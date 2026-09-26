@@ -508,13 +508,11 @@ The `queue` block is what `lightsout queue` runs on. Without it the command refu
 | `queue.ready-status`     |       no | Your tracker's name for the status a ticket waits at once its shaping is finished or was never needed. Defaults to `"Ready to implement"`. It must be one of `queue.eligible-statuses`, or the queue refuses at startup naming both keys.                                     |
 | `queue.in-progress-status` |     no | Status the queue moves a ticket to when it picks it up. Defaults to `"In Progress"`.                                                                                                                                                                                        |
 | `queue.done-status`      |       no | Your tracker's name for the status a ticket reaches once its merge is confirmed. Defaults to `"Done"`.                                                                                                                                                                       |
-| `queue.setup`            |        — | Removed spelling. A config still carrying it fails to parse, with a message naming `worktree.setup` as the key that holds its value now.                                                                                                                                     |
 | `queue.branch-template`  |       no | How a ticket becomes a branch name. `{ticket}` is the lowercased identifier, `{slug}` the slugged title. Defaults to `{ticket}-{slug}`. Whatever it produces must be matched by `ship.ticket-pattern` wherever a ticket names the work. `lightsout work-order new` renders it once and saves the result in the work order's record; the folder's own label is saved separately, and a folder is found by the record that stores a branch rather than by slugging the branch itself. With no ticket, `{ticket}` and the separator that follows it simply drop.                                                                        |
 | `queue.decisions-heading` |      no | The ticket-body heading relayed answers are appended under. Defaults to `## Decisions`.                                                                                                                                                                                     |
 | `queue.worker-timeout`   |       no | Ceiling for one ticket's worker session, as a duration string like `90s`, `45m` or `4h`. Per ticket, never for the drain — the queue itself runs until the backlog is dry. A hit ceiling parks the ticket resumably. Defaults to `4h`.                                        |
 | `queue.question-timeout` |       no | How long one relayed question waits for an answer before its ticket parks, as a duration string. Only `--file-relay` observes it; the terminal relay waits on the person at the terminal. Defaults to `1h`.                                                                   |
 | `queue.parked-label`     |       no | The ticket label the queue sets when a ticket parks and clears when it resumes or ships. It is cleared from a ticket the queue leaves open too: that ticket is waiting on a human decision rather than parked. Opt-in with no default. Linear creates the team label on first use; Jira updates issue labels directly. |
-| `queue.route-labels`     |        — | Removed spelling. A config still carrying it fails to parse, with a message naming `queue.planning-status-labels` as the key that holds its value now.                                                                                                                       |
 
 The block is strict for the same reason `ship` is: an unknown key fails parsing
 rather than silently disabling a setting you believe is on. It contains queue
@@ -740,7 +738,6 @@ prints a total.
 | `auto-plan.propose-before-draft` |       no | When true, the proposal comes before the plan is drafted and carries the design shape rather than the finished plan. Defaults to `false`, where the proposal shows the real, graded plan. |
 | `auto-plan.implement-on-approval` |       no | When true, an approved proposal starts `/implement` rather than stopping at the hand-off line. Defaults to `false`: auto-plan only plans. Ignored under `lightsout queue`, where the auto-plan worker stops at the published plan and the engine runs the build itself.                                                |
 | `auto-plan.auto-approve-plan`    |       no | When true, the proposal is skipped entirely, provided nothing cleared the escalation bar; a question that clears it parks the run instead of being guessed past. Defaults to `false`.    |
-| `auto-plan.auto-approve`         |        — | Removed spelling of `auto-approve-plan`. A config still carrying it fails to parse, with a message naming the key that replaced it.                                                      |
 
 Every key is off by default, so an absent block is the most supervised behaviour there is — the skill plans the whole ticket, shows one proposal, and stops. Turning a key on is a repository saying the factory may carry on that far without asking. The block is strict for the same reason `ship` is.
 
@@ -791,37 +788,6 @@ At least one entry is required: an empty array would mean "declared, but
 nothing", which opts into a check that can never fire. Each entry is strict for
 the same reason `ship` is — a misspelled key fails parsing rather than silently
 declaring a surface with no description.
-
-### Removed spellings
-
-`standards-packages` and `standardsPackages` are removed spellings of `standards-packs`,
-and `auto-plan.auto-approve` is a removed spelling of `auto-plan.auto-approve-plan`. A
-configuration still carrying one fails to parse, with a message naming the key that
-replaced it.
-
-The tracker connection moved out of `queue` because ticket operations such as
-publishing a plan do not require a queue. The removed spellings map to the
-top-level block as follows: `queue.tracker` → `ticket-tracker.provider`,
-`queue.team` → `ticket-tracker.team`, `queue.site-url` →
-`ticket-tracker.site-url`, `queue.project` → `ticket-tracker.project`,
-`queue.api-key-env` → `ticket-tracker.api-key-env`, and
-`queue.api-user-email-env` → `ticket-tracker.api-user-email-env`. A
-configuration still carrying an old spelling fails to parse and names its new
-home.
-
-`queue.route-labels` → `queue.planning-status-labels`. The two-value route
-vocabulary was replaced by the five planning statuses, so a configuration still
-carrying the old key fails to parse and names the key that holds its value now.
-Existing tickets keep their old labels until someone relabels them; nothing in
-the engine reads a `route-` label any more.
-
-`queue.setup` → `worktree.setup`. The command prepares a worktree whoever cut
-it — the queue for a ticket, an implementation run for itself — so it stopped
-being a queue setting. A configuration still carrying the old key fails to parse
-and names its new home.
-
-That message is the live answer, which is why there is no list of every tombstone the
-schema declares here.
 
 ### Harness-neutral keys
 

@@ -26,7 +26,7 @@
       "channel": "base",
       "intro": "# Architecture Decisions\n\nUniversal architectural decisions that apply across the codebase.",
       "ruleIds": [
-        "modules-and-the-graduation-rule",
+        "module-file-to-folder",
         "code-placement-philosophy",
         "thin-wrapper-functions",
         "dead-export",
@@ -42,7 +42,7 @@
       "set": "code",
       "path": "code/architecture/folder-structure",
       "channel": "base",
-      "intro": "# Folder Structure\n\nUse a `common/` folder pattern for shared code — it keeps related code local, makes dependency scope visible, and scales by promoting code upward only when reuse is proven. The trees below are **folder-modules** (see [Modules & the Graduation Rule](./architecture-decisions.md#modules--the-graduation-rule)): a feature folder holds a concept and the companions that serve it, and every import names the file that declares what it imports. A folder carries no `index.ts` — only a package's entry does.",
+      "intro": "# Folder Structure\n\nUse a `common/` folder pattern for shared code — it keeps related code local, makes dependency scope visible, and scales by promoting code upward only when reuse is proven. The trees below are **folder-modules** (see [module-file-to-folder](../architecture-decisions/05-module-file-to-folder/rule.md)): a feature folder holds a concept and the companions that serve it, and every import names the file that declares what it imports. A folder carries no `index.ts` — only a package's entry does.",
       "ruleIds": [
         "placement",
         "file-directly-in-common",
@@ -794,7 +794,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## File vs Folder — The Graduation Rule\n\nClasses follow the same graduation rule as everything else (see [architecture-decisions.md](../../architecture/architecture-decisions.md#modules--the-graduation-rule)):\n\n- **A class starts as a single file** — `RateLimiter.ts` with its test beside it; non-exported helpers may co-locate.\n- **A class graduates to a folder** — `HttpClient/` — only when it needs private companions (bundled utils, types, or constants that serve only it). Companions live under `common/` by category (`utils/`, `types/`, `constants/`), and callers import the class from its own file — `HttpClient/HttpClient.ts`.\n- Do NOT create a folder for a class with no companions — that is ceremony, not structure.",
+      "prose": "## File vs Folder — The Graduation Rule\n\nClasses follow the same graduation rule as everything else (see [module-file-to-folder](../../../../architecture/architecture-decisions/05-module-file-to-folder/rule.md)):\n\n- **A class starts as a single file** — `RateLimiter.ts` with its test beside it; non-exported helpers may co-locate.\n- **A class graduates to a folder** — `HttpClient/` — only when it needs private companions (bundled utils, types, or constants that serve only it). Companions live under `common/` by category (`utils/`, `types/`, `constants/`), and callers import the class from its own file — `HttpClient/HttpClient.ts`.\n- Do NOT create a folder for a class with no companions — that is ceremony, not structure.",
       "fixtures": [
         {
           "side": "pass",
@@ -2433,7 +2433,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Growing Without New Rules\n\nAt every level exactly three kinds of things exist: **modules**, **`common/`**, and **files**. Growth never invents a new kind of place — it is always one of two mechanical moves:\n\n- **Graduate** — a file needs private companions → it becomes a module ([the graduation rule](./architecture-decisions.md#modules--the-graduation-rule))\n- **Consolidate** — a level holds more than ~20 modules → group related sibling modules under a new parent domain module (recursive: a module within a module)",
+      "prose": "## Growing Without New Rules\n\nAt every level exactly three kinds of things exist: **modules**, **`common/`**, and **files**. Growth never invents a new kind of place — it is always one of two mechanical moves:\n\n- **Graduate** — a file needs private companions → it becomes a module ([module-file-to-folder](../../architecture-decisions/05-module-file-to-folder/rule.md))\n- **Consolidate** — a level holds more than ~20 modules → group related sibling modules under a new parent domain module (recursive: a module within a module)",
       "fixtures": [
         {
           "side": "pass",
@@ -2865,10 +2865,10 @@
       }
     },
     {
-      "id": "modules-and-the-graduation-rule",
+      "id": "module-file-to-folder",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
-      "summary": "a folder created for a concept with no private companions, or a folder's internals reached from outside it",
+      "summary": "When a module should stay one file, and when it should become a folder.",
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
@@ -2877,7 +2877,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Modules & the Graduation Rule\n\nA **module** is a unit of code with a public API and private internals. TypeScript enforces privacy at the file level (non-exported = invisible); folder-level boundaries are convention the repo may enforce with tooling.\n\n**Every concept starts as a file and earns its folder:**\n\n- **File-module (default):** a single file holding one exported item plus non-exported helpers. The compiler enforces the boundary for free.\n- **Folder-module (graduated):** when a concept needs private companions — its own utils, types, or constants that serve only it — it graduates to a folder holding the concept and its companions.\n- **Born folders:** features, route modules, and screens are inherently multi-file and start as folder-modules.\n\n**The trigger is mechanical:** *needs private companion files → folder; doesn't → file.* Never create folder ceremony for a one-file concept.\n\n**Borderline cases are decided by the companion test:** does any of the concept's files serve only the concept itself? No → the concept is primitives; its files belong in `common/<type>/`. Yes → it is a module. This applies to shared code too: a shared concept with private companions graduates OUT of `common/` into its own module ([folder-structure.md](./folder-structure.md#what-lives-in-common--the-companion-test)).\n\n**Boundary rules for folder-modules:**\n\n1. Every import names the file that declares what it imports. A folder carries no `index.ts`; only a package's entry does, and code inside the package never imports through it.\n2. Code outside a folder-module imports the files it is meant to use — the concept's own file, and what that file's callers need — never the companions that serve only the concept\n3. Inside a module, imports between its files are correct\n4. Tests target the module's public files; its companions are covered through them (a `.unit.test.ts` beside a file marks it as a boundary; files under a module's `common/` have none of their own)\n5. Test imports obey the same boundary: a test OUTSIDE a module imports only its public files, never its companions — including in repos that keep tests in a separate directory. (A test living beside its file is inside the module; it imports that file directly.)\n\nThe rule is recursive — a graduated component folder inside a feature folder is a module within a module.",
+      "prose": "## Modules & the Graduation Rule\n\nA **module** is a unit of code with a public API and private internals. TypeScript enforces privacy at the file level (non-exported = invisible).\n\n**Every concept starts as a file and earns its folder:**\n\n- **File-module (default):** a single file holding one exported item plus non-exported helpers. The compiler enforces the boundary for free.\n- **Folder-module (graduated):** when a concept needs private companions — its own utils, types, or constants that serve only it — it graduates to a folder holding the concept and its companions.\n- **Born folders:** features, route modules, and screens are inherently multi-file and start as folder-modules.\n\n**The trigger is mechanical:** *needs private companion files → folder; doesn't → file.* Never create folder ceremony for a one-file concept.\n\n**Borderline cases are decided by the companion test:** does any of the concept's files serve only the concept itself? No → the concept is primitives; its files belong in `common/<type>/`. Yes → it is a module. This applies to shared code too: a shared concept with private companions graduates OUT of `common/` into its own module ([folder-structure.md](./folder-structure.md#what-lives-in-common--the-companion-test)).\n\nThe rule is recursive — a graduated component folder inside a feature folder is a module within a module.",
       "fixtures": [
         {
           "side": "pass",

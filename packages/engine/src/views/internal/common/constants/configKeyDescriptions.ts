@@ -1,16 +1,11 @@
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 
 /**
- * What each live `lightsout.config.json` key is for, in the schema's own words.
+ * What each `lightsout.config.json` key is for, in the schema's own words.
  *
  * Transcribed from `LightsoutConfig`'s doc comments rather than read from them:
  * TypeScript doc comments are erased before anything runs, so a transcription is
  * the only honest route to the sentence a reader of the file would see.
- *
- * Live keys only. The removed spellings are declared in the schema purely so a
- * stale config fails loudly, and a key nobody may write needs no explanation —
- * which is exactly what the coverage test beside this file proves about every
- * key missing from here.
  *
  * The `timeouts.` entries are the block's leaves rather than shape keys: the
  * block's defaults are per leaf, so the page gives each its own row and each row

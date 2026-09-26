@@ -6,8 +6,7 @@ const base = { gates: { check: 'c', test: 't', 'test-coverage': false } };
 // The block contracts — Gates, PackageGates, ConfigCommands,
 // StandardsCheckOverrides — each pin their own shape in their own test. What
 // this file owns is the composed config: which blocks are required, which are
-// optional, and the top-level fields. The retired spellings and their refusals
-// are the neighbouring `LightsoutConfig.removedKeys` suite.
+// optional, and the top-level fields.
 
 test('LightsoutConfig: gates is required, and every other block is optional', () => {
 	// with no gates block there is nothing to verify a run with
@@ -372,4 +371,11 @@ test('LightsoutConfig: the pricing block is optional, keeps its own kebab-case s
 	// estimated-cost column rather than guess a rate nobody stated
 	expect('pricing' in LightsoutConfig.parse(base)).toBe(false);
 	expect(LightsoutConfig.parse(base).pricing).toBe(undefined);
+});
+
+test('LightsoutConfig: a key the schema does not declare is refused, at the top level and inside timeouts', () => {
+	// a typo that parsed would leave its setting at the default while the file
+	// says otherwise
+	expect(LightsoutConfig.safeParse({ ...base, harnes: 'codex' }).success).toBe(false);
+	expect(LightsoutConfig.safeParse({ ...base, timeouts: { 'agent-minutse': 30 } }).success).toBe(false);
 });

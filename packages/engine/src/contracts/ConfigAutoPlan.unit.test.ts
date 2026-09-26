@@ -29,11 +29,4 @@ describe('ConfigAutoPlan', () => {
 
 		expect(parsed.success).toBe(false);
 	});
-
-	test('refuses the removed `auto-approve` spelling with a message naming the key that replaced it, so a stale config is told what to write', () => {
-		const parsed = ConfigAutoPlan.safeParse({ 'auto-approve': true });
-
-		expect(parsed.success).toBe(false);
-		expect(parsed.error?.issues[0]?.message).toContain('auto-plan.auto-approve-plan');
-	});
 });

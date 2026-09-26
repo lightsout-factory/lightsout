@@ -1,24 +1,6 @@
 import { expect, test } from '@jest/globals';
 import { StandardsCheckOverrides } from '#src/contracts/StandardsCheckOverrides.ts';
 
-test('StandardsCheckOverrides: the renamed finding severity is refused with a message naming blocking', () => {
-	const bare = StandardsCheckOverrides.safeParse({ 'duplicate-code-block': 'finding' });
-
-	// a value copied from the pre-rename docs is told what happened, rather than
-	// being handed a bare list of the three valid options
-	expect(bare.success).toBe(false);
-	expect(bare.error?.message ?? '').toMatch(/severity `finding` was renamed to `blocking`/);
-
-	// the object form takes the same value in a different position — both reject
-	const nested = StandardsCheckOverrides.safeParse({ 'duplicate-code-block': { severity: 'finding' } });
-
-	expect(nested.success).toBe(false);
-	expect(nested.error?.message ?? '').toMatch(/severity `finding` was renamed to `blocking`/);
-
-	// an ordinary typo keeps the ordinary enum error — only the retired spelling is called out
-	expect(StandardsCheckOverrides.safeParse({ 'duplicate-code-block': 'blockign' }).error?.message ?? '').not.toMatch(/was renamed/);
-});
-
 test('StandardsCheckOverrides: both override forms come through parsing intact', () => {
 	const overrides = {
 		'duplicate-code-block': 'off',

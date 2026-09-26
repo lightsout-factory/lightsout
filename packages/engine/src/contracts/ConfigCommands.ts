@@ -17,7 +17,7 @@ const commandHarness = z
  * Per-command harness selection (`plan` covers draft/dedup/grade; `resume`
  * always keeps the run manifest's recorded harness). Each entry overrides the
  * global `harness`/`model`/`effort` for that command; unlisted commands use
- * the globals. Both objects are `.strict()` — unlike the rest of the config,
+ * the globals. Both objects are `.strict()`, like every block of the config:
  * a typoed key here would silently disable an override the user believes
  * is active, so it fails parsing loudly instead.
  */

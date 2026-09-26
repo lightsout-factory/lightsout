@@ -144,13 +144,6 @@ describe('buildRunBurnDown', () => {
 		expect(burnDown?.overCap).toBe(undefined);
 	});
 
-	test('a run saved before the size rules were renamed still counts its over-cap batches', () => {
-		const batches = [buildBatch({ id: 'batch-01:crowded-folder:engine', rule: 'crowded-folder', blocking: 2 })];
-		const burnDown = buildRunBurnDown({ manifest: buildManifest({ pipeline: PipelineKind.Refactor }), worklist: frozen({ batches }) });
-
-		expect(burnDown?.overCap).toStrictEqual({ before: 2, after: 2 });
-	});
-
 	test('a refactor run whose frozen work-list is missing or unparseable gets no panel at all', () => {
 		// The tag survives a file that would not parse, which is exactly the case a
 		// reader must not be shown zeroes for.

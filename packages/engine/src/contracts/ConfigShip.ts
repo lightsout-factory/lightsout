@@ -10,8 +10,7 @@ import { ShipMergeMethod } from '#src/contracts/ship/ShipMergeMethod.ts';
  * are all this block's business, so no tracker vocabulary ever reaches engine
  * source.
  *
- * `.strict()` for the same reason `ConfigCommands` is strict: the rest of the
- * config strips unknown keys, and a typo here would silently disable a setting
+ * `.strict()`, like every block of the config: a typo here would silently disable a setting
  * the user believes is active.
  */
 export const ConfigShip = z

@@ -10,8 +10,7 @@ import { GateOverride } from '#src/contracts/GateOverride.ts';
  * engine's default: the cheap gates first, and the expensive ones only once
  * every package group's cheap gates are green.
  *
- * `.strict()` for the same reason `ConfigAutoPlan` is strict: the rest of the
- * config strips unknown keys, and a misspelled checkpoint has to fail loudly
+ * `.strict()`, like every block of the config: a misspelled checkpoint has to fail loudly
  * rather than silently disable a schedule the author believes is set.
  */
 export const GateOverrides = z

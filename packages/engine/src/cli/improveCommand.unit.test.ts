@@ -61,7 +61,7 @@ test('improveCommand: a present-but-invalid config is a hard error, not the miss
 		config: { driver: 'codex', gates: { check: 'c', test: 't', 'test-coverage': false } },
 	});
 
-	await expect(improveCommand(context)).rejects.toThrow(/renamed to `harness`/);
+	await expect(improveCommand(context)).rejects.toThrow(/driver/);
 });
 
 /**

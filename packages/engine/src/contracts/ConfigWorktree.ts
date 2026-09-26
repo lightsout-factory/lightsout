@@ -9,8 +9,7 @@ import { z } from 'zod';
  * implementation run prepares one per run. A key living inside either block
  * would read as belonging to that one alone.
  *
- * `.strict()` for the same reason `ConfigPlan` is strict: the rest of the config
- * strips unknown keys, and a typo in an opt-in setting has to fail loudly rather
+ * `.strict()`, like every block of the config: a typo in an opt-in setting has to fail loudly rather
  * than silently leave the default in force.
  */
 export const ConfigWorktree = z

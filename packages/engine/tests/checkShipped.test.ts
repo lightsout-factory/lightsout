@@ -153,11 +153,26 @@ test('an engine bundle that no longer matches src/ fails', async () => {
 	expect(output).toMatch(/plugin\/dist\/cli\.mjs does not match packages\/engine\/src\//);
 });
 
+/**
+ * Any one rule.md the authored pack holds. Which rule is incidental to the
+ * claim under test, and naming one broke this test when that rule was renamed.
+ */
+const findAuthoredRule = async ({ cwd }: { cwd: string }) => {
+	const root = join(cwd, 'packages/standards-typescript/code');
+	const entry = (await readdir(root, { recursive: true, withFileTypes: true })).find((candidate) => candidate.isFile() && candidate.name === 'rule.md');
+
+	if (entry === undefined) {
+		throw new Error(`no authored rule.md under ${root} to change`);
+	}
+
+	return join(entry.parentPath, entry.name);
+};
+
 test('a standards package that no longer matches its authored source fails, naming the file that differs', async () => {
 	const cwd = await setupShippedClone();
-	const rule = 'packages/standards-typescript/code/architecture/architecture-decisions/05-modules-and-the-graduation-rule/rule.md';
+	const rule = await findAuthoredRule({ cwd });
 
-	await writeFile(join(cwd, rule), `${await readFile(join(cwd, rule), 'utf8')}\n\nDrift.\n`);
+	await writeFile(rule, `${await readFile(rule, 'utf8')}\n\nDrift.\n`);
 
 	const { ok, output } = checkShipped({ cwd, base: 'main' });
 

@@ -9,7 +9,7 @@ interface Params {
 
 /**
  * A rule's prose without its opening heading when that heading only spells the
- * rule's id — "Modules & the Graduation Rule" over `modules-and-the-graduation-rule`
+ * rule's id — "Props & State" over `props-and-state`
  * — since the page's title already says it. Any other opening is kept.
  *
  * @param prose - the rule's prose

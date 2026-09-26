@@ -10,7 +10,7 @@ interface Props {
 }
 
 /**
- * The rule's identity: its name, what it flags, who enforces it, and what it
+ * The rule's identity: its name, what it is about, who enforces it, and what it
  * does by default.
  *
  * These are the pack's own defaults rather than how any one repo runs the rule
@@ -24,7 +24,7 @@ export const RuleHeader = ({ rule }: Props) => {
 		<header className="flex flex-col gap-4">
 			<h1 className="break-words font-bold font-mono text-2xl text-drop-navy md:text-3xl">{rule.id}</h1>
 			<p className="text-lg text-muted-foreground leading-relaxed">
-				Flags <CodeSpans text={rule.summary} />.
+				<CodeSpans text={rule.summary} />
 			</p>
 			<div className="flex flex-wrap items-center gap-2">
 				<CheckKindTag kind={toCheckKind({ checked: rule.checked })} />

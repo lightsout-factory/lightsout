@@ -17,46 +17,56 @@ reaches the shipped `plugin/standards/` bundle.
 
 ## Rule Id Naming Convention
 
-1. **An id names the defect the rule finds** — not the mechanism that finds it,
-   not the input the check reads, not the remedy the fix applies. `clone` names
-   a detector; `ungrouped-domain-utils` names what is wrong on disk.
-2. **Kebab-case, two to five words, no term a reader outside this project would
+1. **An id names the topic the rule covers, in plain words** — specific enough
+   that a reader knows what it covers without opening it. Not the mechanism
+   that finds a break, not the input the check reads, not the remedy the fix
+   applies. `clone` names a detector; `module-file-to-folder` names what the
+   rule decides.
+2. **One style for every rule, however it is checked.** Whether an agent or a
+   `check.ts` enforces it shows as a tag on the rule's page, not in its id, so
+   a rule that gains or loses a check keeps its name. No lint-style `no-` or
+   `prefer-` prefixes: a rule is guidance, not a yes-or-no switch.
+3. **Kebab-case, two to five words, no term a reader outside this project would
    have to look up.** `ast`, `census`, `mega`, `clone` all fail this.
-3. **A prefix is allowed only when it names the subject the defect is about**,
+4. **A prefix is allowed only when it names the subject the defect is about**,
    and only where the pack already reads that way: `test-` (a defect in a test
    file), `barrel-`, `class-`, `duplicate-`. A prefix that names the check's
    plumbing is banned — this is what retires `path-`.
-4. **The id must not read as the opposite of what it enforces.**
+5. **The id must not read as the opposite of what it enforces.**
    `index-not-barrel` fails: the rule requires an index file to *be* a barrel.
-5. **Word order follows English.** The defect is a noun phrase read left to
+6. **Word order follows English.** The defect is a noun phrase read left to
    right: `duplicate-export-name`, not `name-duplicate`; `folder-size`, not
    `folder-census`. An id that reads as a database column name fails.
-6. **A word the id shares with its document folder is not automatically
+7. **A word the id shares with its document folder is not automatically
    redundant.** Ids are read in flat lists — config keys, findings output, the
    `durableRuleIds` ledger — where no folder is around them, so
    `test-in-tests-folder` earns its `test-`: without it the id could describe
    any file. Drop the shared word only when the rest of the id already implies
    it, which is why `test-mega-factory` became `oversized-setup-factory` — a
    setup factory is a test-only thing and the word buys nothing.
-7. **An id is durable once shipped.** Renaming one resets every persisted
+8. **An id is durable once shipped.** Renaming one resets every persisted
    finding keyed to it. Get it right at birth; a rename is a deliberate change
    that migrates the config, the engine's id lists and the pack's cross-links in
    the same commit.
 
 ## Writing a Rule's Prose
 
-**Summary** — the `summary` in a rule's front matter is one lowercase noun
-phrase naming what a reader would see on disk when the rule is broken. No
-mechanism (`token-level`, `after identifier normalization`, `AST`), no tool
-names, no settings keys. When a number decides the finding, say "over its cap"
-rather than the number itself. Two rewrites from the sweep that set the bar:
+**Summary** — the `summary` in a rule's front matter is one short sentence
+saying what the rule is about, for a person deciding at a glance whether it
+makes sense. Agents never read it; they read the prose. State the topic at a
+high level, not the mistake in detail — the details belong in the prose. No
+jargon, no mechanism (`token-level`, `after identifier normalization`, `AST`),
+no tool names, no settings keys, no numbers. Pages print it as written, so it
+starts with a capital letter and ends with a full stop.
 
-- before: `"token-level copy-paste spans"`
-- after: `"the same block of code written out in two or more files"`
-- before: `"function bodies identical after identifier normalization"`
-- after: `"two functions with the same body under different variable names"`
+- before: `"a folder created for a concept with no private companions, or a folder's internals reached from outside it"`
+- after: `"When a module should stay one file, and when it should become a folder."`
 
-**Prose** — plain sentences, the reason stated before the mandate, second
+**Prose** — the prose is the rule itself. Agents follow this exact text when
+they write and review code, and the rule page prints the same text under "The
+rule", so it has to be clear enough to hand straight to an agent and readable
+enough for a person to agree with. One rule, one job: leave out anything
+another rule already covers. Plain sentences, the reason stated before the mandate, second
 person or plain declarative, no jargon left undefined on the page. The register
 is set by `tests/unit-testing/04-module-boundary-testing/rule.md`: it opens with
 what to do by default, gives the reason in the same breath ("so a module's

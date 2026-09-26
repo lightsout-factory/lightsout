@@ -3,9 +3,9 @@ import { dropRepeatedTitle } from '#src/features/packs/screens/RuleDetail/intern
 
 describe('dropRepeatedTitle', () => {
 	test('drops an opening heading that only spells the rule id, reading an ampersand as "and"', () => {
-		const prose = dropRepeatedTitle({ prose: '## Modules & the Graduation Rule\n\nA module is a unit.', ruleId: 'modules-and-the-graduation-rule' });
+		const prose = dropRepeatedTitle({ prose: '## Props & State\n\nKeep state local.', ruleId: 'props-and-state' });
 
-		expect(prose).toBe('A module is a unit.');
+		expect(prose).toBe('Keep state local.');
 	});
 
 	test('keeps an opening heading that says something the id does not', () => {

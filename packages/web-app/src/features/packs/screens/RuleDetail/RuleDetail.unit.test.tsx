@@ -88,11 +88,13 @@ describe('RuleDetail', () => {
 		expect(crumb).toHaveAttribute('href', '/standards-packs/typescript');
 	});
 
-	test('names the rule as the page, and says what it flags as a sentence', () => {
+	test('names the rule as the page, and says what it is about in its own words', () => {
 		setupRuleDetail();
 
 		expect(screen.getByRole('heading', { level: 1, name: 'type-assertion' })).toBeInTheDocument();
-		expect(screen.getByText(/^Flags/)).toHaveTextContent('Flags an as cast where narrowing would do.');
+		expect(
+			screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'When an as cast is fine, and when to narrow the type instead.'),
+		).toBeInTheDocument();
 	});
 
 	test('says who enforces the rule and what it does by default, and nothing a reader cannot use', () => {
@@ -108,12 +110,20 @@ describe('RuleDetail', () => {
 		expect([screen.getByText('Agent check'), screen.getByText('Advises by default')]).toHaveLength(2);
 	});
 
-	test("prints the rule's own argument, which is what a reader needs in order to disagree with it", () => {
+	test("prints the rule's own text, which is what a reader needs in order to disagree with it", () => {
 		setupRuleDetail();
 
-		const prose = within(getSection({ name: 'Why this rule' })).getByText(/Avoid/);
+		const prose = within(getSection({ name: 'The rule' })).getByText(/Avoid/);
 
 		expect(prose).toBeInTheDocument();
+	});
+
+	test('says agents read that text as written, so a reader knows nothing else is behind it', () => {
+		setupRuleDetail();
+
+		const note = within(getSection({ name: 'The rule' })).getByText('Agents read this text as written when they write and review code.');
+
+		expect(note).toBeInTheDocument();
 	});
 
 	test('drops an opening heading that only repeats the rule name', () => {

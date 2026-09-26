@@ -10,7 +10,6 @@ import { ConfigQueue } from '#src/contracts/ConfigQueue.ts';
 import { ConfigShip } from '#src/contracts/ConfigShip.ts';
 import { ConfigTicketTracker } from '#src/contracts/ConfigTicketTracker.ts';
 import { ConfigWorktree } from '#src/contracts/ConfigWorktree.ts';
-import { renamedKey } from '#src/contracts/common/utils/renamedKey.ts';
 import { validateGateOverrideNames } from '#src/contracts/common/utils/validateGateOverrideNames.ts';
 import { Effort } from '#src/contracts/Effort.ts';
 import { GateOverrides } from '#src/contracts/GateOverrides.ts';
@@ -28,8 +27,8 @@ import { StandardsCheckOverrides } from '#src/contracts/StandardsCheckOverrides.
  * that reads it: `package-gates`, `test-coverage`, `agent-commands`. The parsed
  * value keeps that spelling, so a run manifest's config snapshot round-trips
  * through this schema unchanged and a reader of either file sees one
- * vocabulary. Each key's previous camelCase spelling is declared beside it as
- * a refusal that names the new one.
+ * vocabulary. Every block is `.strict()`: an unknown key fails parsing, so a
+ * typo never silently leaves a setting at its default.
  *
  * Composed from the block contracts beside it — `ConfigGates`, `PackageGates`,
  * `ConfigCommands`, `StandardsCheckOverrides` — each of which pins its own
@@ -49,14 +48,6 @@ export const LightsoutConfig = z
 		 * deliberately not settable — it would make a writing role write nothing.
 		 */
 		permissions: z.enum([Permissions.Write, Permissions.FullAccess]).optional(),
-		/** Removed — renamed to `harness`. Declared only so a stale key fails loudly instead of being silently stripped. */
-		driver: renamedKey({ from: 'driver', to: 'harness' }),
-		/** Removed — replaced by `permissions`. Same reason. */
-		permissionMode: z.never('`permissionMode` was replaced by `permissions` (`write` or `full-access`)').optional(),
-		/** Removed — renamed to `gates`. Same reason. */
-		scripts: renamedKey({ from: 'scripts', to: 'gates' }),
-		/** Removed — renamed twice over; the current name is `package-gates`. Same reason. */
-		packageScripts: renamedKey({ from: 'packageScripts', to: 'package-gates' }),
 		/** Per-command harness selection. See `ConfigCommands`. */
 		commands: ConfigCommands.optional(),
 		/** Verification commands — the mechanical gates. See `ConfigGates`. */
@@ -74,11 +65,8 @@ export const LightsoutConfig = z
 				'supervisor-minutes': z.number().positive().optional(),
 				/** One gate command — the repo's own check, test, coverage, build or end-to-end run. Default 15. */
 				'gate-minutes': z.number().positive().optional(),
-				/** Removed — renamed to `agent-minutes`. Declared only so a stale key fails loudly instead of being silently stripped. */
-				agentMinutes: renamedKey({ from: 'timeouts.agentMinutes', to: 'timeouts.agent-minutes' }),
-				/** Removed — renamed to `supervisor-minutes`. Same reason. */
-				supervisorMinutes: renamedKey({ from: 'timeouts.supervisorMinutes', to: 'timeouts.supervisor-minutes' }),
 			})
+			.strict()
 			.optional(),
 		/**
 		 * Command prefixes working agents are granted (prefix match, arguments
@@ -89,8 +77,6 @@ export const LightsoutConfig = z
 		 * all gates itself, and agents are told grants are not for verifying.
 		 */
 		'agent-commands': z.array(z.string()).optional(),
-		/** Removed — renamed to `agent-commands`. Declared only so a stale key fails loudly instead of being silently stripped. */
-		agentCommands: renamedKey({ from: 'agentCommands', to: 'agent-commands' }),
 		/**
 		 * Path prefixes of generated/derived files (e.g. a Prisma client output
 		 * dir). Treated like gate artifacts: real files in the diff, but excluded
@@ -132,8 +118,6 @@ export const LightsoutConfig = z
 		 * format never breaks the run.
 		 */
 		'coverage-summary-path': z.string().optional(),
-		/** Removed — renamed to `coverage-summary-path`. Declared only so a stale key fails loudly instead of being silently stripped. */
-		coverageSummaryPath: renamedKey({ from: 'coverageSummaryPath', to: 'coverage-summary-path' }),
 		/**
 		 * How many source files one plan or phase may create or modify before the
 		 * feature executor refuses it. Default 50 (`defaultExecutorFileLimit`).
@@ -147,12 +131,8 @@ export const LightsoutConfig = z
 		'executor-file-limit': z.number().positive().optional(),
 		/** Directory holding workspace packages, for monorepo scoped gates. Default 'packages'. */
 		'packages-dir': z.string().optional(),
-		/** Removed — renamed to `packages-dir`. Same reason. */
-		packagesDir: renamedKey({ from: 'packagesDir', to: 'packages-dir' }),
 		/** Monorepo scoped gate templates. See `PackageGates`. */
 		'package-gates': PackageGates.optional(),
-		/** Removed — renamed to `package-gates`. Same reason. */
-		packageGates: renamedKey({ from: 'packageGates', to: 'package-gates' }),
 		/**
 		 * Opt-in per-checkpoint gate schedules, keyed by the four verification
 		 * checkpoints. A listed checkpoint runs exactly the gates its entry names,
@@ -170,14 +150,6 @@ export const LightsoutConfig = z
 		 * is loaded. A root that cannot be loaded is a hard error.
 		 */
 		'standards-packs': z.union([z.array(z.string()), z.literal(false)]).optional(),
-		/** Removed — renamed to `standards-packs`. Declared only so a stale key fails loudly instead of being silently stripped. */
-		'standards-packages': renamedKey({ from: 'standards-packages', to: 'standards-packs' }),
-		/** Removed — renamed to `standards-packs`. Same reason. */
-		standardsPackages: renamedKey({ from: 'standardsPackages', to: 'standards-packs' }),
-		/** Removed — replaced by `standards-packs`. Same reason. */
-		standards: z.never('`standards` was replaced by `standards-packs` — standards now load as packs').optional(),
-		/** Removed — the test tree ships inside a standards pack. Same reason. */
-		testStandards: z.never('`testStandards` was replaced by `standards-packs` — standards now load as packs').optional(),
 		/**
 		 * Framework channels of the loaded standards packs (e.g. 'react',
 		 * 'tanstack'). Unspecified = detected per run from the scoped packages'
@@ -185,14 +157,8 @@ export const LightsoutConfig = z
 		 * docs only).
 		 */
 		'standards-channels': z.array(z.string()).optional(),
-		/** Removed — renamed to `standards-channels`. Declared only so a stale key fails loudly instead of being silently stripped. */
-		standardsChannels: renamedKey({ from: 'standardsChannels', to: 'standards-channels' }),
-		/** Removed — renamed twice over; the current name is `standards-checks`. Same reason. */
-		scan: renamedKey({ from: 'scan', to: 'standards-checks' }),
 		/** Per-rule severity/settings overrides. See `StandardsCheckOverrides`. */
 		'standards-checks': StandardsCheckOverrides.optional(),
-		/** Removed — renamed to `standards-checks`. Same reason. */
-		standardsChecks: renamedKey({ from: 'standardsChecks', to: 'standards-checks' }),
 		/** Opt-in ship settings — branch ticket pattern, pull request body template, merge method. See `ConfigShip`. */
 		ship: ConfigShip.optional(),
 		/** Opt-in auto-plan settings — which of `/auto-plan`'s checkpoints this repo keeps. See `ConfigAutoPlan`. */
@@ -212,6 +178,7 @@ export const LightsoutConfig = z
 		/** Opt-in documentation surfaces — each a repo-relative path and what that document covers. See `ConfigDocs`. */
 		docs: ConfigDocs.optional(),
 	})
+	.strict()
 	// The one check no block can make on its own: an override may name a gate
 	// configured under `gates`, under `package-gates`, or nowhere at all, and
 	// this is the only schema that sees all three at once.
