@@ -71,6 +71,38 @@ interpolated measurement (`${lineCount} lines (cap ~${cap})`), its observed
 value, and the settings key its guidance names are the actionable part of the
 finding, and they stay.
 
+## A Rule's Examples
+
+A rule's `fixtures/fail/` and `fixtures/pass/` are what `lightsout
+standards-validate` runs its check against, and what the rule's page shows as
+its Incorrect and Correct examples. `example` in the front matter says how they
+are shaped, which decides how the page shows them:
+
+- `kind: snippet` — one file a side, each read on its own.
+- `kind: repo` — a small source tree a side, because the rule looks across files
+  and no single file shows the defect. `focus` names the file each side opens
+  on: the one that shows the defect, and the one that shows its fix. Supporting
+  files — a `package.json` the check reads, the module that imports another —
+  stay in the tree without leading it.
+
+```yaml
+example:
+  kind: repo
+  focus:
+    fail: src/feature/buildGreeting.ts
+    pass: src/index.ts
+```
+
+`standards-validate` holds the fixtures to the declared shape: a snippet with
+more than one file a side, or a `focus` file its side does not hold, is a
+problem. A rule that declares nothing is shown by its files — one file or none a
+side as a snippet, anything more as a repo opening on each side's first file —
+which is what a pack written before this key exists gets.
+
+Comments in a fixture are half of what it teaches, so every file a reader might
+open says why it is there. Mind what a comment names: a check that counts
+mentions, like `dead-export`'s, reads a comment's words as uses.
+
 ## Renaming a Rule
 
 A rename resets every persisted finding keyed to the old id: baselines,

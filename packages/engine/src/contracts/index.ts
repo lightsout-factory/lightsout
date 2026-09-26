@@ -176,6 +176,8 @@ export { PlanStage } from '#src/contracts/views/planWorkspace/PlanStage.ts';
 export { PlanWorkspaceFile } from '#src/contracts/views/planWorkspace/PlanWorkspaceFile.ts';
 export { PlanWorkspaceListing } from '#src/contracts/views/planWorkspace/PlanWorkspaceListing.ts';
 export { PlanWorkspaceView } from '#src/contracts/views/planWorkspace/PlanWorkspaceView.ts';
+export { RuleExample } from '#src/contracts/views/RuleExample.ts';
+export { RuleExampleKind } from '#src/contracts/views/RuleExampleKind.ts';
 export { RunListing } from '#src/contracts/views/RunListing.ts';
 export { RunStepView } from '#src/contracts/views/RunStepView.ts';
 export { RunView } from '#src/contracts/views/RunView.ts';

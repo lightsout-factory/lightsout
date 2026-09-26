@@ -1,38 +1,75 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { StandardsPackRuleView } from '@lightsout/engine';
-import { StandardsSeverity } from '@lightsout/engine/contracts';
-import { screen } from '@testing-library/react';
+import { FixtureSide, RuleExampleKind, StandardsSeverity } from '@lightsout/engine/contracts';
+import { screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { RuleDetail } from '#src/features/packs/screens/RuleDetail/RuleDetail.tsx';
+import { buildStandardsPackRuleListing } from '#tests/helpers/buildStandardsPackRuleListing.ts';
 import { buildStandardsPackRuleView } from '#tests/helpers/buildStandardsPackRuleView.ts';
+import { buildStandardsPackView } from '#tests/helpers/buildStandardsPackView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
 // Mocked Imports
 // -------------------------
-// The trail above the page links back to the packs list and to the set, and a
-// link needs a live router to resolve a path. A plain anchor keeps the
-// assertions about where the page points.
+// The trail above the page and the links to the rules either side need a live
+// router to resolve a path. A plain anchor keeps the assertions about where
+// the page points.
 jest.mock('@tanstack/react-router', () => ({
-	Link: ({ to, params, children, className }: { to: string; params?: Record<string, string>; children: ReactNode; className?: string }) => (
-		<a href={Object.entries(params ?? {}).reduce((path, [name, value]) => path.replace(`$${name}`, value), to)} className={className}>
+	Link: ({
+		to,
+		params,
+		hash,
+		children,
+		className,
+		'aria-current': ariaCurrent,
+	}: {
+		to: string;
+		params?: Record<string, string>;
+		hash?: string;
+		children: ReactNode;
+		className?: string;
+		'aria-current'?: 'page';
+	}) => (
+		<a
+			href={`${Object.entries(params ?? {}).reduce((path, [name, value]) => path.replace(`$${name}`, value), to)}${hash === undefined ? '' : `#${hash}`}`}
+			className={className}
+			aria-current={ariaCurrent}
+		>
 			{children}
 		</a>
 	),
 }));
+
 // -------------------------
 
-const setupRuleDetail = ({ rule = buildStandardsPackRuleView() }: { rule?: StandardsPackRuleView } = {}) => {
+/** The set the page's rule sits in: the rule itself between two others, in one document. */
+const packRules = [
+	buildStandardsPackRuleListing({ id: 'no-any' }),
+	buildStandardsPackRuleListing({ id: 'type-assertion' }),
+	buildStandardsPackRuleListing({ id: 'import-type-only' }),
+];
+
+const setupRuleDetail = ({ rule = buildStandardsPackRuleView(), rules = packRules }: { rule?: StandardsPackRuleView; rules?: typeof packRules } = {}) => {
 	renderWithQueryClient({
 		ui: <RuleDetail ruleId={rule.id} />,
-		seed: [{ queryKey: [QueryKey.DefaultPackRule, rule.id], data: rule }],
+		seed: [
+			{ queryKey: [QueryKey.DefaultPackRule, rule.id], data: rule },
+			{ queryKey: [QueryKey.DefaultPack], data: buildStandardsPackView({ rules }) },
+		],
 	});
 
 	return { rule };
 };
 
-/** The override block the settings card offers, parsed, so the assertion pins the entries rather than the indentation. */
-const readOverrideSnippet = (): unknown => JSON.parse(screen.getByText(/"settings"/).textContent ?? '');
+/** The text of every code block captioned with this path, in page order. */
+const readCode = ({ caption }: { caption: string }) => screen.getAllByText(caption).map((label) => label.closest('figure')?.querySelector('pre')?.textContent);
+
+/** The config block the page offers, parsed, so the assertion pins the entries rather than the indentation. */
+const readConfigSnippet = (): unknown => JSON.parse(readCode({ caption: 'lightsout.config.json' })[0] ?? '');
+
+/** One section of the page, found by its heading. */
+const getSection = ({ name }: { name: string }) => screen.getByRole('heading', { level: 2, name }).closest('section') as HTMLElement;
 
 describe('RuleDetail', () => {
 	test('shows the whole address a reader walked to get here, one step at a time', () => {
@@ -51,87 +88,207 @@ describe('RuleDetail', () => {
 		expect(crumb).toHaveAttribute('href', '/standards-packs/typescript');
 	});
 
-	test('names the rule as the page, and says what it catches', () => {
+	test('names the rule as the page, and says what it flags as a sentence', () => {
 		setupRuleDetail();
 
 		expect(screen.getByRole('heading', { level: 1, name: 'type-assertion' })).toBeInTheDocument();
-		expect(screen.getByText('an `as` cast where narrowing would do')).toBeInTheDocument();
+		expect(screen.getByText(/^Flags/)).toHaveTextContent('Flags an as cast where narrowing would do.');
 	});
 
-	test('says who enforces the rule, how loudly it ships, and where it applies', () => {
+	test('says who enforces the rule and what it does by default, and nothing a reader cannot use', () => {
 		setupRuleDetail();
 
-		expect(screen.getByText('Deterministic check')).toBeInTheDocument();
-		expect(screen.getByText('blocking by default')).toBeInTheDocument();
-		expect(screen.getByText('base')).toBeInTheDocument();
-		expect(screen.getByText('code')).toBeInTheDocument();
+		expect([screen.getByText('Deterministic check'), screen.getByText('Blocks by default')]).toHaveLength(2);
+		expect([screen.queryByText('base'), screen.queryByText('code')]).toStrictEqual([null, null]);
 	});
 
-	test('calls an agent check an agent check, and says it ships advisory, since much of the pack is both', () => {
+	test('calls an agent check an agent check, and says it only advises', () => {
 		setupRuleDetail({ rule: buildStandardsPackRuleView({ overrides: { checked: false, defaultSeverity: StandardsSeverity.Advisory } }) });
 
-		expect(screen.getByText('Agent check')).toBeInTheDocument();
-		expect(screen.getByText('advisory by default')).toBeInTheDocument();
+		expect([screen.getByText('Agent check'), screen.getByText('Advises by default')]).toHaveLength(2);
 	});
 
 	test("prints the rule's own argument, which is what a reader needs in order to disagree with it", () => {
 		setupRuleDetail();
 
-		const prose = screen.getByText(/Avoid `as` casts/);
+		const prose = within(getSection({ name: 'Why this rule' })).getByText(/Avoid/);
 
 		expect(prose).toBeInTheDocument();
 	});
 
-	test('says as much for a rule that argues only through its example, rather than leaving a blank panel', () => {
+	test('drops an opening heading that only repeats the rule name', () => {
+		setupRuleDetail({ rule: buildStandardsPackRuleView({ prose: '## Type Assertion\n\nAvoid `as` casts.' }) });
+
+		const heading = screen.queryByRole('heading', { name: 'Type Assertion' });
+
+		expect(heading).not.toBeInTheDocument();
+	});
+
+	test('says as much for a rule that argues only through its examples, rather than leaving a blank section', () => {
 		setupRuleDetail({ rule: buildStandardsPackRuleView({ prose: '' }) });
 
-		const line = screen.getByText('This rule states its summary and proves it with an example.');
+		const line = screen.getByText('This rule states its summary and shows it with examples.');
 
 		expect(line).toBeInTheDocument();
 	});
 
-	test('shows both sides of the proof', () => {
+	test('shows the incorrect example before the correct one', () => {
 		setupRuleDetail();
 
-		expect(screen.getByText('return (value as string).toUpperCase();')).toBeInTheDocument();
-		expect(screen.getByText(/if \(typeof value === 'string'\)/)).toBeInTheDocument();
+		const titles = within(getSection({ name: 'Examples' }))
+			.getAllByRole('heading', { level: 3 })
+			.map((heading) => heading.textContent);
+
+		expect(titles).toStrictEqual(['Incorrect', 'Correct']);
 	});
 
-	test('lists the numbers a rule ships with, and the block that replaces one', () => {
-		setupRuleDetail({ rule: buildStandardsPackRuleView({ id: 'file-size', overrides: { defaultSettings: { maxLines: 250 } } }) });
-
-		expect(screen.getByRole('heading', { name: 'Its numbers' })).toBeInTheDocument();
-		expect(readOverrideSnippet()).toStrictEqual({ 'standards-checks': { 'file-size': { settings: { maxLines: 250 } } } });
-	});
-
-	test('leaves that card off the rules that ship no numbers, which is most of them', () => {
+	test('shows each example verbatim under the file it would live in', () => {
 		setupRuleDetail();
 
-		const card = screen.queryByRole('heading', { name: 'Its numbers' });
+		const code = readCode({ caption: 'src/readLabel.ts' });
 
-		expect(card).not.toBeInTheDocument();
+		expect(code).toStrictEqual(['return (value as string).toUpperCase();', "if (typeof value === 'string') {\treturn value.toUpperCase();}"]);
 	});
 
-	test('says plainly how a repo turns the rule down, both ways', () => {
+	test('says a deterministic check flags the incorrect example and passes the correct one', () => {
 		setupRuleDetail();
 
-		expect(screen.getByText('"standards-checks": { "type-assertion": "advisory" }')).toBeInTheDocument();
-		expect(screen.getByText('"standards-checks": { "type-assertion": "off" }')).toBeInTheDocument();
+		const source = screen.getByText('The check flags the incorrect code and passes the correct code.');
+
+		expect(source).toBeInTheDocument();
 	});
 
-	test('offers each of those lines for copying, since they are meant to be pasted rather than retyped', () => {
+	test('says the agent judges code like the examples, rather than exactly these files', () => {
+		setupRuleDetail({ rule: buildStandardsPackRuleView({ overrides: { checked: false } }) });
+
+		const source = screen.getByText('The agent flags code like the incorrect example and accepts code like the correct one.');
+
+		expect(source).toBeInTheDocument();
+	});
+
+	test('gives a side holding more than one file a tab per file, keyed by its path', () => {
+		setupRuleDetail({
+			rule: buildStandardsPackRuleView({
+				fixtures: [
+					{ side: FixtureSide.Fail, path: 'src/a.ts', text: 'const a = b as C;' },
+					{ side: FixtureSide.Fail, path: 'src/b.ts', text: 'const b = c as D;' },
+					{ side: FixtureSide.Pass, path: 'src/a.ts', text: 'const a = read();' },
+				],
+			}),
+		});
+
+		const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
+
+		expect(tabs).toStrictEqual(['src/a.ts', 'src/b.ts']);
+	});
+
+	test('leaves out a side with no example rather than drawing it empty', () => {
+		setupRuleDetail({ rule: buildStandardsPackRuleView({ fixtures: [{ side: FixtureSide.Fail, path: 'src/a.ts', text: 'const a = b as C;' }] }) });
+
+		const correct = screen.queryByRole('heading', { name: 'Correct' });
+
+		expect(correct).not.toBeInTheDocument();
+	});
+
+	test('says the pack shipped without its examples when there are none', () => {
+		setupRuleDetail({ rule: buildStandardsPackRuleView({ fixtures: [] }) });
+
+		const notice = screen.getByText('This pack shipped without its examples.');
+
+		expect(notice).toBeInTheDocument();
+	});
+
+	test('shows a repo example as a tree a side, opened on the file the rule declares', () => {
+		setupRuleDetail({
+			rule: buildStandardsPackRuleView({
+				fixtures: [
+					{ side: FixtureSide.Fail, path: 'package.json', text: '{}' },
+					{ side: FixtureSide.Fail, path: 'src/unused.ts', text: 'export const unused = 1;' },
+					{ side: FixtureSide.Pass, path: 'package.json', text: '{}' },
+					{ side: FixtureSide.Pass, path: 'src/used.ts', text: 'export const used = 1;' },
+				],
+				example: { kind: RuleExampleKind.Repo, focus: { fail: 'src/unused.ts', pass: 'src/used.ts' } },
+			}),
+		});
+
+		const selected = screen
+			.getAllByRole('tab')
+			.filter((tab) => tab.getAttribute('aria-selected') === 'true')
+			.map((tab) => tab.textContent);
+
+		expect({ trees: screen.getAllByRole('tablist').map((tree) => tree.getAttribute('aria-label')), selected }).toStrictEqual({
+			trees: ['Incorrect files', 'Correct files'],
+			selected: ['unused.ts', 'used.ts'],
+		});
+	});
+
+	test('says a repo example is a small repo, so its extra files read as setting rather than as more examples', () => {
+		setupRuleDetail({
+			rule: buildStandardsPackRuleView({ example: { kind: RuleExampleKind.Repo, focus: { fail: 'src/readLabel.ts', pass: 'src/readLabel.ts' } } }),
+		});
+
+		const note = screen.getByText(/Each example is a small repo, because this rule looks across files/);
+
+		expect(note).toBeInTheDocument();
+	});
+
+	test('lists the three settings a rule can take, and marks the one the pack ships', () => {
 		setupRuleDetail();
 
-		expect(screen.getByRole('button', { name: /copy advisory/i })).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /copy off/i })).toBeInTheDocument();
+		const settings = within(getSection({ name: 'Configure' }))
+			.getAllByRole('listitem')
+			.map((item) => item.textContent);
+
+		expect(settings).toStrictEqual([
+			'Block"blocking"Stops a run when a file the run changed breaks the rule.Default',
+			'Advise"advisory"Reports it and hands it to the refactor agent. Never stops a run.',
+			'Off"off"Not checked. Use it when your own linter already enforces the rule.',
+		]);
 	});
 
-	test('offers the two ways to turn on a rule the pack ships off, since a repo opts into it', () => {
-		setupRuleDetail({ rule: buildStandardsPackRuleView({ overrides: { defaultSeverity: StandardsSeverity.Off } }) });
+	test('offers the config block at the pack default, so pasting it changes nothing until a value is edited', () => {
+		setupRuleDetail();
 
-		expect(screen.getByRole('heading', { name: 'Turn it on' })).toBeInTheDocument();
-		expect(screen.getByText('"standards-checks": { "type-assertion": "blocking" }')).toBeInTheDocument();
-		expect(screen.getByText('"standards-checks": { "type-assertion": "advisory" }')).toBeInTheDocument();
+		const snippet = readConfigSnippet();
+
+		expect(snippet).toStrictEqual({ 'standards-checks': { 'type-assertion': 'blocking' } });
+	});
+
+	test('puts a rule’s numbers in that block, ready to change', () => {
+		setupRuleDetail({
+			rule: buildStandardsPackRuleView({ id: 'file-size', overrides: { defaultSettings: { maxLines: 250 } } }),
+			rules: [buildStandardsPackRuleListing({ id: 'file-size' })],
+		});
+
+		const snippet = readConfigSnippet();
+
+		expect(snippet).toStrictEqual({ 'standards-checks': { 'file-size': { severity: 'blocking', settings: { maxLines: 250 } } } });
+	});
+
+	test('offers that block for copying, since it is meant to be pasted rather than retyped', () => {
+		setupRuleDetail();
+
+		const button = screen.getByRole('button', { name: 'Copy' });
+
+		expect(button).toBeInTheDocument();
+	});
+
+	test('links to the rules either side, so a reader can walk the set', () => {
+		setupRuleDetail();
+
+		const links = within(screen.getByRole('navigation', { name: 'Neighbouring rules' }))
+			.getAllByRole('link')
+			.map((link) => link.getAttribute('href'));
+
+		expect(links).toStrictEqual(['/standards-packs/typescript/no-any', '/standards-packs/typescript/import-type-only']);
+	});
+
+	test('shows no neighbour links for a rule alone in its set', () => {
+		setupRuleDetail({ rules: [buildStandardsPackRuleListing()] });
+
+		const neighbours = screen.queryByRole('navigation', { name: 'Neighbouring rules' });
+
+		expect(neighbours).not.toBeInTheDocument();
 	});
 
 	test('shows nothing of any repo, since it is a public page', () => {

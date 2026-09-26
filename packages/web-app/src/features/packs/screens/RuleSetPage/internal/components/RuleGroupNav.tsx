@@ -1,7 +1,7 @@
 import type { StandardsPackDocumentView } from '@lightsout/engine';
 import { StandardsSet } from '@lightsout/engine/contracts';
+import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
 import { readDocumentTitle } from '#src/features/packs/internal/common/utils/readDocumentTitle.ts';
-import { CodeSpans } from '#src/features/packs/screens/RuleSetPage/internal/components/CodeSpans.tsx';
 
 interface Group {
 	id: string;

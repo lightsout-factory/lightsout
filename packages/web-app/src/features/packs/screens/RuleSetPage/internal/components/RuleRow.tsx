@@ -1,13 +1,11 @@
 import type { StandardsPackRuleListing } from '@lightsout/engine';
-import { StandardsSeverity } from '@lightsout/engine/contracts';
 import { Link } from '@tanstack/react-router';
-import { ChevronRight, OctagonX, TriangleAlert } from 'lucide-react';
-import { CheckKind } from '#src/common/constants/CheckKind.ts';
-import { checkKindIcons } from '#src/common/constants/checkKindIcons.ts';
-import { checkKindLabels } from '#src/common/constants/checkKindLabels.ts';
+import { ChevronRight } from 'lucide-react';
+import { severityDisplays } from '#src/common/constants/severityDisplays.ts';
 import { cn } from '#src/common/utils/cn.ts';
 import { toCheckKind } from '#src/common/utils/toCheckKind.ts';
-import { CodeSpans } from '#src/features/packs/screens/RuleSetPage/internal/components/CodeSpans.tsx';
+import { CheckKindTag } from '#src/features/packs/components/CheckKindTag.tsx';
+import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
 
 interface Props {
 	rule: StandardsPackRuleListing;
@@ -16,13 +14,10 @@ interface Props {
 
 /**
  * One rule as a row that opens it: its id and what it catches, its kind of check,
- * and whether it blocks a run or only advises.
+ * and what it does by default — blocks a run, only advises, or waits to be turned on.
  */
 export const RuleRow = ({ rule, ruleSet }: Props) => {
-	const isBlocking = rule.defaultSeverity === StandardsSeverity.Blocking;
-	const SeverityIcon = isBlocking ? OctagonX : TriangleAlert;
-	const kind = toCheckKind({ checked: rule.checked });
-	const KindIcon = checkKindIcons[kind];
+	const severity = severityDisplays[rule.defaultSeverity];
 
 	return (
 		<li>
@@ -38,18 +33,10 @@ export const RuleRow = ({ rule, ruleSet }: Props) => {
 					</span>
 				</div>
 				<div className="hidden shrink-0 items-center gap-2 sm:flex">
-					<span
-						className={cn(
-							'inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-semibold text-xs',
-							kind === CheckKind.Deterministic ? 'bg-primary-tint text-primary' : 'bg-agent-light text-agent-foreground',
-						)}
-					>
-						<KindIcon aria-hidden="true" className="size-3.5" />
-						{checkKindLabels[kind].short}
-					</span>
+					<CheckKindTag kind={toCheckKind({ checked: rule.checked })} isShort />
 					<span className="inline-flex w-20 items-center gap-1.5 font-medium text-muted-foreground text-xs">
-						<SeverityIcon aria-hidden="true" className={cn('size-3.5', isBlocking ? 'text-status-failed' : 'text-status-running')} />
-						{isBlocking ? 'Blocks' : 'Advises'}
+						<severity.Icon aria-hidden="true" className={cn('size-3.5', severity.iconClass)} />
+						{severity.verb}
 					</span>
 				</div>
 				<ChevronRight aria-hidden="true" className="size-4 shrink-0 text-subtle-foreground transition-transform group-hover:translate-x-0.5" />

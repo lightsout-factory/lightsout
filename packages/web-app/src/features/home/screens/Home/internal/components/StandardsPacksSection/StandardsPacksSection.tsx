@@ -1,10 +1,12 @@
+import { StandardsSeverity } from '@lightsout/engine/contracts';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { ArrowRight, Blocks, BookCheck, ClipboardPen, Code, type LucideIcon, OctagonX, Plus, ToggleLeft, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Blocks, BookCheck, ClipboardPen, Code, type LucideIcon, Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { FadeIn } from '#src/appUI/FadeIn.tsx';
 import { FrameworkMark } from '#src/appUI/icons/FrameworkMark.tsx';
 import { Framework } from '#src/common/constants/Framework.ts';
+import { severityDisplays } from '#src/common/constants/severityDisplays.ts';
 import { cn } from '#src/common/utils/cn.ts';
 import { SectionPill } from '#src/features/home/components/SectionPill.tsx';
 import { PackStats } from '#src/features/home/screens/Home/internal/components/StandardsPacksSection/internal/components/PackStats.tsx';
@@ -29,13 +31,6 @@ const frameworks = [
 	{ framework: Framework.TypeScript, name: 'TypeScript' },
 	{ framework: Framework.React, name: 'React' },
 	{ framework: Framework.TanStack, name: 'TanStack' },
-];
-
-/** The three settings a repo gives each rule, in the colour each carries everywhere in lightsout. */
-const severities: Array<{ label: string; meaning: string; Icon: LucideIcon; iconClass: string }> = [
-	{ label: 'Block', meaning: 'stops the run', Icon: OctagonX, iconClass: 'text-status-failed-foreground' },
-	{ label: 'Advise', meaning: 'flags it for the agent', Icon: TriangleAlert, iconClass: 'text-status-running' },
-	{ label: 'Off', meaning: 'not checked', Icon: ToggleLeft, iconClass: 'text-subtle-foreground' },
 ];
 
 /** A card on the lower row: a small title over its contents. */
@@ -102,12 +97,16 @@ export const StandardsPacksSection = () => {
 							<div className="flex flex-col gap-3">
 								<p className="text-muted-foreground text-sm">Each rule is yours to set:</p>
 								<ul className="flex flex-wrap gap-x-6 gap-y-2">
-									{severities.map(({ label, meaning, Icon, iconClass }) => (
-										<li key={label} title={meaning} className="inline-flex items-center gap-2 font-semibold text-drop-navy text-sm">
-											<Icon aria-hidden="true" className={cn('size-4', iconClass)} />
-											{label}
-										</li>
-									))}
+									{Object.values(StandardsSeverity).map((severity) => {
+										const { label, meaning, Icon, iconClass } = severityDisplays[severity];
+
+										return (
+											<li key={label} title={meaning} className="inline-flex items-center gap-2 font-semibold text-drop-navy text-sm">
+												<Icon aria-hidden="true" className={cn('size-4', iconClass)} />
+												{label}
+											</li>
+										);
+									})}
 								</ul>
 							</div>
 						</Panel>

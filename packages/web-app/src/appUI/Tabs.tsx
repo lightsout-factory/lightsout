@@ -15,7 +15,7 @@ const variantClasses: Record<TabsVariant, { root: string; list: string; trigger:
 		root: 'flex flex-col gap-4',
 		list: 'flex min-w-0 gap-1 overflow-x-auto border-border border-b',
 		trigger:
-			'-mb-px shrink-0 whitespace-nowrap border-transparent border-b-2 px-3 py-2 font-medium text-muted-foreground text-sm transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground',
+			'-mb-px shrink-0 cursor-pointer whitespace-nowrap border-transparent border-b-2 px-3 py-2 font-medium text-muted-foreground text-sm transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground',
 	},
 	// Tabs stacked as cards on the left, the panel beside them; one column on a narrow screen.
 	[TabsVariant.Side]: {

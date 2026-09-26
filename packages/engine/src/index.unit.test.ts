@@ -38,6 +38,8 @@ test('the library entry exposes the readers, the run-state predicates, and the s
 		'PlanWorkspaceListing',
 		'PlanWorkspaceNotFoundError',
 		'PlanWorkspaceView',
+		'RuleExample',
+		'RuleExampleKind',
 		'RunBurnDown',
 		'RunBurnDownBatch',
 		'RunBurnDownBatchOutcome',

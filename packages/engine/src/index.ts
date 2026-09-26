@@ -25,6 +25,8 @@ export {
 	PlanWorkspaceFile,
 	PlanWorkspaceListing,
 	PlanWorkspaceView,
+	RuleExample,
+	RuleExampleKind,
 	RunBurnDown,
 	RunBurnDownBatch,
 	RunBurnDownBatchOutcome,

@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ArrowRight, FolderTree, type LucideIcon, Recycle, Scissors, WandSparkles } from 'lucide-react';
 import { type ComponentType, useCallback, useState } from 'react';
@@ -15,7 +14,6 @@ import { FileCapScene } from '#src/features/home/screens/Home/internal/component
 import { FolderCapScene } from '#src/features/home/screens/Home/internal/components/CleansAsItCodesSection/internal/components/FolderCapScene.tsx';
 import { ReuseScene } from '#src/features/home/screens/Home/internal/components/CleansAsItCodesSection/internal/components/ReuseScene.tsx';
 import { usePrefersReducedMotion } from '#src/features/home/screens/Home/internal/hooks/usePrefersReducedMotion.ts';
-import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
 
 /**
  * The three things the section shows, each with the scene that shows it and a
@@ -91,24 +89,18 @@ const BenefitLabel = ({ benefit, isActive }: { benefit: (typeof benefits)[number
 
 /**
  * The section's last word: these are a sample, and the default pack holds the
- * rest. The count is read from the shipped pack, so it cannot go stale; until
- * the pack answers, the sentence stands without a number rather than with a
- * guessed one.
+ * rest. No count: the sentence reads the same however many rules the pack
+ * holds, and the packs page it links to gives the numbers.
  */
-const MoreRulesLink = () => {
-	const { data: pack } = useQuery(defaultPackQueryOptions());
-	const ruleCount = pack?.totals.rules;
-
-	return (
-		<p className="text-center text-muted-foreground text-base">
-			These are just a few of the {ruleCount === undefined ? '' : `${ruleCount} `}rules in the default Standards Pack.{' '}
-			<Link to="/standards-packs" className="inline-flex items-center gap-1 font-semibold text-primary transition-colors hover:text-primary-hover">
-				See them all
-				<ArrowRight aria-hidden="true" className="size-4" />
-			</Link>
-		</p>
-	);
-};
+const MoreRulesLink = () => (
+	<p className="text-center text-muted-foreground text-base">
+		These are just a few of the rules in the default Standards Pack.{' '}
+		<Link to="/standards-packs" className="inline-flex items-center gap-1 font-semibold text-primary transition-colors hover:text-primary-hover">
+			See them all
+			<ArrowRight aria-hidden="true" className="size-4" />
+		</Link>
+	</p>
+);
 
 /**
  * What lightsout does to a codebase while the agent works: three things,

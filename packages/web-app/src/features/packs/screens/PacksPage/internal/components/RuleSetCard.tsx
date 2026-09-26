@@ -3,7 +3,10 @@ import { Link } from '@tanstack/react-router';
 import { ArrowRight, Blocks } from 'lucide-react';
 import { FrameworkMark } from '#src/appUI/icons/FrameworkMark.tsx';
 import { CheckKind } from '#src/common/constants/CheckKind.ts';
+import { checkKindIcons } from '#src/common/constants/checkKindIcons.ts';
 import { checkKindLabels } from '#src/common/constants/checkKindLabels.ts';
+import { checkKindTones } from '#src/common/constants/checkKindTones.ts';
+import { cn } from '#src/common/utils/cn.ts';
 import { describeChannel } from '#src/features/packs/internal/common/utils/describeChannel.ts';
 import { toRuleSetSlug } from '#src/features/packs/internal/common/utils/toRuleSetSlug.ts';
 
@@ -16,11 +19,15 @@ interface Props {
 /**
  * One set of rules in a pack — TypeScript, React, TanStack — as a card that
  * opens those rules: its logo, when it applies, how many rules it holds, and
- * how many are deterministic checks and how many agent checks.
+ * how many are deterministic checks and how many agent checks, each beside the
+ * icon the page's key gives that kind. A kind the set has none of is dimmed.
  */
 export const RuleSetCard = ({ total }: Props) => {
 	const face = describeChannel({ channel: total.channel });
-	const checkedShare = total.rules === 0 ? 0 : Math.round((total.checked / total.rules) * 100);
+	const kinds = [
+		{ kind: CheckKind.Deterministic, count: total.checked },
+		{ kind: CheckKind.Agent, count: total.judgment },
+	];
 
 	return (
 		<Link
@@ -44,21 +51,20 @@ export const RuleSetCard = ({ total }: Props) => {
 					<span className="font-semibold text-drop-navy">{total.rules}</span> rules
 				</p>
 			</div>
-			<div className="flex flex-col gap-2">
-				<span aria-hidden="true" className="flex h-1.5 overflow-hidden rounded-full bg-agent-light">
-					<span className="rounded-full bg-primary" style={{ width: `${checkedShare}%` }} />
-				</span>
-				<p className="flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground text-xs">
-					<span className="inline-flex items-center gap-1.5">
-						<span aria-hidden="true" className="size-2 rounded-full bg-primary" />
-						{total.checked} {checkKindLabels[CheckKind.Deterministic].plural}
-					</span>
-					<span className="inline-flex items-center gap-1.5">
-						<span aria-hidden="true" className="size-2 rounded-full bg-agent-border" />
-						{total.judgment} {checkKindLabels[CheckKind.Agent].plural}
-					</span>
-				</p>
-			</div>
+			<ul className="flex flex-col gap-2">
+				{kinds.map(({ kind, count }) => {
+					const Icon = checkKindIcons[kind];
+
+					return (
+						<li key={kind} className={cn('flex items-center gap-2.5 text-muted-foreground-strong text-sm', count === 0 && 'opacity-50')}>
+							<span className={cn('flex size-6 shrink-0 items-center justify-center rounded-md', checkKindTones[kind])}>
+								<Icon aria-hidden="true" className="size-3.5" />
+							</span>
+							{count} {checkKindLabels[kind].plural}
+						</li>
+					);
+				})}
+			</ul>
 			<span className="mt-auto inline-flex items-center gap-1 font-semibold text-primary text-sm">
 				View rules
 				<ArrowRight aria-hidden="true" className="size-4 transition-transform group-hover:translate-x-0.5" />

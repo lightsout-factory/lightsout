@@ -348,7 +348,10 @@
           "path": "src/errors/getErrorCode.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { getErrorCode } from './getErrorCode';\nimport { errorCodes } from './errorCodes';\n\ndescribe('getErrorCode', () => {\n\ttest('names the connection failure by its wire code', () => {\n\t\tconst code = getErrorCode({ kind: 'connection' });\n\n\t\t// comparing the module's own constant to itself — true even when the value is wrong\n\t\texpect(code).toBe(errorCodes.connection);\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "async",
@@ -375,7 +378,10 @@
           "path": "src/users/getUserData.unit.test.ts",
           "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { getUserData } from './getUserData';\n\nconst mockFindUser = jest.fn<(id: string) => Promise<{ id: string } | null>>();\n\ndescribe('getUserData', () => {\n\ttest('rejects when the user does not exist', () => {\n\t\tmockFindUser.mockImplementation(() => Promise.reject(new Error('Not found')));\n\n\t\t// nothing is awaited, so the assertion runs before the rejection lands and\n\t\t// the test passes whatever the unit does\n\t\tgetUserData({ findUser: mockFindUser, userId: '999' }).catch((error: Error) => {\n\t\t\texpect(error.message).toBe('Not found');\n\t\t});\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "banned-class-shapes",
@@ -412,7 +418,14 @@
           "path": "src/reporting/ReportGenerator.ts",
           "text": "interface Row {\n\tlabel: string;\n\tamount: number;\n}\n\n// A function with a hat on: one method, nothing held between calls, and every\n// caller writing `new ReportGenerator().execute(...)` to reach it.\nexport class ReportGenerator {\n\texecute({ rows }: { rows: Row[] }): string {\n\t\treturn rows.map((row) => `${row.label}: ${row.amount}`).join('\\n');\n\t}\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/config/ConfigPaths.ts",
+          "pass": "src/http/HttpClient.ts"
+        }
+      }
     },
     {
       "id": "banned-folder-name",
@@ -454,7 +467,14 @@
           "path": "src/billing/helpers/formatAmount.ts",
           "text": "export const formatAmount = () => 1;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/helpers/formatAmount.ts",
+          "pass": "src/billing/common/types/Invoice.ts"
+        }
+      }
     },
     {
       "id": "bare-string-union",
@@ -481,7 +501,10 @@
           "path": "src/common/types/Action.ts",
           "text": "// No object behind it, so every caller writes `doThing('add')` and the source\n// of truth becomes \"everywhere\".\nexport type Action = 'add' | 'remove' | 'list' | 'update';\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "barrel-star",
@@ -518,7 +541,14 @@
           "path": "src/index.ts",
           "text": "export * from './feature/renderGreeting';\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/feature/renderGreeting.ts",
+          "pass": "src/feature/renderGreeting.ts"
+        }
+      }
     },
     {
       "id": "brittle-doc-tags",
@@ -550,7 +580,14 @@
           "path": "src/billing/chargeInvoice.ts",
           "text": "/**\n * Charges an invoice against the payer's default method.\n *\n * @author Ada Lovelace\n * @since 2.1.0\n * @todo handle partial payments\n */\nexport const chargeInvoice = ({ invoiceId }: { invoiceId: string }): string => invoiceId;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/chargeInvoice.ts",
+          "pass": "src/billing/chargeInvoice.ts"
+        }
+      }
     },
     {
       "id": "case-collision",
@@ -607,7 +644,14 @@
           "path": "src/render/Markdown/Markdown.tsx",
           "text": "export const Markdown = () => <section>markdown</section>;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/feature/Gates.ts",
+          "pass": "src/feature/configGates.ts"
+        }
+      }
     },
     {
       "id": "casing",
@@ -649,7 +693,14 @@
           "path": "src/billing/maxRetries.ts",
           "text": "export const MAX_RETRIES = 10;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/invoice.ts",
+          "pass": "src/billing/Invoice.ts"
+        }
+      }
     },
     {
       "id": "circular-dependencies",
@@ -691,7 +742,14 @@
           "path": "src/orders/getOrderTotal.ts",
           "text": "import { getCustomerTier } from '../customers/getCustomerTier';\n\n// orders imports customers, customers imports orders: fragile load order, and a\n// bundler can no longer drop either half.\nexport const getOrderTotal = ({ amount, customerId }: { amount: number; customerId: string }): number =>\n\tamount * (getCustomerTier({ customerId }) === 'gold' ? 0.9 : 1);\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/customers/getCustomerTier.ts",
+          "pass": "src/common/types/CustomerTier.ts"
+        }
+      }
     },
     {
       "id": "class-bright-line",
@@ -718,7 +776,10 @@
           "path": "src/pricing/PriceFormatter.ts",
           "text": "interface ConstructorParams {\n\tlocale: string;\n}\n\n// None of the four criteria hold: nothing persists between calls, one operation\n// uses the injected value, there is no second implementation and no framework\n// asked for a class. \"How many PriceFormatters exist?\" is not a question.\nexport class PriceFormatter {\n\tprivate readonly locale: string;\n\n\tconstructor({ locale }: ConstructorParams) {\n\t\tthis.locale = locale;\n\t}\n\n\tformat({ amount }: { amount: number }): string {\n\t\treturn amount.toLocaleString(this.locale);\n\t}\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "class-graduation",
@@ -745,7 +806,10 @@
           "path": "src/rate/RateLimiter/RateLimiter.ts",
           "text": "interface ConstructorParams {\n\ttokens: number;\n}\n\n// A folder and a barrel around a class that bundles nothing — ceremony, not\n// structure. `RateLimiter.ts` beside its test is the whole module.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ tokens }: ConstructorParams) {\n\t\tthis.remaining = tokens;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "class-inheritance",
@@ -777,7 +841,14 @@
           "path": "src/runs/RefactorRun.ts",
           "text": "class RunState {\n\tprotected steps: string[] = [];\n\n\trecord({ step }: { step: string }): void {\n\t\tthis.steps.push(step);\n\t}\n}\n\nexport class RefactorRun extends RunState {\n\tdecline({ step }: { step: string }): void {\n\t\tthis.record({ step: `declined:${step}` });\n\t}\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/runs/RefactorRun.ts",
+          "pass": "src/runs/RefactorRun.ts"
+        }
+      }
     },
     {
       "id": "class-surface",
@@ -804,7 +875,10 @@
           "path": "src/http/HttpClient.ts",
           "text": "interface ConstructorParams {\n\tbaseUrl: string;\n}\n\n// `buildQuery` touches no state — it is on the surface only because it was\n// written where the class was, and every consumer now sees it as API.\nexport class HttpClient {\n\tprivate readonly baseUrl: string;\n\n\tconstructor({ baseUrl }: ConstructorParams) {\n\t\tthis.baseUrl = baseUrl;\n\t}\n\n\tget({ path, query }: { path: string; query: Record<string, string> }): string {\n\t\treturn `${this.baseUrl}${path}?${this.buildQuery({ query })}`;\n\t}\n\n\tbuildQuery({ query }: { query: Record<string, string> }): string {\n\t\treturn Object.entries(query)\n\t\t\t.map(([key, value]) => `${key}=${value}`)\n\t\t\t.join('&');\n\t}\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "class-syntax",
@@ -831,7 +905,10 @@
           "path": "src/people/Person.ts",
           "text": "interface GreetParams {\n\tgreeting: string;\n}\n\n// Positional constructor arguments, and a separate interface for a method that\n// takes one property — both of the shapes the section rules out.\nexport class Person {\n\tprivate readonly name: string;\n\n\tconstructor(name: string, isActive = true) {\n\t\tthis.name = isActive ? name : `${name} (inactive)`;\n\t}\n\n\tgreet(params: GreetParams) {\n\t\treturn `${params.greeting}, my name is ${this.name}.`;\n\t}\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "code-in-index-file",
@@ -883,7 +960,14 @@
           "path": "src/index.ts",
           "text": "import { renderGreeting } from './feature/renderGreeting';\n\nconsole.log(renderGreeting());\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/feature/renderGreeting.ts",
+          "pass": "package.json"
+        }
+      }
     },
     {
       "id": "code-placement-philosophy",
@@ -925,7 +1009,14 @@
           "path": "src/invoices/common/utils/formatMoney.ts",
           "text": "// Two features reached for the same helper and neither searched `common/`\n// first, so the reuse is proven but the code never moved up to the lowest\n// common ancestor.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/common/utils/formatMoney.ts",
+          "pass": "src/billing/getChargeLabel.ts"
+        }
+      }
     },
     {
       "id": "component-file-structure",
@@ -962,7 +1053,14 @@
           "path": "src/components/StatusBadge/StatusBadge.tsx",
           "text": "interface Props {\n\tstatus: 'connected' | 'notInstalled';\n}\n\n// A folder and a barrel around a component that bundles no utilities, types or\n// constants — the folder is the default only once there is something to bundle.\nexport const StatusBadge = ({ status }: Props) => <span className={status}>{status}</span>;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/components/StatusBadge/StatusBadge.tsx",
+          "pass": "src/components/InstallPanel/InstallPanel.tsx"
+        }
+      }
     },
     {
       "id": "constants",
@@ -989,7 +1087,10 @@
           "path": "src/common/types/defaultConfig.ts",
           "text": "export const defaultConfig = { name: 'default' };\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "cross-package-sharing",
@@ -1026,7 +1127,14 @@
           "path": "packages/frontend/src/permissions/utils/hasPermission.ts",
           "text": "export const hasPermission = () => true;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "packages/api/src/permissions/utils/hasPermission.ts",
+          "pass": "packages/api/src/auth/getAuth.ts"
+        }
+      }
     },
     {
       "id": "dead-export",
@@ -1041,7 +1149,7 @@
         "pass": 5,
         "fail": 3
       },
-      "prose": "### Unused Code\n\nDelete unused exports, interfaces, types, and functions immediately — version control has history. If unsure whether something is used, search before deciding.",
+      "prose": "### Unused Code\n\nDelete unused exports, interfaces, types and functions as soon as they become unused. Keeping them \"in case\" isn't needed: git history still has them. If you're not sure whether something is used, search before deleting.",
       "fixtures": [
         {
           "side": "pass",
@@ -1081,9 +1189,16 @@
         {
           "side": "fail",
           "path": "src/index.ts",
-          "text": "export { renderGreeting } from './feature/renderGreeting';\n"
+          "text": "// The package entry publishes `renderGreeting`, so it is used. Nothing\n// publishes or imports the greeting builder beside it in feature/.\nexport { renderGreeting } from './feature/renderGreeting';\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/feature/buildGreeting.ts",
+          "pass": "src/index.ts"
+        }
+      }
     },
     {
       "id": "derived-lookup-map",
@@ -1110,7 +1225,10 @@
           "path": "src/common/constants/LogLevel.ts",
           "text": "export const LogLevel = {\n\tDebug: 'debug',\n\tInfo: 'info',\n\tError: 'error',\n} as const;\n\nexport type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];\n\n// Not keyed by the union — it merely uses it, so it is an unrelated constant\n// riding along in this file instead of living in `constants/` on its own.\nexport const defaultLogLevel: LogLevel = LogLevel.Info;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "discriminant-const-object",
@@ -1167,7 +1285,14 @@
           "path": "tsconfig.json",
           "text": "{\n\t\"compilerOptions\": {\n\t\t\"target\": \"ES2022\",\n\t\t\"module\": \"ESNext\",\n\t\t\"moduleResolution\": \"Bundler\",\n\t\t\"strict\": true,\n\t\t\"noEmit\": true\n\t},\n\t\"include\": [\"src\"]\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/common/constants/SyncEventKind.ts",
+          "pass": "src/common/constants/SyncEventKind.ts"
+        }
+      }
     },
     {
       "id": "doc-elements",
@@ -1194,7 +1319,10 @@
           "path": "src/billing/chargeInvoice.ts",
           "text": "/**\n * Charges an invoice.\n *\n * @param invoiceId - {string} The id of the invoice, a string\n * @returns a string\n */\nexport const chargeInvoice = ({ invoiceId }: { invoiceId: string }): string => invoiceId;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "domain-folder-is-not-a-module",
@@ -1231,7 +1359,14 @@
           "path": "src/billing/common/parsing/parseDate.ts",
           "text": "import { normalizeStamp } from './normalizeStamp';\n\nexport const parseDate = () => normalizeStamp();\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/common/parsing/normalizeStamp.ts",
+          "pass": "src/billing/common/parsing/parseDate.ts"
+        }
+      }
     },
     {
       "id": "duplicate-code-block",
@@ -1280,7 +1415,14 @@
           "path": "src/invoices/totalFees.ts",
           "text": "interface Params {\n\tcharges: Array<{ active: boolean; pending: boolean; amount: number; multiplier: number; bonus: number; fee: number; penalty: number }>;\n}\n\n// Copy-paste: the same span as billing/totalCharges.ts down to the token, with\n// only the exported name changed.\nexport const totalFees = ({ charges }: Params): number => {\n\tlet total = 0;\n\n\tfor (const charge of charges) {\n\t\tif (charge.active && charge.amount > 0) {\n\t\t\ttotal += charge.amount * charge.multiplier + charge.bonus;\n\t\t} else if (charge.pending) {\n\t\t\ttotal += charge.amount / 2 - charge.fee;\n\t\t} else {\n\t\t\ttotal -= charge.penalty;\n\t\t}\n\t}\n\n\treturn total * 100;\n};\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/totalCharges.ts",
+          "pass": "src/billing/totalCharges.ts"
+        }
+      }
     },
     {
       "id": "duplicate-export-name",
@@ -1317,7 +1459,14 @@
           "path": "src/invoices/formatAmount.ts",
           "text": "// One name, two homes: either one concept implemented twice, or a helper that\n// has earned promotion to the lowest common ancestor `common/`.\nexport const formatAmount = ({ cents }: { cents: number }): string => `${(cents / 100).toFixed(2)} USD`;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/formatAmount.ts",
+          "pass": "src/common/utils/formatAmount.ts"
+        }
+      }
     },
     {
       "id": "duplicate-function-body",
@@ -1356,7 +1505,14 @@
           "path": "src/invoices/buildInvoiceSummary.ts",
           "text": "interface Params {\n\treference: number;\n\tamounts: Record<string, number>;\n}\n\n// Every identifier renamed, not one branch changed — the same function wearing\n// a different vocabulary, which is what tier 2 sees through and copy-paste\n// detection does not.\nexport const buildInvoiceSummary = ({ reference, amounts }: Params): Record<string, number> => {\n\tconst initial = amounts.a + amounts.b + amounts.c + amounts.d;\n\tconst running = initial + amounts.e + amounts.f + amounts.g + amounts.h;\n\tconst final = running + amounts.i + amounts.j + amounts.k + amounts.l;\n\n\treturn { reference, initial, running, final };\n};\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/buildChargeSummary.ts",
+          "pass": "src/billing/buildChargeSummary.ts"
+        }
+      }
     },
     {
       "id": "explicit-return-type",
@@ -1388,7 +1544,14 @@
           "path": "src/users/getUserDisplayName.ts",
           "text": "interface Params {\n\tuser: { name: string | null } | null;\n}\n\n// Exported with an implicit contract: whatever the body happens to return today\n// is what consumers are compiled against.\nexport const getUserDisplayName = ({ user }: Params) => user?.name ?? 'Unknown';\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/users/getUserDisplayName.ts",
+          "pass": "src/users/formatInitials.js"
+        }
+      }
     },
     {
       "id": "feature-structure",
@@ -1425,7 +1588,14 @@
           "path": "src/features/issues/issuesUtils.ts",
           "text": "export const getIssueRows = (): string[] => ['first', 'second'];\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/features/issues/IssuesScreen.tsx",
+          "pass": "src/features/issues/common/utils/getIssueRows.ts"
+        }
+      }
     },
     {
       "id": "file-directly-in-common",
@@ -1457,7 +1627,14 @@
           "path": "src/billing/common/utils/formatRate.ts",
           "text": "export const formatRate = () => 1;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/common/rate.ts",
+          "pass": "src/billing/common/utils/formatRate.ts"
+        }
+      }
     },
     {
       "id": "file-naming-conventions",
@@ -1494,7 +1671,14 @@
           "path": "src/hooks/UseIssues.ts",
           "text": "export const useIssues = () => ({ issues: [] });\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/components/issue-detail-content.tsx",
+          "pass": "src/components/IssueDetailContent.tsx"
+        }
+      }
     },
     {
       "id": "file-naming-for-server-functions",
@@ -1531,7 +1715,14 @@
           "path": "src/features/issues/serverFns/count-issues/count-issues-server-fn.ts",
           "text": "import { createServerFn } from '@tanstack/react-start';\n\nexport const countIssuesServerFn = createServerFn().handler(async () => 0);\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/features/issues/serverFns/count-issues/count-issues-document.ts",
+          "pass": "src/features/issues/serverFns/countIssues/CountIssuesDocument.ts"
+        }
+      }
     },
     {
       "id": "file-size",
@@ -1566,7 +1757,14 @@
           "path": "src/catalog/catalogEntries.ts",
           "text": "interface CatalogEntry {\n\tsku: string;\n\tlabel: string;\n\tprice: number;\n}\n\n// The whole catalog in one file: past the cap, and the signal that the concept\n// has grown into a module with a boundary of its own.\nexport const catalogEntries: CatalogEntry[] = [\n\t{ sku: 'sku-001', label: 'Catalog entry 001', price: 100 },\n\t{ sku: 'sku-002', label: 'Catalog entry 002', price: 105 },\n\t{ sku: 'sku-003', label: 'Catalog entry 003', price: 110 },\n\t{ sku: 'sku-004', label: 'Catalog entry 004', price: 115 },\n\t{ sku: 'sku-005', label: 'Catalog entry 005', price: 120 },\n\t{ sku: 'sku-006', label: 'Catalog entry 006', price: 125 },\n\t{ sku: 'sku-007', label: 'Catalog entry 007', price: 130 },\n\t{ sku: 'sku-008', label: 'Catalog entry 008', price: 135 },\n\t{ sku: 'sku-009', label: 'Catalog entry 009', price: 140 },\n\t{ sku: 'sku-010', label: 'Catalog entry 010', price: 145 },\n\t{ sku: 'sku-011', label: 'Catalog entry 011', price: 150 },\n\t{ sku: 'sku-012', label: 'Catalog entry 012', price: 155 },\n\t{ sku: 'sku-013', label: 'Catalog entry 013', price: 160 },\n\t{ sku: 'sku-014', label: 'Catalog entry 014', price: 165 },\n\t{ sku: 'sku-015', label: 'Catalog entry 015', price: 170 },\n\t{ sku: 'sku-016', label: 'Catalog entry 016', price: 175 },\n\t{ sku: 'sku-017', label: 'Catalog entry 017', price: 180 },\n\t{ sku: 'sku-018', label: 'Catalog entry 018', price: 185 },\n\t{ sku: 'sku-019', label: 'Catalog entry 019', price: 190 },\n\t{ sku: 'sku-020', label: 'Catalog entry 020', price: 195 },\n\t{ sku: 'sku-021', label: 'Catalog entry 021', price: 200 },\n\t{ sku: 'sku-022', label: 'Catalog entry 022', price: 205 },\n\t{ sku: 'sku-023', label: 'Catalog entry 023', price: 210 },\n\t{ sku: 'sku-024', label: 'Catalog entry 024', price: 215 },\n\t{ sku: 'sku-025', label: 'Catalog entry 025', price: 220 },\n\t{ sku: 'sku-026', label: 'Catalog entry 026', price: 225 },\n\t{ sku: 'sku-027', label: 'Catalog entry 027', price: 230 },\n\t{ sku: 'sku-028', label: 'Catalog entry 028', price: 235 },\n\t{ sku: 'sku-029', label: 'Catalog entry 029', price: 240 },\n\t{ sku: 'sku-030', label: 'Catalog entry 030', price: 245 },\n\t{ sku: 'sku-031', label: 'Catalog entry 031', price: 250 },\n\t{ sku: 'sku-032', label: 'Catalog entry 032', price: 255 },\n\t{ sku: 'sku-033', label: 'Catalog entry 033', price: 260 },\n\t{ sku: 'sku-034', label: 'Catalog entry 034', price: 265 },\n\t{ sku: 'sku-035', label: 'Catalog entry 035', price: 270 },\n\t{ sku: 'sku-036', label: 'Catalog entry 036', price: 275 },\n\t{ sku: 'sku-037', label: 'Catalog entry 037', price: 280 },\n\t{ sku: 'sku-038', label: 'Catalog entry 038', price: 285 },\n\t{ sku: 'sku-039', label: 'Catalog entry 039', price: 290 },\n\t{ sku: 'sku-040', label: 'Catalog entry 040', price: 295 },\n\t{ sku: 'sku-041', label: 'Catalog entry 041', price: 300 },\n\t{ sku: 'sku-042', label: 'Catalog entry 042', price: 305 },\n\t{ sku: 'sku-043', label: 'Catalog entry 043', price: 310 },\n\t{ sku: 'sku-044', label: 'Catalog entry 044', price: 315 },\n\t{ sku: 'sku-045', label: 'Catalog entry 045', price: 320 },\n\t{ sku: 'sku-046', label: 'Catalog entry 046', price: 325 },\n\t{ sku: 'sku-047', label: 'Catalog entry 047', price: 330 },\n\t{ sku: 'sku-048', label: 'Catalog entry 048', price: 335 },\n\t{ sku: 'sku-049', label: 'Catalog entry 049', price: 340 },\n\t{ sku: 'sku-050', label: 'Catalog entry 050', price: 345 },\n\t{ sku: 'sku-051', label: 'Catalog entry 051', price: 350 },\n\t{ sku: 'sku-052', label: 'Catalog entry 052', price: 355 },\n\t{ sku: 'sku-053', label: 'Catalog entry 053', price: 360 },\n\t{ sku: 'sku-054', label: 'Catalog entry 054', price: 365 },\n\t{ sku: 'sku-055', label: 'Catalog entry 055', price: 370 },\n\t{ sku: 'sku-056', label: 'Catalog entry 056', price: 375 },\n\t{ sku: 'sku-057', label: 'Catalog entry 057', price: 380 },\n\t{ sku: 'sku-058', label: 'Catalog entry 058', price: 385 },\n\t{ sku: 'sku-059', label: 'Catalog entry 059', price: 390 },\n\t{ sku: 'sku-060', label: 'Catalog entry 060', price: 395 },\n\t{ sku: 'sku-061', label: 'Catalog entry 061', price: 400 },\n\t{ sku: 'sku-062', label: 'Catalog entry 062', price: 405 },\n\t{ sku: 'sku-063', label: 'Catalog entry 063', price: 410 },\n\t{ sku: 'sku-064', label: 'Catalog entry 064', price: 415 },\n\t{ sku: 'sku-065', label: 'Catalog entry 065', price: 420 },\n\t{ sku: 'sku-066', label: 'Catalog entry 066', price: 425 },\n\t{ sku: 'sku-067', label: 'Catalog entry 067', price: 430 },\n\t{ sku: 'sku-068', label: 'Catalog entry 068', price: 435 },\n\t{ sku: 'sku-069', label: 'Catalog entry 069', price: 440 },\n\t{ sku: 'sku-070', label: 'Catalog entry 070', price: 445 },\n\t{ sku: 'sku-071', label: 'Catalog entry 071', price: 450 },\n\t{ sku: 'sku-072', label: 'Catalog entry 072', price: 455 },\n\t{ sku: 'sku-073', label: 'Catalog entry 073', price: 460 },\n\t{ sku: 'sku-074', label: 'Catalog entry 074', price: 465 },\n\t{ sku: 'sku-075', label: 'Catalog entry 075', price: 470 },\n\t{ sku: 'sku-076', label: 'Catalog entry 076', price: 475 },\n\t{ sku: 'sku-077', label: 'Catalog entry 077', price: 480 },\n\t{ sku: 'sku-078', label: 'Catalog entry 078', price: 485 },\n\t{ sku: 'sku-079', label: 'Catalog entry 079', price: 490 },\n\t{ sku: 'sku-080', label: 'Catalog entry 080', price: 495 },\n\t{ sku: 'sku-081', label: 'Catalog entry 081', price: 500 },\n\t{ sku: 'sku-082', label: 'Catalog entry 082', price: 505 },\n\t{ sku: 'sku-083', label: 'Catalog entry 083', price: 510 },\n\t{ sku: 'sku-084', label: 'Catalog entry 084', price: 515 },\n\t{ sku: 'sku-085', label: 'Catalog entry 085', price: 520 },\n\t{ sku: 'sku-086', label: 'Catalog entry 086', price: 525 },\n\t{ sku: 'sku-087', label: 'Catalog entry 087', price: 530 },\n\t{ sku: 'sku-088', label: 'Catalog entry 088', price: 535 },\n\t{ sku: 'sku-089', label: 'Catalog entry 089', price: 540 },\n\t{ sku: 'sku-090', label: 'Catalog entry 090', price: 545 },\n\t{ sku: 'sku-091', label: 'Catalog entry 091', price: 550 },\n\t{ sku: 'sku-092', label: 'Catalog entry 092', price: 555 },\n\t{ sku: 'sku-093', label: 'Catalog entry 093', price: 560 },\n\t{ sku: 'sku-094', label: 'Catalog entry 094', price: 565 },\n\t{ sku: 'sku-095', label: 'Catalog entry 095', price: 570 },\n\t{ sku: 'sku-096', label: 'Catalog entry 096', price: 575 },\n\t{ sku: 'sku-097', label: 'Catalog entry 097', price: 580 },\n\t{ sku: 'sku-098', label: 'Catalog entry 098', price: 585 },\n\t{ sku: 'sku-099', label: 'Catalog entry 099', price: 590 },\n\t{ sku: 'sku-100', label: 'Catalog entry 100', price: 595 },\n\t{ sku: 'sku-101', label: 'Catalog entry 101', price: 600 },\n\t{ sku: 'sku-102', label: 'Catalog entry 102', price: 605 },\n\t{ sku: 'sku-103', label: 'Catalog entry 103', price: 610 },\n\t{ sku: 'sku-104', label: 'Catalog entry 104', price: 615 },\n\t{ sku: 'sku-105', label: 'Catalog entry 105', price: 620 },\n\t{ sku: 'sku-106', label: 'Catalog entry 106', price: 625 },\n\t{ sku: 'sku-107', label: 'Catalog entry 107', price: 630 },\n\t{ sku: 'sku-108', label: 'Catalog entry 108', price: 635 },\n\t{ sku: 'sku-109', label: 'Catalog entry 109', price: 640 },\n\t{ sku: 'sku-110', label: 'Catalog entry 110', price: 645 },\n\t{ sku: 'sku-111', label: 'Catalog entry 111', price: 650 },\n\t{ sku: 'sku-112', label: 'Catalog entry 112', price: 655 },\n\t{ sku: 'sku-113', label: 'Catalog entry 113', price: 660 },\n\t{ sku: 'sku-114', label: 'Catalog entry 114', price: 665 },\n\t{ sku: 'sku-115', label: 'Catalog entry 115', price: 670 },\n\t{ sku: 'sku-116', label: 'Catalog entry 116', price: 675 },\n\t{ sku: 'sku-117', label: 'Catalog entry 117', price: 680 },\n\t{ sku: 'sku-118', label: 'Catalog entry 118', price: 685 },\n\t{ sku: 'sku-119', label: 'Catalog entry 119', price: 690 },\n\t{ sku: 'sku-120', label: 'Catalog entry 120', price: 695 },\n\t{ sku: 'sku-121', label: 'Catalog entry 121', price: 700 },\n\t{ sku: 'sku-122', label: 'Catalog entry 122', price: 705 },\n\t{ sku: 'sku-123', label: 'Catalog entry 123', price: 710 },\n\t{ sku: 'sku-124', label: 'Catalog entry 124', price: 715 },\n\t{ sku: 'sku-125', label: 'Catalog entry 125', price: 720 },\n\t{ sku: 'sku-126', label: 'Catalog entry 126', price: 725 },\n\t{ sku: 'sku-127', label: 'Catalog entry 127', price: 730 },\n\t{ sku: 'sku-128', label: 'Catalog entry 128', price: 735 },\n\t{ sku: 'sku-129', label: 'Catalog entry 129', price: 740 },\n\t{ sku: 'sku-130', label: 'Catalog entry 130', price: 745 },\n\t{ sku: 'sku-131', label: 'Catalog entry 131', price: 750 },\n\t{ sku: 'sku-132', label: 'Catalog entry 132', price: 755 },\n\t{ sku: 'sku-133', label: 'Catalog entry 133', price: 760 },\n\t{ sku: 'sku-134', label: 'Catalog entry 134', price: 765 },\n\t{ sku: 'sku-135', label: 'Catalog entry 135', price: 770 },\n\t{ sku: 'sku-136', label: 'Catalog entry 136', price: 775 },\n\t{ sku: 'sku-137', label: 'Catalog entry 137', price: 780 },\n\t{ sku: 'sku-138', label: 'Catalog entry 138', price: 785 },\n\t{ sku: 'sku-139', label: 'Catalog entry 139', price: 790 },\n\t{ sku: 'sku-140', label: 'Catalog entry 140', price: 795 },\n\t{ sku: 'sku-141', label: 'Catalog entry 141', price: 800 },\n\t{ sku: 'sku-142', label: 'Catalog entry 142', price: 805 },\n\t{ sku: 'sku-143', label: 'Catalog entry 143', price: 810 },\n\t{ sku: 'sku-144', label: 'Catalog entry 144', price: 815 },\n\t{ sku: 'sku-145', label: 'Catalog entry 145', price: 820 },\n\t{ sku: 'sku-146', label: 'Catalog entry 146', price: 825 },\n\t{ sku: 'sku-147', label: 'Catalog entry 147', price: 830 },\n\t{ sku: 'sku-148', label: 'Catalog entry 148', price: 835 },\n\t{ sku: 'sku-149', label: 'Catalog entry 149', price: 840 },\n\t{ sku: 'sku-150', label: 'Catalog entry 150', price: 845 },\n\t{ sku: 'sku-151', label: 'Catalog entry 151', price: 850 },\n\t{ sku: 'sku-152', label: 'Catalog entry 152', price: 855 },\n\t{ sku: 'sku-153', label: 'Catalog entry 153', price: 860 },\n\t{ sku: 'sku-154', label: 'Catalog entry 154', price: 865 },\n\t{ sku: 'sku-155', label: 'Catalog entry 155', price: 870 },\n\t{ sku: 'sku-156', label: 'Catalog entry 156', price: 875 },\n\t{ sku: 'sku-157', label: 'Catalog entry 157', price: 880 },\n\t{ sku: 'sku-158', label: 'Catalog entry 158', price: 885 },\n\t{ sku: 'sku-159', label: 'Catalog entry 159', price: 890 },\n\t{ sku: 'sku-160', label: 'Catalog entry 160', price: 895 },\n\t{ sku: 'sku-161', label: 'Catalog entry 161', price: 900 },\n\t{ sku: 'sku-162', label: 'Catalog entry 162', price: 905 },\n\t{ sku: 'sku-163', label: 'Catalog entry 163', price: 910 },\n\t{ sku: 'sku-164', label: 'Catalog entry 164', price: 915 },\n\t{ sku: 'sku-165', label: 'Catalog entry 165', price: 920 },\n\t{ sku: 'sku-166', label: 'Catalog entry 166', price: 925 },\n\t{ sku: 'sku-167', label: 'Catalog entry 167', price: 930 },\n\t{ sku: 'sku-168', label: 'Catalog entry 168', price: 935 },\n\t{ sku: 'sku-169', label: 'Catalog entry 169', price: 940 },\n\t{ sku: 'sku-170', label: 'Catalog entry 170', price: 945 },\n\t{ sku: 'sku-171', label: 'Catalog entry 171', price: 950 },\n\t{ sku: 'sku-172', label: 'Catalog entry 172', price: 955 },\n\t{ sku: 'sku-173', label: 'Catalog entry 173', price: 960 },\n\t{ sku: 'sku-174', label: 'Catalog entry 174', price: 965 },\n\t{ sku: 'sku-175', label: 'Catalog entry 175', price: 970 },\n\t{ sku: 'sku-176', label: 'Catalog entry 176', price: 975 },\n\t{ sku: 'sku-177', label: 'Catalog entry 177', price: 980 },\n\t{ sku: 'sku-178', label: 'Catalog entry 178', price: 985 },\n\t{ sku: 'sku-179', label: 'Catalog entry 179', price: 990 },\n\t{ sku: 'sku-180', label: 'Catalog entry 180', price: 995 },\n\t{ sku: 'sku-181', label: 'Catalog entry 181', price: 1000 },\n\t{ sku: 'sku-182', label: 'Catalog entry 182', price: 1005 },\n\t{ sku: 'sku-183', label: 'Catalog entry 183', price: 1010 },\n\t{ sku: 'sku-184', label: 'Catalog entry 184', price: 1015 },\n\t{ sku: 'sku-185', label: 'Catalog entry 185', price: 1020 },\n\t{ sku: 'sku-186', label: 'Catalog entry 186', price: 1025 },\n\t{ sku: 'sku-187', label: 'Catalog entry 187', price: 1030 },\n\t{ sku: 'sku-188', label: 'Catalog entry 188', price: 1035 },\n\t{ sku: 'sku-189', label: 'Catalog entry 189', price: 1040 },\n\t{ sku: 'sku-190', label: 'Catalog entry 190', price: 1045 },\n\t{ sku: 'sku-191', label: 'Catalog entry 191', price: 1050 },\n\t{ sku: 'sku-192', label: 'Catalog entry 192', price: 1055 },\n\t{ sku: 'sku-193', label: 'Catalog entry 193', price: 1060 },\n\t{ sku: 'sku-194', label: 'Catalog entry 194', price: 1065 },\n\t{ sku: 'sku-195', label: 'Catalog entry 195', price: 1070 },\n\t{ sku: 'sku-196', label: 'Catalog entry 196', price: 1075 },\n\t{ sku: 'sku-197', label: 'Catalog entry 197', price: 1080 },\n\t{ sku: 'sku-198', label: 'Catalog entry 198', price: 1085 },\n\t{ sku: 'sku-199', label: 'Catalog entry 199', price: 1090 },\n\t{ sku: 'sku-200', label: 'Catalog entry 200', price: 1095 },\n\t{ sku: 'sku-201', label: 'Catalog entry 201', price: 1100 },\n\t{ sku: 'sku-202', label: 'Catalog entry 202', price: 1105 },\n\t{ sku: 'sku-203', label: 'Catalog entry 203', price: 1110 },\n\t{ sku: 'sku-204', label: 'Catalog entry 204', price: 1115 },\n\t{ sku: 'sku-205', label: 'Catalog entry 205', price: 1120 },\n\t{ sku: 'sku-206', label: 'Catalog entry 206', price: 1125 },\n\t{ sku: 'sku-207', label: 'Catalog entry 207', price: 1130 },\n\t{ sku: 'sku-208', label: 'Catalog entry 208', price: 1135 },\n\t{ sku: 'sku-209', label: 'Catalog entry 209', price: 1140 },\n\t{ sku: 'sku-210', label: 'Catalog entry 210', price: 1145 },\n\t{ sku: 'sku-211', label: 'Catalog entry 211', price: 1150 },\n\t{ sku: 'sku-212', label: 'Catalog entry 212', price: 1155 },\n\t{ sku: 'sku-213', label: 'Catalog entry 213', price: 1160 },\n\t{ sku: 'sku-214', label: 'Catalog entry 214', price: 1165 },\n\t{ sku: 'sku-215', label: 'Catalog entry 215', price: 1170 },\n\t{ sku: 'sku-216', label: 'Catalog entry 216', price: 1175 },\n\t{ sku: 'sku-217', label: 'Catalog entry 217', price: 1180 },\n\t{ sku: 'sku-218', label: 'Catalog entry 218', price: 1185 },\n\t{ sku: 'sku-219', label: 'Catalog entry 219', price: 1190 },\n\t{ sku: 'sku-220', label: 'Catalog entry 220', price: 1195 },\n\t{ sku: 'sku-221', label: 'Catalog entry 221', price: 1200 },\n\t{ sku: 'sku-222', label: 'Catalog entry 222', price: 1205 },\n\t{ sku: 'sku-223', label: 'Catalog entry 223', price: 1210 },\n\t{ sku: 'sku-224', label: 'Catalog entry 224', price: 1215 },\n\t{ sku: 'sku-225', label: 'Catalog entry 225', price: 1220 },\n\t{ sku: 'sku-226', label: 'Catalog entry 226', price: 1225 },\n\t{ sku: 'sku-227', label: 'Catalog entry 227', price: 1230 },\n\t{ sku: 'sku-228', label: 'Catalog entry 228', price: 1235 },\n\t{ sku: 'sku-229', label: 'Catalog entry 229', price: 1240 },\n\t{ sku: 'sku-230', label: 'Catalog entry 230', price: 1245 },\n\t{ sku: 'sku-231', label: 'Catalog entry 231', price: 1250 },\n\t{ sku: 'sku-232', label: 'Catalog entry 232', price: 1255 },\n\t{ sku: 'sku-233', label: 'Catalog entry 233', price: 1260 },\n\t{ sku: 'sku-234', label: 'Catalog entry 234', price: 1265 },\n\t{ sku: 'sku-235', label: 'Catalog entry 235', price: 1270 },\n\t{ sku: 'sku-236', label: 'Catalog entry 236', price: 1275 },\n\t{ sku: 'sku-237', label: 'Catalog entry 237', price: 1280 },\n\t{ sku: 'sku-238', label: 'Catalog entry 238', price: 1285 },\n\t{ sku: 'sku-239', label: 'Catalog entry 239', price: 1290 },\n\t{ sku: 'sku-240', label: 'Catalog entry 240', price: 1295 },\n\t{ sku: 'sku-241', label: 'Catalog entry 241', price: 1300 },\n\t{ sku: 'sku-242', label: 'Catalog entry 242', price: 1305 },\n\t{ sku: 'sku-243', label: 'Catalog entry 243', price: 1310 },\n\t{ sku: 'sku-244', label: 'Catalog entry 244', price: 1315 },\n\t{ sku: 'sku-245', label: 'Catalog entry 245', price: 1320 },\n\t{ sku: 'sku-246', label: 'Catalog entry 246', price: 1325 },\n\t{ sku: 'sku-247', label: 'Catalog entry 247', price: 1330 },\n\t{ sku: 'sku-248', label: 'Catalog entry 248', price: 1335 },\n\t{ sku: 'sku-249', label: 'Catalog entry 249', price: 1340 },\n\t{ sku: 'sku-250', label: 'Catalog entry 250', price: 1345 },\n];\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/catalog/catalogEntries.ts",
+          "pass": "src/catalog/entries/getCatalogEntry001.ts"
+        }
+      }
     },
     {
       "id": "filename-mismatch",
@@ -1613,7 +1811,14 @@
           "path": "src/billing/chargeLabel.ts",
           "text": "export const getChargeLabel = ({ amount }: { amount: number }): string => `${amount}`;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/chargeLabel.ts",
+          "pass": "package.json"
+        }
+      }
     },
     {
       "id": "files-that-must-not-have-dedicated-tests",
@@ -1670,7 +1875,14 @@
           "path": "src/common/utils/getTimeout.ts",
           "text": "import { defaultTimeout } from '../constants/defaultTimeout';\n\nexport const getTimeout = (raw?: string): number => (raw === undefined ? defaultTimeout : Number(raw));\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/common/constants/defaultTimeout.ts",
+          "pass": "src/common/constants/defaultTimeout.ts"
+        }
+      }
     },
     {
       "id": "folder-casing",
@@ -1707,7 +1919,14 @@
           "path": "src/one-off/getThing.ts",
           "text": "export const getThing = () => 1;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/one-off/getThing.ts",
+          "pass": "src/HttpClient/HttpClient.ts"
+        }
+      }
     },
     {
       "id": "folder-index-file",
@@ -1754,7 +1973,14 @@
           "path": "src/ingestion/ingestRecords.ts",
           "text": "export const ingestRecords = (): number => 1;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/ingestion/index.ts",
+          "pass": "package.json"
+        }
+      }
     },
     {
       "id": "folder-size",
@@ -2003,7 +2229,14 @@
           "path": "src/wide/wide9.ts",
           "text": "export const wide9 = 9;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/wide/wide0.ts",
+          "pass": "package.json"
+        }
+      }
     },
     {
       "id": "formatter-config",
@@ -2030,7 +2263,10 @@
           "path": "src/billing/getChargeLabel.ts",
           "text": "// Two-space indent and double quotes in a repo whose formatter config says otherwise.\nexport const getChargeLabel = ({ amount }: { amount: number }): string => {\n  return \"\" + amount;\n};\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "fractal-skeleton",
@@ -2067,7 +2303,14 @@
           "path": "src/features/issues/issuesHelpers.ts",
           "text": "export const issuesHelpers = () => [];\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/features/issues/issuesEntry.ts",
+          "pass": "src/features/issues/common/utils/getIssueRows.ts"
+        }
+      }
     },
     {
       "id": "framework-basics",
@@ -2094,7 +2337,10 @@
           "path": "src/routes/dashboard.route.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { DashboardRoute } from './dashboard.route';\n\n// A route file is thin wiring covered by e2e tests and the screen component's\n// own tests, and a component test cannot live in a .ts file at all.\ndescribe('DashboardRoute', () => {\n\ttest('is defined', () => {\n\t\texpect(DashboardRoute).toBeDefined();\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "function-size",
@@ -2125,7 +2371,10 @@
           "path": "src/reporting/buildReportSummary.ts",
           "text": "interface Row {\n\tregion: string;\n\tproduct: string;\n\tcurrency: string;\n\tamount: number;\n\trefunded: boolean;\n}\n\ninterface Params {\n\trows: Row[];\n\trates: Record<string, number>;\n}\n\n// Every step of the summary inlined into one body — not a linear flow of step\n// calls, just a long function, which is the shape the table calls \"needs\n// splitting\".\nexport const buildReportSummary = ({ rows, rates }: Params): Record<string, number> => {\n\tconst regionTotals: Record<string, number> = {};\n\tconst regionRefunds: Record<string, number> = {};\n\tconst regionCounts: Record<string, number> = {};\n\n\tfor (const row of rows) {\n\t\tconst converted = row.amount * (rates[row.currency] ?? 1);\n\n\t\tif (row.refunded) {\n\t\t\tregionRefunds[row.region] = (regionRefunds[row.region] ?? 0) + converted;\n\t\t} else {\n\t\t\tregionTotals[row.region] = (regionTotals[row.region] ?? 0) + converted;\n\t\t}\n\n\t\tregionCounts[row.region] = (regionCounts[row.region] ?? 0) + 1;\n\t}\n\n\tconst productTotals: Record<string, number> = {};\n\tconst productRefunds: Record<string, number> = {};\n\tconst productCounts: Record<string, number> = {};\n\n\tfor (const row of rows) {\n\t\tconst converted = row.amount * (rates[row.currency] ?? 1);\n\n\t\tif (row.refunded) {\n\t\t\tproductRefunds[row.product] = (productRefunds[row.product] ?? 0) + converted;\n\t\t} else {\n\t\t\tproductTotals[row.product] = (productTotals[row.product] ?? 0) + converted;\n\t\t}\n\n\t\tproductCounts[row.product] = (productCounts[row.product] ?? 0) + 1;\n\t}\n\n\tconst currencyTotals: Record<string, number> = {};\n\tconst currencyRefunds: Record<string, number> = {};\n\tconst currencyCounts: Record<string, number> = {};\n\n\tfor (const row of rows) {\n\t\tconst converted = row.amount * (rates[row.currency] ?? 1);\n\n\t\tif (row.refunded) {\n\t\t\tcurrencyRefunds[row.currency] = (currencyRefunds[row.currency] ?? 0) + converted;\n\t\t} else {\n\t\t\tcurrencyTotals[row.currency] = (currencyTotals[row.currency] ?? 0) + converted;\n\t\t}\n\n\t\tcurrencyCounts[row.currency] = (currencyCounts[row.currency] ?? 0) + 1;\n\t}\n\n\tconst summary: Record<string, number> = {};\n\n\tfor (const [region, total] of Object.entries(regionTotals)) {\n\t\tsummary[`region.${region}.total`] = total;\n\t\tsummary[`region.${region}.refunded`] = regionRefunds[region] ?? 0;\n\t\tsummary[`region.${region}.count`] = regionCounts[region] ?? 0;\n\t\tsummary[`region.${region}.average`] = total / (regionCounts[region] ?? 1);\n\t}\n\n\tfor (const [product, total] of Object.entries(productTotals)) {\n\t\tsummary[`product.${product}.total`] = total;\n\t\tsummary[`product.${product}.refunded`] = productRefunds[product] ?? 0;\n\t\tsummary[`product.${product}.count`] = productCounts[product] ?? 0;\n\t\tsummary[`product.${product}.average`] = total / (productCounts[product] ?? 1);\n\t}\n\n\tfor (const [currency, total] of Object.entries(currencyTotals)) {\n\t\tsummary[`currency.${currency}.total`] = total;\n\t\tsummary[`currency.${currency}.refunded`] = currencyRefunds[currency] ?? 0;\n\t\tsummary[`currency.${currency}.count`] = currencyCounts[currency] ?? 0;\n\t\tsummary[`currency.${currency}.average`] = total / (currencyCounts[currency] ?? 1);\n\t}\n\n\tsummary['rows.counted'] = rows.length;\n\tsummary['rows.refunded'] = rows.filter((row) => row.refunded).length;\n\tsummary['rows.settled'] = rows.filter((row) => !row.refunded).length;\n\tsummary['regions.counted'] = Object.keys(regionTotals).length;\n\tsummary['products.counted'] = Object.keys(productTotals).length;\n\tsummary['currencies.counted'] = Object.keys(currencyTotals).length;\n\n\tfor (const [region, count] of Object.entries(regionCounts)) {\n\t\tsummary[`region.${region}.share`] = count / rows.length;\n\t}\n\n\tfor (const [product, count] of Object.entries(productCounts)) {\n\t\tsummary[`product.${product}.share`] = count / rows.length;\n\t}\n\n\tfor (const [currency, count] of Object.entries(currencyCounts)) {\n\t\tsummary[`currency.${currency}.share`] = count / rows.length;\n\t}\n\n\treturn summary;\n};\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "graduating-out-of-common",
@@ -2162,7 +2411,14 @@
           "path": "src/common/permissions/normalizeRole.ts",
           "text": "export const normalizeRole = () => 'admin';\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/common/permissions/hasPermission.ts",
+          "pass": "src/permissions/common/utils/normalizeRole.ts"
+        }
+      }
     },
     {
       "id": "growing-without-new-rules",
@@ -2199,7 +2455,14 @@
           "path": "src/billing/leftovers/getInvoice.ts",
           "text": "export const getInvoice = () => 1;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/leftovers/getCharge.ts",
+          "pass": "src/billing/charges/getCharge.ts"
+        }
+      }
     },
     {
       "id": "import-path-alias",
@@ -2246,7 +2509,14 @@
           "path": "tsconfig.json",
           "text": "{\n\t\"compilerOptions\": {\n\t\t\"paths\": {\n\t\t\t\"@/*\": [\"./src/*\"]\n\t\t}\n\t}\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/getChargeLabel.ts",
+          "pass": "src/billing/getChargeLabel.ts"
+        }
+      }
     },
     {
       "id": "import-through-index",
@@ -2308,7 +2578,14 @@
           "path": "src/reporting/buildReport.ts",
           "text": "import { ingestRecords } from '../ingestion';\n\nexport const buildReport = (): number => ingestRecords();\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/ingestion/common/utils/normalizeRecord.ts",
+          "pass": "package.json"
+        }
+      }
     },
     {
       "id": "import-time-side-effects",
@@ -2335,7 +2612,10 @@
           "path": "src/boot/autoInit.unit.test.ts",
           "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { isInitialized } from './autoInit';\n\ndescribe('autoInit', () => {\n\ttest('reads the current script the module was loaded from', () => {\n\t\t// the module already ran at import time, so this change arrives too late\n\t\t// and every later test shares the one instance\n\t\tjest.replaceProperty(document, 'currentScript', document.createElement('script'));\n\n\t\texpect(isInitialized).toBe(true);\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "import-type-only",
@@ -2377,7 +2657,14 @@
           "path": "src/billing/Invoice.ts",
           "text": "export interface Invoice {\n\tlabel: string;\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/Invoice.ts",
+          "pass": "src/billing/Invoice.ts"
+        }
+      }
     },
     {
       "id": "internal-import-from-outside",
@@ -2424,7 +2711,14 @@
           "path": "src/reporting/buildReport.ts",
           "text": "import { parseRow } from '../ingestion/internal/parseRow';\n\nexport const buildReport = (): number => parseRow();\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/ingestion/ingestRecords.ts",
+          "pass": "src/ingestion/ingestRecords.ts"
+        }
+      }
     },
     {
       "id": "jest-spyon-vs-jest-mock",
@@ -2451,7 +2745,10 @@
           "path": "src/orders/placeOrder.unit.test.ts",
           "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { placeOrder } from './placeOrder';\n\n// The repository is an object the test already holds — replacing its whole\n// module hides every other method the unit may touch.\nconst mockSave = jest.fn<(order: { id: string }) => void>();\n\njest.mock('./orderRepository', () => ({\n\torderRepository: { save: (order: { id: string }) => mockSave(order) },\n}));\n\ndescribe('placeOrder', () => {\n\ttest('saves the order it was given', () => {\n\t\tplaceOrder({ order: { id: 'a' } });\n\n\t\texpect(mockSave).toHaveBeenCalledWith({ id: 'a' });\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "mocking-component-dependencies",
@@ -2478,7 +2775,10 @@
           "path": "src/projects/ProjectPanel.unit.test.tsx",
           "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { ProjectPanel } from './ProjectPanel';\n\n// An internal child under this module's own common/ — mocking it leaves it\n// with no coverage at all, and the wrapper drops the props it is handed.\njest.mock('./common/components/ProjectRow', () => ({\n\tProjectRow: () => <div />,\n}));\n\nconst setupProjectPanel = () => {\n\trender(<ProjectPanel workspaceId={1} />);\n};\n\ndescribe('ProjectPanel', () => {\n\ttest('lists the projects the hook returned', () => {\n\t\tsetupProjectPanel();\n\n\t\tconst panel = screen.getByRole('list');\n\n\t\texpect(panel).toBeInTheDocument();\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "module-boundary-testing",
@@ -2525,7 +2825,14 @@
           "path": "src/ingestion/ingestRecords.ts",
           "text": "import { normalizeRecord } from './common/utils/normalizeRecord';\n\nexport const ingestRecords = ({ raw }: { raw: string[] }): string[] => raw.map((record) => normalizeRecord({ raw: record }));\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/ingestion/common/utils/normalizeRecord.ts",
+          "pass": "src/ingestion/common/utils/normalizeRecord.ts"
+        }
+      }
     },
     {
       "id": "module-exports",
@@ -2552,7 +2859,10 @@
           "path": "src/billing/formatRate.ts",
           "text": "const formatRate = (): string => '1';\n\nexport { formatRate };\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "modules-and-the-graduation-rule",
@@ -2579,7 +2889,10 @@
           "path": "src/RateLimiter/RateLimiter.ts",
           "text": "interface ConstructorParams {\n\tperMinute: number;\n}\n\n// A folder, a barrel, and nothing private to hide behind them — ceremony for a\n// concept that is still one file.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ perMinute }: ConstructorParams) {\n\t\tthis.remaining = perMinute;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "multi-export",
@@ -2621,7 +2934,14 @@
           "path": "src/common/types/Config.ts",
           "text": "export interface Config {\n\tname: string;\n}\n\nexport const maxRetries = 3;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/common/types/Config.ts",
+          "pass": "src/common/constants/defaultConfig.ts"
+        }
+      }
     },
     {
       "id": "named-constant-boundaries",
@@ -2648,7 +2968,10 @@
           "path": "src/actions/readAction.ts",
           "text": "import type { Action } from '../common/constants/Action';\n\n// The query string is not the union yet, and the cast says it is — an unknown\n// value now travels as a checked one.\nexport const readAction = ({ query }: { query: Record<string, string> }): Action => query.action as Action;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "named-constant-casing",
@@ -2675,7 +2998,10 @@
           "path": "src/common/constants/action.ts",
           "text": "// Members consumers dot into, so it is a named constant — and named constants\n// are PascalCase, file included.\nexport const action = {\n\tAdd: 'add',\n\tRemove: 'remove',\n} as const;\n\nexport type action = (typeof action)[keyof typeof action];\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "naming-consistency",
@@ -2702,7 +3028,10 @@
           "path": "src/orders/orderIsPaid.ts",
           "text": "// A second boolean convention in a domain whose other predicates read `isX`.\nexport const orderIsPaid = ({ paidAt }: { paidAt: string | null }): boolean => paidAt !== null;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "naming-for-reuse",
@@ -2729,7 +3058,10 @@
           "path": "src/common/utils/formatPricingDate.ts",
           "text": "// Named for the one screen that happens to call it today.\nexport const formatPricingDate = ({ date }: { date: Date }): string => date.toISOString();\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "no-any",
@@ -2761,7 +3093,14 @@
           "path": "src/parsing/parseRecord.ts",
           "text": "export const parseRecord = ({ raw }: { raw: any }): string => String(raw);\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/parsing/parseRecord.ts",
+          "pass": "src/parsing/parseLegacyRecord.ts"
+        }
+      }
     },
     {
       "id": "object-args",
@@ -2788,7 +3127,10 @@
           "path": "src/files/copyFile.ts",
           "text": "// Two same-typed slots in a row: `copyFile(dest, src)` compiles just as happily\n// as the intended order, and no call site says which is which.\nexport const copyFile = (sourcePath: string, destPath: string, overwrite = false): string =>\n\t`${sourcePath} -> ${destPath}${overwrite ? ' (overwrite)' : ''}`;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "oversized-setup-factory",
@@ -2817,7 +3159,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { renderInvoice } from './renderInvoice';\n\nconst setupInvoice = ({\n\tcustomer = 'Ada',\n\tcurrency = 'USD',\n\tamount = 100,\n\tdiscount = 0,\n\ttaxRate = 0,\n\tisPaid = false,\n\tissuedOn = '2026-01-01',\n}: {\n\tcustomer?: string;\n\tcurrency?: string;\n\tamount?: number;\n\tdiscount?: number;\n\ttaxRate?: number;\n\tisPaid?: boolean;\n\tissuedOn?: string;\n} = {}) => {\n\treturn { customer, currency, amount, discount, taxRate, isPaid, issuedOn };\n};\n\ndescribe('renderInvoice', () => {\n\ttest('names the customer it was built for', () => {\n\t\tconst invoice = setupInvoice({ customer: 'Ada' });\n\n\t\tconst rendered = renderInvoice(invoice);\n\n\t\texpect(rendered).toContain('Ada');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "params-interface-docs",
@@ -2844,7 +3189,10 @@
           "path": "src/billing/chargeInvoice.ts",
           "text": "/**\n * The arguments chargeInvoice takes.\n */\ninterface Params {\n\t/** The invoice id. */\n\tinvoiceId: string;\n\t/** The payer name. */\n\tpayerName: string;\n}\n\nexport const chargeInvoice = ({ invoiceId, payerName }: Params): string => `${invoiceId}${payerName}`;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "path-aliases",
@@ -2871,7 +3219,10 @@
           "path": "src/billing/getChargeLabel.ts",
           "text": "import { formatRate } from '@src/common/utils/formatRate';\n\nexport const getChargeLabel = (): string => formatRate();\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "per-folder-readmes",
@@ -2908,7 +3259,14 @@
           "path": "src/billing/README.md",
           "text": "This folder holds the billing module. `common/` holds its shared code, `index.ts` is its public API.\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/README.md",
+          "pass": "src/sandbox/README.md"
+        }
+      }
     },
     {
       "id": "placement",
@@ -2960,7 +3318,14 @@
           "path": "src/pay/pay.ts",
           "text": "import { round } from './common/utils/round';\n\nexport const pay = round;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/bill/bill.ts",
+          "pass": "src/common/utils/shared.ts"
+        }
+      }
     },
     {
       "id": "precedence-in-repos-with-older-tests",
@@ -2997,7 +3362,14 @@
           "path": "src/feature/getLabel.unit.test.ts",
           "text": "import { expect, describe, test, beforeEach } from '@jest/globals';\nimport { getLabel } from './getLabel';\n\n// A NEW test file written in the legacy style of the file it mirrors — this\n// document wins for files you create, whatever the mirror target does.\nlet name: string;\n\ndescribe('getLabel', () => {\n\tbeforeEach(() => {\n\t\tname = ' Ada ';\n\t});\n\n\ttest('trims the name it is given', () => {\n\t\texpect(getLabel({ name })).toBe('Ada');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/feature/getLabel.ts",
+          "pass": "src/feature/getLabel.ts"
+        }
+      }
     },
     {
       "id": "premature-abstraction",
@@ -3024,7 +3396,10 @@
           "path": "src/forms/renderField.ts",
           "text": "interface Params {\n\tkind: 'email' | 'phone' | 'address' | 'date';\n\tlabel: string;\n\tvalue: string;\n\trequired?: boolean;\n\thint?: string;\n}\n\n// Four shapes and five options, built for one caller. The right abstraction\n// shows up after two or three concrete uses; guessed early, it is a shape every\n// later use has to be bent to fit.\nexport const renderField = ({ kind, label, value, required = false, hint }: Params): string => {\n\tconst mark = required ? '*' : '';\n\tconst suffix = hint === undefined ? '' : ` (${hint})`;\n\n\treturn `<label data-kind=\"${kind}\">${label}${mark}: ${value}${suffix}</label>`;\n};\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "private-helper-colocation",
@@ -3056,7 +3431,14 @@
           "path": "src/reporting/buildReportSummary.ts",
           "text": "interface Params {\n\trecords: Array<{ amount: number }>;\n}\n\n// The helper a second file also needs, still unexported here — so the second\n// file copied it instead of importing it.\nconst sumTotals = ({ records }: { records: Array<{ amount: number }> }) => records.reduce((total, record) => total + record.amount, 0);\n\nexport const buildReportSummary = ({ records }: Params): { total: number } => ({ total: sumTotals({ records }) });\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/invoices/buildInvoiceTotals.ts",
+          "pass": "src/reporting/buildReportSummary.ts"
+        }
+      }
     },
     {
       "id": "props-union-exemption",
@@ -3088,7 +3470,14 @@
           "path": "src/install/InstallPanel.tsx",
           "text": "interface Props {\n\tstatus: 'notInstalled' | 'connected';\n}\n\n// The same values decide domain behaviour elsewhere in the app, so they are\n// domain values wearing the props exemption — they belong in a `const` object.\nexport const InstallPanel = ({ status }: Props) => <p>{status === 'connected' ? 'Connected' : 'Not installed'}</p>;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/install/InstallPanel.tsx",
+          "pass": "src/install/InstallPanel.tsx"
+        }
+      }
     },
     {
       "id": "query-options",
@@ -3120,7 +3509,14 @@
           "path": "src/features/issues/screens/IssuesScreen/IssuesScreen.tsx",
           "text": "import { queryOptions, useSuspenseQuery } from '@tanstack/react-query';\nimport { findAllIssuesServerFn } from '../../serverFns/findAllIssues';\n\n// The query is declared inline in the screen, so the next caller that needs the\n// same data writes its own key and the cache quietly splits in two.\nexport const IssuesScreen = ({ search }: { search: string }) => {\n\tconst { data } = useSuspenseQuery(\n\t\tqueryOptions({ queryKey: ['issues', search], queryFn: () => findAllIssuesServerFn({ data: { search } }) }),\n\t);\n\n\treturn <ul>{data.map((issue: string) => <li key={issue}>{issue}</li>)}</ul>;\n};\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/features/issues/screens/IssuesScreen/IssuesScreen.tsx",
+          "pass": "src/common/constants/QueryKey.ts"
+        }
+      }
     },
     {
       "id": "query-priority",
@@ -3147,7 +3543,10 @@
           "path": "src/notifications/DismissButton.unit.test.tsx",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { DismissButton } from './DismissButton';\n\nconst setupDismissButton = () => {\n\trender(<DismissButton />);\n};\n\ndescribe('DismissButton', () => {\n\ttest('renders a button users and assistive technology can find', () => {\n\t\tsetupDismissButton();\n\n\t\t// a test id added to source for the test's convenience, where the button's\n\t\t// own role and label would have found it\n\t\tconst button = screen.getByTestId('dismiss-button');\n\n\t\texpect(button).toBeInTheDocument();\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "react-domain-folders",
@@ -3184,7 +3583,14 @@
           "path": "src/common/utils/getInstallStepConfig.tsx",
           "text": "// Two related JSX config builders sitting in the ungrouped `utils/` bucket —\n// the second one is the signal that they have a domain of their own.\nexport const getInstallStepConfig = () => ({ title: 'Install', body: <p>Run the installer.</p> });\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/common/utils/getDesignStepConfig.tsx",
+          "pass": "src/common/stepConfigs/getDesignStepConfig.tsx"
+        }
+      }
     },
     {
       "id": "react-size-thresholds",
@@ -3236,7 +3642,14 @@
           "path": "src/issues/useIssueSummary.ts",
           "text": "interface Issue {\n\tid: string;\n\tstate: string;\n\tamount: number;\n}\n\n// The hook computes instead of composing: the totals, the averages and the\n// ordering are pure logic that belongs in utilities the hook calls.\nexport const useIssueSummary = ({ issues }: { issues: Issue[] }) => {\n\tconst totals: Record<string, number> = {};\n\tconst counts: Record<string, number> = {};\n\n\tfor (const issue of issues) {\n\t\ttotals[issue.state] = (totals[issue.state] ?? 0) + issue.amount;\n\t\tcounts[issue.state] = (counts[issue.state] ?? 0) + 1;\n\t}\n\n\tconst averages: Record<string, number> = {};\n\n\tfor (const [state, total] of Object.entries(totals)) {\n\t\taverages[state] = total / (counts[state] ?? 1);\n\t}\n\n\tconst ordered = Object.entries(averages).sort(([, left], [, right]) => right - left);\n\n\treturn { totals, counts, averages, ordered };\n};\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/issues/IssuePanel.tsx",
+          "pass": "src/issues/IssueGroup.tsx"
+        }
+      }
     },
     {
       "id": "server-functions",
@@ -3268,7 +3681,14 @@
           "path": "src/features/issues/countIssues.ts",
           "text": "import { createServerFn } from '@tanstack/react-start';\n\n// A server function loose in the feature root: nothing marks the server\n// boundary, and its GraphQL document has nowhere to sit beside it.\nexport const countIssues = createServerFn().handler(async () => 0);\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/features/issues/countIssues.ts",
+          "pass": "src/features/issues/serverFns/countIssues/CountIssuesDocument.ts"
+        }
+      }
     },
     {
       "id": "setup-factories",
@@ -3295,7 +3715,10 @@
           "path": "src/profile/getAvatarUrl.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { getAvatarUrl } from './getAvatarUrl';\n\n// The arrangement lives in module state the factory mutates, so what a test\n// gets depends on what ran before it.\nlet currentProfile: string | null = null;\n\nconst setupAvatar = () => {\n\treturn { userProfile: { avatar: currentProfile } };\n};\n\ndescribe('getAvatarUrl', () => {\n\ttest('returns the profile avatar when one exists', () => {\n\t\tcurrentProfile = 'p.png';\n\t\tconst { userProfile } = setupAvatar();\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile });\n\n\t\texpect(avatarUrl).toBe('p.png');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "shared-package-criteria",
@@ -3332,7 +3755,14 @@
           "path": "packages/shared/src/billing/utils/getInvoiceRowClass.ts",
           "text": "export const getInvoiceRowClass = () => 'row';\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "packages/frontend/src/billing/renderInvoiceRow.ts",
+          "pass": "packages/frontend/src/billing/getInvoiceRowClass.ts"
+        }
+      }
     },
     {
       "id": "single-file-domain-folder",
@@ -3369,7 +3799,14 @@
           "path": "src/billing/common/formatting/formatDate.ts",
           "text": "export const formatDate = () => 1;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/common/formatting/formatDate.ts",
+          "pass": "src/billing/common/parsing/parseDate.ts"
+        }
+      }
     },
     {
       "id": "single-return",
@@ -3396,7 +3833,10 @@
           "path": "src/shipping/calculateShippingCost.ts",
           "text": "interface Params {\n\tweightKg: number;\n\tisExpress: boolean;\n\tdestination: { ratePerKg: number; expressSurcharge: number; minimumCharge: number };\n}\n\n// A return per branch, so the minimum-charge floor has to be remembered three\n// times — and the express branch is where it was forgotten.\nexport const calculateShippingCost = ({ weightKg, isExpress, destination }: Params): number => {\n\tif (isExpress) {\n\t\treturn weightKg * destination.ratePerKg + destination.expressSurcharge;\n\t}\n\n\tif (weightKg * destination.ratePerKg < destination.minimumCharge) {\n\t\treturn destination.minimumCharge;\n\t}\n\n\treturn weightKg * destination.ratePerKg;\n};\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "single-use-scalar",
@@ -3438,7 +3878,14 @@
           "path": "src/billing/chargeInvoice.ts",
           "text": "const maxRetries = 10;\n\n// A folded number names a value the same way a bare literal does.\nconst retryWindowMs = 10 * 60_000;\n\nexport const chargeInvoice = ({ attempt, elapsedMs }: { attempt: number; elapsedMs: number }): boolean => attempt < maxRetries && elapsedMs < retryWindowMs;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/chargeInvoice.ts",
+          "pass": "src/billing/buildReceipt.ts"
+        }
+      }
     },
     {
       "id": "synonym-export-name",
@@ -3490,7 +3937,14 @@
           "path": "src/users/fetchUserData.ts",
           "text": "export const fetchUserData = ({ id }: { id: string }): string => id;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/profile/getUserData.ts",
+          "pass": "src/config/readFile.ts"
+        }
+      }
     },
     {
       "id": "tanstack-hooks",
@@ -3517,7 +3971,10 @@
           "path": "src/features/issues/screens/IssuesScreen/useIssues.ts",
           "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../../queries/issuesQueryOptions';\n\n// A feature-level hook parked inside one screen's folder: the next screen that\n// needs it either deep-imports across the boundary or writes a second copy.\nexport const useIssues = ({ search }: { search: string }) => useSuspenseQuery(issuesQueryOptions({ search }));\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-assert-in-hook",
@@ -3544,7 +4001,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test, beforeEach } from '@jest/globals';\n\ndescribe('subject', () => {\n\tbeforeEach(() => {\n\t\texpect(1 + 1).toBe(2);\n\t});\n\n\ttest('adds two numbers', () => {\n\t\texpect(2 + 2).toBe(4);\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-file-size",
@@ -3573,7 +4033,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { test, expect } from '@jest/globals';\n\ntest('case 0 holds its contract', () => {\n\texpect(0 + 1).toBe(1);\n});\n\ntest('case 1 holds its contract', () => {\n\texpect(1 + 1).toBe(2);\n});\n\ntest('case 2 holds its contract', () => {\n\texpect(2 + 1).toBe(3);\n});\n\ntest('case 3 holds its contract', () => {\n\texpect(3 + 1).toBe(4);\n});\n\ntest('case 4 holds its contract', () => {\n\texpect(4 + 1).toBe(5);\n});\n\ntest('case 5 holds its contract', () => {\n\texpect(5 + 1).toBe(6);\n});\n\ntest('case 6 holds its contract', () => {\n\texpect(6 + 1).toBe(7);\n});\n\ntest('case 7 holds its contract', () => {\n\texpect(7 + 1).toBe(8);\n});\n\ntest('case 8 holds its contract', () => {\n\texpect(8 + 1).toBe(9);\n});\n\ntest('case 9 holds its contract', () => {\n\texpect(9 + 1).toBe(10);\n});\n\ntest('case 10 holds its contract', () => {\n\texpect(10 + 1).toBe(11);\n});\n\ntest('case 11 holds its contract', () => {\n\texpect(11 + 1).toBe(12);\n});\n\ntest('case 12 holds its contract', () => {\n\texpect(12 + 1).toBe(13);\n});\n\ntest('case 13 holds its contract', () => {\n\texpect(13 + 1).toBe(14);\n});\n\ntest('case 14 holds its contract', () => {\n\texpect(14 + 1).toBe(15);\n});\n\ntest('case 15 holds its contract', () => {\n\texpect(15 + 1).toBe(16);\n});\n\ntest('case 16 holds its contract', () => {\n\texpect(16 + 1).toBe(17);\n});\n\ntest('case 17 holds its contract', () => {\n\texpect(17 + 1).toBe(18);\n});\n\ntest('case 18 holds its contract', () => {\n\texpect(18 + 1).toBe(19);\n});\n\ntest('case 19 holds its contract', () => {\n\texpect(19 + 1).toBe(20);\n});\n\ntest('case 20 holds its contract', () => {\n\texpect(20 + 1).toBe(21);\n});\n\ntest('case 21 holds its contract', () => {\n\texpect(21 + 1).toBe(22);\n});\n\ntest('case 22 holds its contract', () => {\n\texpect(22 + 1).toBe(23);\n});\n\ntest('case 23 holds its contract', () => {\n\texpect(23 + 1).toBe(24);\n});\n\ntest('case 24 holds its contract', () => {\n\texpect(24 + 1).toBe(25);\n});\n\ntest('case 25 holds its contract', () => {\n\texpect(25 + 1).toBe(26);\n});\n\ntest('case 26 holds its contract', () => {\n\texpect(26 + 1).toBe(27);\n});\n\ntest('case 27 holds its contract', () => {\n\texpect(27 + 1).toBe(28);\n});\n\ntest('case 28 holds its contract', () => {\n\texpect(28 + 1).toBe(29);\n});\n\ntest('case 29 holds its contract', () => {\n\texpect(29 + 1).toBe(30);\n});\n\ntest('case 30 holds its contract', () => {\n\texpect(30 + 1).toBe(31);\n});\n\ntest('case 31 holds its contract', () => {\n\texpect(31 + 1).toBe(32);\n});\n\ntest('case 32 holds its contract', () => {\n\texpect(32 + 1).toBe(33);\n});\n\ntest('case 33 holds its contract', () => {\n\texpect(33 + 1).toBe(34);\n});\n\ntest('case 34 holds its contract', () => {\n\texpect(34 + 1).toBe(35);\n});\n\ntest('case 35 holds its contract', () => {\n\texpect(35 + 1).toBe(36);\n});\n\ntest('case 36 holds its contract', () => {\n\texpect(36 + 1).toBe(37);\n});\n\ntest('case 37 holds its contract', () => {\n\texpect(37 + 1).toBe(38);\n});\n\ntest('case 38 holds its contract', () => {\n\texpect(38 + 1).toBe(39);\n});\n\ntest('case 39 holds its contract', () => {\n\texpect(39 + 1).toBe(40);\n});\n\ntest('case 40 holds its contract', () => {\n\texpect(40 + 1).toBe(41);\n});\n\ntest('case 41 holds its contract', () => {\n\texpect(41 + 1).toBe(42);\n});\n\ntest('case 42 holds its contract', () => {\n\texpect(42 + 1).toBe(43);\n});\n\ntest('case 43 holds its contract', () => {\n\texpect(43 + 1).toBe(44);\n});\n\ntest('case 44 holds its contract', () => {\n\texpect(44 + 1).toBe(45);\n});\n\ntest('case 45 holds its contract', () => {\n\texpect(45 + 1).toBe(46);\n});\n\ntest('case 46 holds its contract', () => {\n\texpect(46 + 1).toBe(47);\n});\n\ntest('case 47 holds its contract', () => {\n\texpect(47 + 1).toBe(48);\n});\n\ntest('case 48 holds its contract', () => {\n\texpect(48 + 1).toBe(49);\n});\n\ntest('case 49 holds its contract', () => {\n\texpect(49 + 1).toBe(50);\n});\n\ntest('case 50 holds its contract', () => {\n\texpect(50 + 1).toBe(51);\n});\n\ntest('case 51 holds its contract', () => {\n\texpect(51 + 1).toBe(52);\n});\n\ntest('case 52 holds its contract', () => {\n\texpect(52 + 1).toBe(53);\n});\n\ntest('case 53 holds its contract', () => {\n\texpect(53 + 1).toBe(54);\n});\n\ntest('case 54 holds its contract', () => {\n\texpect(54 + 1).toBe(55);\n});\n\ntest('case 55 holds its contract', () => {\n\texpect(55 + 1).toBe(56);\n});\n\ntest('case 56 holds its contract', () => {\n\texpect(56 + 1).toBe(57);\n});\n\ntest('case 57 holds its contract', () => {\n\texpect(57 + 1).toBe(58);\n});\n\ntest('case 58 holds its contract', () => {\n\texpect(58 + 1).toBe(59);\n});\n\ntest('case 59 holds its contract', () => {\n\texpect(59 + 1).toBe(60);\n});\n\ntest('case 60 holds its contract', () => {\n\texpect(60 + 1).toBe(61);\n});\n\ntest('case 61 holds its contract', () => {\n\texpect(61 + 1).toBe(62);\n});\n\ntest('case 62 holds its contract', () => {\n\texpect(62 + 1).toBe(63);\n});\n\ntest('case 63 holds its contract', () => {\n\texpect(63 + 1).toBe(64);\n});\n\ntest('case 64 holds its contract', () => {\n\texpect(64 + 1).toBe(65);\n});\n\ntest('case 65 holds its contract', () => {\n\texpect(65 + 1).toBe(66);\n});\n\ntest('case 66 holds its contract', () => {\n\texpect(66 + 1).toBe(67);\n});\n\ntest('case 67 holds its contract', () => {\n\texpect(67 + 1).toBe(68);\n});\n\ntest('case 68 holds its contract', () => {\n\texpect(68 + 1).toBe(69);\n});\n\ntest('case 69 holds its contract', () => {\n\texpect(69 + 1).toBe(70);\n});\n\ntest('case 70 holds its contract', () => {\n\texpect(70 + 1).toBe(71);\n});\n\ntest('case 71 holds its contract', () => {\n\texpect(71 + 1).toBe(72);\n});\n\ntest('case 72 holds its contract', () => {\n\texpect(72 + 1).toBe(73);\n});\n\ntest('case 73 holds its contract', () => {\n\texpect(73 + 1).toBe(74);\n});\n\ntest('case 74 holds its contract', () => {\n\texpect(74 + 1).toBe(75);\n});\n\ntest('case 75 holds its contract', () => {\n\texpect(75 + 1).toBe(76);\n});\n\ntest('case 76 holds its contract', () => {\n\texpect(76 + 1).toBe(77);\n});\n\ntest('case 77 holds its contract', () => {\n\texpect(77 + 1).toBe(78);\n});\n\ntest('case 78 holds its contract', () => {\n\texpect(78 + 1).toBe(79);\n});\n\ntest('case 79 holds its contract', () => {\n\texpect(79 + 1).toBe(80);\n});\n\ntest('case 80 holds its contract', () => {\n\texpect(80 + 1).toBe(81);\n});\n\ntest('case 81 holds its contract', () => {\n\texpect(81 + 1).toBe(82);\n});\n\ntest('case 82 holds its contract', () => {\n\texpect(82 + 1).toBe(83);\n});\n\ntest('case 83 holds its contract', () => {\n\texpect(83 + 1).toBe(84);\n});\n\ntest('case 84 holds its contract', () => {\n\texpect(84 + 1).toBe(85);\n});\n\ntest('case 85 holds its contract', () => {\n\texpect(85 + 1).toBe(86);\n});\n\ntest('case 86 holds its contract', () => {\n\texpect(86 + 1).toBe(87);\n});\n\ntest('case 87 holds its contract', () => {\n\texpect(87 + 1).toBe(88);\n});\n\ntest('case 88 holds its contract', () => {\n\texpect(88 + 1).toBe(89);\n});\n\ntest('case 89 holds its contract', () => {\n\texpect(89 + 1).toBe(90);\n});\n\ntest('case 90 holds its contract', () => {\n\texpect(90 + 1).toBe(91);\n});\n\ntest('case 91 holds its contract', () => {\n\texpect(91 + 1).toBe(92);\n});\n\ntest('case 92 holds its contract', () => {\n\texpect(92 + 1).toBe(93);\n});\n\ntest('case 93 holds its contract', () => {\n\texpect(93 + 1).toBe(94);\n});\n\ntest('case 94 holds its contract', () => {\n\texpect(94 + 1).toBe(95);\n});\n\ntest('case 95 holds its contract', () => {\n\texpect(95 + 1).toBe(96);\n});\n\ntest('case 96 holds its contract', () => {\n\texpect(96 + 1).toBe(97);\n});\n\ntest('case 97 holds its contract', () => {\n\texpect(97 + 1).toBe(98);\n});\n\ntest('case 98 holds its contract', () => {\n\texpect(98 + 1).toBe(99);\n});\n\ntest('case 99 holds its contract', () => {\n\texpect(99 + 1).toBe(100);\n});\n\ntest('case 100 holds its contract', () => {\n\texpect(100 + 1).toBe(101);\n});\n\ntest('case 101 holds its contract', () => {\n\texpect(101 + 1).toBe(102);\n});\n\ntest('case 102 holds its contract', () => {\n\texpect(102 + 1).toBe(103);\n});\n\ntest('case 103 holds its contract', () => {\n\texpect(103 + 1).toBe(104);\n});\n\ntest('case 104 holds its contract', () => {\n\texpect(104 + 1).toBe(105);\n});\n\ntest('case 105 holds its contract', () => {\n\texpect(105 + 1).toBe(106);\n});\n\ntest('case 106 holds its contract', () => {\n\texpect(106 + 1).toBe(107);\n});\n\ntest('case 107 holds its contract', () => {\n\texpect(107 + 1).toBe(108);\n});\n\ntest('case 108 holds its contract', () => {\n\texpect(108 + 1).toBe(109);\n});\n\ntest('case 109 holds its contract', () => {\n\texpect(109 + 1).toBe(110);\n});\n\ntest('case 110 holds its contract', () => {\n\texpect(110 + 1).toBe(111);\n});\n\ntest('case 111 holds its contract', () => {\n\texpect(111 + 1).toBe(112);\n});\n\ntest('case 112 holds its contract', () => {\n\texpect(112 + 1).toBe(113);\n});\n\ntest('case 113 holds its contract', () => {\n\texpect(113 + 1).toBe(114);\n});\n\ntest('case 114 holds its contract', () => {\n\texpect(114 + 1).toBe(115);\n});\n\ntest('case 115 holds its contract', () => {\n\texpect(115 + 1).toBe(116);\n});\n\ntest('case 116 holds its contract', () => {\n\texpect(116 + 1).toBe(117);\n});\n\ntest('case 117 holds its contract', () => {\n\texpect(117 + 1).toBe(118);\n});\n\ntest('case 118 holds its contract', () => {\n\texpect(118 + 1).toBe(119);\n});\n\ntest('case 119 holds its contract', () => {\n\texpect(119 + 1).toBe(120);\n});\n\ntest('case 120 holds its contract', () => {\n\texpect(120 + 1).toBe(121);\n});\n\ntest('case 121 holds its contract', () => {\n\texpect(121 + 1).toBe(122);\n});\n\ntest('case 122 holds its contract', () => {\n\texpect(122 + 1).toBe(123);\n});\n\ntest('case 123 holds its contract', () => {\n\texpect(123 + 1).toBe(124);\n});\n\ntest('case 124 holds its contract', () => {\n\texpect(124 + 1).toBe(125);\n});\n\ntest('case 125 holds its contract', () => {\n\texpect(125 + 1).toBe(126);\n});\n\ntest('case 126 holds its contract', () => {\n\texpect(126 + 1).toBe(127);\n});\n\ntest('case 127 holds its contract', () => {\n\texpect(127 + 1).toBe(128);\n});\n\ntest('case 128 holds its contract', () => {\n\texpect(128 + 1).toBe(129);\n});\n\ntest('case 129 holds its contract', () => {\n\texpect(129 + 1).toBe(130);\n});\n\ntest('case 130 holds its contract', () => {\n\texpect(130 + 1).toBe(131);\n});\n\ntest('case 131 holds its contract', () => {\n\texpect(131 + 1).toBe(132);\n});\n\ntest('case 132 holds its contract', () => {\n\texpect(132 + 1).toBe(133);\n});\n\ntest('case 133 holds its contract', () => {\n\texpect(133 + 1).toBe(134);\n});\n\ntest('case 134 holds its contract', () => {\n\texpect(134 + 1).toBe(135);\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-in-tests-folder",
@@ -3610,7 +4073,14 @@
           "path": "src/feature/tests/getLabel.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { getLabel } from '../getLabel';\n\ndescribe('getLabel', () => {\n\ttest('trims the name it is given', () => {\n\t\tconst label = getLabel({ name: ' Ada ' });\n\n\t\texpect(label).toBe('Ada');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/feature/getLabel.ts",
+          "pass": "src/feature/getLabel.ts"
+        }
+      }
     },
     {
       "id": "test-manual-mock-cleanup",
@@ -3637,7 +4107,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test, jest, beforeEach } from '@jest/globals';\n\nconst mockGetTimezone = jest.fn<() => string>();\n\ndescribe('subject', () => {\n\tbeforeEach(() => {\n\t\tjest.clearAllMocks();\n\t});\n\n\ttest('reads the timezone', () => {\n\t\tmockGetTimezone.mockReturnValue('UTC');\n\n\t\texpect(mockGetTimezone()).toBe('UTC');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-mock-prefix",
@@ -3664,7 +4137,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test, jest } from '@jest/globals';\n\nconst getProfile = jest.fn<() => string>();\n\ndescribe('subject', () => {\n\ttest('reads the profile', () => {\n\t\tgetProfile.mockReturnValue('p.png');\n\n\t\texpect(getProfile()).toBe('p.png');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-mock-return-in-hook",
@@ -3691,7 +4167,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test, jest, beforeEach } from '@jest/globals';\n\nconst mockGetProfile = jest.fn<() => string>();\n\ndescribe('subject', () => {\n\tbeforeEach(() => {\n\t\tmockGetProfile.mockReturnValue('p.png');\n\t});\n\n\ttest('reads the profile', () => {\n\t\texpect(mockGetProfile()).toBe('p.png');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-mock-untyped",
@@ -3718,7 +4197,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test, jest } from '@jest/globals';\n\nconst mockGetLocale = jest.fn();\n\ndescribe('subject', () => {\n\ttest('reads the locale', () => {\n\t\tmockGetLocale.mockReturnValue('en-GB');\n\n\t\texpect(mockGetLocale()).toBe('en-GB');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-mock-wrapper-untyped",
@@ -3745,7 +4227,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test, jest } from '@jest/globals';\n\nconst mockSaveOrder = jest.fn<(params: { id: string }) => string>();\n\njest.mock('@/orders/saveOrder', () => ({\n\tsaveOrder: (...args: unknown[]) => mockSaveOrder(args[0] as { id: string }),\n}));\n\ndescribe('subject', () => {\n\ttest('saves the order', () => {\n\t\tmockSaveOrder.mockReturnValue('ok');\n\n\t\texpect(mockSaveOrder({ id: 'a' })).toBe('ok');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-multiple-setups",
@@ -3787,7 +4272,14 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { getLabel } from './getLabel';\n\nconst setupLabel = ({ name = 'Ada' }: { name?: string } = {}) => {\n\treturn { name };\n};\n\nconst setupFallbackLabel = () => {\n\treturn { name: '' };\n};\n\ndescribe('getLabel', () => {\n\ttest('trims the name it is given', () => {\n\t\tconst { name } = setupLabel({ name: ' Ada ' });\n\t\tconst fallback = setupFallbackLabel();\n\n\t\tconst label = getLabel({ name: name || fallback.name });\n\n\t\texpect(label).toBe('Ada');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "subject.unit.test.ts",
+          "pass": "describeRule.unit.test.ts"
+        }
+      }
     },
     {
       "id": "test-nested-describe",
@@ -3814,7 +4306,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { getLabel } from './getLabel';\n\ndescribe('getLabel', () => {\n\tdescribe('padded names', () => {\n\t\ttest('trims it', () => {\n\t\t\tconst label = getLabel({ name: ' Ada ' });\n\n\t\t\texpect(label).toBe('Ada');\n\t\t});\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-never-passing-assertion",
@@ -3841,7 +4336,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\n\ndescribe('subject', () => {\n\ttest('reads back a record written without a ticket', () => {\n\t\tconst record = JSON.parse('{\"name\":\"add-search-basics\"}');\n\n\t\texpect(record).toEqual(expect.objectContaining({ name: 'add-search-basics', ticketRef: undefined }));\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-not-beside-subject",
@@ -3893,7 +4391,14 @@
           "path": "src/feature/labelling.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { getLabel } from './getLabel';\n\ndescribe('getLabel', () => {\n\ttest('trims the name it is given', () => {\n\t\tconst label = getLabel({ name: ' Ada ' });\n\n\t\texpect(label).toBe('Ada');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/feature/getLabel.ts",
+          "pass": "package.json"
+        }
+      }
     },
     {
       "id": "test-only-export",
@@ -3950,7 +4455,14 @@
           "path": "src/feature/buildGreeting.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { buildGreeting } from './buildGreeting';\n\ndescribe('buildGreeting', () => {\n\ttest('greets the name it is given', () => {\n\t\tconst greeting = buildGreeting({ name: 'Ada' });\n\n\t\texpect(greeting).toBe('Hello, Ada.');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/feature/buildGreeting.ts",
+          "pass": "package.json"
+        }
+      }
     },
     {
       "id": "test-shared-let",
@@ -3977,7 +4489,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test, beforeEach } from '@jest/globals';\n\nlet subject: string;\n\ndescribe('subject', () => {\n\tbeforeEach(() => {\n\t\tsubject = 'ready';\n\t});\n\n\ttest('reads the subject', () => {\n\t\texpect(subject).toBe('ready');\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-strict-equal-matcher",
@@ -4004,7 +4519,10 @@
           "path": "subject.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\n\ndescribe('subject', () => {\n\ttest('matches part of the result', () => {\n\t\tconst result = { id: 'a', size: 2 };\n\n\t\texpect(result).toStrictEqual(expect.objectContaining({ id: 'a' }));\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-structure-arrange-act-assert-with-setup-factories",
@@ -4031,7 +4549,10 @@
           "path": "src/billing/getTotal.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { getTotal } from './getTotal';\n\ndescribe('getTotal', () => {\n\ttest('multiplies the quantity by the unit price', () => {\n\t\t// arrange\n\t\tconst quantity = 2;\n\t\tconst unitPrice = 50;\n\t\t// act and assert in one breath, with the call nested in the matcher\n\t\texpect(getTotal({ quantity, unitPrice })).toBe(100);\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "test-support-in-src",
@@ -4068,7 +4589,14 @@
           "path": "src/feature/getLabel.ts",
           "text": "export const getLabel = ({ name }: { name: string }): string => name.trim();\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/feature/fixtures/sampleLabel.ts",
+          "pass": "src/feature/getLabel.ts"
+        }
+      }
     },
     {
       "id": "testing-hooks-in-isolation",
@@ -4095,7 +4623,10 @@
           "path": "src/keyboard/useEscapeKey.unit.test.ts",
           "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { useEscapeKey } from './useEscapeKey';\n\n// Every hook primitive stubbed, including the three this hook never calls —\n// each one a shim that can drift from the framework for no coverage in return.\njest.mock('react', () => ({\n\tuseEffect: (callback: () => void) => callback(),\n\tuseCallback: <T>(callback: T) => callback,\n\tuseMemo: (factory: () => unknown) => factory(),\n\tuseState: (initial: unknown) => [initial, () => undefined],\n\tuseRef: (initial: unknown) => ({ current: initial }),\n\tuseContext: () => ({}),\n}));\n\ndescribe('useEscapeKey', () => {\n\ttest('adds a keydown event listener', () => {\n\t\tconst addEventListenerSpy = jest.spyOn(document, 'addEventListener');\n\n\t\tuseEscapeKey({ isActive: true, onEscape: jest.fn<() => void>() });\n\n\t\texpect(addEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "testing-user-interactions",
@@ -4122,7 +4653,10 @@
           "path": "src/notifications/NotificationBanner.unit.test.tsx",
           "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport userEvent from '@testing-library/user-event';\nimport { NotificationBanner } from './NotificationBanner';\n\nconst setupNotificationBanner = () => {\n\tconst onDismiss = jest.fn<() => void>();\n\trender(<NotificationBanner onDismiss={onDismiss} />);\n\n\treturn { onDismiss };\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('calls the dismiss handler when the dismiss button is clicked', async () => {\n\t\tconst { onDismiss } = setupNotificationBanner();\n\t\t// the target query grouped with arrange, and the interaction left unawaited\n\t\tconst dismissButton = screen.getByRole('button', { name: /dismiss/i });\n\t\tconst user = userEvent.setup();\n\n\t\tuser.click(dismissButton);\n\n\t\texpect(onDismiss).toHaveBeenCalledTimes(1);\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "the-render-pattern",
@@ -4149,7 +4683,10 @@
           "path": "src/notifications/NotificationBanner.unit.test.tsx",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { render } from '@testing-library/react';\nimport { NotificationBanner } from './NotificationBanner';\n\ndescribe('NotificationBanner', () => {\n\ttest('renders the notification message when visible', () => {\n\t\t// render in the test body, and queries destructured from its result\n\t\tconst { getByText } = render(<NotificationBanner isVisible message=\"Action required\" />);\n\n\t\texpect(getByText('Action required')).toBeInTheDocument();\n\t});\n});\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "thin-wrapper-functions",
@@ -4196,7 +4733,14 @@
           "path": "src/common/utils/buildVersionedLabel.ts",
           "text": "interface Params {\n\tname: string;\n\tversion: string;\n}\n\nexport const buildVersionedLabel = ({ name, version }: Params): string => `${name} ${version}`;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/common/utils/buildBrowserLabel.ts",
+          "pass": "src/browsers/getBrowserBadge.ts"
+        }
+      }
     },
     {
       "id": "top-level-domain-nouns",
@@ -4233,7 +4777,14 @@
           "path": "src/managers/getCharge.ts",
           "text": "export const getCharge = () => 1;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/managers/getBranch.ts",
+          "pass": "src/billing/getCharge.ts"
+        }
+      }
     },
     {
       "id": "type-alias-indirection",
@@ -4270,7 +4821,14 @@
           "path": "src/common/types/TableFilterState.ts",
           "text": "export interface TableFilterState {\n\tquery: string;\n\tpage: number;\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/common/types/FilterOptions.ts",
+          "pass": "src/common/types/TableFilterState.ts"
+        }
+      }
     },
     {
       "id": "type-assertion",
@@ -4302,7 +4860,14 @@
           "path": "src/payloads/readLabel.ts",
           "text": "// The payload's field is `unknown`, and the cast says it is a string rather\n// than proving it — a value from outside now travels as a checked one.\nexport const readLabel = ({ payload }: { payload: Record<string, unknown> }): string => (payload.label as string).toUpperCase();\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/payloads/readLabel.ts",
+          "pass": "src/payloads/common/constants/PayloadKind.ts"
+        }
+      }
     },
     {
       "id": "types-and-interfaces",
@@ -4339,7 +4904,14 @@
           "path": "src/billing/CopyResult.ts",
           "text": "export interface CopyResult {\n\tsuccess: boolean;\n}\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/CopyResult.ts",
+          "pass": "src/billing/copyFile.ts"
+        }
+      }
     },
     {
       "id": "ungrouped-domain-utils",
@@ -4386,7 +4958,14 @@
           "path": "src/billing/common/utils/formatDate.ts",
           "text": "export const formatDate = () => 1;\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/common/utils/formatCurrency.ts",
+          "pass": "src/billing/common/utils/formatDate.ts"
+        }
+      }
     },
     {
       "id": "verbose-names",
@@ -4413,7 +4992,10 @@
           "path": "src/billing/sumCharges.ts",
           "text": "export const sumCharges = ({ c }: { c: number[] }): number => {\n\tlet t = 0;\n\n\tfor (const v of c) {\n\t\tt += v;\n\t}\n\n\treturn t;\n};\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     },
     {
       "id": "when-to-document",
@@ -4440,7 +5022,10 @@
           "path": "src/billing/getInvoiceLabel.ts",
           "text": "/**\n * Gets the invoice label.\n *\n * @param label - the label\n */\nexport const getInvoiceLabel = ({ label }: { label: string }): string => {\n\t// return the label\n\treturn label;\n};\n"
         }
-      ]
+      ],
+      "example": {
+        "kind": "snippet"
+      }
     }
   ]
 }

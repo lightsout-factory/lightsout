@@ -5,7 +5,8 @@ import type { RawStandardsFinding } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { typescriptInputKinds } from '#src/standardsCheck/internal/common/constants/typescriptInputKinds.ts';
-import { checkFixtureTree } from '#src/standardsCheck/internal/common/utils/checkFixtureTree.ts';
+import { checkFixtureTree } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts';
+import { checkRuleExample } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkRuleExample.ts';
 import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
 
 interface Params {
@@ -146,7 +147,8 @@ const checkFrameworkOwned = async ({ pack, compiler }: { pack: LoadedStandardsPa
 };
 
 /**
- * Run every check in a pack against its own fixtures.
+ * Run every check in a pack against its own fixtures, and hold each rule's
+ * fixtures to the example shape its rule.md declares.
  *
  * This is the question load time deliberately does not ask. Loading a pack
  * validates its structure and its honesty — that a rule claiming a check ships
@@ -193,6 +195,8 @@ export const validateStandardsPack = async ({ pack }: Params): Promise<{ problem
 			problems.push(...missing.map((side) => `${rule.id}: fixtures/${side}/ is missing or empty — every rule ships a fixture pair`));
 			continue;
 		}
+
+		problems.push(...(await checkRuleExample({ rule })));
 
 		if (run === undefined || inputKind === undefined) {
 			notes.push(`${rule.id}: judgment-only — fixtures reserved for agent accuracy`);
