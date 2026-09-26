@@ -122691,9 +122691,6 @@ var createProgressPrinter = () => {
 // src/cli/internal/common/utils/describeMissingPlanAddress.ts
 var describeMissingPlanAddress = ({ name, missing }) => `'${name}' is not a plan address, so there is no ${missing} \u2014 a plan of a work order is addressed as '<work-order-name>/<plan-id>', and \`lightsout work-order show --name ${name}\` lists the plans that work order holds`;
 
-// src/contracts/common/utils/renamedKey.ts
-var renamedKey = ({ from, to }) => external_exports.never(`\`${from}\` was renamed to \`${to}\``).optional();
-
 // src/contracts/ConfigAutoPlan.ts
 var ConfigAutoPlan = external_exports.object({
   /**
@@ -122712,9 +122709,7 @@ var ConfigAutoPlan = external_exports.object({
    * escalation bar; a question that clears it parks the run instead of being
    * guessed past. Default false.
    */
-  "auto-approve-plan": external_exports.boolean().optional(),
-  /** Removed — renamed to `auto-approve-plan`. Declared only so a stale config fails loudly instead of failing as an unknown key. */
-  "auto-approve": renamedKey({ from: "auto-plan.auto-approve", to: "auto-plan.auto-approve-plan" })
+  "auto-approve-plan": external_exports.boolean().optional()
 }).strict();
 
 // src/contracts/Effort.ts
@@ -122756,11 +122751,7 @@ var ConfigDocs = external_exports.array(
 // src/contracts/common/constants/baseGateShape.ts
 var baseGateShape = {
   check: external_exports.string(),
-  test: external_exports.string(),
-  /** Removed — renamed to `test`. Declared only so a stale key fails loudly instead of being silently stripped. */
-  testUnit: renamedKey({ from: "testUnit", to: "test" }),
-  /** Removed — renamed to `test-coverage`. Same reason. */
-  testCoverage: renamedKey({ from: "testCoverage", to: "test-coverage" })
+  test: external_exports.string()
 };
 
 // src/contracts/common/utils/validateCustomTestGates.ts
@@ -122783,7 +122774,7 @@ var validateCustomTestGates = ({ gates, knownGateKeys: knownGateKeys3, unknownKe
 };
 
 // src/contracts/ConfigGates.ts
-var knownGateKeys = /* @__PURE__ */ new Set(["check", "test", "test-coverage", "testCoverage", "testUnit", "generate", "build", "format"]);
+var knownGateKeys = /* @__PURE__ */ new Set(["check", "test", "test-coverage", "generate", "build", "format"]);
 var ConfigGates = external_exports.object({
   ...baseGateShape,
   /**
@@ -122858,16 +122849,6 @@ var ConfigPricing = external_exports.record(
 
 // src/contracts/ConfigQueue.ts
 var ConfigQueue = external_exports.object({
-  /** Removed — tracker identity moved to the `ticket-tracker` block. Declared only so a stale config fails loudly instead of being silently stripped. */
-  tracker: renamedKey({ from: "queue.tracker", to: "ticket-tracker.provider" }),
-  /** Removed — moved to the `ticket-tracker` block. Same reason. */
-  team: renamedKey({ from: "queue.team", to: "ticket-tracker.team" }),
-  /** Removed — Jira's origin moved to the `ticket-tracker` block. Same reason. */
-  "site-url": renamedKey({ from: "queue.site-url", to: "ticket-tracker.site-url" }),
-  /** Removed — Jira's project moved to the `ticket-tracker` block. Same reason. */
-  project: renamedKey({ from: "queue.project", to: "ticket-tracker.project" }),
-  /** Removed — the two-value route vocabulary was replaced by the five planning statuses. Declared only so a stale config fails loudly instead of being silently stripped. */
-  "route-labels": renamedKey({ from: "queue.route-labels", to: "queue.planning-status-labels" }),
   /**
    * The tracker label naming each planning status. Each key is optional and
    * defaults to the planning status verbatim, so a repo overrides only the
@@ -122883,10 +122864,6 @@ var ConfigQueue = external_exports.object({
   }).strict().optional(),
   /** How many tickets may be in flight at once. Also the ceiling on how many questions can ever wait for the user at the same time. */
   "max-parallel": external_exports.number().int().positive(),
-  /** Removed — moved to the `ticket-tracker` block. Same reason. */
-  "api-key-env": renamedKey({ from: "queue.api-key-env", to: "ticket-tracker.api-key-env" }),
-  /** Removed — Jira's account-email variable moved to the `ticket-tracker` block. Same reason. */
-  "api-user-email-env": renamedKey({ from: "queue.api-user-email-env", to: "ticket-tracker.api-user-email-env" }),
   /** Ticket statuses the queue may pick up. Default `['Backlog', 'Ready to implement']`. */
   "eligible-statuses": external_exports.array(external_exports.string()).optional(),
   /** This tracker's name for the status a ticket waits at once shaping is finished or was never needed. Default `'Ready to implement'`. */
@@ -122895,8 +122872,6 @@ var ConfigQueue = external_exports.object({
   "in-progress-status": external_exports.string().optional(),
   /** This tracker's name for the status a ticket reaches once its merge is confirmed. Default `'Done'`. */
   "done-status": external_exports.string().optional(),
-  /** Removed — the preparation command is shared with isolated implementation runs, so it moved to the `worktree` block. Declared only so a stale config fails loudly instead of being silently stripped. */
-  setup: renamedKey({ from: "queue.setup", to: "worktree.setup" }),
   /**
    * How a ticket becomes a branch name. `{ticket}` is the lowercased
    * identifier, `{slug}` the slugged title. Default `{ticket}-{slug}`.
@@ -123093,7 +123068,7 @@ var GateOverrides = external_exports.object({
 }).strict();
 
 // src/contracts/PackageGates.ts
-var knownGateKeys2 = /* @__PURE__ */ new Set(["check", "test", "test-coverage", "testCoverage", "testUnit", "build"]);
+var knownGateKeys2 = /* @__PURE__ */ new Set(["check", "test", "test-coverage", "build"]);
 var PackageGates = external_exports.object({
   ...baseGateShape,
   /** Scoped coverage gate. Omitted = no coverage gate for package groups. */
@@ -123139,15 +123114,12 @@ var StandardsSeverity = {
 };
 
 // src/contracts/StandardsCheckOverrides.ts
-var standardsSeverityValue = external_exports.enum(StandardsSeverity, {
-  error: (issue2) => issue2.input === "finding" ? "severity `finding` was renamed to `blocking`" : void 0
-});
 var StandardsCheckOverrides = external_exports.record(
   external_exports.string(),
   external_exports.union([
-    standardsSeverityValue,
+    external_exports.enum(StandardsSeverity),
     external_exports.object({
-      severity: standardsSeverityValue.optional(),
+      severity: external_exports.enum(StandardsSeverity).optional(),
       settings: external_exports.record(external_exports.string(), external_exports.number()).optional()
     }).strict()
   ])
@@ -123167,14 +123139,6 @@ var LightsoutConfig = external_exports.object({
    * deliberately not settable — it would make a writing role write nothing.
    */
   permissions: external_exports.enum([Permissions.Write, Permissions.FullAccess]).optional(),
-  /** Removed — renamed to `harness`. Declared only so a stale key fails loudly instead of being silently stripped. */
-  driver: renamedKey({ from: "driver", to: "harness" }),
-  /** Removed — replaced by `permissions`. Same reason. */
-  permissionMode: external_exports.never("`permissionMode` was replaced by `permissions` (`write` or `full-access`)").optional(),
-  /** Removed — renamed to `gates`. Same reason. */
-  scripts: renamedKey({ from: "scripts", to: "gates" }),
-  /** Removed — renamed twice over; the current name is `package-gates`. Same reason. */
-  packageScripts: renamedKey({ from: "packageScripts", to: "package-gates" }),
   /** Per-command harness selection. See `ConfigCommands`. */
   commands: ConfigCommands.optional(),
   /** Verification commands — the mechanical gates. See `ConfigGates`. */
@@ -123190,12 +123154,8 @@ var LightsoutConfig = external_exports.object({
     /** The read-only supervisor. Default 15. */
     "supervisor-minutes": external_exports.number().positive().optional(),
     /** One gate command — the repo's own check, test, coverage, build or end-to-end run. Default 15. */
-    "gate-minutes": external_exports.number().positive().optional(),
-    /** Removed — renamed to `agent-minutes`. Declared only so a stale key fails loudly instead of being silently stripped. */
-    agentMinutes: renamedKey({ from: "timeouts.agentMinutes", to: "timeouts.agent-minutes" }),
-    /** Removed — renamed to `supervisor-minutes`. Same reason. */
-    supervisorMinutes: renamedKey({ from: "timeouts.supervisorMinutes", to: "timeouts.supervisor-minutes" })
-  }).optional(),
+    "gate-minutes": external_exports.number().positive().optional()
+  }).strict().optional(),
   /**
    * Command prefixes working agents are granted (prefix match, arguments
    * allowed) — for plan deliverables only a command can produce, e.g. a
@@ -123205,8 +123165,6 @@ var LightsoutConfig = external_exports.object({
    * all gates itself, and agents are told grants are not for verifying.
    */
   "agent-commands": external_exports.array(external_exports.string()).optional(),
-  /** Removed — renamed to `agent-commands`. Declared only so a stale key fails loudly instead of being silently stripped. */
-  agentCommands: renamedKey({ from: "agentCommands", to: "agent-commands" }),
   /**
    * Path prefixes of generated/derived files (e.g. a Prisma client output
    * dir). Treated like gate artifacts: real files in the diff, but excluded
@@ -123248,8 +123206,6 @@ var LightsoutConfig = external_exports.object({
    * format never breaks the run.
    */
   "coverage-summary-path": external_exports.string().optional(),
-  /** Removed — renamed to `coverage-summary-path`. Declared only so a stale key fails loudly instead of being silently stripped. */
-  coverageSummaryPath: renamedKey({ from: "coverageSummaryPath", to: "coverage-summary-path" }),
   /**
    * How many source files one plan or phase may create or modify before the
    * feature executor refuses it. Default 50 (`defaultExecutorFileLimit`).
@@ -123263,12 +123219,8 @@ var LightsoutConfig = external_exports.object({
   "executor-file-limit": external_exports.number().positive().optional(),
   /** Directory holding workspace packages, for monorepo scoped gates. Default 'packages'. */
   "packages-dir": external_exports.string().optional(),
-  /** Removed — renamed to `packages-dir`. Same reason. */
-  packagesDir: renamedKey({ from: "packagesDir", to: "packages-dir" }),
   /** Monorepo scoped gate templates. See `PackageGates`. */
   "package-gates": PackageGates.optional(),
-  /** Removed — renamed to `package-gates`. Same reason. */
-  packageGates: renamedKey({ from: "packageGates", to: "package-gates" }),
   /**
    * Opt-in per-checkpoint gate schedules, keyed by the four verification
    * checkpoints. A listed checkpoint runs exactly the gates its entry names,
@@ -123286,14 +123238,6 @@ var LightsoutConfig = external_exports.object({
    * is loaded. A root that cannot be loaded is a hard error.
    */
   "standards-packs": external_exports.union([external_exports.array(external_exports.string()), external_exports.literal(false)]).optional(),
-  /** Removed — renamed to `standards-packs`. Declared only so a stale key fails loudly instead of being silently stripped. */
-  "standards-packages": renamedKey({ from: "standards-packages", to: "standards-packs" }),
-  /** Removed — renamed to `standards-packs`. Same reason. */
-  standardsPackages: renamedKey({ from: "standardsPackages", to: "standards-packs" }),
-  /** Removed — replaced by `standards-packs`. Same reason. */
-  standards: external_exports.never("`standards` was replaced by `standards-packs` \u2014 standards now load as packs").optional(),
-  /** Removed — the test tree ships inside a standards pack. Same reason. */
-  testStandards: external_exports.never("`testStandards` was replaced by `standards-packs` \u2014 standards now load as packs").optional(),
   /**
    * Framework channels of the loaded standards packs (e.g. 'react',
    * 'tanstack'). Unspecified = detected per run from the scoped packages'
@@ -123301,14 +123245,8 @@ var LightsoutConfig = external_exports.object({
    * docs only).
    */
   "standards-channels": external_exports.array(external_exports.string()).optional(),
-  /** Removed — renamed to `standards-channels`. Declared only so a stale key fails loudly instead of being silently stripped. */
-  standardsChannels: renamedKey({ from: "standardsChannels", to: "standards-channels" }),
-  /** Removed — renamed twice over; the current name is `standards-checks`. Same reason. */
-  scan: renamedKey({ from: "scan", to: "standards-checks" }),
   /** Per-rule severity/settings overrides. See `StandardsCheckOverrides`. */
   "standards-checks": StandardsCheckOverrides.optional(),
-  /** Removed — renamed to `standards-checks`. Same reason. */
-  standardsChecks: renamedKey({ from: "standardsChecks", to: "standards-checks" }),
   /** Opt-in ship settings — branch ticket pattern, pull request body template, merge method. See `ConfigShip`. */
   ship: ConfigShip.optional(),
   /** Opt-in auto-plan settings — which of `/auto-plan`'s checkpoints this repo keeps. See `ConfigAutoPlan`. */
@@ -123327,7 +123265,7 @@ var LightsoutConfig = external_exports.object({
   queue: ConfigQueue.optional(),
   /** Opt-in documentation surfaces — each a repo-relative path and what that document covers. See `ConfigDocs`. */
   docs: ConfigDocs.optional()
-}).superRefine((config2, ctx) => {
+}).strict().superRefine((config2, ctx) => {
   validateGateOverrideNames({ overrides: config2["gate-overrides"], gates: config2.gates, packageGates: config2["package-gates"], ctx });
 });
 
@@ -133362,14 +133300,6 @@ var buildDominantPathNote = ({ findings }) => {
   return dominant === void 0 ? void 0 : `${Math.round(dominant.count / dominant.total * 100)}% of findings (${dominant.count}/${dominant.total}) sit under ${dominant.dir}/ \u2014 if that path is generated output, add it to the config's "generated" list`;
 };
 
-// src/common/constants/renamedRuleIds.ts
-var renamedRuleIds = {
-  "crowded-folder": "folder-size",
-  "size-file": "file-size",
-  "size-function": "function-size",
-  "test-size-file": "test-file-size"
-};
-
 // src/standardsCheck/resolvePackageRuleStates.ts
 var resolvePackageRuleStates = ({ packs, config: config2 }) => {
   const states = /* @__PURE__ */ new Map();
@@ -133386,10 +133316,6 @@ var resolvePackageRuleStates = ({ packs, config: config2 }) => {
   }
   for (const [id, override] of Object.entries(config2?.["standards-checks"] ?? {})) {
     const state = states.get(id);
-    const renamedTo = renamedRuleIds[id];
-    if (state === void 0 && renamedTo !== void 0) {
-      throw new Error(`standards-checks names "${id}", which was renamed to "${renamedTo}" \u2014 use the new name in lightsout.config.json`);
-    }
     if (state === void 0) {
       throw new Error(`standards-checks names "${id}", which no loaded standards pack declares \u2014 valid rule ids: ${[...states.keys()].sort().join(", ")}`);
     }
