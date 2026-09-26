@@ -1,22 +1,11 @@
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
-import type { StandardsPackView } from '@lightsout/engine';
-import { act, fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { CleansAsItCodesSection } from '#src/features/home/screens/Home/internal/components/CleansAsItCodesSection/CleansAsItCodesSection.tsx';
 import { codeCaps } from '#src/features/home/screens/Home/internal/components/CleansAsItCodesSection/internal/common/constants/codeCaps.ts';
 import { getDefaultPackBundle } from '#src/lightsout/common/utils/getDefaultPackBundle.ts';
-import { buildStandardsPackView } from '#tests/helpers/buildStandardsPackView.ts';
-import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
 // Mocked Imports
-// -------------------------
-// The pack query is left unanswered unless a test seeds it, so the server
-// function behind it is stubbed with a promise that never settles — the moment
-// before the pack arrives, which is the state the page has to read well in.
-jest.mock('#src/features/packs/internal/serverFns/getDefaultPackServerFn.ts', () => ({ getDefaultPackServerFn: () => new Promise(() => {}) }));
-// Every other export of the lightsout module is the real thing — the committed
-// default pack above all, which the caps are held to.
 // -------------------------
 // Only the link, which needs a live router around it to resolve a path.
 jest.mock('@tanstack/react-router', () => ({
@@ -32,14 +21,14 @@ jest.mock('@tanstack/react-router', () => ({
 const folderStepMs = 900;
 const folderFrameCount = 10;
 
-const setupSection = ({ prefersReduced = false, pack }: { prefersReduced?: boolean; pack?: StandardsPackView } = {}) => {
+const setupSection = ({ prefersReduced = false }: { prefersReduced?: boolean } = {}) => {
 	jest.useFakeTimers();
 
 	if (prefersReduced) {
 		Object.assign(globalThis, { matchMedia: () => ({ matches: true }) });
 	}
 
-	renderWithQueryClient({ ui: <CleansAsItCodesSection />, seed: pack === undefined ? [] : [{ queryKey: [QueryKey.DefaultPack], data: pack }] });
+	render(<CleansAsItCodesSection />);
 
 	// One act per frame: each frame's report has to land before the next timer
 	// is set, just as it does in a browser.
@@ -136,13 +125,11 @@ describe('CleansAsItCodesSection', () => {
 		});
 	});
 
-	test('closes by saying the cards are a sample, with the default pack’s real rule count', () => {
-		setupSection({
-			pack: { ...buildStandardsPackView(), totals: { rules: 112, checked: 53, judgment: 59, documents: 24, withFixtures: 112 } },
-		});
+	test('closes by saying the cards are a sample, in words that hold however many rules the pack ships', () => {
+		setupSection();
 
 		expect(screen.getByRole('link', { name: 'See them all' }).parentElement).toHaveTextContent(
-			'These are just a few of the 112 rules in the default Standards Pack.',
+			'These are just a few of the rules in the default Standards Pack.',
 		);
 	});
 
@@ -150,13 +137,5 @@ describe('CleansAsItCodesSection', () => {
 		setupSection();
 
 		expect(screen.getByRole('link', { name: 'See them all' })).toHaveAttribute('href', '/standards-packs');
-	});
-
-	test('keeps the sentence without a number until the pack answers, rather than guessing one', () => {
-		setupSection();
-
-		expect(screen.getByRole('link', { name: 'See them all' }).parentElement).toHaveTextContent(
-			'These are just a few of the rules in the default Standards Pack.',
-		);
 	});
 });

@@ -4,6 +4,7 @@ import type { StandardsCheckModule, StandardsSet } from '@lightsout/standards-co
 import { z } from 'zod';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import { RuleExample } from '#src/contracts/views/RuleExample.ts';
 import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
 import { parseDeclaration } from '#src/standardsPacks/internal/common/parsing/parseDeclaration.ts';
 import { hasFile } from '#src/standardsPacks/internal/common/utils/hasFile.ts';
@@ -24,6 +25,7 @@ const ruleDeclaration = z.object({
 	checked: z.boolean().default(false),
 	severity: z.enum(StandardsSeverity).default(StandardsSeverity.Advisory),
 	settings: z.record(z.string(), z.number()).default({}),
+	example: RuleExample.optional(),
 });
 
 /** rule.md read: what it declares and the prose it argues. Either part is absent when the file cannot supply it. */
@@ -105,6 +107,7 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, problems 
 			checked: declaration.checked,
 			defaultSeverity: declaration.severity,
 			defaultSettings: declaration.settings,
+			...(declaration.example === undefined ? {} : { example: declaration.example }),
 			...(check === undefined ? {} : { inputKind: check.inputKind, run: check.run }),
 			fixturesPath,
 		};

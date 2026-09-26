@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { render } from '@testing-library/react';
-import { CodeSpans } from '#src/features/packs/screens/RuleSetPage/internal/components/CodeSpans.tsx';
+import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
 
 describe('CodeSpans', () => {
 	test('draws each backticked word as code, without its backticks', () => {

@@ -520,6 +520,16 @@ sidebar.tsx
 	--status-escalated: theme(colors.purple.500);
 	--status-escalated-light: theme(colors.purple.50);
 	--status-escalated-border: theme(colors.purple.200);
+
+	/* Syntax colours for code blocks, read by the highlighter's theme. */
+	--code-plain: theme(colors.slate.700);
+	--code-comment: theme(colors.slate.400);
+	--code-keyword: theme(colors.violet.600);
+	--code-string: theme(colors.emerald.700);
+	--code-number: theme(colors.amber.700);
+	--code-function: theme(colors.blue.600);
+	--code-type: theme(colors.cyan.700);
+	--code-punctuation: theme(colors.slate.500);
 }
 
 .dark {
@@ -557,6 +567,15 @@ sidebar.tsx
 
 	--status-escalated-light: oklch(from var(--status-escalated) l c h / 12%);
 	--status-escalated-border: oklch(from var(--status-escalated) l c h / 35%);
+
+	--code-plain: theme(colors.slate.200);
+	--code-comment: theme(colors.slate.500);
+	--code-keyword: theme(colors.violet.300);
+	--code-string: theme(colors.emerald.300);
+	--code-number: theme(colors.amber.300);
+	--code-function: theme(colors.blue.300);
+	--code-type: theme(colors.cyan.300);
+	--code-punctuation: theme(colors.slate.400);
 }
 
 @theme inline {

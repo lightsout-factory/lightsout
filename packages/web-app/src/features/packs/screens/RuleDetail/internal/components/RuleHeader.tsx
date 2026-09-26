@@ -1,31 +1,38 @@
 import type { StandardsPackRuleView } from '@lightsout/engine';
-import { Badge } from '#src/appUI/badges/Badge.tsx';
-import { MetadataTag } from '#src/appUI/badges/MetadataTag.tsx';
-import { checkKindLabels } from '#src/common/constants/checkKindLabels.ts';
-import { severityBadgeVariants } from '#src/common/constants/severityBadgeVariants.ts';
+import { severityDisplays } from '#src/common/constants/severityDisplays.ts';
+import { cn } from '#src/common/utils/cn.ts';
 import { toCheckKind } from '#src/common/utils/toCheckKind.ts';
+import { CheckKindTag } from '#src/features/packs/components/CheckKindTag.tsx';
+import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
 
 interface Props {
 	rule: StandardsPackRuleView;
 }
 
 /**
- * The rule's identity: what it catches, and the four facts that decide where it
- * applies and how loudly.
+ * The rule's identity: its name, what it flags, who enforces it, and what it
+ * does by default.
  *
  * These are the pack's own defaults rather than how any one repo runs the rule
- * — a repo's config can lower a severity, and that belongs on the page about
+ * — a repo's config can change the setting, and that belongs on the page about
  * the repo.
  */
-export const RuleHeader = ({ rule }: Props) => (
-	<header className="flex flex-col gap-3">
-		<h1 className="font-mono font-semibold text-2xl">{rule.id}</h1>
-		<p className="max-w-3xl text-sm leading-6">{rule.summary}</p>
-		<div className="flex flex-wrap items-center gap-2">
-			<Badge>{checkKindLabels[toCheckKind({ checked: rule.checked })].label}</Badge>
-			<Badge variant={severityBadgeVariants[rule.defaultSeverity]}>{rule.defaultSeverity} by default</Badge>
-			<MetadataTag>{rule.channel}</MetadataTag>
-			<MetadataTag>{rule.set}</MetadataTag>
-		</div>
-	</header>
-);
+export const RuleHeader = ({ rule }: Props) => {
+	const severity = severityDisplays[rule.defaultSeverity];
+
+	return (
+		<header className="flex flex-col gap-4">
+			<h1 className="break-words font-bold font-mono text-2xl text-drop-navy md:text-3xl">{rule.id}</h1>
+			<p className="text-lg text-muted-foreground leading-relaxed">
+				Flags <CodeSpans text={rule.summary} />.
+			</p>
+			<div className="flex flex-wrap items-center gap-2">
+				<CheckKindTag kind={toCheckKind({ checked: rule.checked })} />
+				<span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 font-semibold text-muted-foreground-strong text-xs">
+					<severity.Icon aria-hidden="true" className={cn('size-3.5', severity.iconClass)} />
+					{severity.verb} by default
+				</span>
+			</div>
+		</header>
+	);
+};

@@ -117,14 +117,17 @@ const setupMissingRuleSetPage = ({ ruleSet = 'vue' }: { ruleSet?: string } = {})
 
 /** The rule page, for one address. */
 const setupRuleDetailPage = ({ rule = 'folder-size' }: { rule?: string } = {}) => {
-	const { pages } = setupRouteTree();
+	const { pack, pages } = setupRouteTree();
 	const route = pages['/_site/standards-packs/$ruleSet/$rule'];
 	jest.spyOn(route, 'useParams').mockReturnValue({ ruleSet: 'typescript', rule });
 	const Page = route.options.component;
 
 	renderWithQueryClient({
 		ui: <Page />,
-		seed: [{ queryKey: [QueryKey.DefaultPackRule, rule], data: toStandardsPackRuleView({ bundle: getDefaultPackBundle(), rule }) }],
+		seed: [
+			{ queryKey: [QueryKey.DefaultPackRule, rule], data: toStandardsPackRuleView({ bundle: getDefaultPackBundle(), rule }) },
+			{ queryKey: [QueryKey.DefaultPack], data: pack },
+		],
 	});
 };
 

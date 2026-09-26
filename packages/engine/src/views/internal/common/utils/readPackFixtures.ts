@@ -1,25 +1,8 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { FixtureSide } from '#src/contracts/views/FixtureSide.ts';
 import type { StandardsPackFixture } from '#src/contracts/views/StandardsPackFixture.ts';
-
-/** Every file under one side's root, as `/`-separated paths relative to it, sorted. */
-const listSideFiles = async ({ root, prefix }: { root: string; prefix: string }) => {
-	const entries = await readdir(root, { withFileTypes: true }).catch(() => []);
-	const paths: string[] = [];
-
-	for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
-		const path = prefix === '' ? entry.name : `${prefix}/${entry.name}`;
-
-		if (entry.isDirectory()) {
-			paths.push(...(await listSideFiles({ root: join(root, entry.name), prefix: path })));
-		} else {
-			paths.push(path);
-		}
-	}
-
-	return paths;
-};
+import { listFixtureFiles } from '#src/standardsPacks/common/utils/listFixtureFiles.ts';
 
 interface Params {
 	fixturesPath: string;
@@ -47,7 +30,7 @@ export const readPackFixtures = async ({ fixturesPath }: Params): Promise<Standa
 	for (const side of [FixtureSide.Pass, FixtureSide.Fail]) {
 		const sideRoot = join(fixturesPath, side);
 
-		for (const path of await listSideFiles({ root: sideRoot, prefix: '' })) {
+		for (const path of await listFixtureFiles({ root: sideRoot })) {
 			const text = await readFile(join(sideRoot, ...path.split('/')), 'utf8').catch(() => undefined);
 
 			if (text !== undefined) {

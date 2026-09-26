@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import { RuleExampleKind } from '#src/contracts/views/RuleExampleKind.ts';
 import { parseRuleFolder } from '#src/standardsPacks/internal/common/parsing/parseRuleFolder.ts';
 
 /** One rule folder on disk, declaring the given front matter, with nothing else in it. */
@@ -39,6 +40,33 @@ describe('parseRuleFolder', () => {
 
 	test('refuses a severity the pack format does not know, and drops the rule', async () => {
 		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: an internal file imported from outside\nseverity: loud' });
+		const problems: string[] = [];
+
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems });
+
+		expect({ rule, problemCount: problems.length }).toStrictEqual({ rule: undefined, problemCount: 1 });
+	});
+
+	test('reads the example shape a rule declares, with the file each side opens on', async () => {
+		const { folderPath } = setupRuleFolder({
+			frontMatter: 'summary: an internal file imported from outside\nexample:\n  kind: repo\n  focus:\n    fail: src/a.ts\n    pass: src/b.ts',
+		});
+
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems: [] });
+
+		expect(rule?.example).toStrictEqual({ kind: RuleExampleKind.Repo, focus: { fail: 'src/a.ts', pass: 'src/b.ts' } });
+	});
+
+	test('leaves the example undeclared when rule.md says nothing, so the files decide', async () => {
+		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: an internal file imported from outside' });
+
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems: [] });
+
+		expect(rule).not.toHaveProperty('example');
+	});
+
+	test('refuses a repo example that names no file to open on, and drops the rule', async () => {
+		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: an internal file imported from outside\nexample:\n  kind: repo' });
 		const problems: string[] = [];
 
 		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems });

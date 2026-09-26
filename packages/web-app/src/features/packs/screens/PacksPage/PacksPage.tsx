@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { PackPageFrame } from '#src/features/packs/components/PackPageFrame.tsx';
 import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
 import { CheckKindKey } from '#src/features/packs/screens/PacksPage/internal/components/CheckKindKey.tsx';
-import { HowPacksLoad } from '#src/features/packs/screens/PacksPage/internal/components/HowPacksLoad.tsx';
 import { RuleSetCard } from '#src/features/packs/screens/PacksPage/internal/components/RuleSetCard.tsx';
 import { YourPackCard } from '#src/features/packs/screens/PacksPage/internal/components/YourPackCard.tsx';
 
@@ -19,7 +19,7 @@ export const PacksPage = () => {
 	const { data: pack } = useSuspenseQuery(defaultPackQueryOptions());
 
 	return (
-		<div className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-4 py-20">
+		<PackPageFrame>
 			<header className="flex flex-col gap-5">
 				<h1 className="font-extrabold text-4xl text-drop-navy tracking-tight md:text-5xl">Standards Packs</h1>
 				<p className="max-w-2xl text-lg text-muted-foreground leading-relaxed">
@@ -33,7 +33,6 @@ export const PacksPage = () => {
 				))}
 				<YourPackCard />
 			</div>
-			<HowPacksLoad />
-		</div>
+		</PackPageFrame>
 	);
 };

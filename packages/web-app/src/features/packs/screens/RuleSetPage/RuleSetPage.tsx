@@ -1,13 +1,15 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { CheckKind } from '#src/common/constants/CheckKind.ts';
 import { toCheckKind } from '#src/common/utils/toCheckKind.ts';
+import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
+import { PackPageFrame } from '#src/features/packs/components/PackPageFrame.tsx';
 import type { PackRuleFilters } from '#src/features/packs/internal/common/types/PackRuleFilters.ts';
+import { describeChannel } from '#src/features/packs/internal/common/utils/describeChannel.ts';
 import { filterPackRules } from '#src/features/packs/internal/common/utils/filterPackRules.ts';
 import { groupRulesByDocument } from '#src/features/packs/internal/common/utils/groupRulesByDocument.ts';
 import { readDocumentTitle } from '#src/features/packs/internal/common/utils/readDocumentTitle.ts';
 import { toRuleSetChannel } from '#src/features/packs/internal/common/utils/toRuleSetChannel.ts';
 import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
-import { CodeSpans } from '#src/features/packs/screens/RuleSetPage/internal/components/CodeSpans.tsx';
 import { RuleFilters } from '#src/features/packs/screens/RuleSetPage/internal/components/RuleFilters.tsx';
 import { RuleGroupNav } from '#src/features/packs/screens/RuleSetPage/internal/components/RuleGroupNav.tsx';
 import { RuleRow } from '#src/features/packs/screens/RuleSetPage/internal/components/RuleRow.tsx';
@@ -40,7 +42,7 @@ export const RuleSetPage = ({ ruleSet, filters, onFiltersChange }: Props) => {
 	const deterministic = rules.filter((rule) => toCheckKind({ checked: rule.checked }) === CheckKind.Deterministic).length;
 
 	return (
-		<div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-16">
+		<PackPageFrame crumbs={[{ label: 'Standards Packs', link: { to: '/standards-packs' } }, { label: describeChannel({ channel }).name }]}>
 			<RuleSetHeader
 				channel={channel}
 				totals={{ rules: rules.length, [CheckKind.Deterministic]: deterministic, [CheckKind.Agent]: rules.length - deterministic }}
@@ -74,6 +76,6 @@ export const RuleSetPage = ({ ruleSet, filters, onFiltersChange }: Props) => {
 					)}
 				</div>
 			</div>
-		</div>
+		</PackPageFrame>
 	);
 };

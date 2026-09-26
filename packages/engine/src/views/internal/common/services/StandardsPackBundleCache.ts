@@ -7,6 +7,7 @@ import type { StandardsPackRuleView } from '#src/contracts/views/StandardsPackRu
 import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
 import { readStandardsPack } from '#src/standardsPacks/readStandardsPack.ts';
 import { readPackFixtures } from '#src/views/internal/common/utils/readPackFixtures.ts';
+import { resolveRuleExample } from '#src/views/internal/common/utils/resolveRuleExample.ts';
 import { toStandardsPackRuleListing } from '#src/views/internal/common/utils/toStandardsPackRuleListing.ts';
 
 /** The newest modification time anywhere under a folder — the stamp that says whether a cached read is still current. */
@@ -66,7 +67,12 @@ const toRuleView = async ({ rule }: { rule: LoadedStandardsRule }) => {
 		fail: fixtures.filter((fixture) => fixture.side === FixtureSide.Fail).length,
 	};
 
-	return { ...toStandardsPackRuleListing({ rule, fixtureCounts }), prose: rule.prose, fixtures };
+	return {
+		...toStandardsPackRuleListing({ rule, fixtureCounts }),
+		prose: rule.prose,
+		fixtures,
+		example: resolveRuleExample({ declared: rule.example, fixtures }),
+	};
 };
 
 /** The pack read off disk and folded whole, so nothing downstream ever holds a `LoadedStandardsPack`. */

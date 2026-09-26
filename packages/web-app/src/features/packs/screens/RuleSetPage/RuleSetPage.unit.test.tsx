@@ -70,6 +70,17 @@ const setupRuleSetPage = ({ ruleSet = 'typescript', filters = {} }: { ruleSet?: 
 const readGroupTitles = () => screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.firstChild?.textContent);
 
 describe('RuleSetPage', () => {
+	test('shows the trail back to every pack above the set, with the set as the page already open', () => {
+		setupRuleSetPage();
+
+		const trail = screen.getByRole('navigation', { name: 'Breadcrumb' });
+
+		expect({
+			text: trail.textContent,
+			link: within(trail).getByRole('link', { name: 'Standards Packs' }).getAttribute('href'),
+		}).toStrictEqual({ text: 'Standards PacksTypeScript', link: '/standards-packs' });
+	});
+
 	test('names the set by the name a reader knows it by', () => {
 		setupRuleSetPage();
 

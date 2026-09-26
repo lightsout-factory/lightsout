@@ -1,5 +1,6 @@
 import type { StandardsCheckFunction, StandardsInputKind, StandardsSet } from '@lightsout/standards-contracts';
 import type { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import type { RuleExample } from '#src/contracts/views/RuleExample.ts';
 
 /** One rule folder, read: its prose, its declaration, and its check when it ships one. */
 export interface LoadedStandardsRule {
@@ -23,6 +24,8 @@ export interface LoadedStandardsRule {
 	inputKind?: StandardsInputKind;
 	/** The validated check, present iff checked. */
 	run?: StandardsCheckFunction;
+	/** How rule.md says its examples are shaped; absent when it declares none, and a page reads the shape off the files. */
+	example?: RuleExample;
 	/** Absolute path of the folder holding pass/ and fail/. */
 	fixturesPath: string;
 }

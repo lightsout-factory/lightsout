@@ -1,6 +1,7 @@
 import { CheckKind } from '#src/common/constants/CheckKind.ts';
 import { checkKindIcons } from '#src/common/constants/checkKindIcons.ts';
 import { checkKindLabels } from '#src/common/constants/checkKindLabels.ts';
+import { checkKindTones } from '#src/common/constants/checkKindTones.ts';
 import { cn } from '#src/common/utils/cn.ts';
 
 /**
@@ -15,12 +16,7 @@ export const CheckKindKey = () => (
 
 			return (
 				<div key={kind} className="flex items-start gap-3">
-					<span
-						className={cn(
-							'flex size-7 shrink-0 items-center justify-center rounded-lg',
-							kind === CheckKind.Deterministic ? 'bg-primary-tint text-primary' : 'bg-agent-light text-agent-foreground',
-						)}
-					>
+					<span className={cn('flex size-7 shrink-0 items-center justify-center rounded-lg', checkKindTones[kind])}>
 						<Icon aria-hidden="true" className="size-3.5" />
 					</span>
 					<div className="flex flex-col">
