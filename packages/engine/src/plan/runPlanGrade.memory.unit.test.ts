@@ -72,6 +72,7 @@ const setupLostReader = async ({ name }: { name: string }) => {
 			planName: name,
 			findings: [],
 			lastPass: { scope: 'full', inputs: staleInputs, at: baselineAt },
+			coverage: { readers: [] },
 			nextFindingNumber: 1,
 			updatedAt: baselineAt,
 		}),

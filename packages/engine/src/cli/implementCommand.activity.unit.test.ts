@@ -75,9 +75,10 @@ jest.mock('#src/cli/internal/common/utils/exitAfterImplement.ts', () => ({
 }));
 // -------------------------
 
-/** The plan folder every recorded case points `--plan` at, and the name the record is written under. */
-const planName = 'lo-42-add-widgets';
-const planFolder = join('.lightsout', 'work-orders', planName, 'plans');
+/** The plan every recorded case points `--plan` at, and the address the record is written under. */
+const workOrderName = 'lo-42-add-widgets';
+const planName = `${workOrderName}/001-add-widgets`;
+const planFolder = join('.lightsout', 'work-orders', workOrderName, 'plans', '001-add-widgets');
 
 /** What the plan inside the plans directory says. */
 const planBody = '# Plan: add widgets\n';
@@ -109,7 +110,11 @@ const setupImplementRecord = ({ args }: { args: string[] }) => {
 
 	// The branch an isolated run builds on is the work order record's answer, so
 	// the record for this plan's work order stands on disk before the command runs.
-	seedWorkOrderRecord({ cwd, name: planName });
+	seedWorkOrderRecord({
+		cwd,
+		name: workOrderName,
+		plans: [{ id: '001-add-widgets', title: 'Add widgets', progress: 'ready', createdAt: '2026-01-01T00:00:00.000Z' }],
+	});
 	mkdirSync(join(cwd, planFolder), { recursive: true });
 	writeFileSync(join(cwd, planFolder, 'plan.md'), planBody);
 
@@ -125,7 +130,7 @@ const setupImplementRecord = ({ args }: { args: string[] }) => {
 		context: { flags: parseFlags({ args }), rest: [], cwd },
 		cwd,
 		workspace,
-		planDir: join(cwd, '.lightsout', 'work-orders', planName, 'plans'),
+		planDir: join(cwd, planFolder),
 		...captured,
 	};
 };
@@ -189,7 +194,7 @@ describe('implementCommand activity record', () => {
 
 		// the tree comes down when the work ships, so a record written inside it
 		// would take the whole account of the run with it
-		expect(activityRecordsUnder({ dir: cwd })).toStrictEqual([join('.lightsout', 'work-orders', planName, 'plans', 'activity.jsonl')]);
+		expect(activityRecordsUnder({ dir: cwd })).toStrictEqual([join(planFolder, 'activity.jsonl')]);
 		expect(activityRecordsUnder({ dir: workspace })).toStrictEqual([]);
 		expect(report.roots).toEqual([expect.objectContaining({ level: 'plan', label: planName, children: [expect.objectContaining({ level: 'command-run' })] })]);
 	});

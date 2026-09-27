@@ -17,7 +17,7 @@ interface Params {
  *
  * No lock is taken: the store writes by rename, so a reader never meets a
  * half-written file. `{ record: undefined }` says only that no `state.json`
- * exists, which every caller reads as "this is a legacy plan folder" — a
+ * exists, which every caller reads as "this branch belongs to no work order" — a
  * corrupt record is an error instead, never undefined.
  */
 export const readWorkOrderState = async ({ cwd, name }: Params): Promise<{ record: WorkOrderState | undefined } | { error: string }> => {

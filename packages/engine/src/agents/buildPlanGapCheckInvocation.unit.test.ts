@@ -169,9 +169,10 @@ const settledRecords: GradeFindingRecord[] = [
 		status: GradeFindingStatus.Resolved,
 		disposition: GapOutcome.NeedsAHuman,
 		humanDecision: 'the human picks the retry budget',
-		resolution: { answerAt: 'RESOLUTION-CITATION-SENTINEL: the runner retries three times', verifiedAt: '2026-01-02T00:00:00.000Z' },
+		resolutions: [
+			{ phase: 'phase1-memory.md', answerAt: 'RESOLUTION-CITATION-SENTINEL: the runner retries three times', verifiedAt: '2026-01-02T00:00:00.000Z' },
+		],
 		observations: [],
-		resolutions: [],
 		reopened: [],
 	},
 	{

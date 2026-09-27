@@ -23,9 +23,8 @@ interface Params {
  * driver so the permission translation and the effort flag are testable without
  * spawning a process.
  *
- * The focused-environment mapping — `getDriverCapabilities` owns the record of
- * which controls each harness was verified to have, and against which binary
- * version. `noMcpServers` is `--strict-mcp-config` (no `--mcp-config` is passed
+ * The focused-environment mapping, verified against claude CLI 2.1.270.
+ * `noMcpServers` is `--strict-mcp-config` (no `--mcp-config` is passed
  * anywhere here, which is what makes it load zero servers rather than some
  * named file's), `noSkillCatalog` is `--disable-slash-commands`, `toolAllowlist`
  * is `--tools` with the names comma-joined into one argument, and

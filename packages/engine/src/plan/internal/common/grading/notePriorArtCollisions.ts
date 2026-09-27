@@ -23,10 +23,9 @@ const collisionKey = ({ plannedSymbol, plannedPath, phase }: { plannedSymbol: st
 /**
  * What a previous `plan dedup` already ruled on, as comparable keys.
  *
- * Every failure reads as an empty set, which restores the older, noisier nudge
- * rather than silencing it: no `dedup.json` yet, a hand-edit that no longer
- * parses, and a report written before the field existed all mean "nothing is
- * recorded as settled". This is one advisory line on a grade that has already
+ * Every failure reads as an empty set, which keeps the nudge rather than
+ * silencing it: no `dedup.json` yet, and a hand-edit that no longer parses, both
+ * mean "nothing is recorded as settled". This is one advisory line on a grade that has already
  * done its real work, so it never throws.
  */
 const readSettledCollisions = async ({ workspaceDir }: { workspaceDir: string }): Promise<Set<string>> => {

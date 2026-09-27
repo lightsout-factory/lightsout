@@ -8,8 +8,7 @@ interface Params {
 
 /**
  * Every observation one gap stands for: the list it carries, or — when it carries
- * none, as a single reader's finding or a record written before grouping existed
- * does — the one observation its own identity fields describe.
+ * none, as a single reader's finding does — the one observation its own identity fields describe.
  *
  * Spelled once because the batch accounting, the report collapse and the memory
  * fold all need a gap's observations and must agree on what an empty list means:

@@ -80,7 +80,6 @@ export { BrainstormDecisions } from '#src/contracts/plan/decisions/BrainstormDec
 export { DecisionRow } from '#src/contracts/plan/decisions/DecisionRow.ts';
 export { DecisionSource } from '#src/contracts/plan/decisions/DecisionSource.ts';
 export { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
-export { DraftImplementation } from '#src/contracts/plan/draft/DraftImplementation.ts';
 export { PlanDraftReport } from '#src/contracts/plan/draft/PlanDraftReport.ts';
 export { PlanDraftStatus } from '#src/contracts/plan/draft/PlanDraftStatus.ts';
 export { PlanFixReport } from '#src/contracts/plan/draft/PlanFixReport.ts';

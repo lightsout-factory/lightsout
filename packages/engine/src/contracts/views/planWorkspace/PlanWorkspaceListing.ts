@@ -11,7 +11,7 @@ import { PlanWorkspaceFile } from '#src/contracts/views/planWorkspace/PlanWorksp
  * `RunListing` strikes.
  */
 export const PlanWorkspaceListing = z.object({
-	/** The plan's name under its ticket folder's `plans/` — a plan address `<ticket-branch>/<plan-id>`, or a legacy folder's name. */
+	/** The plan's address under its work order's `plans/` — `<work-order>/<plan-id>`. */
 	name: z.string(),
 	stage: z.enum(PlanStage),
 	/** Present once `grade.json` exists and parses. */

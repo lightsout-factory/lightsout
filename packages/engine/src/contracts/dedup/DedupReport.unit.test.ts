@@ -13,6 +13,7 @@ const setupReport = (overrides: Record<string, unknown> = {}) => {
 	const report = {
 		planName: 'packages-to-src',
 		findings: [finding],
+		reviewed: [],
 		reviewedAt: '2026-08-04T00:00:00.000Z',
 		...overrides,
 	};
@@ -46,7 +47,7 @@ describe('DedupReport', () => {
 	});
 
 	test('findings defaults to empty — the clean result is still a report', () => {
-		const parsed = DedupReport.parse({ planName: 'packages-to-src', reviewedAt: '2026-08-04T00:00:00.000Z' });
+		const parsed = DedupReport.parse({ planName: 'packages-to-src', reviewed: [], reviewedAt: '2026-08-04T00:00:00.000Z' });
 
 		// no candidates detected and every candidate ruled distinct both read back as
 		// an empty findings array
@@ -54,7 +55,7 @@ describe('DedupReport', () => {
 	});
 
 	test('a report that never says otherwise is a finished scan', () => {
-		const parsed = DedupReport.parse({ planName: 'packages-to-src', reviewedAt: '2026-08-04T00:00:00.000Z' });
+		const parsed = DedupReport.parse({ planName: 'packages-to-src', reviewed: [], reviewedAt: '2026-08-04T00:00:00.000Z' });
 
 		expect(parsed.complete).toBe(true);
 		expect(parsed.incompleteReason).toBe(undefined);
@@ -160,14 +161,6 @@ describe('DedupReport', () => {
 });
 
 describe('DedupReport reviewed', () => {
-	test('a report from before the field existed reads as nothing reviewed', () => {
-		const parsed = DedupReport.parse({ planName: 'packages-to-src', reviewedAt: '2026-08-04T00:00:00.000Z' });
-
-		// the default has to be the noisy answer: an old dedup.json cannot claim to
-		// have settled collisions it never recorded
-		expect(parsed.reviewed).toStrictEqual([]);
-	});
-
 	test('a reviewed collision round-trips as the triple that identifies it', () => {
 		const parsed = DedupReport.parse({
 			planName: 'packages-to-src',

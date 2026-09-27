@@ -153,6 +153,8 @@ const setupRepository = async ({ trees = {}, names = [] }: { trees?: Record<stri
 		trees[branch]?.refusesCreation ? { error: `something is already at ${pathOf(branch)}, so no worktree was made for '${branch}'` } : pathOf(branch),
 	);
 	mockWriteWorktreeRecord.mockResolvedValue(undefined);
+	mockPrepareTicketBranch.mockResolvedValue({});
+	mockReadLiveRunLock.mockResolvedValue(undefined);
 	mockReadGitHeadCommit.mockImplementation(async ({ cwd }) => (cwd === sourceCwd ? launchingHead : otherHead));
 
 	return { sourceCwd, elsewhere, pathOf, config: configOf(), flags: flagsOf() };
@@ -175,7 +177,6 @@ const setupIsolationSwitches = async () => {
 const setupEveryRefusal = async () =>
 	setupRepository({
 		trees: {
-			'lo-201-claimed-tree': { occupant: 'worktree', record: { owner: 'implement', startPoint: 'origin/main' } },
 			'lo-202-unclaimed-tree': { occupant: 'worktree' },
 			'lo-203-held-elsewhere': { heldElsewhere: true },
 			'lo-204-occupied-by-file': { occupant: 'file', refusesCreation: true },
@@ -218,16 +219,11 @@ describe('resolvePlanWorktree', () => {
 		expect(mockWriteWorktreeRecord).not.toHaveBeenCalled();
 	});
 
-	test('refuses a tree an implement run owns and one nothing claims, naming the path', async () => {
+	test('refuses a tree nothing claims, naming the path', async () => {
 		const { sourceCwd, pathOf, config, flags } = await setupEveryRefusal();
 
-		const [implementOwned, unclaimed] = await Promise.all([
-			resolvePlanWorktree({ cwd: sourceCwd, config, flags, name: 'lo-201-claimed-tree' }),
-			resolvePlanWorktree({ cwd: sourceCwd, config, flags, name: 'lo-202-unclaimed-tree' }),
-		]);
+		const unclaimed = await resolvePlanWorktree({ cwd: sourceCwd, config, flags, name: 'lo-202-unclaimed-tree' });
 
-		expect(implementOwned).toEqual({ error: expect.stringContaining(pathOf('lo-201-claimed-tree')) });
-		expect(implementOwned).toEqual({ error: expect.stringMatching(/implement/) });
 		expect(unclaimed).toEqual({ error: expect.stringContaining(pathOf('lo-202-unclaimed-tree')) });
 		expect(mockCreateWorktree).not.toHaveBeenCalled();
 		expect(mockWriteWorktreeRecord).not.toHaveBeenCalled();
@@ -301,23 +297,17 @@ describe('resolvePlanWorktree', () => {
 		const { sourceCwd, elsewhere, pathOf, config, flags } = await setupEveryRefusal();
 
 		const refusals = await Promise.all(
-			['lo-201-claimed-tree', 'lo-202-unclaimed-tree', 'lo-203-held-elsewhere', 'lo-204-occupied-by-file'].map((branch) =>
+			['lo-202-unclaimed-tree', 'lo-203-held-elsewhere', 'lo-204-occupied-by-file'].map((branch) =>
 				resolvePlanWorktree({ cwd: sourceCwd, config, flags, name: branch }),
 			),
 		);
 		const sentences = refusals.map(sentenceOf);
 
 		expect(sentences).toEqual([
-			expect.stringContaining(pathOf('lo-201-claimed-tree')),
 			expect.stringContaining(pathOf('lo-202-unclaimed-tree')),
 			expect.stringContaining(elsewhere),
 			expect.stringContaining(pathOf('lo-204-occupied-by-file')),
 		]);
-		expect(sentences).toEqual([
-			expect.stringContaining('--no-worktree'),
-			expect.stringContaining('--no-worktree'),
-			expect.stringContaining(elsewhere),
-			expect.stringContaining('--no-worktree'),
-		]);
+		expect(sentences).toEqual([expect.stringContaining('--no-worktree'), expect.stringContaining(elsewhere), expect.stringContaining('--no-worktree')]);
 	});
 });

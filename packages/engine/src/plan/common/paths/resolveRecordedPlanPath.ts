@@ -4,7 +4,7 @@ import { workOrdersDir } from '#src/common/workspace/workOrdersDir.ts';
 interface Params {
 	/** The checkout the reader is working in — a primary checkout, a linked worktree, or no repository. */
 	cwd: string;
-	/** A plan path as run state recorded it: repo-relative with forward slashes by contract, or absolute from an older record. */
+	/** A plan path as run state recorded it — repo-relative with forward slashes — or as a `--plan` value gave it. */
 	path: string;
 }
 
@@ -18,10 +18,8 @@ interface Params {
  * exist". One answer for the three readers of such a path, rather than the same
  * rule grown three times.
  *
- * An absolute path is answered unchanged: it already names a file. A path under
- * the pre-layout plans folder, and the legacy `.claude/plans/` prefix, both stay
- * with the given checkout on purpose — a manifest carrying either was written
- * before plan data moved and its folder was never relocated.
+ * Any other path is read against the given checkout, and an absolute one
+ * already names a file.
  */
 export const resolveRecordedPlanPath = async ({ cwd, path }: Params): Promise<string> => {
 	// Both separators, because the contract spells a recorded path with forward

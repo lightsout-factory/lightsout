@@ -15,8 +15,7 @@ export const reportCatalogEntry: CommandCatalogEntry = {
 		{
 			name: 'plan',
 			value: '<name>',
-			meaning:
-				'The plan to report on — a plan address, a legacy plan folder name, or a ticket folder, which reports every plan under it beneath one totalled ticket row.',
+			meaning: 'The plan to report on — a plan address, or a work order name, which reports every plan under it beneath one totalled ticket row.',
 			required: true,
 		},
 		{

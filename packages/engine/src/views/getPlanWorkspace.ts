@@ -21,18 +21,16 @@ import { PlanWorkspaceNotFoundError } from '#src/views/PlanWorkspaceNotFoundErro
 const escapesFolder = ({ segment }: { segment: string }) => segment === '' || segment === '..' || segment.includes('/') || segment.includes('\\');
 
 /**
- * A workspace name that could only address something outside the plans folder —
- * the defence `getPlanDocument` applies to its path.
+ * Whether a workspace name addresses a plan inside the plans folder — the
+ * defence `getPlanDocument` applies to its path.
  *
- * A plan address is the one name allowed to carry a separator, and its
- * ticket-branch segment is held to the same single-segment test a legacy name
- * must pass. Every other name with a separator is refused, so a second segment
- * that is not a plan id can never be opened.
+ * Only a plan address opens a workspace, and its work-order segment is held to
+ * a single-segment test, so nothing outside the plans folder can be opened.
  */
-const escapesPlansFolder = ({ name }: { name: string }) => {
+const addressesAPlan = ({ name }: { name: string }) => {
 	const address = parsePlanAddress({ name });
 
-	return escapesFolder({ segment: address?.workOrderName ?? name });
+	return address !== undefined && !escapesFolder({ segment: address.workOrderName });
 };
 
 /**
@@ -71,12 +69,12 @@ interface Params {
  * One plan workspace, whole: its files, its parsed records, and the runs that
  * implemented it.
  *
- * @param cwd - the repo whose `.lightsout/plans/` is read
- * @param name - the plan's name, exactly as the URL carried it: a plan address `<ticket-branch>/<plan-id>`, or a legacy folder's name
- * @throws {PlanWorkspaceNotFoundError} When no folder under `.lightsout/plans/` answers to the name.
+ * @param cwd - the repo whose `.lightsout/work-orders/` is read
+ * @param name - the plan's address, exactly as the URL carried it: `<work-order>/<plan-id>`
+ * @throws {PlanWorkspaceNotFoundError} When the name is no plan address, or no plan folder answers to it.
  */
 export const getPlanWorkspace = async ({ cwd, name }: Params): Promise<PlanWorkspaceView> => {
-	if (escapesPlansFolder({ name })) {
+	if (!addressesAPlan({ name })) {
 		throw new PlanWorkspaceNotFoundError({ name });
 	}
 

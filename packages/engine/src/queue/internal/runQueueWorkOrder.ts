@@ -174,7 +174,6 @@ export const runQueueWorkOrder = async ({
 		driver,
 		driverName,
 		settings,
-		trackerSettings,
 		relay,
 		coordinatorRunId,
 		coordinatorRunDir,

@@ -17,13 +17,8 @@ import { GapVerdict } from '#src/contracts/plan/grade/GapVerdict.ts';
  */
 export const GradedGap = GapObservation.extend({
 	...GapVerdict.omit({ outcome: true, matchesFinding: true }).shape,
-	/**
-	 * Widened from the judge's three: `unjudged` is the engine's stamp and never
-	 * the judge's to claim. The default is for parsing a `grade.json` written
-	 * before this field existed — and it defaults to the blocking value, because
-	 * a record that cannot say a finding was weighed has not weighed it.
-	 */
-	outcome: z.enum(GapOutcome).default(GapOutcome.Unjudged),
+	/** Widened from the judge's three: `unjudged` is the engine's stamp and never the judge's to claim. */
+	outcome: z.enum(GapOutcome),
 	/** Why nobody settled it, absent when a judge did. */
 	unjudgedReason: z.string().optional(),
 	/**
@@ -35,7 +30,7 @@ export const GradedGap = GapObservation.extend({
 	findingId: z.string().optional(),
 	/**
 	 * Every observation this finding covers. Empty on a single-observation finding
-	 * and on a `grade.json` written before grouping existed — read it through
+	 * — read it through
 	 * `findingLocations`, which treats empty as the gap's own `phase`.
 	 */
 	observations: z.array(GapObservation).default([]),

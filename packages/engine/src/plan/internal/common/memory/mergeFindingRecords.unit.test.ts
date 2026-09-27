@@ -192,7 +192,7 @@ describe('mergeFindingRecords', () => {
 			findings: [
 				recordOf({
 					status: GradeFindingStatus.Resolved,
-					resolution: { answerAt: 'a judge is retried twice', verifiedAt: seenAt },
+					resolutions: [{ phase: 'phase1-memory.md', answerAt: 'a judge is retried twice', verifiedAt: seenAt }],
 				}),
 			],
 			gaps: [gapOf({ findingId: 'f1', humanDecision: 'the retry limit is still unspecified' })],
@@ -206,7 +206,7 @@ describe('mergeFindingRecords', () => {
 			expect.objectContaining({
 				id: 'f1',
 				status: GradeFindingStatus.Open,
-				resolution: undefined,
+				resolutions: [],
 				lastSeen: passAt,
 				reopened: [{ at: passAt, reason: 'the retry limit is still unspecified', priorStatus: GradeFindingStatus.Resolved }],
 			}),
@@ -236,7 +236,7 @@ describe('mergeFindingRecords', () => {
 					id: 'f3',
 					gap: 'the plan never says which file holds the floor',
 					status: GradeFindingStatus.Resolved,
-					resolution: { answerAt: 'a judge is retried twice', verifiedAt: seenAt },
+					resolutions: [{ phase: 'phase1-memory.md', answerAt: 'a judge is retried twice', verifiedAt: seenAt }],
 				}),
 			],
 			gaps: [
@@ -277,7 +277,7 @@ describe('mergeFindingRecords', () => {
 					expect.objectContaining({
 						id: 'f3',
 						status: GradeFindingStatus.Resolved,
-						resolution: { answerAt: 'a judge is retried twice', verifiedAt: seenAt },
+						resolutions: [{ phase: 'phase1-memory.md', answerAt: 'a judge is retried twice', verifiedAt: seenAt }],
 						lastSeen: passAt,
 						reopened: [],
 					}),

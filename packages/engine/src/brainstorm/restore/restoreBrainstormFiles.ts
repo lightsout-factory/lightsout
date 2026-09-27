@@ -2,7 +2,6 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { brainstormAttachmentFileNames } from '#src/brainstorm/common/constants/brainstormAttachmentFileNames.ts';
 import { brainstormAttachmentManifestName } from '#src/brainstorm/common/constants/brainstormAttachmentManifestName.ts';
-import { isBrainstormOnlyAttachmentName } from '#src/brainstorm/internal/common/utils/isBrainstormOnlyAttachmentName.ts';
 import { attachmentTitle } from '#src/common/attachmentManifest/attachmentTitle.ts';
 import { parseAttachmentManifest } from '#src/common/attachmentManifest/parseAttachmentManifest.ts';
 import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachments.ts';
@@ -24,8 +23,8 @@ interface Params {
 	/** The ticket reference that folder's name carries, e.g. 'lo-117'. */
 	identifier: string;
 	settings: TrackerSettings;
-	/** The plan id the ticket's titles for this plan are namespaced under; absent for a legacy folder. */
-	titlePrefix?: string;
+	/** The plan id the ticket's titles for this plan are namespaced under. */
+	titlePrefix: string;
 }
 
 interface RestoredBrainstormFiles {
@@ -142,18 +141,12 @@ const writeIntoFolder = async ({ dir, files }: { dir: string; files: ReadGenerat
 };
 
 /**
- * Rebuild a brainstorm's files from the one ticket generation committed by
- * `brainstorm-attachments.json` — the ticket's own, or, under a plan id prefix,
- * that plan's.
+ * Rebuild a brainstorm's files from the one generation of this plan committed by
+ * `brainstorm-attachments.json`.
  *
- * "Did a brainstorm publish to this ticket?" is asked with
- * `isBrainstormOnlyAttachmentName` for a legacy folder, never with the selected
- * set: the selected set includes `brainstorm-notes.md`, which a published
- * legacy *plan* carries too, so asking with it would refuse on every
- * plan-carrying ticket. Under a prefix the plan generation no longer carries the
- * notes, so that exclusion would only hide a notes-only generation — there, any
- * of the generation's own names counts. A ticket with no published brainstorm is
- * the ordinary case and is not a failure.
+ * Any of the generation's own names is evidence a brainstorm was published for
+ * this plan, since the plan generation never carries the notes. A ticket with no
+ * published brainstorm is the ordinary case and is not a failure.
  */
 export const restoreBrainstormFiles = async ({ cwd, name, identifier, settings, titlePrefix }: Params): Promise<RestoredBrainstormFiles> => {
 	const listed = await getTicketAttachments({ settings, identifier });
@@ -169,14 +162,7 @@ export const restoreBrainstormFiles = async ({ cwd, name, identifier, settings, 
 	const selected = attachments.filter(({ title }) => brainstormAttachmentFileNames.includes(title));
 	const markers = attachments.filter(({ title }) => title === brainstormAttachmentManifestName);
 	const marker = markers[0];
-	// Under a prefix the plan generation never carries the notes, so any of this
-	// generation's names is evidence a brainstorm was published for this plan. A
-	// legacy ticket's two generations share `brainstorm-notes.md`, which is why
-	// the wider question there still excludes it.
-	const isEvidence =
-		titlePrefix === undefined ? isBrainstormOnlyAttachmentName : ({ name: title }: { name: string }) => brainstormAttachmentFileNames.includes(title);
-
-	if (!attachments.some(({ title }) => isEvidence({ name: title })) && markers.length === 0) {
+	if (!attachments.some(({ title }) => brainstormAttachmentFileNames.includes(title)) && markers.length === 0) {
 		return { restored: [], skipped: [] };
 	}
 
@@ -214,9 +200,9 @@ export const restoreBrainstormFiles = async ({ cwd, name, identifier, settings, 
 		manifest: parsed.manifest,
 		selected,
 		markerName,
-		// Under a prefix `brainstorm-decisions.json` is optional, because a plan of
-		// a ticket may be shaped by a brainstorm that settled no decision of its own.
-		required: titlePrefix === undefined ? brainstormAttachmentFileNames : [brainstormNotesFileName],
+		// `brainstorm-decisions.json` is optional, because a plan may be shaped by a
+		// brainstorm that settled no decision of its own.
+		required: [brainstormNotesFileName],
 	});
 
 	if ('error' in generation) {

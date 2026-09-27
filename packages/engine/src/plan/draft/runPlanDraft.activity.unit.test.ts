@@ -8,8 +8,6 @@ import { createActivityRecorder } from '#src/activity/createActivityRecorder.ts'
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { ActivityNode } from '#src/contracts/activity/ActivityNode.ts';
-import { DraftImplementation } from '#src/contracts/plan/draft/DraftImplementation.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runPlanDraft } from '#src/plan/draft/runPlanDraft.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { createDraftDriver } from '#tests/helpers/createDraftDriver.ts';
@@ -60,24 +58,6 @@ const setupPhasedDraftActivity = ({ name }: { name: string }) => {
 const setupRepairDraftActivity = ({ name }: { name: string }) => {
 	const draft = setupPhasedDraft({ name, touching: 0 });
 	const driver = createDraftDriver({ bodies: [dirtyPlanBody({ markers: 'TBD' }), dirtyPlanBody({ markers: 'TODO' }), cleanPlanBody()] });
-
-	return { ...draft, ...openCommandRun({ name }), driver };
-};
-
-/**
- * A focused draft over an open command-run level, against the one registered
- * harness that cannot provide a control the focused environment asks for — so
- * the run is refused before any agent is spawned.
- *
- * A factory of its own because the arrangement differs in what answers the
- * harness rather than in a parameter: the driver is an ordinary working author
- * renamed, so a run the preflight failed to refuse would draft normally and the
- * assertion would see the missing refusal rather than a stub that could not
- * write.
- */
-const setupRefusedDraftActivity = ({ name }: { name: string }) => {
-	const draft = setupPhasedDraft({ name, touching: 0 });
-	const driver: Driver = { ...createDraftDriver({ bodies: [cleanPlanBody()] }), name: 'omp' };
 
 	return { ...draft, ...openCommandRun({ name }), driver };
 };
@@ -143,41 +123,6 @@ describe('runPlanDraft activity levels', () => {
 		expect({ steps: stepLabels({ node: commandRun }), rounds: passRounds({ node: commandRun, step: 'repair-' }) }).toStrictEqual({
 			steps: ['draft'],
 			rounds: [['repair-1'], ['repair-2']],
-		});
-	});
-
-	test('a legacy draft records the same level shape as a focused one', async () => {
-		const { cwd, dir, driver, level, name } = setupPhasedDraftActivity({ name: 'legacy-levels' });
-
-		await runPlanDraft({ cwd, driver, name, level, implementation: DraftImplementation.Legacy });
-
-		const commandRun = await readCommandRun({ dir, level });
-
-		// The same shape the focused draft above is pinned to, stated again rather
-		// than shared: the flag chooses which writer runs, never what a plan run
-		// records, and a legacy draft whose spawns were never wired would record a
-		// command run with nothing under it at all.
-		expect({ steps: stepLabels({ node: commandRun }), fanOuts: passRounds({ node: commandRun, step: 'draft-phase' }) }).toStrictEqual({
-			steps: ['draft'],
-			fanOuts: [['draft-phase1', 'draft-phase2']],
-		});
-	});
-
-	test('a draft refused before any work opens nothing under the command run', async () => {
-		const { cwd, dir, driver, level, name } = setupRefusedDraftActivity({ name: 'refused-levels' });
-
-		const result = await runPlanDraft({ cwd, driver, name, level });
-
-		const commandRun = await readCommandRun({ dir, level });
-
-		// The refusal returns before the context is built, so the level it was
-		// handed is carried and never opened on. A run that spent nothing must
-		// leave no pass, no step and no process behind to be totalled — otherwise
-		// the report bills a refusal as work.
-		expect({ status: result.status, children: commandRun.children, processes: commandRun.processes }).toStrictEqual({
-			status: 'failed',
-			children: [],
-			processes: [],
 		});
 	});
 });

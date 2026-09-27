@@ -3,7 +3,6 @@ import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatu
 import type { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
 import { confirmCitation } from '#src/plan/internal/common/memory/confirmCitation.ts';
 import { recheckPlanText } from '#src/plan/internal/common/memory/recheckPlanText.ts';
-import { recordResolutions } from '#src/plan/internal/common/memory/recordResolutions.ts';
 import { reopenRecord } from '#src/plan/internal/common/memory/reopenRecord.ts';
 import type { DeliverableFile } from '#src/plan/internal/common/types/DeliverableFile.ts';
 
@@ -22,7 +21,7 @@ const firstLostCitation = async ({ params, record }: { params: Params; record: G
 	const { cwd, files, overviewText } = params;
 	let lost: { phase: string; answerAt: string } | undefined;
 
-	for (const { phase, answerAt } of recordResolutions({ record })) {
+	for (const { phase, answerAt } of record.resolutions) {
 		const confirmed = await confirmCitation({ cwd, citation: answerAt, planText: recheckPlanText({ files, overviewText, phase }) });
 
 		if (!confirmed.ok) {

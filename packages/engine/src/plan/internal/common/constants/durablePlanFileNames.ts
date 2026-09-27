@@ -30,11 +30,10 @@ import { gradeMemoryFileName } from '#src/plan/internal/common/constants/gradeMe
  * planning resumed on another machine has to keep it. The history and the agent
  * transcripts beside it are local debugging state about how a grade was reached.
  *
- * `brainstorm-notes.md` is the one record the brainstorm generation also
- * carries, which is why it is spelled here as `brainstormNotesFileName` rather
- * than as a literal, and why `isPlanOnlyAttachmentName` and
- * `isBrainstormOnlyAttachmentName` exist: neither generation may take the
- * shared title as evidence that it was the one published.
+ * `brainstorm-notes.md` sits in the plan folder but belongs to the brainstorm
+ * generation, which is why it is spelled here as `brainstormNotesFileName`
+ * rather than as a literal, and why `isPlanOnlyAttachmentName` leaves it out of
+ * every plan generation.
  */
 export const durablePlanFileNames: { records: string[]; deliverable: RegExp } = {
 	/** The plan's working records, each attached when the folder holds it. */

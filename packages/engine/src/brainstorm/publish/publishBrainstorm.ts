@@ -23,8 +23,8 @@ interface Params {
 	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	onProgress: (message: string) => void;
-	/** The plan id every attachment title is namespaced under; absent for a legacy folder, whose titles stay bare. */
-	titlePrefix?: string;
+	/** The plan id every attachment title is namespaced under. */
+	titlePrefix: string;
 }
 
 interface BrainstormPublishReport {
@@ -48,23 +48,16 @@ const contentTypeOf = ({ name }: { name: string }) => (name.endsWith('.json') ? 
  * Read the generation as one snapshot before any outward mutation, then append
  * the marker committing exactly those bytes.
  *
- * Under a prefix only `brainstorm-notes.md` is required: a plan inside a ticket
- * folder may be shaped by a brainstorm that settled no decision of its own, and
- * refusing that would leave the notes unpublishable. A legacy folder still owes
- * both files, exactly as it always has.
+ * Only `brainstorm-notes.md` is required: a plan may be shaped by a brainstorm
+ * that settled no decision of its own, and refusing that would leave the notes
+ * unpublishable.
  */
-const prepareAttachments = async ({
-	dir,
-	titlePrefix,
-}: {
-	dir: string;
-	titlePrefix?: string;
-}): Promise<{ attachments: PreparedAttachment[] } | { error: string }> => {
+const prepareAttachments = async ({ dir }: { dir: string }): Promise<{ attachments: PreparedAttachment[] } | { error: string }> => {
 	const files: PreparedAttachment[] = [];
 
 	for (const name of brainstormAttachmentFileNames) {
 		const content = await readFile(join(dir, name)).catch((error: unknown) => ({ error: messageOf({ error }) }));
-		const optional = titlePrefix !== undefined && name !== brainstormNotesFileName;
+		const optional = name !== brainstormNotesFileName;
 
 		if (Buffer.isBuffer(content)) {
 			files.push({ name, content });
@@ -90,7 +83,7 @@ const attachBrainstormFiles = async ({
 	ticketRef: string;
 	attachments: PreparedAttachment[];
 	onProgress: (message: string) => void;
-	titlePrefix?: string;
+	titlePrefix: string;
 }) => {
 	const published: string[] = [];
 
@@ -126,14 +119,12 @@ const attachBrainstormFiles = async ({
  * the work order's record, then configuration, then the network — so the two
  * failures a user actually hits are answered with no round trip.
  *
- * No stale attachment is reported, and for a legacy folder none can exist: the
- * set is two fixed names, so a re-publish replaces both same-titled attachments
- * and leaves nothing over. Under a prefix a republish without
+ * No stale attachment is reported. A republish without
  * `brainstorm-decisions.json` does leave that plan's earlier copy of it on the
  * ticket — restore ignores it, because the marker written last does not list it.
  */
 export const publishBrainstorm = async ({ cwd, name, config, env, onProgress, titlePrefix }: Params): Promise<BrainstormPublishReport> => {
-	const prepared = await prepareAttachments({ dir: await planWorkspaceDir({ cwd, name }), titlePrefix });
+	const prepared = await prepareAttachments({ dir: await planWorkspaceDir({ cwd, name }) });
 
 	if ('error' in prepared) {
 		return { published: [], error: prepared.error };

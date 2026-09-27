@@ -4,8 +4,8 @@ import { describe, expect, test } from '@jest/globals';
 import { copyRunInputs } from '#src/cli/internal/common/implementRun/copyRunInputs.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 
-const planName = 'lo-9-isolated-implement';
-const planFolderPath = join('.lightsout', 'work-orders', planName, 'plans');
+const workOrderName = 'lo-9-isolated-implement';
+const planFolderPath = join('.lightsout', 'work-orders', workOrderName, 'plans', '001-isolated-implement');
 const overviewBody = '# overview\n\nthe whole plan, in phases\n';
 const phaseBody = '# phase 3: isolated implement\n';
 const factsBody = '{"facts":[]}\n';

@@ -8,8 +8,7 @@ interface Params {
  * files are written by separate agents from the declarations this spawn settles,
  * so a phase it does not declare is never authored at all.
  *
- * It differs from the legacy brief in one place. The `## Phases` row and the
- * matching `### Phase <N> — ` declaration heading are two views of one record and
+ * The `## Phases` row and the matching `### Phase <N> — ` declaration heading are two views of one record and
  * the engine normalises the pairing between them, so the writer states each
  * phase once instead of checking one copy against the other.
  */

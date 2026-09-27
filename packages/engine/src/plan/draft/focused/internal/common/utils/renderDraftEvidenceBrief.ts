@@ -2,8 +2,8 @@ import type { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvi
 import { renderEvidenceBrief } from '#src/plan/evidence/renderEvidenceBrief.ts';
 
 interface Params {
-	/** The draft's collected evidence. Absent only when the context carries none — a legacy context, or a focused one wired without a collection. */
-	evidence: SourceEvidenceIndex | undefined;
+	/** The draft's collected evidence. */
+	evidence: SourceEvidenceIndex;
 }
 
 /**
@@ -16,7 +16,7 @@ interface Params {
  * away from the single flow and the overview spawn being briefed differently for
  * no stated reason.
  *
- * @returns the rendered section, or the empty string when there is no evidence to render
+ * @returns the rendered section
  */
 export const renderDraftEvidenceBrief = ({ evidence }: Params): string =>
-	evidence === undefined ? '' : renderEvidenceBrief({ index: evidence, paths: evidence.entries.map((entry) => entry.path) });
+	renderEvidenceBrief({ index: evidence, paths: evidence.entries.map((entry) => entry.path) });

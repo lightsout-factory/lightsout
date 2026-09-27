@@ -42,7 +42,8 @@ const mockRunImplementPipeline = jest.fn<(params: PipelineCall) => Promise<Pipel
 jest.mock('#src/pipeline/runImplementPipeline.ts', () => ({ runImplementPipeline: (params: PipelineCall) => mockRunImplementPipeline(params) }));
 // -------------------------
 
-const name = 'lo-154-queue-owns-the-build';
+const workOrderName = 'lo-154-queue-owns-the-build';
+const name = `${workOrderName}/001-queue-build`;
 
 const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
@@ -51,7 +52,7 @@ const passedManifest: RunManifest = {
 	runId: 'run-7',
 	createdAt: '2026-01-01T00:00:00.000Z',
 	updatedAt: '2026-01-01T00:00:01.000Z',
-	plan: join('.lightsout', 'work-orders', name, 'plans', 'plan.md'),
+	plan: join('.lightsout', 'work-orders', workOrderName, 'plans', '001-queue-build', 'plan.md'),
 	harness: 'claude-code',
 	status: RunStatus.Passed,
 	currentStep: null,
@@ -69,16 +70,16 @@ const passedManifest: RunManifest = {
 
 /**
  * A temporary checkout holding one plan folder, with both pipelines stubbed to
- * pass. `phased` adds the overview file that decides which of the two runs,
+ * answer `result`. `phased` adds the overview file that decides which of the two runs,
  * since the choice is read off the tree rather than told.
  *
  * Whichever runs opens one child on the level it was handed, so a build that
  * was handed no level writes no child — which is how a case reads back that
  * the level actually reached the pipeline rather than stopping at the wrapper.
  */
-const setupQueueBuild = async ({ phased }: { phased: boolean }) => {
+const setupQueueBuild = async ({ phased = false, result = { ok: true, manifest: passedManifest } }: { phased?: boolean; result?: PipelineResult }) => {
 	const cwd = await freshCwd();
-	const planDir = join(cwd, '.lightsout', 'work-orders', name, 'plans');
+	const planDir = join(cwd, '.lightsout', 'work-orders', workOrderName, 'plans', '001-queue-build');
 
 	await mkdir(planDir, { recursive: true });
 	await writeFile(join(planDir, 'plan.md'), '# Plan\n', 'utf8');
@@ -88,9 +89,9 @@ const setupQueueBuild = async ({ phased }: { phased: boolean }) => {
 	}
 
 	const build = async ({ level }: PipelineCall): Promise<PipelineResult> => {
-		level?.open({ level: ActivityLevelKind.Pass, label: 'the build' }).close({ outcome: RunStatus.Passed });
+		level?.open({ level: ActivityLevelKind.Pass, label: 'the build' }).close({ outcome: result.manifest.status });
 
-		return { ok: true, manifest: passedManifest };
+		return result;
 	};
 
 	mockRunPhasesPipeline.mockImplementation(build);
@@ -133,5 +134,24 @@ describe('runPlanFolderPipeline', () => {
 		]);
 		// and the queue still reads the build the way it always has
 		expect(outcome).toStrictEqual({});
+	});
+
+	test('a queue build that fails closes its command run failed and still states the resume', async () => {
+		const failed = { ok: false, error: 'the test gate stayed red', manifest: { ...passedManifest, status: RunStatus.Failed } };
+		const { cwd, planDir, onProgress } = await setupQueueBuild({ result: failed });
+
+		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress });
+
+		const report = buildActivityTree({ plan: name, marks: await readActivityMarks({ dir: planDir }) });
+
+		expect(report.roots).toEqual([
+			expect.objectContaining({
+				level: 'plan',
+				label: name,
+				outcome: 'failed',
+				children: [expect.objectContaining({ level: 'command-run', label: 'implement', outcome: 'failed' })],
+			}),
+		]);
+		expect(outcome).toStrictEqual({ error: 'the test gate stayed red — `lightsout resume --run run-7` continues it from the worktree' });
 	});
 });

@@ -75,18 +75,18 @@ describe('resolveRecordedPlanPath', () => {
 		expect(resolved).toBe(join(worktree, '.lightsout', 'runs', 'lo-150-run', 'inputs', 'notes.md'));
 	});
 
-	test('an absolute path is answered unchanged and a legacy plans path stays with its checkout', async () => {
+	test('an absolute path is answered unchanged and a path outside the plans directory stays with its checkout', async () => {
 		const { primary, worktree } = setupLinkedWorktree();
 		const absolute = join(primary, '.lightsout', 'work-orders', 'lo-150', 'plans', 'plan.md');
 
 		const resolved = {
 			absolute: await resolveRecordedPlanPath({ cwd: worktree, path: absolute }),
-			legacy: await resolveRecordedPlanPath({ cwd: worktree, path: '.claude/plans/lo-150/plan.md' }),
+			outside: await resolveRecordedPlanPath({ cwd: worktree, path: 'notes/lo-150/plan.md' }),
 		};
 
 		expect(resolved).toStrictEqual({
 			absolute,
-			legacy: join(worktree, '.claude', 'plans', 'lo-150', 'plan.md'),
+			outside: join(worktree, 'notes', 'lo-150', 'plan.md'),
 		});
 	});
 });

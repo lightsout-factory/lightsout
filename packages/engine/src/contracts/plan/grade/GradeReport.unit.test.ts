@@ -1,6 +1,17 @@
 import { describe, expect, test } from '@jest/globals';
 import { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
 
+/** The fields every report carries, and nothing else — what the default cases parse. */
+const minimalReport = {
+	planName: 'packages-to-src',
+	grade: 'A',
+	passed: true,
+	gradedAt: '2026-08-04T00:00:00.000Z',
+	scopeComplete: true,
+	scope: 'full',
+	covered: [],
+};
+
 const setupReport = (overrides: Record<string, unknown> = {}) => {
 	const finding = {
 		check: 'no-placeholders',
@@ -17,6 +28,7 @@ const setupReport = (overrides: Record<string, unknown> = {}) => {
 		options: ['drop the barrel', 'amend the standard'],
 		phase: 'phase2-cross-phase-checks.md',
 		lens: 'decisions',
+		outcome: 'unjudged',
 	};
 	const report = {
 		planName: 'packages-to-src',
@@ -26,8 +38,11 @@ const setupReport = (overrides: Record<string, unknown> = {}) => {
 		phasesChecked: ['phase1-lint-vocabulary.md', 'phase2-cross-phase-checks.md'],
 		lenses: ['surface', 'wiring', 'decisions'],
 		complete: true,
+		scopeComplete: false,
 		passed: false,
 		gradedAt: '2026-08-04T00:00:00.000Z',
+		scope: 'full',
+		covered: [],
 		...overrides,
 	};
 
@@ -62,7 +77,7 @@ describe('GradeReport', () => {
 					phase: 'phase2-cross-phase-checks.md',
 					lens: 'decisions',
 					outcome: 'unjudged',
-					// a gap written before grouping existed reads as holding no other observation
+					// a single-observation gap holds no other observation
 					observations: [],
 				},
 			],
@@ -81,7 +96,7 @@ describe('GradeReport', () => {
 	});
 
 	test('structural and gaps default to empty — a clean pass carries no evidence', () => {
-		const parsed = GradeReport.parse({ planName: 'packages-to-src', grade: 'A', passed: true, gradedAt: '2026-08-04T00:00:00.000Z' });
+		const parsed = GradeReport.parse(minimalReport);
 
 		// the skill reads both arrays off every grade report without guarding for
 		// absence
@@ -90,7 +105,7 @@ describe('GradeReport', () => {
 	});
 
 	test('the coverage fields default to an unstated-but-complete pass', () => {
-		const parsed = GradeReport.parse({ planName: 'packages-to-src', grade: 'A', passed: true, gradedAt: '2026-08-04T00:00:00.000Z' });
+		const parsed = GradeReport.parse(minimalReport);
 
 		// the skill reads phasesChecked and lenses off every report, and a report
 		// that never says otherwise is a finished one
@@ -110,13 +125,13 @@ describe('GradeReport', () => {
 		expect(parsed.incompleteReason).toBe('phase3-two-stage-draft.md/wiring: rate limited or overloaded');
 	});
 
-	test('a grade.json written before the commit stamp existed still parses, with both fields absent', () => {
+	test('a grade taken outside a git worktree parses with both commit fields absent', () => {
 		const { report } = setupReport();
 
 		const parsed = GradeReport.parse(report);
 
-		// an older record has no honest value to supply, and a default would make a
-		// grade taken against unknown code read as one taken against HEAD
+		// no commit was read, and a default would make a grade taken against unknown
+		// code read as one taken against HEAD
 		expect(parsed.gradedCommit).toBe(undefined);
 		expect(parsed.gradedTreeDirty).toBe(undefined);
 	});
@@ -223,16 +238,6 @@ describe('GradeReport', () => {
 		expect(result.success).toBe(false);
 	});
 
-	test('a gap written before the outcome field existed reads back as unjudged, which blocks', () => {
-		const { report, gap } = setupReport();
-		const unweighed = { area: gap.area, gap: gap.gap, decision: gap.decision, options: gap.options, phase: gap.phase, lens: gap.lens };
-
-		const parsed = GradeReport.parse({ ...report, gaps: [unweighed] });
-
-		// a record that cannot say a finding was weighed has not weighed it
-		expect(parsed.gaps[0]?.outcome).toBe('unjudged');
-	});
-
 	test("rejects an outcome outside the engine's four", () => {
 		for (const outcome of ['NeedsAHuman', 'needs a human', 'blocking', '']) {
 			const { report, gap } = setupReport();
@@ -264,6 +269,7 @@ describe('GradeReport', () => {
 					decision: 'name the target directory',
 					phase: 'plan.md',
 					lens: 'surface',
+					outcome: 'unjudged',
 				},
 			],
 		});
@@ -271,8 +277,8 @@ describe('GradeReport', () => {
 		const parsed = GradeReport.parse(report);
 
 		// the inherited PlanGap default survives the extend — a gap written without
-		// options reads back with an empty list, and keeps its attribution; one
-		// written before grouping existed reads back holding no other observation
+		// options reads back with an empty list, and keeps its attribution; a
+		// single-observation gap reads back holding no other observation
 		expect(parsed.gaps[0]).toStrictEqual({
 			area: 'insufficient-detail',
 			gap: 'the move map names no target for tests/helpers',
@@ -329,49 +335,22 @@ describe('GradeReport', () => {
 		const withReason = GradeReport.parse(explained);
 
 		// a history line has to say why the pass reached as far as it did, and a
-		// record written before the field existed has no honest line to invent
+		// report that stopped on structural findings has no line to give
 		expect(withoutReason.scopeReason).toBe(undefined);
 		expect(withReason.scopeReason).toBe('focused review of phase2-cross-phase-checks.md — the edited phase and its connected closure');
 	});
 
-	test('a report written before the scope fields defaults to full', () => {
-		const { report } = setupReport();
-
-		const parsed = GradeReport.parse(report);
-
-		// every reader of grade.json branches on scope, so an older record must read
-		// as the whole-plan pass it was rather than as a partial repair check, and it
-		// carries no fingerprint that could be mistaken for matching current inputs
-		expect(parsed.scope).toBe('full');
-		expect(parsed.focusedOn).toStrictEqual([]);
-		expect(parsed.inputs).toBe(undefined);
-	});
-
-	test('a report written before scope coverage existed parses as claiming none', () => {
-		const { report } = setupReport();
-
-		const parsed = GradeReport.parse(report);
-
-		// an older record never said its own scope finished, so it must not read as
-		// having established coverage the repair baseline could narrow against
-		expect(parsed.scopeComplete).toBe(false);
-	});
-
-	test('the covered plan files round-trip, and a report written before them claims none', () => {
-		const { report: older } = setupReport();
+	test('the covered plan files round-trip', () => {
 		const { report: current } = setupReport({
 			scope: 'focused',
 			focusedOn: ['phase2-cross-phase-checks.md'],
 			covered: ['phase1-lint-vocabulary.md', 'phase2-cross-phase-checks.md', 'phase3-two-stage-draft.md'],
 		});
 
-		const withoutCoverage = GradeReport.parse(older);
 		const withCoverage = GradeReport.parse(current);
 
 		// the terminal line tells a reading from a reuse by comparing covered against
-		// phasesChecked, so the files a pass stood on must survive the round trip;
-		// an older report claims no coverage rather than reading as a whole-plan one
+		// phasesChecked, so the files a pass stood on must survive the round trip
 		expect(withCoverage.covered).toStrictEqual(['phase1-lint-vocabulary.md', 'phase2-cross-phase-checks.md', 'phase3-two-stage-draft.md']);
-		expect(withoutCoverage.covered).toStrictEqual([]);
 	});
 });

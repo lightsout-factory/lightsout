@@ -9,7 +9,7 @@ import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 
 interface Params<Result> {
 	cwd: string;
-	/** A plan address or a legacy plan name — the folder the record is written in. Undefined when the caller has no plan folder, which records nothing. */
+	/** A plan address — the folder the record is written in. Undefined when the caller has no plan folder, which records nothing. */
 	name: string | undefined;
 	/** What this command run is called in the report, e.g. the subcommand's own words. Free text: the recorder is handed a label, never a planning enum. */
 	label: string;

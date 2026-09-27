@@ -1,5 +1,4 @@
-import { execSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'node:fs';
+import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PassThrough, Writable } from 'node:stream';
@@ -16,9 +15,7 @@ import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTi
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import { TerminalQuestionRelay } from '#src/queue/relay/TerminalQuestionRelay.ts';
 import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
-import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
 /**
@@ -35,33 +32,18 @@ import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts
 // Every build here spawns a harness or a pipeline — another module's entry
 // point, each covered by its own tests. What this file owns is the fork between
 // them, which is observable with them stubbed.
-const mockRunPlanFolderPipeline = jest.fn<(params: { cwd: string; name: string }) => Promise<WorkerOutcome>>();
 const mockRunDirectWork = jest.fn<(params: { answeredQuestion?: { question: string; answer: string } }) => Promise<PipelineResult>>();
 const mockAppendTicketNote = jest.fn<() => Promise<undefined>>();
 
-jest.mock('#src/queue/workers/internal/runPlanFolderPipeline.ts', () => ({
-	runPlanFolderPipeline: (params: { cwd: string; name: string }) => mockRunPlanFolderPipeline(params),
-}));
 jest.mock('#src/direct/runDirectWork.ts', () => ({
 	runDirectWork: (params: { answeredQuestion?: { question: string; answer: string } }) => mockRunDirectWork(params),
 }));
 jest.mock('#src/ticketTracker/appendTicketNote.ts', () => ({ appendTicketNote: () => mockAppendTicketNote() }));
 // -------------------------
-// The plan worker asks the disk whether the folder is there, then asks the ticket
-// for the plan when it is not. Only the tracker half is stubbed: whether a
-// folder exists is arranged by making one, so `pathExists` stays real and each
-// case reads the worktree it actually built.
-const mockRestorePlanWorkspace =
-	jest.fn<(params: { cwd: string; name: string; identifier: string; settings: TrackerSettings }) => Promise<{ restored: string[]; error?: string }>>();
-
-jest.mock('#src/plan/restore/restorePlanWorkspace.ts', () => ({
-	restorePlanWorkspace: (params: { cwd: string; name: string; identifier: string; settings: TrackerSettings }) => mockRestorePlanWorkspace(params),
-}));
-// -------------------------
 // Reading the record, and building a work order's plans one at a time, each have
 // their own tests. What this file owns is the fork between them: a record sends
-// the ticket to the ordered per-plan build, no record leaves the single
-// branch-named build exactly as it was, and a failed pull builds nothing.
+// the ticket to the ordered per-plan build, no record builds from the ticket
+// body, and a failed pull builds nothing.
 interface PullTicketRecordParams {
 	cwd: string;
 	workOrderName: string;
@@ -169,9 +151,8 @@ const setupRelay = () => {
 const setupBrainstormOnlyTicket = () => {
 	const { relay, coordinatorRunDir } = setupRelay();
 
-	// A ticket with no record is the legacy shape this fallback was written against.
+	// A ticket with no record carries no published plan.
 	mockPullTicketRecord.mockResolvedValue({ record: undefined });
-	mockRestorePlanWorkspace.mockResolvedValue({ restored: [] });
 	mockRunDirectWork.mockResolvedValue({ ok: true, manifest: manifestOf(RunStatus.Passed) });
 
 	const progress: string[] = [];
@@ -180,7 +161,6 @@ const setupBrainstormOnlyTicket = () => {
 		relay,
 		progress,
 		params: {
-			// A fresh empty worktree: no plan folder on disk, which is what sends the worker to the ticket.
 			worktreePath: mkdtempSync(join(tmpdir(), 'lightsout-brainstorm-only-')),
 			workOrderName: 'lo-70-drain',
 			ticket: { ...ticketOf(QueueWorker.Plan), planningStatus: PlanningStatus.Complete },
@@ -188,7 +168,6 @@ const setupBrainstormOnlyTicket = () => {
 			driver,
 			driverName: 'claude-code',
 			settings,
-			trackerSettings: trackerSettingsFixture(),
 			relay,
 			coordinatorRunId: 'run-q',
 			coordinatorRunDir,
@@ -220,8 +199,6 @@ const setupPlanWorkerTicket = ({ pull }: { pull: PullTicketRecordResult }) => {
 
 	mockPullTicketRecord.mockResolvedValue(pull);
 	mockBuildTicketPlans.mockResolvedValue({});
-	mockRestorePlanWorkspace.mockResolvedValue({ restored: ['plan.md'] });
-	mockRunPlanFolderPipeline.mockResolvedValue({});
 
 	return {
 		relay,
@@ -235,55 +212,10 @@ const setupPlanWorkerTicket = ({ pull }: { pull: PullTicketRecordResult }) => {
 			driver,
 			driverName: 'claude-code',
 			settings,
-			trackerSettings: trackerSettingsFixture(),
 			relay,
 			coordinatorRunId: 'run-q',
 			coordinatorRunDir,
 			workOrderRunDir,
-			env: { LINEAR_API_KEY: 'key-1' },
-		},
-	};
-};
-
-/**
- * The queue's own shape for a ticket with no record: a primary checkout holding
- * the branch's plan folder, and the ticket's linked worktree — cut from that
- * checkout — as the tree the worker builds in. The folder never leaves the main
- * checkout, so the worker has to look there rather than in the tree it stands in.
- */
-const setupPlanWorkerInWorktree = () => {
-	const { relay, coordinatorRunDir } = setupRelay();
-	// realpath on both sides, so macOS's symlinked temp directory cannot make the
-	// folder written here and the one git answers with look like different places.
-	const primary = realpathSync(setupBranchRepo().cwd);
-	const worktreePath = join(primary, '.worktrees', 'lo-70-drain');
-
-	execSync(`git worktree add -q -b lo-70-drain "${worktreePath}" main`, { cwd: primary, stdio: 'ignore' });
-
-	const folder = join(primary, '.lightsout', 'work-orders', 'lo-70-drain', 'plans');
-
-	mkdirSync(folder, { recursive: true });
-	writeFileSync(join(folder, 'plan.md'), '# Plan\n');
-
-	mockPullTicketRecord.mockResolvedValue({ record: undefined });
-	mockRunPlanFolderPipeline.mockResolvedValue({});
-
-	return {
-		relay,
-		worktreePath,
-		params: {
-			worktreePath,
-			workOrderName: 'lo-70-drain',
-			ticket: ticketOf(QueueWorker.Plan),
-			config,
-			driver,
-			driverName: 'claude-code',
-			settings,
-			trackerSettings: trackerSettingsFixture(),
-			relay,
-			coordinatorRunId: 'run-q',
-			coordinatorRunDir,
-			workOrderRunDir: join(coordinatorRunDir, 'work-orders', 'LO-70'),
 			env: { LINEAR_API_KEY: 'key-1' },
 		},
 	};
@@ -313,46 +245,6 @@ describe('runWorkerWithRelay', () => {
 		expect(mockBuildTicketPlans).toHaveBeenCalledWith(
 			expect.objectContaining({ cwd: worktreePath, workOrderName: 'lo-70-drain', record: ticketRecord, workOrderRunDir, allowTicketBodyBuild: true }),
 		);
-		expect(mockRestorePlanWorkspace).not.toHaveBeenCalled();
-	});
-
-	test('runWorkerWithRelay: a plan-worker ticket with no record keeps the single branch-named build', async () => {
-		const { relay, params, worktreePath } = setupPlanWorkerTicket({ pull: { record: undefined } });
-
-		const outcome = await runWorkerWithRelay(params);
-
-		relay.close();
-
-		expect(outcome).toStrictEqual({});
-		expect(mockRestorePlanWorkspace).toHaveBeenCalledWith(expect.objectContaining({ cwd: worktreePath, name: 'lo-70-drain' }));
-		expect(mockRunPlanFolderPipeline).toHaveBeenCalledWith(expect.objectContaining({ cwd: worktreePath, name: 'lo-70-drain' }));
-		expect(mockBuildTicketPlans).not.toHaveBeenCalled();
-	});
-
-	test('runWorkerWithRelay: a plan worker in a linked worktree finds the plan folder the primary checkout holds', async () => {
-		const { relay, params, worktreePath } = setupPlanWorkerInWorktree();
-
-		const outcome = await runWorkerWithRelay(params);
-
-		relay.close();
-
-		expect(outcome).toStrictEqual({});
-		expect(mockRunPlanFolderPipeline).toHaveBeenCalledWith(expect.objectContaining({ cwd: worktreePath, name: 'lo-70-drain' }));
-		expect(mockRestorePlanWorkspace).not.toHaveBeenCalled();
-	});
-
-	test('runWorkerWithRelay: a plan-worker ticket whose published plan cannot be fetched parks', async () => {
-		const { relay, params } = setupPlanWorkerTicket({ pull: { record: undefined } });
-
-		mockRestorePlanWorkspace.mockResolvedValue({ restored: [], error: 'LO-70 could not be read: the tracker returned 401' });
-
-		const outcome = await runWorkerWithRelay(params);
-
-		relay.close();
-
-		expect(outcome).toStrictEqual({ error: 'the plan published to LO-70 could not be fetched: LO-70 could not be read: the tracker returned 401' });
-		expect(mockRunPlanFolderPipeline).not.toHaveBeenCalled();
-		expect(mockBuildTicketPlans).not.toHaveBeenCalled();
 	});
 
 	test('runWorkerWithRelay: a plan worker whose record pull fails builds nothing', async () => {
@@ -364,8 +256,6 @@ describe('runWorkerWithRelay', () => {
 		relay.close();
 
 		expect(outcome).toStrictEqual({ error: divergence });
-		expect(mockRestorePlanWorkspace).not.toHaveBeenCalled();
 		expect(mockBuildTicketPlans).not.toHaveBeenCalled();
-		expect(mockRunPlanFolderPipeline).not.toHaveBeenCalled();
 	});
 });

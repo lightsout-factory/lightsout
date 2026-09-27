@@ -1,7 +1,7 @@
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
 
 interface Params {
-	/** A plan address, or the bare name of a plan shaped before its ticket exists. */
+	/** A plan address, or a work order's name for its plans folder as a whole. */
 	name: string;
 }
 

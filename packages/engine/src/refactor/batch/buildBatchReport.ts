@@ -18,8 +18,7 @@ interface Params {
  *
  * An empty advisory account is omitted rather than written as an empty list: a
  * batch that was shown no advice and one whose agent said nothing about it are
- * the same absence, and it is the same absence a manifest written before the
- * field existed carries.
+ * the same absence.
  */
 export const buildBatchReport = ({ outcome, remainingSiteKeys, rationale, advisoryOutcomes }: Params): BatchReport => {
 	return { outcome, remainingSiteKeys, rationale, ...(advisoryOutcomes.length > 0 ? { advisoryOutcomes } : {}) };

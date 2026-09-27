@@ -103,14 +103,14 @@ describe('StructuralFinding', () => {
 		}
 	});
 
-	test('severity defaults to blocking, so a grade.json written before the field existed still reads as gating', () => {
+	test('rejects a finding with no severity', () => {
 		const { finding } = setupFinding({ severity: undefined });
 
-		const parsed = StructuralFinding.parse(finding);
+		const result = StructuralFinding.safeParse(finding);
 
-		// the default is for the read boundary, not for producers: every one of
-		// them builds the field explicitly
-		expect(parsed.severity).toBe('blocking');
+		// every producer states which of the two it is reporting, so a finding
+		// without one is malformed rather than silently blocking
+		expect(result.success).toBe(false);
 	});
 
 	test('severity accepts both levels and nothing else', () => {

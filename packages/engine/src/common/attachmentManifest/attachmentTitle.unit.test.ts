@@ -4,11 +4,11 @@ import { attachmentTitle } from '#src/common/attachmentManifest/attachmentTitle.
 const setupPlanFile = () => ({ prefix: '002-fix', name: 'plan.md' });
 
 describe('attachmentTitle', () => {
-	test('attachmentTitle: joins the prefix and the file name with a double hyphen, and answers the bare name with no prefix', () => {
+	test('attachmentTitle: joins the prefix and the file name with a double hyphen', () => {
 		const { prefix, name } = setupPlanFile();
 
-		const titles = [attachmentTitle({ prefix, name }), attachmentTitle({ name })];
+		const title = attachmentTitle({ prefix, name });
 
-		expect(titles).toStrictEqual(['002-fix--plan.md', 'plan.md']);
+		expect(title).toBe('002-fix--plan.md');
 	});
 });

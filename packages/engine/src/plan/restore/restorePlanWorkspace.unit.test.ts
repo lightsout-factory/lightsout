@@ -25,7 +25,10 @@ jest.mock('#src/ticketTracker/readTicketAsset.ts', () => ({ readTicketAsset: (pa
 // -------------------------
 
 const settings = trackerSettingsFixture();
-const name = 'lo-54-portable-plan';
+const workOrderName = 'lo-54-portable-plan';
+/** The plan id the default cases restore, and so the prefix on every title their ticket carries. */
+const planId = '001-plan';
+const name = `${workOrderName}/${planId}`;
 
 const overviewBody = ({ phases }: { phases: string[] }) =>
 	`# Feature — Overview\n\n## Phases\n\n| # | File | Scope |\n|---|------|-------|\n${phases.map((phase, index) => `| ${index + 1} | \`${phase}\` | scope |`).join('\n')}\n`;
@@ -66,7 +69,10 @@ const setup = ({ attachments, bodies = {}, unreadable = {}, manifestFiles, manif
 	const titles = [...attachments, ...Array.from({ length: copies }, () => planAttachmentManifestName)];
 	const assetBodies = titles.map((title) => (title === planAttachmentManifestName ? marker : bodyOf(title)));
 
-	mockGetTicketAttachments.mockResolvedValue(titles.map((title, index) => ({ id: `att-${index}`, title, url: `https://assets.example/${index}` })));
+	// Bodies are keyed by the bare file name; the ticket carries each under this plan's id.
+	mockGetTicketAttachments.mockResolvedValue(
+		titles.map((title, index) => ({ id: `att-${index}`, title: `${planId}--${title}`, url: `https://assets.example/${index}` })),
+	);
 	mockReadTicketAsset.mockImplementation(async ({ url }) => {
 		const index = Number(url.split('/').at(-1));
 		const title = titles[index] ?? '';
@@ -78,7 +84,12 @@ const setup = ({ attachments, bodies = {}, unreadable = {}, manifestFiles, manif
 	return { cwd, dir: planWorkspaceFolder({ cwd: cwd, name: name }) };
 };
 
-const restore = ({ cwd }: { cwd: string }) => restorePlanWorkspace({ cwd, name, identifier: 'lo-54', settings });
+/** A restore of the default plan, without the marker's hash — the prefixed cases below assert that hash on their own. */
+const restore = async ({ cwd }: { cwd: string }) => {
+	const { markerSha256: _markerSha256, ...outcome } = await restorePlanWorkspace({ cwd, name, identifier: 'lo-54', settings, titlePrefix: planId });
+
+	return outcome;
+};
 
 /** What the plan folder holds, or undefined when it was never created. */
 const folderOf = ({ dir }: { dir: string }) => {
@@ -89,9 +100,9 @@ const folderOf = ({ dir }: { dir: string }) => {
 	}
 };
 
-/** One plan generation's attachments — every title under a plan id prefix, or bare — plus the marker text it commits. */
-const generationOf = ({ prefix, files }: { prefix?: string; files: string[] }) => {
-	const titleOf = (bare: string) => (prefix === undefined ? bare : `${prefix}--${bare}`);
+/** One plan generation's attachments — every title under its plan id prefix — plus the marker text it commits. */
+const generationOf = ({ prefix, files }: { prefix: string; files: string[] }) => {
+	const titleOf = (bare: string) => `${prefix}--${bare}`;
 	const bodyOf = (bare: string) => `body of ${titleOf(bare)}\n`;
 	const marker = serializeAttachmentManifest({ files: files.map((file) => ({ name: file, content: Buffer.from(bodyOf(file), 'utf8') })) }).toString('utf8');
 	const assets = [...files.map((file) => ({ title: titleOf(file), body: bodyOf(file) })), { title: titleOf(planAttachmentManifestName), body: marker }];
@@ -110,17 +121,17 @@ const setupTitled = ({ assets, planName }: { assets: { title: string; body: stri
 };
 
 const restorePrefixed = ({ cwd, prefix }: { cwd: string; prefix: string }) =>
-	restorePlanWorkspace({ cwd, name: `${name}/${prefix}`, identifier: 'lo-54', settings, titlePrefix: prefix });
+	restorePlanWorkspace({ cwd, name: `${workOrderName}/${prefix}`, identifier: 'lo-54', settings, titlePrefix: prefix });
 
 describe('restorePlanWorkspace', () => {
 	test('writes only the manifest-listed durable generation, leaving transport metadata, stale files and run state on the ticket', async () => {
 		const { cwd, dir } = setup({
-			attachments: ['plan.md', 'brainstorm-notes.md', 'grade.json', 'overview.md', 'phase1-old.md', 'facts.json', 'draft-stream.jsonl'],
-			manifestFiles: ['plan.md', 'brainstorm-notes.md', 'grade.json'],
+			attachments: ['plan.md', 'decisions.json', 'grade.json', 'overview.md', 'phase1-old.md', 'facts.json', 'draft-stream.jsonl'],
+			manifestFiles: ['plan.md', 'decisions.json', 'grade.json'],
 		});
 
-		expect(await restore({ cwd })).toStrictEqual({ restored: ['brainstorm-notes.md', 'grade.json', 'plan.md'] });
-		expect(folderOf({ dir })).toStrictEqual(['brainstorm-notes.md', 'grade.json', 'plan.md']);
+		expect(await restore({ cwd })).toStrictEqual({ restored: ['decisions.json', 'grade.json', 'plan.md'] });
+		expect(folderOf({ dir })).toStrictEqual(['decisions.json', 'grade.json', 'plan.md']);
 		expect(readFileSync(join(dir, 'plan.md'), 'utf8')).toBe('body of plan.md\n');
 	});
 
@@ -131,7 +142,7 @@ describe('restorePlanWorkspace', () => {
 
 		expect(await restore({ cwd })).toStrictEqual({ restored: ['plan.md'] });
 		expect(folderOf({ dir })).toStrictEqual(['plan.md']);
-		expect(readdirSync(join(cwd, '.lightsout', 'work-orders'))).toStrictEqual([name]);
+		expect(readdirSync(join(cwd, '.lightsout', 'work-orders'))).toStrictEqual([workOrderName]);
 	});
 
 	test('restores overview.md and the exact phase files declared in its Phases table', async () => {
@@ -182,15 +193,15 @@ describe('restorePlanWorkspace', () => {
 
 		expect(await restore({ cwd })).toStrictEqual({
 			restored: [],
-			error: `plan.md does not match the SHA-256 committed by ${planAttachmentManifestName} — publish the plan again`,
+			error: `plan.md does not match the SHA-256 committed by ${planId}--${planAttachmentManifestName} — publish the plan again`,
 		});
 		expect(folderOf({ dir })).toBeUndefined();
 	});
 
 	test('a disk refusal exposes no partial restored folder and returns the filesystem reason', async () => {
-		const { cwd, dir } = setup({ attachments: ['plan.md', 'brainstorm-notes.md'] });
+		const { cwd, dir } = setup({ attachments: ['plan.md', 'decisions.json'] });
 
-		mkdirSync(join(cwd, '.lightsout', 'work-orders', name), { recursive: true });
+		mkdirSync(join(cwd, '.lightsout', 'work-orders', workOrderName, 'plans'), { recursive: true });
 		writeFileSync(dir, 'occupied by a file');
 
 		const restored = await restore({ cwd });
@@ -198,7 +209,7 @@ describe('restorePlanWorkspace', () => {
 		expect(restored.restored).toStrictEqual([]);
 		expect(restored.error).toEqual(expect.stringContaining('the restored plan could not be written:'));
 		expect(readFileSync(dir, 'utf8')).toBe('occupied by a file');
-		expect(readdirSync(join(cwd, '.lightsout', 'work-orders'))).toStrictEqual([name]);
+		expect(readdirSync(join(cwd, '.lightsout', 'work-orders'))).toStrictEqual([workOrderName]);
 	});
 
 	test('creates no folder when the ticket carries no plan attachment', async () => {
@@ -213,7 +224,7 @@ describe('restorePlanWorkspace', () => {
 
 		expect(await restore({ cwd })).toStrictEqual({
 			restored: [],
-			error: `the ticket carries durable plan attachments but no ${planAttachmentManifestName} commit marker — publish the plan again before implementing it`,
+			error: `the ticket carries durable plan attachments but no ${planId}--${planAttachmentManifestName} commit marker — publish the plan again before implementing it`,
 		});
 		expect(folderOf({ dir })).toBeUndefined();
 		expect(mockReadTicketAsset).not.toHaveBeenCalled();
@@ -224,7 +235,7 @@ describe('restorePlanWorkspace', () => {
 
 		expect(await restore({ cwd })).toStrictEqual({
 			restored: [],
-			error: `the ticket carries more than one ${planAttachmentManifestName} attachment, so no single committed plan generation can be selected`,
+			error: `the ticket carries more than one ${planId}--${planAttachmentManifestName} attachment, so no single committed plan generation can be selected`,
 		});
 		expect(folderOf({ dir })).toBeUndefined();
 		expect(mockReadTicketAsset).not.toHaveBeenCalled();
@@ -236,7 +247,7 @@ describe('restorePlanWorkspace', () => {
 		const result = await restore({ cwd });
 
 		expect(result.restored).toStrictEqual([]);
-		expect(result.error).toMatch(/^plan-attachments\.json is not valid JSON:/);
+		expect(result.error).toMatch(/^001-plan--plan-attachments\.json is not valid JSON:/);
 		expect(folderOf({ dir })).toBeUndefined();
 		expect(mockReadTicketAsset).toHaveBeenCalledTimes(1);
 	});
@@ -246,7 +257,7 @@ describe('restorePlanWorkspace', () => {
 
 		expect(await restore({ cwd })).toStrictEqual({
 			restored: [],
-			error: `the ticket carries more than one attachment named plan.md, so ${planAttachmentManifestName} cannot select one generation`,
+			error: `the ticket carries more than one attachment named plan.md, so ${planId}--${planAttachmentManifestName} cannot select one generation`,
 		});
 		expect(folderOf({ dir })).toBeUndefined();
 	});
@@ -262,12 +273,11 @@ describe('restorePlanWorkspace', () => {
 	});
 
 	test('refuses records with no deliverable and creates no folder', async () => {
-		const { cwd, dir } = setup({ attachments: ['brainstorm-notes.md', 'grade.json'] });
+		const { cwd, dir } = setup({ attachments: ['decisions.json', 'grade.json'] });
 
 		expect(await restore({ cwd })).toStrictEqual({
 			restored: [],
-			error:
-				'the plan generation (brainstorm-notes.md, grade.json) is not runnable — expected plan.md on its own, or overview.md with at least one phase<N> file',
+			error: 'the plan generation (decisions.json, grade.json) is not runnable — expected plan.md on its own, or overview.md with at least one phase<N> file',
 		});
 		expect(folderOf({ dir })).toBeUndefined();
 	});
@@ -279,14 +289,14 @@ describe('restorePlanWorkspace', () => {
 		expect(folderOf({ dir })).toBeUndefined();
 	});
 
-	test('restorePlanWorkspace: ignores brainstorm-attachments.json and brainstorm-decisions.json on the same ticket', async () => {
+	test('restorePlanWorkspace: ignores the brainstorm generation on the same ticket', async () => {
 		const { cwd, dir } = setup({
 			attachments: ['plan.md', 'brainstorm-notes.md', 'brainstorm-decisions.json', 'brainstorm-attachments.json'],
-			manifestFiles: ['plan.md', 'brainstorm-notes.md'],
+			manifestFiles: ['plan.md'],
 		});
 
-		expect(await restore({ cwd })).toStrictEqual({ restored: ['brainstorm-notes.md', 'plan.md'] });
-		expect(folderOf({ dir })).toStrictEqual(['brainstorm-notes.md', 'plan.md']);
+		expect(await restore({ cwd })).toStrictEqual({ restored: ['plan.md'] });
+		expect(folderOf({ dir })).toStrictEqual(['plan.md']);
 	});
 
 	test('restorePlanWorkspace: answers with no plan and no error when the ticket carries only brainstorm-notes.md and brainstorm-attachments.json', async () => {
@@ -302,17 +312,9 @@ describe('restorePlanWorkspace', () => {
 
 		expect(await restore({ cwd })).toStrictEqual({
 			restored: [],
-			error: `the ticket carries durable plan attachments but no ${planAttachmentManifestName} commit marker — publish the plan again before implementing it`,
+			error: `the ticket carries durable plan attachments but no ${planId}--${planAttachmentManifestName} commit marker — publish the plan again before implementing it`,
 		});
 		expect(folderOf({ dir })).toBeUndefined();
-	});
-
-	test("restorePlanWorkspace: restores brainstorm-notes.md when the plan's own marker commits it", async () => {
-		const { cwd, dir } = setup({ attachments: ['plan.md', 'brainstorm-notes.md'] });
-
-		expect(await restore({ cwd })).toStrictEqual({ restored: ['brainstorm-notes.md', 'plan.md'] });
-		expect(folderOf({ dir })).toStrictEqual(['brainstorm-notes.md', 'plan.md']);
-		expect(readFileSync(join(dir, 'brainstorm-notes.md'), 'utf8')).toBe('body of brainstorm-notes.md\n');
 	});
 
 	test('restorePlanWorkspace: restores a generation whose marker was written before the helpers moved', async () => {
@@ -332,10 +334,10 @@ describe('restorePlanWorkspace', () => {
 		expect(readFileSync(join(dir, 'plan.md'), 'utf8')).toBe('body of plan.md\n');
 	});
 
-	test("restorePlanWorkspace: with a title prefix, restores only that plan's generation under bare names and reports its marker's SHA-256", async () => {
+	test("restorePlanWorkspace: restores only that plan's generation under bare names and reports its marker's SHA-256", async () => {
 		const fix = generationOf({ prefix: '002-fix', files: ['plan.md', 'decisions.json'] });
-		const others = [...generationOf({ prefix: '001-a', files: ['plan.md', 'grade.json'] }).assets, ...generationOf({ files: ['plan.md'] }).assets];
-		const { cwd, dir } = setupTitled({ planName: `${name}/002-fix`, assets: [...others, ...fix.assets] });
+		const others = generationOf({ prefix: '001-a', files: ['plan.md', 'grade.json'] }).assets;
+		const { cwd, dir } = setupTitled({ planName: `${workOrderName}/002-fix`, assets: [...others, ...fix.assets] });
 
 		const restored = await restorePrefixed({ cwd, prefix: '002-fix' });
 
@@ -344,9 +346,9 @@ describe('restorePlanWorkspace', () => {
 		expect(readFileSync(join(dir, 'plan.md'), 'utf8')).toBe('body of 002-fix--plan.md\n');
 	});
 
-	test("restorePlanWorkspace: with a title prefix, answers no plan and creates no folder when only another plan's generation is on the ticket", async () => {
+	test("restorePlanWorkspace: answers no plan and creates no folder when only another plan's generation is on the ticket", async () => {
 		const { assets } = generationOf({ prefix: '001-a', files: ['plan.md', 'decisions.json'] });
-		const { cwd, dir } = setupTitled({ planName: `${name}/002-fix`, assets });
+		const { cwd, dir } = setupTitled({ planName: `${workOrderName}/002-fix`, assets });
 
 		const restored = await restorePrefixed({ cwd, prefix: '002-fix' });
 
@@ -354,9 +356,9 @@ describe('restorePlanWorkspace', () => {
 		expect(folderOf({ dir })).toBeUndefined();
 	});
 
-	test('restorePlanWorkspace: with a title prefix, refuses a marker that lists brainstorm-notes.md', async () => {
+	test('restorePlanWorkspace: refuses a marker that lists brainstorm-notes.md', async () => {
 		const { assets } = generationOf({ prefix: '002-fix', files: ['plan.md', 'brainstorm-notes.md'] });
-		const { cwd, dir } = setupTitled({ planName: `${name}/002-fix`, assets });
+		const { cwd, dir } = setupTitled({ planName: `${workOrderName}/002-fix`, assets });
 
 		const restored = await restorePrefixed({ cwd, prefix: '002-fix' });
 
@@ -365,28 +367,16 @@ describe('restorePlanWorkspace', () => {
 		expect(folderOf({ dir })).toBeUndefined();
 	});
 
-	test('restorePlanWorkspace: with a title prefix, answers no plan when the prefix carries only the brainstorm generation', async () => {
+	test('restorePlanWorkspace: answers no plan when the prefix carries only the brainstorm generation', async () => {
 		const assets = [
 			{ title: '002-fix--brainstorm-notes.md', body: 'notes\n' },
 			{ title: '002-fix--brainstorm-attachments.json', body: 'marker\n' },
 		];
-		const { cwd, dir } = setupTitled({ planName: `${name}/002-fix`, assets });
+		const { cwd, dir } = setupTitled({ planName: `${workOrderName}/002-fix`, assets });
 
 		const restored = await restorePrefixed({ cwd, prefix: '002-fix' });
 
 		expect(restored).toStrictEqual({ restored: [] });
 		expect(folderOf({ dir })).toBeUndefined();
-	});
-
-	test('restorePlanWorkspace: without a title prefix, ignores every prefixed title and state.json', async () => {
-		const prefixed = ['001-a', '002-fix'].flatMap((prefix) => generationOf({ prefix, files: ['plan.md', 'decisions.json'] }).assets);
-		const bare = generationOf({ files: ['plan.md', 'grade.json'] }).assets;
-		const { cwd, dir } = setupTitled({ planName: name, assets: [...prefixed, { title: 'state.json', body: '{}\n' }, ...bare] });
-
-		const restored = await restore({ cwd });
-
-		expect(restored).toStrictEqual({ restored: ['grade.json', 'plan.md'] });
-		expect(folderOf({ dir })).toStrictEqual(['grade.json', 'plan.md']);
-		expect(readFileSync(join(dir, 'plan.md'), 'utf8')).toBe('body of plan.md\n');
 	});
 });

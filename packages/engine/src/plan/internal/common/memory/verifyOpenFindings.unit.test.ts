@@ -30,16 +30,15 @@ describe('verifyOpenFindings', () => {
 
 		// a cited already-answered is the one answer that closes a record, and the
 		// closure records where the plan states the answer and when it was checked —
-		// one entry per location, and never again in the legacy single field
+		// one entry per location
 		expect(recordIn({ memory: result.memory, id: 'f1' })).toEqual(
 			expect.objectContaining({
 				status: GradeFindingStatus.Resolved,
-				resolution: undefined,
 				resolutions: [{ phase: 'phase-1-reader.md', answerAt: firstPhaseLine, verifiedAt: '2026-02-02T00:00:00.000Z' }],
 			}),
 		);
 		// a judge restating the outstanding decision closes nothing
-		expect(recordIn({ memory: result.memory, id: 'f2' })).toEqual(expect.objectContaining({ status: GradeFindingStatus.Open, resolution: undefined }));
+		expect(recordIn({ memory: result.memory, id: 'f2' })).toEqual(expect.objectContaining({ status: GradeFindingStatus.Open, resolutions: [] }));
 	});
 
 	test('a citation the plan text does not contain leaves the record open and says so', async () => {
@@ -59,8 +58,8 @@ describe('verifyOpenFindings', () => {
 		// may turn an unresolved blocker into a closed record
 		expect(recordIn({ memory: result.memory, id: 'f1' })?.status).toBe(GradeFindingStatus.Open);
 		expect(recordIn({ memory: result.memory, id: 'f2' })?.status).toBe(GradeFindingStatus.Open);
-		expect(recordIn({ memory: result.memory, id: 'f1' })?.resolution).toBe(undefined);
-		expect(recordIn({ memory: result.memory, id: 'f2' })?.resolution).toBe(undefined);
+		expect(recordIn({ memory: result.memory, id: 'f1' })?.resolutions).toStrictEqual([]);
+		expect(recordIn({ memory: result.memory, id: 'f2' })?.resolutions).toStrictEqual([]);
 		// and the refusal names the citation it refused, so the terminal can say why
 		expect(result.refusals.get('f1')).toEqual(expect.stringContaining(invented));
 		expect(result.refusals.get('f2')).toEqual(expect.stringContaining('Decision Log'));

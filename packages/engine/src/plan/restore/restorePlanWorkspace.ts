@@ -4,7 +4,6 @@ import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachment
 import type { AttachmentManifest } from '#src/common/types/AttachmentManifest.ts';
 import { sha256 } from '#src/common/utils/sha256.ts';
 import { planAttachmentManifestName } from '#src/plan/common/constants/planAttachmentManifestName.ts';
-import { isDurablePlanAttachmentName } from '#src/plan/common/utils/isDurablePlanAttachmentName.ts';
 import { isPlanOnlyAttachmentName } from '#src/plan/internal/common/utils/isPlanOnlyAttachmentName.ts';
 import { validatePlanAttachmentGeneration } from '#src/plan/internal/common/validatePlanAttachmentGeneration.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
@@ -22,8 +21,8 @@ interface Params {
 	/** The ticket reference that folder's name carries, e.g. 'lo-54'. */
 	identifier: string;
 	settings: TrackerSettings;
-	/** The plan id the ticket's titles for this plan are namespaced under; absent for a legacy folder. */
-	titlePrefix?: string;
+	/** The plan id the ticket's titles for this plan are namespaced under. */
+	titlePrefix: string;
 }
 
 interface RestoredPlanWorkspace {
@@ -163,19 +162,11 @@ export const restorePlanWorkspace = async ({ cwd, name, identifier, settings, ti
 	// read before any of them runs.
 	const attachments = scopeAttachments({ attachments: listed, prefix: titlePrefix });
 	const markerName = attachmentTitle({ prefix: titlePrefix, name: planAttachmentManifestName });
-	// Under a prefix the brainstorm generation owns `brainstorm-notes.md`, so a
-	// plan generation may neither carry it nor commit it; a legacy marker still
-	// may, which is why the selectable set stays the wider one there.
-	const isSelectableName = titlePrefix === undefined ? isDurablePlanAttachmentName : isPlanOnlyAttachmentName;
-	const durableAttachments = attachments.filter(({ title }) => isSelectableName({ name: title }));
-	// Two different questions, deliberately asked with two predicates. Which
-	// attachments this generation may select stays the durable set, so a plan
-	// marker listing `brainstorm-notes.md` still restores it. Whether a plan was
-	// published at all excludes that shared title, because `brainstorm publish`
-	// sends it too — a ticket carrying only a brainstorm is a ticket with no
-	// plan, not an interrupted plan upload.
-	const planOnlyAttachments = attachments.filter(({ title }) => isPlanOnlyAttachmentName({ name: title }));
-	const selected = selectManifestAttachment({ attachments, planOnlyAttachments, markerName });
+	// The brainstorm generation owns `brainstorm-notes.md`, so a plan generation
+	// may neither carry it nor commit it — and a ticket carrying only a
+	// brainstorm is a ticket with no plan, not an interrupted plan upload.
+	const planAttachments = attachments.filter(({ title }) => isPlanOnlyAttachmentName({ name: title }));
+	const selected = selectManifestAttachment({ attachments, planOnlyAttachments: planAttachments, markerName });
 
 	if ('error' in selected) {
 		return { restored: [], error: selected.error };
@@ -191,13 +182,13 @@ export const restorePlanWorkspace = async ({ cwd, name, identifier, settings, ti
 		return { restored: [], error: manifestRead.error };
 	}
 
-	const parsed = parseAttachmentManifest({ text: manifestRead.text, markerName, isAllowedName: isSelectableName });
+	const parsed = parseAttachmentManifest({ text: manifestRead.text, markerName, isAllowedName: isPlanOnlyAttachmentName });
 
 	if ('error' in parsed) {
 		return { restored: [], error: parsed.error };
 	}
 
-	const generation = selectGeneration({ manifest: parsed.manifest, durableAttachments, markerName });
+	const generation = selectGeneration({ manifest: parsed.manifest, durableAttachments: planAttachments, markerName });
 
 	if ('error' in generation) {
 		return { restored: [], error: generation.error };
@@ -223,5 +214,5 @@ export const restorePlanWorkspace = async ({ cwd, name, identifier, settings, ti
 
 	const restored = read.files.map(({ title }) => title).sort();
 
-	return titlePrefix === undefined ? { restored } : { restored, markerSha256: sha256({ content: manifestRead.text }) };
+	return { restored, markerSha256: sha256({ content: manifestRead.text }) };
 };

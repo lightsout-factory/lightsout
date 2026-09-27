@@ -10,7 +10,6 @@ import { PlanFixReport } from '#src/contracts/plan/draft/PlanFixReport.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { getAgentOutcomeStatus } from '#src/invoke/getAgentOutcomeStatus.ts';
-import { syncPlanDecisions } from '#src/plan/decisionLog/syncPlanDecisions.ts';
 import { convergeFindings } from '#src/plan/draft/internal/common/utils/convergeFindings.ts';
 import { repairMechanicalFindings } from '#src/plan/draft/repairMechanicalFindings.ts';
 import type { PlanRepairResult } from '#src/plan/internal/common/types/PlanRepairResult.ts';
@@ -38,9 +37,7 @@ interface Params {
 	/** The command-run level each repair attempt opens its own pass level under. Absent wherever no run is being recorded. */
 	level?: ActivityLevel;
 	progress: (message: string) => void;
-	/** True when the caller wants each round to regenerate every engine-owned section — the Decision Log, the Global Constraints, the stamped phase counts and the phase sections — before it lints. Unset leaves the round syncing only the Decision Log, which is what the legacy draft flow gets. */
-	mechanicalRepair?: boolean;
-	/** Absolute path of the overview when the deliverable is phased. Read only when `mechanicalRepair` is set. */
+	/** Absolute path of the overview when the deliverable is phased. */
 	overviewPath?: string;
 }
 
@@ -84,29 +81,22 @@ const runRepairAttempt = async ({ params, findings, attempt }: { params: Params;
  * offers is unreachable here: a plan file the repairer deleted or broke comes
  * back as a finding rather than as no answer at all.
  *
- * Every round composes the two sections the decision record owns — the Decision
- * Log and the Global Constraints — before it lints them. Both are the engine's,
- * and the repairer is told not to touch either, so a round that displaced or
- * damaged one is corrected here rather than handed back to the repairer as a
- * finding it has been forbidden to fix.
- *
- * A caller asking for `mechanicalRepair` gets the whole deterministic pass in
- * place of that bare sync: every engine-owned section is regenerated first, so a
- * defect the engine can settle from a record is never reported and never reaches
- * a spawn. It is opt-in rather than default-on because both draft flows share
- * this loop, and the legacy one must keep its current repair behaviour.
+ * Every round regenerates every engine-owned section — the Decision Log, the
+ * Global Constraints, the stamped phase counts and the phase sections — before
+ * it lints. The repairer is told not to touch any of them, so a round that
+ * displaced or damaged one is corrected here rather than handed back to the
+ * repairer as a finding it has been forbidden to fix, and a defect the engine
+ * can settle from a record never reaches a spawn.
  */
 export const repairPlanStructure = async (params: Params): Promise<PlanRepairResult> => {
-	const { cwd, name, planPaths, decisions, config, progress, mechanicalRepair, overviewPath } = params;
+	const { cwd, name, planPaths, decisions, config, progress, overviewPath } = params;
 
 	return convergeFindings({
 		name,
 		verb: 'repair',
 		findingNoun: 'structural finding(s)',
 		check: async () => {
-			await (mechanicalRepair === true
-				? repairMechanicalFindings({ cwd, name, planPaths, decisions, overviewPath })
-				: syncPlanDecisions({ cwd, name, planPaths, decisions }));
+			await repairMechanicalFindings({ cwd, name, planPaths, decisions, overviewPath });
 
 			return lintPlanStructure({ cwd, planPaths, decisions, config });
 		},

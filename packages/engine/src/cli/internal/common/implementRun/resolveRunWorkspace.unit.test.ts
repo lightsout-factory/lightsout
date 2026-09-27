@@ -72,7 +72,7 @@ jest.mock('#src/runState/lock/readLiveRunLock.ts', () => ({ readLiveRunLock: (pa
 
 const sourceCwd = resolve('/tmp/lightsout-launching-checkout');
 const branch = 'lo-9-isolated-run';
-const planPath = join('.lightsout', 'work-orders', branch, 'plans');
+const planPath = join('.lightsout', 'work-orders', branch, 'plans', '001-isolated-run', 'plan.md');
 const worktreePath = resolve('/tmp/lightsout-launching-checkout-worktrees', branch);
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 const pinnedCommit = '3f5c1a9e8b7d6c5b4a39281706f5e4d3c2b1a098';
@@ -104,6 +104,8 @@ const setupWorkspace = ({ worktree, setup, flags = [], answers = {} }: { worktre
 	// on, so a row that expects a branch at all has to hold one.
 	seedWorkOrderRecord({ cwd: sourceCwd, name: branch });
 
+	mockPrepareTicketBranch.mockResolvedValue({});
+	mockReadLiveRunLock.mockResolvedValue(undefined);
 	mockFetchDefaultBranch.mockResolvedValue(fetched);
 	mockReadBranchWorktree.mockResolvedValue(holder);
 	mockResolveWorktreePath.mockResolvedValue(worktreePath);
@@ -323,17 +325,6 @@ describe('resolveRunWorkspace', () => {
 		expect(workspace).toEqual({ error: expect.stringContaining('--no-worktree') });
 		expect(mockWriteWorktreeRecord).not.toHaveBeenCalled();
 		expect(mockCreateWorktree).not.toHaveBeenCalled();
-	});
-
-	test('a legacy plan never adopts a tree an implementation run already owns', async () => {
-		const { config, flags } = setupWorkspace({ answers: { holder: worktreePath, record: recordOwnedBy({ owner: 'implement', startPoint: pinnedCommit }) } });
-
-		const workspace = await resolveRunWorkspace({ cwd: sourceCwd, config, flags, planPath });
-
-		expect(workspace).toEqual({ error: expect.stringContaining(worktreePath) });
-		expect(workspace).toEqual({ error: expect.stringContaining('--no-worktree') });
-		expect(mockWriteWorktreeRecord).not.toHaveBeenCalled();
-		expect(mockReadLiveRunLock).not.toHaveBeenCalled();
 	});
 
 	test('builds a later plan on the pushed ticket branch when only the remote holds it', async () => {

@@ -5,7 +5,7 @@ import type { PlanActivityReport } from '#src/views/common/types/PlanActivityRep
 
 interface Params {
 	cwd: string;
-	/** Plan names already resolved — a plan address, or a legacy plan folder's name. */
+	/** Plan addresses already resolved. */
 	names: string[];
 }
 

@@ -17,13 +17,9 @@ interface Params {
 
 /**
  * The names one ticket folder contributes: the address of every plan subfolder
- * its plans folder holds, or the ticket's own name when that folder is there
- * and holds none — which is the brainstorm shaped before a plan id existed.
- *
- * A ticket folder with no plans folder at all contributes nothing. Every branch
- * gets a folder for its ship and worktree records, so absent and empty are
- * different answers: absent means no plan was ever shaped here, and a row for
- * it would put a phantom plan named for the branch on the list.
+ * its plans folder holds. A ticket folder with no plans folder at all
+ * contributes nothing, since every branch gets a folder for its ship and
+ * worktree records whether or not a plan was ever shaped there.
  */
 const namesOf = async ({ cwd, folder }: { cwd: string; folder: string }) => {
 	const children = await readdir(await planWorkspaceDir({ cwd, name: folder }), { withFileTypes: true }).catch(() => undefined);
@@ -37,7 +33,7 @@ const namesOf = async ({ cwd, folder }: { cwd: string; folder: string }) => {
 		.map((child) => formatPlanAddress({ workOrderName: folder, planId: child.name }))
 		.filter((address) => parsePlanAddress({ name: address }) !== undefined);
 
-	return addresses.length === 0 ? [folder] : addresses;
+	return addresses;
 };
 
 /**

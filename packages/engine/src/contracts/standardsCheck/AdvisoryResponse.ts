@@ -16,8 +16,7 @@
  *    the fix."
  *
  * It reads as advice taken, which inflates exactly the number the health report
- * exists to measure. Older reports carry only the first two values and still
- * parse.
+ * exists to measure.
  */
 export const AdvisoryResponse = {
 	Applied: 'applied',

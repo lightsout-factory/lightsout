@@ -38,9 +38,11 @@ interface Params {
  * prompt-level list the engine injects into the invocation, exactly as it
  * already is on codex.
  *
- * There is no focused-environment mapping here either — `getDriverCapabilities`
- * holds the record of which isolation controls each variant was verified to
- * have. Neither variant reaches for a wholesale minimal mode to fake a control
+ * There is no focused-environment mapping here either, so a focused request
+ * runs as an ordinary session. Both variants publish flags that could express
+ * part of it — omp 18.1.6 has `--no-skills` and `--tools`, pi 0.84.4 has
+ * `--tools` — but neither is wired yet, and neither publishes an MCP flag.
+ * Neither variant reaches for a wholesale minimal mode to fake a control
  * its published flags cannot express, for the same reason the `--config`
  * overlay is refused above: a blunt instrument that can quietly close what a
  * user's own settings allow is not one this engine may use.

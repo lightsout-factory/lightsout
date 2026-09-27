@@ -16,9 +16,9 @@ interface Params {
  * present in codex-cli 0.146.0.
  *
  * There is no focused-environment mapping here: `codex exec` publishes no
- * isolation flag this engine has verified, so no flag can be emitted for one.
- * `getDriverCapabilities` holds the record of which controls this harness was
- * verified to have, and is where a newly published flag gets declared.
+ * isolation flag this engine has verified, so a focused request runs as an
+ * ordinary session. The controls only save tokens, so the spawn is still
+ * correct without them.
  */
 export const buildCodexArgs = ({ outFile, model, effort, permissions }: Params): string[] => {
 	const args = ['exec', '--skip-git-repo-check', '--color', 'never', '--output-last-message', outFile];

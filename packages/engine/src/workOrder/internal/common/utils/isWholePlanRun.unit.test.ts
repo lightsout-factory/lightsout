@@ -47,12 +47,12 @@ const setupTwoPlans = () => {
 describe('isWholePlanRun', () => {
 	test('a whole-plan run recorded repo-relative is recognised from a linked worktree', async () => {
 		const { worktree } = setupLinkedWorktree();
-		const ask = (planPath: string) => isWholePlanRun({ cwd: worktree, name: 'lo-150', planPath });
+		const ask = (planPath: string) => isWholePlanRun({ cwd: worktree, name: 'lo-150/001-activity-record', planPath });
 
 		const answers = {
-			plan: await ask('.lightsout/work-orders/lo-150/plans/plan.md'),
-			overview: await ask('.lightsout/work-orders/lo-150/plans/overview.md'),
-			phase: await ask('.lightsout/work-orders/lo-150/plans/phase1-activity-record.md'),
+			plan: await ask('.lightsout/work-orders/lo-150/plans/001-activity-record/plan.md'),
+			overview: await ask('.lightsout/work-orders/lo-150/plans/001-activity-record/overview.md'),
+			phase: await ask('.lightsout/work-orders/lo-150/plans/001-activity-record/phase1-activity-record.md'),
 		};
 
 		expect(answers).toStrictEqual({ plan: true, overview: true, phase: false });

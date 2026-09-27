@@ -27,8 +27,8 @@ interface PublishParams {
 	config: LightsoutConfig;
 	env: NodeJS.ProcessEnv;
 	onProgress: (message: string) => void;
-	/** The plan id every attachment title is namespaced under; absent for a legacy folder. */
-	titlePrefix?: string;
+	/** The plan id every attachment title is namespaced under. */
+	titlePrefix: string;
 }
 
 const mockPublishBrainstorm = jest.fn<(params: PublishParams) => Promise<BrainstormPublishReport>>();

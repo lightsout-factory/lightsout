@@ -35,9 +35,8 @@ const recordOf = (overrides: Partial<GradeFindingRecord> = {}): GradeFindingReco
 	status: GradeFindingStatus.Resolved,
 	disposition: GapOutcome.NeedsAHuman,
 	humanDecision: 'pick the failure mode',
-	resolution: { answerAt: survivingLine, verifiedAt: resolvedAt },
+	resolutions: [{ phase: 'phase-1-reader.md', answerAt: survivingLine, verifiedAt: resolvedAt }],
 	observations: [],
-	resolutions: [],
 	reopened: [],
 	...overrides,
 });
@@ -103,7 +102,7 @@ const recordIn = ({ memory, id }: { memory: GradeMemory; id: string }): GradeFin
 describe('revalidateResolutions', () => {
 	test('a resolved record reopens when its citation leaves the plan', async () => {
 		const { params } = await setupRevalidation({
-			findings: [recordOf({ resolution: { answerAt: deletedLine, verifiedAt: resolvedAt } })],
+			findings: [recordOf({ resolutions: [{ phase: 'phase-1-reader.md', answerAt: deletedLine, verifiedAt: resolvedAt }] })],
 		});
 
 		const result = await revalidateResolutions(params);
@@ -115,7 +114,7 @@ describe('revalidateResolutions', () => {
 			expect.objectContaining({
 				status: GradeFindingStatus.Open,
 				disposition: GapOutcome.NeedsAHuman,
-				resolution: undefined,
+				resolutions: [],
 				lastSeen: passAt,
 				reopened: [
 					expect.objectContaining({
@@ -133,7 +132,7 @@ describe('revalidateResolutions', () => {
 	test('a record reopened again keeps every earlier reopen entry ahead of the new one', async () => {
 		const earlier = { at: resolvedAt, reason: 'an earlier judge ruled the question open again', priorStatus: GradeFindingStatus.Noted };
 		const { params } = await setupRevalidation({
-			findings: [recordOf({ reopened: [earlier], resolution: { answerAt: deletedLine, verifiedAt: resolvedAt } })],
+			findings: [recordOf({ reopened: [earlier], resolutions: [{ phase: 'phase-1-reader.md', answerAt: deletedLine, verifiedAt: resolvedAt }] })],
 		});
 
 		const result = await revalidateResolutions(params);
@@ -150,7 +149,7 @@ describe('revalidateResolutions', () => {
 		const { params } = await setupRevalidation({
 			findings: [
 				recordOf(),
-				recordOf({ id: 'f2', resolution: { answerAt: 'src/answer.ts', verifiedAt: resolvedAt } }),
+				recordOf({ id: 'f2', resolutions: [{ phase: 'phase-1-reader.md', answerAt: 'src/answer.ts', verifiedAt: resolvedAt }] }),
 				// closed on creation by a judge, never carrying a verified citation —
 				// so a citation the plan no longer holds says nothing about it
 				recordOf({
@@ -159,9 +158,9 @@ describe('revalidateResolutions', () => {
 					disposition: GapOutcome.AlreadyAnswered,
 					humanDecision: undefined,
 					answerAt: deletedLine,
-					resolution: undefined,
+					resolutions: [],
 				}),
-				recordOf({ id: 'f4', status: GradeFindingStatus.Open, resolution: undefined }),
+				recordOf({ id: 'f4', status: GradeFindingStatus.Open, resolutions: [] }),
 			],
 			onDisk: ['src/answer.ts'],
 		});
@@ -173,7 +172,7 @@ describe('revalidateResolutions', () => {
 		expect(recordIn({ memory: result.memory, id: 'f1' })).toEqual(
 			expect.objectContaining({
 				status: GradeFindingStatus.Resolved,
-				resolution: { answerAt: survivingLine, verifiedAt: resolvedAt },
+				resolutions: [{ phase: 'phase-1-reader.md', answerAt: survivingLine, verifiedAt: resolvedAt }],
 				lastSeen: resolvedAt,
 				reopened: [],
 			}),
@@ -181,7 +180,7 @@ describe('revalidateResolutions', () => {
 		expect(recordIn({ memory: result.memory, id: 'f2' })).toEqual(
 			expect.objectContaining({
 				status: GradeFindingStatus.Resolved,
-				resolution: { answerAt: 'src/answer.ts', verifiedAt: resolvedAt },
+				resolutions: [{ phase: 'phase-1-reader.md', answerAt: 'src/answer.ts', verifiedAt: resolvedAt }],
 				reopened: [],
 			}),
 		);
@@ -218,7 +217,6 @@ describe('revalidateResolutions', () => {
 							options: [],
 						},
 					],
-					resolution: undefined,
 					resolutions: [
 						{ phase: 'phase-1-reader.md', answerAt: survivingLine, verifiedAt: resolvedAt },
 						{ phase: 'phase-2-writer.md', answerAt: deletedLine, verifiedAt: resolvedAt },
@@ -236,7 +234,6 @@ describe('revalidateResolutions', () => {
 			expect.objectContaining({
 				status: GradeFindingStatus.Open,
 				disposition: GapOutcome.NeedsAHuman,
-				resolution: undefined,
 				resolutions: [],
 				lastSeen: passAt,
 				reopened: [

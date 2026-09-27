@@ -62,7 +62,7 @@ const planningRecord = (): PlanningProgress => ({
 	],
 });
 
-/** The plans a ticket record holds when the board's `workOrderName` names a ticket folder rather than a legacy plan folder. */
+/** The plans a ticket record holds when the board's `workOrderName` names a ticket folder. */
 const firstPlanId = '001-board-links';
 const secondPlanId = '002-link-hover';
 
@@ -120,8 +120,8 @@ const setupTicketFolderWorktree = async ({ withPlanToPlan }: { withPlanToPlan: b
  * The same ticket folder, holding a `state.json` the record contract refuses.
  *
  * A record that cannot be read is never the same thing as a folder with no
- * record: the second is a legacy plan folder, and reading the first as one would
- * draw a planning block for a plan nobody is writing.
+ * record, and reading the first as the second would draw a planning block for a
+ * plan nobody is writing.
  */
 const setupUnreadableTicketFolder = async () => {
 	jest.spyOn(Date, 'now').mockReturnValue(pinnedNow);
@@ -213,8 +213,8 @@ describe('loadActiveTicketBlock', () => {
 		const lines = await loadActiveTicketBlock({ ticket });
 
 		// Never the ticket folder's own planning block: a record nothing can read
-		// is not a legacy plan folder, and drawing one would show a plan record
-		// for a plan nobody is writing.
+		// is not a missing record, and drawing one would show a plan record for a
+		// plan nobody is writing.
 		expect(lines).toEqual([expect.stringContaining(join('.lightsout', 'work-orders', workOrderName, 'state.json'))]);
 	});
 

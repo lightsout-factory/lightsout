@@ -43,9 +43,9 @@ interface ResolvedTree {
  * run is still using it.
  *
  * Only a tree at the branch's own path qualifies; a branch collision or an
- * unrecorded tree is never evidence. For a legacy plan the record must name the
- * `plan` owner: that tree is one plan's alone, and a tree an implementation run
- * owns is a run's, not a second run's. For a plan address an `implement` record
+ * unrecorded tree is never evidence. For a run that belongs to no work order the
+ * record must name the `plan` owner: that tree is one plan's alone, and a tree an
+ * implementation run owns is a run's, not a second run's. For a plan address an `implement` record
  * qualifies too, because every plan of a ticket builds on the one branch in the
  * one tree — what separates a finished run's tree from a live one is the run
  * lock, which is why an address is refused while one is held.
@@ -110,7 +110,8 @@ const cutWorkspace = async ({
 }): Promise<ResolvedTree | WorktreeFailure> => {
 	// A later plan of a ticket must be built on the implementation its branch
 	// already carries, so the ticket branch is settled before anything is adopted
-	// or cut. A legacy plan keeps today's start point and never asks.
+	// or cut. A run that belongs to no work order keeps the launching checkout's
+	// start point and never asks.
 	const prepared = addressed ? await prepareWorkOrderBranch({ cwd, branch }) : { startPoint: undefined };
 
 	if ('error' in prepared) {

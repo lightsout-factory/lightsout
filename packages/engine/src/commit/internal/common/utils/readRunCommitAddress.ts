@@ -13,8 +13,8 @@ import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
  *
  * A phase child run's plan is its own phase file inside the plan folder, so the
  * file's stem is appended to the plan id — which is how a phase names itself
- * without a second rule. A legacy folder named for its branch alone is its own
- * unit, and only a plan outside the plans directory has no name to take at all.
+ * without a second rule. A plan outside the plans directory has no name to take
+ * at all.
  */
 const readUnit = async ({ cwd, plan, planName }: { cwd: string; plan: string; planName?: string }) => {
 	// The run's own record of which plan it belongs to is preferred over reading
@@ -23,14 +23,13 @@ const readUnit = async ({ cwd, plan, planName }: { cwd: string; plan: string; pl
 	const name = planName ?? (await planNameFromPath({ cwd, planPath: plan }));
 	const stem = basename(plan, extname(plan));
 
-	if (name === undefined) {
+	const address = name === undefined ? undefined : parsePlanAddress({ name });
+
+	if (address === undefined) {
 		return { unit: stem };
 	}
 
-	const address = parsePlanAddress({ name });
-	const base = address?.planId ?? name;
-
-	return { unit: stem === 'plan' ? base : `${base}/${stem}`, workOrderName: address?.workOrderName ?? name, planId: address?.planId };
+	return { unit: stem === 'plan' ? address.planId : `${address.planId}/${stem}`, workOrderName: address.workOrderName, planId: address.planId };
 };
 
 /**

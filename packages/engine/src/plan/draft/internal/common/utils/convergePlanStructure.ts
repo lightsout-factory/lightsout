@@ -19,8 +19,6 @@ interface Params {
 	reports: PlanDraftReport[];
 	/** Accumulated advisories, appended to by this step and read at whichever exit it produces. */
 	advisories: StructuralFinding[];
-	/** Forwarded to `repairPlanStructure` — only the focused draft flow sets it. */
-	mechanicalRepair?: boolean;
 	/** Forwarded to `repairPlanStructure` — the overview of a phased deliverable. */
 	overviewPath?: string;
 }
@@ -33,8 +31,7 @@ interface Params {
  * Spelled once because both flows end identically, and an exit shape that is
  * hand-written twice is one edit away from the two ending differently for no
  * stated reason. The command-run level goes through here for the same reason:
- * wiring it once is what keeps the focused and legacy convergences recording
- * one shape.
+ * wiring it once is what keeps both flows recording one shape.
  *
  * The blocking findings come back beside the result because one caller acts on
  * them rather than returning them: a single plan busting the created-file
@@ -48,11 +45,10 @@ export const convergePlanStructure = async ({
 	variant,
 	reports,
 	advisories,
-	mechanicalRepair,
 	overviewPath,
 }: Params): Promise<{ result: RunPlanDraftResult; blocking: StructuralFinding[] }> => {
 	const { cwd, driver, name, workspaceDir, brainstormDecisionsPath, decisions, config, model, effort, permissions, timeoutMs, level, progress } = context;
-	const draftStop = createDraftStop({ workspaceDir, advisories, implementation: context.implementation });
+	const draftStop = createDraftStop({ workspaceDir, advisories });
 	const repaired = await repairPlanStructure({
 		cwd,
 		driver,
@@ -68,7 +64,6 @@ export const convergePlanStructure = async ({
 		timeoutMs,
 		level,
 		progress,
-		mechanicalRepair,
 		overviewPath,
 	});
 

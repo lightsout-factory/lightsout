@@ -21,15 +21,13 @@ export const GradeMemory = z.object({
 	lastPass: z.object({ scope: z.enum(GradeScope), inputs: GradeInputs, at: z.string() }).optional(),
 	/** The most recent complete, passing, full review — what the reuse short-circuit compares the current fingerprint against. */
 	lastPassingFullReview: z.object({ inputs: GradeInputs, at: z.string() }).optional(),
-	/** What the readers have read, and at what text. Empty on a memory written before coverage existed, which claims no coverage and so takes exactly one full re-baseline. */
-	coverage: z
-		.object({
-			/** One entry per plan file per reader brief. */
-			readers: z.array(GradeReadCoverage).default([]),
-			/** The whole-plan documentation checker's own entry; absent until it has run once. */
-			docs: GradeDocsCoverage.optional(),
-		})
-		.default({ readers: [] }),
+	/** What the readers have read, and at what text. */
+	coverage: z.object({
+		/** One entry per plan file per reader brief. */
+		readers: z.array(GradeReadCoverage),
+		/** The whole-plan documentation checker's own entry; absent until it has run once. */
+		docs: GradeDocsCoverage.optional(),
+	}),
 	/** The `<N>` the next `f<N>` id takes. Monotonic, so a deleted record's id is never handed out again. */
 	nextFindingNumber: z.number().int().default(1),
 	updatedAt: z.string(),

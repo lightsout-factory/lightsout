@@ -15,12 +15,11 @@ interface Params {
  *
  * Spelled once because a lost citation, a contrary ruling, a new unverified
  * location and an absorbed obligation all reopen a record, and a copy that forgot
- * to clear one of the two citation fields would leave a closure nobody checks.
+ * to clear the citations would leave a closure nobody checks.
  */
 export const reopenRecord = ({ record, reason, at }: Params): GradeFindingRecord => ({
 	...record,
 	status: GradeFindingStatus.Open,
-	resolution: undefined,
 	resolutions: [],
 	lastSeen: at,
 	reopened: [...record.reopened, { at, reason, priorStatus: record.status }],

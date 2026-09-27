@@ -1,7 +1,7 @@
 import type { GapObservation } from '#src/contracts/plan/grade/GapObservation.ts';
 
 interface Params {
-	/** Every observation the finding holds; empty on a single-observation finding or a record written before grouping existed. */
+	/** Every observation the finding holds; empty on a single-observation finding. */
 	observations: GapObservation[];
 	/** The finding's own plan file — the one location when it holds no observations. */
 	phase: string;

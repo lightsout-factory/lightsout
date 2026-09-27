@@ -2,7 +2,6 @@ import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { resolveWorktreeIsolation } from '#src/cli/internal/common/args/resolveWorktreeIsolation.ts';
 import type { PlanWorktree } from '#src/cli/plan/internal/common/types/PlanWorktree.ts';
 import { readGitHeadCommit } from '#src/common/git/readGitHeadCommit.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 import { isSamePath } from '#src/common/utils/isSamePath.ts';
 import { readWorkOrderRecordFile } from '#src/common/workspace/readWorkOrderRecordFile.ts';
@@ -22,7 +21,7 @@ interface Params {
 	/** The launching checkout's config, so a repository whose config is not yet committed still gets the isolation it asked for. */
 	config: LightsoutConfig | undefined;
 	flags: CommandContext['flags'];
-	/** A plan address, or a legacy plan name. The branch is its ticket-branch segment, never the address. */
+	/** A plan address. The branch is its work order's, never the address. */
 	name: string;
 	onProgress?: (message: string) => void;
 }
@@ -39,31 +38,26 @@ const noWorktreeRemedy = 'pass --no-worktree to plan in the launching checkout d
  * the queue's resume and cleanup recognise their tree by its own owner. A tree
  * nothing claims is refused, because an occupied directory is never evidence.
  *
- * For a plan address an `implement` record is accepted too: every plan of a
- * ticket lives on the one branch, so the tree an earlier plan's implementation
- * run adopted is exactly where the next plan must be researched. What separates
- * that from a run still editing the tree is the run lock, not the record, so an
- * address is refused whatever the owner while a live run holds it. A legacy name
- * accepts neither the `implement` record nor the lock question: its tree is one
- * plan's alone, and a run owning it means the plan is being built.
+ * An `implement` record is accepted too: every plan of a ticket lives on the
+ * one branch, so the tree an earlier plan's implementation run adopted is
+ * exactly where the next plan must be researched. What separates that from a run
+ * still editing the tree is the run lock, not the record, so the tree is refused
+ * whatever the owner while a live run holds it.
  */
-const continueInTree = async ({ cwd, branch, addressed, treePath }: { cwd: string; branch: string; addressed: boolean; treePath: string }) => {
-	const holder = addressed ? await readLiveRunLock({ cwd: treePath }) : undefined;
+const continueInTree = async ({ cwd, branch, treePath }: { cwd: string; branch: string; treePath: string }) => {
+	const holder = await readLiveRunLock({ cwd: treePath });
 
 	if (holder !== undefined) {
 		return { error: `the worktree at ${treePath} cannot be planned in: run ${holder.runId} is using it right now — wait for it, or ${noWorktreeRemedy}` };
 	}
 
 	const record = await readWorktreeRecord({ cwd, branch });
-	const owners: WorktreeOwner[] = addressed ? [WorktreeOwner.Plan, WorktreeOwner.Queue, WorktreeOwner.Implement] : [WorktreeOwner.Plan, WorktreeOwner.Queue];
 
-	if (record !== undefined && owners.includes(record.owner)) {
+	if (record !== undefined) {
 		return { cwd: treePath, branch, isolated: true, created: false };
 	}
 
-	const reason = record === undefined ? 'no ownership record claims it for this plan' : `its ownership record names a '${record.owner}' run, not this plan`;
-
-	return { error: `the worktree at ${treePath} cannot be planned in: ${reason} — ${noWorktreeRemedy}` };
+	return { error: `the worktree at ${treePath} cannot be planned in: no ownership record claims it for this plan — ${noWorktreeRemedy}` };
 };
 
 /**
@@ -158,7 +152,6 @@ export const resolvePlanWorktree = async ({ cwd, config, flags, name, onProgress
 		return { cwd, isolated: false, created: false };
 	}
 
-	const addressed = parsePlanAddress({ name }) !== undefined;
 	const workOrderName = workOrderNameOf({ name });
 	// The label names the work order to look up; the branch is whatever its
 	// record stores, which under a prefixed template is a different string.
@@ -177,8 +170,7 @@ export const resolvePlanWorktree = async ({ cwd, config, flags, name, onProgress
 		return { cwd: treePath, branch, isolated: true, created: false };
 	}
 
-	// A legacy name keeps today's start points, so its branch is never inspected.
-	const prepared = addressed ? await prepareWorkOrderBranch({ cwd, branch }) : { startPoint: undefined };
+	const prepared = await prepareWorkOrderBranch({ cwd, branch });
 
 	if ('error' in prepared) {
 		return prepared;
@@ -190,7 +182,7 @@ export const resolvePlanWorktree = async ({ cwd, config, flags, name, onProgress
 	if (holder === undefined) {
 		worktree = await cutPlanTree({ cwd, config, branch, pushedStartPoint: prepared.startPoint, treePath, onProgress });
 	} else if (await isSamePath({ path: holder, otherPath: treePath })) {
-		worktree = await continueInTree({ cwd, branch, addressed, treePath });
+		worktree = await continueInTree({ cwd, branch, treePath });
 	} else {
 		worktree = { error: `'${branch}' is already checked out at ${holder} — plan from ${holder}, or ${noWorktreeRemedy}` };
 	}

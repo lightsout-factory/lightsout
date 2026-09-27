@@ -141,9 +141,9 @@ test('the focused role prompt replaces re-reading and per-symbol searching with 
 	const role = rolePromptOf(systemPrompt);
 
 	expect({
-		// legacy step 2: read every recorded path again before writing
+		// no order to read every recorded path again before writing
 		ordersAReReadOfTheRecordedPaths: /read each `filesToModify` and `patternsToMirror` path/i.test(role),
-		// legacy step 3: one repository search per proposed new symbol
+		// no order to run one repository search per proposed new symbol
 		ordersASearchPerProposedSymbol: /before proposing any newly-created exported symbol, search/i.test(role),
 		// what stands in their place
 		namesTheCollectedEvidence: /evidence/i.test(role),
