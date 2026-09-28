@@ -50,16 +50,27 @@ const setupHouseRepo = async ({ name = 'acme' }: { name?: string } = {}) => {
 };
 
 describe('getStandardsPackView', () => {
-	test('reads the authored default pack this repo ships, with the counts its folders actually hold', async () => {
+	test('reads the authored default pack this repo ships, with totals that agree with its own rows', async () => {
 		const { cwd } = setupThisRepo();
 
 		const view = await getStandardsPackView({ cwd, name: 'lightsout-defaults' });
+		const checked = view.rules.filter((rule) => rule.checked).length;
 
-		// recount before changing these — the pack moves, and the numbers are the
-		// only place the page's claim about it is pinned. Every rule ships both
-		// sides of its proof, judgment-only ones included, which is why
-		// `withFixtures` matches `rules` rather than `checked`.
-		expect(view.totals).toStrictEqual({ rules: 109, checked: 51, judgment: 58, documents: 24, withFixtures: 109 });
+		// The pack grows and shrinks as its rules are written, so no count of it
+		// is pinned here — the exact counting is pinned on the house pack below.
+		// What must hold whatever the pack holds: the totals are the rows
+		// recounted, and every rule ships both sides of its examples, judgment-only
+		// ones included, which is why `withFixtures` matches `rules`.
+		// A pack that loaded no rule at all would agree with itself too, so the
+		// check also says the pack is not empty.
+		expect({ ...view.totals, isEmpty: view.rules.length === 0 }).toStrictEqual({
+			isEmpty: false,
+			rules: view.rules.length,
+			checked,
+			judgment: view.rules.length - checked,
+			documents: view.documents.length,
+			withFixtures: view.rules.length,
+		});
 	});
 
 	test('says the default pack is the one a run loads when the config names none', async () => {

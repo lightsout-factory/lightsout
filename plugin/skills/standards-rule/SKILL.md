@@ -11,12 +11,17 @@ has the same shape.
 
 ## How a pack is built
 
-- **Pack:** a folder holding `lightsout-standards.json`, a `code/` tree and a
-  `tests/` tree. A repo lists the packs it uses in `standards-packs`, and their
-  documents stack.
-- **Document:** a folder with a `document.md` and one folder per rule. It covers
-  one topic. Its `document.md` intro holds the background every rule in it
-  shares, said once.
+- **Pack:** a folder holding `lightsout-standards.json`, plus a `code/` tree for
+  the agents that write code and a `tests/` tree for the agent that writes
+  tests. A repo lists the packs it uses in `standards-packs` in its lightsout
+  config, and their documents stack.
+- **Document:** any folder under `code/` or `tests/` that holds a
+  `document.md`, plus one folder per rule. It covers one topic, such as error
+  handling or naming. Its `document.md` is a short intro holding the background
+  every rule in it shares, said once. Folders without a `document.md` only
+  group documents. A `document.md` may start with `channel: <framework>` front
+  matter, such as `channel: react`; its rules then apply only to repos that use
+  that framework.
 - **Rule:** a folder named `<NN>-<id>`. `<NN>` sets only the reading order. The
   `<id>` is the rule's key: findings are written with it, and a repo names it in
   `standards-checks` to turn the rule on or off or change its severity.
@@ -44,9 +49,21 @@ the rule's page.
 
 ## Steps
 
-1. **Find the pack and the document.** The pack root is the folder holding
-   `lightsout-standards.json`. Read the document's `document.md` and every rule
-   in the document, because the agent reads them together.
+1. **Find the pack and the document, or create them.** The pack root is the
+   folder holding `lightsout-standards.json`. Read the document's `document.md`
+   and every rule in it, because the agent reads them together.
+   - **No pack yet:** create a folder with a `lightsout-standards.json`, and
+     `code/` or `tests/` in it:
+
+     ```json
+     { "name": "house-rules", "formatVersion": 1, "description": "What this team agrees on." }
+     ```
+
+     Then add the folder to `standards-packs` in the repo's lightsout config,
+     so lightsout loads it.
+   - **No document for the rule's topic:** create a folder for the topic, such
+     as `code/error-handling/`, with a `document.md` holding a heading and one
+     line on what the topic covers.
 
 2. **Decide the rule's one job.** A rule is one decision. To decide where one
    rule ends, ask: could a repo want this rule without the one next to it? If
@@ -74,36 +91,35 @@ the rule's page.
    declared example shape. If the repo has its own tests for the pack, run
    them too.
 
-6. **Show the reviewer, and wait.** Show the new rule, the instruction list for
-   a changed rule, and every new instruction on its own. Commit only what the
-   reviewer approves.
+6. **Show the user, and wait.** Show the new rule, the instruction list for a
+   changed rule, and every new instruction on its own. Commit only what the
+   user approves.
 
 ## Name (the id)
 
 1. **Name the topic the rule covers, in plain words**, specific enough that a
    reader knows what it covers without opening it. Not the mechanism that finds
-   a break, not the input a check reads, not the fix. `clone` names a detector;
-   `module-file-to-folder` names what the rule decides.
+   a break, not the input a check reads, not the fix. `import-scanner` names a
+   detector; `import-from-declaring-file` names what the rule decides.
 2. **One style for every rule, however it is checked.** A rule that gains or
    loses a check keeps its name. No lint-style `no-` or `prefer-` prefixes: a
    rule is guidance, not a yes-or-no switch.
 3. **Kebab-case, two to five words, no term a reader outside the project would
-   have to look up.** `ast`, `census`, `mega` and `clone` all fail this.
+   have to look up.** Words like `ast` or `census` fail this.
 4. **Use words engineers already know**, not labels a reader must learn:
-   `module`, not `graduation` or `companion`.
+   `helper-file-placement`, not `satellite-rule`.
 5. **A prefix only when it names the subject the rule is about**, such as
    `test-` for a rule about test files — never one that names how the check
    works.
 6. **The id must not read as the opposite of what it asks for.**
-   `index-not-barrel` fails when the rule requires an index file to be a
-   barrel.
+   `allow-default-export` fails for a rule that forbids default exports.
 7. **Word order follows English:** `duplicate-export-name`, not
    `name-duplicate`. An id that reads as a database column name fails.
 8. **A word the id shares with its document is not always a repeat.** Ids are
    read in flat lists, such as config keys and findings, with no folder around
    them. Drop the shared word only when the rest of the id already implies it.
-9. **The prose's `##` heading is the id in words:** `module-file-to-folder`
-   reads "Module File to Folder".
+9. **The prose's `##` heading is the id in words:**
+   `import-from-declaring-file` reads "Import From Declaring File".
 10. **An id is durable once shipped.** Renaming one resets every saved finding
     keyed to it. See [Renaming a rule](#renaming-a-rule).
 
@@ -116,8 +132,8 @@ glance whether it makes sense. Agents never read it.
 - No jargon, no mechanism, no tool names, no settings keys, no numbers.
 - A capital letter at the start and a full stop at the end.
 
-Before: `"a folder created for a concept with no private companions"`.
-After: `"When a module should stay one file, and when it should become a folder."`
+Before: `"a re-export resolved through an index instead of the declaring module"`.
+After: `"Where an import should point."`
 
 ## Prose
 
@@ -138,9 +154,9 @@ with.
 - **No soft words.** "Consider", "usually" and "where it makes sense" let an
   agent skip the rule. Say "always", or name the exception.
 - **An exception is a test the agent can apply.** An exception it cannot apply,
-  such as "features are inherently multi-file", is defined or removed.
-- **Cover both directions where they exist:** when a file becomes a folder, and
-  when a folder goes back to a file.
+  such as "unless the case is simple", is defined or removed.
+- **Cover both directions where they exist:** when to split something, and when
+  to merge it back.
 - **One rule, one job:** leave out anything another rule already covers.
 - **Every link resolves** to a file that exists.
 
@@ -194,7 +210,7 @@ finding.
 ## Changing an existing rule
 
 A rewrite changes how a rule is said, never what it asks for, unless the
-reviewer approves the change.
+user approves the change.
 
 1. Before you rewrite a rule, list every instruction in its old text, one per
    row.
@@ -202,8 +218,8 @@ reviewer approves the change.
    now. Or remove it as a repeat, and quote the other rule that already says
    it. If you cannot quote it, it is not a repeat, and it stays.
 3. A new instruction that fills a gap is allowed, but list it separately and get
-   the reviewer's approval before you commit.
-4. Show the reviewer the full list, old instruction to new home, before you
+   the user's approval before you commit.
+4. Show the user the full list, old instruction to new home, before you
    commit.
 
 ## Renaming a rule
