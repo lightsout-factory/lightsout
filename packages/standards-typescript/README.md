@@ -148,6 +148,21 @@ example and pass its correct one, and every rule's declared shape is checked
 (`packages/engine/src/standardsCheck/validateStandardsPack.defaultPack.unit.test.ts`).
 An edit to a checked rule's example, even to a comment, can break that test.
 
+## Changing an Existing Rule
+
+A rewrite changes how a rule is said, never what it asks for, unless the
+reviewer approves the change.
+
+1. Before you rewrite a rule, list every instruction in its old text, one per
+   row.
+2. After the rewrite, give each row a home: the rule and line where it lives
+   now. Or remove it as a repeat, and quote the other rule that already says
+   it. If you cannot quote it, it is not a repeat, and it stays.
+3. A new instruction that fills a gap is allowed, but list it separately and get
+   the reviewer's approval before you commit.
+4. Show the reviewer the full list, old instruction to new home, before you
+   commit.
+
 ## After Changing a Rule
 
 1. `pnpm build:default-pack` — the web app reads the pack from one bundled copy,

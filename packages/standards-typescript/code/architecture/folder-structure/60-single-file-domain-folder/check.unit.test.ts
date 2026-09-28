@@ -7,7 +7,7 @@ describe('single-file-domain-folder check', () => {
 		expect(check.inputKind).toBe('file-list');
 	});
 
-	test('reports a graduated domain folder holding one file', async () => {
+	test('reports a domain folder holding one file', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/formatting/formatDate.ts'] });
 
 		const findings = await check.run({ input, settings: {} });
@@ -18,12 +18,12 @@ describe('single-file-domain-folder check', () => {
 				files: [{ path: 'src/billing/common/formatting' }],
 				detail: "domain folder 'formatting' holds one file",
 				guidance:
-					'A domain folder graduates when a SECOND related function appears — until then the file belongs in `utils/`. Heuristic — judge before acting.',
+					'Move the file back into `utils/`. A domain folder starts when a second function about the same subject appears. Heuristic — judge before acting.',
 			},
 		]);
 	});
 
-	test('leaves alone a domain folder holding the second related function graduation is for', async () => {
+	test('leaves alone a domain folder holding a second related function', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/parsing/parseDate.ts', 'src/billing/common/parsing/parseTime.ts'] });
 
 		const findings = await check.run({ input, settings: {} });
@@ -32,7 +32,7 @@ describe('single-file-domain-folder check', () => {
 	});
 
 	test.each([{ folder: 'utils' }, { folder: 'types' }, { folder: 'constants' }, { folder: 'services' }])(
-		'never judges $folder, which is the always-built skeleton rather than a graduation',
+		'never judges $folder, which is a folder for a kind of code rather than a domain folder',
 		async ({ folder }) => {
 			const input = setupFileListInput({ files: [`src/billing/common/${folder}/formatTax.ts`] });
 

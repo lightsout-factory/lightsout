@@ -7,7 +7,7 @@ import { getBaseName } from '../../../../common/paths/getBaseName.ts';
 import { getDirectory } from '../../../../common/paths/getDirectory.ts';
 import { isTestFile } from '../../../../common/paths/isTestFile.ts';
 
-/** Whether a folder is a graduated domain folder — directly under a `common/`, and not one of its four type folders. */
+/** Whether a folder is a domain folder — directly under a `common/`, and not one of its four type folders. */
 const isDomainFolder = ({ directory }: { directory: string }) =>
 	getBaseName({ path: getDirectory({ path: directory }) }) === 'common' && !commonTypeFolders.has(getBaseName({ path: directory }));
 
@@ -28,7 +28,7 @@ export const check: StandardsCheckModule = {
 					files: [{ path: directory }],
 					detail: `domain folder '${getBaseName({ path: directory })}' holds one file`,
 					guidance:
-						'A domain folder graduates when a SECOND related function appears — until then the file belongs in `utils/`. Heuristic — judge before acting.',
+						'Move the file back into `utils/`. A domain folder starts when a second function about the same subject appears. Heuristic — judge before acting.',
 				}),
 			);
 	},

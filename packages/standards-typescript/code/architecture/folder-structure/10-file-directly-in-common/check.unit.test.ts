@@ -17,8 +17,7 @@ describe('file-directly-in-common check', () => {
 				siteKey: 'file-directly-in-common:src/billing/common/rate.ts',
 				files: [{ path: 'src/billing/common/rate.ts' }],
 				detail: "'rate.ts' sits directly in src/billing/common",
-				guidance:
-					'Move it under the type folder for what it is — `utils/`, `types/`, `constants/`, `services/`, or a graduated domain folder. `common/` is always typed, never flat.',
+				guidance: 'Move it into the folder for its kind of code — `utils/`, `types/`, `constants/` or `services/` — or into a domain folder.',
 			},
 		]);
 	});
@@ -66,8 +65,7 @@ describe('file-directly-in-common check', () => {
 				siteKey: 'file-directly-in-common:src/billing/common/indexer.ts',
 				files: [{ path: 'src/billing/common/indexer.ts' }],
 				detail: "'indexer.ts' sits directly in src/billing/common",
-				guidance:
-					'Move it under the type folder for what it is — `utils/`, `types/`, `constants/`, `services/`, or a graduated domain folder. `common/` is always typed, never flat.',
+				guidance: 'Move it into the folder for its kind of code — `utils/`, `types/`, `constants/` or `services/` — or into a domain folder.',
 			},
 		]);
 	});

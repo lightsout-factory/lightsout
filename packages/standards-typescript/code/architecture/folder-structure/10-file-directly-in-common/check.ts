@@ -22,8 +22,7 @@ export const check: StandardsCheckModule = {
 					rule: 'file-directly-in-common',
 					files: [{ path: file }],
 					detail: `'${getBaseName({ path: file })}' sits directly in ${getDirectory({ path: file })}`,
-					guidance:
-						'Move it under the type folder for what it is — `utils/`, `types/`, `constants/`, `services/`, or a graduated domain folder. `common/` is always typed, never flat.',
+					guidance: 'Move it into the folder for its kind of code — `utils/`, `types/`, `constants/` or `services/` — or into a domain folder.',
 				}),
 			),
 };

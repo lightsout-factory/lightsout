@@ -40,7 +40,7 @@ type-only.
 (`@Module`), not by folders — so folder layout follows the base rules
 unchanged: features grow by the
 [domain-folder rule](../folder-structure/55-ungrouped-domain-utils/rule.md), shared
-code lands by the [placement rule](../folder-structure/05-placement/rule.md),
+code lands by the [placement rule](../folder-structure/05-shared-code-placement/rule.md),
 and `controllers/`, `services/` and their siblings are legal folder names
 everywhere without declaring anything (the
 [banned-folder-name rule](../folder-structure/25-banned-folder-name/rule.md)

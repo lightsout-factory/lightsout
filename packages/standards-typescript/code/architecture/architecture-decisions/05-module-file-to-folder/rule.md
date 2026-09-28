@@ -17,3 +17,4 @@ A module is one exported item and the code only it uses.
 - Turn it into a folder only when it needs more files that only it uses, such as its own types, constants or helpers.
 - When the folder is down to one file, turn it back into a file.
 - This applies at every level, including a module inside another module's folder.
+- The type folders in `common/` are not modules, so this rule does not apply to them.
