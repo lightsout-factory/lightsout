@@ -44,10 +44,14 @@ reaches the shipped `plugin/standards/` bundle.
    any file. Drop the shared word only when the rest of the id already implies
    it, which is why `test-mega-factory` became `oversized-setup-factory` — a
    setup factory is a test-only thing and the word buys nothing.
-8. **An id is durable once shipped.** Renaming one resets every persisted
-   finding keyed to it. Get it right at birth; a rename is a deliberate change
-   that migrates the config, the engine's id lists and the pack's cross-links in
-   the same commit.
+8. **Use words engineers already know**, not labels a reader must learn:
+   `module`, not `graduation` or `companion`.
+9. **The prose's `##` heading is the id in words**: `module-file-to-folder`
+   reads "Module File to Folder".
+10. **An id is durable once shipped.** Renaming one resets every persisted
+    finding keyed to it. Get it right at birth; a rename is a deliberate change
+    that migrates the config, the engine's id lists and the pack's cross-links in
+    the same commit.
 
 ## Writing a Rule's Prose
 
@@ -65,13 +69,28 @@ starts with a capital letter and ends with a full stop.
 **Prose** — the prose is the rule itself. Agents follow this exact text when
 they write and review code, and the rule page prints the same text under "The
 rule", so it has to be clear enough to hand straight to an agent and readable
-enough for a person to agree with. One rule, one job: leave out anything
-another rule already covers. Plain sentences, the reason stated before the mandate, second
-person or plain declarative, no jargon left undefined on the page. The register
-is set by `tests/unit-testing/04-module-boundary-testing/rule.md`: it opens with
-what to do by default, gives the reason in the same breath ("so a module's
-internals can be reorganized without touching a single test"), then lists the
-carve-outs.
+enough for a person to agree with.
+
+- **Fewest words that get the job done.** Agents load the prose on every task,
+  so every word costs, but the job getting done comes first.
+- **Plain words, written as instructions a new engineer could follow.** Plain
+  language is not less exact for an agent; exact conditions are what make it
+  exact.
+- **Shape:** what to do, when it applies and its exceptions, then why in one
+  short sentence. An agent uses the reason to decide cases the rule does not
+  name.
+- **Say what to do**, not only what is bad.
+- **No soft words** — "consider", "usually", "where it makes sense" let an agent
+  skip the rule. Say "always", or name the exception.
+- **An exception is a test the agent can apply.** One it cannot apply ("features
+  are inherently multi-file") is defined or removed.
+- **Cover both directions where they exist**: when a file becomes a folder, and
+  when a folder goes back to a file.
+- **One rule, one job**: leave out anything another rule already covers.
+- **Every link resolves** to a file that exists.
+
+`architecture/architecture-decisions/05-module-file-to-folder/rule.md` sets the
+register.
 
 **Printed finding text** — the `detail` and `guidance` strings a `check.ts`
 emits are what a person reads when the rule fires, so they take the same plain
@@ -85,12 +104,22 @@ finding, and they stay.
 
 A rule's `fixtures/fail/` and `fixtures/pass/` are what `lightsout
 standards-validate` runs its check against, and what the rule's page shows as
-its Incorrect and Correct examples. `example` in the front matter says how they
-are shaped, which decides how the page shows them:
+its Incorrect and Correct examples. Agents never see them: an example's job is
+to make a person agree with the rule in a few seconds.
+
+- **Show the whole rule, not half of it.** One example can show both halves —
+  `module-file-to-folder`'s shows a folder made too early and a module whose own
+  type sits in shared code.
+- **Follow every other rule in the pack**, so the correct side is correct
+  everywhere: a file inside a module folder goes under `common/<type>/`, one
+  export per file.
+
+`example` in the front matter says how they are shaped, which decides how the
+page shows them. Pick the shape that shows the mistake:
 
 - `kind: snippet` — one file a side, each read on its own.
-- `kind: repo` — a small source tree a side, because the rule looks across files
-  and no single file shows the defect. `focus` names the file each side opens
+- `kind: repo` — a small source tree a side, because the rule is about files
+  and folders or looks across files, and no single file shows the defect. `focus` names the file each side opens
   on: the one that shows the defect, and the one that shows its fix. Supporting
   files — a `package.json` the check reads, the module that imports another —
   stay in the tree without leading it.
@@ -110,8 +139,24 @@ side as a snippet, anything more as a repo opening on each side's first file —
 which is what a pack written before this key exists gets.
 
 Comments in a fixture are half of what it teaches, so every file a reader might
-open says why it is there. Mind what a comment names: a check that counts
-mentions, like `dead-export`'s, reads a comment's words as uses.
+open says in a short comment what is wrong or right, and why — and says it
+accurately. Mind what a comment names: a check that counts mentions, like
+`dead-export`'s, reads a comment's words as uses.
+
+The fixtures are also tests: every deterministic check must flag its incorrect
+example and pass its correct one, and every rule's declared shape is checked
+(`packages/engine/src/standardsCheck/validateStandardsPack.defaultPack.unit.test.ts`).
+An edit to a checked rule's example, even to a comment, can break that test.
+
+## After Changing a Rule
+
+1. `pnpm build:default-pack` — the web app reads the pack from one bundled copy,
+   `assets/default-pack.json`, and this rebuilds it so the rule's page shows the
+   change.
+2. Run the pack tests: `pnpm test:unit -- src/standardsCheck/validateStandardsPack.defaultPack.unit.test.ts src/standardsPacks`
+   from `packages/engine`.
+3. Note every other rule that still uses the rule's old name or words, and fix
+   each when its own review reaches it.
 
 ## Renaming a Rule
 
@@ -139,6 +184,9 @@ change:
   `packages/engine/src/standardsCheck/listStandardsRules.unit.test.ts`, whose
   docblock records what changed and when, so a missing id reads as a rename
   rather than a retirement
+
+Renamed means renamed: no old names, aliases or "renamed to" messages are kept
+anywhere.
 
 Then verify mechanically: `git grep -w <old-id>` over tracked files, excluding
 `plugin/` (regenerated by `pnpm bundle`), returns nothing.

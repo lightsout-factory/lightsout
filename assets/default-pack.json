@@ -27,7 +27,6 @@
       "intro": "# Architecture Decisions\n\nUniversal architectural decisions that apply across the codebase.",
       "ruleIds": [
         "module-file-to-folder",
-        "code-placement-philosophy",
         "thin-wrapper-functions",
         "dead-export",
         "premature-abstraction",
@@ -45,6 +44,7 @@
       "intro": "# Folder Structure\n\nUse a `common/` folder pattern for shared code — it keeps related code local, makes dependency scope visible, and scales by promoting code upward only when reuse is proven. The trees below are **folder-modules** (see [module-file-to-folder](../architecture-decisions/05-module-file-to-folder/rule.md)): a feature folder holds a concept and the companions that serve it, and every import names the file that declares what it imports. A folder carries no `index.ts` — only a package's entry does.",
       "ruleIds": [
         "placement",
+        "reuse-common-code",
         "file-directly-in-common",
         "graduating-out-of-common",
         "top-level-domain-nouns",
@@ -966,55 +966,6 @@
         "focus": {
           "fail": "src/feature/renderGreeting.ts",
           "pass": "package.json"
-        }
-      }
-    },
-    {
-      "id": "code-placement-philosophy",
-      "set": "code",
-      "documentPath": "code/architecture/architecture-decisions",
-      "summary": "shared code placed above the lowest level that reaches it, or landing in `common/` as a folder-module",
-      "channel": "base",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultSettings": {},
-      "fixtureCounts": {
-        "pass": 3,
-        "fail": 2
-      },
-      "prose": "## Code Placement Philosophy\n\nPlace shared code at the lowest common ancestor `common/` folder (each package's architecture doc defines the concrete hierarchy):\n\n1. **First:** search whether it already exists in `common/` at any level — if found, use it.\n2. **Second:** if not found, start local and promote later — moving code up when reuse is proven beats premature generalization.\n3. **When promoting, the destination is decided by the companion test:** a single-file primitive goes to the ancestor level's `common/<type>/`; a shared concept with private companions becomes its own module at that level. `common/` never contains folder-modules — shared code is a primitive or a module, never a third thing.\n\nImport granularity follows the import rule ([module-api.md](../style-guide/structure/module-api.md#import-from-the-declaring-file)): every import names the file that declares what it imports. Never import through an `index.ts`, and never from your own package's entry.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/billing/getChargeLabel.ts",
-          "text": "import { formatMoney } from '../common/utils/formatMoney';\n\nexport const getChargeLabel = ({ cents }: { cents: number }): string => `Charged ${formatMoney({ cents })}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/utils/formatMoney.ts",
-          "text": "// A single-file primitive, so promotion lands it in the ancestor level's\n// `common/utils/` rather than making a module of it.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/invoices/getInvoiceLabel.ts",
-          "text": "import { formatMoney } from '../common/utils/formatMoney';\n\nexport const getInvoiceLabel = ({ cents }: { cents: number }): string => `Invoiced ${formatMoney({ cents })}`;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/common/utils/formatMoney.ts",
-          "text": "export const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/invoices/common/utils/formatMoney.ts",
-          "text": "// Two features reached for the same helper and neither searched `common/`\n// first, so the reuse is proven but the code never moved up to the lowest\n// common ancestor.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/billing/common/utils/formatMoney.ts",
-          "pass": "src/billing/getChargeLabel.ts"
         }
       }
     },
@@ -3672,6 +3623,60 @@
         "focus": {
           "fail": "src/issues/IssuePanel.tsx",
           "pass": "src/issues/IssueGroup.tsx"
+        }
+      }
+    },
+    {
+      "id": "reuse-common-code",
+      "set": "code",
+      "documentPath": "code/architecture/folder-structure",
+      "summary": "Look for existing shared code before writing new code.",
+      "channel": "base",
+      "checked": false,
+      "defaultSeverity": "advisory",
+      "defaultSettings": {},
+      "fixtureCounts": {
+        "pass": 3,
+        "fail": 3
+      },
+      "prose": "## Reuse Common Code\n\nBefore you write a helper, type, constant or service, look for one in the `common/` folders, from your own folder up to the package root.\n\n- If one does what you need, import it. Never write a second copy.\n- If one nearly does, extend it rather than write a near copy, as long as its current callers keep working.\n\nTwo copies drift apart, and a fix then reaches only one of them.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/common/utils/formatMoney.ts",
+          "text": "// Shared by getChargeLabel and getInvoiceLabel, so it lives in src/common/utils/.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/getChargeLabel.ts",
+          "text": "import { formatMoney } from './common/utils/formatMoney.ts';\n\nexport const getChargeLabel = ({ cents }: { cents: number }): string => `Charged ${formatMoney({ cents })}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/getInvoiceLabel.ts",
+          "text": "import { formatMoney } from './common/utils/formatMoney.ts';\n\n// Correct: imports the formatMoney that src/common/utils/ already has.\nexport const getInvoiceLabel = ({ cents }: { cents: number }): string => `Invoiced ${formatMoney({ cents })}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/utils/formatMoney.ts",
+          "text": "// Shared by getChargeLabel and getInvoiceLabel, so it lives in src/common/utils/.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/getChargeLabel.ts",
+          "text": "import { formatMoney } from './common/utils/formatMoney.ts';\n\nexport const getChargeLabel = ({ cents }: { cents: number }): string => `Charged ${formatMoney({ cents })}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/getInvoiceLabel.ts",
+          "text": "// Incorrect: writes its own copy of formatMoney when src/common/utils/ already\n// has one. A fix to either copy now misses the other.\nconst formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n\nexport const getInvoiceLabel = ({ cents }: { cents: number }): string => `Invoiced ${formatMoney({ cents })}`;\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/getInvoiceLabel.ts",
+          "pass": "src/getInvoiceLabel.ts"
         }
       }
     },
