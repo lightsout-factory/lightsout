@@ -111,7 +111,7 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 	// a rule's live numbers ride its summary line
 	expect(stdout).toContain('minTokens 50');
 	// the totals close it off, counting both kinds of rule
-	expect(stdout).toMatch(/│ 111 rule\(s\)\s+│\s+15 blocking\s+│\s+95 advisory, 1 off\s+│\s+51 by code, 60 by judgment\s+│/);
+	expect(stdout).toMatch(/│ 109 rule\(s\)\s+│\s+15 blocking\s+│\s+93 advisory, 1 off\s+│\s+51 by code, 58 by judgment\s+│/);
 	// the test-shape rules name the document they enforce
 	expect(stdout).toMatch(/│ test-nested-describe\s+│\s+advisory\s+│\s+code\s+│\s+lightsout-defaults: tests\/unit-testing\s+│/);
 	// and so do the file-placement rules, across the three docs they come from
@@ -131,7 +131,7 @@ test('cli: standards-check --list marks the rules this repo configured', async (
 
 	// "this is our policy" reads apart from "this is the default"
 	expect(stdout).toMatch(/│ synonym-export-name\s+│\s+off \(config\)\s+│/);
-	expect(stdout).toMatch(/│ 111 rule\(s\)\s+│\s+15 blocking\s+│\s+94 advisory, 2 off\s+│\s+51 by code, 60 by judgment\s+│/);
+	expect(stdout).toMatch(/│ 109 rule\(s\)\s+│\s+15 blocking\s+│\s+92 advisory, 2 off\s+│\s+51 by code, 58 by judgment\s+│/);
 	expect(code).toBe(0);
 });
 

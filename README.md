@@ -625,6 +625,8 @@ lightsout standards-validate
 lightsout standards-health
 ```
 
+To write a rule of your own, or review one, use `/standards-rule`. It walks through the rule's name, summary, prose and examples, keeps every rule in the same shape, and runs `standards-validate` on the pack when it is done.
+
 ## Documentation
 
 - [Configuration](docs/configuration.md)
