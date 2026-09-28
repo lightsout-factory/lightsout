@@ -2,8 +2,8 @@ interface ConstructorParams {
 	perMinute: number;
 }
 
-// One file until it needs private companions. The compiler already enforces the
-// boundary: nothing here is exported but the class itself.
+// Correct: one file. Nothing but the class is exported, so TypeScript keeps
+// everything else in the file private.
 export class RateLimiter {
 	private remaining: number;
 

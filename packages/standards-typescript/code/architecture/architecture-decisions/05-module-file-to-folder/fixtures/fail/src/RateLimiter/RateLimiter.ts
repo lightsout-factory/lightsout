@@ -2,8 +2,8 @@ interface ConstructorParams {
 	perMinute: number;
 }
 
-// A folder, a barrel, and nothing private to hide behind them — ceremony for a
-// concept that is still one file.
+// Incorrect: a folder that holds only this one file. Nothing else in it serves
+// RateLimiter, so it should be the single file src/RateLimiter.ts.
 export class RateLimiter {
 	private remaining: number;
 

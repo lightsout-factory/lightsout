@@ -2874,24 +2874,48 @@
       "defaultSeverity": "advisory",
       "defaultSettings": {},
       "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
+        "pass": 3,
+        "fail": 3
       },
-      "prose": "## Modules & the Graduation Rule\n\nA **module** is a unit of code with a public API and private internals. TypeScript enforces privacy at the file level (non-exported = invisible).\n\n**Every concept starts as a file and earns its folder:**\n\n- **File-module (default):** a single file holding one exported item plus non-exported helpers. The compiler enforces the boundary for free.\n- **Folder-module (graduated):** when a concept needs private companions — its own utils, types, or constants that serve only it — it graduates to a folder holding the concept and its companions.\n- **Born folders:** features, route modules, and screens are inherently multi-file and start as folder-modules.\n\n**The trigger is mechanical:** *needs private companion files → folder; doesn't → file.* Never create folder ceremony for a one-file concept.\n\n**Borderline cases are decided by the companion test:** does any of the concept's files serve only the concept itself? No → the concept is primitives; its files belong in `common/<type>/`. Yes → it is a module. This applies to shared code too: a shared concept with private companions graduates OUT of `common/` into its own module ([folder-structure.md](./folder-structure.md#what-lives-in-common--the-companion-test)).\n\nThe rule is recursive — a graduated component folder inside a feature folder is a module within a module.",
+      "prose": "## Module File to Folder\n\nA module is one exported item and the code only it uses.\n\n- Keep a module in one file. TypeScript hides everything a file does not export, so its helpers stay private for free.\n- Turn it into a folder only when it needs more files that only it uses, such as its own types, constants or helpers.\n- When the folder is down to one file, turn it back into a file.\n- This applies at every level, including a module inside another module's folder.",
       "fixtures": [
         {
           "side": "pass",
           "path": "src/RateLimiter.ts",
-          "text": "interface ConstructorParams {\n\tperMinute: number;\n}\n\n// One file until it needs private companions. The compiler already enforces the\n// boundary: nothing here is exported but the class itself.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ perMinute }: ConstructorParams) {\n\t\tthis.remaining = perMinute;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
+          "text": "interface ConstructorParams {\n\tperMinute: number;\n}\n\n// Correct: one file. Nothing but the class is exported, so TypeScript keeps\n// everything else in the file private.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ perMinute }: ConstructorParams) {\n\t\tthis.remaining = perMinute;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/RetryPolicy/common/types/RetryPolicyOptions.ts",
+          "text": "// Correct: this type exists for RetryPolicy, so it lives in RetryPolicy's own\n// common/types/ folder. Callers still import it from this file.\nexport interface RetryPolicyOptions {\n\tattempts: number;\n\tdelayMs: number;\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/RetryPolicy/RetryPolicy.ts",
+          "text": "import type { RetryPolicyOptions } from './common/types/RetryPolicyOptions.ts';\n\n// Correct: RetryPolicy exports its options type for callers, so it needs a\n// second file. It is a folder that holds the class and that file.\nexport class RetryPolicy {\n\tprivate readonly options: RetryPolicyOptions;\n\n\tconstructor(options: RetryPolicyOptions) {\n\t\tthis.options = options;\n\t}\n\n\tdelayFor({ attempt }: { attempt: number }): number | undefined {\n\t\treturn attempt < this.options.attempts ? this.options.delayMs * 2 ** attempt : undefined;\n\t}\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/types/RetryPolicyOptions.ts",
+          "text": "// Incorrect: this type exists for RetryPolicy, but it sits in the shared code\n// every module can reach. It belongs in a RetryPolicy/ folder.\nexport interface RetryPolicyOptions {\n\tattempts: number;\n\tdelayMs: number;\n}\n"
         },
         {
           "side": "fail",
           "path": "src/RateLimiter/RateLimiter.ts",
-          "text": "interface ConstructorParams {\n\tperMinute: number;\n}\n\n// A folder, a barrel, and nothing private to hide behind them — ceremony for a\n// concept that is still one file.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ perMinute }: ConstructorParams) {\n\t\tthis.remaining = perMinute;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
+          "text": "interface ConstructorParams {\n\tperMinute: number;\n}\n\n// Incorrect: a folder that holds only this one file. Nothing else in it serves\n// RateLimiter, so it should be the single file src/RateLimiter.ts.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ perMinute }: ConstructorParams) {\n\t\tthis.remaining = perMinute;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/RetryPolicy.ts",
+          "text": "import type { RetryPolicyOptions } from './common/types/RetryPolicyOptions.ts';\n\n// Incorrect: RetryPolicy exports its options type for callers, and a file holds\n// one export, so it needs a second file. It should be a folder, not one file.\nexport class RetryPolicy {\n\tprivate readonly options: RetryPolicyOptions;\n\n\tconstructor(options: RetryPolicyOptions) {\n\t\tthis.options = options;\n\t}\n\n\tdelayFor({ attempt }: { attempt: number }): number | undefined {\n\t\treturn attempt < this.options.attempts ? this.options.delayMs * 2 ** attempt : undefined;\n\t}\n}\n"
         }
       ],
       "example": {
-        "kind": "snippet"
+        "kind": "repo",
+        "focus": {
+          "fail": "src/RateLimiter/RateLimiter.ts",
+          "pass": "src/RetryPolicy/RetryPolicy.ts"
+        }
       }
     },
     {
