@@ -376,6 +376,7 @@ A repository that wants the strict profile promotes those rules itself — an ex
     "internal-import-from-outside": "blocking",
     "multi-export": "blocking",
     "oversized-setup-factory": "blocking",
+    "params-interface-docs": "blocking",
     "single-file-domain-folder": "blocking",
     "single-use-scalar": "blocking",
     "file-size": "blocking",
