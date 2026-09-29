@@ -1,6 +1,6 @@
 ---
 name: brainstorm
-description: Shape a vague idea into a buildable direction through dialogue — checks whether it is one idea or several, offers 2–3 competing approaches with trade-offs and a recommendation, and converges on a design stated in plain words. Use when the user has a rough idea, wants to think through a feature before planning it, or asks to brainstorm. It decides its own outcome — ready to implement, or ready to auto-plan — and always writes the design write-up and the settled decisions, publishing both to the ticket.
+description: Shape a vague idea into a buildable direction through dialogue — checks whether it is one idea or several, offers the competing approaches worth building, with trade-offs and a recommendation, and converges on a design stated in plain words. Use when the user has a rough idea, wants to think through a feature before planning it, or asks to brainstorm. It decides its own outcome — ready to implement, or ready to auto-plan — and always writes the design write-up and the settled decisions, publishing both to the ticket.
 allowed-tools: Bash, Read, Write, Grep, Glob, Task
 ---
 
@@ -40,6 +40,15 @@ decides — in everyday words — before naming any options.
 
 **Question:** the question itself, one sentence.
 
+**Vet every option before it is offered.** An option earns its place only if
+you would build it and defend it when asked "is this best practice?". Judge it
+against how established tools solve the same problem and against this
+codebase's own conventions — never against a ticket's wording, or a name or
+shape that happens to be in the conversation already. A name, key or value
+drafted inside an option passes the same test before it is written down. When
+only one option survives, present it alone and ask the user to confirm it;
+never add a weaker alternative to fill a slot.
+
 **Options:** the answers to choose between, one per line, each opening with a
 bracketed number and its name — `(1) <name>: …` — then what it wins and what it
 costs. The number is there so the user can reply with the digit alone; the name
@@ -48,7 +57,10 @@ When an option carries risk, say what goes wrong if it fails and what catches
 it.
 
 **Recommendation:** the option you recommend, named by its number, and the
-one-line why — so a reply of just that number resolves it.
+one-line why — so a reply of just that number resolves it. The why names the
+precedent the option follows when one exists ("ESLint keeps rules apart from the
+configs that select them"). A ticket's settled decisions bind the design, but
+its wording is never evidence that an option is best.
 
 **Presentation.** Each labeled part is its own short paragraph — bold label,
 blank line between parts. No bullet dashes on the labels; the blank lines
@@ -151,9 +163,10 @@ Two cases are asked before anything is added, in the Question format:
   switch the work order to multiple-plan mode. A no means this idea is not a plan
   on this work order, and the brainstorm says so rather than adding one anyway.
 
-**3. Approaches.** Present 2–3 genuinely different ways to build it, in the
-Question format — what each wins, what each costs, and which one you recommend
-and why. Skip only when the user already arrived with a chosen approach, and
+**3. Approaches.** Present the genuinely different ways to build it that pass
+the vetting rule in the Question format — usually two or three; when only one
+passes, present it alone and say in one line why the others fell. Give what
+each wins, what each costs, and which one you recommend and why. Skip only when the user already arrived with a chosen approach, and
 say so in one line.
 
 **4. Converge.** State the design back in plain words — what gets built, what

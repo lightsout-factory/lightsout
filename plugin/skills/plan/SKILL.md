@@ -45,6 +45,15 @@ decides — in everyday words — before naming any options.
 
 **Question:** the question itself, one sentence.
 
+**Vet every option before it is offered.** An option earns its place only if
+you would build it and defend it when asked "is this best practice?". Judge it
+against how established tools solve the same problem and against this
+codebase's own conventions — never against a ticket's wording, or a name or
+shape that happens to be in the conversation already. A name, key or value
+drafted inside an option passes the same test before it is written down. When
+only one option survives, present it alone and ask the user to confirm it;
+never add a weaker alternative to fill a slot.
+
 **Options:** the answers to choose between, one per line, each opening with a
 bracketed number and its name — `(1) <name>: …` — then what it wins and what it
 costs. The number is there so the user can reply with the digit alone; the name
@@ -53,7 +62,10 @@ When an option carries risk, say what goes wrong if it fails and what catches
 it.
 
 **Recommendation:** the option you recommend, named by its number, and the
-one-line why — so a reply of just that number resolves it.
+one-line why — so a reply of just that number resolves it. The why names the
+precedent the option follows when one exists ("ESLint keeps rules apart from the
+configs that select them"). A ticket's settled decisions bind the design, but
+its wording is never evidence that an option is best.
 
 **Presentation.** Each labeled part is its own short paragraph — bold label,
 blank line between parts. No bullet dashes on the labels; the blank lines
@@ -391,8 +403,10 @@ conditional). Run this step only when the design shape is not already settled
 naming the chosen approach; [Settled decisions](#settled-decisions) is the
 test. When it is settled, say so in one line ("Design shape settled during
 Elicitation — skipping approaches", or "Approach settled during brainstorm —
-skipping approaches") and move on — never skip silently. Present 2–3 genuinely
-different approaches in the Question format: Context states the design problem
+skipping approaches") and move on — never skip silently. Present the genuinely
+different approaches that pass the vetting rule in the Question format — usually
+two or three; when only one passes, present it alone and say in one line why the
+others fell. Context states the design problem
 in everyday words, Question asks which to build, Options gives each approach
 with its wins and costs, Recommendation names one by number with the one-line
 why. Record the
