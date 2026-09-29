@@ -24,8 +24,9 @@ only what is particular to this pack and this repo.
 
 ## In This Pack
 
-- **Prefixes this pack uses:** `test-` (a rule about a test file), `barrel-`,
-  `class-` and `duplicate-`. `path-` named how a check worked, and is retired.
+- **Prefixes this pack uses:** `no-` (a ban), `prefer-` (a default), and
+  subject prefixes: `test-` (a rule about a test file), `barrel-`, `class-` and
+  `duplicate-`. `path-` named how a check worked, and is retired.
 - **Shared words:** ids are also read in the `durableRuleIds` ledger, so
   `test-in-tests-folder` keeps its `test-`. `test-mega-factory` became
   `oversized-setup-factory`: a setup factory is a test-only thing, so `test-`

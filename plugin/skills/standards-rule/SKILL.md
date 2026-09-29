@@ -101,18 +101,22 @@ the rule's page.
    reader knows what it covers without opening it. Not the mechanism that finds
    a break, not the input a check reads, not the fix. `import-scanner` names a
    detector; `import-from-declaring-file` names what the rule decides.
-2. **One style for every rule, however it is checked.** A rule that gains or
-   loses a check keeps its name. No lint-style `no-` or `prefer-` prefixes: a
-   rule is guidance, not a yes-or-no switch.
+2. **The name says what kind of rule it is:**
+   - `no-<thing>` when the rule is a ban.
+   - `prefer-<thing>` when the rule is a default the model may depart from.
+   - A topic name when the rule is a set of instructions, such as
+     `module-file-to-folder`.
+
+   A rule that gains or loses a code check keeps its name.
 3. **Kebab-case, two to five words, no term a reader outside the project would
    have to look up.** Words like `ast` or `census` fail this.
 4. **Use words engineers already know**, not labels a reader must learn:
    `helper-file-placement`, not `satellite-rule`.
-5. **A prefix only when it names the subject the rule is about**, such as
-   `test-` for a rule about test files — never one that names how the check
-   works.
+5. **Any other prefix names the subject the rule is about**, such as `test-`
+   for a rule about test files — never how the check works.
 6. **The id must not read as the opposite of what it asks for.**
-   `allow-default-export` fails for a rule that forbids default exports.
+   `allow-default-export` fails for a rule that bans default exports; name it
+   `no-default-export`.
 7. **Word order follows English:** `duplicate-export-name`, not
    `name-duplicate`. An id that reads as a database column name fails.
 8. **A word the id shares with its document is not always a repeat.** Ids are
@@ -151,10 +155,9 @@ with.
   short sentence. An agent uses the reason to decide cases the rule does not
   name.
 - **Say what to do**, not only what is bad.
-- **No soft words.** "Consider", "usually" and "where it makes sense" let an
-  agent skip the rule. Say "always", or name the exception.
-- **An exception is a test the agent can apply.** An exception it cannot apply,
-  such as "unless the case is simple", is defined or removed.
+- **Write as much as the agent needs to get it right:** list exceptions where
+  they matter, and give the reason so the agent can judge the cases you don't
+  list.
 - **Cover both directions where they exist:** when to split something, and when
   to merge it back.
 - **One rule, one job:** leave out anything another rule already covers.
