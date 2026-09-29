@@ -7,7 +7,6 @@ import { isTestFile } from '../paths/isTestFile.ts';
 import type { FileExport } from '../types/FileExport.ts';
 
 interface Params {
-	/** The rule id these findings answer for. */
 	rule: string;
 	/** What one file's exports violate, or undefined when the file is clean. */
 	detail: ({ file, exports }: { file: string; exports: FileExport[] }) => string | undefined;
@@ -21,19 +20,9 @@ interface Params {
 }
 
 /**
- * A whole check for a rule that judges a source file by the exports it
- * declares.
- *
- * Every such rule exempts the same two kinds of file for the same reasons — a
- * barrel declares nothing of its own, and the test standards own test files —
- * and every one reaches its verdict the same way: read what the file exports,
- * then either say something about it or say nothing. Only the judgment and the
- * wording differ, so a rule states those and this supplies the rest, leaving
- * the shared half no copy to drift apart from.
- *
- * A rule with an exemption of its own — a framework that names files a document
- * does not get to rename — supplies `getExempt`, which is asked once for the
- * whole run.
+ * Barrels are exempt because they declare nothing of their own, and test files
+ * because the test standards own them. `getExempt` is asked once for the whole
+ * run, since a framework carve-out needs every manifest to answer.
  *
  * One finding per file, since the work is "open this file and fix what it
  * says".

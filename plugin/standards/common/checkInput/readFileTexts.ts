@@ -7,10 +7,6 @@ interface Params {
 }
 
 /**
- * The scope and the text a check was handed, for the rules that must read a
- * file rather than judge it by its path — a barrel's re-export lines, a name's
- * references across the repo.
- *
  * An input of any other kind yields an empty scope, for the same reason
  * `readPathLists` does: a rule that declared `file-text` is never handed
  * another kind.

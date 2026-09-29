@@ -2,10 +2,8 @@ import type { CallBlock } from '../types/CallBlock.ts';
 import { blankStringsAndComments } from './blankStringsAndComments.ts';
 import { getLineNumber } from './getLineNumber.ts';
 
-/** A title argument: the call's first argument when it is a string literal. */
 const titleSpan = /^\s*(['"`])((?:\\.|[^\\])*?)\1/;
 
-/** Index of the bracket closing the one at `open` — the mask's length when the source is unbalanced. */
 const closeIndexOf = ({ mask, open, closeChar }: { mask: string; open: number; closeChar: string }) => {
 	const openChar = mask.charAt(open);
 	let depth = 0;
@@ -24,7 +22,7 @@ const closeIndexOf = ({ mask, open, closeChar }: { mask: string; open: number; c
 	return cursor;
 };
 
-/** Index just past the first `=>` sitting outside every bracket — 0 when there is none, so the caller reads the whole span. */
+/** 0 when there is no top-level `=>`, so the caller reads the whole span. */
 const arrowEnd = ({ mask }: { mask: string }) => {
 	let depth = 0;
 	let end = 0;
@@ -46,9 +44,6 @@ interface Params {
 }
 
 /**
- * Every call to one of `callees` in a file, with its callback body and its
- * nesting depth.
- *
  * A text-level pass, deliberately: resolving these through a parser would make
  * every test-shape rule depend on a consumer TypeScript, and their value is that
  * they run on any repo. What it cannot do is see through a helper that wraps

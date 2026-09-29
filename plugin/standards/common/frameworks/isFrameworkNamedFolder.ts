@@ -10,15 +10,9 @@ interface Params {
 }
 
 /**
- * Whether the framework mandates this folder's name, which is what exempts it
- * from the banned-module-name rule.
- *
- * It reads `exemptFolderNames`, which no framework in today's table fills: React
- * mandates no layout and NestJS wires by decorators rather than by folder, so
- * neither one's familiar vocabulary is a fact its documents state. The question
- * answers `no` everywhere until a real mandate appears, and it stays in the
- * vocabulary so the rule that would need it already asks — a framework that does
- * mandate a name is then one table entry away rather than a new exception layer.
+ * No framework in the carve-out table fills `exemptFolderNames` yet, so this
+ * answers `no` everywhere until a real mandate appears; it stays so a framework
+ * that does mandate a name is one table entry away.
  *
  * Matched inside the governing package's `src/` only, so a repo's fixture trees
  * and test helpers cannot pick up a mandate meant for source.

@@ -6,9 +6,6 @@ interface Params {
 }
 
 /**
- * `src/feature` + `./thing` flattened to `src/feature/thing`, with `..`
- * segments walked and `.` segments dropped.
- *
  * String work rather than `node:path` for the reason every path helper here is:
  * a check imports only from inside its own package, and the paths it is handed
  * are repo-relative and `/`-separated on every machine.

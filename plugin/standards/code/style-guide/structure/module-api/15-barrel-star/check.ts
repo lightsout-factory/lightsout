@@ -10,12 +10,9 @@ import { isBarrelFile } from '../../../../../common/paths/isBarrelFile.ts';
 
 export const check: StandardsCheckModule = {
 	inputKind: 'file-text',
-	// `export *` publishes whatever the target happens to export today, which is
-	// the opposite of a contract that lists exactly what consumers may use. A
-	// package's entry is where that contract matters most — other packages build
-	// against it — so every index file is judged, the entry included. Whether a
-	// folder should have one at all is `folder-index-file`'s question; a route
-	// the framework loads is no index file.
+	// `export *` publishes whatever the target happens to export, the opposite of
+	// a contract listing what consumers may use. A package's entry is where that
+	// contract matters most, so every index file is judged, the entry included.
 	run: ({ input }): RawStandardsFinding[] => {
 		const { files, contents } = readFileTexts({ input });
 		const fileSet = new Set(files);

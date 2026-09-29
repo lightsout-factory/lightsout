@@ -3,10 +3,8 @@ import { joinPath } from '../paths/joinPath.ts';
 import type { PackageEntries } from '../types/PackageEntries.ts';
 import { isRecord } from '../utils/isRecord.ts';
 
-/** The manifest fields that name a file other packages load. `exports` may nest conditions and subpaths to any depth. */
 const entryFields = ['main', 'module', 'types', 'typings', 'exports'];
 
-/** Every path string a manifest field holds, however deeply `exports` nests its conditions and subpaths. */
 const collectTargets = ({ value }: { value: unknown }): string[] => {
 	if (typeof value === 'string') {
 		return [value];
@@ -19,7 +17,6 @@ const collectTargets = ({ value }: { value: unknown }): string[] => {
 	return isRecord(value) ? Object.values(value).flatMap((item) => collectTargets({ value: item })) : [];
 };
 
-/** The parsed manifest, or undefined when the text is not one. */
 const parseManifest = ({ text }: { text: string }) => {
 	try {
 		const data: unknown = JSON.parse(text);
@@ -36,9 +33,6 @@ interface Params {
 }
 
 /**
- * Which folders are packages, and which files their manifests publish — the
- * answer to "is this `index.ts` a package's entry, or a folder's?".
- *
  * Both halves are needed because a manifest may name its entry in the built
  * output rather than the source: `"exports": "./dist/index.js"` publishes a
  * file this run never sees, while the `src/index.ts` it is built from sits

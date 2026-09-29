@@ -3,18 +3,14 @@ import type ts from 'typescript';
 import { buildTreeLineCheck } from '../../../../../common/checks/buildTreeLineCheck.ts';
 
 /**
- * Whether an assertion is the `as const` form. That one asserts nothing about a
- * value's type — it freezes a literal — and the named-constants document asks
- * for it by name, so it is not what this rule bans.
+ * `as const` asserts nothing about a value's type — it freezes a literal — and
+ * the named-constants document asks for it by name.
  */
 const isAsConst = ({ node, compiler }: { node: ts.AsExpression; compiler: typeof ts }) =>
 	compiler.isTypeReferenceNode(node.type) && compiler.isIdentifier(node.type.typeName) && node.type.typeName.text === 'const';
 
 /**
- * The lines in one file carrying an `as` cast, 1-based.
- *
- * Only source files reach a check declaring this input — the engine hands over
- * parsed trees for source and keeps test files separate — so the document's
+ * Only source files reach a check declaring this input, so the document's
  * test-file allowance for `as unknown as T` needs nothing here to hold.
  */
 const getAssertionLines = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {

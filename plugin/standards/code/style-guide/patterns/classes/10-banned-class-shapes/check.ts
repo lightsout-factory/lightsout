@@ -2,7 +2,6 @@ import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/stand
 import type ts from 'typescript';
 import { buildClassFindings } from '../../../../../common/findings/buildClassFindings.ts';
 
-/** Whether a class member carries one of the keywords the two banned shapes turn on. */
 const hasModifier = ({ member, kind, compiler }: { member: ts.ClassElement; kind: ts.SyntaxKind; compiler: typeof ts }) => {
 	const modifiers =
 		compiler.isPropertyDeclaration(member) ||
@@ -16,12 +15,9 @@ const hasModifier = ({ member, kind, compiler }: { member: ts.ClassElement; kind
 };
 
 /**
- * The classes the four criteria never licensed, and nothing but the declaration
- * is needed to say so.
- *
  * A class the framework mandates is out of scope: a decorated class is a NestJS
  * service or resolver, and an abstract one is the shared interface criterion (c)
- * describes, so neither is the module-in-a-costume this rule bans.
+ * describes.
  */
 const getBannedShape = ({ node, compiler }: { node: ts.ClassDeclaration; compiler: typeof ts }) => {
 	const isFrameworkOwned = (node.modifiers ?? []).some((modifier) => compiler.isDecorator(modifier) || modifier.kind === compiler.SyntaxKind.AbstractKeyword);

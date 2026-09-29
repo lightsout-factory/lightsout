@@ -3,10 +3,8 @@ import type { FrameworkCarveOut } from '../types/FrameworkCarveOut.ts';
 import { getBaseName } from './getBaseName.ts';
 
 /**
- * The segments that open a test filename's suffix — the kind markers this
- * repo's own names use, and the two markers `isTestFile` reads. A closed set
- * is the point: under a router root the dots before it are route segments, so
- * only a named suffix may be stripped.
+ * A closed set on purpose: under a router root the dots before the suffix are
+ * route segments, so only a named suffix may be stripped.
  */
 const testSuffixSegments = new Set(['unit', 'integration', 'e2e', 'test', 'spec']);
 
@@ -25,9 +23,6 @@ interface Params {
 }
 
 /**
- * A test file's first name segment — the name of the subject it must sit
- * beside.
- *
  * Everything from the first dot on is qualifier and suffix
  * (`runPipeline.monorepo.unit.test.ts` names `runPipeline`), so the subject is
  * what precedes it.

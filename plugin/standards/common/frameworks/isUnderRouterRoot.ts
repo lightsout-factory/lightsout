@@ -9,10 +9,6 @@ interface Params {
 }
 
 /**
- * Whether a path sits inside a directory the package's router owns — the one
- * place a framework, not these documents, decides what files and folders are
- * called.
- *
  * Matched only DIRECTLY under the package's `src/`: at arbitrary depth an
  * ordinary domain folder called `routes` would exempt its whole subtree from
  * rules that have every reason to judge it.

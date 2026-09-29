@@ -10,10 +10,8 @@ interface Params {
 }
 
 /**
- * Whether a file is one other packages load: an index file at a package's root
- * or its `src/`, or any file the manifest names.
- *
- * Both, because a manifest may name its entry in the built output — `./dist/
+ * An index file at a package's root or its `src/` counts as well as any file
+ * the manifest names, because a manifest may name its entry in the built output — `./dist/
  * index.js` — which a run never sees, while the `src/index.ts` it is built from
  * is right here; and because a subpath export can point anywhere, a folder's
  * `index.ts` included.

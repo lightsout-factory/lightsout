@@ -3,7 +3,6 @@ import type ts from 'typescript';
 import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
 import { collectFunctionNodes } from '../../../../../common/parsing/collectFunctionNodes.ts';
 
-/** One function measured over the cap its name earned, in the words the finding reports it. */
 interface Oversized {
 	kind: string;
 	name: string;
@@ -13,12 +12,6 @@ interface Oversized {
 	endLine: number;
 }
 
-/**
- * The cap a function owes and the word for what it is. The name decides first —
- * a `use`-prefixed function is a hook wherever it lives — then the file: a
- * capitalized function in a `.tsx` is a component. Everything else is a plain
- * function on the table's own cap.
- */
 const getSizeCap = ({ name, path, settings }: { name: string; path: string; settings: Record<string, number> }) => {
 	let sized = { cap: settings.function, kind: 'function' };
 
@@ -32,11 +25,8 @@ const getSizeCap = ({ name, path, settings }: { name: string; path: string; sett
 };
 
 /**
- * Every function in one file that runs past its cap.
- *
- * Nested function-likes are walked too, but a callback nobody named inherits its
- * parent's budget rather than earning one of its own — the parent is the
- * function anyone would split.
+ * A callback nobody named inherits its parent's budget rather than earning one
+ * of its own: the parent is the function anyone would split.
  */
 const getOversized = ({
 	path,

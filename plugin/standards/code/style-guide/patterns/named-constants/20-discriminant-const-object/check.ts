@@ -3,20 +3,13 @@ import type ts from 'typescript';
 import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
 import { getOwningPack } from '../../../../../common/paths/getOwningPack.ts';
 
-/** The 1-based line a node starts on. */
 const lineOf = ({ sourceFile, node }: { sourceFile: ts.SourceFile; node: ts.Node }) => sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
 
 /**
- * Every string an `as const` object in the run holds, against the files that
- * declare it.
- *
- * The rule is about a family that HAS a const object — that is what a narrowing
- * site is supposed to reference. Without this the checker alone would call any
- * union of string literals a family, and report every `typeof value === 'string'`
- * guard and every inline literal union in the repo.
- *
- * The declaring paths are kept because reachability decides the rest: a site can
- * only reference an object it is allowed to import.
+ * Without the const objects the checker alone would call any literal union a
+ * family, and report every `typeof value === 'string'` guard in the repo. The
+ * declaring paths are kept because a site can only reference an object it is
+ * allowed to import.
  */
 const readConstStrings = ({ typedFiles, compiler }: { typedFiles: TypeCheckerInput['typedFiles']; compiler: typeof ts }) => {
 	const strings = new Map<string, Set<string>>();
@@ -47,7 +40,6 @@ const readConstStrings = ({ typedFiles, compiler }: { typedFiles: TypeCheckerInp
 	return strings;
 };
 
-/** Lines where a field is typed as a bare string literal — the declaration half of the rule. */
 const declarationLines = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {
 	const lines: number[] = [];
 
@@ -65,14 +57,9 @@ const declarationLines = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile;
 };
 
 /**
- * The family a compared expression belongs to, when it belongs to one: the name
- * of its declared type, and the strings that type admits.
- *
- * This is the question only a checker can answer. The expression's DECLARED
- * type is what says whether a literal is a discriminant, and that declaration
- * is almost never in the file doing the comparing — the whole cost the rule
- * names is paid one import away. A type that is a string literal, or a union of
- * them, is a family; `string` is not, and neither is anything else.
+ * Only a checker can answer this: the expression's DECLARED type says whether a
+ * literal is a discriminant, and that declaration is almost never in the file
+ * doing the comparing.
  */
 const readFamily = ({ node, checker }: { node: ts.Expression; checker: ts.TypeChecker }) => {
 	const type = checker.getTypeAtLocation(node);
@@ -88,14 +75,8 @@ const readFamily = ({ node, checker }: { node: ts.Expression; checker: ts.TypeCh
 };
 
 /**
- * Lines narrowing a field against a raw string literal its own declared type
- * already names — the narrowing half, and the half the rule's prose is about:
- * "otherwise consumers retype the literal at every narrowing site".
- *
- * Both ways of narrowing count. `event.kind === 'file-added'` and
- * `switch (event.kind) { case 'file-added': }` retype the same literal, and a
- * rule that saw only the first would send an agent to fix an `if` and walk past
- * the switch beneath it.
+ * `===` and `switch` both count: a rule that saw only the first would send an
+ * agent to fix an `if` and walk past the switch beneath it.
  */
 const narrowingSites = ({
 	sourceFile,
@@ -108,7 +89,6 @@ const narrowingSites = ({
 	checker: ts.TypeChecker;
 	compiler: typeof ts;
 	constStrings: Map<string, Set<string>>;
-	/** Whether the file may import a const object declared at this path. */
 	reachable: (params: { declaringPath: string }) => boolean;
 }) => {
 	const sites: Array<{ line: number; family: string }> = [];
@@ -161,11 +141,9 @@ const narrowingSites = ({
 
 const formatLineList = ({ lines }: { lines: number[] }) => `at ${lines.length > 1 ? 'lines' : 'line'} ${lines.join(', ')}`;
 
-// Asks for the checker, not just the tree. The declaration half is decidable
-// from syntax alone — `kind: 'file-added'` and a default value spelled the same
-// way differ only by position — but the narrowing half is not: whether a
-// compared literal is a discriminant depends on the DECLARED type of the thing
-// it is compared against, which lives in another file.
+// Asks for the checker, not just the tree: whether a compared literal is a
+// discriminant depends on the DECLARED type of what it is compared against,
+// which lives in another file.
 export const check: StandardsCheckModule = {
 	inputKind: 'type-checker',
 	run: ({ input }): RawStandardsFinding[] => {
@@ -176,10 +154,8 @@ export const check: StandardsCheckModule = {
 		const constStrings = readConstStrings({ typedFiles: input.typedFiles, compiler: input.compiler });
 		const findings: RawStandardsFinding[] = [];
 
-		// Reported on source only. `typedFiles` also carries tests and files
-		// outside the run's scope, because the evidence above needs them typed —
-		// but a test narrowing a string is the test's own business, and a file
-		// nobody asked about is not this run's to report.
+		// Reported on source only. `typedFiles` also carries tests and out-of-scope
+		// files because the evidence above needs them typed.
 		for (const path of input.source) {
 			const typed = input.typedFiles.get(path);
 
@@ -188,12 +164,10 @@ export const check: StandardsCheckModule = {
 			}
 
 			const { sourceFile, checker } = typed;
-			// A rule's check ships as a bare directory beside the engine, with no
-			// manifest and no `node_modules`, so every VALUE it imports has to resolve
-			// inside its own pack. A discriminant declared anywhere else is a value it
-			// may not name — which is why every `check.ts` in the world writes
-			// `input.kind !== 'syntax-tree'` with the literal spelled out, and why
-			// doing so is not this rule's finding.
+			// A check ships as a bare directory with no `node_modules`, so every value
+			// it imports must resolve inside its own pack. A discriminant declared
+			// anywhere else is one it may not name, so spelling out its literal is not
+			// this rule's finding.
 			const home = getOwningPack({ path, standardsPacks: input.standardsPacks });
 			const declarations = declarationLines({ sourceFile, compiler: input.compiler });
 			const narrowings = narrowingSites({

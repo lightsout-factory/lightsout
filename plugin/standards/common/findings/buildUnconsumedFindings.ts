@@ -5,7 +5,6 @@ import type { UnconsumedExport } from '../types/UnconsumedExport.ts';
 import { buildRawFinding } from './buildRawFinding.ts';
 
 interface Params {
-	/** Files in scope, from the file-text input. */
 	files: string[];
 	/** Text for every file in scope and every reference file. */
 	contents: Map<string, string>;
@@ -13,7 +12,6 @@ interface Params {
 	standardsPacks: string[];
 	/** Every package's framework carve-outs, forwarded to the reference counting. */
 	carveOuts: FrameworkCarveOut[];
-	/** The rule id claiming this verdict. */
 	rule: string;
 	/** Which unconsumed exports this rule claims — the verdicts are mutually exclusive, so each export lands in at most one rule. */
 	matches: ({ test }: UnconsumedExport['reachedBy']) => boolean;
@@ -23,15 +21,9 @@ interface Params {
 }
 
 /**
- * The findings one verdict earns over a repo's unconsumed exports, with every
- * such export of a single file gathered into one finding that names each.
- *
- * Several rules read the same reference count and differ only in which verdict
- * they claim, so the counting, the grouping and the sentence shape live here
- * once: a rule states its verdict and the prose it reports under, nothing else.
- * Splitting them into rules rather than one is what lets a repo switch off the
- * verdict it disagrees with — a deliberate public API is not a defect — while
- * keeping the others.
+ * Split into several rules rather than one so a repo can switch off the verdict
+ * it disagrees with — a deliberate public API is not a defect — while keeping
+ * the others.
  */
 export const buildUnconsumedFindings = ({ files, contents, standardsPacks, carveOuts, rule, matches, detail, guidance }: Params): RawStandardsFinding[] => {
 	const byFile = new Map<string, string[]>();

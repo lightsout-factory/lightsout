@@ -2,38 +2,25 @@ import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from 
 import type ts from 'typescript';
 import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
 
-/** The leftmost identifier of a type reference's name — `Repository` in `Repository` and in `orm.Repository`, which is the name an import binds. */
 const getRootTypeName = ({ name, compiler }: { name: ts.EntityName; compiler: typeof ts }): ts.Identifier =>
 	compiler.isIdentifier(name) ? name : getRootTypeName({ name: name.left, compiler });
 
-/** Whether a declaration carries a decorator of its own. */
 const isDecorated = ({ node, compiler }: { node: ts.HasDecorators; compiler: typeof ts }) => (compiler.getDecorators(node)?.length ?? 0) > 0;
 
 /**
- * Whether a type reference sits where `emitDecoratorMetadata` emits it as a
- * runtime value — a decorated class's constructor parameters, a decorated
- * method's parameters, a decorated property's type, a decorated method's return
- * type.
+ * The positions `emitDecoratorMetadata` turns into runtime values, which is
+ * how NestJS's dependency injection and validation pipes read a type. Written
+ * as `import type` the name erases and the app breaks at runtime, with nothing
+ * in the build saying so.
  *
- * Those four are exactly the positions the compiler turns into a
- * `design:paramtypes`, `design:type` or `design:returntype` entry, which is how
- * NestJS's dependency injection and its validation pipes read the type at all.
- * Written as `import type` the name erases and the metadata becomes `undefined`
- * — the app breaks at runtime, and nothing in the build says so.
- *
- * Read from the decorator rather than from the tsconfig flag on purpose: a
- * decorated class in a repo without `emitDecoratorMetadata` is vanishingly
- * rare, and the two mistakes are not the same size — the false positive costs a
- * broken app, the false negative one unflagged import.
- *
- * An undecorated member of a decorated class is NOT one of these positions. The
- * line is what the compiler emits metadata for, not the class as a whole.
+ * Read from the decorator rather than the tsconfig flag on purpose: a false
+ * positive costs a broken app, a false negative one unflagged import. An
+ * undecorated member of a decorated class is NOT one of these positions.
  */
 const isMetadataPosition = ({ reference, compiler }: { reference: ts.TypeReferenceNode; compiler: typeof ts }) => {
 	const { parent } = reference;
-	// The one test every position below shares — the reference IS the declared
-	// type, not something nested inside the declaration — written once, so a
-	// fifth position added later cannot be the one that forgets it.
+	// The reference IS the declared type, not something nested inside it —
+	// written once, so a position added later cannot forget it.
 	const declaresThisType =
 		(compiler.isParameter(parent) || compiler.isPropertyDeclaration(parent) || compiler.isMethodDeclaration(parent)) && parent.type === reference;
 	// `design:paramtypes`: the parameter list of a decorated constructor's class,
@@ -51,15 +38,10 @@ const isMetadataPosition = ({ reference, compiler }: { reference: ts.TypeReferen
 };
 
 /**
- * Every name the file mentions, split by whether the mention sits inside a type
- * node. The import clause itself is skipped — it binds the names, it does not
- * use them — and `typeof X` counts as a type position, since that is exactly
- * the form `import type` still permits.
- *
- * The one type position that counts as a VALUE use is a reference decorator
- * metadata emits, and only its OUTERMOST reference: the metadata carries the
- * outer constructor and nothing inside it, so `Repository` in
- * `Repository<Event>` is emitted while `Event` erases exactly as it always did.
+ * `typeof X` counts as a type position, since that is the form `import type`
+ * still permits. The one type position that counts as a VALUE use is the
+ * outermost reference decorator metadata emits: `Repository` in
+ * `Repository<Event>` is emitted while `Event` erases.
  */
 const collectNameUses = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {
 	const inTypes = new Set<string>();
@@ -89,11 +71,6 @@ const collectNameUses = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; 
 	return { inTypes, inValues };
 };
 
-/**
- * The local names one import clause binds as values. A clause already written
- * `import type`, and a specifier already written `type X`, bind nothing here —
- * they erase already, which is the whole point of the rule.
- */
 const getValueBindings = ({ declaration, compiler }: { declaration: ts.ImportDeclaration; compiler: typeof ts }) => {
 	const clause = declaration.importClause;
 	const names: string[] = [];
@@ -117,7 +94,6 @@ const getValueBindings = ({ declaration, compiler }: { declaration: ts.ImportDec
 	return names;
 };
 
-/** The module specifiers of one file's imports that every reference proves type-only. */
 const getTypeOnlySpecifiers = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {
 	const { inTypes, inValues } = collectNameUses({ sourceFile, compiler });
 	const specifiers: string[] = [];

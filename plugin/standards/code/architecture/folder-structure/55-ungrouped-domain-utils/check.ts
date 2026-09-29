@@ -6,13 +6,9 @@ import { getBaseName } from '../../../../common/paths/getBaseName.ts';
 import { getDirectory } from '../../../../common/paths/getDirectory.ts';
 
 /**
- * Leading verbs that describe how a value is reached rather than what it is
- * about. A domain folder is named for its subject — `formatting/`,
- * `validation/`, `parsing/` — and those names come from verbs that carry a
- * subject with them. These do not: grouping on them yields `predicates/`,
- * `getters/`, `resolution/`, `builders/`, which are folders named for the ROLE
- * of the code they hold — banned outright by this document. Two `is*` functions
- * are two predicates, not a shared domain, so they never get a folder.
+ * Leading verbs that say how a value is reached rather than what it is about.
+ * Grouping on them yields `predicates/` or `getters/`, folders named for the
+ * ROLE of their code, which this document bans outright.
  */
 const accessVerbs = new Set([
 	'is',
@@ -50,14 +46,12 @@ const accessVerbs = new Set([
 	'apply',
 ]);
 
-/** The leading word of an export name, camelCase boundaries and separators alike. */
 const getFirstToken = ({ name }: { name: string }) =>
 	name
 		.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
 		.split(/[\s\-_.]+/)[0]
 		?.toLowerCase() ?? '';
 
-/** Production files under each `utils/` folder, gathered by the verb their names lead with. */
 const groupUtilsByVerb = ({ files }: { files: string[] }) => {
 	const byDirectory = new Map<string, Map<string, string[]>>();
 

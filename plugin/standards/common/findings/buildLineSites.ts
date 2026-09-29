@@ -8,8 +8,6 @@ interface Params {
 }
 
 /**
- * A finding's `files` entries for several sites in one file.
- *
  * The site key dedupes on path, so the extra entries carry each location
  * without splitting one file's violations into separate findings to accept or
  * resolve.
