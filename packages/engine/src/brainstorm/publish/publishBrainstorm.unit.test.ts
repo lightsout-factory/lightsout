@@ -57,7 +57,7 @@ const trackerBlock: LightsoutConfig['ticket-tracker'] = { ...ticketTrackerConfig
 const env = { LINEAR_API_KEY: 'lin_key' };
 
 const setupBrainstorm = ({
-	folder = 'lo-117-brainstorm-decides-its-outcome',
+	folder = 'lo-117-brainstorm-decides-its-outcome/001-x',
 	files = { 'brainstorm-notes.md': '# the design\n', 'brainstorm-decisions.json': '[]\n' },
 	tickets = [{ id: 'id-117', identifier: 'LO-117' }],
 	uploadFailures = {},
@@ -102,6 +102,7 @@ const setupBrainstorm = ({
 			config: { gates, 'ticket-tracker': trackerBlock },
 			env,
 			onProgress: (message: string) => progress.push(message),
+			titlePrefix: '001-x',
 		},
 	};
 };
@@ -112,7 +113,7 @@ const setupBrainstorm = ({
  * the record.
  */
 const setupRecordedWorkOrder = () => {
-	const { params } = setupBrainstorm({ folder: 'alpha-redesign', tickets: [{ id: 'id-901', identifier: 'LO-901' }], ticketRef: 'LO-901' });
+	const { params } = setupBrainstorm({ folder: 'alpha-redesign/001-x', tickets: [{ id: 'id-901', identifier: 'LO-901' }], ticketRef: 'LO-901' });
 
 	seedWorkOrderRecord({ cwd: params.cwd, name: 'alpha-redesign', branch: 'feature/alpha-redesign', ticketRef: 'LO-901' });
 
@@ -120,35 +121,8 @@ const setupRecordedWorkOrder = () => {
 };
 
 describe('publishBrainstorm', () => {
-	test('publishBrainstorm: attaches both brainstorm files and commits them with brainstorm-attachments.json last', async () => {
-		const { params } = setupBrainstorm();
-
-		const report = await publishBrainstorm(params);
-
-		expect(report).toStrictEqual({
-			ticketRef: 'lo-117',
-			published: ['brainstorm-notes.md', 'brainstorm-decisions.json', 'brainstorm-attachments.json'],
-		});
-		expect(mockSetTicketAttachment.mock.calls.map(([call]) => ({ ticketId: call.ticketId, title: call.title }))).toStrictEqual([
-			{ ticketId: 'id-117', title: 'brainstorm-notes.md' },
-			{ ticketId: 'id-117', title: 'brainstorm-decisions.json' },
-			{ ticketId: 'id-117', title: 'brainstorm-attachments.json' },
-		]);
-	});
-
-	test('publishBrainstorm: refuses with no tracker write when brainstorm-decisions.json is not on disk', async () => {
-		const { params } = setupBrainstorm({ files: { 'brainstorm-notes.md': '# the design\n' } });
-
-		const report = await publishBrainstorm(params);
-
-		expect(report.published).toStrictEqual([]);
-		expect(report.error ?? '').toMatch(/brainstorm-decisions\.json/u);
-		expect(mockGetTicketsByIdentifiers).not.toHaveBeenCalled();
-		expect(mockSetTicketAttachment).not.toHaveBeenCalled();
-	});
-
 	test('publishBrainstorm: refuses a work order whose record carries no ticket reference', async () => {
-		const { params } = setupBrainstorm({ folder: 'brainstorm-decides-its-outcome', ticketRef: null });
+		const { params } = setupBrainstorm({ folder: 'brainstorm-decides-its-outcome/001-x', ticketRef: null });
 
 		const report = await publishBrainstorm(params);
 
@@ -159,26 +133,23 @@ describe('publishBrainstorm', () => {
 
 	test('publishBrainstorm: reports the files that landed when the tracker refuses the second attachment', async () => {
 		const { params } = setupBrainstorm({
-			uploadFailures: { 'brainstorm-decisions.json': "uploading 'brainstorm-decisions.json' failed: 403 Forbidden" },
+			uploadFailures: { '001-x--brainstorm-decisions.json': "uploading 'brainstorm-decisions.json' failed: 403 Forbidden" },
 		});
 
 		const report = await publishBrainstorm(params);
 
 		expect(report).toStrictEqual({
 			ticketRef: 'lo-117',
-			published: ['brainstorm-notes.md'],
+			published: ['001-x--brainstorm-notes.md'],
 			error: "uploading 'brainstorm-decisions.json' failed: 403 Forbidden",
 		});
-		expect(mockSetTicketAttachment.mock.calls.map(([call]) => call.title)).toStrictEqual(['brainstorm-notes.md', 'brainstorm-decisions.json']);
+		expect(mockSetTicketAttachment.mock.calls.map(([call]) => call.title)).toStrictEqual(['001-x--brainstorm-notes.md', '001-x--brainstorm-decisions.json']);
 	});
 
-	test("publishBrainstorm: with a title prefix, publishes brainstorm-notes.md alone when brainstorm-decisions.json is absent, under the plan's prefix", async () => {
-		const { params } = setupBrainstorm({
-			folder: 'lo-117-brainstorm-decides-its-outcome/001-x',
-			files: { 'brainstorm-notes.md': '# the design\n' },
-		});
+	test("publishBrainstorm: publishes brainstorm-notes.md alone when brainstorm-decisions.json is absent, under the plan's prefix", async () => {
+		const { params } = setupBrainstorm({ files: { 'brainstorm-notes.md': '# the design\n' } });
 
-		const report = await publishBrainstorm({ ...params, titlePrefix: '001-x' });
+		const report = await publishBrainstorm(params);
 
 		const marker = mockSetTicketAttachment.mock.calls.map(([call]) => call).at(-1);
 		expect(report).toStrictEqual({
@@ -193,10 +164,10 @@ describe('publishBrainstorm', () => {
 		});
 	});
 
-	test("publishBrainstorm: with a title prefix, attaches both files and the marker under the plan's prefix", async () => {
-		const { params } = setupBrainstorm({ folder: 'lo-117-brainstorm-decides-its-outcome/001-x' });
+	test("publishBrainstorm: attaches both files and the marker under the plan's prefix", async () => {
+		const { params } = setupBrainstorm();
 
-		const report = await publishBrainstorm({ ...params, titlePrefix: '001-x' });
+		const report = await publishBrainstorm(params);
 
 		const marker = mockSetTicketAttachment.mock.calls.map(([call]) => call).at(-1);
 		expect(report).toStrictEqual({
@@ -218,13 +189,10 @@ describe('publishBrainstorm', () => {
 		});
 	});
 
-	test('publishBrainstorm: with a title prefix, refuses with no tracker write when brainstorm-notes.md is not on disk', async () => {
-		const { params } = setupBrainstorm({
-			folder: 'lo-117-brainstorm-decides-its-outcome/001-x',
-			files: { 'brainstorm-decisions.json': '[]\n' },
-		});
+	test('publishBrainstorm: refuses with no tracker write when brainstorm-notes.md is not on disk', async () => {
+		const { params } = setupBrainstorm({ files: { 'brainstorm-decisions.json': '[]\n' } });
 
-		const report = await publishBrainstorm({ ...params, titlePrefix: '001-x' });
+		const report = await publishBrainstorm(params);
 
 		expect(report.published).toStrictEqual([]);
 		expect(report.error ?? '').toMatch(/brainstorm-notes\.md/u);
@@ -239,7 +207,7 @@ describe('publishBrainstorm', () => {
 
 		expect(report).toStrictEqual({
 			ticketRef: 'LO-901',
-			published: ['brainstorm-notes.md', 'brainstorm-decisions.json', 'brainstorm-attachments.json'],
+			published: ['001-x--brainstorm-notes.md', '001-x--brainstorm-decisions.json', '001-x--brainstorm-attachments.json'],
 		});
 		expect(mockGetTicketsByIdentifiers).toHaveBeenCalledWith(expect.objectContaining({ identifiers: ['LO-901'] }));
 		expect(mockSetTicketAttachment.mock.calls.map(([call]) => call.ticketId)).toStrictEqual(['id-901', 'id-901', 'id-901']);

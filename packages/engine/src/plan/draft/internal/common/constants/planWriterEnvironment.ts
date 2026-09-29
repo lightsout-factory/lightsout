@@ -11,9 +11,9 @@ import { planWriterTools } from '#src/plan/draft/internal/common/constants/planW
  * the driver from the config, and a second copy here would be the harness-wide
  * "minimal mode" the focused environment deliberately is not.
  *
- * Both the preflight and every focused spawn read this one value, so a control
- * added to the request cannot reach a spawn without also reaching the preflight
- * that refuses a harness unable to provide it.
+ * A harness applies the controls it can express and runs the rest as an
+ * ordinary session: the controls save tokens, and the plan is the same without
+ * them.
  */
 export const planWriterEnvironment: AgentEnvironment = {
 	noMcpServers: true,

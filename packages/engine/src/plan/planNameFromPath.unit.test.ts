@@ -7,20 +7,24 @@ import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 /** A repo root the cases resolve against — nothing is read from disk, so it need not exist. */
 const cwd = resolve('/repo');
 
-test('planNameFromPath: a plan folder under the plans directory answers its own name', async () => {
-	expect(await planNameFromPath({ cwd, planPath: join('.lightsout', 'work-orders', 'lo-52-status-progress', 'plans') })).toBe('lo-52-status-progress');
-});
-
-test('planNameFromPath: a plan.md inside a plan folder answers the folder, not the file', async () => {
-	expect(await planNameFromPath({ cwd, planPath: join('.lightsout', 'work-orders', 'lo-52-status-progress', 'plans', 'plan.md') })).toBe(
-		'lo-52-status-progress',
+test('planNameFromPath: a plan.md inside a plan folder answers the plan, not the file', async () => {
+	expect(await planNameFromPath({ cwd, planPath: join('.lightsout', 'work-orders', 'lo-52-status-progress', 'plans', '001-status', 'plan.md') })).toBe(
+		'lo-52-status-progress/001-status',
 	);
 });
 
 test('planNameFromPath: an absolute path into the plans directory reads the same as the relative one', async () => {
-	expect(await planNameFromPath({ cwd, planPath: join(cwd, '.lightsout', 'work-orders', 'rate-limit-banner', 'plans', 'overview.md') })).toBe(
-		'rate-limit-banner',
+	expect(await planNameFromPath({ cwd, planPath: join(cwd, '.lightsout', 'work-orders', 'rate-limit-banner', 'plans', '001-banner', 'overview.md') })).toBe(
+		'rate-limit-banner/001-banner',
 	);
+});
+
+test('planNameFromPath: a work order plans folder, or a loose file in it, names no plan', async () => {
+	const folder = await planNameFromPath({ cwd, planPath: join('.lightsout', 'work-orders', 'lo-52-status-progress', 'plans') });
+	const loose = await planNameFromPath({ cwd, planPath: join('.lightsout', 'work-orders', 'lo-7-search', 'plans', 'facts.json') });
+	const notAPlanId = await planNameFromPath({ cwd, planPath: join('.lightsout', 'work-orders', 'lo-7-search', 'plans', 'implemented', 'phase1-search.md') });
+
+	expect({ folder, loose, notAPlanId }).toStrictEqual({ folder: undefined, loose: undefined, notAPlanId: undefined });
 });
 
 test('planNameFromPath: a path outside the plans directory is not a plan workspace', async () => {
@@ -59,12 +63,6 @@ test('planNameFromPath: a plan subfolder given without a file answers its plan a
 	expect(await planNameFromPath({ cwd, planPath: join('.lightsout', 'work-orders', 'lo-7-search', 'plans', '002-ranking') })).toBe('lo-7-search/002-ranking');
 });
 
-test('planNameFromPath: a subfolder whose name is not a plan id leaves the legacy folder name', async () => {
-	expect(await planNameFromPath({ cwd, planPath: join('.lightsout', 'work-orders', 'lo-7-search', 'plans', 'implemented', 'phase1-search.md') })).toBe(
-		'lo-7-search',
-	);
-});
-
 /**
  * A primary checkout with a linked worktree added from it — the shape a plan
  * command runs in once planning moved into a worktree, and the one place a
@@ -82,18 +80,12 @@ const setupLinkedWorktree = () => {
 test('a plans-directory path given from a linked worktree still answers its plan name', async () => {
 	const { worktree } = setupLinkedWorktree();
 
-	const name = await planNameFromPath({ cwd: worktree, planPath: join('.lightsout', 'work-orders', 'lo-52-status-progress', 'plans', 'plan.md') });
+	const name = await planNameFromPath({
+		cwd: worktree,
+		planPath: join('.lightsout', 'work-orders', 'lo-52-status-progress', 'plans', '001-status', 'plan.md'),
+	});
 
-	expect(name).toBe('lo-52-status-progress');
-});
-
-test("planNameFromPath: a plan subfolder answers its address and a loose file answers the ticket's own name", async () => {
-	// the address is spelled with `/` whatever the platform's path separator is,
-	// because it is the `--name` value every plan subcommand takes
-	const addressed = await planNameFromPath({ cwd, planPath: join('.lightsout', 'work-orders', 'lo-7-search', 'plans', '001-search-basics', 'plan.md') });
-	const loose = await planNameFromPath({ cwd, planPath: join('.lightsout', 'work-orders', 'lo-7-search', 'plans', 'facts.json') });
-
-	expect({ addressed, loose }).toStrictEqual({ addressed: 'lo-7-search/001-search-basics', loose: 'lo-7-search' });
+	expect(name).toBe('lo-52-status-progress/001-status');
 });
 
 test("planNameFromPath: a path under a ticket's runs folder, and the ticket folder itself, belong to no plan", async () => {

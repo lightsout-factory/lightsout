@@ -32,12 +32,10 @@ interface Params {
  * found (not a drafting bug — the inputs are wrong, so surface it and never
  * loop), or files it claimed but did not write.
  *
- * The focused sibling of `authorPlanFiles`, differing in three places: the
- * invocation comes from the focused builder, the engine's rendered evidence
+ * The invocation comes from the focused builder, the engine's rendered evidence
  * brief is threaded in, and the runner requests the focused environment.
  *
- * The granted command prefixes are computed exactly as legacy computes them —
- * the sync prefix then the lint prefix, in the order the writer runs them, and a
+ * The granted command prefixes are the sync prefix then the lint prefix, in the order the writer runs them, and a
  * spawn granted nothing asks the harness for nothing. The focused environment
  * narrows the built-in tool set; it never touches this grant.
  */
@@ -52,7 +50,7 @@ export const authorFocusedPlanFiles = async ({
 	const { cwd, driver, name, workspaceDir, facts, decisions, executorFileLimit, standards, config, model, effort, permissions, timeoutMs } = context;
 	// Nothing has been checked yet at any of this step's exits, so every one of
 	// them carries an empty advisory set — stated once rather than four times.
-	const draftStop = createDraftStop({ workspaceDir, advisories: [], implementation: context.implementation });
+	const draftStop = createDraftStop({ workspaceDir, advisories: [] });
 	const invokePlanAgent = createPlanAgentRunner({
 		cwd,
 		driver,

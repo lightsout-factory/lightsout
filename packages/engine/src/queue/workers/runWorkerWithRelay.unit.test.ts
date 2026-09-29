@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PassThrough, Writable } from 'node:stream';
@@ -16,7 +16,6 @@ import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTi
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import { TerminalQuestionRelay } from '#src/queue/relay/TerminalQuestionRelay.ts';
 import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import type { WorkOrderPlanOutcome } from '#src/workOrder/common/types/WorkOrderPlanOutcome.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
@@ -28,35 +27,20 @@ import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts
 // selects and the loop between a worker's question and the answer that comes
 // back, which is observable with them stubbed.
 const mockRunAutoPlanWorker = jest.fn<(params: { answeredQuestion?: { question: string; answer: string } }) => Promise<WorkerOutcome>>();
-const mockRunPlanFolderPipeline = jest.fn<(params: { cwd: string; name: string }) => Promise<WorkerOutcome>>();
 const mockRunDirectWork = jest.fn<(params: { answeredQuestion?: { question: string; answer: string } }) => Promise<PipelineResult>>();
 const mockAppendTicketNote = jest.fn<() => Promise<undefined>>();
 
 jest.mock('#src/queue/workers/internal/runAutoPlanWorker.ts', () => ({
 	runAutoPlanWorker: (params: { answeredQuestion?: { question: string; answer: string } }) => mockRunAutoPlanWorker(params),
 }));
-jest.mock('#src/queue/workers/internal/runPlanFolderPipeline.ts', () => ({
-	runPlanFolderPipeline: (params: { cwd: string; name: string }) => mockRunPlanFolderPipeline(params),
-}));
 jest.mock('#src/direct/runDirectWork.ts', () => ({
 	runDirectWork: (params: { answeredQuestion?: { question: string; answer: string } }) => mockRunDirectWork(params),
 }));
 jest.mock('#src/ticketTracker/appendTicketNote.ts', () => ({ appendTicketNote: () => mockAppendTicketNote() }));
 // -------------------------
-// The plan worker asks the disk whether the folder is there, then asks the ticket
-// for the plan when it is not. Only the tracker half is stubbed: whether a
-// folder exists is arranged by making one, so `pathExists` stays real and each
-// case reads the worktree it actually built.
-const mockRestorePlanWorkspace =
-	jest.fn<(params: { cwd: string; name: string; identifier: string; settings: TrackerSettings }) => Promise<{ restored: string[]; error?: string }>>();
-
-jest.mock('#src/plan/restore/restorePlanWorkspace.ts', () => ({
-	restorePlanWorkspace: (params: { cwd: string; name: string; identifier: string; settings: TrackerSettings }) => mockRestorePlanWorkspace(params),
-}));
-// -------------------------
-// Every ticket here carries no ticket record, which is the legacy shape these
-// cases were written against, so the pull is stubbed to answer nothing. What a
-// record changes is stated in `runWorkerWithRelay.planWorker.unit.test.ts`.
+// Every ticket here carries no ticket record, so the pull is stubbed to answer
+// nothing. What a record changes is stated in
+// `runWorkerWithRelay.planWorker.unit.test.ts`.
 interface PullTicketRecordParams {
 	cwd: string;
 	workOrderName: string;
@@ -194,7 +178,6 @@ const runWorker = ({
 		driver,
 		driverName: 'claude-code',
 		settings,
-		trackerSettings: trackerSettingsFixture(),
 		relay,
 		coordinatorRunId: 'run-q',
 		coordinatorRunDir,
@@ -269,20 +252,6 @@ describe('runWorkerWithRelay', () => {
 
 		expect(outcome).toStrictEqual({});
 		expect(mockRunAutoPlanWorker).toHaveBeenLastCalledWith(expect.objectContaining({ answeredQuestion: { question: 'Which one?', answer: 'the second one' } }));
-	});
-
-	test('hands the plan folder the plan worker located to the engine-owned build', async () => {
-		const { relay, coordinatorRunDir } = setupRelay();
-		const worktreePath = mkdtempSync(join(tmpdir(), 'lightsout-plan-worker-'));
-
-		mkdirSync(join(worktreePath, '.lightsout', 'work-orders', 'lo-70-drain', 'plans'), { recursive: true });
-		writeFileSync(join(worktreePath, '.lightsout', 'work-orders', 'lo-70-drain', 'plans', 'plan.md'), '# Plan\n');
-		mockRunPlanFolderPipeline.mockResolvedValue({});
-
-		expect(await runWorker({ relay, coordinatorRunDir, worktreePath, ticket: ticketOf(QueueWorker.Plan) })).toStrictEqual({});
-		expect(mockRunPlanFolderPipeline).toHaveBeenCalledWith(expect.objectContaining({ cwd: worktreePath, name: 'lo-70-drain' }));
-
-		relay.close();
 	});
 
 	test('stops relaying once the answers have run out, rather than asking the user forever', async () => {

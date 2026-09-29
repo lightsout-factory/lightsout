@@ -14,7 +14,6 @@ describe('WorkOrderMode', () => {
 		expect(modeValues).toStrictEqual(['single-plan', 'multiple-plan']);
 		expect(WorkOrderEventKind).toStrictEqual({
 			PlanAdded: 'plan-added',
-			PlanAdopted: 'plan-adopted',
 			PlanRetitled: 'plan-retitled',
 			PlanExcluded: 'plan-excluded',
 			ModeChanged: 'mode-changed',
@@ -24,7 +23,6 @@ describe('WorkOrderMode', () => {
 		});
 		expect(eventKindValues).toStrictEqual([
 			'plan-added',
-			'plan-adopted',
 			'plan-retitled',
 			'plan-excluded',
 			'mode-changed',

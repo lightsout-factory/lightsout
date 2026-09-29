@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { DraftImplementation } from '#src/contracts/plan/draft/DraftImplementation.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 
@@ -17,8 +16,6 @@ export const PlanningStepRecord = z.object({
 	finishedAt: z.string().optional(),
 	/** The latest attempt's duration; absent while it runs. */
 	durationMs: z.number().nonnegative().optional(),
-	/** Which drafting implementation produced this step's work. Written by the draft step alone; absent on every other step and on a record written before this field existed. */
-	implementation: z.enum(DraftImplementation).optional(),
 });
 
 export type PlanningStepRecord = z.infer<typeof PlanningStepRecord>;

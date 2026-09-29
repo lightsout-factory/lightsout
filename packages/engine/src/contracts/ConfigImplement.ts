@@ -9,8 +9,7 @@ import { z } from 'zod';
  * command and lives in a different block. This one is the command's own
  * behaviour.
  *
- * `.strict()` for the same reason `ConfigPlan` is strict: the rest of the config
- * strips unknown keys, and a typo in an opt-in setting has to fail loudly rather
+ * `.strict()`, like every block of the config: a typo in an opt-in setting has to fail loudly rather
  * than silently leave the default in force.
  */
 export const ConfigImplement = z

@@ -16,7 +16,6 @@ import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutco
 import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
-import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
 /**
  * The auto-plan worker as the queue reaches it: which plan the engine picks
@@ -198,7 +197,6 @@ const setupAutoPlanTicket = ({
 			driver,
 			driverName: 'claude-code',
 			settings: queueSettingsFixture(),
-			trackerSettings: trackerSettingsFixture(),
 			relay: relayThatIsNeverAsked(),
 			coordinatorRunId: 'run-q',
 			coordinatorRunDir,

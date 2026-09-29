@@ -12,7 +12,7 @@ import { getDirectory } from '../../../../common/paths/getDirectory.ts';
  * subject with them. These do not: grouping on them yields `predicates/`,
  * `getters/`, `resolution/`, `builders/`, which are folders named for the ROLE
  * of the code they hold — banned outright by this document. Two `is*` functions
- * are two predicates, not a shared domain, so they never graduate.
+ * are two predicates, not a shared domain, so they never get a folder.
  */
 const accessVerbs = new Set([
 	'is',
@@ -94,7 +94,7 @@ export const check: StandardsCheckModule = {
 							rule: 'ungrouped-domain-utils',
 							files: paths.map((path) => ({ path })),
 							detail: `${paths.length} '${verb}*' functions in ${directory}`,
-							guidance: 'A domain-folder graduation candidate. Heuristic — judge before acting.',
+							guidance: 'If they share a subject, move them into a folder named for it, next to `utils/`. Heuristic — judge before acting.',
 						}),
 					);
 				}

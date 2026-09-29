@@ -9,8 +9,8 @@ interface Params {
 	ticketRef: string;
 	attachments: PreparedAttachment[];
 	onProgress: (message: string) => void;
-	/** The plan id every title is namespaced under; absent for a legacy folder, whose titles stay bare. */
-	titlePrefix?: string;
+	/** The plan id every title is namespaced under. */
+	titlePrefix: string;
 }
 
 /** The tracker previews an attachment by its content type, and the durable set holds only these two shapes. */

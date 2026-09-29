@@ -73,10 +73,6 @@ const workOrderName = 'lo-7-search';
 const workOrderFolder = join('.lightsout', 'work-orders', workOrderName);
 const laterPlanFolder = join(workOrderFolder, 'plans', '002-ranking');
 
-/** A plan folder named for its branch alone — what every plan carried before addresses existed. */
-const legacyBranch = 'lo-9-legacy-plan';
-const legacyPlanFolder = join('.lightsout', 'work-orders', legacyBranch, 'plans');
-
 const planBody = '# Plan: rank the results\n';
 const pinnedCommit = '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d';
 
@@ -191,23 +187,6 @@ describe('implementCommand plan addresses', () => {
 		expect(errors.join('\n')).toContain('--no-worktree');
 		// nothing was adopted, so the tree still belongs to the session that cut it
 		expect(record).toEqual(expect.objectContaining({ owner: 'plan' }));
-		expect(mockRunPipelineOrFailFast).not.toHaveBeenCalled();
-		expect(exitCodes).toStrictEqual([1]);
-	});
-
-	test('a legacy plan is still refused by the tree an implementation run owns, rather than adopting it', async () => {
-		const { context, cwd, treePath, errors, exitCodes } = await setupTicketRun({
-			planFolder: legacyPlanFolder,
-			branch: legacyBranch,
-			standing: WorktreeOwner.Implement,
-		});
-
-		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
-
-		const record = await readWorktreeRecord({ cwd, branch: legacyBranch });
-		expect(errors.join('\n')).toContain(treePath);
-		expect(errors.join('\n')).toContain('--no-worktree');
-		expect(record).toEqual(expect.objectContaining({ owner: 'implement', startPoint: pinnedCommit }));
 		expect(mockRunPipelineOrFailFast).not.toHaveBeenCalled();
 		expect(exitCodes).toStrictEqual([1]);
 	});

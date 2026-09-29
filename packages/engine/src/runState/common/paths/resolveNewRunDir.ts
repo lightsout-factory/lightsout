@@ -8,7 +8,7 @@ import { getWorkOrderRunsDir } from '#src/runState/internal/common/paths/getWork
 
 interface Params {
 	cwd: string;
-	/** The plan this run belongs to: an address `<ticket-branch>/<plan-id>`, or a legacy folder's bare slug. Absent on a run that belongs to no plan. */
+	/** The plan this run belongs to: an address `<work-order>/<plan-id>`. Absent on a run that belongs to no plan. */
 	planName?: string;
 	/** The ticket branch a plan-less run is built on. Absent on a run with no ticket to file under either. */
 	workOrderName?: string;
@@ -20,10 +20,8 @@ interface Params {
 /**
  * Where a NEW run goes, from what the caller already knows.
  *
- * A `planName` answers that plan's ticket folder's runs folder — the ticket
- * branch being whichever folder `workOrderNameOf` reads the name into, since a
- * legacy bare-slug folder is a ticket folder named for its branch. A
- * `workOrderName` with no plan name answers that same folder reached from the
+ * A `planName` answers that plan's ticket folder's runs folder — the folder
+ * `workOrderNameOf` reads the address into. A `workOrderName` with no plan name answers that same folder reached from the
  * branch, which is how a direct run of a ticket is filed under the ticket it
  * builds. Neither answers the owning command's runs folder.
  *

@@ -55,7 +55,7 @@ export const settleRecheckedRecord = async ({ cwd, record, located, at }: Params
 	// replied. The stamp says the question was ASKED, which is what stops the next
 	// pass buying it again; a record nobody could ask stays unstamped and so is
 	// always worth asking.
-	const asked = { ...record, lastRecheckedAt: at, resolution: undefined };
+	const asked = { ...record, lastRecheckedAt: at };
 
 	return {
 		record: closed ? { ...asked, status: GradeFindingStatus.Resolved, resolutions } : asked,

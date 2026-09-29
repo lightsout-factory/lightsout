@@ -11,8 +11,7 @@ import { z } from 'zod';
  * repository that declares none sees all three off at zero cost — no section, no
  * added prompt text, no checker spawn and no new question.
  *
- * The entry object is `.strict()` for the same reason `ConfigShip` is: the rest
- * of the config strips unknown keys, so a misspelled `cover` or `paths` must
+ * The entry object is `.strict()`, like every block of the config, so a misspelled `cover` or `paths` must
  * fail loudly rather than silently declaring a surface with no description.
  *
  * `.min(1)` because an empty array would mean "declared, but nothing", which

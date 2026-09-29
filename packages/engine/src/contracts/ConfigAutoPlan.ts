@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { renamedKey } from '#src/contracts/common/utils/renamedKey.ts';
 
 /**
  * The optional `auto-plan` block of `lightsout.config.json` — which of
@@ -16,8 +15,7 @@ import { renamedKey } from '#src/contracts/common/utils/renamedKey.ts';
  * be invisible to `doctor` and to the config page, and a typo in it would
  * silently disable a setting the user believes is on.
  *
- * `.strict()` for the same reason `ConfigShip` is strict: the rest of the
- * config strips unknown keys, and the typo above has to fail loudly.
+ * `.strict()`, like every block of the config: the typo above has to fail loudly.
  */
 export const ConfigAutoPlan = z
 	.object({
@@ -38,8 +36,6 @@ export const ConfigAutoPlan = z
 		 * guessed past. Default false.
 		 */
 		'auto-approve-plan': z.boolean().optional(),
-		/** Removed — renamed to `auto-approve-plan`. Declared only so a stale config fails loudly instead of failing as an unknown key. */
-		'auto-approve': renamedKey({ from: 'auto-plan.auto-approve', to: 'auto-plan.auto-approve-plan' }),
 	})
 	.strict();
 

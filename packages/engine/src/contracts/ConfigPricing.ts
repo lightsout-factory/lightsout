@@ -19,8 +19,7 @@ import { z } from 'zod';
  * tokens — the unit every harness vendor publishes, so a user copies the
  * published number rather than converting it.
  *
- * Each entry is `.strict()` for the same reason `ConfigPlan` and `ConfigShip`
- * are: the rest of the config strips unknown keys, and a typo in a rate name
+ * Each entry is `.strict()`, like every block of the config: a typo in a rate name
  * would then leave that token count silently unpriced while the column still
  * printed a total. It has to fail loudly instead.
  */

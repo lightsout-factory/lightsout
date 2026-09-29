@@ -7,8 +7,8 @@ import { freshCwd } from '#tests/helpers/freshCwd.ts';
 /**
  * A temp repo whose tickets directory holds a ticket folder of three plans —
  * seeded out of order, so plan-id order is proved rather than inherited from
- * the filesystem — and one legacy folder whose plans folder holds a plan file
- * and no subfolder.
+ * the filesystem — and one work order whose plans folder holds a loose file and
+ * no plan.
  */
 const setupPlansDir = async () => {
 	const cwd = await freshCwd();
@@ -18,8 +18,8 @@ const setupPlansDir = async () => {
 		await mkdir(join(tickets, 'lo-150-observability', 'plans', planId), { recursive: true });
 	}
 
-	await mkdir(join(tickets, 'legacy-plan', 'plans'), { recursive: true });
-	await writeFile(join(tickets, 'legacy-plan', 'plans', 'plan.md'), '# Plan\n', 'utf8');
+	await mkdir(join(tickets, 'lo-9-no-plans', 'plans'), { recursive: true });
+	await writeFile(join(tickets, 'lo-9-no-plans', 'plans', 'plan.md'), '# Plan\n', 'utf8');
 
 	return { cwd, tickets };
 };
@@ -37,12 +37,12 @@ test('resolveReportTargets: an address resolves to one plan, and a ticket folder
 	});
 });
 
-test('resolveReportTargets: a legacy folder resolves to its own name with the ticket flag false', async () => {
-	const { cwd } = await setupPlansDir();
+test('resolveReportTargets: a work order holding no plan answers an error rather than reporting a loose file', async () => {
+	const { cwd, tickets } = await setupPlansDir();
 
-	const resolved = await resolveReportTargets({ cwd, name: 'legacy-plan' });
+	const resolved = await resolveReportTargets({ cwd, name: 'lo-9-no-plans' });
 
-	expect(resolved).toStrictEqual({ names: ['legacy-plan'], workOrderFolder: false });
+	expect(resolved).toStrictEqual({ error: `work order 'lo-9-no-plans' holds no plan under ${join(tickets, 'lo-9-no-plans', 'plans')}` });
 });
 
 test('resolveReportTargets: an unknown name answers an error naming the value and the plans folder searched', async () => {

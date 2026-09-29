@@ -16,8 +16,7 @@ import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
  * `contract` on is a repository saying its plans carry the tests that state
  * their acceptance criteria, so grading may be mostly mechanical.
  *
- * `.strict()` for the same reason `ConfigShip` is strict: the rest of the config
- * strips unknown keys, and a typo in an opt-in switch has to fail loudly rather
+ * `.strict()`, like every block of the config: a typo in an opt-in switch has to fail loudly rather
  * than silently leave the feature off.
  */
 export const ConfigPlan = z

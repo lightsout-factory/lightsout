@@ -17,8 +17,8 @@ interface Params {
 	/** The process environment the tracker API key is read from. Passed rather than read, so a test never mutates `process.env`. */
 	env: NodeJS.ProcessEnv;
 	onProgress: (message: string) => void;
-	/** The plan id every attachment title is namespaced under; absent for a legacy folder, whose titles stay bare. */
-	titlePrefix?: string;
+	/** The plan id every attachment title is namespaced under. */
+	titlePrefix: string;
 }
 
 interface PublishReport {
@@ -31,9 +31,8 @@ interface PublishReport {
 	/** Set when the publish stopped — the one sentence saying why. */
 	error?: string;
 	/**
-	 * SHA-256 of the commit marker's bytes, set only for a prefixed publish in
-	 * which every attachment including the marker landed. A legacy folder has no
-	 * ticket record to record a generation in, so nothing asks for it there.
+	 * SHA-256 of the commit marker's bytes, set only for a publish in which every
+	 * attachment including the marker landed.
 	 */
 	markerSha256?: string;
 }
@@ -70,7 +69,7 @@ export const publishPlan = async ({ cwd, name, config, env, onProgress, titlePre
 		};
 	}
 
-	const prepared = await prepareAttachments({ files: durable.files, titlePrefix });
+	const prepared = await prepareAttachments({ files: durable.files });
 
 	if ('error' in prepared) {
 		return { ticketRef, published: [], stale: [], error: prepared.error };
@@ -110,7 +109,5 @@ export const publishPlan = async ({ cwd, name, config, env, onProgress, titlePre
 	const stale = await reportStaleAttachments({ settings, ticketRef, published, onProgress, titlePrefix });
 	const marker = prepared.attachments.at(-1);
 
-	return titlePrefix === undefined || marker === undefined
-		? { ticketRef, published, stale }
-		: { ticketRef, published, stale, markerSha256: sha256({ content: marker.content }) };
+	return marker === undefined ? { ticketRef, published, stale } : { ticketRef, published, stale, markerSha256: sha256({ content: marker.content }) };
 };

@@ -1,4 +1,3 @@
-import type { DraftImplementation } from '#src/contracts/plan/draft/DraftImplementation.ts';
 import type { PlanDraftReport } from '#src/contracts/plan/draft/PlanDraftReport.ts';
 import type { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
@@ -13,7 +12,6 @@ interface PlanDraftComplete {
 	/** The overview spawn's report first, then one per phase in phase order. A single plan returns one element. */
 	reports: PlanDraftReport[];
 	advisories: StructuralFinding[];
-	implementation: DraftImplementation;
 }
 
 /** A spawn that died, or an engine check the draft could not get past. */
@@ -22,7 +20,6 @@ interface PlanDraftFailed {
 	workspaceDir: string;
 	error: string;
 	advisories: StructuralFinding[];
-	implementation: DraftImplementation;
 }
 
 /** The harness rate-limit wall — resumable, not an error. */
@@ -31,7 +28,6 @@ interface PlanDraftPaused {
 	workspaceDir: string;
 	error: string;
 	advisories: StructuralFinding[];
-	implementation: DraftImplementation;
 }
 
 /** The writer found the facts or decisions do not match the codebase; the inputs are wrong, so the draft never loops. */
@@ -40,7 +36,6 @@ interface PlanDraftFactsError {
 	workspaceDir: string;
 	discrepancies: string[];
 	advisories: StructuralFinding[];
-	implementation: DraftImplementation;
 }
 
 /** Blocking findings the repair loops could not converge, handed back with the draft intact. */
@@ -50,7 +45,6 @@ interface PlanDraftStructuralIssues {
 	findings: StructuralFinding[];
 	planPaths: string[];
 	advisories: StructuralFinding[];
-	implementation: DraftImplementation;
 }
 
 /**
@@ -58,8 +52,6 @@ interface PlanDraftStructuralIssues {
  *
  * `advisories` rides every member, not only the success case: it is information
  * the human wants whichever way the draft ended, and `[]` wherever the draft
- * stopped before any check could produce one. `implementation` rides every
- * member for the same reason: a plan folder is attributable to the implementation
- * that produced it however the draft ended, refusals included.
+ * stopped before any check could produce one.
  */
 export type RunPlanDraftResult = PlanDraftComplete | PlanDraftFailed | PlanDraftPaused | PlanDraftFactsError | PlanDraftStructuralIssues;

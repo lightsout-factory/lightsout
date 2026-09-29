@@ -152,7 +152,7 @@ export const draftFocusedPhasedPlan = async ({ context, step }: Params): Promise
 	const advisories: StructuralFinding[] = [];
 	// A focused context always carries evidence; the empty index is what a context wired without a collection narrows to.
 	const collected = evidence ?? { planName: name, entries: [], collectedAt: new Date().toISOString() };
-	const draftStop = createDraftStop({ workspaceDir, advisories, implementation: context.implementation });
+	const draftStop = createDraftStop({ workspaceDir, advisories });
 	const authored = await authorFocusedPlanFiles({
 		context,
 		outputs,
@@ -208,7 +208,6 @@ export const draftFocusedPhasedPlan = async ({ context, step }: Params): Promise
 		variant: PlanVariant.Overview,
 		reports: [authored.report, ...phases.reports],
 		advisories,
-		mechanicalRepair: true,
 		overviewPath,
 	});
 

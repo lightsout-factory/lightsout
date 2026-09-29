@@ -49,8 +49,8 @@ jest.mock('#src/ticketTracker/resolveTrackerSettings.ts', () => ({
 }));
 // -------------------------
 
-/** A plan name carrying ticket lo-150, which is the key the brainstorm fetch turns on. */
-const ticketPlanName = 'lo-150-planning-observability';
+/** A plan address under the work order of ticket lo-150, which is the key the brainstorm fetch turns on. */
+const ticketPlanName = 'lo-150-planning-observability/001-plan';
 const branch = 'lo-150-planning-observability';
 const notesBody = '# the brainstorm write-up\n';
 const decisionsBody = '{"planName":"lo-150-planning-observability","decisions":[]}\n';
@@ -72,7 +72,7 @@ const authoredFacts = {
 	],
 };
 
-/** One published brainstorm generation on the ticket, under the bare titles a legacy plan folder carries. */
+/** One published brainstorm generation on the ticket, under the plan's id. */
 const publishAttachments = ({ failure }: { failure?: TrackerFailure }) => {
 	const marker = serializeAttachmentManifest({
 		files: [
@@ -88,9 +88,9 @@ const publishAttachments = ({ failure }: { failure?: TrackerFailure }) => {
 
 	mockGetTicketAttachments.mockResolvedValue(
 		failure ?? [
-			{ id: 'att-1', title: 'brainstorm-notes.md', url: 'https://assets.example/brainstorm-notes.md' },
-			{ id: 'att-2', title: 'brainstorm-decisions.json', url: 'https://assets.example/brainstorm-decisions.json' },
-			{ id: 'att-3', title: 'brainstorm-attachments.json', url: 'https://assets.example/brainstorm-attachments.json' },
+			{ id: 'att-1', title: '001-plan--brainstorm-notes.md', url: 'https://assets.example/brainstorm-notes.md' },
+			{ id: 'att-2', title: '001-plan--brainstorm-decisions.json', url: 'https://assets.example/brainstorm-decisions.json' },
+			{ id: 'att-3', title: '001-plan--brainstorm-attachments.json', url: 'https://assets.example/brainstorm-attachments.json' },
 		],
 	);
 	mockReadTicketAsset.mockImplementation(async ({ url }) => bodies[url] ?? { error: `no asset at ${url}` });
@@ -180,7 +180,7 @@ describe('planVerifyFactsCommand', () => {
 	});
 
 	test('fetches from the ticket the record names, even when the plan’s label spells no ticket id at all', async () => {
-		const { context, planDir, logged, exitCodes } = setupVerifyFactsFromWorktree({ name: 'rate-limit-banner', ticketRef: 'ENG-4821' });
+		const { context, planDir, logged, exitCodes } = setupVerifyFactsFromWorktree({ name: 'rate-limit-banner/001-plan', ticketRef: 'ENG-4821' });
 
 		await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
 
@@ -193,7 +193,7 @@ describe('planVerifyFactsCommand', () => {
 	});
 
 	test('asks no ticket and prints no fetch line for a work order whose record carries no ticket reference', async () => {
-		const { context, planDir, logged, exitCodes } = setupVerifyFactsFromWorktree({ name: 'rate-limit-banner', ticketRef: null });
+		const { context, planDir, logged, exitCodes } = setupVerifyFactsFromWorktree({ name: 'rate-limit-banner/001-plan', ticketRef: null });
 
 		await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
 

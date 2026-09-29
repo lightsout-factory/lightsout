@@ -19,7 +19,6 @@ import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTi
 import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
-import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 /**
@@ -173,7 +172,6 @@ const setupWorker = ({
 			driver: answer === undefined ? driver : answering,
 			driverName: 'claude-code',
 			settings: queueSettingsFixture(),
-			trackerSettings: trackerSettingsFixture(),
 			relay,
 			coordinatorRunId: 'run-q',
 			coordinatorRunDir,

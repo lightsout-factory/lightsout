@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { renamedKey } from '#src/contracts/common/utils/renamedKey.ts';
 
 /**
  * The optional `queue` block of `lightsout.config.json` — everything
@@ -13,22 +12,11 @@ import { renamedKey } from '#src/contracts/common/utils/renamedKey.ts';
  * variables — is `ConfigTicketTracker`, because publishing a plan to its ticket
  * needs that identity without needing a queue at all.
  *
- * `.strict()` for the same reason `ConfigShip` is strict: the rest of the
- * config strips unknown keys, and a typo here would silently disable a setting
+ * `.strict()`, like every block of the config: a typo here would silently disable a setting
  * the user believes is active.
  */
 export const ConfigQueue = z
 	.object({
-		/** Removed — tracker identity moved to the `ticket-tracker` block. Declared only so a stale config fails loudly instead of being silently stripped. */
-		tracker: renamedKey({ from: 'queue.tracker', to: 'ticket-tracker.provider' }),
-		/** Removed — moved to the `ticket-tracker` block. Same reason. */
-		team: renamedKey({ from: 'queue.team', to: 'ticket-tracker.team' }),
-		/** Removed — Jira's origin moved to the `ticket-tracker` block. Same reason. */
-		'site-url': renamedKey({ from: 'queue.site-url', to: 'ticket-tracker.site-url' }),
-		/** Removed — Jira's project moved to the `ticket-tracker` block. Same reason. */
-		project: renamedKey({ from: 'queue.project', to: 'ticket-tracker.project' }),
-		/** Removed — the two-value route vocabulary was replaced by the five planning statuses. Declared only so a stale config fails loudly instead of being silently stripped. */
-		'route-labels': renamedKey({ from: 'queue.route-labels', to: 'queue.planning-status-labels' }),
 		/**
 		 * The tracker label naming each planning status. Each key is optional and
 		 * defaults to the planning status verbatim, so a repo overrides only the
@@ -47,10 +35,6 @@ export const ConfigQueue = z
 			.optional(),
 		/** How many tickets may be in flight at once. Also the ceiling on how many questions can ever wait for the user at the same time. */
 		'max-parallel': z.number().int().positive(),
-		/** Removed — moved to the `ticket-tracker` block. Same reason. */
-		'api-key-env': renamedKey({ from: 'queue.api-key-env', to: 'ticket-tracker.api-key-env' }),
-		/** Removed — Jira's account-email variable moved to the `ticket-tracker` block. Same reason. */
-		'api-user-email-env': renamedKey({ from: 'queue.api-user-email-env', to: 'ticket-tracker.api-user-email-env' }),
 		/** Ticket statuses the queue may pick up. Default `['Backlog', 'Ready to implement']`. */
 		'eligible-statuses': z.array(z.string()).optional(),
 		/** This tracker's name for the status a ticket waits at once shaping is finished or was never needed. Default `'Ready to implement'`. */
@@ -59,8 +43,6 @@ export const ConfigQueue = z
 		'in-progress-status': z.string().optional(),
 		/** This tracker's name for the status a ticket reaches once its merge is confirmed. Default `'Done'`. */
 		'done-status': z.string().optional(),
-		/** Removed — the preparation command is shared with isolated implementation runs, so it moved to the `worktree` block. Declared only so a stale config fails loudly instead of being silently stripped. */
-		setup: renamedKey({ from: 'queue.setup', to: 'worktree.setup' }),
 		/**
 		 * How a ticket becomes a branch name. `{ticket}` is the lowercased
 		 * identifier, `{slug}` the slugged title. Default `{ticket}-{slug}`.

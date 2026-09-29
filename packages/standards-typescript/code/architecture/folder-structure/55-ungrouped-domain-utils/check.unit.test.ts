@@ -19,12 +19,12 @@ describe('ungrouped-domain-utils check', () => {
 				siteKey: 'ungrouped-domain-utils:src/billing/common/utils/formatCurrency.ts|src/billing/common/utils/formatDate.ts',
 				files: [{ path: 'src/billing/common/utils/formatDate.ts' }, { path: 'src/billing/common/utils/formatCurrency.ts' }],
 				detail: "2 'format*' functions in src/billing/common/utils",
-				guidance: 'A domain-folder graduation candidate. Heuristic — judge before acting.',
+				guidance: 'If they share a subject, move them into a folder named for it, next to `utils/`. Heuristic — judge before acting.',
 			},
 		]);
 	});
 
-	test('leaves a lone function alone, since a domain folder graduates on the SECOND related function', async () => {
+	test('leaves a lone function alone, since a domain folder starts with the second related function', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/utils/formatDate.ts', 'src/billing/common/utils/parseDate.ts'] });
 
 		const findings = await check.run({ input, settings: {} });

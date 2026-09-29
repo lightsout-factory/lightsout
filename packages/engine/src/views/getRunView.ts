@@ -72,8 +72,7 @@ const buildStepView = async ({
  * `parentRunId` — one manifest opened, no scan over the rest of the history.
  *
  * Absent silently wherever the link cannot be proved: a top-level run records
- * no parent, a phase child recorded before the field existed carries none, and
- * a coordinator whose manifest will not read (deleted, corrupt, mid-write)
+ * no parent, and a coordinator whose manifest will not read (deleted, corrupt, mid-write)
  * leaves the back-link off rather than taking the page down.
  *
  * The step is the coordinator's own record of this child, and while the phase

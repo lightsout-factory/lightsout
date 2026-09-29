@@ -5,7 +5,7 @@ import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
 interface Params {
 	/** The checkout the run builds in, which the plan path is resolved against. */
 	cwd: string;
-	/** The plan's name under the plans directory: a plan address, or a legacy folder's name. */
+	/** The plan's address under the plans directory. */
 	name: string;
 	/** The run's plan path as its manifest records it (or will). Undefined for a build from the ticket body. */
 	planPath: string | undefined;

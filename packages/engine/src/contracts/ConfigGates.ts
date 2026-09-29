@@ -3,7 +3,7 @@ import { baseGateShape } from '#src/contracts/common/constants/baseGateShape.ts'
 import { validateCustomTestGates } from '#src/contracts/common/utils/validateCustomTestGates.ts';
 
 /** The fixed gate keys — everything else in the block must be a custom `test-*` suite. */
-const knownGateKeys = new Set(['check', 'test', 'test-coverage', 'testCoverage', 'testUnit', 'generate', 'build', 'format']);
+const knownGateKeys = new Set(['check', 'test', 'test-coverage', 'generate', 'build', 'format']);
 
 /**
  * Verification commands — the mechanical gates. Full shell commands, run by

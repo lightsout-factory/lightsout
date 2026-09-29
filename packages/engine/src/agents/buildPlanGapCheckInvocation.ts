@@ -34,7 +34,7 @@ interface Params {
 
 /** How one settled record was settled — the citation that closed it, or the decision the judge said the implementing agent may make. */
 const settlementOf = ({ record }: { record: GradeFindingRecord }) =>
-	record.resolution?.answerAt ?? record.agentDecision ?? record.answerAt ?? 'settled by an earlier pass';
+	record.resolutions[0]?.answerAt ?? record.agentDecision ?? record.answerAt ?? 'settled by an earlier pass';
 
 /** One line per settled record, so a reader can point at the one it means before deciding it has new evidence. */
 const settledSection = ({ settled }: { settled: GradeFindingRecord[] }) =>

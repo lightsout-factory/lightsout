@@ -23,7 +23,9 @@ jest.mock('#src/ticketTracker/readTicketAsset.ts', () => ({ readTicketAsset: (pa
 // -------------------------
 
 const settings = trackerSettingsFixture();
-const name = 'lo-117-brainstorm-outcome';
+/** The plan id every title on the ticket is namespaced under. */
+const planId = '001-x';
+const name = `lo-117-brainstorm-outcome/${planId}`;
 
 /** The bytes every attachment carries unless a test asks for its own. */
 const defaultBody = ({ title }: { title: string }) => `body of ${title}\n`;
@@ -67,13 +69,16 @@ const setup = ({ attachments, bodies = {}, manifestFiles, manifestText, manifest
 	const titles = [...attachments, ...Array.from({ length: manifestCopies }, () => 'brainstorm-attachments.json')];
 	const assetBodies = titles.map((title, index) => (index >= attachments.length ? marker : bodyOf(title)));
 
-	mockGetTicketAttachments.mockResolvedValue(titles.map((title, index) => ({ id: `att-${index}`, title, url: `https://assets.example/${index}` })));
+	// Bodies are keyed by the bare file name; the ticket carries each under this plan's id.
+	mockGetTicketAttachments.mockResolvedValue(
+		titles.map((title, index) => ({ id: `att-${index}`, title: `${planId}--${title}`, url: `https://assets.example/${index}` })),
+	);
 	mockReadTicketAsset.mockImplementation(async ({ url }) => assetBodies[Number(url.split('/').at(-1))] ?? '');
 
 	return { cwd, dir };
 };
 
-const restore = ({ cwd }: { cwd: string }) => restoreBrainstormFiles({ cwd, name, identifier: 'lo-117', settings });
+const restore = ({ cwd }: { cwd: string }) => restoreBrainstormFiles({ cwd, name, identifier: 'lo-117', settings, titlePrefix: planId });
 
 /** What the plan folder holds, or undefined when it was never created. */
 const folderOf = ({ dir }: { dir: string }) => {
@@ -98,8 +103,7 @@ const prefixOf = ({ title }: { title: string }) => (title.includes('--') ? title
 
 /**
  * Build a ticket carrying several plans' brainstorm generations side by side,
- * each under its own plan id prefix, plus the bare-title generation a ticket
- * shaped before ticket records carries.
+ * each under its own plan id prefix.
  *
  * A marker commits bare file names while the attachment itself wears the
  * marker's own prefix, so a generation can only ever verify against the files
@@ -134,7 +138,7 @@ const setupPrefixed = ({ attachments, markers = {}, planName = name }: PrefixedS
 	return { cwd, dir, planName };
 };
 
-const restorePrefixed = ({ cwd, planName, titlePrefix }: { cwd: string; planName: string; titlePrefix?: string }) =>
+const restorePrefixed = ({ cwd, planName, titlePrefix }: { cwd: string; planName: string; titlePrefix: string }) =>
 	restoreBrainstormFiles({ cwd, name: planName, identifier: 'lo-117', settings, titlePrefix });
 
 describe('restoreBrainstormFiles', () => {
@@ -185,20 +189,6 @@ describe('restoreBrainstormFiles', () => {
 		expect(folderOf({ dir })).toBeUndefined();
 	});
 
-	test('restoreBrainstormFiles: refuses a generation that carries only brainstorm-notes.md', async () => {
-		const { cwd, dir } = setup({
-			attachments: ['brainstorm-notes.md'],
-			manifestFiles: ['brainstorm-notes.md'],
-		});
-
-		const restored = await restore({ cwd });
-
-		expect(restored.restored).toStrictEqual([]);
-		expect(restored.skipped).toStrictEqual([]);
-		expect(restored.error).toEqual(expect.stringContaining('brainstorm-decisions.json'));
-		expect(folderOf({ dir })).toBeUndefined();
-	});
-
 	test('restoreBrainstormFiles: answers with nothing when the ticket carries no brainstorm attachment', async () => {
 		const { cwd, dir } = setup({ attachments: ['facts.json', 'draft-stream.jsonl'], manifestCopies: 0 });
 
@@ -222,7 +212,7 @@ describe('restoreBrainstormFiles', () => {
 
 	test('restoreBrainstormFiles: answers with nothing when the ticket carries a published plan and no brainstorm generation', async () => {
 		const { cwd, dir } = setup({
-			attachments: ['plan.md', 'brainstorm-notes.md', 'grade.json', 'plan-attachments.json'],
+			attachments: ['plan.md', 'grade.json', 'plan-attachments.json'],
 			manifestCopies: 0,
 		});
 
@@ -232,20 +222,12 @@ describe('restoreBrainstormFiles', () => {
 		expect(folderOf({ dir })).toBeUndefined();
 	});
 
-	test("restoreBrainstormFiles: with a title prefix, restores a notes-only generation under that prefix and ignores other plans' and bare brainstorm titles", async () => {
+	test("restoreBrainstormFiles: restores a notes-only generation under its plan's prefix and ignores other plans' titles", async () => {
 		const { cwd, dir, planName } = setupPrefixed({
-			planName: `${name}/001-x`,
-			attachments: [
-				'001-x--brainstorm-notes.md',
-				'002-y--brainstorm-notes.md',
-				'002-y--brainstorm-decisions.json',
-				'brainstorm-notes.md',
-				'brainstorm-decisions.json',
-			],
+			attachments: ['001-x--brainstorm-notes.md', '002-y--brainstorm-notes.md', '002-y--brainstorm-decisions.json'],
 			markers: {
 				'001-x--brainstorm-attachments.json': ['brainstorm-notes.md'],
 				'002-y--brainstorm-attachments.json': ['brainstorm-notes.md', 'brainstorm-decisions.json'],
-				'brainstorm-attachments.json': ['brainstorm-notes.md', 'brainstorm-decisions.json'],
 			},
 		});
 
@@ -256,11 +238,10 @@ describe('restoreBrainstormFiles', () => {
 		expect(readFileSync(join(dir, 'brainstorm-notes.md'), 'utf8')).toBe('body of 001-x--brainstorm-notes.md\n');
 	});
 
-	test('restoreBrainstormFiles: with a title prefix, refuses prefixed brainstorm-notes.md with no prefixed marker', async () => {
+	test('restoreBrainstormFiles: refuses brainstorm-notes.md under its plan id with no marker under that id', async () => {
 		const { cwd, dir, planName } = setupPrefixed({
-			planName: `${name}/001-x`,
 			attachments: ['001-x--brainstorm-notes.md'],
-			markers: { 'brainstorm-attachments.json': ['brainstorm-notes.md', 'brainstorm-decisions.json'] },
+			markers: { '002-y--brainstorm-attachments.json': ['brainstorm-notes.md', 'brainstorm-decisions.json'] },
 		});
 
 		const restored = await restorePrefixed({ cwd, planName, titlePrefix: '001-x' });
@@ -269,18 +250,5 @@ describe('restoreBrainstormFiles', () => {
 		expect(restored.skipped).toStrictEqual([]);
 		expect(restored.error).toEqual(expect.stringContaining('001-x--brainstorm-attachments.json'));
 		expect(folderOf({ dir })).toBeUndefined();
-	});
-
-	test('restoreBrainstormFiles: without a title prefix, ignores prefixed brainstorm titles', async () => {
-		const { cwd, dir, planName } = setupPrefixed({
-			attachments: ['001-x--brainstorm-notes.md', '001-x--brainstorm-decisions.json'],
-			markers: { '001-x--brainstorm-attachments.json': ['brainstorm-notes.md', 'brainstorm-decisions.json'] },
-		});
-
-		const restored = await restorePrefixed({ cwd, planName });
-
-		expect(restored).toStrictEqual({ restored: [], skipped: [] });
-		expect(folderOf({ dir })).toBeUndefined();
-		expect(mockReadTicketAsset).not.toHaveBeenCalled();
 	});
 });

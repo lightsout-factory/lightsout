@@ -107,8 +107,7 @@ const activityRecordsUnder = async ({ dir }: { dir: string }) => {
  *
  * The manifest records no workspace, so the continuation builds in the checkout
  * it was launched from and there is exactly one directory the record could land
- * in. The ticket has no record, which is the legacy folder case: the lifecycle
- * runs the pipeline unchanged and nothing but the activity marks is written.
+ * in. The ticket has no record, so the lifecycle runs the pipeline unchanged and nothing but the activity marks is written.
  */
 const setupParkedImplementRun = () => {
 	const seeded = setupResume({

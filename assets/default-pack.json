@@ -13,11 +13,11 @@
     "tanstack"
   ],
   "totals": {
-    "rules": 111,
+    "rules": 109,
     "checked": 51,
-    "judgment": 60,
+    "judgment": 58,
     "documents": 24,
-    "withFixtures": 111
+    "withFixtures": 109
   },
   "documents": [
     {
@@ -26,8 +26,7 @@
       "channel": "base",
       "intro": "# Architecture Decisions\n\nUniversal architectural decisions that apply across the codebase.",
       "ruleIds": [
-        "modules-and-the-graduation-rule",
-        "code-placement-philosophy",
+        "module-file-to-folder",
         "thin-wrapper-functions",
         "dead-export",
         "premature-abstraction",
@@ -42,22 +41,21 @@
       "set": "code",
       "path": "code/architecture/folder-structure",
       "channel": "base",
-      "intro": "# Folder Structure\n\nUse a `common/` folder pattern for shared code — it keeps related code local, makes dependency scope visible, and scales by promoting code upward only when reuse is proven. The trees below are **folder-modules** (see [Modules & the Graduation Rule](./architecture-decisions.md#modules--the-graduation-rule)): a feature folder holds a concept and the companions that serve it, and every import names the file that declares what it imports. A folder carries no `index.ts` — only a package's entry does.",
+      "intro": "# Folder Structure\n\nShared code lives in `common/` folders. A `common/` folder sits inside the folder whose code shares it, so where it sits shows who uses it: `src/common/` serves all of `src/`, and `src/billing/common/` serves only `src/billing/`.\n\nInside `common/`, every file goes in a folder for its kind of code:\n\n| Folder | Holds |\n| --- | --- |\n| `utils/` | Stateless functions, pure or doing I/O (`formatDate`, `loadConfig`) |\n| `types/` | Types (`CopyResult`) |\n| `constants/` | Constants (`defaultConfig`, `Action`) |\n| `services/` | Classes that hold state (`ApiClient`) |\n\nTwo or more functions about one subject can also share a folder named for that subject, such as `formatting/` or `parsing/`: a domain folder.\n\nA package's own architecture document may set its concrete folder layout on top of these rules.",
       "ruleIds": [
-        "placement",
+        "shared-code-placement",
+        "reuse-common-code",
         "file-directly-in-common",
-        "graduating-out-of-common",
+        "module-out-of-common",
         "top-level-domain-nouns",
         "banned-folder-name",
-        "growing-without-new-rules",
         "folder-size",
-        "fractal-skeleton",
+        "module-folder-layout",
         "per-folder-readmes",
         "folder-casing",
         "ungrouped-domain-utils",
         "single-file-domain-folder",
         "case-collision",
-        "domain-folder-is-not-a-module",
         "cross-package-sharing",
         "shared-package-criteria"
       ]
@@ -66,7 +64,7 @@
       "set": "code",
       "path": "code/architecture/nestjs",
       "channel": "nestjs",
-      "intro": "# NestJS Architecture\n\nHow the base rules apply to a NestJS application. Two kinds of statement, each\nlabeled by what it is:\n\n- **Mandated** — what NestJS resolves or requires: kebab-case filenames\n  throughout (`events.service.ts`, `create-event.dto.ts`), and `src/main.ts`\n  as the bootstrap entry its CLI resolves. These facts live in the framework\n  carve-out table, which the checks consult — this document refers to them and\n  never restates them as rules.\n- **Applied** — how the base rules read against Nest code. Everything below\n  cites the base rule it applies; none of it overrides one.\n\n**Classes are criterion d, not an exception.** Nest's dependency injection\nrequires classes for services, controllers, resolvers, guards, pipes and\ninterceptors — that is exactly criterion d of the\n[class bright-line](../../style-guide/patterns/classes/05-class-bright-line/rule.md).\nA class Nest does not require still needs one of the other criteria; \"it's a\nNest project\" earns nothing by itself.\n\n**Decorated classes are framework-owned for the class rules.** Extending a\nNest-provided base or implementing its interfaces is the framework's contract,\nper the carve-out in\n[class inheritance](../../style-guide/patterns/classes/30-class-inheritance/rule.md).\nSharing between your *own* classes still composes — hold a collaborator and\ndelegate — exactly as that rule states.\n\n**Constructor-injected types are value imports.** Nest reads injection tokens\nfrom decorator metadata, so a type used in a decorated class's constructor\nmust not be imported with `import type` — the\n[type-only import rule](../../style-guide/conventions/lint-and-formatting/10-import-type-only/rule.md)\ncarves this out; everywhere else in a Nest file, type-only imports stay\ntype-only.\n\n**Modules and folders are ordinary.** A Nest module is wired by decorators\n(`@Module`), not by folders — so folder layout follows the base rules\nunchanged: features grow by the\n[domain-folder rule](../folder-structure/55-ungrouped-domain-utils/rule.md), shared\ncode lands by the [placement rule](../folder-structure/05-placement/rule.md),\nand `controllers/`, `services/` and their siblings are legal folder names\neverywhere without declaring anything (the\n[banned-folder-name rule](../folder-structure/25-banned-folder-name/rule.md)\nbans junk drawers, not framework vocabulary). The suffix convention\n(`*.service.ts`, `*.controller.ts`, `*.module.ts`, `*.guard.ts`, `*.dto.ts`)\nis Nest's own documented naming, generated by its CLI — follow it; the\n[filename-match rule](../../style-guide/conventions/file-naming/05-filename-mismatch/rule.md)\nalready reads those dotted kebab names as the framework's.",
+      "intro": "# NestJS Architecture\n\nHow the base rules apply to a NestJS application. Two kinds of statement, each\nlabeled by what it is:\n\n- **Mandated** — what NestJS resolves or requires: kebab-case filenames\n  throughout (`events.service.ts`, `create-event.dto.ts`), and `src/main.ts`\n  as the bootstrap entry its CLI resolves. These facts live in the framework\n  carve-out table, which the checks consult — this document refers to them and\n  never restates them as rules.\n- **Applied** — how the base rules read against Nest code. Everything below\n  cites the base rule it applies; none of it overrides one.\n\n**Classes are criterion d, not an exception.** Nest's dependency injection\nrequires classes for services, controllers, resolvers, guards, pipes and\ninterceptors — that is exactly criterion d of the\n[class bright-line](../../style-guide/patterns/classes/05-class-bright-line/rule.md).\nA class Nest does not require still needs one of the other criteria; \"it's a\nNest project\" earns nothing by itself.\n\n**Decorated classes are framework-owned for the class rules.** Extending a\nNest-provided base or implementing its interfaces is the framework's contract,\nper the carve-out in\n[class inheritance](../../style-guide/patterns/classes/30-class-inheritance/rule.md).\nSharing between your *own* classes still composes — hold a collaborator and\ndelegate — exactly as that rule states.\n\n**Constructor-injected types are value imports.** Nest reads injection tokens\nfrom decorator metadata, so a type used in a decorated class's constructor\nmust not be imported with `import type` — the\n[type-only import rule](../../style-guide/conventions/lint-and-formatting/10-import-type-only/rule.md)\ncarves this out; everywhere else in a Nest file, type-only imports stay\ntype-only.\n\n**Modules and folders are ordinary.** A Nest module is wired by decorators\n(`@Module`), not by folders — so folder layout follows the base rules\nunchanged: features grow by the\n[domain-folder rule](../folder-structure/55-ungrouped-domain-utils/rule.md), shared\ncode lands by the [placement rule](../folder-structure/05-shared-code-placement/rule.md),\nand `controllers/`, `services/` and their siblings are legal folder names\neverywhere without declaring anything (the\n[banned-folder-name rule](../folder-structure/25-banned-folder-name/rule.md)\nbans junk drawers, not framework vocabulary). The suffix convention\n(`*.service.ts`, `*.controller.ts`, `*.module.ts`, `*.guard.ts`, `*.dto.ts`)\nis Nest's own documented naming, generated by its CLI — follow it; the\n[filename-match rule](../../style-guide/conventions/file-naming/05-filename-mismatch/rule.md)\nalready reads those dotted kebab names as the framework's.",
       "ruleIds": []
     },
     {
@@ -242,7 +240,7 @@
       "set": "code",
       "path": "code/style-guide/structure/type-placement",
       "channel": "base",
-      "intro": "# Type & Constant Placement\n\nThese placement rules govern **shared** declarations. An exported type or\nconstant with no second consumer is a file-module wherever its consumers live\n— `common/` placement is earned by sharing, never by kind (see the Code\nPlacement Philosophy in architecture-decisions.md).",
+      "intro": "# Type & Constant Placement\n\nThese placement rules govern **shared** declarations. An exported type or\nconstant with no second consumer is a file-module wherever its consumers live\n— `common/` placement is earned by sharing, never by kind (see the\n[shared code placement rule](../../../architecture/folder-structure/05-shared-code-placement/rule.md)).",
       "ruleIds": [
         "types-and-interfaces",
         "constants"
@@ -794,7 +792,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## File vs Folder — The Graduation Rule\n\nClasses follow the same graduation rule as everything else (see [architecture-decisions.md](../../architecture/architecture-decisions.md#modules--the-graduation-rule)):\n\n- **A class starts as a single file** — `RateLimiter.ts` with its test beside it; non-exported helpers may co-locate.\n- **A class graduates to a folder** — `HttpClient/` — only when it needs private companions (bundled utils, types, or constants that serve only it). Companions live under `common/` by category (`utils/`, `types/`, `constants/`), and callers import the class from its own file — `HttpClient/HttpClient.ts`.\n- Do NOT create a folder for a class with no companions — that is ceremony, not structure.",
+      "prose": "## File vs Folder — The Graduation Rule\n\nClasses follow the same graduation rule as everything else (see [module-file-to-folder](../../../../architecture/architecture-decisions/05-module-file-to-folder/rule.md)):\n\n- **A class starts as a single file** — `RateLimiter.ts` with its test beside it; non-exported helpers may co-locate.\n- **A class graduates to a folder** — `HttpClient/` — only when it needs private companions (bundled utils, types, or constants that serve only it). Companions live under `common/` by category (`utils/`, `types/`, `constants/`), and callers import the class from its own file — `HttpClient/HttpClient.ts`.\n- Do NOT create a folder for a class with no companions — that is ceremony, not structure.",
       "fixtures": [
         {
           "side": "pass",
@@ -970,55 +968,6 @@
       }
     },
     {
-      "id": "code-placement-philosophy",
-      "set": "code",
-      "documentPath": "code/architecture/architecture-decisions",
-      "summary": "shared code placed above the lowest level that reaches it, or landing in `common/` as a folder-module",
-      "channel": "base",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultSettings": {},
-      "fixtureCounts": {
-        "pass": 3,
-        "fail": 2
-      },
-      "prose": "## Code Placement Philosophy\n\nPlace shared code at the lowest common ancestor `common/` folder (each package's architecture doc defines the concrete hierarchy):\n\n1. **First:** search whether it already exists in `common/` at any level — if found, use it.\n2. **Second:** if not found, start local and promote later — moving code up when reuse is proven beats premature generalization.\n3. **When promoting, the destination is decided by the companion test:** a single-file primitive goes to the ancestor level's `common/<type>/`; a shared concept with private companions becomes its own module at that level. `common/` never contains folder-modules — shared code is a primitive or a module, never a third thing.\n\nImport granularity follows the import rule ([module-api.md](../style-guide/structure/module-api.md#import-from-the-declaring-file)): every import names the file that declares what it imports. Never import through an `index.ts`, and never from your own package's entry.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/billing/getChargeLabel.ts",
-          "text": "import { formatMoney } from '../common/utils/formatMoney';\n\nexport const getChargeLabel = ({ cents }: { cents: number }): string => `Charged ${formatMoney({ cents })}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/utils/formatMoney.ts",
-          "text": "// A single-file primitive, so promotion lands it in the ancestor level's\n// `common/utils/` rather than making a module of it.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/invoices/getInvoiceLabel.ts",
-          "text": "import { formatMoney } from '../common/utils/formatMoney';\n\nexport const getInvoiceLabel = ({ cents }: { cents: number }): string => `Invoiced ${formatMoney({ cents })}`;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/common/utils/formatMoney.ts",
-          "text": "export const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/invoices/common/utils/formatMoney.ts",
-          "text": "// Two features reached for the same helper and neither searched `common/`\n// first, so the reuse is proven but the code never moved up to the lowest\n// common ancestor.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/billing/common/utils/formatMoney.ts",
-          "pass": "src/billing/getChargeLabel.ts"
-        }
-      }
-    },
-    {
       "id": "component-file-structure",
       "set": "code",
       "documentPath": "code/architecture/react",
@@ -1031,7 +980,7 @@
         "pass": 3,
         "fail": 1
       },
-      "prose": "## Component File Structure\n\nThe [graduation rule](../../folder-structure/55-ungrouped-domain-utils/rule.md)\napplied to components: a component is a single `.tsx` file until it has private\ncompanions — utilities, types, or constants of its own — and graduates to a\nfolder only then.\n\n```\ncomponents/\n├── StatusBadge.tsx                  ✅ Single file (the default)\n├── InstallPanel/                    ✅ Graduated: it bundles private companions\n│   ├── common/\n│   │   └── utils/\n│   │       └── getInstallStepLabel.ts\n│   └── InstallPanel.tsx\n```\n\nThe folder's inside is the ordinary\n[fractal skeleton](../../folder-structure/40-fractal-skeleton/rule.md):\ncompanions live under `common/`, and callers import the component from\n`InstallPanel/InstallPanel.tsx` itself — a folder carries no `index.ts`\n([folder-index-file rule](../../../style-guide/structure/module-api/25-folder-index-file/rule.md)).\nA folder holding only `Component.tsx` bundles nothing and should be the single file —\nthe [single-file folder rule](../../folder-structure/60-single-file-domain-folder/rule.md),\napplied to a component.",
+      "prose": "## Component File Structure\n\nThe [graduation rule](../../folder-structure/55-ungrouped-domain-utils/rule.md)\napplied to components: a component is a single `.tsx` file until it has private\ncompanions — utilities, types, or constants of its own — and graduates to a\nfolder only then.\n\n```\ncomponents/\n├── StatusBadge.tsx                  ✅ Single file (the default)\n├── InstallPanel/                    ✅ Graduated: it bundles private companions\n│   ├── common/\n│   │   └── utils/\n│   │       └── getInstallStepLabel.ts\n│   └── InstallPanel.tsx\n```\n\nThe folder's inside is the ordinary\n[fractal skeleton](../../folder-structure/40-module-folder-layout/rule.md):\ncompanions live under `common/`, and callers import the component from\n`InstallPanel/InstallPanel.tsx` itself — a folder carries no `index.ts`\n([folder-index-file rule](../../../style-guide/structure/module-api/25-folder-index-file/rule.md)).\nA folder holding only `Component.tsx` bundles nothing and should be the single file —\nthe [single-file folder rule](../../folder-structure/60-single-file-domain-folder/rule.md),\napplied to a component.",
       "fixtures": [
         {
           "side": "pass",
@@ -1325,50 +1274,6 @@
       }
     },
     {
-      "id": "domain-folder-is-not-a-module",
-      "set": "code",
-      "documentPath": "code/architecture/folder-structure",
-      "summary": "a domain folder under `common/` carrying a file that serves only its siblings",
-      "channel": "base",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultSettings": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "A domain folder is **not** a concept with parts of its own — by the companion test every file in it is something its users call directly, and imports target those files one by one. The moment a domain folder needs a file that serves only its siblings, it has become a concept of its own and moves out of `common/`.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/billing/common/parsing/parseDate.ts",
-          "text": "export const parseDate = () => 1;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/billing/common/parsing/parseTime.ts",
-          "text": "export const parseTime = () => 2;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/common/parsing/normalizeStamp.ts",
-          "text": "export const normalizeStamp = () => 1;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/common/parsing/parseDate.ts",
-          "text": "import { normalizeStamp } from './normalizeStamp';\n\nexport const parseDate = () => normalizeStamp();\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/billing/common/parsing/normalizeStamp.ts",
-          "pass": "src/billing/common/parsing/parseDate.ts"
-        }
-      }
-    },
-    {
       "id": "duplicate-code-block",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
@@ -1566,7 +1471,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Feature Structure\n\nA feature under `src/features/` is a module — callers import each file it\noffers directly, and it carries no `index.ts`\n([folder-index-file rule](../../../style-guide/structure/module-api/25-folder-index-file/rule.md)) —\nand everything inside it grows by the\n[graduation rule](../../folder-structure/55-ungrouped-domain-utils/rule.md) — a\nsingle file until companions or a shared subject earn a folder. There is no\nfixed feature tree to stamp out; these are the domain folders a TanStack\nfeature *commonly grows*, each created when graduation triggers and never\nbefore:\n\n- `screens/` — route-destination components; a screen graduates to its own\n  folder exactly as any component does\n  ([component file structure](../../react/10-component-file-structure/rule.md))\n- `queries/` — query-options factories (see the query-options rule)\n- `serverFns/` — server functions (see the server-functions rule)\n- `hooks/` — query-wrapping hooks\n- `components/` — feature-wide components\n- `common/` — feature-internal shared code\n\nWhere a piece of code lives — app-wide `src/common/`, feature `common/`, or\nbeside its one consumer — is the base\n[placement rule](../../folder-structure/05-placement/rule.md), unchanged here.\n\nNone of this is TanStack's requirement. What TanStack mandates — route\nfilenames under `routes/`, the `router.tsx`/`server.ts`/`client.tsx` entry\nfiles — lives in the framework carve-out table; the layout above is this\npack's convention for the code the framework says nothing about.",
+      "prose": "## Feature Structure\n\nA feature under `src/features/` is a module — callers import each file it\noffers directly, and it carries no `index.ts`\n([folder-index-file rule](../../../style-guide/structure/module-api/25-folder-index-file/rule.md)) —\nand everything inside it grows by the\n[graduation rule](../../folder-structure/55-ungrouped-domain-utils/rule.md) — a\nsingle file until companions or a shared subject earn a folder. There is no\nfixed feature tree to stamp out; these are the domain folders a TanStack\nfeature *commonly grows*, each created when graduation triggers and never\nbefore:\n\n- `screens/` — route-destination components; a screen graduates to its own\n  folder exactly as any component does\n  ([component file structure](../../react/10-component-file-structure/rule.md))\n- `queries/` — query-options factories (see the query-options rule)\n- `serverFns/` — server functions (see the server-functions rule)\n- `hooks/` — query-wrapping hooks\n- `components/` — feature-wide components\n- `common/` — feature-internal shared code\n\nWhere a piece of code lives — app-wide `src/common/`, feature `common/`, or\nbeside its one consumer — is the base\n[placement rule](../../folder-structure/05-shared-code-placement/rule.md), unchanged here.\n\nNone of this is TanStack's requirement. What TanStack mandates — route\nfilenames under `routes/`, the `router.tsx`/`server.ts`/`client.tsx` entry\nfiles — lives in the framework carve-out table; the layout above is this\npack's convention for the code the framework says nothing about.",
       "fixtures": [
         {
           "side": "pass",
@@ -1601,37 +1506,42 @@
       "id": "file-directly-in-common",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "a file placed directly in `common/` instead of under a type folder",
+      "summary": "Files in `common/` go in a folder for their kind of code.",
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultSettings": {},
       "fixtureCounts": {
-        "pass": 1,
+        "pass": 2,
         "fail": 2
       },
-      "prose": "",
+      "prose": "## File Directly in Common\n\nNever put a file directly in `common/`. Put it in the folder for its kind of code, `utils/`, `types/`, `constants/` or `services/`, or in a domain folder.\n\n- Make that folder with its first file. A type folder with one file is fine.\n- Never invent a new type folder.\n\nThen where a file goes is never a choice, and a reader knows where to look.",
       "fixtures": [
         {
           "side": "pass",
+          "path": "src/billing/billing.ts",
+          "text": "import { formatRate } from './common/utils/formatRate.ts';\n\nexport const billing = ({ rate }: { rate: number }): string => `Rate ${formatRate({ rate })}`;\n"
+        },
+        {
+          "side": "pass",
           "path": "src/billing/common/utils/formatRate.ts",
-          "text": "export const formatRate = () => 1;\n"
+          "text": "// Correct: a function, so it goes in common/utils/.\nexport const formatRate = ({ rate }: { rate: number }): string => `${(rate * 100).toFixed(1)}%`;\n"
         },
         {
           "side": "fail",
-          "path": "src/billing/common/rate.ts",
-          "text": "export const rate = 1;\n"
+          "path": "src/billing/billing.ts",
+          "text": "import { formatRate } from './common/formatRate.ts';\n\nexport const billing = ({ rate }: { rate: number }): string => `Rate ${formatRate({ rate })}`;\n"
         },
         {
           "side": "fail",
-          "path": "src/billing/common/utils/formatRate.ts",
-          "text": "export const formatRate = () => 1;\n"
+          "path": "src/billing/common/formatRate.ts",
+          "text": "// Incorrect: sits directly in common/. A function belongs in common/utils/.\nexport const formatRate = ({ rate }: { rate: number }): string => `${(rate * 100).toFixed(1)}%`;\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/billing/common/rate.ts",
+          "fail": "src/billing/common/formatRate.ts",
           "pass": "src/billing/common/utils/formatRate.ts"
         }
       }
@@ -2269,50 +2179,6 @@
       }
     },
     {
-      "id": "fractal-skeleton",
-      "set": "code",
-      "documentPath": "code/architecture/folder-structure",
-      "summary": "a graduated feature folder inventing its own internal layout",
-      "channel": "base",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultSettings": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## Fractal Skeleton\n\nEvery graduated feature folder shares one internal shape — its main file and (when needed) `common/`. No feature invents its own layout.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/features/issues/common/utils/getIssueRows.ts",
-          "text": "export const getIssueRows = () => [];\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/features/issues/issues.ts",
-          "text": "import { getIssueRows } from './common/utils/getIssueRows';\n\nexport const issues = getIssueRows;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/features/issues/issuesEntry.ts",
-          "text": "export const issuesEntry = () => [];\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/features/issues/issuesHelpers.ts",
-          "text": "export const issuesHelpers = () => [];\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/features/issues/issuesEntry.ts",
-          "pass": "src/features/issues/common/utils/getIssueRows.ts"
-        }
-      }
-    },
-    {
       "id": "framework-basics",
       "set": "tests",
       "documentPath": "tests/unit-testing-react-components",
@@ -2374,94 +2240,6 @@
       ],
       "example": {
         "kind": "snippet"
-      }
-    },
-    {
-      "id": "graduating-out-of-common",
-      "set": "code",
-      "documentPath": "code/architecture/folder-structure",
-      "summary": "a shared concept with companions only it uses left inside `common/` instead of graduating to its own folder",
-      "channel": "base",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultSettings": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## What Lives in `common/` — the Companion Test\n\n`common/` holds shared **single files only**: primitives (a stateless function, a type, a constant, one service class) filed under their type subfolder. It never holds a concept with parts of its own.\n\nA shared concept must leave `common/` and become its own folder — a sibling of the features that use it — the moment it has companions: files that exist only to serve it. The mechanical test: **does any of its files serve only the concept itself?**\n\n- No — every file is something its users call directly → it is a bag of primitives → its files go in `common/<type>/` (or a domain folder)\n- Yes → it is a concept with parts of its own → it graduates to its own folder, and its companions go with it\n\nThis keeps placement closed under growth: shared code is either a primitive (`common/`) or a concept with its own folder (a domain sibling) — there is no third place.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/permissions/common/utils/normalizeRole.ts",
-          "text": "export const normalizeRole = () => 'admin';\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/permissions/hasPermission.ts",
-          "text": "import { normalizeRole } from './common/utils/normalizeRole';\n\nexport const hasPermission = () => normalizeRole() === 'admin';\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/permissions/hasPermission.ts",
-          "text": "import { normalizeRole } from './normalizeRole';\n\nexport const hasPermission = () => normalizeRole() === 'admin';\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/permissions/normalizeRole.ts",
-          "text": "export const normalizeRole = () => 'admin';\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/common/permissions/hasPermission.ts",
-          "pass": "src/permissions/common/utils/normalizeRole.ts"
-        }
-      }
-    },
-    {
-      "id": "growing-without-new-rules",
-      "set": "code",
-      "documentPath": "code/architecture/folder-structure",
-      "summary": "a level grown by inventing a new kind of place instead of graduating a file or consolidating siblings",
-      "channel": "base",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultSettings": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## Growing Without New Rules\n\nAt every level exactly three kinds of things exist: **modules**, **`common/`**, and **files**. Growth never invents a new kind of place — it is always one of two mechanical moves:\n\n- **Graduate** — a file needs private companions → it becomes a module ([the graduation rule](./architecture-decisions.md#modules--the-graduation-rule))\n- **Consolidate** — a level holds more than ~20 modules → group related sibling modules under a new parent domain module (recursive: a module within a module)",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/billing/charges/getCharge.ts",
-          "text": "export const getCharge = () => 2;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/billing/invoices/getInvoice.ts",
-          "text": "export const getInvoice = () => 1;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/leftovers/getCharge.ts",
-          "text": "export const getCharge = () => 2;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/leftovers/getInvoice.ts",
-          "text": "export const getInvoice = () => 1;\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/billing/leftovers/getCharge.ts",
-          "pass": "src/billing/charges/getCharge.ts"
-        }
       }
     },
     {
@@ -2865,33 +2643,165 @@
       }
     },
     {
-      "id": "modules-and-the-graduation-rule",
+      "id": "module-file-to-folder",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
-      "summary": "a folder created for a concept with no private companions, or a folder's internals reached from outside it",
+      "summary": "When a module should stay one file, and when it should become a folder.",
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultSettings": {},
       "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
+        "pass": 3,
+        "fail": 3
       },
-      "prose": "## Modules & the Graduation Rule\n\nA **module** is a unit of code with a public API and private internals. TypeScript enforces privacy at the file level (non-exported = invisible); folder-level boundaries are convention the repo may enforce with tooling.\n\n**Every concept starts as a file and earns its folder:**\n\n- **File-module (default):** a single file holding one exported item plus non-exported helpers. The compiler enforces the boundary for free.\n- **Folder-module (graduated):** when a concept needs private companions — its own utils, types, or constants that serve only it — it graduates to a folder holding the concept and its companions.\n- **Born folders:** features, route modules, and screens are inherently multi-file and start as folder-modules.\n\n**The trigger is mechanical:** *needs private companion files → folder; doesn't → file.* Never create folder ceremony for a one-file concept.\n\n**Borderline cases are decided by the companion test:** does any of the concept's files serve only the concept itself? No → the concept is primitives; its files belong in `common/<type>/`. Yes → it is a module. This applies to shared code too: a shared concept with private companions graduates OUT of `common/` into its own module ([folder-structure.md](./folder-structure.md#what-lives-in-common--the-companion-test)).\n\n**Boundary rules for folder-modules:**\n\n1. Every import names the file that declares what it imports. A folder carries no `index.ts`; only a package's entry does, and code inside the package never imports through it.\n2. Code outside a folder-module imports the files it is meant to use — the concept's own file, and what that file's callers need — never the companions that serve only the concept\n3. Inside a module, imports between its files are correct\n4. Tests target the module's public files; its companions are covered through them (a `.unit.test.ts` beside a file marks it as a boundary; files under a module's `common/` have none of their own)\n5. Test imports obey the same boundary: a test OUTSIDE a module imports only its public files, never its companions — including in repos that keep tests in a separate directory. (A test living beside its file is inside the module; it imports that file directly.)\n\nThe rule is recursive — a graduated component folder inside a feature folder is a module within a module.",
+      "prose": "## Module File to Folder\n\nA module is one exported item and the code only it uses.\n\n- Keep a module in one file. TypeScript hides everything a file does not export, so its helpers stay private for free.\n- Turn it into a folder only when it needs more files that only it uses, such as its own types, constants or helpers.\n- When the folder is down to one file, turn it back into a file.\n- This applies at every level, including a module inside another module's folder.\n- The type folders in `common/` are not modules, so this rule does not apply to them.",
       "fixtures": [
         {
           "side": "pass",
           "path": "src/RateLimiter.ts",
-          "text": "interface ConstructorParams {\n\tperMinute: number;\n}\n\n// One file until it needs private companions. The compiler already enforces the\n// boundary: nothing here is exported but the class itself.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ perMinute }: ConstructorParams) {\n\t\tthis.remaining = perMinute;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
+          "text": "interface ConstructorParams {\n\tperMinute: number;\n}\n\n// Correct: one file. Nothing but the class is exported, so TypeScript keeps\n// everything else in the file private.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ perMinute }: ConstructorParams) {\n\t\tthis.remaining = perMinute;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/RetryPolicy/common/types/RetryPolicyOptions.ts",
+          "text": "// Correct: this type exists for RetryPolicy, so it lives in RetryPolicy's own\n// common/types/ folder. Callers still import it from this file.\nexport interface RetryPolicyOptions {\n\tattempts: number;\n\tdelayMs: number;\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/RetryPolicy/RetryPolicy.ts",
+          "text": "import type { RetryPolicyOptions } from './common/types/RetryPolicyOptions.ts';\n\n// Correct: RetryPolicy exports its options type for callers, so it needs a\n// second file. It is a folder that holds the class and that file.\nexport class RetryPolicy {\n\tprivate readonly options: RetryPolicyOptions;\n\n\tconstructor(options: RetryPolicyOptions) {\n\t\tthis.options = options;\n\t}\n\n\tdelayFor({ attempt }: { attempt: number }): number | undefined {\n\t\treturn attempt < this.options.attempts ? this.options.delayMs * 2 ** attempt : undefined;\n\t}\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/types/RetryPolicyOptions.ts",
+          "text": "// Incorrect: this type exists for RetryPolicy, but it sits in the shared code\n// every module can reach. It belongs in a RetryPolicy/ folder.\nexport interface RetryPolicyOptions {\n\tattempts: number;\n\tdelayMs: number;\n}\n"
         },
         {
           "side": "fail",
           "path": "src/RateLimiter/RateLimiter.ts",
-          "text": "interface ConstructorParams {\n\tperMinute: number;\n}\n\n// A folder, a barrel, and nothing private to hide behind them — ceremony for a\n// concept that is still one file.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ perMinute }: ConstructorParams) {\n\t\tthis.remaining = perMinute;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
+          "text": "interface ConstructorParams {\n\tperMinute: number;\n}\n\n// Incorrect: a folder that holds only this one file. Nothing else in it serves\n// RateLimiter, so it should be the single file src/RateLimiter.ts.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ perMinute }: ConstructorParams) {\n\t\tthis.remaining = perMinute;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/RetryPolicy.ts",
+          "text": "import type { RetryPolicyOptions } from './common/types/RetryPolicyOptions.ts';\n\n// Incorrect: RetryPolicy exports its options type for callers, and a file holds\n// one export, so it needs a second file. It should be a folder, not one file.\nexport class RetryPolicy {\n\tprivate readonly options: RetryPolicyOptions;\n\n\tconstructor(options: RetryPolicyOptions) {\n\t\tthis.options = options;\n\t}\n\n\tdelayFor({ attempt }: { attempt: number }): number | undefined {\n\t\treturn attempt < this.options.attempts ? this.options.delayMs * 2 ** attempt : undefined;\n\t}\n}\n"
         }
       ],
       "example": {
-        "kind": "snippet"
+        "kind": "repo",
+        "focus": {
+          "fail": "src/RateLimiter/RateLimiter.ts",
+          "pass": "src/RetryPolicy/RetryPolicy.ts"
+        }
+      }
+    },
+    {
+      "id": "module-folder-layout",
+      "set": "code",
+      "documentPath": "code/architecture/folder-structure",
+      "summary": "What goes inside a module folder.",
+      "channel": "base",
+      "checked": false,
+      "defaultSeverity": "advisory",
+      "defaultSettings": {},
+      "fixtureCounts": {
+        "pass": 2,
+        "fail": 2
+      },
+      "prose": "## Module Folder Layout\n\nEvery module folder has the same layout:\n\n- Its main file, named after the folder: `listIssues/listIssues.ts`.\n- A `common/` folder for the files only this module uses, when it has any.\n- Modules inside it, each a file or folder next to the main file.\n\nNothing else. Every level, `src/` included, holds only modules, a `common/` folder and files: never invent another kind of folder.\n\nThen a reader knows where to look in any module.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/listIssues/common/utils/getIssueRows.ts",
+          "text": "// Correct: only listIssues uses this, so it goes in the module's common/.\nexport const getIssueRows = ({ titles }: { titles: string[] }): string[] => titles.map((title, index) => `${index + 1}. ${title}`);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/listIssues/listIssues.ts",
+          "text": "import { getIssueRows } from './common/utils/getIssueRows.ts';\n\n// Correct: the main file is named after its folder.\nexport const listIssues = ({ titles }: { titles: string[] }): string => getIssueRows({ titles }).join('\\n');\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/listIssues/getIssueRows.ts",
+          "text": "// Incorrect: only listIssues uses this, so it belongs in listIssues/common/utils/.\nexport const getIssueRows = ({ titles }: { titles: string[] }): string[] => titles.map((title, index) => `${index + 1}. ${title}`);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/listIssues/run.ts",
+          "text": "import { getIssueRows } from './getIssueRows.ts';\n\n// Incorrect: the main file is not named after its folder, so a reader cannot\n// tell which file is the module.\nexport const run = ({ titles }: { titles: string[] }): string => getIssueRows({ titles }).join('\\n');\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/listIssues/run.ts",
+          "pass": "src/listIssues/listIssues.ts"
+        }
+      }
+    },
+    {
+      "id": "module-out-of-common",
+      "set": "code",
+      "documentPath": "code/architecture/folder-structure",
+      "summary": "When shared code has grown too big for `common/`.",
+      "channel": "base",
+      "checked": false,
+      "defaultSeverity": "advisory",
+      "defaultSettings": {},
+      "fixtureCounts": {
+        "pass": 4,
+        "fail": 4
+      },
+      "prose": "## Module Out of Common\n\n`common/` holds only files that other code imports directly. It never holds a module with files of its own.\n\n- When shared code needs a file that only it uses, move it out of `common/` into its own module folder, next to the `common/` it left, and move that file into the module's own `common/`.\n- This includes a domain folder: once one of its files exists only to serve the others, it is a module and moves out.\n\nThen `common/` stays a list of things to import, and every module has the same shape wherever it sits.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/billing.ts",
+          "text": "import { hasPermission } from './hasPermission/hasPermission.ts';\n\nexport const billing = ({ role }: { role: string }): boolean => hasPermission({ role });\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/hasPermission/common/utils/normalizeRole.ts",
+          "text": "// Correct: only hasPermission uses this, so it lives in hasPermission's common/.\nexport const normalizeRole = ({ role }: { role: string }): string => role.trim().toLowerCase();\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/hasPermission/hasPermission.ts",
+          "text": "import { normalizeRole } from './common/utils/normalizeRole.ts';\n\n// Correct: a module of its own next to src/common/, because it has a file that\n// only it uses.\nexport const hasPermission = ({ role }: { role: string }): boolean => normalizeRole({ role }) === 'admin';\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/invoices.ts",
+          "text": "import { hasPermission } from './hasPermission/hasPermission.ts';\n\nexport const invoices = ({ role }: { role: string }): boolean => hasPermission({ role });\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing.ts",
+          "text": "import { hasPermission } from './common/permissions/hasPermission.ts';\n\nexport const billing = ({ role }: { role: string }): boolean => hasPermission({ role });\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/permissions/hasPermission.ts",
+          "text": "import { normalizeRole } from './normalizeRole.ts';\n\nexport const hasPermission = ({ role }: { role: string }): boolean => normalizeRole({ role }) === 'admin';\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/permissions/normalizeRole.ts",
+          "text": "// Incorrect: only hasPermission uses this. hasPermission now has a file of its\n// own, so it is a module and should leave common/.\nexport const normalizeRole = ({ role }: { role: string }): string => role.trim().toLowerCase();\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/invoices.ts",
+          "text": "import { hasPermission } from './common/permissions/hasPermission.ts';\n\nexport const invoices = ({ role }: { role: string }): boolean => hasPermission({ role });\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/common/permissions/normalizeRole.ts",
+          "pass": "src/hasPermission/hasPermission.ts"
+        }
       }
     },
     {
@@ -3269,65 +3179,6 @@
       }
     },
     {
-      "id": "placement",
-      "set": "code",
-      "documentPath": "code/architecture/folder-structure",
-      "summary": "shared code sitting in a `common/` above or below the lowest folder that holds everyone using it",
-      "channel": "base",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultSettings": {},
-      "fixtureCounts": {
-        "pass": 4,
-        "fail": 3
-      },
-      "prose": "## Rules\n\n1. **Keep `common/` close to consumers** — the lowest level where all dependents can reach it\n2. **Promote when reused** — move to a parent `common/` only when 2+ modules at that level need it\n3. **Avoid circular dependencies** — update imports when promoting; verify no cycles\n4. **`common/` is always typed, never flat** — every file lives under a type subfolder from the first file. The type vocabulary is a closed list: `utils/`, `types/`, `constants/`, `services/`, plus domain folders graduated per [Domain Folders](#domain-folders). Never invent a new type folder; never place a file directly in `common/`.\n5. **Graduate, don't pre-build** — a *concept* becomes a folder only when it needs private companions. This ceremony ban does not apply to `common/`'s type subfolders: that skeleton is always built, so placement is a no-decision.\n\n| Folder | Contents |\n| ----------- | ---------------------------------------- |\n| `utils/` | Stateless functions — pure or IO-performing (`formatDate()`, `loadConfig()`) |\n| `types/` | Type-level declarations (`CopyResult`) |\n| `constants/` | Value and named constants (`defaultConfig`, `Action`) |\n| `services/` | Stateful classes with methods (`ApiClient`) |\n\n## Example\n\n```\nsrc/\n├─ common/            # shared across ALL modules\n│  ├─ utils/          #   (formatDate.ts)\n│  ├─ types/\n│  ├─ services/\n│  ├─ formatting/     # domain folder: 2+ related pure functions\n├─ featureA/\n│  ├─ common/         # shared within featureA only\n│  │  ├─ utils/\n│  │  ├─ types/\n│  └─ featureA.ts\n```\n\nReading the hierarchy: `src/common/` serves every feature; `src/featureA/common/` serves only `featureA`. If a helper there is later needed by `featureB`, promote it to `src/common/utils/`.\n\nA file in a folder's `common/` may still be what the folder offers others — a type its exported functions take, say. Code outside the folder imports that from its own file like any other export, and it stays where it is. What moves is a general helper the folder merely happened to hold first: once a second folder needs it for its own work, it belongs in the `common/` of the lowest folder containing both.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/common/utils/shared.ts",
-          "text": "export const shared = 9;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/other/other.ts",
-          "text": "import { shared } from '../common/utils/shared';\n\nexport const other = shared;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/pay/common/utils/round.ts",
-          "text": "export const round = 1;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/pay/pay.ts",
-          "text": "import { round } from './common/utils/round';\n\nexport const pay = round;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/bill/bill.ts",
-          "text": "import { round } from '../pay/common/utils/round';\n\nexport const bill = round;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/pay/common/utils/round.ts",
-          "text": "export const round = 1;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/pay/pay.ts",
-          "text": "import { round } from './common/utils/round';\n\nexport const pay = round;\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/bill/bill.ts",
-          "pass": "src/common/utils/shared.ts"
-        }
-      }
-    },
-    {
       "id": "precedence-in-repos-with-older-tests",
       "set": "tests",
       "documentPath": "tests/unit-testing",
@@ -3492,7 +3343,7 @@
         "pass": 2,
         "fail": 1
       },
-      "prose": "### Query Options\n\nQuery-options factories live in the feature's `queries/` folder — the\nconventional [domain folder](../../folder-structure/55-ungrouped-domain-utils/rule.md)\nfor a feature's query definitions (a grouping, not a module, per\n[a domain folder is not a module](../../folder-structure/65-domain-folder-is-not-a-module/rule.md)).\nThis pack's convention — consistency across TanStack repos is worth the noun —\nnot a TanStack requirement.\n\n```typescript\n// features/issues/queries/issuesQueryOptions.ts\ninterface Params {\n\tsearchParams: IssuesSearchParams;\n}\n\nexport const issuesQueryOptions = ({ searchParams }: Params) =>\n\tqueryOptions({\n\t\tqueryKey: [QueryKey.Issues, searchParams],\n\t\tqueryFn: () => findAllIssuesServerFn({ data: searchParams }),\n\t});\n```\n\nThe factory's inferred return type is deliberate — see the return-types note in\nthis channel's [document](../document.md).",
+      "prose": "### Query Options\n\nQuery-options factories live in the feature's `queries/` folder — the\nconventional [domain folder](../../folder-structure/55-ungrouped-domain-utils/rule.md)\nfor a feature's query definitions (a grouping, not a module, per\n[a domain folder is not a module](../../folder-structure/15-module-out-of-common/rule.md)).\nThis pack's convention — consistency across TanStack repos is worth the noun —\nnot a TanStack requirement.\n\n```typescript\n// features/issues/queries/issuesQueryOptions.ts\ninterface Params {\n\tsearchParams: IssuesSearchParams;\n}\n\nexport const issuesQueryOptions = ({ searchParams }: Params) =>\n\tqueryOptions({\n\t\tqueryKey: [QueryKey.Issues, searchParams],\n\t\tqueryFn: () => findAllIssuesServerFn({ data: searchParams }),\n\t});\n```\n\nThe factory's inferred return type is deliberate — see the return-types note in\nthis channel's [document](../document.md).",
       "fixtures": [
         {
           "side": "pass",
@@ -3561,7 +3412,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Domain Folders\n\nThe [graduation rule](../../folder-structure/55-ungrouped-domain-utils/rule.md)\napplied to JSX-producing helpers: two or more functions sharing a subject\ngraduate out of `utils/` into a named domain folder, exactly as pure functions\ndo.\n\n```\ncommon/\n├── utils/                         # Ungrouped pure functions\n├── stepConfigs/                   # ✅ Domain folder — 2+ related JSX config builders\n│   ├── getDesignStepConfig.tsx\n│   ├── getInstallStepConfig.tsx\n│   └── getStepContentConfig.tsx\n├── cellRenderers/                 # ✅ Domain folder — 2+ related JSX renderers\n│   ├── renderStatusCell.tsx\n│   └── renderDateCell.tsx\n```\n\nA domain folder is a grouping, not a module\n([a domain folder is not a module](../../folder-structure/65-domain-folder-is-not-a-module/rule.md)):\ncallers import each file in it directly, and like every folder it carries no\n`index.ts` ([folder-index-file rule](../../../style-guide/structure/module-api/25-folder-index-file/rule.md)).",
+      "prose": "## Domain Folders\n\nThe [graduation rule](../../folder-structure/55-ungrouped-domain-utils/rule.md)\napplied to JSX-producing helpers: two or more functions sharing a subject\ngraduate out of `utils/` into a named domain folder, exactly as pure functions\ndo.\n\n```\ncommon/\n├── utils/                         # Ungrouped pure functions\n├── stepConfigs/                   # ✅ Domain folder — 2+ related JSX config builders\n│   ├── getDesignStepConfig.tsx\n│   ├── getInstallStepConfig.tsx\n│   └── getStepContentConfig.tsx\n├── cellRenderers/                 # ✅ Domain folder — 2+ related JSX renderers\n│   ├── renderStatusCell.tsx\n│   └── renderDateCell.tsx\n```\n\nA domain folder is a grouping, not a module\n([a domain folder is not a module](../../folder-structure/15-module-out-of-common/rule.md)):\ncallers import each file in it directly, and like every folder it carries no\n`index.ts` ([folder-index-file rule](../../../style-guide/structure/module-api/25-folder-index-file/rule.md)).",
       "fixtures": [
         {
           "side": "pass",
@@ -3652,6 +3503,60 @@
       }
     },
     {
+      "id": "reuse-common-code",
+      "set": "code",
+      "documentPath": "code/architecture/folder-structure",
+      "summary": "Look for existing shared code before writing new code.",
+      "channel": "base",
+      "checked": false,
+      "defaultSeverity": "advisory",
+      "defaultSettings": {},
+      "fixtureCounts": {
+        "pass": 3,
+        "fail": 3
+      },
+      "prose": "## Reuse Common Code\n\nBefore you write a helper, type, constant or service, look for one in every `common/` folder in the package.\n\n- If one does what you need, import it. Never write a second copy.\n- If it sits in another module's `common/`, move it up as shared-code-placement says, then import it.\n- If one nearly does, extend it rather than write a near copy, as long as its current callers keep working.\n\nTwo copies drift apart, and a fix then reaches only one of them.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/common/utils/formatMoney.ts",
+          "text": "// Shared by getChargeLabel and getInvoiceLabel, so it lives in src/common/utils/.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/getChargeLabel.ts",
+          "text": "import { formatMoney } from './common/utils/formatMoney.ts';\n\nexport const getChargeLabel = ({ cents }: { cents: number }): string => `Charged ${formatMoney({ cents })}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/getInvoiceLabel.ts",
+          "text": "import { formatMoney } from './common/utils/formatMoney.ts';\n\n// Correct: imports the formatMoney that src/common/utils/ already has.\nexport const getInvoiceLabel = ({ cents }: { cents: number }): string => `Invoiced ${formatMoney({ cents })}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/utils/formatMoney.ts",
+          "text": "// Shared by getChargeLabel and getInvoiceLabel, so it lives in src/common/utils/.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/getChargeLabel.ts",
+          "text": "import { formatMoney } from './common/utils/formatMoney.ts';\n\nexport const getChargeLabel = ({ cents }: { cents: number }): string => `Charged ${formatMoney({ cents })}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/getInvoiceLabel.ts",
+          "text": "// Incorrect: writes its own copy of formatMoney when src/common/utils/ already\n// has one. A fix to either copy now misses the other.\nconst formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n\nexport const getInvoiceLabel = ({ cents }: { cents: number }): string => `Invoiced ${formatMoney({ cents })}`;\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/getInvoiceLabel.ts",
+          "pass": "src/getInvoiceLabel.ts"
+        }
+      }
+    },
+    {
       "id": "server-functions",
       "set": "code",
       "documentPath": "code/architecture/tanstack-start",
@@ -3721,6 +3626,70 @@
       }
     },
     {
+      "id": "shared-code-placement",
+      "set": "code",
+      "documentPath": "code/architecture/folder-structure",
+      "summary": "Which `common/` folder shared code belongs in.",
+      "channel": "base",
+      "checked": false,
+      "defaultSeverity": "advisory",
+      "defaultSettings": {},
+      "fixtureCounts": {
+        "pass": 4,
+        "fail": 4
+      },
+      "prose": "## Shared Code Placement\n\nPut shared code in the `common/` of the lowest folder that holds every file using it.\n\n- Code that only one module uses stays in that module.\n- When a second module needs it, move it up to the `common/` of the lowest folder that holds both, update the imports, and check that the move made no circular imports.\n- A type or function that is part of a module's own API, such as the options its function takes, stays in that module. Other modules import it from there.\n\nThen where a file sits shows who uses it.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/billing/billing.ts",
+          "text": "import { formatMoney } from '../common/utils/formatMoney.ts';\nimport { roundCents } from './common/utils/roundCents.ts';\n\nexport const billing = ({ cents }: { cents: number }): string => formatMoney({ cents: roundCents({ cents }) });\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/billing/common/utils/roundCents.ts",
+          "text": "// Correct: only billing uses this, so it stays in billing.\nexport const roundCents = ({ cents }: { cents: number }): number => Math.round(cents);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/common/utils/formatMoney.ts",
+          "text": "// Correct: billing and invoices both use this, and src/ is the lowest folder\n// that holds both.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/invoices.ts",
+          "text": "import { formatMoney } from './common/utils/formatMoney.ts';\n\nexport const invoices = ({ cents }: { cents: number }): string => `Invoiced ${formatMoney({ cents })}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/billing.ts",
+          "text": "import { roundCents } from '../common/utils/roundCents.ts';\nimport { formatMoney } from './common/utils/formatMoney.ts';\n\nexport const billing = ({ cents }: { cents: number }): string => formatMoney({ cents: roundCents({ cents }) });\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/utils/formatMoney.ts",
+          "text": "// Incorrect: invoices.ts uses this too, so it sits too low. It belongs in\n// src/common/utils/, the lowest folder that holds both users.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/utils/roundCents.ts",
+          "text": "// Incorrect: only billing uses this, so it sits too high. It belongs in\n// src/billing/common/utils/.\nexport const roundCents = ({ cents }: { cents: number }): number => Math.round(cents);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/invoices.ts",
+          "text": "import { formatMoney } from './billing/common/utils/formatMoney.ts';\n\n// Reaches into billing's own common/ for a helper they both need.\nexport const invoices = ({ cents }: { cents: number }): string => `Invoiced ${formatMoney({ cents })}`;\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/common/utils/formatMoney.ts",
+          "pass": "src/common/utils/formatMoney.ts"
+        }
+      }
+    },
+    {
       "id": "shared-package-criteria",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
@@ -3768,43 +3737,63 @@
       "id": "single-file-domain-folder",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "a graduated domain folder holding one file",
+      "summary": "When a domain folder in `common/` has too few files to be a folder.",
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultSettings": {},
       "fixtureCounts": {
-        "pass": 3,
-        "fail": 1
+        "pass": 4,
+        "fail": 4
       },
-      "prose": "",
+      "prose": "## Single-File Domain Folder\n\nA domain folder in `common/` needs at least two files. When it holds only one, move that file back into `utils/`.\n\nA folder for one file adds a level to search and groups nothing.",
       "fixtures": [
         {
           "side": "pass",
+          "path": "src/billing/billing.ts",
+          "text": "import { formatDate } from './common/utils/formatDate.ts';\nimport { parseDate } from './common/parsing/parseDate.ts';\nimport { parseTime } from './common/parsing/parseTime.ts';\n\nexport const billing = ({ day, time }: { day: string; time: string }): string => `${formatDate({ date: parseDate({ text: day }) })} +${parseTime({ text: time })}m`;\n"
+        },
+        {
+          "side": "pass",
           "path": "src/billing/common/parsing/parseDate.ts",
-          "text": "export const parseDate = () => 1;\n"
+          "text": "// Correct: parsing/ holds two files, so it is worth a folder.\nexport const parseDate = ({ text }: { text: string }): Date => new Date(`${text}T00:00:00Z`);\n"
         },
         {
           "side": "pass",
           "path": "src/billing/common/parsing/parseTime.ts",
-          "text": "export const parseTime = () => 2;\n"
+          "text": "export const parseTime = ({ text }: { text: string }): number => Number(text.split(':')[0]) * 60 + Number(text.split(':')[1]);\n"
         },
         {
           "side": "pass",
-          "path": "src/billing/common/utils/formatTax.ts",
-          "text": "export const formatTax = () => 3;\n"
+          "path": "src/billing/common/utils/formatDate.ts",
+          "text": "// Correct: one function about formatting, so it stays in utils/.\nexport const formatDate = ({ date }: { date: Date }): string => date.toISOString().slice(0, 10);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/billing.ts",
+          "text": "import { formatDate } from './common/formatting/formatDate.ts';\nimport { parseDate } from './common/parsing/parseDate.ts';\nimport { parseTime } from './common/parsing/parseTime.ts';\n\nexport const billing = ({ day, time }: { day: string; time: string }): string => `${formatDate({ date: parseDate({ text: day }) })} +${parseTime({ text: time })}m`;\n"
         },
         {
           "side": "fail",
           "path": "src/billing/common/formatting/formatDate.ts",
-          "text": "export const formatDate = () => 1;\n"
+          "text": "// Incorrect: the only file in formatting/. One function belongs in utils/.\nexport const formatDate = ({ date }: { date: Date }): string => date.toISOString().slice(0, 10);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/parsing/parseDate.ts",
+          "text": "export const parseDate = ({ text }: { text: string }): Date => new Date(`${text}T00:00:00Z`);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/parsing/parseTime.ts",
+          "text": "export const parseTime = ({ text }: { text: string }): number => Number(text.split(':')[0]) * 60 + Number(text.split(':')[1]);\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
           "fail": "src/billing/common/formatting/formatDate.ts",
-          "pass": "src/billing/common/parsing/parseDate.ts"
+          "pass": "src/billing/common/utils/formatDate.ts"
         }
       }
     },
@@ -4917,53 +4906,73 @@
       "id": "ungrouped-domain-utils",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "two or more utils about the same subject left loose in `utils/` instead of grouped in a folder named for it",
+      "summary": "When functions about one subject in `utils/` should get their own folder.",
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultSettings": {},
       "fixtureCounts": {
-        "pass": 4,
-        "fail": 2
+        "pass": 5,
+        "fail": 5
       },
-      "prose": "## Domain Folders\n\nA stateless function starts in `utils/`. When a second related function with a shared domain appears, both graduate to a named domain folder (sibling of `utils/`) — `formatting/`, `validation/`, `parsing/`. One function alone never gets a domain folder; stateful code stays in `services/`.",
+      "prose": "## Ungrouped Domain Utils\n\nWhen two or more functions in a `common/utils/` folder share a subject, move them into a domain folder named for that subject, next to `utils/`: `formatting/`, `parsing/`, `validation/`.\n\n- Name the folder for the subject, never for the kind of function: never `getters/` or `predicates/`. Two `is*` functions stay in `utils/`.\n- A single function about a subject stays in `utils/`.\n- Classes that hold state stay in `services/`, never in a domain folder.\n\nThen all the code about one subject is in one place.",
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/billing/common/utils/formatDate.ts",
-          "text": "export const formatDate = () => 1;\n"
+          "path": "src/billing/billing.ts",
+          "text": "import { formatCurrency } from './common/formatting/formatCurrency.ts';\nimport { formatDate } from './common/formatting/formatDate.ts';\nimport { isWeekend } from './common/utils/isWeekend.ts';\n\nexport const billing = ({ cents, date }: { cents: number; date: Date }): string =>\n\tisWeekend({ date }) ? 'closed' : `${formatCurrency({ cents })} on ${formatDate({ date })}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/billing/common/formatting/formatCurrency.ts",
+          "text": "// Correct: the formatting functions share a folder named for their subject.\nexport const formatCurrency = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/billing/common/formatting/formatDate.ts",
+          "text": "export const formatDate = ({ date }: { date: Date }): string => date.toISOString().slice(0, 10);\n"
         },
         {
           "side": "pass",
           "path": "src/billing/common/utils/isHoliday.ts",
-          "text": "export const isHoliday = () => false;\n"
+          "text": "export const isHoliday = ({ date }: { date: Date }): boolean => date.toISOString().slice(5, 10) === '12-25';\n"
         },
         {
           "side": "pass",
           "path": "src/billing/common/utils/isWeekend.ts",
-          "text": "export const isWeekend = () => true;\n"
+          "text": "// Correct: two is* functions share a kind, not a subject, so they stay in utils/.\nexport const isWeekend = ({ date }: { date: Date }): boolean => date.getDay() === 0 || date.getDay() === 6;\n"
         },
         {
-          "side": "pass",
-          "path": "src/billing/common/utils/parseDate.ts",
-          "text": "export const parseDate = () => 2;\n"
+          "side": "fail",
+          "path": "src/billing/billing.ts",
+          "text": "import { formatCurrency } from './common/utils/formatCurrency.ts';\nimport { formatDate } from './common/utils/formatDate.ts';\nimport { isWeekend } from './common/utils/isWeekend.ts';\n\nexport const billing = ({ cents, date }: { cents: number; date: Date }): string =>\n\tisWeekend({ date }) ? 'closed' : `${formatCurrency({ cents })} on ${formatDate({ date })}`;\n"
         },
         {
           "side": "fail",
           "path": "src/billing/common/utils/formatCurrency.ts",
-          "text": "export const formatCurrency = () => 2;\n"
+          "text": "// Incorrect: formatCurrency and formatDate share a subject, formatting, but\n// sit loose in utils/.\nexport const formatCurrency = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
         },
         {
           "side": "fail",
           "path": "src/billing/common/utils/formatDate.ts",
-          "text": "export const formatDate = () => 1;\n"
+          "text": "export const formatDate = ({ date }: { date: Date }): string => date.toISOString().slice(0, 10);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/utils/isHoliday.ts",
+          "text": "export const isHoliday = ({ date }: { date: Date }): boolean => date.toISOString().slice(5, 10) === '12-25';\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/utils/isWeekend.ts",
+          "text": "export const isWeekend = ({ date }: { date: Date }): boolean => date.getDay() === 0 || date.getDay() === 6;\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
           "fail": "src/billing/common/utils/formatCurrency.ts",
-          "pass": "src/billing/common/utils/formatDate.ts"
+          "pass": "src/billing/common/formatting/formatCurrency.ts"
         }
       }
     },

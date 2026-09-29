@@ -83,9 +83,3 @@ test('resolveConfigAndDriver: a present-but-invalid config (typoed commands key)
 	// defaults (decision 26)
 	expect(resolveConfigAndDriver({ cwd, command: 'implement' })).rejects.toThrow();
 });
-
-test('resolveConfigAndDriver: a stale top-level driver key rejects with a message naming harness', async () => {
-	const { cwd } = setupConsumerDir({ config: { driver: 'codex', gates: { check: 'c', test: 't', 'test-coverage': false } } });
-
-	await expect(resolveConfigAndDriver({ cwd, command: 'plan' })).rejects.toThrow(/renamed to `harness`/);
-});

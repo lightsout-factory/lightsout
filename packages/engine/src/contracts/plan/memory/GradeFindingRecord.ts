@@ -28,7 +28,7 @@ export const GradeFindingRecord = z.object({
 	gap: z.string(),
 	decision: z.string(),
 	options: z.array(z.string()).default([]),
-	/** Every original observation the record holds, each with its own phase, lens and wording. Empty on a record written before grouping existed — read it through `recordObservations`. */
+	/** Every original observation the record holds, each with its own phase, lens and wording. Empty on a single-observation record — read it through `recordObservations`. */
 	observations: z.array(GapObservation).default([]),
 	firstSeen: z.string(),
 	lastSeen: z.string(),
@@ -49,8 +49,6 @@ export const GradeFindingRecord = z.object({
 	agentDecision: z.string().optional(),
 	safeBecause: z.string().optional(),
 	answerAt: z.string().optional(),
-	/** The single-location closure written before per-location resolutions existed. Read only through `recordResolutions`; nothing writes it again. */
-	resolution: z.object({ answerAt: z.string(), verifiedAt: z.string() }).optional(),
 	/** Set only on a `resolved` record: one confirmed citation per affected location, and when a judge verified it. */
 	resolutions: z.array(z.object({ phase: z.string(), answerAt: z.string(), verifiedAt: z.string() })).default([]),
 	reopened: z.array(z.object({ at: z.string(), reason: z.string(), priorStatus: z.enum(GradeFindingStatus) })).default([]),

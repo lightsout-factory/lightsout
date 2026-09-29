@@ -101,7 +101,6 @@ describe('absorbObservations', () => {
 			expect.objectContaining({
 				status: GradeFindingStatus.Open,
 				resolutions: [],
-				resolution: undefined,
 				lastSeen: passAt,
 				observations: [observationOf(), phaseTwoSeen, phaseThreeSeen],
 				reopened: [
@@ -117,16 +116,18 @@ describe('absorbObservations', () => {
 
 	test('leaves a resolved record closed when every location it gains is already cited', () => {
 		const sameFileRewording = observationOf({ lens: GapCheckLens.Wiring, gap: 'phase one never caps how often a judge reruns' });
-		const legacyResolution = { answerAt: 'A judge is retried twice.', verifiedAt: seenAt };
 		const { record, observations } = setupAbsorb({
-			record: { status: GradeFindingStatus.Resolved, resolution: legacyResolution },
+			record: {
+				status: GradeFindingStatus.Resolved,
+				resolutions: [{ phase: 'phase1-contracts.md', answerAt: 'A judge is retried twice.', verifiedAt: seenAt }],
+			},
 			joining: [sameFileRewording],
 		});
 
 		const absorbed = absorbObservations({ record, observations, at: passAt });
 
-		// the closure written before per-location citations existed still covers the
-		// record's own plan file, so a second wording there changes nothing about it
+		// the closure already covers the record's own plan file, so a second wording
+		// there changes nothing about it
 		expect(absorbed).toStrictEqual({ ...record, observations: [observationOf(), sameFileRewording] });
 	});
 

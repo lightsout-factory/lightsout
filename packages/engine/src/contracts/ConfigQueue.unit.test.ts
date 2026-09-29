@@ -31,17 +31,6 @@ describe('ConfigQueue', () => {
 		expect(parsed['decisions-heading']).toBe('## Settled');
 	});
 
-	test('refuses the retired `worker-minutes` key, because a silently ignored ceiling is worse than a refusal', () => {
-		expect(ConfigQueue.safeParse({ ...minimal, 'worker-minutes': 90 }).success).toBe(false);
-	});
-
-	test('refuses the moved `setup` key with a message naming `worktree.setup`, because a lost preparation command leaves an agent in a tree with no dependencies', () => {
-		const result = ConfigQueue.safeParse({ ...minimal, setup: 'pnpm install' });
-
-		expect(result.success).toBe(false);
-		expect(result.error?.message ?? '').toMatch(/`queue.setup` was renamed to `worktree.setup`/);
-	});
-
 	test.each([
 		{ key: 'worker-timeout', value: 240 },
 		{ key: 'question-timeout', value: 60 },
@@ -104,22 +93,6 @@ describe('ConfigQueue', () => {
 		expect(ConfigQueue.safeParse({ 'ready-status': 'Waiting' }).success).toBe(false);
 	});
 
-	test.each([
-		{ key: 'tracker', to: 'ticket-tracker.provider' },
-		{ key: 'team', to: 'ticket-tracker.team' },
-		{ key: 'site-url', to: 'ticket-tracker.site-url' },
-		{ key: 'project', to: 'ticket-tracker.project' },
-		{ key: 'api-key-env', to: 'ticket-tracker.api-key-env' },
-		{ key: 'api-user-email-env', to: 'ticket-tracker.api-user-email-env' },
-	])('refuses the moved `queue.$key` spelling, naming $to — a silently stripped identity would leave the queue querying nothing', ({ key, to }) => {
-		const parsed = ConfigQueue.safeParse({ ...minimal, [key]: 'linear' });
-
-		expect(parsed.success).toBe(false);
-		// the message is the whole point of the rejection — a stripped identity key
-		// would leave the queue querying a team nobody named
-		expect(parsed.error?.message ?? '').toContain(`\`queue.${key}\` was renamed to \`${to}\``);
-	});
-
 	test('refuses a parallelism that is not a whole number of tickets', () => {
 		expect(ConfigQueue.safeParse({ ...minimal, 'max-parallel': 0 }).success).toBe(false);
 		expect(ConfigQueue.safeParse({ ...minimal, 'max-parallel': 1.5 }).success).toBe(false);
@@ -127,15 +100,6 @@ describe('ConfigQueue', () => {
 
 	test('refuses a planning-status-labels block naming a planning status the engine has no meaning for', () => {
 		expect(ConfigQueue.safeParse({ ...minimal, 'planning-status-labels': { 'planning-needs-review': 'shaped-review' } }).success).toBe(false);
-	});
-
-	test('refuses the retired `queue.route-labels` spelling, naming the key that holds its value now', () => {
-		const parsed = ConfigQueue.safeParse({ ...minimal, 'route-labels': { direct: 'route-direct', 'auto-plan': 'route-auto-plan' } });
-
-		// a stripped route map would leave the queue querying no label at all, so
-		// the message naming the replacement is the whole point of the rejection
-		expect(parsed.success).toBe(false);
-		expect(parsed.error?.message ?? '').toContain('`queue.route-labels` was renamed to `queue.planning-status-labels`');
 	});
 
 	test('refuses a key it does not know — a typo here would silently disable a setting the file believes is on', () => {

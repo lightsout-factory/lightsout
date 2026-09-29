@@ -115,18 +115,6 @@ describe('commitRunWork subjects', () => {
 		expect({ uncommitted, subject: headSubject({ cwd }) }).toStrictEqual({ uncommitted: undefined, subject: 'LO-152 Drain the backlog' });
 	});
 
-	test('addresses a legacy plan folder by its own name', async () => {
-		const { cwd, run, driver } = await setupCommitRun({
-			dirty: { 'src/thing.ts': 'export const thing = 1;\n' },
-			changedFiles: ['src/thing.ts'],
-			plan: '.lightsout/work-orders/legacy-notes/plans/plan.md',
-		});
-
-		const uncommitted = await commitRunWork({ run, driver, resumed: false });
-
-		expect({ uncommitted, subject: headSubject({ cwd }) }).toStrictEqual({ uncommitted: undefined, subject: `${workOrderName} legacy-notes` });
-	});
-
 	test('commits under the branch name when the work order state cannot be read', async () => {
 		const { cwd, run, progress, driver } = await setupCommitRun({
 			dirty: { 'src/thing.ts': 'export const thing = 1;\n' },

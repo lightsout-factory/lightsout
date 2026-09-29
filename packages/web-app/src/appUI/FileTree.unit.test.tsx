@@ -34,7 +34,7 @@ describe('FileTree', () => {
 		const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
 
 		expect({ tabs, folders: [screen.getByText('src'), screen.getByText('feature')].length }).toStrictEqual({
-			tabs: ['package.json', 'buildGreeting.ts'],
+			tabs: ['buildGreeting.ts', 'package.json'],
 			folders: 2,
 		});
 	});

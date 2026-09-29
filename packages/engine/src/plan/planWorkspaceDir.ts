@@ -5,7 +5,7 @@ import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts'
 interface Params {
 	/** The directory the command runs in — a primary checkout, a linked worktree, or no repository at all. */
 	cwd: string;
-	/** A plan address, or the bare name of a plan shaped before its ticket exists. */
+	/** A plan address, or a work order's name for its plans folder as a whole. */
 	name: string;
 }
 
@@ -16,11 +16,10 @@ interface Params {
  * `phase<N>-<slug>.md` files.
  *
  * An address answers that plan's own subfolder inside its ticket's plans folder;
- * a bare name answers the plans folder itself, which is where a brainstorm
- * shaped before its ticket exists lives as loose files until a plan is made out
- * of them. Putting those loose files one level below the ticket folder is what
- * keeps the ticket's own record files and its `runs/` sibling out of every scan
- * that looks for them.
+ * a work order's name answers the plans folder itself, which holds one subfolder
+ * per plan. Putting plans one level below the ticket folder is what keeps the
+ * ticket's own record files and its `runs/` sibling out of every scan that looks
+ * for them.
  *
  * Always under the primary checkout, whichever checkout the command runs in, the
  * way `resolveSharedStateDir` answers for shared run state. A planning worktree

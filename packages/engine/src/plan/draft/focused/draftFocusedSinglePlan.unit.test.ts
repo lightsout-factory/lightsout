@@ -3,7 +3,6 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { Effort } from '#src/contracts/Effort.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
-import { DraftImplementation } from '#src/contracts/plan/draft/DraftImplementation.ts';
 import { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvidenceIndex.ts';
 import { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
@@ -55,15 +54,12 @@ const cleanSingle: Respond = ({ role, path }) => (role === 'single' ? cleanPlanB
 const setupFocusedSingle = ({
 	name,
 	respond = cleanSingle,
-	collected = true,
 	model,
 	effort,
 	permissions,
 }: {
 	name: string;
 	respond?: Respond;
-	/** Whether the context carries a collected evidence index at all — `false` is a focused context wired without a collection. */
-	collected?: boolean;
 	model?: string;
 	effort?: Effort;
 	permissions?: Permissions;
@@ -98,23 +94,20 @@ const setupFocusedSingle = ({
 		permissions,
 		timeoutMs: 120_000,
 		progress: (message) => messages.push(message),
-		implementation: DraftImplementation.Focused,
-		evidence: collected
-			? SourceEvidenceIndex.parse({
-					planName: name,
-					entries: [
-						{
-							path: 'src/index.js',
-							sha256: 'a'.repeat(64),
-							kind: 'whole',
-							bytes: evidenceMarker.length,
-							text: evidenceMarker,
-							roles: ['the entry point every module is re-exported through'],
-						},
-					],
-					collectedAt: '2026-01-01T00:00:00.000Z',
-				})
-			: undefined,
+		evidence: SourceEvidenceIndex.parse({
+			planName: name,
+			entries: [
+				{
+					path: 'src/index.js',
+					sha256: 'a'.repeat(64),
+					kind: 'whole',
+					bytes: evidenceMarker.length,
+					text: evidenceMarker,
+					roles: ['the entry point every module is re-exported through'],
+				},
+			],
+			collectedAt: '2026-01-01T00:00:00.000Z',
+		}),
 	};
 
 	return { context, cwd, planDir, spawns, roles, messages };
@@ -172,24 +165,6 @@ describe('draftFocusedSinglePlan', () => {
 			path: writer.prompt.includes('### `src/index.js`'),
 			text: writer.prompt.includes(evidenceMarker.trim()),
 		}).toStrictEqual({ section: true, path: true, text: true });
-	});
-
-	test('drafts on without an evidence section when the context carries no collection', async () => {
-		const { context, spawns } = setupFocusedSingle({ name: 'focused-uncollected', collected: false });
-
-		const result = await draftFocusedSinglePlan({ context });
-
-		expectStatus(result, 'complete');
-
-		const [writer] = spawns;
-
-		// A context wired without a collection still drafts: the brief is simply
-		// empty rather than a heading standing over nothing, and the writer is
-		// spawned with the same focused environment either way.
-		expect({
-			section: writer.prompt.includes('## Collected source evidence'),
-			environment: writer.environment !== undefined,
-		}).toStrictEqual({ section: false, environment: true });
 	});
 
 	test('escalates once to a focused phased re-draft when the created-file ceiling is busted', async () => {

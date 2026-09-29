@@ -11,7 +11,8 @@ import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { seedRunDir } from '#tests/helpers/seedRunDir.ts';
 
-const name = 'add-search';
+const workOrderName = 'add-search';
+const name = `${workOrderName}/001-plan`;
 
 /** Every record a finished workspace holds, each valid against its own contract. */
 const records = {
@@ -29,8 +30,16 @@ const records = {
 		planName: name,
 		decisions: [{ source: DecisionSource.Brainstorm, question: 'build it?', options: 'yes / no', choice: 'yes', rationale: 'users ask' }],
 	}),
-	'grade.json': JSON.stringify({ planName: name, grade: PlanGrade.A, passed: true, gradedAt: '2026-01-01T00:00:00.000Z' }),
-	'dedup.json': JSON.stringify({ planName: name, findings: [], reviewedAt: '2026-01-01T00:00:00.000Z' }),
+	'grade.json': JSON.stringify({
+		planName: name,
+		grade: PlanGrade.A,
+		passed: true,
+		gradedAt: '2026-01-01T00:00:00.000Z',
+		scopeComplete: true,
+		scope: 'full',
+		covered: [],
+	}),
+	'dedup.json': JSON.stringify({ planName: name, findings: [], reviewed: [], reviewedAt: '2026-01-01T00:00:00.000Z' }),
 };
 
 /** One workspace on disk, holding whatever a case states over the finished set. */
@@ -50,21 +59,21 @@ const seedWorkspace = async ({ files }: { files: Record<string, string> }) => {
 test('a workspace no folder answers to is a not-found rather than an empty page', async () => {
 	const cwd = await freshCwd();
 
-	await expect(getPlanWorkspace({ cwd, name: 'never-planned' })).rejects.toThrow(PlanWorkspaceNotFoundError);
+	await expect(getPlanWorkspace({ cwd, name: 'never-planned/001-plan' })).rejects.toThrow(PlanWorkspaceNotFoundError);
 });
 
 test('a file where a workspace folder should be is a not-found too, not a walk of something else', async () => {
 	const cwd = await freshCwd();
 
-	await mkdir(join(cwd, '.lightsout', 'work-orders', name), { recursive: true });
+	await mkdir(join(cwd, '.lightsout', 'work-orders', workOrderName, 'plans'), { recursive: true });
 	await writeFile(planWorkspaceFolder({ cwd, name }), 'a file, not a folder', 'utf8');
 
 	await expect(getPlanWorkspace({ cwd, name })).rejects.toThrow(PlanWorkspaceNotFoundError);
 });
 
 // a backslash is never the address separator, so such a name stays one segment — and one segment holding a separator is refused
-test.each([{ named: '../runs' }, { named: 'nested/plan' }, { named: '..' }, { named: '' }, { named: 'lo-7-search\\001-basics' }])(
-	'a name that could only address something outside the plans folder — $named — is refused before any disk is touched',
+test.each([{ named: '../runs' }, { named: 'nested/plan' }, { named: '..' }, { named: '' }, { named: 'lo-7-search\\001-basics' }, { named: 'lo-7-search' }])(
+	'a name that is no plan address — $named — is refused before any disk is touched',
 	async ({ named }) => {
 		await expect(getPlanWorkspace({ cwd: await freshCwd(), name: named })).rejects.toThrow(PlanWorkspaceNotFoundError);
 	},
@@ -133,10 +142,13 @@ test('a phased workspace hands back its overview and its phase files in numeric 
 test('the runs that implemented the plan come back with it, and the folder they were read from is absolute', async () => {
 	const { cwd, dir } = await seedWorkspace({ files: { 'overview.md': '# overview' } });
 
-	await seedRunDir({ cwd, manifest: { runId: 'run-one', plan: `.lightsout/work-orders/${name}/plans/phase1-a.md`, planName: name, status: RunStatus.Passed } });
 	await seedRunDir({
 		cwd,
-		manifest: { runId: 'run-elsewhere', plan: '.lightsout/work-orders/other/plans/plan.md', planName: 'other', status: RunStatus.Passed },
+		manifest: { runId: 'run-one', plan: `.lightsout/work-orders/${workOrderName}/plans/001-plan/phase1-a.md`, planName: name, status: RunStatus.Passed },
+	});
+	await seedRunDir({
+		cwd,
+		manifest: { runId: 'run-elsewhere', plan: '.lightsout/work-orders/other/plans/001-plan/plan.md', planName: 'other/001-plan', status: RunStatus.Passed },
 	});
 	const view = await getPlanWorkspace({ cwd, name });
 

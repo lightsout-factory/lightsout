@@ -43,7 +43,6 @@ const complete = ({ record }: { record: GradeFindingRecord }): GradeFindingRecor
 	agentDecision: undefined,
 	safeBecause: undefined,
 	answerAt: undefined,
-	resolution: undefined,
 	...record,
 });
 

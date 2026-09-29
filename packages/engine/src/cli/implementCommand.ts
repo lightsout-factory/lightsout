@@ -137,7 +137,7 @@ export const implementCommand = async ({ flags, cwd }: CommandContext): Promise<
 
 	// The record's own bookkeeping around the run: the plan is marked implementing
 	// under the id the pipeline is handed, and the outcome is recorded against it.
-	// A legacy folder and a ticket with no record run exactly as they always have.
+	// A run outside a work order, and a ticket with no record, record nothing here.
 	const outcome = await runWorkOrderPlanLifecycle({
 		cwd: workspace.cwd,
 		name: planName,

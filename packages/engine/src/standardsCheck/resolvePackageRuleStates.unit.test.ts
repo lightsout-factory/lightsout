@@ -110,14 +110,6 @@ describe('resolvePackageRuleStates', () => {
 		);
 	});
 
-	test('a config naming a renamed rule by its old id is refused, naming the new id', () => {
-		const packs = [standardsPack({ rules: [rule({ id: 'folder-size' })] })];
-
-		expect(() => setupStates({ packs, standardsChecks: { 'crowded-folder': 'blocking' } })).toThrow(
-			'standards-checks names "crowded-folder", which was renamed to "folder-size" — use the new name in lightsout.config.json',
-		);
-	});
-
 	test('resolves every rule to its own default when the repo has no config at all', () => {
 		const states = resolvePackageRuleStates({ packs: [standardsPack({ rules: twoRules })] });
 

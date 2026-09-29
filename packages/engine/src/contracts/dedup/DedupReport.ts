@@ -21,13 +21,8 @@ import { ReviewedCollision } from '#src/contracts/dedup/ReviewedCollision.ts';
 export const DedupReport = z.object({
 	planName: z.string(),
 	findings: z.array(DedupFinding).default([]),
-	/**
-	 * Every collision this pass ruled on, whatever the ruling — what a later
-	 * `plan grade` subtracts before nudging. Empty in a report written before
-	 * the field existed, which reads as "nothing recorded" and restores the
-	 * older, noisier nudge rather than silencing it.
-	 */
-	reviewed: z.array(ReviewedCollision).default([]),
+	/** Every collision this pass ruled on, whatever the ruling — what a later `plan grade` subtracts before nudging. */
+	reviewed: z.array(ReviewedCollision),
 	/** False when a judge failed or hit the rate-limit wall; the findings above are real but partial. */
 	complete: z.boolean().default(true),
 	/** Why the scan did not finish, absent when it did. */

@@ -16,8 +16,8 @@ const manifestText = JSON.stringify({
 	runId,
 	createdAt: '2026-01-01T00:00:00.000Z',
 	updatedAt: '2026-01-01T00:00:00.000Z',
-	plan: '.lightsout/work-orders/search-ranking/plans/phase1-groundwork.md',
-	planName: 'search-ranking',
+	plan: '.lightsout/work-orders/search-ranking/plans/001-ranking/phase1-groundwork.md',
+	planName: 'search-ranking/001-ranking',
 	harness: 'claude-code',
 	status: RunStatus.Passed,
 	currentStep: null,
@@ -26,7 +26,15 @@ const manifestText = JSON.stringify({
 });
 
 /** The grade report this arrangement writes, as text — what a test overriding it writes its own version of. */
-const gradeText = JSON.stringify({ planName: 'search-ranking', grade: 'A', passed: true, gradedAt: '2026-01-02T00:00:00.000Z' });
+const gradeText = JSON.stringify({
+	planName: 'search-ranking',
+	grade: 'A',
+	passed: true,
+	gradedAt: '2026-01-02T00:00:00.000Z',
+	scopeComplete: true,
+	scope: 'full',
+	covered: [],
+});
 
 /**
  * A phased plan that got the whole way: notes it started from, an overview and
@@ -39,7 +47,7 @@ const gradeText = JSON.stringify({ planName: 'search-ranking', grade: 'A', passe
  */
 const setupPlansReader = async ({ grade = gradeText }: { grade?: string } = {}): Promise<{ reader: LightsoutReader }> => {
 	const repoRoot = await mkdtemp(join(tmpdir(), 'lightsout-reader-plans-'));
-	const workspace = '.lightsout/work-orders/search-ranking/plans';
+	const workspace = '.lightsout/work-orders/search-ranking/plans/001-ranking';
 	const files: Record<string, string> = {
 		// A run of a plan is filed under that plan's ticket folder.
 		[`.lightsout/work-orders/search-ranking/runs/${runId}/manifest.json`]: manifestText,
@@ -109,7 +117,7 @@ describe('getReader plans', () => {
 
 		expect(listings).toEqual([
 			{
-				name: 'search-ranking',
+				name: 'search-ranking/001-ranking',
 				stage: 'implemented',
 				grade: 'A',
 				hasNotes: true,
@@ -134,7 +142,7 @@ describe('getReader plans', () => {
 	test('returns one workspace with its records parsed and its transcripts named rather than read', async () => {
 		const { reader } = await setupPlansReader();
 
-		const workspace = await reader.getPlanWorkspace({ name: 'search-ranking' });
+		const workspace = await reader.getPlanWorkspace({ name: 'search-ranking/001-ranking' });
 
 		expect({
 			request: workspace.facts?.request,
@@ -156,13 +164,13 @@ describe('getReader plans', () => {
 	test('rejects a plan name no folder answers to rather than resolving to an empty workspace', async () => {
 		const { reader } = await setupPlansReader();
 
-		await expect(reader.getPlanWorkspace({ name: 'never-planned' })).rejects.toThrow(/never-planned/);
+		await expect(reader.getPlanWorkspace({ name: 'never-planned/001-plan' })).rejects.toThrow(/never-planned/);
 	});
 
 	test('reports a record that will not parse as a line the page can show, rather than refusing the whole workspace', async () => {
 		const { reader } = await setupPlansReader({ grade: '{ not json at all' });
 
-		const workspace = await reader.getPlanWorkspace({ name: 'search-ranking' });
+		const workspace = await reader.getPlanWorkspace({ name: 'search-ranking/001-ranking' });
 
 		expect({ grade: workspace.grade, problems: workspace.problems }).toEqual({ grade: undefined, problems: [expect.stringContaining('grade.json')] });
 	});

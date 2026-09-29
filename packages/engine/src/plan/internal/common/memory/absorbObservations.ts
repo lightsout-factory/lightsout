@@ -3,7 +3,6 @@ import type { GradeFindingRecord } from '#src/contracts/plan/memory/GradeFinding
 import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatus.ts';
 import { findingLocations } from '#src/plan/common/utils/findingLocations.ts';
 import { recordObservations } from '#src/plan/internal/common/memory/recordObservations.ts';
-import { recordResolutions } from '#src/plan/internal/common/memory/recordResolutions.ts';
 import { reopenRecord } from '#src/plan/internal/common/memory/reopenRecord.ts';
 import { dedupeObservations } from '#src/plan/internal/common/observations/dedupeObservations.ts';
 
@@ -23,12 +22,12 @@ interface Params {
  * A closure is a claim about specific locations; a new location is a claim
  * nobody has verified, and inheriting the closure would turn an unproven repair
  * into an approval. What the record held is read through `recordObservations`,
- * so a record written before grouping existed keeps its own location rather
- * than losing it to the first observation that joins.
+ * so a single-observation record keeps its own location rather than losing it
+ * to the first observation that joins.
  */
 export const absorbObservations = ({ record, observations, at }: Params): GradeFindingRecord => {
 	const merged = { ...record, observations: dedupeObservations({ observations: [...recordObservations({ record }), ...observations] }) };
-	const cited = new Set(recordResolutions({ record }).map(({ phase }) => phase));
+	const cited = new Set(record.resolutions.map(({ phase }) => phase));
 	const uncovered = findingLocations({ observations: merged.observations, phase: record.phase }).filter((location) => !cited.has(location));
 	const reason = `gained an observation at ${uncovered.join(', ')}, where no confirmed citation closes it`;
 

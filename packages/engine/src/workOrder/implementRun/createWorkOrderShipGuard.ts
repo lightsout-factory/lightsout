@@ -40,8 +40,8 @@ export const createWorkOrderShipGuard = ({ config, env, onProgress }: Params): S
 			const local = await readWorkOrderState({ cwd, name: branch });
 
 			// A tracker that cannot be read must not stop a branch that has no record
-			// here at all: such a branch is a legacy one and ships exactly as it did
-			// before work order states existed. A branch that DOES have a record is
+			// here at all: such a branch belongs to no work order, so no ticket record
+			// governs its ship. A branch that DOES have a record is
 			// refused, because what its published copy says could not be established.
 			return 'error' in local || local.record !== undefined ? pulled.error : undefined;
 		}

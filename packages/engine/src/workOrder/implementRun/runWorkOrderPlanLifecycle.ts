@@ -21,7 +21,7 @@ import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderSt
 interface Params {
 	/** The checkout the run builds in: HEAD is read and the plan's durable files are hashed here; the record is resolved through its primary checkout. */
 	cwd: string;
-	/** The plan's name under the plans directory: a plan address, a legacy folder name, or undefined. */
+	/** The plan's address under the plans directory, or undefined for a plan outside it. */
 	name: string | undefined;
 	/** The id of the run a resume continues. Absent for a fresh run, which is handed a newly minted id. */
 	resumeRunId?: string;
@@ -160,7 +160,7 @@ const recordOutcome = async ({
 /**
  * Wrap one pipeline run for a plan name: refuse a plan the work order state says
  * may not be built, record the plan's progress around the run, and run the
- * pipeline unchanged for a legacy folder name or a ticket with no record.
+ * pipeline unchanged for a run outside a work order or a work order with no record.
  *
  * `implement`, `resume` and the queue's plan build all go through here, so the
  * ticket's numeric order, its mode and its exclusions are enforced on every path

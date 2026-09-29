@@ -24,6 +24,6 @@ common/
 ```
 
 A domain folder is a grouping, not a module
-([a domain folder is not a module](../../folder-structure/65-domain-folder-is-not-a-module/rule.md)):
+([a domain folder is not a module](../../folder-structure/15-module-out-of-common/rule.md)):
 callers import each file in it directly, and like every folder it carries no
 `index.ts` ([folder-index-file rule](../../../style-guide/structure/module-api/25-folder-index-file/rule.md)).

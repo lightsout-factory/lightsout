@@ -29,10 +29,13 @@ const setupMemory = (overrides: Record<string, unknown> = {}) => {
 		status: 'resolved',
 		disposition: 'needs-a-human',
 		humanDecision: 'choose the malformed-memory behaviour',
-		resolution: {
-			answerAt: 'Decision Log row 27: a malformed memory fails the pass naming the file',
-			verifiedAt: '2026-09-02T00:00:00.000Z',
-		},
+		resolutions: [
+			{
+				phase: 'phase1-preflight.md',
+				answerAt: 'Decision Log row 27: a malformed memory fails the pass naming the file',
+				verifiedAt: '2026-09-02T00:00:00.000Z',
+			},
+		],
 		reopened: [{ at: '2026-09-01T12:00:00.000Z', reason: 'the cited row was deleted', priorStatus: 'resolved' }],
 	};
 	const memory = {
@@ -40,6 +43,7 @@ const setupMemory = (overrides: Record<string, unknown> = {}) => {
 		findings: [record],
 		lastPass: { scope: 'focused', inputs, at: '2026-09-02T00:00:00.000Z' },
 		lastPassingFullReview: { inputs, at: '2026-09-01T00:00:00.000Z' },
+		coverage: { readers: [] },
 		nextFindingNumber: 2,
 		updatedAt: '2026-09-02T00:00:00.000Z',
 		...overrides,
@@ -71,12 +75,6 @@ const decisionLogPart = {
 	],
 };
 
-/** The two plan files a pass recorded before design hashes existed carries — a whole-file digest and nothing else. */
-const unhashedPlanFiles = [
-	{ file: 'overview.md', sha256: 'a'.repeat(64) },
-	{ file: 'phase1-preflight.md', sha256: 'b'.repeat(64) },
-];
-
 /** The two plan files a design-hash case measures, each carrying the digest of the text a reader read. */
 const designHashedPlanFiles = [
 	{ file: 'overview.md', sha256: 'a'.repeat(64), designSha256: '6'.repeat(64) },
@@ -91,16 +89,6 @@ const setupDesignHashMemory = () =>
 			planFiles: designHashedPlanFiles,
 			decisionLog: {
 				overviewDesign: '8'.repeat(64),
-				rows: [{ sha256: '2'.repeat(64), questionSha256: '3'.repeat(64) }],
-			},
-		},
-	});
-
-const setupPreDesignHashMemory = () =>
-	setupMemoryFingerprinted({
-		extra: {
-			decisionLog: {
-				overview: '1'.repeat(64),
 				rows: [{ sha256: '2'.repeat(64), questionSha256: '3'.repeat(64) }],
 			},
 		},
@@ -171,15 +159,15 @@ describe('GradeMemory', () => {
 					status: 'resolved',
 					disposition: 'needs-a-human',
 					humanDecision: 'choose the malformed-memory behaviour',
-					resolution: {
-						answerAt: 'Decision Log row 27: a malformed memory fails the pass naming the file',
-						verifiedAt: '2026-09-02T00:00:00.000Z',
-					},
-					// a record written before grouping existed holds no observation list
-					// and no per-location resolutions of its own; readers fall back to
-					// its representative fields and its single resolution
+					// a single-observation record holds no observation list of its own
 					observations: [],
-					resolutions: [],
+					resolutions: [
+						{
+							phase: 'phase1-preflight.md',
+							answerAt: 'Decision Log row 27: a malformed memory fails the pass naming the file',
+							verifiedAt: '2026-09-02T00:00:00.000Z',
+						},
+					],
 					reopened: [{ at: '2026-09-01T12:00:00.000Z', reason: 'the cited row was deleted', priorStatus: 'resolved' }],
 				},
 			],
@@ -218,29 +206,8 @@ describe('GradeMemory', () => {
 					sha256: '0'.repeat(64),
 				},
 			},
-			// no pass has recorded a reading yet, so the contract fills the field
-			// rather than leaving it absent
 			coverage: { readers: [] },
 			nextFindingNumber: 2,
-			updatedAt: '2026-09-02T00:00:00.000Z',
-		});
-	});
-
-	test("an older memory file parses with the contract's defaults", () => {
-		const parsed = GradeMemory.parse({
-			planName: 'grade-scope-and-finding-memory',
-			updatedAt: '2026-09-02T00:00:00.000Z',
-		});
-
-		// a memory written before a pass ever recorded its fingerprint has no
-		// baseline to offer, and an absent one must never read as a match: the
-		// record set is empty, the id counter starts at one, and neither pass
-		// stamp is invented
-		expect(parsed).toStrictEqual({
-			planName: 'grade-scope-and-finding-memory',
-			findings: [],
-			coverage: { readers: [] },
-			nextFindingNumber: 1,
 			updatedAt: '2026-09-02T00:00:00.000Z',
 		});
 	});
@@ -259,7 +226,7 @@ describe('GradeMemory', () => {
 		}).toStrictEqual({ lastPass: decisionLogPart, lastPassingFullReview: decisionLogPart });
 	});
 
-	test('a pass recorded before the decision-log part existed parses with the part absent', () => {
+	test('a pass recorded with no decision-log part parses with the part absent', () => {
 		const { memory } = setupMemory();
 
 		const parsed = GradeMemory.parse(memory);
@@ -300,30 +267,6 @@ describe('GradeMemory', () => {
 		});
 	});
 
-	test('a memory recorded before design hashes parses with them absent', () => {
-		const { memory } = setupPreDesignHashMemory();
-
-		const parsed = GradeMemory.parse(memory);
-
-		// nobody measured the design text of that earlier pass, and an absent
-		// measurement must never read as a match: no plan file is handed a digest,
-		// and the old whole-overview field is not mistaken for the shared design
-		// hash, so the plan takes exactly one full re-baseline
-		expect({
-			lastPassPlanFiles: parsed.lastPass?.inputs.planFiles,
-			lastPassOverviewDesign: parsed.lastPass?.inputs.decisionLog?.overviewDesign,
-			lastPassRows: parsed.lastPass?.inputs.decisionLog?.rows,
-			fullReviewPlanFiles: parsed.lastPassingFullReview?.inputs.planFiles,
-			fullReviewOverviewDesign: parsed.lastPassingFullReview?.inputs.decisionLog?.overviewDesign,
-		}).toStrictEqual({
-			lastPassPlanFiles: unhashedPlanFiles,
-			lastPassOverviewDesign: undefined,
-			lastPassRows: [{ sha256: '2'.repeat(64), questionSha256: '3'.repeat(64) }],
-			fullReviewPlanFiles: unhashedPlanFiles,
-			fullReviewOverviewDesign: undefined,
-		});
-	});
-
 	test('a memory carrying read coverage round-trips through GradeMemory', () => {
 		const { memory } = setupCoverageMemory();
 
@@ -359,26 +302,15 @@ describe('GradeMemory', () => {
 		});
 	});
 
-	test('a memory written before coverage existed parses with no coverage claimed', () => {
-		const { memory } = setupMemory();
-
-		const parsed = GradeMemory.parse(memory);
-
-		// nobody recorded a reading on that plan, and an absent record must claim
-		// none rather than be rejected or handed an invented documentation entry:
-		// the plan takes exactly one full re-baseline
-		expect(parsed.coverage).toStrictEqual({ readers: [] });
-	});
-
-	test('a recheck stamp round-trips, and a record written before it stays unstamped', () => {
+	test('a recheck stamp round-trips, and a record no judge was asked about stays unstamped', () => {
 		const { memory } = setupRecheckedFindings();
 
 		const parsed = GradeMemory.parse(memory);
 
 		// the narrowed re-verification asks about every record no judge has ever
 		// answered, so a stamp lost on the way to disk buys a judge that was already
-		// paid for, and a stamp invented on a record written before the field
-		// silences that record forever
+		// paid for, and a stamp invented on a record nobody asked about silences
+		// that record forever
 		expect(parsed.findings.map(({ id, lastRecheckedAt }) => ({ id, lastRecheckedAt }))).toStrictEqual([
 			{ id: 'f1', lastRecheckedAt: undefined },
 			{ id: 'f2', lastRecheckedAt: '2026-09-03T00:00:00.000Z' },

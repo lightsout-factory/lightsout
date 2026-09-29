@@ -21,7 +21,7 @@ export const RunManifest = z.object({
 	updatedAt: z.string(),
 	/** Path to the plan file the run implements, relative to the target repo. For a phases run this is the overview path. */
 	plan: z.string(),
-	/** The plan this run belongs to, named the way the plans directory names it: a plan address `<ticket-branch>/<plan-id>`, or a legacy folder's bare slug. Absent on a run that belongs to no plan — a refactor, coverage, queue or direct run, and an implement run built from a plan file outside the plans directory. */
+	/** The plan this run belongs to, named the way the plans directory names it: a plan address `<work-order>/<plan-id>`. Absent on a run that belongs to no plan — a refactor, coverage, queue or direct run, and an implement run built from a plan file outside the plans directory. */
 	planName: z.string().optional(),
 	/** Which pipeline owns this run. Absent on pre-discriminator manifests → implement. */
 	pipeline: z.enum(PipelineKind).optional(),
@@ -29,7 +29,7 @@ export const RunManifest = z.object({
 	ticketRef: z.string().optional(),
 	/** Optional overview plan (high-level context for a phased plan), relative to the target repo. */
 	overview: z.string().optional(),
-	/** Set on a phase's child run: the run id of the coordinator that started it. Absent on a top-level run, and on phase children recorded before this field existed. */
+	/** Set on a phase's child run: the run id of the coordinator that started it. Absent on a top-level run. */
 	parentRunId: z.string().optional(),
 	/** Harness the run was started with (a resumed run must reuse it). */
 	harness: z.string(),
@@ -43,11 +43,11 @@ export const RunManifest = z.object({
 	/** Step id currently executing, or null when no step is in flight. */
 	currentStep: z.string().nullable(),
 	steps: z.array(StepRecord),
-	/** Step ids the run's pipeline declared at start, in order — what lets a reader show a row for a step the run has not reached. Absent on a pipeline that discovers its steps as it goes (refactor, coverage, phases) and on manifests written before this field existed. */
+	/** Step ids the run's pipeline declared at start, in order — what lets a reader show a row for a step the run has not reached. Absent on a pipeline that discovers its steps as it goes (refactor, coverage, phases). */
 	stepOrder: z.array(z.string()).optional(),
-	/** The git branch the run was started on, as git named it — the key a ship result is filed under. Absent on a detached HEAD, outside a worktree, and on manifests written before this field existed. */
+	/** The git branch the run was started on, as git named it — the key a ship result is filed under. Absent on a detached HEAD and outside a worktree. */
 	branch: z.string().optional(),
-	/** Absolute path of the checkout the run's git work, gates, agents and commit happened in. Absent on a run that built in the checkout it was launched from, and on manifests written before this field existed. */
+	/** Absolute path of the checkout the run's git work, gates, agents and commit happened in. Absent on a run that built in the checkout it was launched from. */
 	workspace: z.string().optional(),
 	/** Resolved before the run started: a passing run will ship this branch. Absent when no ship intent was resolved at all. */
 	willShip: z.boolean().optional(),

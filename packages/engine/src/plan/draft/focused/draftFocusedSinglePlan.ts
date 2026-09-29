@@ -48,7 +48,7 @@ export const draftFocusedSinglePlan = async ({ context }: Params): Promise<RunPl
 	// Appended to once the closing lint has run, and read at every stop, so no
 	// exit can be added that quietly drops what the human was told.
 	const advisories: StructuralFinding[] = [];
-	const draftStop = createDraftStop({ workspaceDir, advisories, implementation: context.implementation });
+	const draftStop = createDraftStop({ workspaceDir, advisories });
 	const authored = await authorFocusedPlanFiles({
 		context,
 		outputs,
@@ -77,7 +77,6 @@ export const draftFocusedSinglePlan = async ({ context }: Params): Promise<RunPl
 		variant: PlanVariant.Single,
 		reports: [report],
 		advisories,
-		mechanicalRepair: true,
 	});
 	const overCeiling = converged.blocking.find(
 		(finding) => finding.check === StructuralCheck.CreatedFilesWithinCeiling || finding.check === StructuralCheck.TouchedFilesWithinCeiling,

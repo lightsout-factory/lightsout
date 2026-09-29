@@ -27,7 +27,7 @@ afterEach(() => {
 
 /** The three history events the append-only rows start from and add to. */
 const firstEvent = { at: '2026-01-01T00:00:00.000Z', kind: WorkOrderEventKind.PlanAdded, detail: 'added plan 001-record' };
-const secondEvent = { at: '2026-01-02T00:00:00.000Z', kind: WorkOrderEventKind.PlanAdopted, detail: 'adopted the legacy folder as plan 001-record' };
+const secondEvent = { at: '2026-01-02T00:00:00.000Z', kind: WorkOrderEventKind.ModeChanged, detail: 'mode changed to multiple-plan' };
 const thirdEvent = { at: '2026-01-03T00:00:00.000Z', kind: WorkOrderEventKind.PlanRetitled, detail: 'retitled plan 001-record' };
 
 /** A record the contract accepts, varied only where a row needs it to differ. */

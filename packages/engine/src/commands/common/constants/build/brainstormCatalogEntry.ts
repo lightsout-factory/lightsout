@@ -17,8 +17,7 @@ export const brainstormCatalogEntry: CommandCatalogEntry = {
 		{
 			name: 'name',
 			value: '<name>',
-			meaning:
-				'The brainstorm’s plan, under .lightsout/work-orders/<work-order-name>/plans/ — a plan address <work-order-name>/<NNN-slug>, or a legacy folder name.',
+			meaning: 'The brainstorm’s plan, under .lightsout/work-orders/<work-order-name>/plans/ — a plan address <work-order-name>/<NNN-slug>.',
 			required: true,
 		},
 		{ name: 'cwd', value: '<path>', meaning: 'Repository the brainstorm workspace lives in.', fallback: 'The process working directory.', required: false },

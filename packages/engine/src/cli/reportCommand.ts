@@ -33,7 +33,7 @@ const estimateOf = ({ plan, pricing }: { plan: PlanActivityReport; pricing?: Con
  * It spawns nothing and writes nothing: every figure it prints was recorded by
  * the plan commands that spent the time, and everything above a harness process
  * is folded from those marks when they are read. The name may address one plan,
- * a legacy plan folder, or a ticket folder holding several plans.
+ * or a work order holding several plans.
  *
  * `--json` prints the same totalled tree as data and no table, so a later chart
  * reads the one calculation this table reads rather than a second one of its

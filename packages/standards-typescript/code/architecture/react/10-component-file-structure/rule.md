@@ -22,7 +22,7 @@ components/
 ```
 
 The folder's inside is the ordinary
-[fractal skeleton](../../folder-structure/40-fractal-skeleton/rule.md):
+[fractal skeleton](../../folder-structure/40-module-folder-layout/rule.md):
 companions live under `common/`, and callers import the component from
 `InstallPanel/InstallPanel.tsx` itself — a folder carries no `index.ts`
 ([folder-index-file rule](../../../style-guide/structure/module-api/25-folder-index-file/rule.md)).

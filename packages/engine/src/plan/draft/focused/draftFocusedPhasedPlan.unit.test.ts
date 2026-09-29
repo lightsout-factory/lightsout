@@ -2,7 +2,6 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
-import { DraftImplementation } from '#src/contracts/plan/draft/DraftImplementation.ts';
 import type { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvidenceIndex.ts';
 import type { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
@@ -91,7 +90,6 @@ const setupFocusedPhasedDraft = ({ name, respond }: { name: string; respond: Par
 		workspaceDir: planDir,
 		facts: draftFacts(),
 		decisions: draftDecisions({ planName: name }),
-		implementation: DraftImplementation.Focused,
 		evidence: draftEvidence({ planName: name }),
 		executorFileLimit: 50,
 		timeoutMs: 60_000,

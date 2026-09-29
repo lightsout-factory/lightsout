@@ -26,8 +26,7 @@ interface Params {
  * A path inside a plan subfolder of a ticket's plans folder answers that plan's
  * address, spelled with `/` whatever the platform's path separator is, because
  * the address is the `--name` value every plan subcommand takes. Every other
- * path inside that plans folder answers the ticket's bare name, which is what a
- * plan shaped before its ticket exists is addressed by.
+ * path inside that plans folder answers undefined: no plan lives loose there.
  *
  * Only `plans/` is a plan's home, so a path under a ticket's `runs/` folder —
  * and the ticket folder itself — answers undefined rather than claiming the
@@ -50,5 +49,5 @@ export const planNameFromPath = async ({ cwd, planPath }: Params): Promise<strin
 
 	const address = planId === undefined ? undefined : formatPlanAddress({ workOrderName, planId });
 
-	return address !== undefined && parsePlanAddress({ name: address }) !== undefined ? address : workOrderName;
+	return address !== undefined && parsePlanAddress({ name: address }) !== undefined ? address : undefined;
 };

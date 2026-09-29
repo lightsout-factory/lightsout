@@ -2,7 +2,7 @@ import type { PlanAddress } from '#src/common/types/PlanAddress.ts';
 import { PlanId } from '#src/contracts/workOrder/PlanId.ts';
 
 interface Params {
-	/** Whatever a command was handed as a plan's `--name`: a plan address, or a legacy plan folder's name. */
+	/** Whatever a command was handed as a `--name`: a plan address, or a work order's name. */
 	name: string;
 }
 
@@ -14,9 +14,8 @@ interface Params {
  * exactly this pair. Everything else asks here — or asks `workOrderNameOf` —
  * rather than splitting a name of its own.
  *
- * Undefined is the legacy answer, not a failure: a folder named for its branch
- * alone is exactly what every plan carried before ticket records existed, and
- * it keeps working. A first segment that is empty, `.` or `..` is refused
+ * Undefined is not a failure on its own: a work order's name is a valid answer
+ * wherever a whole ticket is meant, and each caller decides. A first segment that is empty, `.` or `..` is refused
  * because it would resolve outside the plans directory.
  */
 export const parsePlanAddress = ({ name }: Params): PlanAddress | undefined => {

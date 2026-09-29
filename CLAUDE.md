@@ -13,6 +13,8 @@ For all coding changes and diagnosis, only suggest or apply best-practice soluti
 
 Prefer correctness over speed of response.
 
+To write or review a rule in a standards pack, follow `plugin/skills/standards-rule/SKILL.md`. For the default pack, also read `packages/standards-typescript/README.md`.
+
 ## Linear Tickets and Git Branches
 One ticket = one branch = one PR, and a work order holds its plans — follow the `ticket-workflow` skill, with `linear-ticket` for the Linear mechanics.
 

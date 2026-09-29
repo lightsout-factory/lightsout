@@ -27,8 +27,8 @@ interface Props {
 }
 
 /**
- * One rule whole, read top to bottom like a linter's rule page: what it flags,
- * why, examples of code it flags and code it wants, how to configure it, and
+ * One rule whole, read top to bottom: what it is about, the rule's own text as
+ * agents read it, examples of code it flags and code it wants, how to configure it, and
  * the rules either side of it — in the same frame as the other pack pages, so
  * the width never changes between them.
  *
@@ -53,8 +53,15 @@ export const RuleDetail = ({ ruleId }: Props) => {
 			]}
 		>
 			<RuleHeader rule={rule} />
-			<Section title="Why this rule">
-				{prose === '' ? <p className="text-muted-foreground text-sm">This rule states its summary and shows it with examples.</p> : <Markdown text={prose} />}
+			<Section title="The rule">
+				{prose === '' ? (
+					<p className="text-muted-foreground text-sm">This rule states its summary and shows it with examples.</p>
+				) : (
+					<>
+						<p className="text-muted-foreground text-sm">Agents read this text as written when they write and review code.</p>
+						<Markdown text={prose} />
+					</>
+				)}
 			</Section>
 			<Section title="Examples">
 				<RuleExamples fixtures={rule.fixtures} kind={toCheckKind({ checked: rule.checked })} example={rule.example} />

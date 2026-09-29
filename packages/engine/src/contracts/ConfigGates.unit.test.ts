@@ -30,23 +30,6 @@ test('ConfigGates: check, test, and testCoverage are each required', () => {
 	expect(ConfigGates.safeParse({ check: 'c', test: 't', 'test-coverage': true }).success).toBe(false);
 });
 
-test('ConfigGates: a stale testUnit key is refused with a message naming its new name', () => {
-	const result = ConfigGates.safeParse({ check: 'c', test: 't', testUnit: 't', 'test-coverage': false });
-
-	// the rename fails loudly rather than the stale key being stripped and its
-	// command never running
-	expect(result.success).toBe(false);
-	expect(result.error?.message ?? '').toMatch(/renamed to `test`/);
-});
-
-test('ConfigGates: a stale camelCase testCoverage is refused with a message naming the kebab key', () => {
-	const result = ConfigGates.safeParse({ check: 'c', test: 't', testCoverage: false });
-
-	// the rename fails loudly rather than the old spelling being silently stripped
-	expect(result.success).toBe(false);
-	expect(result.error?.message ?? '').toMatch(/renamed to `test-coverage`/);
-});
-
 test('ConfigGates: custom `test-*` suites are part of the block, and parsing keeps them in place', () => {
 	const gates = { check: 'c', test: 't', 'test-coverage': false, 'test-e2e': 'pnpm test:e2e', 'test-integration': 'pnpm test:int' };
 

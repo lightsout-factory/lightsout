@@ -20,7 +20,7 @@ interface Params {
  * record's own entry naming this run. That is what makes resuming single-plan
  * plan 001's body build a repair of that plan rather than of nothing.
  *
- * @returns the plan address or legacy folder name the run belongs to, or undefined
+ * @returns the plan address the run belongs to, or undefined
  */
 export const readResumedPlanName = async ({ cwd, manifest }: Params): Promise<string | undefined> => {
 	const fromPath = await planNameFromPath({ cwd, planPath: manifest.plan });

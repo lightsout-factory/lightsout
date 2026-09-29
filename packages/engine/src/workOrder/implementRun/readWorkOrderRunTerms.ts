@@ -11,7 +11,7 @@ import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
 interface Params {
 	/** Any checkout of the repository; the record is read from its primary checkout. */
 	cwd: string;
-	/** The run's plan name under the plans directory: a plan address, a legacy folder name, or undefined for a plan outside the plans directory. */
+	/** The run's plan name under the plans directory: a plan address, or undefined for a plan outside the plans directory. */
 	name: string | undefined;
 	/** The run's plan path as the manifest records it (or will): the plan's plan.md, its overview.md, or one phase file. Undefined for a build from the ticket body. */
 	planPath: string | undefined;

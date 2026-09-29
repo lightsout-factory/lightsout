@@ -5,12 +5,12 @@ import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { runCli } from '#tests/helpers/runCli.ts';
 import { usageStderr } from '#tests/helpers/usageStderr.ts';
 
-// The dispatch table's report entry, end to end. A plan folder written before
-// the activity record existed holds none, which is the one report outcome
+// The dispatch table's report entry, end to end. A plan folder no command has
+// run in yet holds no activity record, which is the one report outcome
 // observable without a planning run to spend money on.
 const seedPlanFolderWithoutRecord = async () => {
 	const cwd = await freshCwd();
-	const planDir = join(cwd, '.lightsout', 'work-orders', 'demo', 'plans');
+	const planDir = join(cwd, '.lightsout', 'work-orders', 'demo', 'plans', '001-demo');
 
 	await mkdir(planDir, { recursive: true });
 	await writeFile(join(planDir, 'plan.md'), '# Demo\n', 'utf8');
@@ -21,7 +21,7 @@ const seedPlanFolderWithoutRecord = async () => {
 test('cli: report on a plan with no activity record says so and exits 0', async () => {
 	const { cwd } = await seedPlanFolderWithoutRecord();
 
-	const { stdout, stderr, code } = await runCli({ args: ['report', '--plan', 'demo', '--cwd', cwd] });
+	const { stdout, stderr, code } = await runCli({ args: ['report', '--plan', 'demo/001-demo', '--cwd', cwd] });
 
 	expect(stdout).toMatch(/no activity record/);
 	// the folder is named, and no empty box-drawn table is printed in place of one

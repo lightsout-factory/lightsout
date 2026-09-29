@@ -1,5 +1,4 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { DraftImplementation } from '#src/contracts/plan/draft/DraftImplementation.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import { convergePlanStructure } from '#src/plan/draft/internal/common/utils/convergePlanStructure.ts';
@@ -15,7 +14,6 @@ interface RepairParams {
 	cwd: string;
 	name: string;
 	planPaths: string[];
-	mechanicalRepair?: boolean;
 	overviewPath?: string;
 }
 
@@ -37,7 +35,7 @@ const setupConverge = () => {
 		workspaceDir: '/repo/.lightsout/work-orders/demo/plans',
 		facts: planFacts(),
 		decisions: emptyDecisionsRecord(),
-		implementation: DraftImplementation.Focused,
+		evidence: { planName: 'demo', entries: [], collectedAt: '2026-01-01T00:00:00.000Z' },
 		executorFileLimit: 50,
 		timeoutMs: 1_000,
 		progress: () => undefined,
@@ -53,26 +51,12 @@ const setupConverge = () => {
 };
 
 describe('convergePlanStructure', () => {
-	test('forwards the mechanical pass request and the overview path to the structural repair', async () => {
+	test('forwards the overview path to the structural repair', async () => {
 		const converge = setupConverge();
 
-		const converged = await convergePlanStructure({ ...converge, mechanicalRepair: true, overviewPath: '/repo/plans/demo/overview.md' });
+		const converged = await convergePlanStructure({ ...converge, overviewPath: '/repo/plans/demo/overview.md' });
 
 		expect(converged.result.status).toBe('complete');
-		expect(mockRepairPlanStructure).toHaveBeenCalledWith(expect.objectContaining({ mechanicalRepair: true, overviewPath: '/repo/plans/demo/overview.md' }));
-	});
-
-	test('calls the structural repair with no mechanical request when the flow does not ask for one', async () => {
-		const converge = setupConverge();
-
-		const converged = await convergePlanStructure(converge);
-
-		const forwarded = mockRepairPlanStructure.mock.calls[0]?.[0];
-
-		expect(converged.result.status).toBe('complete');
-		// the legacy flow asks for neither, and a default-on pass here would change
-		// what every one of its repair rounds does
-		expect(forwarded?.mechanicalRepair).toBeUndefined();
-		expect(forwarded?.overviewPath).toBeUndefined();
+		expect(mockRepairPlanStructure).toHaveBeenCalledWith(expect.objectContaining({ overviewPath: '/repo/plans/demo/overview.md' }));
 	});
 });

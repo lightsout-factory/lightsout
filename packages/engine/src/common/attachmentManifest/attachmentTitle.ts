@@ -1,6 +1,6 @@
 interface Params {
-	/** The plan id the title is namespaced under. Absent for a legacy folder, whose titles stay bare. */
-	prefix?: string;
+	/** The plan id the title is namespaced under. */
+	prefix: string;
 	/** The file's own bare name, exactly as the commit marker lists it. */
 	name: string;
 }
@@ -13,4 +13,4 @@ interface Params {
  * holds two consecutive hyphens, which is what lets `scopeAttachments` tell
  * `001-a--plan.md` from a longer id's `001-a-b--plan.md`.
  */
-export const attachmentTitle = ({ prefix, name }: Params): string => (prefix === undefined ? name : `${prefix}--${name}`);
+export const attachmentTitle = ({ prefix, name }: Params): string => `${prefix}--${name}`;

@@ -4,7 +4,6 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { format } from 'node:util';
 import { describe, expect, jest, test } from '@jest/globals';
-import { DraftImplementation } from '#src/contracts/plan/draft/DraftImplementation.ts';
 import type { PlanningProgress } from '#src/contracts/plan/progress/PlanningProgress.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import type { PlanningStepRecord } from '#src/contracts/plan/progress/PlanningStepRecord.ts';
@@ -287,39 +286,6 @@ describe('recordPlanningStep', () => {
 
 		expect(result).toBe(workResult);
 		expect(errors).toEqual([expect.stringContaining(recordPath), expect.stringContaining(recordPath)]);
-	});
-
-	test('records the drafting implementation on the running and finished entries', async () => {
-		const { cwd, recordPath, work, seenByWork, statusOf } = await setupRecording();
-
-		await recordPlanningStep({ cwd, name, step: PlanningStep.Draft, work, statusOf, implementation: DraftImplementation.Legacy });
-		await recordPlanningStep({ cwd, name, step: PlanningStep.Grade, work, statusOf });
-		const recordAfter = await readRecord({ path: recordPath });
-
-		expect(seenByWork[0]?.steps).toStrictEqual([
-			{ step: 'draft', status: 'running', attempts: 1, pid: process.pid, startedAt: isoTime, implementation: 'legacy' },
-		]);
-		expect(recordAfter?.steps).toStrictEqual([
-			{
-				step: 'draft',
-				status: 'passed',
-				attempts: 1,
-				pid: process.pid,
-				startedAt: isoTime,
-				finishedAt: isoTime,
-				durationMs: expect.any(Number),
-				implementation: 'legacy',
-			},
-			{
-				step: 'grade',
-				status: 'passed',
-				attempts: 1,
-				pid: process.pid,
-				startedAt: isoTime,
-				finishedAt: isoTime,
-				durationMs: expect.any(Number),
-			},
-		]);
 	});
 
 	test("a step recorded from a linked worktree lands in the primary checkout's planning record", async () => {

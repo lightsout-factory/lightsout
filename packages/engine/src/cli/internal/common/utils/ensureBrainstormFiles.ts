@@ -1,7 +1,6 @@
 import { restoreBrainstormFiles } from '#src/brainstorm/restore/restoreBrainstormFiles.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
-import { planNumberOf } from '#src/common/planAddress/planNumberOf.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { readPlanWorkOrderRef } from '#src/plan/readPlanWorkOrderRef.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';
@@ -41,11 +40,7 @@ const report = ({
  * Fetch a ticket's published brainstorm into its plan folder, at planning's
  * first command edge.
  *
- * A plan addressed inside a ticket folder takes the generation published under
- * its own plan id. Plan 001 falls back to the ticket's bare-title generation
- * when its prefix carries none, because a ticket brainstormed before ticket
- * records existed carries its notes under bare titles and that generation can
- * only belong to the ticket's first plan; no later plan number falls back.
+ * A plan takes the generation published under its own plan id.
  *
  * It answers nothing and never blocks, which is the one way it differs from
  * `ensurePlanWorkspace`: planning must still run in a repo with no
@@ -68,22 +63,15 @@ export const ensureBrainstormFiles = async ({ cwd, name, write = console.log }: 
 		return;
 	}
 
-	const identifier = await readPlanWorkOrderRef({ cwd, name });
+	const address = parsePlanAddress({ name });
+	const identifier = address === undefined ? undefined : await readPlanWorkOrderRef({ cwd, name });
 
-	if (identifier === undefined) {
+	if (address === undefined || identifier === undefined) {
 		return;
 	}
 
 	const dir = await planWorkspaceDir({ cwd, name });
-	const titlePrefix = parsePlanAddress({ name })?.planId;
-	const own = await restoreBrainstormFiles({ cwd, name, identifier, settings: trackerSettings, titlePrefix });
-
-	// Only a ticket's first plan may take the bare-title generation, because a
-	// bare generation can belong to no other plan.
-	const firstPlanNumber = 1;
-	const isFirstPlan = titlePrefix !== undefined && planNumberOf({ id: titlePrefix }) === firstPlanNumber;
-	const emptyPrefix = own.error === undefined && own.restored.length === 0 && own.skipped.length === 0;
-	const taken = isFirstPlan && emptyPrefix ? await restoreBrainstormFiles({ cwd, name, identifier, settings: trackerSettings }) : own;
+	const taken = await restoreBrainstormFiles({ cwd, name, identifier, settings: trackerSettings, titlePrefix: address.planId });
 
 	if (taken.error !== undefined) {
 		write(`lightsout: could not fetch the brainstorm from ticket ${identifier}: ${taken.error}`);

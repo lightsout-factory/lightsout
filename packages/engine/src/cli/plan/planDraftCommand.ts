@@ -8,7 +8,6 @@ import { yellow } from '#src/cli/internal/common/terminal/yellow.ts';
 import { exitOnPlanFailure } from '#src/cli/plan/internal/common/utils/exitOnPlanFailure.ts';
 import { planRunOptions } from '#src/cli/plan/internal/common/utils/planRunOptions.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { DraftImplementation } from '#src/contracts/plan/draft/DraftImplementation.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
@@ -45,10 +44,6 @@ const printPlanAdvisories = ({ advisories }: { advisories: StructuralFinding[] }
 export const planDraftCommand = async ({ cwd, driver, name, standards, config, flags }: Params): Promise<void> => {
 	const scopeFlag = getStringFlag({ flags, name: 'scope' });
 	const scope = scopeFlag === 'phased' ? PlanVariant.Overview : scopeFlag === 'single' ? PlanVariant.Single : undefined;
-	// A valueless flag, read the way `--worktree` is: typed or not, never a value.
-	// It has no config key on purpose — a persistent default is exactly how legacy
-	// would quietly become the default again.
-	const implementation = flags.get('legacy') === true ? DraftImplementation.Legacy : DraftImplementation.Focused;
 	// A facts error or structural issues exit 1 below, so they record as failed —
 	// one reading, shared by both records.
 	const statusOf = ({ result }: { result: Awaited<ReturnType<typeof runPlanDraft>> }) =>
@@ -67,8 +62,7 @@ export const planDraftCommand = async ({ cwd, driver, name, standards, config, f
 				cwd,
 				name,
 				step: PlanningStep.Draft,
-				implementation,
-				work: () => runPlanDraft({ ...planRunOptions({ cwd, driver, name, standards, config }), scope, implementation, level }),
+				work: () => runPlanDraft({ ...planRunOptions({ cwd, driver, name, standards, config }), scope, level }),
 				statusOf,
 			}),
 	});

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { ensureBrainstormFiles } from '#src/cli/internal/common/utils/ensureBrainstormFiles.ts';
@@ -45,7 +45,7 @@ jest.mock('#src/ticketTracker/resolveTrackerSettings.ts', () => ({
 }));
 // -------------------------
 
-const name = 'lo-117-brainstorm-decides-its-outcome';
+const name = 'lo-117-brainstorm-decides-its-outcome/001-a';
 const notesBody = '# the brainstorm write-up\n';
 const decisionsBody = '{"planName":"lo-117-brainstorm-decides-its-outcome","decisions":[]}\n';
 
@@ -64,9 +64,9 @@ const seedCwd = async ({ config = { 'ticket-tracker': ticketTrackerConfigBlock }
 	};
 
 	mockGetTicketAttachments.mockResolvedValue([
-		{ id: 'att-1', title: 'brainstorm-notes.md', url: 'https://assets.example/brainstorm-notes.md' },
-		{ id: 'att-2', title: 'brainstorm-decisions.json', url: 'https://assets.example/brainstorm-decisions.json' },
-		{ id: 'att-3', title: 'brainstorm-attachments.json', url: 'https://assets.example/brainstorm-attachments.json' },
+		{ id: 'att-1', title: '001-a--brainstorm-notes.md', url: 'https://assets.example/brainstorm-notes.md' },
+		{ id: 'att-2', title: '001-a--brainstorm-decisions.json', url: 'https://assets.example/brainstorm-decisions.json' },
+		{ id: 'att-3', title: '001-a--brainstorm-attachments.json', url: 'https://assets.example/brainstorm-attachments.json' },
 	]);
 	mockReadTicketAsset.mockImplementation(async ({ url }) => bodies[url] ?? { error: `no asset at ${url}` });
 
@@ -96,10 +96,9 @@ const planDecisionsBody = '{"planName":"lo-9-x/001-a","decisions":[]}\n';
 
 /**
  * A repo whose ticket carries one brainstorm generation per entry, each under
- * its own attachment title prefix — `undefined` for the bare titles a ticket
- * shaped before ticket records carries.
+ * its own attachment title prefix.
  */
-const seedTicketCwd = async ({ generations }: { generations: { prefix?: string; notes: string; decisions: string; marker?: boolean }[] }) => {
+const seedTicketCwd = async ({ generations }: { generations: { prefix: string; notes: string; decisions: string; marker?: boolean }[] }) => {
 	const attachments: Attachment[] = [];
 	const bodies: Record<string, string> = {};
 
@@ -111,7 +110,7 @@ const seedTicketCwd = async ({ generations }: { generations: { prefix?: string; 
 		const committed = marker ? [{ name: 'brainstorm-attachments.json', content: serializeAttachmentManifest({ files }) }] : [];
 
 		for (const { name: fileName, content } of [...files, ...committed]) {
-			const title = prefix === undefined ? fileName : `${prefix}--${fileName}`;
+			const title = `${prefix}--${fileName}`;
 			const url = `https://assets.example/${title}`;
 
 			attachments.push({ id: `att-${attachments.length + 1}`, title, url });
@@ -173,11 +172,11 @@ describe('ensureBrainstormFiles', () => {
 		expect(printed).toStrictEqual(['lightsout: could not fetch the brainstorm from ticket lo-117: no ticket lo-117 in team LO']);
 	});
 
-	test("ensureBrainstormFiles: for a plan address, fetches the brainstorm generation under the plan's prefix into the plan's folder", async () => {
+	test("ensureBrainstormFiles: fetches the brainstorm generation under the plan's own prefix, never another plan's", async () => {
 		const cwd = await seedTicketCwd({
 			generations: [
 				{ prefix: '001-a', notes: planNotesBody, decisions: planDecisionsBody },
-				{ notes: notesBody, decisions: decisionsBody },
+				{ prefix: '002-b', notes: notesBody, decisions: decisionsBody },
 			],
 		});
 		const dir = join(cwd, '.lightsout', 'work-orders', 'lo-9-x', 'plans', '001-a');
@@ -189,34 +188,7 @@ describe('ensureBrainstormFiles', () => {
 		expect(printed).toStrictEqual([`lightsout: fetched 2 brainstorm file(s) from ticket lo-9 into ${dir}`]);
 	});
 
-	test('ensureBrainstormFiles: plan 001 falls back to a bare-title brainstorm generation and no later plan does', async () => {
-		const cwd = await seedTicketCwd({ generations: [{ notes: notesBody, decisions: decisionsBody }] });
-		const firstDir = join(cwd, '.lightsout', 'work-orders', 'lo-9-x', 'plans', '001-a');
-		const laterDir = join(cwd, '.lightsout', 'work-orders', 'lo-9-x', 'plans', '002-b');
-
-		const printedForFirst = await ensure({ cwd, planName: 'lo-9-x/001-a' });
-		const printedForLater = await ensure({ cwd, planName: 'lo-9-x/002-b' });
-
-		expect(readFileSync(join(firstDir, 'brainstorm-notes.md'), 'utf8')).toBe(notesBody);
-		expect(readFileSync(join(firstDir, 'brainstorm-decisions.json'), 'utf8')).toBe(decisionsBody);
-		expect(printedForFirst).toStrictEqual([`lightsout: fetched 2 brainstorm file(s) from ticket lo-9 into ${firstDir}`]);
-		expect(existsSync(laterDir)).toBe(false);
-		expect(printedForLater).toStrictEqual([]);
-	});
-
-	test("ensureBrainstormFiles: plan 001 prints one warning when the ticket's bare-title generation cannot be fetched", async () => {
-		const cwd = await seedTicketCwd({ generations: [{ notes: notesBody, decisions: decisionsBody, marker: false }] });
-		const dir = join(cwd, '.lightsout', 'work-orders', 'lo-9-x', 'plans', '001-a');
-
-		const printed = await ensure({ cwd, planName: 'lo-9-x/001-a' });
-
-		expect(printed).toStrictEqual([
-			'lightsout: could not fetch the brainstorm from ticket lo-9: the ticket carries brainstorm attachments but no brainstorm-attachments.json commit marker — publish the brainstorm again',
-		]);
-		expect(existsSync(dir)).toBe(false);
-	});
-
-	test('ensureBrainstormFiles: for a plan address, keeps a brainstorm file already in the plan folder and reports it kept', async () => {
+	test('ensureBrainstormFiles: keeps a brainstorm file already in the plan folder and reports it kept', async () => {
 		const cwd = await seedTicketCwd({ generations: [{ prefix: '001-a', notes: planNotesBody, decisions: planDecisionsBody }] });
 		const dir = join(cwd, '.lightsout', 'work-orders', 'lo-9-x', 'plans', '001-a');
 		const mine = '# the write-up I am still editing\n';
@@ -237,9 +209,9 @@ describe('ensureBrainstormFiles', () => {
 	test("restores from the ticket the work order's record names", async () => {
 		const workOrderName = 'brainstorm-decides-its-outcome';
 		const { cwd } = await setupRecordedWorkOrder({ workOrderName, ticketRef: 'lo-117' });
-		const dir = planWorkspaceFolder({ cwd: cwd, name: workOrderName });
+		const dir = planWorkspaceFolder({ cwd: cwd, name: `${workOrderName}/001-a` });
 
-		const printed = await ensure({ cwd, planName: workOrderName });
+		const printed = await ensure({ cwd, planName: `${workOrderName}/001-a` });
 
 		expect(mockGetTicketAttachments).toHaveBeenCalledWith(expect.objectContaining({ identifier: 'lo-117' }));
 		expect(readFileSync(join(dir, 'brainstorm-notes.md'), 'utf8')).toBe(notesBody);

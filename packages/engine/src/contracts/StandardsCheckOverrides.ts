@@ -3,18 +3,6 @@ import { z } from 'zod';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 
 /**
- * A rule's severity, with the pre-rename spelling called out by name.
- *
- * `finding` was this severity's value until it collided with the umbrella noun
- * — every hit the check reports is a finding, at any severity. A config written
- * against the older docs gets told what happened rather than a bare list of
- * valid options, the same courtesy the renamed `scan` key gets.
- */
-const standardsSeverityValue = z.enum(StandardsSeverity, {
-	error: (issue) => (issue.input === 'finding' ? 'severity `finding` was renamed to `blocking`' : undefined),
-});
-
-/**
  * Per-rule overrides for `lightsout standards-check` (the `standards-checks` block), keyed by rule id. A
  * value is either a severity, or an object with a severity and/or that
  * rule's own settings. A rule not named here keeps its default — silence
@@ -29,10 +17,10 @@ const standardsSeverityValue = z.enum(StandardsSeverity, {
 export const StandardsCheckOverrides = z.record(
 	z.string(),
 	z.union([
-		standardsSeverityValue,
+		z.enum(StandardsSeverity),
 		z
 			.object({
-				severity: standardsSeverityValue.optional(),
+				severity: z.enum(StandardsSeverity).optional(),
 				settings: z.record(z.string(), z.number()).optional(),
 			})
 			.strict(),

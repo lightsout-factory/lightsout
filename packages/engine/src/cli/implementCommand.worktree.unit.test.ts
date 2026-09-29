@@ -90,7 +90,7 @@ jest.mock('#src/cli/internal/common/render/printResult.ts', () => ({
 // -------------------------
 
 /** The plan folder every case points `--plan` at, and the branch its name yields. */
-const planFolder = join('.lightsout', 'work-orders', 'lo-42-add-widgets', 'plans');
+const planFolder = join('.lightsout', 'work-orders', 'lo-42-add-widgets', 'plans', '001-add-widgets');
 const branch = 'lo-42-add-widgets';
 
 /** What the plan says when the run starts. */
@@ -142,7 +142,13 @@ const setupImplementWorktree = ({
 
 	// The branch an isolated run builds on is the work order record's answer, so
 	// the record for this plan's work order stands on disk before the command runs.
-	seedWorkOrderRecord({ cwd, name: 'lo-42-add-widgets', branch: storedBranch, ticketRef: 'lo-42' });
+	seedWorkOrderRecord({
+		cwd,
+		name: 'lo-42-add-widgets',
+		branch: storedBranch,
+		ticketRef: 'lo-42',
+		plans: [{ id: '001-add-widgets', title: 'Add widgets', progress: 'ready', createdAt: '2026-01-01T00:00:00.000Z' }],
+	});
 	mkdirSync(join(cwd, planFolder), { recursive: true });
 	writeFileSync(join(cwd, planFolder, phased ? 'overview.md' : 'plan.md'), planBody);
 

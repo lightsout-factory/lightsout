@@ -224,7 +224,7 @@ describe('planPublishCommand', () => {
 		await expect(planPublishCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the plan address reaches the ticket publisher as `address`, with the
-		// repo's own tracker block, and the legacy publisher is left alone
+		// repo's own tracker block
 		expect(mockPublishTicketPlan.mock.calls[0]?.[0]).toMatchObject({
 			cwd,
 			address: 'lo-9-x/001-a',

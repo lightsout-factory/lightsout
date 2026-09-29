@@ -29,10 +29,12 @@ const passingFullReview = {
 	phasesChecked: ['plan.md'],
 	lenses: ['surface', 'wiring', 'decisions'],
 	complete: true,
+	scopeComplete: true,
 	passed: true,
 	gradedAt: '2026-09-07T00:00:00.000Z',
 	scope: 'full',
 	focusedOn: [],
+	covered: ['plan.md'],
 	inputs,
 };
 

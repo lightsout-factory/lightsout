@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises';
+import { renameSync, rmSync, writeFileSync } from 'node:fs';
 import { readGateLock } from '#src/gates/gateLock/internal/readGateLock.ts';
 
 interface Params {
@@ -33,5 +33,18 @@ export const writeGateLockGroups = async ({ lockPath, runId, gateGroups }: Param
 		return;
 	}
 
-	await writeFile(lockPath, `${JSON.stringify({ ...holder, gateGroups }, null, '\t')}\n`, 'utf8').catch(() => undefined);
+	// Written beside the lock and renamed over it, so a reader in any process
+	// sees the old document or the new one, never the empty file a rewrite in
+	// place leaves between truncating and writing. Synchronous for the reason
+	// `readGateLock` is: no other write from this process can land between the
+	// read above and the rename, so the writes land in the order they were made
+	// and the last one to land really is the current set.
+	const tempPath = `${lockPath}.${process.pid}.tmp`;
+
+	try {
+		writeFileSync(tempPath, `${JSON.stringify({ ...holder, gateGroups }, null, '\t')}\n`, 'utf8');
+		renameSync(tempPath, lockPath);
+	} catch {
+		rmSync(tempPath, { force: true });
+	}
 };

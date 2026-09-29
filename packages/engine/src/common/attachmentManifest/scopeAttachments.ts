@@ -1,7 +1,7 @@
 interface Params<Attachment> {
 	attachments: Attachment[];
-	/** The plan id whose namespace the list is narrowed to. Absent answers the list unchanged. */
-	prefix?: string;
+	/** The plan id whose namespace the list is narrowed to. */
+	prefix: string;
 }
 
 /**
@@ -11,18 +11,13 @@ interface Params<Attachment> {
  * Everything downstream — selecting a generation, parsing a marker, deciding
  * whether a plan was published at all — is written against bare file names, so
  * this is the one place a prefixed ticket is turned back into the single-plan
- * list those steps already read. With no prefix the list passes through, which
- * is what keeps a legacy folder behaving exactly as it did.
+ * list those steps already read.
  *
  * Generic over `{ title }` so the shared folder never imports the tracker's own
  * attachment type; every other field of each attachment, its url above all, is
  * carried through untouched.
  */
 export const scopeAttachments = <Attachment extends { title: string }>({ attachments, prefix }: Params<Attachment>): Attachment[] => {
-	if (prefix === undefined) {
-		return attachments;
-	}
-
 	const namespace = `${prefix}--`;
 
 	return attachments

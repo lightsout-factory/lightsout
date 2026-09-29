@@ -12,19 +12,15 @@ interface Params {
 /**
  * What a `--plan` value addresses: one plan, or every plan of a ticket folder.
  *
- * Three answers, in this order. A name that parses as a plan address and whose
- * folder is there is that one plan. A plans folder holding plan subfolders is a
- * ticket folder, and contributes every plan's address in plan-id order — a
- * ticket's plans are the unit a person paid for, so asking what a ticket cost
- * must not need several commands and hand arithmetic. A plans folder holding no
- * plan subfolder is a legacy plan folder, named for its branch alone the way
- * every plan was before ticket records existed, and reports under its own name.
+ * Two answers. A name that parses as a plan address and whose folder is there is
+ * that one plan. A work order name whose plans folder holds plan subfolders
+ * contributes every plan's address in plan-id order — a ticket's plans are the
+ * unit a person paid for, so asking what a ticket cost must not need several
+ * commands and hand arithmetic.
  *
  * Anything else answers an error naming the value and the folder that was
- * searched, so a reader can see which checkout answered. A branch whose ticket
- * folder holds no plans folder at all is one of those: it never carried a plan,
- * so it is no plan rather than a loose-file one. It never exits and never
- * prints: the command owns the exit code and the output.
+ * searched, so a reader can see which checkout answered. It never exits and
+ * never prints: the command owns the exit code and the output.
  *
  * It asks `parsePlanAddress` for the address shape rather than splitting a name
  * itself, which is the rule that function's own doc comment sets. It is not
@@ -47,5 +43,9 @@ export const resolveReportTargets = async ({ cwd, name }: Params): Promise<{ nam
 
 	// An addressed name is one plan whatever it happens to hold, so a plan folder
 	// that grew a subdirectory of its own is never read as a ticket.
-	return parsePlanAddress({ name }) !== undefined || plans.length === 0 ? { names: [name], workOrderFolder: false } : { names: plans, workOrderFolder: true };
+	if (parsePlanAddress({ name }) !== undefined) {
+		return { names: [name], workOrderFolder: false };
+	}
+
+	return plans.length === 0 ? { error: `work order '${name}' holds no plan under ${folder}` } : { names: plans, workOrderFolder: true };
 };

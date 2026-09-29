@@ -1,3 +1,16 @@
 # Folder Structure
 
-Use a `common/` folder pattern for shared code — it keeps related code local, makes dependency scope visible, and scales by promoting code upward only when reuse is proven. The trees below are **folder-modules** (see [Modules & the Graduation Rule](./architecture-decisions.md#modules--the-graduation-rule)): a feature folder holds a concept and the companions that serve it, and every import names the file that declares what it imports. A folder carries no `index.ts` — only a package's entry does.
+Shared code lives in `common/` folders. A `common/` folder sits inside the folder whose code shares it, so where it sits shows who uses it: `src/common/` serves all of `src/`, and `src/billing/common/` serves only `src/billing/`.
+
+Inside `common/`, every file goes in a folder for its kind of code:
+
+| Folder | Holds |
+| --- | --- |
+| `utils/` | Stateless functions, pure or doing I/O (`formatDate`, `loadConfig`) |
+| `types/` | Types (`CopyResult`) |
+| `constants/` | Constants (`defaultConfig`, `Action`) |
+| `services/` | Classes that hold state (`ApiClient`) |
+
+Two or more functions about one subject can also share a folder named for that subject, such as `formatting/` or `parsing/`: a domain folder.
+
+A package's own architecture document may set its concrete folder layout on top of these rules.

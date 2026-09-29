@@ -4,9 +4,6 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { runDirectWork } from '#src/direct/runDirectWork.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { pathExists } from '#src/plan/common/paths/pathExists.ts';
-import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
-import { restorePlanWorkspace } from '#src/plan/restore/restorePlanWorkspace.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
@@ -16,8 +13,6 @@ import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutco
 import { buildWorkOrderPlans } from '#src/queue/workers/internal/buildWorkOrderPlans.ts';
 import { toWorkerOutcome } from '#src/queue/workers/internal/common/utils/toWorkerOutcome.ts';
 import { runAutoPlanWorker } from '#src/queue/workers/internal/runAutoPlanWorker.ts';
-import { runPlanFolderPipeline } from '#src/queue/workers/internal/runPlanFolderPipeline.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { runWorkOrderBodyBuildLifecycle } from '#src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts';
 import { pullWorkOrderState } from '#src/workOrder/pullWorkOrderState.ts';
 
@@ -27,7 +22,6 @@ interface Params {
 	/** The work order's label — the folder its record and its plans live under, and the first segment of every plan address it holds. */
 	workOrderName: string;
 	settings: QueueSettings;
-	trackerSettings: TrackerSettings;
 	ticket: RunnableTicket;
 	config: LightsoutConfig;
 	driver: Driver;
@@ -101,13 +95,10 @@ const runDirectWorker = async ({
  * each committed as its own commit, and the loop decides whether the ticket then
  * ships, stays open, or parks.
  *
- * A ticket with no record keeps exactly the shape it always had. The plan folder
- * carries the work order's label, and `.lightsout` is gitignored, so a fresh
- * worktree has none — the ordinary case is fetching it back from the ticket's own
- * attachments. A ticket carrying no plan at all is not an error either: shaping
- * may have finished on approved brainstorm material, whose outcome lives in the
- * ticket body. It then builds from the body, announced so the run is legible —
- * and stays distinct from the direct worker, which never looks for a plan at all.
+ * A ticket with no record carries no published plan — publishing a plan is what
+ * writes the record. That is not an error: shaping may have finished on approved
+ * brainstorm material, whose outcome lives in the ticket body. It then builds
+ * from the body, announced so the run is legible.
  */
 const runPlanWorker = async ({
 	cwd,
@@ -116,7 +107,6 @@ const runPlanWorker = async ({
 	config,
 	driver,
 	driverName,
-	trackerSettings,
 	env,
 	workOrderRunDir,
 	onProgress,
@@ -127,7 +117,6 @@ const runPlanWorker = async ({
 	config: LightsoutConfig;
 	driver: Driver;
 	driverName: string;
-	trackerSettings: TrackerSettings;
 	env: NodeJS.ProcessEnv;
 	workOrderRunDir: string;
 	onProgress?: (message: string) => void;
@@ -154,23 +143,9 @@ const runPlanWorker = async ({
 		});
 	}
 
-	const folder = await planWorkspaceDir({ cwd, name: workOrderName });
+	onProgress?.(`${ticket.identifier} carries no published plan, so it is built from the ticket body`);
 
-	if (!(await pathExists({ path: folder }))) {
-		const restored = await restorePlanWorkspace({ cwd, name: workOrderName, identifier: ticket.identifier, settings: trackerSettings });
-
-		if (restored.error !== undefined) {
-			return { error: `the plan published to ${ticket.identifier} could not be fetched: ${restored.error}` };
-		}
-
-		if (restored.restored.length === 0) {
-			onProgress?.(`${ticket.identifier} carries no published plan, so it is built from the ticket body`);
-
-			return runDirectWorker({ cwd, workOrderName, ticket, config, driver, driverName, onProgress });
-		}
-	}
-
-	return runPlanFolderPipeline({ cwd, name: workOrderName, config, driver, onProgress });
+	return runDirectWorker({ cwd, workOrderName, ticket, config, driver, driverName, onProgress });
 };
 
 /**
@@ -189,7 +164,6 @@ export const runWorkerWithRelay = async ({
 	driver,
 	driverName,
 	settings,
-	trackerSettings,
 	relay,
 	coordinatorRunId,
 	coordinatorRunDir,
@@ -206,8 +180,7 @@ export const runWorkerWithRelay = async ({
 	for (let turn = 0; ; turn += 1) {
 		const workers: Record<QueueWorker, () => Promise<WorkerOutcome>> = {
 			[QueueWorker.Direct]: () => runDirectWorker({ cwd: worktreePath, workOrderName, ticket, config, driver, driverName, answeredQuestion, onProgress }),
-			[QueueWorker.Plan]: () =>
-				runPlanWorker({ cwd: worktreePath, ticket, workOrderName, config, driver, driverName, trackerSettings, env, workOrderRunDir, onProgress }),
+			[QueueWorker.Plan]: () => runPlanWorker({ cwd: worktreePath, ticket, workOrderName, config, driver, driverName, env, workOrderRunDir, onProgress }),
 			[QueueWorker.AutoPlan]: () =>
 				runAutoPlanWorker({
 					cwd: worktreePath,

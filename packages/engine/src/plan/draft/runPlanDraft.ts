@@ -5,18 +5,12 @@ import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { defaultExecutorFileLimit } from '#src/common/constants/defaultExecutorFileLimit.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
-import { DraftImplementation } from '#src/contracts/plan/draft/DraftImplementation.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
 import { readMergedDecisions } from '#src/plan/decisionLog/readMergedDecisions.ts';
 import { estimatePlanScope } from '#src/plan/draft/estimatePlanScope.ts';
 import { draftFocusedPhasedPlan } from '#src/plan/draft/focused/draftFocusedPhasedPlan.ts';
 import { draftFocusedSinglePlan } from '#src/plan/draft/focused/draftFocusedSinglePlan.ts';
-import { planWriterEnvironment } from '#src/plan/draft/internal/common/constants/planWriterEnvironment.ts';
-import { preflightDraftEnvironment } from '#src/plan/draft/internal/preflightDraftEnvironment.ts';
-import { draftPhasedPlan } from '#src/plan/draft/legacy/draftPhasedPlan.ts';
-import { draftSinglePlan } from '#src/plan/draft/legacy/draftSinglePlan.ts';
 import { collectSourceEvidence } from '#src/plan/evidence/collectSourceEvidence.ts';
 import type { DraftContext } from '#src/plan/internal/common/types/DraftContext.ts';
 import type { RunPlanDraftResult } from '#src/plan/internal/common/types/RunPlanDraftResult.ts';
@@ -30,8 +24,6 @@ interface Params {
 	name: string;
 	/** Force a variant; otherwise it is estimated from the facts' touched-file count. */
 	scope?: PlanVariant;
-	/** Which drafting implementation to use. Absent means focused, which is what makes focused the default without any caller opting in. */
-	implementation?: DraftImplementation;
 	/** Supplemental code standards, threaded into the plan-writer invocation. */
 	standards?: string;
 	model?: string;
@@ -61,23 +53,11 @@ interface Params {
  * sizes, with a bounded reshape loop behind it: the cheapest moment to refuse an
  * unbuildable phase is before any phase file has been paid for.
  *
- * Two implementations author those spawns. **Focused** is the default and needs
- * no caller to ask for it: its writers run in a restricted agent environment and
- * are handed source evidence the engine collected once, rather than each
- * re-reading the same files. **Legacy** is the previous implementation, reached
- * only by typing `--legacy` on `lightsout plan draft`, and its behaviour is
- * unchanged. The engine never runs both, compares them, or falls back from one
- * to the other.
- *
- * The preflight refusal below returns before the context is built and so opens
- * no level at all — the refuse-before-any-work rule applied to the one refusal
- * this runner has.
- *
- * A focused run is refused before any agent is spawned when the resolved harness
- * cannot provide a control the focused environment asks for. The refusal comes
- * back through the ordinary failed member, so every downstream reader keeps
- * working, and it runs before the evidence collection — collecting evidence walks
- * and reads the repository, and a run about to be refused should not pay for it.
+ * Every writer is handed source evidence the engine collected once, rather than
+ * each re-reading the same files, and asks its harness for a restricted agent
+ * environment. A harness applies the controls it can express and runs the rest
+ * as an ordinary session, so a draft runs on every harness: the controls save
+ * tokens, and the plan is the same without them.
  *
  * `plan draft` overwrites an existing deliverable — it is the from-scratch
  * authoring step, never re-run mid-convergence. Brainstorm's settled rows are
@@ -88,7 +68,6 @@ export const runPlanDraft = async ({
 	driver,
 	name,
 	scope,
-	implementation = DraftImplementation.Focused,
 	standards,
 	model,
 	effort,
@@ -107,15 +86,6 @@ export const runPlanDraft = async ({
 	const config = await readOptionalConfig({ cwd });
 	const executorFileLimit = config?.['executor-file-limit'] ?? defaultExecutorFileLimit;
 	const variant = scope ?? estimatePlanScope({ facts, executorFileLimit });
-	const focused = implementation === DraftImplementation.Focused;
-	// Legacy skips the preflight entirely, which is what makes `--legacy` a usable
-	// escape on a harness that cannot provide the focused environment.
-	const refusal = focused ? preflightDraftEnvironment({ driver, environment: planWriterEnvironment }) : undefined;
-
-	if (refusal !== undefined) {
-		return { status: PlanRunStatus.Failed, workspaceDir, error: refusal, advisories: [], implementation };
-	}
-
 	progress(`plan draft ${name}: variant ${variant} (${scope ? 'scope flag' : 'estimated'})`);
 
 	const context: DraftContext = {
@@ -126,8 +96,7 @@ export const runPlanDraft = async ({
 		facts,
 		decisions: merged,
 		brainstormDecisionsPath: brainstorm ? join(workspaceDir, 'brainstorm-decisions.json') : undefined,
-		implementation,
-		evidence: focused ? await collectSourceEvidence({ cwd, name, facts, config }) : undefined,
+		evidence: await collectSourceEvidence({ cwd, name, facts, config }),
 		config,
 		executorFileLimit,
 		standards,
@@ -139,9 +108,5 @@ export const runPlanDraft = async ({
 		progress,
 	};
 
-	if (focused) {
-		return variant === PlanVariant.Single ? draftFocusedSinglePlan({ context }) : draftFocusedPhasedPlan({ context, step: 'draft' });
-	}
-
-	return variant === PlanVariant.Single ? draftSinglePlan({ context }) : draftPhasedPlan({ context, step: 'draft' });
+	return variant === PlanVariant.Single ? draftFocusedSinglePlan({ context }) : draftFocusedPhasedPlan({ context, step: 'draft' });
 };

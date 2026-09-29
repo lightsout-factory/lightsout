@@ -3,7 +3,7 @@
  *
  * `SinglePlan` means plan 001 alone supplies the ticket's implementation — that
  * one plan may still have phases — and the repository's automatic shipping
- * applies exactly as it did before ticket records existed. `MultiplePlan` means
+ * applies. `MultiplePlan` means
  * the ticket's plans implement in numeric order on one branch and the ticket
  * ships only when an explicit ship request naming the included plans is
  * satisfied.

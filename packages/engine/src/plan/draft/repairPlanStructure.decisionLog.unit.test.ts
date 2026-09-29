@@ -13,26 +13,11 @@ import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { expectStatus } from '#tests/helpers/expectStatus.ts';
 import { createRepairDriver, runRepairLoop, setupRepairDraft } from '#tests/helpers/repairDraftFixture.ts';
 
-// The Decision Log the repair loop owns: the sync that runs ahead of every
-// lint, and the merged record the draft hands down instead of a second read of
+// The Decision Log the repair loop owns: the mechanical pass that runs ahead of
+// every lint, and the merged record the draft hands down instead of a second read of
 // the workspace.
 
 // Mocked Imports
-// -------------------------
-/** The sync runner as the repair loop calls it: the draft's own paths and the record it was started from, never a second read of the workspace. */
-interface SyncParams {
-	cwd: string;
-	name: string;
-	planPaths?: string[];
-	decisions?: DecisionsRecord;
-}
-
-const mockSyncPlanDecisions = jest.fn<(params: SyncParams) => Promise<{ status: 'complete'; files: SyncedPlanFile[] }>>();
-
-// The barrel re-exports this file, so both import styles reach the double.
-jest.mock('#src/plan/decisionLog/syncPlanDecisions.ts', () => ({
-	syncPlanDecisions: (params: SyncParams) => mockSyncPlanDecisions(params),
-}));
 // -------------------------
 /** The deterministic pass as the repair loop calls it: the draft's own paths and record, plus the overview of a phased deliverable. */
 interface MechanicalParams {
@@ -50,30 +35,9 @@ jest.mock('#src/plan/draft/repairMechanicalFindings.ts', () => ({
 }));
 // -------------------------
 
-// Every round of the loop syncs before it lints, so the runner stands in for
-// every case in this file; the two cases that measure it re-wire it themselves.
-mockSyncPlanDecisions.mockResolvedValue({ status: 'complete', files: [] });
-
-/**
- * A drafted plan whose sync stands in for the engine's own: every call clears
- * `strips` from each file it is handed, so a marker the sync clears can only
- * reach the lint if the lint ran first.
- */
-const setupSyncedDraft = ({ body, strips }: { body: string; strips?: string }) => {
-	const draft = setupRepairDraft({ body });
-
-	mockSyncPlanDecisions.mockImplementation(async ({ planPaths = [] }) => {
-		if (strips !== undefined) {
-			for (const path of planPaths) {
-				writeFileSync(path, readFileSync(path, 'utf8').replace(`${strips} `, ''));
-			}
-		}
-
-		return { status: 'complete', files: planPaths.map((path) => ({ path, updated: true })) };
-	});
-
-	return draft;
-};
+// Every round of the loop runs the pass before it lints, so the double stands in
+// for every case in this file; the cases that measure it re-wire it themselves.
+mockRepairMechanicalFindings.mockResolvedValue([]);
 
 /**
  * A drafted plan whose mechanical pass stands in for the engine's own: every
@@ -151,11 +115,11 @@ describe('repairPlanStructure decision log', () => {
 		]);
 	});
 
-	test('every repair round syncs the Decision Log before it re-lints', async () => {
-		// Four planted markers, one of them cleared by the sync — and every repair
+	test('every repair round runs the mechanical pass before it re-lints', async () => {
+		// Four planted markers, one of them cleared by the pass — and every repair
 		// re-introduces it, the way a repair that displaces the engine's section
 		// does. 3 → 2 → 1 → 0 findings, so all three repairs run.
-		const draft = setupSyncedDraft({ body: dirtyPlanBody({ markers: 'TBD TODO ??? {token}' }), strips: 'TBD' });
+		const draft = setupMechanicalDraft({ body: dirtyPlanBody({ markers: 'TBD TODO ??? {token}' }), strips: 'TBD' });
 		const messages: string[] = [];
 		const driver = createRepairDriver({
 			bodies: [dirtyPlanBody({ markers: 'TBD TODO ???' }), dirtyPlanBody({ markers: 'TBD TODO' }), dirtyPlanBody({ markers: 'TBD' })],
@@ -165,7 +129,7 @@ describe('repairPlanStructure decision log', () => {
 
 		expectStatus(result, 'complete');
 		// three rounds plus the opening check
-		expect(mockSyncPlanDecisions).toHaveBeenCalledTimes(4);
+		expect(mockRepairMechanicalFindings).toHaveBeenCalledTimes(4);
 		// the counts prove the order: a lint that ran first would have counted the
 		// re-introduced marker and narrated 4, 3 and 2 findings instead
 		expect(messages).toEqual([
@@ -174,7 +138,7 @@ describe('repairPlanStructure decision log', () => {
 			expect.stringMatching(/1 structural finding\(s\).*repair 3\/3/),
 		]);
 		// and the plan the loop hands back is clean, though every repairer output
-		// carried the marker the sync cleared
+		// carried the marker the pass cleared
 		expect('findings' in result && result.findings).toStrictEqual([]);
 	});
 
@@ -182,7 +146,7 @@ describe('repairPlanStructure decision log', () => {
 		// The clean skeleton's log is rendered from an empty record, and the
 		// workspace holds no decisions.json at all: a lint that read the workspace
 		// would find no rows and call this log current.
-		const draft = setupSyncedDraft({ body: cleanPlanBody() });
+		const draft = setupMechanicalDraft({ body: cleanPlanBody() });
 		const driver = createRepairDriver({
 			respond: () => ({
 				text: JSON.stringify({ status: 'error', filesEdited: [], discrepancies: ['the Decision Log is composed by the engine, not by a repair'] }),
@@ -201,11 +165,11 @@ describe('repairPlanStructure decision log', () => {
 		expect('findings' in result && result.findings[0]?.issue).toMatch(/saved decision records/);
 	});
 
-	test("the sync is handed the draft's own paths and merged record, so it resolves neither for itself", async () => {
+	test("the pass is handed the draft's own paths and merged record, so it resolves neither for itself", async () => {
 		// This workspace holds no decisions.json and no resolvable deliverable: a
-		// sync left to read the record or to resolve the plan would compose from
+		// pass left to read the record or to resolve the plan would compose from
 		// nothing, so the loop states both.
-		const draft = setupSyncedDraft({ body: cleanPlanBody() });
+		const draft = setupMechanicalDraft({ body: cleanPlanBody() });
 		const driver = createRepairDriver({
 			respond: () => ({
 				text: JSON.stringify({ status: 'error', filesEdited: [], discrepancies: ['the Decision Log is composed by the engine, not by a repair'] }),
@@ -216,29 +180,13 @@ describe('repairPlanStructure decision log', () => {
 		const result = await runRepairLoop({ ...draft, driver, decisions: mergedRecordWithBrainstormRow() });
 
 		expectStatus(result, 'complete');
-		expect(mockSyncPlanDecisions).toHaveBeenCalledWith({
+		expect(mockRepairMechanicalFindings).toHaveBeenCalledWith({
 			cwd: draft.cwd,
 			name: 'demo',
 			planPaths: [draft.planPath],
 			decisions: mergedRecordWithBrainstormRow(),
+			overviewPath: undefined,
 		});
-	});
-
-	test('syncs only the Decision Log when the mechanical pass is not requested', async () => {
-		// One planted marker forces a repair round, so the loop checks twice: the
-		// opening check and the one after the repair.
-		const draft = setupSyncedDraft({ body: dirtyPlanBody() });
-		const driver = createRepairDriver({ bodies: [cleanPlanBody()] });
-
-		const result = await runRepairLoop({ ...draft, driver });
-
-		expectStatus(result, 'complete');
-		// both rounds composed the Decision Log
-		expect(mockSyncPlanDecisions).toHaveBeenCalledTimes(2);
-		// and nothing else the engine owns — the constraints, the stamped counts
-		// and the phase sections are a request the legacy flow never makes
-		expect(mockRepairMechanicalFindings).not.toHaveBeenCalled();
-		expect('findings' in result && result.findings).toStrictEqual([]);
 	});
 
 	test('runs the mechanical pass each round and spawns the agent only for what survives', async () => {
@@ -258,7 +206,6 @@ describe('repairPlanStructure decision log', () => {
 			decisions: emptyDecisionsRecord(),
 			timeoutMs: 60_000,
 			progress: () => {},
-			mechanicalRepair: true,
 			overviewPath,
 		});
 
@@ -274,7 +221,6 @@ describe('repairPlanStructure decision log', () => {
 		});
 		// the pass stands in place of the bare Decision Log sync, which composes
 		// the log itself rather than beside it
-		expect(mockSyncPlanDecisions).not.toHaveBeenCalled();
 		// one spawn, carrying the survivor and not the finding the pass had
 		// already repaired
 		expect(prompts).toHaveLength(1);

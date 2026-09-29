@@ -55,17 +55,25 @@ const setupTicketAndWorktree = () => {
 
 	const generation = [
 		{ title: 'plan.md', body: '# plan\n' },
-		{ title: 'brainstorm-notes.md', body: '# notes\n' },
+		{ title: 'decisions.json', body: '[]\n' },
 	];
 	const marker = serializeAttachmentManifest({
 		files: generation.map(({ title, body }) => ({ name: title, content: Buffer.from(body, 'utf8') })),
 	}).toString('utf8');
 	const assets = [...generation, { title: planAttachmentManifestName, body: marker }];
 
-	mockGetTicketAttachments.mockResolvedValue(assets.map(({ title }, index) => ({ id: `att-${index}`, title, url: `https://assets.example/${index}` })));
+	// The ticket carries each file under the plan's id.
+	mockGetTicketAttachments.mockResolvedValue(
+		assets.map(({ title }, index) => ({ id: `att-${index}`, title: `001-plan--${title}`, url: `https://assets.example/${index}` })),
+	);
 	mockReadTicketAsset.mockImplementation(async ({ url }) => assets[Number(url.split('/').at(-1))]?.body ?? '');
 
-	return { primary, worktree, dir: join(primary, '.lightsout', 'work-orders', 'lo-54-portable-plan', 'plans'), name: 'lo-54-portable-plan' };
+	return {
+		primary,
+		worktree,
+		dir: join(primary, '.lightsout', 'work-orders', 'lo-54-portable-plan', 'plans', '001-plan'),
+		name: 'lo-54-portable-plan/001-plan',
+	};
 };
 
 /** Run state a plan folder always holds and no publish ever carries. */
@@ -179,7 +187,7 @@ describe('durablePlanFiles', () => {
 	test("publish and restore act on the primary checkout's plan folder from any checkout", async () => {
 		const { worktree, dir, name } = setupTicketAndWorktree();
 
-		const restored = await restorePlanWorkspace({ cwd: worktree, name, identifier: 'lo-54', settings: trackerSettingsFixture() });
+		const restored = await restorePlanWorkspace({ cwd: worktree, name, identifier: 'lo-54', settings: trackerSettingsFixture(), titlePrefix: '001-plan' });
 		const published = await durablePlanFiles({ cwd: worktree, name });
 
 		// One assertion over both directions, because the claim is that they meet on
@@ -192,11 +200,11 @@ describe('durablePlanFiles', () => {
 			published: published.files,
 			worktreeHoldsLightsoutData: existsSync(join(worktree, '.lightsout')),
 		}).toStrictEqual({
-			restored: ['brainstorm-notes.md', 'plan.md'],
-			primaryFolder: ['brainstorm-notes.md', 'plan.md'],
+			restored: ['decisions.json', 'plan.md'],
+			primaryFolder: ['decisions.json', 'plan.md'],
 			published: [
 				{ name: 'plan.md', path: join(dir, 'plan.md') },
-				{ name: 'brainstorm-notes.md', path: join(dir, 'brainstorm-notes.md') },
+				{ name: 'decisions.json', path: join(dir, 'decisions.json') },
 			],
 			worktreeHoldsLightsoutData: false,
 		});

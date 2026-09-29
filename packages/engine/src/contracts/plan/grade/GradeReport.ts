@@ -52,8 +52,8 @@ export const GradeReport = z.object({
 	phasesLight: z.array(z.string()).default([]),
 	/** True when every plan file is covered at its current text — by this pass or a recorded earlier one — and nothing failed or was withheld. A failed judge leaves its gap `unjudged` instead of making the pass incomplete. */
 	complete: z.boolean().default(true),
-	/** True when every check this pass's own scope called for finished — never a whole-plan clean bill, and never an approval. Defaults to `false` so a report written before the field existed claims no coverage. */
-	scopeComplete: z.boolean().default(false),
+	/** True when every check this pass's own scope called for finished — never a whole-plan clean bill, and never an approval. */
+	scopeComplete: z.boolean(),
 	/** Why the pass did not finish, absent when it did. */
 	incompleteReason: z.string().optional(),
 	passed: z.boolean(),
@@ -62,15 +62,15 @@ export const GradeReport = z.object({
 	gradedCommit: z.string().optional(),
 	/** True when the working tree held uncommitted changes at grade time, so `gradedCommit` is a floor rather than an exact description of what was measured. Absent means NOT KNOWN — no commit was read, or the changed-file probe itself failed. It never means clean; only `false` means clean. */
 	gradedTreeDirty: z.boolean().optional(),
-	/** How far this pass reached. Defaults to `full` so a report written before the field existed reads as the whole-plan pass it was. */
-	scope: z.enum(GradeScope).default(GradeScope.Full),
+	/** How far this pass reached. */
+	scope: z.enum(GradeScope),
 	/** The plan files a focused pass read — the edited phases and their connected closure. Empty on a full pass. */
 	focusedOn: z.array(z.string()).default([]),
-	/** The plan files covered at their current text when the pass ended, by this pass or by a recorded earlier one. Defaults to empty so a report written before the field claims no coverage — it is what the terminal line reads to tell a reading from a reuse. */
-	covered: z.array(z.string()).default([]),
-	/** The fingerprint of everything this pass measured. Absent on a report written before the field existed, which is never treated as matching anything. */
+	/** The plan files covered at their current text when the pass ended, by this pass or by a recorded earlier one — what the terminal line reads to tell a reading from a reuse. */
+	covered: z.array(z.string()),
+	/** The fingerprint of everything this pass measured. Absent on a report that stopped on structural findings before measuring anything. */
 	inputs: GradeInputs.optional(),
-	/** One line naming the rule that chose this pass's scope, persisted so a history line says why the pass reached as far as it did. Absent on a report written before the field existed and on a preflight stop. */
+	/** One line naming the rule that chose this pass's scope, persisted so a history line says why the pass reached as far as it did. Absent on a report that stopped on structural findings. */
 	scopeReason: z.string().optional(),
 });
 

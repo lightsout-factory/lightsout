@@ -9,20 +9,17 @@ import type { PreparedAttachment } from '#src/plan/publish/internal/common/types
 
 interface Params {
 	files: DurablePlanFile[];
-	/** The plan id the titles will be namespaced under; absent for a legacy folder. */
-	titlePrefix?: string;
 }
 
 /**
  * Read a complete immutable snapshot before the first outward mutation, then
  * append the manifest that commits exactly those bytes.
  */
-export const prepareAttachments = async ({ files, titlePrefix }: Params): Promise<{ attachments: PreparedAttachment[] } | { error: string }> => {
+export const prepareAttachments = async ({ files }: Params): Promise<{ attachments: PreparedAttachment[] } | { error: string }> => {
 	const durable: PreparedAttachment[] = [];
-	// Under a prefix the brainstorm generation owns `brainstorm-notes.md`
-	// outright, so the plan generation neither sends it nor commits it. A legacy
-	// folder's two generations still both carry it, as they always have.
-	const carried = titlePrefix === undefined ? files : files.filter(({ name }) => name !== brainstormNotesFileName);
+	// The brainstorm generation owns `brainstorm-notes.md` outright, so the plan
+	// generation neither sends it nor commits it.
+	const carried = files.filter(({ name }) => name !== brainstormNotesFileName);
 
 	for (const file of carried) {
 		try {

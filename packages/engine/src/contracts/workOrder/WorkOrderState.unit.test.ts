@@ -78,7 +78,6 @@ const setupFullWorkOrderState = () => {
 		},
 		history: [
 			{ at: '2026-09-01T09:00:00.000Z', kind: 'plan-added', detail: 'added 001-ticket-record' },
-			{ at: '2026-09-01T09:05:00.000Z', kind: 'plan-adopted', detail: 'adopted the legacy folder as 001-ticket-record' },
 			{ at: '2026-09-01T09:10:00.000Z', kind: 'plan-retitled', detail: 'retitled 001-ticket-record to Ticket record' },
 			{ at: '2026-09-04T09:00:00.000Z', kind: 'plan-excluded', detail: 'excluded 002-plan-addressing' },
 			{ at: '2026-09-01T09:15:00.000Z', kind: 'mode-changed', detail: 'mode changed to multiple-plan' },

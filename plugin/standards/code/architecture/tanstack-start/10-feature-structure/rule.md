@@ -27,7 +27,7 @@ before:
 
 Where a piece of code lives — app-wide `src/common/`, feature `common/`, or
 beside its one consumer — is the base
-[placement rule](../../folder-structure/05-placement/rule.md), unchanged here.
+[placement rule](../../folder-structure/05-shared-code-placement/rule.md), unchanged here.
 
 None of this is TanStack's requirement. What TanStack mandates — route
 filenames under `routes/`, the `router.tsx`/`server.ts`/`client.tsx` entry

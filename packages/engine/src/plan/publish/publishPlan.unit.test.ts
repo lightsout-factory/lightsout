@@ -64,8 +64,14 @@ const env = { LINEAR_API_KEY: 'lin_key' };
 const overviewBody = ({ phases }: { phases: string[] }) =>
 	`# Feature — Overview\n\n## Phases\n\n| # | File | Scope |\n|---|------|-------|\n${phases.map((phase, index) => `| ${index + 1} | \`${phase}\` | scope |`).join('\n')}\n`;
 
+/** The plan id every case publishes under, and so the prefix on every title it writes. */
+const planId = '001-portable-plan';
+
+/** A durable file's title on the ticket: its name under this plan's id. */
+const titled = (name: string) => `${planId}--${name}`;
+
 const setupPlan = ({
-	folder = 'lo-54-portable-plan',
+	folder = `lo-54-portable-plan/${planId}`,
 	files,
 	config,
 	tickets = [{ id: 'id-54', identifier: 'LO-54' }],
@@ -115,6 +121,7 @@ const setupPlan = ({
 			config: config ?? { gates, 'ticket-tracker': trackerBlock },
 			env,
 			onProgress: (message: string) => progress.push(message),
+			titlePrefix: planId,
 		},
 	};
 };
@@ -125,7 +132,7 @@ const setupPlan = ({
  * configured, which is what makes the refusal the record's own answer rather
  * than a missing config block's.
  */
-const setupLocalOnlyWorkOrder = ({ workOrder = 'rate-limit-banner', plan = '001-portable-plan' }: { workOrder?: string; plan?: string } = {}) => {
+const setupLocalOnlyWorkOrder = ({ workOrder = 'rate-limit-banner', plan = planId }: { workOrder?: string; plan?: string } = {}) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-publish-plan-'));
 	const name = `${workOrder}/${plan}`;
 	const dir = planWorkspaceFolder({ cwd, name });
@@ -150,6 +157,7 @@ const setupLocalOnlyWorkOrder = ({ workOrder = 'rate-limit-banner', plan = '001-
 			config: { gates, 'ticket-tracker': trackerBlock },
 			env,
 			onProgress: (message: string) => progress.push(message),
+			titlePrefix: plan,
 		},
 	};
 };
@@ -162,16 +170,17 @@ describe('publishPlan', () => {
 
 		const report = await publishPlan(params);
 
-		expect(report).toStrictEqual({
+		expect(report).toEqual({
 			ticketRef: 'lo-54',
-			published: ['overview.md', 'phase1-seam.md', 'grade.json', planAttachmentManifestName],
+			published: [titled('overview.md'), titled('phase1-seam.md'), titled('grade.json'), titled(planAttachmentManifestName)],
 			stale: [],
+			markerSha256: expect.any(String),
 		});
 		expect(mockSetTicketAttachment.mock.calls.map(([call]) => ({ ticketId: call.ticketId, title: call.title }))).toStrictEqual([
-			{ ticketId: 'id-54', title: 'overview.md' },
-			{ ticketId: 'id-54', title: 'phase1-seam.md' },
-			{ ticketId: 'id-54', title: 'grade.json' },
-			{ ticketId: 'id-54', title: planAttachmentManifestName },
+			{ ticketId: 'id-54', title: titled('overview.md') },
+			{ ticketId: 'id-54', title: titled('phase1-seam.md') },
+			{ ticketId: 'id-54', title: titled('grade.json') },
+			{ ticketId: 'id-54', title: titled(planAttachmentManifestName) },
 		]);
 	});
 
@@ -181,26 +190,26 @@ describe('publishPlan', () => {
 		await publishPlan(params);
 
 		expect(mockSetTicketAttachment.mock.calls.map(([call]) => [call.title, call.contentType])).toStrictEqual([
-			['plan.md', 'text/markdown'],
-			['decisions.json', 'application/json'],
-			[planAttachmentManifestName, 'application/json'],
+			[titled('plan.md'), 'text/markdown'],
+			[titled('decisions.json'), 'application/json'],
+			[titled(planAttachmentManifestName), 'application/json'],
 		]);
 	});
 
 	test('attaches a schema-1 manifest last, committing the exact names and hashes of the bytes already sent', async () => {
-		const { params } = setupPlan({ files: { 'plan.md': '# the plan\n', 'brainstorm-notes.md': '# notes\n' } });
+		const { params } = setupPlan({ files: { 'plan.md': '# the plan\n', 'decisions.json': '[]\n' } });
 
 		await publishPlan(params);
 
 		const writes = mockSetTicketAttachment.mock.calls.map(([call]) => call);
 		const manifestWrite = writes.at(-1);
 
-		expect(manifestWrite?.title).toBe(planAttachmentManifestName);
+		expect(manifestWrite?.title).toBe(titled(planAttachmentManifestName));
 		expect(JSON.parse(manifestWrite?.content.toString('utf8') ?? '')).toStrictEqual({
 			schemaVersion: 1,
 			files: [
 				{ name: 'plan.md', sha256: sha256({ content: '# the plan\n' }) },
-				{ name: 'brainstorm-notes.md', sha256: sha256({ content: '# notes\n' }) },
+				{ name: 'decisions.json', sha256: sha256({ content: '[]\n' }) },
 			],
 		});
 	});
@@ -229,7 +238,7 @@ describe('publishPlan', () => {
 
 		const report = await publishPlan(params);
 
-		expect(report.error ?? '').toMatch(/^nothing to publish for 'lo-54-portable-plan'/);
+		expect(report.error ?? '').toMatch(/^nothing to publish for 'lo-54-portable-plan\/001-portable-plan'/);
 		expect(report.ticketRef).toBeUndefined();
 		expect(mockGetTicketsByIdentifiers).not.toHaveBeenCalled();
 	});
@@ -247,12 +256,12 @@ describe('publishPlan', () => {
 	});
 
 	test('a work order carrying no ticket reference refuses before a tracker is resolved, because there is nothing to attach to', async () => {
-		const { params } = setupPlan({ folder: 'rate-limit-banner', files: { 'plan.md': '# plan' }, ticketRef: null });
+		const { params } = setupPlan({ folder: `rate-limit-banner/${planId}`, files: { 'plan.md': '# plan' }, ticketRef: null });
 
 		const report = await publishPlan(params);
 
 		expect(report.error).toBe(
-			"plan 'rate-limit-banner' cannot be published: work order 'rate-limit-banner' carries no ticket reference in its record, so it belongs to no ticket",
+			`plan 'rate-limit-banner/${planId}' cannot be published: work order 'rate-limit-banner' carries no ticket reference in its record, so it belongs to no ticket`,
 		);
 		expect(mockGetTicketsByIdentifiers).not.toHaveBeenCalled();
 	});
@@ -287,12 +296,12 @@ describe('publishPlan', () => {
 	test('a failure on the third file keeps the two that landed, so a partial publish is visible rather than silent', async () => {
 		const { params } = setupPlan({
 			files: { 'overview.md': overviewBody({ phases: ['phase1-seam.md'] }), 'phase1-seam.md': '# one', 'grade.json': '{}' },
-			uploadFailures: { 'grade.json': "uploading 'grade.json' failed: 403 Forbidden" },
+			uploadFailures: { [titled('grade.json')]: "uploading 'grade.json' failed: 403 Forbidden" },
 		});
 
 		expect(await publishPlan(params)).toStrictEqual({
 			ticketRef: 'lo-54',
-			published: ['overview.md', 'phase1-seam.md'],
+			published: [titled('overview.md'), titled('phase1-seam.md')],
 			stale: [],
 			error: "uploading 'grade.json' failed: 403 Forbidden",
 		});
@@ -339,31 +348,16 @@ describe('publishPlan', () => {
 		const { params, progress } = setupPlan({
 			files: { 'overview.md': overviewBody({ phases: ['phase1-seam.md'] }), 'phase1-seam.md': '# one' },
 			attachments: [
-				{ id: 'att-1', title: 'overview.md', url: 'https://assets.example/overview.md' },
-				{ id: 'att-9', title: 'plan.md', url: 'https://assets.example/plan.md' },
+				{ id: 'att-1', title: titled('overview.md'), url: 'https://assets.example/overview.md' },
+				{ id: 'att-9', title: titled('plan.md'), url: 'https://assets.example/plan.md' },
 			],
 		});
 
 		const report = await publishPlan(params);
 
-		expect(report.stale).toStrictEqual(['plan.md']);
+		expect(report.stale).toStrictEqual([titled('plan.md')]);
 		expect(report.error).toBeUndefined();
-		expect(progress.at(-1) ?? '').toMatch(/^plan\.md is a plan file from an earlier publish that this run did not write/);
-	});
-
-	test('a working record this run did not write is reported too — a brainstorm-notes.md hand-attached to a ticket whose folder holds none', async () => {
-		const { params, progress } = setupPlan({
-			files: { 'plan.md': '# plan' },
-			attachments: [
-				{ id: 'att-1', title: 'plan.md', url: 'https://assets.example/plan.md' },
-				{ id: 'att-4', title: 'brainstorm-notes.md', url: 'https://assets.example/brainstorm-notes.md' },
-			],
-		});
-
-		const report = await publishPlan(params);
-
-		expect(report).toStrictEqual({ ticketRef: 'lo-54', published: ['plan.md', planAttachmentManifestName], stale: ['brainstorm-notes.md'] });
-		expect(progress.at(-1) ?? '').toMatch(/^brainstorm-notes\.md is a plan file from an earlier publish that this run did not write/);
+		expect(progress.at(-1) ?? '').toMatch(/^001-portable-plan--plan\.md is a plan file from an earlier publish that this run did not write/);
 	});
 
 	test('an attachment whose title names no plan file is neither reported nor touched', async () => {
@@ -373,7 +367,7 @@ describe('publishPlan', () => {
 		});
 
 		expect((await publishPlan(params)).stale).toStrictEqual([]);
-		expect(progress).toStrictEqual(['attached plan.md to lo-54', `attached ${planAttachmentManifestName} to lo-54`]);
+		expect(progress).toStrictEqual([`attached ${titled('plan.md')} to lo-54`, `attached ${titled(planAttachmentManifestName)} to lo-54`]);
 	});
 
 	test('a failure reading the attachment list back leaves the report clean — the files did land — and says so through progress', async () => {
@@ -381,7 +375,12 @@ describe('publishPlan', () => {
 
 		const report = await publishPlan(params);
 
-		expect(report).toStrictEqual({ ticketRef: 'lo-54', published: ['plan.md', planAttachmentManifestName], stale: [] });
+		expect(report).toEqual({
+			ticketRef: 'lo-54',
+			published: [titled('plan.md'), titled(planAttachmentManifestName)],
+			stale: [],
+			markerSha256: expect.any(String),
+		});
 		expect(progress.at(-1)).toBe("could not read lo-54's attachment list back: the tracker did not answer");
 	});
 

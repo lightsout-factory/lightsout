@@ -26,8 +26,7 @@ export const planCatalogEntry: CommandCatalogEntry = {
 		{
 			name: 'name',
 			value: '<name>',
-			meaning:
-				'The plan to work in, under .lightsout/work-orders/<work-order-name>/plans/ — a plan address <work-order-name>/<NNN-slug>, or a legacy folder name.',
+			meaning: 'The plan to work in, under .lightsout/work-orders/<work-order-name>/plans/ — a plan address <work-order-name>/<NNN-slug>.',
 			required: true,
 		},
 		{
@@ -36,13 +35,6 @@ export const planCatalogEntry: CommandCatalogEntry = {
 			meaning: 'Rough notes to start from — a /brainstorm file, or anything you wrote yourself.',
 			fallback: 'The workspace starts from the request alone.',
 			shape: 'plan-verify-facts',
-			required: false,
-		},
-		{
-			name: 'legacy',
-			meaning: 'Draft with the previous drafting implementation rather than the focused one.',
-			fallback: 'The focused drafting implementation.',
-			shape: 'plan-draft',
 			required: false,
 		},
 		{

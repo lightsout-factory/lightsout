@@ -115,8 +115,8 @@ const printTicketRow = ({ target, plans, pricing }: { target: string; plans: Pla
 /**
  * The whole printed answer for one `--plan` value.
  *
- * A plan folder written before the activity record existed holds none, so one
- * line saying so reads better than an empty table — and a ticket's missing plan
+ * A plan folder no command has run in yet holds no activity record, so one line
+ * saying so reads better than an empty table — and a ticket's missing plan
  * never stops the plans beside it from reporting.
  */
 export const printActivityReport = ({ target, workOrderFolder, plans, pricing }: Params): void => {
