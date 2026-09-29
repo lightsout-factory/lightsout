@@ -11,14 +11,6 @@ interface Params {
 	marks: ActivityMark[];
 }
 
-/**
- * Fold one record's marks into the totalled tree a report is drawn from.
- *
- * Split from the reader so this is a pure function of a mark list: every rule
- * the report depends on is then checked without a filesystem, and a terminal
- * table and its data-shaped twin read one calculation rather than each doing
- * their own.
- */
 export const buildActivityTree = ({ plan, marks }: Params): ActivityReport => {
 	const roots = nestActivityMarks({ marks });
 

@@ -5,18 +5,7 @@ import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { buildStandardsHealth } from '#src/standardsCheck/buildStandardsHealth.ts';
 import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
 
-/**
- * `lightsout standards-health` — which rules are machine-checked, which are
- * judgment, and how often agents declined each one's findings.
- *
- * A repo with no config still has an answer (the pack lightsout ships, every
- * rule at its default), and a repo with no refactor history still has half of
- * one: the coverage claim comes from the pack's folders, so it never depends
- * on anything having been run.
- *
- * Informational — it always exits 0. It reports on the rules, not on the code,
- * so there is nothing here for a caller to gate on.
- */
+// Always exits 0: it reports on the rules, not the code, so there is nothing to gate on.
 export const standardsHealthCommand = async ({ cwd }: CommandContext): Promise<void> => {
 	const config = await readOptionalConfig({ cwd });
 	const packs = await resolveStandardsPacks({ cwd, config });

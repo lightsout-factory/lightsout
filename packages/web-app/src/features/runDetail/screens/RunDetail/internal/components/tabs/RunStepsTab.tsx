@@ -7,7 +7,6 @@ interface Props {
 	onOpenPlan: (path: string) => void;
 }
 
-/** Every step in full, in the order the run took them — each anchored by its id so the overview can jump to one. */
 export const RunStepsTab = ({ view, onOpenPlan }: Props) => (
 	<div className="flex flex-col gap-3">
 		{view.steps.map((step) => (

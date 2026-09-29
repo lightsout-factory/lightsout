@@ -7,7 +7,6 @@ interface Params {
 	runId: string;
 }
 
-/** Drop the run lock — but only our own. A lock held by another pid or run is never deleted here. */
 export const releaseRunLock = async ({ cwd, runId }: Params): Promise<void> => {
 	const holder = await readRunLock({ cwd });
 

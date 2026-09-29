@@ -16,13 +16,8 @@ interface Params {
 }
 
 /**
- * The branch's pull request: the open one when there is one, else a new one
- * carrying the rendered body.
- *
- * Adoption is resume, not re-render — a body someone has since edited by hand
- * is theirs, and a re-run must not overwrite it. That is also what makes a
- * second shipping attempt cheap: the pull request the first one opened is the
- * one the second one waits on.
+ * An open pull request is adopted, never re-rendered: a body someone has since edited by hand is
+ * theirs, and a second attempt waits on the pull request the first one opened.
  */
 export const openPullRequest = async ({ branch, cwd, settings, ticket, onProgress }: Params): Promise<PullRequestSummary | ShipStepFailure> => {
 	const adopted = await findPullRequest({ branch, cwd, state: PullRequestState.Open });

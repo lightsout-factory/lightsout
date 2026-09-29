@@ -40,17 +40,13 @@ interface GenerationFile {
 	sha256: string;
 }
 
-/** Read one attachment while retaining its title in every refusal. */
 const readAttachment = async ({ settings, attachment }: { settings: TrackerSettings; attachment: TrackerAttachment }) => {
 	const text = await readTicketAsset({ settings, url: attachment.url });
 
 	return typeof text === 'string' ? { text } : { error: `the ticket's ${attachment.title} could not be read: ${text.error}` };
 };
 
-/**
- * Resolve the manifest's exact generation. Unlisted durable attachments are
- * stale by definition and harmless; a missing or duplicate listed title is not.
- */
+/** Unlisted durable attachments are stale by definition and harmless; a missing or duplicate listed title is not. */
 const selectGeneration = ({
 	manifest,
 	durableAttachments,
@@ -82,12 +78,8 @@ const selectGeneration = ({
 };
 
 /**
- * The one commit marker this restore selects a generation by.
- *
- * Three outcomes, and the difference between them matters: exactly one marker
- * is a generation to restore, no marker with no plan attachments at all is a
- * ticket that has never carried a plan, and anything else is a ticket whose
- * plan cannot be read without republishing it.
+ * No marker with no plan attachments at all is a ticket that has never carried
+ * a plan; any other markerless or multi-marker ticket must be republished.
  */
 const selectManifestAttachment = ({
 	attachments,
@@ -114,7 +106,6 @@ const selectManifestAttachment = ({
 		: { error: `the ticket carries durable plan attachments but no ${markerName} commit marker — publish the plan again before implementing it` };
 };
 
-/** Every selected attachment's verified text, or the first contextual read/hash refusal. */
 const readAndVerifyGeneration = async ({ settings, files, markerName }: { settings: TrackerSettings; files: GenerationFile[]; markerName: string }) => {
 	const reads = await Promise.all(
 		files.map(async (file) => ({
@@ -142,13 +133,9 @@ const readAndVerifyGeneration = async ({ settings, files, markerName }: { settin
 };
 
 /**
- * Rebuild a plan folder from the one ticket generation committed by
- * `plan-attachments.json`. The manifest is transport metadata and is never
- * written into the workspace; run state is neither listed nor restored.
- *
- * Every refusal path creates no plan folder. A later successful publish can
- * therefore be fetched instead of an incomplete folder permanently winning the
- * disk-first check.
+ * Every refusal path creates no plan folder, so a later successful publish can
+ * be fetched instead of an incomplete folder permanently winning the disk-first
+ * check.
  */
 export const restorePlanWorkspace = async ({ cwd, name, identifier, settings, titlePrefix }: Params): Promise<RestoredPlanWorkspace> => {
 	const listed = await getTicketAttachments({ settings, identifier });
@@ -157,14 +144,10 @@ export const restorePlanWorkspace = async ({ cwd, name, identifier, settings, ti
 		return { restored: [], error: listed.error };
 	}
 
-	// Everything below is written against bare file names, so one plan's
-	// namespace is turned back into the single-plan list those steps already
-	// read before any of them runs.
 	const attachments = scopeAttachments({ attachments: listed, prefix: titlePrefix });
 	const markerName = attachmentTitle({ prefix: titlePrefix, name: planAttachmentManifestName });
-	// The brainstorm generation owns `brainstorm-notes.md`, so a plan generation
-	// may neither carry it nor commit it — and a ticket carrying only a
-	// brainstorm is a ticket with no plan, not an interrupted plan upload.
+	// A ticket carrying only a brainstorm is a ticket with no plan, not an
+	// interrupted plan upload.
 	const planAttachments = attachments.filter(({ title }) => isPlanOnlyAttachmentName({ name: title }));
 	const selected = selectManifestAttachment({ attachments, planOnlyAttachments: planAttachments, markerName });
 

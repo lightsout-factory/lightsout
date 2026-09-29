@@ -11,10 +11,8 @@ import { planStageLabels } from '#src/features/plans/internal/common/constants/p
 import { planWorkspacesQueryOptions } from '#src/features/plans/queries/planWorkspacesQueryOptions.ts';
 import { PlansTable } from '#src/features/plans/screens/PlansPage/components/PlansTable.tsx';
 
-/** A repo that has planned nothing yet: the two commands that start a workspace. */
 const NoPlansYet = () => <EmptyState icon={NotebookPen} title="No plans yet." description="Run /brainstorm or /plan to start one." />;
 
-/** Plans there are, but none at the stage the reader asked for — so the way out is dropping the filter. */
 const NoneAtThisStage = ({ onClear }: { onClear: () => void }) => (
 	<EmptyState
 		title="No plans at this stage."
@@ -27,16 +25,12 @@ const NoneAtThisStage = ({ onClear }: { onClear: () => void }) => (
 );
 
 /**
- * Every plan workspace this repo has — the decide half of "humans decide,
- * agents execute".
+ * The stage filter lives in the URL so a narrowed list is a link somebody can
+ * send; the write replaces rather than pushes, because back should leave the
+ * page rather than unwind one filter edit.
  *
- * The stage filter lives in the URL rather than in component state, so a
- * narrowed list is a link somebody can send; the write replaces rather than
- * pushes, because back should leave the page rather than unwind one filter edit.
- *
- * Both empty states are chosen here, where the unfiltered listings and the
- * filtered ones are held at once: "no plans yet" and "none at this stage" are
- * different answers, and the shared table cannot tell them apart.
+ * Both empty states are chosen here, where the unfiltered and filtered listings
+ * are both held: the shared table cannot tell "no plans yet" from "none at this stage".
  */
 export const PlansPage = () => {
 	const { data: listings } = useSuspenseQuery(planWorkspacesQueryOptions());

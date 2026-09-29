@@ -15,12 +15,9 @@ interface Params {
 }
 
 /**
- * The checkout a planning session acts on, announced when the session moved into
- * it — or the one sentence saying why there is none.
- *
- * The tree holds code work only. A plan folder lives in the main checkout
- * whichever checkout a plan command runs from, so there is nothing to stock the
- * tree with and nothing inside it to lose when it is removed.
+ * The tree holds code work only: a plan folder lives in the main checkout
+ * whichever checkout a plan command runs from, so nothing in the tree is lost
+ * when it is removed.
  */
 export const openPlanWorktree = async ({ cwd, config, flags, name }: Params): Promise<{ worktree: PlanWorktree } | { error: string }> => {
 	const worktree = await resolvePlanWorktree({ cwd, config, flags, name, onProgress: createProgressPrinter() });
@@ -29,9 +26,8 @@ export const openPlanWorktree = async ({ cwd, config, flags, name }: Params): Pr
 		return { error: worktree.error };
 	}
 
-	// Only a session that moved says so. One already standing in the tree — every
-	// subcommand after `plan workspace` — has moved nowhere, and a line saying so
-	// on every call would bury the output each subcommand exists to print.
+	// Only a session that moved says so; a line on every subcommand already
+	// standing in the tree would bury the output it exists to print.
 	if (worktree.isolated && !(await isSamePath({ path: cwd, otherPath: worktree.cwd }))) {
 		console.log(`lightsout: workspace ${worktree.cwd}\n  branch: ${worktree.branch}`);
 	}

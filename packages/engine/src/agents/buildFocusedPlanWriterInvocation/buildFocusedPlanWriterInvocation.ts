@@ -20,7 +20,6 @@ import type { ExportCollision } from '#src/plan/evidence/common/types/ExportColl
 interface Params {
 	facts: PlanFacts;
 	decisions: DecisionsRecord;
-	/** Where to write each plan file, and its template variant. */
 	outputs: { path: string; variant: PlanVariant }[];
 	/** The settled overview text — present only on a phase spawn. */
 	overviewText?: string;
@@ -28,7 +27,6 @@ interface Params {
 	declaration?: PhaseDeclaration;
 	/** The previous phase's declaration row. Absent for phase 1. */
 	previousDeclaration?: PhaseDeclaration;
-	/** Numbers the template's size rules are stated with. */
 	limits: { executorFileLimit: number; createdFileCeiling: number; touchedFileCeiling: number };
 	/** Supplemental code standards, inlined verbatim. */
 	standards?: string;
@@ -36,7 +34,6 @@ interface Params {
 	lintCommand?: string;
 	/** Exact engine-section sync command the writer runs before its self-lint. */
 	syncCommand?: string;
-	/** The repository's declared documentation surfaces. */
 	docs?: ConfigDocs;
 	/** `plan.contract` from config — true selects the contract template and the ledger brief. */
 	contract?: boolean;
@@ -47,29 +44,16 @@ interface Params {
 }
 
 /**
- * Assemble the focused plan-writer invocation deterministically. The role prompt
- * and the plan template are stable, so they live in the system prompt (the
- * template appended as a labelled section, with the engine's size numbers
- * substituted in so the prompt and the checks cannot disagree); everything that
- * varies per assignment is the prompt.
+ * An overview output and a `declaration` are mutually exclusive: the first
+ * authors the overview alone, the second one phase file.
  *
- * Three spawn shapes share this builder: a single plan (neither phased section),
- * the overview spawn that opens a phased draft, and one phase spawn per declared
- * phase. The last two are mutually exclusive — an overview output means author
- * the overview alone, a `declaration` means author that one phase file.
+ * The evidence and census come ahead of the decisions and facts JSON, because
+ * evidence a writer meets after kilobytes of records is evidence it reads last.
  *
- * The prompt's section order is load-bearing. The collected evidence and the
- * census arrive with the assignment, ahead of the decisions and facts JSON,
- * because evidence a writer meets after several kilobytes of records is evidence
- * it reads last.
- *
- * Two things this builder deliberately does not do. It never trims the verified
- * facts to one assignment: the facts carry the architectural map, and which part
- * of a map bears on one phase is a judgment rather than a filter — the saving
- * comes from not re-reading source, not from withholding the map. And it takes
- * the evidence already rendered rather than as typed entries, because the
- * renderer lives in the plan module and importing it here would turn this
- * module's type-only dependency on `plan` into a runtime cycle.
+ * The facts are never trimmed to one assignment: which part of the architectural
+ * map bears on one phase is a judgment, not a filter. The evidence arrives
+ * already rendered because importing the plan module's renderer here would turn
+ * a type-only dependency on `plan` into a runtime cycle.
  */
 export const buildFocusedPlanWriterInvocation = ({
 	facts,

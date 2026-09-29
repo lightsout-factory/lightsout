@@ -21,22 +21,14 @@ export const planVerifyFactsCommand = async ({ flags, cwd }: CommandContext): Pr
 		return exitCli({ code: 1 });
 	}
 
-	// The fetch has to have happened before anything asks the disk what the plan
-	// folder holds — the same placement `implementCommand` gives
-	// `ensurePlanWorkspace` at its own edge. A `brainstorm-notes.md` landed here
-	// is already home, so the write-once `--notes` snapshot below keeps it.
+	// Before anything reads the plan folder, so a fetched `brainstorm-notes.md` is
+	// already home and the write-once `--notes` snapshot below keeps it.
 	await ensureBrainstormFiles({ cwd, name });
 
 	const notesFile = getStringFlag({ flags, name: 'notes' });
-	// The same conditions that pick exit 1 and exit 0 below, and the one reading
-	// both records state — a step this run failed must not read as passed in the
-	// activity record.
 	const statusOf = ({ result: verified }: { result: Awaited<ReturnType<typeof runPlanVerifyFacts>> }) =>
 		verified.status === PlanRunStatus.Failed || !verified.facts ? RunStatus.Failed : RunStatus.Passed;
-	// Wrapped outside the planning-step record and inside the refusals above, so
-	// a command that refuses before doing any work opens no level at all. This
-	// subcommand spawns no agent, so its command run carries no child: the
-	// level's own time is the whole of what it records.
+	// Wrapped after the refusals above, so a command that refuses opens no level.
 	const result = await recordPlanCommandRun({
 		cwd,
 		name,

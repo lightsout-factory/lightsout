@@ -6,18 +6,11 @@ interface Params {
 	dataset: SprawlDataset;
 }
 
-/** Held for the same reason the lane states are: the answer cannot change while the app is running. */
 const cache = new WeakMap<SprawlDataset, number>();
 
 /**
- * The tallest file across every frame of both lanes — the one vertical scale
- * both charts share.
- *
- * Shared rather than per lane, because the without lane's summed-back files are
- * by construction the taller ones. Scaled to itself, each lane would draw bars
- * of the same height and the comparison would read as no difference at all.
- *
- * @param dataset - the committed dataset
+ * One scale for both lanes: the without lane's summed-back files are taller by
+ * construction, and scaled to itself each lane would look the same.
  */
 export const getSprawlMaxLines = ({ dataset }: Params): number => {
 	const cached = cache.get(dataset);

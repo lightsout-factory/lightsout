@@ -10,31 +10,22 @@ import { ConfigNotFoundError } from '#src/views/ConfigNotFoundError.ts';
 import { buildConfigSections } from '#src/views/internal/common/utils/buildConfigSections.ts';
 
 /**
- * The file as written, keys only — what `fromConfig` is decided against.
- *
- * Deliberately lenient: this is the same text `parseConfig` has already
- * accepted, and what it is read for here is which keys were typed rather than
- * what they mean.
+ * Deliberately lenient: `parseConfig` has already accepted this text, and here
+ * only which keys were typed matters.
  */
 const DeclaredConfig = z.object({ timeouts: z.record(z.string(), z.unknown()).optional() }).catchall(z.unknown());
 
-/** Every key the file itself wrote, the timeouts block flattened to the two leaves the page gives their own rows. */
 const listDeclaredKeys = ({ raw }: { raw: string }) => {
 	const declared = DeclaredConfig.parse(JSON.parse(raw));
 
 	return [...Object.keys(declared), ...Object.keys(declared.timeouts ?? {}).map((leaf) => `timeouts.${leaf}`)];
 };
 
-/** The distinct framework channels a pack's own documents declare — what a pack row shows beside its name. */
 const getPackChannels = ({ pack }: { pack: LoadedStandardsPack }) => [...new Set(pack.documents.map((document) => document.channel))].sort();
 
 /**
- * Which pack declares each rule id.
- *
  * `StandardsRuleListing` carries no pack field, and re-parsing its `doc` display
- * string would be a second format to keep true — so the packs already loaded are
- * what answers, and the ledger's link to a rule page stays correct when several
- * packs load at once.
+ * string would be a second format to keep true, so the loaded packs answer.
  */
 const mapRuleOwners = ({ packs }: { packs: LoadedStandardsPack[] }) => {
 	const owners = new Map<string, { pack: string; channel: string }>();
@@ -53,17 +44,11 @@ interface Params {
 }
 
 /**
- * What this repo told lightsout, and what lightsout filled in.
- *
- * Both halves, because either alone answers half the question: the file is
- * already on the reader's disk, and the defaults it does not mention are the
- * part nobody can look up. Each row says which of the two it is, and every
- * default comes from the engine's own named constants rather than a second
+ * Every default comes from the engine's own named constants rather than a second
  * table that could disagree with them.
  *
- * @param cwd - the repo whose `lightsout.config.json`, packs and rule states are read
- * @throws {ConfigNotFoundError} When no `lightsout.config.json` exists — the page 404s.
- * @throws {Error} When the file exists but fails to parse — surfaced by the route's error boundary with the zod message, which is the actionable answer.
+ * @throws {ConfigNotFoundError} When no `lightsout.config.json` exists; the page 404s.
+ * @throws {Error} When the file fails to parse; the route's error boundary shows the zod message.
  */
 export const getConfigView = async ({ cwd }: Params): Promise<ConfigView> => {
 	const configPath = resolveConfigPath({ cwd });
@@ -83,9 +68,8 @@ export const getConfigView = async ({ cwd }: Params): Promise<ConfigView> => {
 		harness: config.harness ?? null,
 		model: config.model ?? null,
 		sections: buildConfigSections({ config, declaredKeys: listDeclaredKeys({ raw }) }),
-		// A config naming no pack loads exactly one, and it is the default one —
-		// which is what `resolveStandardsPacks` encodes and this reads back rather
-		// than deciding for itself.
+		// A config naming no pack loads exactly the default one, as
+		// `resolveStandardsPacks` encodes.
 		packs: packs.map((pack) => ({
 			name: pack.name,
 			rootPath: pack.rootPath,

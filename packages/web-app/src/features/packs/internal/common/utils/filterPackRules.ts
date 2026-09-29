@@ -7,16 +7,7 @@ interface Params {
 	filters: PackRuleFilters;
 }
 
-/**
- * The rules left after everything a reader narrowed to.
- *
- * The four vocabulary filters match exactly and the free-text one is a
- * case-insensitive substring of either the rule's id or its summary — a reader
- * types "any" and means the rule about `any`, not a regular expression.
- *
- * @param rules - every rule the pack holds
- * @param filters - what to narrow by; an absent key narrows nothing
- */
+/** The free-text filter is a plain substring, not a regular expression: a reader types "any" and means the rule about `any`. */
 export const filterPackRules = ({ rules, filters }: Params): StandardsPackRuleListing[] => {
 	const text = filters.text?.trim().toLowerCase() ?? '';
 

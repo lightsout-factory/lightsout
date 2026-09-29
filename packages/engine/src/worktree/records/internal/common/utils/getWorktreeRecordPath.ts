@@ -8,10 +8,6 @@ interface Params {
 }
 
 /**
- * A branch's worktree ownership: `worktree.json` in the folder of the work
- * order whose record stores that branch, beside the ship and branch-state
- * records the same branch leaves.
- *
  * Undefined when no work order claims the branch — the branch keeps no local
  * record, rather than one filed under a folder named after it.
  */

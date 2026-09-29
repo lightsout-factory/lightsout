@@ -12,10 +12,8 @@ interface Params {
 }
 
 /**
- * One finding per file over every class declaration it holds — the walk the
- * class-shape rules share, so each rule states only its own judgment of a
- * declaration. Per-file rather than per-class because every such rule's
- * remedy is one design pass over the file, however many classes sit in it.
+ * Per-file rather than per-class because every such rule's remedy is one design
+ * pass over the file, however many classes sit in it.
  */
 export const buildClassFindings = ({ input, rule, guidance, getViolation }: Params): RawStandardsFinding[] => {
 	const findings: RawStandardsFinding[] = [];

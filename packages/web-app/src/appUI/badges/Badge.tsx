@@ -3,12 +3,10 @@ import type { ComponentProps } from 'react';
 import { BadgeVariant } from '#src/common/constants/BadgeVariant.ts';
 import { cn } from '#src/common/utils/cn.ts';
 
-// Unexported for the same reason as Button's: the upstream shadcn file exports
-// its variants beside the component, and one file here holds one export.
+// Unexported because one file here holds one export.
 //
-// Square by default, and a pill only for the five run-status families — the
-// pill is what a reader already reads as "state of a process", so keeping it
-// there and nowhere else is what stops every tag on a page looking like one.
+// A pill only for the run-status families, so no other tag on a page reads as
+// the state of a process.
 const badgeVariants = cva(
 	'inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden whitespace-nowrap rounded-sm border px-2 py-0.5 text-xs font-medium',
 	{

@@ -15,9 +15,7 @@ interface Params {
 	driver: Driver;
 	config: LightsoutConfig;
 	batchId: string;
-	/** The plan text (standalone banner), for the supervisor's context. */
 	planContent: string;
-	/** Invocations spent on the batch before this point, for the supervisor's context. */
 	attempts: number;
 	onProgress: (message: string) => void;
 	recordUsage: (params: { step: string; usage?: AgentUsage }) => Promise<void>;
@@ -28,22 +26,8 @@ interface Params {
 }
 
 /**
- * Drive one batch's gates to green, or to a terminal answer.
- *
- * Two stages, cheapest first: a fixed number of mechanical fix attempts, then —
- * only if those are spent — the supervisor's exception path, which buys at most
- * one guided retry before escalating. Rate limits park at whichever stage they
- * happen in, so nothing is lost and the run resumes where it stopped.
- *
- * A gate run that reached no verdict — it never got the machine, a gate
- * crashed, or a gate ran past its ceiling — ends the settle before either stage
- * spends anything more, whether it is the first gate run or a re-run inside the
- * cheap loop: no command returned a verdict, so there is nothing for a fix agent
- * to repair and nothing for a supervisor to rule on.
- *
- * Separate from the batch loop because the loop's job is what to DO with the
- * answer — resolved, declined, requeued — and this is how the answer is
- * reached. The two change for different reasons.
+ * A gate run that reached no verdict ends the settle before either stage spends
+ * more: there is nothing for a fix agent to repair or a supervisor to rule on.
  */
 export const settleBatchGates = async ({
 	cwd,
@@ -73,11 +57,8 @@ export const settleBatchGates = async ({
 		}
 	}
 
-	// Held as its own value so the guided-fix closure below carries the red that
-	// survived the cheap retries, rather than re-reading a variable the loop reassigns.
 	const gateError = result.error;
 
-	// Undefined here means the loop ran to its end rather than parking on a rate limit.
 	if (outcome === undefined) {
 		const noVerdict = describeGateNoVerdict({ result });
 
@@ -86,7 +67,6 @@ export const settleBatchGates = async ({
 		} else if (!gateError) {
 			outcome = { kind: SettleKind.Green };
 		} else {
-			// Exception path: mechanical retries exhausted — bring in judgment.
 			outcome = await superviseBatch({
 				cwd,
 				runId,

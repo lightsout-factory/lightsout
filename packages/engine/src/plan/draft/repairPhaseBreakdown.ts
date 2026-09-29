@@ -38,22 +38,13 @@ interface Params {
 	progress: (message: string) => void;
 }
 
-/** The breakdown as it stands on disk, or nothing when the overview cannot be read — a spawn that claimed to write it and did not. */
 const checkOverviewOnDisk = async ({ overviewPath, executorFileLimit }: { overviewPath: string; executorFileLimit: number }) => {
 	const overviewText = await readFile(overviewPath, 'utf8').catch(() => undefined);
 
 	return overviewText === undefined ? undefined : checkPhaseBreakdown({ overviewText, overviewBase: basename(overviewPath), executorFileLimit });
 };
 
-/**
- * One reshape round: its own agent runner, so each attempt keeps its own
- * transcript, pointed at the blocking findings alongside the decisions and facts
- * the overview was written from.
- *
- * Its own activity level too, for the same reason and under the same number:
- * the report's job here is saying which round burned the time, and rounds
- * collapsed into one row could not.
- */
+/** Its own agent runner and activity level, so each attempt keeps its own transcript and the report can say which round burned the time. */
 const runReshapeAttempt = async ({ params, findings, attempt }: { params: Params; findings: StructuralFinding[]; attempt: number }) => {
 	const { cwd, driver, overviewPath, workspaceDir, brainstormDecisionsPath, model, effort, permissions, timeoutMs } = params;
 	const round = params.level?.open({ level: ActivityLevelKind.Pass, label: `breakdown reshape ${attempt}` });
@@ -86,18 +77,7 @@ const runReshapeAttempt = async ({ params, findings, attempt }: { params: Params
 	return outcome;
 };
 
-/**
- * Converge a freshly-authored overview's phase breakdown: each blocking
- * breakdown finding is corrected by a reshape invocation that edits the overview
- * in place, re-checked after each. A `complete` result carries the surviving
- * findings — empty when the breakdown converged — so the caller decides what a
- * survivor means.
- *
- * Keeping the common case unattended is the point: a breakdown that cannot be
- * made to fit still stops the run, but one an agent can reshape does not cost a
- * human a round trip. It runs before a single phase file is drafted, which is
- * the cheapest moment a plan can be refused.
- */
+/** A `complete` result carries the surviving findings, so the caller decides what a survivor means. */
 export const repairPhaseBreakdown = async (params: Params): Promise<PlanRepairResult> => {
 	const { name, overviewPath, executorFileLimit, progress } = params;
 

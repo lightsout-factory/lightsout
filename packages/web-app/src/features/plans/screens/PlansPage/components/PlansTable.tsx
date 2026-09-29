@@ -10,17 +10,15 @@ import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
 import { planGradeBadgeConfig } from '#src/features/plans/internal/common/constants/planGradeBadgeConfig.ts';
 import { planStageBadgeConfig } from '#src/features/plans/internal/common/constants/planStageBadgeConfig.ts';
 
-/** The column a plans list opens on: what happened most recently is what a reader is looking for. */
+/** What happened most recently is what a reader is looking for. */
 const defaultSortKey = 'updatedAt';
 
-/** The workspace's name, as the way into what it decided. */
 const PlanLink = ({ listing }: { listing: PlanWorkspaceListing }) => (
 	<Link to="/app/plans/$name" params={{ name: listing.name }} className="font-medium hover:underline hover:underline-offset-2">
 		{listing.name}
 	</Link>
 );
 
-/** The columns, in the order a reader scans them: what it is, how far it got, how big it is, when. */
 const columns: Array<DataTableColumn<PlanWorkspaceListing>> = [
 	{ key: 'name', header: 'plan', sortValue: (listing) => listing.name, render: (listing) => <PlanLink listing={listing} /> },
 	{
@@ -59,16 +57,7 @@ interface Props {
 	empty: ReactNode;
 }
 
-/**
- * Every plan workspace a caller hands over, as rows a reader can order.
- *
- * Split out of the page the way `RunsTable` is, so the commands feature can show
- * the same rows filtered to one command's own workspaces.
- *
- * The ordering is this table's own rather than the URL's: the plans page keeps
- * only its stage filter in the query string, and a shared table cannot write to
- * a route it does not know it is on.
- */
+/** The ordering is component state, not the URL's: a shared table cannot write to a route it does not know it is on. */
 export const PlansTable = ({ listings, empty }: Props) => {
 	const [sort, setSort] = useState<{ key: string; direction: SortDirection }>({ key: defaultSortKey, direction: SortDirection.Descending });
 

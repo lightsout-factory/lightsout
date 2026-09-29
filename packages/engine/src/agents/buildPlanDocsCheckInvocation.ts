@@ -11,12 +11,7 @@ interface Params {
 	docs: ConfigDocs;
 }
 
-/**
- * Assemble the whole-plan documentation checker's invocation deterministically.
- * The stable parts — the role prompt, the declared surfaces, the overview — live
- * in the system prompt (the harness caches through it); the plan text under
- * check is the per-invocation prompt.
- */
+/** The stable parts ride the system prompt the harness caches through; the plan text is the per-invocation prompt. */
 export const buildPlanDocsCheckInvocation = ({ planFiles, overviewText, docs }: Params): { systemPrompt: string; prompt: string } => {
 	const roleSections = [planDocsCheckPrompt, `# The repository's declared documentation surfaces\n\n${renderDocsSurfaces({ docs })}`];
 

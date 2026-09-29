@@ -1,10 +1,6 @@
 /**
- * How one harness process ended.
- *
- * A closed set rather than free text, for the same reason every other
- * end-reason in the engine is one: a report line, a filter and a test all
- * narrow on it. Every member is something the writer can prove at the moment
- * the spawn settles, which is the rule the set is chosen by.
+ * Every member is something the writer can prove at the moment the spawn
+ * settles, which is the rule the set is chosen by.
  *
  * There is deliberately no `rejected`. Whether an answer satisfied its contract
  * is judged after the process has ended, by the code holding the contract

@@ -18,7 +18,6 @@ const emptySide = '/dev/null';
 // embedded-quote escape are what stop a path from becoming shell syntax.
 const quoted = ({ path }: { path: string }) => `'${path.replaceAll("'", `'\\''`)}'`;
 
-/** Which of the three differences this is: no approved version is an addition, no live file is a removal, and two texts that disagree is a modification. */
 const kindOf = ({ live, approved }: { live?: string; approved?: string }) => {
 	if (approved === undefined) {
 		return TestChangeKind.Added;
@@ -28,12 +27,8 @@ const kindOf = ({ live, approved }: { live?: string; approved?: string }) => {
 };
 
 /**
- * The unified diff between the approved version and the live file.
- *
  * `git diff --no-index` exits 1 when the two differ, which is the normal case
- * here, so stdout is what is read rather than the exit code. An empty stdout
- * falls back to a one-line note, so every bundle entry carries something the
- * reviewer can read.
+ * here, so stdout is what is read rather than the exit code.
  */
 const diffOf = async ({ cwd, path, kind, approved, scratch }: { cwd: string; path: string; kind: TestChangeKind; approved?: string; scratch: string }) => {
 	const before = join(scratch, path);
@@ -57,16 +52,11 @@ interface Params {
 }
 
 /**
- * Every test-side file whose live content differs from its approved version,
- * each with a unified diff. Empty when nothing differs — and an empty bundle
- * invokes no reviewer.
- *
  * Candidates come from three routes at once, because each one alone has a blind
  * spot: git sees what actually changed, the manifest's changed-file list is what
  * survives the run's baseline subtraction, and a path the run already approved
  * has to be re-judged if it was edited again since. Generated and vendored
- * prefixes are dropped — a gate or a formatter rewrites those, and a
- * regenerated file is never an agent's edit to a test.
+ * prefixes are dropped because a regenerated file is never an agent's edit.
  *
  * Sorted by path, so a re-entry hands the reviewer the same bundle it saw first.
  */

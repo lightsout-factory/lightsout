@@ -12,7 +12,6 @@ export interface DriverInvocation {
 	model?: string;
 	/** Reasoning effort, mapped to the harness's own effort flag. Omit to take the harness default. */
 	effort?: Effort;
-	/** Working directory of the target repository. */
 	cwd: string;
 	/**
 	 * Harness-neutral capability level, translated by each driver. Headless runs
@@ -29,11 +28,7 @@ export interface DriverInvocation {
 	 * told to honor lives in the invocation prompt.
 	 */
 	allowedCommands?: string[];
-	/**
-	 * A focused role's requested agent environment, translated by each driver.
-	 * Omitted by every ordinary invocation — an invocation without it produces
-	 * byte-identical argv to one built before this member existed.
-	 */
+	/** A focused role's requested agent environment, translated by each driver. Ordinary invocations omit it. */
 	environment?: AgentEnvironment;
 	/** Kill the harness process after this many ms. The driver rejects; the engine decides what a hang means. */
 	timeoutMs?: number;

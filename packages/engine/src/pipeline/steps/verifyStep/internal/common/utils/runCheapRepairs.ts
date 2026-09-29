@@ -13,17 +13,12 @@ interface Params {
 	result: VerificationResult;
 }
 
-/**
- * The unguided half of the repair budget: hand the red back to the checkpoint's
- * own fix role while any failed family still has attempts left on it.
- */
 export const runCheapRepairs = async ({ context, record, result }: Params): Promise<RepairOutcome> => {
 	let currentRecord = record;
 	let currentResult = result;
 
-	// A crash ends the loop, so does a gate that ran past its ceiling, and so does a gate run that never got the machine: a red the
-	// fix agent must not be shown is a red the loop has nothing left to do about, whether a gate reached no verdict or none of them
-	// ran at all. A timeout ends it even beside a failed family, because the run then holds no whole verdict to repair against.
+	// A crash, a timeout or a gate run that never got the machine ends the loop, even beside a failed
+	// family: the run then holds no whole verdict to repair against.
 	while (currentResult.error && currentResult.crashes.length === 0 && currentResult.timeouts.length === 0 && currentResult.coordination === undefined) {
 		const repairable = [...new Set(currentResult.failedFamilies)].filter(
 			(family) => (currentRecord.verification?.repairAttempts[family] ?? 0) < maxCheapFixRetries,

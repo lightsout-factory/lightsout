@@ -1,6 +1,5 @@
 import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';
 
-/** One parsed plan file, with the identity every finding is labelled by. */
 export interface PhaseFile {
 	/** Absolute path on disk. */
 	path: string;

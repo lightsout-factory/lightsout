@@ -31,7 +31,6 @@ interface Params {
 
 type Ownership = { owned: true } | { owned: false; detail: string };
 
-/** What a guarded stop needs to know about the branch it may have to put back. */
 interface GuardContext {
 	cwd: string;
 	branch: string;
@@ -39,7 +38,6 @@ interface GuardContext {
 	onProgress?: (message: string) => void;
 }
 
-/** Whether this attempt still owns what it started: the branch it stood on, at the commit it recorded. */
 const readOwnership = async ({ cwd, branch, baselineCommit }: { cwd: string; branch: string; baselineCommit: string }): Promise<Ownership> => {
 	const current = await runGit({ command: 'git rev-parse --abbrev-ref HEAD', cwd });
 	const head = await runGit({ command: 'git rev-parse HEAD', cwd });
@@ -58,9 +56,6 @@ const readOwnership = async ({ cwd, branch, baselineCommit }: { cwd: string; bra
 };
 
 /**
- * The guarded stop: restore the baseline when this attempt still owns the
- * branch, and say what is left behind when it does not.
- *
  * A rollback is mandatory before a push and destructive by nature, so it never
  * runs against git state that changed hands — work that took the branch's place
  * is somebody's, and destroying it to tidy up would be the worst outcome of the
@@ -80,7 +75,6 @@ const guardedStop = async ({ context, failure }: { context: GuardContext; failur
 	return restoreFailure === undefined ? failure : { ...failure, detail: `${failure.detail}\nrestoring the pre-integration branch failed: ${restoreFailure}` };
 };
 
-/** The standards both recovery loops are handed, or the blocked stop a declared pack that would not load earns. */
 const loadStandards = async ({ cwd, integration }: Pick<Params, 'cwd' | 'integration'>): Promise<{ standards?: string; error?: string }> => {
 	try {
 		const { standards } = await resolveStandards({ cwd, config: integration.config, packages: [] });
@@ -91,7 +85,7 @@ const loadStandards = async ({ cwd, integration }: Pick<Params, 'cwd' | 'integra
 	}
 };
 
-/** Whatever an agent left unsettled — an unmerged entry, or a marker it introduced — read from git rather than from its report. */
+/** Read from git rather than from the agent's report. */
 const readUnsettled = async ({ cwd }: { cwd: string }): Promise<{ paths: string[]; error?: string }> => {
 	const unmerged = await readUnmergedPaths({ cwd });
 	const marked = await readConflictMarkerPaths({ cwd });
@@ -103,15 +97,7 @@ const readUnsettled = async ({ cwd }: { cwd: string }): Promise<{ paths: string[
 	return { paths: [...new Set([...unmerged, ...marked])] };
 };
 
-/**
- * The verified tree, committed once: the merge, any conflict resolution and
- * any repair together.
- *
- * `git commit --no-edit` when this attempt's merge is still open, so the commit
- * is the merge commit git wrote the message for; a plain commit when there was
- * no merge and the verified repairs changed something; and nothing at all when
- * the tree is exactly what it already was.
- */
+/** `--no-edit` while this attempt's merge is still open, so the commit is the merge commit git wrote the message for. */
 const commitVerifiedTree = async ({ context }: { context: GuardContext }) => {
 	const { cwd, onProgress } = context;
 	const staged = await runGit({ command: 'git add -A', cwd });
@@ -147,7 +133,6 @@ const commitVerifiedTree = async ({ context }: { context: GuardContext }) => {
 	return undefined;
 };
 
-/** The bounded recoveries, in order — conflicts, then a demonstrated remote failure, then the repository's own gates. */
 const recoverCandidate = async ({
 	params,
 	standards,
@@ -181,10 +166,6 @@ const recoverCandidate = async ({
 };
 
 /**
- * Bring the remote default branch into the branch being shipped, make the
- * result pass the repository's own gates, and commit it — or put the branch
- * back exactly where it stood and say why.
- *
  * Nothing is committed before the gates are green, so an exhausted recovery
  * stays reversible and nothing unverified can reach the remote. A branch the
  * default branch is already an ancestor of still runs every gate: standalone

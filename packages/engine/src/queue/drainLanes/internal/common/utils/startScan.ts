@@ -33,15 +33,14 @@ const runScan = async ({ context, state }: { context: LaneContext; state: LaneSt
 };
 
 /**
- * The tracker re-read a landed merge makes worth making, in its own task: not a
- * gate run, so it holds no slot, and never on the ship lane, so a merge never
- * waits on the network. One scan at a time, so two can never race the ledger.
+ * Its own task: not a gate run, so it holds no slot, and never on the ship
+ * lane, so a merge never waits on the network. One scan at a time, so two never
+ * race the ledger.
  *
- * It runs only while something is held back as blocked — a merge can unblock a
- * ticket only if one was — so a drain with nothing blocked reads the tracker
- * exactly once, as it always did. `idleScanSpent` stops it re-reading an
- * unchanged tracker: set when a scan starts, handed back by a merge that landed
- * or a scan that admitted tickets.
+ * It runs only while something is held back as blocked, since only then can a
+ * merge unblock a ticket. `idleScanSpent` stops it re-reading an unchanged
+ * tracker: set when a scan starts, cleared by a merge that landed or a scan
+ * that admitted tickets.
  */
 export const startScan = ({ context, state, flight }: Params): void => {
 	const allowed = flight.scans === 0 && !state.scansStopped && state.blockedByIdentifier.size > 0 && state.retired < context.settings.maxParallel;

@@ -8,15 +8,14 @@ import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/Loade
 
 interface Params {
 	cwd: string;
-	/** Provenance for the judgment ledger — which run's review this was. */
+	/** Provenance for the judgment ledger. */
 	runId: string;
 	driver: Driver;
 	batch: RefactorBatch;
-	/** The run's standards packs — the same judgment rules the pre-edit review read. */
 	packs: LoadedStandardsPack[];
-	/** Active framework channels; a document out of play is not reviewed. */
+	/** A document out of play is not reviewed. */
 	channels: string[];
-	/** The pre-edit advisories, machine and agent alike: the baseline this diffs against. */
+	/** The pre-edit advisories, machine and agent alike. */
 	baseline: StandardsFinding[];
 	/** The files the batch's agents actually claimed — the only code this run can have written. */
 	changedFiles: string[];
@@ -27,24 +26,12 @@ interface Params {
 }
 
 /**
- * A second read of the judgment rules, over the code the batch just wrote.
+ * The pre-edit review only judges inherited code, so a batch can pass every gate
+ * and still leave worse code behind. Only new advisories come back: the executor
+ * already answered the old ones.
  *
- * The pre-edit review happens before the executor runs, so it can only judge
- * the code the batch inherited — nothing in the loop ever reads the output.
- * That is how a batch can satisfy every deterministic gate and still leave
- * worse code behind: hitting a line-count target by splitting a function into a
- * six-exit one passes the checks and fails the rule the check was standing in
- * for.
- *
- * What comes back is only what is NEW. An advisory the pre-edit review already
- * raised was shown to the executor, which judged it and recorded its answer;
- * handing it back a second time is churn, not verification. An advisory that
- * appears only now is the batch's own doing.
- *
- * Advisory throughout, deliberately. These findings are an agent's reading of
- * prose rules, so two reads of the same unchanged file can honestly differ.
- * Scoping to the changed files keeps that narrow, and the consequence — hand it
- * back to be judged — costs one invocation when it is wrong, never a bad verdict.
+ * Advisory, deliberately: two agent reads of the same file can honestly differ,
+ * so a wrong finding costs one invocation, never a bad verdict.
  */
 export const reviewBatchOutput = async ({
 	cwd,

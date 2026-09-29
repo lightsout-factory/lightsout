@@ -8,13 +8,7 @@ interface ConstructorParams {
 	board: QueueBoardRecorder;
 }
 
-/**
- * The relay the queue hands its workers: the CLI's own relay, observed so the
- * board shows a ticket waiting for an answer while its question is open.
- *
- * It holds the CLI's relay rather than replacing it, so every call reaches that
- * relay unchanged and the question travels exactly as it would without a board.
- */
+/** Wraps the CLI's relay rather than replacing it, so every question travels exactly as it would without a board. */
 export class BoardQuestionRelay implements QuestionRelay {
 	private readonly relay: QuestionRelay;
 	private readonly board: QueueBoardRecorder;

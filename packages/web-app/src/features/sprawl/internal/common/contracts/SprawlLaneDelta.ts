@@ -2,13 +2,7 @@ import { z } from 'zod';
 import { SprawlFile } from '#src/features/sprawl/internal/common/contracts/SprawlFile.ts';
 import { SprawlFolder } from '#src/features/sprawl/internal/common/contracts/SprawlFolder.ts';
 
-/**
- * One lane at one frame, carried as a change against the frame before it.
- *
- * A snapshot per frame — every file with its line count, twice, for hundreds of
- * commits — is megabytes shipped to the homepage. Deltas carry only what moved,
- * which keeps the committed dataset in the low hundreds of kilobytes.
- */
+/** A change against the previous frame: a full snapshot per frame would ship megabytes to the homepage. */
 export const SprawlLaneDelta = z.object({
 	/** Files whose line count changed since the previous frame, plus new files; removals travel out-of-band (see `removedFiles`). The first frame carries every file. */
 	files: z.array(SprawlFile),

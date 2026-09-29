@@ -2,14 +2,9 @@ import { z } from 'zod';
 import { SourceEvidenceKind } from '#src/contracts/plan/evidence/SourceEvidenceKind.ts';
 
 /**
- * One file's collected evidence, keyed by repo-relative path and bound to the
- * bytes it was taken from.
- *
  * The hash is the entry's identity: an entry whose source no longer hashes to
  * it is re-collected rather than trusted. Line numbers are deliberately absent —
- * they are hints, not identity, and a writer that needs a location opens the
- * file. Every optional field defaults, so a record an earlier run wrote still
- * parses at the boundary.
+ * they are hints, not identity.
  */
 export const SourceEvidenceEntry = z.object({
 	/** Repo-relative path this entry is the evidence for. */

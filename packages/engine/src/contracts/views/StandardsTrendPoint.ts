@@ -1,8 +1,6 @@
 import { z } from 'zod';
 
 /**
- * One dated snapshot reduced to its counts — what a trend plots.
- *
  * Counts rather than the snapshot itself: a chart over a repo's whole history
  * would otherwise load every finding of every check ever run to draw a line.
  */

@@ -4,16 +4,8 @@ import { GapOutcome } from '#src/contracts/plan/grade/GapOutcome.ts';
 import { GapVerdict } from '#src/contracts/plan/grade/GapVerdict.ts';
 
 /**
- * A gap as it is persisted in `grade.json`: what the reader reported, plus the
- * plan file it was found in, the lens that found it, and the judge's ruling on
- * who has to settle it. The engine stamps the phase and the lens after the
- * reader returns — the gap-check contract stays the bare `gaps` array, so an
- * agent can neither mislabel a gap's phase nor claim a lens it was not given —
- * and it stamps the outcome too whenever no judge settled the finding.
- *
- * The judge's half is spread in from `GapVerdict` rather than retyped, so the
- * shape the agent answers in and the shape written to disk stay related by
- * construction.
+ * The engine stamps the phase and the lens after the reader returns, so an
+ * agent can neither mislabel a gap's phase nor claim a lens it was not given.
  */
 export const GradedGap = GapObservation.extend({
 	...GapVerdict.omit({ outcome: true, matchesFinding: true }).shape,
@@ -22,22 +14,16 @@ export const GradedGap = GapObservation.extend({
 	/** Why nobody settled it, absent when a judge did. */
 	unjudgedReason: z.string().optional(),
 	/**
-	 * The memory record this gap belongs to — the one it was merged into, or the
-	 * record it was surfaced from. `matchesFinding` is deliberately not carried
-	 * through from the verdict: what is persisted is the id the engine resolved,
-	 * never the agent's raw claim.
+	 * The memory record this gap belongs to. `matchesFinding` is deliberately not
+	 * carried through: what is persisted is the id the engine resolved, never the
+	 * agent's raw claim.
 	 */
 	findingId: z.string().optional(),
-	/**
-	 * Every observation this finding covers. Empty on a single-observation finding
-	 * — read it through
-	 * `findingLocations`, which treats empty as the gap's own `phase`.
-	 */
+	/** Empty on a single-observation finding — read it through `findingLocations`, which treats empty as the gap's own `phase`. */
 	observations: z.array(GapObservation).default([]),
 	/**
-	 * The engine's per-pass identifier shared by every gap one multi-observation
-	 * ruling covered — what lets the memory fold open one record for a group it has
-	 * not given a record id yet. Never an agent's to claim.
+	 * Shared by every gap one multi-observation ruling covered, so the memory fold
+	 * opens one record for a group it has not given a record id yet. Never an agent's to claim.
 	 */
 	groupId: z.string().optional(),
 	/** The judge's statement of the one violated requirement or contradiction a confirmed group's members are. */

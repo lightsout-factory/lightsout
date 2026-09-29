@@ -18,7 +18,6 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/** Freeze a copy of the rough-notes file at `<workspaceDir>/brainstorm-notes.md` — write-once, an existing snapshot is never overwritten. */
 const snapshotNotes = async ({
 	cwd,
 	workspaceDir,
@@ -58,14 +57,9 @@ type RunPlanVerifyFactsResult =
 	| { status: typeof PlanRunStatus.Failed; workspaceDir: string; error: string };
 
 /**
- * Deterministically verify session-authored plan facts and stamp the canonical
- * `facts.json` — no agent. The conducting session explores in-context and
- * authors `{ request, areas }`; this parses it (parse-don't-cast), re-checks
- * every claimed path/script on disk via `verifyFacts`, and rewrites the file
- * as a full `PlanFacts` with `verification` + `verifiedAt`. Missing paths are
- * data for the session (Elicitation input), never a failure; only an
- * unreadable or unparsable authored file fails. Idempotent — re-running
- * re-verifies and re-stamps.
+ * Missing paths are data for the session, never a failure; only an unreadable
+ * or unparsable authored file fails. Idempotent: re-running re-verifies and
+ * re-stamps.
  */
 export const runPlanVerifyFacts = async ({ cwd, name, notesFile, onProgress }: Params): Promise<RunPlanVerifyFactsResult> => {
 	const progress = onProgress ?? (() => undefined);

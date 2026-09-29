@@ -1,6 +1,5 @@
 import type { z } from 'zod';
 
-/** A custom test suite's key: `test-` plus a kebab name, e.g. `test-e2e`, `test-integration`, `test-browser`. */
 const customTestKey = /^test-[a-z0-9]+(-[a-z0-9]+)*$/;
 
 interface Params {
@@ -12,13 +11,7 @@ interface Params {
 	ctx: z.RefinementCtx;
 }
 
-/**
- * The key set of a gate block is closed: a key is either one of the block's
- * fixed gates or a custom `test-*` suite, because a silently dropped gate is a
- * suite that never runs.
- *
- * @returns the custom suites' commands, in the order the block wrote them
- */
+/** The key set of a gate block is closed, because a silently dropped gate is a suite that never runs. */
 export const validateCustomTestGates = ({ gates, knownGateKeys, unknownKeyMessage, ctx }: Params): string[] => {
 	const commands: string[] = [];
 

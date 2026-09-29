@@ -45,7 +45,6 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/** The identifiers the parked scan already settled — attempted before the drain even starts. */
 const toParkedIdentifiers = ({ parked }: { parked: ParkedWork }) => [
 	...parked.outcomes.map((outcome) => outcome.ticket.identifier),
 	...parked.leftBehind.map((entry) => entry.identifier),
@@ -53,24 +52,12 @@ const toParkedIdentifiers = ({ parked }: { parked: ParkedWork }) => [
 ];
 
 /**
- * The whole drain: parallel builders and one serial ship lane running at the
- * same time, with each landed merge re-reading the tracker so the tickets it
- * unblocked join the run already in flight.
+ * Every identifier a scan offered is recorded as attempted and never offered
+ * again, except blocked ones. That is what makes the drain terminate, and why a
+ * parked ticket is never re-resumed to re-ask the same question.
  *
- * Only tickets held back as blocked stay candidates: every identifier a scan was
- * offered is recorded as attempted and never offered again, whatever became of
- * it. That is what makes the drain terminate, and it is why a parked ticket is
- * never re-resumed inside one invocation to re-ask the same question.
- *
- * The report is the FINAL state, not a log: a ticket blocked by an early scan
- * that later ran appears only as an outcome, and a ticket still blocked at the
- * end appears exactly once in `leftBehind`.
- *
- * It opens by finishing the parked worktrees already recorded merged — work
- * that writes tickets to Done, so it waits for this function's run lock. What
- * that and the parked scan left behind seeds the drain's ledger, so the board
- * shows those tickets from the drain's first pass and the report lists them
- * first.
+ * The report is the final state, not a log. Merged parked trees are settled here
+ * because writing tickets to Done needs this function's run lock.
  */
 export const drainQueue = async ({
 	cwd,

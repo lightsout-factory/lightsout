@@ -10,15 +10,7 @@ interface Params {
 	workOrderName?: string;
 }
 
-/**
- * Every run this repo has state for, newest first — the runs list, whole, with
- * no paging. Given a ticket branch, only that ticket's own runs folder is read,
- * which is what keeps a plan's row from opening every run on disk.
- *
- * A run whose manifest will not read is skipped in silence, the way `status` and
- * the health report skip one: a list is an account of what is readable, and one
- * corrupt directory must not take the whole history down with it.
- */
+/** A run whose manifest will not read is skipped in silence, so one corrupt directory cannot take the whole history down. */
 export const listRuns = async ({ cwd, workOrderName }: Params): Promise<RunListing[]> => {
 	const listings: RunListing[] = [];
 

@@ -5,7 +5,6 @@ import { CommandInvocation } from '#src/contracts/commands/CommandInvocation.ts'
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 import { CommandStep } from '#src/contracts/commands/CommandStep.ts';
 
-/** One command lightsout offers: how it is invoked, when to reach for it, and what it leaves behind. */
 export const CommandCatalogEntry = z.object({
 	/** The word after `lightsout`, and the `$command` route param. */
 	id: z.string(),

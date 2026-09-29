@@ -13,13 +13,9 @@ interface Params {
 }
 
 /**
- * Persist judgment findings to `.lightsout/review-findings.jsonl` in the target
- * repo's primary checkout.
- *
  * Called the moment a review reports them, before anything is spent acting on
- * them: a run that parks or escalates never builds its batch report, and a
- * judgment finding has no second witness the way a checked one does — no code
- * check can rediscover it, so an unwritten one is simply gone.
+ * them: a run that parks or escalates never builds its batch report, and no
+ * code check can rediscover a judgment finding, so an unwritten one is gone.
  */
 export const appendReviewFindings = async ({ cwd, runId, step, findings }: Params): Promise<void> =>
 	appendJsonlRecords({ path: await getReviewFindingsPath({ cwd }), schema: ReviewFindingRecord, entries: findings, runId, step });

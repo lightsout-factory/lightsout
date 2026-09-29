@@ -4,7 +4,6 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { readWorktreeRecord } from '#src/worktree/records/readWorktreeRecord.ts';
 
 interface Params {
-	/** The checkout the commit would stage. */
 	cwd: string;
 	manifest: RunManifest;
 	/** The run's configured `generated` path prefixes. Build output under one of them is never a stray edit, whoever regenerated it. */
@@ -12,25 +11,12 @@ interface Params {
 }
 
 /**
- * Why the checkout may not be committed in, or undefined when it may.
- *
- * The commit stages through `git add -A`, so in a checkout a person chose
- * themselves anything they edited while the run sat parked would ride into the
- * ticket's pull request. The dirty tree is therefore compared against what the
- * run itself recorded: its own changed files plus the files that were already
- * dirty when it started.
- *
- * Refusing every dirty tree instead would make a parked run unresumable,
- * because a parked run's own partial work is exactly what makes that tree
- * dirty. A tree lightsout cut — for a drain, for an implementation run, for a
- * planning session alike — skips the comparison outright: it was cut for this
- * ticket's own work on this ticket's own branch, and only a tree somebody else
- * chose is the hazard.
- *
- * Generated paths are dropped from the stray set before the verdict. This runs
- * BEFORE `commitWorkOrderWork`, which is the only code that takes build output
- * back out of the tree, so without the exclusion a run whose own gates
- * regenerated a tracked file would be refused over it.
+ * The commit stages through `git add -A`, so in a checkout a person chose, anything
+ * they edited while the run sat parked would ride into the pull request. The tree is
+ * compared against the run's own files rather than refused outright, because a parked
+ * run's partial work is what makes it dirty. A tree lightsout cut for this ticket skips
+ * the check. Generated paths are dropped because this runs before `commitWorkOrderWork`
+ * takes build output back out of the tree.
  */
 export const describeUnownedEdits = async ({ cwd, manifest, generated }: Params): Promise<string | undefined> => {
 	const record = manifest.branch === undefined ? undefined : await readWorktreeRecord({ cwd, branch: manifest.branch });

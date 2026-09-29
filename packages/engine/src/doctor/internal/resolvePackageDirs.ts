@@ -13,10 +13,9 @@ interface Params {
 }
 
 /**
- * Resolve the package dirs every later check iterates (root plus each scoped
- * package with a resolvable manifest) and, in monorepo mode, the scoped-gates
- * check: a package with no matching script is legitimate (infra, docs) — the
- * doctor names it so intent and accident are distinguishable.
+ * A package with no matching gate script is legitimate (infra, docs), so the
+ * scoped-gates check names it as a note: intent and a typo'd script name look
+ * identical.
  */
 export const resolvePackageDirs = async ({ cwd, config, packagesDir }: Params): Promise<{ packageDirs: PackageDir[]; scopedGatesCheck?: DoctorCheck }> => {
 	const packageDirs: PackageDir[] = [{ label: 'root', dir: cwd }];

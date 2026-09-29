@@ -1,12 +1,6 @@
-/**
- * The four ways one gate run can be scheduled.
- *
- * Only the verification checkpoints ask for a schedule; every other gate caller
- * passes none and gets `Single`, which is exactly the behaviour those callers
- * have always had.
- */
+/** Only the verification checkpoints ask for a schedule; every other gate caller passes none and gets `Single`. */
 export const GateScheduleKind = {
-	/** One stage, the engine's canonical order — what every gate caller that asks for no schedule gets. */
+	/** One stage, the engine's canonical order. */
 	Single: 'single',
 	/** Two stages, cheap then expensive, with every group held at the boundary. */
 	Tiered: 'tiered',

@@ -8,24 +8,20 @@ let installed = false;
 let shuttingDown = false;
 
 const onSignal = async (signal: NodeJS.Signals) => {
-	// A repeat Ctrl-C would otherwise start the grace period over, making an
-	// impatient second press the slowest way out. The wait is bounded already,
-	// so the right answer to the repeat is to keep going.
+	// A repeat Ctrl-C would otherwise start the grace period over.
 	if (shuttingDown) {
 		return;
 	}
 
 	shuttingDown = true;
 
-	// Awaited, so the children are gone before the engine is. Re-raising while
-	// they were still being asked to stop is what orphaned a harness that traps
-	// SIGTERM: the engine died first and took the escalation with it.
+	// Awaited, so the children are gone before the engine is: re-raising first
+	// would take the SIGKILL escalation down with the engine and orphan a
+	// harness that traps SIGTERM.
 	await terminateChildGroups({ children: live });
 
-	// Re-raising restores the disposition the engine had before it listened: it
-	// dies on Ctrl-C, with the exit status a caller expects. Merely listening
-	// would swallow the interrupt and leave the engine running with no way to
-	// stop it.
+	// Re-raising restores the default disposition, so the engine dies on Ctrl-C
+	// with the exit status a caller expects; merely listening would swallow it.
 	uninstall();
 	process.kill(process.pid, signal);
 };
@@ -62,23 +58,13 @@ interface Params {
 }
 
 /**
- * Pass Ctrl-C on to a running child, and stop when it exits.
+ * A child in its own process group is out of the terminal's foreground group,
+ * so Ctrl-C would no longer reach it; relaying the signal restores that while
+ * keeping the group.
  *
- * Putting a child in its own process group is what lets the engine kill it
- * wholesale, but it also takes the child out of the terminal's foreground
- * group — so Ctrl-C would no longer reach it, and interrupting the engine would
- * leave a harness running and billing. Relaying the signal restores what a user
- * expects while keeping the group.
- *
- * One pair of process listeners is shared by every live child rather than one
- * pair each, because several harnesses run at once (the test writers go up to
- * five in parallel) and per-child listeners would trip Node's max-listener
- * warning under load.
- *
- * The engine outlives the interrupt just long enough to see the children out —
- * SIGTERM, then a hard kill for whatever ignored it — before re-raising and
- * dying itself. Ctrl-C therefore costs the grace period only when a child
- * declines to honour it.
+ * One pair of process listeners is shared by every live child, because several
+ * harnesses run at once and per-child listeners would trip Node's
+ * max-listener warning.
  *
  * @returns a function that stops relaying to this child — call it once the
  * child has settled, or its group id will be reused by an unrelated process.

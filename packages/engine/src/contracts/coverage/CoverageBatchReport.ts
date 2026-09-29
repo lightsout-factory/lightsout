@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 
-/** The step-record `report` payload a coverage batch persists. */
 export const CoverageBatchReport = z.object({
 	outcome: z.enum(BatchOutcome),
 	/** Per batch file: statements pct before the batch and after re-measure. A file absent from the re-measured summary keeps afterPct equal to beforePct. */

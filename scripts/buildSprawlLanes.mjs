@@ -1,9 +1,4 @@
-/**
- * How many of a lane's files sit over the cap for their dialect.
- *
- * This is the number the payoff counter reports, so it is measured on the
- * lane's whole tree rather than on the bars the chart happens to draw.
- */
+/** Measured on the lane's whole tree, not on the bars the chart happens to draw, because the payoff counter reports it. */
 const countOverCap = ({ files, caps }) => {
 	let over = 0;
 
@@ -16,7 +11,6 @@ const countOverCap = ({ files, caps }) => {
 	return over;
 };
 
-/** Every folder holding a TypeScript file at this frame, and every folder above it. */
 const buildFolderSet = ({ files }) => {
 	const folders = new Set();
 
@@ -30,12 +24,9 @@ const buildFolderSet = ({ files }) => {
 };
 
 /**
- * The graduations that happened between two frames.
- *
  * A graduation is a file leaving and a folder of its own name arriving with an
- * `index.ts` inside it, in the same commit. The folder has to be NEW — an
- * ordinary deletion beside a same-stem folder that was already there is a
- * deletion, and calling it a split would invent a move nobody made.
+ * `index.ts` inside it, in the same commit. The folder has to be NEW, or an
+ * ordinary deletion would be counted as a split nobody made.
  */
 const findGraduations = ({ previous, current, previousFolders, currentFolders }) => {
 	const graduations = [];
@@ -54,14 +45,8 @@ const findGraduations = ({ previous, current, previousFolders, currentFolders })
 };
 
 /**
- * One frame of the counterfactual: the same tree with every active graduation
- * summed back into the file it came out of.
- *
- * Substitutions are applied longest prefix first, so a split inside an
- * already-undone folder lands in the outer sum instead of being counted twice.
- * The folder the split created — and everything beneath it — leaves the folder
- * rows, and the folder the file came out of gets its file back, because in this
- * history it never left.
+ * Longest prefix first, so a split inside an already-undone folder lands in the
+ * outer sum instead of being counted twice.
  */
 const undoGraduations = ({ tree, substitutions }) => {
 	const files = new Map(tree.files);
@@ -95,21 +80,11 @@ const undoGraduations = ({ tree, substitutions }) => {
 };
 
 /**
- * Both lanes' full state at every frame.
+ * The lanes differ by one variable: in "without", every graduation is undone.
  *
- * The two lanes are the same commits and differ by exactly one variable: in the
- * "without" lane every graduation is undone, so the file that split keeps
- * growing at its original path. That is the whole claim the hero makes, and
- * replaying the real history is the only way to make it without inventing data.
- *
- * Consolidation is deliberately not undone. A folder's population is counted as
- * the census check counts it — direct files only — so moving a folder under a
- * new parent changes no number this chart draws, and undoing it would be
- * invisible. The caption says "every split undone", which is exactly what this
- * lane is.
- *
- * @param trees - each frame's measured tree, from `readSprawlTrees`
- * @param caps - the standards pack's caps, from `readSprawlCaps`
+ * Consolidation is deliberately not undone: folder populations count direct
+ * files only, as the census check does, so undoing a move would change no
+ * number the chart draws.
  */
 export const buildSprawlLanes = ({ trees, caps }) => {
 	const withStates = [];
@@ -126,9 +101,8 @@ export const buildSprawlLanes = ({ trees, caps }) => {
 		}
 
 		for (const [path, prefix] of substitutions) {
-			// The folder this file was summing has gone: a deleted subtree is a
-			// deletion in both lanes, not a zero-line phantom held at a path nobody
-			// has any more.
+			// A deleted subtree is a deletion in both lanes, not a zero-line
+			// phantom held at a path nobody has any more.
 			if (!currentFolders.has(prefix.slice(0, -1))) {
 				substitutions.delete(path);
 			}

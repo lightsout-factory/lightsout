@@ -20,21 +20,13 @@ interface Params {
 }
 
 /**
- * Everything a continuation has to clear before anything is mutated: the plan
- * the parked run belongs to, what that plan's ticket record says about running
- * it again, the ship terms this continuation carries, and the pre-source
- * lifecycle write its branch's ticket owes.
+ * Everything a continuation has to clear before anything is mutated, all asked
+ * of the workspace, because the branch the run builds on is the one they answer
+ * for. A plan the ticket has since taken out of the order leaves no trace of
+ * having been resumed: no tracker write, no restamped manifest.
  *
- * They are asked in this order, and all of them of the WORKSPACE, because the
- * branch the run builds on is the one they all answer for. A plan the ticket has
- * since taken out of the order therefore leaves no trace of having been resumed:
- * no tracker write, no restamped manifest.
- *
- * Each refusal is REPORTED here and answered as undefined, the way
- * `resolveCommandShipIntent` reports its own contradiction — the caller has only
- * to exit.
- *
- * @returns the plan name and the ship intent, or undefined when something refused the resume
+ * Each refusal is reported here and answered as undefined, so the caller has
+ * only to exit.
  */
 export const readResumeClearance = async ({
 	workspace,
@@ -55,20 +47,17 @@ export const readResumeClearance = async ({
 		return undefined;
 	}
 
-	// A resumed run ships on the same terms a first run does: whatever the config,
-	// the flags and the ticket say, settled here rather than inherited. A fix, a
-	// resume and a merge is the whole point of parking, and a run that had to be
-	// resumed is not a run that deserves to end unshipped and unmentioned.
+	// A resumed run ships on the same terms a first run does, settled here rather
+	// than inherited from the parked run.
 	const shipIntent = resolveCommandShipIntent({ config: loaded, flags, env: process.env, shipRequest: terms.shipRequest });
 
 	if (shipIntent === undefined) {
 		return undefined;
 	}
 
-	// Every pipeline still here writes source, so each owes the pre-source
-	// lifecycle write the implement entries already make. It is also what refuses a
-	// ticket under a gate hold. No `ticketRef`: a resumed run is ticket-backed
-	// through its branch, which the guard reads for itself.
+	// Every pipeline here writes source, so each owes the pre-source lifecycle
+	// write, which also refuses a ticket under a gate hold. No `ticketRef`: a
+	// resumed run is ticket-backed through its branch, which the guard reads.
 	const refusal = await requireImplementLifecycle({ cwd: workspace, config: loaded, env: process.env, onProgress: createProgressPrinter() });
 
 	if (refusal !== undefined) {

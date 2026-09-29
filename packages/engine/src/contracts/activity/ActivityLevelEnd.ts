@@ -3,8 +3,6 @@ import { ActivityMarkKind } from '#src/contracts/activity/ActivityMarkKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 
 /**
- * One level closing, and how it settled.
- *
  * `RunStatus` rather than an enum of its own: the engine already spells "how
  * did this settle" once, and a level that ended on the rate-limit wall is the
  * state `RunStatus.PausedRateLimit` already names. A level that never closes

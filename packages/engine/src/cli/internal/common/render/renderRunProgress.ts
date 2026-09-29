@@ -7,18 +7,9 @@ import type { RunProgressRow } from '#src/views/common/types/RunProgressRow.ts';
 
 const collapseWhitespace = ({ text }: { text: string }) => text.replace(/\s+/g, ' ').trim();
 
-/**
- * A labelled diagnostic wrapped onto as many lines as it needs, the label on the
- * first and the rest hanging under its text — the shape the single-line entries
- * beside it already read as, so a long one does not become a different kind of
- * row.
- */
 const wrapLabelled = ({ label, text }: { label: string; text: string }) => {
-	// The block's rules span its widest line, so one long unwrapped line does not
-	// overflow — it drags the rules out with it, and a supervisor diagnosis runs
-	// to several hundred characters. A fixed ceiling keeps the block the shape the
-	// layout was chosen as, and the rules still grow for a long step id the way
-	// they always did.
+	// The block's rules span its widest line, so an unwrapped supervisor
+	// diagnosis would drag them out to hundreds of characters.
 	const diagnosisWidth = 96;
 	const indent = ` ${label.padEnd('last output'.length)}   `;
 	const width = Math.max(diagnosisWidth - indent.length, 1);
@@ -68,16 +59,6 @@ const verificationLines = ({ row }: { row: RunProgressRow }) => {
 	return lines;
 };
 
-/**
- * What the bounded cleanup pass has spent and what it is leaving behind, on the
- * diagnostic line beside the verification one — two budgets, never one number.
- *
- * A record with no reason yet is a cleanup still running, or a run parked
- * mid-loop: it reads as in progress rather than borrowing a reason that never
- * happened. A count is named only when there is one, and each is labelled the
- * way this block labels everything — name first, then the number — so the line
- * reads as the verification line beside it does.
- */
 const cleanupLines = ({ row }: { row: RunProgressRow }) => {
 	const cleanup = row.cleanup;
 
@@ -106,25 +87,6 @@ interface Params {
 	progress: RunProgress;
 }
 
-/**
- * A run's progress block as lines: a title line, a rule, one row per step, a
- * closing rule, the totals, and what the run is doing now.
- *
- * Pure — data in, strings out — because this is the ONE rendering of the
- * block. The chat view and the terminal view are the same bytes, so the layout
- * can be held to the character without a run to look at.
- *
- * The rules span the widest row rather than the 46 columns the chosen sample
- * drew them at. That width follows from no column and could not survive a
- * longer step id, which would leave the rules narrower still than the rows they
- * bracket — read as a drawing error rather than a choice. It is the one
- * departure from the sample; every other line reproduces it character for
- * character.
- *
- * The geometry — title padding, rule widths, row columns and glyph paint —
- * lives in `renderProgressBlock`, which the planning block shares; this file
- * owns what is particular to a run: its diagnostics and its totals.
- */
 export const renderRunProgress = ({ progress }: Params): string[] => {
 	const diagnostics = progress.rows.flatMap((row) => [...verificationLines({ row }), ...cleanupLines({ row })]);
 	const cost = progress.costUsd === undefined ? '' : ` · ${formatCost({ usd: progress.costUsd })}`;

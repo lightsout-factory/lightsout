@@ -16,16 +16,9 @@ interface Params {
 	result: VerificationResult;
 }
 
-/**
- * The guided half of the repair budget, spent once: the supervisor rules on the
- * red the cheap retries could not clear, and its guidance buys one more turn of
- * the fix role.
- */
 export const runGuidedRepair = async ({ context, record, result }: Params): Promise<GuidedRepairOutcome> => {
-	// A crashed gate buys no judgment either — the supervisor would be asked to rule on a toolchain fault — and neither does a gate that
-	// ran past its ceiling, which returned no verdict for it to rule on. A red with no failed family
-	// is that same shape: the checkpoint could not be run, so there is nothing to rule on and nothing to repair — as `runCheapRepairs` decides too.
-	// A gate run that never got the machine is the plainest case of it: not one command executed, so the supervisor would rule on nothing at all.
+	// A crash, a timeout, a red with no failed family or a gate run that never got the machine leaves
+	// the supervisor no verdict to rule on.
 	if (
 		!result.error ||
 		result.failedFamilies.length === 0 ||

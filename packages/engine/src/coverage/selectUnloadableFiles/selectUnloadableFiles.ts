@@ -22,24 +22,17 @@ interface Params {
 }
 
 /**
- * Split candidate files by whether the repo's own test runner could load them
- * at all: a file holding an `await` at module scope is unloadable exactly when
- * the Jest configuration governing its coverage scope loads that file as
- * CommonJS, where a module-scope `await` is a syntax error and no test can
- * execute a statement of it.
+ * A file holding an `await` at module scope is unloadable exactly when its
+ * scope's Jest loads it as CommonJS, where that `await` is a syntax error.
  *
- * One function answers this for every caller on purpose. The execution gate and
- * the write-tests target selection ask the same question, and two copies of it
- * are exactly how a writer gets asked for a test the gate would then exempt.
- * That is also why each file's content is read here rather than taken from the
- * caller: a caller-supplied content map is a seam for exactly the disagreement
- * this split exists to rule out, and a run classifies tens of changed files.
+ * One function answers this for every caller on purpose: the execution gate and
+ * the write-tests target selection must agree, or a writer gets asked for a test
+ * the gate would then exempt. That is also why each file's content is read here
+ * rather than taken from the caller.
  *
- * Every uncertain answer keeps the file unloadable — no configuration found,
- * one the engine cannot evaluate, a file in no coverage scope. That is the
- * behaviour that ships today, and it is the safe direction: a wrong ESM verdict
- * fails a run on a file no test could ever cover, while a wrong CommonJS
- * verdict merely repeats today's silent skip.
+ * Every uncertain answer keeps the file unloadable: a wrong ESM verdict fails a
+ * run on a file no test could ever cover, while a wrong CommonJS verdict merely
+ * skips it.
  */
 export const selectUnloadableFiles = async ({ cwd, config, files, compiler }: Params): Promise<{ loadable: string[]; unloadable: string[] }> => {
 	if (compiler === undefined) {
@@ -69,7 +62,7 @@ export const selectUnloadableFiles = async ({ cwd, config, files, compiler }: Pa
 
 		if (scope === undefined) {
 			// No Jest configuration governs this file, so its module mode is
-			// undetermined — which keeps the exemption that ships today.
+			// undetermined, which keeps the exemption.
 			unloadable.push(file);
 			continue;
 		}

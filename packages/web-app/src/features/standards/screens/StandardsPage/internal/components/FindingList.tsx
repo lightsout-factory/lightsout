@@ -10,7 +10,6 @@ import { BadgeVariant } from '#src/common/constants/BadgeVariant.ts';
 import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
 import { getFindingFolder } from '#src/features/standards/internal/common/utils/getFindingFolder.ts';
 
-/** The site a finding names, with the span the rule measured — a 268-line file is not wrong at line one. */
 const describeFile = ({ file }: { file: StandardsFinding['files'][number] }) => {
 	if (file.startLine === undefined) {
 		return file.path;
@@ -30,12 +29,8 @@ interface RuleCellProps {
 }
 
 /**
- * The rule id, as the control that narrows the table to it.
- *
- * Not a link to the rule's page: a finding carries a rule id and no pack, and
- * the view records the pack only inside a display string nobody should re-parse.
- * The prose stays one click away through the ledger on the config page, whose
- * rows do carry a pack.
+ * Not a link to the rule's page: a finding carries no pack, and the view records
+ * the pack only inside a display string nobody should re-parse.
  */
 const RuleCell = ({ finding, loaded, active, onToggle }: RuleCellProps) => (
 	<span className="flex items-center gap-1.5">
@@ -46,12 +41,6 @@ const RuleCell = ({ finding, loaded, active, onToggle }: RuleCellProps) => (
 	</span>
 );
 
-/**
- * What one finding says once a reader opens it: the rule's standing advice,
- * every file it covers, and the site key the refactor pipeline works in.
- *
- * A row of the table rather than a card, so the columns above it stay aligned.
- */
 const FindingDetails = ({ finding }: { finding: StandardsFinding }) => (
 	<tr className="border-border border-b bg-muted last:border-0">
 		{/* The four columns plus the disclosure cell the table draws in front of them. */}
@@ -81,25 +70,12 @@ interface Props {
 	/** The active rule filter, or undefined for all rules. Owned by the page, seeded from `?rule=`. */
 	ruleFilter?: string;
 	onRuleFilterChange: (rule: string | undefined) => void;
-	/** The active folder facet, or undefined for all folders. */
 	folderFilter?: string;
 	/** The depth the folder labels were truncated at, so a row can be matched against the label a reader clicked. */
 	depth: number;
 }
 
-/**
- * The open findings, as a table a reader narrows from either side.
- *
- * The rule cell is the rule filter and the folder facet is the other, and each
- * row opens onto the standing advice and the site key the refactor pipeline
- * works in — the key is shown exactly as recorded, because a reader
- * cross-referencing a batch report wants to paste this string rather than a
- * prettier one.
- *
- * An empty result says which question it answered. A blank region reads as a
- * page that failed to load, and "nothing open under this rule" is the answer a
- * reader came for as often as a list is.
- */
+/** The site key is shown exactly as recorded, because a reader cross-referencing a batch report pastes it. */
 export const FindingList = ({ findings, loadedRules, ruleFilter, onRuleFilterChange, folderFilter, depth }: Props) => {
 	const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
 	const loaded = new Set(loadedRules);

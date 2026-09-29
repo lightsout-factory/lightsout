@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-/** One scope's aggregate coverage, from its summary report's `total` entry. */
 export const CoverageTotal = z.object({
 	scope: z.string(),
 	statementsPct: z.number(),

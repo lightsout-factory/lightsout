@@ -7,15 +7,12 @@ import { RunListing } from '#src/contracts/views/RunListing.ts';
 import { RunStepView } from '#src/contracts/views/RunStepView.ts';
 import { RunBurnDown } from '#src/contracts/views/runBurnDown/RunBurnDown.ts';
 
-/** One run's whole evidence, assembled: timing, steps, gates, agent spend, friction and files. */
 export const RunView = z.object({
 	listing: RunListing,
 	harness: z.string(),
 	/**
-	 * Overview plan path, repo-relative: `manifest.overview` on a phase's child
-	 * run; on the coordinator itself (`pipeline: 'phases'`), whose manifest
-	 * carries no `overview` field, this is `manifest.plan` — initializeSequence
-	 * records the overview as the coordinator's plan.
+	 * Overview plan path, repo-relative. The coordinator's manifest carries no
+	 * `overview` field, so on the coordinator this is its `manifest.plan`.
 	 */
 	overview: z.string().optional(),
 	currentStep: z.string().nullable(),

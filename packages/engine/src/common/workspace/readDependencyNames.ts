@@ -12,15 +12,12 @@ interface Params {
 }
 
 /**
- * Every dependency name one package declares, or undefined when the directory
- * ships no readable package.json at all — which is how a child of the packages
- * directory that is not a package drops out of a caller's map entirely. A
- * manifest that exists but cannot be understood declares nothing, rather than
- * making the whole run fail over a file no caller asked for.
+ * Undefined when there is no package.json, so a directory that is not a package
+ * drops out of a caller's map. A manifest that cannot be understood declares
+ * nothing rather than failing the run.
  *
- * The union is deliberate (dependencies, devDependencies, peerDependencies): a
- * question like "does this repo use React?" is about what a package declares,
- * not about what happens to be installed.
+ * All three dependency kinds count: the question is what a package declares, not
+ * what happens to be installed.
  */
 export const readDependencyNames = async ({ manifestPath }: Params): Promise<string[] | undefined> => {
 	const text = await readFile(manifestPath, 'utf8').catch(() => undefined);

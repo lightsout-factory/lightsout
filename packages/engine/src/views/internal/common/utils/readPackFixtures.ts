@@ -9,19 +9,10 @@ interface Params {
 }
 
 /**
- * Every file of a rule's proof, both sides, with the text each holds.
+ * Each side is read recursively because it is a real source tree: a flat read
+ * would drop a file the fixture was carved out into. A missing side yields no
+ * entries rather than an error, since a built pack ships without its fixtures.
  *
- * The two sides are read recursively because they are real source trees rather
- * than single files: `type-assertion`'s pass side is a payload reader plus the
- * named-constant file it was carved out into, and a flat read would show the
- * first and silently drop the carve-out the fixture exists to demonstrate.
- *
- * A missing side — or no `fixtures` folder at all — yields no entries rather
- * than an error, the same stance `getPlanDocument` takes towards a deleted plan.
- * A built pack ships without its fixtures, and that is a normal state a page
- * renders as "shipped without its fixtures".
- *
- * @param fixturesPath - absolute path of the rule folder's `fixtures` folder, which holds `pass/` and `fail/`
  * @returns pass-side files first, then fail-side, each side in path order
  */
 export const readPackFixtures = async ({ fixturesPath }: Params): Promise<StandardsPackFixture[]> => {

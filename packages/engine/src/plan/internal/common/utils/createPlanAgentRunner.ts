@@ -15,7 +15,6 @@ import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts'
 interface Params {
 	cwd: string;
 	driver: Driver;
-	/** The plan's workspace, where this step's evidence lands. */
 	workspaceDir: string;
 	/** Names the evidence files: `<step>-stream.jsonl` and `<step>-rejected-*.txt`. */
 	step: string;
@@ -23,11 +22,9 @@ interface Params {
 	effort?: Effort;
 	permissions?: Permissions;
 	timeoutMs?: number;
-	/** Fresh role invocations each of this step's calls may spend. Defaults to the chokepoint's own default of one. */
+	/** Defaults to the chokepoint's own default of one. */
 	maxRoleAttempts?: number;
-	/** A focused role's requested agent environment, relayed on every call this runner makes. A runner created without one produces exactly today's invocation. */
 	environment?: AgentEnvironment;
-	/** The level each of this runner's calls opens its own step level under. Absent wherever no run is being recorded, which leaves every call exactly as it was. */
 	level?: ActivityLevel;
 }
 
@@ -36,32 +33,21 @@ interface CallParams<Contract extends z.ZodType> {
 	contract: Contract;
 	/** Distinguishes rejected payloads when a step invokes the agent once per plan file. */
 	label?: string;
-	/** Command prefixes this invocation grants the agent (e.g. the self-lint command). */
 	allowedCommands?: string[];
 }
 
 /**
- * The plan pipeline's agent call, bound to one step's evidence files.
- *
- * Every plan step invokes an agent under a contract and tees the harness stream
- * to `<step>-stream.jsonl` beside a copy of any payload that failed the
- * contract — the same setup three times over, which is three chances to write
- * the tee slightly differently. The transcript sink is created once per step
- * rather than once per call, so a step that invokes the agent per plan file
- * still produces one correctly ordered transcript. The rejected-payload name
- * carries the chokepoint's spawn number, which keeps rising across a step's
- * fresh role attempts as well as its re-emits — load-bearing for a step that
- * raised `maxRoleAttempts`, whose evidence would otherwise overwrite itself.
+ * The transcript sink is created once per step rather than per call, so a step
+ * that invokes the agent per plan file still produces one ordered transcript.
+ * The rejected-payload name carries the chokepoint's spawn number, which keeps
+ * rising across fresh role attempts, so a step that raised `maxRoleAttempts`
+ * does not overwrite its own evidence.
  *
  * Classifying the outcome stays with the caller: a rate limit and a failure
- * mean different things per step, down to the exact re-run command a human is
- * told to type.
+ * mean different things per step.
  *
- * The step LEVEL, unlike that sink, is opened per call: a level has to end when
- * its call ends, and a runner has no disposal hook to end one on. Two calls
- * from one runner therefore produce two sibling rows under the same label,
- * which is the truth — they were two requests. A runner created without a level
- * opens nothing, hands the chokepoint nothing, and writes no mark.
+ * The step LEVEL, unlike the sink, is opened per call: a level has to end when
+ * its call ends, and a runner has no disposal hook to end one on.
  */
 export const createPlanAgentRunner = ({
 	cwd,

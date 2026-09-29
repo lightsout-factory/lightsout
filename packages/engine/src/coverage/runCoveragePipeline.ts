@@ -28,15 +28,9 @@ interface Params {
 }
 
 /**
- * The coverage pipeline body — always entered holding the run lock (the
- * exported wrapper acquires and releases it). Pre-flight green gate → rounds
- * of (measure → batch the worst files of one failing scope → write tests →
- * verify → re-measure) until the consumer's own coverage command exits 0.
- *
- * Every state transition persists before the next action; rate limits park, a
- * budget ceiling parks, three consecutive declines stop the run as systemic.
- * The engine never commits — the run ends with tests in the working tree and
- * set-aside files recommended for review.
+ * Every state transition persists before the next action. Rate limits and the
+ * budget ceiling park; three consecutive declines stop the run as systemic. The
+ * engine never commits: the run ends with tests in the working tree.
  */
 const executeCoverage = async ({
 	cwd,
@@ -49,9 +43,8 @@ const executeCoverage = async ({
 	onProgress,
 }: Params & { runId: string }): Promise<CoverageResult> => {
 	const { manifest, worklist } = await initializeCoverageRun({ cwd, runId, driver, config, allowDirty, existing });
-	// Set-aside files, the systemic streak and the per-file strikes survive
-	// park/resume boundaries — rebuilt from persisted batch reports, never
-	// process memory.
+	// Rebuilt from persisted batch reports, never process memory, so the state
+	// survives park and resume.
 	const seeded = seedCoverageResumeState({ manifest });
 	const run = new CoverageRun({ cwd, config, manifest, onProgress, setAside: seeded.setAside, before: worklist.totals });
 
@@ -75,16 +68,12 @@ const executeCoverage = async ({
 	// Resolved once for the run: without a consumer TypeScript, grouping degrades
 	// to one file per batch component, exactly like the implement fan-out.
 	const compiler = resolveConsumerTypescript({ cwd, packagesDir: config['packages-dir'] ?? defaultPackagesDir });
-	// Also once for the run: standards-pack roots make the test-file question
-	// answerable — a rule check under a pack's `tests/` document set is
-	// source, and filtering without them excludes it everywhere.
+	// Without the pack roots, a rule check under a pack's `tests/` document set
+	// would be filtered out as a test everywhere.
 	const { standardsPacks } = await listSourceFiles({ cwd });
 
 	return runCoverageRounds({ run, driver, batchInputs: { testStandards, compiler, standardsPacks }, maxBatches, resumed: seeded });
 };
 
-/**
- * Public entry: the shared run-lock lifecycle around the body — every pipeline
- * takes the same repo lock, so no two runs can race one tree.
- */
+/** Every pipeline takes the same repo lock, so no two runs can race one tree. */
 export const runCoveragePipeline = (params: Params): Promise<CoverageResult> => withRunLock({ params, run: executeCoverage });

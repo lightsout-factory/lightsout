@@ -45,20 +45,17 @@ type RunPlanDedupResult =
 	| { status: typeof PlanRunStatus.Failed; workspaceDir: string; error: string; dedup?: DedupReport; dedupPath?: string }
 	| { status: typeof PlanRunStatus.PausedRateLimit; workspaceDir: string; error: string; dedup?: DedupReport; dedupPath?: string };
 
-/** One plan file's collisions, and the file's own text — everything one judge is given. */
 interface DedupGroup {
 	phase: string;
 	text: string;
 	candidates: PriorArtCandidate[];
 }
 
-/** One judge's settled result, labelled with the plan file it ruled on. */
 interface DedupResult {
 	group: DedupGroup;
 	outcome: AgentOutcome<DedupJudgment>;
 }
 
-/** The plan files that actually have something to judge — a file with no collisions spawns nothing, the existing no-op rule now applied per file. */
 const groupCandidates = ({ files, candidates }: { files: DeliverableFile[]; candidates: PriorArtCandidate[] }) => {
 	const groups: DedupGroup[] = [];
 
@@ -74,7 +71,6 @@ const groupCandidates = ({ files, candidates }: { files: DeliverableFile[]; cand
 	return groups;
 };
 
-/** One judge spawn: its own runner, its own transcript, and only its own plan file's text and collisions. */
 const spawnDedupJudge = async ({
 	params,
 	pass,
@@ -105,17 +101,9 @@ const spawnDedupJudge = async ({
 };
 
 /**
- * Fold every judge's outcome in one pass, after all have settled. Each group's
- * verdicts are matched against that group's own candidates — a smaller and less
- * ambiguous set than the whole plan — and the findings concatenate in plan-file
- * order. A judge that failed contributes a labelled reason instead, and never
- * silences the groups that did return.
- *
- * `reviewed` is collected from the same loop and under the same condition: a
- * group whose judge returned had every one of its collisions weighed, whether
- * or not any became a finding. A group whose judge failed contributes nothing,
- * so a lost judge leaves its collisions unweighed rather than quietly recorded
- * as settled.
+ * A failed judge contributes a labelled reason and never silences the groups
+ * that returned. Only a returned group adds to `reviewed`, so a lost judge
+ * leaves its collisions unweighed rather than quietly recorded as settled.
  */
 const foldDedupResults = ({ results }: { results: Array<DedupResult | undefined> }) => {
 	const findings: DedupFinding[] = [];
@@ -140,25 +128,13 @@ const foldDedupResults = ({ results }: { results: Array<DedupResult | undefined>
 };
 
 /**
- * Read-only prior-art detector for the interactive Dedup Review pass:
- * deterministically detect every planned new symbol that name-collides with an
- * existing export (reusing the standards check's tier-0 comparator), then have
- * the judge agents rule which are real duplicates and how to resolve each. It
- * never edits the plan — it detects, judges, and writes `dedup.json`, the typed
- * findings the ignition skill reads to conduct the human resolution. No
- * candidates → no agent call, an empty report.
+ * Never edits the plan: it writes `dedup.json`, the findings the skill reads to
+ * conduct the human resolution.
  *
- * A phased plan is judged one agent per plan file, all at once, each given only
- * its own file's text and its own file's collisions and each duplication
- * labelled with the file that planned it. The whole fan-out is one activity
- * level with a step per spawn, and a run with no candidates opens none at all:
- * a grouping row over zero spawns is a row for work that never happened.
- *
- * Gluing every phase into one prompt is the single-agent-whole-plan shape the
- * draft and the grade were split out of, and it has not bitten yet only because
- * the deterministic scan found no collisions on the plans run so far. A judge
- * that fails no longer discards the pass: what finished is persisted, marked
- * incomplete, and the runner still reports the failure so a human re-runs.
+ * Each plan file gets its own judge, given only its own text and collisions. A
+ * run with no candidates opens no activity level, because a grouping row over
+ * zero spawns is a row for work that never happened. A failed judge does not
+ * discard the pass: what finished is persisted and marked incomplete.
  */
 export const runPlanDedup = async (params: Params): Promise<RunPlanDedupResult> => {
 	const { cwd, name, onProgress } = params;
@@ -205,7 +181,6 @@ export const runPlanDedup = async (params: Params): Promise<RunPlanDedupResult> 
 		return dedup;
 	};
 
-	// No candidates → no-op: an empty report, no agent call.
 	if (candidates.length === 0) {
 		progress(`plan dedup ${name}: no prior-art candidates — nothing to review`);
 

@@ -7,7 +7,7 @@ import { formatCount } from '#src/common/formatting/formatCount.ts';
 import { planGradeBadgeConfig } from '#src/features/plans/internal/common/constants/planGradeBadgeConfig.ts';
 import { planStageBadgeConfig } from '#src/features/plans/internal/common/constants/planStageBadgeConfig.ts';
 
-/** Every file that is on disk and will not parse, said out loud — a corrupt workspace is shown rather than quietly rendered as empty. */
+/** A corrupt workspace is shown rather than quietly rendered as empty. */
 const PlanProblems = ({ problems }: { problems: string[] }) => (
 	<ul className="flex flex-col gap-1 rounded-lg border border-status-failed-border bg-status-failed-light px-4 py-3 text-sm text-status-failed">
 		{problems.map((problem) => (
@@ -23,7 +23,6 @@ interface Props {
 	view: PlanWorkspaceView;
 }
 
-/** What this plan is, how far it got, where it lives, and the runs that implemented it. */
 export const PlanHeader = ({ view }: Props) => (
 	<header className="flex flex-col gap-3">
 		{view.problems.length === 0 ? null : <PlanProblems problems={view.problems} />}

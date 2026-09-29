@@ -13,18 +13,12 @@ interface Params {
 type LabelOperation = { add: string } | { remove: string };
 
 /**
- * Makes `label` the one member of `groupLabels` the ticket carries.
- *
- * Labels outside `groupLabels` are never touched, and writing nothing is a
- * legitimate outcome: a ticket already carrying exactly `label` costs one read
- * and no write. Jira takes the whole add-and-remove set in one update, so an
- * exclusive write is a single request.
+ * Labels outside `groupLabels` are never touched.
  *
  * Unlike Linear's half, this never fails for a label that does not exist yet,
- * and that asymmetry is deliberate rather than a missing guard: a Jira label
- * comes into being the first time an issue carries it, so there is no catalog
- * entry to check against at write time. Whether a configured label exists is
- * answered for both providers by `listLabelNames`, at the caller's startup.
+ * deliberately: a Jira label comes into being the first time an issue carries
+ * it, so there is no catalog entry to check at write time. `listLabelNames`
+ * answers whether a configured label exists, at the caller's startup.
  */
 export const setExclusiveLabel = async ({ settings, ticketId, label, groupLabels }: Params): Promise<TrackerFailure | undefined> => {
 	const path = `/rest/api/3/issue/${encodeURIComponent(ticketId)}`;

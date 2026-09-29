@@ -38,14 +38,10 @@ interface Params {
 }
 
 /**
- * The absolute path of the Jest configuration a scope's coverage command
- * actually runs, or undefined when none can be identified.
- *
- * The command's own `-c` / `--config` argument wins outright — and when it
- * names a file that is not there, the answer is undefined rather than a
- * guess. Every package in this workspace ships both a unit config and an e2e
- * one, so picking by filename where the command already said which is how the
- * wrong suite's exclusions get read.
+ * The command's own `-c` / `--config` wins outright, and a named file that is
+ * missing answers undefined rather than a guess: a package often ships both a
+ * unit and an e2e config, and picking by filename reads the wrong suite's
+ * exclusions.
  */
 export const resolveJestConfigPath = async ({ scopeRoot, coverageScript }: Params): Promise<string | undefined> => {
 	const named = coverageScript === undefined ? undefined : configArgument({ command: coverageScript });

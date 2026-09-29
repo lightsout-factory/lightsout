@@ -1,8 +1,3 @@
-/**
- * The writer's brief on the acceptance-test ledger: what a contract plan
- * carries, and what it stops carrying. The behaviour a plan used to narrate is
- * what a row states, so the two are alternatives rather than additions.
- */
 export const ledgerSection = `## Acceptance-test ledger
 
 This repository writes plans as CONTRACTS. A contract plan carries what a test

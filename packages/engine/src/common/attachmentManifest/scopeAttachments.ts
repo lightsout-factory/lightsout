@@ -4,19 +4,7 @@ interface Params<Attachment> {
 	prefix: string;
 }
 
-/**
- * Narrow a ticket's attachment list to one plan's namespace, with the prefix
- * taken off every title that survives.
- *
- * Everything downstream — selecting a generation, parsing a marker, deciding
- * whether a plan was published at all — is written against bare file names, so
- * this is the one place a prefixed ticket is turned back into the single-plan
- * list those steps already read.
- *
- * Generic over `{ title }` so the shared folder never imports the tracker's own
- * attachment type; every other field of each attachment, its url above all, is
- * carried through untouched.
- */
+/** Generic over `{ title }` so the shared folder never imports the tracker's own attachment type. */
 export const scopeAttachments = <Attachment extends { title: string }>({ attachments, prefix }: Params<Attachment>): Attachment[] => {
 	const namespace = `${prefix}--`;
 

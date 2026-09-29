@@ -9,17 +9,9 @@ interface Params {
 }
 
 /**
- * Repo-relative path → sha256 of the file's current bytes, for every
- * standards-scope changed file that exists on disk.
- *
- * Taken before cleanup and again after every round, this is how the step knows
- * what cleanup itself changed: a report may omit a file it edited, and a
- * timed-out attempt leaves edits behind with no report at all, so bytes are the
- * only account that cannot be wrong.
- *
- * A path whose file cannot be read is omitted rather than recorded, so a file
- * the round deleted simply reads as absent on the later side instead of raising
- * an error the step would have to decide what to do with.
+ * Bytes are how the step knows what cleanup changed: a report may omit a file it edited, and a
+ * timed-out attempt leaves edits behind with no report. An unreadable file is omitted, so a
+ * file the round deleted reads as absent.
  */
 export const fingerprintScopeFiles = async ({ run }: Params): Promise<Record<string, string>> => {
 	const entries = await Promise.all(

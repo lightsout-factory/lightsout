@@ -16,7 +16,6 @@ interface Params {
 /** The tracker previews an attachment by its content type, and the durable set holds only these two shapes. */
 const contentTypeOf = ({ name }: { name: string }) => (name.endsWith('.json') ? 'application/json' : 'text/markdown');
 
-/** Attach the prepared snapshot in order, with its manifest last, stopping at the first tracker refusal. */
 export const attachDurableFiles = async ({
 	settings,
 	ticketId,

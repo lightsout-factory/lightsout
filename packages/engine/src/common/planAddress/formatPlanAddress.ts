@@ -4,8 +4,5 @@ interface Params {
 	planId: string;
 }
 
-/**
- * Write a plan's address. The one writer of the shape `parsePlanAddress` reads,
- * so the separator is spelled in exactly that pair.
- */
+/** The one writer of the shape `parsePlanAddress` reads, so the separator is spelled in exactly that pair. */
 export const formatPlanAddress = ({ workOrderName, planId }: Params): string => `${workOrderName}/${planId}`;

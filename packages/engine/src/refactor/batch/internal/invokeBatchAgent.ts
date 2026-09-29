@@ -20,41 +20,26 @@ interface Params {
 	config: LightsoutConfig;
 	batch: RefactorBatch;
 	invocation: { systemPrompt: string; prompt: string };
-	/** Usage-ledger suffix for this invocation ('' | 'requeue' | 'fix-N'). */
+	/** Usage-ledger suffix: '' | 'requeue' | 'fix-N'. */
 	label: string;
-	/** 1-based invocation number within the batch, for evidence file names. */
+	/** 1-based, for evidence file names. */
 	invocationCount: number;
 	agentTimeoutMs: number;
-	/** Mutable batch-level collectors: agent-reported paths and friction lines accumulate here across invocations. */
+	/** Mutable; accumulates across invocations. */
 	reportedFiles: Set<string>;
 	rationale: string[];
-	/** Keyed by site key so a later invocation's answer about one advisory replaces the earlier one — the batch's final word, not its first. */
+	/** Keyed by site so a later answer replaces the earlier one. */
 	advisoryOutcomes: Map<string, AdvisoryOutcome>;
 	onProgress: (message: string) => void;
 	recordUsage: (params: { step: string; usage?: AgentUsage }) => Promise<void>;
 }
 
 /**
- * One agent invocation within a batch, with the run-evidence plumbing every
- * invocation gets: the event stream teed to the run dir, rejected reports
- * persisted, usage recorded to the ledger, friction appended, and the
- * report's changed files + friction lines folded into the batch's collectors.
- *
- * The repo's formatter runs over whatever the agent wrote, before anything
- * reads the tree. The executor is forbidden every repository command, and that
- * ban is right for the ones that VERIFY — an agent permitted to run its own
- * tests is an agent that can talk itself into a green one. A formatter verifies
- * nothing. Banning it only means the agent reproduces house formatting by
- * reading its neighbours, and the first run dogfooded on this engine mis-ordered
- * the imports in three of the eight files it wrote: green batch, red repo lint.
- * The command is already in the config, it is deterministic and it changes no
- * behavior, so the engine runs it rather than asking an agent to imitate it.
- *
- * Here rather than in the caller because every write in a batch arrives through
- * this one function — first pass, requeue, polish, every gate fix — and because
- * the gates, the site re-check and the review of what the batch wrote all read
- * the tree afterwards; a re-check reading unformatted code reports line numbers
- * no later pass agrees with.
+ * The engine runs the repo's formatter after every invocation: the executor is
+ * barred from repository commands so it cannot verify its own work, and a
+ * formatter verifies nothing, so the engine runs it rather than have the agent
+ * imitate house style. Every batch write arrives through here, and a re-check of
+ * unformatted code reports line numbers no later pass agrees with.
  */
 export const invokeBatchAgent = async ({
 	cwd,
@@ -99,9 +84,8 @@ export const invokeBatchAgent = async ({
 	const formatError = await runFormatter({ cwd, runId, config, step: batch.id });
 
 	if (formatError) {
-		// Announced and no more. A formatter that cannot run is a human's
-		// configuration problem rather than work an agent can fix, and spending
-		// the batch's fix retries on it would bury the message under agent output.
+		// A formatter that cannot run is a human's configuration problem, not work
+		// an agent can fix.
 		onProgress(`${batch.id}: ${formatError}`);
 	}
 

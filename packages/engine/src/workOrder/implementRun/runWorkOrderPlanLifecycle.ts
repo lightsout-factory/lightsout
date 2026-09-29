@@ -19,17 +19,16 @@ import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
 
 interface Params {
-	/** The checkout the run builds in: HEAD is read and the plan's durable files are hashed here; the record is resolved through its primary checkout. */
+	/** HEAD is read and the plan's durable files are hashed here; the record is resolved through its primary checkout. */
 	cwd: string;
-	/** The plan's address under the plans directory, or undefined for a plan outside it. */
+	/** Undefined for a plan outside the plans directory. */
 	name: string | undefined;
-	/** The id of the run a resume continues. Absent for a fresh run, which is handed a newly minted id. */
+	/** Absent for a fresh run, which is handed a newly minted id. */
 	resumeRunId?: string;
-	/** Runs the pipeline. A fresh run must be created under exactly the id it is handed. */
+	/** A fresh run must be created under exactly the id it is handed. */
 	run: (params: { runId: string }) => Promise<PipelineResult>;
 }
 
-/** Every durable file of the plan, with the hash of the bytes on disk — the scope a passed run is recorded against. */
 const readPlanSnapshot = async ({ cwd, name }: { cwd: string; name: string }) => {
 	const durable = await durablePlanFiles({ cwd, name });
 	const snapshot: { name: string; sha256: string }[] = [];
@@ -45,18 +44,14 @@ const readPlanSnapshot = async ({ cwd, name }: { cwd: string; name: string }) =>
 	return snapshot;
 };
 
-/** The same record with one plan replaced, which is the only shape of change this helper ever makes. */
 const withPlan = ({ record, plan }: { record: WorkOrderState; plan: WorkOrderPlan }): WorkOrderState => ({
 	...record,
 	plans: record.plans.map((candidate) => (candidate.id === plan.id ? plan : candidate)),
 });
 
 /**
- * Mark the plan implementing, re-asking the order rules against the record as it
- * stands inside the lock.
- *
- * The re-ask is the point: minutes may pass between the first read and this
- * write, and a record another command changed meanwhile must not be overwritten
+ * Re-asks the order rules inside the lock: minutes may pass after the first
+ * read, and a record another command changed meanwhile must not be overwritten
  * with a decision taken against the old one.
  */
 const recordImplementing = ({
@@ -92,8 +87,8 @@ const recordImplementing = ({
 				return { error: `work order ${workOrderName} holds no plan ${planId}` };
 			}
 
-			// Where the implementation BEGAN, kept across every repair of it: a plan
-			// already implementing or failed keeps the start its first run recorded.
+			// A plan already implementing or failed keeps the start its first run
+			// recorded, across every repair.
 			const started =
 				(plan.progress === PlanProgress.Implementing || plan.progress === PlanProgress.Failed) && plan.implementation !== undefined
 					? { startedAt: plan.implementation.startedAt, startCommit: plan.implementation.startCommit }
@@ -103,11 +98,9 @@ const recordImplementing = ({
 		},
 	});
 
-/** Whether the plan's start values have to be minted, which is the only case that needs git to name a commit. */
 const needsFreshStart = ({ plan }: { plan: WorkOrderPlan | undefined }) =>
 	plan?.implementation === undefined || (plan.progress !== PlanProgress.Implementing && plan.progress !== PlanProgress.Failed);
 
-/** What the finished run leaves on the plan: implemented with its scope, failed, or the progress the run started under. */
 const recordOutcome = async ({
 	cwd,
 	workOrderName,
@@ -158,26 +151,13 @@ const recordOutcome = async ({
 };
 
 /**
- * Wrap one pipeline run for a plan name: refuse a plan the work order state says
- * may not be built, record the plan's progress around the run, and run the
- * pipeline unchanged for a run outside a work order or a work order with no record.
- *
- * `implement`, `resume` and the queue's plan build all go through here, so the
- * ticket's numeric order, its mode and its exclusions are enforced on every path
- * rather than only in the queue. A refusal is one sentence returned, never
- * thrown or printed: the caller owns the exit code, exactly as
- * `requireImplementLifecycle` leaves it.
- *
- * Every write is local. Progress is this machine's working state, and the next
- * `lightsout work-order` subcommand or `plan publish` is what puts it on the ticket.
+ * Every write is local: progress is this machine's working state, and the next
+ * `lightsout work-order` subcommand or `plan publish` puts it on the ticket.
  *
  * A pipeline that throws, or exits before its run exists, deliberately leaves
- * the plan `implementing` under an id no manifest carries: the next `implement`
- * or `resume` of the plan overwrites the id and keeps the start, and restoring
- * the old progress would have to happen outside the fail-fast wrappers that call
- * `process.exit` around this function.
- *
- * @returns the refusal, or the run's result with a record-write failure and a whole-plan note beside it
+ * the plan `implementing` under an id no manifest carries: the next run
+ * overwrites the id and keeps the start, and restoring the old progress would
+ * have to happen outside the wrappers that call `process.exit` around this.
  */
 export const runWorkOrderPlanLifecycle = async ({ cwd, name, resumeRunId, run }: Params): Promise<WorkOrderPlanOutcome> => {
 	const address = name === undefined ? undefined : parsePlanAddress({ name });

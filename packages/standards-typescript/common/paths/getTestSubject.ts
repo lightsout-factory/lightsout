@@ -19,11 +19,6 @@ interface Params {
 	carveOut?: FrameworkCarveOut;
 }
 
-/**
- * The source file a test's first name segment names, in the test's own
- * directory — `undefined` when the folder holds no such file, which is the
- * co-location rule's whole question.
- */
 export const getTestSubject = ({ test, files, carveOut }: Params): string | undefined => {
 	const stem = `${getDirectory({ path: test })}/${getTestSubjectName({ test, carveOut })}`;
 

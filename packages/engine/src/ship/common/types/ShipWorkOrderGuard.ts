@@ -1,15 +1,9 @@
 /**
- * The work order's say over shipping a branch, handed to `runShip` by its
- * caller.
+ * Required on `runShip` and `runShipAttempt`, so the compiler refuses any shipping
+ * path that merges a branch without asking its work order first.
  *
- * Required on `runShip` and on `runShipAttempt` for the reason
- * {@link ShipIntegration} is required: the compiler then refuses any shipping
- * path added later that omits the safety contract, so there is no way to merge a
- * branch without asking its work order first.
- *
- * The implementation lives in the work-order module rather than here, because
- * reading and writing a work order's state needs `plan`, `brainstorm` and `ship`
- * itself — a `ship` that reached for it would close a cycle in the module graph.
+ * The implementation lives in the work-order module, because a `ship` that reached
+ * for it would close a cycle in the module graph.
  */
 export interface ShipWorkOrderGuard {
 	/** Undefined when the branch may ship; otherwise the one sentence saying why it may not. */

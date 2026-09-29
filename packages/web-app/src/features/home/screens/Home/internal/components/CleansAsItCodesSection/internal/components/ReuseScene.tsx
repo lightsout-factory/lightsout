@@ -6,19 +6,12 @@ import { Appear } from '#src/features/home/screens/Home/internal/components/Clea
 import { LoopingScene } from '#src/features/home/screens/Home/internal/components/CleansAsItCodesSection/internal/components/LoopingScene.tsx';
 import { StatusChip } from '#src/features/home/screens/Home/internal/components/CleansAsItCodesSection/internal/components/StatusChip.tsx';
 
-/** How long one frame holds. Short, so each moment below can be held for its own length in whole frames. */
+/** Short, so each moment below can be held for its own length in whole frames. */
 const stepMs = 700;
 
-/** One moment of the scene, repeated for as many frames as it should stay on screen. */
 const hold = ({ status, chip, ms }: { status: SceneStatus; chip: string; ms: number }) =>
 	Array.from({ length: Math.round(ms / stepMs) }, () => ({ status, chip }));
 
-/**
- * Frame by frame: the plan asks for a new helper, the repo is scanned, an
- * existing one turns up, and the plan reuses it. The scan and the find hold
- * long enough to read, and the updated plan longest — the same rhythm as the
- * other two scenes.
- */
 const frames = [
 	...hold({ status: SceneStatus.Working, chip: 'Drafting the plan', ms: 1400 }),
 	...hold({ status: SceneStatus.Fixing, chip: 'Scanning for duplicates…', ms: 2100 }),
@@ -26,7 +19,6 @@ const frames = [
 	...hold({ status: SceneStatus.Clean, chip: 'Plan updated', ms: 3500 }),
 ];
 
-/** One frame of the planning scene. */
 const PlanFrame = ({ status, chip }: (typeof frames)[number]) => {
 	const isFound = status === SceneStatus.Over || status === SceneStatus.Clean;
 	const isReused = status === SceneStatus.Clean;
@@ -66,11 +58,6 @@ const PlanFrame = ({ status, chip }: (typeof frames)[number]) => {
 	);
 };
 
-/**
- * A plan about to add a helper the repo already has, caught before any code
- * is written — planning searches for existing code, and the plan is changed to
- * reuse what it finds.
- */
 export const ReuseScene = ({ onFinish }: SceneProps) => (
 	<LoopingScene
 		title="Planning · catch duplication before coding"

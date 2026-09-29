@@ -5,8 +5,6 @@ import { ProcessEndReason } from '#src/contracts/activity/ProcessEndReason.ts';
 import { Effort } from '#src/contracts/Effort.ts';
 
 /**
- * One harness process, start to finish.
- *
  * One mark per process rather than per logical request: a request re-run after
  * a malformed answer really did cost money twice, and summing the spawns would
  * report an expensive agent where the truth is a repeatedly rejected answer.
@@ -20,11 +18,9 @@ import { Effort } from '#src/contracts/Effort.ts';
  */
 export const HarnessProcessMark = z.object({
 	kind: z.literal(ActivityMarkKind.HarnessProcess),
-	/** The level this process ran inside. */
 	levelId: z.string(),
 	/** The adapter that spawned it — a driver's own name. */
 	harness: z.string(),
-	/** The model override in force, when there was one. */
 	model: z.string().optional(),
 	/** The reasoning effort in force, when one was set; absent means the harness's own default. */
 	effort: z.enum(Effort).optional(),

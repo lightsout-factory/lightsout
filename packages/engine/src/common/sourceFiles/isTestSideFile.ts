@@ -16,15 +16,9 @@ interface Params {
 }
 
 /**
- * Whether a path is test-side — the widened question the test-change review
- * asks: not only "is this a test?" but "could changing this change what the
- * tests prove?".
- *
- * It is `isTestFile` plus the two file kinds that decide a test's verdict
- * without stating an assertion in code. A snapshot IS the expected value, so a
- * rewritten one can hide the behaviour change it was written to catch. A jest
- * config decides which files are collected, so an edit there can stop a test
- * from running at all without touching a line of it.
+ * `isTestFile` plus the two file kinds that decide a test's verdict without an
+ * assertion in code: a snapshot is the expected value, and a jest config
+ * decides which tests are collected at all.
  */
 export const isTestSideFile = ({ path, standardsPacks }: Params): boolean => {
 	const name = path.slice(path.lastIndexOf('/') + 1);

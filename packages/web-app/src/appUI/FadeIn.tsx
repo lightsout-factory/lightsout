@@ -3,28 +3,15 @@ import { cn } from '#src/common/utils/cn.ts';
 
 interface Props {
 	children: ReactNode;
-	/** Stagger in ms; default 0. */
 	delayMs?: number;
 	className?: string;
 }
 
 /**
- * Eases its children in — rising 30px and fading up over 0.8s, FeedbackDrop's
- * motion — as the page loads, or as they scroll into view.
- *
- * It renders **visible**, and only the browser ever hides anything. A page that
- * arrives without its scripts — an error, a slow network, a reader who blocks
- * them — is a page whose words are on screen, because the reveal is decoration
- * and decoration must never be what puts the content there. Rendering hidden
- * and waiting for an effect is how that promise gets broken, and the server has
- * no way to know whether the effect will ever run.
- *
- * So what is on screen at load eases in through CSS alone: `@starting-style`
- * (Tailwind's `starting:` variant) gives the transition a place to start from,
- * so no script decides when it shows. Children off screen at mount are hidden
- * by the effect and revealed as they scroll in — those cost nobody a flash,
- * since there was nothing to see. A viewer who asked for reduced motion gets
- * neither, and a browser without an `IntersectionObserver` is never hidden.
+ * Renders visible, so the content is on screen even when scripts never run; the
+ * reveal is decoration. What is on screen at load eases in through CSS alone
+ * (`@starting-style`, Tailwind's `starting:`), and only children off screen at
+ * mount are hidden by the effect and revealed as they scroll in.
  */
 export const FadeIn = ({ children, delayMs = 0, className }: Props) => {
 	const [hidden, setHidden] = useState(false);
@@ -40,16 +27,13 @@ export const FadeIn = ({ children, delayMs = 0, className }: Props) => {
 
 		const box = target.getBoundingClientRect();
 
-		// On screen already: leave it exactly as it was served. Hiding it here is
-		// the one thing a reader would see as a flicker.
+		// On screen already: hiding it here would show as a flicker.
 		if (box.top < globalThis.innerHeight && box.bottom > 0) {
 			return;
 		}
 
 		setHidden(true);
 
-		// FeedbackDrop's trigger: a sliver of the block in view, a little above the
-		// bottom edge, so it rises as the reader reaches it rather than off screen.
 		const observer = new globalThis.IntersectionObserver(
 			(entries) => {
 				if (entries.some((entry) => entry.isIntersecting)) {

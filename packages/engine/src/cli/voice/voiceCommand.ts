@@ -30,8 +30,6 @@ export const voiceCommand = async ({ rest, cwd }: CommandContext): Promise<void>
 	}
 
 	if (subcommand === 'speak') {
-		// A pi-family extension pipes its payload in the same way; the first
-		// positional names which event it describes.
 		const kind = getPositionals({ args: rest })[1];
 
 		if (kind !== 'turn' && kind !== 'picker') {

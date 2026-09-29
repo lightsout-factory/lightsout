@@ -9,7 +9,6 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/** Nothing merged, and why — the shape every failure before the merge answers with. */
 const noMerge = ({ failure, baseCommit }: { failure: string; baseCommit?: string }): MergeOutcome => ({
 	baseCommit,
 	conflictPaths: [],
@@ -17,7 +16,6 @@ const noMerge = ({ failure, baseCommit }: { failure: string; baseCommit?: string
 	failure,
 });
 
-/** Whether the fetched base is already reachable from `HEAD`: exit 0 yes, exit 1 no, anything else an error rather than an answer. */
 const isAlreadyIntegrated = async ({ cwd, baseCommit }: { cwd: string; baseCommit: string }): Promise<{ ancestor: boolean } | { error: string }> => {
 	const checked = await runGit({ command: `git merge-base --is-ancestor ${quoteGitArgument({ argument: baseCommit })} HEAD`, cwd });
 
@@ -28,7 +26,6 @@ const isAlreadyIntegrated = async ({ cwd, baseCommit }: { cwd: string; baseCommi
 	return checked?.exitCode === 1 ? { ancestor: false } : { error: `git could not say whether ${baseCommit} is already on the branch` };
 };
 
-/** The freshly fetched default commit, or the sentence saying why the fetch or the ref read did not produce one. */
 const pinDefaultBranch = async ({ cwd, defaultBranch }: { cwd: string; defaultBranch: string }): Promise<{ baseCommit: string } | { error: string }> => {
 	// The fetch crosses the network and takes a deadline of its own rather than
 	// the git ceiling, which is sized for local reads.
@@ -49,9 +46,6 @@ const pinDefaultBranch = async ({ cwd, defaultBranch }: { cwd: string; defaultBr
 };
 
 /**
- * Fetch `origin` and merge the remote default branch into the checked-out
- * branch without committing it.
- *
  * The tracking ref is resolved to an immutable commit once, and only that
  * commit is used for the ancestor check and for the merge — so a default
  * branch that moves while the gates run cannot make the branch that was

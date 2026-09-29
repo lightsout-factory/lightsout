@@ -12,7 +12,6 @@ import { runCheapRepairs } from '#src/pipeline/steps/verifyStep/internal/common/
 import { runGuidedRepair } from '#src/pipeline/steps/verifyStep/internal/common/utils/runGuidedRepair.ts';
 import { withResult } from '#src/pipeline/steps/verifyStep/internal/common/utils/withResult.ts';
 
-/** The first entry into the checkpoint when no formatter pass is owed: the review (or the rename check), then the gates. */
 const enterVerification = async ({ context, record }: { context: VerifyContext; record: StepRecord }): Promise<RepairOutcome> => {
 	const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames } = context;
 	const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames });
@@ -91,15 +90,8 @@ const runVerificationStep = async ({ context }: { context: VerifyContext }) => {
 };
 
 /**
- * One verification checkpoint: format, judge every change made to a test-side
- * file, run the gates, and repair a red under a fixed budget — cheap retries per
- * failed family, then one supervisor-guided turn — before escalating the run.
- *
- * The review runs before the gates and can itself go red, under the
- * `test-review` family, without a gate being spent. It rides this budget rather
- * than opening one of its own. A rename-only checkpoint runs the rename check
- * where the review would run, and its refusal goes red the same way under the
- * `rename-check` family.
+ * The test-change review (or a rename-only plan's rename check) can go red without a gate being
+ * spent, and rides this checkpoint's repair budget rather than opening its own.
  */
 export const verifyStep = ({
 	run,

@@ -15,8 +15,6 @@ interface Params {
 }
 
 /**
- * The holds still standing, with every release the tracker can prove applied.
- *
  * The release rule lives here and nowhere else. A hold whose label write was
  * confirmed clears when the ticket comes back and its labels no longer carry the
  * blocked label — nothing else counts as release. A tracker read that failed
@@ -30,9 +28,8 @@ interface Params {
  * lands.
  *
  * Only the holds it changes are written back, so a worker recording a hold for
- * another ticket in the same moment is untouched. The empty short circuit is
- * load-bearing rather than an optimisation: a repository that has never timed
- * out makes no tracker call here at all.
+ * another ticket in the same moment is untouched. The empty short circuit means
+ * a repository that has never timed out makes no tracker call here at all.
  *
  * It reads and writes the tracker, so it is never called while a gate
  * reservation is held.

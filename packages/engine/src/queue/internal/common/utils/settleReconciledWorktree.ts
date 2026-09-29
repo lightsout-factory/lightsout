@@ -12,19 +12,12 @@ interface Params {
 }
 
 /**
- * The worktree a reconciled ticket leaves behind, settled: removed when the
- * tree is clean, kept when it is not.
+ * A reconciled ticket never reaches the ship step, so a clean tree left here would
+ * be rediscovered by every later drain. A dirty one is never removed: a merged
+ * pull request says nothing about work begun there since.
  *
- * A reconciled ticket never reaches the ship step, which is the only other code
- * that removes a worktree — so leaving a clean one would make every later drain
- * rediscover work that already shipped. A dirty one is never removed: a merged
- * pull request says nothing about work begun in that directory since.
- *
- * The ownership record is deleted only after a removal that worked. A record
- * dropped beside a tree still standing is the unclaimed tree a later drain
- * adopts, so a kept tree and a failed removal both keep theirs.
- *
- * @returns the sentence to append to the skip reason, or undefined when there was nothing to keep
+ * The ownership record is deleted only after a removal that worked, because a
+ * standing tree without one is adopted by a later drain.
  */
 export const settleReconciledWorktree = async ({ cwd, worktreePath, branch, onProgress }: Params): Promise<string | undefined> => {
 	const changed = await readGitChangedFiles({ cwd: worktreePath });

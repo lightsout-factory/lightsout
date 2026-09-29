@@ -10,14 +10,9 @@ interface Params {
 }
 
 /**
- * Source work already in the worktree before the loop takes any plan, put under
- * the plan it can only have come from: the most recently implemented one, whose
- * build a refused commit — or a human's `lightsout resume` in this tree — left
- * uncommitted.
- *
- * Leftovers with no implemented plan behind them belong to nobody, so the ticket
- * parks for a human instead of having them committed under a name that would be
- * wrong.
+ * Leftovers can only have come from the most recently implemented plan, whose
+ * build a refused commit — or a human's `lightsout resume` — left uncommitted.
+ * With no implemented plan they belong to nobody, so the ticket parks.
  *
  * @returns the one sentence saying why the loop stopped, or undefined once the tree is settled
  */

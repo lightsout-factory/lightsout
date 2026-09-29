@@ -7,7 +7,7 @@ interface Params {
 	rule: string;
 }
 
-/** One default-pack rule's argument and fixture text. Never stale, for the same reason the pack is not. */
+/** Never stale: the pack is bundled into the app. */
 export const defaultPackRuleQueryOptions = ({ rule }: Params) =>
 	queryOptions({
 		queryKey: [QueryKey.DefaultPackRule, rule],

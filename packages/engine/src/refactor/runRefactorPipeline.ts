@@ -34,14 +34,9 @@ interface Params {
 }
 
 /**
- * The refactor pipeline body — always entered holding the run lock (the
- * exported wrapper acquires and releases it). Pre-flight green gate →
- * serial batches (invoke → verify with gate-kind routing → re-check →
- * resolved/declined) → final whole-scope re-check for the burn-down. Every
- * state transition persists before the next action; rate limits park, a
- * budget ceiling parks, three consecutive declines stop the run as systemic.
- * The engine never commits and never baselines — the run ends with changes
- * in the working tree and declines recommended for human review.
+ * Always entered holding the run lock. The engine never commits and never
+ * baselines: the run ends with changes in the working tree and declines
+ * recommended for human review.
  */
 const executeRefactor = async ({
 	cwd,
@@ -111,9 +106,5 @@ const executeRefactor = async ({
 	return closeRefactorRun({ run, worklist });
 };
 
-/**
- * Public entry: the shared run-lock lifecycle around the body — an implement
- * run and a refactor run take the same repo lock, so they can never race one
- * tree.
- */
+/** An implement run and a refactor run take the same repo lock, so they can never race one tree. */
 export const runRefactorPipeline = (params: Params): Promise<RefactorResult> => withRunLock({ params, run: executeRefactor });

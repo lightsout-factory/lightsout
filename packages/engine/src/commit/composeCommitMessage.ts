@@ -11,11 +11,8 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
 
 interface Params {
-	/** The worktree whose staged change is described — the one the commit is made in. */
 	cwd: string;
-	/** The harness the calling pipeline or queue already holds. */
 	driver: Driver;
-	/** Supplies the model and effort. */
 	config: LightsoutConfig;
 	address: CommitAddress;
 	/** The lightsout run named on the body's last line. Absent only for a leftover plan with no recorded run, whose message then names none. */
@@ -26,12 +23,8 @@ interface Params {
 }
 
 /**
- * The agent's answer about one staged change.
- *
- * A read-only one-shot with a fixed three-minute ceiling — longer than the
- * work-order namer's, because this call reads a diff rather than a title. It
- * grants no commands: the diff is handed over in the prompt, so there is nothing
- * for the agent to look up.
+ * The ceiling is longer than the work-order namer's because this call reads a
+ * diff rather than a title.
  */
 const askForSummary = async ({
 	cwd,
@@ -65,13 +58,9 @@ const askForSummary = async ({
 };
 
 /**
- * The summary with a leading copy of the reference taken off, so the subject
- * names the ticket exactly once.
- *
- * The reference is compared as a literal string, never built into a pattern —
- * a run-label fallback can hold pattern characters — and only as a whole token:
- * it must be followed by a colon, whitespace or the end of the summary, so a
- * summary opening on a longer ticket such as `LO-1670` is left as it is.
+ * The reference is compared as a literal, never built into a pattern, because a
+ * run-label fallback can hold pattern characters. It must be followed by a
+ * colon, whitespace or the end, so a summary opening on `LO-1670` is kept.
  */
 const stripReference = ({ summary, reference }: { summary: string; reference: string }) => {
 	const rest = summary.slice(reference.length);
@@ -80,11 +69,6 @@ const stripReference = ({ summary, reference }: { summary: string; reference: st
 	return (repeats ? rest.replace(/^\s*:?\s*/u, '') : summary).trim();
 };
 
-/**
- * The summary and body the agent wrote for the staged change, or why there are
- * none. An index nobody could read never reaches the agent: there would be
- * nothing for it to describe.
- */
 const readAnswer = async ({
 	cwd,
 	driver,
@@ -119,16 +103,8 @@ const readAnswer = async ({
 };
 
 /**
- * The message one commit is made under, written from what is staged: the
- * agent's summary behind the engine's reference, then the agent's body and the
- * trailer lines.
- *
- * It answers a message and never an error arm. Every failure — an index that
- * cannot be read, a driver that throws, an answer the contract refuses twice, a
- * summary that only repeated the reference — falls back to the caller's
- * template subject and narrates that through `onProgress`. The message is
- * description, and verified work is never lost over a model call. The trailer
- * lines are the same on either path, because the one assembler writes both.
+ * Every failure falls back to the caller's template subject: the message is
+ * description, and verified work is never lost over a model call.
  */
 export const composeCommitMessage = async ({ cwd, driver, config, address, runId, onUsage, onProgress }: Params): Promise<string> => {
 	const answer = await readAnswer({ cwd, driver, config, address, onUsage });

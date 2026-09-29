@@ -6,11 +6,8 @@ import { readConfig } from '#src/common/config/readConfig.ts';
 import { excludeWorkOrderPlan } from '#src/workOrder/excludeWorkOrderPlan.ts';
 
 /**
- * `lightsout work-order exclude-plan` at the terminal.
- *
- * The progress printer matters here rather than being decoration: excluding a
- * plan whose implementation started runs this repository's own full gates on
- * the ticket branch, which can take minutes.
+ * The progress printer matters here: excluding a plan whose implementation
+ * started runs the repository's full gates on the ticket branch, which can take minutes.
  */
 export const workOrderExcludePlanCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const name = await getRequiredFlag({ flags, name: 'name' });

@@ -3,14 +3,7 @@ import { AddressNotFound } from '#src/common/components/boundaries/AddressNotFou
 import { planWorkspaceQueryOptions } from '#src/features/plans/queries/planWorkspaceQueryOptions.ts';
 import { PlanDetail } from '#src/features/plans/screens/PlanDetail/PlanDetail.tsx';
 
-/**
- * No folder under `.lightsout/plans/` answers to the name in the path.
- *
- * Reached because `getPlanWorkspaceServerFn` turns the engine's
- * `PlanWorkspaceNotFoundError` into the router's own not-found signal on the
- * server — an error class cannot survive the trip across the wire, so nothing
- * here matches one.
- */
+/** Reached because `getPlanWorkspaceServerFn` turns `PlanWorkspaceNotFoundError` into `notFound()` on the server. */
 const PlanNotFound = () => {
 	const { name } = Route.useParams();
 
@@ -28,8 +21,6 @@ const PlanDetailPage = () => {
 };
 
 export const Route = createFileRoute('/app/plans/$name')({
-	// Warmed before the first render, so the page is server-rendered with its
-	// records rather than arriving as a shell the client has to fill.
 	loader: async ({ context, params }) => {
 		await context.queryClient.ensureQueryData(planWorkspaceQueryOptions({ name: params.name }));
 	},

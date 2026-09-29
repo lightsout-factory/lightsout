@@ -13,13 +13,11 @@ import { getRunTitle } from '#src/views/internal/common/utils/getRunTitle.ts';
 /** Statuses from which this run can still reach ship — a run that ended any other way never will. */
 const shippableStatuses: RunStatus[] = [RunStatus.Running, RunStatus.Pending, RunStatus.PausedRateLimit, RunStatus.PausedBudget, RunStatus.Passed];
 
-/** How a filed ship result reads as a table row outcome. */
 const shipRowStatus: Record<ShipStatus, RunStatus> = {
 	[ShipStatus.Shipped]: RunStatus.Passed,
 	[ShipStatus.Blocked]: RunStatus.Failed,
 };
 
-/** The ship row's outcome: passed on a shipped branch, failed on a blocked one, and undefined when no result was ever filed. */
 const readShipRow = async ({ cwd, manifest }: { cwd: string; manifest: RunManifest }): Promise<RunProgressRow> => {
 	const result = manifest.branch === undefined ? undefined : await readShipResult({ cwd, branch: manifest.branch });
 
@@ -36,23 +34,14 @@ const readShipRow = async ({ cwd, manifest }: { cwd: string; manifest: RunManife
 interface Params {
 	cwd: string;
 	manifest: RunManifest;
-	/** The repo lock, or undefined when nothing holds it — what decides whether a running row ticks. */
+	/** Decides whether a running row ticks. */
 	lock: RunLock | undefined;
 }
 
 /**
- * A run's progress block, built from what the run already persisted.
- *
- * A view, never a second source of truth: every number here is read from the
- * manifest, the progress log and the ship directory, exactly as `summarizeRun`
- * reads a finished run's totals.
- *
- * The one thing it adds is the clock. A long step writes nothing while it
- * works, so a frozen duration would tell a reader nothing about whether the
- * step is slow or wedged — the running step of a LIVE run therefore shows its
- * persisted total plus the time since the manifest's last write. A run with no
- * process behind it shows the persisted number unchanged, because a crashed run
- * that kept ticking would read as work.
+ * A long step writes nothing while it works, so the running step of a live run
+ * adds the time since the manifest's last write. A run with no process behind it
+ * does not tick, because a crashed run that kept ticking would read as work.
  */
 export const getRunProgress = async ({ cwd, manifest, lock }: Params): Promise<RunProgress> => {
 	const live = isRunLive({ manifest, lock });
@@ -76,10 +65,8 @@ export const getRunProgress = async ({ cwd, manifest, lock }: Params): Promise<R
 		}
 	}
 
-	// A run that ended failed or escalated will never ship — exitAfterImplement
-	// refuses a result that is not ok — so a pending ship row would promise a
-	// reader work still to come. Omitted, the table's last row is the step that
-	// stopped the run, which is what they wanted to see.
+	// A run that ended failed or escalated will never ship, so a pending ship row
+	// would promise work still to come.
 	const shipRow = manifest.willShip === true && shippableStatuses.includes(manifest.status) ? await readShipRow({ cwd, manifest }) : undefined;
 
 	if (shipRow) {

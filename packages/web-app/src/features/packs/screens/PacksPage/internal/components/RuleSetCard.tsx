@@ -16,12 +16,6 @@ interface Props {
 	total: ChannelTotal;
 }
 
-/**
- * One set of rules in a pack — TypeScript, React, TanStack — as a card that
- * opens those rules: its logo, when it applies, how many rules it holds, and
- * how many are deterministic checks and how many agent checks, each beside the
- * icon the page's key gives that kind. A kind the set has none of is dimmed.
- */
 export const RuleSetCard = ({ total }: Props) => {
 	const face = describeChannel({ channel: total.channel });
 	const kinds = [

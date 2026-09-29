@@ -34,22 +34,15 @@ interface ConstructorParams {
 }
 
 /**
- * The implement run's moving parts as one owned object: the state and
- * persistence every run shares, plus step timers, the evidence counters, and
- * the invocation plumbing every agent call goes through. Steps mutate run
- * state ONLY through these methods, so the persist-before-next-action
- * ordering lives in exactly one place. Deliberately small: state +
- * persistence + invocation; derivations that merely read the run live in
- * their own files.
+ * Steps mutate run state only through these methods, so the
+ * persist-before-next-action ordering lives in exactly one place.
  */
 export class PipelineRun {
 	/** Public: the supervisor consult invokes with its own contract/timeouts, outside invokeRole. */
 	readonly driver: Driver;
-	// The shared run state is held, not inherited: what this run adds — step
-	// timers, evidence counters, agent invocation — stays visible against a
-	// plain value it forwards to. It stays private for the same reason:
-	// `setStep` and `recordUsage` below add to what they forward, and a caller
-	// holding the state could call the plain versions instead.
+	// The shared run state is held, not inherited, and private: `setStep` and
+	// `recordUsage` add to what they forward, and a caller holding the state
+	// could call the plain versions instead.
 	private readonly runState: RunState;
 	// Active time per step, accumulated across attempts and resumes: the
 	// timer starts when nextRecord picks the step up (seeded with any prior
@@ -74,7 +67,6 @@ export class PipelineRun {
 		return this.runState.config;
 	}
 
-	/** Ceiling for a run's agent invocations, config-resolved once. */
 	get agentTimeoutMs(): number {
 		return this.runState.agentTimeoutMs;
 	}
@@ -153,12 +145,9 @@ export class PipelineRun {
 		return this.level?.open({ level: ActivityLevelKind.Step, label: step });
 	}
 
-	// Every agent invocation's full event stream (tool calls, chat text, the
-	// final result) is teed to agents/stream-NN-<step>.jsonl — the chat as
-	// on-disk run evidence, tail-able live for anyone who wants the
-	// play-by-play. The progress stream stays quiet per event: a working
-	// agent fires tools every few seconds, and narrating each one drowned
-	// the terminal. Evidence only: outcomes never depend on it.
+	// Every agent invocation's full event stream is teed to
+	// agents/stream-NN-<step>.jsonl as run evidence, never narrated per event: a
+	// working agent fires tools every few seconds. Outcomes never depend on it.
 	agentEventSink({ step }: { step: string }): (event: unknown) => void {
 		this.transcriptCount += 1;
 
@@ -178,9 +167,8 @@ export class PipelineRun {
 		return createEventFileSink({ path, ready: path });
 	}
 
-	// A final message that fails its contract is still evidence — persist it
-	// to the run dir before any retry, so a rejected report never has to be
-	// recovered from harness-internal session files again.
+	// A final message that fails its contract is still evidence, so it is
+	// persisted before any retry.
 	persistRejected({ step }: { step: string }): (params: { text: string; attempt: number; validationError: string }) => Promise<void> {
 		return async ({ text, attempt, validationError }) => {
 			this.rejectedCount += 1;

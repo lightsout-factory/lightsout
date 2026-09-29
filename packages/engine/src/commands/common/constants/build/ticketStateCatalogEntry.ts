@@ -2,7 +2,6 @@ import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalog
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 
-/** `lightsout ticket-state` — the deterministic tracker write every workflow skill shells out to. */
 export const ticketStateCatalogEntry: CommandCatalogEntry = {
 	id: 'ticket-state',
 	cli: 'lightsout ticket-state',

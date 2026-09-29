@@ -26,23 +26,13 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/** What every refusal about a tree offers the reader instead. */
 const noWorktreeRemedy = 'pass --no-worktree to plan in the launching checkout deliberately';
 
 /**
- * The tree already standing at the branch's path, continued in — or the refusal
- * when nothing proves it is this plan's.
- *
- * A `plan` record is a resumed session; a `queue` record is the drain's ticket
- * tree, which is already this plan's workspace. Neither record is re-stamped:
- * the queue's resume and cleanup recognise their tree by its own owner. A tree
- * nothing claims is refused, because an occupied directory is never evidence.
- *
- * An `implement` record is accepted too: every plan of a ticket lives on the
- * one branch, so the tree an earlier plan's implementation run adopted is
- * exactly where the next plan must be researched. What separates that from a run
- * still editing the tree is the run lock, not the record, so the tree is refused
- * whatever the owner while a live run holds it.
+ * Any owner's record is accepted, since every plan of a ticket shares one branch,
+ * and none is re-stamped: the queue's resume and cleanup recognise their tree by
+ * its own owner. A tree nothing claims is refused, because an occupied directory
+ * is never evidence, and so is any tree a live run holds.
  */
 const continueInTree = async ({ cwd, branch, treePath }: { cwd: string; branch: string; treePath: string }) => {
 	const holder = await readLiveRunLock({ cwd: treePath });
@@ -61,19 +51,10 @@ const continueInTree = async ({ cwd, branch, treePath }: { cwd: string; branch: 
 };
 
 /**
- * A fresh tree cut for the plan, or the step that refused.
- *
- * The start point is captured once and recorded: a first cut takes the launching
- * checkout's committed HEAD, and a tree whose record already carries a start
- * point is re-cut at that same commit. A record with none belongs to a branch
- * that was adopted rather than cut, and `createWorktree` adopts a branch git
- * already knows whatever start point it is handed — which is what puts a later
- * plan's tree on the ticket branch's current implementation.
- *
- * A ticket branch only the remote holds is the one case where neither of those
- * is right: `prepareWorkOrderBranch` answers the pushed commit, and it wins, so the
- * local ticket branch is created at the implementation that was pushed rather
- * than at whatever this checkout happens to stand on.
+ * A re-cut reuses the recorded start point. `createWorktree` adopts a branch git
+ * already knows whatever start point it is handed, which puts a later plan's tree
+ * on the branch's current implementation. A branch only the remote holds starts
+ * at the pushed commit, not at whatever this checkout stands on.
  */
 const cutPlanTree = async ({
 	cwd,
@@ -97,8 +78,7 @@ const cutPlanTree = async ({
 		return { error: `no worktree was made at ${treePath}: the launching checkout has no commit to plan from — ${noWorktreeRemedy}` };
 	}
 
-	// `worktree.setup` runs here as it does for every other creator, because this
-	// same tree becomes the implementation workspace.
+	// `worktree.setup` runs because this same tree becomes the implementation workspace.
 	const created = await createWorktree({
 		cwd,
 		branch,
@@ -113,33 +93,14 @@ const cutPlanTree = async ({
 };
 
 /**
- * The one resolver every plan subcommand goes through before anything reads the
- * disk: the checkout the session acts on, or one sentence saying why there is
- * none.
+ * The order is a requirement, for the reason `resolveRunWorkspace` gives: nothing
+ * touches git when isolation is off.
  *
- * The order is a requirement, for the reason `resolveRunWorkspace` gives: the
- * flags are read first, isolation is decided from the flags and then
- * `plan.worktree`, and nothing touches git at all when isolation is off. The
- * tree is `resolveWorktreePath`'s, so planning, the queue and `implement` agree
- * on where a branch's tree sits.
+ * The branch is settled against the remote first because a later plan must be
+ * researched against the implementation the branch already carries. A session
+ * already standing in the tree is answered as it stands, whatever its record says.
  *
- * The branch is whatever the plan's work order record stores, never the plan's
- * own address and never its first segment, so every plan of one work order
- * plans in the one tree on the one branch even when a prefixed template made
- * the two different strings. A `--name` no work order claims is refused rather
- * than planned on a branch nothing authored. For an address the work order's
- * branch is settled first — a branch only the remote holds supplies the start
- * point, and a branch behind or diverged from the pushed one is refused —
- * because a later plan must be researched against the implementation the branch
- * already carries.
- *
- * A session already standing in that tree is answered as it stands, whatever
- * its record says: it adopts nothing, having moved nowhere, which is what keeps
- * every tree cut before ownership was recorded working. From anywhere else, the
- * record decides.
- *
- * It never falls back to the launching checkout, never exits and never writes to
- * the console — the command owns the exit code and the printing.
+ * It never exits or prints; the command owns both.
  */
 export const resolvePlanWorktree = async ({ cwd, config, flags, name, onProgress }: Params): Promise<PlanWorktree | { error: string }> => {
 	const isolated = resolveWorktreeIsolation({ flags, configured: config?.plan?.worktree });

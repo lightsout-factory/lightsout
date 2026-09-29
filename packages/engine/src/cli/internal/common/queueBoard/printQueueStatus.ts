@@ -11,7 +11,6 @@ import type { RunListing } from '#src/contracts/views/RunListing.ts';
 import { getQueueBoardPath } from '#src/queue/board/getQueueBoardPath.ts';
 import { readQueueBoard } from '#src/queue/board/readQueueBoard.ts';
 
-/** Live while a going manifest has a live process behind it, stopped when it has none, finished otherwise. */
 const toBoardState = ({ listing }: { listing: RunListing }) => {
 	const going = listing.status === RunStatus.Running || listing.status === RunStatus.Pending;
 	let state: QueueBoardState = QueueBoardState.Finished;
@@ -23,14 +22,9 @@ const toBoardState = ({ listing }: { listing: RunListing }) => {
 	return state;
 };
 
-/** A ticket someone is working right now: building, shipping, or a live worker waiting for a relayed answer. */
 const isActive = ({ ticket }: { ticket: QueueBoardTicket }) =>
 	ticket.lane === QueueLane.Building || ticket.lane === QueueLane.ShippingNow || (ticket.lane === QueueLane.Blocked && ticket.question !== undefined);
 
-/**
- * The board, then — only while the queue is live — one detail block per
- * active ticket, in column order and, inside a column, in record order.
- */
 const printBoard = async ({ cwd, listing }: { cwd: string; listing: RunListing }) => {
 	const board = await readQueueBoard({ cwd, runId: listing.runId });
 
@@ -67,15 +61,9 @@ interface Params {
 }
 
 /**
- * `status --queue`: the queue's board, then one fenced status block per active
- * ticket — the whole update the queue skill posts, printed once and appended
- * with `console.log`, never clearing the screen.
- *
  * No queue run going, or a queue run with no board yet, is a normal answer. A
  * named run that is not a queue run, or whose manifest does not read, is the
- * reader's mistake, said on stderr.
- *
- * @returns the exit code the command ends with: 0 for every answer but a named run that cannot be shown, which is 1
+ * reader's mistake.
  */
 export const printQueueStatus = async ({ cwd, runId, wait }: Params): Promise<number> => {
 	const listing = await resolveQueueRun({ cwd, runId, wait });

@@ -1,13 +1,12 @@
 import type { ProseFile } from '#src/contracts/plan/ledger/ProseFile.ts';
 
 interface Params {
-	/** The lines under the `## Prose Files` heading, or undefined when the section is absent. */
+	/** Undefined when the section is absent. */
 	sectionLines: string[] | undefined;
-	/** The 1-based line number the section's first line sits at in the plan file. */
+	/** 1-based line number of the section's first line in the plan file. */
 	firstLine: number;
 }
 
-/** The first backticked span in a bullet and everything written after it — the path it names, and where its reason would be. */
 const splitAtSpan = ({ line }: { line: string }) => {
 	const span = /`([^`]+)`/.exec(line);
 
@@ -15,15 +14,10 @@ const splitAtSpan = ({ line }: { line: string }) => {
 };
 
 /**
- * Read the `## Prose Files` section: one `-` bullet per file, the path in a
- * backticked span, then a dash and the reason no test states that file's
- * behaviour.
- *
- * A bullet with no backticked span is ignored rather than reported — the
- * prose-path check already reports every backticked span naming nothing, and a
- * bullet without one names nothing at all. A bullet that DOES name a path and
- * states no reason is malformed: the exemption exists because of its reason, so
- * an unreasoned one is a file that is neither covered by a test nor explained.
+ * One `-` bullet per file: the path in a backticked span, then a dash and the
+ * reason no test states that file's behaviour. A bullet with no span names
+ * nothing and is ignored. One that names a path but states no reason is
+ * malformed: the exemption exists because of its reason.
  */
 export const parseProseFiles = ({ sectionLines, firstLine }: Params): { files: ProseFile[]; malformedLines: number[] } => {
 	const files: ProseFile[] = [];

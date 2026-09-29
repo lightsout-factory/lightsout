@@ -26,31 +26,21 @@ interface Params {
 	cwd: string;
 	name: string;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	target: TicketTrackerTarget;
 	onProgress?: (message: string) => void;
 }
 
 interface PlanMarkers {
-	/** What the kept record will say each plan's published generation is. */
 	recorded: Record<string, string>;
-	/** The subset this machine itself has just published, which is all the sidecar may claim. */
+	/** Only what this machine itself just published, which is all the sidecar may claim. */
 	published: Record<string, string>;
 }
 
 /**
- * Put this machine's copy of each divergent plan back on the ticket, so the
- * kept record's markers describe files that are really there.
- *
- * A plan this machine does not hold cannot be republished, so the kept record
- * takes the ticket's own marker for it: the ticket's files stay as they are and
- * the record describes them truthfully. The sidecar is told only about the
- * plans actually republished here, because it records what THIS machine has
- * published or restored and nothing else.
- *
- * A ticket carrying no record of its own has nothing to be behind, so no plan
- * is divergent and nothing is republished.
+ * Republishes so the kept record's markers describe files that are really
+ * there. A plan this machine does not hold keeps the ticket's own marker, so the
+ * record still describes the ticket's files truthfully.
  */
 const republishDivergentPlans = async ({
 	cwd,
@@ -111,27 +101,16 @@ const republishDivergentPlans = async ({
 	return markers;
 };
 
-/** The kept record with each plan's published marker set to what the ticket now carries for it. */
 const withPlanMarkers = ({ record, markers }: { record: WorkOrderState; markers: Record<string, string> }): WorkOrderState => ({
 	...record,
 	plans: record.plans.map((plan) => (markers[plan.id] === undefined ? plan : { ...plan, publishedMarker: markers[plan.id] })),
 });
 
 interface RecordsToKeep {
-	/** This machine's record, holding every plan either copy knows about. */
 	kept: WorkOrderState;
-	/** The ticket's own copy and its normalised bytes, absent when the ticket carries none. */
 	carried: PublishedWorkOrderState | undefined;
 }
 
-/**
- * Read both copies and settle what the kept record will say, before anything is
- * published.
- *
- * Plans only the ticket's copy holds are carried into this machine's record, so
- * a plan added on another machine is neither lost nor has its number handed to
- * something else later.
- */
 const readRecordsToKeep = async ({
 	cwd,
 	name,
@@ -167,15 +146,10 @@ const readRecordsToKeep = async ({
 };
 
 /**
- * Settle a divergence this machine's way: its record is published over the
- * ticket's, and every plan whose published files this machine never saw is
- * republished from the copy here.
- *
  * The plans are republished before the record, so a record naming a marker no
- * attachment matches is never left on the ticket. The upload of the record
- * itself is still guarded: keeping the local copy overrides the published
- * version the human looked at, never one that arrived after it, so a third
- * machine publishing mid-command is reported rather than overwritten.
+ * attachment matches is never left on the ticket. The record upload is guarded:
+ * it overrides the published version the human looked at, never a later one, so
+ * a third machine publishing mid-command is reported rather than overwritten.
  */
 export const keepLocalWorkOrderState = async ({
 	cwd,

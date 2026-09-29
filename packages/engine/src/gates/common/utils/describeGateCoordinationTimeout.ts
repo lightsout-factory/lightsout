@@ -5,13 +5,9 @@ interface Params {
 }
 
 /**
- * The one sentence a gate run that never started because it could not have the
- * machine is reported with.
- *
- * Written once, following the rule `describeGateCrash` established: one event
- * gets one spelling, so the expiry reads the same wherever it surfaces. It must
- * not read as a code failure and must not suggest a repair — no gate command
- * executed, so there is nothing about the code to have failed.
+ * One event gets one spelling, so the expiry reads the same wherever it
+ * surfaces. It must not read as a code failure or suggest a repair: no gate
+ * command executed.
  */
 export const describeGateCoordinationTimeout = ({ holder, waitedMs }: Params): string => {
 	const waited = waitedMs >= 60_000 ? `${Math.round(waitedMs / 60_000)}m` : `${Math.round(waitedMs / 1_000)}s`;

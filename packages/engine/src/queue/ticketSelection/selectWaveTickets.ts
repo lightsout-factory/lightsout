@@ -20,26 +20,16 @@ interface Params {
 }
 
 /**
- * What one wave may take, and what it must hold back.
+ * The already-attempted filter runs before the dedupe, so every copy of an
+ * ambiguous ticket leaves together and the ambiguity check still sees every copy
+ * of the rest.
  *
- * The already-attempted filter runs BEFORE the dedupe, so every copy of a
- * ticket carrying more than one planning-status label leaves together and the
- * ambiguity check still sees every copy of the tickets that remain. It is also
- * what makes the wave loop terminate: a ticket offered to any wave is never
- * offered again.
+ * A ticket that selects no worker is dropped in silence: it is in an ordinary
+ * state, and reporting each would bury the real skips. A blocked ticket is left
+ * behind rather than reordered; chain order falls out of repeated scans.
  *
- * A ticket whose pair selects no worker is dropped in silence: a ticket still
- * being shaped, or one not yet waiting to be implemented, is an ordinary state,
- * and reporting every one of them would bury the real skips.
- *
- * A ticket with an unfinished blocker is left behind rather than reordered — the
- * queue drains everything unblocked, then re-scans, and correct chain order
- * falls out of the repetition.
- *
- * A held ticket leaves through the same `blocked` channel, and deliberately not
- * through `skipped`: a hold is released by a human at a moment nothing here can
- * predict, so the ticket is re-offered by the next scan exactly as a blocked one
- * is rather than being settled for the invocation.
+ * A held ticket leaves as `blocked`, not `skipped`, because a human may release
+ * the hold at any moment, so the next scan must re-offer it.
  */
 export const selectWaveTickets = ({ tickets, settings, attempted, holds, onProgress }: Params): WaveSelection => {
 	const fresh = tickets.filter((ticket) => !attempted.has(ticket.identifier.toLowerCase()));

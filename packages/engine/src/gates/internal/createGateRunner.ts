@@ -17,32 +17,26 @@ import { appendFriction } from '#src/runState/appendFriction.ts';
 
 interface Params {
 	cwd: string;
-	/** Ceiling for one gate command, in milliseconds — `timeouts.gate-minutes`, already resolved by the caller. */
+	/** `timeouts.gate-minutes`, already resolved by the caller. */
 	timeoutMs: number;
 	/** When set, every command execution is appended to the run's commands.jsonl. */
 	runId?: string;
-	/** Pipeline step in flight, recorded in the command log. */
 	step?: string;
-	/** Structured sink — one entry per command execution. Feeds verify's evidence list; independent of the commands.jsonl log. */
+	/** One entry per command execution; independent of the commands.jsonl log. */
 	onGateResult?: (result: GateResult) => void;
-	/** Live progress sink — one line per command result. Silent when omitted. */
 	onProgress?: (message: string) => void;
-	/** The shared gate reservation's record of a gate process group, called once per attempt that spawned. */
+	/** Called once per attempt that spawned. */
 	onGateSpawn?: ({ pid }: { pid: number }) => void;
-	/** The same reservation forgetting that group once the attempt settles, the timeout path included. */
+	/** Called once the attempt settles, the timeout path included. */
 	onGateExit?: ({ pid }: { pid: number }) => void;
 }
 
-/** Executions a gate gets while it keeps crashing; one re-run was not always enough. */
 const maxCrashAttempts = 3;
 
-/** Executions a gate gets while it keeps running past its ceiling; each costs a full ceiling. */
+/** Lower than the crash allowance because each attempt costs a full ceiling. */
 const maxTimeoutAttempts = 2;
 
-/**
- * The reporter file and a fresh results directory for one execution, so a re-run
- * is never judged on an earlier attempt's results. Nothing without a run folder.
- */
+/** A fresh results directory per execution, so a re-run is never judged on an earlier attempt's results. */
 const prepareEvidence = async ({ cwd, runId, step, kind, group }: { cwd: string; runId?: string; step?: string; kind: string; group: string }) => {
 	if (!runId) {
 		return undefined;
@@ -57,7 +51,7 @@ const prepareEvidence = async ({ cwd, runId, step, kind, group }: { cwd: string;
 	return { dir, env: { [testReporterEnv.reporter]: reporterPath, [testReporterEnv.resultsDir]: dir } };
 };
 
-/** One execution of a gate command. A failed spawn becomes exit -1; `timedOut` says the deadline stopped it. */
+/** A failed spawn becomes exit -1. */
 const spawnAttempt = async ({
 	command,
 	cwd,
@@ -75,7 +69,6 @@ const spawnAttempt = async ({
 }) => {
 	let result: CommandResult;
 	let timedOut = false;
-	// Only an attempt that produced a pid reports an exit to the reservation.
 	let spawnedPid: number | undefined;
 
 	try {
@@ -103,7 +96,6 @@ const spawnAttempt = async ({
 	return { result, timedOut };
 };
 
-/** How a crash or a timeout is re-run and reported, each on its own allowance; nothing for other endings. */
 const noVerdictPolicy = ({ ending, ceilingMinutes }: { ending: GateEnding; ceilingMinutes: number }) => {
 	const policies: Partial<Record<GateEnding, { allowance: number; suffix: string; rerun: string; friction: string }>> = {
 		[GateEnding.Crashed]: {
@@ -123,10 +115,7 @@ const noVerdictPolicy = ({ ending, ceilingMinutes }: { ending: GateEnding; ceili
 	return policies[ending];
 };
 
-/**
- * Runs one gate command under a timeout, re-running it while a crash or the
- * ceiling is the only thing red about it. Re-runs never spend the fix budget.
- */
+/** Re-runs of a crash or a timeout never spend the fix budget. */
 export const createGateRunner = ({ cwd, timeoutMs, runId, step, onGateResult, onProgress, onGateSpawn, onGateExit }: Params): RunGate => {
 	const ceilingMinutes = timeoutMs / 60_000;
 

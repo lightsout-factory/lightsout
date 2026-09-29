@@ -9,17 +9,13 @@ interface Params {
 	stat: string;
 	/** The staged diff, possibly cut to the engine's limit. */
 	diff: string;
-	/** Whether `diff` was cut. */
 	truncated: boolean;
 }
 
 /**
- * Assemble the commit-message invocation deterministically.
- *
- * The diff is placed under its heading as it is, never inside a code fence: a
- * diff that touches a markdown file carries fences of its own, and one of them
- * could close the prompt's fence early. The role prompt is one fixed text, so
- * nothing about this commit reaches the system prompt.
+ * The diff goes under its heading unfenced: a diff that touches a markdown
+ * file carries fences of its own, and one of them could close the prompt's
+ * fence early.
  */
 export const buildCommitMessageInvocation = ({ reference, context, stat, diff, truncated }: Params): { systemPrompt: string; prompt: string } => {
 	const sections = [

@@ -6,7 +6,6 @@ import { getFrameworkCarveOuts } from '../frameworks/getFrameworkCarveOuts.ts';
 import type { UnconsumedExport } from '../types/UnconsumedExport.ts';
 
 interface Params {
-	/** The rule id claiming this verdict. */
 	rule: string;
 	/** Which unconsumed exports this rule claims — the verdicts are mutually exclusive, so each export lands in at most one rule. */
 	matches: ({ test }: UnconsumedExport['reachedBy']) => boolean;
@@ -16,13 +15,6 @@ interface Params {
 }
 
 /**
- * A whole check for a rule that reports on exports nothing consumes.
- *
- * `buildUnconsumedFindings` already holds the counting and the grouping. This
- * holds the rest of the check around it — the input it declares and the read
- * that gets there — so the three rules using it share a body instead of
- * repeating one. Each states only which verdict it claims and what it says.
- *
  * The framework carve-outs are derived here rather than taken as a parameter,
  * because every rule that uses this builder wants the same answer and none of
  * them should have to ask for it.

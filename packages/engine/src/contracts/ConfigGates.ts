@@ -6,20 +6,16 @@ import { validateCustomTestGates } from '#src/contracts/common/utils/validateCus
 const knownGateKeys = new Set(['check', 'test', 'test-coverage', 'generate', 'build', 'format']);
 
 /**
- * Verification commands — the mechanical gates. Full shell commands, run by
- * the engine itself; agents never run them.
+ * Full shell commands, run by the engine itself; agents never run them.
  *
- * `test` and `test-coverage` are two spellings of the same suite — plain and
- * coverage-instrumented — so the engine runs one or the other, never both.
- * Every other `test-*` key is a custom suite of its own (`test-e2e`,
- * `test-integration`, …), run in the order written here, after the unit suite
- * and before `build`. The key set is otherwise closed: an unknown key that is
- * not a `test-*` suite fails parsing, because a silently dropped gate is a
- * suite that never runs.
+ * `test` and `test-coverage` are the same suite, plain and instrumented, so the
+ * engine runs one or the other, never both. Every other `test-*` key is a
+ * custom suite, run in the order written, after the unit suite and before
+ * `build`. Any other unknown key fails parsing, because a silently dropped gate
+ * is a suite that never runs.
  *
- * Validation only — the parsed value keeps the config's own spelling, so a
- * run manifest's config snapshot round-trips through this schema unchanged.
- * `resolveGates` is where the engine reads the block.
+ * Validation only: the parsed value keeps the config's own spelling, so a run
+ * manifest's config snapshot round-trips unchanged. `resolveGates` reads it.
  */
 export const ConfigGates = z
 	.object({

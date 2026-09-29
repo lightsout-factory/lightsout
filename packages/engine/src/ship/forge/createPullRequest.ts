@@ -11,7 +11,6 @@ interface Params {
 	cwd: string;
 }
 
-/** The pull request number out of the URL `gh pr create` prints, or undefined when that line is not a URL ending in one. */
 const readCreatedNumber = ({ stdout }: { stdout: string }) => {
 	const segment = stdout.trim().split('\n').at(-1)?.split('/').at(-1) ?? '';
 	const parsed = Number.parseInt(segment, 10);
@@ -20,19 +19,10 @@ const readCreatedNumber = ({ stdout }: { stdout: string }) => {
 };
 
 /**
- * Open a pull request for this branch and return it.
- *
- * Three `gh` calls, because one cannot do it. `--fill-first` takes the title
- * and body from the branch's FIRST commit, which is the deterministic "what
- * shipped" line the ship result carries — plain `--fill` would use the branch
- * name as the title on a multi-commit branch, turning it into a slug. `gh pr
- * create` refuses `--body` alongside `--fill-first`, so the rendered body is
- * written by a second call, and the third reads back what the forge actually
- * recorded rather than trusting what was asked for.
- *
- * Any of the three exiting non-zero answers that call's own stderr, so the
- * caller can tell a refused create from a refused edit without another round
- * trip; it turns that into a blocked result.
+ * `--fill-first` takes the title and body from the branch's first commit; plain
+ * `--fill` would title a multi-commit branch with its slug. `gh pr create`
+ * refuses `--body` alongside `--fill-first`, so the body is set by a second
+ * call, and a third reads back what the forge actually recorded.
  */
 export const createPullRequest = async ({ branch, body, cwd }: Params): Promise<PullRequestSummary | ShipStepFailure> => {
 	const created = await runGh({ args: ['pr', 'create', '--fill-first', '--head', branch], cwd });

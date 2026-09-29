@@ -2,19 +2,10 @@ import { createFileRoute } from '@tanstack/react-router';
 import { runQueryOptions } from '#src/features/runDetail/queries/runQueryOptions.ts';
 import { RunDetail } from '#src/features/runDetail/screens/RunDetail/RunDetail.tsx';
 
-// The trailing underscore on `runs_` is the router's own spelling for "this
-// path segment is not a layout": without it the file router would nest the
-// detail page inside the runs list and render both at once. The path a reader
-// and every `Link` sees is still /app/runs/$runId.
+// The trailing underscore on `runs_` stops the file router nesting this page
+// inside the runs list; the URL is still /app/runs/$runId.
 
-/**
- * No run on disk answers to the id in the path.
- *
- * Reached because `getRunServerFn` turns the engine's `RunNotFoundError` into
- * the router's own not-found signal on the server — an error class cannot
- * survive the trip across the wire, so nothing here matches one. Anything
- * genuinely unexpected falls through to the root's catch boundary instead.
- */
+/** Reached because `getRunServerFn` turns `RunNotFoundError` into `notFound()` on the server. */
 const RunNotFound = () => {
 	const { runId } = Route.useParams();
 
@@ -35,8 +26,6 @@ const RunDetailPage = () => {
 };
 
 export const Route = createFileRoute('/app/runs_/$runId')({
-	// Warmed before the first render, so the page is server-rendered with its
-	// evidence rather than arriving as a shell the client has to fill.
 	loader: async ({ context, params }) => {
 		await context.queryClient.ensureQueryData(runQueryOptions({ runId: params.runId }));
 	},

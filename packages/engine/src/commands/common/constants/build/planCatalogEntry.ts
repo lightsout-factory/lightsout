@@ -3,7 +3,6 @@ import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalog
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 
-/** `/plan` — eight subcommands under one command word, so it carries eight invocations rather than one. */
 export const planCatalogEntry: CommandCatalogEntry = {
 	id: 'plan',
 	slash: '/plan',

@@ -58,7 +58,6 @@ interface Params {
 	progress: (message: string) => void;
 }
 
-/** One focused phase spawn: its own runner, its own transcript, and exactly one output path the engine dictates. */
 const spawnPhase = async ({
 	params,
 	declaration,
@@ -110,30 +109,17 @@ const spawnPhase = async ({
 };
 
 /**
- * Spawn one focused plan-writer per declared phase, concurrently, each authoring
- * exactly one `phase<N>-<slug>.md` against the overview's settled declaration.
- *
- * Each spawn carries its own narrowed evidence brief and the census result for
- * the symbols its declaration names, and each requests the focused environment.
  * The transcript step names are fixed — `scripts/comparePlanDrafts.mjs` reads
  * them by those names.
  *
- * The export census is built once here rather than per spawn: it is one
- * repository-wide read, and every phase's declared symbols are compared against
- * the same copy of it.
- *
- * `planDraftConcurrency` is read unchanged and deliberately not raised: the bound
- * is the harness rate limit rather than a cost the cheaper spawn buys back, and
- * one rate-limited spawn parks the whole draft.
+ * `planDraftConcurrency` is deliberately not raised: the bound is the harness
+ * rate limit, and one rate-limited spawn parks the whole draft.
  *
  * A phase spawn gets no self-lint command: its siblings are not on disk yet, so
  * a lint run there would report artefacts of when it looked rather than defects.
  *
- * The whole fan-out is ONE level, with the concurrent writers as its steps: the
- * report's question here is what authoring the phases cost as against what the
- * overview did, which a flat list of spawns under the command run could not
- * answer. It is closed once `drainTasks` settles, including when a rate-limited
- * spawn stopped it early.
+ * The whole fan-out is one level so the report can set what authoring the
+ * phases cost against what the overview did.
  */
 export const authorFocusedPhaseFiles = async (params: Params): Promise<AuthorPhaseFilesResult> => {
 	const { cwd, name, declarations, progress } = params;

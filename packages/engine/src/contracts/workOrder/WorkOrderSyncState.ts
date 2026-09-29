@@ -1,20 +1,13 @@
 import { z } from 'zod';
 import { PlanId } from '#src/contracts/workOrder/PlanId.ts';
 
-/** A SHA-256 digest as this sidecar spells one: 64 lowercase hex characters. */
 const sha256Digest = z.string().regex(/^[a-f0-9]{64}$/, 'a hash is written as 64 lowercase hex characters');
 
 /**
- * What this machine last published or restored, written beside `state.json` in
- * the work order's own folder under the primary checkout as `state-sync.json`.
- *
- * It is the base of the three-way comparison the pull makes: with it, a local
- * state file and a published one that differ can be told apart into "only we
- * moved", "only the ticket moved" and "both moved". Without it two differing
- * copies are a divergence, which is the safe direction.
- *
- * It is never published — it describes this machine's own history with the
- * ticket, not the ticket — and only the work order module reads or writes it.
+ * The base of the pull's three-way comparison, telling "only we moved", "only
+ * the ticket moved" and "both moved" apart; without it two differing copies are
+ * a divergence. Never published: it describes this machine's own history with
+ * the ticket.
  */
 export const WorkOrderSyncState = z
 	.object({

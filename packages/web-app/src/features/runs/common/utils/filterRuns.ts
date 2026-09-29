@@ -8,16 +8,6 @@ interface Params {
 	filters: RunFilters;
 }
 
-/**
- * The runs left after everything a reader narrowed to.
- *
- * The two set filters match exactly and the free-text one is a case-insensitive
- * substring of the title — a reader types "coverage" and means the runs whose
- * titles say so, not a regular expression.
- *
- * @param runs - every row the reader has
- * @param filters - what to narrow by; an empty set and an absent text narrow nothing
- */
 export const filterRuns = ({ runs, filters }: Params): RunListing[] => {
 	const text = filters.text?.toLowerCase();
 

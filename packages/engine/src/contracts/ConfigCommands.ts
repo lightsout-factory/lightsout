@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { Effort } from '#src/contracts/Effort.ts';
 
-/** One command's harness override: harness, model, and/or effort, each falling back to the global field. */
 const commandHarness = z
 	.object({
 		/** Harness name for this command ('claude-code', 'codex', 'omp' or 'pi'). Falls back to the global `harness`. */
@@ -14,12 +13,9 @@ const commandHarness = z
 	.strict();
 
 /**
- * Per-command harness selection (`plan` covers draft/dedup/grade; `resume`
- * always keeps the run manifest's recorded harness). Each entry overrides the
- * global `harness`/`model`/`effort` for that command; unlisted commands use
- * the globals. Both objects are `.strict()`, like every block of the config:
- * a typoed key here would silently disable an override the user believes
- * is active, so it fails parsing loudly instead.
+ * `plan` covers draft, dedup and grade; `resume` always keeps the run manifest's
+ * recorded harness. Both objects are `.strict()` so a typoed key fails parsing
+ * instead of silently disabling an override.
  */
 export const ConfigCommands = z
 	.object({

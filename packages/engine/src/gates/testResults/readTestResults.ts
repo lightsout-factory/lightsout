@@ -10,16 +10,8 @@ interface Params {
 }
 
 /**
- * Every per-test result one gate execution left behind, merged across the jest
- * processes that wrote them, with each test file path made repo-relative — the
- * runner reports absolute paths and every caller compares against repo-relative
- * ones.
- *
- * A directory that is missing, unreadable or empty answers an empty list, and so
- * does a results file that is truncated or off-contract. Absence is a value
- * here: the callers each decide what an empty answer means, and they mean
- * different things — a row that cannot be proved, or a reporter that never
- * loaded.
+ * Paths are made repo-relative because the runner reports absolute ones. A missing directory
+ * or a bad results file answers an empty list; each caller decides what empty means.
  */
 export const readTestResults = async ({ cwd, dir }: Params): Promise<TestResultsFile['testResults']> => {
 	const entries: string[] = await readdir(dir).catch(() => []);

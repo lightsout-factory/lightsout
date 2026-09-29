@@ -1,24 +1,13 @@
 import { maskSecrets } from '#src/ship/internal/common/utils/maskSecrets.ts';
 
 interface Params {
-	/** The block's own sentence, which an empty stderr leaves exactly as it is. */
 	sentence: string;
-	/** Whatever the failing command said. */
 	stderr: string;
 }
 
 /**
- * The block's own sentence, with the failing command's words after it.
- *
- * Redacted before it is kept: the result file is persisted and quoted outward
- * by tracker skills, and `git push` stderr can echo a tokenized remote
- * (`https://user:ghp_xxx@github.com/...`). URL userinfo and token-shaped runs
- * are masked, so a credential can never leave the machine through this file.
- *
- * Capped rather than whole: this is a hand-off a tracker skill quotes into a
- * comment, not a log, so a hook that prints a page of guidance is cut off at
- * the point a human has already got the message. An empty stderr leaves the
- * sentence exactly as it was, so no result ever ends in a bare colon.
+ * Redacted because the result file is quoted outward by tracker skills and `git push` stderr can
+ * echo a tokenized remote. Capped because a tracker skill quotes it into a comment; it is not a log.
  */
 export const appendCommandOutput = ({ sentence, stderr }: Params): string => {
 	const maxStderrCharacters = 500;

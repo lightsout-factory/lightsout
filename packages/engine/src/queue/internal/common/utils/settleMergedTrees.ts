@@ -15,22 +15,16 @@ interface Params {
 	env: NodeJS.ProcessEnv;
 	settings: QueueSettings;
 	trackerSettings: TrackerSettings;
-	/** The parked worktrees the scan found already recorded merged. */
 	merged: MergedParkedTree[];
 	onProgress?: (message: string) => void;
 }
 
 /**
- * Every parked worktree whose branch was already recorded merged, finished: the
- * ticket reconciled to done, the clean worktree removed, the parked label
- * cleared, and one settled entry each saying so.
+ * Sequential because each iteration removes a worktree in the main checkout, and
+ * main-checkout mutations must not overlap.
  *
- * Sequential rather than parallel, for the reason `reconcileMergedTickets`
- * gives: an iteration removes a worktree in the main checkout, and the queue's
- * rule is that main-checkout mutations do not overlap.
- *
- * The merge itself already happened, so nothing here can fail in a way that
- * makes it un-happen: every failure becomes a sentence appended to the reason.
+ * The merge already happened, so every failure here becomes a sentence appended
+ * to the reason rather than a failure.
  */
 export const settleMergedTrees = async ({ cwd, config, env, settings, trackerSettings, merged, onProgress }: Params): Promise<LeftBehindTicket[]> => {
 	const settled: LeftBehindTicket[] = [];
@@ -43,8 +37,6 @@ export const settleMergedTrees = async ({ cwd, config, env, settings, trackerSet
 		}
 
 		const heldWorktree = await settleReconciledWorktree({ cwd, worktreePath: tree.worktreePath, branch: tree.branch, onProgress });
-		// The ticket is finished, so the label that says a human is needed comes
-		// off; a tracker that refuses it is a progress line and nothing more.
 		const cleared = await setTicketLabel({ settings: trackerSettings, ticketId: tree.ticket.id, label: settings.parkedLabel, present: false });
 
 		if (cleared !== undefined) {

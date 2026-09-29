@@ -1,19 +1,11 @@
 interface Params {
-	/** A title, a heading or a file stem — whatever the caller has that names the work. */
 	text: string;
 }
 
 /**
- * A title as a branch-safe word: lowercase, single dashes, no leading or
- * trailing dash, at most 40 characters cut on a dash.
- *
- * Shared rather than owned by either caller: the queue renders a ticket's
- * branch and a standalone implementation run renders its own, and two sluggers
- * would let the branch a ticket gets from the queue drift from the branch the
- * same ticket gets from `implement`.
- *
- * Nothing branch-safe in the text answers an empty string rather than a dash on
- * its own; the caller decides what an empty slug means.
+ * Shared so the branch a ticket gets from the queue cannot drift from the
+ * branch the same ticket gets from `implement`. Text with nothing branch-safe
+ * answers an empty string; the caller decides what that means.
  */
 export const toBranchSlug = ({ text }: Params): string => {
 	const maxSlugLength = 40;

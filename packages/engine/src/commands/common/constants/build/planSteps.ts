@@ -1,7 +1,6 @@
 import { CommandActor } from '#src/contracts/commands/CommandActor.ts';
 import type { CommandStep } from '#src/contracts/commands/CommandStep.ts';
 
-/** The eight steps of `/plan`, in order — the cards of its infographic and the headings of its manual page. */
 export const planSteps: CommandStep[] = [
 	{
 		title: 'CREATE THE PLAN WORKSPACE',

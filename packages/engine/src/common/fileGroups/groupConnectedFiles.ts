@@ -5,10 +5,8 @@ interface Params {
 }
 
 /**
- * Connected components of the changed-file import graph — each component is
- * one test-writing job (a boundary plus the internals it reaches, by
- * construction). Deterministic: members sorted within a component,
- * components ordered by their first member, independent of edge order.
+ * Each connected component is one test-writing job: a boundary plus the
+ * internals it reaches. The output is independent of edge order.
  */
 export const groupConnectedFiles = ({ files, edges }: Params): string[][] => {
 	const parent = new Map<string, string>(files.map((file) => [file, file]));

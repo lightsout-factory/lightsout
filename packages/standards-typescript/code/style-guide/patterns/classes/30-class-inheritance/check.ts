@@ -2,11 +2,7 @@ import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/stand
 import type ts from 'typescript';
 import { buildClassFindings } from '../../../../../common/findings/buildClassFindings.ts';
 
-/**
- * The name a heritage expression ends with: `RunState` from `extends RunState`,
- * `Component` from `extends React.Component`. The last segment is what carries
- * the error-family convention the exemption reads.
- */
+/** The last segment, because it carries the error-family convention the exemption reads. */
 const getBaseName = ({ expression, compiler }: { expression: ts.Expression; compiler: typeof ts }): string => {
 	if (compiler.isIdentifier(expression)) {
 		return expression.text;
@@ -24,10 +20,9 @@ const getBaseName = ({ expression, compiler }: { expression: ts.Expression; comp
 };
 
 /**
- * The banned extension a class declares, or undefined. `implements` is a
- * contract, not inheritance, so only the `extends` clause is read. The Error
- * family is the platform's one licensed base, and a decorated class is
- * framework-owned — the same carve-out its sibling rules apply.
+ * `implements` is a contract, not inheritance, so only the `extends` clause is
+ * read. The Error family is the platform's one licensed base, and a decorated
+ * class is framework-owned.
  */
 const getBannedExtension = ({ node, compiler }: { node: ts.ClassDeclaration; compiler: typeof ts }) => {
 	const isFrameworkOwned = (node.modifiers ?? []).some((modifier) => compiler.isDecorator(modifier));

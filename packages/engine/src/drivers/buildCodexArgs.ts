@@ -10,31 +10,22 @@ interface Params {
 }
 
 /**
- * Assemble the argv for one `codex exec` spawn. Kept pure and separate from the
- * driver so the sandbox mapping, the pinned approval policy, and the effort
- * override are testable without spawning a process. Both config keys verified
- * present in codex-cli 0.146.0.
- *
- * There is no focused-environment mapping here: `codex exec` publishes no
- * isolation flag this engine has verified, so a focused request runs as an
- * ordinary session. The controls only save tokens, so the spawn is still
- * correct without them.
+ * There is no focused-environment mapping: `codex exec` publishes no isolation
+ * flag, so a focused request runs as an ordinary session. The controls only save
+ * tokens, so the spawn is still correct without them.
  */
 export const buildCodexArgs = ({ outFile, model, effort, permissions }: Params): string[] => {
 	const args = ['exec', '--skip-git-repo-check', '--color', 'never', '--output-last-message', outFile];
 
 	if (permissions === Permissions.FullAccess) {
-		// The bundled flag sets approval AND sandbox together; adding a separate
-		// approval override alongside it would re-split the axis this driver
-		// deliberately keeps off the config surface.
+		// The bundled flag sets approval and sandbox together; a separate approval
+		// override would re-split the axis this driver keeps off the config surface.
 		args.push('--dangerously-bypass-approvals-and-sandbox');
 	} else {
 		args.push('--sandbox', permissions === Permissions.ReadOnly ? 'read-only' : 'workspace-write');
-		// Approval only means anything when a human can answer, and `codex exec`
-		// never prompts — pinning the policy here makes explicit what the harness
-		// already does, and is what keeps it from becoming a setting. The value is
-		// TOML parsed by codex itself; spawnCollect uses no shell, so the quotes
-		// reach codex literally and parse as the TOML string `never`.
+		// `codex exec` never prompts, so the policy is pinned rather than made a
+		// setting. The value is TOML; spawnCollect uses no shell, so the quotes
+		// reach codex literally.
 		args.push('-c', 'approval_policy="never"');
 	}
 

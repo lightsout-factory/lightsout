@@ -11,14 +11,8 @@ interface Params {
 }
 
 /**
- * Persist one run's pre-edit standards baseline — the deterministic findings as
- * they stood before the run's first agent turn, which is what later tells a
- * violation this run made from debt it inherited.
- *
- * The same bytes every other engine record is written in, so the run's baseline
- * and the repo's own snapshot read alike in a diff and parse through one
- * contract. No dated copy beside it: a trend over a single run's one baseline
- * has nothing to plot.
+ * The findings before the run's first agent turn, which later tell a violation
+ * this run made from debt it inherited.
  */
 export const writeRunStandardsBaseline = async ({ cwd, runId, snapshot }: Params): Promise<void> => {
 	const path = await getRunStandardsBaselinePath({ cwd, runId });

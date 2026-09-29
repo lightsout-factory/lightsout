@@ -15,10 +15,8 @@ interface Params {
 }
 
 /**
- * One manifest folded into a list row.
- *
- * Reads nothing but the manifest and the repo lock — no JSONL file is opened —
- * so listing every run a repo has stays cheap however long its history gets.
+ * Reads nothing but the manifest and the repo lock, so listing every run stays
+ * cheap however long the history gets.
  */
 export const buildRunListing = ({ manifest, lock, worklist }: Params): RunListing => {
 	const live = isRunLive({ manifest, lock });

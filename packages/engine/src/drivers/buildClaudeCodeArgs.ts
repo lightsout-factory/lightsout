@@ -2,7 +2,6 @@ import type { Effort } from '#src/contracts/Effort.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentEnvironment } from '#src/drivers/common/types/AgentEnvironment.ts';
 
-/** The neutral capability levels expressed in Claude Code's own permission-mode vocabulary. */
 const claudePermissionModes: Record<Permissions, string> = {
 	[Permissions.ReadOnly]: 'plan',
 	[Permissions.Write]: 'acceptEdits',
@@ -19,52 +18,26 @@ interface Params {
 }
 
 /**
- * Assemble the argv for one `claude -p` spawn. Kept pure and separate from the
- * driver so the permission translation and the effort flag are testable without
- * spawning a process.
+ * `--strict-mcp-config` loads zero MCP servers only because no `--mcp-config` is
+ * passed anywhere here. `--setting-sources ""` is deliberately not emitted: it
+ * takes the repository's own CLAUDE.md out of the spawn, and a plan writer is
+ * ordered to follow it.
  *
- * The focused-environment mapping, verified against claude CLI 2.1.270.
- * `noMcpServers` is `--strict-mcp-config` (no `--mcp-config` is passed
- * anywhere here, which is what makes it load zero servers rather than some
- * named file's), `noSkillCatalog` is `--disable-slash-commands`, `toolAllowlist`
- * is `--tools` with the names comma-joined into one argument, and
- * `settingsPreserved` needs no flag at all — it is satisfied by those three
- * being per-property flags, none of which touches auth, the model, the effort
- * level or the permission mode.
- *
- * `--setting-sources ""` is the obvious companion to the skill flag and is
- * deliberately NOT emitted: measured here, it takes the repository's own
- * CLAUDE.md out of the spawn. With the three flags the spawn quotes this
- * repository's CLAUDE.md verbatim; with the fourth added it answers that it has
- * no such instructions. It was not earning its place either — the current draft
- * environment boots at 20,943 tokens, the three flags bring it to 9,613, and
- * the fourth reaches 8,494, about 1,100 tokens for the repository instructions
- * a plan writer is ordered to follow.
- *
- * The wholesale modes in `claude --help` are all refused for the same reason.
- * `--bare` restricts auth to an API key and never reads OAuth or the keychain,
- * moving the user off the subscription this engine bills against — and drivers
- * never handle credentials. `--restricted` refuses `bypassPermissions`, which
- * is what `full-access` maps to here, so it would silently downgrade a
- * configured permission level. `--safe-mode` disables CLAUDE.md along with the
- * skills, plugins and MCP servers. Each is also a bundle whose contents the
- * harness may change between versions, whereas four named per-property flags
- * are what let a capability record say exactly what is expressed.
+ * The wholesale modes are refused. `--bare` restricts auth to an API key, moving
+ * the user off their subscription; `--restricted` refuses `bypassPermissions`,
+ * which `full-access` maps to; `--safe-mode` disables CLAUDE.md. Each is also a
+ * bundle the harness may change between versions, where per-property flags say
+ * exactly what is expressed.
  */
 export const buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allowedCommands, environment }: Params): string[] => {
-	// stream-json (which requires --verbose in print mode) instead of json:
-	// same final result payload, but every intermediate event — tool calls,
-	// token ticks — arrives live for transcripts and progress narration.
-	// The dynamic sections (git status and friends) move to the first user
-	// message, so the default system prompt stays byte-identical between
-	// steps — the cached prefix the engine's system-prompt layout depends on.
+	// stream-json (which requires --verbose in print mode) delivers every event
+	// live for transcripts and progress. Excluding the dynamic sections keeps the
+	// default system prompt byte-identical between steps, so its cached prefix holds.
 	const args = ['-p', '--output-format', 'stream-json', '--verbose', '--exclude-dynamic-system-prompt-sections'];
 
 	if (systemPromptPath) {
-		// Append, never replace: keeps the harness's default agent behavior,
-		// mirroring how the Agent tool layers a role prompt onto a subagent.
-		// The file variant, not the argv one: role + plan + standards can reach
-		// hundreds of kilobytes against a fixed argv ceiling.
+		// Append, never replace, to keep the harness's default agent behavior. The
+		// file variant, because role + plan + standards can exceed the argv ceiling.
 		args.push('--append-system-prompt-file', systemPromptPath);
 	}
 

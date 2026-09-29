@@ -8,21 +8,12 @@ import type { PhaseSizeCounts } from '#src/plan/internal/common/types/PhaseSizeC
 
 interface Params {
 	phase: PhaseFile;
-	/** The configured executor-file-limit — the default budget a plan may declare its own replacement for. */
+	/** The default budget a plan may declare its own replacement for. */
 	fileLimit: number;
 	counts: PhaseSizeCounts;
 }
 
-/**
- * The three size numbers: two fixed ceilings and one advisory budget. The
- * created-file count and the touched count each have a real ceiling that no
- * declaration raises. The touched count is also measured against whatever
- * budget this plan declares for itself, as an advisory note that reads beside
- * the ceiling rather than in place of it.
- *
- * A rename-only plan (one with a `## Renames` section) is exempt from the
- * touched ceiling, because a repo-wide rename's size is not what makes it hard.
- */
+/** A rename-only plan is exempt from the touched ceiling, because a repo-wide rename's size is not what makes it hard. */
 export const checkPlanSizes = ({ phase, fileLimit, counts }: Params): StructuralFinding[] => {
 	const findings: StructuralFinding[] = [];
 	const { created, touched } = counts;

@@ -10,7 +10,6 @@ import { readPackFixtures } from '#src/views/internal/common/utils/readPackFixtu
 import { resolveRuleExample } from '#src/views/internal/common/utils/resolveRuleExample.ts';
 import { toStandardsPackRuleListing } from '#src/views/internal/common/utils/toStandardsPackRuleListing.ts';
 
-/** The newest modification time anywhere under a folder — the stamp that says whether a cached read is still current. */
 const getNewestMtime = async ({ root }: { root: string }) => {
 	const entries = await readdir(root, { withFileTypes: true }).catch(() => []);
 	let newest = 0;
@@ -31,13 +30,8 @@ const getNewestMtime = async ({ root }: { root: string }) => {
 };
 
 /**
- * What a `standards-packs` entry would say for this pack: repo-relative, or
- * absolute when the pack sits outside the repo.
- *
- * Named apart from `toRepoRelativePath`, which it builds on, because it answers
- * a different question: that one always produces a route relative to the repo,
- * including a `../` walk outward, while a config entry naming a pack outside the
- * repo is written out in full.
+ * Unlike `toRepoRelativePath`, a pack outside the repo is written out in full
+ * rather than as a `../` walk, as a `standards-packs` entry would name it.
  */
 const toPackEntryPath = ({ rootPath, cwd }: { rootPath: string; cwd: string }) => {
 	const relativePath = toRepoRelativePath({ cwd, path: rootPath });
@@ -57,7 +51,6 @@ const toPackEntryPath = ({ rootPath, cwd }: { rootPath: string; cwd: string }) =
 	return path;
 };
 
-/** One rule folded into the bundle's shape: what it is, what it argues, and the files that prove it. */
 const toRuleView = async ({ rule }: { rule: LoadedStandardsRule }) => {
 	// `run` and `inputKind` are deliberately dropped: a function cannot cross the
 	// wire, and no page shows a check's source code.
@@ -112,32 +105,20 @@ const readBundle = async ({ packPath, isDefault, cwd }: { packPath: string; isDe
 };
 
 /**
- * The pack reads this process has already done, kept until the folder they came
- * from changes.
+ * A pack page's first paint reads the pack in several separate server-function
+ * calls, so a per-call memo would save nothing; this instance outlives them.
  *
- * Reading a pack is megabytes of fixture text plus a folder parse per rule, and
- * one pack page's first paint asks for it seven times — the view, then the six
- * showcase rules the loader warms — each as a separate server-function call. A
- * memo inside any one of those calls would save nothing, so this is an instance
- * that outlives them, which is what `common/services/` is for.
- *
- * What is stored is the in-flight promise rather than the resolved value, so
- * those seven callers share one read; a rejected one drops its entry, so a
- * failure is never cached. Against each entry sits the newest modification time
- * under the pack root, so editing a rule or a fixture is seen on the next
- * request instead of after a restart — which is what a viewer used while writing
- * rules needs.
+ * The in-flight promise is stored so concurrent callers share one read, and a
+ * rejected one drops its entry so a failure is never cached. Each entry is
+ * stamped with the newest mtime under the pack root, so an edited rule or
+ * fixture is seen on the next request instead of after a restart.
  */
 export class StandardsPackBundleCache {
 	private readonly inFlight = new Map<string, { stamp: number; bundle: Promise<StandardsPackBundle> }>();
 
 	/**
-	 * One pack whole, read from disk or from this cache.
-	 *
-	 * Keyed by the pack root AND the repo it is being read for, because `path`
-	 * and `isDefault` are answers about that repo and the cached bundle has to be
-	 * whole — nothing above this stamps a field onto a copy. There is one repo per
-	 * running viewer, so the second key costs nothing in practice.
+	 * Keyed by the pack root AND the repo, because `path` and `isDefault` are
+	 * answers about that repo and the cached bundle has to be whole.
 	 */
 	async read({ packPath, isDefault, cwd }: { packPath: string; isDefault: boolean; cwd: string }): Promise<StandardsPackBundle> {
 		// A NUL joins them because it is the one byte a path cannot hold, so no pair

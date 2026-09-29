@@ -5,10 +5,8 @@ import { cn } from '#src/common/utils/cn.ts';
 import { toCodeLanguage } from '#src/common/utils/toCodeLanguage.ts';
 
 /**
- * Each item paired with the character offset it starts at, counted with the
- * given lengths plus a gap between items. The offset is a stable key: two
- * lines, or two tokens, may repeat the same text, but never at the same place —
- * which is why a token with no text, drawing nothing, is dropped before counting.
+ * The offset is a stable key: lines or tokens may repeat text, but never at the
+ * same place — which is why an empty token is dropped before counting.
  */
 const withOffsets = <Item,>({ items, lengthOf, gap }: { items: Item[]; lengthOf: (item: Item) => number; gap: number }) => {
 	let offset = 0;
@@ -22,7 +20,6 @@ const withOffsets = <Item,>({ items, lengthOf, gap }: { items: Item[]; lengthOf:
 	});
 };
 
-/** A line's length in characters, its tokens joined. */
 const lineLength = (line: Token[]) => line.reduce((length, token) => length + token.content.length, 0);
 
 interface Props {
@@ -30,7 +27,6 @@ interface Props {
 	text: string;
 	/** The file's path. It picks the highlighting, and is shown as the caption unless `isCaptionHidden`. */
 	path: string;
-	/** Leaves the caption off, for a block whose path is already shown beside it — a tab label, say. */
 	isCaptionHidden?: boolean;
 	/** A control at the caption's right end — a copy button, say. Shown only with the caption. */
 	action?: ReactNode;
@@ -38,11 +34,8 @@ interface Props {
 }
 
 /**
- * One file of code, highlighted, under a caption naming the file.
- *
- * Highlighting runs during render and yields React elements rather than an HTML
- * string, so nothing here reaches `dangerouslySetInnerHTML`. A file with no
- * grammar for its extension is shown as plain text.
+ * Highlighting yields React elements rather than an HTML string, so nothing
+ * here reaches `dangerouslySetInnerHTML`.
  */
 export const CodeBlock = ({ text, path, isCaptionHidden = false, action, className }: Props) => (
 	<figure className={cn('overflow-hidden rounded-lg border border-border bg-muted/40', className)}>

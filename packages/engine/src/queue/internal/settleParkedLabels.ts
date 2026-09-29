@@ -13,20 +13,11 @@ interface Params {
 }
 
 /**
- * The parked label, settled once per drain: on every parked outcome, off every
- * other one.
+ * Settled once per drain rather than at each park site, because a park in the
+ * worker and a park at the ship step are the same fact, and only this list knows both.
  *
- * A ticket the queue left open has the label cleared exactly as a shipped one
- * does — it is waiting on a human decision rather than parked — which is why the
- * `present` value reads the one rule that says which outcomes are parks.
- *
- * Doing it here rather than at each park site is what keeps the label honest —
- * a ticket that parks in the worker and a ticket that parks at the ship step
- * are the same fact to whoever is watching the tracker, and there is one list
- * that knows both.
- *
- * A failed write is a progress line and nothing more: the tracker is a courtesy
- * to whoever is watching, never a precondition for building.
+ * A failed write is only a progress line: the tracker is a courtesy, never a
+ * precondition for building.
  */
 export const settleParkedLabels = async ({ settings, trackerSettings, outcomes, onProgress }: Params): Promise<void> => {
 	if (settings.parkedLabel === undefined) {

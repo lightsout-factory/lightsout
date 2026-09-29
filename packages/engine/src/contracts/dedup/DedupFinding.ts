@@ -1,14 +1,7 @@
 import { z } from 'zod';
 import { DedupVerdict } from '#src/contracts/dedup/DedupVerdict.ts';
 
-/**
- * One confirmed prior-art duplication in `dedup.json`: the engine's
- * deterministically-detected collision (`plannedSymbol` + `collidesWith`) joined
- * with the judge agent's verdict (`recommendation`/`rationale`/`suggestedLocation`/
- * `migrateCallers`) by `plannedSymbol`. Only verdicts with `isDuplicate === true`
- * become findings — the resolution the skill applies to the plan file named by
- * `phase`.
- */
+/** A detected collision joined with the judge's verdict by `plannedSymbol`; only verdicts with `isDuplicate === true` become findings. */
 export const DedupFinding = DedupVerdict.omit({ isDuplicate: true }).extend({
 	plannedPath: z.string(),
 	/** Basename of the plan file this duplication was planned in — the file the skill edits to resolve it. */

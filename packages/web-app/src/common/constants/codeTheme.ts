@@ -1,9 +1,5 @@
 import type { PrismTheme } from 'prism-react-renderer';
 
-/**
- * The syntax colours a code block paints tokens in, each read from a `--code-*`
- * token in the stylesheet so one theme serves the light page and the dark one.
- */
 export const codeTheme: PrismTheme = {
 	plain: { color: 'var(--code-plain)' },
 	styles: [

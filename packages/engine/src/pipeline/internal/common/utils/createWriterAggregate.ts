@@ -6,7 +6,6 @@ import { appendFriction } from '#src/runState/appendFriction.ts';
 
 interface Params<TGroup> {
 	run: PipelineRun;
-	/** The step the friction entries and progress lines are attributed to. */
 	step: string;
 	/** How one assignment names itself in a progress line or a failure. */
 	label: ({ group }: { group: TGroup }) => string;
@@ -19,10 +18,6 @@ interface WriterAggregate<TGroup> {
 }
 
 /**
- * A fan-out's running aggregate. Every writer result folds in here, wherever it
- * lands: a rate limit parks the run, an absent report is a failure, and a report
- * contributes its friction, its status, and its changed files.
- *
  * @typeParam TGroup - the assignment each writer was given; only `label` reads it.
  */
 export const createWriterAggregate = <TGroup>({ run, step, label }: Params<TGroup>): WriterAggregate<TGroup> => {

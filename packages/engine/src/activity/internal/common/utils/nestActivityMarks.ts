@@ -10,7 +10,6 @@ interface Params {
 	marks: ActivityMark[];
 }
 
-/** One level's folded window, before its children and its totals are attached. */
 interface LevelWindow {
 	id: string;
 	level: ActivityLevelKind;
@@ -30,14 +29,9 @@ type Processes = Map<string, HarnessProcessMark[]>;
 const isEarlier = ({ left, right }: { left: string; right: string }) => Date.parse(left) < Date.parse(right);
 
 /**
- * Every level id in the record, each folded into one window.
- *
- * A level id appearing in several start marks is one level: several processes
- * each open a plan-kind level for the same plan folder, one per command run,
- * and folding them is what makes those one row rather than several. A level is
- * finished only when every start carrying its id was answered by an end — an
- * unanswered one leaves the window open rather than borrowing the other's end
- * time.
+ * Several processes open a plan-kind level with the same id, one per command
+ * run, so repeated starts fold into one window. The level is finished only when
+ * every start was answered by an end.
  */
 const foldLevels = ({ marks }: Params) => {
 	const levels = new Map<string, LevelWindow>();
@@ -94,12 +88,7 @@ const foldLevels = ({ marks }: Params) => {
 	return levels;
 };
 
-/**
- * Each level filed under its parent, and the ones with nowhere to go kept as
- * roots. A level naming a parent no start mark carries is a root rather than a
- * casualty: dropping it would lose recorded time, which is the one thing the
- * fold must never do.
- */
+/** A level naming a parent no start mark carries becomes a root, so its recorded time is never lost. */
 const groupChildren = ({ levels }: { levels: Map<string, LevelWindow> }) => {
 	const children: Children = new Map();
 	const roots: LevelWindow[] = [];
@@ -117,12 +106,7 @@ const groupChildren = ({ levels }: { levels: Map<string, LevelWindow> }) => {
 	return { children, roots };
 };
 
-/**
- * The processes recorded on each level, in the order they were written. A
- * process naming a level nothing ever started is attached to nothing and counts
- * toward no total: it has no window to sit inside, and inventing one would put
- * time where nothing happened.
- */
+/** A process naming a level nothing started is dropped: inventing a window would put time where nothing happened. */
 const groupProcesses = ({ marks, levels }: { marks: ActivityMark[]; levels: Map<string, LevelWindow> }) => {
 	const grouped: Processes = new Map();
 
@@ -141,7 +125,6 @@ interface TreeParams {
 	processes: Processes;
 }
 
-/** Every process at or below the level — what its totals are computed from. */
 const gatherProcesses = ({ level, children, processes }: TreeParams): HarnessProcessMark[] => [
 	...(processes.get(level.id) ?? []),
 	...(children.get(level.id) ?? []).flatMap((child) => gatherProcesses({ level: child, children, processes })),
@@ -159,7 +142,6 @@ const buildNode = ({ level, children, processes }: TreeParams): ActivityNode => 
 	children: (children.get(level.id) ?? []).map((child) => buildNode({ level: child, children, processes })),
 });
 
-/** Fold a flat list of activity marks into the tree of levels it recorded. */
 export const nestActivityMarks = ({ marks }: Params): ActivityNode[] => {
 	const levels = foldLevels({ marks });
 	const processes = groupProcesses({ marks, levels });

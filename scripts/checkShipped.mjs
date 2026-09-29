@@ -11,14 +11,12 @@ import { resolveShipBaseCommit } from './shipRelease/resolveShipBaseCommit.mjs';
 import { runGit } from './shipRelease/runGit.mjs';
 import { shippedDirectories } from './shipRelease/shippedDirectories.mjs';
 
-/** Every file under a directory, as sorted slash-separated relative paths. */
 const filesUnder = ({ dir }) =>
 	readdirSync(dir, { recursive: true })
 		.filter((entry) => statSync(join(dir, entry)).isFile())
 		.map((entry) => entry.split(sep).join('/'))
 		.sort();
 
-/** The first way two directory trees differ, or undefined when they match. */
 const firstDifference = ({ built, shipped }) => {
 	const builtFiles = filesUnder({ dir: built });
 	const shippedFiles = filesUnder({ dir: shipped });
@@ -40,9 +38,6 @@ const firstDifference = ({ built, shipped }) => {
 };
 
 /**
- * The version verdict for one shipped directory: a problem, or why it was
- * skipped, or what it compared.
- *
  * The working tree is compared, not HEAD, so an uncommitted rebuild demands
  * its bump before the commit rather than after.
  */
@@ -87,14 +82,7 @@ const versionVerdict = ({ baseCommit, dir, primaryManifestPath, manifestPaths })
 	return { checked: `${dir}/ version ${baseVersion} -> ${headVersion}` };
 };
 
-/**
- * Checks shipped build parity, manifest agreement, and version movement
- * against a base ref.
- *
- * @param base - git ref the version is compared against when no exact commit is pinned. Defaults to `origin/main`.
- * @param baseCommit - the exact commit to compare against, overriding `base`. Defaults to `LIGHTSOUT_SHIP_BASE_COMMIT`.
- * @returns every problem found, and one note per shipped directory saying what the version check did or why it was skipped
- */
+/** @param baseCommit - the exact commit to compare against, overriding `base`. Defaults to `LIGHTSOUT_SHIP_BASE_COMMIT`. */
 export const checkShipped = async ({ base = 'origin/main', baseCommit: pinnedBase } = {}) => {
 	const problems = [];
 	const work = mkdtempSync(join(tmpdir(), 'lightsout-shipped-'));
@@ -142,8 +130,7 @@ export const checkShipped = async ({ base = 'origin/main', baseCommit: pinnedBas
 
 /**
  * Exit codes are set rather than forced with `process.exit`: stdout is a pipe
- * for every caller that matters here, so exiting on the line after a log would
- * discard it and the check would fail with nothing printed about why.
+ * for every caller that matters, and exiting right after a log discards it.
  */
 const main = async () => {
 	const baseFlag = process.argv.indexOf('--base');

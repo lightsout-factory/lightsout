@@ -4,7 +4,6 @@ export interface SprawlFolderRow {
 	path: string;
 	y: number;
 	entries: number;
-	/** More direct files than the folder-census cap allows. */
 	overCap: boolean;
 	squares: { x: number; y: number; size: number }[];
 }

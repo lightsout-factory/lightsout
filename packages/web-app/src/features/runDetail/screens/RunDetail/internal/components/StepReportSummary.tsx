@@ -4,7 +4,6 @@ import { StepReportKind } from '#src/features/runDetail/internal/common/constant
 import type { StepReport } from '#src/features/runDetail/internal/common/types/StepReport.ts';
 import { ChildRunLink } from '#src/features/runDetail/screens/RunDetail/internal/components/ChildRunLink.tsx';
 
-/** A short heading over one block of a report's detail. */
 const Section = ({ label, children }: { label: string; children: ReactNode }) => (
 	<div className="flex flex-col gap-1">
 		<span className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{label}</span>
@@ -12,7 +11,6 @@ const Section = ({ label, children }: { label: string; children: ReactNode }) =>
 	</div>
 );
 
-/** Whatever went wrong inside one step, or nothing at all when nothing did — the same block wherever a report carries failures. */
 const FailuresSection = ({ failures }: { failures: string[] }) =>
 	failures.length === 0 ? null : (
 		<Section label="failures">
@@ -28,16 +26,7 @@ interface Props {
 	report: StepReport;
 }
 
-/**
- * One step's validated report, rendered by whichever contract it answered to.
- *
- * A report matching none of them is shown as its own JSON rather than hidden:
- * the manifest stores it opaquely, so a shape nobody anticipated is evidence a
- * reader still has to be able to see.
- *
- * Every kind but `Raw` and `Phase` is a stack of blocks, so the branch decides
- * only what those blocks are and the stack itself is written once below them.
- */
+/** An unrecognised report is shown as JSON rather than hidden: a shape nobody anticipated is still evidence. */
 export const StepReportSummary = ({ report }: Props) => {
 	const isStacked = report.kind !== StepReportKind.Raw && report.kind !== StepReportKind.Phase;
 	let content: ReactNode;

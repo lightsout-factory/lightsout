@@ -13,16 +13,9 @@ interface Params {
 }
 
 /**
- * Call one package's check and hand back what it flagged.
+ * Swallowing a misbehaving check would turn a broken rule into a rule that
+ * silently finds nothing.
  *
- * The only place the engine executes a package's check, so it is the only place
- * that has to decide what a misbehaving one means: a check that throws, or that
- * returns anything other than valid raw findings, is a fault in the package and
- * is reported as one. Swallowing it would turn a broken rule into a rule that
- * silently finds nothing — the failure mode the whole package format exists to
- * make impossible.
- *
- * @param rule - the rule id, named in any failure
  * @throws {Error} When the check throws, or returns something that is not a list of raw findings.
  */
 export const runRuleCheck = async ({ rule, run, input, settings }: Params): Promise<RawStandardsFinding[]> => {

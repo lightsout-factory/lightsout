@@ -24,8 +24,6 @@ const readJson = ({ raw }: { raw: string }) => {
 };
 
 /**
- * The answer waiting at this path, or undefined while there is none.
- *
  * A missing file, a half-written one, and one holding a blank answer are all
  * the same "not yet": parking a ticket on a transient read would turn a race
  * into lost work, and a blank answer is one a worker would act on.
@@ -44,10 +42,8 @@ const readRelayAnswer = async ({ path }: { path: string }) => {
 };
 
 /**
- * Both halves of one exchange, gone.
- *
- * A question file outlives its answer only as litter, and an answer left beside
- * a question nobody waits for reads as live to the next mailbox reader.
+ * A question file outlives its answer only as litter, and an answer left
+ * beside a question nobody waits for reads as live to the next mailbox reader.
  */
 const removeExchange = async ({ questionPath, answerPath }: { questionPath: string; answerPath: string }) => {
 	await rm(questionPath, { force: true });
@@ -59,17 +55,13 @@ interface ConstructorParams {
 	trackerSettings: TrackerSettings;
 	/** Absolute path to the mailbox, already created and emptied by the CLI. */
 	directory: string;
-	/** Where every worker's progress line is written — `process.stdout` in the CLI, a stream in tests. */
 	output: NodeJS.WritableStream;
 }
 
 /**
- * Questions as files, answers as files beside them.
- *
- * Deliberately NOT serialized, unlike `TerminalQuestionRelay`: the terminal
+ * Deliberately not serialized, unlike `TerminalQuestionRelay`: the terminal
  * serializes because there is one screen and one cursor, and a mailbox has
- * neither. Up to `max-parallel` questions may wait at once, which is what makes
- * the mailbox worth having — the reader answers them in whatever order suits.
+ * neither, so up to `max-parallel` questions may wait at once.
  */
 export class FileQuestionRelay implements QuestionRelay {
 	private readonly settings: QueueSettings;
@@ -158,8 +150,6 @@ export class FileQuestionRelay implements QuestionRelay {
 	}
 
 	/**
-	 * The answer file's contents once it holds one.
-	 *
 	 * @throws {Error} When the question timeout elapses — both files are removed
 	 * first, so a late or blank answer never lingers to look live — or when the
 	 * relay closes under the wait.

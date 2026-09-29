@@ -22,14 +22,6 @@ interface Props {
 	onFiltersChange: (filters: PackRuleFilters) => void;
 }
 
-/**
- * One set of the default pack's rules whole — every TypeScript rule, say —
- * grouped under the document that states each one, with a list of those
- * documents beside them.
- *
- * The counts in the header are the whole set's; the search and the kind-of-check
- * switch narrow only the list under them.
- */
 export const RuleSetPage = ({ ruleSet, filters, onFiltersChange }: Props) => {
 	const channel = toRuleSetChannel({ ruleSet });
 	const { data: pack } = useSuspenseQuery(defaultPackQueryOptions());

@@ -7,26 +7,22 @@ import type { PriorArtCandidate } from '#src/plan/internal/common/types/PriorArt
 
 interface Params {
 	cwd: string;
-	/** Kebab plan name — what the nudge tells the reader to re-run `plan dedup` against. */
 	name: string;
-	/** The plan's own folder, where a previous pass left `dedup.json`. */
+	/** Where a previous pass left `dedup.json`. */
 	workspaceDir: string;
 	planPaths: string[];
 	config?: LightsoutConfig;
 	onProgress: (message: string) => void;
 }
 
-/** One collision's identity across runs. The same name planned at two paths, or in two plan files, is two collisions. */
+/** The same name planned at two paths, or in two plan files, is two collisions. */
 const collisionKey = ({ plannedSymbol, plannedPath, phase }: { plannedSymbol: string; plannedPath: string; phase: string }): string =>
 	`${phase} ${plannedPath} ${plannedSymbol}`;
 
 /**
- * What a previous `plan dedup` already ruled on, as comparable keys.
- *
  * Every failure reads as an empty set, which keeps the nudge rather than
- * silencing it: no `dedup.json` yet, and a hand-edit that no longer parses, both
- * mean "nothing is recorded as settled". This is one advisory line on a grade that has already
- * done its real work, so it never throws.
+ * silencing it. It never throws: this is one advisory line on a grade that has
+ * already done its real work.
  */
 const readSettledCollisions = async ({ workspaceDir }: { workspaceDir: string }): Promise<Set<string>> => {
 	const text = await readFile(join(workspaceDir, 'dedup.json'), 'utf8').catch(() => undefined);
@@ -45,15 +41,9 @@ const readSettledCollisions = async ({ workspaceDir }: { workspaceDir: string })
 };
 
 /**
- * A cheap advisory backstop for the Dedup Review phase: when a plan's planned
- * symbols name-collide with existing exports and no dedup pass has weighed
- * them, nudge — but never gate.
- *
- * The nudge says "run `plan dedup`", so it is only ever an argument about
- * collisions dedup has not seen. A collision it already ruled on stays
- * detectable on disk whenever the resolution was to keep both files — `defer`
- * and `distinct` both do — and re-reporting it made every later grade pass
- * repeat a finding with no work left in it.
+ * Advisory only — it nudges, never gates. A collision dedup already ruled on is
+ * filtered out: it stays detectable on disk when the resolution kept both files,
+ * and re-reporting it would repeat a finding with no work left in it.
  */
 export const notePriorArtCollisions = async ({ cwd, name, workspaceDir, planPaths, config, onProgress }: Params): Promise<void> => {
 	const candidates: PriorArtCandidate[] = await detectPriorArtCandidates({ cwd, planPaths, config });

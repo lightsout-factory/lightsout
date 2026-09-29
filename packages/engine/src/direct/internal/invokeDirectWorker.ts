@@ -11,7 +11,6 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 
-/** The step every direct-worker invocation is recorded under. */
 const implementStep = 'implement';
 
 interface Params {
@@ -20,19 +19,12 @@ interface Params {
 	ticketRef: string;
 	ticketBody: string;
 	standards?: string;
-	/** The answer to the question a previous invocation stopped on. */
 	answeredQuestion?: AnsweredQuestion;
 	/** Gate output from a failed attempt, handed back for a fix re-invocation. */
 	errorContext?: string;
 }
 
-/**
- * One direct-worker invocation, recorded as an attempt of the implement step.
- *
- * A rate-limited harness parks the run, an ambiguous ticket escalates carrying
- * the question — which is exactly what the queue's relay loop reads — and any
- * other refusal fails it.
- */
+/** An ambiguous ticket escalates carrying the question, which is what the queue's relay loop reads. */
 export const invokeDirectWorker = async ({
 	run,
 	driver,

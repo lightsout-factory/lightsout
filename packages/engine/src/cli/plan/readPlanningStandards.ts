@@ -10,10 +10,8 @@ interface Params {
 	config: LightsoutConfig | undefined;
 }
 
-// Standards are SUPPLEMENTAL for planning (load-if-configured, non-fatal if
-// absent) — resolved once and threaded into draft, dedup, and grade, exactly
-// the mechanism the implement pipeline uses. Only the code set: planning writes
-// a plan, not tests.
+// Standards are supplemental for planning, so failing to load them is non-fatal.
+// Only the code set: planning writes a plan, not tests.
 export const readPlanningStandards = async ({ cwd, config }: Params): Promise<string | undefined> => {
 	let standards: string | undefined;
 

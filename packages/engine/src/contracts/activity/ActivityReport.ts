@@ -3,9 +3,6 @@ import { ActivityNode } from '#src/contracts/activity/ActivityNode.ts';
 import { ActivityTotals } from '#src/contracts/activity/ActivityTotals.ts';
 
 /**
- * The whole fold of one activity record — what a reader asks for and what a
- * data-shaped report prints.
- *
  * `plan` is a caller-supplied label rather than anything this module resolves,
  * so the report can say what it is a report of without the record knowing about
  * any one pipeline.

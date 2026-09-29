@@ -9,19 +9,17 @@ import type { PhaseProvenance } from '#src/plan/internal/common/types/PhaseProve
 
 interface Params {
 	cwd: string;
-	/** Implementable plan files, ordered by phase number. */
+	/** Ordered by phase number. */
 	phases: PhaseFile[];
 	provenance: PhaseProvenance;
 }
 
-/** One provenance defect, before it is stamped with the phase that named the path. */
 interface Defect {
 	path: string;
 	issue: string;
 	fix: string;
 }
 
-/** Every provenance finding is blocking and points at the phase file that named the path. */
 const stamp = ({ phase, defects }: { phase: PhaseFile; defects: Defect[] }): StructuralFinding[] =>
 	defects.map(({ path, issue, fix }) => ({
 		check: StructuralCheck.FileProvenance,
@@ -32,7 +30,6 @@ const stamp = ({ phase, defects }: { phase: PhaseFile; defects: Defect[] }): Str
 		fix,
 	}));
 
-/** A path this phase names that a strictly earlier phase deleted or moved away, and nothing has supplied since. */
 const removedDefects = ({ phase, removedBefore, removedBy }: { phase: PhaseFile; removedBefore: Set<string>; removedBy: Map<string, string> }) =>
 	[...phase.plan.modifyPaths, ...phase.plan.earlierPhaseModifyPaths, ...phase.plan.deletePaths]
 		.filter((path) => removedBefore.has(path))
@@ -42,11 +39,7 @@ const removedDefects = ({ phase, removedBefore, removedBy }: { phase: PhaseFile;
 			fix: 'drop this path, or have a phase recreate it before this one touches it',
 		}));
 
-/**
- * An earlier-phase modify names a file no earlier phase writes, so nothing puts
- * it there. A path an earlier phase removed is left to `removedDefects` — one
- * defect, reported by the rule that knows why the path is missing.
- */
+/** A path an earlier phase removed is left to `removedDefects`, the rule that knows why it is missing. */
 const unsuppliedModifyDefects = ({ phase, providedBefore, removedBefore }: { phase: PhaseFile; providedBefore: Set<string>; removedBefore: Set<string> }) =>
 	phase.plan.earlierPhaseModifyPaths
 		.filter((path) => !providedBefore.has(path) && !removedBefore.has(path))
@@ -56,7 +49,6 @@ const unsuppliedModifyDefects = ({ phase, providedBefore, removedBefore }: { pha
 			fix: 'list it under `## Files to Modify` if it exists today, or have an earlier phase create it',
 		}));
 
-/** A modify names a file an earlier phase creates, so it is not on disk when the implementing agent opens it. */
 const earlierPhaseDefects = ({ phase, providedBefore }: { phase: PhaseFile; providedBefore: Set<string> }) =>
 	phase.plan.modifyPaths
 		.filter((path) => providedBefore.has(path))
@@ -66,11 +58,7 @@ const earlierPhaseDefects = ({ phase, providedBefore }: { phase: PhaseFile; prov
 			fix: 'list it under `## Files to Modify from Earlier Phases`',
 		}));
 
-/**
- * A path this phase creates that another phase also creates. Skipped when a
- * removal falls between the two: the later create is then a recreate, which is
- * legitimate work rather than a collision.
- */
+/** Skipped when a removal falls between the two creates: the later one is then a recreate, not a collision. */
 const collisionDefects = ({ phase, phases, provenance }: { phase: PhaseFile; phases: PhaseFile[]; provenance: PhaseProvenance }) => {
 	const order = ({ base }: { base: string }) => phases.findIndex((candidate) => candidate.base === base);
 
@@ -93,11 +81,7 @@ const collisionDefects = ({ phase, phases, provenance }: { phase: PhaseFile; pha
 		}));
 };
 
-/**
- * A delete or move source naming a path neither on disk nor supplied by an
- * earlier phase — there is nothing there to remove. A path an earlier phase
- * already removed is `removedDefects`' to report, not this one's.
- */
+/** A path an earlier phase already removed is `removedDefects`' to report, not this one's. */
 const missingRemovalDefects = async ({
 	cwd,
 	phase,
@@ -127,17 +111,11 @@ const missingRemovalDefects = async ({
 };
 
 /**
- * FileProvenance — a phased plan's paths must trace to a phase that supplies
- * them. Reads the phase files directly rather than the overview's declaration,
- * because by lint time every phase file is on disk with its complete list, which
- * makes provenance exactly decidable instead of dependent on how complete the
- * declaration happens to be.
- *
- * It is the only check that knows which create paths an earlier phase removed,
- * so it is also the producer of `clearedCreates` — the `<phase base>|<path>`
- * keys `lintPlanStructure` uses to drop a per-file `path-exists` finding for a
- * legitimate delete-then-recreate. `lintPlanCrossPhase` passes the set straight
- * through; no other check contributes to it.
+ * Reads the phase files rather than the overview's declaration: every phase file
+ * is on disk by lint time, which makes provenance exactly decidable. It is the
+ * only check that knows which creates an earlier phase removed, so it alone
+ * produces `clearedCreates`, which `lintPlanStructure` uses to drop a
+ * `path-exists` finding for a delete-then-recreate.
  */
 export const checkFileProvenance = async ({ cwd, phases, provenance }: Params): Promise<CrossPhaseLintResult> => {
 	const findings: StructuralFinding[] = [];

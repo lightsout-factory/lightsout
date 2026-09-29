@@ -16,19 +16,17 @@ interface Params {
 	name: string;
 	/** Already-merged rows; when absent they are read from the plan workspace. */
 	decisions?: DecisionsRecord;
-	/** Sync exactly these plan files instead of resolving the deliverable. The draft flow owns its own paths, and mid-draft the deliverable does not always resolve. */
+	/** Mid-draft the deliverable does not always resolve, so the draft flow passes its own paths. */
 	planPaths?: string[];
 }
 
 type SyncPlanDecisionsResult = { status: typeof PlanRunStatus.Complete; files: SyncedPlanFile[] } | { status: typeof PlanRunStatus.Failed; error: string };
 
 /**
- * The plan's merged record, as a value rather than a rejection — a record nobody
- * authored is a failed sync, not a crash.
+ * A record nobody authored is a failed sync, not a crash.
  *
- * The return type is annotated although this is an internal helper: inferred, it
- * normalizes to a union whose success member carries an optional `error`, and
- * the caller's narrowing then reads that field as possibly undefined.
+ * The return type is annotated because inferred, the union normalizes to one
+ * member carrying an optional `error`, which breaks the caller's narrowing.
  */
 const resolveDecisions = async ({
 	cwd,
@@ -53,17 +51,11 @@ const resolveDecisions = async ({
 };
 
 /**
- * The plan files this sync rewrites: the caller's own list when it has one, and
- * every file of the resolved deliverable otherwise.
+ * Between the overview spawn and the first phase file the folder holds neither
+ * `plan.md` nor a phase file, which `resolvePlanDeliverable` reads as no plan, so
+ * the draft flow passes its own paths.
  *
- * The draft flow states its paths because mid-draft the deliverable does not
- * always resolve — between the overview spawn and the first phase file the
- * folder holds neither a `plan.md` nor a phase file, which
- * `resolvePlanDeliverable` reads as no plan at all.
- *
- * Annotated for the same reason `resolveDecisions` is: inferred, the union
- * normalizes to one member carrying an optional `error`, and the caller's
- * narrowing then reads that field as possibly undefined.
+ * Annotated for the same reason as `resolveDecisions`.
  */
 const resolvePaths = async ({
 	cwd,
@@ -95,12 +87,6 @@ const resolvePaths = async ({
 	return { paths: [...overviewPaths, ...deliverable.files.map((file) => file.path)] };
 };
 
-/**
- * The two per-section results as one entry per path: a file is updated when
- * either of its engine-composed sections moved. Reported per file rather than
- * per section because that is what the CLI prints, and a reader is told what
- * happened to a plan file, not to a heading inside one.
- */
 const foldSyncedFiles = ({ logs, constraints }: { logs: SyncedPlanFile[]; constraints: SyncedPlanFile[] }) => {
 	const movedConstraints = new Map(constraints.map(({ path, updated }) => [path, updated]));
 
@@ -108,30 +94,13 @@ const foldSyncedFiles = ({ logs, constraints }: { logs: SyncedPlanFile[]; constr
 };
 
 /**
- * Regenerate the two sections the engine composes from the saved decision
- * records — the `## Decision Log` and the `## Global Constraints` — in every
- * file of one plan deliverable.
+ * Phase files point at the overview's log so a phased plan keeps one history,
+ * but every file gets the constraints, because a phase file is handed to an
+ * implementing agent on its own. Both sections sync here because this is the
+ * command the currency checks name as their remedy.
  *
- * `plan.md` and `overview.md` carry the rendered table; every
- * `phase<N>-<slug>.md` carries the sentence pointing at the overview's copy, so
- * a phased plan keeps one history rather than one per phase, and which of the
- * two a path gets is decided from its name in every case. The constraints
- * section takes no such split: every file of the deliverable gets the same
- * rendered rules, because a phase file is handed to an implementing agent on its
- * own. What a plan *is* — for a caller that does not state its own paths — is
- * answered by `resolvePlanDeliverable` and nowhere else.
- *
- * Both sections rather than the log alone, because this is the command the
- * currency checks name as their remedy: a `## Global Constraints` finding whose
- * fix ran only the log would name a command that cannot clear it.
- *
- * Every way this can fail — an unresolvable deliverable, phase files with no
- * overview to hold the table, a record that was never authored — is settled
- * before the first write, so a caller never has to reason about a half-synced
- * deliverable. Callers already holding the merged record pass it in, beside the
- * paths they own: the draft flow syncs mid-draft from the record it started
- * with, and a second read of the workspace there would be a second source of
- * truth.
+ * Every failure is settled before the first write, so no deliverable is left
+ * half-synced.
  */
 export const syncPlanDecisions = async ({ cwd, name, decisions, planPaths }: Params): Promise<SyncPlanDecisionsResult> => {
 	const resolvedPaths = await resolvePaths({ cwd, name, planPaths });

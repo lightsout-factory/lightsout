@@ -10,7 +10,6 @@ interface Params {
 	error: string;
 }
 
-/** Persist a terminal status and hand back the result the run reports. */
 export const stopDirectRun = async ({ run, record, status, error }: Params): Promise<PipelineResult> => {
 	await run.stop({ record, status, error, label: 'direct run' });
 

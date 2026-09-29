@@ -14,7 +14,6 @@ import { workOrderSyncCommand } from '#src/cli/workOrder/internal/workOrderSyncC
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 
-/** Each subcommand word and the handler it reaches, in the order the usage text lists them. */
 const workOrderSubcommands: Record<string, (context: CommandContext) => Promise<void>> = {
 	new: workOrderNewCommand,
 	'add-plan': workOrderAddPlanCommand,
@@ -27,15 +26,8 @@ const workOrderSubcommands: Record<string, (context: CommandContext) => Promise<
 };
 
 /**
- * The `work-order` command word, dispatching on its first positional.
- *
- * It resolves no config and no driver: each subcommand reads the repository's
- * config itself, and the one that spawns an agent — `new`, summarising a
- * ticket's title into a name — resolves its own harness. Every subcommand acts
- * on a whole ticket, so a plan's own address given as `--name` is refused here
- * rather than seven times over — a plan address would otherwise name a folder
- * that holds no record at all. `new` takes no `--name`, so that guard is inert
- * for it and needs no carve-out.
+ * Every subcommand acts on a whole ticket, so a plan's address given as `--name`
+ * is refused here once: it would name a folder that holds no record.
  */
 export const workOrderCommand = async ({ flags, rest, cwd }: CommandContext): Promise<void> => {
 	const word = getPositionals({ args: rest })[0] ?? '';

@@ -2,14 +2,7 @@ interface Params {
 	overviewContent: string;
 }
 
-/**
- * Phase file names from the overview's `## Phases` table, in written order.
- *
- * The table is the authored source of truth for phase order — sorting file
- * names would put `phase10` before `phase2`, which is exactly the ordering the
- * author did not write. Deterministic and dependency-free; the caller decides
- * whether an empty result is an error.
- */
+/** The table is the source of truth for phase order: sorting file names would put `phase10` before `phase2`. */
 export const readOverviewPhases = ({ overviewContent }: Params): string[] => {
 	const files: string[] = [];
 	let inPhases = false;

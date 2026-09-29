@@ -3,44 +3,26 @@ import { getPlanDesignHash } from '#src/plan/internal/common/scope/getPlanDesign
 import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';
 import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
 
-/** The overview's two engine-composed sections whose spans describe ONE phase rather than every phase. */
 const perPhaseRegions = [generatedPlanRegions.phases, generatedPlanRegions.phaseDeclarations];
 
 interface Params {
-	/** The parsed `overview.md`. */
 	overview: ParsedPlan;
-	/** Every phase-file basename this plan has now. */
 	phaseFiles: string[];
 }
 
 type OverviewDesignHashes = { shared: string; attributed: Map<string, string> } | { error: string; shared: string };
 
-/** The overview lines a span covers, as one text — a 1-based inclusive range, as the parser states it. */
 const textOf = ({ overview, start, end }: { overview: ParsedPlan; start: number; end: number }) => overview.lines.slice(start - 1, end).join('\n');
 
 /**
- * Split a phased plan's overview into the text every phase shares and the text
- * describing one phase alone.
+ * A phase's row in `## Phases` and its block in `## Phase Declarations` belong
+ * in that phase's own design hash. The spans come from the line provenance
+ * `parsePhaseDeclarations` records, never a second scan of the sections, which
+ * could disagree with it.
  *
- * A phase's row in `## Phases` and its `### Phase <N>` block in
- * `## Phase Declarations` are about that phase and nothing else, so their
- * content belongs in that phase's own design hash rather than in the overview's.
- * Every other overview section, `## Cross-Phase Dependencies` included, is text
- * every phase reads and stays shared. The spans are located through the line
- * provenance `parsePhaseDeclarations` records, never by scanning the two
- * sections again: a second reader of the table would be a second answer to where
- * a phase's overview content is, and the two would agree only by accident.
- *
- * The checks run in a fixed order and the first to fail is the answer, as
- * `getDecisionReach`'s do. Every one of them is a span the engine cannot place —
- * a declaration missing its row or its block, a declaration naming no phase file
- * of this plan, or a phase file the overview declares nowhere — and a reach that
- * cannot be placed makes the whole overview shared, which widens the pass. That
- * branch keeps both per-phase sections in `shared`, so nothing in them goes
+ * A span the engine cannot place makes the whole overview shared, which widens
+ * the pass, and keeps both per-phase sections in `shared` so nothing goes
  * unmeasured.
- *
- * @returns the overview's shared design hash with the overview text credited to
- * each phase, or the shared hash beside the reason no span could be credited
  */
 export const getOverviewDesignHashes = ({ overview, phaseFiles }: Params): OverviewDesignHashes => {
 	const declarations = parsePhaseDeclarations({ plan: overview });

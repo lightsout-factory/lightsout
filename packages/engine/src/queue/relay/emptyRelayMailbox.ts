@@ -7,8 +7,6 @@ interface Params {
 }
 
 /**
- * The mailbox, existing and empty.
- *
  * A question file left by a crashed drain names a worker that is gone, so it
  * would sit in the mailbox looking answerable forever. Emptying at startup is
  * what makes "a file in the mailbox" mean "a live question".

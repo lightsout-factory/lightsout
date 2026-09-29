@@ -13,7 +13,6 @@ const maxConsecutiveDeclines = 3;
 interface Params {
 	run: RefactorRun;
 	batch: RefactorBatch;
-	/** The batch's in-flight step record, to be closed out with the outcome. */
 	record: StepRecord;
 	outcome: BatchStop;
 	/** Consecutive declines up to and excluding this batch. */
@@ -23,17 +22,13 @@ interface Params {
 interface BatchSettlement {
 	/** Present when this batch ends the whole run — park, failure, escalation. */
 	result?: RefactorResult;
-	/** The streak carried into the next batch. */
 	declineStreak: number;
 }
 
 /**
- * Turn one batch's terminal condition into persisted run state: a park, a
- * failure, or an escalation ends the run, while a completed batch records its
- * report and changed files. A declined batch is still a Passed step — its
- * outcome and files are written before the run escalates, so resume never
- * re-spends on it — and three consecutive declines stop the run as systemic
- * rather than a per-batch judgment.
+ * A declined batch is still a Passed step, written before the run escalates,
+ * so resume never re-spends on it. Consecutive declines stop the run as
+ * systemic rather than a per-batch judgment.
  */
 export const settleBatchOutcome = async ({ run, batch, record, outcome, declineStreak }: Params): Promise<BatchSettlement> => {
 	if (outcome.kind === BatchStopKind.Parked) {

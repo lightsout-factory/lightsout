@@ -20,11 +20,9 @@ const freshRecord = ({ branch, maxAttempts }: { branch: string; maxAttempts: num
 };
 
 /**
- * The ticket folder ignores everything in it, its own ignore file included, so
- * the integration step's `git add -A` never stages the record into a release
- * candidate and its `git clean -fd` never deletes it — whatever the
- * repository's own ignore rules cover. Anything at that path that is not a file
- * is written over, which fails, and the caller skips its record write.
+ * The folder ignores everything in it, so the integration step's `git add -A`
+ * never stages the record and its `git clean -fd` never deletes it, whatever the
+ * repository's own ignore rules cover.
  */
 const ensureIgnoreFile = async ({ folder }: { folder: string }) => {
 	const ignorePath = join(folder, '.gitignore');
@@ -39,14 +37,8 @@ const ensureIgnoreFile = async ({ folder }: { folder: string }) => {
 };
 
 /**
- * One whole record, written through a temporary sibling file and renamed into
- * place, never into a folder without its ignore file.
- *
- * The path arrives unresolved because the recorder's constructor cannot await
- * one, and it is resolved inside the same `try` the write itself runs in — a
- * checkout that cannot be resolved is dropped exactly as an unwritable file is.
- * A branch no work order claims resolves to no path at all, and its writes drop
- * just as silently.
+ * The path arrives unresolved because the constructor cannot await one; resolving
+ * it inside the same `try` drops an unresolvable checkout just as an unwritable file is.
  */
 const writeRecord = async ({ recordPath, record }: { recordPath: Promise<string | undefined>; record: ShippingProgress }) => {
 	try {
@@ -69,22 +61,15 @@ const writeRecord = async ({ recordPath, record }: { recordPath: Promise<string 
 };
 
 interface ConstructorParams {
-	/** The checkout being shipped; the record lands in the primary one, resolved from it. */
+	/** The record lands in the primary checkout, resolved from this one. */
 	cwd: string;
-	/** The branch as git names it. */
 	branch: string;
-	/** The ship's own bound on attempts. */
 	maxAttempts: number;
 }
 
 /**
- * Writes the ship sequence's own step progress to its shipping record, for
- * `lightsout status --shipping` to read while the ship is still going.
- *
- * The record lives in memory and is rewritten whole on every change, one write
- * at a time and in call order. Only `end` returns a promise: every other method
- * queues its write and returns at once, so a slow disk never delays a ship
- * step, and a failed write is dropped without a word.
+ * Only `end` returns a promise: every other method queues its write and returns
+ * at once, so a slow disk never delays a ship step.
  */
 export class ShippingProgressRecorder {
 	private readonly recordPath: Promise<string | undefined>;
@@ -96,7 +81,7 @@ export class ShippingProgressRecorder {
 		this.record = freshRecord({ branch, maxAttempts });
 	}
 
-	/** Attempt 1 starts a fresh record, replacing any an earlier ship of the branch left; a later one runs the five attempt steps again under the same start time. */
+	/** Attempt 1 replaces any record an earlier ship left; a later attempt keeps the same start time. */
 	beginAttempt({ attempt }: { attempt: number }): void {
 		const { branch, maxAttempts } = this.record;
 
@@ -146,7 +131,7 @@ export class ShippingProgressRecorder {
 		this.save();
 	}
 
-	/** Stamps the change and queues a whole-record write behind the ones already queued. Each write holds its own snapshot, because `record` is replaced rather than mutated. */
+	/** Each write holds its own snapshot, because `record` is replaced rather than mutated. */
 	private save() {
 		const record: ShippingProgress = { ...this.record, pid: process.pid, updatedAt: new Date().toISOString() };
 		const recordPath = this.recordPath;

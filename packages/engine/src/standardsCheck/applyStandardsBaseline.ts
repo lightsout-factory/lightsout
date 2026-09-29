@@ -23,21 +23,12 @@ interface Params {
 }
 
 /**
- * The debt ledger, applied to one run's findings.
+ * The ledger lives at the repo root, never under gitignored `.lightsout/`, so it
+ * gets committed: the PR that creates it makes the debt reviewable, and its
+ * shrinking diff is the burn-down.
  *
- * The ledger lives at the repo root, next to the config, so it gets COMMITTED —
- * a debt record the PR that creates it makes reviewable, and whose shrinking
- * diff is the burn-down. Never under gitignored .lightsout/. A missing file is
- * the no-baseline state; there is no second location.
- *
- * Accepting debt is always an explicit act (`writeBaseline`), never a side
- * effect of a check run. An unreadable ledger suppresses nothing — it is called
- * out and ignored, because silently hiding findings behind a corrupt file is
- * the one failure mode a debt ledger must not have.
- *
- * Split out of `runStandardsCheck` so that function reads as detection then
- * persistence: which findings a repo has already accepted is policy, not
- * detection.
+ * An unreadable ledger suppresses nothing — silently hiding findings behind a
+ * corrupt file is the one failure mode a debt ledger must not have.
  */
 export const applyStandardsBaseline = async ({
 	cwd,

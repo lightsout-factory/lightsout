@@ -2,16 +2,9 @@ import { z } from 'zod';
 import { ShipMergeMethod } from '#src/contracts/ship/ShipMergeMethod.ts';
 
 /**
- * The optional `ship` block of `lightsout.config.json` — everything
- * `lightsout ship` needs that is a house convention rather than a universal.
- *
- * The engine learns "ticket reference" here and nothing else: which tracker a
- * team runs, what its magic words are, and what a pull request body should say
- * are all this block's business, so no tracker vocabulary ever reaches engine
- * source.
- *
- * `.strict()`, like every block of the config: a typo here would silently disable a setting
- * the user believes is active.
+ * Every tracker convention lives here, so no tracker vocabulary reaches engine
+ * source. `.strict()` so a typo fails loudly instead of silently disabling a
+ * setting.
  */
 export const ConfigShip = z
 	.object({
@@ -51,8 +44,7 @@ export const ConfigShip = z
 		 * empty may merge after the usual registration grace — the explicit
 		 * opt-out for a repository that intentionally has no CI. Default false,
 		 * and never set automatically. It applies only to absent checks: failed,
-		 * pending, unreadable and another commit's checks are enforced exactly as
-		 * they always were.
+		 * pending, unreadable and another commit's checks are still enforced.
 		 */
 		'allow-no-ci': z.boolean().optional(),
 		/** When true, a passed `lightsout implement` run chains into ship without `--ship` being typed. Default false. */

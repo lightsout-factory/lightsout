@@ -10,7 +10,6 @@ interface Params {
 	ticketPattern: RegExp;
 }
 
-/** Everything the sequence needs before it may touch the forge, once every precondition has held. */
 interface ShipPreconditionsMet {
 	branch: string;
 	/** Read here rather than again later, so the sync step and the "not on it" check cannot disagree. */
@@ -19,7 +18,6 @@ interface ShipPreconditionsMet {
 	ticket: Record<string, string>;
 }
 
-/** The first precondition that did not hold, and whatever was known by then. */
 interface ShipPreconditionsBlocked {
 	reason: ShipBlockReason;
 	detail: string;
@@ -28,7 +26,6 @@ interface ShipPreconditionsBlocked {
 
 type ShipPreconditions = ShipPreconditionsMet | ShipPreconditionsBlocked;
 
-/** The dirty-tree detail: enough paths to recognise the problem, not the whole `git status`. */
 const describeDirtyTree = ({ changed }: { changed: string[] | undefined }) => {
 	const shownPaths = 5;
 
@@ -43,14 +40,8 @@ const describeDirtyTree = ({ changed }: { changed: string[] | undefined }) => {
 };
 
 /**
- * Everything that must be true before ship may push anything, checked in the
- * order that names the first real problem rather than a cascade.
- *
- * Pushing is not among them: it is a step of the sequence, so a branch nobody
- * has pushed is shippable and `implement --ship` can chain straight off its own
- * commit. What is checked here is what no later step could recover from — a
- * detached HEAD, the default branch itself, uncommitted work, a branch name
- * carrying no ticket, and a `gh` that cannot speak for this repository.
+ * Checked in the order that names the first real problem rather than a cascade. Pushing is not a
+ * precondition, so an unpushed branch is shippable and `implement --ship` can chain off its own commit.
  */
 export const checkShipPreconditions = async ({ cwd, ticketPattern }: Params): Promise<ShipPreconditions> => {
 	const branch = await readGitCurrentBranch({ cwd });

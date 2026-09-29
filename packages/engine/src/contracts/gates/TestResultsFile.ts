@@ -1,16 +1,9 @@
 import { z } from 'zod';
 
 /**
- * One per-test results file as the engine's jest reporter wrote it, parsed at
- * the boundary.
- *
- * `status` is a plain string rather than the `TestCaseStatus` union on purpose:
- * a status the engine has never heard of must read as "not passing", never as a
- * whole results file the reader silently drops — a dropped file is
- * indistinguishable from a test that never ran.
- *
- * A results entry naming no test file is refused rather than carried: there is
- * nothing an acceptance row could be matched against.
+ * `status` is a plain string, not the `TestCaseStatus` union: an unknown status
+ * must read as "not passing" rather than make the whole file fail to parse and
+ * be dropped.
  */
 export const TestResultsFile = z.object({
 	testResults: z

@@ -3,41 +3,22 @@ import { gradeFileName } from '#src/plan/internal/common/constants/gradeFileName
 import { gradeMemoryFileName } from '#src/plan/internal/common/constants/gradeMemoryFileName.ts';
 
 /**
- * The one answer to which files in a plan folder travel. Everything else the
- * folder holds — agent transcripts, manifests, progress logs — is run state,
- * and run state never leaves the machine that made it.
+ * The files in a plan folder that travel; everything else is run state and
+ * never leaves the machine that made it. One object, because publish and fetch
+ * must match against exactly the same names.
  *
- * One object rather than two exports: publish writes an attachment per name
- * here, and the fetch matches an attachment's title against exactly the same
- * names. Two lists could be updated apart, which would leave a file publish
- * uploads and the fetch never looks for.
+ * `deliverable` mirrors `resolvePlanDeliverable` and is NOT a safety guard: it
+ * admits a path separator. A caller reading attachment titles a stranger can set
+ * rejects a non-bare name first, and must not narrow this pattern to do it, or
+ * the fetch would refuse a phase file publish uploads.
  *
- * `deliverable` is the naming rule, copied from `resolvePlanDeliverable`, and
- * it is NOT a safety guard: it admits a path separator exactly as the resolver's
- * own pattern does, which is harmless against a directory listing and is not
- * harmless against an attachment title a stranger can set. A caller reading
- * titles off a ticket rejects a non-bare file name before consulting this
- * field, and must not narrow the field to do it — a narrower pattern here would
- * stop mirroring the resolver, and a phase file publish uploads would be one the
- * fetch silently refuses to restore.
+ * The annotation is written out rather than `as const` so `records` is a
+ * `string[]` a caller can `includes` a plain string against.
  *
- * The annotation is written out rather than left to `as const` so `records` is a
- * `string[]` a caller can `includes` a plain string against without a cast.
- *
- * `grade-memory.json` travels and `grade-history.jsonl` does not, because they
- * are different kinds of thing: the memory holds the plan's settled decisions —
- * which questions a human answered, and where the plan states each answer — so
- * planning resumed on another machine has to keep it. The history and the agent
- * transcripts beside it are local debugging state about how a grade was reached.
- *
- * `brainstorm-notes.md` sits in the plan folder but belongs to the brainstorm
- * generation, which is why it is spelled here as `brainstormNotesFileName`
- * rather than as a literal, and why `isPlanOnlyAttachmentName` leaves it out of
- * every plan generation.
+ * `grade-memory.json` travels because it holds the plan's settled decisions;
+ * `grade-history.jsonl` is local debugging state.
  */
 export const durablePlanFileNames: { records: string[]; deliverable: RegExp } = {
-	/** The plan's working records, each attached when the folder holds it. */
 	records: [brainstormNotesFileName, 'decisions.json', gradeFileName, gradeMemoryFileName],
-	/** A plan deliverable's own file name, spelled exactly as `resolvePlanDeliverable` matches it. */
 	deliverable: /^(?:plan\.md|overview\.md|phase\d+.*\.md)$/,
 };

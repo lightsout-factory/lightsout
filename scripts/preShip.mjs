@@ -10,7 +10,6 @@ import { resolveShipBaseCommit } from './shipRelease/resolveShipBaseCommit.mjs';
 import { runGit } from './shipRelease/runGit.mjs';
 import { shippedDirectories } from './shipRelease/shippedDirectories.mjs';
 
-/** The base version with its patch segment moved one step — `0.37.0` becomes `0.37.1`. */
 const bumpPatch = ({ version }) => {
 	const segments = version.split('.').map((segment) => Number.parseInt(segment, 10) || 0);
 
@@ -23,7 +22,7 @@ const bumpPatch = ({ version }) => {
 	return segments.join('.');
 };
 
-/** Rewrite just the version value in place, so the manifest keeps its exact formatting. */
+/** Rewritten in place so the manifest keeps its exact formatting. */
 const writeVersion = ({ manifestPath, from, to }) => {
 	const absolute = join(repoRoot, manifestPath);
 	const manifest = readFileSync(absolute, 'utf8');
@@ -32,26 +31,16 @@ const writeVersion = ({ manifestPath, from, to }) => {
 };
 
 /**
- * Make the tree shippable — the repository's `ship.pre-ship` command.
+ * The repository's `ship.pre-ship` command, so an unattended ship meets the
+ * same bar as `pnpm bundle` plus a manual bump.
  *
- * Two conventions guard a push here (see `.githooks/pre-push` and
- * `scripts/checkShipped.mjs`): the shipped plugin directories must match what
- * the sources build to, and a shipped directory that changed must carry a new
- * version. A human ships by running `pnpm bundle` and bumping by hand; this
- * script is that habit as code, so an unattended ship — the queue's — meets
- * the same bar without a human in the loop.
+ * It rebuilds first because the rebuild is itself a change the version check
+ * must see. The patch moves from the BASE version, so serial queue merges each
+ * land one step above whatever main holds at their turn. Nothing is committed:
+ * the engine commits only once the gates pass.
  *
- * It rebuilds first and bumps second, because the rebuild is itself a change
- * the version question must see. Only the patch segment moves, from the BASE
- * version rather than the head one, so serial queue merges each bump exactly
- * one step above whatever main holds at their turn. Nothing is committed —
- * the engine verifies what this leaves behind and commits it only once the
- * gates have passed.
- *
- * The base is `LIGHTSOUT_SHIP_BASE_COMMIT` when the engine pinned one: ship
- * has already fetched and merged that exact commit, so it — and never the fork
- * point the two branches share — is what the shipped version must clear. Run by
- * hand with no pinned commit, the old `origin/main` merge base still applies.
+ * The base is `LIGHTSOUT_SHIP_BASE_COMMIT` when the engine pinned one, never
+ * the fork point; run by hand, the `origin/main` merge base applies.
  */
 export const preShip = async () => {
 	execFileSync('pnpm', ['bundle'], { cwd: repoRoot, stdio: 'inherit' });
@@ -101,9 +90,8 @@ export const preShip = async () => {
 		return;
 	}
 
-	// Verified here, against the same pinned commit the versions were measured
-	// from, so the hook itself is what says the candidate is shippable rather
-	// than a later check comparing against a fork point that has since moved.
+	// Verified against the same pinned commit the versions were measured from,
+	// not a fork point that has since moved.
 	const { problems } = await checkShipped({ baseCommit });
 
 	if (problems.length > 0) {

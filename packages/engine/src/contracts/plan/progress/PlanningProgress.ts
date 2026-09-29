@@ -2,11 +2,8 @@ import { z } from 'zod';
 import { PlanningStepRecord } from '#src/contracts/plan/progress/PlanningStepRecord.ts';
 
 /**
- * What the plan subcommands last recorded about their own steps, written to
- * `planning-progress.json` in the plan folder.
- *
- * It stays on the machine: it is not one of the durable files `plan publish`
- * attaches, because only `lightsout status --planning` reads it.
+ * Not one of the durable files `plan publish` attaches, because only
+ * `lightsout status --planning` reads it.
  */
 export const PlanningProgress = z.object({
 	/** The plan folder name the record belongs to. */

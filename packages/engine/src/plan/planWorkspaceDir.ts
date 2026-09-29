@@ -10,21 +10,12 @@ interface Params {
 }
 
 /**
- * The one answer to where a plan lives: a single gitignored folder holding both
- * the transient working files (`facts.json`, `decisions.json`, the agent
- * transcripts) and the drafted plan text — `plan.md`, or `overview.md` plus its
- * `phase<N>-<slug>.md` files.
+ * Plans sit one level below the ticket folder, which keeps the ticket's own
+ * record files and its `runs/` sibling out of every scan for them.
  *
- * An address answers that plan's own subfolder inside its ticket's plans folder;
- * a work order's name answers the plans folder itself, which holds one subfolder
- * per plan. Putting plans one level below the ticket folder is what keeps the
- * ticket's own record files and its `runs/` sibling out of every scan that looks
- * for them.
- *
- * Always under the primary checkout, whichever checkout the command runs in, the
- * way `resolveSharedStateDir` answers for shared run state. A planning worktree
- * is removed once its work ships, so a plan folder written inside one dies with
- * it — and a worktree holds code work only.
+ * Always under the primary checkout, whichever checkout the command runs in, as
+ * `resolveSharedStateDir` is: a planning worktree is removed once its work
+ * ships, and a plan folder written inside one would die with it.
  */
 export const planWorkspaceDir = async ({ cwd, name }: Params): Promise<string> => {
 	const address = parsePlanAddress({ name });

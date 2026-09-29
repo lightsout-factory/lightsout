@@ -35,10 +35,8 @@ interface Params {
 }
 
 /**
- * Runs the repository's gates: the root `gates.*` as one group, or with
- * `package-gates` one group per package in scope. The whole run holds a gate
- * reservation shared by every worktree of the repository, because they share
- * one machine.
+ * The whole run holds a gate reservation shared by every worktree of the
+ * repository, because they share one machine.
  *
  * Crashed and timed-out gates are re-run, and reported in `crashes` and
  * `timeouts`, never as a failed family. A run that could not get the machine

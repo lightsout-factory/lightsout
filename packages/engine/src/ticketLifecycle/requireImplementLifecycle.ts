@@ -22,8 +22,6 @@ interface Params {
 }
 
 /**
- * Which Planning Status the required pre-implementation write records.
- *
  * The two terminal shaping states are preserved, because the case that matters
  * is a human `planning-not-needed` classification that must never be rewritten
  * as shaped work. Everything else — `planning-ready-auto-plan`, either
@@ -45,29 +43,19 @@ const toPreImplementationPlanningStatus = ({ labels, lifecycle }: { labels: stri
 };
 
 /**
- * The required pre-source lifecycle write, expressed as a command-edge guard.
- *
  * A markdown instruction cannot make a write required, so the engine performs
- * it: the ticket says what preparation it owes and that implementation has
- * begun *before* an agent touches any source, and a write that cannot be made
- * stops the run rather than letting two entry points disagree about who owns
- * the branch.
+ * it before an agent touches any source, and a write that cannot be made stops
+ * the run rather than letting two entry points disagree about who owns the
+ * branch.
  *
- * A repository with no tracker, and a branch no work order's record claims a
- * ticket for, both proceed untouched — there is nothing to synchronize and no
- * ticket to refuse on behalf of.
+ * A held ticket is refused after it is fetched and before any lifecycle write,
+ * so it is never moved to In Progress and then turned away. The holds are
+ * reconciled rather than read raw, so a ticket whose label a human just
+ * removed starts on the first try.
  *
- * A ticket under a durable gate hold is refused outright, and refused here —
- * after the ticket is fetched and before any lifecycle write — so a held ticket
- * is never moved to In Progress and then turned away. The holds are reconciled
- * rather than read raw, so a ticket whose label a human just removed starts on
- * the first try.
- *
- * A ticket already at the configured done status keeps that status. Re-running
- * implement on a shipped branch is ordinary — a fix-up after a merge — and
- * moving it back to In Progress would make merged work look unshipped for as
- * long as nobody noticed. The planning status is still written and the run
- * still proceeds: source work is genuinely happening, so this is not a refusal.
+ * A ticket already at the done status keeps it: re-running implement on a
+ * shipped branch is an ordinary fix-up, and moving it back to In Progress would
+ * make merged work look unshipped.
  *
  * @returns undefined when the run may start, or the one sentence saying why it may not
  */
@@ -76,8 +64,6 @@ export const requireImplementLifecycle = async ({ cwd, config, env, ticketRef, o
 		return undefined;
 	}
 
-	// The ticket this run is about: the reference the caller was given, or the one
-	// the branch's own work order record names.
 	const reference = ticketRef ?? (await readWorkOrderTicketRef({ cwd }));
 
 	if (reference === undefined) {

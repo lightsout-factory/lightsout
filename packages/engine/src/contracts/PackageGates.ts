@@ -6,17 +6,14 @@ import { validateCustomTestGates } from '#src/contracts/common/utils/validateCus
 const knownGateKeys = new Set(['check', 'test', 'test-coverage', 'build']);
 
 /**
- * Monorepo mode: gate command templates run per affected package, with
- * `{package}` replaced by that package's package.json `name`. When set,
- * verifies run scoped to the run's package scope (plan front-matter
- * `packages:` list or `--packages`, expanded as changed files reveal the
- * true blast radius) and `gates.*` becomes the root-group commands, run
- * only when files outside the packages directory change.
+ * Gate command templates run per affected package, with `{package}` replaced by
+ * that package's package.json `name`. When set, `gates.*` becomes the
+ * root-group commands, run only when files outside the packages directory
+ * change.
  *
- * `test` and `test-coverage` are the same suite, plain or instrumented; any
- * other `test-*` key is a custom suite run in written order. Validation only —
- * the parsed value keeps the config's own spelling, so a run manifest's
- * config snapshot round-trips through this schema unchanged.
+ * `test` and `test-coverage` are the same suite, plain or instrumented. Validation
+ * only: the parsed value keeps the config's own spelling, so a run manifest's
+ * config snapshot round-trips unchanged.
  */
 export const PackageGates = z
 	.object({

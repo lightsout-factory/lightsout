@@ -7,17 +7,14 @@ interface Props {
 	/** Radix reports every close — the scrim, the close button, and Escape — through this one callback. */
 	onOpenChange: (open: boolean) => void;
 	title: ReactNode;
-	/** Right-aligned slot beside the close button. */
 	action?: ReactNode;
 	children: ReactNode;
 }
 
 /**
- * A panel that slides in from the right over a scrim.
- *
- * Named for what it is to Radix and to a screen reader rather than for how it
- * looks: the drawer is styling over a dialog, and the accessible name, the
- * focus trap and the Escape handler all come from the primitive.
+ * Named for what it is to Radix rather than how it looks: the drawer is styling
+ * over a dialog, and the accessible name, focus trap and Escape handler come
+ * from the primitive.
  */
 export const Dialog = ({ open, onOpenChange, title, action, children }: Props) => (
 	<DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>

@@ -6,13 +6,8 @@ import { GradeReadCoverage } from '#src/contracts/plan/memory/GradeReadCoverage.
 import { GradeScope } from '#src/contracts/plan/memory/GradeScope.ts';
 
 /**
- * The persisted `grade-memory.json`: a plan's settled decisions, and what the
- * last pass and the last qualifying full review measured.
- *
- * It is a separate file from `grade.json` because the two answer different
- * questions. `grade.json` is overwritten every pass and holds the latest
- * verdict; this is the state that crosses passes, so it is written once per pass
- * and travels with a published plan.
+ * Separate from `grade.json`, which is overwritten every pass: this is the state
+ * that crosses passes and travels with a published plan.
  */
 export const GradeMemory = z.object({
 	planName: z.string(),

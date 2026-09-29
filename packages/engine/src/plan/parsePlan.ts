@@ -9,13 +9,8 @@ import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';
 import { planCreatePaths } from '#src/plan/internal/planCreatePaths.ts';
 
 /**
- * Split a plan into its `##` sections (a `###` subheading stays inside its
- * section), each carrying the 1-based line its first line sits at.
- *
- * The line number is what lets a section's own reader report a defect by
- * location rather than by position within the section — the ledger and
- * prose-files parsers both number their malformed lines that way, and a finding
- * a human cannot jump to is a finding they have to hunt for.
+ * Each section carries its 1-based first line, so a section's own reader can
+ * report a defect by a location a human can jump to.
  */
 const parseSections = ({ lines }: { lines: string[] }) => {
 	const sections = new Map<string, { lines: string[]; firstLine: number }>();
@@ -40,17 +35,14 @@ const parseSections = ({ lines }: { lines: string[] }) => {
 };
 
 /**
- * One section's 1-based inclusive line range. The heading sits one line above
- * the section's first line, and the span runs to the last line before the next
- * `##` — blank lines included, which is what lets the rewriter replace the whole
- * span and write exactly one blank line back.
+ * Blank lines up to the next `##` are included, so the rewriter can replace the
+ * whole span and write exactly one blank line back.
  */
 const rangeOf = ({ section }: { section: { lines: string[]; firstLine: number } }) => ({
 	start: section.firstLine - 1,
 	end: section.firstLine - 1 + section.lines.length,
 });
 
-/** Paths from the leading code span of each line in a section that matches `lineMatches` (`###` subheadings or `-` bullets). */
 const pathsFromLines = ({ sectionLines, lineMatches }: { sectionLines: string[] | undefined; lineMatches: (line: string) => boolean }) => {
 	if (!sectionLines) {
 		return [];
@@ -71,7 +63,6 @@ const pathsFromLines = ({ sectionLines, lineMatches }: { sectionLines: string[] 
 	return paths;
 };
 
-/** The backtick-delimited command in each `-` bullet of the Verification section. */
 const commandsFromVerification = ({ sectionLines }: { sectionLines: string[] | undefined }): string[] => {
 	if (!sectionLines) {
 		return [];
@@ -95,12 +86,9 @@ const commandsFromVerification = ({ sectionLines }: { sectionLines: string[] | u
 };
 
 /**
- * The `### ` headings of the `## Files to Move` section, as source/destination
- * pairs. A heading that names fewer than two path-shaped spans is dropped from
- * the pairs and recorded by its 1-based line number instead, so the lint reports
- * it rather than losing a file the plan meant to move. Scanned over the whole
- * file rather than the section's lines because the line number is the finding's
- * location.
+ * A heading naming fewer than two paths is recorded by line number, so the lint
+ * reports it rather than losing a file the plan meant to move. Scanned over the
+ * whole file because that line number is the finding's location.
  */
 const movesFromPlan = ({ lines }: { lines: string[] }) => {
 	const moves: { from: string; to: string }[] = [];
@@ -133,10 +121,8 @@ const movesFromPlan = ({ lines }: { lines: string[] }) => {
 };
 
 /**
- * The line range of every engine-composed region this file carries, keyed by
- * heading. A region the file lacks gets no entry at all: an invented empty span
- * would read to the section writers as a section to replace rather than one to
- * insert.
+ * A region the file lacks gets no entry: an invented empty span would read to
+ * the section writers as a section to replace rather than one to insert.
  */
 const generatedRangesFrom = ({ parsed }: { parsed: Map<string, { lines: string[]; firstLine: number }> }) => {
 	const ranges = new Map<string, { start: number; end: number }>();
@@ -152,7 +138,6 @@ const generatedRangesFrom = ({ parsed }: { parsed: Map<string, { lines: string[]
 	return ranges;
 };
 
-/** The first integer in the optional `## File Budget` section — the touched-file allowance a plan declares for itself. */
 const fileBudgetFrom = ({ sectionLines }: { sectionLines: string[] | undefined }) => {
 	for (const line of sectionLines ?? []) {
 		const match = /(\d+)/.exec(line);
@@ -166,13 +151,11 @@ const fileBudgetFrom = ({ sectionLines }: { sectionLines: string[] | undefined }
 };
 
 interface Params {
-	/** The plan file's full text. */
 	content: string;
 	/** The plan file's basename — `overview.md` is one of the overview-variant signals. */
 	base: string;
 }
 
-/** Parse a plan file's text into the typed `ParsedPlan` the structural lint keys off. */
 export const parsePlan = ({ content, base }: Params): ParsedPlan => {
 	const lines = content.split('\n');
 	const parsed = parseSections({ lines });

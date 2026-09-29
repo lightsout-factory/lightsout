@@ -7,14 +7,7 @@ interface Params {
 	ruleId: string;
 }
 
-/**
- * A rule's prose without its opening heading when that heading only spells the
- * rule's id — "Props & State" over `props-and-state`
- * — since the page's title already says it. Any other opening is kept.
- *
- * @param prose - the rule's prose
- * @param ruleId - the rule's id
- */
+/** Drops an opening heading that only spells the rule's id ("Props & State" for `props-and-state`), since the page title already shows it. */
 export const dropRepeatedTitle = ({ prose, ruleId }: Params): string => {
 	const [first = '', ...rest] = prose.trimStart().split('\n');
 	const heading = /^#{1,6}\s+(.+)$/.exec(first);

@@ -3,13 +3,7 @@ import { formatCost, formatTokenCount } from '@lightsout/shared';
 import { Card } from '#src/appUI/panels/Card.tsx';
 import { formatCount } from '#src/common/formatting/formatCount.ts';
 
-/**
- * How much of the run's input came out of cache, drawn rather than parenthesised.
- *
- * It is the number that decides what a long run costs — a run reading 90% from
- * cache and one reading 30% are different orders of spend — and a bar says that
- * at a glance where a figure inside a sentence does not.
- */
+/** Drawn as a bar because the cache share decides what a long run costs, and a bar says so at a glance. */
 const CacheReadBar = ({ share }: { share: number }) => {
 	const percent = Math.round(share * 100);
 
@@ -28,7 +22,6 @@ const CacheReadBar = ({ share }: { share: number }) => {
 
 interface Props {
 	usage?: RunUsage;
-	/** Share of all input the model read from cache, as the engine computed it. */
 	cacheReadShare?: number;
 	steps: RunStepView[];
 	agents: AgentInvocation[];
@@ -36,14 +29,6 @@ interface Props {
 	rejectedReports: number;
 }
 
-/**
- * What the agents cost: the run total, the same split per step, and every
- * invocation the ledger recorded.
- *
- * Rejected reports are called out when there are any, because that number is
- * what a re-emit cost — an invocation that produced nothing usable still shows
- * up in the totals above it.
- */
 export const AgentCostPanel = ({ usage, cacheReadShare, steps, agents, rejectedReports }: Props) => (
 	<Card title="Agent cost">
 		{usage === undefined ? (

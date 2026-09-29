@@ -11,18 +11,8 @@ interface Params {
 	trackerSettings: TrackerSettings;
 }
 
-/**
- * Every ticket the queue may pick up, with the planning status each one carries
- * and the worker its pair selects.
- *
- * The tracker is asked for the whole configured label set in one query and
- * reports the labels and the status it saw; what they mean is decided here,
- * because a planning status is the queue's word for a label and the seam has no
- * business knowing it.
- *
- * A ticket carrying more than one planning-status label yields one summary per
- * status, deliberately — the drain is the one place the ambiguity skip lives.
- */
+// A ticket with more than one planning-status label deliberately yields one
+// summary per status: the ambiguity skip lives in the drain.
 export const listEligibleTickets = async ({ settings, trackerSettings }: Params): Promise<TicketSummary[] | QueueFailure> => {
 	const tickets = await listTickets({
 		settings: trackerSettings,

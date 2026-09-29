@@ -7,22 +7,17 @@ import { describeGateCrash } from '#src/gates/internal/common/utils/describeGate
 import { describeGateTimeout } from '#src/gates/internal/common/utils/describeGateTimeout.ts';
 
 interface Params {
-	/** The gates to run, in the order someone else already put them in — with every command final. */
+	/** Already in order, with every command final. */
 	entries: GateEntry[];
 	label?: string;
 	gate: RunGate;
-	/** Stop at the first red (default); false runs every gate and aggregates the failures — verify's complete-report mode. */
+	/** Default true; false runs every gate and aggregates the failures. */
 	failFast?: boolean;
 }
 
 /**
- * Run one ordered list of gates and report what happened.
- *
- * The order is not this function's to choose: `buildGateStages` decides which
- * gates a run schedules and in which order, because an override has to be able
- * to replace that decision entirely. What is left here is execution — first
- * failure wins unless `failFast` is false, in which case every gate in the list
- * runs and the failures aggregate.
+ * The order is not this function's to choose: `buildGateStages` decides it,
+ * because an override has to be able to replace that decision entirely.
  */
 export const runGateSet = async ({ entries, label, gate, failFast = true }: Params): Promise<GateRunResult> => {
 	const group = label ?? 'root';
@@ -31,15 +26,11 @@ export const runGateSet = async ({ entries, label, gate, failFast = true }: Para
 	const failedFamilies: string[] = [];
 	const crashes: string[] = [];
 	const timeouts: string[] = [];
-	// A crash or a timeout records a failure too, so it stops a fail-fast group
-	// like any red.
 	const stop = () => failFast && failures.length > 0;
 
-	// A red gate is recorded twice over: as output, which every caller reads as
-	// the reason the run stopped, and as a family, which is what a fix agent is
-	// asked to repair. A gate the runner judged a crash or a timeout gets the
-	// first and not the second — it never returned a verdict, so nothing is known
-	// to be broken, and the run still fails closed.
+	// A crash or a timeout is not a family a fix agent is asked to repair: it
+	// returned no verdict, so nothing is known to be broken. The run still fails
+	// closed through `failures`.
 	const recordRed = ({ family, name, outcome }: { family: string; name: string; outcome: GateOutcome }) => {
 		const label = `${prefix}${name}`;
 

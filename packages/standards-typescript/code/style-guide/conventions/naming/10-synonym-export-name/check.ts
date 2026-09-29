@@ -6,13 +6,9 @@ import { getExportName } from '../../../../../common/naming/getExportName.ts';
 import { getNameKey } from '../../../../../common/naming/getNameKey.ts';
 
 /**
- * Files in scope grouped by their synonym- and word-order-normalized key, and
- * within each key by the name the file actually uses — the finding has to name
- * the spellings, not the key they share.
- *
- * Tests are left out for the same reason the duplicate-name rule leaves them
- * out: a test file is named after the subject it covers, so its name is the
- * convention working rather than a second name for one concept.
+ * Grouped within each key by the name the file uses, because the finding has to
+ * name the spellings, not the key they share. Tests are left out: a test file is
+ * named after the subject it covers.
  */
 const groupByNameKey = ({ files, tests }: { files: string[]; tests: string[] }) => {
 	const testPaths = new Set(tests);

@@ -9,17 +9,15 @@ import { getCodeSpans } from '#src/plan/internal/common/utils/getCodeSpans.ts';
 import { getDeclarationDefects } from '#src/plan/lint/internal/common/utils/getDeclarationDefects.ts';
 
 interface Params {
-	/** Rows parsed from the overview. */
 	declarations: PhaseDeclaration[];
-	/** Implementable plan files, ordered by phase number. */
+	/** Ordered by phase number. */
 	phases: PhaseFile[];
-	/** The overview's basename — the finding label for a declaration-side defect. */
+	/** The finding label for a declaration-side defect. */
 	overviewBase: string;
-	/** Source-file counts per phase basename, as the lint already computes them. */
+	/** Keyed by phase basename. */
 	counts: Map<string, PhaseSizeCounts>;
 }
 
-/** One inconsistency, before the check and severity every one of them shares is stamped on. */
 interface Defect {
 	phase: string;
 	issue: string;
@@ -27,11 +25,10 @@ interface Defect {
 	fix: string;
 }
 
-/** Every declaration defect is blocking; only the file it is reported against varies. */
 const stamp = ({ defects }: { defects: Defect[] }): StructuralFinding[] =>
 	defects.map((defect) => ({ check: StructuralCheck.DeclarationConsistent, severity: FindingSeverity.Blocking, ...defect }));
 
-/** Every backticked span in a phase file, plus the export name of every path it creates — the two ways a declared name may appear. */
+/** A declared name may appear as a backticked span or as the export name of a created path. */
 const namesIn = ({ phase }: { phase: PhaseFile }) => {
 	const spans = new Set<string>();
 
@@ -44,7 +41,6 @@ const namesIn = ({ phase }: { phase: PhaseFile }) => {
 	return { spans, exports: new Set(phase.plan.createPaths.map((path) => getExportName({ path }))) };
 };
 
-/** The declaration set and the phase-file set must name each other exactly, and the numbering must read 1..n. */
 const phaseSetDefects = ({ declarations, phases, overviewBase }: Omit<Params, 'counts'>) => {
 	const defects: Defect[] = [];
 
@@ -80,7 +76,6 @@ const phaseSetDefects = ({ declarations, phases, overviewBase }: Omit<Params, 'c
 	return defects;
 };
 
-/** The declared counts and file budget, against the phase file the declaration describes. */
 const numberDefects = ({
 	declaration,
 	phase,
@@ -138,7 +133,6 @@ const numberDefects = ({
 	return defects;
 };
 
-/** The names a declaration hands forward, against the phase file it describes. */
 const nameDefects = ({ declaration, phase, overviewBase }: { declaration: PhaseDeclaration; phase: PhaseFile; overviewBase: string }) => {
 	const defects: Defect[] = [];
 	const { spans, exports } = namesIn({ phase });
@@ -174,7 +168,6 @@ const nameDefects = ({ declaration, phase, overviewBase }: { declaration: PhaseD
 	return defects;
 };
 
-/** Whether the overview declares the phase rename-only, against whether its own file carries a `## Renames` section. */
 const renamesDefects = ({ declaration, phase, overviewBase }: { declaration: PhaseDeclaration; phase: PhaseFile; overviewBase: string }) => {
 	const declared = declaration.renamesOnly === true;
 	const own = phase.plan.renames.length > 0;
@@ -194,11 +187,8 @@ const renamesDefects = ({ declaration, phase, overviewBase }: { declaration: Pha
 };
 
 /**
- * DeclarationConsistent — anything a phase declares in the overview must appear
- * in that phase's own file, and the two must agree about the phase set and its
- * sizes. This is the rule that keeps the declaration honest: the provenance
- * check reads the phase files, so without this the declaration could quietly
- * describe a plan that no longer exists.
+ * The provenance check reads the phase files, so without this the overview's
+ * declaration could quietly describe a plan that no longer exists.
  */
 export const checkPhaseDeclarations = ({ declarations, phases, overviewBase, counts }: Params): StructuralFinding[] => {
 	const defects = phaseSetDefects({ declarations, phases, overviewBase });

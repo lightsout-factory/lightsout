@@ -1,9 +1,8 @@
 /**
- * What the overview declares about one phase: its size, and the work of it that
- * crosses a phase boundary. The phase file itself holds the complete file list —
- * repeating it here would create two lists that drift the moment either is
- * edited. This exists so phase agents can author concurrently before any phase
- * file is on disk, and so the size check can run before any of them is paid for.
+ * Only the work that crosses a phase boundary: the phase file holds the
+ * complete file list, and repeating it here would create two lists that drift.
+ * This exists so phase agents can author concurrently before any phase file is
+ * on disk, and so the size check can run before any of them is paid for.
  */
 export interface PhaseDeclaration {
 	/** 1-based phase number, from the `## Phases` table's first column. */
@@ -24,10 +23,7 @@ export interface PhaseDeclaration {
 	scripts: string[];
 	/** The phase's declared `## File Budget`, absent when it takes the configured default. */
 	fileBudget?: number;
-	/**
-	 * Present and `true` only when the declaration block carries `- **Renames only:** yes`, so the phase file must carry a `## Renames` section.
-	 * Omitted rather than `false` otherwise, so a declaration that says nothing about renames reads exactly as it did before the bullet existed.
-	 */
+	/** Present and `true` only when the declaration block carries `- **Renames only:** yes`; omitted rather than `false` otherwise. */
 	renamesOnly?: boolean;
 	/** 1-based line of this phase's row in the overview's `## Phases` table; absent for a declaration block with no matching row. */
 	rowLine?: number;

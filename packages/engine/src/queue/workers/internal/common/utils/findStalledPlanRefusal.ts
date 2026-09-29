@@ -9,13 +9,9 @@ interface Params {
 }
 
 /**
- * Why the queue will not build past a plan whose own implementation was started
- * and did not finish — failed, or still recorded as being implemented, which is
- * what a paused or interrupted run leaves.
- *
- * That is a failure a human repairs rather than something to wait on, so the
- * ticket parks: the queue never retries a failed plan and never resumes a paused
- * run. The sentence names both repair paths the ticket has.
+ * `Implementing` is what a paused or interrupted run leaves. The queue never
+ * retries a failed plan and never resumes a paused run, so the ticket parks for
+ * a human.
  *
  * @returns the one sentence saying why the loop stopped, or undefined when the plan may be built
  */

@@ -13,13 +13,8 @@ interface Params {
 }
 
 /**
- * The id to add for one label name, preferring a team-scoped match over a
- * workspace-level one.
- *
- * The scope filter asks for the team's labels *or* labels with no team, so two
- * different labels may answer to the same name. Any of them satisfies a reader
- * comparing by name, but preferring the team's own keeps two runs on the same
- * workspace from disagreeing about which id they added.
+ * The scope filter can answer a team label and a workspace label with one name;
+ * preferring the team's keeps two runs from adding different ids.
  */
 const targetLabelIdOf = ({ catalog, label }: { catalog: IssueLabel[]; label: string }) => {
 	const matches = catalog.filter((node) => node.name === label);
@@ -28,14 +23,9 @@ const targetLabelIdOf = ({ catalog, label }: { catalog: IssueLabel[]; label: str
 };
 
 /**
- * Adds the target label, putting the siblings back when the add is rejected.
- *
- * The removals have already landed by this point, so a failed add would leave
- * the ticket carrying no member of the group at all — a state nothing heals,
- * because a caller reads "no label" as "not delegated" and never comes back to
- * it. A rollback that itself fails is acceptable: it is a second chance at the
- * as-found state, not a guarantee, and the original failure is what the caller
- * is told about either way.
+ * Puts the siblings back when the add is rejected: with no group label the
+ * ticket reads as "not delegated" and nothing comes back to it. The rollback is
+ * best-effort; the caller is told the original failure either way.
  */
 const addTargetLabel = async ({ client, ticketId, targetId, removed }: { client: LinearClient; ticketId: string; targetId: string; removed: IssueLabel[] }) => {
 	try {
@@ -50,32 +40,15 @@ const addTargetLabel = async ({ client, ticketId, targetId, removed }: { client:
 };
 
 /**
- * Makes `label` the one member of `groupLabels` the ticket carries.
+ * Siblings are removed before the target is added: in a Linear label group the
+ * add drops siblings server-side, so later removals would target labels the
+ * issue no longer carries and could be rejected. The brief window with no group
+ * label reads as "not delegated", which the next pass heals.
  *
- * Labels outside `groupLabels` are never touched, and writing nothing is a
- * legitimate outcome: a ticket already carrying exactly `label` costs two reads
- * and no write.
+ * Siblings are removed by the id the issue reports, since two labels can share a
+ * name and removing the wrong id is a silent no-op.
  *
- * The siblings are removed *before* the target is added, and the obvious order
- * is the wrong one. When the group is configured as a Linear label group —
- * which is what makes "exactly one" a tracker guarantee — the add drops the
- * siblings server-side, so removals issued after it would target labels the
- * issue no longer carries. Whether Linear rejects such a removal is live-API
- * behaviour this folder cannot check by compiling, and a rejection here becomes
- * a `TrackerFailure` that parks the ticket — so a correctly configured
- * workspace could park everything while its tracker state was in fact right.
- * Removing first makes every operation act on a label the issue was just read
- * as carrying, in a grouped and an ungrouped workspace alike. The cost is a
- * window in which the ticket carries no member of the group, which every reader
- * already treats as "not delegated": a missed pickup that the next pass heals.
- *
- * The siblings are removed by the id the issue itself reports rather than by a
- * name-keyed catalog entry, because the scope filter can answer two labels
- * sharing one name and removing the wrong id is a silent no-op.
- *
- * This never creates a label. Whether every configured label exists is one
- * question, answered once by `listLabelNames` at the caller's startup rather
- * than silently, per ticket, at write time.
+ * Never creates a label: `listLabelNames` checks the configuration at startup.
  */
 export const setExclusiveLabel = async ({ settings, ticketId, label, groupLabels }: Params): Promise<TrackerFailure | undefined> =>
 	runLinear({

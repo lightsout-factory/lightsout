@@ -6,7 +6,7 @@ interface Params {
 	cwd: string;
 }
 
-/** Turn the read-out on for this project. The file's existence is the whole signal, so writing over one already there is harmless. */
+/** The file's existence is the whole signal, so writing over one already there is harmless. */
 export const createVoiceMarker = async ({ cwd }: Params): Promise<void> => {
 	const markerPath = getVoiceMarkerPath({ cwd });
 

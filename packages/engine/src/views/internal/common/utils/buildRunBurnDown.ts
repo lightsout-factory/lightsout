@@ -9,30 +9,21 @@ import type { RunBurnDownBatch } from '#src/contracts/views/runBurnDown/RunBurnD
 import { RunBurnDownBatchOutcome } from '#src/contracts/views/runBurnDown/RunBurnDownBatchOutcome.ts';
 import type { FrozenWorklist } from '#src/views/internal/common/types/FrozenWorklist.ts';
 
-/** One work-list batch as the panel shows it, beside the site count it left standing. */
 interface JoinedBatch {
 	row: RunBurnDownBatch;
 	remaining: number;
 }
 
-/**
- * The rules whose findings are the sprawl itself — a file, a function or a
- * folder past its cap. `test-file-size` is deliberately outside the set: it
- * never forms a batch, so it could never be counted here.
- */
+/** `test-file-size` is deliberately outside the set: it never forms a batch. */
 const overCapRules = new Set(['file-size', 'function-size', 'folder-size']);
 
-/** A total across the joined batches — `blocking` for the before side, `remaining` for the after. */
 const sumOver = ({ entries, read }: { entries: JoinedBatch[]; read: (entry: JoinedBatch) => number }) =>
 	entries.reduce((total, entry) => total + read(entry), 0);
 
 /**
- * One frozen batch joined to what the run recorded against it.
- *
- * A batch the run never reached — and a batch whose recorded report will not
- * parse — reads as `not-run` and counts its frozen blocking findings as still
- * standing, so a run that stopped after the first of eight reads as barely
- * started rather than nearly done.
+ * A batch the run never reached, or whose report will not parse, reads as
+ * `not-run` and counts its blocking findings as still standing, so a run that
+ * stopped early reads as barely started rather than nearly done.
  */
 const toBurnDownBatch = ({ batch, step }: { batch: RefactorBatch; step?: StepRecord }) => {
 	const report = step === undefined ? undefined : BatchReport.safeParse(step.report).data;
@@ -52,7 +43,6 @@ const toBurnDownBatch = ({ batch, step }: { batch: RefactorBatch; step?: StepRec
 	return joined;
 };
 
-/** The sites a refactor run's work-list froze, against the sites its batches left behind. */
 const buildRefactorBurnDown = ({ manifest, batches }: { manifest: RunManifest; batches: RefactorBatch[] }) => {
 	const steps: Map<string, StepRecord> = new Map(manifest.steps.map((step) => [step.id, step]));
 	const joined = batches.map((batch) => toBurnDownBatch({ batch, step: steps.get(batch.id) }));
@@ -78,11 +68,8 @@ const buildRefactorBurnDown = ({ manifest, batches }: { manifest: RunManifest; b
 };
 
 /**
- * Every file a coverage run measured, earliest reading against latest.
- *
- * No before/after count: the threshold the run was chasing lives in the repo's
- * coverage command rather than in the manifest, so no honest count of "files
- * below threshold" exists here.
+ * No before/after count: the threshold the run chased lives in the repo's
+ * coverage command, not the manifest.
  */
 const buildCoverageBurnDown = ({ manifest }: { manifest: RunManifest }) => {
 	const merged = new Map<string, { path: string; beforePct: number; afterPct: number }>();
@@ -113,16 +100,6 @@ interface Params {
 	worklist: FrozenWorklist | undefined;
 }
 
-/**
- * The before and after a refactor or coverage run achieved; undefined for every
- * other pipeline.
- *
- * Computed here rather than in a page, so the number a panel draws and the
- * number a frozen demo run carries come out of the same reader. A refactor run
- * whose work-list is missing or unparseable, and a coverage run none of whose
- * steps recorded a measurement, both answer undefined — no panel, the way
- * `listRuns` skips unreadable state in silence.
- */
 export const buildRunBurnDown = ({ manifest, worklist }: Params): RunBurnDown | undefined => {
 	let burnDown: RunBurnDown | undefined;
 

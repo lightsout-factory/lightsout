@@ -30,7 +30,6 @@ const readTicketBodyEligibility = ({ record }: { record: WorkOrderState }): Work
 	return eligibility;
 };
 
-/** Plan 001 supplies a single-plan ticket's implementation, so it decides whether the ticket may ship — or, when there is none, the build from the ticket body does. */
 const readSinglePlanEligibility = ({ record }: Params): WorkOrderShipEligibility => {
 	const first = record.plans.find((plan) => planNumberOf({ id: plan.id }) === 1);
 	let eligibility: WorkOrderShipEligibility;
@@ -54,7 +53,6 @@ const readSinglePlanEligibility = ({ record }: Params): WorkOrderShipEligibility
 	return eligibility;
 };
 
-/** How the approved set of plans and the ticket's current included plans differ, as the clauses of one sentence. */
 const describeRequestDrift = ({ missing, stale }: { missing: string[]; stale: string[] }) => {
 	const clauses = [
 		...(missing.length === 0 ? [] : [`it does not name ${missing.join(', ')}`]),
@@ -101,16 +99,8 @@ const readMultiplePlanEligibility = ({ record }: Params): WorkOrderShipEligibili
 };
 
 /**
- * Whether a ticket's own record authorizes shipping it, and one sentence saying
- * why not when it does not.
- *
- * A branch carrying no record at all is the caller's own case and ships exactly
- * as it did before work order states existed; this function is only ever handed a
- * record. A record that already says the ticket shipped is never eligible
- * again, whatever its plans say — the merged record is history.
- *
- * A plan's display title takes no part in any of it, which is what makes a
- * rename something that never withdraws an approval.
+ * A record that already says the ticket shipped is never eligible again. A plan's display title
+ * takes no part, so a rename never withdraws an approval.
  */
 export const readWorkOrderShipEligibility = ({ record }: Params): WorkOrderShipEligibility => {
 	let eligibility: WorkOrderShipEligibility;

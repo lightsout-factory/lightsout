@@ -9,21 +9,9 @@ import { StandardsHeader } from '#src/features/standards/screens/StandardsPage/i
 import { StandardsTrendChart } from '#src/features/standards/screens/StandardsPage/internal/components/StandardsTrendChart.tsx';
 
 /**
- * What this repo is breaking, and where.
- *
- * Everything on the page comes from one `StandardsView` the engine assembled, so
- * the page and `lightsout standards-check` cannot disagree about a number.
- *
- * Two facets narrow one table: which rule, and which folder. The rule filter
- * lives in the URL so a narrowed page is a link somebody can send — and so
- * `?rule=<id>` from the health page and the rule pages lands on the right rows.
- * The folder facet and its depth stay in component state: they describe how this
- * reader is looking rather than what they are looking at.
- *
- * What a rule SAYS is not here any more. That lives on `/standards-packs/$pack/$rule`,
- * which renders the prose, the fixtures and this repo's own history of the rule,
- * and the severity ledger lives on `/app/config`, whose rows carry the pack a
- * link to a rule page needs.
+ * The rule filter lives in the URL so `?rule=<id>` links from the health and rule
+ * pages land on the right rows. The folder facet and its depth stay in component
+ * state: they describe how this reader is looking, not what they are looking at.
  */
 export const StandardsPage = () => {
 	const { data: view } = useSuspenseQuery(standardsQueryOptions());

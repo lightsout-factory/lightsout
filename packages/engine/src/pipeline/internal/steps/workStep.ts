@@ -16,7 +16,6 @@ interface Params {
 	requireChanges?: boolean;
 }
 
-/** A working-role step: invoke the agent, capture friction, merge changed-file truth, persist the verdict. */
 export const workStep = ({ run, gitPrefix, id, build, requireChanges }: Params): PipelineStep['run'] => {
 	return async () => {
 		const record = run.nextRecord({ id });

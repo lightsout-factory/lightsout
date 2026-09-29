@@ -1,8 +1,6 @@
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 
 /**
- * What a record-changing ticket operation answers with when it succeeded.
- *
  * Three parts, because a change can succeed and still have something to say:
  * the record as it now stands, one sentence the command prints before its own
  * lines, and the publish that did not happen. A `publishError` is never a

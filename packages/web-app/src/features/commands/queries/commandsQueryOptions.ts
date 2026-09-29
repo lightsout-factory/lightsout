@@ -3,10 +3,9 @@ import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { listCommandsServerFn } from '#src/features/commands/internal/serverFns/listCommandsServerFn.ts';
 
 /**
- * The whole command catalog in one query rather than one query per command.
- *
- * It is a few kilobytes of static data that changes only when the engine does,
- * so the detail page needs no second round trip and nothing here is polled.
+ * One query for the whole catalog: it is small static data that changes only
+ * with the engine, so the detail page needs no second round trip and nothing
+ * is polled.
  */
 export const commandsQueryOptions = () =>
 	queryOptions({

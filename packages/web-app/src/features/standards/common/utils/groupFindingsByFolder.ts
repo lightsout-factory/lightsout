@@ -7,18 +7,6 @@ interface Params {
 	depth: number;
 }
 
-/**
- * Findings bucketed by the folder their first file sits in, largest bucket
- * first.
- *
- * A finding names one or more files and the first is its site, so that one path
- * decides the bucket; a finding naming no file at all buckets under `.`. Ties
- * break on the folder name so the same findings always render in the same
- * order.
- *
- * @param findings - the findings to bucket, already filtered to whatever the page is showing
- * @param depth - how many leading path segments a folder label keeps; the breakdown offers three and four
- */
 export const groupFindingsByFolder = ({ findings, depth }: Params): FolderGroup[] => {
 	const byFolder = new Map<string, Map<string, number>>();
 

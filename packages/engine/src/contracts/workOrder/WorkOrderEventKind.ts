@@ -1,10 +1,6 @@
 /**
- * What one entry of a ticket record's append-only history records.
- *
- * The history is what makes a withdrawal or a supersession readable after the
- * fact: a ship request that a newly added plan withdrew leaves both the
- * `ShipRequested` and the `ShipRequestWithdrawn` event, rather than one silent
- * replacement.
+ * The history is append-only so a withdrawal stays readable: a withdrawn ship
+ * request leaves both `ShipRequested` and `ShipRequestWithdrawn`.
  */
 export const WorkOrderEventKind = {
 	PlanAdded: 'plan-added',

@@ -11,23 +11,15 @@ import { renderSprawlSvg } from './renderSprawlSvg.mjs';
 import { runScript } from './runScript.mjs';
 
 /**
- * Renders `assets/sprawl-dataset.json` to the two README GIFs.
+ * Colours are hex literals here because a Node script writing pixels cannot
+ * resolve a Tailwind token.
  *
- * The geometry is `buildSprawlLayout`, `buildSprawlLaneStates` and
- * `getSprawlMaxLines` in the web app's sprawl folder — typed, unit-tested
- * source — and this script builds the SVG as a string from them and
- * rasterises it.
- *
- * Colours are hex literals here, and this is the one place in this feature that
- * is legitimate: a Node script writing pixels cannot resolve a Tailwind token,
- * and the guardrail test that bans literals scans `packages/web-app/src` only.
- *
- * Like the dataset, this is an author-built committed artefact. CI never
- * rebuilds it, so the fonts coming from the author's machine is fine.
+ * An author-built committed artefact that CI never rebuilds, so fonts from the
+ * author's machine are fine.
  */
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** The two renders. The light one is the README's `<img>` fallback, the dark one its dark-scheme `<source>`. */
+/** The light one is the README's `<img>` fallback, the dark one its dark-scheme `<source>`. */
 const themes = [
 	{ file: 'sprawl.gif', ground: '#0d1524', barFrom: '#35d6e8', barTo: '#b06bf5', muted: '#d3dfef', mutedOpacity: 0.4, overCap: '#e5484d', text: '#d3dfef' },
 	{
@@ -42,16 +34,12 @@ const themes = [
 	},
 ];
 
-/** A README image has a weight limit in practice; past it the smaller pair is rendered instead. */
+/** A README image has a weight limit in practice. */
 const maxBytes = 3 * 1024 * 1024;
 
 /**
- * The frames the GIF keeps: evenly spaced, but never at the cost of a refactor
- * marker, the first frame or the last.
- *
- * A marker is where a move happens, which is the whole point of the image — an
- * even sample that dropped one would be showing the outcome with the cause
- * edited out.
+ * Evenly spaced, but never dropping a refactor marker: a marker is where a move
+ * happens, and dropping one would show the outcome with the cause edited out.
  */
 const sampleFrames = ({ frames, target }) => {
 	if (frames.length <= target) {
@@ -73,7 +61,6 @@ const sampleFrames = ({ frames, target }) => {
 	return [...kept].sort((left, right) => left - right);
 };
 
-/** One frame's RGBA pixels, at the size the GIF is being written at. */
 const rasterise = ({ svg, width }) => {
 	const rendered = new Resvg(svg, {
 		fitTo: { mode: 'width', value: width },
@@ -85,13 +72,8 @@ const rasterise = ({ svg, width }) => {
 };
 
 /**
- * One theme's GIF.
- *
- * The palette is quantised once over a handful of frames and written as the
- * global colour table, rather than per frame: a local table on every frame
- * would add a kilobyte apiece for colours that never change. Consecutive
- * repeats of the same frame — a held marker, the held last frame — reuse the
- * pixels already indexed instead of rasterising again.
+ * One global palette rather than one per frame: a local table would add a
+ * kilobyte a frame for colours that never change.
  */
 const encodeGif = ({ dataset, theme, width, kept, schedule }) => {
 	const { GIFEncoder, quantize, applyPalette } = gifenc;
@@ -140,13 +122,11 @@ const encodeGif = ({ dataset, theme, width, kept, schedule }) => {
 	return { bytes: gif.bytes(), height };
 };
 
-/** @param log - where progress goes; the caller owns the console */
 export const renderSprawlGif = ({ log = console.log } = {}) => {
 	const dataset = JSON.parse(readFileSync(join(repoRoot, 'assets', 'sprawl-dataset.json'), 'utf8'));
 	const kept = sampleFrames({ frames: dataset.frames, target: 120 });
 	const frames = kept.map((index) => dataset.frames[index]);
-	// The last frame is held for two seconds so a reader lands on the outcome
-	// rather than on whatever the loop happened to restart over.
+	// The last frame is held so a reader lands on the outcome.
 	const schedule = [...buildSprawlFrameSchedule({ frames }), ...Array.from({ length: 24 }, () => kept.length - 1)];
 
 	log(`sampled ${kept.length} of ${dataset.frames.length} frames, ${frames.filter((frame) => frame.isRefactorMarker).length} of them refactor markers`);
@@ -169,8 +149,7 @@ export const renderSprawlGif = ({ log = console.log } = {}) => {
 		}
 
 		// Both are re-rendered, never just the heavy one: the README pairs them in
-		// one `<picture>`, and two GIFs of different sizes would jump as the reader
-		// switched colour scheme.
+		// one `<picture>`, and different sizes would jump on a colour-scheme switch.
 		log(`${over.length} render(s) over budget at ${width} px — falling back to the smaller pair`);
 	}
 

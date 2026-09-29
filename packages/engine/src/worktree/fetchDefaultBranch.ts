@@ -7,16 +7,8 @@ interface Params {
 }
 
 /**
- * The remote's default branch, with the remote brought up to date first — what
- * a new worktree's branch is cut from.
- *
- * The fetch comes first because a clone whose `origin/HEAD` was never set can
- * be repaired by one, so reading the head before fetching would refuse a
- * repository the very next step would have fixed. A fetch that failed stops the
- * run rather than answering from a stale remote: a branch cut from yesterday's
- * default is a branch the ship step then has to rebase.
- *
- * @returns the branch name without the `origin/` prefix, or the sentence naming what to do next
+ * The fetch comes first because it can repair a clone whose `origin/HEAD` was never set. A failed
+ * fetch stops the run rather than cutting from a stale default the ship step would have to rebase.
  */
 export const fetchDefaultBranch = async ({ cwd }: Params): Promise<string | WorktreeFailure> => {
 	// The fetch crosses the network, so it takes a deadline of its own rather

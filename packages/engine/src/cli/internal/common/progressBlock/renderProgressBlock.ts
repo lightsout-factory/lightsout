@@ -5,24 +5,15 @@ import { formatClockDuration } from '#src/cli/internal/common/utils/formatClockD
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunProgressRow } from '#src/views/common/types/RunProgressRow.ts';
 
-/** One step row as the block draws it: which step, how it ended, how often it ran, and for how long. */
 type BlockRow = Pick<RunProgressRow, 'id' | 'status' | 'attempts' | 'durationMs'>;
 
-/** What a row with no outcome to state shows instead of one. */
 const emDash = '—';
 
-/** The glyph a step the run has not reached carries — this layout's own, quieter than the hollow circle a status table uses. */
 const notReachedGlyph = '·';
 
-/**
- * The sample block's own column widths, which are the floors every narrower
- * run reproduces exactly: 4 + 21 + 17 + 7 = the 49-column row the layout was
- * chosen as. A longer step id widens that one column rather than breaking the
- * alignment.
- */
+/** Floors, so every narrower run reproduces the 49-column layout exactly (4 + 21 + 17 + 7). */
 const minimumWidths = { id: 21, outcome: 17, duration: 7 };
 
-/** Where this layout's glyphs differ from the status table's: a running step points forward, and one not yet started is a bullet. */
 const layoutGlyphs: Partial<Record<RunStatus, string>> = {
 	[RunStatus.Running]: '▶',
 	[RunStatus.Pending]: notReachedGlyph,
@@ -31,21 +22,17 @@ const layoutGlyphs: Partial<Record<RunStatus, string>> = {
 const rowGlyph = ({ status }: { status: RunStatus | undefined }) => (status === undefined ? notReachedGlyph : (layoutGlyphs[status] ?? statusIcons[status]));
 
 /**
- * One row's plain cells, un-padded — the geometry is measured on these, because
- * an ANSI colour code counts toward `String.length` and occupies no column.
+ * Plain cells, because an ANSI colour code counts toward `String.length` and
+ * occupies no column.
  *
- * A row the run has not reached ends at the em dash: no outcome to pad out and
- * no clock to show. Both ways a run can have one read the same, because they
- * mean the same thing to a reader — an implement run has no record at all for a
- * step it has not started, while a phased coordinator seeds a `pending` record
- * for every phase before anything runs.
+ * An implement run has no record for a step it has not started, while a phased
+ * coordinator seeds a `pending` record for every phase; both mean the same to a
+ * reader, so both draw the same.
  */
 const rowCells = ({ row }: { row: BlockRow }) => {
 	const glyph = rowGlyph({ status: row.status });
 
 	if (row.status === undefined || row.status === RunStatus.Pending) {
-		// The status is dropped, not carried: a not-yet-reached row is painted and
-		// cut the same way whether the record says `pending` or there is no record.
 		return { glyph, status: undefined, id: row.id, outcome: emDash, duration: undefined };
 	}
 
@@ -69,17 +56,8 @@ interface Params {
 }
 
 /**
- * A progress block as lines: a title line with its tag, a rule, one row per
- * step, any diagnostic lines, a closing rule, the totals, and what is happening
- * now.
- *
- * Pure — data in, strings out — because this is the ONE layout every progress
- * block shares: a run's, a plan's planning steps, a ship's. The chat view and
- * the terminal view are the same bytes, so the layout can be held to the
- * character without anything running to look at.
- *
- * The rules span the widest line rather than a fixed width, so a longer step id
- * or diagnostic drags them out with it instead of overhanging them.
+ * The one layout every progress block shares — a run's, a plan's planning
+ * steps, a ship's — and the chat and terminal views are the same bytes.
  */
 export const renderProgressBlock = ({ title, tag, rows, diagnostics, totals, now }: Params): string[] => {
 	const cells = rows.map((row) => rowCells({ row }));
@@ -98,15 +76,12 @@ export const renderProgressBlock = ({ title, tag, rows, diagnostics, totals, now
 		...diagnostics.map((line) => line.length),
 		totalsLine.length,
 		nowLine?.length ?? 0,
-		// The title line is measured too, or a long title would overhang the rule
-		// it is supposed to sit inside and its padding could go negative.
+		// Measured too, or a long title's padding could go negative.
 		title.length + tag.length + 1,
 	);
 	const rule = dim('─'.repeat(ruleWidth));
 	const titleLine = `${title}${' '.repeat(Math.max(1, ruleWidth - tag.length - title.length))}${tag}`;
-	// Painted last, and only the glyph: the geometry above is already settled on
-	// the plain text, and the glyph is the one cell whose colour says something
-	// the words do not.
+	// Painted after the geometry is settled on the plain text.
 	const painted = cells.map((cell, index) => {
 		const glyph = cell.status === undefined ? dim(cell.glyph) : paintStatus({ status: cell.status, text: cell.glyph });
 

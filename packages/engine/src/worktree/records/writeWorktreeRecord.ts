@@ -17,9 +17,6 @@ interface Params {
 }
 
 /**
- * Record who a branch's worktree belongs to, atomically (tmp file + rename),
- * from the step that just made it true.
- *
  * A failed write is a progress line and nothing more, exactly as
  * `writeBranchState`'s is, and so is a branch no work order claims: the tree
  * exists either way, and refusing to create it because a JSON write was

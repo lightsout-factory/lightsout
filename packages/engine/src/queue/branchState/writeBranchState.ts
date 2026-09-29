@@ -14,14 +14,10 @@ interface Params {
 }
 
 /**
- * Record a branch's phase atomically (tmp file + rename), from the step that
- * just made it true.
- *
  * A failed write is a progress line and nothing more, and so is a branch no
- * work order claims: the two read alike to the lane on purpose. The run holding
- * this outcome in memory is complete either way, and turning a shipped ticket
- * into a parked one because a JSON write was impossible would be the worse
- * outcome — the next run simply re-derives what this one could not record.
+ * work order claims: turning a shipped ticket into a parked one because a JSON
+ * write failed would be worse, and the next run re-derives what this one could
+ * not record.
  */
 export const writeBranchState = async ({ cwd, branch, phase, onProgress }: Params): Promise<void> => {
 	const record: BranchState = { branch, phase, updatedAt: new Date().toISOString() };

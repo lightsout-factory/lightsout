@@ -24,20 +24,11 @@ interface Params {
 	run: PipelineRun;
 	gitPrefix?: string;
 	planContent: string;
-	/** Overview text for a phased run — see `buildRefactorExecutorInvocation`. */
 	overviewContent?: string;
 	standards?: string;
 }
 
-/**
- * Everything cleanup reads once, before it can spend anything: the rules both
- * reviews judge by, the pre-edit comparison point, the round budget, the tree
- * as it stands now, and the judgment reviewer's opening read.
- *
- * A resume reuses the recorded initial review rather than buying a second one —
- * it describes code the resume has not changed — and re-runs only the
- * deterministic check.
- */
+/** A resume reuses the recorded initial review rather than buying a second one: it describes code the resume has not changed. */
 const buildCleanupContext = async ({ run, gitPrefix, planContent, overviewContent, standards, prior }: Params & { prior: RefactorStepReport | undefined }) => {
 	const packs = await resolveStandardsPacks({ cwd: run.cwd, config: run.config });
 	const channels = await resolveStandardsChannels({ cwd: run.cwd, config: run.config, packages: run.current().packages });
@@ -58,21 +49,13 @@ const buildCleanupContext = async ({ run, gitPrefix, planContent, overviewConten
 	};
 };
 
-/** What the deterministic checks and the opening review between them are asking of this round, narrated for a watching human. */
 const narrateGate = ({ run, workList, advisories }: { run: PipelineRun; workList: StandardsFinding[]; advisories: StandardsFinding[] }) => {
 	if (workList.length > 0 || advisories.length > 0) {
 		run.progress(`standards gate: ${workList.length} blocking + ${advisories.length} advisory on changed files`);
 	}
 };
 
-/**
- * Spend rounds while a qualifying deterministic blocking finding still stands.
- *
- * The first round may also be earned by advisories — the deterministic ones the
- * run introduced, plus the judgment reviewer's opening read. Every later round
- * is earned only by qualifying blocking work, so the opening advisory pass is
- * never replayed as an open-ended tidy.
- */
+/** Only the first round may be earned by advisories, so the opening advisory pass is never replayed as an open-ended tidy. */
 const runCleanupRounds = async ({ context, state }: { context: CleanupContext; state: CleanupState }) => {
 	while (state.endReason === undefined) {
 		const check = await standardsWorkList({ run: context.run, baseline: context.baseline });
@@ -99,17 +82,7 @@ const runCleanupRounds = async ({ context, state }: { context: CleanupContext; s
 	return undefined;
 };
 
-/**
- * What cleanup leaves behind, recorded rather than escalated: a truthful
- * re-check where the last round edited without being re-checked, the judgment
- * reviewer's read of the files cleanup actually changed, and the narration of
- * anything still standing.
- *
- * The final review is scoped by the same non-test filter the opening review's
- * `sourceFiles` applies, so both reads see the same kind of file. Cleanup that
- * changed nothing is not reviewed twice — the opening read stands as the final
- * one — and neither review ever buys a round.
- */
+/** Filtered like the opening review's `sourceFiles`, so both reviews read the same kind of file. */
 const finishCleanup = async ({ context, state }: { context: CleanupContext; state: CleanupState }) => {
 	const { run, packs, channels } = context;
 
@@ -131,19 +104,9 @@ const finishCleanup = async ({ context, state }: { context: CleanupContext; stat
 };
 
 /**
- * Bounded, non-blocking implementation cleanup.
- *
- * A round is bought only while a deterministic blocking finding this run's own
- * edits introduced or measurably worsened is still standing — pre-existing
- * debt, findings whose provenance cannot be established and the judgment
- * reviewer's opinions are recorded and handed forward, never converted into
- * work. Cleanup ends for one of five named reasons, whatever it leaves behind
- * is written to the step record's typed report, and the run always carries on
- * to the formatter and normal verification: no branch of this step stops it.
- *
- * A harness rate limit still parks the run, exactly as every other step does.
- * The recorded round count and the baseline survive the park, so the resume
- * continues rather than restarts.
+ * A round is bought only while a blocking finding this run introduced or worsened still stands;
+ * pre-existing debt, uncertain provenance and reviewer opinions are recorded, never turned into
+ * work. Nothing here stops the run: only a rate limit parks it.
  */
 export const refactorStep = ({ run, gitPrefix, planContent, overviewContent, standards }: Params): PipelineStep['run'] => {
 	return async () => {

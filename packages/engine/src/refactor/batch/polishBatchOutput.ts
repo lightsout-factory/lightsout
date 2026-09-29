@@ -13,9 +13,9 @@ import type { BatchStop } from '#src/refactor/internal/common/types/BatchStop.ts
 interface Params {
 	tools: BatchTools;
 	batch: RefactorBatch;
-	/** The pre-edit advisories: the baseline the output review diffs against, and the list the executor already answered. */
+	/** The pre-edit advisories, which the executor already answered. */
 	baseline: StandardsFinding[];
-	/** The sites this batch just cleared — re-checked after the polish, so a polish that revives one cannot pass unnoticed. */
+	/** Re-checked after the polish, so a polish that revives one cannot pass unnoticed. */
 	workFindings: StandardsFinding[];
 	standards?: string;
 	testStandards?: string;
@@ -23,22 +23,13 @@ interface Params {
 }
 
 /**
- * The batch's closing step: read the judgment rules against the code the batch
- * wrote, and spend one invocation on whatever that read turns up.
+ * Green gates and cleared sites say nothing about the shape of the replacement
+ * code: a check standing in for a judgment can be satisfied by code the
+ * judgment would reject.
  *
- * Reached only once the gates are green and every site is gone, which is
- * exactly the moment the old loop declared victory. Green gates and cleared
- * sites say the batch satisfied its checks; they say nothing about the shape of
- * what replaced the old code, and a check that stands in for a judgment can be
- * satisfied by code the judgment would reject.
- *
- * The budget is one pass, deliberately. These are advisory findings, so nothing
- * here can fail the batch, and an unbounded review-fix-review loop would let a
- * judgment rule spend a run's whole budget arguing with itself.
- *
- * The sites are re-checked afterwards because the polish edits the same files
- * the batch just cleared: a polish that trades a shape problem for the blocking
- * finding the batch came to burn down is a decline, not a pass.
+ * One pass, deliberately: these findings are advisory, and an unbounded
+ * review-fix loop would let a judgment rule spend the run arguing with itself.
+ * A polish that revives a cleared site is a decline, not a pass.
  */
 export const polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards, testStandards, onProgress }: Params): Promise<BatchStop> => {
 	const resolve = () => tools.finish({ outcome: BatchOutcome.Resolved, remainingSiteKeys: [] });

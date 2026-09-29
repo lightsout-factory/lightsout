@@ -1,7 +1,2 @@
-/**
- * How many files a lane draws as bars.
- *
- * The rest of the tree is left out on purpose: at a thousand files a hairline
- * each is noise, and the claim the chart makes is about the biggest files.
- */
+/** Only the biggest files are drawn: the chart's claim is about them, and a hairline per file is noise. */
 export const sprawlBarCount = 40;

@@ -6,16 +6,10 @@ interface Params {
 }
 
 /**
- * Which code a grade was measured against: the commit `HEAD` was at, and
- * whether uncommitted work sat beside it. `gradedAt` says when a verdict was
- * taken; this says against what.
- *
- * The two probes are separate statements rather than one optional-chained
- * expression because `readGitChangedFiles` fails independently of the commit
- * read: an undefined flag means the tree state was NOT READ, never that it was
- * read and found clean. Grading almost always happens with uncommitted work in
- * the tree, which is why the commit is recorded rather than withheld when the
- * flag is true.
+ * `readGitChangedFiles` fails independently of the commit read: an undefined
+ * flag means the tree state was NOT READ, never that it was read and found
+ * clean. The commit is recorded even on a dirty tree, because grading almost
+ * always happens with uncommitted work.
  */
 export const readGradeStamp = async ({ cwd }: Params): Promise<{ commit: string | undefined; treeDirty: boolean | undefined }> => {
 	const commit = await readGitHeadCommit({ cwd });

@@ -1,4 +1,4 @@
 import { renderUsage } from '#src/commands/renderUsage.ts';
 
-/** The `--help` text. Rendered from the command catalog so a flag cannot be documented in one place and accepted in another. */
+/** Rendered from the command catalog so a flag cannot be documented in one place and accepted in another. */
 export const usage = renderUsage();

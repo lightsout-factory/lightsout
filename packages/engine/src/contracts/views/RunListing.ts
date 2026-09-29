@@ -1,12 +1,7 @@
 import { z } from 'zod';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 
-/**
- * One row of the runs list.
- *
- * Everything the list needs and nothing that requires opening a JSONL file, so
- * listing every run a repo has stays cheap however long its history gets.
- */
+/** Nothing here may require opening a JSONL file, so listing every run stays cheap however long the history gets. */
 export const RunListing = z.object({
 	runId: z.string(),
 	/** First eight characters — the form every lightsout report prints and `resume --run` accepts. */
@@ -14,11 +9,9 @@ export const RunListing = z.object({
 	/** One of `PipelineKind`; a manifest predating the discriminator reads as `PipelineKind.Implement`. Kept a string so a row survives a value this engine does not know. */
 	pipeline: z.string(),
 	status: z.enum(RunStatus),
-	/** Human label derived from the plan path — see getRunTitle. */
 	title: z.string(),
 	/** Repo-relative plan path, exactly as the manifest records it. */
 	plan: z.string(),
-	/** The plan this run belongs to, copied from the manifest. Absent when the run belongs to none. */
 	planName: z.string().optional(),
 	createdAt: z.string(),
 	updatedAt: z.string(),
@@ -30,7 +23,7 @@ export const RunListing = z.object({
 	changedFileCount: z.number(),
 	/** Run-wide API-equivalent cost; absent for drivers that report no usage. */
 	costUsd: z.number().optional(),
-	/** Set on a phase's child run: the coordinator that started it. Copied from the run's own manifest. */
+	/** Set on a phase's child run: the coordinator that started it. */
 	parentRunId: z.string().optional(),
 	/** A `resume --run` would do something: failed, either paused state, or running with no live process. */
 	resumable: z.boolean(),

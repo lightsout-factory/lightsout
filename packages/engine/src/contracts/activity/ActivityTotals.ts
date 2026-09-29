@@ -2,8 +2,6 @@ import { z } from 'zod';
 import { HarnessProcessUsage } from '#src/contracts/activity/HarnessProcessUsage.ts';
 
 /**
- * Everything the fold computes for one node of an activity tree.
- *
  * Nothing here is ever written to the record — the record stores marks, and
  * these are read from them every time. `busyMs` and `idleMs` are both carried
  * so a renderer never subtracts them itself and cannot disagree with the fold.

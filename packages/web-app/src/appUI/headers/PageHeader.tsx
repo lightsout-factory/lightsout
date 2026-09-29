@@ -5,11 +5,9 @@ interface Props {
 	icon?: LucideIcon;
 	title: string;
 	description?: ReactNode;
-	/** Right-aligned slot — a filter, a copy button, a count. */
 	action?: ReactNode;
 }
 
-/** Every page's opening row: what this page is, and the one control that belongs beside its name. */
 export const PageHeader = ({ icon: Icon, title, description, action }: Props) => (
 	<header className="flex flex-wrap items-start justify-between gap-3">
 		<div className="flex min-w-0 flex-col gap-1">

@@ -4,19 +4,11 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 
 interface Params {
 	record: WorkOrderState;
-	/** A full plan id, or the plan's number on its own — `2`, `02` and `002` all name plan 002. */
+	/** A full plan id, or its number alone — `2`, `02` and `002` all name plan 002. */
 	token: string;
 }
 
-/**
- * The plan a human named at the terminal, or the one sentence listing the ids
- * the ticket does hold.
- *
- * A bare number is accepted because a plan's number is what a human reads off
- * `lightsout work-order show`, while the full id is what every record and
- * attachment carries; both name the same plan and neither is ambiguous, since
- * no ticket ever reuses a number.
- */
+/** A bare number is unambiguous because no ticket ever reuses a plan number. */
 export const resolveWorkOrderPlan = ({ record, token }: Params): WorkOrderPlan | { error: string } => {
 	const numbered = /^\d{1,3}$/.test(token) ? record.plans.find((plan) => planNumberOf({ id: plan.id }) === Number(token)) : undefined;
 	const plan = record.plans.find((candidate) => candidate.id === token) ?? numbered;

@@ -12,16 +12,9 @@ import { extractJsonReport } from '#src/invoke/extractJsonReport.ts';
 import { recordHarnessProcess } from '#src/invoke/internal/common/utils/recordHarnessProcess.ts';
 
 /**
- * Usage summed across every rung of the ladder — a re-emit retry and a re-run
- * both cost tokens, and the caller accounts per call, not per process spawn.
  * Stays `undefined` until some rung reports usage, so a harness that reports
- * nothing is recorded as nothing rather than as zero.
- *
- * A rung reports per field, because a process killed before its terminal result
- * event has token counts and no cost. Field by field, absent adds nothing, and
- * a figure holding no field at all leaves the total exactly as it was — the
- * same rule the activity fold follows, so the two readers state one spawn's
- * spend identically.
+ * nothing is recorded as nothing rather than as zero. Summed per field, because
+ * a process killed before its terminal result event has token counts and no cost.
  */
 const sumUsage = ({ total, rungUsage }: { total?: AgentUsage; rungUsage?: HarnessProcessUsage }) => {
 	const { inputTokens, outputTokens, cacheReadTokens, cacheCreationTokens, costUsd } = rungUsage ?? {};
@@ -42,25 +35,16 @@ const sumUsage = ({ total, rungUsage }: { total?: AgentUsage; rungUsage?: Harnes
 };
 
 /**
- * Whether the cheap re-emit is worth spending on this rejection.
- *
- * Handing an agent an empty or one-line error message and asking it to restate
- * it as a report cannot succeed — one graded pass spent seven such turns and got
- * the identical text back every time — so a rejection holding no object to
- * reconstruct from does not earn one.
- *
- * The ceiling-of-1 carve-out is backward compatibility, not reasoning about what
- * could work: a caller that never opted into a re-run keeps the default ladder
- * exactly, spending its re-emit even on a rejection this predicate judges
- * hopeless.
+ * Asking an agent to restate an empty or one-line error message as a report
+ * cannot succeed, so a rejection holding no object does not earn a re-emit. A
+ * caller on the default ceiling of 1 keeps its re-emit regardless.
  */
 const shouldReemit = ({ payload, maxRoleAttempts }: { payload: unknown; maxRoleAttempts: number }) =>
 	maxRoleAttempts === 1 || (typeof payload === 'object' && payload !== null);
 
 /**
- * What ended the ladder, minus the bill: `usage` is threaded onto the outcome
- * once, at the single exit, so no rung can return an outcome that under-reports
- * what the call burned.
+ * `usage` is threaded onto the outcome once, at the single exit, so no rung can
+ * return an outcome that under-reports what the call burned.
  */
 type LadderResult<Report> = { ok: true; report: Report } | { ok: false; failure: string; rateLimited: boolean };
 
@@ -85,39 +69,25 @@ interface Params<Contract extends z.ZodType> {
 	/**
 	 * Fresh role invocations this call may spend before giving up on the
 	 * contract — the re-run ceiling. Defaults to 1: one role invocation plus its
-	 * one cheap re-emit, which is every caller's behaviour today. Only the plan
-	 * grade readers raise it, because a reader written off costs a whole graded
-	 * pass while every other role's failure costs one step.
+	 * one cheap re-emit. Only the plan grade readers raise it, because a reader
+	 * written off costs a whole graded pass while every other role's failure
+	 * costs one step.
 	 */
 	maxRoleAttempts?: number;
 	/** Relayed to the driver: one call per harness stream event (transcript tee, progress narration). */
 	onEvent?: (event: unknown) => void;
 	/** Called with the raw final message whenever it fails the contract — the caller persists it as run evidence. */
 	onRejectedOutput?: (params: { text: string; attempt: number; validationError: string }) => Promise<void> | void;
-	/**
-	 * The level each of this call's harness processes is recorded under. Omitted
-	 * wherever no run is being recorded — the ladder then behaves exactly as it
-	 * does today.
-	 */
+	/** The level each of this call's harness processes is recorded under. Omitted wherever no run is being recorded. */
 	activity?: ActivityLevel;
 }
 
 /**
- * Invoke an agent role and validate its final message against the role's
- * contract. A malformed payload is rejected by the contract — never
- * hand-parsed around — and retried CHEAPLY first: the retry is a re-emit
- * invocation carrying the rejected text ("reconstruct the report from this,
- * touch nothing"), not a re-run of the whole role prompt, so a formatting
- * slip costs seconds instead of minutes. A caller that opted into a ceiling
- * above one may then re-run the role from scratch, each fresh invocation
- * carrying its own re-emit; a rejection with no object in it skips the
- * re-emit, because restating a one-line error message as a report cannot
- * work — unless the caller took the default ceiling, whose ladder is
- * unchanged. Every rejected message is handed to `onRejectedOutput` before the
- * next rung, under a spawn number that never restarts, so no rung overwrites
- * an earlier rung's evidence. A rate-limited harness is reported as such,
- * from whatever rung met the wall, so the engine can park the run instead of
- * failing it.
+ * A malformed payload is rejected by the contract — never hand-parsed around —
+ * and retried cheaply first with a re-emit carrying the rejected text, not a
+ * re-run of the whole role prompt. Rejected messages reach `onRejectedOutput`
+ * under a spawn number that never restarts, so no rung overwrites an earlier
+ * rung's evidence.
  */
 export const invokeAgentWithContract = async <Contract extends z.ZodType>({
 	driver,
@@ -165,7 +135,7 @@ export const invokeAgentWithContract = async <Contract extends z.ZodType>({
 			reemit: isReemit,
 		});
 
-		// Above the failure break, and exactly once per rung: a killed spawn still burned what it streamed, and dropping it would underbill its own activity mark.
+		// Above the failure break: a killed spawn still burned what it streamed.
 		usage = sumUsage({ total: usage, rungUsage: rung.usage });
 
 		if (!rung.ok) {

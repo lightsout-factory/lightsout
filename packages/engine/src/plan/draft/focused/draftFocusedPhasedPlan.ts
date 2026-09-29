@@ -30,13 +30,9 @@ interface Params {
 }
 
 /**
- * The deterministic door check on the breakdown the overview declares, and the
- * overview text the phase writers are then authored against — or the stop that
- * ends the draft before a single phase spawn is paid for.
- *
- * The overview is re-synced after the check because a reshape round rewrites
- * `overview.md`, and a phase writer authors against the text in its prompt
- * rather than the file: sections composed only on disk would still fan out stale.
+ * Runs before any phase spawn is paid for. The overview is re-synced after the
+ * check because a reshape round rewrites `overview.md`, and a phase writer
+ * authors against the text in its prompt rather than the file.
  */
 const readCheckedBreakdown = async ({
 	params,
@@ -77,16 +73,9 @@ const readCheckedBreakdown = async ({
 };
 
 /**
- * Compose every section the engine owns across a finished phased deliverable,
- * in the one order they may run in.
- *
- * The Decision Log and the Global Constraints come from the saved records, so
- * they can be written as soon as the phase files exist. The counts cannot: the
- * overview's were an estimate made before any phase file was on disk, and only
- * the stamp turns them into a fact. The paired `## Phases` row and
- * `### Phase <N> — ` heading are rendered from the record the stamp returns, so
- * rendering them ahead of it would write the overview agent's estimate straight
- * back over the real counts.
+ * `syncPhaseSections` renders from the record the stamp returns, so running it
+ * ahead of the stamp would write the overview agent's estimated counts straight
+ * back over the real ones.
  */
 const composeEngineSections = async ({
 	cwd,
@@ -110,45 +99,22 @@ const composeEngineSections = async ({
 };
 
 /**
- * Draft a phased plan with the focused implementation: an overview spawn, a
- * deterministic door check on the breakdown it declares, then one concurrent
- * spawn per declared phase, and the usual structural repair over the finished
- * set.
- *
- * It mirrors `draftPhasedPlan` step for step and differs in five places: the
- * overview spawn carries the draft's evidence brief, `## Global Constraints` is
- * composed beside every Decision Log sync, the paired `## Phases` row and
- * `### Phase <N> — ` declaration heading are rendered from one record straight
- * after the counts are stamped, the fan-out is the focused one, and the
- * convergence runs the deterministic mechanical repair before each round's lint.
- *
- * Three orderings are load-bearing. The door check runs before any phase spawn is
- * paid for, because that is the cheapest moment to refuse an unbuildable phase.
- * The overview is re-synced after it, because a reshape round rewrites
- * `overview.md` while a phase writer authors against the text in its prompt. And
- * `syncPhaseSections` runs after the counts are stamped rather than before,
- * because the stamp is what turns the overview's estimate into the fact that
- * section renders.
- *
  * The overview spawn gets no self-lint, because at the end of it no phase file
  * exists and `resolvePlanDeliverable` would answer `no plan found` — handing an
  * agent a command that always errors teaches it to ignore the section.
  *
- * A phase that busts the created-file ceiling here — legitimate, since the
- * declared counts were an estimate and the declaration a floor — surfaces as a
- * blocking finding from the closing lint and, unresolved, hands back. It is
- * deliberately NOT escalated to another breakdown reshape: re-splitting would
- * invalidate every phase file already authored, paying for the whole fan-out
- * twice to fix one phase.
+ * A phase that busts the created-file ceiling here surfaces as a blocking
+ * finding from the closing lint and is deliberately not escalated to another
+ * breakdown reshape: re-splitting would invalidate every phase file already
+ * authored.
  */
 export const draftFocusedPhasedPlan = async ({ context, step }: Params): Promise<RunPlanDraftResult> => {
 	const { cwd, driver, name, workspaceDir, facts, decisions, brainstormDecisionsPath, config, executorFileLimit, evidence } = context;
 	const { standards, model, effort, permissions, timeoutMs, level, progress } = context;
 	const outputs = await planDraftOutputs({ cwd, name, variant: PlanVariant.Overview });
 	const overviewPath = outputs[0].path;
-	// Appended to as each check reports, and read at every stop: a breakdown
-	// warning gates nothing, but it is the human's only notice of what reviewing
-	// this plan will cost them, so it has to ride whichever way the draft ends.
+	// Read at every stop: a breakdown warning gates nothing, but it is the human's
+	// only notice of what reviewing this plan will cost, whichever way the draft ends.
 	const advisories: StructuralFinding[] = [];
 	// A focused context always carries evidence; the empty index is what a context wired without a collection narrows to.
 	const collected = evidence ?? { planName: name, entries: [], collectedAt: new Date().toISOString() };

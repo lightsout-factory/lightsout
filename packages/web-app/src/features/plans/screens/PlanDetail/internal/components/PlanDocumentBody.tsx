@@ -9,13 +9,8 @@ interface Props {
 }
 
 /**
- * One markdown file of a plan workspace, read through the same query the run
- * detail's plan drawer uses — so a plan opened from a run and the same plan
- * opened from this page are one cached document rather than two fetches.
- *
- * A path with nothing behind it renders as a recorded absence, matching
- * `getPlanDocument`'s own habit: a file deleted after its run is a normal state,
- * not an error.
+ * Shares the run detail's plan query, so a plan opened from either page is one
+ * cached document. A missing file is a normal state, not an error.
  */
 export const PlanDocumentBody = ({ path }: Props) => {
 	const { data: plan } = useQuery(planQueryOptions({ path }));

@@ -3,17 +3,9 @@ interface Params {
 }
 
 /**
- * Exit the process, but only after stdout and stderr have drained.
- *
- * `process.exit` discards whatever the pipes have not accepted yet, and a
- * pipe's kernel buffer is 64KB on Linux — while the ledger table alone is
- * ~150KB. A reader slow to drain (a CI runner collecting a subprocess's
- * output) would otherwise receive a table truncated wherever scheduling
- * happened to cut it.
- *
- * The empty write is the drain signal: stream write callbacks fire in
- * order, so this one runs only after everything queued before it has been
- * accepted by the pipe.
+ * `process.exit` discards whatever a pipe has not accepted yet, so a slow reader
+ * would get truncated output. Write callbacks fire in order, so the empty
+ * write's callback runs only once everything queued before it was accepted.
  */
 export const exitCli = async ({ code }: Params): Promise<never> => {
 	await Promise.all([process.stdout, process.stderr].map((stream) => new Promise<void>((resolve) => stream.write('', () => resolve()))));

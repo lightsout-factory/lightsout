@@ -9,16 +9,8 @@ interface Props {
 }
 
 /**
- * What this repo enforces, when it last looked, and how much is open.
- *
- * A repo that has never run a check is not an error state — the rules are
- * loaded and listed either way — so the whole header collapses to the one
- * command that would fill it in.
- *
- * Every number here is the engine's own. The snapshot's notes are printed as
- * they were written, because they are already full sentences meant for a
- * person: one of them warns that a dominant path may be generated output, and
- * rewording it here would cost the reader that argument.
+ * The snapshot's notes are printed as written: they are already sentences for a
+ * person, and one warns that a dominant path may be generated output.
  */
 export const StandardsHeader = ({ view }: Props) => {
 	const { totals } = view;

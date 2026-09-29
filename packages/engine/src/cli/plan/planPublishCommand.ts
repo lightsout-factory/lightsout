@@ -10,7 +10,6 @@ import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts
 import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep.ts';
 import { publishWorkOrderPlan } from '#src/workOrder/publishWorkOrderPlan.ts';
 
-/** What the publisher answers, and what the printing sequence below reads off it. */
 interface PlanPublishOutcome {
 	ticketRef?: string;
 	published: string[];
@@ -21,36 +20,20 @@ interface PlanPublishOutcome {
 }
 
 /**
- * `lightsout plan publish` at the terminal.
+ * The config is read with `readConfig`, not the optional reader: publishing needs
+ * a `ticket-tracker` block, so a repo with no config is refused.
  *
- * It spawns no agent, so it resolves no driver — the shape
- * `planVerifyFactsCommand` already sets. The config is read with `readConfig`
- * rather than the optional reader: publishing needs a `ticket-tracker` block, so
- * a repo with no config has nothing to resolve and is refused by name, the way
- * `queueCommand` treats the same requirement.
- *
- * Every plan publishes through the work order state, which also puts its
- * brainstorm generation and `state.json` on the ticket: the dispatcher refuses
- * a `--name` that is not a plan address, so this command is only ever handed
- * one.
- *
- * A stale attachment does not change the exit code. The manifest committed
- * last selects the new generation, so an unlisted attachment publish
- * deliberately left behind is harmless and remains visible for manual cleanup.
- * A record that could not be written is different: the plan's files landed but
- * nothing on the ticket says which generation they are, so the step is failed
- * and the sentence goes to stderr after the list of what did land.
+ * A stale attachment does not change the exit code: the manifest committed last
+ * selects the new generation, so it is harmless. A record that could not be
+ * written fails the step, because nothing on the ticket then says which
+ * generation the landed files are.
  */
 export const planPublishCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const name = await getRequiredFlag({ flags, name: 'name' });
 	const config = await readConfig({ cwd });
-	// One reading for both records, so a publish that failed cannot read as
-	// passed in one of them.
 	const statusOf = ({ result }: { result: PlanPublishOutcome }) =>
 		result.error === undefined && result.recordError === undefined ? RunStatus.Passed : RunStatus.Failed;
-	// Wrapped after the required flag and the config read, so a command that
-	// refuses before doing any work opens no level. Publishing spawns no agent,
-	// so this command run carries no child either.
+	// Wrapped after the refusals above, so a command that refuses opens no level.
 	const report = await recordPlanCommandRun({
 		cwd,
 		name,

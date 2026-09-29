@@ -15,7 +15,6 @@ interface Params {
 	ticketRef?: string;
 }
 
-/** The branch stored by the work order a plan address names, or undefined when no record answers to that label. */
 const branchOfPlan = async ({ cwd, planPath }: { cwd: string; planPath: string }) => {
 	const planName = await planNameFromPath({ cwd, planPath });
 
@@ -29,21 +28,9 @@ const branchOfPlan = async ({ cwd, planPath }: { cwd: string; planPath: string }
 };
 
 /**
- * The branch an isolated run is put on: the one the work order's record stores,
- * or the one sentence saying the input names no work order.
- *
- * Nothing is derived here any more. A plan address names a work order and the
- * record says which branch its plans implement on; a `--ref` names a ticket and
- * the work order carrying it says the same. Deriving a branch from a file stem
- * or re-rendering the queue's template would put a second author of the branch
- * back in, and a second author is exactly what a work order's record exists to
- * remove.
- *
- * That is a real narrowing for `implement-direct`: an isolated direct run needs
- * a `--ref` whose work order exists, and everything else builds in the
- * launching checkout. Its one caller is `resolveRunWorkspace`, which calls it
- * only once isolation is decided, so a run building where it was launched is
- * never refused for failing to name a work order.
+ * The branch comes only from a work order's record, never derived from a file
+ * stem or the queue's template: the record exists to be the branch's one
+ * author. So an isolated direct run needs a `--ref` whose work order exists.
  */
 export const resolveRunBranch = async ({ cwd, planPath, ticketPath, ticketRef }: Params): Promise<string | { error: string }> => {
 	let branch: string | undefined;

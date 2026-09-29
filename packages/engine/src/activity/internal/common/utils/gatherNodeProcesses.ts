@@ -7,11 +7,8 @@ interface Params {
 }
 
 /**
- * Every harness process at or below the given levels.
- *
- * The fold's two entry points both need the raw processes rather than their
- * children's totals: the union of windows and the peak overlap cannot be
- * reconstructed from totals that already added them up.
+ * Raw processes rather than children's totals: the union of windows and the
+ * peak overlap cannot be rebuilt from totals that already added them up.
  */
 export const gatherNodeProcesses = ({ nodes }: Params): HarnessProcessMark[] =>
 	nodes.flatMap((node) => [...node.processes, ...gatherNodeProcesses({ nodes: node.children })]);

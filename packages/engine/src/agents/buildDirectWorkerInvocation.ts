@@ -23,12 +23,8 @@ interface Params {
 }
 
 /**
- * Assemble the direct worker's invocation deterministically.
- *
- * Everything stable across the run — the role prompt, the ticket, the
- * standards, the granted commands — rides the system prompt the harness caches
- * through, so a fix re-invocation pays only for what actually changed: the
- * changed-file list, the gate output, and an answered question.
+ * Everything stable across the run rides the system prompt the harness caches
+ * through, so a fix re-invocation pays only for what changed.
  */
 export const buildDirectWorkerInvocation = ({
 	ticketRef,

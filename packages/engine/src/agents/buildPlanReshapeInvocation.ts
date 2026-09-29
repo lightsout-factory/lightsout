@@ -2,7 +2,6 @@ import planReshapePrompt from '#src/agents/prompts/planReshape.md';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 
 interface Params {
-	/** The typed breakdown findings to resolve, each with its exact fix. */
 	findings: StructuralFinding[];
 	/** Absolute path(s) of the overview file to Edit in place. */
 	planPaths: string[];
@@ -19,16 +18,10 @@ interface Params {
 }
 
 /**
- * Assemble one phase-breakdown reshape invocation deterministically: the
- * findings (with their exact fix strings), the overview path to edit in place,
- * the ceilings every phase must come in under, and the facts/decisions as
- * *paths* the reshaper Reads only when a re-split needs their content.
- *
- * A sibling of `buildPlanRepairInvocation` rather than a use of it: that
- * builder's role prompt opens "You do NOT re-author it" and makes minimal,
- * non-restructuring edits a hard rule — which is exactly what re-splitting a
- * breakdown is not. The repairer's narrowness is what makes it safe on a
- * finished plan, so it stays narrow and this stands beside it.
+ * A sibling of `buildPlanRepairInvocation` rather than a use of it: the
+ * repairer's role prompt makes minimal, non-restructuring edits a hard rule,
+ * which keeps it safe on a finished plan and is exactly what re-splitting a
+ * breakdown is not.
  */
 export const buildPlanReshapeInvocation = ({
 	findings,

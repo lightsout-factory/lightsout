@@ -2,10 +2,6 @@ import { BatchReport, PhaseReport, RefactorStepReport, WorkReport, WritersReport
 import { StepReportKind } from '#src/features/runDetail/internal/common/constants/StepReportKind.ts';
 import type { StepReport } from '#src/features/runDetail/internal/common/types/StepReport.ts';
 
-/**
- * The write-tests envelope read as one summary: how many writer batches ran,
- * how many files they touched between them, and how each of them ended.
- */
 const summarizeWriters = ({ reports }: { reports: WorkReport[] }) => {
 	const statuses: Record<string, number> = {};
 	let fileCount = 0;
@@ -32,16 +28,9 @@ interface Params {
 }
 
 /**
- * Read a step's opaque report by shape; anything unrecognized degrades to
- * pretty-printed JSON rather than taking the page down.
- *
- * The only place in this app that inspects an engine value's shape instead of
- * reading a declared field, and deliberately so: `StepRecord.report` is
- * `z.unknown()` precisely because the manifest stores it opaquely, so someone
- * has to look. Each candidate is the engine's own schema, tried most specific
- * first.
- *
- * @returns undefined when the step recorded no report at all
+ * Reads the report by shape because `StepRecord.report` is `z.unknown()`: the
+ * manifest stores it opaquely. Anything unrecognised degrades to JSON rather than
+ * taking the page down.
  */
 export const summarizeStepReport = ({ report }: Params): StepReport | undefined => {
 	if (report === undefined) {

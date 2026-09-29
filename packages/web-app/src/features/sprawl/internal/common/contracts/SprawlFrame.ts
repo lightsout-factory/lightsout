@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { SprawlLaneDelta } from '#src/features/sprawl/internal/common/contracts/SprawlLaneDelta.ts';
 
-/** One commit, as both lanes saw it. */
 export const SprawlFrame = z.object({
 	/** Short commit sha. */
 	sha: z.string(),

@@ -4,7 +4,6 @@ import { TableAlignment, tableAlignmentClasses } from '#src/common/constants/Tab
 import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
 import { cn } from '#src/common/utils/cn.ts';
 
-/** The ARIA word for how a column is ordered right now. */
 const ariaSortOf = ({ isActive, direction }: { isActive: boolean; direction?: SortDirection }) => {
 	const active = direction === SortDirection.Descending ? 'descending' : 'ascending';
 
@@ -20,13 +19,6 @@ interface Props<TRow> {
 	hasDisclosure?: boolean;
 }
 
-/**
- * A data table's whole `<thead>`: one `<th>` per column, the `aria-sort` each
- * claims, and the button a sortable one wraps its label in.
- *
- * The header owns every `<th>` in the table — a body cell is always a `<td>` —
- * so screen readers are told once, here, what each column is and how it runs.
- */
 export const DataTableHeader = <TRow,>({ columns, sortKey, sortDirection, onSort, hasDisclosure = false }: Props<TRow>) => (
 	<thead className="border-border border-b text-muted-foreground text-xs">
 		<tr>

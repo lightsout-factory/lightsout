@@ -12,14 +12,12 @@ import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 interface Params {
 	batchId: string;
 	batch: CoverageBatch;
-	/** The writer invocation's outcome for this batch. */
 	attempt: AgentOutcome<WorkReport>;
 	/** Batch-level rationale collector: the salvage and decline notes accumulate here. */
 	rationale: string[];
 	onProgress: (message: string) => void;
 	/** The tests-only verdict on what the batch has written — the error message, or undefined when only tests changed. */
 	testsOnly: () => Promise<string | undefined>;
-	/** Re-measure the batch's scope. */
 	measure: () => ReturnType<typeof measureCoverageBatch>;
 	/** Run the batch's gates and answer their whole verdict — a red, a crash, or a run that never started. */
 	gates: () => Promise<GateRunResult>;
@@ -27,17 +25,13 @@ interface Params {
 	finish: (params: { outcome: BatchOutcome; files: CoverageBatchReport['files'] }) => CoverageBatchStop;
 }
 
-/** The batch's files as they stood before it ran — the record a batch that never measured leaves. */
 const unmeasured = ({ batch }: { batch: CoverageBatch }) =>
 	batch.files.map((file) => ({ path: file.path, beforePct: file.statementsPct, afterPct: file.statementsPct }));
 
 /**
- * What a failed invocation leaves behind. An agent can die after finishing its
- * edits but before reporting: if coverage verifiably moved and the gates are
- * green, the work is done — classify it, don't discard it.
- *
- * Salvage never waives the tests-only rule: a dying agent's source edit fails
- * the batch exactly as a live one's would.
+ * An agent can die after finishing its edits but before reporting: if coverage
+ * verifiably moved and the gates are green, the work is done. Salvage never
+ * waives the tests-only rule.
  */
 const salvage = async ({
 	batchId,
@@ -72,17 +66,9 @@ const salvage = async ({
 };
 
 /**
- * The terminal condition the writer's own answer settled — a rate limit, a
- * hard invocation failure, a source file it should not have touched, a scope
- * or source refusal — or undefined when it reported complete and the gates
- * decide next.
- *
  * A report of `failed` is a decline, not a run-stopper: that status is exactly
  * what the writer's role rules say to report when a file's source looks
  * defective, which is the routine set-aside case here.
- *
- * Separate from the batch loop because this is what the AGENT's answer means;
- * the loop's job is what to do with it — verify, measure, record.
  */
 export const getCoverageAttemptStop = async ({
 	batchId,

@@ -4,7 +4,6 @@ interface Params {
 
 const unquote = (value: string) => value.trim().replace(/^['"]|['"]$/g, '');
 
-/** Consecutive `- item` lines directly under the key, stopping at the first line that is not one. */
 const collectBlockItems = ({ lines, keyIndex }: { lines: string[]; keyIndex: number }) => {
 	const items: string[] = [];
 
@@ -22,12 +21,8 @@ const collectBlockItems = ({ lines, keyIndex }: { lines: string[]; keyIndex: num
 };
 
 /**
- * Read the `packages:` list from a plan's YAML front-matter — the plan is
- * where scope knowledge lives, so `/implement plan.md` needs nothing else.
- * Deterministic and dependency-free: supports the inline form
- * (`packages: [a, b]`) and the block-list form (`- a` lines). Returns
- * undefined when there is no front-matter, no `packages:` key, or an empty
- * list — the caller decides whether missing scope is an error.
+ * Dependency-free, so only the inline form (`packages: [a, b]`) and the
+ * block-list form (`- a` lines) are read. An empty list answers undefined.
  */
 export const readPlanPackages = ({ planContent }: Params): string[] | undefined => {
 	const frontMatter = planContent.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1];

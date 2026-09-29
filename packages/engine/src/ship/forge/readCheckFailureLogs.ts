@@ -19,13 +19,10 @@ const RollupView = z.object({
 	statusCheckRollup: z.array(z.object({ __typename: z.string() }).catchall(z.unknown())),
 });
 
-/** One Actions check on the rollup — the only kind of row a run can be read from. */
 const ActionsCheck = z.object({ __typename: z.literal('CheckRun'), name: z.string(), conclusion: z.string(), detailsUrl: z.string() });
 
-/** The runs the forge lists for one commit, used only when the check's own link did not name one. */
 const RunRows = z.array(z.object({ databaseId: z.number(), headSha: z.string() }).catchall(z.unknown()));
 
-/** One run's own account of what it was built from and which of its jobs failed. */
 const RunDetail = z.object({
 	headSha: z.string(),
 	conclusion: z.string(),
@@ -35,7 +32,6 @@ const RunDetail = z.object({
 /** How much of a failed job's output a repair attempt is handed. Past this a model is reading noise, not a cause. */
 const maxEvidenceCharacters = 32_000;
 
-/** The run a failing check points at: from its own job link when it has one, else from the commit's runs when exactly one is listed. */
 const resolveRunId = async ({ check, commit, cwd }: { check: z.infer<typeof ActionsCheck>; commit: string; cwd: string }) => {
 	const linked = /^https:\/\/[^/]+\/[^/]+\/[^/]+\/actions\/runs\/(\d+)\/job\/\d+/.exec(check.detailsUrl);
 	const linkedRunId = linked === null ? undefined : linked[1];
@@ -53,7 +49,6 @@ const resolveRunId = async ({ check, commit, cwd }: { check: z.infer<typeof Acti
 	return matching.length === 1 ? matching[0]?.databaseId : undefined;
 };
 
-/** The failed job's own output, restricted to the job that failed and capped — or undefined when there is nothing attributable to read. */
 const readFailedJobLog = async ({ runId, jobName, cwd }: { runId: number; jobName: string; cwd: string }) => {
 	const logged = await runGh({ args: ['run', 'view', String(runId), '--log-failed'], cwd });
 
@@ -74,7 +69,6 @@ const readFailedJobLog = async ({ runId, jobName, cwd }: { runId: number; jobNam
 	return masked.length > maxEvidenceCharacters ? `${masked.slice(0, maxEvidenceCharacters)}\n… truncated: the failed job printed more than this` : masked;
 };
 
-/** One failing check's evidence, or undefined when any reading could not tie it to the commit asked about. */
 const readOneFailure = async ({ rollup, name, commit, cwd }: { rollup: z.infer<typeof RollupView>; name: string; commit: string; cwd: string }) => {
 	const parsed = rollup.statusCheckRollup.map((entry) => ActionsCheck.safeParse(entry));
 	const row = parsed.find((candidate) => candidate.success && candidate.data.name === name);
@@ -103,19 +97,11 @@ const readOneFailure = async ({ rollup, name, commit, cwd }: { rollup: z.infer<t
 };
 
 /**
- * The failing checks' own output for one exact commit, or `undefined` when it
- * cannot be attributed to that commit.
- *
- * A repair agent may only be handed evidence that demonstrably belongs to the
- * candidate it is repairing, so every reading has to agree: the pull request
- * stands on the commit, the run was built from it, the job that failed is the
- * check that was reported red, and the head has not moved by the time the logs
- * are in hand. Anything unreadable, ambiguous, from another provider or from
- * another commit answers `undefined`, and the caller blocks rather than
- * guessing.
- *
- * Only repository-owned Actions URLs are parsed; nothing here fetches an
- * arbitrary link a check happened to carry.
+ * A repair agent may only be handed evidence that belongs to the candidate it
+ * repairs, so anything unreadable, ambiguous, from another provider or from
+ * another commit answers `undefined` and the caller blocks rather than
+ * guessing. Only repository-owned Actions URLs are parsed; nothing here fetches
+ * an arbitrary link a check carried.
  */
 export const readCheckFailureLogs = async ({ prNumber, commit, failingChecks, cwd }: Params): Promise<CheckFailure[] | undefined> => {
 	const viewed = await runGh({ args: ['pr', 'view', String(prNumber), '--json', 'headRefOid,statusCheckRollup'], cwd });

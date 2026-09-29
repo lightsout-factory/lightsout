@@ -50,7 +50,6 @@ const advisoryOutcomesSection = [
 	'```\n"advisoryOutcomes": [{ "rule": "function-size", "siteKey": "function-size:src/example.ts", "outcome": "declined", "reason": "orchestration exemption applies — every step delegates" }]\n```',
 ].join('\n\n');
 
-/** The scope section for one caller — the only part of the role prompt that differs between them. */
 const scopePrompt = ({ scope }: { scope: RefactorScope }) => (scope === RefactorScope.Standalone ? refactorScopeStandalonePrompt : refactorScopeFeaturePrompt);
 
 /**
@@ -61,7 +60,6 @@ const scopePrompt = ({ scope }: { scope: RefactorScope }) => (scope === Refactor
 const worklistHeading = ({ scope }: { scope: RefactorScope }) =>
 	scope === RefactorScope.Standalone ? '# Files the findings name' : '# Changed files to review';
 
-/** Render one standards finding as a markdown bullet with its formatted site(s). */
 const findingLine = (finding: StandardsFinding) => {
 	const where = finding.files.map((file) => formatFindingSite({ file })).join(' ↔ ');
 
@@ -76,10 +74,8 @@ const findingLine = (finding: StandardsFinding) => {
 const advisoryLine = (finding: StandardsFinding) => `${findingLine(finding)} (siteKey: \`${finding.siteKey}\`)`;
 
 /**
- * Assemble the refactor-executor invocation deterministically. The plan and
- * standards are identical on every pass, so they ride the system prompt the
- * harness caches through; the review list, standards findings, and any gate
- * output grow between passes and stay in the user prompt.
+ * The plan and standards are identical on every pass, so they ride the system
+ * prompt the harness caches through.
  */
 export const buildRefactorExecutorInvocation = ({
 	scope,
@@ -95,12 +91,8 @@ export const buildRefactorExecutorInvocation = ({
 }: Params): { systemPrompt: string; prompt: string } => {
 	const roleSections = [refactorExecutorPrompt, scopePrompt({ scope })];
 
-	// Before the plan, because it reframes what the plan means. A phase-1 tree
-	// is full of things nothing consumes yet, and without the overview the only
-	// honest reading of "no caller" is "dead". The findings themselves are
-	// unaffected — detection is code, and the gate re-reads the tree after this
-	// agent reports — but every judgment call around them improves: which
-	// advisory to decline, and which "unused" export to leave standing.
+	// Before the plan, because it reframes it: a phase-1 tree is full of things
+	// nothing consumes yet, and without the overview "no caller" reads as "dead".
 	if (overviewContent) {
 		roleSections.push(
 			`# Overview (high-level context)\n\nThe plan below is one phase of this larger effort. Later phases consume what this one builds, so a thing with no caller yet is not necessarily dead.\n\n${overviewContent}`,

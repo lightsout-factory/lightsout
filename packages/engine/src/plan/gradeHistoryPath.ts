@@ -8,12 +8,8 @@ interface Params {
 }
 
 /**
- * The one answer to where a plan's grade history lives: an append-only ledger
- * beside `grade.json`, holding one whole `GradeReport` per line.
- *
- * Every grading pass appends a line here and nothing is ever removed, which is
- * what makes it a ledger rather than a second grade file. `grade.json` still
- * holds the latest pass and is still the file to read for a verdict; this is how
- * a human sees a plan go C → B → A, and which finding kept coming back.
+ * An append-only ledger of whole `GradeReport`s, one per line, so a human can
+ * see a plan go C → B → A. `grade.json` still holds the latest pass and is the
+ * file to read for a verdict.
  */
 export const gradeHistoryPath = async ({ cwd, name }: Params): Promise<string> => join(await planWorkspaceDir({ cwd, name }), 'grade-history.jsonl');

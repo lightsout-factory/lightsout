@@ -9,13 +9,9 @@ import { PlanWorkspaceListing } from '#src/contracts/views/planWorkspace/PlanWor
 import { RunListing } from '#src/contracts/views/RunListing.ts';
 
 /**
- * One plan workspace as its page shows it: the listing row, the files it holds,
- * every record that parsed, and the runs that implemented it.
- *
- * Each record is optional because a workspace is built up over several commands
- * and is readable at every point in between — and `problems` is what keeps that
- * leniency honest, naming each file that exists and would not parse rather than
- * letting it read as absent.
+ * Each record is optional because a workspace is readable at every point while
+ * it is built up; `problems` names each file that exists but would not parse,
+ * so it never reads as absent.
  */
 export const PlanWorkspaceView = z.object({
 	listing: PlanWorkspaceListing,

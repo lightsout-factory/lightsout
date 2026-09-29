@@ -17,31 +17,20 @@ interface Params {
 const separator = '[-_/.]';
 
 /**
- * The template with the `{ticket}` token taken out, for work no ticket names.
- *
- * The token goes together with the single separator that FOLLOWS it, so a
- * template carrying a prefix still names a git namespace: `feature/` then the
- * token, a hyphen and the slug renders `feature/add-search-basics` rather than
- * the flat `feature-add-search-basics` that dropping the leading slash would
- * give. Only when the token ends the template does the separator before it drop
- * instead — which is what the trailing trim then does.
+ * The token goes with the separator that follows it, so a prefixed template
+ * still names a git namespace: `feature/{ticket}-{slug}` renders
+ * `feature/add-search-basics`, not `feature-add-search-basics`. When the token
+ * ends the template, the trailing trim drops the separator before it.
  */
 const dropTicketToken = ({ template }: { template: string }) =>
 	template.replaceAll(new RegExp(`\\{ticket\\}${separator}?`, 'gu'), '').replaceAll(new RegExp(`^${separator}+|${separator}+$`, 'gu'), '');
 
 /**
- * The branch one work order gets, rendered from the repo's own template.
- *
- * An unknown token is left exactly as written, matching how ship's `pr-body`
- * template treats one. Whatever this produces must be matched by
- * `ship.ticket-pattern` — both are the repo's config, so a company branch
- * convention configures the two keys together, and that pairing is what links
- * the ticket, the worktree, the commits and the pull request.
- *
- * A repository with no ticket system at all is the normal case rather than a
- * gap, so a missing reference renders a usable branch rather than a refusal:
- * the `{ticket}` token and the separator beside it simply drop, and
- * `ship.ticket-pattern` is checked only where there is a ticket.
+ * An unknown token is left as written, matching ship's `pr-body` template. The
+ * output must match `ship.ticket-pattern`: the two keys are configured
+ * together, and that pairing links the ticket, worktree, commits and pull
+ * request. Most repositories have no ticket system, so a missing reference
+ * drops the `{ticket}` token rather than refusing.
  */
 export const renderBranchTemplate = ({ template, ticketRef, title }: Params): string => {
 	const slugged = template.replaceAll('{slug}', toBranchSlug({ text: title }));

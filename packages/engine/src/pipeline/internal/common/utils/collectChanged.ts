@@ -12,11 +12,8 @@ interface Params {
 }
 
 /**
- * Merge the two sources of changed-file truth: what agents reported and
- * what git actually observed (minus the run's baseline dirt). Agents can
- * forget files; git cannot be sweet-talked. Also widens the package scope
- * to whatever the changed files reveal — declared scope is a starting
- * point, changed files are the truth; scope never shrinks.
+ * Agents can forget files; git cannot be sweet-talked. Package scope only
+ * widens: declared scope is a starting point, and changed files are the truth.
  */
 export const collectChanged = async ({ run, gitPrefix, reports }: Params): Promise<{ changedFiles: string[]; packages: string[] }> => {
 	// Generated/derived files (configured prefixes) are like gate artifacts:

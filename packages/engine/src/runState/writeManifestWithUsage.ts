@@ -11,10 +11,8 @@ interface Params {
 }
 
 /**
- * Persist a manifest patch with the run's usage totals stamped in — the one
- * write path both pipelines share, so a resumed run's totals survive process
- * boundaries identically everywhere. Until the first invocation lands, the
- * manifest's existing usage is preserved rather than zeroed.
+ * The one write path both pipelines share. Until the first invocation lands,
+ * the manifest's existing usage is preserved rather than zeroed.
  */
 export const writeManifestWithUsage = async ({ cwd, manifest, patch, usageTotals }: Params): Promise<RunManifest> => {
 	const usage = usageTotals.invocations > 0 ? { ...usageTotals } : manifest.usage;

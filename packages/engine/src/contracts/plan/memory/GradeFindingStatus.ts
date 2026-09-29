@@ -1,11 +1,6 @@
 /**
- * The lifecycle state of one memory record — what a finding is now, across every
- * pass that has seen it, rather than how one judge ruled on it once.
- *
  * `GapOutcome` is the judge's ruling on a single pass and is never rewritten;
- * this is what the record does with that ruling as the plan changes underneath
- * it. `Open` and `Pending` block. `Superseded` is closed because its question
- * moved to another record, not because anybody answered it.
+ * this is what the record does with that ruling as the plan changes underneath it.
  */
 export const GradeFindingStatus = {
 	/** A `needs-a-human` finding nobody has verified as answered yet. Blocks. */

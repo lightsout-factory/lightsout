@@ -3,13 +3,8 @@ import { z } from 'zod';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 
 /**
- * One rule as a pack's page lists it — everything except the text that makes a
- * payload heavy.
- *
  * Deliberately not `StandardsRuleView`: that row is about how one repo runs a
- * rule — the severity its config chose, how many findings are open, what
- * refactor history recorded — and this one is about what the rule *is*, which is
- * the same on every machine.
+ * rule, this one about what the rule is, which is the same on every machine.
  */
 export const StandardsPackRuleListing = z.object({
 	id: z.string(),

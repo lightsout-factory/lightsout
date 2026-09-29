@@ -2,16 +2,10 @@ import { z } from 'zod';
 import { GateOverride } from '#src/contracts/GateOverride.ts';
 
 /**
- * The optional `gate-overrides` block of `lightsout.config.json` — which gates
- * run at each of the four verification checkpoints.
- *
- * A listed checkpoint runs exactly the gates its entry names, in that order,
- * with no tiering; `"off"` runs none at all. An unlisted checkpoint keeps the
- * engine's default: the cheap gates first, and the expensive ones only once
- * every package group's cheap gates are green.
- *
- * `.strict()`, like every block of the config: a misspelled checkpoint has to fail loudly
- * rather than silently disable a schedule the author believes is set.
+ * An unlisted checkpoint keeps the engine's default: the cheap gates first, and
+ * the expensive ones only once every package group's cheap gates are green.
+ * `.strict()` so a misspelled checkpoint fails loudly rather than silently
+ * disabling a schedule.
  */
 export const GateOverrides = z
 	.object({

@@ -1,9 +1,9 @@
 const rootDirToken = '<rootDir>/';
 const currentDirToken = './';
 
-// Syntax this matcher does not implement. `[`/`]` are character classes,
-// `(`/`)` are extglob, `\` is an escape — each would change what the pattern
-// means, and guessing is the only way this could take teeth away from the gate.
+// `[`/`]` are character classes, `(`/`)` are extglob, `\` is an escape — each
+// would change what the pattern means, and guessing could take teeth away from
+// the gate.
 const unsupportedSyntax = /[[\]()\\]/;
 
 // Both tokens mean "from the root the path side is already relative to". They
@@ -80,33 +80,19 @@ const toExpression = ({ pattern }: { pattern: string }) => {
 };
 
 interface Params {
-	/** One collectCoverageFrom glob with any leading `!` already stripped by the caller. */
+	/** Any leading `!` already stripped by the caller. */
 	pattern: string;
-	/** rootDir-relative path in posix form (forward slashes, no leading `./`). */
+	/** rootDir-relative, posix form, no leading `./`. */
 	path: string;
 }
 
 /**
- * Whether a collectCoverageFrom glob matches a rootDir-relative path, or
- * `undefined` when the pattern uses syntax this matcher does not implement —
- * which callers must read as "cannot decide", never as "no match".
+ * `undefined` means "cannot decide", never "no match": unsupported syntax
+ * (extglob, character classes, nested braces, backslash escapes) and an
+ * expression that will not compile both answer it.
  *
- * Supported: literal segments, `?` (one character, never `/`), `*` (any run of
- * characters, never `/`), `**` (any number of path segments, including none
- * when it is followed by a slash), and single-level `{a,b}` alternation. A
- * leading `<rootDir>/` or `./` is stripped first, since the path side is
- * already relative to that root.
- *
- * Not supported, and answered with `undefined`: extglob (`+(…)`, `@(…)`,
- * `!(…)`), character classes (`[…]`), nested braces, and backslash escapes.
- * None of them appear in a collectCoverageFrom in the wild, and guessing at one
- * would be the only way this change could take teeth away from the gate.
- *
- * This function never throws. An expression that will not compile is answered
- * with `undefined` like any other undecidable pattern — a throw would propagate
- * out of the shared predicate into both the execution gate and the write-tests
- * step and end the run, which is the one outcome the fail-safe doctrine rules
- * out everywhere else.
+ * Never throws: a throw would propagate out of the shared predicate into both
+ * the execution gate and the write-tests step and end the run.
  */
 export const matchesCoverageGlob = ({ pattern, path }: Params): boolean | undefined => {
 	const normalised = normalisePattern({ pattern });

@@ -9,81 +9,60 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { RunUsage } from '#src/contracts/run/RunUsage.ts';
 import { StepRecord } from '#src/contracts/run/StepRecord.ts';
 
-/**
- * The on-disk state of a run (`.lightsout/runs/<id>/manifest.json`).
- *
- * State lives here, not in any model's context window — this is what makes
- * runs crash-safe, rate-limit-safe, and resumable at the failed step.
- */
+/** State lives here rather than in a model's context, so runs survive crashes and rate limits and resume at the failed step. */
 export const RunManifest = z.object({
 	runId: z.string(),
 	createdAt: z.string(),
 	updatedAt: z.string(),
-	/** Path to the plan file the run implements, relative to the target repo. For a phases run this is the overview path. */
+	/** Relative to the target repo. For a phases run this is the overview path. */
 	plan: z.string(),
-	/** The plan this run belongs to, named the way the plans directory names it: a plan address `<work-order>/<plan-id>`. Absent on a run that belongs to no plan — a refactor, coverage, queue or direct run, and an implement run built from a plan file outside the plans directory. */
+	/** A plan address `<work-order>/<plan-id>`. Absent on a run that belongs to no plan, including an implement run of a plan file outside the plans directory. */
 	planName: z.string().optional(),
-	/** Which pipeline owns this run. Absent on pre-discriminator manifests → implement. */
+	/** Absent means implement. */
 	pipeline: z.enum(PipelineKind).optional(),
 	/** The ticket this run builds, e.g. 'LO-70'. Absent on a run started from a plan. */
 	ticketRef: z.string().optional(),
-	/** Optional overview plan (high-level context for a phased plan), relative to the target repo. */
+	/** Relative to the target repo. */
 	overview: z.string().optional(),
-	/** Set on a phase's child run: the run id of the coordinator that started it. Absent on a top-level run. */
+	/** Set on a phase's child run to the coordinator's run id. */
 	parentRunId: z.string().optional(),
-	/** Harness the run was started with (a resumed run must reuse it). */
+	/** A resumed run must reuse it. */
 	harness: z.string(),
-	/**
-	 * Snapshot of the resolved config at run creation — the permanent record
-	 * of which settings produced this run. Resume EXECUTES with the current
-	 * config file; this records what the run started with.
-	 */
+	/** A record of what the run started with; resume executes with the current config file. */
 	config: LightsoutConfig.optional(),
 	status: z.enum(RunStatus),
-	/** Step id currently executing, or null when no step is in flight. */
 	currentStep: z.string().nullable(),
 	steps: z.array(StepRecord),
-	/** Step ids the run's pipeline declared at start, in order — what lets a reader show a row for a step the run has not reached. Absent on a pipeline that discovers its steps as it goes (refactor, coverage, phases). */
+	/** Lets a reader show a row for a step not yet reached. Absent on a pipeline that discovers its steps as it goes. */
 	stepOrder: z.array(z.string()).optional(),
-	/** The git branch the run was started on, as git named it — the key a ship result is filed under. Absent on a detached HEAD and outside a worktree. */
+	/** The key a ship result is filed under. Absent on a detached HEAD and outside a worktree. */
 	branch: z.string().optional(),
-	/** Absolute path of the checkout the run's git work, gates, agents and commit happened in. Absent on a run that built in the checkout it was launched from. */
+	/** Absolute. Absent on a run that built in the checkout it was launched from. */
 	workspace: z.string().optional(),
-	/** Resolved before the run started: a passing run will ship this branch. Absent when no ship intent was resolved at all. */
+	/** A passing run will ship this branch. Absent when no ship intent was resolved. */
 	willShip: z.boolean().optional(),
-	/** Source files changed so far, accumulated across steps. */
 	changedFiles: z.array(z.string()),
-	/** The commits this run left behind, in the order they were made. A phased run's coordinator carries one per phase; every other run carries at most one. */
+	/** A phased run's coordinator carries one per phase; every other run carries at most one. */
 	commits: z.array(RunCommit).default([]),
 	/**
-	 * Package scope (directory names under the packages dir) for scoped
-	 * gates. Seeded from the plan front-matter or `--packages`, then expanded
-	 * as changed files reveal the true blast radius — never shrunk. Empty in
-	 * non-monorepo mode.
+	 * Directory names under the packages dir. Expanded as changed files reveal
+	 * the blast radius, never shrunk. Empty in non-monorepo mode.
 	 */
 	packages: z.array(z.string()).default([]),
-	/** Where the initial package scope came from — recorded so a derived scope is never mistaken for a declared one. */
+	/** Recorded so a derived scope is never mistaken for a declared one. */
 	packagesSource: z.enum(PackagesSource).optional(),
-	/**
-	 * Aggregate agent usage across the whole run (per-invocation detail lives
-	 * in the run dir's `agents.jsonl`). Absent for drivers reporting nothing.
-	 */
+	/** Per-invocation detail lives in the run dir's `agents.jsonl`. Absent for drivers reporting nothing. */
 	usage: RunUsage.optional(),
-	/**
-	 * Paths already dirty/untracked in git when the run started. Subtracted
-	 * from every git snapshot so only files the RUN changed are attributed to
-	 * it — agents report what they changed, git reports what actually changed.
-	 */
+	/** Paths already dirty when the run started, subtracted from every git snapshot so only the run's own changes are attributed to it. */
 	baselineDirtyFiles: z.array(z.string()).default([]),
-	/** Public subject files resolved for the write-tests step — what verify fix re-invocations hand back to writers. */
+	/** What verify fix re-invocations hand back to test writers. */
 	testSubjects: z.array(z.string()).default([]),
-	/** The live acceptance-test mapping: one entry per plan ledger row, rewritten by an approved disposition. Empty for a plan with no ledger. */
+	/** One entry per plan ledger row. */
 	acceptanceTests: z.array(AcceptanceTestRecord).default([]),
-	/** Test-side files whose approved version is not simply their content at HEAD — a copy the run took, or an approved removal. */
 	approvedTests: z.array(ApprovedTestRecord).default([]),
 	/** Changed files the write-tests step skipped because nothing public reaches them; re-checked at run end. */
 	unreachableChangedFiles: z.array(z.string()).default([]),
-	/** Changed files the write-tests step skipped because the repo's own coverage configuration does not collect them — the set verify fix re-invocations must not demand execution of. */
+	/** Files the repo's coverage configuration does not collect, so verify fix re-invocations must not demand their execution. */
 	coverageExcludedChangedFiles: z.array(z.string()).default([]),
 });
 

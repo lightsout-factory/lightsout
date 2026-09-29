@@ -5,45 +5,29 @@ import { invokedDirectly } from './invokedDirectly.mjs';
 
 /**
  * Writes each plugin's slash-command routers from its skills, for the
- * pi-family harnesses only.
+ * pi-family harnesses only; `--check` fails when a committed directory differs.
  *
- * pi and omp list no plugin skills anywhere a user can pick from — a skill is
- * read on demand, not offered. The routers are that missing menu: type `/`
- * and every entry point the plugin offers is there. Claude Code needs no such
- * menu; it already lists every installed skill as its own slash command, so a
- * router beside it would show each entry point twice.
+ * pi and omp offer no menu of plugin skills, so the routers are that menu.
+ * Claude Code already lists every skill as a slash command, so a router there
+ * would show each entry point twice.
  *
- * The routers live in `prompts/`, and each harness reaches them differently:
- * pi reads `prompts` from the `pi` block in the plugin's package.json; omp
- * treats a marketplace install as a Claude Code plugin and reads the
- * directory named by `slash-commands` in `.claude-plugin/plugin.json`, a key
- * Claude Code itself ignores. Claude Code scans only `commands/`, which no
- * longer exists. The manifest key is checked below, because a router omp
- * cannot find is a router that does not exist.
+ * pi reads `prompts` from the `pi` block in package.json; omp treats a
+ * marketplace install as a Claude Code plugin and reads the directory named by
+ * `slash-commands` in `.claude-plugin/plugin.json`, a key Claude Code ignores.
  *
- * The router files deliberately hold no workflow of their own: each one just
- * routes to the skill it mirrors, which stays the single source of truth. A
- * router that duplicated its skill's steps would be two documents drifting
- * apart, and this factory runs on documents staying in step.
- *
- * Hand-maintaining the mirrors is how they drift, so every prompts directory
- * is generated: one router per SKILL.md under the plugin's skills, stamped
- * with a marker so write mode may prune a router whose skill disappeared. The
- * namespace comes from each plugin's own manifest, so the routers carry the
- * name the catalog installs under. `--check` writes nothing and fails when a
- * committed directory differs from what this would write, which is what keeps
- * them in step. It is wired into `pnpm check`.
+ * A router holds no workflow of its own, only a pointer to its skill, so the
+ * two cannot drift. The marker lets write mode prune a router whose skill
+ * disappeared.
  */
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** Every plugin that ships skills: the base engine plugin and the two tracker add-ons. */
 const pluginDirs = ['plugin', 'plugin-linear', 'plugin-jira'];
 const marker = '<!-- generated:lightsout-prompt -->';
-/** Where omp is told to look for the routers, relative to the plugin root — the value `slash-commands` must carry. */
+/** The value `slash-commands` must carry, or omp cannot find the routers. */
 const promptsPath = './prompts';
 
-/** The frontmatter fields a router carries over from its skill: the name, and the description autocomplete shows. Handles the plain single-line form and the folded (`>-`) block some skills use. */
+/** Handles the plain single-line form and the folded (`>-`) block some skills use. */
 const parseFrontmatter = ({ text }) => {
 	const lines = text.split('\n');
 	const end = lines.indexOf('---', 1);
@@ -56,7 +40,6 @@ const parseFrontmatter = ({ text }) => {
 	let blockKey;
 
 	for (const line of lines.slice(1, end)) {
-		// inside an indented block: each indented line folds into the value
 		if (blockKey !== undefined && (line.startsWith('  ') || line.trim() === '')) {
 			const piece = line.trim();
 
@@ -76,7 +59,6 @@ const parseFrontmatter = ({ text }) => {
 
 		const value = match[2].trim();
 
-		// a folded or literal block indicator starts an indented block; plain text is the value itself
 		if (value === '>' || value === '>-' || value === '|' || value === '|-') {
 			blockKey = match[1];
 			fields[blockKey] = '';
@@ -88,7 +70,7 @@ const parseFrontmatter = ({ text }) => {
 	return fields;
 };
 
-/** A YAML single-quoted scalar, the one quoting form every consumer of these files accepts. */
+/** Single-quoted: the one YAML quoting form every consumer of these files accepts. */
 const quoteScalar = ({ value }) => `'${value.replaceAll("'", "''")}'`;
 
 const routerFor = ({ pluginName, skillName, description }) => `---
@@ -101,7 +83,6 @@ Read \`skill://${skillName}\` — the ${pluginName} \`${skillName}\` skill — a
 User input: $ARGUMENTS
 `;
 
-/** One plugin's routers: its manifest name plus the router text per skill, keyed by skill name. */
 const buildRouters = ({ pluginDir }) => {
 	const skillsDir = join(repoRoot, pluginDir, 'skills');
 	const manifestPath = join(pluginDir, '.claude-plugin', 'plugin.json');
@@ -133,7 +114,6 @@ const buildRouters = ({ pluginDir }) => {
 	return { promptsDir: join(repoRoot, pluginDir, 'prompts'), pluginName, routers };
 };
 
-/** The names of the generated routers currently on disk for one plugin. */
 const onDiskRouterNames = ({ promptsDir }) => {
 	if (!existsSync(promptsDir)) {
 		return [];
@@ -145,9 +125,8 @@ const onDiskRouterNames = ({ promptsDir }) => {
 };
 
 /**
- * Exit codes are set rather than forced with `process.exit`, for the reason
- * checkShipped.mjs states: stdout is a pipe for every caller that matters, and
- * exiting on the line after a log discards it.
+ * Exit codes are set rather than forced with `process.exit`: stdout is a pipe
+ * for every caller that matters, and exiting right after a log discards it.
  */
 const main = () => {
 	const checking = process.argv.includes('--check');

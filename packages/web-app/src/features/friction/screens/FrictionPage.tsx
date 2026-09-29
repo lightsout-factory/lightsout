@@ -17,10 +17,8 @@ import { filterFriction } from '#src/features/friction/common/utils/filterFricti
 import { frictionQueryOptions } from '#src/features/friction/queries/frictionQueryOptions.ts';
 import { runsQueryOptions } from '#src/features/runs/queries/runsQueryOptions.ts';
 
-/** The one command that feeds this log back into the pipeline that produced it. */
 const improveCommand = 'lightsout improve --engine <path>';
 
-/** The run an entry was recorded in, by title when this repo still has that run and by its short id when it does not. */
 const RunCell = ({ record, runs }: { record: FrictionRecord; runs: RunListing[] }) => {
 	const listing = runs.find((run) => run.runId === record.runId);
 	const shortId = record.runId.slice(0, 8);
@@ -35,7 +33,6 @@ const RunCell = ({ record, runs }: { record: FrictionRecord; runs: RunListing[] 
 	);
 };
 
-/** The columns, in the order a reader scans them: what kind of thing this was, where it happened, and what was said. */
 const buildColumns = ({ runs }: { runs: RunListing[] }): Array<DataTableColumn<FrictionRecord>> => [
 	{ key: 'area', header: 'area', render: (record) => <Badge>{record.area}</Badge> },
 	{ key: 'kind', header: 'kind', render: (record) => <span className="text-muted-foreground">{record.kind ?? 'friction'}</span> },
@@ -45,15 +42,8 @@ const buildColumns = ({ runs }: { runs: RunListing[] }): Array<DataTableColumn<F
 ];
 
 /**
- * What agents reported as getting in their way, across every run this repo has.
- *
- * The run detail's own Friction tab answers "what fought this run"; this page
- * answers the question that one cannot — what keeps fighting, run after run,
- * which is the only form the signal is actionable in.
- *
- * Suspends on the log and subscribes to the runs, because the runs are needed
- * only to put a title beside a run id: a page that waited on them would stall
- * on data no filter reads.
+ * Suspends on the log but only subscribes to the runs: they just put a title
+ * beside a run id, and waiting on them would stall on data no filter reads.
  */
 export const FrictionPage = () => {
 	const { data: records } = useSuspenseQuery(frictionQueryOptions());

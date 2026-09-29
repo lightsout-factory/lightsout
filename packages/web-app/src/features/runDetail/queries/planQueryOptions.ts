@@ -7,7 +7,7 @@ interface Params {
 	path: string;
 }
 
-/** A plan document, fetched when the drawer first asks for it and kept — a plan file does not change under a run that has already read it. */
+/** Never stale: a plan file does not change under a run that has already read it. */
 export const planQueryOptions = ({ path }: Params) =>
 	queryOptions({
 		queryKey: [QueryKey.Plan, path],

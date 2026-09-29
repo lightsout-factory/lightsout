@@ -18,19 +18,9 @@ interface Params {
 }
 
 /**
- * The checkout an `implement` run builds in and the plan target inside it,
- * announced before any source work — or the one sentence saying why there is
- * neither.
- *
- * The checkout a person chose to work in is refused when it holds uncommitted
- * changes, because a passing run now commits what it built: without the
- * refusal a `--no-worktree` run would sweep their unrelated edits into the
- * ticket's branch. A tree lightsout cut or adopted for the run is never judged.
- *
- * The plan resolver is pure and side-effect free, so resolving the target a
- * second time here is honest rather than wasteful: the caller's first call
+ * The plan target is resolved a second time here on purpose: the caller's call
  * answered what the user pointed at, this one answers where that input now
- * lives, and an absolute `--plan` is normalised onto the copy by it.
+ * lives in the workspace.
  */
 export const openImplementWorkspace = async ({
 	cwd,
@@ -44,19 +34,16 @@ export const openImplementWorkspace = async ({
 		return { error: workspace.error };
 	}
 
-	// Before the announcement and before the input copy, exactly as
-	// `openDirectWorkspace` orders it: the guard judges the tree the run will
-	// commit, rather than a tree the copy has already touched.
+	// Before the input copy, so the guard judges the tree the run will commit
+	// rather than a tree the copy has already touched.
 	const uncommittable = await describeUncommittableTree({ cwd: workspace.cwd, isolated: workspace.isolated });
 
 	if (uncommittable !== undefined) {
 		return { error: uncommittable };
 	}
 
-	// Only an isolated run announces itself here. A run building where it was
-	// launched has moved nowhere, and `printRunHeader` names that checkout on its
-	// own `cwd:` line a few lines later — a second line saying the same thing
-	// would push every other startup line down for no new fact.
+	// A run building where it was launched has moved nowhere, and
+	// `printRunHeader` already names that checkout on its `cwd:` line.
 	if (workspace.isolated) {
 		console.log(`lightsout: workspace ${workspace.cwd}\n  branch: ${workspace.branch}`);
 	}

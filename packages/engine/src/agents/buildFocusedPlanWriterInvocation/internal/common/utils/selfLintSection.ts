@@ -6,14 +6,8 @@ interface Params {
 }
 
 /**
- * The writer's self-lint brief: the commands it runs before reporting, in the
- * order it must run them, and the rule that stops the fix loop.
- *
- * The sync command is named first where it was granted, because it composes the
- * sections the writer is forbidden to write — a lint run ahead of it reports
- * defects the writer is not allowed to fix.
- *
- * @returns the section, or undefined when this spawn was granted no lint command.
+ * The sync command runs first because it composes the sections the writer is
+ * forbidden to write; a lint run ahead of it reports defects the writer may not fix.
  */
 export const selfLintSection = ({ lintCommand, syncCommand }: Params): string | undefined => {
 	if (lintCommand === undefined) {

@@ -7,17 +7,8 @@ interface ConstructorParams {
 }
 
 /**
- * The v1 reader: every method is a direct call into the engine with this
- * process's repo root as its `cwd`.
- *
- * A class because both of the standards' bright lines hold at once — every
- * operation shares one injected dependency, and a second implementation of the
- * same interface behind an HTTP call is the whole reason the interface exists.
- *
- * Nothing is reshaped, cached or caught here.
- *
- * A `RunNotFoundError` from the engine travels to the server function, which is
- * where it becomes a 404.
+ * A class because every operation shares one injected dependency, and a second
+ * implementation behind an HTTP call is the reason the interface exists.
  */
 export class InProcessReader implements LightsoutReader {
 	private readonly repoRoot: string;

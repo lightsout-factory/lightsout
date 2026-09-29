@@ -8,12 +8,6 @@ interface Props {
 	pack?: StandardsPackListing;
 }
 
-/**
- * The pack's rules split by kind of check: the deterministic ones code decides,
- * and the agent checks an agent reviews the change against — the half no linter covers.
- * Counts are the pack's own, read live; without them the two kinds are still
- * named, just not counted.
- */
 export const PackStats = ({ pack }: Props) => {
 	const kinds = [
 		{ Icon: checkKindIcons[CheckKind.Deterministic], count: pack?.totals.checked, label: checkKindLabels[CheckKind.Deterministic].plural },

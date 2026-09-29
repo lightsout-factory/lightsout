@@ -2,11 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { SiteShell } from '#src/features/app/components/SiteShell.tsx';
 
 /**
- * The public site: the landing page, the standards packs, the commands and the
- * docs.
- *
- * Pathless, so every page under it keeps the URL it had — `/standards-packs` is still
- * `/standards-packs`. What the file buys is that a page belongs to the site by where
- * it sits rather than by a list somebody has to remember to update.
+ * Pathless, so every page under it keeps its own URL, and a page belongs to the
+ * site by where it sits rather than by a list somebody has to update.
  */
 export const Route = createFileRoute('/_site')({ component: SiteShell });

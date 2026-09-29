@@ -77,20 +77,10 @@ const checkShipRequest = ({ record, ctx }: { record: z.infer<typeof WorkOrderSta
 };
 
 /**
- * A work order's own state: `state.json`, held exactly once per machine, in
- * that work order's own folder under the PRIMARY checkout.
- *
- * It lives in the primary checkout for the reason `WorktreeRecord` does: the
- * mode, each plan's progress and the ship request are mutable state that the
- * planning tree, the implementation tree, the queue's tree and the primary
- * checkout all read, and one copy per machine is what stops them disagreeing.
- * Only the work order module's store writes it, and `history` is append-only —
- * a change that drops or rewrites an earlier event is refused rather than
- * written.
- *
- * Every work order has one, and the folder's name is a label the record
- * confirms rather than a fact derived from it: `name` is what every reader
- * starts from, and `branch` is only the git branch the work implements on.
+ * Held once per machine under the PRIMARY checkout: the planning,
+ * implementation and queue trees all read this mutable state, and one copy
+ * stops them disagreeing. `history` is append-only; a change that drops or
+ * rewrites an earlier event is refused.
  */
 export const WorkOrderState = WorkOrderStateShape.superRefine((record, ctx) => {
 	checkPlanOrder({ record, ctx });

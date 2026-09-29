@@ -12,15 +12,11 @@ interface Params {
 	crashed: boolean;
 	timedOut: boolean;
 	rerun?: boolean;
-	/** Absolute path of this execution's per-test evidence slot, recorded relative to the checkout. Absent for a run with no run folder. */
+	/** Absolute; recorded relative to the checkout. Absent for a run with no run folder. */
 	evidenceDir?: string;
 }
 
-/**
- * One gate execution's evidence, in the single shape both sinks carry: the
- * commands.jsonl record adds only the log-specific `at`/`step` on top of it, so
- * building it twice is how the two would drift.
- */
+/** Built once for both sinks, so commands.jsonl and the result cannot drift. */
 export const buildGateResult = ({ cwd, kind, group, command, result, durationMs, crashed, timedOut, rerun, evidenceDir }: Params): GateResult => {
 	const outputTailChars = 2000;
 

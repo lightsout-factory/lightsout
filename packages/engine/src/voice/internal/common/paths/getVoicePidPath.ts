@@ -4,7 +4,7 @@ interface Params {
 	cwd: string;
 }
 
-/** Where the reading currently playing records itself, so a newer question can cut it off: `<repo>/.lightsout/voice-pid`. */
+/** Recorded so a newer question can cut off the reading still playing. */
 export const getVoicePidPath = ({ cwd }: Params): string => {
 	return join(cwd, '.lightsout', 'voice-pid');
 };

@@ -9,13 +9,9 @@ import { satisfiesGateKey } from '#src/gates/testResults/internal/satisfiesGateK
 import { readTestResults } from '#src/gates/testResults/readTestResults.ts';
 
 /**
- * Whether one gate execution could carry this row's result: it ran, it came back
- * green, it recorded a results directory, its family answers for the row's gate
- * key, and its package group covers the file the row names.
- *
- * Only a green gate counts, so a red gate reaches the fix role as gate output
- * and never as this family. Only a covering group counts, so a sibling package's
- * green result is never read as evidence about a file it never executed.
+ * Only a green gate counts, so a red gate reaches the fix role as gate output instead. Only
+ * a covering package group counts, so a sibling package's green result is never read as
+ * evidence about a file it never executed.
  */
 const covers = ({ gate, row, packagesDir }: { gate: GateResult; row: AcceptanceRow; packagesDir: string }) =>
 	gate.skipped !== true &&
@@ -24,7 +20,6 @@ const covers = ({ gate, row, packagesDir }: { gate: GateResult; row: AcceptanceR
 	satisfiesGateKey({ gate: row.gate, kind: gate.kind }) &&
 	(gate.group === 'root' || gate.group === packageOf({ file: row.testFile, packagesDir }));
 
-/** One read per results directory, shared across every row that counts it. */
 const createResultsReader = ({ cwd }: { cwd: string }) => {
 	const readings = new Map<string, Promise<TestResultsFile['testResults']>>();
 
@@ -39,7 +34,6 @@ const createResultsReader = ({ cwd }: { cwd: string }) => {
 
 type ReadResults = ReturnType<typeof createResultsReader>;
 
-/** Every reported status for the cases matching this row, across the directories its gates wrote. */
 const statusesFor = async ({ row, dirs, read }: { row: AcceptanceRow; dirs: string[]; read: ReadResults }) => {
 	const statuses: string[] = [];
 
@@ -64,14 +58,8 @@ const statusesFor = async ({ row, dirs, read }: { row: AcceptanceRow; dirs: stri
 };
 
 /**
- * What the evidence says about one row — undefined when it is proved, else the
- * reason it is not.
- *
- * A row is proved by at least one matching case with every match passing. A
- * literal name normally matches one case; it matches several when jest expanded
- * it under a `describe.each` ancestor, and a template name matches one case per
- * table row. In every one of those shapes "all of them passed" is exactly what
- * the row claims, which is why there is no ambiguity rule.
+ * A name can match several cases, under a `describe.each` ancestor or as a template name;
+ * every match must pass, which is exactly what the row claims, so there is no ambiguity rule.
  */
 const judgeRow = async ({ row, dirs, read }: { row: AcceptanceRow; dirs: string[]; read: ReadResults }) => {
 	const statuses = await statusesFor({ row, dirs, read });
@@ -91,33 +79,18 @@ const describeRow = ({ row, reason }: { row: AcceptanceRow; reason: string }) =>
 
 interface Params {
 	cwd: string;
-	/** The acceptance tests this checkpoint must prove. */
 	rows: AcceptanceRow[];
-	/** Every gate result this checkpoint observed, each carrying the directory it wrote. */
 	gates: GateResult[];
 	/** True at the run's last verification, where an unproven row is a failure rather than a skip. */
 	final: boolean;
-	/** The packages directory, so a package group's results are matched to the files it owns. */
 	packagesDir: string;
-	/** One line per row whose gate did not run at a non-final checkpoint. Silent when omitted. */
 	onProgress?: (message: string) => void;
 }
 
 /**
- * The deterministic post-gate check: every acceptance test must be shown to have
- * executed and passed under the gate its row names.
- *
- * A green gate command and an unchanged quoted string do not establish that a
- * named case ran — during LO-81 ten cases disappeared through a move and every
- * check stayed green. This reads the per-test results the gate itself wrote and
- * holds each row to its own execution.
- *
- * A row no observed gate could carry is skipped with a progress line, because a
- * checkpoint may legitimately run a narrower schedule. At the run's final
- * verification the same row is a failure: the run must end with every acceptance
- * test executed against the finished tree.
- *
- * @returns undefined when every row is proved or legitimately skipped, else the message the verify step turns into the `acceptance-tests` failure family.
+ * A green gate command does not prove a named case ran, so this reads the per-test results
+ * the gate itself wrote. A row no observed gate could carry is skipped before the final
+ * verification, because a checkpoint may run a narrower schedule; at the final one it fails.
  */
 export const checkAcceptanceTests = async ({ cwd, rows, gates, final, packagesDir, onProgress }: Params): Promise<string | undefined> => {
 	if (rows.length === 0) {

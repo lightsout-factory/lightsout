@@ -18,16 +18,12 @@ import { getRunTitle } from '#src/views/internal/common/utils/getRunTitle.ts';
 import { readFrozenWorklist } from '#src/views/internal/common/utils/readFrozenWorklist.ts';
 import { readRunListing } from '#src/views/internal/common/utils/readRunListing.ts';
 
-/** The per-step spend summarizeRun attributed, keyed by step id. */
 type StepUsage = Map<string, { invocations: number; outputTokens: number; costUsd: number }>;
 
 /**
- * A coordinator's step ids ARE the phase file names, extension included
- * (`initializeSequence` records what `readOverviewPhases` returned), so they
- * are joined to the overview's own directory as they stand — the same
- * resolution `runPhasesPipeline` uses to run the phase. The file is named only
- * when it is still there: a phase deleted after its run must not be offered as
- * something to open.
+ * A coordinator's step ids are the phase file names, extension included, so they
+ * join the overview's directory as they stand. A phase deleted after its run is
+ * not offered as something to open.
  */
 const resolvePhaseFile = async ({ cwd, overviewDir, step }: { cwd: string; overviewDir: string; step: StepRecord }) => {
 	const planPath = join(overviewDir, step.id);
@@ -39,7 +35,6 @@ const resolvePhaseFile = async ({ cwd, overviewDir, step }: { cwd: string; overv
 	return exists ? planPath : undefined;
 };
 
-/** The manifest's record joined to what the ledger says the step cost, plus the phase links a coordinator's steps carry. */
 const buildStepView = async ({
 	cwd,
 	step,
@@ -68,16 +63,9 @@ const buildStepView = async ({
 };
 
 /**
- * The coordinator this run records, read straight off its own manifest's
- * `parentRunId` — one manifest opened, no scan over the rest of the history.
- *
- * Absent silently wherever the link cannot be proved: a top-level run records
- * no parent, and a coordinator whose manifest will not read (deleted, corrupt, mid-write)
- * leaves the back-link off rather than taking the page down.
- *
- * The step is the coordinator's own record of this child, and while the phase
- * is still running there is no such record yet — the step in flight is what
- * names it until the child reports back.
+ * A coordinator whose manifest will not read leaves the back-link off rather than
+ * taking the page down. While the phase is still running the coordinator has no
+ * record of this child yet, so its step in flight names it.
  */
 const readParent = async ({ cwd, runId, parentRunId }: { cwd: string; runId: string; parentRunId?: string }): Promise<RunView['parent']> => {
 	const manifest = parentRunId === undefined ? undefined : await readRunManifest({ cwd, runId: parentRunId }).catch(() => undefined);
@@ -93,15 +81,9 @@ interface Params {
 }
 
 /**
- * One run's whole evidence, assembled: timing, steps, gates, agent spend,
- * friction and files.
+ * Every number comes from the reader that already owns it, so a detail page and
+ * a sidebar row cannot disagree.
  *
- * Every number here is computed by the readers that already own it —
- * `summarizeRun` for timing and per-step cost, the JSONL reader for the two
- * logs, `readRunListing` for the row a list would show. Nothing is re-derived,
- * so a detail page and a sidebar row cannot disagree.
- *
- * @param cwd - the repo whose run state is read
  * @param runId - full id, or the shortened form a report printed
  * @throws {RunNotFoundError} When no run on disk answers to the id.
  */
@@ -120,8 +102,8 @@ export const getRunView = async ({ cwd, runId }: Params): Promise<RunView> => {
 	const overview = coordinatorOverview ?? manifest.overview;
 	const overviewDir = coordinatorOverview === undefined ? undefined : dirname(coordinatorOverview);
 	const friction = await readFriction({ cwd });
-	// Read once here rather than inside `readRunListing`, because the burn-down
-	// wants the same file: two consumers, one open of `worklist.json`.
+	// Read here rather than inside `readRunListing`, because the burn-down wants
+	// the same file.
 	const worklist = manifest.plan.endsWith('worklist.json') ? await readFrozenWorklist({ cwd, manifest }) : undefined;
 
 	return {

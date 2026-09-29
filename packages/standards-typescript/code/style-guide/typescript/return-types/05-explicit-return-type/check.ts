@@ -2,28 +2,18 @@ import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from 
 import type ts from 'typescript';
 import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
 
-/** Whether a statement carries the `export` keyword — the bright line the rule is drawn on. */
 const isExported = ({ statement, compiler }: { statement: ts.Statement; compiler: typeof ts }) =>
 	(compiler.canHaveModifiers(statement) ? (compiler.getModifiers(statement) ?? []) : []).some(
 		(modifier) => modifier.kind === compiler.SyntaxKind.ExportKeyword,
 	);
 
 /**
- * The exported functions in one file that state no return type, by the two
- * shapes an export is written in: `export const name = () => …` and
- * `export function name() …`.
+ * Only top-level statements are read: a nested function is not exported, and
+ * the rule is about the file's public contract.
  *
- * Only top-level statements are read. A function nested inside another is not
- * exported whatever it looks like, and the rule is about the file's public
- * contract.
- *
- * Two of the document's four exceptions are decided here. A generic signature
- * is left alone — the type parameters are the contract, and the written return
- * type is the unreadable expression the exception describes. An arrow whose
- * variable is annotated is interface-pinned: the contract is already declared,
- * one line above. The other two — framework components, and query-options
- * factories — are decided by the caller, which judges only the files an
- * annotation belongs in.
+ * A generic signature is left alone, since its type parameters are the
+ * contract, and an arrow whose variable is annotated is already pinned. The
+ * document's other two exceptions are decided by the caller.
  */
 const getUnannotated = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {
 	const missing: string[] = [];
@@ -56,25 +46,17 @@ const getUnannotated = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; c
 	return missing;
 };
 
-/** A file under a `queries/` folder, where the document's fourth exception puts the query-options factories. */
 const isQueryOptionsFactory = ({ path }: { path: string }) => path.split('/').slice(0, -1).includes('queries');
 
 /**
- * A file this rule can ask anything of: one where a return type annotation is
- * syntax that exists, and where the document asks for one.
+ * An allow-list rather than extensions to skip. `.tsx` is the document's first
+ * exception, framework components. JavaScript has no syntax for the annotation,
+ * so every hit would be a finding nobody could fix, and these standards run at
+ * full strength on JavaScript-only repos.
  *
- * Named as an allow-list rather than a list of extensions to skip. `.tsx` is
- * the document's own first exception — framework components live there.
- * JavaScript is a harder no: `.js`, `.mjs` and friends have no syntax for the
- * annotation this rule demands, so every hit would be a finding nobody could
- * fix, and a burn-down would stall on work that cannot be done. These standards
- * deliberately run at full strength on JavaScript-only repos, which is exactly
- * why a TypeScript-only rule has to state its own scope instead of assuming it.
- *
- * A `queries/` folder is the fourth exception, decided by path for the same
- * reason `.tsx` is: what makes a query-options factory its own contract is the
- * inferred `queryOptions` type, and that is not a fact the declaration's syntax
- * shows.
+ * A `queries/` folder is the fourth exception, decided by path because a
+ * query-options factory's contract is its inferred `queryOptions` type, which
+ * the declaration's syntax does not show.
  */
 const isAnnotatable = ({ path }: { path: string }) => /\.(ts|mts|cts)$/.test(path) && !isQueryOptionsFactory({ path });
 

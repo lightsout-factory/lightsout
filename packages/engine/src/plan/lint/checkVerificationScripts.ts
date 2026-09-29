@@ -11,19 +11,17 @@ import { getPlanNamedPaths } from '#src/plan/internal/common/utils/getPlanNamedP
 interface Params {
 	plan: ParsedPlan;
 	cwd: string;
-	/** Absolute path to the plan file — its basename anchors each finding's location. */
+	/** Absolute. */
 	planPath: string;
 	/** The finding label: this file's basename. */
 	phase: string;
-	/** Directory prefix each package lives under (`packages` by default). */
 	packagesDir: string;
-	/** Full-command verification overrides from config — never checked as package scripts. */
+	/** Full-command overrides from config, never checked as package scripts. */
 	configCommands: Set<string>;
-	/** Script names an earlier-or-same phase declares it adds — available even though no package.json has them yet. */
+	/** Scripts an earlier-or-same phase declares it adds, available before any package.json has them. */
 	declaredScripts: Set<string>;
 }
 
-/** The package-script name a verification command invokes, or undefined for a raw command with no package-manager prefix. */
 const scriptNameOf = ({ command }: { command: string }) => {
 	// Any `… run <script>` form (pnpm/npm/yarn/turbo, with or without filter
 	// flags) resolves through the same parser the doctor and scoped gates use,
@@ -32,9 +30,8 @@ const scriptNameOf = ({ command }: { command: string }) => {
 	const tokens = command.split(/\s+/);
 
 	if (scriptName === undefined && tokens[0] === 'pnpm') {
-		// Bare-script form (`pnpm check`, `pnpm --filter x check`, `pnpm -F x
-		// check`): the script is the first token past the flags. `--filter`/`-F`
-		// consume their selector argument; `--filter=<sel>` is a single token.
+		// `--filter`/`-F` consume their selector argument; `--filter=<sel>` is a
+		// single token.
 		let index = 1;
 
 		while (tokens[index]?.startsWith('-')) {
@@ -51,7 +48,6 @@ const scriptNameOf = ({ command }: { command: string }) => {
 	return scriptName;
 };
 
-/** Each package directory the plan names a path inside — every manifest beyond the root one whose scripts this plan's commands may resolve in. */
 const getPackageDirs = ({ plan, packagesDir }: { plan: ParsedPlan; packagesDir: string }) => {
 	const packageDirs = new Set<string>();
 
@@ -68,7 +64,7 @@ const getPackageDirs = ({ plan, packagesDir }: { plan: ParsedPlan; packagesDir: 
 	return packageDirs;
 };
 
-/** Every script key the root manifest and each named package's manifest declare — an unreadable manifest contributes nothing rather than failing the check. */
+/** An unreadable manifest contributes nothing rather than failing the check. */
 const getAvailableScripts = async ({ cwd, packagesDir, packageDirs }: { cwd: string; packagesDir: string; packageDirs: Set<string> }) => {
 	const manifestPaths = [join(cwd, 'package.json'), ...[...packageDirs].map((dir) => join(cwd, packagesDir, dir, 'package.json'))];
 	const availableScripts = new Set<string>();
@@ -89,12 +85,9 @@ const getAvailableScripts = async ({ cwd, packagesDir, packageDirs }: { cwd: str
 };
 
 /**
- * ScriptExists — each verification command's package script must resolve in a
- * target package.json (root plus each package any path the plan names sits in —
- * created, modified, moved or deleted, so a phase whose only package-touching
- * work is a move still resolves that package's manifest). Config full-command
- * overrides, scripts an earlier-or-same phase declares it adds, and raw
- * non-package commands are skipped, never guessed into findings.
+ * Every path the plan names counts, a move included, so a phase whose only
+ * package work is a move still resolves that package's manifest. Anything it
+ * cannot decide is skipped, never guessed into a finding.
  */
 export const checkVerificationScripts = async ({
 	plan,
@@ -115,8 +108,6 @@ export const checkVerificationScripts = async ({
 
 		const scriptName = scriptNameOf({ command });
 
-		// A raw command with no package-manager prefix (e.g. `tsc --noEmit`) is
-		// not a package script — do not guess it into a finding.
 		if (scriptName === undefined) {
 			continue;
 		}

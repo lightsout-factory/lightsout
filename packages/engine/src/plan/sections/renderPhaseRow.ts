@@ -4,20 +4,12 @@ interface Params {
 	declaration: PhaseDeclaration;
 }
 
-/** One authored field as a table cell: trimmed, its pipes escaped so a cell cannot split its own row, and its line breaks folded so a row stays one line. */
 const toCell = ({ text }: { text: string }) => text.trim().replaceAll('|', '\\|').replace(/\r?\n/g, '<br>');
 
 /**
- * One `## Phases` table row, rendered from one phase record.
- *
- * The exact inverse of the table half of `parsePhaseDeclarations`: the number,
- * the phase filename in a backtick span, the scope, the created count and the
- * touched count, so what is rendered here reads back as the record it came from.
- *
- * A count the record does not state renders as an empty cell — the shape that
- * parser already reads as "missing or not an integer", so the consistency check
- * can still report it. The literal text of an absent value must never reach a
- * cell, which is what an unguarded interpolation would put there.
+ * The exact inverse of the table half of `parsePhaseDeclarations`. An absent
+ * count renders as an empty cell, which that parser reads as missing, so the
+ * consistency check can still report it.
  */
 export const renderPhaseRow = ({ declaration }: Params): string => {
 	const cells = [

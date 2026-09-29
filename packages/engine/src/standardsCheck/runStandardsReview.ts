@@ -21,22 +21,13 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/**
- * The rules an agent has to read, because no code can check them: every rule
- * declared judgment-only whose document is in play for this repo. Channel
- * gating is all-or-nothing per document, exactly as it is for the checks.
- */
 const collectJudgmentRules = ({ packs, channels }: { packs: LoadedStandardsPack[]; channels: string[] }) =>
 	packs
 		.flatMap((pack) => pack.rules)
 		.filter((rule) => !rule.checked && (rule.channel === 'base' || channels.includes(rule.channel)))
 		.map((rule) => ({ id: rule.id, documentPath: rule.documentPath, prose: rule.prose }));
 
-/**
- * The agent's report as engine findings: advisory by construction, sited by the
- * engine, and only for rules a loaded pack actually declares. Everything
- * dropped is counted and stated — a silent drop would read as a clean review.
- */
+/** Everything dropped is counted and stated — a silent drop would read as a clean review. */
 const toFindings = ({ reported, known }: { reported: StandardsReviewReport['findings']; known: Set<string> }) => {
 	const findings: StandardsFinding[] = [];
 	const unknownRules: string[] = [];
@@ -78,24 +69,16 @@ const toFindings = ({ reported, known }: { reported: StandardsReviewReport['find
 };
 
 /**
- * The other half of a standards check: an agent reads the judgment-only rules
- * against the files in scope and reports what it finds.
+ * Its findings are always advisory and never gate, because a judgment call is
+ * not evidence.
  *
- * Its findings are always advisory and join the same stream the machine checks
- * feed, so a reader gets one list rather than two — but they never gate, because
- * a judgment call is not evidence.
- *
- * Nothing here throws. A missing harness binary, a timeout, a rate limit, or a
- * final message that will not match the contract all come back as a skipped
- * review with a plain note: the machine half is real evidence and must still be
+ * Nothing here throws: every failure comes back as a skipped review with a
+ * plain note, because the machine half is real evidence and must still be
  * reported, and a repo whose harness is absent is not a repo in violation.
  *
  * Site keys are derived here rather than asked for, and a finding naming a rule
  * no loaded pack declares is dropped — an id an agent invented must not be
  * able to enter the findings stream.
- *
- * @param files - repo-relative files in scope; an empty list reviews nothing
- * @param timeoutMs - ceiling for the single review invocation
  */
 export const runStandardsReview = async ({
 	cwd,
@@ -113,11 +96,7 @@ export const runStandardsReview = async ({
 		return { findings: [], notes: [] };
 	}
 
-	// One agent reads every rule against every file in one sitting, so this is
-	// the slow half. Each progress line tells the reader what is happening to
-	// them right now, in their own words: the review has started and roughly how
-	// long that takes; it is still running, with proof of life; it finished, and
-	// what it found. Every line names the review, so it stands on its own in a
+	// Every progress line names the review, so it stands on its own in a
 	// pipeline log as much as under the command's own heading.
 	const ruleCount = `${rules.length} rule${rules.length === 1 ? '' : 's'}`;
 

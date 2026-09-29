@@ -6,26 +6,19 @@ interface Params {
 	command: string;
 	args: string[];
 	cwd: string;
-	/** Written to the child's stdin, then closed. Sidesteps argv length limits for large prompts. */
+	/** Written to the child's stdin, then closed. */
 	stdinText?: string;
 	timeoutMs?: number;
-	/** Called once per complete stdout line as it arrives (empty lines skipped). Full stdout is still collected and returned. */
+	/** Called per complete stdout line, empty lines skipped. Full stdout is still collected and returned. */
 	onStdoutLine?: (line: string) => void;
 }
 
-/**
- * Spawn a harness process, feed stdin, collect output. Rejects on spawn
- * failure or timeout; an exit code is a result, not an exception — the
- * caller owns what it means.
- */
+/** Rejects only on spawn failure or timeout: an exit code is a result the caller interprets. */
 export const spawnCollect = ({ command, args, cwd, stdinText, timeoutMs, onStdoutLine }: Params): Promise<CommandResult> => {
-	// `env` is passed explicitly rather than left to ambient inheritance — see
-	// the same note in runCommand. It is inert in production and is what makes
-	// the harness binary stubbable from a test: without it, a test that empties
-	// PATH still spawns the real harness, which costs real money.
-	// `detached` puts the harness at the head of its own process group, so a
-	// timeout kills the tools it spawned along with it. See the same note in
-	// runCommand.
+	// `env` is passed explicitly so a test can stub the harness binary: without
+	// it, a test that empties PATH still spawns the real harness, which costs money.
+	// `detached` gives the harness its own process group, so a timeout kills the
+	// tools it spawned too.
 	const child = spawn(command, args, { cwd, stdio: ['pipe', 'pipe', 'pipe'], env: process.env, detached: true });
 
 	// Listeners attach before stdin is written, so a harness that answers
@@ -36,11 +29,9 @@ export const spawnCollect = ({ command, args, cwd, stdinText, timeoutMs, onStdou
 		onStdoutLine,
 	});
 
-	// A harness that exits before draining stdin (bad flag, unsupported
-	// version) raises EPIPE on the stream. The exit code and stderr already
-	// carry that story to the caller, so the write error is not a second one —
-	// left unhandled it would escape as an uncaught exception and take the
-	// engine down with the run manifest still marked running.
+	// A harness that exits before draining stdin raises EPIPE, which the exit
+	// code and stderr already report. Unhandled, it would crash the engine with
+	// the run manifest still marked running.
 	child.stdin?.on('error', () => {});
 
 	if (stdinText !== undefined) {

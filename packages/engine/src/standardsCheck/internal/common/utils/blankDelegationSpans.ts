@@ -10,7 +10,6 @@ interface Params {
 	compiler: typeof ts;
 }
 
-/** Whether a constructor does nothing but store its parameters on `this` — the other half of the composition remedy's shape. */
 const isAssigningConstructor = ({ node, compiler }: { node: ts.ConstructorDeclaration; compiler: typeof ts }) =>
 	node.body?.statements.every(
 		(statement) =>
@@ -22,22 +21,13 @@ const isAssigningConstructor = ({ node, compiler }: { node: ts.ConstructorDeclar
 	);
 
 /**
- * The composition-over-inheritance remedy blanked out of a file before
- * duplicate-block detection, the way import lists already are: a class that
- * holds a shared collaborator and forwards to it through one-line methods
- * repeats that shape
- * in every class holding the same collaborator BY DESIGN — the standards
- * mandate it in place of `extends`. Counting it as duplication reports the
- * remedy as the disease, and did, on every refactor run that touched two run
- * classes.
+ * The standards mandate composition in place of `extends`, so a class that
+ * forwards to a shared collaborator through one-line methods repeats that shape
+ * by design; counting it as duplication reports the remedy as the disease.
  *
- * Blanked members: a constructor whose body only stores parameters on `this`,
- * and a method whose body is one forward to a `this`-held field (the shared
- * `isDelegationForwardBody` predicate — the same one the
- * duplicate-function-body rule consults, so the two duplication tiers can never
- * disagree about the exempt shape). Blanking is newline-preserving, so every reported line number stays
- * true. Real logic beside the forwards — a second statement, a computation —
- * keeps its lines and stays a duplicate-block candidate.
+ * Uses `isDelegationForwardBody`, the predicate the duplicate-function-body
+ * rule consults, so the two duplication tiers never disagree about the exempt
+ * shape. Blanking is newline-preserving, so reported line numbers stay true.
  */
 export const blankDelegationSpans = ({ path, text, compiler }: Params): string => {
 	const sourceFile = compiler.createSourceFile(path, text, compiler.ScriptTarget.Latest, true);

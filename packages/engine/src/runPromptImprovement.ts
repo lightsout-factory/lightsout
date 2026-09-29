@@ -28,11 +28,8 @@ type PromptImprovementResult =
 	| { status: typeof PromptImprovementStatus.NoFriction; friction: FrictionRecord[] }
 	| { status: typeof PromptImprovementStatus.Invoked; friction: FrictionRecord[]; outcome: AgentOutcome<WorkReport> };
 
-/**
- * The self-improvement loop: aggregated friction in, prompt edits out. The
- * improver works in the ENGINE repo's worktree — a human reviews the diff and
- * commits; the loop proposes, it does not ship.
- */
+// The improver edits the engine repo's worktree and never commits: a human
+// reviews the diff and commits it.
 export const runPromptImprovement = async ({ consumerCwd, engineCwd, driver, model, effort }: Params): Promise<PromptImprovementResult> => {
 	const friction = await readFriction({ cwd: consumerCwd });
 

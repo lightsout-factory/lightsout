@@ -28,12 +28,8 @@ const getQuestionBlock = ({ question }: { question: unknown }) => {
 };
 
 /**
- * What an option picker is asking, ready to be read aloud — or nothing, when
- * the tool input holds no questions.
- *
  * The picker is spoken as it appears rather than from the finished transcript:
- * by the time a turn ends the user has already answered it, so reading it then
- * would be both late and a repeat.
+ * by the time a turn ends the user has already answered it.
  */
 export const getSpokenPickerText = ({ toolInput }: Params): string | undefined => {
 	const blocks = getArrayField({ value: toolInput, key: 'questions' })

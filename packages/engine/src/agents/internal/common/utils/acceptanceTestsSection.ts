@@ -2,19 +2,13 @@ import { listSection } from '#src/agents/internal/common/utils/listSection.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 
 interface Params {
-	/** The run's acceptance-test mapping, each row a test file and the name of the case in it. */
 	acceptanceTests?: Pick<AcceptanceTestRecord, 'testFile' | 'testName'>[];
 }
 
 /**
- * The brief section naming the tests that define done, and the rules binding
- * anyone who edits one.
- *
  * One text, shared by the executor's brief and the unit-test writer's, because
  * the rules bind both identically: a second spelling in one of them would be a
  * second set of rules the moment either is edited.
- *
- * @returns the section, or undefined for a run whose plan names no acceptance test — the section is omitted rather than emitted empty.
  */
 export const acceptanceTestsSection = ({ acceptanceTests = [] }: Params): string | undefined =>
 	listSection({

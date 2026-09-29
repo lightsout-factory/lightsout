@@ -23,14 +23,12 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/** Whether a worktree is already sitting at this path — a run parked by an earlier drain. */
 const exists = async ({ path }: { path: string }) => {
 	const found = await stat(path).catch(() => undefined);
 
 	return found !== undefined;
 };
 
-/** Whether git already knows this branch, which decides between cutting a new one and adopting what is there. */
 const branchExists = async ({ cwd, branch }: { cwd: string; branch: string }) => {
 	const shown = await runCommand({ command: `git rev-parse --verify --quiet refs/heads/${branch}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 
@@ -38,19 +36,9 @@ const branchExists = async ({ cwd, branch }: { cwd: string; branch: string }) =>
 };
 
 /**
- * Whether the directory already at the path may be continued in, or the reason
- * it may not.
- *
- * Every entry point places one ticket's tree at the same path on the same
- * branch, so a standalone run's tree and a drain's tree for one ticket collide
- * there and nothing in the path or the branch name tells them apart. The
- * parked scan's skip stops a drain RESUMING such a tree; this is what stops it
- * CREATING into one, which is a worker running inside a tree another run may
- * still be building in. Asked in the creator so no present or future caller can
- * forget it.
- *
- * A tree with no record at all is continued in as it always was: every tree
- * made before ownership was recorded carries none.
+ * A standalone run's tree and a drain's tree for one ticket share one path and branch, so only the
+ * ownership record tells them apart; asked here in the creator so no caller can forget it. A tree
+ * with no record predates ownership records and is continued in.
  */
 const describeClaim = async ({ cwd, branch, owner, worktreePath }: { cwd: string; branch: string; owner: WorktreeOwner; worktreePath: string }) => {
 	const record = await readWorktreeRecord({ cwd, branch });
@@ -60,13 +48,7 @@ const describeClaim = async ({ cwd, branch, owner, worktreePath }: { cwd: string
 		: `the worktree at ${worktreePath} belongs to a '${record.owner}' run, so it was left alone`;
 };
 
-/**
- * A fresh tree cut for the branch, its ownership and start point recorded and
- * the setup command run in it — or the step that refused.
- *
- * Ownership is recorded after the tree exists and before setup runs, so a
- * failed setup still leaves a tree a later run can attribute rather than adopt.
- */
+/** Ownership is recorded before setup runs, so a failed setup still leaves a tree a later run can attribute rather than adopt. */
 const cutTree = async ({
 	cwd,
 	branch,
@@ -119,21 +101,10 @@ const cutTree = async ({
 };
 
 /**
- * The worktree this run is built in, created if it is not already there.
- *
- * There is deliberately no `git fetch` here: the drain fetches once before it
- * starts, an isolated implementation run fetches before it calls this, and the
- * queue's serialized creation chain is what keeps concurrent tickets from
- * racing git in the main checkout. The start point is composed by the caller
- * for the same reason — a planning session pins its tree to the launching
- * checkout's commit rather than to the remote default.
- *
- * A branch that already exists with no worktree is adopted as it stands rather
- * than refused — a pre-made ticket branch is exactly what a branch-per-ticket
- * workflow produces, and a stale base is caught by the ship step's
- * rebase-plus-gates before it can merge.
- *
- * @returns the worktree's absolute path, or the step that refused
+ * No `git fetch` here: every caller fetches first, and the queue's serialized creation chain keeps
+ * concurrent tickets from racing git in the main checkout. An existing branch with no worktree is
+ * adopted rather than refused, because branch-per-ticket workflows pre-make it, and the ship step
+ * catches a stale base.
  */
 export const createWorktree = async ({ cwd, branch, startPoint, setup, owner, reuseExisting, onProgress }: Params): Promise<string | WorktreeFailure> => {
 	const worktreePath = await resolveWorktreePath({ cwd, branch });

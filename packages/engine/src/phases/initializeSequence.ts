@@ -27,7 +27,6 @@ interface Params {
 	willShip?: boolean;
 }
 
-/** The phase file names the overview's table names, refusing an empty table and a file listed twice. */
 const getPhaseFiles = async ({ cwd, overview }: { cwd: string; overview: string }) => {
 	// The shared resolver, not a bare join: a plan folder lives in the primary
 	// checkout whichever checkout the run works in, so a plans-directory path
@@ -62,9 +61,8 @@ const assertPhaseFilesExist = async ({ cwd, overview, phases }: { cwd: string; o
 
 	for (const file of phases) {
 		const phasePath = join(dirname(overview), file);
-		// Resolved the same way the overview beside it is: a phase file sits in
-		// that same plan folder, so joining it to the run's checkout would report
-		// every phase of a phased plan as missing.
+		// A phase file sits in the overview's plan folder, so joining it to the
+		// run's checkout would report every phase as missing.
 		const present = await access(await resolveRecordedPlanPath({ cwd, path: phasePath })).then(
 			() => true,
 			() => false,
@@ -80,19 +78,7 @@ const assertPhaseFilesExist = async ({ cwd, overview, phases }: { cwd: string; o
 	}
 };
 
-/**
- * Resolve a phased run's manifest — resume validation, or fresh-start creation
- * with one step record per phase in the overview's written order.
- *
- * Every validation failure throws before any state exists: the CLI prints the
- * message and exits, and a rejected fresh start leaves no half-born run behind.
- *
- * @param overviewPath - overview path for a fresh sequence, cwd-relative or absolute
- * @param startPhase - 1-based phase to start from; earlier phases are recorded as passed outside the sequence
- * @param existing - resume: the coordinator manifest to continue
- * @throws {Error} When the overview is missing, its Phases table is empty or repeats a file, a phase file
- * is missing, the starting phase is out of range, or an unfinished sequence for this plan already exists.
- */
+/** Every validation failure throws before any state exists, so a rejected fresh start leaves no half-born run behind. */
 export const initializeSequence = async ({
 	cwd,
 	driver,
@@ -119,8 +105,6 @@ export const initializeSequence = async ({
 		throw new Error('a fresh phased run needs an overview path');
 	}
 
-	// The relative form up front, not only in the record: the phase-file checks
-	// and the unfinished-sequence guard below all read it.
 	const overview = toRepoRelativePath({ cwd, path: overviewPath });
 	const phases = await getPhaseFiles({ cwd, overview });
 	const firstPhase = startPhase ?? 1;

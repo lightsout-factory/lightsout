@@ -5,10 +5,8 @@ import { Button } from '#src/appUI/buttons/Button.tsx';
 import { Card } from '#src/appUI/panels/Card.tsx';
 import { formatCount } from '#src/common/formatting/formatCount.ts';
 
-/** A command that ran and came back non-zero — the only rows worth reading first. */
 const hasFailed = ({ gate }: { gate: GateEvidence }) => gate.exitCode !== undefined && gate.exitCode !== 0;
 
-/** One `commands.jsonl` line. A failing row opens to its captured output; a passing one has none to show. */
 const GateRow = ({ gate, showStep = false }: { gate: GateEvidence; showStep?: boolean }) => (
 	<details className="rounded-md border border-border px-3 py-2 text-xs open:bg-muted">
 		<summary className="flex cursor-pointer flex-wrap items-center gap-x-2 gap-y-1">
@@ -32,16 +30,10 @@ const GateRow = ({ gate, showStep = false }: { gate: GateEvidence; showStep?: bo
 interface Props {
 	gates: GateEvidence[];
 	totals: RunView['gateTotals'];
-	/** Name the pipeline step each command ran under — what the gates tab adds over the same rows elsewhere. */
 	showStep?: boolean;
 }
 
-/**
- * Every gate command the run ran, failures first and in full.
- *
- * Passing rows start hidden on purpose: a green run has dozens of them, and
- * left visible they bury the one command a reader opened this page for.
- */
+/** Passing rows start hidden: a green run has dozens, and they bury the failing command a reader came for. */
 export const GateEvidencePanel = ({ gates, totals, showStep = false }: Props) => {
 	const [showPassing, setShowPassing] = useState(false);
 	const failed = gates.filter((gate) => hasFailed({ gate }));

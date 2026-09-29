@@ -13,7 +13,6 @@ interface Params {
 	runId: string;
 	/** The ticket body, verbatim — written beside the run as the document it was built from. */
 	ticketBody: string;
-	/** The ticket's human reference, for the run header. */
 	ticketRef: string;
 	/** Recorded on the manifest as the harness name. */
 	driverName: string;
@@ -22,7 +21,6 @@ interface Params {
 	willShip?: boolean;
 }
 
-/** The run this ticket is built in, with the ticket body written beside it as the document the run was built from. */
 export const createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, config, willShip }: Params): Promise<RunManifest> => {
 	// The directory has to be known before the run is created: the manifest's
 	// `plan` field points at a `ticket.md` inside it. A direct run belongs to no

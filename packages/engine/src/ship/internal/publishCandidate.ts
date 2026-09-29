@@ -10,7 +10,6 @@ interface Params {
 	candidate: string;
 }
 
-/** What the remote holds for the branch right now, or undefined when it could not be read at all. */
 const readRemoteTip = async ({ branch, cwd }: { branch: string; cwd: string }) => {
 	const remoteReadTimeoutMs = 60_000;
 	const listed = await runGit({ command: `git ls-remote --heads origin ${quoteGitArgument({ argument: branch })}`, cwd, timeoutMs: remoteReadTimeoutMs });
@@ -19,15 +18,9 @@ const readRemoteTip = async ({ branch, cwd }: { branch: string; cwd: string }) =
 };
 
 /**
- * Push the verified candidate, and read the remote back when git said no.
- *
- * A push whose command failed may still have published — a connection dropped
- * after the pack was accepted looks exactly like one that was not — so the
- * remote's own ref is what answers. Nothing here force-pushes, and nothing here
- * retries an ambiguous outcome: an exact match with the candidate is the only
- * reading that counts as published.
- *
- * @returns undefined once the candidate is on the remote, else the push's own failure
+ * A push whose command failed may still have published (a connection dropped after the pack was
+ * accepted), so the remote's own ref answers. Only an exact match with the candidate counts;
+ * nothing force-pushes or retries an ambiguous outcome.
  */
 export const publishCandidate = async ({ branch, cwd, candidate }: Params): Promise<ShipStepFailure | undefined> => {
 	const failure = await pushBranch({ branch, cwd });

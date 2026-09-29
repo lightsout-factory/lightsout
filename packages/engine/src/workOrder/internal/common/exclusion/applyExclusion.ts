@@ -6,17 +6,15 @@ import { recordShipRequestWithdrawal } from '#src/workOrder/internal/common/reco
 
 interface Params {
 	record: WorkOrderState;
-	/** The plan the exclusion is written onto. */
 	target: WorkOrderPlan;
-	/** Why this plan is out of the ticket's work — the record's only account of the decision. */
+	/** The record's only account of the decision. */
 	reason: string;
 	implementationRemoved: boolean;
-	/** The commit the branch verification passed on, set only for a plan whose implementation started. */
+	/** Set only for a plan whose implementation started. */
 	verifiedCommit: string | undefined;
 	at: string;
 }
 
-/** The exclusion written onto the plan, and the ship request it takes down with it. */
 export const applyExclusion = ({
 	record,
 	target,

@@ -4,17 +4,10 @@ import { commandsQueryOptions } from '#src/features/commands/queries/commandsQue
 import { CommandManual } from '#src/features/commands/screens/CommandDetail/internal/components/CommandManual.tsx';
 
 interface Props {
-	/** The route param — a catalog id such as `implement` or `standards-check`. */
 	commandId: string;
 }
 
-/**
- * One command's manual — a public page, the one a reader lands on from a link
- * before they have installed anything, so it shows nothing of any repo.
- *
- * An id the catalog does not carry renders nothing: the route answers that with
- * its own not-found panel before this component is reached.
- */
+/** An unknown id renders nothing: the route answers it with its own not-found panel before this is reached. */
 export const CommandDetail = ({ commandId }: Props) => {
 	const { data: commands } = useSuspenseQuery(commandsQueryOptions());
 	const entry = commands.find((candidate) => candidate.id === commandId);

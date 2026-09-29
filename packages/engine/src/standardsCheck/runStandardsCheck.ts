@@ -23,23 +23,8 @@ interface Params {
 }
 
 /**
- * The structural standards-check suite: detection is code — agents never get
- * asked to "go find problems". The rules come from the standards packs the
- * repo loads, each rule bringing its own check, so what a repo enforces and
- * what a repo is told are the same document. Severity and settings come from
- * the resolved rule states, which is what makes `lightsout standards-check
- * --list` the truthful account of what a repo enforces.
- *
- * Framework channels are detected from the root package.json, exactly as the
- * prompt side detects them: a document out of play for this repo contributes no
- * prose, so it contributes no checks either.
- *
- * Read-only apart from .lightsout/standards-check.json (the typed evidence
- * file, the refactor pipeline's work-list). Baselining is explicit, never a
- * side effect: `writeBaseline` writes lightsout.standards-baseline.json at the
- * repo root — a COMMITTED debt ledger, like phpstan-baseline.neon or detekt's
- * baseline.xml — and later runs report only findings whose site key is not in
- * it (`all` overrides).
+ * Detection is code — agents are never asked to "go find problems". Baselining
+ * is explicit, never a side effect of a check run.
  *
  * @throws {Error} When a declared standards pack cannot be loaded, or a check misbehaves — a repo that asked for standards and did not get them must not run.
  */

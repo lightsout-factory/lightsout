@@ -5,11 +5,8 @@ interface Params {
 }
 
 /**
- * Dated snapshots gather in one place: `<repo>/.lightsout/standards-check`.
- *
- * The directory and the latest-snapshot file differ only by extension, which is
- * legal on every filesystem — and is the point: the dated copies sit under a
- * name that says what they are, rather than a second name nobody would guess.
+ * The dated-snapshots directory and the latest-snapshot file differ only by
+ * extension on purpose, so the dated copies sit under a name that says what they are.
  */
 export const getStandardsSnapshotsDir = ({ cwd }: Params): string => {
 	return join(cwd, '.lightsout', 'standards-check');

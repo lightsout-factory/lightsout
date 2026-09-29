@@ -9,18 +9,12 @@ import { readConfig } from '#src/common/config/readConfig.ts';
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
 
 /**
- * `lightsout brainstorm publish` at the terminal.
- *
- * It spawns no agent, so it resolves no driver. The config is read with
- * `readConfig` rather than the optional reader: publishing needs a
- * `ticket-tracker` block, so a repo with no config has nothing to resolve and is
- * refused by name — the shape `planPublishCommand` already sets.
- *
- * A plan publishes under its own plan id, so one plan's brainstorm can never
- * replace another's — which is why a `--name` that is not a plan address is
- * refused before the config is read rather than published under bare titles.
- * The ticket record is not synced here — `plan publish` is what says a plan's
- * generation changed.
+ * The config is read with `readConfig` rather than the optional reader:
+ * publishing needs a `ticket-tracker` block, so a repo with no config is refused
+ * by name. A plan publishes under its own plan id so one plan's brainstorm never
+ * replaces another's, which is why a `--name` that is not a plan address is
+ * refused before the config is read. The ticket record is not synced here:
+ * `plan publish` is what says a plan's generation changed.
  */
 export const brainstormPublishCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const name = await getRequiredFlag({ flags, name: 'name' });

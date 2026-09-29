@@ -1,19 +1,9 @@
 import { testReporterEnv } from '#src/common/constants/testReporterEnv.ts';
 
 /**
- * The engine's jest reporter, held as a CommonJS source string.
- *
- * A string constant rather than a file the bundler copies, for the reason the
- * prompts are strings: a source file the engine writes to disk at run time is
- * carried by the bundle as text, so no second esbuild loader is needed.
- *
- * One file per jest process is what makes this work in a monorepo: a repo whose
- * unit-test script fans out into one jest process per package has every one of
- * them inherit the same results directory, and a single shared output file would
- * be overwritten by whichever process finished last.
- *
- * Every write error is swallowed. A reporter that fails a suite it is only
- * observing would turn evidence collection into a new way for a run to die.
+ * A string rather than a file the bundler copies, so the bundle carries it as text with no
+ * second esbuild loader. It writes one file per jest process because a monorepo's
+ * per-package jest processes all inherit the same results directory.
  */
 export const jestReporterSource = `const { mkdirSync, writeFileSync } = require('node:fs');
 const { join } = require('node:path');

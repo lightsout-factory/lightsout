@@ -1,9 +1,7 @@
-// Re-exported from the shared package rather than declared here. These are the
-// shapes a standards pack implements, so they belong to something a pack
-// author can install — the engine is one consumer of them among others, not
-// their owner. Listing them here keeps the engine's published `./contracts`
-// entry complete for its consumers; engine code itself imports each one from
-// `@lightsout/standards-contracts`, the package that declares it.
+// Re-exported rather than declared here: these are the shapes a standards pack
+// implements, owned by `@lightsout/standards-contracts`. Listing them keeps the
+// engine's published `./contracts` entry complete; engine code imports each one
+// from that package directly.
 export type {
 	CloneSpan,
 	CloneSpansInput,

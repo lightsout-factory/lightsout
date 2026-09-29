@@ -14,14 +14,6 @@ interface Params {
 	worklist: RefactorWorklist;
 }
 
-/**
- * The run's closing whole-scope re-check, and the verdict it earns.
- *
- * Two different things can be blocking when the batches are done. A work-list
- * finding still standing is a decline — a human's call, reported and not
- * failed. A blocking finding that was never on the work-list is the run's own
- * doing, and certifying that as a pass would make the gate worthless.
- */
 export const closeRefactorRun = async ({ run, worklist }: Params): Promise<RefactorResult> => {
 	const finalCheck = await runStandardsCheck({ cwd: run.cwd, path: worklist.path === '.' ? undefined : worklist.path, all: worklist.all, persist: false });
 	// Finding severity only, mirroring the worklist filter — the burn-down

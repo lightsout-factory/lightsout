@@ -16,31 +16,19 @@ interface Params {
 }
 
 /**
- * The verification gate primitive. Runs a consumer-configured command and
- * returns its exit code — the one signal in the pipeline no model can
- * sweet-talk. Rejects only on spawn failure or timeout; a non-zero exit is a
- * result, not an exception (the engine owns what failure means). Both kinds of
- * rejection still reject — `onTimeout` is how a caller tells them apart.
+ * Rejects only on spawn failure or timeout; a non-zero exit is a result, not an
+ * exception. `onTimeout` is how a caller tells the two rejections apart.
  */
 export const runCommand = ({ command, cwd, timeoutMs, env, onSpawn, onTimeout }: Params): Promise<CommandResult> => {
-	// `env` is passed explicitly rather than left to ambient inheritance. In
-	// production this is identical — the child inherited exactly these values
-	// anyway — but it makes the environment a visible input, which is what lets
-	// a test stub a binary onto PATH. Some runners (Jest) hand test code a copy
-	// of process.env that real child processes do not inherit, so without this
-	// a PATH-stubbing test silently probes the machine instead of its fixture.
+	// `env` is passed explicitly because Jest hands test code a copy of
+	// process.env that real child processes do not inherit, so a PATH-stubbing
+	// test would otherwise probe the machine instead of its fixture.
 	// `detached` makes the shell its own process-group leader, so a gate that
-	// blows its deadline can be killed WITH the tree it started. Without it,
-	// killing `pnpm test` leaves the test runner underneath it running on a
-	// machine nobody is watching. Ctrl-C still reaches it — collectChildOutput
-	// relays the signal, which is the job the terminal's foreground group did
-	// before the child left it.
+	// blows its deadline can be killed with the tree it started.
 	const child = spawn(command, { cwd, shell: true, stdio: ['ignore', 'pipe', 'pipe'], env: env ? { ...process.env, ...env } : process.env, detached: true });
 
-	// Reported before the output collector is wired, because this is the only
-	// place the group id surfaces at all: nothing downstream of
-	// `collectChildOutput` ever sees it, and the shared gate reservation has to
-	// record the group while the command is still running.
+	// The only place the group id surfaces, and the shared gate reservation has
+	// to record it while the command is still running.
 	if (child.pid !== undefined) {
 		onSpawn?.({ pid: child.pid });
 	}

@@ -1,16 +1,9 @@
 import { z } from 'zod';
 
 /**
- * The optional `implement` block of `lightsout.config.json` — the settings the
- * `implement` command itself reads: whether a run builds in its own isolated
- * worktree, and the cleanup round budget.
- *
- * Not to be confused with `commands.implement`, which picks a harness for this
- * command and lives in a different block. This one is the command's own
- * behaviour.
- *
- * `.strict()`, like every block of the config: a typo in an opt-in setting has to fail loudly rather
- * than silently leave the default in force.
+ * The `implement` command's own behaviour; `commands.implement`, a different
+ * block, picks its harness. `.strict()` so a typo fails loudly rather than
+ * silently leaving the default in force.
  */
 export const ConfigImplement = z
 	.object({

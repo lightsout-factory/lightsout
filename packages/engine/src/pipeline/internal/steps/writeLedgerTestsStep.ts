@@ -34,16 +34,13 @@ interface Params {
 	deletePaths?: string[];
 }
 
-/** One writer's assignment: the test file it owns, and every ledger row naming it. */
 interface LedgerAssignment {
 	testFile: string;
 	rows: LedgerRow[];
 }
 
-/** What every ledger writer's brief needs, minus the per-assignment part. */
 type Context = Omit<Params, 'rows' | 'gitPrefix'>;
 
-/** What the two writer passes produced, and the stop they earned when they did not settle. */
 interface LedgerWriteOutcome {
 	reports: WorkReport[];
 	failure?: { status: RunStatus; error: string };
@@ -146,7 +143,6 @@ const settleWrittenTests = async ({ context, assignments }: { context: Context; 
 	return { reports, errors, parked };
 };
 
-/** Both writer passes as one outcome: the fan-out, then the repair of any file short a named test. */
 const writeLedgerTests = async ({ context, assignments }: { context: Context; assignments: LedgerAssignment[] }): Promise<LedgerWriteOutcome> => {
 	const written = await runLedgerWriters({ context, assignments });
 	// The repair pass is only owed to writers that all came back; a park or a failure below has already decided the step.
@@ -172,11 +168,9 @@ const writeLedgerTests = async ({ context, assignments }: { context: Context; as
 };
 
 /**
- * The write-ledger-tests fan-out: one writer per ledger test file, then the
- * approval. The tests stating the plan's acceptance criteria are written before
- * the executor starts, and what this writer produced is approved without review
- * — it is the trusted seat. Every later change to a test-side file is judged by
- * the test-change reviewer at the next verification checkpoint.
+ * What this writer produced is approved without review because it is the
+ * trusted seat; every later change to a test-side file is judged by the
+ * test-change reviewer at the next verification checkpoint.
  */
 export const writeLedgerTestsStep = ({
 	run,

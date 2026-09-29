@@ -1,14 +1,10 @@
 const { join } = require('node:path');
 const createJestConfig = require('../../tooling/jest/createJestConfig.cjs');
 
-// The web app's suite: jsdom, because most of what it owns is a React
-// component, and Testing Library's matchers on top of the shared setup.
-//
-// No `moduleNameMapper` for `#src`. Four packages in this workspace spell their
+// No `moduleNameMapper` for `#src`: several workspace packages spell their
 // private alias the same way, and a mapper is project-global — it would rewrite
-// the engine's own `#src` imports onto this package's src/ the moment a test
-// loaded engine source. Jest 30 resolves package `imports` from the manifest
-// owning the importing file, which is the only answer that stays correct.
+// the engine's own `#src` imports onto this package's src/. Jest resolves
+// package `imports` from the manifest owning the importing file instead.
 module.exports = createJestConfig({
 	rootDir: __dirname,
 	testEnvironment: 'jsdom',
@@ -17,52 +13,37 @@ module.exports = createJestConfig({
 	// ships a browser ESM entry) and breaks the CommonJS loader ts-jest compiles
 	// for. These are the conditions this code actually runs under on a server.
 	testEnvironmentOptions: { customExportConditions: ['require', 'node'] },
-	// `tests/` is in here alongside `src/`: a suite that polices the source tree
-	// as text names no subject beside it, so it lives in the package's own
-	// tests/ directory rather than pretending to be a file's unit test.
+	// `tests/` holds suites that police the source tree as text and so have no
+	// subject file to sit beside.
 	testMatch: ['<rootDir>/src/**/*.unit.test.ts', '<rootDir>/src/**/*.unit.test.tsx', '<rootDir>/tests/**/*.unit.test.ts', '<rootDir>/tests/**/*.unit.test.tsx'],
 	// Re-declares the key the factory sets rather than adding to it: the factory
 	// spreads the caller's keys last, so a repeated key replaces instead of
 	// merging, and the shared setup file has to be named again to survive.
 	setupFilesAfterEnv: [join(__dirname, '..', '..', 'tooling', 'jest', 'setupTestEnvironment.ts'), join(__dirname, 'tests', 'config', 'jest.setup.ts')],
-	// Measure EVERY source file this app writes, not just the ones a test
-	// happens to import. A file left out of the report is
-	// indistinguishable from a file no test ever loaded — the entries and the
-	// route modules each have a test reaching them, and the report is where that
-	// is visible. `src/markdownAsText.d.ts` is in here too: a declaration
-	// file compiles to nothing, so it lands at zero statements rather than
-	// going missing.
+	// Every source file, not just the ones a test imports: a file left out of
+	// the report is indistinguishable from one no test ever loaded.
 	//
-	// The one exception is `src/common/components/ui/` — shadcn/ui components,
-	// written by their CLI rather than by this app. They are listed under
-	// `vendored` in lightsout.config.json, which stops the engine writing tests
-	// for them; measuring them here would then hold the threshold against code
-	// nothing is allowed to cover. Components this app authors live in
-	// `src/appUI/` and are measured like everything else.
+	// Except `src/common/components/ui/` — shadcn/ui components written by their
+	// CLI. They are `vendored` in lightsout.config.json, so the engine writes no
+	// tests for them, and measuring them would hold the threshold against code
+	// nothing is allowed to cover.
 	collectCoverageFrom: ['src/**/*.ts', 'src/**/*.tsx', '!src/**/*.unit.test.ts', '!src/**/*.unit.test.tsx', '!src/common/components/ui/**'],
 	coverageThreshold: { global: { statements: 95, branches: 95, functions: 95, lines: 95 } },
-	// The only mappers this package carries, and never for `#src`.
 	// `@tanstack/react-start` and its subpaths publish an `import` condition and
 	// nothing else, so Jest's CommonJS resolver cannot load them however it is
 	// configured.
 	moduleNameMapper: {
-		// An image asked for as a URL. `homeMeta` imports the sprawl GIF and the fix
-		// section imports six workflow SVGs, all with `?url` — which asks the
-		// bundler for the path each will be served from rather than for a module.
-		// Jest resolves requires against the filesystem and would hand a binary to
-		// the JavaScript parser, so the stylesheet's stand-in answers these too.
+		// An image imported with `?url` asks the bundler for its served path, but
+		// Jest would hand the binary to the JavaScript parser.
 		//
 		// Ahead of `#assets` deliberately: Jest stops at the first pattern that
 		// matches, and that one would rewrite the specifier to a real `.gif` on
-		// disk before this rule was ever consulted.
+		// disk first.
 		'\\.(gif|svg)(\\?.*)?$': join(__dirname, 'tests', 'stubs', 'styleUrl.ts'),
-		// The repo-root assets/ folder, mirroring the `paths` entry in
-		// tsconfig.json and the `resolve.alias` in vite.config.ts. It is spelled
+		// Mirrors tsconfig.json `paths` and vite.config.ts `resolve.alias`. Spelled
 		// three times rather than once in package.json `imports` because a package
-		// import may not escape the package — Node, TypeScript and esbuild all
-		// reject a target that climbs out of it.
+		// import may not escape the package.
 		'^#assets/(.*)$': join(__dirname, '..', '..', 'assets', '$1'),
-		// The repo-root docs/ folder, whose markdown the /docs pages render.
 		// Spelled three times for the same reason `#assets` is.
 		'^#docs/(.*)$': join(__dirname, '..', '..', 'docs', '$1'),
 		'^@tanstack/react-start$': join(__dirname, 'tests', 'stubs', 'tanstackReactStart.ts'),
@@ -73,11 +54,8 @@ module.exports = createJestConfig({
 		// reference, so nothing matching that specifier exists on disk and the root
 		// route cannot be required without a stand-in.
 		'\\.css(\\?.*)?$': join(__dirname, 'tests', 'stubs', 'styleUrl.ts'),
-		// `react-markdown` and `remark-gfm` are ESM-only, as is everything they
-		// depend on, and the shared transform compiles only `.ts`, `.tsx` and
-		// `.md`. Parsing is the library's contract; what this app owns is the
-		// `components` map, and the stubs call through it. Real rendering is proved
-		// by `nx build web-app` and the dev run.
+		// ESM-only, and the shared transform compiles only `.ts`, `.tsx` and `.md`.
+		// What this app owns is the `components` map, which the stubs call through.
 		'^react-markdown$': join(__dirname, 'tests', 'stubs', 'reactMarkdown.tsx'),
 		'^remark-gfm$': join(__dirname, 'tests', 'stubs', 'remarkGfm.ts'),
 	},

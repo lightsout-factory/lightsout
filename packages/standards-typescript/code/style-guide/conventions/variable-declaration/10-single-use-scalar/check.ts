@@ -2,7 +2,6 @@ import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from 
 import type ts from 'typescript';
 import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
 
-/** Whether the token combines numbers arithmetically — the only joins a folded number may use. */
 const isArithmeticOperator = ({ kind, compiler }: { kind: ts.SyntaxKind; compiler: typeof ts }): boolean =>
 	kind === compiler.SyntaxKind.AsteriskToken ||
 	kind === compiler.SyntaxKind.PlusToken ||
@@ -25,9 +24,8 @@ const isFoldedNumber = ({ node, compiler }: { node: ts.Expression; compiler: typ
 		isFoldedNumber({ node: node.right, compiler }));
 
 /**
- * A literal with no moving parts — the "scalar" the rule names. A lookup map, a
- * structured config object and anything genuinely computed are the carve-outs
- * the rule states, and they are all excluded by simply not being one of these.
+ * A lookup map, a structured config object and anything computed are the
+ * rule's carve-outs, excluded by not being one of these.
  */
 const isScalarLiteral = ({ node, compiler }: { node: ts.Expression; compiler: typeof ts }): boolean =>
 	compiler.isStringLiteral(node) ||
@@ -37,13 +35,9 @@ const isScalarLiteral = ({ node, compiler }: { node: ts.Expression; compiler: ty
 	isFoldedNumber({ node, compiler });
 
 /**
- * The scalar constant names one top-level statement declares, or none when it
- * declares something else.
- *
  * Exported constants are left out: their readers are in other files, so this
- * file cannot count them, and a value published on purpose is a different
- * question from one hoisted out of the single function that reads it. `let` is
- * left out for the same kind of reason — it is state, not a constant.
+ * file cannot count them. `let` is left out because it is state, not a
+ * constant.
  */
 const getStatementScalars = ({ statement, compiler }: { statement: ts.Statement; compiler: typeof ts }) => {
 	const names: string[] = [];
@@ -64,7 +58,6 @@ const getStatementScalars = ({ statement, compiler }: { statement: ts.Statement;
 	return names;
 };
 
-/** Every scalar constant the file keeps at module scope, in declaration order. */
 const getModuleScalars = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) =>
 	sourceFile.statements.flatMap((statement) => getStatementScalars({ statement, compiler }));
 

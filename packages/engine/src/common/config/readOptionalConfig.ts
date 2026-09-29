@@ -8,21 +8,8 @@ interface Params {
 }
 
 /**
- * The config when the repo has one, `undefined` when it has none — and a throw
- * when it has one that does not parse.
- *
- * That third case is the point. Commands that can run without a config used to
- * spell this `readConfig(...).catch(() => undefined)`, which cannot tell "this
- * repo has no config" from "this repo's config is broken" and answered both
- * with the defaults. Measured on this repo: one illegal `package-gates` key
- * that `doctor` refused by name took `standards-check` from 790 source files to
- * 909 — the `generated` list was gone, so the web app's generated route tree
- * was read as source — and from 3 blocking findings to 10, with nothing in the
- * output saying the config had been ignored. It read as a code regression and
- * took a bisect of the config to find.
- *
- * A repo with no config gets defaults nobody has to choose. A repo with a
- * broken one gets told.
+ * Throws on a config that does not parse: silently falling back to defaults
+ * for a broken config changes what a command does with nothing saying why.
  */
 export const readOptionalConfig = async ({ cwd }: Params): Promise<LightsoutConfig | undefined> => {
 	const configPath = resolveConfigPath({ cwd });

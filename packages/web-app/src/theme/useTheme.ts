@@ -3,8 +3,6 @@ import type { ThemeContextValue } from '#src/theme/internal/common/types/ThemeCo
 import { ThemeContext } from '#src/theme/internal/ThemeContext.ts';
 
 /**
- * The theme in force, and the way to change it.
- *
  * @throws {Error} When called outside a `ThemeProvider`.
  */
 export const useTheme = (): ThemeContextValue => {

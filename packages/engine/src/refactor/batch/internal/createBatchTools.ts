@@ -19,33 +19,22 @@ interface Params {
 	driver: Driver;
 	config: LightsoutConfig;
 	batch: RefactorBatch;
-	/** The run's standards packs — the judgment rules the output review reads. */
 	packs: LoadedStandardsPack[];
-	/** Active framework channels, resolved once by the pipeline. */
 	channels: string[];
 	/** false skips the review of what the batch wrote — code-checks-only mode. */
 	agentReview: boolean;
 	/** Check scope of the run's worklist, threaded into the per-batch re-check. */
 	checkPath?: string;
-	/** Include baselined findings in re-checks — must match the worklist's mode. */
+	/** Must match the worklist's mode. */
 	checkAll: boolean;
 	agentTimeoutMs: number;
-	/** Files earlier steps already attributed — excluded from this batch's git-truth merge. */
+	/** Excluded from this batch's git-truth merge. */
 	attributedFiles: string[];
 	onProgress: (message: string) => void;
 	recordUsage: (params: { step: string; usage?: AgentUsage }) => Promise<void>;
 }
 
-/**
- * Everything a batch's passes do to the world, bound to the one batch they act
- * on: spending an invocation, running the gates, asking the tree which of the
- * batch's sites are still live, and reporting an outcome.
- *
- * They are created together rather than passed around as loose arguments
- * because they share mutable batch-level state — the invocation count, the
- * rationale the passes accumulate, the files the agents claimed — and two
- * copies of that state could disagree about what the batch did.
- */
+/** Created together because they share mutable batch-level state that two copies could disagree about. */
 export const createBatchTools = ({
 	cwd,
 	runId,

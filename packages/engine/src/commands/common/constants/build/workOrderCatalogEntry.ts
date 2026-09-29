@@ -4,15 +4,8 @@ import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 
 /**
- * The `--name` flag, on each subcommand shape that acts on a record already
- * written.
- *
- * One row per shape rather than a single unshaped row, because the `new` line
- * must not advertise a `--name` for the one subcommand that writes the name
- * itself; `readCommandFlags` folds the rows back into one accepted flag, so
- * what the shapes change is only which usage lines print it. One factory rather
- * than seven copies, so the sentence naming the folder can never come to read
- * two ways.
+ * One row per shape so the `new` usage line does not advertise `--name`;
+ * `readCommandFlags` folds the rows back into one accepted flag.
  */
 const workOrderNameFlag = ({ shape }: { shape: string }): CommandFlag => ({
 	name: 'name',
@@ -22,7 +15,6 @@ const workOrderNameFlag = ({ shape }: { shape: string }): CommandFlag => ({
 	required: true,
 });
 
-/** `lightsout work-order` — eight subcommands under one command word, so it carries eight invocations rather than one. */
 export const workOrderCatalogEntry: CommandCatalogEntry = {
 	id: 'work-order',
 	cli: 'lightsout work-order',

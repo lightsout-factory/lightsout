@@ -5,14 +5,9 @@ import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 
 /**
- * Run a phased sequence; every throw on the way in is a clean one-line exit.
- *
- * The coordinator's own initialization throws (a missing phase file, an
- * unfinished sequence for this overview), and a phase can collide with a live
- * repo lock — neither is worth a stack trace, and both leave the sequence
- * exactly resumable. The parameter object shape is imposed by runPhasesPipeline
- * (functions.md's externally-imposed-signature exemption), so it is forwarded
- * verbatim rather than re-declared as a `Params` interface.
+ * Every throw on the way in leaves the sequence exactly resumable, so none is
+ * worth a stack trace. The parameter shape is imposed by runPhasesPipeline
+ * (functions.md's externally-imposed-signature exemption).
  */
 export const runPhasesOrFailFast = async (params: Parameters<typeof runPhasesPipeline>[0]): Promise<PipelineResult> => {
 	try {

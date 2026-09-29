@@ -18,14 +18,10 @@ interface Params {
 }
 
 /**
- * The tickets a later wave may take: the tracker re-read from scratch, so a
- * blocker that finished during the wave just gone is now visible as finished.
- *
- * Parked worktrees are deliberately not re-scanned — that happens once per
- * invocation, before the first wave. The holds are not re-reconciled either: a
- * hold taken during this drain belongs to a ticket already attempted and never
- * re-offered, and re-reading would put a tracker round trip inside the drain's
- * idle-scan loop.
+ * Parked worktrees are deliberately not re-scanned; that happens once, before the
+ * first wave. Holds are not re-reconciled either: a hold taken during this drain
+ * belongs to a ticket never re-offered, and re-reading would put a tracker round
+ * trip inside the idle-scan loop.
  */
 export const listNextWave = async ({ settings, trackerSettings, attempted, holds, onProgress }: Params): Promise<WaveSelection | QueueFailure> => {
 	const eligible = await listEligibleTickets({ settings, trackerSettings });

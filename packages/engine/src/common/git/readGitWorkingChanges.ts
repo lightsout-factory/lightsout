@@ -8,11 +8,7 @@ interface Params {
 	cwd: string;
 }
 
-/**
- * A porcelain status code read into a kind. The `D` is read first so a file
- * added and then deleted within the run (`AD`) is never taken for a file on
- * disk.
- */
+/** The `D` is read first so a file added and then deleted within the run (`AD`) is never taken for a file on disk. */
 const kindOf = ({ code }: { code: string }) => {
 	let kind: GitChangeKind = GitChangeKind.Modified;
 
@@ -26,16 +22,8 @@ const kindOf = ({ code }: { code: string }) => {
 };
 
 /**
- * Every path currently changed under `cwd` (paths relative to `cwd`), with
- * whether it was added, modified or removed relative to `HEAD`, read from
- * `git status`.
- *
- * A sibling of `readGitChangedFiles`, which answers a different question — the
- * files that now exist — and so collapses a move to its destination. Here a move
- * is read with `--no-renames` as the removal of its old path and the addition of
- * its new one, because a caller comparing each change against `HEAD` needs both
- * sides of it. Returns undefined when `cwd` is not inside a git worktree or the
- * command fails. Run state under `.lightsout/` is never reported.
+ * Unlike `readGitChangedFiles`, a move is read with `--no-renames` as a removal
+ * and an addition, because a caller comparing each change against `HEAD` needs both sides.
  */
 export const readGitWorkingChanges = async ({ cwd }: Params): Promise<GitWorkingChange[] | undefined> => {
 	const prefix = await readGitPrefix({ cwd });

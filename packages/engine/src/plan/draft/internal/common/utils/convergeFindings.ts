@@ -25,19 +25,8 @@ interface Params {
 }
 
 /**
- * The bargain both plan-repair loops strike: check, spawn one correcting agent
- * against the blocking findings, re-check, and repeat until clean or until
- * `maxPlanRepairAttempts` is spent — then hand the survivors back to the
- * session. Only BLOCKING findings drive the loop and reach the agent: an
- * advisory is not a defect and must never consume one of those attempts. A
- * `complete` result carries the full surviving set, advisories included, so the
- * caller can print them.
- *
- * Spelled once because the structural repair and the phase-breakdown reshape
- * differ only in which check they re-read with and which agent they spawn —
- * everything load-bearing about the loop is the same bargain, and two copies of
- * it are two chances for one to quietly stop honouring a decline or an
- * unchanged finding set.
+ * Only blocking findings drive the loop and reach the agent: an advisory is not
+ * a defect and must never consume a repair attempt.
  */
 export const convergeFindings = async ({ name, verb, findingNoun, check, unreadableError, runAttempt, progress }: Params): Promise<PlanRepairResult> => {
 	const unreadable = { status: PlanRunStatus.Failed, error: unreadableError } as const;
@@ -62,12 +51,8 @@ export const convergeFindings = async ({ name, verb, findingNoun, check, unreada
 				: { status: PlanRunStatus.Failed, error: outcome.failure };
 		}
 
-		// The agent found a finding unresolvable from its inputs — narrate the
-		// declines, then fall through to the re-check below and stop: it may have
-		// fixed other findings before declining, so the surviving set must come
-		// from the check, never from the stale pre-attempt list. The survivors
-		// return to the session, which fixes them via conductor Edit (the
-		// Grade-step pattern).
+		// A declining agent may have fixed other findings first, so the surviving
+		// set must come from the re-check below, never from the pre-attempt list.
 		const declined = outcome.report.status === PlanFixStatus.Error;
 
 		if (declined) {
@@ -89,10 +74,7 @@ export const convergeFindings = async ({ name, verb, findingNoun, check, unreada
 		}
 
 		// Every round gets identical inputs, so a finding set that came back
-		// unchanged predicts an unchanged retry — spend the remaining attempts on
-		// nothing and the survivors still land in the session's lap. They return
-		// as structural-issues either way, and grade re-runs the same checks, so
-		// nothing is hidden by stopping early.
+		// unchanged predicts an unchanged retry.
 		if (getBlockingFindings({ findings }).length > 0 && getFindingSetKey({ findings }) === beforeKey) {
 			progress(`plan draft ${name}: ${verb} ${attempt} made no progress — stopping`);
 

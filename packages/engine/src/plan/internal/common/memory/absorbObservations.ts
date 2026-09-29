@@ -8,22 +8,16 @@ import { dedupeObservations } from '#src/plan/internal/common/observations/dedup
 
 interface Params {
 	record: GradeFindingRecord;
-	/** The observations joining the record. */
 	observations: GapObservation[];
-	/** The pass timestamp, written into a `reopened` entry when the join reopens the record. */
 	at: string;
 }
 
 /**
- * A record holding every observation it held plus the ones joining it,
- * de-duplicated — and reopened when it was resolved and thereby gains a plan
- * file its resolutions hold no confirmed citation for.
- *
- * A closure is a claim about specific locations; a new location is a claim
- * nobody has verified, and inheriting the closure would turn an unproven repair
- * into an approval. What the record held is read through `recordObservations`,
- * so a single-observation record keeps its own location rather than losing it
- * to the first observation that joins.
+ * A resolved record that gains a plan file its resolutions hold no citation for
+ * is reopened: a closure is a claim about specific locations, and inheriting it
+ * would turn an unproven repair into an approval. What the record held is read
+ * through `recordObservations`, so a single-observation record keeps its own
+ * location.
  */
 export const absorbObservations = ({ record, observations, at }: Params): GradeFindingRecord => {
 	const merged = { ...record, observations: dedupeObservations({ observations: [...recordObservations({ record }), ...observations] }) };

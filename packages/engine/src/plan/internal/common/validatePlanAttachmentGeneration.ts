@@ -6,15 +6,10 @@ interface GenerationFile {
 	text: string;
 }
 
-/** The phase deliverables in a generation; durable working records are deliberately excluded. */
 const phaseNamesOf = ({ names }: { names: string[] }) =>
 	names.filter((name) => name !== 'plan.md' && name !== 'overview.md' && durablePlanFileNames.deliverable.test(name));
 
-/**
- * The shared publish/restore runnable-generation invariant. Publish applies it
- * to the complete disk snapshot before mutation; restore applies it only after
- * the manifest-selected bytes have passed their hashes.
- */
+/** Publish applies this to the disk snapshot before mutation; restore applies it only after the selected bytes have passed their hashes. */
 export const validatePlanAttachmentGeneration = ({ files }: { files: GenerationFile[] }): { error: string } | undefined => {
 	const names = files.map(({ name }) => name);
 	const hasSingle = names.includes('plan.md');

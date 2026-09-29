@@ -4,20 +4,17 @@ import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { planWorkspacePath } from '#src/plan/planWorkspacePath.ts';
 import type { PlanWorkspaceFiles } from '#src/views/internal/common/types/PlanWorkspaceFiles.ts';
 
-/** The one subfolder the walk descends into: where a phased plan's finished phases are archived. */
 const archiveFolder = 'implemented';
 
-/** A drafted phase file, and the number that orders it. */
 const phasePattern = /^phase(\d+)-.+\.md$/;
 
-/** One entry, stat'd — absent when it disappeared between the folder listing and the stat, which a viewer treats as never having been there. */
+/** Absent when the entry disappeared between the folder listing and the stat. */
 const statEntry = async ({ dir, name, workspacePath }: { dir: string; name: string; workspacePath: string }) => {
 	const stats = await stat(join(dir, name)).catch(() => undefined);
 
 	return stats === undefined ? undefined : { name, path: `${workspacePath}/${name}`, bytes: stats.size, updatedAt: stats.mtime.toISOString() };
 };
 
-/** The archived phase files, workspace-relative — read one level deep and no further. */
 const readArchive = async ({ dir, workspacePath }: { dir: string; workspacePath: string }) => {
 	const names: string[] = await readdir(join(dir, archiveFolder)).catch(() => []);
 	const archived = await Promise.all(
@@ -33,17 +30,10 @@ interface Params {
 }
 
 /**
- * Every file in a plan workspace, stat'd and bucketed by role. Nothing is
- * parsed.
- *
- * The near-namesake `readPlanWorkspaceFile` reads and validates one named file
- * strictly, for the pipeline. This one opens nothing: it is what a list page
- * needs to draw a row without paying for the workspace's contents.
- *
- * The walk reads the top level plus exactly one known subfolder. A directory
- * named `implemented/` is read one level deep into `implementedFiles`, counted
- * in neither `phaseFiles` nor `updatedAt` — an archived phase must not make a
- * finished plan look active. Every other directory is skipped entirely.
+ * Opens nothing, so a list page draws a row without paying for the workspace's
+ * contents. `implemented/` is read one level deep and counted in neither
+ * `phaseFiles` nor `updatedAt`: an archived phase must not make a finished plan
+ * look active. Every other directory is skipped.
  */
 export const readPlanWorkspaceFiles = async ({ cwd, name }: Params): Promise<PlanWorkspaceFiles> => {
 	const dir = await planWorkspaceDir({ cwd, name });

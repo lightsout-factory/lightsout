@@ -2,13 +2,10 @@ import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from 
 import type ts from 'typescript';
 import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
 
-/** PascalCase as the table spells it: an uppercase first letter and nothing but letters and digits after it. */
 const pascalCase = /^[A-Z][A-Za-z0-9]*$/;
 
-/** An underscore between two alphanumerics — snake_case or SCREAMING_SNAKE_CASE, which no row of the table permits. */
 const snakeCase = /[A-Za-z0-9]_[A-Za-z0-9]/;
 
-/** The three declarations the table pins to PascalCase, with the word a finding calls each one. */
 const getTypeDeclaration = ({ node, compiler }: { node: ts.Node; compiler: typeof ts }): { kind: string; name: string } | undefined => {
 	let found: { kind: string; name: string } | undefined;
 
@@ -27,7 +24,6 @@ const getTypeDeclaration = ({ node, compiler }: { node: ts.Node; compiler: typeo
 	return found;
 };
 
-/** A variable or function name, wherever in the file it is declared. */
 const getValueName = ({ node, compiler }: { node: ts.Node; compiler: typeof ts }) => {
 	const named = compiler.isVariableDeclaration(node) || compiler.isFunctionDeclaration(node) ? node.name : undefined;
 
@@ -35,14 +31,9 @@ const getValueName = ({ node, compiler }: { node: ts.Node; compiler: typeof ts }
 };
 
 /**
- * The names in one file the table rules out.
- *
- * Only the two unambiguous halves are judged. A class, interface or type alias
- * whose name does not start with a capital is wrong under every row, and an
- * underscore inside any name is wrong under all of them at once. The PascalCase
- * side of the value rows is deliberately left alone: a capitalized `const` is a
- * React component or a named constant as often as it is a mistake, and the
- * table alone cannot tell which.
+ * The PascalCase side of the value rows is deliberately left alone: a
+ * capitalized `const` is a React component or a named constant as often as it
+ * is a mistake, and the table alone cannot tell which.
  */
 const getCasingProblems = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {
 	const problems: string[] = [];

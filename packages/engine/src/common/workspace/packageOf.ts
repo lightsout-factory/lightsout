@@ -5,7 +5,6 @@ interface Params {
 	packagesDir: string;
 }
 
-/** The package directory a file belongs to (`<packagesDir>/<name>/…` → `<name>`), or undefined for root-group files. */
 export const packageOf = ({ file, packagesDir }: Params): string | undefined => {
 	const prefix = `${packagesDir}/`;
 

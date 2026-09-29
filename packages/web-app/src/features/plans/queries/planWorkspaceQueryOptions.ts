@@ -7,7 +7,7 @@ interface Params {
 	name: string;
 }
 
-/** One plan workspace, whole. Not polled, for the reason the list is not: nothing writes here but a planning command. */
+/** Not polled: a workspace changes only when someone runs a planning command. */
 export const planWorkspaceQueryOptions = ({ name }: Params) =>
 	queryOptions({
 		queryKey: [QueryKey.PlanWorkspace, name],

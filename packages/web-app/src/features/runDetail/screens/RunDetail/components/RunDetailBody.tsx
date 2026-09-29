@@ -16,13 +16,6 @@ interface Props {
 	onOpenPlan: (path: string) => void;
 }
 
-/**
- * One run's whole evidence: who the run was and where it stands, then six tabs
- * over the same `RunView` the engine assembled.
- *
- * Takes the view it is handed rather than reading a query, so the page keeps
- * the suspending read and the plan drawer, and this keeps only the evidence.
- */
 export const RunDetailBody = ({ view, onOpenPlan }: Props) => {
 	const [tab, setTab] = useState<string>(RunDetailTab.Overview);
 

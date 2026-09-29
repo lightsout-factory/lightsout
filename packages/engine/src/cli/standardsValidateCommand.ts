@@ -10,25 +10,11 @@ import { validateStandardsPack } from '#src/standardsCheck/validateStandardsPack
 import { readStandardsPack } from '#src/standardsPacks/readStandardsPack.ts';
 import { resolveDefaultStandardsPack } from '#src/standardsPacks/resolveDefaultStandardsPack.ts';
 
-/**
- * The pack named by `--pack`, or the bundled default when the flag is absent.
- * Async so that a default that cannot be located rejects like a pack that
- * cannot be read — one failure path for the caller to report.
- */
+// Async so a default that cannot be located rejects like a pack that cannot be
+// read: one failure path for the caller.
 const readRequestedPack = async ({ requested, cwd }: { requested?: string; cwd: string }) =>
-	// resolve() leaves an absolute --pack alone, so both forms the flag accepts
-	// land here.
 	readStandardsPack({ packPath: requested === undefined ? resolveDefaultStandardsPack() : resolve(cwd, requested) });
 
-/**
- * `lightsout standards-validate` — run every check in a standards pack against
- * its own fixtures.
- *
- * The authoring gate: a rule whose fail fixture goes unflagged is a check that
- * catches nothing, and one whose pass fixture is flagged is a check that cries
- * wolf. Neither is visible at load time, and both are exactly what someone
- * writing a rule needs told.
- */
 export const standardsValidateCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const requested = getStringFlag({ flags, name: 'pack' });
 	const pack = await readRequestedPack({ requested, cwd }).catch((error: unknown) => {

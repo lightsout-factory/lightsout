@@ -7,20 +7,14 @@ interface Params {
 }
 
 /**
- * Where one run keeps the deterministic findings from before its first agent
- * edit: `standards-baseline.json` in the run's own folder.
+ * In the run's own folder rather than the manifest, which is rewritten every
+ * step and must not carry thousands of findings, or the repo-level
+ * `.lightsout/standards-check.json`, which belongs to the user's standalone
+ * check.
  *
- * The run's own folder rather than the manifest, which is rewritten on every
- * step and must not carry thousands of findings — and rather than the
- * repo-level `.lightsout/standards-check.json`, which belongs to the user's own
- * standalone check and must never be clobbered by a run.
- *
- * Not the committed debt ledger, whose file name is nearly the same word. That
- * one is `lightsout.standards-baseline.json` at the repo root, holds site keys a
- * repository has accepted as debt, and is read by `applyStandardsBaseline`. This
- * one is a whole `StandardsSnapshot`, is gitignored, belongs to a single run,
- * and reads past that ledger on purpose — the two records mean opposite things:
- * debt already forgiven, versus the measurement that says which debt is new.
+ * Not the committed debt ledger `lightsout.standards-baseline.json`: that holds
+ * debt already forgiven, while this is the measurement that says which debt is
+ * new.
  */
 export const getRunStandardsBaselinePath = async ({ cwd, runId }: Params): Promise<string> => {
 	return join(await resolveRunDir({ cwd, runId }), 'standards-baseline.json');

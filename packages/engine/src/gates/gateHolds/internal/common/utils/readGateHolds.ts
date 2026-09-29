@@ -8,7 +8,6 @@ interface Params {
 	cwd: string;
 }
 
-/** One hold file, or undefined when it is missing, truncated or not a hold at all. */
 const readOneHold = async ({ path }: { path: string }) => {
 	const raw = await readFile(path, 'utf8').catch(() => undefined);
 
@@ -24,15 +23,9 @@ const readOneHold = async ({ path }: { path: string }) => {
 };
 
 /**
- * Every hold recorded in the shared folder, keyed by the lowercased reference
- * its file is named for.
- *
- * Mirrors `readRunLock` — read, zod-parse, and answer for the absent and the
- * corrupt case without throwing — with two deliberate differences. An absent
- * directory answers an empty map rather than undefined, so every caller has one
- * shape and none of them spells a "nothing here" case; and a file that will not
- * parse is skipped rather than failing the read, because one interrupted write
- * must not hide every other hold on the machine.
+ * An absent directory answers an empty map rather than undefined, so every
+ * caller has one shape. A file that will not parse is skipped rather than
+ * failing the read, because one interrupted write must not hide every other hold.
  */
 export const readGateHolds = async ({ cwd }: Params): Promise<GateHolds> => {
 	const { dir } = await getGateHoldPaths({ cwd });

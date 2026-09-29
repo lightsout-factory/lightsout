@@ -8,13 +8,9 @@ import { resolveJestConfigPath } from '#src/coverage/loadScopeJestConfig/interna
 
 const ScopeManifest = z.looseObject({ scripts: z.record(z.string(), z.string()).optional().catch(undefined) });
 
-// The command a scope's coverage gate ultimately runs. A gate command is
-// usually a workspace runner pointed at a script (`pnpm --filter x run
-// test:unit:coverage`), and it is that script's body — not the runner
-// invocation — that names the Jest config. `readPackageManifest` is not the
-// reader for this: it throws on a manifest with no `name`, which is right when
-// the engine needs a workspace filter and wrong here, where an unreadable
-// manifest simply means "nothing is known".
+// A script's body, not the runner invocation that names it, names the Jest
+// config. `readPackageManifest` is not used because it throws on a manifest with
+// no `name`, where here an unreadable manifest means "nothing is known".
 const resolveScopeCoverageScript = async ({ scopeRoot, command }: { scopeRoot: string; command: string }) => {
 	const scriptName = extractRunScriptName({ command });
 
@@ -43,8 +39,6 @@ const requireConfig = ({ configPath }: { configPath: string }) => {
 	}
 };
 
-// A package.json carries the configuration under its `jest` key; every other
-// config file exports the configuration object itself.
 const readJestKey = ({ loaded }: { loaded: unknown }) => (typeof loaded === 'object' && loaded !== null && 'jest' in loaded ? loaded.jest : undefined);
 
 // Jest permits an async config factory, which this loader deliberately does
@@ -59,15 +53,10 @@ interface Params {
 }
 
 /**
- * A coverage scope's Jest configuration, loaded but unparsed, or undefined when
- * the engine cannot read one — no config found, a config it cannot `require`
- * (TypeScript, ESM-only, a function or promise export), or a runner that is not
- * Jest.
- *
- * One loader on purpose: every view over a scope's configuration is built from
- * this read, so no two views can disagree about which config file a scope even
- * uses, nor about when the read degrades. Undefined is the honest answer, and
- * each view reads it as the behaviour that shipped before it existed.
+ * Undefined when no config can be `require`d (TypeScript, ESM-only, a function
+ * or promise export) or the runner is not Jest. Every view over a scope's
+ * configuration reads through this one loader, so no two views disagree about
+ * which config file a scope uses.
  */
 export const loadScopeJestConfig = async ({ scopeRoot, command }: Params): Promise<LoadedJestConfig | undefined> => {
 	const coverageScript = await resolveScopeCoverageScript({ scopeRoot, command });

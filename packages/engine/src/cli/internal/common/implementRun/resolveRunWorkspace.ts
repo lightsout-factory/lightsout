@@ -31,29 +31,21 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/** The tree a run works in — adopted or cut — before the branch and the isolation flag are added to it. */
 interface ResolvedTree {
 	path: string;
 	created: boolean;
 }
 
 /**
- * The tree already standing on this branch, taken over for the run — undefined
- * when the checkout holding the branch is anything else, and the refusal when a
- * run is still using it.
+ * Only a recorded tree at the branch's own path qualifies. For a run that
+ * belongs to no work order the record must name the `plan` owner, since a tree
+ * an implementation run owns is not a second run's. For a plan address an
+ * `implement` record qualifies too, because every plan of a ticket builds in
+ * the one tree; the run lock is what separates a finished run's tree from a
+ * live one.
  *
- * Only a tree at the branch's own path qualifies; a branch collision or an
- * unrecorded tree is never evidence. For a run that belongs to no work order the
- * record must name the `plan` owner: that tree is one plan's alone, and a tree an
- * implementation run owns is a run's, not a second run's. For a plan address an `implement` record
- * qualifies too, because every plan of a ticket builds on the one branch in the
- * one tree — what separates a finished run's tree from a live one is the run
- * lock, which is why an address is refused while one is held.
- *
- * The record is re-stamped to `implement` before the run begins, carrying its
- * start point forward, because that stamp is the whole licence the post-ship
- * cleanup reads. `worktree.setup` does not run again: whoever cut the tree paid
- * for it.
+ * The record is re-stamped to `implement` because that stamp is the licence the
+ * post-ship cleanup reads. `worktree.setup` does not run again.
  */
 const adoptPlanningTree = async ({
 	cwd,
@@ -88,12 +80,8 @@ const adoptPlanningTree = async ({
 };
 
 /**
- * The tree this run works in — cut here, or the one already standing on the
- * branch — or the step that refused.
- *
- * Nothing here falls back to the launching checkout: a run that asked for
- * isolation and did not get it stops, because a gate run against the tree the
- * user happened to be standing on judges code the run is not building.
+ * Nothing here falls back to the launching checkout: a gate run against the
+ * tree the user happened to be standing on judges code the run is not building.
  */
 const cutWorkspace = async ({
 	cwd,
@@ -110,8 +98,7 @@ const cutWorkspace = async ({
 }): Promise<ResolvedTree | WorktreeFailure> => {
 	// A later plan of a ticket must be built on the implementation its branch
 	// already carries, so the ticket branch is settled before anything is adopted
-	// or cut. A run that belongs to no work order keeps the launching checkout's
-	// start point and never asks.
+	// or cut.
 	const prepared = addressed ? await prepareWorkOrderBranch({ cwd, branch }) : { startPoint: undefined };
 
 	if ('error' in prepared) {
@@ -128,12 +115,9 @@ const cutWorkspace = async ({
 		);
 	}
 
-	// A branch cut from a stale base is the thing this step exists to prevent,
-	// so a failed fetch stops the run rather than answering from yesterday. It
-	// comes after the adopt branch above: a run continuing in a tree that
-	// already exists needs no start point, and must not fail for a network
-	// that was down. A ticket branch only the remote holds already named the
-	// commit to cut from, so that run needs no default branch at all.
+	// A failed fetch stops the run rather than cutting from a stale base. It comes
+	// after the adopt branch above, so a run continuing in an existing tree never
+	// fails for a network that was down.
 	let startPoint = prepared.startPoint;
 
 	if (startPoint === undefined) {
@@ -167,20 +151,9 @@ const cutWorkspace = async ({
 };
 
 /**
- * The one resolver both implement commands call before any source work: the
- * checkout the run will act on, or one sentence saying why there is none.
- *
- * It takes the run's inputs rather than a branch already derived from them, and
- * calls `resolveRunBranch` itself only once isolation has been decided. That
- * order is a requirement rather than a preference: a run with isolation off
- * never needs a branch, so deriving one first would let a `--no-worktree` run
- * be refused because a loose input's stem happened to carry no branch-safe
- * characters. One resolver owning the order is also what keeps a refusal naming
- * the first real problem rather than a cascade.
- *
- * It never exits and never writes to the console — the command owns the exit
- * code and the printing — which is the shape `resolvePlanTarget` and
- * `ensurePlanWorkspace` already take.
+ * The branch is resolved only once isolation is decided: a run with isolation
+ * off never needs one, so resolving it first would refuse a `--no-worktree` run
+ * whose input names no work order.
  */
 export const resolveRunWorkspace = async ({
 	cwd,

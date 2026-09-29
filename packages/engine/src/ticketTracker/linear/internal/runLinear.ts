@@ -4,20 +4,13 @@ import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFail
 
 interface Params<Result> {
 	apiKey: string;
-	/** The one call to make. Everything above this function stays pure. */
 	call: (client: LinearClient) => Promise<Result>;
 }
 
 /**
- * The one place a Linear client is built and a call is made.
- *
- * Every other file in this module goes through it and nothing outside the
- * module can reach it — it is deliberately absent from the barrel — so swapping
- * Linear for another tracker later is a change inside this folder alone rather
- * than a rewrite of every caller.
- *
- * A rejection, a thrown value, or a blown deadline all become a `TrackerFailure`
- * value rather than an exception, so no caller in the folder needs a try/catch.
+ * Deliberately absent from the barrel, so swapping trackers stays a change
+ * inside this folder. Every failure, deadline included, comes back as a
+ * `TrackerFailure` value rather than an exception.
  */
 export const runLinear = async <Result>({ apiKey, call }: Params<Result>): Promise<Result | TrackerFailure> => {
 	const trackerTimeoutMs = 60_000;

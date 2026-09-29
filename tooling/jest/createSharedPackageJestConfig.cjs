@@ -1,17 +1,9 @@
 const createJestConfig = require('./createJestConfig.cjs');
 
 /**
- * The Jest settings the shared packages — standards-contracts,
- * standards-testkit and shared — have in common. They are the same package
- * shape: a small `src/` of co-located unit tests, and no fixtures to keep out
- * of the coverage denominator.
- *
- * They are also what everything else builds against, so they carry the same
- * coverage bar as the engine. A small denominator makes a percentage move
- * sharply — one uncovered branch out of a handful reads as a big drop — which
- * is a reason to read a dip carefully, not a reason to set it lower.
- *
- * @param rootDir - the package root; every glob in the returned config anchors to it
+ * The shared packages carry the same coverage bar as the engine because
+ * everything else builds against them. Their small denominator makes a dip look
+ * sharp, which is a reason to read it carefully, not to set the bar lower.
  */
 module.exports = ({ rootDir }) =>
 	createJestConfig({

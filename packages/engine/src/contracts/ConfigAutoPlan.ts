@@ -1,21 +1,12 @@
 import { z } from 'zod';
 
 /**
- * The optional `auto-plan` block of `lightsout.config.json` — which of
- * `/auto-plan`'s checkpoints a repo keeps and which it removes.
- *
  * Every key is off by default, so an absent block is the most supervised
- * behaviour there is: the skill plans the whole ticket, shows one proposal of
- * the finished plan, and stops. Turning a key on is a repo saying the factory
- * may carry on that far without asking.
+ * behaviour: the skill plans the whole ticket, shows one proposal, and stops.
  *
- * No engine code reads this block — the skill does, straight off the file. It
- * is declared here anyway because every key a config may write is validated,
- * described and shown by the config view; a key only a skill knew about would
- * be invisible to `doctor` and to the config page, and a typo in it would
- * silently disable a setting the user believes is on.
- *
- * `.strict()`, like every block of the config: the typo above has to fail loudly.
+ * No engine code reads this block; the skill reads it straight off the file. It
+ * is declared here so `doctor` and the config view can see it, and `.strict()`
+ * so a typo fails loudly instead of silently disabling a setting.
  */
 export const ConfigAutoPlan = z
 	.object({

@@ -14,20 +14,14 @@ interface Params {
 }
 
 /**
- * The tree this shipped run may take down, or undefined when nothing licenses a
- * removal.
+ * The ownership record is the only licence to remove a tree: it outlives the
+ * process that cut the tree, so a resumed run still knows. A `--no-worktree`
+ * checkout and a queue-owned tree carry no `Implement` record, and a record
+ * naming another path never licenses removing this one, so a reused branch
+ * name cannot take down the wrong tree.
  *
- * The ownership record is the only licence — not a flag and not a per-run
- * boolean, because a resumed run did not create the tree its first invocation
- * created, and the record is what makes that fact outlive the process that
- * established it. That is also what keeps a checkout the user selected with
- * `--no-worktree` and a queue-owned tree out of reach: neither carries an
- * `Implement` record. A record naming some other path never licenses removing
- * this workspace, so a reused branch name cannot take down the wrong tree.
- *
- * The primary checkout is resolved here rather than taken from the caller, so
- * the answer is the same whether the ship tail handed over the launching
- * checkout or the workspace itself.
+ * The primary checkout is resolved here, so the answer is the same whether the
+ * caller handed over the launching checkout or the workspace itself.
  */
 const describeRemovableTree = async ({ cwd, manifest }: { cwd: string; manifest: RunManifest }) => {
 	const { workspace, branch } = manifest;
@@ -44,22 +38,10 @@ const describeRemovableTree = async ({ cwd, manifest }: { cwd: string; manifest:
 };
 
 /**
- * Take down the worktree a standalone implementation run built in, once its
- * branch has merged.
- *
- * Best effort throughout and never throwing, for the reason `shipOneBranch`
- * gives: the merge has already happened by the time this runs, and a failed
- * cleanup must not turn a shipped run into a failed one. The tree comes down
- * before the record is deleted, and the record only when the removal worked — a
- * record deleted beside a tree that survived is exactly the unclaimed tree a
- * later drain adopts.
- *
- * Nothing is saved out of the tree first, because a tree never holds a plan: a
- * plan folder lives in the main checkout whichever checkout a command runs from,
- * so removing the tree can take no copy of a plan with it.
- *
- * The run's own records are never touched: they live in the checkout the
- * command was launched from, which is the whole reason they are written there.
+ * Best effort and never throwing: the merge has already happened, and a failed
+ * cleanup must not turn a shipped run into a failed one. The record is deleted
+ * only when the removal worked, because a record deleted beside a surviving
+ * tree leaves an unclaimed tree a later drain would adopt.
  */
 export const removeShippedRunWorkspace = async ({ cwd, manifest, onProgress }: Params): Promise<void> => {
 	const removable = await describeRemovableTree({ cwd, manifest });

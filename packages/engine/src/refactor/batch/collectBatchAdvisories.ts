@@ -7,13 +7,12 @@ import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/Loade
 
 interface Params {
 	cwd: string;
-	/** Provenance for the judgment ledger — which run's review this was. */
+	/** Provenance for the judgment ledger. */
 	runId: string;
 	driver: Driver;
 	batch: RefactorBatch;
-	/** The run's standards packs — the judgment rules the agent review reads. */
 	packs: LoadedStandardsPack[];
-	/** Active framework channels; a document out of play is not reviewed. */
+	/** A document out of play is not reviewed. */
 	channels: string[];
 	/** A live check's findings, which the machine advisories are filtered out of. */
 	findings: StandardsFinding[];
@@ -24,22 +23,9 @@ interface Params {
 }
 
 /**
- * Everything the batch's agent should weigh but nothing it can be held to: the
- * machine advisories standing on the batch's files, plus an agent's read of the
- * rules no check can cover.
- *
- * Both halves land in one list because the executor treats them the same way —
- * judge each against its own guidance, fix it unless an exemption applies, never
- * block on it. Every advisory touching the batch's files is included, not just
- * the size ones: each carries its own guidance, and one the agent never sees is
- * one it can never judge.
- *
- * A review that could not run leaves a note on the progress stream and no
- * findings — the batch is still real work, and a missing harness must not stop it.
- *
- * Code-checks-only mode (`agentReview: false`) keeps the machine advisories and
- * skips the agent's read — the caller opted out of that spend for the run. The
- * skip lives in the review itself, so both of a batch's reads honour it.
+ * Machine advisories and the agent's read land in one list because the executor
+ * treats them alike: judge, fix unless exempt, never block. Every advisory on the
+ * batch's files is included, since one the agent never sees it can never judge.
  */
 export const collectBatchAdvisories = async ({
 	cwd,

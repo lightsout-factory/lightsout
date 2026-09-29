@@ -9,10 +9,8 @@ import { isWithinLastDays } from '#src/features/repo/internal/common/utils/isWit
 import { HealthTile } from '#src/features/repo/screens/RepoHealth/internal/components/HealthTile.tsx';
 import { Sparkline } from '#src/features/repo/screens/RepoHealth/internal/components/Sparkline.tsx';
 
-/** The window every "recently" on this page means. Trailing from now, so it says one thing in every timezone. */
 const windowDays = 7;
 
-/** What the runs tile's second line says: how the week's runs ended, in the words the badges use. */
 const describeStatuses = ({ runs }: { runs: RunListing[] }) => {
 	const counts = new Map<RunListing['status'], number>();
 
@@ -24,24 +22,18 @@ const describeStatuses = ({ runs }: { runs: RunListing[] }) => {
 };
 
 interface Props {
-	/** Every run, phase children included — the tiles decide per number which of the two they mean. */
+	/** Every run, phase children included. */
 	runs: RunListing[];
-	/** Absent while the standards query is pending or has failed, which is why the finding tiles can read as a dash. */
 	standards?: StandardsView;
 	friction?: FrictionRecord[];
 }
 
 /**
- * The six numbers a repo owner checks first.
+ * A tile whose data has not arrived shows a dash, not a zero: a zero would tell a
+ * repo that has never run a check that nothing is broken.
  *
- * A tile whose data has not arrived renders a dash rather than a zero: "no check
- * has run here" and "nothing is broken" are opposite answers, and a zero would
- * give the reassuring one to a repo that has never looked.
- *
- * Run counts and the recent-run split are top-level runs only — one eight-phase
- * implement run is one thing that happened, not nine. Spend is the exception and
- * sums every run including the children, because a coordinator's own `costUsd`
- * covers only its own steps and its phases' spend lives on the phases.
+ * Run counts are top-level runs only, but spend sums the phase children too: a
+ * coordinator's own `costUsd` covers only its own steps.
  */
 export const HealthTiles = ({ runs, standards, friction }: Props) => {
 	const { data: plans } = useQuery(planWorkspacesQueryOptions());

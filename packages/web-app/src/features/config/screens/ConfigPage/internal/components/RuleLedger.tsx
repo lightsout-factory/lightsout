@@ -11,10 +11,8 @@ import { severityBadgeVariants } from '#src/common/constants/severityBadgeVarian
 import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
 import { toRuleSetSlug } from '#src/features/packs/internal/common/utils/toRuleSetSlug.ts';
 
-/** One row of the ledger — a loaded rule and the state this repo runs it at. */
 type RuleState = ConfigView['ruleStates'][number];
 
-/** The rule id, as the way into what the rule actually says. */
 const RuleLink = ({ state }: { state: RuleState }) => (
 	<Link
 		to="/standards-packs/$ruleSet/$rule"
@@ -25,7 +23,6 @@ const RuleLink = ({ state }: { state: RuleState }) => (
 	</Link>
 );
 
-/** How this repo tuned one rule's numbers, or nothing at all when it left them as the pack wrote them. */
 const RuleSettings = ({ state }: { state: RuleState }) => {
 	const entries = Object.entries(state.settings);
 
@@ -62,14 +59,7 @@ interface Props {
 	ruleStates: ConfigView['ruleStates'];
 }
 
-/**
- * Every rule this repo loads, at the state it actually runs at here.
- *
- * The same table `lightsout standards-check --list` prints, from the same
- * reader — so the terminal and the page cannot disagree about what a repo
- * enforces. It lives on the config page rather than beside the findings because
- * it is a record of decisions, not of breakage.
- */
+/** The same table `lightsout standards-check --list` prints, from the same reader, so the two cannot disagree. */
 export const RuleLedger = ({ ruleStates }: Props) => {
 	const [severities, setSeverities] = useState<string[]>([]);
 	const rows = severities.length === 0 ? ruleStates : ruleStates.filter((state) => severities.includes(state.severity));

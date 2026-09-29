@@ -7,17 +7,7 @@ interface Params {
 	content: Buffer;
 }
 
-/**
- * Write one of a work order folder's own files — the record, the sidecar, a
- * surfaced published copy — off to the side and expose it with one rename, the
- * way `writeBranchState` writes its record.
- *
- * The temporary name is fixed rather than unique because every caller holds the
- * record's exclusive lock, which is what makes two writers of one path
- * impossible. A failure throws: the callers turn it into their own one sentence
- * with `messageOf`, because what the failure means differs by what was being
- * written.
- */
+/** The temporary name is fixed rather than unique because every caller holds the record's exclusive lock. */
 export const writeWorkOrderFolderFile = async ({ path, content }: Params): Promise<void> => {
 	const temporaryPath = `${path}.tmp`;
 

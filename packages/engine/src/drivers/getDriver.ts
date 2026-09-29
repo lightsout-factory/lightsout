@@ -7,10 +7,7 @@ interface Params {
 	name: string;
 }
 
-/**
- * Driver registry. Resume paths reconstruct the driver from the manifest's
- * recorded name — an unknown name is a hard error, never a silent fallback.
- */
+/** Resume reconstructs the driver from the manifest's recorded name, so an unknown name is an error, never a silent fallback. */
 export const getDriver = ({ name }: Params): Driver => {
 	if (name === 'claude-code') {
 		return createClaudeCodeDriver();

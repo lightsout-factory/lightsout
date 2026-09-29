@@ -11,18 +11,11 @@ interface Params {
 }
 
 /**
- * Every directory a run folder may sit in for one repository: one runs folder
- * per ticket, plus one per command.
+ * The primary checkout is resolved twice rather than deriving one directory from
+ * the other, because walking up from the tickets directory would assert a
+ * layout this file does not own.
  *
- * The primary checkout is resolved twice — once through `workOrdersDir` and once
- * through `resolveSharedStateDir` — rather than deriving one from the other.
- * Each of those two names is owned by exactly one helper, and recovering the
- * state directory from the tickets directory by walking up would be this file
- * asserting a layout it does not own. The cost is one extra `git rev-parse`
- * per scan, and a scan happens at most twice in a process.
- *
- * A location that is not on disk is still listed: whether a directory is there
- * is the scanner's question, not this one's, and a run created after the list
+ * A location that is not on disk is still listed: a run created after the list
  * was taken must not be missed because the folder was absent when it was built.
  */
 export const listRunLocations = async ({ cwd }: Params): Promise<string[]> => {

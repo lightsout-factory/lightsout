@@ -5,10 +5,5 @@ interface Params {
 	gaps: GradedGap[];
 }
 
-/**
- * The gaps that gate the grade. The verdict reads this rather than
- * `gaps.length`, so a finding a judge ruled the agent can settle can never fail
- * a plan by being counted — the same reason `getBlockingFindings` exists beside
- * the structural findings.
- */
+/** The verdict reads this rather than `gaps.length`, so a finding the agent can settle never fails a plan by being counted. */
 export const getBlockingGaps = ({ gaps }: Params): GradedGap[] => gaps.filter((gap) => isBlockingGap({ gap }));

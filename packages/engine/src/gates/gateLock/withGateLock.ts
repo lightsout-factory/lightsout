@@ -10,44 +10,25 @@ import { releaseGateLock } from '#src/gates/gateLock/internal/releaseGateLock.ts
 import { describeGateLockFailure } from '#src/gates/internal/common/utils/describeGateLockFailure.ts';
 
 interface Params<Result> {
-	/** The checkout this run's gates execute in — both the shared-state key and the worktree a waiter names. */
 	cwd: string;
-	/** Reuse the caller's run id when it has one; a caller without one gets a minted id, as `withRunLock` does. */
 	runId?: string;
-	/** How long to wait for the machine. `gateLockTimings.waitCeilingMs` when absent; zero means one attempt and no wait. */
+	/** `gateLockTimings.waitCeilingMs` when absent; zero means one attempt and no wait. */
 	waitCeilingMs?: number;
 	onProgress?: (message: string) => void;
 	run: (handle: { onGateSpawn: ({ pid }: { pid: number }) => void; onGateExit: ({ pid }: { pid: number }) => void }) => Promise<Result>;
 }
 
 /**
- * Hold the shared gate reservation for one whole scheduled gate run, or answer
- * why the machine was never taken.
+ * Unlike `withRunLock`, this waits for a live holder rather than failing fast.
+ * A write failure gets its own refusal sentence, so a read-only disk never
+ * tells an operator to wait for a run that does not exist.
  *
- * Mirrors `withRunLock` and extends its shape with the wait, because that lock
- * fails fast on a live holder and this one must not: a contending gate run
- * polls under a fixed ceiling and only then gives up. The refusal sentence is
- * picked off the acquisition's `failure` member — set means the reservation
- * could not be written at all, absent means the wait expired against a live
- * holder — because reusing the wait sentence for a read-only disk would tell an
- * operator to wait for a run that does not exist.
- *
- * The reservation's path is resolved ONCE and threaded to every step below.
- * That is load-bearing rather than tidiness: resolving it asks git, and a
- * two-second poll under a thirty-minute ceiling would otherwise spawn about
- * nine hundred `git rev-parse` processes on the machine this whole feature
+ * The path is resolved once because resolving it asks git, and polling would
+ * otherwise spawn a `git rev-parse` every two seconds on the machine this lock
  * exists to unload.
  *
- * `run` is handed the two callbacks that record and forget a gate's process
- * group. They are synchronous and the persist is not, so every persist is
- * appended to one promise chain and each write carries the whole current set:
- * package groups spawn and exit in the same tick, and an unordered write that
- * dropped a live group is exactly what the reclaim rule would then read.
- *
- * The reservation is released in a `finally` on every exit path, a returned
- * result and a thrown error alike. That is this module's half of the
- * lock-ordering invariant: it is never held past the body it wraps, and nothing
- * inside the body acquires another lock.
+ * Lock ordering: the reservation is never held past the body it wraps, and
+ * nothing inside the body acquires another lock.
  */
 export const withGateLock = async <Result>({ cwd, runId, waitCeilingMs, onProgress, run }: Params<Result>): Promise<GateLockOutcome<Result>> => {
 	const lockPath = await getGateLockPath({ cwd });
@@ -70,8 +51,8 @@ export const withGateLock = async <Result>({ cwd, runId, waitCeilingMs, onProgre
 	}
 
 	const gateGroups = new Set<number>();
-	// Serialised, and reading the live set at write time rather than a captured
-	// snapshot, so the last write to land is also the one carrying the truth.
+	// Package groups spawn and exit in the same tick, so writes are serialised
+	// and each carries the whole live set: the last write to land is the truth.
 	let persisted = Promise.resolve();
 	const persist = () => {
 		persisted = persisted.then(() => writeGateLockGroups({ lockPath, runId: heldRunId, gateGroups: [...gateGroups] }));

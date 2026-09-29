@@ -14,21 +14,9 @@ interface Params {
 }
 
 /**
- * What the run's flags amount to once they have been read and checked against
- * each other, or the one message saying why they cannot amount to a run.
- *
- * The checks live together because none of them stands alone: whether
- * `--overview`, `--packages` and `--start-phase` are allowed depends on what
- * `--plan` turned out to point at, and the order is what makes the message name
- * the first real problem rather than a cascade.
- *
- * Every check here reads the LAUNCHING checkout, and every one of them runs
- * before a workspace is resolved: no worktree may be created for a flag
- * combination that is going to be refused.
- *
- * The ticket record's own refusal is read here for the same reason: a plan the
- * ticket says may not be built yet must be refused before a tree is cut and
- * before the tracker is told the ticket has started.
+ * Every check reads the launching checkout and runs before a workspace is
+ * resolved, so no worktree is cut and no tracker is told the ticket started for
+ * a run that is going to be refused.
  */
 export const resolveImplementInputs = async ({
 	flags,

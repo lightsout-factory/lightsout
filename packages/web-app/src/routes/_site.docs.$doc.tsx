@@ -3,12 +3,7 @@ import { AddressNotFound } from '#src/common/components/boundaries/AddressNotFou
 import { docPages } from '#src/features/docs/common/constants/docPages.ts';
 import { DocPage } from '#src/features/docs/screens/DocPage/DocPage.tsx';
 
-/**
- * The path names no document this build carries.
- *
- * There is no docs index to send a reader back to, so the way out is the
- * configuration doc — the same target the site bar's own Docs entry points at.
- */
+/** There is no docs index, so the way out is the configuration doc, which the site bar's Docs entry also points at. */
 const DocNotFound = () => (
 	<AddressNotFound title="No doc at that address.">
 		That doc does not exist —{' '}
@@ -26,8 +21,6 @@ const DocRoutePage = () => {
 };
 
 export const Route = createFileRoute('/_site/docs/$doc')({
-	// The markdown is bundled with the app, so there is nothing to fetch — the
-	// loader only decides whether the path names a document at all.
 	loader: ({ params }) => {
 		if (docPages[params.doc] === undefined) {
 			throw notFound();

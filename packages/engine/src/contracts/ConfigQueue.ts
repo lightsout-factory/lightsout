@@ -1,19 +1,9 @@
 import { z } from 'zod';
 
 /**
- * The optional `queue` block of `lightsout.config.json` — everything
- * `lightsout queue` needs that is a house convention rather than a universal.
- *
- * What lives here is queue behaviour: which label names each planning status,
- * what this tracker calls each status the engine writes, which statuses count as
- * available work, how many tickets run at once, and the queue's own timeouts.
- * The engine spells none of them in source. Who
- * the engine talks to about a ticket — provider-specific address and credential
- * variables — is `ConfigTicketTracker`, because publishing a plan to its ticket
- * needs that identity without needing a queue at all.
- *
- * `.strict()`, like every block of the config: a typo here would silently disable a setting
- * the user believes is active.
+ * Tracker identity lives in `ConfigTicketTracker` instead, because publishing a
+ * plan to its ticket needs it without a queue. `.strict()` so a typo fails
+ * loudly instead of silently disabling a setting.
  */
 export const ConfigQueue = z
 	.object({

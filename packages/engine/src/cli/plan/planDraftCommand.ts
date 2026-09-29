@@ -28,13 +28,7 @@ interface Params {
 	flags: Map<string, string | true>;
 }
 
-/**
- * Advisories gate nothing, so however the draft ended is where they get read at
- * all — beneath the written paths on success, beneath the errors otherwise.
- * Computed, persisted and never seen is the failure this exists to prevent: one
- * of them is the over-eight-phases note, whose whole job is telling the human
- * how many decisions the review will put in front of them.
- */
+// Advisories gate nothing, so they are printed on every outcome or never read at all.
 const printPlanAdvisories = ({ advisories }: { advisories: StructuralFinding[] }) => {
 	for (const finding of advisories) {
 		printStructuralFinding({ finding });
@@ -44,8 +38,6 @@ const printPlanAdvisories = ({ advisories }: { advisories: StructuralFinding[] }
 export const planDraftCommand = async ({ cwd, driver, name, standards, config, flags }: Params): Promise<void> => {
 	const scopeFlag = getStringFlag({ flags, name: 'scope' });
 	const scope = scopeFlag === 'phased' ? PlanVariant.Overview : scopeFlag === 'single' ? PlanVariant.Single : undefined;
-	// A facts error or structural issues exit 1 below, so they record as failed —
-	// one reading, shared by both records.
 	const statusOf = ({ result }: { result: Awaited<ReturnType<typeof runPlanDraft>> }) =>
 		result.status === PlanRunStatus.Complete
 			? RunStatus.Passed
@@ -80,9 +72,6 @@ export const planDraftCommand = async ({ cwd, driver, name, standards, config, f
 		return exitCli({ code: 1 });
 	}
 
-	// A refused phase breakdown surfaces here too, so each line leads with the
-	// plan file the finding is in — on a phased draft that is the difference
-	// between a navigable list and twenty unattributed lines.
 	if (result.status === PlanRunStatus.StructuralIssues) {
 		const blocking = getBlockingFindings({ findings: result.findings });
 

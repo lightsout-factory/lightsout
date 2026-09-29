@@ -9,12 +9,9 @@ interface Params {
 }
 
 /**
- * The entries a reader asked for.
- *
- * The text match reads `detail` and `kind` and nothing else. The run's title is
- * joined in for display afterwards, so a filter typed while the runs query is
- * still in flight narrows the same rows it will narrow a second later — a filter
- * whose answer depends on what has loaded is a filter nobody can trust.
+ * The text match reads only `detail` and `kind`, never the run title joined in
+ * for display, so a filter typed before the runs query lands narrows the same
+ * rows it will narrow afterwards.
  */
 export const filterFriction = ({ records, areas, text }: Params): FrictionRecord[] => {
 	const needle = text?.trim().toLowerCase() ?? '';

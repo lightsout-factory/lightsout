@@ -1,12 +1,7 @@
 {
-	// Covers what is not inside a package. Every package typechecks itself
-	// through its own tsconfig — that is what proves it stands alone, and it is
-	// what `nx run-many -t typecheck` runs. This file is left holding the shared
-	// tooling, which belongs to no package and would otherwise be checked by
-	// nothing at all.
-	//
-	// Editors pick the nearest config, so opening a file under packages/ still
-	// gets that package's settings rather than these.
+	// Covers the shared tooling, which belongs to no package: every package typechecks itself
+	// through its own tsconfig. Editors pick the nearest config, so a file under packages/ still
+	// gets its package's settings.
 	"extends": "./tsconfig.base.json",
 	"include": ["tooling/**/*.ts"],
 	"exclude": ["node_modules"]

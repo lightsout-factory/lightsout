@@ -11,11 +11,8 @@ interface Params {
 }
 
 /**
- * One persisted check result, validated at the boundary.
- *
  * `undefined` when the file is absent or will not parse: a repo that has never
- * run a check is a normal state a reader has to render, not an error — and a
- * snapshot written by an older engine is no more readable than a missing one.
+ * run a check is a normal state a reader has to render, not an error.
  */
 export const readStandardsSnapshot = async ({ cwd, fileName }: Params): Promise<StandardsSnapshot | undefined> => {
 	const path = fileName === undefined ? getStandardsCheckPath({ cwd }) : join(getStandardsSnapshotsDir({ cwd }), fileName);

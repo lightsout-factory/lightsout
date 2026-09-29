@@ -7,15 +7,8 @@ import { GridPattern } from '#src/common/constants/GridPattern.ts';
 import { Wordmark } from '#src/features/app/components/Wordmark.tsx';
 import { InstallLine } from '#src/features/home/components/InstallLine.tsx';
 
-/** Where the project lives. */
 const githubUrl = 'https://github.com/lightsout-factory/lightsout';
 
-/**
- * The page's last word: the promise from How it works said once more, the same
- * install line the hero opens on, and where to read further — then the small
- * print. The hero's grid returns, fading in from the top this time, so the page
- * closes the way it opened; the footer under it sits on solid ground.
- */
 export const ClosingSection = () => (
 	<section className="w-full text-center">
 		<div className="relative overflow-hidden px-4 py-32">

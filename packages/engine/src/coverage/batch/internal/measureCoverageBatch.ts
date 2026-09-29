@@ -10,11 +10,7 @@ interface Params {
 	batch: CoverageBatch;
 }
 
-/**
- * Re-measure the batch's scope and compare every tracked file against its
- * pre-batch percentage. Any file whose statements percentage strictly improved
- * is what resolves a batch, so the comparison is the batch's whole verdict.
- */
+/** A batch resolves when any tracked file's statements percentage strictly improved. */
 export const measureCoverageBatch = async ({ cwd, config, runId, batch }: Params): Promise<{ files: CoverageBatchReport['files']; improved: boolean }> => {
 	const measured = await runCoverageCheck({ cwd, config, scope: batch.scope, runId, step: batch.id });
 	const pctByPath = new Map(measured.files.map((file) => [file.path, file.statementsPct]));

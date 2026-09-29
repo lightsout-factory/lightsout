@@ -1,18 +1,12 @@
 {
 	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
-		// A browser package needs the DOM and JSX; everything else it inherits.
 		"lib": ["DOM", "DOM.Iterable", "ES2022"],
 		"jsx": "react-jsx",
 		"types": ["node", "@testing-library/jest-dom/jest-globals"],
-		// The two repo-root folders this app reads: assets/, where every shipped
-		// graphic and its data file lives so the README and this app read one
-		// copy, and docs/, whose markdown the /docs pages render. Neither can be
-		// a `#…/*` entry in package.json `imports`: Node, TypeScript and esbuild
-		// all reject an `imports` target that escapes the package
-		// (ERR_INVALID_PACKAGE_TARGET). So each alias is declared three times —
-		// here, in vite.config.ts, and in jest.config.cjs — and the three have
-		// to agree.
+		// These repo-root folders cannot be `#…/*` entries in package.json `imports`: Node, TypeScript
+		// and esbuild all reject an `imports` target that escapes the package (ERR_INVALID_PACKAGE_TARGET).
+		// So each alias is declared here, in vite.config.ts and in jest.config.cjs, and the three must agree.
 		"paths": { "#assets/*": ["../../assets/*"], "#docs/*": ["../../docs/*"] }
 	},
 	// tests/ is typechecked and reached through `#tests/*`: shared test support

@@ -20,16 +20,11 @@ interface Params {
 }
 
 /**
- * How a direct run ends: its commit, and the stamp or the stop that follows.
- *
- * Both of the run's endings come here — a first run whose gates went green, and
- * a run re-entered with its gates already recorded green — so the two cannot
- * end differently. The commit is made while the run is still running, because a
- * run already stamped passed could not be failed by the commit that follows it.
- *
- * A refused commit is recorded under a step of its own rather than over the
- * gate step, so the gates that did pass keep saying so and a resume pays for
- * the commit alone.
+ * Both of the run's endings come here, so the two cannot end differently. The
+ * commit is made while the run is still running, because a run already stamped
+ * passed could not be failed by the commit that follows it. A refused commit is
+ * recorded under a step of its own so the gates that passed keep saying so and
+ * a resume pays for the commit alone.
  */
 export const finishDirectRun = async ({ run, driver, ticketRef, ticketBody, resumed }: Params): Promise<PipelineResult> => {
 	const address = { reference: ticketRef, fallbackSubject: `${ticketRef} ${headingOf({ text: ticketBody })}`.trim(), context: ticketBody };

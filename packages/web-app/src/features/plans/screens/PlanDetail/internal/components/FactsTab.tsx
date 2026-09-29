@@ -4,7 +4,6 @@ import { SettingsCard } from '#src/appUI/panels/SettingsCard.tsx';
 import { formatCount } from '#src/common/formatting/formatCount.ts';
 import { formatRelativeTime } from '#src/common/formatting/formatRelativeTime.ts';
 
-/** One list of facts under its own heading; a list nothing was recorded for is left out rather than shown empty. */
 const FactList = ({ title, items }: { title: string; items: Array<{ key: string; lead: string; note: string }> }) =>
 	items.length === 0 ? null : (
 		<div className="flex flex-col gap-1">
@@ -20,7 +19,6 @@ const FactList = ({ title, items }: { title: string; items: Array<{ key: string;
 		</div>
 	);
 
-/** What one explorer agent confirmed by reading the codebase, before any of it was planned. */
 const AreaCard = ({ area }: { area: ExploreArea }) => (
 	<SettingsCard title={area.area} description={area.namingConvention}>
 		<div className="flex flex-col gap-3">
@@ -43,10 +41,6 @@ interface Props {
 	facts?: PlanFacts;
 }
 
-/**
- * The verified facts a plan was drafted from: what was asked for, what each
- * explorer found, and the deterministic on-disk check of every path they named.
- */
 export const FactsTab = ({ facts }: Props) => {
 	if (facts === undefined) {
 		return <p className="text-muted-foreground text-sm">No facts recorded — run lightsout plan verify-facts --name &lt;name&gt;.</p>;

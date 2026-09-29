@@ -13,16 +13,7 @@ interface Params {
 	config?: LightsoutConfig;
 }
 
-/**
- * Weigh every selected plan file, so only the ones that earn the reader fan-out
- * pay for it. With `plan.contract` off nothing is weighed and every selected
- * file is read exactly as before the key existed.
- *
- * The weight is computed here rather than stamped at draft time because the
- * parsed plan carries what the decision turns on — the create paths, the
- * packages its paths sit in, whether it has a pattern to mirror — and the facts
- * a draft is written from carry no create paths at all.
- */
+/** Computed at grade time rather than stamped at draft time, because the facts a draft is written from carry no create paths. */
 export const weighSelection = ({ selected, config }: Params): { weights: PhaseWeight[]; heavy: DeliverableFile[]; light: string[] } => {
 	if (config?.plan?.contract !== true) {
 		return { weights: [], heavy: selected, light: [] };

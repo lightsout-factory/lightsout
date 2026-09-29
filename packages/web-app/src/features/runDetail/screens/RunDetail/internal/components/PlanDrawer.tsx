@@ -7,14 +7,12 @@ import { Skeleton } from '#src/appUI/Skeleton.tsx';
 import { planQueryOptions } from '#src/features/runDetail/queries/planQueryOptions.ts';
 import { WorklistView } from '#src/features/runDetail/screens/RunDetail/internal/components/WorklistView.tsx';
 
-/** The document as text a reader can paste elsewhere: a plan's own markdown, or a work-list's JSON. */
 const getRawText = ({ plan }: { plan: PlanDocument }) => {
 	const payload = plan.worklist ?? plan.coverageWorklist;
 
 	return plan.text ?? (payload === undefined ? undefined : JSON.stringify(payload, null, 2));
 };
 
-/** Whichever of the three things a recorded plan path turned out to be. */
 const PlanBody = ({ plan }: { plan: PlanDocument }) => {
 	if (plan.text !== undefined) {
 		return <Markdown text={plan.text} />;
@@ -31,13 +29,7 @@ const PlanBody = ({ plan }: { plan: PlanDocument }) => {
 	);
 };
 
-/**
- * The drawer's contents once a path has been chosen.
- *
- * Its own component so the fetch only exists while the drawer is open: a plan
- * is read when a reader asks for it and kept thereafter, since a plan file does
- * not change under a run that has already read it.
- */
+/** Its own component so the fetch exists only while the drawer is open. */
 const PlanDialog = ({ path, onClose }: { path: string; onClose: () => void }) => {
 	const { data: plan } = useQuery(planQueryOptions({ path }));
 	const raw = plan === undefined ? undefined : getRawText({ plan });
@@ -55,5 +47,4 @@ interface Props {
 	onClose: () => void;
 }
 
-/** The plan a run implemented, shown beside the evidence it produced. */
 export const PlanDrawer = ({ path, onClose }: Props) => (path === undefined ? null : <PlanDialog path={path} onClose={onClose} />);

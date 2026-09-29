@@ -2,7 +2,6 @@ import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalog
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 
-/** `lightsout improve` — the one command that writes somewhere other than the repository it is pointed at. */
 export const improveCatalogEntry: CommandCatalogEntry = {
 	id: 'improve',
 	cli: 'lightsout improve',

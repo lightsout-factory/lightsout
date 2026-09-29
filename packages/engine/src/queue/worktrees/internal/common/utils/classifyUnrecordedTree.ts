@@ -13,15 +13,9 @@ interface Params {
 }
 
 /**
- * The bucket for a tree nothing has recorded yet, and the record written from
- * it — today's git count, made durable so no later scan has to run it again.
- *
- * The write is narrower than the bucket on purpose: a count git could not give
- * is not a fact worth recording. Records are never deleted and a recorded phase
- * short-circuits the count above, so persisting `building` for an answer git
- * never gave would send a branch that already carries finished commits back to
- * a worker on every future scan, with the count that would have found it never
- * running again.
+ * A count git could not give is not recorded: records are never deleted and a recorded phase
+ * skips the count, so a wrong `building` would send a branch with finished commits back to a
+ * worker on every future scan.
  */
 export const classifyUnrecordedTree = async ({
 	cwd,

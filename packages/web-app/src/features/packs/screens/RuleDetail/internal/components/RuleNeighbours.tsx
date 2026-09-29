@@ -4,7 +4,6 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '#src/common/utils/cn.ts';
 import { toRuleSetSlug } from '#src/features/packs/internal/common/utils/toRuleSetSlug.ts';
 
-/** One end's link: which way it points, and the rule it opens. */
 const NeighbourLink = ({ rule, isNext }: { rule: StandardsPackRuleListing; isNext: boolean }) => (
 	<Link
 		to="/standards-packs/$ruleSet/$rule"
@@ -28,7 +27,6 @@ interface Props {
 	next?: StandardsPackRuleListing;
 }
 
-/** The rules either side of this one in its set, so a reader can walk the set rule by rule. */
 export const RuleNeighbours = ({ previous, next }: Props) =>
 	previous === undefined && next === undefined ? null : (
 		<nav aria-label="Neighbouring rules" className="flex flex-col gap-3 sm:flex-row">

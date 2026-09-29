@@ -1,13 +1,6 @@
 import { join } from 'node:path';
 
-/**
- * The directories a marketplace install copies, with every host manifest that
- * names the same build.
- *
- * One list rather than one per script: `preShip.mjs` bumps exactly what
- * `checkShipped.mjs` then verifies, so a fourth plugin added to one copy and
- * not the other would ship unversioned or fail a check nothing prepared.
- */
+/** One list, so `preShip.mjs` bumps exactly what `checkShipped.mjs` then verifies. */
 export const shippedDirectories = [
 	{
 		dir: 'plugin',

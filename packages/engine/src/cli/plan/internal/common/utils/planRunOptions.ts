@@ -23,12 +23,6 @@ interface PlanRunOptions {
 	onProgress: (message: string) => void;
 }
 
-/**
- * The options every agent-backed plan subcommand hands its runner: the plan's
- * identity, the harness settings lifted off the config, and a progress printer.
- * Extracted because dedup, draft and grade each spelled the same eight lines out
- * in full — a change to how the config reaches a runner had three places to go.
- */
 export const planRunOptions = ({ cwd, driver, name, standards, config }: Params): PlanRunOptions => ({
 	cwd,
 	driver,

@@ -2,19 +2,11 @@ import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import type { PhaseProvenance } from '#src/plan/internal/common/types/PhaseProvenance.ts';
 
 interface Params {
-	/** Every implementable plan file, already ordered by phase number. */
+	/** Already ordered by phase number. */
 	phases: PhaseFile[];
 }
 
-/**
- * Resolve where each path in a phased plan comes from: a phase supplies a path
- * by creating it or moving to it, and removes one by deleting it or moving it
- * away. Pure — no disk access, so the caller decides what an unsupplied path
- * means.
- *
- * A single plan resolves to a one-phase walk with empty `providedBefore` and
- * `removedBefore` sets, which is exactly right: it has no predecessor.
- */
+/** No disk access, so the caller decides what an unsupplied path means. */
 export const getPhaseProvenance = ({ phases }: Params): PhaseProvenance => {
 	const providedBefore = new Map<string, Set<string>>();
 	const removedBefore = new Map<string, Set<string>>();

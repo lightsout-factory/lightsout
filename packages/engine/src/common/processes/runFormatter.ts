@@ -15,14 +15,8 @@ interface Params {
 }
 
 /**
- * Run the consumer's configured formatter over the working tree, recorded in
- * the run's command log like any other command the engine spends.
- *
- * Every kind of run needs this and none of them agree on what a failure means —
- * the implement pipeline stops the run on one, a refactor batch announces it
- * and lets the gates decide — so this reports the failure and never throws or
- * halts. A repo with no formatter configured is not a failure; there is simply
- * nothing to run.
+ * Callers disagree on what a formatter failure means, so this reports the
+ * failure and never throws or halts.
  */
 export const runFormatter = async ({ cwd, runId, config, step, onResult }: Params): Promise<string | undefined> => {
 	const command = config.gates.format;

@@ -10,13 +10,8 @@ interface Params {
 }
 
 /**
- * The plan text a run works from, plus the overview text when the plan is one
- * phase of a larger piece.
- *
- * A missing file is a failure rather than an empty string: every role's
- * invocation is built from this text, so an unreadable plan would otherwise
- * spawn agents with nothing to implement. The overview is only required when
- * the manifest says there is one.
+ * A missing file is a failure rather than an empty string: an unreadable plan
+ * would otherwise spawn agents with nothing to implement.
  */
 export const readPlanSources = async ({ cwd, plan, overview }: Params): Promise<{ planContent: string; overviewContent?: string } | { error: string }> => {
 	// The shared resolver, not a bare resolve: a plans-directory record is read

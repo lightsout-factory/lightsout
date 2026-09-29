@@ -32,7 +32,6 @@ const findHistoryRefusal = ({ current, next }: { current: WorkOrderState | undef
 		: undefined;
 };
 
-/** Write the changed record, or say why it was refused. Nothing reaches disk until every rule has passed. */
 const writeChangedRecord = async ({
 	workOrderFolder,
 	recordPath,
@@ -78,19 +77,9 @@ const writeChangedRecord = async ({
 };
 
 /**
- * The one local writer of a work order state's content: read, change, check,
- * write — all of it under the record's exclusive lock, so two commands on one
- * machine never lose each other's work.
- *
- * It enforces what belongs to the store and nothing more: the contract, that
- * the record names the work order it was asked for, and the append-only
- * history.
- * Which progress may follow which, and when a ship request is withdrawn, belong
- * to the operations that pass themselves in as `change`.
- *
- * The write is atomic — a temporary file beside the record, then a rename — for
- * the reason `writeBranchState` is, with one difference: a failed write is an
- * error handed back to the caller rather than a progress line, because the
+ * Read, change, check and write all run under the record's exclusive lock, so two commands on one
+ * machine never lose each other's work. It enforces only what belongs to the store: progress rules
+ * belong to the callers. A failed write is an error rather than a progress line, because the
  * caller's change has then not happened.
  */
 export const updateLocalWorkOrderState = async ({ cwd, name, change }: Params): Promise<{ record: WorkOrderState } | { error: string }> => {

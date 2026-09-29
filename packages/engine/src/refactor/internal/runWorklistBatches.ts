@@ -11,7 +11,6 @@ interface Params {
 	run: RefactorRun;
 	driver: Driver;
 	worklist: RefactorWorklist;
-	/** Per-run inputs every batch shares, forwarded to runBatch unchanged. */
 	batchInputs: Pick<Parameters<typeof runBatch>[0], 'packs' | 'channels' | 'standards' | 'testStandards' | 'agentReview'>;
 	/** Stop (parked, resumable) after this many batches this run — budget control. */
 	maxBatches?: number;
@@ -20,9 +19,8 @@ interface Params {
 }
 
 /**
- * Walk the frozen worklist's batches serially, skipping the ones a previous
- * attempt already passed. Each batch is invoked, verified and settled before
- * the next begins, so the run's state on disk is truthful at every boundary.
+ * Batches run serially, each settled before the next begins, so the run's
+ * state on disk is truthful at every boundary.
  *
  * @returns the run-ending result when a batch parks, fails, escalates or hits
  *   the budget ceiling, undefined when the whole worklist is processed

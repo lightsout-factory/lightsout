@@ -19,20 +19,12 @@ interface Params {
 const formatOf = ({ path }: { path: string }) => (/\.(m|c)?tsx?$/.test(path) ? 'typescript' : 'javascript');
 
 /**
- * Duplicated spans, from the same jscpd detector the check has
- * always used. The engine runs it rather than the rule, so the rule's
- * `minTokens` reaches the detector as a setting instead of a rule opening files
- * of its own — which is also why a second duplicate-block rule with a different threshold
- * would simply get its own detection run.
+ * The engine runs the detector rather than the rule, so the rule's `minTokens`
+ * reaches it as a setting instead of a rule opening files of its own.
  *
- * Imports are blanked first (newline-preserving): a shared import list is
- * non-deduplicable by construction, so counting it as duplication would report
- * work nobody can do, and blanking keeps the reported line numbers true. The
- * composition remedy's delegation forwards are blanked the same way and for
- * the same reason — the standards mandate that shape, so it is never work
- * (see `blankDelegationSpans`).
- *
- * @param settings - the rule's resolved numbers; `minTokens` drives the detector
+ * Imports and delegation forwards are blanked first (newline-preserving): they
+ * are non-deduplicable by construction, so counting them would report work
+ * nobody can do, and blanking keeps the reported line numbers true.
  */
 export const buildCloneSpansInput = async ({ cwd, source, settings, cache, compiler }: Params): Promise<CloneSpansInput> => {
 	const { minTokens } = settings;
@@ -54,9 +46,8 @@ export const buildCloneSpansInput = async ({ cwd, source, settings, cache, compi
 					{ path: b.sourceId, startLine: b.start.line, endLine: b.end.line },
 					{ path: a.sourceId, startLine: a.start.line, endLine: a.end.line },
 				],
-				// jscpd's own measure of a clone's size: the distance between the
-				// first and last token of the span. Both ends are optional in its
-				// types, and a span it could not place counts as no tokens.
+				// Both ends are optional in jscpd's types, and a span it could not
+				// place counts as no tokens.
 				tokens: (a.end.position ?? 0) - (a.start.position ?? 0),
 			});
 		}

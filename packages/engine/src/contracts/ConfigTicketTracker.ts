@@ -16,23 +16,14 @@ const jiraSiteUrl = z
 	}, 'Jira site-url must be an HTTPS *.atlassian.net origin');
 
 /**
- * The optional `ticket-tracker` block of `lightsout.config.json` — who the
- * engine talks to about tickets, where that provider lives, and how it
- * authenticates.
- *
- * Tracker identity is one fact, spelled once. It sits above `queue` rather than
- * inside it because the queue is no longer its only reader: publishing a plan to
- * its ticket needs a provider connection without needing a queue at all, and
- * two spellings of one fact would let those callers disagree about which team
- * or project a ticket lives in.
- *
- * `.strict()`, like every block of the config: a typo here would silently disable a setting the user
- * believes is active.
+ * Top-level rather than inside `queue`, because publishing a plan to its ticket
+ * needs the provider without a queue, and two spellings of one fact would let
+ * callers disagree about where a ticket lives. `.strict()` so a typo fails
+ * loudly instead of silently disabling a setting.
  */
 export const ConfigTicketTracker = z.discriminatedUnion('provider', [
 	z
 		.object({
-			/** Which tracker the engine talks to. */
 			provider: z.literal('linear'),
 			/** The Linear team key, e.g. 'LO' — every query is scoped to it. */
 			team: z.string().min(1, 'Linear trackers need a team'),
@@ -42,7 +33,6 @@ export const ConfigTicketTracker = z.discriminatedUnion('provider', [
 		.strict(),
 	z
 		.object({
-			/** Which tracker the engine talks to. */
 			provider: z.literal('jira'),
 			/** The Jira Cloud origin, normalized by the settings resolver before requests are made. */
 			'site-url': jiraSiteUrl,

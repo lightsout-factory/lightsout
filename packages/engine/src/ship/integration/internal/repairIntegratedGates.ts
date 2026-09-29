@@ -22,7 +22,6 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/** The verdict one full verification cycle reached: prepared and green, prepared and red, or never prepared at all. */
 const verifyCandidate = async ({
 	cwd,
 	integration,
@@ -90,9 +89,8 @@ const verifyCandidate = async ({
 };
 
 /**
- * Prepares the release candidate, runs the whole repository's gates with
- * coverage, and hands a red result back to the agent to repair. Preparation
- * runs before every verification, so each is measured against the same base.
+ * Preparation runs before every verification, so each is measured against the
+ * same base.
  *
  * @returns undefined once the gates are green, else why the allowance ran out and which families stayed red
  */

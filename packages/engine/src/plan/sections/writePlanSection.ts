@@ -6,22 +6,16 @@ import { writePlanFileIfChanged } from '#src/plan/internal/common/rewriting/writ
 import { parsePlan } from '#src/plan/parsePlan.ts';
 
 interface Params {
-	/** Absolute path of the plan file to rewrite. */
+	/** Absolute. */
 	path: string;
-	/** The `##` heading this section is found by, without the leading `##`. */
+	/** Without the leading `##`. */
 	heading: string;
-	/** The rendered section text, heading line included. */
+	/** Heading line included. */
 	section: string;
-	/** The `##` heading whose section this one is placed immediately after when the file carries none. Appended at the end of the file when absent or itself not found. */
+	/** The heading this section is placed after when the file carries none; appended at the end when absent or not found. */
 	after?: string;
 }
 
-/**
- * The file's lines with the section inserted, for a file that carries no such
- * heading: immediately after the anchor section's own span, or appended when the
- * file carries no anchor either — a section the plan needs is never dropped for
- * want of somewhere tidy to put it.
- */
 const insertSection = ({ lines, anchorEnd, sectionLines }: { lines: string[]; anchorEnd?: number; sectionLines: string[] }) => {
 	if (anchorEnd === undefined) {
 		const trailingNewline = lines.at(-1) === '';
@@ -33,14 +27,7 @@ const insertSection = ({ lines, anchorEnd, sectionLines }: { lines: string[]; an
 	return [...lines.slice(0, anchorEnd), ...sectionLines, '', ...lines.slice(anchorEnd)];
 };
 
-/**
- * Put one rendered section into one plan file under its `##` heading, and touch
- * nothing else.
- *
- * The section's span is read from the parsed plan rather than rescanned here: a
- * second span scanner would be a second answer to where a section starts and
- * ends, which is the question the whole in-place rewrite turns on.
- */
+/** The span comes from the parsed plan, not a rescan, so there is one answer to where a section starts and ends. */
 export const writePlanSection = async ({ path, heading, section, after }: Params): Promise<SyncedPlanFile> => {
 	const original = await readFile(path, 'utf8');
 	const plan = parsePlan({ content: original, base: basename(path) });

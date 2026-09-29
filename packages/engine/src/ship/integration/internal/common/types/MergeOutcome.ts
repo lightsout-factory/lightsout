@@ -1,4 +1,3 @@
-/** What git did when it was asked to bring the remote default branch into the checked-out branch. */
 export interface MergeOutcome {
 	/** Exact freshly fetched default commit, absent only when fetch/ref inspection fails. */
 	baseCommit?: string;

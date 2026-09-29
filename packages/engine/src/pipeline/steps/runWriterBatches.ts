@@ -18,15 +18,8 @@ interface Params {
 	acceptanceTests?: AcceptanceTestRecord[];
 }
 
-/** Spawning one writer for one group, optionally gated on its first stream event. */
 type SpawnWriter = ({ group, onFirstEvent }: { group: TestTargetGroup; onFirstEvent?: () => void }) => Promise<WriterResult>;
 
-/**
- * Fan the unit-test writers out over their groups: a writer starts as soon as
- * no running writer holds any of its subject files, and the slots refill on
- * every settle (see `drainBySubjects`). The first group is spawned alone as a
- * prompt-cache warm-up (see `createWarmSpawn`) and the rest trail it.
- */
 export const runWriterBatches = async ({
 	run,
 	groups,

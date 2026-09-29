@@ -6,14 +6,9 @@ interface Params {
 }
 
 /**
- * The blocking finding set as a comparable multiset key, so a repair loop can
- * tell a round that changed nothing from one that made progress.
- *
  * `location` is deliberately excluded: it carries a line number, and a repair
  * edit earlier in the file shifts every later finding's line — a stuck finding
- * that merely drifted would read as progress. `issue` already names the
- * specifics. Advisory findings are excluded outright: they are not defects, so
- * one persisting unchanged is not a stalled repair.
+ * that merely drifted would read as progress.
  */
 export const getFindingSetKey = ({ findings }: Params): string =>
 	getBlockingFindings({ findings })

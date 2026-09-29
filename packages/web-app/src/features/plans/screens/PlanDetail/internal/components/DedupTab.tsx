@@ -6,13 +6,7 @@ interface Props {
 	dedup?: DedupReport;
 }
 
-/**
- * The prior-art duplications the Dedup Review pass confirmed.
- *
- * Three different facts, and the tab says which one it is: not reviewed,
- * reviewed and clean, or reviewed and these. A clean report and a missing one
- * would otherwise read the same, and only one of them is evidence.
- */
+/** A clean report and a missing one must read differently: only one of them is evidence. */
 export const DedupTab = ({ dedup }: Props) => {
 	if (dedup === undefined) {
 		return <p className="text-muted-foreground text-sm">Not reviewed yet — run lightsout plan dedup --name &lt;name&gt;.</p>;

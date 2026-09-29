@@ -15,12 +15,8 @@ interface Params {
 }
 
 /**
- * The pull request's own state, which is the only thing that can say whether a
- * merge happened and whether another attempt could change the answer.
- *
  * Everything past `state` and `mergeCommit` is optional: a forge that answers
- * an older field set still lets a confirmed merge be recognised, and a missing
- * field simply fails the narrow test a recoverable refusal has to pass.
+ * an older field set still lets a confirmed merge be recognised.
  */
 const StateView = z.object({
 	state: z.string(),
@@ -32,10 +28,8 @@ const StateView = z.object({
 
 type StateView = z.infer<typeof StateView>;
 
-/** Review decisions that mean a human has to act, whatever else the pull request says about itself. */
 const humanReviewDecisions = new Set(['REVIEW_REQUIRED', 'CHANGES_REQUESTED']);
 
-/** The pull request as the forge holds it now, or undefined when the answer could not be read at all. */
 const readState = async ({ prNumber, cwd }: { prNumber: number; cwd: string }) => {
 	const viewed = await runGh({ args: ['pr', 'view', String(prNumber), '--json', 'state,mergeCommit,headRefOid,mergeStateStatus,reviewDecision'], cwd });
 	const view = StateView.safeParse(parseForgeJson({ stdout: viewed.stdout }));
@@ -44,14 +38,8 @@ const readState = async ({ prNumber, cwd }: { prNumber: number; cwd: string }) =
 };
 
 /**
- * Whether a refusal was only a base that had moved on.
- *
- * Read from the pull request's structured state and never from the message:
- * GitHub prints the same "Base branch was modified" sentence for refusals a
- * retry cannot fix, so a classifier that read the words would spend whole
- * attempts on a protected branch or a missing review. Everything else —
- * `BLOCKED`, `UNKNOWN`, a head someone else moved, an unreadable answer — is
- * final.
+ * Read from the structured state, never the message: GitHub prints the same
+ * "Base branch was modified" sentence for refusals a retry cannot fix.
  */
 const isStaleBase = ({ view, expectedHead }: { view: StateView | undefined; expectedHead: string }) =>
 	view !== undefined &&
@@ -61,13 +49,8 @@ const isStaleBase = ({ view, expectedHead }: { view: StateView | undefined; expe
 	!humanReviewDecisions.has(view.reviewDecision ?? '');
 
 /**
- * Wait for a merge the forge accepted to actually land.
- *
- * A merge queue answers the command with a zero exit and merges minutes later,
- * so a caller that read the exit code as the answer would report a shipped
- * result for a pull request still sitting in a queue. The command is never
- * re-sent: only the read-back is repeated, under the same ceiling the check
- * wait uses.
+ * A merge queue answers with a zero exit and merges minutes later. The command
+ * is never re-sent; only the read-back is repeated.
  */
 const confirmMerge = async ({ prNumber, cwd, mergeStderr }: { prNumber: number; cwd: string; mergeStderr: string }): Promise<string | ShipStepFailure> => {
 	const { pollIntervalMs, ceilingMs } = remoteWaitTimings;
@@ -94,22 +77,11 @@ const confirmMerge = async ({ prNumber, cwd, mergeStderr }: { prNumber: number; 
 };
 
 /**
- * Merge the pull request, delete its branch on the forge, and answer with the
- * commit the merge produced.
- *
- * `--match-head-commit` is what makes the merge conditional: the commit this
- * invocation pushed and verified is the only one it may land, so a commit
- * somebody else pushed while the checks ran cannot be merged under this
- * invocation's evidence. `--delete-branch` is the "branch deleted" step of the
- * ship sequence, done by the forge so the remote branch goes with the merge.
- * Nothing here admin-bypasses, and nothing here picks a method other than the
- * configured one.
- *
- * A merged pull request is only ever reported from the forge's own state, in
- * both directions: a non-zero exit whose read-back says MERGED is a merge,
- * because `gh pr merge` also does local cleanup that always fails inside a
- * linked worktree, and a zero exit whose read-back says OPEN is not one, because
- * a merge queue accepts before it lands.
+ * `--match-head-commit` makes the merge conditional, so a commit somebody else
+ * pushed while the checks ran cannot be merged under this invocation's
+ * evidence. A non-zero exit whose read-back says MERGED is a merge, because
+ * `gh pr merge` also does local cleanup that always fails inside a linked
+ * worktree.
  *
  * @returns the merge commit, or the refusal — carrying `staleBase` only when the forge's own state proved a newer base is the whole problem
  */

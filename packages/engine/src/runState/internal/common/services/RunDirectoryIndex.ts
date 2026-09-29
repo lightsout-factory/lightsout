@@ -3,7 +3,6 @@ import { join } from 'node:path';
 import { listRunLocations } from '#src/runState/internal/common/paths/listRunLocations.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 
-/** Every run directory under the locations this repository files runs in, keyed by run id. */
 const scanLocations = async ({ cwd }: { cwd: string }) => {
 	const found = new Map<string, string>();
 
@@ -19,10 +18,8 @@ const scanLocations = async ({ cwd }: { cwd: string }) => {
 };
 
 /**
- * The runs a typed id names. An exact id is an answer in its own right, never a
- * prefix of a longer one — reports print ids cut to eight characters, so a
- * prefix has to be accepted, and a run whose whole id is another's prefix must
- * still answer for itself.
+ * Reports print ids cut to eight characters, so a prefix has to be accepted —
+ * but a run whose whole id is another's prefix must still answer for itself.
  */
 const matchRuns = ({ known, runId }: { known: ReadonlyMap<string, string>; runId: string }) => {
 	const exact = known.get(runId);
@@ -33,29 +30,18 @@ const matchRuns = ({ known, runId }: { known: ReadonlyMap<string, string>; runId
 };
 
 /**
- * The run-id-to-directory map the engine keeps for the life of the process.
- *
  * A run's folder is filed under the work it belongs to, so nothing can be
- * joined onto a fixed path to find one — and the engine's most common operation
- * must not walk the tree on every manifest read. The structure stays the only
- * index; this is the memory of what it said.
+ * joined onto a fixed path to find one, and the engine's most common operation
+ * must not walk the tree on every manifest read.
  *
- * The scan is keyed by `cwd` rather than by the state directory it reads. Two
- * checkouts of one repository therefore keep one entry each and scan the same
- * folders, which costs one extra scan per distinct `cwd` and can never make
- * them disagree; keying by the state directory would instead make every lookup
- * pay a `git rev-parse` to find the key, which is the cost this index exists to
- * remove.
+ * Keyed by `cwd` rather than by the state directory: keying by the state
+ * directory would make every lookup pay a `git rev-parse` to find the key.
  */
 export class RunDirectoryIndex {
-	/** One run-id-to-directory map per `cwd` — filled by its first scan, and added to as runs are created. */
 	private readonly directories = new Map<string, Map<string, string>>();
 	private readonly scanned = new Set<string>();
 
 	/**
-	 * Which run a typed id names, and where it is — both from one lookup, so the
-	 * two questions can never be answered from two different scans.
-	 *
 	 * @throws {RunNotFoundError} When nothing matches the id, or when a shortened id matches more than one run — which names the matches.
 	 */
 	async resolve({ cwd, runId }: { cwd: string; runId: string }): Promise<{ runId: string; runDir: string }> {

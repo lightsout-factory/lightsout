@@ -8,7 +8,6 @@ interface Params {
 	pricing?: ConfigPricing;
 }
 
-/** Each token count a process may report, beside the rate key that prices it. */
 const pricedCounts = [
 	{ count: 'inputTokens', rate: 'input' },
 	{ count: 'outputTokens', rate: 'output' },
@@ -17,23 +16,9 @@ const pricedCounts = [
 ] as const;
 
 /**
- * The one place a configured rate meets a recorded token count.
- *
- * It answers `undefined` — never `0` — when there is no price list, when no
- * process in the subtree ran under a model the list names, or when no such
- * process reported any tokens at all. A missing rate read as a free agent would
- * be worse than no figure: a process killed at its ceiling that recovered
- * nothing would price as having spent nothing.
- *
- * A subtree mixing priced and unpriced processes answers the priced part, and
- * the renderer marks the row so a partial total is never read as a complete
- * one.
- *
- * It takes a node rather than a node id, so it needs nothing from the tree but
- * the shape the fold already returns — an id-keyed estimate map would have to
- * agree with the tree about identity, and two structures that can disagree
- * eventually do. It lives here rather than in the terminal's own renderer so a
- * later chart prices a record the same way this table does.
+ * Answers `undefined`, never `0`, when nothing in the subtree can be priced: a
+ * missing rate read as free would price a process killed at its ceiling as
+ * having spent nothing.
  */
 export const estimateActivityCost = ({ node, pricing }: Params): number | undefined => {
 	const tokensPerRate = 1_000_000;

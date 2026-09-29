@@ -7,11 +7,8 @@ interface Params {
 }
 
 /**
- * Greedy word wrap with a fixed indent on every line.
- *
- * A word longer than the available width is left whole on its own line rather
- * than split: the long words here are file paths and symbol names, and a path
- * broken across two lines cannot be copied, clicked, or searched for.
+ * A word longer than the width is left whole rather than split: the long words
+ * here are file paths, and a broken path cannot be copied, clicked or searched.
  */
 export const wrapText = ({ text, width, indent }: Params): string[] => {
 	const available = Math.max(width - indent.length, 1);

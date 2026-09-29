@@ -3,9 +3,6 @@ import { BadgeVariant } from '#src/common/constants/BadgeVariant.ts';
 import { planStageLabels } from '#src/features/plans/internal/common/constants/planStageLabels.ts';
 
 /**
- * Stage → badge label and family, by how far along the plan is. Passed straight
- * to `StatusBadge`'s `config`.
- *
  * The families read as progress here rather than as a run outcome: the closed
  * set has no other readable progression, and the brand accent stays in the three
  * places it is allowed.

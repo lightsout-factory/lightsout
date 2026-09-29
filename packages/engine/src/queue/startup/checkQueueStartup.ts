@@ -21,16 +21,9 @@ interface Params {
 }
 
 /**
- * Everything the drain cannot start without: a ready status the eligible query
- * actually asks for, a planning-status label set the tracker knows, a branch
- * template whose output the ship pattern matches, and a remote default branch
- * to cut from.
- *
- * The two configuration refusals come first because a configuration that cannot
+ * The configuration refusals come first, because a configuration that cannot
  * work should cost nothing to discover. A branch template the ticket pattern
- * cannot read would make every resumed ticket's identifier underivable, so it is
- * refused up front, naming both keys — config-usability refusals, never workflow
- * ones.
+ * cannot read would make every resumed ticket's identifier underivable.
  */
 // Annotated because inference would widen each branch with the other's absent
 // key, and `'error' in started` could no longer narrow the union at the call site.

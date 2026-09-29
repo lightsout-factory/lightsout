@@ -13,7 +13,6 @@ interface Params {
 	write?: (line: string) => void;
 }
 
-/** Say what one restore did, in the same two lines whichever generation it took. */
 const report = ({
 	restored,
 	skipped,
@@ -37,16 +36,9 @@ const report = ({
 };
 
 /**
- * Fetch a ticket's published brainstorm into its plan folder, at planning's
- * first command edge.
- *
- * A plan takes the generation published under its own plan id.
- *
- * It answers nothing and never blocks, which is the one way it differs from
- * `ensurePlanWorkspace`: planning must still run in a repo with no
- * `lightsout.config.json`, and a ticket with no published brainstorm is the
- * ordinary case rather than a failure. Only a tracker read that was attempted
- * and failed prints anything, and planning carries on regardless.
+ * Never blocks, unlike `ensurePlanWorkspace`: planning must still run in a repo
+ * with no `lightsout.config.json`, and a ticket with no published brainstorm is
+ * the ordinary case rather than a failure.
  */
 export const ensureBrainstormFiles = async ({ cwd, name, write = console.log }: Params): Promise<void> => {
 	// Unguarded: a config the engine cannot parse must fail loudly here, exactly

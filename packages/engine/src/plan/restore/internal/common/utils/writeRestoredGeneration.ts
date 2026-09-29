@@ -9,7 +9,7 @@ interface Params {
 	files: ReadGenerationFile[];
 }
 
-/** Write the complete restored set off to the side, then expose it with one rename. */
+/** Written off to the side, then exposed with one rename, so a reader never sees a partial set. */
 export const writeRestoredGeneration = async ({ dir, files }: Params): Promise<{ error: string } | undefined> => {
 	let temporaryDir: string | undefined;
 

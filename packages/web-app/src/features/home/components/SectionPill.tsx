@@ -3,18 +3,12 @@ import type { ReactNode } from 'react';
 import { cn } from '#src/common/utils/cn.ts';
 
 interface Props {
-	/** Words, or words with logos inline beside the names they belong to. */
 	label: ReactNode;
-	/** A blue icon before the label. */
 	icon?: LucideIcon;
 	className?: string;
 }
 
-/**
- * The white pill with a blue icon and uppercase label that opens a home
- * section — FeedbackDrop's section badge, so the two sites introduce a section
- * the same way.
- */
+/** FeedbackDrop's section badge, so the two sites introduce a section the same way. */
 export const SectionPill = ({ icon: Icon, label, className }: Props) => (
 	<p
 		className={cn(

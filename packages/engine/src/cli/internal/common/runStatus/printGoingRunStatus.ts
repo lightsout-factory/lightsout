@@ -11,22 +11,8 @@ interface Params {
 }
 
 /**
- * `status --now`: the run that is going, printed once.
- *
- * It answers at once. The minute-long grace `--watch` spends exists for a
- * caller that has just started a run in the background, and a person typing
- * this form has not — so the resolver is asked for no grace at all.
- *
- * A phased plan prints both of its levels: the phase sequence, then the phase
- * moving now. Nothing going falls back to the newest run of any status, and
- * several unrelated families going are named back rather than guessed at. The
- * block is appended after a blank line; nothing clears the screen and nothing
- * repaints.
- *
- * It owns its own refusal — `--now` beside `--run`, `--watch`, `--planning` or
- * `--shipping`, or carrying a value — so the dispatcher stays a router.
- *
- * @returns the exit code the command ends with: 1 for a refusal or an ambiguous answer, 0 otherwise
+ * No grace period: the minute `--watch` waits exists for a caller that has just
+ * started a run in the background, and a person typing this form has not.
  */
 export const printGoingRunStatus = async ({ cwd, flags }: Params): Promise<number> => {
 	if (flags.get('now') !== true || flags.has('run') || flags.has('watch') || flags.has('planning') || flags.has('shipping')) {

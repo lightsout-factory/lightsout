@@ -5,10 +5,6 @@ import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPack
 import { defaultPackRuleQueryOptions } from '#src/features/packs/queries/defaultPackRuleQueryOptions.ts';
 import { RuleDetail } from '#src/features/packs/screens/RuleDetail/RuleDetail.tsx';
 
-/**
- * Either half of the address was wrong — a set the pack does not hold, or a
- * rule that set does not carry.
- */
 const RuleNotFound = () => {
 	const { ruleSet, rule } = Route.useParams();
 
@@ -26,8 +22,7 @@ const RuleDetailPage = () => {
 };
 
 export const Route = createFileRoute('/_site/standards-packs/$ruleSet/$rule')({
-	// The rule must sit in the set the address names — a real rule under the
-	// wrong set is a wrong address, not a page — and then it is warmed for the page.
+	// A real rule under the wrong set is a wrong address, not a page.
 	loader: async ({ context, params }) => {
 		const channel = toRuleSetChannel({ ruleSet: params.ruleSet });
 		const pack = await context.queryClient.ensureQueryData(defaultPackQueryOptions());

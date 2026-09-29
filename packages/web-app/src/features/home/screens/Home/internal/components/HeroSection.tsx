@@ -7,14 +7,8 @@ import { SectionPill } from '#src/features/home/components/SectionPill.tsx';
 import { heroDescription } from '#src/features/home/internal/common/constants/heroDescription.ts';
 
 /**
- * The promise, in three words, and the one thing to do about it.
- *
- * It fills the first screen under the header, so the next section waits below
- * the fold rather than competing with the headline. Styled to FeedbackDrop's
- * hero, class for class: the faint grid fading toward
- * the page, the blue pill badge, a navy headline with its last word in blue,
- * the grey sub line saying plainly what it is, one pill-shaped action and
- * the small print under it — each block rising in on its own delay.
+ * Fills the first screen under the header, so the next section waits below the
+ * fold. Styled to FeedbackDrop's hero, class for class.
  */
 export const HeroSection = () => (
 	<section className="relative flex min-h-[calc(100svh-4.5rem)] w-full flex-col items-center justify-center px-4 py-16 text-center">

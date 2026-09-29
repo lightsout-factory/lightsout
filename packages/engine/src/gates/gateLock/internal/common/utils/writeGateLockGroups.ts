@@ -4,27 +4,17 @@ import { readGateLock } from '#src/gates/gateLock/internal/readGateLock.ts';
 interface Params {
 	lockPath: string;
 	runId: string;
-	/** The whole current set of live gate process groups, never a delta — so the last write to land is also the correct one. */
+	/** The whole current set, never a delta, so the last write to land is the correct one. */
 	gateGroups: number[];
 }
 
 /**
- * Persist the gate process groups executing right now into the reservation.
+ * A failed write is swallowed: a held reservation must not be dropped over a
+ * transient write.
  *
- * The group list is the one part of the document that moves while the machine
- * is held — there is no heartbeat and no timer — so this runs only when the set
- * changes. `startedAt` is never rewritten: it is what lets a waiter report the
- * reservation's age.
- *
- * Only our own document is rewritten, following the same rule as
- * `releaseGateLock`. A write that fails is swallowed rather than raised: a
- * reservation that is held must not be dropped over a transient write.
- *
- * The read-then-write is not atomic and does not need to be. Reclaiming
- * requires the holder's pid to be dead, and a process whose pid is dead is
- * running no group write, so the window in which a reclaimer could unlink
- * between our read and our write cannot open. Written down so nobody reaches
- * for file locking to close a gap that is not there.
+ * The read-then-write needs no file locking: reclaiming requires the holder's
+ * pid to be dead, and a dead process runs no group write, so no reclaimer can
+ * land between our read and our write.
  */
 export const writeGateLockGroups = async ({ lockPath, runId, gateGroups }: Params): Promise<void> => {
 	const holder = readGateLock({ lockPath });
@@ -33,12 +23,9 @@ export const writeGateLockGroups = async ({ lockPath, runId, gateGroups }: Param
 		return;
 	}
 
-	// Written beside the lock and renamed over it, so a reader in any process
-	// sees the old document or the new one, never the empty file a rewrite in
-	// place leaves between truncating and writing. Synchronous for the reason
-	// `readGateLock` is: no other write from this process can land between the
-	// read above and the rename, so the writes land in the order they were made
-	// and the last one to land really is the current set.
+	// Renamed over the lock so a reader never sees the empty file an in-place
+	// rewrite leaves. Synchronous so this process's writes land in the order
+	// they were made.
 	const tempPath = `${lockPath}.${process.pid}.tmp`;
 
 	try {

@@ -1,13 +1,9 @@
 import type { SVGProps } from 'react';
 
 /**
- * GitHub's own mark — the Octocat in its circle — filled in the text colour, so
- * it follows the theme.
- *
- * Here because lucide dropped its brand icons at 1.0; the path is Simple Icons'
- * `github` (CC0), the same set the framework logos come from. Decorative — the
- * link it stands in always carries the word "GitHub" or an accessible name of
- * its own.
+ * Here because lucide ships no brand icons; the path is Simple Icons' `github`
+ * (CC0). Decorative — the link it stands in always carries the word "GitHub" or
+ * an accessible name of its own.
  */
 export const GithubMark = (props: SVGProps<SVGSVGElement>) => (
 	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>

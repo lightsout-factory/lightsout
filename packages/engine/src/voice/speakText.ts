@@ -9,15 +9,10 @@ interface Params {
 }
 
 /**
- * Read the given text aloud through the Mac's own voice, and return without
- * waiting for it to finish.
- *
- * A newer question makes the one still playing stale, so the previous reading
- * is cut off rather than talked over. The text goes in on the child's input
- * stream instead of as an argument: that sidesteps command-line length limits
- * and stops a block beginning with a dash from being read as a flag. The child
- * is detached and unref'd so a long question does not hold the hook — and the
- * session — open while it plays.
+ * The text goes in on stdin rather than as an argument, which sidesteps
+ * command-line length limits and stops a block beginning with a dash from being
+ * read as a flag. The child is detached and unref'd so a long question does not
+ * hold the hook — and the session — open while it plays.
  */
 export const speakText = async ({ cwd, text }: Params): Promise<void> => {
 	await stopSpeech({ cwd });

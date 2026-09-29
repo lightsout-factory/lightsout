@@ -8,14 +8,8 @@ interface Params {
 }
 
 /**
- * Every label name the configured team or project knows about.
- *
- * The answer is complete — every page is walked — because a truncated catalog
- * would report a configured label as missing when it exists, and the caller's
- * whole reason for asking is to refuse a configuration that cannot work.
- *
- * Order is whatever the tracker answered; the caller compares by membership,
- * never by position.
+ * Every page is walked, because a truncated catalog would report a configured
+ * label as missing when it exists. Order is whatever the tracker answered.
  */
 export const listLabelNames = async (params: Params): Promise<string[] | TrackerFailure> =>
 	params.settings.provider === 'linear'

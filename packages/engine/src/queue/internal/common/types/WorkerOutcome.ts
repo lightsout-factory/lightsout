@@ -1,8 +1,4 @@
-/**
- * What one worker invocation amounted to, with every worker's different report
- * shape already normalized: a question to relay, an error to park on, a reason
- * the ticket stays open, or none of them — which is success.
- */
+// None of the fields set means success.
 export interface WorkerOutcome {
 	question?: string;
 	error?: string;

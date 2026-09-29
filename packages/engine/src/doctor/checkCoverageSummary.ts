@@ -12,13 +12,8 @@ interface Params {
 }
 
 /**
- * Confirm every scope that runs a coverage command writes a JSON summary where
- * `lightsout test-coverage-to-threshold` will look for it. Existence at the
- * configured path is the whole check — no tool config is parsed, so a repo can
- * measure with anything that writes the file.
- *
- * A missing summary is a warn rather than a fail: it is also the state of a
- * freshly cloned repo that has never run its coverage script.
+ * Only existence is checked, so a repo can measure with any tool that writes the
+ * file. Missing is a warn: a fresh clone has never run its coverage script.
  */
 export const checkCoverageSummary = async ({ config, packageDirs }: Params): Promise<DoctorCheck | undefined> => {
 	const scoped = config['package-gates']?.['test-coverage'];
@@ -29,8 +24,7 @@ export const checkCoverageSummary = async ({ config, packageDirs }: Params): Pro
 	}
 
 	const summaryPath = config['coverage-summary-path'] ?? defaultCoverageSummaryPath;
-	// Measurement follows the same packages-only rule the coverage run does: a
-	// scoped command means the packages ARE the measurement.
+	// Same rule as the coverage run: a scoped command means the packages are the measurement.
 	const scopes = scoped ? packageDirs.filter((entry) => entry.label !== 'root') : packageDirs.filter((entry) => entry.label === 'root');
 	const expected = scopes.map((entry) => ({ label: entry.label, path: join(entry.dir, summaryPath) }));
 	const absent: string[] = [];

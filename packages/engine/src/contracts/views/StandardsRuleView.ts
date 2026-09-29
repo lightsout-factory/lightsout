@@ -2,14 +2,6 @@ import { StandardsSet } from '@lightsout/standards-contracts';
 import { z } from 'zod';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 
-/**
- * One rule as a reader shows it: what the rule says, how this repo runs it, how
- * many findings it has open, and what refactor history recorded about it.
- *
- * Composed from the rule listing and the health report rather than replacing
- * either — the two answer different questions about the same rule, and a reader
- * wants both on one row.
- */
 export const StandardsRuleView = z.object({
 	rule: z.string(),
 	/** '<package name>: <document folder>' — which package states the rule, and where. */

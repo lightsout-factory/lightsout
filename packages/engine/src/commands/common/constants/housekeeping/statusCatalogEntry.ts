@@ -2,7 +2,6 @@ import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalog
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 
-/** `lightsout status` — what lightsout sees here, either across every run or inside one of them. */
 export const statusCatalogEntry: CommandCatalogEntry = {
 	id: 'status',
 	cli: 'lightsout status',

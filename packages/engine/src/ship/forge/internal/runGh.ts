@@ -12,16 +12,9 @@ interface Params {
 const quote = ({ argument }: { argument: string }) => `'${argument.split("'").join(`'\\''`)}'`;
 
 /**
- * The one place a `gh` process is spawned.
- *
- * Every other file in `forge/` goes through it and nothing outside the folder
- * can reach it — it is deliberately absent from the barrel — so swapping
- * GitHub for another forge later is a change inside this folder alone rather
- * than a rewrite of the ship sequence.
- *
- * A non-zero exit is a value, never an exception, matching `runCommand`'s own
- * contract; a spawn failure or a blown deadline becomes exit -1 carrying the
- * message, so no caller here needs a try/catch.
+ * Deliberately absent from the barrel, so swapping GitHub for another forge
+ * stays a change inside `forge/`. A spawn failure or a blown deadline becomes
+ * exit -1 carrying the message, so no caller needs a try/catch.
  */
 export const runGh = async ({ args, cwd }: Params): Promise<CommandResult> => {
 	const forgeTimeoutMs = 60_000;

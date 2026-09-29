@@ -11,7 +11,6 @@ import { configQueryOptions } from '#src/features/config/queries/configQueryOpti
 import { ConfigFieldRow } from '#src/features/config/screens/ConfigPage/internal/components/ConfigFieldRow.tsx';
 import { RuleLedger } from '#src/features/config/screens/ConfigPage/internal/components/RuleLedger.tsx';
 
-/** One loaded pack, as the way into the Standards Packs page that shows its rules, and which framework documents it carries. */
 const PackRow = ({ pack }: { pack: ConfigView['packs'][number] }) => (
 	<div className="flex flex-wrap items-center gap-2 border-border border-b py-3 first:pt-0 last:border-0 last:pb-0">
 		<Link to="/standards-packs" className="font-medium text-sm hover:underline hover:underline-offset-2">
@@ -32,12 +31,8 @@ const PackRow = ({ pack }: { pack: ConfigView['packs'][number] }) => (
 );
 
 /**
- * What this repo told lightsout, and what lightsout filled in.
- *
  * A viewer rather than an editor, deliberately: the file is the record, and a
- * page that could write it would be a second author of run state. What the page
- * adds is the half a reader cannot get by opening the file — which values they
- * never chose, and which rules those values produced.
+ * page that could write it would be a second author of run state.
  */
 export const ConfigPage = () => {
 	const { data: view } = useSuspenseQuery(configQueryOptions());

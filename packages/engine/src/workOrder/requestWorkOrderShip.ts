@@ -16,12 +16,10 @@ interface Params {
 	/** Full plan ids or bare numbers, as they were typed. */
 	plans: string[];
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	onProgress?: (message: string) => void;
 }
 
-/** Every token turned into the plan it names, or the first token that names nothing the request may include. */
 const resolveRequestedPlans = ({ record, tokens }: { record: WorkOrderState; tokens: string[] }): WorkOrderPlan[] | { error: string } => {
 	const named: WorkOrderPlan[] = [];
 
@@ -57,17 +55,9 @@ const findUncoveredPlansRefusal = ({ record, named }: { record: WorkOrderState; 
 };
 
 /**
- * Record the human's explicit request to ship a multiple-plan ticket, bound to
- * the exact plans it approves.
- *
- * The request is what a multiple-plan ticket ships on: the human declares the
- * finish line and the queue carries it out once the named plans are
- * implemented. Binding it to stable ids rather than to a count is what lets the
- * check immediately before the merge tell a renamed plan from a new one.
- *
- * The stored ids are always the ticket's own included plans in number order,
- * whichever spelling was typed, so the set can be compared to the ticket's
- * plans by equality later.
+ * Bound to stable plan ids rather than a count, so the check before the merge can tell a renamed
+ * plan from a new one. Stored as the ticket's included plans in number order, whatever spelling
+ * was typed, so it compares by equality later.
  */
 export const requestWorkOrderShip = ({ cwd, name, plans, config, env, onProgress }: Params): Promise<WorkOrderStateChange | { error: string }> =>
 	changeExistingWorkOrderState({

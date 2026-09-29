@@ -6,22 +6,17 @@ import { Tabs } from '#src/appUI/Tabs.tsx';
 import { CheckKind } from '#src/common/constants/CheckKind.ts';
 import { cn } from '#src/common/utils/cn.ts';
 
-/** What each side is called, and the mark and colour it carries. Incorrect comes first: it is what the rule is about. */
+/** Incorrect comes first: it is what the rule is about. */
 const sides: Array<{ side: FixtureSide; title: string; Icon: LucideIcon; iconClass: string }> = [
 	{ side: FixtureSide.Fail, title: 'Incorrect', Icon: CircleX, iconClass: 'text-status-failed' },
 	{ side: FixtureSide.Pass, title: 'Correct', Icon: CircleCheck, iconClass: 'text-status-passed' },
 ];
 
-/**
- * What the examples mean, said from whoever enforces the rule: a deterministic
- * check flags and passes exactly these, an agent judges code like them.
- */
 const sources: Record<CheckKind, string> = {
 	[CheckKind.Deterministic]: 'The check flags the incorrect code and passes the correct code.',
 	[CheckKind.Agent]: 'The agent flags code like the incorrect example and accepts code like the correct one.',
 };
 
-/** One side's files: a repo as a tree opened on its focus file, a snippet as its one block. */
 const SideFiles = ({ files, example, side, title }: { files: StandardsPackFixture[]; example: RuleExample; side: FixtureSide; title: string }) => {
 	if (example.kind === RuleExampleKind.Repo) {
 		return (
@@ -49,16 +44,9 @@ const SideFiles = ({ files, example, side, title }: { files: StandardsPackFixtur
 interface Props {
 	fixtures: StandardsPackFixture[];
 	kind: CheckKind;
-	/** How the examples are shaped, which decides how each side is shown. */
 	example: RuleExample;
 }
 
-/**
- * A rule's examples: the code it flags, then the code it wants, each at full
- * width so a long line reads whole. A snippet shows its one file a side; a repo
- * shows each side as a tree, opened on the file the rule declares. A side with
- * no example is left out rather than drawn empty.
- */
 export const RuleExamples = ({ fixtures, kind, example }: Props) =>
 	fixtures.length === 0 ? (
 		<p className="text-muted-foreground text-sm">This pack shipped without its examples.</p>

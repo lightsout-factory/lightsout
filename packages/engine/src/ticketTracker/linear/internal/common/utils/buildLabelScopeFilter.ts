@@ -1,15 +1,6 @@
 import type { LinearClient } from '@linear/sdk';
 
-/**
- * One clause of an issue-label filter's `or` array, derived from the client
- * method that consumes it.
- *
- * `@linear/sdk` v92 declares `IssueLabelFilter` internally but does not export
- * it from its entry point — importing that name by hand fails to compile with
- * TS2305. Deriving the type from `issueLabels`' own parameter keeps this file
- * honest against whatever the installed SDK actually accepts, and needs no
- * hand-written shadow interface that could drift from it.
- */
+/** Derived from the client method because `@linear/sdk` does not export `IssueLabelFilter` from its entry point. */
 type LabelFilterClause = NonNullable<NonNullable<NonNullable<Parameters<LinearClient['issueLabels']>[0]>['filter']>['or']>[number];
 
 interface Params {
@@ -17,12 +8,5 @@ interface Params {
 	team: string;
 }
 
-/**
- * The `or` clause naming every label the named team may put on an issue.
- *
- * A workspace-level label has no team, so a filter that asks only for
- * `team.key = 'LO'` never sees it — and a caller checking whether a configured
- * label exists would report a working label as missing. The SDK's nullable team
- * filter carries a `null` comparator for exactly this case.
- */
+/** A workspace-level label has no team, so filtering on the team key alone would report it missing. */
 export const buildLabelScopeFilter = ({ team }: Params): LabelFilterClause[] => [{ team: { key: { eq: team } } }, { team: { null: true } }];

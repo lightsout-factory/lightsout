@@ -24,23 +24,12 @@ const partitionKnown = ({ declared, knownPackages }: { declared: string[]; known
 });
 
 /**
- * Which packages a monorepo run is scoped to, and where that answer came from.
- *
  * The chain is `--packages` flag → plan front-matter `packages:` list →
- * concrete package paths referenced in the plan body → hard error. Nothing
- * beyond that is inferred — a run that cannot name its scope must stop, because
- * every gate afterwards would be scoped to a guess.
- *
- * The chain's answer is then reconciled against the packages that exist. Names
- * lifted out of the plan's prose are filtered down to real packages, and the
- * dropped ones come back on `ignored` so the run can record what it rejected.
- * A name a human declared — the flag, or the front-matter list — is never
- * filtered: it is a mistake worth stopping for, so it returns an error naming
- * both the missing package and the ones that exist. An empty `knownPackages`
- * means the workspace is unknown rather than empty, so nothing is reconciled.
- *
- * Returns no scope at all when there is nothing to settle: a single-repo config
- * has no package scope, and a resume already has one.
+ * concrete package paths in the plan body → hard error; a run that cannot name
+ * its scope must stop, because every later gate would be scoped to a guess.
+ * Names lifted from the plan's prose are filtered to real packages and the
+ * dropped ones come back on `ignored`; a name a human declared is never
+ * filtered, because it is a mistake worth stopping for.
  */
 export const resolvePackageScope = ({
 	config,

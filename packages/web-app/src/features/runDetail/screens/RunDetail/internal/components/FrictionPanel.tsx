@@ -6,12 +6,7 @@ interface Props {
 	records: FrictionRecord[];
 }
 
-/**
- * What fought the agents, and what they decided when the plan was silent.
- *
- * Grouped by area with a count per group, which is the same shape the terminal
- * report prints — a reader comparing the two should not have to translate.
- */
+/** Grouped by area with a count, the shape the terminal report prints, so a reader comparing the two need not translate. */
 export const FrictionPanel = ({ records }: Props) => (
 	<Card title="Friction">
 		{records.length === 0 ? (

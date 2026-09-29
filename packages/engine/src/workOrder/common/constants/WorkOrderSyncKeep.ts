@@ -1,6 +1,4 @@
 /**
- * Which copy of a diverged work order state the human chose to keep.
- *
  * A divergence is never resolved by the engine: both copies hold real work, so
  * `lightsout work-order sync --keep` is how a person says which one wins. Keeping
  * the local copy republishes it over the ticket's; keeping the published copy

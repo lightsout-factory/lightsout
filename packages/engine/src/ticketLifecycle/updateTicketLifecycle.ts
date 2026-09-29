@@ -23,24 +23,14 @@ interface Params {
 }
 
 /**
- * The two lifecycle fields, written as one operation: which planning a ticket
- * still owes, and where its implementation stands.
+ * The parameter is `lifecycle` rather than `settings` because every caller also
+ * holds a `TrackerSettings`. `trackerStatus` takes a role, never a status name,
+ * so every caller stays free of status strings.
  *
- * The lifecycle settings parameter is `lifecycle` rather than `settings`
- * because every caller holds a `TrackerSettings` at the same moment, and a bare
- * `settings` beside a `trackerSettings` reads as the tracker's.
- *
- * `trackerStatus` takes a role, never a status name. Turning a role into the
- * repository's own spelling happens here and only here, which is what keeps
- * every caller free of status strings.
- *
- * A ticket already at the target status is left alone rather than asked to move
- * to it. That is not an optimisation: a required write is asked for a status the
- * ticket may already hold — a resumed parked ticket is at In Progress by
- * construction — and Jira looks up an available transition and refuses when the
- * workflow offers no self-transition, which most do not. Treating that refusal
- * as success instead would swallow a genuinely misconfigured status name, which
- * is the thing these writes exist to surface.
+ * A ticket already at the target status is not asked to move to it. That is not
+ * an optimisation: Jira refuses when the workflow offers no self-transition,
+ * which most do not, and treating that refusal as success would swallow a
+ * genuinely misconfigured status name.
  *
  * The planning label is written first because the status is the visible
  * ownership marker, and ownership is the last thing to become true.

@@ -23,18 +23,14 @@ const ignoresPath = ({ patterns, rootDir, absolutePath }: { patterns: string[]; 
 interface Params {
 	/** Absolute path to the file, as the coverage report and the ignore patterns both see it. */
 	absolutePath: string;
-	/** The scope's resolved collection, or undefined when its configuration could not be found or evaluated — which answers `true`, exactly today's behaviour. */
+	/** The scope's resolved collection, or undefined when its configuration could not be found or evaluated — which answers `true`. */
 	collection: CoverageCollection | undefined;
 }
 
 /**
- * Whether the repo's own coverage configuration collects this file — the
- * question a missing coverage entry cannot answer on its own.
- *
- * Every uncertain answer is `true`. An unreadable configuration, an absent
- * `collectCoverageFrom`, and a glob this matcher does not implement all report
- * the file as collected, so this change can only ever add exemptions and never
- * remove one the gate already enforces.
+ * Every uncertain answer is `true` — an unreadable configuration, an absent
+ * `collectCoverageFrom`, a glob this matcher does not implement — so an
+ * exemption is only ever granted when it is certain.
  */
 export const isCoverageCollectedFile = ({ absolutePath, collection }: Params): boolean => {
 	if (collection === undefined) {

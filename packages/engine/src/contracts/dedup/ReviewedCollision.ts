@@ -1,15 +1,10 @@
 import { z } from 'zod';
 
 /**
- * One name-collision a dedup pass ruled on, whatever the ruling.
+ * `findings` holds only confirmed duplications, so without this a collision
+ * ruled distinct is indistinguishable from one nobody looked at.
  *
- * `findings` holds only the duplications the judge confirmed, so a collision
- * ruled distinct leaves no trace there. That absence is indistinguishable from
- * a collision nobody has looked at, and `plan grade`'s advisory nudge — "run
- * `plan dedup`" — was reading it as the second. This is the record that tells
- * the two apart: every collision the pass weighed, findings included.
- *
- * Identity is the triple, not the symbol alone. The same name planned at two
+ * Identity is the triple, not the symbol alone: the same name planned at two
  * paths, or in two phases, is two separate rulings.
  */
 export const ReviewedCollision = z.object({

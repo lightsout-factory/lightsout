@@ -11,14 +11,8 @@ interface Params {
 }
 
 /**
- * Everything a per-file selector needs to decide which coverage scope measures
- * a repo-relative path: the arguments `coverageScopeOf` takes, plus the
- * absolute root the file paths are relative to.
- *
- * Shared because both selectors read the same three settings off the same
- * configuration before walking their files, and a copy drifting would have them
- * disagree about which scope owns a file — the disagreement each selector
- * exists to rule out.
+ * Shared because both selectors read these settings, and a copy drifting would
+ * have them disagree about which scope owns a file.
  */
 export const resolveScopeContext = async ({
 	cwd,

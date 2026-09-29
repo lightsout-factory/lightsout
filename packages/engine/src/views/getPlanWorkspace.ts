@@ -17,16 +17,9 @@ import { readPlanWorkspaceFiles } from '#src/views/internal/common/utils/readPla
 import { listRuns } from '#src/views/listRuns.ts';
 import { PlanWorkspaceNotFoundError } from '#src/views/PlanWorkspaceNotFoundError.ts';
 
-/** One path segment that could only address something outside the folder it is joined to. */
 const escapesFolder = ({ segment }: { segment: string }) => segment === '' || segment === '..' || segment.includes('/') || segment.includes('\\');
 
-/**
- * Whether a workspace name addresses a plan inside the plans folder — the
- * defence `getPlanDocument` applies to its path.
- *
- * Only a plan address opens a workspace, and its work-order segment is held to
- * a single-segment test, so nothing outside the plans folder can be opened.
- */
+/** The defence `getPlanDocument` applies to its path: nothing outside the plans folder can be opened. */
 const addressesAPlan = ({ name }: { name: string }) => {
 	const address = parsePlanAddress({ name });
 
@@ -34,12 +27,8 @@ const addressesAPlan = ({ name }: { name: string }) => {
 };
 
 /**
- * Every JSON record the workspace holds, each read leniently.
- *
- * `readPlanFacts` and its siblings are deliberately not used: they throw on a
- * missing or corrupt file, which is correct for a pipeline that must not proceed
- * on half an answer, and wrong for a viewer whose job is to show a half-finished
- * workspace. Each file that exists and will not parse becomes a line instead.
+ * Not `readPlanFacts` and its siblings: they throw on a missing or corrupt file,
+ * which is right for a pipeline and wrong for a viewer of a half-finished workspace.
  */
 const readRecords = async ({ cwd, files }: { cwd: string; files: PlanWorkspaceFiles }) => {
 	const [facts, decisions, brainstormDecisions, grade, dedup] = await Promise.all([
@@ -66,11 +55,7 @@ interface Params {
 }
 
 /**
- * One plan workspace, whole: its files, its parsed records, and the runs that
- * implemented it.
- *
- * @param cwd - the repo whose `.lightsout/work-orders/` is read
- * @param name - the plan's address, exactly as the URL carried it: `<work-order>/<plan-id>`
+ * @param name - the plan's address as the URL carried it: `<work-order>/<plan-id>`
  * @throws {PlanWorkspaceNotFoundError} When the name is no plan address, or no plan folder answers to it.
  */
 export const getPlanWorkspace = async ({ cwd, name }: Params): Promise<PlanWorkspaceView> => {

@@ -1,15 +1,7 @@
 import { join } from 'node:path';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 
-/**
- * Which command's folder holds a run that belongs to no plan.
- *
- * Implement and phases answer the same folder, because a coordinator and the
- * plan it sequences are one command's work; the other four each answer their
- * own. The map lives beside the function it serves: it is tautologically
- * coupled to the parameter's type, and a second file for it would be a lookup
- * nobody can find from the function that reads it.
- */
+/** Implement and phases share a folder, because a coordinator and the plan it sequences are one command's work. */
 const commandFolders: Record<PipelineKind, string> = {
 	[PipelineKind.Implement]: 'implement',
 	[PipelineKind.Phases]: 'implement',
@@ -25,5 +17,4 @@ interface Params {
 	pipeline: PipelineKind;
 }
 
-/** The runs folder of the command that owns a run belonging to no plan: `<state>/<command>/runs`. */
 export const getCommandRunsDir = ({ stateDir, pipeline }: Params): string => join(stateDir, commandFolders[pipeline], 'runs');

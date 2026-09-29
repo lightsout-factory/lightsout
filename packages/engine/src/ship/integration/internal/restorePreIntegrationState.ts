@@ -10,7 +10,6 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/** What is still wrong after the restore ran, or `undefined` when the branch really is back where it started. */
 const describeRemainingState = async ({ cwd, baselineCommit }: { cwd: string; baselineCommit: string }) => {
 	const head = await runGit({ command: 'git rev-parse HEAD', cwd });
 	const status = await runGit({ command: 'git status --porcelain', cwd });
@@ -31,15 +30,9 @@ const describeRemainingState = async ({ cwd, baselineCommit }: { cwd: string; ba
 };
 
 /**
- * Put the branch back exactly where it stood before anything was integrated,
- * and say so only when that is verified.
- *
- * The merge is aborted when one is open — an absent merge is normal, not a
- * failure, and never stops the reset. `git clean -fd` and not `-fdx`: the
- * preconditions guarantee a clean tree at the baseline commit, so every
- * untracked file present afterwards came from the merge or from the agent —
- * but ignored build outputs are not the recovery's business, and deleting them
- * would cost the next run its cache.
+ * `git clean -fd` and not `-fdx`: the preconditions guarantee a clean tree at
+ * the baseline commit, but ignored build outputs are not the recovery's
+ * business, and deleting them would cost the next run its cache.
  *
  * The caller checks that this attempt still owns the branch and the merge
  * before calling: this function resets what it is pointed at, so pointing it at

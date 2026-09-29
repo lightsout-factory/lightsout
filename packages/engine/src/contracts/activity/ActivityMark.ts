@@ -4,8 +4,6 @@ import { ActivityLevelStart } from '#src/contracts/activity/ActivityLevelStart.t
 import { HarnessProcessMark } from '#src/contracts/activity/HarnessProcessMark.ts';
 
 /**
- * One line of an activity record.
- *
  * The reader validates every line against this, so a line matching no member is
  * dropped rather than guessed at — which is what lets a record whose last line
  * was cut off mid-write still be read to its last complete mark.

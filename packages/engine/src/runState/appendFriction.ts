@@ -12,10 +12,9 @@ interface Params {
 }
 
 /**
- * Persist friction entries to `.lightsout/friction.jsonl` in the target repo's
- * primary checkout. Append-only: friction accumulates across runs — that's what
- * lets the improvement loop see systemic patterns instead of one-offs, and one
- * ledger per repository is what keeps an isolated run's entries in it.
+ * One append-only ledger per repository, in the primary checkout: friction
+ * accumulating across runs is what lets the improvement loop see systemic
+ * patterns, and it keeps an isolated run's entries in the same ledger.
  */
 export const appendFriction = async ({ cwd, runId, step, friction }: Params): Promise<void> =>
 	appendJsonlRecords({ path: await getFrictionPath({ cwd }), schema: FrictionRecord, entries: friction, runId, step });

@@ -16,25 +16,14 @@ interface Params {
 }
 
 /**
- * Move a ticket to Done and find out whether it got there, rather than trusting
- * the first answer.
+ * A blown tracker deadline cancels nothing: the request is still on its way, so
+ * a write reported as failed may have landed a moment later. A failure is
+ * therefore answered by reading the ticket back, and only a ticket that did not
+ * move is written a second time — Jira refuses a self-transition its workflow
+ * does not offer, so a blind second write would turn that refusal into the
+ * reported error.
  *
- * The tracker call has a deadline, and a blown deadline cancels nothing: the
- * request is still on its way to the tracker, so a write reported as failed may
- * have landed a moment later. This is why the merge on LO-79 completed with its
- * ticket left open — the engine stopped listening and nobody ever asked.
- *
- * So a failure is answered by reading the ticket back, not by trying again
- * blind. Already Done means the write landed and there is nothing to do; only a
- * ticket that genuinely did not move is written a second time. That makes this
- * a converge on a known state rather than a retry, which matters because a
- * status write is not free to repeat — Jira refuses a self-transition its
- * workflow does not offer, and a blind second write would turn that refusal
- * into the reported error.
- *
- * The status comparison is exact, matching `updateTicketLifecycle`'s own. A
- * second, looser rule here would mean two answers in the codebase to the
- * question of whether a ticket is already at a status.
+ * The status comparison is exact, matching `updateTicketLifecycle`'s own.
  *
  * @returns undefined when the ticket reads Done, or the reason it does not — a
  * fragment the caller puts in its own sentence, since only the caller knows

@@ -11,7 +11,6 @@ interface Params {
 	branch: string;
 }
 
-/** Whether git says the first commit is reachable from the second: undefined when git gave no usable answer at all. */
 const readAncestry = async ({ cwd, ancestor, descendant }: { cwd: string; ancestor: string; descendant: string }) => {
 	const asked = await runCommand({ command: `git merge-base --is-ancestor ${ancestor} ${descendant}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 
@@ -22,7 +21,6 @@ const readAncestry = async ({ cwd, ancestor, descendant }: { cwd: string; ancest
 	return asked.exitCode === 0;
 };
 
-/** How the local work-order branch stands against its pushed copy, or undefined when git could not say. */
 const readBranchRelation = async ({ cwd, local, remote }: { cwd: string; local: string; remote: string }) => {
 	const behind = await readAncestry({ cwd, ancestor: local, descendant: remote });
 	const ahead = await readAncestry({ cwd, ancestor: remote, descendant: local });
@@ -40,12 +38,8 @@ const readBranchRelation = async ({ cwd, local, remote }: { cwd: string; local: 
 };
 
 /**
- * The local work-order branch moved onto the pushed commit, or the reason it was
- * left where it is.
- *
- * Only a branch no worktree holds is moved: `git branch -f` on a checked-out
- * branch would leave that tree's index describing a commit it no longer stands
- * on, so a tree holding the branch is the human's to update.
+ * Only a branch no worktree holds is moved: `git branch -f` on a checked-out branch would leave that
+ * tree's index describing a commit it no longer stands on.
  */
 const fastForwardTicketBranch = async ({ cwd, branch, local, remote }: { cwd: string; branch: string; local: string; remote: string }) => {
 	const holder = await readBranchWorktree({ cwd, branch });
@@ -62,24 +56,10 @@ const fastForwardTicketBranch = async ({ cwd, branch, local, remote }: { cwd: st
 };
 
 /**
- * Where a plan address's ticket branch stands before a tree is cut for it or
- * continued in — and the start point to cut from when only the remote holds it.
- *
- * Every plan of a ticket implements on the one ticket branch, so a later plan
- * has to be researched and built on the implementation that branch already
- * carries. Starting from the launching checkout's `HEAD` or the default branch
- * would silently split the ticket's work in two.
- *
- * Nothing is fetched here: a remote-tracking ref answers what the last `git
- * fetch` left behind, and publishing planning artifacts never moves code — the
- * implementation commits travel by `git push` and `git fetch` alone.
- *
- * Only a strict fast-forward of a branch no worktree holds is done without
- * asking; a branch a tree is standing on, and a branch that has diverged, are
- * both refused with the two commits named, because reconciling them is a
- * decision only the human can make.
- *
- * @returns the commit a fresh tree's branch is cut at, no start point when the local branch stands as it should, or the one sentence saying what to do next
+ * Every plan of a ticket implements on one branch, so a later plan must build on what that branch
+ * already carries; starting from `HEAD` or the default branch would split the ticket's work. Nothing
+ * is fetched here. Only a strict fast-forward of a branch no worktree holds is done unasked;
+ * reconciling anything else is a decision only the human can make.
  */
 export const prepareWorkOrderBranch = async ({ cwd, branch }: Params): Promise<{ startPoint?: string } | WorktreeFailure> => {
 	const local = await readGitRefCommit({ cwd, ref: `refs/heads/${branch}` });

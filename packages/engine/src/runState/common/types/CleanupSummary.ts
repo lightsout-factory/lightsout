@@ -1,6 +1,5 @@
 import type { CleanupEndReason } from '#src/contracts/run/CleanupEndReason.ts';
 
-/** What an implementation run's bounded cleanup pass spent and what it left behind — see {@link buildCleanupSummary}. */
 export interface CleanupSummary {
 	/** Cleanup executor rounds actually spent; 0 when no executor was invoked. */
 	rounds: number;

@@ -5,14 +5,9 @@ import bundle from '#assets/default-pack.json';
 let parsed: StandardsPackBundle | undefined;
 
 /**
- * The authored default pack, whole, as `scripts/buildDefaultPackView.mjs`
- * committed it to `assets/default-pack.json`.
- *
- * The app carries it because the public Standards Packs pages document what
- * every repo gets out of the box: the same pack, whole, wherever the site runs.
- * It is the authored pack rather than the copy `plugin/standards/` ships, which
- * the bundler strips the fixtures out of — and a rule page exists to show the
- * code a rule argues about.
+ * Written by `scripts/buildDefaultPackView.mjs`. The authored pack rather than
+ * the copy `plugin/standards/` ships, because the bundler strips the fixtures a
+ * rule page shows.
  */
 export const getDefaultPackBundle = (): StandardsPackBundle => {
 	if (parsed === undefined) {

@@ -6,13 +6,10 @@ interface Params {
 }
 
 /**
- * Turn the run id a user typed into the one on disk. Reports print run ids cut
- * to their first eight characters, so the id a run announces is a prefix rather
- * than a directory name — accepting it here is what lets `resume --run <id>`
- * take the id its own report just showed.
- *
- * The id half of the one lookup `resolveRunDir` takes the directory half of, so
- * the two can never be answered from two different scans.
+ * Reports print run ids cut to their first eight characters, so accepting a
+ * prefix is what lets `resume --run <id>` take the id its own report showed.
+ * Shares one lookup with `resolveRunDir`, so the two never answer from
+ * different scans.
  *
  * @throws {RunNotFoundError} When no run answers to the id, or when a shortened id matches more than one.
  */

@@ -7,17 +7,9 @@ interface Params {
 }
 
 /**
- * One step's cleanup outcome as every surface prints it, or undefined when the
- * step recorded none.
- *
- * The contract decides, never the step id: a coordinator step whose report is a
- * `PhaseReport`, and a step the run never reached, both answer undefined rather
- * than a zeroed summary — a cleanup line claiming zero rounds would read as a
- * pass that ran and found nothing, which is a different fact.
- *
- * Counts, never the findings themselves: the step record is where an inspector
- * opens them, and a report card carrying thousands of entries would be one
- * every surface has to cut back down.
+ * The contract decides, never the step id. A step with no cleanup report
+ * answers undefined rather than a zeroed summary, which would read as a pass
+ * that ran and found nothing.
  */
 export const buildCleanupSummary = ({ step }: Params): CleanupSummary | undefined => {
 	const parsed = RefactorStepReport.safeParse(step.report);

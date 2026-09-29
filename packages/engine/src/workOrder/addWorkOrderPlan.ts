@@ -24,12 +24,10 @@ interface Params {
 	/** The plan's first display title, which stays changeable. Defaults to the slug. */
 	title?: string;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	onProgress?: (message: string) => void;
 }
 
-/** What the change made, so the caller can name the plan and say why an approval lapsed. */
 interface PlanAddition {
 	record: WorkOrderState;
 	planId: string;
@@ -40,7 +38,6 @@ interface PlanAddition {
 /** The highest number a ticket may ever allocate: a plan id carries exactly three digits. */
 const maxPlanNumber = 999;
 
-/** The next id this ticket has never held, or why the slug or the number cannot make one. */
 const allocatePlanId = ({ record, slug }: { record: WorkOrderState; slug: string }): { id: string } | { error: string } => {
 	const highest = record.plans.reduce((top, plan) => Math.max(top, planNumberOf({ id: plan.id })), 0);
 	const next = highest + 1;
@@ -54,7 +51,6 @@ const allocatePlanId = ({ record, slug }: { record: WorkOrderState; slug: string
 	return composePlanId({ number: next, slug });
 };
 
-/** Everything the record must say before a plan may be added to it, and the plan added once it does. */
 const addPlanToRecord = ({
 	current,
 	name,
@@ -111,21 +107,10 @@ const addPlanToRecord = ({
 };
 
 /**
- * Add the next plan to a work order that already exists.
- *
- * A label no record answers to is a typo rather than a way to start work: the
- * refusal names it and names `lightsout work-order new`, which is the one
- * command that writes a work order's name.
- *
- * The id is one above the highest number the ticket has ever held, excluded
- * plans counted, so a number is never reused and a ship request, an exclusion
- * or a published attachment can never come to mean a different plan. Adding a
- * plan to a multiple-plan ticket withdraws any pending ship request, because
- * the set of plans that request approved is no longer the ticket's whole work.
- *
- * The record goes first: the id is allocated under the lock that owns it, and
- * only then is the plan's own folder made. A refusal therefore leaves nothing
- * behind for the next command to trip over.
+ * The id is one above the highest number the ticket has ever held, excluded plans counted, so a
+ * number is never reused and a ship request or an exclusion can never come to mean a different
+ * plan. The record goes first, under its lock, and only then the plan folder, so a refusal leaves
+ * nothing behind.
  */
 export const addWorkOrderPlan = async ({
 	cwd,

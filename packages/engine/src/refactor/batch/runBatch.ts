@@ -18,36 +18,23 @@ interface Params {
 	driver: Driver;
 	config: LightsoutConfig;
 	batch: RefactorBatch;
-	/** The run's standards packs, resolved once by the pipeline — the judgment rules the agent review reads come from here. */
 	packs: LoadedStandardsPack[];
-	/** Active framework channels, resolved once by the pipeline. */
 	channels: string[];
 	/** Check scope of the run's worklist, threaded into the per-batch re-check. */
 	checkPath?: string;
-	/** Include baselined findings in re-checks — must match the worklist's mode. */
+	/** Must match the worklist's mode. */
 	checkAll: boolean;
 	/** false skips both of this batch's agent reviews — the pre-edit read and the read of what it wrote. Code-checks-only mode. */
 	agentReview: boolean;
 	standards?: string;
 	testStandards?: string;
 	agentTimeoutMs: number;
-	/** Files earlier steps already attributed — excluded from this batch's git-truth merge. */
+	/** Excluded from this batch's git-truth merge. */
 	attributedFiles: string[];
 	onProgress: (message: string) => void;
-	/** Run-wide usage recorder (appends to agents.jsonl and totals). */
 	recordUsage: (params: { step: string; usage?: AgentUsage }) => Promise<void>;
 }
 
-/**
- * Execute one batch to a terminal condition: invoke the refactor executor on
- * the batch's findings, verify with scoped gates (cheap fix retries route by
- * gate kind — a red COVERAGE gate goes to the test writer, everything else
- * back to the refactor executor), then re-check the batch's site keys.
- * Sites gone → the judgment rules are read against the code the batch WROTE
- * and one polish pass spent on anything new → resolved; agent changed nothing
- * and sites persist → declined; partial → one re-invocation on the remainder,
- * then whatever persists is declined with the agent's rationale attached.
- */
 export const runBatch = async ({
 	cwd,
 	runId,
@@ -83,9 +70,8 @@ export const runBatch = async ({
 		recordUsage,
 	});
 
-	// One live check up front serves two purposes: the staleness check (earlier
-	// batches may have already eliminated these sites — no agent spent) and
-	// FRESH advisories (frozen worklist advisories cite pre-run line numbers).
+	// Live rather than frozen: earlier batches may have already cleared these
+	// sites, and frozen advisories cite pre-run line numbers.
 	const preCheck = await tools.checkLive();
 	const standing = readStandingWork({ batch, findings: preCheck.findings, onProgress });
 
@@ -108,8 +94,6 @@ export const runBatch = async ({
 		onProgress,
 	});
 
-	// Up to two executor passes: the initial batch, then one re-invocation on
-	// whatever sites survived a pass that DID change the tree (a partial).
 	const passBudget = 2;
 	let workFindings: StandardsFinding[] = standing;
 	let stop: BatchStop | undefined;
@@ -124,7 +108,5 @@ export const runBatch = async ({
 		}
 	}
 
-	// The budget ran out with sites still standing: a decline, and the only way
-	// out of the loop that is not already a stop.
 	return stop ?? (await tools.finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: workFindings.map((finding) => finding.siteKey) }));
 };

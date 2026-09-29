@@ -17,13 +17,9 @@ interface Params {
 }
 
 /**
- * The feature executor's fix re-invocation. Verify-implement hands its red to it
- * for every plan, and a rename-only plan's verify-tests does too — a unit-test
- * writer would be sent to repair a phase that must write no tests.
- *
- * It must receive the same `selfCheckCommand` and `renames` as the implement
- * step's own spawn: the two differ only in the user prompt, and a section on one
- * but not the other would split the role's cached system prompt in two.
+ * A rename-only plan's verify-tests also repairs through this, because a unit-test writer
+ * must not repair a phase that writes no tests. It must receive the same `selfCheckCommand`
+ * and `renames` as the implement spawn, or the role's cached system prompt splits in two.
  */
 export const buildFeatureFix =
 	({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, renames, selfCheckCommand }: Params): FixBuilder =>

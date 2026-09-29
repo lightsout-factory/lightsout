@@ -26,12 +26,7 @@ interface Params {
 	activity?: ActivityLevel;
 }
 
-/**
- * The exception-path judgment call, shared by every pipeline that verifies
- * with gates: after cheap mechanical retries are exhausted, a read-only
- * supervisor diagnoses the failure and either grants one guided retry or
- * rules it a human problem. Callers own usage recording and the verdict.
- */
+/** Callers own usage recording and the verdict. */
 export const consultSupervisor = async ({
 	driver,
 	cwd,

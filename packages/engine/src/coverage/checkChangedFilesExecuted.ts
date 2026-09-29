@@ -13,14 +13,10 @@ import { resolveScopeContext } from '#src/coverage/internal/common/utils/resolve
 import { selectCollectedFiles } from '#src/coverage/selectCollectedFiles/selectCollectedFiles.ts';
 import { selectUnloadableFiles } from '#src/coverage/selectUnloadableFiles/selectUnloadableFiles.ts';
 
-/**
- * The executed-statement half of an Istanbul json-summary, parsed at the
- * boundary. Loose objects, so a report's other metrics pass through untouched.
- */
+/** Loose objects, so a report's other metrics pass through untouched. */
 const ExecutionSummaryReport = z.record(z.string(), z.looseObject({ statements: z.looseObject({ covered: z.unknown(), total: z.unknown() }) }));
 
-// One scope's summary as executed-statement entries keyed repo-relative
-// (report keys are absolute paths), or undefined when unreadable.
+// Report keys are absolute paths, so entries are re-keyed repo-relative.
 const readExecutionSummary = async ({ cwd, summaryPath }: { cwd: string; summaryPath: string }) => {
 	try {
 		const parsed = ExecutionSummaryReport.parse(JSON.parse(await readFile(join(cwd, summaryPath), 'utf8')));
@@ -41,22 +37,12 @@ interface Params {
 }
 
 /**
- * The per-file accountability check: every changed file must show at least one
- * executed statement in the coverage report the gate just produced. The bar is
- * "ran at all" — thresholds stay with the repo's own coverage command.
+ * The bar is "ran at all": thresholds stay with the repo's own coverage command.
  *
- * Five kinds of file are exempt, each because no test could move its number:
- *
- * - deleted files, and provably inert ones (type-only, barrels) — there is no
- *   statement to execute.
- * - a tool's own configuration file — the tool reads it, no test imports it.
- * - a file whose module-scope `await` the scope's own Jest loads as CommonJS,
- *   where that `await` is a syntax error. Under a Jest configured for ES
- *   modules the same file loads normally and is held to the bar like any other.
- * - files outside every coverage scope — outside the measurement entirely.
- * - a file the repo's own coverage configuration does not collect — it can
- *   never appear in the report, so demanding a statement of it reports a fault
- *   no test could fix.
+ * Exempt, because no test could move their number: deleted and inert files, a
+ * tool's own configuration file, a file with a module-scope `await` that the
+ * scope's Jest loads as CommonJS, files outside every coverage scope, and files
+ * the repo's own coverage configuration does not collect.
  */
 export const checkChangedFilesExecuted = async ({ cwd, config, changedFiles, compiler }: Params): Promise<string | undefined> => {
 	if (changedFiles.length === 0 || compiler === undefined) {

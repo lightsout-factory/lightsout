@@ -3,20 +3,13 @@ import { MetadataTag } from '#src/appUI/badges/MetadataTag.tsx';
 import { CopyButton } from '#src/appUI/buttons/CopyButton.tsx';
 import type { RunDetailView } from '#src/features/runDetail/internal/common/types/RunDetailView.ts';
 
-/**
- * What each stopped state means, and what a reader does about it.
- *
- * The three states that carry no failing step and no error between them: a
- * paused run stopped at a wall rather than on a defect, and an escalated one is
- * waiting on a person. Without a sentence each, all a reader sees is a badge.
- */
+/** These states carry no failing step or error, so without a sentence all a reader sees is a badge. */
 const stateSentences: Partial<Record<RunStatus, string>> = {
 	[RunStatus.PausedRateLimit]: 'Paused at the harness rate limit — resume when the window resets.',
 	[RunStatus.PausedBudget]: 'Paused at the batch ceiling you set — resume to continue.',
 	[RunStatus.Escalated]: 'Escalated — the supervisor asked for a human decision; read the step’s report, then resume.',
 };
 
-/** The step a run is standing on: the one that failed, else the last that has not passed, else whatever the manifest still has open. */
 const findOpenStep = ({ view }: { view: RunDetailView }) => {
 	const failed = view.steps.find((step) => step.status === RunStatus.Failed);
 	const unfinished = [...view.steps].reverse().find((step) => step.status !== RunStatus.Passed);
@@ -28,15 +21,7 @@ interface Props {
 	view: RunDetailView;
 }
 
-/**
- * Where a run that has not finished is standing, and the one command that
- * would move it on.
- *
- * A run that passed has no next thing to do and a run that has not started has
- * nothing to say yet, so both draw nothing at all. The resume line follows the
- * manifest's own `resumable` rather than a second list of states, so this and
- * the runs table can never disagree about which runs offer one.
- */
+/** The resume line follows the manifest's own `resumable`, so this and the runs table never disagree about which runs offer one. */
 export const RunWhatNow = ({ view }: Props) => {
 	const { listing } = view;
 

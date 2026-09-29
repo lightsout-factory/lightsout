@@ -7,14 +7,9 @@ import { Dialog } from '#src/appUI/Dialog.tsx';
 import { Wordmark } from '#src/features/app/components/Wordmark.tsx';
 
 /**
- * The sell zone's pages, in the order the bar reads them.
- *
- * Rendered twice — once in the row a wide screen shows, once inside the menu a
- * narrow one opens — so the two can never drift into offering different pages.
- * The `nav` around it differs by label and layout; what it holds does not.
- *
- * Docs has no index of its own, so the bar points at the configuration doc —
- * the one a reader arriving from the front page wants first.
+ * Rendered in both the wide-screen row and the narrow-screen menu, so the two
+ * cannot drift into offering different pages. Docs has no index of its own, so
+ * it points at the configuration doc.
  */
 const SitePages = () => (
 	<>
@@ -30,13 +25,6 @@ const SitePages = () => (
 	</>
 );
 
-/**
- * The bar across the top of every page: which product this is, where else it
- * goes, and the two controls that belong to the reader rather than to a page.
- *
- * Below `md` the pages collapse behind a menu button, so a phone gets the
- * wordmark and the theme control at full size instead of a squeezed row.
- */
 export const TopNav = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
 

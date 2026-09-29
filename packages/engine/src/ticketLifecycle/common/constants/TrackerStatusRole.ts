@@ -1,7 +1,4 @@
 /**
- * The role a tracker status plays in the lifecycle, as opposed to the name a
- * repository spells it with.
- *
  * Callers name a role and `LifecycleSettings.statusNames` turns it into the
  * configured name, so no step outside `resolveLifecycleSettings` ever spells a
  * status string.

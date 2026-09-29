@@ -4,10 +4,9 @@ interface Params {
 }
 
 /**
- * Sorted slices of at most `max` files — the pathological guard for an
- * import component too large for one writer invocation. Lexicographic order
- * keeps sibling directories adjacent, so an oversized component splits
- * approximately along subtree lines.
+ * Guards against an import component too large for one writer invocation.
+ * Lexicographic order keeps sibling directories adjacent, so an oversized
+ * component splits roughly along subtree lines.
  */
 export const chunkFileGroup = ({ files, max }: Params): string[][] => {
 	const sorted = [...files].sort();

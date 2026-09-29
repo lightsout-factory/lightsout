@@ -8,21 +8,11 @@ interface Params extends Partial<Omit<SyntaxTreeInput, 'kind' | 'trees' | 'compi
 }
 
 /**
- * The input a `syntax-tree` check receives, with every source parsed.
+ * Uses this package's own compiler, not `resolveConsumerTypescript`, which finds
+ * the checked repo's compiler and returns nothing when it has none.
  *
- * The compiler is this package's own, imported directly. The hand-rolled copies
- * of this factory each borrowed the engine's `resolveConsumerTypescript`, which
- * answers a different question — it finds the compiler belonging to whatever
- * repo is being CHECKED, and returns nothing when that repo has none. A rule's
- * unit test is not checking a repo; it wants any compiler that can parse a
- * string, and the one beside it always can.
- *
- * Parsed with parent pointers set, because checks walk upward from a node far
- * more often than they walk down, and a tree without them fails in ways that
- * look like the rule is wrong rather than the fixture.
- *
- * @param sources - each file and its text, as pairs; the tree is parsed for you
- * @param dependencies - declared dependency names per package directory, as pairs — the same shape `setupFileListInput` takes, so a rule needing a framework carve-out is arranged the same way whichever input it reads
+ * Parsed with parent pointers set: checks walk upward from a node, and a tree
+ * without them fails in ways that look like the rule is wrong.
  */
 export const setupSyntaxTreeInput = ({ sources = [], dependencies = [], ...overrides }: Params = {}): StandardsCheckInput => {
 	const paths = sources.map(([path]) => path);

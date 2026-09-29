@@ -2,17 +2,10 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
 
-/**
- * Everything the cleanup loop reads and never changes, resolved once before the
- * first round — the rules, the comparison point, the budget and the tree as it
- * stood when cleanup began. Held together so a round runner reads one value
- * rather than eleven parameters that must stay in step.
- */
 export interface CleanupContext {
 	run: PipelineRun;
 	gitPrefix?: string;
 	planContent: string;
-	/** Overview text for a phased run — see `buildRefactorExecutorInvocation`. */
 	overviewContent?: string;
 	standards?: string;
 	packs: LoadedStandardsPack[];

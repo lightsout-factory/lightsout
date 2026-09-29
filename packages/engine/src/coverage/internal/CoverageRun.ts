@@ -21,11 +21,8 @@ interface ConstructorParams {
 }
 
 /**
- * A coverage run: the state and persistence every run shares, plus the
- * set-aside list and the before/after measurements every exit path of this one
- * reports. The pipeline and its steps mutate run state ONLY through these
- * methods, so the persist-before-the-next-action ordering lives in exactly one
- * place.
+ * Pipeline steps mutate run state only through these methods, so the
+ * persist-before-the-next-action ordering lives in exactly one place.
  */
 export class CoverageRun {
 	readonly setAside: CoverageSetAside[];
@@ -49,7 +46,6 @@ export class CoverageRun {
 		return this.runState.config;
 	}
 
-	/** Ceiling for a run's agent invocations, config-resolved once. */
 	get agentTimeoutMs(): number {
 		return this.runState.agentTimeoutMs;
 	}
@@ -83,7 +79,6 @@ export class CoverageRun {
 		return { ok: false, manifest: this.current(), error, setAside: this.setAside, before: this.before, after: this.before };
 	}
 
-	/** Persist a step's terminal status (and the run's), announce it, then halt. */
 	async stop({ record, status, error }: { record: StepRecord; status: RunStatus; error: string }): Promise<CoverageResult> {
 		await this.runState.stop({ record, status, error, label: 'coverage run' });
 

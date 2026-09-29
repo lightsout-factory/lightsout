@@ -1,7 +1,6 @@
 import { CommandActor } from '#src/contracts/commands/CommandActor.ts';
 import type { CommandStep } from '#src/contracts/commands/CommandStep.ts';
 
-/** The twelve steps of `/refactor`, in order — the cards of its infographic and the headings of its manual page. */
 export const refactorSteps: CommandStep[] = [
 	{
 		title: 'START THE RUN',

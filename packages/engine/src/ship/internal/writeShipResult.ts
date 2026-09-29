@@ -9,17 +9,9 @@ interface Params {
 }
 
 /**
- * Persist a ship result atomically (tmp file + rename) and answer with the path
- * written, or undefined when there was nowhere to write it.
- *
- * Same shape as `writeRunManifest`, for the same reason: the whole point of the
- * file is that another tool reads it, and a crash mid-write must not leave that
- * tool parsing half a JSON document.
- *
- * A result whose branch no work order claims — including a run whose branch git
- * could not name at all — is filed nowhere. The forge stays ship's durable
- * record of what happened, which is what `findPullRequest` recovers from, so
- * nothing that matters is lost with the local copy.
+ * Written through a tmp file and a rename because another tool reads it, and a crash mid-write
+ * must not leave half a JSON document. A branch no work order claims is filed nowhere; the forge
+ * stays ship's durable record.
  */
 export const writeShipResult = async ({ cwd, result }: Params): Promise<string | undefined> => {
 	const resultPath = result.branch === undefined ? undefined : await getShipResultPath({ cwd, branch: result.branch });

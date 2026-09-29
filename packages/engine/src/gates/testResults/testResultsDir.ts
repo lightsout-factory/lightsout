@@ -12,7 +12,6 @@ const safeSegment = ({ segment }: { segment: string }) => segment.replace(unsafe
 interface Params {
 	cwd: string;
 	runId: string;
-	/** The pipeline step in flight. */
 	step: string;
 	/** 'root' or the package directory name. */
 	group: string;
@@ -21,12 +20,8 @@ interface Params {
 }
 
 /**
- * The absolute directory one gate execution's per-test results go in, keyed by
- * the step, the package group and the gate kind.
- *
- * One directory per execution rather than one file per run: a checkpoint has to
- * be able to read exactly the evidence the gate it observed wrote, and never a
- * sibling gate's or an earlier attempt's.
+ * One directory per execution, so a checkpoint reads exactly the evidence the gate it observed
+ * wrote, never a sibling gate's or an earlier attempt's.
  */
 export const testResultsDir = async ({ cwd, runId, step, group, kind }: Params): Promise<string> => {
 	const runDir = await resolveRunDir({ cwd, runId });

@@ -1,9 +1,6 @@
 import { z } from 'zod';
 
 /**
- * One flag a command accepts, stated once for the usage line, the flag
- * validator and the manual page.
- *
  * A flag that takes a different placeholder in two invocation shapes is two
  * rows with the same `name` and different `shape` — `implement`'s `plan` is
  * `--plan <path>` in its single-plan shape and `--plan <folder>` in its folder

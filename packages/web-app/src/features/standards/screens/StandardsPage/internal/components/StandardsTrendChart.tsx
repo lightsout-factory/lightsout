@@ -14,22 +14,9 @@ interface Props {
 }
 
 /**
- * Open findings over the checks this repo has run, as two lines.
- *
- * Only snapshots of the same subpath are plotted: a whole-repo total and a
- * single-package total are different measurements, and drawing them as one line
- * would invent a rise or a fall that nobody caused. Snapshots left out for that
- * reason are counted in a line beneath the chart rather than dropped silently.
- *
- * Drawn as inline SVG in a 0–1 box scaled by `viewBox`, so the chart resizes
- * with its card and no charting dependency is added for two polylines.
- *
- * The selector is what lets a reader see the snapshots the omission line counts
- * rather than only being told they exist. Its options are derived from the
- * points the chart already holds — a second prop would be the same list twice,
- * and the two could disagree. Every path is offered, a path with one snapshot
- * included: selecting it shows the no-trend message, which is a truer answer
- * than hiding the path.
+ * Only snapshots of one subpath are plotted: a whole-repo total and a
+ * single-package total are different measurements, and one line through both
+ * would invent a rise or fall nobody caused.
  */
 export const StandardsTrendChart = ({ points, path }: Props) => {
 	const [scope, setScope] = useState(path);

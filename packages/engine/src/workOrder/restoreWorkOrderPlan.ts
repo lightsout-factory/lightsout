@@ -12,7 +12,6 @@ interface Params {
 	/** The plan's address, `<ticket-branch>/<plan-id>`. */
 	address: string;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	/**
 	 * The checkout whose primary holds the work order's state and sync sidecar.
@@ -23,7 +22,7 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/** Remember which generation of this plan's files now sits on disk, so a later publish knows it is not behind. */
+/** So a later publish knows this machine is not behind. */
 const recordMarker = async ({
 	recordCwd,
 	name,
@@ -49,20 +48,9 @@ const recordMarker = async ({
 };
 
 /**
- * Rebuild one plan of a ticket from the generations published under its own
- * plan id: the plan's durable files first, then the brainstorm generation that
- * owns `brainstorm-notes.md`.
- *
- * The plan generation decides the outcome and the brainstorm generation only
- * adds to it: a plan is complete without the notes, so a brainstorm that cannot
- * be verified is reported as a line and the restored plan stands. A ticket
- * carrying no generation for this plan is not a failure either — it is what a
- * plan that has never been published looks like — and no folder is created for
- * it.
- *
- * It does not pull the work order state: the callers that need the record ask for
- * it themselves, and a restore that pulled would read the tracker twice for
- * every plan the queue restores.
+ * A plan is complete without its notes, so a brainstorm that cannot be verified is reported and the
+ * restored plan stands. A ticket carrying no generation for this plan is a plan never published, not
+ * a failure. It does not pull the state: pulling here would read the tracker twice per restored plan.
  */
 export const restoreWorkOrderPlan = async ({
 	cwd,

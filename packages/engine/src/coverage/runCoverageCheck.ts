@@ -11,10 +11,8 @@ import { resolveCoverageScopes } from '#src/coverage/resolveCoverageScopes.ts';
 import { appendCommandLog } from '#src/runState/appendCommandLog.ts';
 
 /**
- * The Istanbul json-summary shape, parsed at the boundary: one entry per file
- * plus a `total`, each carrying a statements percentage. Loose objects, so a
- * report's other metrics (branches, functions, lines) pass through untouched
- * rather than failing a measurement that does not read them.
+ * Loose objects, so a report's other metrics pass through untouched rather than
+ * failing a measurement that does not read them.
  */
 const CoverageSummaryReport = z.record(z.string(), z.looseObject({ statements: z.looseObject({ pct: z.unknown() }) }));
 
@@ -28,7 +26,6 @@ const readJsonFile = async ({ path }: { path: string }) => {
 	}
 };
 
-/** One scope's measured files and total, read from the summary its command just wrote. */
 const readScopeSummary = async ({ cwd, scope, summaryPath, passed }: { cwd: string; scope: string; summaryPath: string; passed: boolean }) => {
 	const parsed = CoverageSummaryReport.safeParse(await readJsonFile({ path: join(cwd, summaryPath) }));
 
@@ -74,10 +71,6 @@ interface Params {
 }
 
 /**
- * Measure coverage: run the consumer's own coverage command in every scope,
- * read each scope's JSON summary, and merge into one worst-first file list
- * with package attribution.
- *
  * The exit codes are the only done signal — the engine never learns the
  * threshold number, so the repo's test config stays the single source of truth
  * for what "covered enough" means. `passed` is the merged signal; each total

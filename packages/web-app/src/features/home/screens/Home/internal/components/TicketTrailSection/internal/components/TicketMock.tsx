@@ -4,10 +4,9 @@ import { LinearMark } from '#src/appUI/icons/LinearMark.tsx';
 import { cn } from '#src/common/utils/cn.ts';
 import { demoTicket } from '#src/features/home/internal/common/constants/demoTicket.ts';
 
-/** The files a ticket carries once its brainstorm and plan are published — the names lightsout attaches them under. */
+/** The names lightsout attaches a published brainstorm and plan under. */
 const attachments = ['brainstorm-notes.md', 'brainstorm-decisions.json', 'plan.md'];
 
-/** What the ticket's history shows, oldest first, each written by lightsout as the work moves. */
 const activity: Array<{ Icon: LucideIcon; text: string; isDone?: boolean }> = [
 	{ Icon: Paperclip, text: 'Brainstorm published: design and decisions attached' },
 	{ Icon: CircleCheck, text: 'Plan graded A and published' },
@@ -15,12 +14,7 @@ const activity: Array<{ Icon: LucideIcon; text: string; isDone?: boolean }> = [
 	{ Icon: GitMerge, text: 'Merged, ticket closed', isDone: true },
 ];
 
-/**
- * A ticket as a team would see it after lightsout has worked it: the plan's
- * files attached, the status current, and a history of every step — drawn as
- * a Linear ticket from lightsout's own board, since that is where this
- * project's work is tracked.
- */
+/** Drawn as a Linear ticket because that is where this project's own work is tracked. */
 export const TicketMock = () => (
 	<figure
 		aria-label="A ticket with its brainstorm, plan and history attached"

@@ -2,19 +2,11 @@ import type { GapObservation } from '#src/contracts/plan/grade/GapObservation.ts
 import type { GradedGap } from '#src/contracts/plan/grade/GradedGap.ts';
 
 interface Params {
-	/** A judged gap, or a memory record — a record is a gap the memory carried across passes, and reads the same way. */
+	/** A judged gap, or a memory record, which reads the same way. */
 	gap: GapObservation & Pick<GradedGap, 'observations'>;
 }
 
-/**
- * Every observation one gap stands for: the list it carries, or — when it carries
- * none, as a single reader's finding does — the one observation its own identity fields describe.
- *
- * Spelled once because the batch accounting, the report collapse and the memory
- * fold all need a gap's observations and must agree on what an empty list means:
- * a copy that read empty as "nothing" would let a finding's own location drop out
- * of the record it joins.
- */
+/** An empty list means a single reader's finding, which still stands for its own location; reading it as "nothing" would drop that location from the record it joins. */
 export const gapObservations = ({ gap }: Params): GapObservation[] =>
 	gap.observations.length > 0
 		? gap.observations

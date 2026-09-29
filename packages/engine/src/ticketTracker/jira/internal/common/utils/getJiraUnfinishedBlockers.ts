@@ -6,8 +6,6 @@ interface Params {
 }
 
 /**
- * The keys of every blocking ticket this issue is still waiting on.
- *
  * Jira stores "A blocks B" once, as a link between the two; from B's side it is
  * the inward end, so the blockers of an issue are the `inwardIssue` of its links
  * whose inward description is 'is blocked by' — the default wording of Jira's

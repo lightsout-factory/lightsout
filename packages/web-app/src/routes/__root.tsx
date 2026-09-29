@@ -10,14 +10,10 @@ import appCss from '#src/styles/app.css?url';
 import { ThemeProvider } from '#src/theme/ThemeProvider.tsx';
 
 /**
- * The one inline script in the app.
- *
- * The server always sends the light class, because it cannot know what this
- * viewer chose. A viewer who chose dark would then see light for a frame, so
- * this runs before the stylesheet is applied and swaps the class. The provider
- * reads the same key in an effect, which is why nothing here causes a
- * hydration mismatch. A browser with storage blocked throws on the first read
- * and is left with the server's answer.
+ * The server always sends the light class because it cannot know this viewer's
+ * choice, so this swaps it before the stylesheet applies to avoid a flash of
+ * light. The provider reads the same key in an effect, so there is no hydration
+ * mismatch. A browser with storage blocked throws and keeps the server's answer.
  */
 const themeScript = `try {
 	var stored = localStorage.getItem('${themeStorageKey}');
@@ -51,9 +47,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 		</RootDocument>
 	),
 	notFoundComponent: () => <NotFound />,
-	// The document and the theme, and nothing else. Which frame a page wears is
-	// decided one level down: `_site.tsx` for the public pages, `app.tsx` for
-	// the pages that read this machine's repository.
 	component: () => (
 		<RootDocument>
 			<ThemeProvider defaultTheme={Theme.Light}>

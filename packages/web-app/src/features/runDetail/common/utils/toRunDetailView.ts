@@ -6,15 +6,7 @@ interface Params {
 	view: RunView;
 }
 
-/**
- * Narrow a run view for the wire: each step's report keeps its value and loses
- * only the `unknown` in its type.
- *
- * A report that is no object at all is dropped rather than carried, because
- * every report contract the engine writes is an object — a primitive in that
- * field is a corrupt manifest, and the step then reads as having recorded
- * nothing rather than as holding something the page cannot show.
- */
+/** Every report the engine writes is an object, so a primitive means a corrupt manifest and is dropped. */
 export const toRunDetailView = ({ view }: Params): RunDetailView => ({
 	...view,
 	steps: view.steps.map((step) => ({

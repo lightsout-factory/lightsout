@@ -9,15 +9,10 @@ interface Params {
 }
 
 /**
- * True only when the file PROVABLY contains no executable statement: every
- * top-level statement is an import, a re-export, or a pure type declaration —
- * i.e. barrels and type-only files, the exact set the test standards exempt
- * from dedicated tests. These never earn a test-writer invocation: there is
- * nothing to cover, and a writer either burns the spawn as a no-op or writes
- * implementation-coupled noise. Conservative by construction — anything else
- * (a constant with a fallback expression, an enum, a class, an
- * export-default) counts as logic and keeps its writer; a false "has logic"
- * merely reproduces the old behavior.
+ * Barrels and type-only files are the set the test standards exempt, and a
+ * test writer given one only burns the spawn or writes implementation-coupled
+ * noise. Conservative on purpose: anything else, even an enum or a constant
+ * with a fallback expression, counts as logic and keeps its writer.
  */
 export const isInertSourceFile = ({ path, content, compiler }: Params): boolean => {
 	const scriptKind = /\.[jt]sx$/.test(path) ? compiler.ScriptKind.TSX : compiler.ScriptKind.TS;

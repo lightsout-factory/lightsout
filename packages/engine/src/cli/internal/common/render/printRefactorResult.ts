@@ -10,12 +10,6 @@ interface Params {
 	result: RefactorResult;
 }
 
-/**
- * Render a finished refactor run: the status line, one line per batch, the
- * agent's own rationale for every decline, the per-rule burn-down, and
- * where the evidence landed. Reporting only — the command owns the exit code,
- * so this stays callable from a test without ending the process.
- */
 export const printRefactorResult = ({ result }: Params): void => {
 	const { manifest, declined, before, after } = result;
 	const batchSteps = manifest.steps.filter((step) => step.id.startsWith('batch-'));

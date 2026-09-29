@@ -2,7 +2,7 @@ interface Params {
 	text: string;
 }
 
-/** The labels both interview skills mandate: the question label plus at least one of the parts that make a one-word answer safe. */
+/** The labels both interview skills mandate. */
 export const isQuestionText = ({ text }: Params): boolean => {
 	const supportingLabels = ['**Context:**', '**Options:**', '**Recommendation:**'];
 

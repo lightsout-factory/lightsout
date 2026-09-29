@@ -1,8 +1,6 @@
 /**
- * What preparation a ticket still owes before implementation can begin.
- *
- * It is deliberately not a record of implementation progress — that is the
- * tracker's own workflow status, and the queue selects on the pair of the two.
+ * Deliberately not a record of implementation progress — that is the tracker's
+ * own workflow status, and the queue selects on the pair of the two.
  */
 export const PlanningStatus = {
 	/** Human shaping is owed and has not started. The queue never selects it. */
@@ -19,11 +17,7 @@ export const PlanningStatus = {
 
 export type PlanningStatus = (typeof PlanningStatus)[keyof typeof PlanningStatus];
 
-/**
- * The tracker label each planning status carries when a repository names none
- * of its own: the planning status verbatim, because the `planning-` prefix
- * already reads as a classification on a tracker.
- */
+/** The planning status verbatim, because the `planning-` prefix already reads as a classification on a tracker. */
 export const defaultPlanningStatusLabels: Record<PlanningStatus, string> = {
 	[PlanningStatus.NeedsBrainstorm]: 'planning-needs-brainstorm',
 	[PlanningStatus.NeedsPlan]: 'planning-needs-plan',

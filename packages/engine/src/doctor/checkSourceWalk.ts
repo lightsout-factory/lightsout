@@ -12,13 +12,7 @@ interface Params {
 
 const sourceExtension = /\.(m|c)?[jt]sx?$/;
 
-/**
- * Why the walk is entitled to skip a file git tracks. Anything git tracks that
- * matches none of these is the interesting case.
- *
- * `fixtures/` is only a reason inside a standards pack, so the pack roots the
- * walk found are what decides it rather than the name alone.
- */
+/** `fixtures/` is only a reason inside a standards pack, so the pack roots decide it rather than the name alone. */
 const skipReason = ({ path, generated, standardsPacks }: { path: string; generated: string[]; standardsPacks: string[] }) => {
 	const segments = path.split('/');
 
@@ -44,25 +38,16 @@ const skipReason = ({ path, generated, standardsPacks }: { path: string; generat
 		return 'standards pack fixture';
 	}
 
-	// A build tool writes beside `src`, never inside it — the walk skips these
-	// names by position, and so does this.
+	// The walk skips these names only before `src`, so this does too.
 	const beforeSrc = segments.slice(0, segments.indexOf('src') === -1 ? segments.length : segments.indexOf('src'));
 
 	return beforeSrc.some((segment) => ['dist', 'build', 'coverage', 'out'].includes(segment)) ? 'build output' : undefined;
 };
 
 /**
- * Does the walk see everything git tracks?
- *
- * The walk hid `packages/engine/src/coverage` — nineteen files — for as long as
- * it skipped every directory named `coverage`, and nothing said so: a walk that
- * lists fewer files reports fewer findings rather than an error, so the rules
- * simply had less to read. Only a count noticed.
- *
- * git's index is the second opinion. Every source file git tracks should either
- * be listed by the walk or be skipped for a reason this can name; a file that is
- * neither is the next blind spot, reported while it is one file rather than
- * nineteen.
+ * A walk that lists too few files reports fewer findings rather than an error,
+ * so git's index is the second opinion: every tracked source file must be walked
+ * or skipped for a reason this can name.
  */
 export const checkSourceWalk = async ({ cwd, generated = [] }: Params): Promise<DoctorCheck> => {
 	const result = await runCommand({ command: 'git ls-files -z', cwd, timeoutMs: probeTimeoutMs }).catch(() => undefined);

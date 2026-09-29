@@ -32,22 +32,12 @@ interface Params {
 }
 
 /**
- * What one ticket's worker left behind, turned into the branch's verdict.
+ * A failed worker commits nothing: work nothing vouches for must not reach the
+ * ship step. A ticket left open was already committed plan by plan, and is
+ * recorded open so the next drain re-evaluates rather than merges it.
  *
- * There are three answers rather than two. A worker that failed parks and
- * commits nothing: committing work nothing vouches for would hand the ship step
- * a branch with no evidence behind it. A worker that left the ticket open
- * commits nothing either — every plan it built was already committed plan by
- * plan — and the branch is recorded open, which is what makes the next drain
- * re-evaluate the ticket rather than merge it.
- *
- * Anything else is committed and then judged ready when the branch carries
- * commits ahead of the default branch, whether or not this session added any, so
- * a resumed ticket whose work an earlier run committed is never reported as
- * having changed nothing. A branch git cannot count is not a fact worth
- * recording, so that answer parks the ticket and leaves the record where it was.
- *
- * @returns the part of the ticket's outcome the worker and the commit step decide
+ * Readiness counts commits ahead of the default branch, not this session's, so a
+ * resumed ticket whose work an earlier run committed is not reported as empty.
  */
 export const settleWorkerOutcome = async ({
 	cwd,
@@ -69,9 +59,8 @@ export const settleWorkerOutcome = async ({
 	if (worked.open !== undefined) {
 		await writeBranchState({ cwd, branch, phase: BranchPhase.Open, onProgress });
 
-		// `error` and `unanswered` are stated absent rather than left off: every
-		// other answer carries all three, and whoever asks whether this ticket
-		// parked must never have to tell a missing key from an empty one.
+		// Stated absent rather than left off, so no reader has to tell a missing
+		// key from an empty one.
 		return { ready: false, open: worked.open, error: undefined, unanswered: undefined };
 	}
 

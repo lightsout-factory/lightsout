@@ -10,13 +10,8 @@ import type { ConfigPricing } from '#src/contracts/ConfigPricing.ts';
 import type { PlanActivityReport } from '#src/views/common/types/PlanActivityReport.ts';
 import { readPlanActivityReports } from '#src/views/readPlanActivityReports.ts';
 
-/**
- * One plan's estimate for the data payload: every root priced and added.
- *
- * Absent whenever the shared estimator answered nothing for every root, so a
- * repository with no rates for the models a plan ran under carries no estimate
- * rather than a zero.
- */
+// Absent rather than zero when no root could be priced, so a repository with no
+// rates carries no estimate.
 const estimateOf = ({ plan, pricing }: { plan: PlanActivityReport; pricing?: ConfigPricing }) => {
 	const priced = (plan.report?.roots ?? []).flatMap((node) => {
 		const estimate = estimateActivityCost({ node, pricing });
@@ -28,28 +23,15 @@ const estimateOf = ({ plan, pricing }: { plan: PlanActivityReport; pricing?: Con
 };
 
 /**
- * `lightsout report --plan <name>` — where a plan's hours and money went.
+ * `--json` prints the totalled tree rather than formatted strings, so a consumer
+ * reads the same calculation the table does.
  *
- * It spawns nothing and writes nothing: every figure it prints was recorded by
- * the plan commands that spent the time, and everything above a harness process
- * is folded from those marks when they are read. The name may address one plan,
- * or a work order holding several plans.
- *
- * `--json` prints the same totalled tree as data and no table, so a later chart
- * reads the one calculation this table reads rather than a second one of its
- * own. The payload carries the tree rather than any pre-formatted string, which
- * is the whole point of the flag.
- *
- * The repository's config is optional: a repository with none still gets a
- * report and loses only the estimated-cost column, because a report is never
- * withheld for want of a price list.
+ * The config is optional: a report is never withheld for want of a price list.
  */
 export const reportCommand = async ({ cwd, flags }: CommandContext): Promise<void> => {
 	const name = getStringFlag({ flags, name: 'plan' });
 
 	if (name === undefined) {
-		// No plan is named, so there is no plan to default to — a report of some
-		// other plan would answer a question nobody asked.
 		console.error(usage);
 		return exitCli({ code: 1 });
 	}

@@ -4,7 +4,6 @@
  * improving batches without improving itself.
  */
 export interface CoverageSetAside {
-	/** The batch whose report produced this entry. */
 	batchId: string;
 	files: string[];
 	/** Why these files stopped — the agent's own lines where there are any. */

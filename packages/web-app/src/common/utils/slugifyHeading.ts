@@ -4,13 +4,8 @@ interface Params {
 }
 
 /**
- * The anchor id a markdown heading gets.
- *
- * One algorithm for both sides of a table of contents: `Markdown` puts this id
- * on the heading it renders, and `DocToc` links to it from the raw line, so the
- * two agree by construction rather than by inspection. Inline markdown is
- * stripped first — a heading reads the same whether or not it spells a word in
- * backticks.
+ * `Markdown` puts this id on the heading it renders and `DocToc` links to it from
+ * the raw line, so both sides must share this one algorithm.
  */
 export const slugifyHeading = ({ text }: Params): string =>
 	text

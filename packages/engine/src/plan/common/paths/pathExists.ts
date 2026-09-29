@@ -4,10 +4,7 @@ interface Params {
 	path: string;
 }
 
-/**
- * True when a path exists on disk. A `stat` that resolves means it exists; any
- * rejection (missing, permission) means it does not. Never throws.
- */
+/** Any `stat` rejection, permission included, reads as not existing. */
 export const pathExists = ({ path }: Params): Promise<boolean> =>
 	stat(path).then(
 		() => true,

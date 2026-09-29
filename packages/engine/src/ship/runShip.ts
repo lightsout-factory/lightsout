@@ -18,23 +18,16 @@ type ProgressSink = (message: string) => void;
 
 interface Params {
 	cwd: string;
-	/** Already-resolved settings — validating the config is the caller's job, so no step here throws. */
+	/** Validating the config is the caller's job, so no step here throws. */
 	settings: ShipSettings;
-	/** The effective config and harness the integration step verifies and repairs with. Required, so no shipping path can be added without the safety contract. */
+	/** Required, so no shipping path can be added without the safety contract. */
 	integration: ShipIntegration;
-	/** The branch's ticket record's say over the merge. Required, so no shipping path can be added without asking the ticket first. */
+	/** Required, so no shipping path can be added without asking the ticket first. */
 	workOrderGuard: ShipWorkOrderGuard;
-	/** Live progress sink — one line per step. Silent when omitted. */
 	onProgress?: ProgressSink;
 }
 
-/**
- * Persist a result and hand it back — the one way out of this file, so no exit
- * path can forget to write one.
- *
- * A branch no work order claims has nowhere to file a result, so there is no
- * path to name and the line is left out; the ship's verdict is unchanged.
- */
+/** The one way out of this file, so no exit path can forget to write a result. */
 const record = async ({ cwd, result, onProgress }: { cwd: string; result: ShipResult; onProgress?: ProgressSink }) => {
 	const resultPath = await writeShipResult({ cwd, result });
 
@@ -45,7 +38,6 @@ const record = async ({ cwd, result, onProgress }: { cwd: string; result: ShipRe
 	return result;
 };
 
-/** A blocked result, written on the way out. Every stop in the sequence ends here rather than throwing. */
 const stopShip = ({
 	cwd,
 	onProgress,
@@ -64,14 +56,9 @@ const stopShip = ({
 };
 
 /**
- * The branch's own diff against the commit it was cut from — what states this
- * candidate's intent to a repair attempt.
- *
- * Read once, from the clean starting HEAD, and unchanged for the rest of the
- * invocation: a repair is bounded by what the branch set out to do, and a diff
- * re-read after an integration would quietly widen that bound to include the
- * default branch's work. An unreadable diff is an empty one, which blocks a CI
- * repair rather than inventing an intent for it.
+ * Read once, from the starting HEAD: a diff re-read after an integration would
+ * widen a repair's bound to the default branch's work. An unreadable diff is
+ * empty, which blocks a CI repair rather than inventing an intent for it.
  */
 const readBranchDiff = async ({ cwd, defaultBranch }: { cwd: string; defaultBranch: string }) => {
 	const maxDiffCharacters = 32_000;
@@ -93,30 +80,14 @@ const readBranchDiff = async ({ cwd, defaultBranch }: { cwd: string; defaultBran
 };
 
 /**
- * Take the branch the caller is standing on from committed work to merged and
- * cleaned up, and write one typed result describing what happened.
+ * Every exit path writes a result, because a tracker skill that finds no file
+ * cannot tell "ship never ran" from "ship ran and stopped".
  *
- * Every exit path — blocked and shipped alike — writes that result before
- * returning, because a tracker skill that finds no file cannot tell "ship never
- * ran" from "ship ran and stopped".
- *
- * The bound is `1 + maxCheapFixRetries` COMPLETE attempts, each of which
- * integrates the freshly fetched default branch, prepares the release, verifies
- * it, commits, pushes, waits for that commit's checks and asks for the
- * configured merge. Only two obstacles earn another one: a merge the forge's own
- * state proved is behind a newer base, and failed checks whose evidence was
- * readable enough to repair. Everything else stops here, because another whole
- * attempt would meet exactly the same wall — and the allowance is never reset,
- * so a default branch that keeps moving cannot spin this forever.
- *
- * A retry starts from whatever the last attempt safely committed, so published
- * work is preserved and nothing is ever force-pushed or reset behind a commit
- * the remote already holds. Only a confirmed merge earns the local cleanup, and
- * it runs once.
- *
- * Once the preconditions pass, the sequence also records each of its six steps
- * in a shipping progress record beside the result, which is what
- * `lightsout status --shipping` reads while the ship is still going.
+ * Only a merge behind a newer base and failed checks readable enough to repair
+ * earn another attempt; anything else would meet the same wall. The allowance is
+ * never reset, so a default branch that keeps moving cannot spin this forever. A
+ * retry starts from what the last attempt committed, so nothing the remote holds
+ * is force-pushed or reset.
  */
 export const runShip = async ({ cwd, settings, integration, workOrderGuard, onProgress }: Params): Promise<ShipResult> => {
 	const preconditions = await checkShipPreconditions({ cwd, ticketPattern: settings.ticketPattern });
@@ -139,7 +110,6 @@ export const runShip = async ({ cwd, settings, integration, workOrderGuard, onPr
 
 	recorder.beginAttempt({ attempt: 1 });
 
-	// Every line still reaches the caller unchanged; the record keeps the last one as what the ship is doing now.
 	const trackedProgress: ProgressSink = (message) => {
 		onProgress?.(message);
 		recorder.noteProgress({ message });

@@ -8,11 +8,7 @@ interface Params {
 	compiler: typeof ts;
 }
 
-/**
- * Whether a node holds an `await` belonging to module scope. Function and
- * class bodies open their own scope, so the search stops at them: an `await`
- * inside one is ordinary async code.
- */
+/** Function and class bodies open their own scope, so an `await` inside one is ordinary async code. */
 const hasModuleScopeAwait = ({ node, compiler }: { node: ts.Node; compiler: typeof ts }): boolean => {
 	if (compiler.isFunctionLike(node) || compiler.isClassLike(node)) {
 		return false;
@@ -27,17 +23,9 @@ const hasModuleScopeAwait = ({ node, compiler }: { node: ts.Node; compiler: type
 };
 
 /**
- * True when the file carries an `await` at module scope — a statement that is
- * legal only where the module system evaluates the file as an ES module, and a
- * syntax error anywhere it is evaluated as CommonJS.
- *
- * Whether the consumer's own runner evaluates it either way is not this
- * predicate's question: it reads syntax and nothing else. The coverage module's
- * `selectUnloadableFiles` answers the runner half, by reading the Jest
- * configuration governing the file's coverage scope.
- *
- * Deliberately narrow: an `await` inside any function or class body is
- * ordinary async code and says nothing about whether the file loads.
+ * A module-scope `await` is legal only where the file is evaluated as an ES
+ * module, and a syntax error under CommonJS. Which one the consumer's runner
+ * uses is `selectUnloadableFiles`'s question; this reads syntax alone.
  */
 export const isUnloadableSourceFile = ({ path, content, compiler }: Params): boolean => {
 	const scriptKind = /\.[jt]sx$/.test(path) ? compiler.ScriptKind.TSX : compiler.ScriptKind.TS;

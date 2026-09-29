@@ -7,18 +7,13 @@ interface Params {
 	cwd: string;
 	/** Kebab plan name — the folder the plan's own files live in. */
 	name: string;
-	/** Optional progress line; the sync command and the read-only passes pass none. */
 	onProgress?: (message: string) => void;
 }
 
 /**
- * The plan's decision rows as one record, with brainstorm's settled ones first:
- * they were settled first, and that order is both the order the Decision Log
- * renders in and the order supersession resolves against. Brainstorm rows are
- * merged at read time so the plan's own `decisions.json` stays plan-owned.
- *
- * A missing `decisions.json` is left to reject as `readDecisions` raises it —
- * the caller decides whether that is a thrown error or a failed result.
+ * Brainstorm rows come first because they were settled first, which is the order
+ * supersession resolves against. They are merged at read time so the plan's own
+ * `decisions.json` stays plan-owned.
  */
 export const readMergedDecisions = async ({
 	cwd,

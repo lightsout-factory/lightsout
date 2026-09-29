@@ -11,11 +11,9 @@ interface Params {
 }
 
 /**
- * Take the repo-wide run lock with an exclusive create (`wx`), so two
- * simultaneous starts can never both win. A holder whose pid is alive is a
- * live conflict → RunLockError, fail fast. A holder whose pid is dead (or a
- * lock that won't parse) is a crash leftover → stolen, with the dead pid
- * reported back so the caller can announce the takeover.
+ * An exclusive create (`wx`), so two simultaneous starts never both win. A
+ * holder whose pid is dead, or a lock that won't parse, is a crash leftover and
+ * is stolen.
  */
 export const acquireRunLock = async ({ cwd, runId }: Params): Promise<{ stalePid: number | undefined }> => {
 	const lockPath = getRunLockPath({ cwd });

@@ -12,10 +12,6 @@ interface Params {
 }
 
 /**
- * Record the approved version of the given test-side paths: a copy in the run
- * folder plus its hash for a path that exists, an approved removal for one that
- * does not.
- *
  * Called after the formatter wherever it runs, so the copy is of formatted
  * bytes and the next checkpoint's diff against this baseline is the agent's
  * edit rather than the formatter's.

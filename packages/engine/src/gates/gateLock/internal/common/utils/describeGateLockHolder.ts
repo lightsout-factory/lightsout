@@ -1,18 +1,13 @@
 import type { GateLock } from '#src/contracts/gates/GateLock.ts';
 
 interface Params {
-	/** The reservation on disk, or undefined when it could not be read or parsed. */
+	/** Undefined when the reservation could not be read or parsed. */
 	lock: GateLock | undefined;
 }
 
 /**
- * The phrase naming who holds the machine — the run, the worktree it runs in,
- * and how long it has held the reservation.
- *
- * Written once and reused by the waiting line and the refusal sentence alike,
- * following the rule `describeGateCrash` established: one event gets one
- * spelling, because two spellings read as two different events. A document that
- * could not be read says so rather than inventing a holder.
+ * Shared by the waiting line and the refusal sentence: one event gets one
+ * spelling, because two spellings read as two different events.
  */
 export const describeGateLockHolder = ({ lock }: Params): string => {
 	if (lock === undefined) {

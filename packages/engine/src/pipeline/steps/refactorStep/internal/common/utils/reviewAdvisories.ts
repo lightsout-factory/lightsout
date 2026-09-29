@@ -12,16 +12,8 @@ interface Params {
 }
 
 /**
- * The agent's read of the judgment-only rules over a named file list.
- *
- * Called twice by the cleanup loop with different scopes — the run's changed
- * source before the first round, and the files cleanup actually changed after
- * the last — which is why it is a file of its own rather than a helper inside
- * the step.
- *
- * It never throws: a review that could not run narrates why and contributes
- * nothing, because the deterministic checks are the real evidence and must not
- * wait on an opinion.
+ * Never throws: a review that could not run narrates why and contributes nothing, because the
+ * deterministic checks are the real evidence and must not wait on an opinion.
  */
 export const reviewAdvisories = async ({ run, packs, channels, files }: Params): Promise<StandardsFinding[]> => {
 	const review = await runStandardsReview({

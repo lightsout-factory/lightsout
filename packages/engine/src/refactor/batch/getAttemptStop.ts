@@ -9,14 +9,12 @@ import type { BatchStop } from '#src/refactor/internal/common/types/BatchStop.ts
 
 interface Params {
 	batchId: string;
-	/** The executor invocation's outcome for this pass. */
 	attempt: AgentOutcome<WorkReport>;
 	/** The findings this pass was asked to resolve — what the salvage and scope paths re-check. */
 	workFindings: StandardsFinding[];
 	/** Batch-level rationale collector: the salvage and scope notes accumulate here. */
 	rationale: string[];
 	onProgress: (message: string) => void;
-	/** Which of the given findings are still live in the tree. */
 	remainingSiteKeys: (params: { frozen: StandardsFinding[] }) => Promise<string[]>;
 	/** Run the batch's gates and answer their whole verdict — a red, a crash, or a run that never started. */
 	gates: () => Promise<GateRunResult>;
@@ -24,14 +22,7 @@ interface Params {
 	finish: (params: { outcome: BatchOutcome; remainingSiteKeys: string[] }) => Promise<BatchStop>;
 }
 
-/**
- * The terminal condition one executor pass settled by itself — a rate limit, a
- * hard invocation failure, a scope refusal, or a report that never completed —
- * or undefined when the pass reported complete and the gates decide next.
- *
- * Separate from the batch loop because this is what the AGENT's answer means;
- * the loop's job is what to do with it — verify, requeue, record.
- */
+/** Undefined when the pass reported complete and the gates decide next. */
 export const getAttemptStop = async ({
 	batchId,
 	attempt,
@@ -48,10 +39,8 @@ export const getAttemptStop = async ({
 		if (attempt.rateLimited) {
 			stop = { kind: BatchStopKind.Parked };
 		} else if ((await remainingSiteKeys({ frozen: workFindings })).length === 0 && (await gates()).error === undefined) {
-			// Salvage check — an agent can die after finishing its edits but before
-			// reporting. If the sites are verifiably gone AND gates are green, the
-			// work is done — classify it, don't discard it. A gate run that never
-			// started is not green: it proves nothing about the work on disk.
+			// An agent can die after finishing its edits but before reporting. A gate
+			// run that never started is not green: it proves nothing about the work.
 			rationale.push(`[other] salvaged: agent invocation failed (${attempt.failure}) but the sites are resolved and gates are green`);
 			onProgress(`${batchId}: invocation failed but work verified on disk — salvaged as resolved`);
 
@@ -60,8 +49,7 @@ export const getAttemptStop = async ({
 			stop = { kind: BatchStopKind.Failed, error: `${batchId}: ${attempt.failure}` };
 		}
 	} else if (attempt.report.status === WorkReportStatus.TerminatedScope) {
-		// A scope refusal is judgment, not failure — record it as a decline
-		// and let the run continue; the human reviews it with the report.
+		// A scope refusal is judgment, not failure; the human reviews it with the report.
 		rationale.push(...attempt.report.failures.map((entry) => `[scope] ${entry}`));
 
 		stop = await finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: await remainingSiteKeys({ frozen: workFindings }) });

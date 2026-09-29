@@ -17,9 +17,9 @@ interface Params {
 }
 
 /**
- * True for the coverage tooling's own output — the measurement must never fail
- * the run it serves, exactly as generated paths never do. A package writes its
- * summary under its own directory, so the check reads both spellings.
+ * The measurement must never fail the run it serves, exactly as generated paths
+ * never do. A package writes its summary under its own directory, so the check
+ * reads both spellings.
  */
 const isMeasurementOutput = ({ path, coverageDir, packagesDir }: { path: string; coverageDir: string; packagesDir: string }) => {
 	const owner = packageOf({ file: path, packagesDir });
@@ -29,13 +29,8 @@ const isMeasurementOutput = ({ path, coverageDir, packagesDir }: { path: string;
 };
 
 /**
- * The batch's changed files with the measurement's own artifacts dropped, and
- * the tests-only verdict on what is left: a coverage run may add tests and
- * nothing else, so a source file among the changes is an error naming what a
- * human must undo.
- *
- * Run after every invocation — a fix agent can reach for source exactly as the
- * first one can.
+ * A coverage run may add tests and nothing else. Run after every invocation — a
+ * fix agent can reach for source exactly as the first one can.
  */
 export const checkTestsOnly = async ({
 	cwd,

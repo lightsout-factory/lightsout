@@ -11,16 +11,9 @@ interface Params {
 }
 
 /**
- * The plan a run being resumed belongs to, as a plan's `--name` under the plans
- * directory — or undefined when nothing names one.
- *
- * A run whose plan path lies in a plan folder answers that folder's address
- * straight away. A build from the ticket body has no plan folder in its path at
- * all, so the plan it belongs to is found the only other way there is: the ticket
- * record's own entry naming this run. That is what makes resuming single-plan
- * plan 001's body build a repair of that plan rather than of nothing.
- *
- * @returns the plan address the run belongs to, or undefined
+ * A build from the ticket body has no plan folder in its path, so its plan is
+ * found through the ticket record's entry naming this run. That is what makes
+ * resuming single-plan plan 001's body build a repair of that plan.
  */
 export const readResumedPlanName = async ({ cwd, manifest }: Params): Promise<string | undefined> => {
 	const fromPath = await planNameFromPath({ cwd, planPath: manifest.plan });

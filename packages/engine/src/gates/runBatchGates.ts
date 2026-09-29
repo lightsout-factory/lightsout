@@ -17,13 +17,8 @@ interface Params {
 }
 
 /**
- * A batch's verification gates, scoped to what the tree actually changed:
- * package scope inferred from the current git diff, root included when root
- * files changed.
- *
  * The whole result travels rather than its error alone, because the two batch
- * pipelines have to tell a red gate from a gate run that never started, and a
- * caller handed nothing but a string can only guess by matching on it.
+ * pipelines have to tell a red gate from a gate run that never started.
  */
 export const runBatchGates = async ({ cwd, config, coverage, runId, step, onProgress }: Params): Promise<GateRunResult> => {
 	const changed = (await readGitChangedFiles({ cwd })) ?? [];

@@ -20,10 +20,6 @@ interface Props {
 	groups: Group[];
 }
 
-/**
- * The list beside the rules: every document the set holds, under its area,
- * each with how many rules it lists — a way to jump straight to one.
- */
 export const RuleGroupNav = ({ groups }: Props) => {
 	const areas = [...new Set(groups.map((group) => readArea({ document: group.document })))];
 

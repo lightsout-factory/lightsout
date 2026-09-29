@@ -1,22 +1,13 @@
 import { z } from 'zod';
 
 /**
- * The optional `docs` block of `lightsout.config.json` — the documentation
- * surfaces a repository declares, each a repo-relative path and a line saying
- * what that document is responsible for.
+ * Declaring the block turns three things on at once: the plan writer's brief on
+ * the surfaces, a required `## Documentation` statement in every implementable
+ * plan file, and the `plan grade` checker that verifies it.
  *
- * Declaring the block turns three seams on at once: the plan writer is briefed
- * on the surfaces, every implementable plan file must carry a `## Documentation`
- * statement, and `plan grade` runs one whole-plan checker that verifies it. A
- * repository that declares none sees all three off at zero cost — no section, no
- * added prompt text, no checker spawn and no new question.
- *
- * The entry object is `.strict()`, like every block of the config, so a misspelled `cover` or `paths` must
- * fail loudly rather than silently declaring a surface with no description.
- *
- * `.min(1)` because an empty array would mean "declared, but nothing", which
- * reads as opting in to a check that can never fire. A repository with nothing
- * to declare omits the key.
+ * `.min(1)` because an empty array would opt in to a check that can never fire,
+ * and the entry is `.strict()` so a misspelled key fails loudly rather than
+ * declaring a surface with no description.
  */
 export const ConfigDocs = z
 	.array(

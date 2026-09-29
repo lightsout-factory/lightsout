@@ -10,15 +10,12 @@ import { runsQueryOptions } from '#src/features/runs/queries/runsQueryOptions.ts
 import { RunsTable } from '#src/features/runs/screens/RunsPage/components/RunsTable.tsx';
 import { RunsFilterBar } from '#src/features/runs/screens/RunsPage/internal/components/RunsFilterBar.tsx';
 
-/** A sort key on its way into the URL, read back against the closed vocabulary the route validates it with. */
 const readSortKey = ({ key }: { key?: string }) => Object.values(RunsSortKey).find((candidate) => candidate === key);
 
 /**
- * Every run this repo has, as a table a reader can narrow and order.
- *
- * The filters live in the URL rather than in component state, so a narrowed
- * table is a link somebody can send. Every write replaces rather than pushes:
- * back should leave the runs page, not unwind one filter edit at a time.
+ * The filters live in the URL so a narrowed table is a link somebody can send.
+ * Writes replace rather than push, so back leaves the page instead of unwinding
+ * one filter edit at a time.
  */
 export const RunsPage = () => {
 	const { data: runs } = useSuspenseQuery(runsQueryOptions());
@@ -28,8 +25,6 @@ export const RunsPage = () => {
 		commands: search.commands ?? [],
 		statuses: search.statuses ?? [],
 		text: search.text,
-		// Newest first until a reader says otherwise, and a URL naming a column the
-		// table cannot order by reads as saying nothing.
 		sortKey: search.sortKey ?? RunsSortKey.Updated,
 		sortDirection: search.sortDirection ?? SortDirection.Descending,
 	};

@@ -19,9 +19,6 @@ import { selfCheckGateNames } from '#src/gates/internal/common/utils/selfCheckGa
 import { runGates } from '#src/gates/runGates.ts';
 
 /**
- * The root and scoped groups' commands as one set, duplicate names dropped and
- * the engine's canonical order kept.
- *
  * Names read off the root block alone would never schedule a build that only
  * `package-gates` declares. Naming a gate a group has no entry for costs
  * nothing, because selection runs over each group's own entries.
@@ -49,15 +46,10 @@ const unionCommands = ({ root, scoped }: { root: GateCommands; scoped: GateComma
 };
 
 /**
- * What this self-check runs against: the packages the live diff touched, or the
- * whole tree where the pipeline it belongs to reads no diff either.
- *
  * The two empty answers `git status` can give are answered separately rather
- * than folded into one list the way a batch run folds them. A batch may widen to
- * the whole repository because its caller pays that once after a committed
- * batch; a self-check that widened would run the whole repository's unit suite
- * inside the agent's own timeout, which is the cost a scoped self-check exists
- * to avoid.
+ * than folded into one list the way a batch run folds them: a self-check that
+ * widened to the whole repository would run the whole unit suite inside the
+ * agent's own timeout.
  */
 const resolveScope = async ({
 	cwd,
@@ -94,13 +86,6 @@ const resolveScope = async ({
 	};
 };
 
-/**
- * The gate names this self-check schedules: the cheap-tier entries of the
- * schedule the following checkpoint would run, plus the build.
- *
- * The names are derived from the root and scoped groups together, because
- * `package-gates` may declare a build the root block does not.
- */
 const scheduledGateNames = ({ config, coverage, checkpoint }: { config: LightsoutConfig; coverage: boolean; checkpoint: string | undefined }) => {
 	const schedule: GateSchedule =
 		checkpoint === undefined
@@ -133,25 +118,12 @@ interface Params {
 }
 
 /**
- * A writing agent's own check of its change, run inside its own spawn: the
- * cheap-tier gates the following checkpoint would run, plus the build, narrowed
- * to the packages the live git diff touched.
- *
- * It is the one gate caller in the engine that does not wait for the machine: a
- * busy machine ends it on the coordination reason at once, carrying no gate
- * verdict at all, because an advisory check has nothing to gain from half an
- * hour of a paid agent session.
- *
- * It records no verdict anywhere. Its executions land in the run's command log
- * under a step name of their own, so the checkpoint that follows reads its own
- * evidence and the run's accounting can subtract this work; the engine's gates
- * stay the only authority on whether a step passed.
+ * Records no verdict anywhere: its executions land in the command log under a
+ * step name of their own, so the engine's gates stay the only authority on
+ * whether a step passed.
  */
 export const runSelfCheck = async ({ cwd, config, coverage, checkpoint, wholeRepository, runId, step, onProgress }: Params): Promise<SelfCheckResult> => {
 	const gateNames = scheduledGateNames({ config, coverage, checkpoint });
-	// The shape every ending that runs no gate shares — held once rather than
-	// written out per branch, which is where one branch eventually forgets a
-	// field.
 	let result: SelfCheckResult = {
 		reason: SelfCheckReason.NothingScheduled,
 		gateNames,
@@ -162,9 +134,8 @@ export const runSelfCheck = async ({ cwd, config, coverage, checkpoint, wholeRep
 		coordination: undefined,
 	};
 
-	// The empty name list is answered before any gate call at all, because an
-	// exact schedule with an empty list still runs the configured codegen command
-	// — and a checkpoint that is off is not a green one.
+	// Answered before any gate call, because an exact schedule with an empty
+	// list still runs the configured codegen command.
 	if (gateNames.length > 0) {
 		const resolved = await resolveScope({ cwd, config, wholeRepository });
 
@@ -181,27 +152,21 @@ export const runSelfCheck = async ({ cwd, config, coverage, checkpoint, wholeRep
 				runId,
 				step: buildSelfCheckStep({ step }),
 				schedule: { kind: GateScheduleKind.Exact, gates: gateNames },
-				// This check runs inside the writing agent's own spawn and records no
-				// verdict anywhere, so a machine another run holds ends it at once
-				// rather than holding a paid session open for the full wait. Every
-				// checkpoint that decides the run still waits the whole ceiling.
+				// An advisory check inside a paid agent session gains nothing from
+				// waiting for a machine another run holds.
 				waitForMachine: false,
 				onGateResult: collector.onGateResult,
 				onProgress,
 			});
 			const gates = collector.observed();
-			// When every observation is a skip, nothing executed at all — which
-			// `runGates` answers with an error naming `gate-overrides`, a block this
-			// consumer may never have written and this caller never used. Judging from
-			// the observations is what makes the answer honest without matching an
-			// error string.
+			// When nothing executed, `runGates` answers with an error naming
+			// `gate-overrides`, a block this caller never used, so this judges from
+			// the observations instead.
 			const ranNothing = gates.every((observation) => observation.skipped === true);
 
 			if (run.coordination !== undefined) {
-				// Read before anything classifies this as a run that produced a
-				// verdict: no gate command executed, so the answer is about the
-				// machine rather than the change, and `ranNothing` — which asks
-				// whether every observation is a skip — has nothing to say about it.
+				// Read before `ranNothing`: no gate command executed, so the answer is
+				// about the machine rather than the change.
 				result = { reason: SelfCheckReason.Coordination, gateNames, gates, error: undefined, crashes: [], timeouts: [], coordination: run.coordination };
 			} else {
 				result = ranNothing

@@ -20,10 +20,6 @@ interface Params {
 const unreadable = ({ detail }: { detail: string }): IntegrationFailure => ({ reason: ShipBlockReason.IntegrationUnavailable, detail, paths: [] });
 
 /**
- * What git says is still unsettled after an attempt: the paths it lists as
- * unmerged, and — when it lists none — the paths the attempt staged or left on
- * disk still carrying conflict markers.
- *
  * Staging is what marks a path resolved, so an agent that stages a file it
  * never settled empties the unmerged list without settling anything. Both
  * readings are needed before an attempt counts.
@@ -49,16 +45,10 @@ const readUnsettledPaths = async ({ cwd }: { cwd: string }): Promise<{ paths: st
 };
 
 /**
- * The bounded conflict recovery: hand the agent the conflicted paths, then ask
- * GIT whether anything is still unsettled.
+ * An agent that reports success while git still lists a path unmerged — or
+ * while the file it staged still carries the markers — has spent an attempt and
+ * nothing more; its own account is never the evidence.
  *
- * The order is the whole point. An agent that reports success while git still
- * lists a path unmerged — or while the file it staged still carries the
- * markers — has spent an attempt and nothing more; its own account is never
- * the evidence.
- *
- * The allowance is `maxCheapFixRetries`, the shared constant the direct
- * pipeline spends: one resolution attempt followed by one corrective attempt.
  * Nothing here aborts, commits or restores — the caller owns every git state
  * transition.
  *

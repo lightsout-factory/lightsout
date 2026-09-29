@@ -11,31 +11,14 @@ interface Params {
 }
 
 /**
- * The plan a `--plan` value names, or undefined when the value does not live in
- * a ticket's plans folder.
+ * The value resolves through `resolveRecordedPlanPath`, so a path handed from a
+ * linked worktree is rooted where `workOrdersDir` answers; rooting the two
+ * differently would read every such path as no plan at all.
  *
- * `planWorkspaceDir` and `planWorkspacePath` build a path from a name; this
- * reads a name back out of one, so the rules that are about a plan's name — the
- * ticket it carries above all — can be asked of a command that takes a path
- * instead. It asks `workOrdersDir` rather than writing the prefix again, and
- * resolves the given value through `resolveRecordedPlanPath` so that a
- * tickets-directory path handed from a linked worktree is rooted where
- * `workOrdersDir` answers: rooting the two differently would relativise every such
- * path to a walk-up and read as no plan at all.
- *
- * A path inside a plan subfolder of a ticket's plans folder answers that plan's
- * address, spelled with `/` whatever the platform's path separator is, because
- * the address is the `--name` value every plan subcommand takes. Every other
- * path inside that plans folder answers undefined: no plan lives loose there.
- *
- * Only `plans/` is a plan's home, so a path under a ticket's `runs/` folder —
- * and the ticket folder itself — answers undefined rather than claiming the
- * ticket's name: a run inside a ticket folder that belongs to no plan must say
- * so, since this answer is what a run manifest records.
- *
- * A path anywhere else answers undefined too: a `--plan` pointing at an
- * arbitrary markdown file is not a plan workspace, and its parent folder's name
- * is nobody's convention to keep.
+ * The address is spelled with `/` on every platform, because it is the `--name`
+ * value plan subcommands take. A path under a ticket's `runs/` folder, or the
+ * ticket folder itself, answers undefined rather than the ticket's name: a run
+ * manifest records this answer, and a run that belongs to no plan must say so.
  */
 export const planNameFromPath = async ({ cwd, planPath }: Params): Promise<string | undefined> => {
 	const fromTicketsDir = relative(await workOrdersDir({ cwd }), await resolveRecordedPlanPath({ cwd, path: planPath }));

@@ -4,10 +4,9 @@ export const StandardsSeverity = {
 	/** Worth a look, plausibly intentional — reported and judged, never blocking. */
 	Advisory: 'advisory',
 	/**
-	 * Not run. Set by a repo when its own linter already enforces the rule — the
-	 * only way a rule stops blocking — or shipped by a pack for a rule a repo
-	 * opts into. An opt-in rule a repo never names is not part of its standards
-	 * at all, prose included.
+	 * Not run. Set by a repo when its own linter already enforces the rule, or
+	 * shipped by a pack for an opt-in rule. An opt-in rule a repo never names is
+	 * not part of its standards at all, prose included.
 	 */
 	Off: 'off',
 } as const;

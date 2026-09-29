@@ -2,7 +2,6 @@ import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalog
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 
-/** `/test-coverage-to-threshold` — the same two shapes as `/refactor`, over coverage rather than findings. */
 export const testCoverageToThresholdCatalogEntry: CommandCatalogEntry = {
 	id: 'test-coverage-to-threshold',
 	slash: '/test-coverage-to-threshold',

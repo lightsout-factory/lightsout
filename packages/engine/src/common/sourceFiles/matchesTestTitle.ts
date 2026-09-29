@@ -15,18 +15,12 @@ interface Params {
 }
 
 /**
- * Whether a title is the test a ledger name means — the one rule the static
- * locator and the execution check share, so the two can never disagree about
- * what a row names.
+ * The one rule the static locator and the execution check share, so the two
+ * never disagree about what a row names.
  *
- * A name carrying no placeholder is literal: it matches a title equal to it and
- * nothing else, its regex-special characters included. A name carrying a
- * placeholder is a template — the head of a `.each` — and matches the template
- * as a file states it, or any title it could have produced, every placeholder
- * read as a wildcard and every other character literal, anchored at both ends.
- *
- * Whether a name is a template is decided by the name alone, so one call answers
- * for a file's static title and for the runner's substituted one.
+ * A name with a placeholder is a `.each` template: it matches the template as a
+ * file states it or any title it could have produced. The name alone decides,
+ * so one call serves a file's static title and the runner's substituted one.
  */
 export const matchesTestTitle = ({ testName, title }: Params): boolean => {
 	if (title === testName) {

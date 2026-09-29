@@ -14,7 +14,6 @@ interface Params {
 	label: string;
 }
 
-/** The one append queue a recorder and every handle beneath it share. */
 interface Queue {
 	write: (mark: ActivityMark) => void;
 	settled: () => Promise<void>;
@@ -59,18 +58,9 @@ const createLevel = ({ id, queue }: { id: string; queue: Queue }): ActivityLevel
 };
 
 /**
- * Open an activity record in `dir` and answer the root level's handle, having
- * written its start mark.
- *
- * A root level's id is its label, which is what makes the merge rule structural
- * rather than a convention a writer has to remember: several processes opening
- * the same-labelled root land under one id, with none of them ever having to
- * read the file to find out what the others chose. A child level's id is a
- * fresh uuid.
- *
- * Every handle the recorder hands out shares one append queue, so lines land in
- * call order across the whole tree — a nested level can never reach disk before
- * the level it opened inside.
+ * A root level's id is its label, so processes opening the same-labelled root
+ * merge under one id without reading the file. Every handle shares one append
+ * queue, so a nested level never reaches disk before the level it opened inside.
  */
 export const createActivityRecorder = ({ dir, level, label }: Params): ActivityLevel => {
 	const queue = createQueue({ path: activityRecordPath({ dir }) });

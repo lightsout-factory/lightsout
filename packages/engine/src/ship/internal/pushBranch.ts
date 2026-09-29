@@ -8,18 +8,9 @@ interface Params {
 }
 
 /**
- * Push the branch and set its upstream, answering undefined when git accepted
- * the push and the push's own stderr when it did not.
- *
- * A step of the sequence rather than a precondition: `implement --ship` chains
- * from a commit nobody has pushed, and `gh pr create` cannot open a pull
- * request for commits the remote has never seen. `--set-upstream` makes the
- * first push and every later one the same command, and a branch already pushed
- * and up to date exits 0 as a no-op — so re-running ship pushes again without
- * consequence.
- *
- * Its own deadline rather than `gitTimeoutMs`: that constant is sized for local
- * reads, and this one crosses the network.
+ * `--set-upstream` makes every push the same command, and an up-to-date branch exits 0, so
+ * re-running ship pushes again harmlessly. Its own deadline because `gitTimeoutMs` is sized for
+ * local reads, and this crosses the network.
  */
 export const pushBranch = async ({ branch, cwd }: Params): Promise<ShipStepFailure | undefined> => {
 	const pushTimeoutMs = 60_000;

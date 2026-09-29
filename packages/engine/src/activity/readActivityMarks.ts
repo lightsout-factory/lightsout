@@ -8,9 +8,8 @@ interface Params {
 }
 
 /**
- * Read one activity record's marks. Validated line by line at the boundary;
- * malformed lines are skipped, never guessed at, so a record whose last line
- * was cut off when its process was killed is read to its last complete mark.
+ * Malformed lines are skipped, so a record whose last line was cut off when its
+ * process was killed reads to its last complete mark.
  */
 export const readActivityMarks = async ({ dir }: Params): Promise<ActivityMark[]> =>
 	readJsonlRecords({ path: activityRecordPath({ dir }), schema: ActivityMark });

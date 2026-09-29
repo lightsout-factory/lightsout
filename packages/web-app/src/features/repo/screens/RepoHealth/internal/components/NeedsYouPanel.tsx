@@ -6,13 +6,7 @@ import { CopyButton } from '#src/appUI/buttons/CopyButton.tsx';
 import { SettingsCard } from '#src/appUI/panels/SettingsCard.tsx';
 import { statusBadgeConfig } from '#src/common/constants/statusBadgeConfig.ts';
 
-/**
- * What to do about one stopped run.
- *
- * A resumable run gets the command that picks it up, because that is the whole
- * of the answer. An escalated one gets a link instead: it stopped on a question
- * for a human, and `resume` is not what it needs first.
- */
+/** An escalated run gets a link, not the resume command: it stopped on a question for a human. */
 const RunAction = ({ run }: { run: RunListing }) =>
 	run.resumable ? (
 		<CopyButton value={`lightsout resume --run ${run.shortId}`} label="Copy resume" />
@@ -28,13 +22,9 @@ interface Props {
 }
 
 /**
- * The runs that are waiting on a person right now.
- *
- * `resumable` is the engine's own answer to "would `resume` do something", so
- * the panel cannot claim a run needs picking up that `resume` would refuse.
- * Escalated runs are added to it by hand, because `isRunResumable` excludes them
- * on purpose — they are waiting on a decision rather than on a restart, which is
- * exactly the case this panel exists for.
+ * `resumable` is the engine's own answer, so the panel never offers a resume that
+ * `resume` would refuse. Escalated runs are added by hand because `isRunResumable`
+ * excludes them on purpose: they wait on a decision, not a restart.
  */
 export const NeedsYouPanel = ({ runs }: Props) => {
 	const waiting = runs.filter((run) => run.resumable || run.status === RunStatus.Escalated);

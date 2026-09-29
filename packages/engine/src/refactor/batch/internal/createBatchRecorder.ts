@@ -10,11 +10,10 @@ import type { BatchStop } from '#src/refactor/internal/common/types/BatchStop.ts
 interface Params {
 	cwd: string;
 	config: LightsoutConfig;
-	/** Files earlier steps already attributed — excluded from the git-truth merge. */
+	/** Excluded from the git-truth merge. */
 	attributedFiles: string[];
 }
 
-/** Create the one store a batch keeps of its own work — see {@link BatchRecorder}. */
 export const createBatchRecorder = ({ cwd, config, attributedFiles }: Params): BatchRecorder => {
 	const rationale: string[] = [];
 	const reportedFiles = new Set<string>();
@@ -23,7 +22,6 @@ export const createBatchRecorder = ({ cwd, config, attributedFiles }: Params): B
 	const reportOf = ({ outcome, remainingSiteKeys }: { outcome: BatchOutcome; remainingSiteKeys: string[] }) =>
 		buildBatchReport({ outcome, remainingSiteKeys, rationale, advisoryOutcomes: [...advisoryOutcomes.values()] });
 
-	/** Agents' reports unioned with git truth — what the batch has actually written so far. */
 	const changedFiles = () => collectBatchChanges({ cwd, config, reportedFiles, attributedFiles });
 
 	/** Every classified end of the batch goes through here, so no branch can report an outcome without the files it changed. */

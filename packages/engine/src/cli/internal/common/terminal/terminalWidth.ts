@@ -1,10 +1,6 @@
 /**
- * Columns to lay text out in.
- *
- * Clamped at both ends: a terminal narrower than the floor would wrap file
- * paths into confetti, and one wider than the ceiling produces lines too long
- * for an eye to track back to the next. Piped output reports no width at all,
- * so it takes a readable fixed default.
+ * Clamped because a narrow terminal would wrap file paths into confetti and a
+ * wide one makes lines too long to read. Piped output reports no width.
  */
 export const terminalWidth = (): number => {
 	const narrowest = 60;

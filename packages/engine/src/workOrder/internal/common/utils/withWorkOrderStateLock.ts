@@ -7,17 +7,15 @@ import { isPidAlive } from '#src/runState/isPidAlive.ts';
 import { workOrderFileNames } from '#src/workOrder/internal/common/constants/workOrderFileNames.ts';
 
 interface Params<Result> {
-	/** The work order's folder in the primary checkout — created here when it is not there yet. */
+	/** In the primary checkout; created here when missing. */
 	workOrderFolder: string;
 	run: () => Promise<Result>;
 }
 
-/** Who holds the lock: enough to tell a live writer from a leftover, and to release only our own. */
 const LockHolder = z.object({ pid: z.number(), token: z.string(), acquiredAt: z.string() });
 
 const sleep = ({ ms }: { ms: number }) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
-/** The holder on disk, or undefined when nothing is there and when what is there will not parse. */
 const readHolder = ({ lockPath }: { lockPath: string }) => {
 	let holder: z.infer<typeof LockHolder> | undefined;
 
@@ -31,13 +29,9 @@ const readHolder = ({ lockPath }: { lockPath: string }) => {
 };
 
 /**
- * Move a leftover out of the way by renaming it aside under a name only this
- * acquisition produces — never by unlinking it.
- *
- * Two callers can both judge one leftover reclaimable, and an unlink from the
- * second would delete the first one's freshly created lock, leaving two writers
- * on one record. A rename whose source is already gone fails instead, so
- * exactly one of them wins and the loser simply polls again.
+ * Renamed aside, never unlinked: two callers can both judge one leftover
+ * reclaimable, and the second's unlink would delete the first's fresh lock. A
+ * rename of a missing source fails, so exactly one wins.
  */
 const claimLeftover = ({ lockPath, token }: { lockPath: string; token: string }) => {
 	const asidePath = `${lockPath}.claim-${process.pid}-${token}`;
@@ -54,15 +48,13 @@ const claimLeftover = ({ lockPath, token }: { lockPath: string; token: string })
 		try {
 			unlinkSync(asidePath);
 		} catch {
-			// The moved-aside document is dead weight either way; failing to remove
-			// it must never stop the lock it just freed from being taken.
+			// Failing to remove the moved-aside file must never stop the lock being taken.
 		}
 	}
 
 	return claimed;
 };
 
-/** One exclusive-create attempt: taken, already there, or a filesystem failure that no retry would fix. */
 const createLock = ({ lockPath, token }: { lockPath: string; token: string }) => {
 	let outcome: { created: true } | { present: true } | { failure: string };
 
@@ -80,16 +72,10 @@ const createLock = ({ lockPath, token }: { lockPath: string; token: string }) =>
 };
 
 /**
- * Take the record's lock, waiting while another writer holds it.
- *
- * Every filesystem access is synchronous. A lock is a check-then-act, and doing
- * it on one turn is what stops anything else in this process interleaving
- * between reading a holder and taking the record it left.
- *
- * A holder whose process is gone, and a document that will not parse on a
- * second read, are leftovers: they are claimed and the attempt is retried at
- * once, with no wait at all. The second read is what keeps a lock written
- * between the first read and the create from being judged a leftover.
+ * Filesystem access is synchronous so nothing else in this process can
+ * interleave between reading a holder and taking the lock. An unparseable lock
+ * is read twice, so one written between the first read and the create is not
+ * judged a leftover.
  */
 const acquireLock = async ({ lockPath, token }: { lockPath: string; token: string }) => {
 	const pollIntervalMs = 100;
@@ -114,9 +100,6 @@ const acquireLock = async ({ lockPath, token }: { lockPath: string; token: strin
 			} else if ('failure' in attempt) {
 				outcome = { error: `the work order state lock ${lockPath} could not be taken: ${attempt.failure}` };
 			} else {
-				// A document is at that path which would not parse a moment ago: a
-				// truncated write, and a leftover like any other — unless a whole one
-				// landed in between, which the second read is what tells apart.
 				retryAtOnce = readHolder({ lockPath }) === undefined ? claimLeftover({ lockPath, token }) : true;
 			}
 		}
@@ -135,7 +118,7 @@ const acquireLock = async ({ lockPath, token }: { lockPath: string; token: strin
 	return outcome;
 };
 
-/** Hand the lock back, but only our own — a document another caller has since reclaimed is left exactly where it is. */
+/** Only our own: a lock another caller has since reclaimed is left in place. */
 const releaseLock = ({ lockPath, token }: { lockPath: string; token: string }) => {
 	if (readHolder({ lockPath })?.token !== token) {
 		return;
@@ -149,17 +132,11 @@ const releaseLock = ({ lockPath, token }: { lockPath: string; token: string }) =
 };
 
 /**
- * Hold a work order state's exclusive lock for the whole of one read-modify-write,
- * or answer why the lock was never taken.
+ * Not the gate lock, which is keyed to the machine rather than one record and
+ * waits far longer.
  *
- * Mirrors `withGateLock`: exclusive create, a bounded wait, release in a
- * `finally` on every exit path. The gate lock itself is not reused — it is
- * keyed to the machine rather than to one record, waits thirty minutes, and
- * records gate process groups.
- *
- * This is the lock-ordering invariant's half: nothing inside `run` takes
- * another lock, and the lock is never held across a tracker call or a gate run,
- * both of which happen before or after this call.
+ * Lock-ordering invariant: nothing inside `run` takes another lock, and this lock
+ * is never held across a tracker call or a gate run.
  */
 export const withWorkOrderStateLock = async <Result>({ workOrderFolder, run }: Params<Result>): Promise<Result | { error: string }> => {
 	try {

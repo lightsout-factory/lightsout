@@ -5,42 +5,28 @@ import { getStandardsPackBundle } from '../packages/engine/src/views/getStandard
 import { invokedDirectly } from './invokedDirectly.mjs';
 
 /**
- * Writes `assets/default-pack.json`: the authored default pack read whole, its
- * prose and every fixture file's text included.
+ * Writes `assets/default-pack.json`, the authored default pack with its
+ * fixtures; `--check` fails when the committed file differs. Never hand-edit
+ * the output. Run `pnpm build:default-pack`.
  *
- * The web app carries this because the engine's run-time default is the copy
- * `plugin/standards/` ships, which the bundler strips the fixtures out of. A
- * rule page has to show the code a rule argues about, so the app substitutes
- * this view wherever the engine finds that stripped copy — which is every repo
- * that is not this monorepo — and serves it outright on the public
- * standards-pack pages, which read no repo at all.
+ * The web app needs it because the shipped copy in `plugin/standards/` has its
+ * fixtures stripped, and a rule page has to show the code a rule argues about.
  *
- * `rootPath` and `path` are rewritten to the repo-relative
- * `packages/standards-typescript`: the file is committed and compared byte for byte, so it may carry
- * nothing about the machine that wrote it. Neither field is ever printed for
- * the default pack — its header says "loads when you say nothing" instead.
+ * `rootPath` and `path` are rewritten to the repo-relative pack path: the file
+ * is compared byte for byte, so it may carry nothing about the machine that
+ * wrote it.
  *
- * `--check` writes nothing and fails when the file on disk differs from what
- * this would write, which is what keeps the committed view in step with the
- * pack. It is wired beside `check:shipped` in CI and in the pre-push hook.
- *
- * The engine is reached by importing the module file rather than the package,
- * because the package index's graph reaches
- * `.md` prompt modules that plain Node cannot load, and `views/` does not.
- *
- * Never hand-edit the output. Run `pnpm build:default-pack` instead.
+ * The module file is imported rather than the package, whose index graph
+ * reaches `.md` prompt modules plain Node cannot load.
  */
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** The name the authored pack answers to, and the one the app asks for. */
 const defaultPackName = 'lightsout-defaults';
 
-/** Where the authored pack sits in this monorepo, and what both path fields are rewritten to. */
 const authoredPackPath = 'packages/standards-typescript';
 
 const outputPath = join(repoRoot, 'assets', 'default-pack.json');
 
-/** @returns the JSON text the committed file should hold, trailing newline included */
 export const buildDefaultPackView = async () => {
 	const bundle = await getStandardsPackBundle({ cwd: repoRoot, name: defaultPackName });
 
@@ -54,9 +40,8 @@ export const buildDefaultPackView = async () => {
 };
 
 /**
- * Exit codes are set rather than forced with `process.exit`, for the reason
- * checkShipped.mjs states: stdout is a pipe for every caller that matters, and
- * exiting on the line after a log discards it.
+ * Exit codes are set rather than forced with `process.exit`: stdout is a pipe
+ * for every caller that matters, and exiting right after a log discards it.
  */
 const main = async () => {
 	const checking = process.argv.includes('--check');

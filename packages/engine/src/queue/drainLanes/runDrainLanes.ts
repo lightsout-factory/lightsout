@@ -46,11 +46,7 @@ const seedState = ({
 	scansStopped: false,
 });
 
-/**
- * Everything nothing ever ran, named rather than dropped: the tickets no slot reached, then whatever is still blocked.
- *
- * Both move out of the lists they were in, so the last board snapshot shows each of them once, in Blocked.
- */
+/** Both lists are emptied, so the last board snapshot shows each ticket once, in Blocked. */
 const finishDrain = ({ context, state }: { context: LaneContext; state: LaneState }): QueueDrainReport => {
 	for (const { ticket } of state.pending) {
 		const reason = 'not started: every slot was retired by a ticket parked on an unanswered question';
@@ -66,7 +62,7 @@ const finishDrain = ({ context, state }: { context: LaneContext; state: LaneStat
 	return { outcomes: state.outcomes, leftBehind: state.leftBehind };
 };
 
-/** Hand the board the ledger as it stands. Never awaited: a slow or failed board write must not hold the drain up. */
+/** Never awaited: a slow or failed board write must not hold the drain up. */
 const recordBoard = ({ context, state }: { context: LaneContext; state: LaneState }) => {
 	context.board.record({
 		settled: { outcomes: state.outcomes, leftBehind: state.leftBehind },
@@ -81,21 +77,12 @@ const recordBoard = ({ context, state }: { context: LaneContext; state: LaneStat
 };
 
 /**
- * The drain: parallel builders and one serial ship lane, running at the same
- * time against the single `queue.max-parallel` budget.
+ * A freed slot goes to a waiting ready branch before a new build, or a long
+ * backlog would starve the ship lane.
  *
- * A branch merges the moment the lane reaches it rather than at the end of a
- * wave, and a freed slot goes to a waiting ready branch before it starts a build
- * that has not begun — without that priority a long backlog would starve the
- * lane, which is the exact wait this drain exists to remove. Each landed merge
- * makes the tracker worth re-reading, so the tickets it unblocked join the run
- * already in flight.
- *
- * The loop ends when nothing is in flight, which is also when no step could
- * start anything. `pending` is deliberately not part of that test: once every
- * builder slot is retired no build can start again, and what is left is reported
- * as never started. It terminates because `attempted` only grows, so only
- * finitely many scans can admit anything.
+ * `pending` is deliberately not part of the end test: once every builder slot
+ * is retired no build can start, and what is left is reported as never started.
+ * The loop terminates because `attempted` only grows.
  */
 export const runDrainLanes = async ({ first, carried, carriedLeftBehind, attempted, ...context }: Params): Promise<QueueDrainReport> => {
 	const state = seedState({ attempted, carried, carriedLeftBehind });

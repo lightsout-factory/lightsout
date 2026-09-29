@@ -8,20 +8,17 @@ import { Appear } from '#src/features/home/screens/Home/internal/components/Clea
 import { CapScene } from '#src/features/home/screens/Home/internal/components/CleansAsItCodesSection/internal/components/CapScene.tsx';
 import { StatusChip } from '#src/features/home/screens/Home/internal/components/CleansAsItCodesSection/internal/components/StatusChip.tsx';
 
-/** How tall one line of code is drawn, in pixels — the scale that turns a line count into a file you can see growing. */
 const pxPerLine = 1;
 
-/** Where the file ends up: far enough past the cap that the overflow reads at a glance, and a split rather than a trim is the obvious fix. */
+/** Far enough past the cap that the overflow reads at a glance, and a split rather than a trim is the obvious fix. */
 const finalLines = codeCaps.fileLines + 40;
 
-/** The one file, split into a folder of focused pieces — the same lines, now in three files that each read in one sitting. */
 const splitFiles = [
 	{ folder: 'runReport/', name: 'runReport.ts', lines: 118 },
 	{ folder: 'runReport/common/utils/', name: 'summarizeSteps.ts', lines: 96 },
 	{ folder: 'runReport/common/utils/', name: 'formatCost.ts', lines: finalLines - 118 - 96 },
 ];
 
-/** Frame by frame: the file growing up to its cap and past it, then the fix, then the split held a while. */
 const frames = [
 	...[180, codeCaps.fileLines].map((lines) => ({ lines, status: SceneStatus.Working })),
 	{ lines: finalLines, status: SceneStatus.Over },
@@ -29,10 +26,9 @@ const frames = [
 	...[1, 2, 3].map(() => ({ lines: finalLines, status: SceneStatus.Clean })),
 ];
 
-/** Widths for the placeholder code lines — more than any file here needs, so the box's height alone decides how many show. */
+/** More lines than any file here needs, so the box's height alone decides how many show. */
 const codeLineWidths = [72, 54, 88, 40, 66, 80, 48, 92, 58, 70, 36, 84, 62, 76, 44, 90, 52, 68, 38, 86];
 
-/** The file drawn as a box of code whose height is its line count; the box grows smoothly when the count changes. */
 const CodeBlock = ({ lines, className }: { lines: number; className?: string }) => (
 	<div
 		aria-hidden="true"
@@ -45,7 +41,6 @@ const CodeBlock = ({ lines, className }: { lines: number; className?: string }) 
 	</div>
 );
 
-/** The cap, drawn as a dashed line at the height a file of exactly that many lines reaches. */
 const LimitLine = () => (
 	<div
 		aria-hidden="true"
@@ -56,7 +51,6 @@ const LimitLine = () => (
 	</div>
 );
 
-/** The one file, growing down the window toward the limit line and past it, the part past the line in red. */
 const GrowingFile = ({ lines, status }: { lines: number; status: SceneStatus }) => (
 	<div className="flex flex-col gap-4">
 		<div className="flex flex-wrap items-center justify-between gap-3">
@@ -78,11 +72,6 @@ const GrowingFile = ({ lines, status }: { lines: number; status: SceneStatus }) 
 	</div>
 );
 
-/**
- * The same code after the refactor pass: three files side by side, drawn
- * identically on a clean white card — the calm after the overflow, with each
- * file's own size left to the number under it.
- */
 const SplitFiles = () => (
 	<Appear className="flex flex-col gap-4">
 		<div className="flex flex-wrap items-center justify-between gap-3">
@@ -111,7 +100,6 @@ const SplitFiles = () => (
 	</Appear>
 );
 
-/** An ordinary source file growing past the Standards Pack's line cap, and the refactor pass splitting it into a folder. */
 const fileScene: CapSceneDefinition<(typeof frames)[number]> = {
 	title: `Standards Pack / file-size · max ${codeCaps.fileLines} lines per file`,
 	frames,

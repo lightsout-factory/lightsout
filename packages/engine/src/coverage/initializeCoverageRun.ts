@@ -22,17 +22,9 @@ interface Params {
 }
 
 /**
- * Resolve a coverage run's manifest + frozen initial measurement. Resume
- * re-reads the frozen file the manifest's `plan` points at (after refusing
- * manifests another pipeline owns). A fresh run refuses a config that opted
- * out of the coverage gate, enforces a git worktree and a CLEAN tree — so the
- * ending diff is entirely the run's — then measures once and freezes the
- * result as the `before` side of the final report.
- *
- * `allowDirty` trades the clean-tree guarantee for a recorded baseline, the
- * same bargain the refactor pipeline offers: the files dirty at start are
- * frozen into the manifest and excluded from batch attribution, so runs can
- * stack while commits are frozen.
+ * A fresh run requires a clean tree so the ending diff is entirely the run's.
+ * `allowDirty` trades that for a recorded baseline, as the refactor pipeline
+ * does: the files dirty at start are excluded from batch attribution.
  *
  * @throws {Error} When coverage is opted out, the tree is dirty (and not accepted) or ungitted, or the run belongs to another pipeline.
  */

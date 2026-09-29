@@ -6,16 +6,9 @@ interface Props {
 }
 
 /**
- * A run of numbers as one line in a unit box.
- *
- * The same no-chart-library approach the standards trend chart takes, at tile
- * size: coordinates normalised to a 0–1 box that a `viewBox` scales, so nothing
- * recomputes on resize, and the same `M`/`L` path data so the two charts read
- * as one technique rather than two.
- *
- * Fewer than two points is not a line and is drawn as nothing rather than as a
- * shape that would claim a direction nobody measured. A run that reads zero
- * throughout has no peak to divide by, so every point sits on the floor.
+ * Coordinates are normalised to a 0–1 box that the `viewBox` scales, so nothing
+ * recomputes on resize. Fewer than two points draws nothing rather than claim a
+ * direction; an all-zero run has no peak to divide by, so it sits on the floor.
  */
 export const Sparkline = ({ values, className }: Props) => {
 	if (values.length < 2) {

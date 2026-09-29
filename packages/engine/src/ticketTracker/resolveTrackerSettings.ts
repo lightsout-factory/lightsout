@@ -4,21 +4,13 @@ import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSet
 
 interface Params {
 	config: LightsoutConfig;
-	/** The process environment the API key is read from. Passed rather than read, so a test never needs to mutate `process.env`. */
+	/** Passed rather than read, so a test never needs to mutate `process.env`. */
 	env: NodeJS.ProcessEnv;
 }
 
 /**
- * The `ticket-tracker` block with the API key read out of the environment, or
- * the one sentence saying why no tracker operation can run.
- *
- * It names the problem rather than answering undefined the way
- * `resolveShipSettings` does, because a missing block and a missing key are two
- * different things to fix and a user who hits one must not be told about the
- * other.
- *
- * Provider-specific values remain inside this seam. Queue behavior is resolved
- * elsewhere and cannot leak into these settings.
+ * Names the problem rather than answering undefined, because a missing block and
+ * a missing key are two different things to fix.
  */
 export const resolveTrackerSettings = ({ config, env }: Params): TrackerSettings | TrackerFailure => {
 	const block = config['ticket-tracker'];

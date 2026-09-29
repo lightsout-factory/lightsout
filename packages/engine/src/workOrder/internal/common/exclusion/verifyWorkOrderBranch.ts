@@ -6,20 +6,16 @@ import { readLiveRunLock } from '#src/runState/lock/readLiveRunLock.ts';
 import { readBranchWorktree } from '#src/worktree/readBranchWorktree.ts';
 
 interface Params {
-	/** Any checkout of the repository: the checkout that holds the branch is found from it. */
+	/** Any checkout of the repository. */
 	cwd: string;
-	/** The ticket's branch, which every plan of it implements on. */
 	branch: string;
 	onProgress?: (message: string) => void;
 }
 
 /**
- * The ticket branch, checked the way shipping checks it: nothing else editing
- * the tree, nothing uncommitted in it, and the repository's own full gates
- * green on the commit it stands on. The engine cannot prove a plan's code was
- * removed, so the human's declaration is what says it was and a passed commit
- * is what backs it. Gates beside a live run would verify a tree that is still
- * changing, so a holder is refused before the clean check and before any gate.
+ * The engine cannot prove a plan's code was removed, so the human's declaration
+ * is backed by a commit that passes the full gates. A live run is refused first:
+ * gates beside it would verify a tree that is still changing.
  */
 export const verifyWorkOrderBranch = async ({ cwd, branch, onProgress }: Params): Promise<{ commit: string } | { error: string }> => {
 	const checkout = await readBranchWorktree({ cwd, branch });

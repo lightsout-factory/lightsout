@@ -19,23 +19,12 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 
 const severityRank: Record<DoctorCheck['status'], number> = { pass: 0, note: 1, warn: 2, fail: 3 };
 
-/**
- * Record a check that answers undefined when the repository gives it nothing to
- * advise about. Written once because most of the package-iterating checks answer
- * that way, and a per-check `if` around each one buried the audit's own sequence.
- */
 const pushOptional = ({ checks, check }: { checks: DoctorCheck[]; check: DoctorCheck | undefined }) => {
 	if (check) {
 		checks.push(check);
 	}
 };
 
-/**
- * The two config keys that exclude paths from the source walk, each with the
- * sentence that clears a stale entry. They warn the same way and are fixed
- * differently: a missing generated path means the generator has not run, while
- * a missing vendored one means the third-party code is simply not there.
- */
 const configuredPathAudits = ({ config }: { config: LightsoutConfig }) =>
 	[
 		{ id: 'generated', paths: config.generated, fix: 'run the generator once, or remove stale entries from `generated`' },
@@ -53,15 +42,8 @@ interface Params {
 }
 
 /**
- * Read-only audit of a consumer repo against every assumption the engine and
- * the bundled standards make: config validity, harness binary, gitignore run
- * state, scoped-gate script coverage, Jest mock-cleanup config, Jest per-test
- * reporter config, generated and vendored paths, coverage summary reporting,
- * script binaries. `usageProbe` adds the one check that is not free — a single
- * real agent call confirming the harness's token fields still parse — and is
- * off unless the caller asks for it. Each warn/fail carries
- * the exact fix; the doctor NEVER mutates — repo-wide changes (e.g.
- * `clearMocks: true`) are a human's decision to apply and verify.
+ * The doctor never mutates: repo-wide changes such as `clearMocks: true` are a
+ * human's decision to apply and verify.
  */
 export const runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }: Params): Promise<DoctorCheck[]> => {
 	const checks: DoctorCheck[] = [];
@@ -91,10 +73,7 @@ export const runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }: 
 
 	checks.push(await checkHarness({ cwd, config, probeHarness }));
 
-	// Only when asked for: the probe spends real money on the user's own
-	// subscription. It sits beside the harness binary check because the two are
-	// one question — is the harness there, and does it still report what it used
-	// to — and an asked-for probe always has something to say.
+	// Only when asked for: the probe spends real money on the user's subscription.
 	if (usageProbe) {
 		checks.push(await checkHarnessUsage({ cwd, config, driver: usageDriver }));
 	}
@@ -102,8 +81,6 @@ export const runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }: 
 	checks.push(await checkGitignore({ cwd }));
 	checks.push(await checkSourceWalk({ cwd, generated: config.generated }));
 
-	// packageDirs (root + every scoped package) is resolved once here and fed
-	// to every package-iterating check below.
 	const { packageDirs, scopedGatesCheck } = await resolvePackageDirs({ cwd, config, packagesDir });
 
 	pushOptional({ checks, check: scopedGatesCheck });
@@ -119,7 +96,6 @@ export const runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }: 
 	pushOptional({ checks, check: await checkCoverageSummary({ config, packageDirs }) });
 	checks.push(await checkScriptBinaries({ cwd, config }));
 
-	// Positives first, actionable items last (nearest the prompt) — stable
-	// within each severity, so related checks keep their relative order.
+	// Actionable items last, nearest the prompt.
 	return checks.sort((a, b) => severityRank[a.status] - severityRank[b.status]);
 };

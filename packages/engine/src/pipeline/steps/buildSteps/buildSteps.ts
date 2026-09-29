@@ -22,27 +22,15 @@ interface Params {
 }
 
 /**
- * The pipeline's step sequence, assembled with formatting after each writing
- * phase and before its verification, with the refactor steps dropped when
- * skipRefactor asks for it.
- *
- * A rename-only plan — one with a `## Renames` section — runs clean-slate, the
- * implement trio and the unit-test trio with both test writers skipped, and no
- * refactor steps: refactor is a non-blocking cleanup, and its edits are not
- * renames, so the rename check would refuse them. Every gate still runs, and its
- * verify-tests repair goes to the feature executor rather than a test writer.
+ * A rename-only plan (one with a `## Renames` section) runs no refactor steps: refactor edits
+ * are not renames, so the rename check would refuse them.
  */
 export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, testStandards, skipRefactor }: Params): PipelineStep[] => {
-	// The number the plan graded against is the number it is run against: a phase
-	// that renames an import across two hundred files declares its own budget, and
-	// one repo-wide setting cannot express that without weakening the guardrail for
-	// every other plan. `base` is a variant hint only, and the content here is
-	// always an implementable plan — never an overview.
+	// The plan's own file budget wins: one repo-wide setting cannot fit a phase that renames an
+	// import across hundreds of files without weakening the guardrail for every other plan.
 	const plan = parsePlan({ content: planContent, base: 'plan.md' });
 	const fileLimit = plan.fileBudget ?? run.config['executor-file-limit'];
-	// Read from the manifest at every call rather than captured once: the ledger
-	// step seeds this mapping and an approved disposition rewrites it, so every
-	// gate run and every fix re-invocation names the rows as they now stand.
+	// Read at every call: the ledger step seeds this mapping and an approved disposition rewrites it.
 	const acceptanceTests = () => run.current().acceptanceTests;
 	const ledgerGates = [...new Set(plan.ledger.map((row) => row.gate))];
 	// A move destination the ledger writer writes carries every case its source

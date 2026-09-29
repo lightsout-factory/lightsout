@@ -20,11 +20,7 @@ import { readRunProcessLock } from '#src/runState/lock/readRunProcessLock.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 
-/**
- * Every run this repo has state for, one line each — what `lightsout status`
- * has always printed, and still prints byte for byte when neither `--run` nor
- * `--watch` asks for anything narrower.
- */
+// Scripts read this listing, so its format must not change.
 const printRunListing = async ({ cwd }: { cwd: string }) => {
 	const runIds = await listRunIds({ cwd });
 
@@ -40,8 +36,7 @@ const printRunListing = async ({ cwd }: { cwd: string }) => {
 			// Taken per run rather than once: the run lock is per-checkout, so an
 			// isolated run's holder is in the workspace it recorded rather than here.
 			const lock = await readRunProcessLock({ cwd, manifest });
-			// A `running` manifest with no live process behind it is a crash
-			// leftover (killed terminal, uncaught error) — resumable, not lost.
+			// A `running` manifest with no live process is a crash leftover: resumable, not lost.
 			const zombie = manifest.status === RunStatus.Running && !isRunLive({ manifest, lock });
 			const status = zombie ? `${manifest.status} (no live process — crashed? resume with --run ${manifest.runId})` : manifest.status;
 			const phases =
@@ -49,8 +44,7 @@ const printRunListing = async ({ cwd }: { cwd: string }) => {
 					? `  phases: ${manifest.steps.filter((step) => step.status === RunStatus.Passed).length}/${manifest.steps.length}`
 					: '';
 
-			// A run built from a ticket rather than a plan says which ticket, so a
-			// queue's parked work is findable from the run list alone.
+			// So a queue's parked work is findable from the run list alone.
 			const ticket = manifest.ticketRef === undefined ? '' : `  ticket: ${manifest.ticketRef}`;
 
 			console.log(`${manifest.runId}  ${status}  plan: ${manifest.plan}${ticket}${phases}  updated: ${manifest.updatedAt}`);
@@ -58,12 +52,6 @@ const printRunListing = async ({ cwd }: { cwd: string }) => {
 	}
 };
 
-/**
- * `--planning <name>`: one plan's planning block, printed once. It is not a
- * run, so it has no run to name and nothing to repaint — beside `--run` or
- * `--watch`, or with no plan name, the request makes no sense and is refused
- * with the usage text. A missing or unreadable record is a normal answer.
- */
 const printPlanningStatus = async ({ cwd, flags }: { cwd: string; flags: Map<string, string | true> }) => {
 	const name = getStringFlag({ flags, name: 'planning' });
 
@@ -81,12 +69,6 @@ const printPlanningStatus = async ({ cwd, flags }: { cwd: string; flags: Map<str
 	return exitCli({ code: 0 });
 };
 
-/**
- * `--shipping <branch>`: one branch's shipping block, read from the checkout
- * that ships it and printed once. Like `--planning` it is not a run: beside
- * `--run`, `--watch` or `--planning`, or with no branch, the request is refused
- * with the usage text. A missing or unreadable record is a normal answer.
- */
 const printShippingStatus = async ({ cwd, flags }: { cwd: string; flags: Map<string, string | true> }) => {
 	const branch = getStringFlag({ flags, name: 'shipping' });
 
@@ -104,11 +86,7 @@ const printShippingStatus = async ({ cwd, flags }: { cwd: string; flags: Map<str
 	return exitCli({ code: 0 });
 };
 
-/**
- * A run id the user typed is theirs to get wrong: an unknown one is a message,
- * never the stack of the manifest path we tried to open. The run form and the
- * queue form both resolve through here, so an unknown id has one answer.
- */
+// An unknown run id the user typed is a message, never a stack trace.
 const resolveTypedRunId = ({ cwd, runId }: { cwd: string; runId: string }) =>
 	resolveRunId({ cwd, runId }).catch((error: unknown) => {
 		if (error instanceof RunNotFoundError) {
@@ -119,13 +97,6 @@ const resolveTypedRunId = ({ cwd, runId }: { cwd: string; runId: string }) =>
 		throw error;
 	});
 
-/**
- * `--queue`: the queue's board and one status block per active ticket, printed
- * once. It takes `--run <id>` to name a queue run and `--wait` to spend a
- * minute on a queue that has only just been launched: beside `--watch`,
- * `--planning`, `--shipping` or `--now`, or with a value after `--queue` or
- * `--wait`, the request is refused with the usage text.
- */
 const printQueueForm = async ({ cwd, flags }: { cwd: string; flags: Map<string, string | true> }) => {
 	const valued = flags.get('queue') !== true || (flags.has('wait') && flags.get('wait') !== true);
 	const clash = flags.has('watch') || flags.has('planning') || flags.has('shipping') || flags.has('now');
@@ -145,54 +116,15 @@ const printQueueForm = async ({ cwd, flags }: { cwd: string; flags: Map<string, 
 };
 
 /**
- * `lightsout status` — which runs this repo has, or what is happening inside
- * one of them.
- *
- * The bare listing is unchanged and always will be: scripts read it, and it is
- * the only view that answers "which runs exist" without opening any of them.
- * `--run <id>` opens one, taking the shortened eight-character id reports
- * print; `--watch` repaints that block every two minutes until the run stops,
- * which is how a detached run gets followed at all. Both detailed blocks
- * include persisted verification diagnostics through `printRunProgress`.
- *
- * A `--watch` with no `--run` follows the one run that is going, and its phase
- * children with it. Several unrelated runs going at once are named back to the
- * reader to pick between rather than guessed at, because narrating somebody
- * else's concurrent work is worse than asking which one they meant.
- *
- * `--planning <name>` shows a plan that is still being planned: the steps its
- * `lightsout plan` subcommands recorded in the plan folder, in the same block
- * layout as a run's, printed once. It stands alone — beside `--run` or
- * `--watch` it prints the usage text and exits 1.
- *
- * `--shipping <branch>` shows a branch that is being shipped: the six steps the
- * ship sequence recorded in the checkout that ships it, in the same layout,
- * printed once. It stands alone too — beside `--run`, `--watch` or
- * `--planning` it prints the usage text and exits 1.
- *
- * `--queue` shows a queue run: its seven-column board, then one fenced block
- * per active ticket holding exactly what `--run`, `--planning` or `--shipping`
- * prints for that ticket's worktree. It follows the live queue run the
- * checkout's run lock names, or the one `--run <id>` names, and prints once —
- * beside `--watch`, `--planning` or `--shipping` it prints the usage text and
- * exits 1. `--wait` asks it to wait up to a minute for a queue that has only
- * just been launched, and is meaningless on every other form, so typed without
- * `--queue` it prints the usage text and exits 1.
- *
- * `--now` shows the run that is going, printed once and never repainted, and
- * for a phased plan both of its levels: the phase sequence, then the phase
- * moving now. It answers at once rather than waiting for a run to appear, falls
- * back to the newest run when nothing is going, and names several unrelated
- * running families back rather than guessing between them. It stands alone —
- * beside `--run`, `--watch`, `--planning`, `--shipping` or `--queue` it prints
- * the usage text and exits 1.
+ * Several unrelated runs going at once are named back to the reader rather than
+ * guessed between, because narrating somebody else's concurrent work is worse
+ * than asking which one they meant.
  */
 export const statusCommand = async ({ cwd, flags }: CommandContext): Promise<void> => {
 	const runFlag = getStringFlag({ flags, name: 'run' });
 	const watch = flags.get('watch') === true;
 
-	// One rule rather than a clause in each form: --wait waits for a queue run to
-	// take the lock, which no other form is looking for.
+	// --wait waits for a queue run to take the lock, which no other form looks for.
 	if (flags.has('wait') && !flags.has('queue')) {
 		console.error(usage);
 		return exitCli({ code: 1 });
@@ -227,9 +159,8 @@ export const statusCommand = async ({ cwd, flags }: CommandContext): Promise<voi
 		return exitCli({ code: 0 });
 	}
 
-	// The one call that spends the full grace period, waiting for a run the
-	// caller has only just started to write its first manifest. From here the
-	// watch re-resolves its own target every frame, inside the family it started.
+	// The one call that spends the full grace period, waiting for a just-started
+	// run to write its first manifest.
 	const going = await resolveWatchTarget({ cwd });
 
 	if (going !== undefined && 'ambiguous' in going) {

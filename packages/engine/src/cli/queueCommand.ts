@@ -26,15 +26,9 @@ import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSet
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';
 
 /**
- * Everything the drain needs from the config, or the one sentence naming the
- * part of it that is unusable.
- *
  * The `queue` block is resolved first, so a repo carrying neither block hears
- * about the one the command is named for rather than about a tracker it has not
- * reached yet. All three are resolved here rather than by the drain: they are
- * startup usage errors like any other bad flag, and the queue ships what it
- * builds, so an unshippable configuration is refused up front rather than after
- * N tickets have been built.
+ * about the one the command is named for. All three are resolved at startup so an
+ * unshippable configuration is refused before any ticket is built.
  */
 const resolveQueueStartup = ({ config, env }: { config: LightsoutConfig; env: NodeJS.ProcessEnv }) => {
 	const settings = resolveQueueSettings({ config, env });
@@ -58,11 +52,8 @@ const resolveQueueStartup = ({ config, env }: { config: LightsoutConfig; env: No
 	return { settings, trackerSettings, shipSettings };
 };
 
-/**
- * The final board, headed as finished, drawn from the report this process just
- * drained — so it can never show another run's board, and still draws its seven
- * columns when the drain found nothing to do and created no coordinator run.
- */
+// Drawn from this process's report, not the coordinator run, so it never shows
+// another run's board and still draws when the drain created no run.
 const printFinalBoard = ({ report }: { report: QueueDrainReport }) => {
 	const at = new Date();
 	const tickets = toQueueBoardTickets({ settled: report, at: at.toISOString() });
@@ -74,7 +65,7 @@ const printFinalBoard = ({ report }: { report: QueueDrainReport }) => {
 	console.log('');
 };
 
-/** One line per ticket the drain touched, and one per ticket it deliberately did not — a ticket must never vanish from the summary. */
+// A ticket must never vanish from the summary, so the left-behind ones print too.
 const printDrainReport = ({ report }: { report: QueueDrainReport }) => {
 	for (const outcome of report.outcomes) {
 		if (outcome.ready) {
@@ -98,14 +89,8 @@ const printDrainReport = ({ report }: { report: QueueDrainReport }) => {
 	}
 };
 
-/**
- * The relay the drain will use: this terminal by default, or the mailbox when
- * `--file-relay` was passed.
- *
- * The flag's value is optional, so `parseFlags` hands back `true` for a bare
- * `--file-relay` and the directory string when one followed it — a bare flag
- * means the default mailbox under `.lightsout/queue/relay`.
- */
+// `parseFlags` hands back `true` for a bare `--file-relay`, which means the
+// default mailbox.
 const buildRelay = async ({
 	requested,
 	settings,
@@ -131,14 +116,8 @@ const buildRelay = async ({
 	return new FileQuestionRelay({ settings, trackerSettings, directory, output: process.stdout });
 };
 
-/**
- * `lightsout queue` — drain the tracker of automatable tickets in parallel
- * worktrees, relaying any question to this terminal or to the mailbox
- * `--file-relay` names.
- *
- * The workers are implement work, so they resolve the config's `implement`
- * harness entry rather than needing a `queue` key of their own.
- */
+// The workers are implement work, so they resolve the config's `implement`
+// harness entry rather than a `queue` key of their own.
 export const queueCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const loaded = await readConfig({ cwd });
 	const startup = resolveQueueStartup({ config: loaded, env: process.env });
@@ -156,8 +135,8 @@ export const queueCommand = async ({ flags, cwd }: CommandContext): Promise<void
 		const holder = await readRunLock({ cwd });
 
 		// Emptying the mailbox of a live drain would delete every question in
-		// flight. The lock inside `runQueue` is still the real mutual exclusion;
-		// this only moves the same refusal ahead of the first destructive write.
+		// flight. The lock inside `runQueue` is the real mutual exclusion; this
+		// only moves the refusal ahead of the first destructive write.
 		if (holder !== undefined && isPidAlive({ pid: holder.pid })) {
 			console.error(
 				`another lightsout run is active in this repo: run ${holder.runId} (pid ${holder.pid}) — its relay mailbox is live, so this drain refuses rather than emptying it`,
@@ -167,16 +146,12 @@ export const queueCommand = async ({ flags, cwd }: CommandContext): Promise<void
 		}
 	}
 
-	// Inherited by every worker session and the engine runs it launches: a
-	// worker's `implement` must end on its own result rather than chain into
-	// ship, whatever the worktree's config says — the drain's serial merge is
-	// the only ship path in a queue run. The coordinator's own merge step calls
+	// Inherited by every worker: the drain's serial merge is the only ship path in
+	// a queue run, whatever a worktree's config says. The coordinator calls
 	// `runShip` directly and never reads this.
 	process.env.LIGHTSOUT_NO_SHIP = '1';
 
 	const relay: QuestionRelay = await buildRelay({ requested, settings, trackerSettings, cwd });
-	// Closed on every exit path, so a crash never leaves the terminal holding a
-	// half-written prompt.
 	const report = await runQueue({
 		cwd,
 		settings,
@@ -198,14 +173,9 @@ export const queueCommand = async ({ flags, cwd }: CommandContext): Promise<void
 	printFinalBoard({ report });
 	printDrainReport({ report });
 
-	// The engine's own exit discipline: 0 when everything eligible shipped, 2
-	// when work remains that a re-run picks up, 1 only for a refusal.
-	// A reconciled already-merged ticket carries `settled`: it is reported, but a
-	// re-run has nothing to pick up for it, so it never makes the drain exit 2.
-	// A reconciliation failure does not either — the branch is merged and will
-	// not be offered again; only the tracker is stale, and the line above says so.
-	// A ticket left open does not either: it is waiting on a human decision — a
-	// ship request, a plan somebody is still writing — not on a re-run.
+	// Exit 2 only when a re-run has something to pick up. A settled ticket, a
+	// reconciliation failure on a merged branch, and a ticket left open for a
+	// human do not count.
 	const resumable = report.leftBehind.some((entry) => entry.settled !== true) || report.outcomes.some((outcome) => isParkedOutcome({ outcome }));
 
 	return exitCli({ code: resumable ? pausedExitCode : 0 });

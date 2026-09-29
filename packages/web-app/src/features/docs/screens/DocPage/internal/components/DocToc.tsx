@@ -1,6 +1,5 @@
 import { slugifyHeading } from '#src/common/utils/slugifyHeading.ts';
 
-/** The document's second- and third-level headings, in the order they appear. */
 const readHeadings = ({ text }: { text: string }) => {
 	const matches = text.split('\n').map((line) => /^(#{2,3}) (.+)$/.exec(line));
 
@@ -8,19 +7,13 @@ const readHeadings = ({ text }: { text: string }) => {
 };
 
 interface Props {
-	/** The document's raw markdown — the same text `Markdown` is handed. */
 	text: string;
 }
 
 /**
- * The list of headings above a document, each linking to the anchor
- * `Markdown` put on it.
- *
- * Read from the raw markdown rather than from the rendered nodes, because the
- * list has to exist before the document is scrolled past. Both sides slug the
- * heading with `slugifyHeading`, which is what makes the link land.
- *
- * A document with no headings gets no list rather than an empty box.
+ * Read from the raw markdown rather than the rendered nodes, because the list
+ * has to exist before the document is scrolled past. `Markdown` slugs headings
+ * with the same `slugifyHeading`, which is what makes the links land.
  */
 export const DocToc = ({ text }: Props) => {
 	const headings = readHeadings({ text });

@@ -10,7 +10,6 @@ import { Card } from '#src/appUI/panels/Card.tsx';
 import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
 import { recordKindLabels } from '#src/features/commands/internal/common/constants/recordKindLabels.ts';
 
-/** The flag columns: what to type, what it means, and what happens when it is left out. */
 const flagColumns: Array<DataTableColumn<CommandFlag>> = [
 	{ key: 'name', header: 'flag', render: (flag) => <span className="font-mono">{spellFlag({ flag })}</span> },
 	{ key: 'meaning', header: 'meaning', render: (flag) => flag.meaning },
@@ -18,12 +17,9 @@ const flagColumns: Array<DataTableColumn<CommandFlag>> = [
 ];
 
 /**
- * How the command is invoked, and every flag it accepts.
- *
- * Deliberately not the bracketed one-liner `lightsout --help` prints: a page has
- * room for a table, and re-deriving the usage line's rules here would be exactly
- * the second list the catalog exists to prevent. Two renderings of one data
- * structure, not two data structures.
+ * Deliberately not the bracketed one-liner `lightsout --help` prints:
+ * re-deriving the usage line's rules here would be a second list the catalog
+ * exists to prevent.
  */
 const InvocationSection = ({ entry }: { entry: CommandCatalogEntry }) => (
 	<Card title="How to run it">
@@ -41,7 +37,6 @@ const InvocationSection = ({ entry }: { entry: CommandCatalogEntry }) => (
 	</Card>
 );
 
-/** One step of the sequence: who does it, what it does, what it prevents, and the files it leaves behind. */
 const StepSection = ({ step, position }: { step: CommandStep; position: number }) => (
 	<div className="flex flex-col gap-2 border-border border-l-2 pl-4">
 		<SectionHeader title={`${position}. ${step.title}`} action={<Badge>{step.actor}</Badge>} />
@@ -66,13 +61,6 @@ interface Props {
 	entry: CommandCatalogEntry;
 }
 
-/**
- * One command's manual: how to invoke it, when to reach for it, what it does
- * step by step, and what else is worth knowing about.
- *
- * Every word comes from the engine's command catalog, which is also what the
- * CLI's `--help` and the README's infographics render from.
- */
 export const CommandManual = ({ entry }: Props) => (
 	<div className="flex flex-col gap-6">
 		<PageHeader title={entry.slash ?? entry.cli ?? entry.id} description={entry.summary} action={<Badge>{recordKindLabels[entry.records]}</Badge>} />

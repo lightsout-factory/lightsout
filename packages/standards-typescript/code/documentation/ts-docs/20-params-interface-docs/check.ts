@@ -2,7 +2,6 @@ import type { StandardsCheckModule } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
 import { buildTreeLineCheck } from '../../../../common/checks/buildTreeLineCheck.ts';
 
-/** The lines a `Params` interface with a doc comment starts on, 1-based. */
 const findDocumentedParamsLines = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {
 	const text = sourceFile.getFullText();
 	const found: number[] = [];

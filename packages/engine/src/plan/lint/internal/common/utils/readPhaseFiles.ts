@@ -7,19 +7,14 @@ import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import { parsePlan } from '#src/plan/parsePlan.ts';
 
 interface Params {
-	/** Absolute paths to the plan file(s) to read, in the order the caller holds them. */
+	/** Absolute. */
 	planPaths: string[];
 }
 
-/** A phase file's position in the walk: `overview.md` precedes every phase, and a lone `plan.md` is phase one. */
+/** `overview.md` precedes every phase, and a lone `plan.md` is phase one. */
 const phaseNumber = ({ base }: { base: string }) => (base === 'overview.md' ? 0 : Number(/^phase(\d+)-/.exec(base)?.[1] ?? 1));
 
-/**
- * Read and parse every plan file once, so each check reads a `PhaseFile` rather
- * than re-parsing the text. An unreadable file yields its finding here and no
- * `PhaseFile` at all, which is what keeps a path the draft claimed but never
- * wrote from passing the lint silently.
- */
+/** An unreadable file yields a finding and no `PhaseFile`, so a path the draft claimed but never wrote cannot pass silently. */
 export const readPhaseFiles = async ({ planPaths }: Params): Promise<{ phases: PhaseFile[]; findings: StructuralFinding[] }> => {
 	const phases: PhaseFile[] = [];
 	const findings: StructuralFinding[] = [];

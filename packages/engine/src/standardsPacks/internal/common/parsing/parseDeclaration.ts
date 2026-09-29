@@ -4,32 +4,17 @@ import { parseFrontMatter } from '#src/standardsPacks/internal/common/parsing/pa
 import { formatSchemaIssues } from '#src/standardsPacks/internal/common/utils/formatSchemaIssues.ts';
 
 interface Params<Shape> {
-	/** The whole markdown file. */
 	text: string;
-	/** What this kind of file may declare in its front matter. */
 	schema: z.ZodType<Shape>;
-	/** Pack-relative path of the file — names it in any problem reported against it. */
+	/** Pack-relative; names the file in any problem reported against it. */
 	filePath: string;
-	/** Sink for problems — the loader throws them as one batch. */
+	/** The loader throws these as one batch. */
 	problems: string[];
 }
 
 /**
- * Read one markdown file's front matter against the schema its kind declares,
- * and hand back the prose below it. Both document.md and rule.md are read this
- * way, so a malformed declaration is reported in one voice whichever file it
- * sits in.
- *
- * A file whose front matter is unparseable or fails its schema reports the
- * fault and yields no declaration — the caller then drops whatever that
- * declaration would have described, rather than filling in defaults nobody
- * wrote. The prose comes back either way; it is the declaration that is in
- * doubt.
- *
- * @param text - the whole markdown file
- * @param schema - what this kind of file may declare
- * @param filePath - pack-relative path, printed in any problem
- * @param problems - sink the loader throws as one batch
+ * Invalid front matter yields no declaration, so the caller drops what it would
+ * have described rather than filling in defaults nobody wrote.
  */
 export const parseDeclaration = <Shape>({ text, schema, filePath, problems }: Params<Shape>): { declaration?: Shape; body: string } => {
 	let declaration: Shape | undefined;

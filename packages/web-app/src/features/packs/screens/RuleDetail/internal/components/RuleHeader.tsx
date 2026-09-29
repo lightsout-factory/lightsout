@@ -9,14 +9,7 @@ interface Props {
 	rule: StandardsPackRuleView;
 }
 
-/**
- * The rule's identity: its name, what it is about, who enforces it, and what it
- * does by default.
- *
- * These are the pack's own defaults rather than how any one repo runs the rule
- * — a repo's config can change the setting, and that belongs on the page about
- * the repo.
- */
+/** Shows the pack's defaults, not any repo's setting: a repo's config belongs on the page about that repo. */
 export const RuleHeader = ({ rule }: Props) => {
 	const severity = severityDisplays[rule.defaultSeverity];
 

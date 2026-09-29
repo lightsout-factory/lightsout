@@ -4,17 +4,12 @@ interface Params {
 }
 
 /**
- * Whether any process in a group is still running.
+ * Gate commands are spawned `detached`, so a killed engine leaves its gates
+ * alive; a dead holder pid alone does not prove the machine is free.
  *
- * Every gate command is spawned `detached`, so a killed engine leaves its gates
- * alive with nothing to reap them. That is why a dead holder pid is not on its
- * own proof that the machine is free: the groups it recorded have to be gone
- * too.
- *
- * Signal 0 sends nothing and only probes, and `EPERM` means the group exists but
- * belongs to another user — still alive. Windows has no POSIX process groups,
- * so the pid itself is probed there and its descendants are not seen; saying so
- * is better than pretending the platforms behave alike.
+ * `EPERM` means the group exists but belongs to another user — still alive.
+ * Windows has no POSIX process groups, so the pid itself is probed there and
+ * its descendants are not seen.
  */
 export const isProcessGroupAlive = ({ pgid }: Params): boolean => {
 	try {

@@ -30,9 +30,6 @@ const createSubjectReservations = () => {
 	};
 };
 
-// The first waiting assignment whose subjects are all free wins, in queue
-// order; taking it removes it from the queue. Undefined when every waiting
-// assignment is blocked by a running writer.
 const takeEligible = ({ waiting, reservations }: { waiting: TestTargetGroup[]; reservations: ReturnType<typeof createSubjectReservations> }) => {
 	const group = waiting.find((candidate) => reservations.isFree({ group: candidate }));
 
@@ -44,28 +41,14 @@ const takeEligible = ({ waiting, reservations }: { waiting: TestTargetGroup[]; r
 };
 
 /**
- * Drain the assignments through `testWriterConcurrency` slots, launching the
- * first waiting assignment whose subject files no running writer holds. Subject
- * collision — two writers editing one file on disk — is the only exclusion that
- * matters, so an assignment blocked on a held file is passed over rather than
- * left holding a slot, and a released file wakes whatever waited on it.
- *
- * The warm-up writer counts inside the ceiling and keeps its own subjects
- * reserved until it settles. On every settle, pool writer or warm-up alike, the
- * order is fixed: release the reservation, fold the result in, and only then
- * look for the next eligible assignment — the park flag is set while folding
- * in, so scanning first would launch one more writer past a rate limit the run
- * has already hit.
- *
- * Every reservation is held by a running writer, so when nothing runs the first
- * waiting assignment is always eligible: the drain cannot deadlock. Nothing is
- * polled — eligibility is re-examined only when a writer settles.
+ * Subject collision is the only exclusion that matters, so an assignment
+ * blocked on a held file is passed over rather than left holding a slot. On
+ * every settle the reservation is released and the result folded in before the
+ * next scan: the park flag is set while folding in, so scanning first would
+ * launch one more writer past a rate limit the run already hit. Every
+ * reservation is held by a running writer, so the drain cannot deadlock.
  *
  * @param groups - the assignments the warm-up writer did not claim, in the fan-out's queue order
- * @param spawnWriter - spawns one writer for one assignment
- * @param aggregate - collects every result and answers whether the run parked
- * @param warm - the warm-up writer in flight and the assignment it holds
- * @param collectWarm - folds the warm-up result in, once and only once
  */
 export const drainBySubjects = async ({ groups, spawnWriter, aggregate, warm, collectWarm }: Params): Promise<void> => {
 	const reservations = createSubjectReservations();

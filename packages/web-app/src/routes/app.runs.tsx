@@ -6,13 +6,6 @@ import { RunsSortKey } from '#src/features/runs/common/constants/RunsSortKey.ts'
 import { runsQueryOptions } from '#src/features/runs/queries/runsQueryOptions.ts';
 import { RunsPage } from '#src/features/runs/screens/RunsPage/RunsPage.tsx';
 
-/**
- * What the query string may say.
- *
- * Every key is optional, and an absent key means "do not narrow on this" — a
- * cleared filter drops out of the URL entirely, and a link to the runs page
- * that says nothing about order gets the page's own default.
- */
 interface RunsSearch {
 	commands?: string[];
 	statuses?: string[];
@@ -22,16 +15,12 @@ interface RunsSearch {
 }
 
 /**
- * The badge families a run's status actually resolves to.
- *
- * Narrower than `BadgeVariant`, which also colours a finding's severity and the
- * brand: a URL naming one of those would pass validation and then match no run,
- * emptying the table rather than narrowing nothing. Deduplicated because the two
- * paused statuses share one family.
+ * Narrower than `BadgeVariant`: a URL naming a severity or brand variant would
+ * pass validation and then match no run. Deduplicated because the two paused
+ * statuses share one family.
  */
 const runStatusFamilyValues = [...new Set(Object.values(runStatusFamilies))];
 
-/** The values from a closed vocabulary a URL list actually named — anything else narrows nothing rather than matching no run at all. */
 const readList = <Option extends string>({ value, options }: { value: unknown; options: readonly Option[] }) => {
 	const named = Array.isArray(value) ? value : [value];
 	const kept = options.filter((option) => named.includes(option));
@@ -39,10 +28,9 @@ const readList = <Option extends string>({ value, options }: { value: unknown; o
 	return kept.length === 0 ? undefined : kept;
 };
 
-/** A free-text URL value, with an empty string read as absent so a cleared box leaves no key behind. */
+/** An empty string reads as absent, so a cleared box leaves no key behind. */
 const readText = ({ value }: { value: unknown }) => (typeof value === 'string' && value !== '' ? value : undefined);
 
-/** A URL value from a closed vocabulary, or nothing — a key naming a column the table cannot order by falls back to the page's own default. */
 const readOption = <Option extends string>({ value, options }: { value: unknown; options: readonly Option[] }) => options.find((option) => option === value);
 
 const validateSearch = (search: Record<string, unknown>): RunsSearch => ({
@@ -55,8 +43,6 @@ const validateSearch = (search: Record<string, unknown>): RunsSearch => ({
 
 export const Route = createFileRoute('/app/runs')({
 	validateSearch,
-	// Warmed before the first render, so the table is server-rendered with its
-	// runs rather than arriving as a shell the client has to fill.
 	loader: async ({ context }) => {
 		await context.queryClient.ensureQueryData(runsQueryOptions());
 	},

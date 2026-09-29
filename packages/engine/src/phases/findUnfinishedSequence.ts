@@ -11,17 +11,11 @@ interface Params {
 }
 
 /**
- * The most recently updated phased run for this plan that has not passed, or
- * undefined when there is none.
- *
  * A failed or paused sequence stopped short — resume continues it, so starting
- * a second one for the same plan would run phases twice. Only a passed sequence
- * is finished. Unreadable run dirs are skipped rather than guessed at.
+ * a second one for the same plan would run phases twice.
  *
- * The match is the plan each coordinator recorded rather than how its overview
- * path was spelled, so a re-spelled path no longer hides a mid-flight sequence.
- * An overview outside any plan folder records no name, and a sequence with no
- * name to match blocks nothing.
+ * Matches the plan each coordinator recorded rather than its overview path's
+ * spelling, so a re-spelled path cannot hide a mid-flight sequence.
  */
 export const findUnfinishedSequence = async ({ cwd, planName }: Params): Promise<RunManifest | undefined> => {
 	if (planName === undefined) {

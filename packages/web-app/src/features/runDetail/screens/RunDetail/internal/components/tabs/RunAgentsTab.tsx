@@ -7,7 +7,6 @@ interface Props {
 	view: RunDetailView;
 }
 
-/** What the agents cost: the run total, the split per step, and every invocation the ledger recorded. */
 export const RunAgentsTab = ({ view }: Props) =>
 	view.listing.pipeline === PipelineKind.Phases ? (
 		<CoordinatorNote />

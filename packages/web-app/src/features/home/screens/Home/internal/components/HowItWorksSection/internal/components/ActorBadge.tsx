@@ -12,7 +12,6 @@ interface Props {
 	className?: string;
 }
 
-/** Who does a step, as a face or a bot beside a one-word label — the flow's whole argument, one badge per card. */
 export const ActorBadge = ({ actor, className }: Props) => {
 	const { label, Icon, classes } = actorStyles[actor];
 

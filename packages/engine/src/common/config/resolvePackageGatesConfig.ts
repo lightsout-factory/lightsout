@@ -7,7 +7,6 @@ interface Params {
 	packageGates: PackageGates;
 }
 
-/** The scoped `package-gates` block, read into the engine's own spelling. */
 interface ResolvedPackageGates {
 	check: string;
 	test: string;
@@ -17,11 +16,7 @@ interface ResolvedPackageGates {
 	extraTests: { name: string; command: string }[];
 }
 
-/**
- * Read a parsed `package-gates` block. The schema validates and keeps the
- * config's own kebab spelling (so manifests round-trip); this is the one
- * place that spelling is translated for the engine.
- */
+/** The schema keeps the config's kebab spelling so manifests round-trip; this translates it for the engine. */
 export const resolvePackageGatesConfig = ({ packageGates }: Params): ResolvedPackageGates => ({
 	check: packageGates.check,
 	test: packageGates.test,

@@ -6,11 +6,9 @@ import { cn } from '#src/common/utils/cn.ts';
 
 interface Props {
 	kind: CheckKind;
-	/** Uses the short label, for a row with little room — "Agent" rather than "Agent check". */
 	isShort?: boolean;
 }
 
-/** A rule's kind of check as a tag, in the icon and colours the packs page's key gives that kind. */
 export const CheckKindTag = ({ kind, isShort = false }: Props) => {
 	const Icon = checkKindIcons[kind];
 

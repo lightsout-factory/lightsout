@@ -16,19 +16,11 @@ interface Params {
 }
 
 /**
- * Wire a spawned child's streams into one promise: collect stdout and stderr,
- * optionally stream complete stdout lines as they arrive, arm a SIGKILL
- * deadline, and settle on close. A non-zero exit is a result, not an
- * exception — only a spawn error or the deadline rejects; a signalled death
- * carries no code, so it reports -1. The deadline reports itself through
- * `onTimeout` before it rejects, so a caller can tell it from a spawn error
- * without reading the error's text.
+ * A non-zero exit is a result, not an exception — only a spawn error or the
+ * deadline rejects; a signalled death carries no code, so it reports -1.
  *
- * Every process the engine runs goes through here — consumer gate commands and
- * harness spawns alike — so the settle rules (what counts as failure, when the
- * timer clears, that a partial trailing line is flushed) are written once
- * rather than re-derived per caller. What differs between callers is how the
- * child is spawned, which is the caller's business.
+ * Every process the engine runs goes through here, so the settle rules are
+ * written once rather than re-derived per caller.
  */
 export const collectChildOutput = ({ child, timeout, onStdoutLine, onTimeout }: Params): Promise<CommandResult> => {
 	return new Promise<CommandResult>((resolve, reject) => {
@@ -59,9 +51,8 @@ export const collectChildOutput = ({ child, timeout, onStdoutLine, onTimeout }: 
 
 		// SIGTERM first, SIGKILL only if it is ignored: SIGKILL cannot be caught,
 		// so leading with it denies the harness the chance to flush a transcript
-		// or delete the temp files it owns. The caller is rejected at the
-		// deadline either way — the escalation runs behind it, on an unref'd
-		// timer so a pending SIGKILL can never be the reason a process lingers.
+		// or delete its temp files. The escalation timer is unref'd so a pending
+		// SIGKILL can never be the reason a process lingers.
 		const expire = () => {
 			killProcessGroup({ child, signal: 'SIGTERM' });
 

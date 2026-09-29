@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { CommandActor } from '#src/contracts/commands/CommandActor.ts';
 
-/** One card of a command's infographic, and one heading of its manual page's "what happens" section. */
 export const CommandStep = z.object({
 	/** Caps, as the infographic renders it: 'START THE RUN'. */
 	title: z.string(),

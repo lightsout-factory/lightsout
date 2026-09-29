@@ -6,29 +6,16 @@ import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleS
 
 interface Params {
 	config: LightsoutConfig;
-	/**
-	 * The process environment. Nothing in this block reads it any more — the API
-	 * key moved to `resolveTrackerSettings` — but it stays on the signature
-	 * beside it, so the two resolvers a command calls together are called the
-	 * same way.
-	 */
+	/** Unread; kept so this and `resolveTrackerSettings`, which a command calls together, are called the same way. */
 	env: NodeJS.ProcessEnv;
 }
 
 /**
- * The `queue` block with its defaults applied, or the one sentence saying why
- * the queue cannot start.
+ * Answers only for the `queue` block: a missing block and a missing tracker key
+ * are different things to fix, so `resolveTrackerSettings` names its own.
  *
- * It answers only for the `queue` block. Tracker identity is
- * `resolveTrackerSettings`'s to resolve and its missing key is that function's
- * to name, and the two failures still reach the user separately because
- * `queueCommand` calls both — a missing block and a missing key are different
- * things to fix, and a user who hits one must not be told about the other.
- *
- * The four status names and the five planning-status labels resolve in the
- * lifecycle module, because the command edge writes both fields without a
- * queue; `resolveLifecycleSettings` is the one place the engine spells a status
- * name, and only as a fallback a repo overrides.
+ * Status names and planning-status labels resolve in `resolveLifecycleSettings`,
+ * because the command edge writes both without a queue.
  */
 export const resolveQueueSettings = ({ config }: Params): QueueSettings | QueueFailure => {
 	const queue = config.queue;

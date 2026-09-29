@@ -7,18 +7,7 @@ interface Params {
 	branch: string;
 }
 
-/**
- * The worktree a branch is currently checked out in, undefined when no worktree
- * holds it, the list is unreadable, the command timed out, or `cwd` is outside
- * a repository.
- *
- * A caller asks this before cutting a tree for a branch: git refuses a second
- * worktree on one branch, and a refusal naming the checkout already holding it
- * is what lets a human choose that checkout on purpose. The porcelain listing
- * is read rather than the directory, because a slash-bearing branch nests
- * directories and an entry name is not a branch name. Same never-throw contract
- * as every reader in `common/git`.
- */
+/** The porcelain listing is read rather than the directory, because a slash-bearing branch nests directories and an entry name is not a branch name. */
 export const readBranchWorktree = async ({ cwd, branch }: Params): Promise<string | undefined> => {
 	const listed = await runCommand({ command: 'git worktree list --porcelain', cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 	let found: string | undefined;

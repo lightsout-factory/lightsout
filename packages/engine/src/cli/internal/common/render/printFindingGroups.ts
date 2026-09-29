@@ -23,18 +23,10 @@ const headingOf = ({ rule, severity, count }: { rule: string; severity: Standard
 };
 
 /**
- * Print the findings grouped under one heading per rule.
- *
- * Grouping is what makes the output readable: a rule's rows line up so
- * their measurements can be compared at a glance, and the guidance — which is
- * the same for every finding a rule emits for the same reason — is stated
- * once beneath the rows it covers instead of repeating on each. Within a group
- * the rows are ordered by guidance, so a rule that reports two different
- * kinds of problem still explains each one next to its own rows.
- *
- * A finding at a single site prints as one aligned row. A finding spanning
- * several files lists its locations and puts the detail underneath, because
- * there is no single location to align such a row on.
+ * Guidance is the same for every finding a rule emits for the same reason, so
+ * it is stated once beneath the rows it covers. A finding spanning several
+ * files has no single location to align a row on, so it lists its locations
+ * and puts the detail underneath.
  */
 export const printFindingGroups = ({ findings }: Params): void => {
 	const width = terminalWidth();
@@ -43,8 +35,7 @@ export const printFindingGroups = ({ findings }: Params): void => {
 	const detailIndent = '      ';
 	// Keyed on severity as well as rule: `size` reports an oversized file as
 	// work and an oversized function as advice, and one heading cannot honestly
-	// count both. The heading's rule and severity come from the finding that
-	// opened the group, so an empty group is not a case to answer.
+	// count both.
 	const groups = new Map<string, { rule: string; severity: StandardsSeverity; findings: StandardsFinding[] }>();
 
 	for (const finding of findings) {
@@ -73,8 +64,6 @@ export const printFindingGroups = ({ findings }: Params): void => {
 
 			for (const finding of partition) {
 				const locations = finding.files.map((file) => formatFindingSite({ file }));
-				// Only a single-site finding has one location to align a row on; a
-				// multi-site one has none, which is what `undefined` says here.
 				const inline = locations.length === 1 ? locations[0] : undefined;
 
 				if (inline !== undefined && inline.length <= column) {

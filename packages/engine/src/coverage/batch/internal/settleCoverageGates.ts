@@ -8,7 +8,6 @@ import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 interface Params {
 	batchId: string;
 	onProgress: (message: string) => void;
-	/** One fix attempt, carrying the gate output that sent the work back. */
 	invokeFix: (params: { label: string; errorContext: string }) => Promise<AgentOutcome<unknown>>;
 	/** The tests-only verdict on what the batch has written — the error message, or undefined when only tests changed. */
 	testsOnly: () => Promise<string | undefined>;
@@ -17,10 +16,8 @@ interface Params {
 }
 
 /**
- * The stop a gate run that reached no verdict settles by itself — it never
- * started, a gate crashed, or a gate ran past its ceiling: escalated rather than
- * failed, because a batch nobody could verify is a human's call rather than a
- * batch that was judged and lost.
+ * Escalated rather than failed: a batch nobody could verify is a human's call,
+ * not a batch that was judged and lost.
  */
 const noVerdictStop = ({ result }: { result: GateRunResult }): CoverageBatchStop | undefined => {
 	const error = describeGateNoVerdict({ result });
@@ -29,23 +26,12 @@ const noVerdictStop = ({ result }: { result: GateRunResult }): CoverageBatchStop
 };
 
 /**
- * Drive one coverage batch's gates to green, or to the condition that stopped
- * it: a rate limit, a source file a fix agent reached for, or a gate still red
- * once the mechanical attempts are spent. Undefined means green.
- *
  * There is no supervisor stage here, unlike the refactor batch's settler: a
  * coverage batch that cannot be made green is set aside for a human with the
  * gate output attached, and the run continues on the next batch.
  *
- * A gate run that reached no verdict — the machine was held by another run of
- * this repository, a gate crashed, or a gate ran past its ceiling — ends the
- * settle at once, whether it is the first call or a re-run inside the loop, and
- * spends no fix invocation on it: no gate command returned a verdict, so there
- * is nothing about the batch to repair.
- *
- * Separate from the batch loop because the loop's job is what to DO with a
- * verified tree — measure it, classify it — and this is how the tree comes to
- * be verified. The two change for different reasons.
+ * A gate run that reached no verdict ends the settle at once and spends no fix
+ * invocation: there is nothing about the batch to repair.
  */
 export const settleCoverageGates = async ({ batchId, onProgress, invokeFix, testsOnly, gates }: Params): Promise<CoverageBatchStop | undefined> => {
 	let result = await gates();

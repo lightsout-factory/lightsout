@@ -5,25 +5,17 @@ import { readWorkOrderSyncState } from '#src/workOrder/internal/common/utils/rea
 import { writeWorkOrderFolderFile } from '#src/workOrder/internal/common/utils/writeWorkOrderFolderFile.ts';
 
 interface Params {
-	/** The work order's folder in the primary checkout. */
+	/** In the primary checkout. */
 	workOrderFolder: string;
-	/** The bytes of the record just published or restored, when this write records one. */
 	recordSha256?: string;
-	/** Marker hashes to merge in, key by key — a plan this call says nothing about keeps the hash it had. */
+	/** Merged key by key; a plan this call says nothing about keeps its hash. */
 	planMarkers?: Record<string, string>;
 }
 
 /**
- * Record what this machine has just published or restored.
- *
- * Merging rather than replacing is the point: publishing one plan must not
- * forget what is known about another, and recording the record's own bytes must
- * not forget the plans. The caller holds the record's lock, so the read and the
- * write here cannot interleave with another writer's.
- *
- * A write failure throws, because a sidecar that did not land means the next
- * pull will call a record that is in fact in sync a divergence — the caller
- * decides whether that is a refusal or a progress line.
+ * Merges rather than replaces, so publishing one plan never forgets another. The
+ * caller holds the record's lock. A failure throws: an unwritten sidecar makes the
+ * next pull report a false divergence.
  */
 export const updateWorkOrderSyncState = async ({ workOrderFolder, recordSha256, planMarkers }: Params): Promise<void> => {
 	const current = await readWorkOrderSyncState({ workOrderFolder });

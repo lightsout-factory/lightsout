@@ -6,17 +6,12 @@ interface Params {
 }
 
 /**
- * Substitute engine-owned values into a prompt document. A number the engine
- * enforces — the executor's file limit, the plan's created-file ceiling — must
- * read the same in the prompt as in the check, and a prompt that hard-codes it
- * is a second source of truth that agrees only by convention.
+ * A number the engine enforces must read the same in the prompt as in the check,
+ * so prompts carry tokens rather than hard-coded values.
  *
- * Substitution happens when the invocation is assembled, so no agent and no
- * plan file ever sees a token — a template that still carries one has not been
- * through this function, and the plan lint's unresolved-`{token}` scan catching
- * it in a written plan is the correct outcome, not a false positive. The two
- * braces are a distinctive delimiter, not an escape: a doubled brace pair
- * matches that scan's pattern exactly as a single one does.
+ * A token left in a written plan means its template skipped this function, and
+ * the plan lint's unresolved-`{token}` scan is right to flag it: the doubled
+ * braces are a delimiter, not an escape, and still match that scan.
  */
 export const applyPromptTokens = ({ text, tokens }: Params): string => {
 	let applied = text;

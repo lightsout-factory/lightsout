@@ -3,7 +3,6 @@ import { join } from 'node:path';
 import type { z } from 'zod';
 import type { PlanWorkspaceFile } from '#src/contracts/views/planWorkspace/PlanWorkspaceFile.ts';
 
-/** JSON text against its contract, with every way it can fail said in one line rather than thrown. */
 const parseRecord = <Shape>({ name, raw, schema }: { name: string; raw: string; schema: z.ZodType<Shape> }) => {
 	let payload: unknown;
 
@@ -24,17 +23,13 @@ interface Params<Shape> {
 	cwd: string;
 	/** The workspace file to read; a workspace without this record passes nothing and gets nothing back. */
 	file?: PlanWorkspaceFile;
-	/** Boundary schema the parsed JSON must satisfy. */
 	schema: z.ZodType<Shape>;
 }
 
 /**
- * One of a plan workspace's JSON records, read the way a viewer needs it: the
- * value, or a line saying why the file would not read.
- *
- * The lenient sibling of `readPlanWorkspaceFile`, which throws instead. Throwing
- * is right for the pipeline, which must not proceed on half an answer, and wrong
- * for a page whose whole job is to show a half-finished workspace.
+ * The lenient sibling of `readPlanWorkspaceFile`, which throws: throwing is
+ * right for the pipeline and wrong for a page whose job is to show a
+ * half-finished workspace.
  */
 export const readPlanRecord = async <Shape>({ cwd, file, schema }: Params<Shape>): Promise<{ value?: Shape; problem?: string }> => {
 	let result: { value?: Shape; problem?: string } = {};

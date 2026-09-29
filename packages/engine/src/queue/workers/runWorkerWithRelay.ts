@@ -38,13 +38,6 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/**
- * The direct worker, its run result read back in the same three terms.
- *
- * The build goes through the body-build lifecycle, which records it on the work
- * order record when that record is a single-plan one holding no plan 001 — the
- * build the ship check then reads — and writes nothing otherwise.
- */
 const runDirectWorker = async ({
 	cwd,
 	workOrderName,
@@ -88,17 +81,8 @@ const runDirectWorker = async ({
 };
 
 /**
- * The plan worker: implement the plan or plans the ticket already carries.
- *
- * A ticket with a record of its own is built plan by plan through
- * `buildWorkOrderPlans`: its plans that are ready to implement go in numeric order,
- * each committed as its own commit, and the loop decides whether the ticket then
- * ships, stays open, or parks.
- *
- * A ticket with no record carries no published plan — publishing a plan is what
- * writes the record. That is not an error: shaping may have finished on approved
- * brainstorm material, whose outcome lives in the ticket body. It then builds
- * from the body, announced so the run is legible.
+ * A ticket with no record is not an error: shaping may have finished on
+ * approved brainstorm material, whose outcome lives in the ticket body.
  */
 const runPlanWorker = async ({
 	cwd,
@@ -149,9 +133,6 @@ const runPlanWorker = async ({
 };
 
 /**
- * The worker, run until it stops asking: every question goes to the one
- * terminal and comes back as an answer the next invocation carries.
- *
  * A worker still asking after the last turn parks, and so does a relay with no
  * terminal behind it — one ticket that cannot be answered must never take the
  * other in-flight workers down with it.
@@ -171,9 +152,8 @@ export const runWorkerWithRelay = async ({
 	env,
 	onProgress,
 }: Params): Promise<WorkerOutcome> => {
-	// The relay's own policy, deliberately its own number rather than the
-	// gate-fix retry count it happens to equal: tuning how many times a red gate
-	// is retried must never silently change how many times the user is asked.
+	// Deliberately its own number rather than the gate-fix retry count it happens
+	// to equal: tuning gate retries must never change how often the user is asked.
 	const maxRelayedQuestions = 2;
 	let answeredQuestion: AnsweredQuestion | undefined;
 
@@ -209,9 +189,8 @@ export const runWorkerWithRelay = async ({
 		const answer = await relay.ask({ question: outcome.question, ticket, coordinatorRunId, coordinatorRunDir }).catch((error: unknown) => ({ error }));
 
 		if (typeof answer !== 'string') {
-			// `unanswered` marks the one park that means the human is away — the
-			// relay throws only when a question can never be answered, and the
-			// drain reads the flag to stop taking on work nobody is there to steer.
+			// `unanswered` means the human is away: the drain reads it to stop taking
+			// on work nobody is there to steer.
 			return { error: `the worker asked a question that could not be relayed: ${messageOf({ error: answer.error })}`, unanswered: true };
 		}
 

@@ -25,7 +25,6 @@ const readTarget = ({ value }: { value: unknown }) => {
 	return typeof parsed.data === 'string' ? parsed.data : (parsed.data.import ?? parsed.data.default);
 };
 
-/** Every directory a file sits in, and each one above it, up to the repo root `.`. */
 const collectAncestorDirectories = ({ files }: { files: string[] }) => {
 	const directories = new Set<string>(['.']);
 
@@ -38,13 +37,7 @@ const collectAncestorDirectories = ({ files }: { files: string[] }) => {
 	return [...directories];
 };
 
-/**
- * The `imports` patterns of every package.json at or above the given files —
- * the aliases Node, TypeScript, esbuild and Jest all resolve a `#` specifier
- * through, read from the manifest that owns the importing file. A manifest
- * that cannot be read as JSON declares none, rather than failing a run over a
- * file no caller asked for.
- */
+// A manifest that cannot be read as JSON declares no aliases rather than failing the run.
 export const readImportAliases = async ({ cwd, files }: Params): Promise<ImportAliases> => {
 	const aliases: ImportAliases = new Map();
 

@@ -5,13 +5,12 @@ import { DataTable } from '#src/appUI/DataTable.tsx';
 import { BadgeVariant } from '#src/common/constants/BadgeVariant.ts';
 import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
 
-/** One row of the log, with a key of its own — two decisions may honestly ask the same question in different words. */
+/** Keyed on its own: two decisions may ask the same question. */
 interface LoggedDecision {
 	key: string;
 	decision: DecisionRow;
 }
 
-/** The columns, in the order the Decision Log itself reads: where it came from, what was asked, and what was settled. */
 const columns: Array<DataTableColumn<LoggedDecision>> = [
 	{ key: 'source', header: 'source', render: ({ decision }) => <Badge>{decision.source}</Badge> },
 	{
@@ -35,10 +34,7 @@ interface Props {
 	view: PlanWorkspaceView;
 }
 
-/**
- * Every decision settled before an agent ran, brainstorm first and the plan's
- * own interview after — the order they were actually made in.
- */
+/** Brainstorm decisions come before the plan's own: the order they were made in. */
 export const DecisionsTab = ({ view }: Props) => {
 	const rows: LoggedDecision[] = [...(view.brainstormDecisions?.decisions ?? []), ...(view.decisions?.decisions ?? [])].map((decision, index) => ({
 		key: `${index}:${decision.question}`,

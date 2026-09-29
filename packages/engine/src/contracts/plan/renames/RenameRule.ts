@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
 /**
- * One entry of a plan's `## Renames` section. A plan or phase file carrying at
- * least one is rename-only: it is built without test writing, and every change
- * it makes is held to its renames in code rather than read by an agent.
+ * A plan or phase file carrying at least one is rename-only: it is built without
+ * test writing, and every change is held to its renames in code.
  */
 export const RenameRule = z.object({
 	/** The literal, case-sensitive text every occurrence of which is replaced. */

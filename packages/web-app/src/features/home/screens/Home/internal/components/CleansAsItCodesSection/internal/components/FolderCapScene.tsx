@@ -8,7 +8,7 @@ import { Appear } from '#src/features/home/screens/Home/internal/components/Clea
 import { CapScene } from '#src/features/home/screens/Home/internal/components/CleansAsItCodesSection/internal/components/CapScene.tsx';
 import { StatusChip } from '#src/features/home/screens/Home/internal/components/CleansAsItCodesSection/internal/components/StatusChip.tsx';
 
-/** The folder's files, in the order the agent adds them — one past the cap, so the last one tips it over. */
+/** One past the cap, so the last one tips it over. */
 const addedFiles = [
 	'Avatar',
 	'Badge',
@@ -33,14 +33,13 @@ const addedFiles = [
 	'Tooltip',
 ].map((name) => `${name}.tsx`);
 
-/** The same files after the refactor pass, grouped by what they are for. */
 const groupedFolders = [
 	{ name: 'ui/', files: ['Avatar', 'Badge', 'Button', 'Card', 'Checkbox', 'Input', 'Select', 'Tabs', 'Tooltip'] },
 	{ name: 'layout/', files: ['Banner', 'Breadcrumb', 'Footer', 'Header', 'Menu', 'Navbar', 'Pagination', 'Sidebar'] },
 	{ name: 'overlays/', files: ['Dialog', 'Dropdown', 'Modal', 'Toast'] },
 ];
 
-/** Frame by frame: the file count reaching the cap and one past it, then the fix, then the clean tree held a while. Short on purpose — the story is the fix, not the climb. */
+/** Short on purpose: the story is the fix, not the climb. */
 const frames = [
 	...[18, 19, 20].map((count) => ({ count, status: SceneStatus.Working })),
 	// Two frames over the cap, so the reader has time to see what broke before the fix flies through.
@@ -50,7 +49,6 @@ const frames = [
 	...[1, 2, 3, 4].map(() => ({ count: 21, status: SceneStatus.Clean })),
 ];
 
-/** How many of the newest files the flat listing shows; the rest are summarized above them. */
 const visibleCount = 5;
 
 const chipText = ({ count, status }: { count: number; status: SceneStatus }) => {
@@ -61,7 +59,6 @@ const chipText = ({ count, status }: { count: number; status: SceneStatus }) => 
 	return status === SceneStatus.Over ? `${count} files · over the ${codeCaps.folderFiles}-file cap` : `${count} / ${codeCaps.folderFiles} files`;
 };
 
-/** One flat folder filling up, file by file. */
 const FlatFolder = ({ count, status }: { count: number; status: SceneStatus }) => {
 	const shown = addedFiles.slice(count - visibleCount, count);
 
@@ -98,24 +95,12 @@ const FlatFolder = ({ count, status }: { count: number; status: SceneStatus }) =
 	);
 };
 
-/** How many files each sub-folder lists before the rest are summed up — enough to show what lives there, not so many the tree gets long. */
 const filesPerFolder = 2;
 
-/** The little elbow that ties a tree row to the line running down its parent, the way a file explorer draws nesting. */
 const branchClasses = 'relative before:absolute before:top-1/2 before:-left-4 before:h-px before:w-3 before:bg-muted-foreground/30';
 
-/**
- * The line running down beside a row to the next one. The last row's stops at
- * its own elbow, as a file explorer ends a branch on the last child rather
- * than trailing a line below it.
- */
 const trunkClasses = 'relative after:absolute after:top-0 after:-left-4 after:h-full after:w-px after:bg-muted-foreground/30';
 
-/**
- * The folder after the refactor pass, drawn as a file tree like the listing
- * before it: the same files, now nested in sub-folders that each sit well
- * under the cap, a couple named in each and the rest summed up.
- */
 const GroupedFolder = () => (
 	<Appear className="flex flex-col gap-4">
 		<div className="flex flex-wrap items-center justify-between gap-3">
@@ -148,11 +133,6 @@ const GroupedFolder = () => (
 	</Appear>
 );
 
-/**
- * A folder growing past the Standards Pack's file cap, and the refactor pass
- * grouping it back under — the page's first picture of lightsout cleaning up
- * after the agent rather than after the reader.
- */
 const folderScene: CapSceneDefinition<(typeof frames)[number]> = {
 	title: `Standards Pack / folder-size · max ${codeCaps.folderFiles} files per folder`,
 	frames,

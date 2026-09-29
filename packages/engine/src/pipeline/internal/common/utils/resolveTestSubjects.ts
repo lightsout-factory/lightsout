@@ -11,11 +11,7 @@ import { partitionByPackage } from '#src/pipeline/internal/common/utils/partitio
 // other file is public — its own subject.
 const isOwnSubject = ({ file }: { file: string }) => !file.split('/').slice(0, -1).includes('internal');
 
-/**
- * One package's walk: its targets resolved against its own module map and
- * import graph. Subjects never cross packages, so every partition answers
- * independently.
- */
+/** Subjects never cross packages, so each partition resolves independently. */
 const resolvePartition = async ({ cwd, targets, universe, compiler }: { cwd: string; targets: string[]; universe: string[]; compiler: typeof ts }) => {
 	const importersOf = new Map<string, string[]>();
 
@@ -91,12 +87,9 @@ interface Params {
 }
 
 /**
- * The upward walk: each changed target file maps to the public files that
- * reach it — the subjects its tests must go through. A target that is its own
- * subject maps to itself; a target inside an `internal/` folder walks reverse
- * import edges, within its package, until it hits own-subject files; a target
- * nothing public reaches becomes an orphan. A repo with no `internal/` folders
- * resolves every file to itself — the per-file behavior, with no config knob.
+ * Each changed target maps to the public files that reach it: the subjects its
+ * tests must go through. A repo with no `internal/` folders resolves every file
+ * to itself, with no config knob.
  */
 export const resolveTestSubjects = async ({
 	cwd,

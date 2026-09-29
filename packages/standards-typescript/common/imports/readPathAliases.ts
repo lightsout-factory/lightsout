@@ -3,13 +3,9 @@ import { joinPath } from '../paths/joinPath.ts';
 import type { PathAliases } from '../types/PathAliases.ts';
 
 /**
- * The same text with line and block comments replaced by spaces, quoted
- * strings left intact.
- *
- * A tsconfig is JSON with comments — every one in this repo has them — so a
- * JSON parser is not an option, and cutting comments by regex would eat the
- * double slash inside any string that happens to hold a URL. Positions are
- * preserved so nothing downstream has to care that this ran.
+ * A tsconfig is JSON with comments, so a JSON parser is not an option, and
+ * cutting comments by regex would eat the double slash inside any string that
+ * holds a URL. Positions are preserved so nothing downstream has to care.
  */
 const stripComments = ({ text }: { text: string }): string => {
 	const chars = text.split('');
@@ -46,7 +42,7 @@ const stripComments = ({ text }: { text: string }): string => {
 	return chars.join('');
 };
 
-/** The `{...}` following a key, by brace balance — the block form no flat regex can match. */
+/** By brace balance — the block form no flat regex can match. */
 const readBlock = ({ text, key }: { text: string; key: string }): string | undefined => {
 	const opened = new RegExp(`"${key}"\\s*:\\s*\\{`).exec(text);
 
@@ -75,14 +71,10 @@ const quoted = /"([^"]*)"/g;
 interface Params {
 	/** Repo-relative path of the tsconfig this text came from — its folder anchors the targets. */
 	tsconfigPath: string;
-	/** The tsconfig's contents. */
 	text: string;
 }
 
 /**
- * The path aliases one tsconfig declares, or `undefined` when this file alone
- * cannot answer.
- *
  * An empty `patterns` map is a real answer, not a missing one: a config that
  * declares no aliases means a bare specifier is a published package, and the
  * rules that resolve one may say so with confidence. `undefined` is reserved

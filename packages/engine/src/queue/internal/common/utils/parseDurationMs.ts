@@ -7,15 +7,7 @@ interface Params {
 	key: string;
 }
 
-/**
- * A duration string in milliseconds, or the one sentence saying why it is not
- * one.
- *
- * The accepted forms are deliberately narrow — a positive integer followed by
- * `s`, `m` or `h` — so no two readers ever disagree about what a value means.
- * Anything else answers a failure naming the key and the accepted forms rather
- * than guessing a unit.
- */
+// Deliberately narrow forms, so no two readers ever disagree about what a value means.
 export const parseDurationMs = ({ value, key }: Params): number | QueueFailure => {
 	const matched = /^(\d+)([smh])$/.exec(value.trim());
 	const amount = Number(matched?.[1] ?? 0);

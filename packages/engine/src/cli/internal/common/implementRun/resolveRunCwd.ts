@@ -9,17 +9,9 @@ interface Params {
 }
 
 /**
- * The checkout a recorded run's work happens in: the workspace its manifest
- * recorded when that directory is still there, and the launching checkout when
- * the run recorded none.
- *
- * A recorded workspace that has gone is an error naming the path rather than a
- * silent fall back, because rebuilding in the checkout the command was launched
- * from would gate and commit a tree the run was never building in.
- *
- * It is a resolver over the manifest alone — it never lists worktrees and never
- * creates one, which is what locating a run's recorded workspace means as
- * against making a second.
+ * A recorded workspace that has gone is an error rather than a fall back to the
+ * launching checkout, which would gate and commit a tree the run was never
+ * building in.
  */
 export const resolveRunCwd = async ({ cwd, manifest }: Params): Promise<{ workspace: string } | { error: string }> => {
 	const { workspace } = manifest;

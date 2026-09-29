@@ -23,26 +23,20 @@ import { standardsValidateCatalogEntry } from '#src/commands/common/constants/st
 import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalogEntry.ts';
 
 /**
- * Every command lightsout offers, stated once.
- *
- * The CLI's usage text, the flag validator, the README infographics and the
- * web app's command pages all render from this array. A command that gains a
- * flag gains it here, and every reader of a flag learns about it in the same
- * commit.
+ * The CLI's usage text, the flag validator, the README infographics and the web
+ * app's command pages all render from this array.
  *
  * In group order — build, burn down, standards, housekeeping — which is the
- * order the commands page reads them in. The usage text's own line order is
- * `renderUsage`'s business, not this array's.
+ * order the commands page reads them in.
  *
- * `related` is filled by rule rather than by taste: every other member of an
- * entry's group, plus these explicit pairs — plan↔implement, implement↔resume,
- * refactor↔standards-check, test-coverage-to-threshold↔standards-check,
- * standards-validate↔standards-health, friction↔improve. Both halves of every
- * pair name each other, so the graph is symmetric by construction.
+ * `related` is filled by rule: every other member of an entry's group, plus
+ * these pairs — plan↔implement, implement↔resume, refactor↔standards-check,
+ * test-coverage-to-threshold↔standards-check,
+ * standards-validate↔standards-health, friction↔improve — each named from both
+ * sides.
  *
- * Nothing in here imports a `.md` module, deliberately: step prose is a string
- * literal rather than a markdown import, which is what lets
- * scripts/buildWorkflowSpecs.mjs load this file under plain Node.
+ * Nothing in here imports a `.md` module, so scripts/buildWorkflowSpecs.mjs can
+ * load this file under plain Node.
  */
 export const commandCatalog: CommandCatalogEntry[] = [
 	brainstormCatalogEntry,

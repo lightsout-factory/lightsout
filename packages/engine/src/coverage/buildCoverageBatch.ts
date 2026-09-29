@@ -17,8 +17,6 @@ interface Params {
 }
 
 /**
- * Fill one batch with whole import-graph components, worst-first.
- *
  * Selecting files one at a time routinely hands the test writer an internal
  * whose module boundary it is forbidden to touch, so it declines for a
  * structural reason rather than a real one. Taking the component whole keeps a

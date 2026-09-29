@@ -12,13 +12,9 @@ interface Params {
 }
 
 /**
- * A single-plan work order holding no plan 001, built from the ticket body and
- * then decided from the record that build was recorded on.
- *
- * A build already recorded as passed is not built again. Leftover work is
- * neither settled nor parked on here: no plan owns it, so the build runs over
- * whatever the tree holds, as the direct worker always has, and a failed or
- * interrupted earlier build is simply built again.
+ * Leftover work is neither settled nor parked on here: no plan owns it, so the
+ * build runs over whatever the tree holds, and a failed or interrupted earlier
+ * build is simply built again.
  */
 export const buildPlanlessWorkOrder = async ({ step, workOrderName }: Params): Promise<WorkerOutcome> => {
 	const { cwd, record } = step;

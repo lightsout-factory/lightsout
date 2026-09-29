@@ -54,12 +54,9 @@ const buildWorkOrder = async ({ context, state, workOrder }: { context: LaneCont
 };
 
 /**
- * Fill every builder slot the ship lane and the retired questions have left.
- *
  * A slot whose ticket parked on an unanswered question is retired rather than
- * refilled: an unanswered question means the human is away, and a drain that
- * refilled would pile up questions nobody is reading. A plain failure holds no
- * human and blocks nothing, so it frees its slot.
+ * refilled: the human is away, and refilling would pile up questions nobody is
+ * reading. A plain failure holds no human, so it frees its slot.
  */
 export const startBuilds = ({ context, state, flight }: Params): void => {
 	while (state.pending.length > 0 && flight.builds + flight.ships + state.retired < context.settings.maxParallel) {

@@ -10,23 +10,10 @@ interface Params {
 }
 
 /**
- * The data half of a plan report: plan names in, totalled trees out, nothing
- * printed.
- *
- * A plan folder holding no activity record answers an entry whose `report` is
- * absent rather than failing the read for the plan beside it — a list is an
- * account of what is there, the bargain `listPlanWorkspaces` strikes for a
- * workspace whose grade file will not parse. A folder whose record is partly
- * written answers a tree built from the marks that parsed, because a record cut
- * off when its process was killed still proves everything above the cut.
- *
- * Order follows the given names.
- *
- * It lives here rather than in the CLI for the reason every other reader in
- * this folder does: the web app reads this module, and a calculation the
- * terminal owns is one a second surface has to repeat. It takes resolved names
- * rather than a raw `--plan` value, so the CLI's name-resolution rules stay in
- * the CLI.
+ * A plan folder holding no activity record answers an absent `report` rather than
+ * failing the read for the plan beside it. A partly written record still builds
+ * a tree from the marks that parsed, because a record cut off when its process
+ * was killed proves everything above the cut.
  */
 export const readPlanActivityReports = async ({ cwd, names }: Params): Promise<PlanActivityReport[]> => {
 	const reports: PlanActivityReport[] = [];

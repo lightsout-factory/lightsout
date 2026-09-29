@@ -11,13 +11,9 @@ interface Params {
 }
 
 /**
- * Persist a planning record atomically (tmp file + rename), or write nothing
- * when the plan folder does not exist.
- *
- * It never creates the plan folder: `ensurePlanWorkspace` and the brainstorm
- * fetch fetch from the ticket only when that folder is absent, so a record that
- * created it would change what planning does. A failed write rejects, and the
- * caller owns reporting it.
+ * Never creates the plan folder: `ensurePlanWorkspace` and the brainstorm fetch
+ * fetch from the ticket only when that folder is absent, so a record that
+ * created it would change what planning does.
  */
 export const writePlanningProgress = async ({ cwd, progress }: Params): Promise<void> => {
 	if (!(await pathExists({ path: await planWorkspaceDir({ cwd, name: progress.name }) }))) {

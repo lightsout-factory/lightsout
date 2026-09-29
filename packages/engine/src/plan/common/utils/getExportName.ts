@@ -6,13 +6,9 @@ interface Params {
 }
 
 /**
- * A path or filename reduced to its export name — the extension stripped.
- * One-export-per-file makes the filename the symbol, so this is the symbol name.
- *
- * A copy of the default standards package's `getExportName`, which must AGREE
+ * A copy of the default standards package's `getExportName`, which must agree
  * with this but cannot be identical: a check derives the base name itself
- * rather than reaching for `node:path`. `scripts/checkMirrors.mjs` compares
- * code, so it holds this pair the other way — as a behavioural mirror, running
- * both copies over the same inputs and comparing what they return.
+ * rather than reaching for `node:path`. `scripts/checkMirrors.mjs` holds the
+ * pair as a behavioural mirror, comparing what both return.
  */
 export const getExportName = ({ path }: Params): string => basename(path).replace(/\.(m|c)?[jt]sx?$/, '');

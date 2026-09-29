@@ -9,23 +9,14 @@ import { getNameKey } from '#src/plan/internal/common/naming/getNameKey.ts';
 interface Params {
 	cwd: string;
 	config?: LightsoutConfig;
-	/** Repo-relative paths that contribute no entry — a plan's own created and emptied paths. */
+	/** A plan's own created and emptied paths. */
 	exclude?: string[];
 }
 
 /**
- * The repository's existing exports, bucketed by the tier-0 name comparator.
- *
- * One-export-per-file makes a source file's basename its symbol, so the census
- * is every non-test, non-`index` source file outside the consumer's generated
- * and vendored paths. Test files and barrels are left out because neither can be
- * prior art: a test states what the code should do, and a barrel re-exports a
- * name declared somewhere the census already holds.
- *
- * Hoisted out of `detectPriorArtCandidates`, which built it inline, so a phase
- * writer's declared symbols can be checked against the same census a written
- * plan's are — one copy rather than two, and one expensive repository-wide read
- * per run rather than one per consumer.
+ * One-export-per-file makes a source file's basename its symbol. Test files and
+ * barrels are left out because neither can be prior art: a test states what the
+ * code should do, and a barrel re-exports a name the census already holds.
  */
 export const buildExportCensus = async ({ cwd, config, exclude = [] }: Params): Promise<ExportCensus> => {
 	const excluded = new Set(exclude);

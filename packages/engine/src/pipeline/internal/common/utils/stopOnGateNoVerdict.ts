@@ -6,7 +6,6 @@ import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 
 interface Params {
 	run: PipelineRun;
-	/** The verification step the crash or timeout happened in. */
 	stepId: string;
 	record: StepRecord;
 	/** One line per gate that crashed on every attempt — `runGates`' `crashes`. */

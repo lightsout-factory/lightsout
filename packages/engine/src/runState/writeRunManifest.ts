@@ -7,14 +7,7 @@ interface Params {
 	manifest: RunManifest;
 }
 
-/**
- * Persist a manifest atomically (tmp file + rename) so a crash mid-write can
- * never leave a half-written manifest — the resume path depends on this file
- * always being valid JSON. Stamps `updatedAt`; returns the stamped manifest.
- *
- * The path comes from a lookup that throws for an unknown run, so a write can
- * no longer land in a directory nobody created.
- */
+/** Atomic (tmp file + rename): the resume path depends on this file always being valid JSON. */
 export const writeRunManifest = async ({ cwd, manifest }: Params): Promise<RunManifest> => {
 	const stamped: RunManifest = { ...manifest, updatedAt: new Date().toISOString() };
 	const manifestPath = await getRunManifestPath({ cwd, runId: manifest.runId });

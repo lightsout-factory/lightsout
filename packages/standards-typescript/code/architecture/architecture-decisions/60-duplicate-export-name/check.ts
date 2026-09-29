@@ -4,9 +4,8 @@ import { buildRawFinding } from '../../../../common/findings/buildRawFinding.ts'
 import { getExportName } from '../../../../common/naming/getExportName.ts';
 
 /**
- * Files in scope grouped by the export name their path implies, tests left out
- * — a test file is named after the subject it covers, so two of them under one
- * name is the convention working, not a concept implemented twice.
+ * Tests are left out: a test file is named after the subject it covers, so two
+ * of them under one name is the convention working.
  */
 const groupByName = ({ files, tests }: { files: string[]; tests: string[] }) => {
 	const testPaths = new Set(tests);

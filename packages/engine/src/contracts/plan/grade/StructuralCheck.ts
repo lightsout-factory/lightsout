@@ -1,21 +1,3 @@
-/**
- * The deterministic structural checks a plan is linted against in code (the
- * mechanical half of grading — heading paths, the paths its prose names,
- * scripts, placeholders, sections, scope, naming), plus the cross-phase checks
- * a phased plan is held to as a whole:
- * where each path comes from, whether the hand-offs chain, whether the
- * overview's declarations match the phase files, and how many phases there are.
- * The two ledger checks read a contract plan's `## Acceptance Tests` table: one
- * asks whether every row and prose-files exemption is well formed, the other
- * whether the plan's source files are all reached by a row or excused with a
- * reason. The decision-log check compares a plan file's `## Decision Log`
- * against the saved decision records the engine composes it from, and the
- * global-constraints check compares that file's `## Global Constraints` against
- * the same records. The hand-off-declared check asks every implementable plan
- * file to name what it hands forward, or to say it hands nothing forward. The
- * renames check reads a rename-only plan's `## Renames` section.
- * Values are internal to findings reports.
- */
 export const StructuralCheck = {
 	PathExists: 'path-exists',
 	ProsePathExists: 'prose-path-exists',

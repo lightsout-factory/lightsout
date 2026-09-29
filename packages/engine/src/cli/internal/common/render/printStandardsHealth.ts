@@ -4,28 +4,24 @@ import { dim } from '#src/cli/internal/common/terminal/dim.ts';
 import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
 import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
 
-/** Longest a recorded reason may print before it is cut — one long rationale must not stretch the whole table. */
+/** One long rationale must not stretch the whole table. */
 const reasonWidth = 96;
 
 const count = ({ value }: { value: number }) => (value === 0 ? '—' : `${value}`);
 
-/** A share of a total, or '—' when nothing was ever put to the test — an unasked question has no answer, and 0% would read as one. */
+/** '—' when nothing was ever put to the test: an unasked question has no answer, and 0% would read as one. */
 const rate = ({ part, total }: { part: number; total: number }) => (total === 0 ? '—' : `${Math.round((part / total) * 100)}%`);
 
-/** Each distinct reason once, cut to the column width — the same rationale repeats across a rule's batches. */
+/** Deduplicated because the same rationale repeats across a rule's batches. */
 const reasonLines = ({ reasons }: { reasons: string[] }) =>
 	[...new Set(reasons.map((reason) => reason.replace(/\s+/g, ' ').trim()))]
 		.filter((reason) => reason.length > 0)
 		.map((reason) => (reason.length > reasonWidth ? `${reason.slice(0, reasonWidth - 1)}…` : reason));
 
 /**
- * How much of a rule's advice actually asked for a change.
- *
- * An `already-met` answer is advice the code already satisfied: nothing was
- * done and nothing was rejected. It is shown in the `advice` count, because the
- * agent did read it, but it is kept out of the decline rate's denominator —
- * otherwise a rule whose advice is usually redundant would show a falling
- * decline rate for a reason that has nothing to do with declining.
+ * `already-met` advice is kept out of the decline rate's denominator, or a rule
+ * whose advice is usually redundant would show a falling decline rate for a
+ * reason that has nothing to do with declining.
  */
 const answerableAdvice = ({ rule }: { rule: StandardsHealthRule }) => rule.adviceApplied + rule.adviceDeclined;
 
@@ -61,27 +57,12 @@ interface Params {
 }
 
 /**
- * The package-health report, as a table.
+ * `sites` and the three columns after it are measured (re-checked on disk after
+ * a refactor run), while `advice` is only the agent's own answer; they are never
+ * added together, or the measured half would vouch for the reported half.
  *
- * Two accounts sit side by side and are never added together. `sites` and the
- * three columns after it are blocking work: frozen into a refactor run's
- * work-list, re-checked on disk afterwards, so `resolved` and `declined` are
- * measured rather than reported. `advice` is everything an agent was merely
- * shown — machine advisories and the agent review's own findings alike — where
- * the only record is the agent's own answer. Mixing them would let the
- * measured half vouch for the reported half.
- *
- * `advice` counts everything the agent was shown; the decline rate beside it
- * divides only by the advice that asked for a change, so a rule whose advice
- * the code already satisfied is not credited with agreement it never won.
- *
- * `untracked` is the honest bucket: a batch that failed, was parked, or never
- * ran left its sites with no recorded fate, and counting those as declines
- * would blame a rule for an outage.
- *
- * Every recorded reason prints dim beneath its rule, because a decline rate
- * without the argument behind it tells a reader which rule to distrust but
- * never why.
+ * `untracked` sites had no recorded fate (a failed, parked or unrun batch), and
+ * counting them as declines would blame a rule for an outage.
  */
 export const printStandardsHealth = ({ health }: Params): void => {
 	const { rules, totals } = health;

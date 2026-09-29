@@ -4,14 +4,7 @@ interface Params<T> {
 	getKey: (item: T) => string;
 }
 
-/**
- * The items gathered under the key each answers to, keys in the order they
- * first appeared.
- *
- * Insertion order rather than sorted order on purpose: both panels using this
- * show the run's own sequence, and re-ordering would claim a ranking the
- * evidence does not carry.
- */
+/** Keys keep insertion order on purpose: sorting would claim a ranking the run's evidence does not carry. */
 export const groupBy = <T>({ items, getKey }: Params<T>): [string, T[]][] => {
 	const groups = new Map<string, T[]>();
 

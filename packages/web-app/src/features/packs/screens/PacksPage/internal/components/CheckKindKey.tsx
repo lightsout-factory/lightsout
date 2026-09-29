@@ -4,11 +4,7 @@ import { checkKindLabels } from '#src/common/constants/checkKindLabels.ts';
 import { checkKindTones } from '#src/common/constants/checkKindTones.ts';
 import { cn } from '#src/common/utils/cn.ts';
 
-/**
- * The two kinds of check, each named and defined once — the one place the pages
- * say what the labels mean, so every card, filter and tag after it can use the
- * label alone.
- */
+/** The one place the pages define each check kind, so every card, filter and tag can use the label alone. */
 export const CheckKindKey = () => (
 	<dl className="flex flex-col gap-3 sm:flex-row sm:gap-8">
 		{Object.values(CheckKind).map((kind) => {

@@ -8,7 +8,6 @@ import { runOrDescribeFailure } from '#src/common/processes/runOrDescribeFailure
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
 
 interface Params {
-	/** The worktree holding the work. */
 	cwd: string;
 	/** Writes the commit's message from what is staged. Called once, after the generated paths are discarded and the source changes staged, and only when there is something to commit. */
 	composeMessage: ({ cwd }: { cwd: string }) => Promise<string>;
@@ -25,41 +24,27 @@ interface Params {
 }
 
 /**
- * One path as a git pathspec that means exactly that file.
- *
- * `runCommand` spawns through a shell, so the quoting is not optional, and
- * git's `:(literal)` magic is what stops a real file named `[slug].tsx` being
- * read as a pattern instead of a name.
+ * `runCommand` spawns through a shell, so the quoting is required, and git's
+ * `:(literal)` magic stops a file named `[slug].tsx` being read as a pattern.
  */
 const toLiteralPathspec = ({ path }: { path: string }) => `':(literal)${path.replaceAll("'", String.raw`'\''`)}'`;
 
-/** One command's worth of pathspecs, each meaning exactly the file it names. */
 const toPathspecs = ({ paths }: { paths: string[] }) => paths.map((path) => toLiteralPathspec({ path })).join(' ');
 
-/**
- * Take the generated changes back out of the worktree, so the commit below can
- * carry source only.
- *
- * @returns git's own words when it refused, or undefined once the tree is clean of them
- */
+/** @returns git's own words when it refused, or undefined once the tree is clean of them */
 const discardGeneratedChanges = async ({ cwd, paths }: { cwd: string; paths: string[] }) => {
 	const pathspecs = toPathspecs({ paths });
-	// The index is put back to HEAD first because `git checkout --` restores the
-	// worktree FROM the index, and this file's own `git add -A` is what stages
-	// the tree: an attempt whose commit was refused parks the ticket with the
-	// build output already staged, and a resumed run would otherwise restore that
-	// stale copy and commit it.
+	// The index is reset first because `git checkout --` restores the worktree
+	// from the index, and a refused earlier attempt can leave stale build output
+	// staged there.
 	const resetFailure = await runOrDescribeFailure({ command: `git reset -q -- ${pathspecs}`, cwd });
 
 	if (resetFailure !== undefined) {
 		return resetFailure;
 	}
 
-	// This read goes through runCommand rather than runOrDescribeFailure because
-	// the split below needs the command's stdout. `--full-name` is deliberately
-	// absent: `git ls-files` prints paths relative to the directory it runs in,
-	// which is the frame readGitChangedFiles returns, so the two lists compare
-	// directly.
+	// `--full-name` is deliberately absent: `git ls-files` prints paths relative
+	// to `cwd`, the same frame `readGitChangedFiles` returns.
 	const listed = await runCommand({ command: `git ls-files -z -- ${pathspecs}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 
 	if (listed?.exitCode !== 0) {
@@ -68,9 +53,8 @@ const discardGeneratedChanges = async ({ cwd, paths }: { cwd: string; paths: str
 
 	const tracked = listed.stdout.split('\0').filter(Boolean);
 	const untracked = paths.filter((path) => !tracked.includes(path));
-	// Each command is skipped when its side of the split is empty, so neither is
-	// ever handed a pathspec it cannot match and no failure has to be tolerated.
-	// `git clean` runs without `-x`, which is right: an ignored file could not
+	// Each command is skipped when its side is empty, so neither is handed a
+	// pathspec it cannot match. `git clean` omits `-x`: an ignored file could not
 	// have reached the commit anyway.
 	const commands = [
 		...(tracked.length > 0 ? [`git checkout -- ${toPathspecs({ paths: tracked })}`] : []),
@@ -89,28 +73,16 @@ const discardGeneratedChanges = async ({ cwd, paths }: { cwd: string; paths: str
 };
 
 /**
- * Commit whatever the worker changed, deterministically.
+ * Generated changes are discarded first: build output committed on a feature
+ * branch snapshots the default branch and makes every later branch conflict on
+ * it. The pre-ship step commits build output after the rebase.
  *
- * The engine never committed before, because a human always did. Under the
- * queue there is nobody there, so the commit is the queue's.
+ * `committed` reports only what this step did. Readiness is settled from the
+ * branch's commits, so a resumed ticket committed by an earlier run still ships.
  *
- * A worker's commit carries source changes only. Anything under the config's
- * `generated` entries is discarded from the worktree first: build output
- * committed on a feature branch is a snapshot of the default branch as it was
- * when that branch started, and every later branch then conflicts on a file no
- * human wrote. Committing build output is the pre-ship step's job at merge
- * time, which runs after the rebase and so never has to be rebased.
- *
- * `committed` reports what this commit step did and nothing more. It does not
- * decide whether the branch is ready to merge: readiness is settled from the
- * commits the branch actually carries, so a resumed ticket whose work was
- * committed by an earlier run still ships.
- *
- * The message is asked for after staging, so the agent writing it reads what
- * will actually be committed — an untracked file only appears in the staged
- * change once it is added — and only when a commit will be made, so a resumed
- * run whose work is already committed spends no agent call. It goes through a
- * file rather than `-m`, so no ticket title needs shell quoting.
+ * The message is asked for after staging, so the agent sees untracked files,
+ * and only when a commit will be made. It goes through a file so no ticket
+ * title needs shell quoting.
  *
  * @returns the message committed under, so the caller can record the subject that actually landed
  */
@@ -142,18 +114,15 @@ export const commitWorkOrderWork = async ({
 		onProgress?.(`discarded ${generatedPaths.length} generated path(s) — the pre-ship step commits build output`);
 	}
 
-	// The verdict reads the source changes that remain: a run whose only changes
-	// were build output has produced nothing to merge, and must be reported that
-	// way rather than reaching `git commit` with an empty index.
+	// A run whose only changes were build output has nothing to merge, and must
+	// not reach `git commit` with an empty index.
 	if (sourcePaths.length === 0) {
 		return { committed: false };
 	}
 
-	// The pathspec is what keeps the staging and the change detection reading one
-	// directory. `readGitChangedFiles` reports paths under `cwd`, while a bare
-	// `git add -A` stages the whole repository — so in a consumer nested inside a
-	// larger repo the commit would carry files the run never saw. At a repository
-	// root the two spellings stage exactly the same thing.
+	// The pathspec keeps staging to the directory `readGitChangedFiles` reads: a
+	// bare `git add -A` stages the whole repository, so a consumer nested in a
+	// larger repo would commit files the run never saw.
 	const stageFailure = await runOrDescribeFailure({ command: 'git add -A -- .', cwd });
 
 	if (stageFailure !== undefined) {

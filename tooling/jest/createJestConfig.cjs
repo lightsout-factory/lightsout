@@ -4,7 +4,6 @@ const { join } = require('node:path');
 const toolingDir = __dirname;
 
 /**
- * How many builds share this machine (`LIGHTSOUT_CONCURRENT_BUILDS`, default 1).
  * `lightsout queue` runs each build as its own process, and none can see the
  * others, so each takes its share of the worker ceiling below.
  */
@@ -24,12 +23,7 @@ const readConcurrentBuilds = () => {
 	return parsed;
 };
 
-/**
- * The Jest settings every package in this workspace shares. A factory rather
- * than a `preset`, so what overrides what is plain object spread.
- *
- * @param rootDir - the package root; every glob in the returned config anchors to it
- */
+/** A factory rather than a `preset`, so what overrides what is plain object spread. */
 module.exports = ({ rootDir, ...rest }) => ({
 	rootDir,
 	preset: 'ts-jest',
@@ -37,8 +31,8 @@ module.exports = ({ rootDir, ...rest }) => ({
 	clearMocks: true,
 	restoreMocks: true,
 	testTimeout: 30_000,
-	// At most eight, and fewer on small machines: a flat eight overloaded
-	// four-core CI runners until slow tests hit the 30-second limit.
+	// Fewer on small machines, where a flat eight overloads the cores until slow
+	// tests hit the 30-second limit.
 	maxWorkers: Math.max(1, Math.floor(Math.min(8, availableParallelism() - 1) / readConcurrentBuilds())),
 	workerIdleMemoryLimit: '512MB',
 	// json-summary is what `lightsout test-coverage-to-threshold` and `doctor` read.

@@ -8,13 +8,7 @@ import { runDirectWork } from '#src/direct/runDirectWork.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 
-/**
- * The ticket body the first invocation froze beside the run, read from the
- * checkout the run's records live in.
- *
- * That file is the input a resume must not re-derive: the ticket on disk may
- * have been edited or deleted since, and the run was built from this copy.
- */
+/** A resume must not re-derive the ticket: the one on disk may have been edited or deleted since the run froze this copy. */
 const readFrozenTicket = ({ cwd, manifest }: { cwd: string; manifest: RunManifest }) => readFile(resolve(cwd, manifest.plan), 'utf8').catch(() => undefined);
 
 interface Params {
@@ -31,16 +25,9 @@ interface Params {
 }
 
 /**
- * Continue a parked direct run in the workspace it recorded: its unfinished
- * stage, and then the commit it never made.
- *
- * The run id, the frozen ticket and the partial changes already in the tree are
- * all kept — a commit or a ship that failed is not a reason to build the ticket
- * again. Every status is handed back to the same pipeline, which decides for
- * itself from the run's own `verify` step record whether anything is left to
- * build: a run whose gates are already green goes straight to its commit, and
- * that commit is the run's rather than this edge's, so a resumed run and a
- * first run cannot end differently.
+ * Every status is handed back to the same pipeline, which decides from the
+ * run's own `verify` step record whether anything is left to build, so a
+ * resumed run and a first run cannot end differently.
  */
 export const continueDirectRun = async ({ cwd, workspace, manifest, config, driver, willShip }: Params): Promise<PipelineResult> => {
 	const ticketBody = await readFrozenTicket({ cwd, manifest });

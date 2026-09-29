@@ -19,15 +19,11 @@ interface Params {
 }
 
 /**
- * One rule's check, run against one fixture tree as if that tree were a whole repo.
- *
  * The tree is named by the caller rather than derived here, because the two
  * callers name theirs differently: a rule's own pair is `fixtures/<side>/`
  * under the rule folder, and the pack-level framework-owned trees sit nowhere
  * near it.
  *
- * @param cwd - absolute path of the tree to check
- * @param label - how a thrown message names the tree
  * @throws {Error} When a type-checker rule's tree carries no tsconfig, or the check itself misbehaves.
  */
 export const checkFixtureTree = async ({ cwd, rule, inputKind, run, label, compiler }: Params): Promise<RawStandardsFinding[]> => {
@@ -47,10 +43,9 @@ export const checkFixtureTree = async ({ cwd, rule, inputKind, run, label, compi
 		compiler,
 	});
 
-	// A fixture tree is its own miniature repo, and a type-checker input needs a
-	// tsconfig to build a program from. Without one the check is handed nothing
-	// and answers nothing, which would otherwise be reported as "the check does
-	// not catch what the rule describes" — the wrong file to go looking in.
+	// Without a tsconfig the check is handed nothing and answers nothing, which
+	// would otherwise be reported as "the check does not catch what the rule
+	// describes" — the wrong file to go looking in.
 	if (input.kind === StandardsInputKind.TypeChecker && input.typedFiles.size === 0 && files.length > 0) {
 		throw new Error(`no tsconfig.json in ${label}, so none of its ${files.length} file(s) could be typed — a type-checker rule's fixtures need one`);
 	}

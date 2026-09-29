@@ -17,13 +17,8 @@ interface Params {
 	config: LightsoutConfig;
 }
 
-/**
- * The coordinator's own run, created and marked running.
- *
- * Its directory is resolved before the run exists, because the manifest's
- * `plan` field points at a `queue.md` inside it — and the drain hands that same
- * directory to every ticket it builds.
- */
+// The directory is resolved before the run exists, because the manifest's `plan`
+// field points at a `queue.md` inside it.
 export const startCoordinatorRun = async ({
 	cwd,
 	runId,
