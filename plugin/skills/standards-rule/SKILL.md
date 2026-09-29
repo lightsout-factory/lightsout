@@ -155,9 +155,10 @@ with.
   short sentence. An agent uses the reason to decide cases the rule does not
   name.
 - **Say what to do**, not only what is bad.
-- **Write as much as the agent needs to get it right:** list exceptions where
-  they matter, and give the reason so the agent can judge the cases you don't
-  list.
+- **Write only what the model wouldn't do on its own.** It already knows the
+  language and the usual edge cases. State the choice and the reason. Add an
+  exception only when it is specific to this team, or when agents keep getting
+  it wrong.
 - **Cover both directions where they exist:** when to split something, and when
   to merge it back.
 - **One rule, one job:** leave out anything another rule already covers.
