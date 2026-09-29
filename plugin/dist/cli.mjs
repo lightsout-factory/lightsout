@@ -126302,14 +126302,20 @@ var getGateLockPath = async ({ cwd }) => {
 };
 
 // src/gates/gateLock/internal/common/utils/writeGateLockGroups.ts
-import { writeFile as writeFile2 } from "node:fs/promises";
+import { renameSync as renameSync2, rmSync, writeFileSync as writeFileSync2 } from "node:fs";
 var writeGateLockGroups = async ({ lockPath, runId, gateGroups }) => {
   const holder = readGateLock({ lockPath });
   if (!holder || holder.pid !== process.pid || holder.runId !== runId) {
     return;
   }
-  await writeFile2(lockPath, `${JSON.stringify({ ...holder, gateGroups }, null, "	")}
-`, "utf8").catch(() => void 0);
+  const tempPath = `${lockPath}.${process.pid}.tmp`;
+  try {
+    writeFileSync2(tempPath, `${JSON.stringify({ ...holder, gateGroups }, null, "	")}
+`, "utf8");
+    renameSync2(tempPath, lockPath);
+  } catch {
+    rmSync(tempPath, { force: true });
+  }
 };
 
 // src/gates/gateLock/internal/releaseGateLock.ts
@@ -126442,7 +126448,7 @@ var testResultsDir = async ({ cwd, runId, step, group, kind }) => {
 };
 
 // src/gates/testResults/writeJestReporter.ts
-import { mkdir, writeFile as writeFile3 } from "node:fs/promises";
+import { mkdir, writeFile as writeFile2 } from "node:fs/promises";
 import { join as join29 } from "node:path";
 
 // src/gates/testResults/internal/jestReporterSource.ts
@@ -126504,7 +126510,7 @@ var writeJestReporter = async ({ cwd, runId }) => {
   const runDir = await resolveRunDir({ cwd, runId });
   const reporterPath = join29(runDir, "jest-reporter.cjs");
   await mkdir(runDir, { recursive: true });
-  await writeFile3(reporterPath, jestReporterSource);
+  await writeFile2(reporterPath, jestReporterSource);
   return reporterPath;
 };
 
@@ -128180,7 +128186,7 @@ var syncDefaultBranch = async ({ cwd, defaultBranch, branch, onProgress }) => {
 };
 
 // src/ship/internal/writeShipResult.ts
-import { mkdir as mkdir5, rename, writeFile as writeFile4 } from "node:fs/promises";
+import { mkdir as mkdir5, rename, writeFile as writeFile3 } from "node:fs/promises";
 import { dirname as dirname5 } from "node:path";
 
 // src/ship/internal/common/utils/getShipResultPath.ts
@@ -128198,20 +128204,20 @@ var writeShipResult = async ({ cwd, result }) => {
   }
   const tmpPath = `${resultPath}.tmp`;
   await mkdir5(dirname5(resultPath), { recursive: true });
-  await writeFile4(tmpPath, `${JSON.stringify(result, null, "	")}
+  await writeFile3(tmpPath, `${JSON.stringify(result, null, "	")}
 `, "utf8");
   await rename(tmpPath, resultPath);
   return resultPath;
 };
 
 // src/ship/progress/ShippingProgressRecorder.ts
-import { mkdir as mkdir6, rename as rename2, stat as stat5, writeFile as writeFile6 } from "node:fs/promises";
+import { mkdir as mkdir6, rename as rename2, stat as stat5, writeFile as writeFile5 } from "node:fs/promises";
 import { dirname as dirname6, join as join38 } from "node:path";
 
 // src/common/utils/writeJsonFile.ts
-import { writeFile as writeFile5 } from "node:fs/promises";
+import { writeFile as writeFile4 } from "node:fs/promises";
 var writeJsonFile = async ({ path, value }) => {
-  await writeFile5(path, `${JSON.stringify(value, void 0, "	")}
+  await writeFile4(path, `${JSON.stringify(value, void 0, "	")}
 `, "utf8");
 };
 
@@ -128236,7 +128242,7 @@ var ensureIgnoreFile = async ({ folder }) => {
     () => false
   );
   if (!isFile) {
-    await writeFile6(ignorePath, "*\n", "utf8");
+    await writeFile5(ignorePath, "*\n", "utf8");
   }
 };
 var writeRecord = async ({ recordPath, record: record3 }) => {
@@ -128912,12 +128918,12 @@ var readWorkOrderWithTrackerTarget = async ({
 import { join as join41 } from "node:path";
 
 // src/workOrder/internal/common/utils/writeWorkOrderFolderFile.ts
-import { mkdir as mkdir7, rename as rename3, writeFile as writeFile7 } from "node:fs/promises";
+import { mkdir as mkdir7, rename as rename3, writeFile as writeFile6 } from "node:fs/promises";
 import { dirname as dirname7 } from "node:path";
 var writeWorkOrderFolderFile = async ({ path, content }) => {
   const temporaryPath = `${path}.tmp`;
   await mkdir7(dirname7(path), { recursive: true });
-  await writeFile7(temporaryPath, content);
+  await writeFile6(temporaryPath, content);
   await rename3(temporaryPath, path);
 };
 
@@ -128954,7 +128960,7 @@ var updateWorkOrderSyncState = async ({ workOrderFolder, recordSha256, planMarke
 
 // src/workOrder/internal/common/utils/withWorkOrderStateLock.ts
 import { randomUUID as randomUUID2 } from "node:crypto";
-import { mkdirSync as mkdirSync2, readFileSync as readFileSync3, renameSync as renameSync2, unlinkSync as unlinkSync2, writeFileSync as writeFileSync2 } from "node:fs";
+import { mkdirSync as mkdirSync2, readFileSync as readFileSync3, renameSync as renameSync3, unlinkSync as unlinkSync2, writeFileSync as writeFileSync3 } from "node:fs";
 import { join as join43 } from "node:path";
 var LockHolder = external_exports.object({ pid: external_exports.number(), token: external_exports.string(), acquiredAt: external_exports.string() });
 var sleep3 = ({ ms }) => new Promise((resolve19) => setTimeout(resolve19, ms));
@@ -128971,7 +128977,7 @@ var claimLeftover2 = ({ lockPath, token }) => {
   const asidePath = `${lockPath}.claim-${process.pid}-${token}`;
   let claimed = false;
   try {
-    renameSync2(lockPath, asidePath);
+    renameSync3(lockPath, asidePath);
     claimed = true;
   } catch {
     claimed = false;
@@ -128987,7 +128993,7 @@ var claimLeftover2 = ({ lockPath, token }) => {
 var createLock = ({ lockPath, token }) => {
   let outcome;
   try {
-    writeFileSync2(lockPath, `${JSON.stringify({ pid: process.pid, token, acquiredAt: (/* @__PURE__ */ new Date()).toISOString() })}
+    writeFileSync3(lockPath, `${JSON.stringify({ pid: process.pid, token, acquiredAt: (/* @__PURE__ */ new Date()).toISOString() })}
 `, { flag: "wx" });
     outcome = { created: true };
   } catch (error51) {
@@ -129314,7 +129320,7 @@ var recordWorkOrderSyncState = async ({
 
 // src/workOrder/updateLocalWorkOrderState.ts
 import { randomUUID as randomUUID3 } from "node:crypto";
-import { rename as rename4, writeFile as writeFile8 } from "node:fs/promises";
+import { rename as rename4, writeFile as writeFile7 } from "node:fs/promises";
 import { join as join46 } from "node:path";
 var findHistoryRefusal = ({ current, next }) => {
   const recorded = current?.history ?? [];
@@ -129346,7 +129352,7 @@ var writeChangedRecord = async ({
   if ("record" in outcome) {
     const temporaryPath = join46(workOrderFolder, `${workOrderFileNames.record}.${randomUUID3()}.tmp`);
     try {
-      await writeFile8(temporaryPath, serializeWorkOrderState({ record: outcome.record }));
+      await writeFile7(temporaryPath, serializeWorkOrderState({ record: outcome.record }));
       await rename4(temporaryPath, recordPath);
     } catch (error51) {
       outcome = { error: `the work order state ${recordPath} could not be written: ${messageOf({ error: error51 })}` };
@@ -130100,7 +130106,7 @@ var pathExists = ({ path }) => stat8(path).then(
 );
 
 // src/brainstorm/restore/restoreBrainstormFiles.ts
-import { mkdir as mkdir10, writeFile as writeFile9 } from "node:fs/promises";
+import { mkdir as mkdir10, writeFile as writeFile8 } from "node:fs/promises";
 import { join as join53 } from "node:path";
 
 // src/common/attachmentManifest/parseAttachmentManifest.ts
@@ -130193,7 +130199,7 @@ var writeIntoFolder = async ({ dir, files }) => {
         skipped.push(title);
         continue;
       }
-      await writeFile9(join53(dir, title), text, "utf8");
+      await writeFile8(join53(dir, title), text, "utf8");
       restored.push(title);
     }
   } catch (error51) {
@@ -130330,7 +130336,7 @@ var validatePlanAttachmentGeneration = ({ files }) => {
 };
 
 // src/plan/restore/internal/common/utils/writeRestoredGeneration.ts
-import { mkdir as mkdir11, mkdtemp as mkdtemp3, rename as rename6, rm as rm6, writeFile as writeFile10 } from "node:fs/promises";
+import { mkdir as mkdir11, mkdtemp as mkdtemp3, rename as rename6, rm as rm6, writeFile as writeFile9 } from "node:fs/promises";
 import { dirname as dirname11, join as join54 } from "node:path";
 var writeRestoredGeneration = async ({ dir, files }) => {
   let temporaryDir;
@@ -130339,7 +130345,7 @@ var writeRestoredGeneration = async ({ dir, files }) => {
     await mkdir11(parent, { recursive: true });
     temporaryDir = await mkdtemp3(join54(parent, ".restore-"));
     for (const { title, text } of files) {
-      await writeFile10(join54(temporaryDir, title), text, "utf8");
+      await writeFile9(join54(temporaryDir, title), text, "utf8");
     }
     await rename6(temporaryDir, dir);
     return void 0;
@@ -130933,12 +130939,12 @@ var resolveNewRunDir = async ({ cwd, planName, workOrderName, pipeline, runId })
 };
 
 // src/runState/writeRunManifest.ts
-import { rename as rename7, writeFile as writeFile11 } from "node:fs/promises";
+import { rename as rename7, writeFile as writeFile10 } from "node:fs/promises";
 var writeRunManifest = async ({ cwd, manifest }) => {
   const stamped = { ...manifest, updatedAt: (/* @__PURE__ */ new Date()).toISOString() };
   const manifestPath = await getRunManifestPath({ cwd, runId: manifest.runId });
   const tmpPath = `${manifestPath}.tmp`;
-  await writeFile11(tmpPath, `${JSON.stringify(stamped, null, "	")}
+  await writeFile10(tmpPath, `${JSON.stringify(stamped, null, "	")}
 `, "utf8");
   await rename7(tmpPath, manifestPath);
   return stamped;
@@ -131103,7 +131109,7 @@ var PhaseReport = external_exports.object({
 });
 
 // src/commit/commitWorkOrderWork.ts
-import { mkdir as mkdir13, writeFile as writeFile12 } from "node:fs/promises";
+import { mkdir as mkdir13, writeFile as writeFile11 } from "node:fs/promises";
 import { join as join58 } from "node:path";
 
 // src/common/sourceFiles/isGeneratedPath.ts
@@ -131169,7 +131175,7 @@ var commitWorkOrderWork = async ({
   const message = await composeMessage({ cwd });
   const messagePath = join58(runDir, "commit-message.txt");
   await mkdir13(runDir, { recursive: true });
-  await writeFile12(messagePath, message.endsWith("\n") ? message : `${message}
+  await writeFile11(messagePath, message.endsWith("\n") ? message : `${message}
 `, "utf8");
   const commitFailure = await runOrDescribeFailure({ command: `git commit -F ${messagePath}`, cwd });
   if (commitFailure !== void 0) {
@@ -131867,7 +131873,7 @@ var runSteps = async ({ run, steps }) => {
 };
 
 // src/pipeline/internal/PipelineRun.ts
-import { mkdir as mkdir15, writeFile as writeFile13 } from "node:fs/promises";
+import { mkdir as mkdir15, writeFile as writeFile12 } from "node:fs/promises";
 import { join as join66 } from "node:path";
 
 // src/common/selfCheck/buildSelfCheckCommand.ts
@@ -132127,7 +132133,7 @@ var PipelineRun = class {
       const dir = join66(await resolveRunDir({ cwd: this.cwd, runId: this.current().runId }), "agents");
       const name = `rejected-${String(this.rejectedCount).padStart(2, "0")}-${step}-attempt${attempt}.txt`;
       await mkdir15(dir, { recursive: true });
-      await writeFile13(join66(dir, name), `# step: ${step} \xB7 invocation attempt ${attempt}
+      await writeFile12(join66(dir, name), `# step: ${step} \xB7 invocation attempt ${attempt}
 # validation: ${validationError}
 
 ${text}`, "utf8");
@@ -132270,7 +132276,7 @@ var checkTestResultsCapability = async ({ cwd, gates, results, onProgress }) => 
 };
 
 // src/pipeline/approvedTests/approveTestFiles.ts
-import { mkdir as mkdir16, readFile as readFile23, rm as rm8, writeFile as writeFile14 } from "node:fs/promises";
+import { mkdir as mkdir16, readFile as readFile23, rm as rm8, writeFile as writeFile13 } from "node:fs/promises";
 import { dirname as dirname14, join as join70 } from "node:path";
 
 // src/pipeline/approvedTests/internal/approvedTestPath.ts
@@ -132292,7 +132298,7 @@ var approveTestFiles = async ({ run, paths }) => {
       continue;
     }
     await mkdir16(dirname14(copy), { recursive: true });
-    await writeFile14(copy, content);
+    await writeFile13(copy, content);
     records.push({ path, sha256: sha256({ content }), removed: false });
   }
   return [...approvedTests.filter((record3) => !paths.includes(record3.path)), ...records];
@@ -133093,7 +133099,7 @@ var writeGateBlockedLabel = async ({ settings, identifier }) => {
 };
 
 // src/gates/gateHolds/internal/common/utils/writeGateHold.ts
-import { mkdir as mkdir17, writeFile as writeFile15 } from "node:fs/promises";
+import { mkdir as mkdir17, writeFile as writeFile14 } from "node:fs/promises";
 import { dirname as dirname18 } from "node:path";
 
 // src/gates/gateHolds/internal/common/utils/getGateHoldPaths.ts
@@ -133108,7 +133114,7 @@ var writeGateHold = async ({ cwd, identifier, hold }) => {
   const { pathFor } = await getGateHoldPaths({ cwd });
   const path = pathFor({ identifier });
   await mkdir17(dirname18(path), { recursive: true });
-  await writeFile15(path, JSON.stringify(hold), "utf8");
+  await writeFile14(path, JSON.stringify(hold), "utf8");
 };
 
 // src/gates/gateHolds/takeGateHold.ts
@@ -133190,7 +133196,7 @@ var writeRunStandardsBaseline = async ({ cwd, runId, snapshot }) => {
 };
 
 // src/standardsCheck/applyStandardsBaseline.ts
-import { readFile as readFile29, writeFile as writeFile16 } from "node:fs/promises";
+import { readFile as readFile29, writeFile as writeFile15 } from "node:fs/promises";
 import { join as join82 } from "node:path";
 var StandardsBaseline = external_exports.object({
   at: external_exports.string(),
@@ -133216,7 +133222,7 @@ var applyStandardsBaseline = async ({
   const baseline = baselineRaw === void 0 ? void 0 : StandardsBaseline.safeParse(baselineJson);
   if (writeBaseline) {
     const siteKeys = [...new Set(findings.map((finding3) => finding3.siteKey))];
-    await writeFile16(baselinePath, `${JSON.stringify({ at: (/* @__PURE__ */ new Date()).toISOString(), path: path ?? ".", siteKeys }, void 0, "	")}
+    await writeFile15(baselinePath, `${JSON.stringify({ at: (/* @__PURE__ */ new Date()).toISOString(), path: path ?? ".", siteKeys }, void 0, "	")}
 `, "utf8");
     notes.push(
       `baseline ${baseline === void 0 ? "written" : "refreshed"}: ${siteKeys.length} site(s) accepted as existing debt \u2014 commit lightsout.standards-baseline.json; future runs report only NEW findings (--all shows everything)`
@@ -145458,7 +145464,7 @@ var runPackageChecks = async ({
 };
 
 // src/standardsCheck/writeStandardsSnapshot.ts
-import { mkdir as mkdir19, writeFile as writeFile17 } from "node:fs/promises";
+import { mkdir as mkdir19, writeFile as writeFile16 } from "node:fs/promises";
 import { join as join88 } from "node:path";
 
 // src/standardsCheck/internal/common/paths/getStandardsCheckPath.ts
@@ -145480,8 +145486,8 @@ var writeStandardsSnapshot = async ({ cwd, snapshot }) => {
   const snapshotsDir = getStandardsSnapshotsDir({ cwd });
   const fileName = `${snapshot.at.replaceAll(":", "-").replaceAll(".", "-")}.json`;
   await mkdir19(snapshotsDir, { recursive: true });
-  await writeFile17(getStandardsCheckPath({ cwd }), body, "utf8");
-  await writeFile17(join88(snapshotsDir, fileName), body, "utf8");
+  await writeFile16(getStandardsCheckPath({ cwd }), body, "utf8");
+  await writeFile16(join88(snapshotsDir, fileName), body, "utf8");
 };
 
 // src/standardsCheck/runStandardsCheck.ts
@@ -146413,7 +146419,7 @@ var applyTestDispositions = async ({
 };
 
 // src/pipeline/approvedTests/internal/collectTestChanges.ts
-import { mkdir as mkdir20, readFile as readFile34, rm as rm9, writeFile as writeFile18 } from "node:fs/promises";
+import { mkdir as mkdir20, readFile as readFile34, rm as rm9, writeFile as writeFile17 } from "node:fs/promises";
 import { dirname as dirname21, join as join91, relative as relative11 } from "node:path";
 
 // src/pipeline/approvedTests/internal/common/constants/TestChangeKind.ts
@@ -146453,7 +146459,7 @@ var diffOf = async ({ cwd, path, kind, approved, scratch }) => {
   const before = join91(scratch, path);
   if (approved !== void 0) {
     await mkdir20(dirname21(before), { recursive: true });
-    await writeFile18(before, approved, "utf8");
+    await writeFile17(before, approved, "utf8");
   }
   const left = approved === void 0 ? emptySide : relative11(cwd, before);
   const right = kind === TestChangeKind.Removed ? emptySide : path;
@@ -148592,7 +148598,7 @@ var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, tes
 import { randomUUID as randomUUID5 } from "node:crypto";
 
 // src/runState/lock/acquireRunLock.ts
-import { mkdir as mkdir21, unlink as unlink2, writeFile as writeFile19 } from "node:fs/promises";
+import { mkdir as mkdir21, unlink as unlink2, writeFile as writeFile18 } from "node:fs/promises";
 import { dirname as dirname22 } from "node:path";
 
 // src/runState/lock/RunLockError.ts
@@ -148608,7 +148614,7 @@ var acquireRunLock = async ({ cwd, runId }) => {
   let stalePid;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      await writeFile19(lockPath, payload, { flag: "wx" });
+      await writeFile18(lockPath, payload, { flag: "wx" });
       return { stalePid };
     } catch (error51) {
       const isAlreadyHeld = typeof error51 === "object" && error51 !== null && "code" in error51 && error51.code === "EEXIST";
@@ -149601,7 +149607,7 @@ ${gates.error}` });
 };
 
 // src/direct/internal/common/utils/createDirectRun.ts
-import { writeFile as writeFile20 } from "node:fs/promises";
+import { writeFile as writeFile19 } from "node:fs/promises";
 import { join as join100 } from "node:path";
 var createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, config: config2, willShip }) => {
   const workOrderName = await readGitCurrentBranch({ cwd });
@@ -149617,7 +149623,7 @@ var createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, co
     baselineDirtyFiles: await readGitChangedFiles({ cwd }),
     willShip
   });
-  await writeFile20(ticketPath, ticketBody.endsWith("\n") ? ticketBody : `${ticketBody}
+  await writeFile19(ticketPath, ticketBody.endsWith("\n") ? ticketBody : `${ticketBody}
 `, "utf8");
   return manifest;
 };
@@ -150506,7 +150512,7 @@ var getPlanRunStatus = ({ status }) => status === PlanRunStatus.Complete ? RunSt
 var planAgentConcurrency = 12;
 
 // src/plan/internal/common/utils/createPlanAgentRunner.ts
-import { writeFile as writeFile21 } from "node:fs/promises";
+import { writeFile as writeFile20 } from "node:fs/promises";
 import { join as join103 } from "node:path";
 var createPlanAgentRunner = ({
   cwd,
@@ -150539,7 +150545,7 @@ var createPlanAgentRunner = ({
       onEvent,
       onRejectedOutput: async ({ text, attempt }) => {
         const name = `${step}-rejected-${label2 === void 0 ? "" : `${label2}-`}${attempt}.txt`;
-        await writeFile21(join103(workspaceDir, name), text, "utf8").catch(() => void 0);
+        await writeFile20(join103(workspaceDir, name), text, "utf8").catch(() => void 0);
       },
       activity: stepLevel
     });
@@ -151097,12 +151103,12 @@ var replaceSectionSpan = ({ lines, start, end, sectionLines }) => {
 };
 
 // src/plan/internal/common/rewriting/writePlanFileIfChanged.ts
-import { writeFile as writeFile22 } from "node:fs/promises";
+import { writeFile as writeFile21 } from "node:fs/promises";
 var writePlanFileIfChanged = async ({ path, original, lines }) => {
   const rewritten = lines.join("\n");
   const updated = rewritten !== original;
   if (updated) {
-    await writeFile22(path, rewritten, "utf8");
+    await writeFile21(path, rewritten, "utf8");
   }
   return { path, updated };
 };
@@ -151911,7 +151917,7 @@ import { readFile as readFile47 } from "node:fs/promises";
 import { basename as basename18 } from "node:path";
 
 // src/plan/draft/stampPhaseCounts.ts
-import { readFile as readFile46, writeFile as writeFile23 } from "node:fs/promises";
+import { readFile as readFile46, writeFile as writeFile22 } from "node:fs/promises";
 import { basename as basename17 } from "node:path";
 
 // src/plan/internal/common/paths/isPlanSourceFile.ts
@@ -152085,7 +152091,7 @@ var stampPhaseCounts = async ({ overviewPath, phasePaths }) => {
   const overviewBase2 = basename17(overviewPath);
   const original = await readFile46(overviewPath, "utf8");
   const stamped = rewriteRows({ lines: original.split("\n"), counts }).join("\n");
-  await writeFile23(overviewPath, stamped, "utf8");
+  await writeFile22(overviewPath, stamped, "utf8");
   return parsePhaseDeclarations({ plan: parsePlan({ content: stamped, base: overviewBase2 }) });
 };
 
@@ -156979,7 +156985,7 @@ var ensureBrainstormFiles = async ({ cwd, name, write = console.log }) => {
 };
 
 // src/plan/runPlanVerifyFacts.ts
-import { copyFile, mkdir as mkdir26, writeFile as writeFile24 } from "node:fs/promises";
+import { copyFile, mkdir as mkdir26, writeFile as writeFile23 } from "node:fs/promises";
 import { join as join130, resolve as resolve15 } from "node:path";
 
 // src/contracts/plan/facts/AuthoredFacts.ts
@@ -157083,7 +157089,7 @@ var runPlanVerifyFacts = async ({ cwd, name, notesFile, onProgress }) => {
     verification,
     verifiedAt: (/* @__PURE__ */ new Date()).toISOString()
   };
-  await writeFile24(factsPath, `${JSON.stringify(facts, void 0, "	")}
+  await writeFile23(factsPath, `${JSON.stringify(facts, void 0, "	")}
 `, "utf8");
   const missingPart = verification.missingPaths.length > 0 ? `, ${verification.missingPaths.length} missing: ${verification.missingPaths.join(", ")}` : "";
   progress(
@@ -158574,14 +158580,14 @@ var startBuilds = ({ context, state, flight }) => {
 };
 
 // src/queue/drainLanes/internal/common/utils/writeQueuePlan.ts
-import { writeFile as writeFile25 } from "node:fs/promises";
+import { writeFile as writeFile24 } from "node:fs/promises";
 import { join as join138 } from "node:path";
 var writeQueuePlan = async ({ path, cwd, queued }) => {
   const root = await resolveWorktreesRoot({ cwd });
   const lines = queued.map(
     (workOrder) => `- ${workOrder.ticket.identifier} \xB7 ${workOrder.ticket.worker} \xB7 ${workOrder.branch} \xB7 ${join138(root, workOrder.name)}`
   );
-  await writeFile25(path, `# queue drain
+  await writeFile24(path, `# queue drain
 
 ${lines.join("\n")}
 `, "utf8");
@@ -160545,7 +160551,7 @@ ${error51 instanceof RunLockError ? error51.message : messageOf({ error: error51
 };
 
 // src/refactor/initializeRun.ts
-import { readFile as readFile62, writeFile as writeFile26 } from "node:fs/promises";
+import { readFile as readFile62, writeFile as writeFile25 } from "node:fs/promises";
 import { join as join142 } from "node:path";
 
 // src/contracts/refactor/RefactorBatch.ts
@@ -160709,7 +160715,7 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
   const worklist = await buildWorklist({ cwd, config: config2, path, all });
   const worklistPath = join142(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Refactor, runId }), "worklist.json");
   const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Refactor, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
-  await writeFile26(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
+  await writeFile25(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
 `, "utf8");
   return { manifest, worklist };
 };
@@ -160973,7 +160979,7 @@ var createSiteChecker = ({ cwd, checkPath, checkAll }) => {
 };
 
 // src/refactor/batch/internal/invokeBatchAgent.ts
-import { mkdir as mkdir31, writeFile as writeFile27 } from "node:fs/promises";
+import { mkdir as mkdir31, writeFile as writeFile26 } from "node:fs/promises";
 import { join as join144 } from "node:path";
 var invokeBatchAgent = async ({
   cwd,
@@ -161007,7 +161013,7 @@ var invokeBatchAgent = async ({
     allowedCommands: config2["agent-commands"],
     onEvent: createEventFileSink({ path: streamPath }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile27(join144(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile26(join144(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
   const formatError2 = await runFormatter({ cwd, runId, config: config2, step: batch.id });
@@ -161042,7 +161048,7 @@ var SettleKind = {
 };
 
 // src/refactor/batch/internal/superviseBatch.ts
-import { mkdir as mkdir32, writeFile as writeFile28 } from "node:fs/promises";
+import { mkdir as mkdir32, writeFile as writeFile27 } from "node:fs/promises";
 import { join as join145 } from "node:path";
 var consultBatchSupervisor = async ({
   cwd,
@@ -161067,7 +161073,7 @@ var consultBatchSupervisor = async ({
     attempts,
     onEvent: createEventFileSink({ path: join145(agentsDir, `stream-${slug}-supervisor.jsonl`) }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile28(join145(agentsDir, `rejected-${slug}-supervisor-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile27(join145(agentsDir, `rejected-${slug}-supervisor-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
 };
@@ -164292,7 +164298,7 @@ ${bold(`test-coverage-to-threshold ${manifest.runId.slice(0, 8)}`)} \u2014 ${sta
 };
 
 // src/coverage/initializeCoverageRun.ts
-import { readFile as readFile68, writeFile as writeFile29 } from "node:fs/promises";
+import { readFile as readFile68, writeFile as writeFile28 } from "node:fs/promises";
 import { join as join152 } from "node:path";
 
 // src/coverage/runCoverageCheck.ts
@@ -164397,7 +164403,7 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
   const worklist = { at: (/* @__PURE__ */ new Date()).toISOString(), totals: measured.totals, files: measured.files };
   const worklistPath = join152(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Coverage, runId }), "worklist.json");
   const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Coverage, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
-  await writeFile29(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
+  await writeFile28(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
 `, "utf8");
   return { manifest, worklist };
 };
@@ -164484,7 +164490,7 @@ The tree is left as it stands \u2014 revert these changes by hand before resumin
 };
 
 // src/coverage/batch/invokeCoverageAgent.ts
-import { mkdir as mkdir33, writeFile as writeFile30 } from "node:fs/promises";
+import { mkdir as mkdir33, writeFile as writeFile29 } from "node:fs/promises";
 import { join as join153 } from "node:path";
 var invokeCoverageAgent = async ({
   cwd,
@@ -164516,7 +164522,7 @@ var invokeCoverageAgent = async ({
     allowedCommands: config2["agent-commands"],
     onEvent: createEventFileSink({ path: streamPath }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile30(join153(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile29(join153(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
   await recordUsage({ step: `${batchId}${label2 ? ` ${label2}` : ""}`, usage: outcome.usage });
@@ -165199,7 +165205,7 @@ var isVoiceOn = async ({ cwd }) => {
 
 // src/voice/speakText.ts
 import { spawn as spawn3 } from "node:child_process";
-import { writeFile as writeFile31 } from "node:fs/promises";
+import { writeFile as writeFile30 } from "node:fs/promises";
 
 // src/voice/internal/common/paths/getVoicePidPath.ts
 import { join as join156 } from "node:path";
@@ -165234,7 +165240,7 @@ var speakText = async ({ cwd, text }) => {
   child.stdin?.write(text);
   child.stdin?.end();
   if (child.pid !== void 0) {
-    await writeFile31(getVoicePidPath({ cwd }), String(child.pid), "utf8");
+    await writeFile30(getVoicePidPath({ cwd }), String(child.pid), "utf8");
   }
   child.unref();
 };
@@ -165312,12 +165318,12 @@ var voiceOffCommand = async ({ cwd }) => {
 };
 
 // src/voice/createVoiceMarker.ts
-import { mkdir as mkdir34, writeFile as writeFile32 } from "node:fs/promises";
+import { mkdir as mkdir34, writeFile as writeFile31 } from "node:fs/promises";
 import { dirname as dirname30 } from "node:path";
 var createVoiceMarker = async ({ cwd }) => {
   const markerPath = getVoiceMarkerPath({ cwd });
   await mkdir34(dirname30(markerPath), { recursive: true });
-  await writeFile32(markerPath, "", "utf8");
+  await writeFile31(markerPath, "", "utf8");
 };
 
 // src/cli/voice/voiceOnCommand.ts
