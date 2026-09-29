@@ -5,13 +5,7 @@ interface Params {
 	issue: Issue;
 }
 
-/**
- * Every label name on one issue, paged to exhaustion.
- *
- * A truncated label list would make a ticket look like it carries one route
- * label when it carries two, which is exactly the case the queue's skip policy
- * exists to catch — so the walk is never allowed to stop at the first page.
- */
+/** A truncated list could hide a second route label, the case the queue's skip policy exists to catch. */
 export const readLabelNames = async ({ issue }: Params): Promise<string[]> => {
 	const labels = await collectNodes({ connection: await issue.labels() });
 

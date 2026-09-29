@@ -7,13 +7,8 @@ import { StandardsPackNotFoundError } from '#src/views/StandardsPackNotFoundErro
 const fixtureSideOrder = [FixtureSide.Pass, FixtureSide.Fail];
 
 /**
- * The same pack with every list in a stated order.
- *
- * Everything that reads a folder here already sorts what `readdir` handed it,
- * so this changes nothing today. It is stated anyway because
- * `assets/default-pack.json` is committed and compared byte for byte in CI: the
- * one guarantee that file needs is that its order is a decision rather than a
- * filesystem's habit, and a decision belongs where the bundle is produced.
+ * `assets/default-pack.json` is committed and compared byte for byte in CI, so
+ * its order must be decided where the bundle is produced, not left to the filesystem.
  */
 const sortBundle = ({ bundle }: { bundle: StandardsPackBundle }) => ({
 	...bundle,
@@ -34,20 +29,7 @@ interface Params {
 }
 
 /**
- * One pack whole — every document, every rule, all its prose and every fixture
- * file's text.
- *
- * The step each pack view takes before it projects, and the whole answer for the
- * web app's default-pack bundler, which commits this to
- * `assets/default-pack.json` so a build holding no repo still has a pack to
- * show.
- *
- * The lookup is by name rather than by folder because the name is what a URL
- * carries, and a name no loaded pack answers to is the not-found the route turns
- * into a 404 rather than an error page.
- *
- * @param cwd - the repo whose config decides which packs load
- * @param name - the pack's `name` from its lightsout-standards.json, which is what the URL carried
+ * @param name - the pack's `name` from its lightsout-standards.json, as the URL carried it
  * @throws {StandardsPackNotFoundError} When no pack this repo loads answers to the name.
  */
 export const getStandardsPackBundle = async ({ cwd, name }: Params): Promise<StandardsPackBundle> => {

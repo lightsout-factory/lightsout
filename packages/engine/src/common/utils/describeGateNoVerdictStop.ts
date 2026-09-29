@@ -1,7 +1,6 @@
 import { jestCrashCause } from '#src/common/constants/jestCrashCause.ts';
 
 interface Params {
-	/** The verification step the gate run belonged to. */
 	stepId: string;
 	/** One line per gate that crashed on every attempt — `runGates`' `crashes`. */
 	crashes: string[];
@@ -9,10 +8,6 @@ interface Params {
 	timeouts: string[];
 }
 
-/**
- * What an operator is told when a gate crashed or timed out instead of failing.
- * Shared by the implement pipeline and the direct run. A crash is named first.
- */
 export const describeGateNoVerdictStop = ({ stepId, crashes, timeouts }: Params): { ending: string; reason: string } =>
 	crashes.length > 0
 		? {

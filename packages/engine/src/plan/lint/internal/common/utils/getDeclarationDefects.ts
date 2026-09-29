@@ -2,33 +2,20 @@ import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFind
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 
 interface Params {
-	/** Rows parsed from the overview, orphan blocks included. */
+	/** Orphan blocks included. */
 	declarations: PhaseDeclaration[];
-	/** What the calling check calls each place a defect points at — the one thing the two spellings of these rules differ by. */
+	/** The one thing the two callers of these rules differ by. */
 	locations: {
-		/** The '## Phase Declarations' section. */
 		declarationsSection: string;
-		/** The '## Phases' table. */
 		phasesTable: string;
-		/** One declared phase file's row. */
 		phaseRow: (file: string) => string;
 	};
 }
 
 /**
- * The three declaration-consistency rules decidable from the overview alone: no
- * orphan declaration block, the phase numbers read 1..n, and every filename
- * agrees with its number.
- *
- * Spelled once because both declaration checks run them — the breakdown check
- * before any phase file exists, the consistency check after — and
- * `getFindingSetKey` keys the repair loop's no-progress detection on
- * `check|issue`. Two copies drifting by a word makes the reshape loop and the
- * structural loop stop recognising the same finding as the same finding.
- *
- * The severity and the phase label are the caller's to stamp: every one of these
- * is blocking, but which file a defect is reported against depends on which
- * check found it.
+ * Shared by both declaration checks because `getFindingSetKey` keys the repair
+ * loop's no-progress detection on `check|issue`: two copies drifting by a word
+ * would stop the loops recognising the same finding.
  */
 export const getDeclarationDefects = ({ declarations, locations }: Params): Pick<StructuralFinding, 'issue' | 'location' | 'fix'>[] => {
 	const defects: Pick<StructuralFinding, 'issue' | 'location' | 'fix'>[] = [];

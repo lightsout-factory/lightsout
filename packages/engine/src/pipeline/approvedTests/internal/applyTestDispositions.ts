@@ -12,7 +12,6 @@ import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 type Verdict = TestChangeReview['verdicts'][number];
 type Disposition = Verdict['acceptanceTests'][number];
 
-/** The fields each disposition kind cannot be applied without. */
 const requiredFields: Record<TestDisposition, (keyof Disposition)[]> = {
 	[TestDisposition.Kept]: [],
 	[TestDisposition.Renamed]: ['newTestName'],
@@ -20,7 +19,6 @@ const requiredFields: Record<TestDisposition, (keyof Disposition)[]> = {
 	[TestDisposition.Replaced]: ['newTestName', 'testFile'],
 };
 
-/** Why this disposition cannot be applied, or undefined when it can. */
 const refuseDisposition = ({ path, disposition }: { path: string; disposition: Disposition }) => {
 	const missing = requiredFields[disposition.disposition].filter((field) => disposition[field] === undefined);
 
@@ -35,7 +33,7 @@ const refuseDisposition = ({ path, disposition }: { path: string; disposition: D
 	return undefined;
 };
 
-/** The row as the disposition leaves it. `criterion` and `gate` never move: a disposition changes where a requirement is stated, never what it is. */
+/** `criterion` and `gate` never move: a disposition changes where a requirement is stated, never what it is. */
 const applyTo = ({ row, disposition }: { row: AcceptanceTestRecord; disposition: Disposition }): AcceptanceTestRecord => ({
 	...row,
 	testName: disposition.newTestName ?? row.testName,
@@ -53,7 +51,6 @@ interface Params {
 	run: PipelineRun;
 	/** The bundle the reviewer was given. */
 	changes: TestChange[];
-	/** What it returned. */
 	review: TestChangeReview;
 	/** The live mapping as the manifest carries it now. */
 	acceptanceTests: AcceptanceTestRecord[];
@@ -63,16 +60,9 @@ interface Params {
  * The deterministic half of the verdict — what makes an approval a guarantee
  * rather than the reviewer's word.
  *
- * A bundled path nobody judged is a rejection, a verdict about a path the engine
- * never showed the reviewer is ignored whole, a disposition may only point at a
- * test-side path and must carry the fields its kind needs, and — once the
- * mapping is rewritten — every acceptance test must still be locatable by title
- * in the file it now names. That last check is what overrides an approval whose
- * disposition points at nothing.
- *
- * An acceptance test in an approved file that the verdict named no disposition
- * for is treated as `kept`, so a reviewer that forgot a row cannot make the
- * engine lose it: the locator then decides whether "kept" was true.
+ * An acceptance test the verdict named no disposition for is treated as `kept`,
+ * so a reviewer that forgot a row cannot make the engine lose it: the title
+ * locator then decides whether "kept" was true.
  */
 export const applyTestDispositions = async ({
 	run,

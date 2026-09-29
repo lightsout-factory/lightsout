@@ -28,13 +28,6 @@ interface Params {
 	recordUsage: (params: { step: string; usage?: AgentUsage }) => Promise<void>;
 }
 
-/**
- * One test-writer invocation within a coverage batch, with the run-evidence
- * plumbing every invocation gets: the event stream teed to the run dir,
- * rejected reports persisted, usage recorded to the ledger, friction appended,
- * and the report's changed files + friction lines folded into the batch's
- * collectors.
- */
 export const invokeCoverageAgent = async ({
 	cwd,
 	runId,

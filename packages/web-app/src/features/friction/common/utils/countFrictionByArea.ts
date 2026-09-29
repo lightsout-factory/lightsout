@@ -6,12 +6,8 @@ interface Params {
 }
 
 /**
- * How many entries each area holds, in `FrictionArea` order — the filter chips'
- * counts.
- *
  * Declaration order rather than count order, and every area listed even at zero:
- * the chips are a fixed row a reader learns the position of, and one that jumped
- * about as the log grew would have to be re-read every visit.
+ * the chips are a fixed row a reader learns the position of.
  *
  * @param records - the whole log, unfiltered, so a chip's count is the vocabulary rather than the current selection
  */

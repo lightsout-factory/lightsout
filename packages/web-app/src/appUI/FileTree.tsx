@@ -4,18 +4,12 @@ import type { ReactNode } from 'react';
 import { toFileTreeRows } from '#src/common/utils/toFileTreeRows.ts';
 
 interface Props {
-	/** Each file's path and what opening it shows. */
 	files: Array<{ path: string; content: ReactNode }>;
-	/** The file open first. */
 	defaultPath: string;
-	/** What the tree is, for a screen reader — "Incorrect files". */
 	label: string;
 }
 
 /**
- * A small source tree: its folders and files on the left, the open file on the
- * right, stacked on a narrow screen.
- *
  * Built on the tab primitive, so the files are a real tab list — arrow keys move
  * between them and a screen reader hears which is open. Folders are labels in
  * that list rather than tabs: nothing opens a folder.

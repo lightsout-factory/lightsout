@@ -14,19 +14,11 @@ interface Params {
 }
 
 /**
- * The builds with no plan deliverable behind them: plan 001 of a single-plan
- * ticket whose brainstorm judged it ready to implement from the ticket body
- * alone, and a single-plan work order that holds no plan 001 at all.
+ * Both builds go through a work order lifecycle helper, because the ship check
+ * reads the record and refuses a build the record does not show as passed.
  *
- * Both go through a work order lifecycle helper, because the ship check reads
- * the record: plan 001 supplies a single-plan work order's whole implementation
- * however it was built, and a work order holding no plan 001 is implemented by
- * the build from the ticket body recorded on the record itself. A build the
- * record does not show as passed is one the ship check refuses.
- *
- * It never relays a question, for the reason a plan-folder build does not: the
- * run it wraps has no answer channel, so an escalated run parks with its worktree
- * intact instead.
+ * It never relays a question: the run it wraps has no answer channel, so an
+ * escalated run parks with its worktree intact instead.
  */
 export const buildFromTicketBody = async ({ step }: Params): Promise<WorkerOutcome> => {
 	const { cwd, record, plan, ticket, config, driver, driverName, onProgress } = step;
@@ -44,7 +36,7 @@ export const buildFromTicketBody = async ({ step }: Params): Promise<WorkerOutco
 
 	// A failed plan-less build never names `lightsout resume`: a resumed run
 	// records nothing on a record with no plan 001, so it could never make the
-	// ticket shippable, and the queue rebuilds it on the next pickup instead.
+	// ticket shippable.
 	return toWorkerOutcome({
 		outcome,
 		onFailedRun: ({ stated, result }) => ({

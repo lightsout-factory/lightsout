@@ -3,7 +3,6 @@ import { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding
 import { StandardsRuleView } from '#src/contracts/views/StandardsRuleView.ts';
 import { StandardsTrendPoint } from '#src/contracts/views/StandardsTrendPoint.ts';
 
-/** The standards view's whole payload: the latest snapshot, every loaded rule, and the trend across snapshots. */
 export const StandardsView = z.object({
 	/** When the latest snapshot was taken; absent when the repo has never run a check. */
 	at: z.string().optional(),

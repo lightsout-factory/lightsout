@@ -2,12 +2,6 @@ import { z } from 'zod';
 import { PlanDraftStatus } from '#src/contracts/plan/draft/PlanDraftStatus.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 
-/**
- * The plan-writer agent's report from a `plan draft` run: the files written
- * (each with its variant and scope), how many decisions it applied, any
- * assumptions it had to make, and any discrepancies it found between the
- * decisions/facts and the codebase.
- */
 export const PlanDraftReport = z.object({
 	status: z.enum(PlanDraftStatus),
 	filesWritten: z

@@ -17,11 +17,9 @@ interface ResumeState {
 }
 
 /**
- * Rebuild the run's decline state from persisted step records on resume — a
- * parked run's earlier declines are part of its final report (the human must
- * still review them), and the systemic-decline streak must survive the park
- * boundary or three consecutive declines split across a rate limit would
- * never trip it.
+ * A parked run's earlier declines are part of its final report, and the
+ * systemic-decline streak must survive the park boundary, or consecutive
+ * declines split across a rate limit would never trip it.
  */
 export const seedResumeState = ({ manifest, batches }: Params): ResumeState => {
 	const stepById = new Map<string, StepRecord>(manifest.steps.map((step) => [step.id, step]));

@@ -9,7 +9,6 @@ interface Params {
 	phase: string;
 }
 
-/** Every finding here is blocking and stamped with this check; only what it says and where it points vary. */
 const finding = ({ phase, issue, location, fix }: { phase: string; issue: string; location: string; fix: string }) => ({
 	check: StructuralCheck.RenamesWellFormed,
 	severity: FindingSeverity.Blocking,
@@ -19,7 +18,6 @@ const finding = ({ phase, issue, location, fix }: { phase: string; issue: string
 	fix,
 });
 
-/** One finding per bullet that renames a text to itself, or whose new text contains any rename's old text — its own included. */
 const renameDefects = ({ plan, phase }: Params) =>
 	plan.renames.flatMap((rename) => {
 		const location = `${phase}:${rename.line}`;
@@ -80,16 +78,10 @@ const renameOnlyDefects = ({ plan, phase }: Params) => {
 };
 
 /**
- * RenamesWellFormed — the `## Renames` section of a rename-only plan file, held
- * to what the build will hold its changes to.
- *
- * Every bullet names exactly two different texts, and no rename's new text
- * contains any rename's old text: that containment rule is what makes applying
- * the renames a second time harmless, which the build's rename check relies on
- * when it applies them to both the starting and the current content of a file.
- * A rename-only file also creates nothing and states no acceptance-test row. The
- * build refuses each of these anyway; catching them here costs a plan edit
- * rather than a failed run.
+ * No new text may contain any old text, so applying the renames twice is
+ * harmless: the build's rename check applies them to both the starting and the
+ * current content. The build refuses these anyway; catching them here costs a
+ * plan edit rather than a failed run.
  */
 export const checkRenames = ({ plan, phase }: Params): StructuralFinding[] => [
 	...plan.malformedRenameLines.map((line) =>

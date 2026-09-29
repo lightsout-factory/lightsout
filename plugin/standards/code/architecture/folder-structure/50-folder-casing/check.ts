@@ -13,14 +13,10 @@ const camelCase = /^[a-z][A-Za-z0-9]*$/;
 const pascalCase = /^[A-Z][A-Za-z0-9]*$/;
 
 /**
- * Jest's own mandated folder shape (`__mocks__`, `__tests__`) — a framework doc
- * mandating a name, which is resolution step 2 of the casing rule. Whether such
- * a folder belongs under `src/` at all is a question the test-placement rules own.
- *
- * Deliberately not folded into a framework dimension beside `isFrameworkCasedFolder`.
- * It reads no carve-out data and turns on no declared dependency, so a dimension
- * holding it would put a fact in that vocabulary which the primitives table does
- * not carry — and the table is where every framework fact lives.
+ * Jest's own mandated folder shape (`__mocks__`, `__tests__`), which is
+ * resolution step 2 of the casing rule. Kept out of the framework dimensions
+ * beside `isFrameworkCasedFolder`: it reads no carve-out data, and the
+ * primitives table is where every framework fact lives.
  */
 const frameworkFolder = /^__[A-Za-z0-9]+__$/;
 
@@ -44,11 +40,7 @@ const getCasingStyle = ({ segment }: { segment: string }) => {
 	return 'none of the three casings';
 };
 
-/**
- * Folder names indexed by their parent. The rule asks for a folder's siblings,
- * and re-scanning the whole list per folder is quadratic in the number of
- * directories — which on a large monorepo is thousands.
- */
+/** Indexed by parent because re-scanning the whole list per folder is quadratic in the number of directories. */
 const groupNamesByParent = ({ directories }: { directories: string[] }) => {
 	const namesByParent = new Map<string, string[]>();
 

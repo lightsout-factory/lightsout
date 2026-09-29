@@ -13,13 +13,8 @@ interface Params {
 }
 
 /**
- * A run's frozen work-list, tagged by the pipeline that froze it. The kind is
- * decided before the file is opened, so a work-list that will not parse still
- * says which pipeline wrote it.
- *
- * Its own file rather than a helper inside `readRunListing`, because the run
- * detail reads it once and hands the result to two consumers — the listing row
- * and the burn-down — instead of opening `worklist.json` twice.
+ * The kind is decided before the file is opened, so a work-list that will not
+ * parse still says which pipeline wrote it.
  */
 export const readFrozenWorklist = async ({ cwd, manifest }: Params): Promise<FrozenWorklist> => {
 	const raw = await readFile(join(await resolveRunDir({ cwd, runId: manifest.runId }), 'worklist.json'), 'utf8').catch(() => undefined);

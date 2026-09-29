@@ -7,14 +7,8 @@ interface Params {
 }
 
 /**
- * The executor-brief section for a rename-only plan: the renames to apply, and
- * the rule the engine holds the phase to in place of the agent review.
- *
  * The standing brief says every test edit is reviewed by an agent, which is not
- * true for this phase — the section says so plainly, so the agent knows the rule
- * it is actually held to.
- *
- * @returns the section, or undefined for a plan that declares no renames — the section is omitted rather than emitted empty.
+ * true for this phase, so this section says so plainly.
  */
 export const renameOnlySection = ({ renames = [] }: Params): string | undefined =>
 	listSection({

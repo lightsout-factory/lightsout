@@ -5,7 +5,6 @@ import { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import type { PlanDocument } from '#src/contracts/views/PlanDocument.ts';
 import { PlanDocumentKind } from '#src/contracts/views/PlanDocumentKind.ts';
 
-/** A JSON plan is one of the two frozen work-lists, or it is nothing a reader can render. */
 const parseWorklist = ({ path, raw }: { path: string; raw: string }): PlanDocument => {
 	let parsed: unknown;
 
@@ -38,15 +37,10 @@ interface Params {
 }
 
 /**
- * A plan as a reader shows it: markdown text, a parsed frozen work-list, or a
- * recorded absence.
- *
- * A missing or unparseable file is an absence rather than an error — a plan
+ * A missing or unparseable file is an absence rather than an error: a plan
  * deleted after its run is a normal state the page still has to render.
  *
- * @param cwd - the repo root; nothing outside it is readable
- * @param path - repo-relative plan path, exactly as the manifest recorded it
- * @throws {Error} When the resolved path escapes the repo root — plans are read only from inside it.
+ * @throws {Error} When the resolved path escapes the repo root.
  */
 export const getPlanDocument = async ({ cwd, path }: Params): Promise<PlanDocument> => {
 	const root = resolve(cwd);

@@ -13,11 +13,6 @@ interface Params {
 	pack: LoadedStandardsPack;
 }
 
-/**
- * The two fixture folders every rule ships, and the two verdicts they carry: a
- * closed pair rather than a loose string, so the folder name and the
- * expectation read from it can never drift apart.
- */
 const FixtureSide = {
 	Fail: 'fail',
 	Pass: 'pass',
@@ -26,12 +21,10 @@ const FixtureSide = {
 type FixtureSide = (typeof FixtureSide)[keyof typeof FixtureSide];
 
 /**
- * The engine's own TypeScript, for parsing fixtures. Resolved through `require`
- * rather than a literal `import('typescript')`, which a bundler would answer by
- * pulling the whole ~8MB compiler into the shipped program — the cost the
- * engine borrows the consumer's compiler to avoid. An install that has none
- * (the plugin without a TypeScript beside it) simply cannot validate those
- * rules, which is a note, not a fault in the pack.
+ * Resolved through `require` rather than a literal `import('typescript')`,
+ * which a bundler would answer by pulling the whole compiler into the shipped
+ * program. An install that has none cannot validate those rules, which is a
+ * note, not a fault in the pack.
  */
 const getEngineTypescript = () => {
 	let compiler: typeof ts | undefined;
@@ -47,11 +40,7 @@ const getEngineTypescript = () => {
 	return compiler;
 };
 
-/**
- * The fixture sides a rule fails to ship. Loading accepts a pack without them —
- * a shipped pack carries no evidence, the way a bundle carries no tests — so
- * this is where the pair is demanded, of the person authoring it.
- */
+/** Loading accepts a pack without fixtures — a shipped pack carries none — so this is where the pair is demanded. */
 const missingFixtureSides = async ({ fixturesPath }: { fixturesPath: string }) => {
 	const missing: FixtureSide[] = [];
 
@@ -66,7 +55,6 @@ const missingFixtureSides = async ({ fixturesPath }: { fixturesPath: string }) =
 	return missing;
 };
 
-/** The distinct files a run of findings names, capped at three — enough to go looking with, short enough to sit inside one problem line. */
 const namePaths = ({ found }: { found: RawStandardsFinding[] }) => {
 	const paths = [...new Set(found.flatMap((finding) => finding.files.slice(0, 1).map((file) => file.path)))];
 
@@ -74,18 +62,12 @@ const namePaths = ({ found }: { found: RawStandardsFinding[] }) => {
 };
 
 /**
- * Every checked rule, run against every framework-owned tree the pack ships,
- * expecting silence.
+ * A rule's own pass fixture proves the false positive someone already found;
+ * this holds every checked rule, including ones added later, to silence on
+ * framework-owned code.
  *
- * This is the standing half of the invariant. A rule's own pass fixture proves
- * the false positive someone already found; this proves the ones nobody has
- * found yet, including in rules that do not exist today — a check that reads
- * paths, names, barrels or tests is held to it the moment it is added, with no
- * fixture of its own to remember.
- *
- * Run as its own pass rather than inside the per-rule loop, which skips a rule
- * whose fixture pair is missing. The invariant is unconditional: a rule owing
- * its author a pass fixture still owes framework-owned code silence.
+ * Its own pass rather than inside the per-rule loop, which skips a rule whose
+ * fixture pair is missing: the invariant is unconditional.
  */
 const checkFrameworkOwned = async ({ pack, compiler }: { pack: LoadedStandardsPack; compiler?: typeof ts }) => {
 	const { frameworkOwnedFixturesPath } = pack;
@@ -147,27 +129,15 @@ const checkFrameworkOwned = async ({ pack, compiler }: { pack: LoadedStandardsPa
 };
 
 /**
- * Run every check in a pack against its own fixtures, and hold each rule's
- * fixtures to the example shape its rule.md declares.
+ * The question load time deliberately does not ask: whether a check catches
+ * what the rule's prose describes is authoring work, paid for by nobody else.
  *
- * This is the question load time deliberately does not ask. Loading a pack
- * validates its structure and its honesty — that a rule claiming a check ships
- * one — because those are what break at run time. Whether the check catches
- * what the rule's prose describes is authoring work, answered on demand by
- * `lightsout standards-validate` and paid for by nobody else.
- *
- * A rule that cannot be validated here is a note rather than a problem:
- * judgment-only rules keep their fixtures for measuring the review agent's
- * accuracy, and a syntax-tree rule cannot be exercised where no TypeScript
- * exists to parse with. Channels are ignored — authoring covers every channel,
- * whatever the machine doing the authoring happens to run.
+ * Channels are ignored — authoring covers every channel, whatever the machine
+ * doing the authoring happens to run.
  */
 export const validateStandardsPack = async ({ pack }: Params): Promise<{ problems: string[]; notes: string[] }> => {
-	// A built pack was stripped of every fixture on the way out, so each of its
-	// rules would report the same two missing sides — hundreds of faults standing
-	// for one fact, and none of them the author's to fix. The pack says which it
-	// is, rather than this inferring it from the absence: an authored pack that
-	// genuinely ships no fixtures yet is a real authoring gap, and it has to keep
+	// Read from the pack rather than inferred from missing fixtures: an authored
+	// pack that ships no fixtures yet is a real authoring gap and must keep
 	// reading as one.
 	if (pack.built) {
 		return {

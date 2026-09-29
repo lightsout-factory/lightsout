@@ -2,13 +2,7 @@ interface Params {
 	text: string;
 }
 
-/**
- * Strip the decoration a voice cannot say.
- *
- * Bold markers, backticks and heading hashes are punctuation for the eye — read
- * aloud they are either noise or silence, and the blank-line runs they leave
- * behind become long dead pauses mid-question.
- */
+/** Blank-line runs left behind would become long dead pauses mid-question. */
 export const formatSpeakable = ({ text }: Params): string => {
 	return text
 		.replace(/\*\*/g, '')

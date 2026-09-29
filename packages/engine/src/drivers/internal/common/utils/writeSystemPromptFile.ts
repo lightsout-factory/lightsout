@@ -7,13 +7,8 @@ interface Params {
 }
 
 /**
- * Write the appended system prompt to a per-spawn temp file for
- * `--append-system-prompt-file`: role + plan + standards can run to hundreds of
- * kilobytes, and argv shares a fixed OS ceiling. Each call gets its own
- * directory so concurrent spawns cannot collide.
- *
- * @param systemPrompt - the full appended system prompt to hand the harness
- * @returns the file path to pass to the harness, and a `cleanup` that removes the directory and never throws
+ * Role + plan + standards can exceed the OS argv ceiling, so the prompt goes
+ * through a file. Each call gets its own directory so concurrent spawns cannot collide.
  */
 export const writeSystemPromptFile = async ({ systemPrompt }: Params): Promise<{ path: string; cleanup: () => Promise<void> }> => {
 	const dir = await mkdtemp(join(tmpdir(), 'lightsout-system-prompt-'));

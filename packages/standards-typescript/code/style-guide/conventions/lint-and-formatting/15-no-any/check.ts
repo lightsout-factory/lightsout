@@ -3,14 +3,11 @@ import type ts from 'typescript';
 import { buildTreeLineCheck } from '../../../../../common/checks/buildTreeLineCheck.ts';
 
 /**
- * The comment forms a project uses to license a bypass. The rule allows a rare,
- * justified `any` behind one of these, so an annotation that carries one is the
- * document working rather than a violation of it — and the comment sits either
- * on the annotation's own line or on the line above it.
+ * The rule allows a rare, justified `any` behind one of these, on the
+ * annotation's own line or the line above it.
  */
 const suppression = /biome-ignore|eslint-disable|@ts-ignore/;
 
-/** The lines an unsuppressed `any` annotation appears on, 1-based. */
 const findAnyLines = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {
 	const lines = sourceFile.getFullText().split('\n');
 	const found: number[] = [];

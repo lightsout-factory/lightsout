@@ -22,13 +22,6 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { requireImplementLifecycle } from '#src/ticketLifecycle/requireImplementLifecycle.ts';
 import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts';
 
-/**
- * The run itself, and whatever the ticket record owes about it.
- *
- * The commit the run ends on is the run's own: one commit per unit of work that
- * passed its own gates, made inside the pipeline before the run is stamped
- * passed. This edge makes none of its own and exits on the run's result.
- */
 const runDirectBuild = async ({
 	cwd,
 	planName,
@@ -51,8 +44,6 @@ const runDirectBuild = async ({
 }) => {
 	const build = (runId?: string) =>
 		runDirectWork({ cwd, ticketBody, ticketRef, runId, driver, driverName, config, willShip, onProgress: createProgressPrinter() });
-	// A build no plan claims is the build this command has always run: no
-	// pre-minted id, and nothing written to any record.
 	const outcome =
 		planName === undefined ? { result: await build() } : await runWorkOrderPlanLifecycle({ cwd, name: planName, run: ({ runId }) => build(runId) });
 
@@ -67,15 +58,8 @@ const runDirectBuild = async ({
 };
 
 /**
- * Everything the opened workspace settles before a model is spent: the label the
- * run and its commit carry, the harness they run under, the pre-source lifecycle
- * write the branch's ticket owes, and the plan (if any) the ticket record says
- * this body build is the implementation of.
- *
- * They all read the WORKSPACE, because the branch the build happens on is the
- * one they all answer for, and each refusal leaves before anything is built.
- *
- * @returns the run's label, harness and claimed plan, or the one sentence refusing the run
+ * Everything here reads the workspace, not the launching checkout, because the
+ * branch the build happens on is the one they answer for.
  */
 const prepareDirectRun = async ({
 	workspace,
@@ -89,10 +73,8 @@ const prepareDirectRun = async ({
 }) => {
 	const ticketRef = flaggedRef ?? (await readRunLabel({ cwd: workspace.cwd }));
 	const { config, driver, driverName } = resolveEffectiveConfigAndDriver({ config: loaded, command: 'implement' });
-	// The guard is handed `--ref` itself rather than `ticketRef`, whose
-	// branch-name fallback is a run label rather than a ticket reference. Without
-	// the flag it reads the branch's work order through `readWorkOrderTicketRef`,
-	// the same reader the label above starts from.
+	// Handed `--ref` itself rather than `ticketRef`, whose branch-name fallback
+	// is a run label, not a ticket reference.
 	const refused = await requireImplementLifecycle({
 		cwd: workspace.cwd,
 		config: loaded,
@@ -110,7 +92,6 @@ const prepareDirectRun = async ({
 	return typeof planName === 'object' ? planName : { ticketRef, config, driver, driverName, planName };
 };
 
-/** The startup lines: which checkout the run builds in, on which branch, from which ticket file — and which config file it read. */
 const printDirectRunHeader = ({
 	workspace,
 	ticketRef,
@@ -129,21 +110,11 @@ const printDirectRunHeader = ({
 };
 
 /**
- * `lightsout implement-direct` — build one ticket straight from its body, with
- * the repo's own gates as the only bar, and commit what passes.
+ * The commit is the pipeline's, made before the run is stamped passed, so a run
+ * that produced none is already a failure here.
  *
- * The commit is the run's, not this edge's: the pipeline makes it before the
- * run is stamped passed, so a run that produced none is already a failure by
- * the time the result arrives here.
- *
- * A dirty tree is refused in the workspace the run builds in, because the run
- * ends in `git add -A` and would otherwise sweep the user's unrelated files
- * into the ticket's commit. The queue's worktrees are always born clean, so
- * only a checkout a person chose themselves can hit it.
- *
- * There is deliberately no current-branch check, mirroring `lightsout
- * implement`: the run builds on whatever branch its workspace holds, and a
- * default-branch mistake is refused downstream by ship.
+ * There is deliberately no current-branch check: a default-branch mistake is
+ * refused downstream by ship.
  */
 export const implementDirectCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const namedTicketPath = await getRequiredFlag({ flags, name: 'ticket' });

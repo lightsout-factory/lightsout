@@ -7,14 +7,6 @@ interface Params {
 	cwd: string;
 }
 
-/**
- * Read and validate `lightsout.config.json` from the target repo root — the
- * single coupling point between engine and consumer. A missing or invalid
- * config is a hard error before any run is created.
- *
- * `readOptionalConfig` is the same read for the commands that may run without
- * one; it differs only in treating absence as an answer rather than an error.
- */
 export const readConfig = async ({ cwd }: Params): Promise<LightsoutConfig> => {
 	const configPath = resolveConfigPath({ cwd });
 	const raw = await readConfigFile({ configPath });

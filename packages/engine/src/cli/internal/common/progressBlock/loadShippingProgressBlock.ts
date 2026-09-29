@@ -6,10 +6,9 @@ import { isPidAlive } from '#src/runState/isPidAlive.ts';
 import type { ShippingProgressReading } from '#src/ship/progress/common/types/ShippingProgressReading.ts';
 import { readShippingProgress } from '#src/ship/progress/readShippingProgress.ts';
 
-/** The record as read: undefined when the branch has none. */
 type RecordedProgress = ShippingProgressReading['progress'];
 
-/** Local 24-hour HH:MM — the clock a reader compares against the one on their own screen. */
+/** Local time, because a reader compares it against the clock on their own screen. */
 const localClock = ({ iso }: { iso: string }) => {
 	const at = new Date(iso);
 
@@ -17,10 +16,9 @@ const localClock = ({ iso }: { iso: string }) => {
 };
 
 /**
- * The six fixed rows, whatever the record holds. Only a live ship's running
- * step keeps its clock ticking; a running step in a record whose process is
- * gone is drawn failed with no clock, because it can no longer finish and
- * drawing it running would make a crashed ship look busy.
+ * A running step in a record whose process is gone is drawn failed with no
+ * clock: it can no longer finish, and drawing it running would make a crashed
+ * ship look busy.
  */
 const shippingRows = ({ progress, live, nowMs }: { progress: RecordedProgress; live: boolean; nowMs: number }) =>
 	Object.values(ShippingStepId).map((id) => {
@@ -41,7 +39,6 @@ const shippingRows = ({ progress, live, nowMs }: { progress: RecordedProgress; l
 		return { id, status, attempts: 1, durationMs };
 	});
 
-/** Wall time from the ship's start: to its end once it ended, to now while it is live, and to its last update when its process is gone. */
 const shippingElapsedMs = ({ progress, live, nowMs }: { progress: RecordedProgress; live: boolean; nowMs: number }) => {
 	if (progress === undefined) {
 		return 0;
@@ -68,15 +65,9 @@ interface Params {
 }
 
 /**
- * A branch's shipping block as lines, in the run block's layout. It prints
- * nothing, and never throws for a missing or unreadable record: a missing one
- * draws every step not reached, an unreadable one answers a single line naming
- * the file, and a branch no work order claims answers a single line saying it
- * keeps no local record at all.
- *
  * Liveness is judged by the end stamp first and the recorded pid second, so a
- * finished ship reads as finished whatever became of its process, and the clock
- * is read once, so every time the block shows agrees with every other.
+ * finished ship reads as finished whatever became of its process. The clock is
+ * read once, so every time the block shows agrees with every other.
  */
 export const loadShippingProgressBlock = async ({ cwd, branch }: Params): Promise<string[]> => {
 	const nowMs = Date.now();

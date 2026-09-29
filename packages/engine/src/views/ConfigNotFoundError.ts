@@ -4,12 +4,8 @@ interface ConstructorParams {
 }
 
 /**
- * No `lightsout.config.json` sits above the directory the app was pointed at.
- *
- * Distinct from a config that exists and will not parse: that one has a message
- * a reader can act on and travels to the error boundary as itself, while this is
- * a page about a file that is not there — which is a 404, and what the server
- * function turns it into.
+ * Distinct from a config that will not parse, whose message reaches the error
+ * boundary as itself: a missing file is a 404.
  */
 export class ConfigNotFoundError extends Error {
 	constructor({ configPath }: ConstructorParams) {

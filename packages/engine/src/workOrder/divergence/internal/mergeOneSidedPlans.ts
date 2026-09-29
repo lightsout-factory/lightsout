@@ -4,27 +4,17 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import { WorkOrderSyncKeep } from '#src/workOrder/common/constants/WorkOrderSyncKeep.ts';
 
 interface Params {
-	/** The copy the human chose to keep. */
 	kept: WorkOrderState;
-	/** The copy being set aside, whose one-sided plans still have to survive. */
 	other: WorkOrderState;
 	keptFrom: WorkOrderSyncKeep;
-	/** The moment the carry is recorded at. */
 	at: string;
 }
 
 /**
- * Carry into the kept record every plan only the other copy holds, so settling
- * a divergence never loses a plan or frees a number for reuse.
- *
- * A plan one machine added while the other was offline is real work with a real
- * folder; dropping it would also let the next `ticket add-plan` hand its number
- * to something else, and a number is never reused. Each carry appends one
- * `plan-added` event saying which copy it came from, because the kept record's
- * own history has no other way to explain how the plan got there.
- *
- * Two different plans under one number is the case no kept record can hold, so
- * it refuses rather than choosing: both ids are named, and the human decides.
+ * Settling a divergence must never lose a plan or free its number for reuse.
+ * Each carry appends a `plan-added` event, because the kept record's history has
+ * no other way to explain how the plan got there. Two different plans under one
+ * number refuse rather than choose, and the human decides.
  */
 export const mergeOneSidedPlans = ({ kept, other, keptFrom, at }: Params): WorkOrderState | { error: string } => {
 	const source = keptFrom === WorkOrderSyncKeep.Local ? WorkOrderSyncKeep.Published : WorkOrderSyncKeep.Local;

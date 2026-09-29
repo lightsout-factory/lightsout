@@ -7,7 +7,6 @@ import { BadgeVariant } from '#src/common/constants/BadgeVariant.ts';
 import { formatRelativeTime } from '#src/common/formatting/formatRelativeTime.ts';
 import { planGradeBadgeConfig } from '#src/features/plans/internal/common/constants/planGradeBadgeConfig.ts';
 
-/** One deterministic defect the plan lint found: which check, where, and the exact fix. */
 const StructuralRow = ({ finding }: { finding: StructuralFinding }) => (
 	<li className="flex flex-col gap-1 border-border border-t pt-2 first:border-t-0 first:pt-0">
 		<span className="flex flex-wrap items-center gap-2">
@@ -20,7 +19,6 @@ const StructuralRow = ({ finding }: { finding: StructuralFinding }) => (
 	</li>
 );
 
-/** One place the plan would force the implementing agent to guess, with the decision that closes it. */
 const GapRow = ({ gap }: { gap: GradedGap }) => (
 	<li className="flex flex-col gap-1 border-border border-t pt-2 first:border-t-0 first:pt-0">
 		<span className="flex flex-wrap items-center gap-2">
@@ -38,7 +36,6 @@ interface Props {
 	grade?: GradeReport;
 }
 
-/** The grade a plan earned, and the evidence behind it — the mechanical findings and the decision gaps. */
 export const GradeTab = ({ grade }: Props) => {
 	if (grade === undefined) {
 		return <p className="text-muted-foreground text-sm">Not graded yet — run lightsout plan grade --name &lt;name&gt;.</p>;

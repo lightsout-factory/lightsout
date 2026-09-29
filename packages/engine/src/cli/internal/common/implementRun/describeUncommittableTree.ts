@@ -8,19 +8,11 @@ interface Params {
 }
 
 /**
- * Why the workspace cannot be committed in, or undefined when it can.
+ * Both implement commands end in `git add -A`, so in a checkout a person chose
+ * to work in anything already there would ride into the ticket's branch.
  *
- * Both implement commands ask this, because both now end in `git add -A`: in a
- * checkout a person chose to work in — the tree `--no-worktree` leaves a run
- * standing in — anything already there would ride into the ticket's branch.
- *
- * A tree lightsout cut or adopted for the run is never judged, and reads no git
- * state at all. A freshly cut worktree is born clean and has nothing to say,
- * while an adopted one is the planning session's tree for this very plan, or
- * the tree an earlier plan of the same ticket built in — whatever it holds is
- * the ticket's own work on the ticket's own branch.
- *
- * @returns the one sentence refusing the workspace, or undefined when the run may build in it
+ * An isolated tree is never judged: a freshly cut worktree is clean, and an
+ * adopted one holds only the ticket's own work on the ticket's own branch.
  */
 export const describeUncommittableTree = async ({ cwd, isolated }: Params): Promise<string | undefined> => {
 	if (isolated) {

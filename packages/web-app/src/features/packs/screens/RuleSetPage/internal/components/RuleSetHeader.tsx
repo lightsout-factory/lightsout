@@ -8,17 +8,9 @@ import { describeChannel } from '#src/features/packs/internal/common/utils/descr
 
 interface Props {
 	channel: string;
-	/** The set's rule count, and how many are of each kind of check. */
 	totals: { rules: number } & Record<CheckKind, number>;
 }
 
-/**
- * The top of a rule-set page: the set's logo and name, when its rules apply, its rule count and how many are of each kind of
- * check.
- *
- * A framework's set is added to the TypeScript rules rather than replacing them,
- * so its page says so and links there.
- */
 export const RuleSetHeader = ({ channel, totals }: Props) => {
 	const face = describeChannel({ channel });
 	const figures = [

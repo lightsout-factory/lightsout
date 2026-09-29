@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-/** One gate-command execution, or scoped skip, as runGates saw it. Each re-run is its own entry. */
+/** Each re-run is its own entry. */
 export const GateResult = z.object({
 	/** Gate kind: 'generate' | 'check' | 'test' | 'testCoverage' | 'build'. */
 	kind: z.string(),
@@ -11,7 +11,7 @@ export const GateResult = z.object({
 	exitCode: z.number().optional(),
 	durationMs: z.number().optional(),
 	rerun: z.boolean().optional(),
-	/** Present (always `true`) when this red was a test runner that died without reporting a failing test, rather than evidence about the code. */
+	/** A test runner that died without reporting a failing test, rather than evidence about the code. */
 	crashed: z.literal(true).optional(),
 	/** Present (always `true`) when this attempt was stopped by the gate ceiling rather than returning an exit code. */
 	timedOut: z.literal(true).optional(),
@@ -21,7 +21,7 @@ export const GateResult = z.object({
 	reason: z.string().optional(),
 	/** Last 2000 chars of stdout+stderr — present only on non-zero exit. */
 	outputTail: z.string().optional(),
-	/** Repo-relative directory this execution's per-test results were written to. */
+	/** Repo-relative. */
 	testResultsDir: z.string().optional(),
 });
 

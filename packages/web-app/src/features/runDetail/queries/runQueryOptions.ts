@@ -8,7 +8,6 @@ interface Params {
 	runId: string;
 }
 
-/** One run, re-fetched every three seconds while it is running and not at all once it has settled. */
 export const runQueryOptions = ({ runId }: Params) =>
 	queryOptions({
 		queryKey: [QueryKey.Run, runId],

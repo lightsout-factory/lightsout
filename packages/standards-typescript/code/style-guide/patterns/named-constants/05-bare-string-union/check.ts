@@ -2,13 +2,11 @@ import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from 
 import type ts from 'typescript';
 import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
 
-/** Whether a type alias is written as a union of two or more bare string literals — the shape the document's ❌ example has. */
 const isStringLiteralUnion = ({ node, compiler }: { node: ts.TypeAliasDeclaration; compiler: typeof ts }) =>
 	compiler.isUnionTypeNode(node.type) &&
 	node.type.types.length > 1 &&
 	node.type.types.every((member) => compiler.isLiteralTypeNode(member) && compiler.isStringLiteral(member.literal));
 
-/** The names a file declares as `const` — the backing objects a derived union would be built from. */
 const getConstNames = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {
 	const names = new Set<string>();
 
@@ -28,13 +26,9 @@ const getConstNames = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; co
 };
 
 /**
- * The exported string unions in one file with no `const` object of the same
- * name beside them.
- *
- * The pairing is what makes the union a source of truth: with the object
- * present, the union is derived from it and consumers dot into the object. With
- * only the type, every call site retypes the literal, which is the failure the
- * document describes.
+ * With a `const` object of the same name the union is derived from it and
+ * consumers dot into the object; with only the type, every call site retypes
+ * the literal.
  */
 const getBareUnions = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {
 	const constNames = getConstNames({ sourceFile, compiler });

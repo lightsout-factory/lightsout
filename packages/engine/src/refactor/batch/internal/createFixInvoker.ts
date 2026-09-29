@@ -13,15 +13,7 @@ interface Params {
 	testStandards?: string;
 }
 
-/**
- * The gate-fix invoker the gate settler calls: the calling pass's context, plus
- * the gate output that sent the work back.
- *
- * Every pass that can turn a gate red builds one of these — the executor pass
- * and the polish pass alike — and they must build it the same way, or a gate
- * red in one would reach the fixing agent with a different account of the work
- * than the same red in the other.
- */
+/** Shared by every pass that can turn a gate red, so the fixing agent gets the same account of the work from each. */
 export const createFixInvoker =
 	({ tools, files, workFindings, advisories, standards, testStandards }: Params): Parameters<typeof settleBatchGates>[0]['invokeFix'] =>
 	({ label, gateError, guidance }) =>

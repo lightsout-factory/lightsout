@@ -2,19 +2,12 @@ import { z } from 'zod';
 import { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 
 /**
- * A judgment finding as persisted to `.lightsout/review-findings.jsonl` — the
- * finding plus provenance (which run, which batch, when). One JSON line per
- * record.
+ * Written the moment an agent review reports it, because a run that parks or
+ * escalates never builds its batch report, and no code check can rediscover a
+ * judgment finding.
  *
- * Written the moment an agent review reports it, before anything is spent
- * trying to act on it. A run that parks on a rate limit or escalates never
- * builds its batch report, so without this the only account of what the review
- * saw dies with the process — and a judgment finding has no second witness the
- * way a checked one does, because no code check can rediscover it.
- *
- * What was DONE about a finding is not here: the batch report's
- * `advisoryOutcomes` already answers that, keyed by the same site. Two records
- * of one answer is how the two come to disagree.
+ * What was done about a finding is not here: the batch report's
+ * `advisoryOutcomes` answers that, and two records of one answer can disagree.
  */
 export const ReviewFindingRecord = StandardsFinding.extend({
 	at: z.string(),

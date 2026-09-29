@@ -11,21 +11,8 @@ interface Params {
 
 /**
  * What a `--plan` value addresses: one plan, or every plan of a ticket folder.
- *
- * Two answers. A name that parses as a plan address and whose folder is there is
- * that one plan. A work order name whose plans folder holds plan subfolders
- * contributes every plan's address in plan-id order — a ticket's plans are the
- * unit a person paid for, so asking what a ticket cost must not need several
- * commands and hand arithmetic.
- *
- * Anything else answers an error naming the value and the folder that was
- * searched, so a reader can see which checkout answered. It never exits and
- * never prints: the command owns the exit code and the output.
- *
- * It asks `parsePlanAddress` for the address shape rather than splitting a name
- * itself, which is the rule that function's own doc comment sets. It is not
- * `resolvePlanTarget`, which answers which deliverable file inside a folder a
- * run should build from — a different question.
+ * The error names the folder searched, so a reader can see which checkout
+ * answered.
  */
 export const resolveReportTargets = async ({ cwd, name }: Params): Promise<{ names: string[]; workOrderFolder: boolean } | { error: string }> => {
 	const folder = await planWorkspaceDir({ cwd, name });

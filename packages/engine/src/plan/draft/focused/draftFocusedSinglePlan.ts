@@ -21,26 +21,11 @@ interface Params {
 }
 
 /**
- * Draft a single plan with the focused implementation, with one escape.
- *
- * It mirrors `draftSinglePlan` step for step and differs in four places: the
- * writer is handed the evidence the engine collected once instead of re-reading
- * source itself, `## Global Constraints` is composed from the decisions record
- * beside the Decision Log, the convergence runs the deterministic mechanical
- * repair before each round's lint, and the escalation goes to the focused phased
- * flow.
- *
- * Both engine section syncs run after the writer returns and before the
- * convergence, so the closing lint reads the sections the engine owns rather than
- * whatever the writer left. No `overviewPath` is passed to the convergence: a
- * standalone plan has no overview to render a phase table into.
- *
  * A single plan cannot be split by the structural repairer — the engine hands it
  * exactly one output path — so a busted created-file or touched-file ceiling is
- * the blocking finding that loop can never resolve. Rather than dead-ending on
- * a defect the engine can work out itself, the draft re-runs once as phased from
- * the same facts and decisions. The phased flow never escalates back, so the retry is
- * taken at most once, and only for these two checks.
+ * a blocking finding that loop can never resolve. The draft re-runs once as
+ * phased instead; the phased flow never escalates back, so the retry happens at
+ * most once.
  */
 export const draftFocusedSinglePlan = async ({ context }: Params): Promise<RunPlanDraftResult> => {
 	const { cwd, name, workspaceDir, decisions, evidence, progress } = context;
@@ -64,10 +49,8 @@ export const draftFocusedSinglePlan = async ({ context }: Params): Promise<RunPl
 
 	const { planPaths, report } = authored;
 
-	// The writer was granted the same sync and may already have run it; the runner
-	// rewrites a file only when its section differs, so this is then a no-op on
-	// disk. It stands anyway, because a denied tool or a skipped self-lint must
-	// not decide whether the plan the convergence lints carries current sections.
+	// The writer may already have run the same sync, but a denied tool or a
+	// skipped self-lint must not decide whether the linted plan carries current sections.
 	await syncPlanDecisions({ cwd, name, planPaths, decisions });
 	await syncGlobalConstraints({ planPaths, decisions });
 

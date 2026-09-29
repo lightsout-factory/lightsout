@@ -1,9 +1,4 @@
-/**
- * How far one recorded grading pass reached. It is a statement about this pass
- * and nothing else: approval is decided from what the read-coverage record
- * covers and from whether every finding is closed, never from this field, so a
- * focused pass may well be the pass that approves a plan.
- */
+/** Approval is never decided from this field, so a focused pass may well be the pass that approves a plan. */
 export const GradeScope = {
 	/** Every plan file the deliverable holds was offered to the readers. */
 	Full: 'full',

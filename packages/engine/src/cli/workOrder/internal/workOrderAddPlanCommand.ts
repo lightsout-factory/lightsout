@@ -6,13 +6,7 @@ import { finishWorkOrderChange } from '#src/cli/workOrder/internal/common/utils/
 import { readConfig } from '#src/common/config/readConfig.ts';
 import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan.ts';
 
-/**
- * `lightsout work-order add-plan` at the terminal.
- *
- * The plan's address is the last line on stdout, because that is the one thing
- * a calling skill reads back — everything else the command has to say goes
- * above it.
- */
+/** The plan's address is the last line on stdout, because a calling skill reads that line back. */
 export const workOrderAddPlanCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const name = await getRequiredFlag({ flags, name: 'name' });
 	const slug = await getRequiredFlag({ flags, name: 'slug' });

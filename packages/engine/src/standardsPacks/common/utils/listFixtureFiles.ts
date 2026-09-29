@@ -2,7 +2,6 @@ import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 interface Params {
-	/** The folder to list — one fixture side's root. */
 	root: string;
 }
 

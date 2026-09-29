@@ -22,14 +22,12 @@ import { foldPhaseChildren } from '#src/features/runs/common/utils/foldPhaseChil
 import { getRunCommand } from '#src/features/runs/common/utils/getRunCommand.ts';
 import type { RunGroup } from '#src/features/runs/internal/common/types/RunGroup.ts';
 
-/** The run's title, as the way into its evidence. */
 const RunLink = ({ run }: { run: RunListing }) => (
 	<Link to="/app/runs/$runId" params={{ runId: run.runId }} className="font-medium hover:underline hover:underline-offset-2">
 		{run.title}
 	</Link>
 );
 
-/** The packages a run was scoped to, one tag each — empty in a repo that is not a monorepo. */
 const RunPackages = ({ run }: { run: RunListing }) => (
 	<span className="flex flex-wrap gap-1">
 		{run.packages.map((name) => (
@@ -38,11 +36,9 @@ const RunPackages = ({ run }: { run: RunListing }) => (
 	</span>
 );
 
-/** The command that would pick a stopped run back up, for the reader to run themselves. */
 const ResumeCommand = ({ run }: { run: RunListing }) =>
 	run.resumable ? <CopyButton value={`lightsout resume --run ${run.shortId}`} label="Copy resume" /> : null;
 
-/** The columns, in the order a reader scans them: how it ended, what it was, what it cost, when. */
 const columns: Array<DataTableColumn<RunGroup>> = [
 	{
 		key: RunsSortKey.Status,
@@ -88,7 +84,6 @@ const columns: Array<DataTableColumn<RunGroup>> = [
 	{ key: 'resume', header: '', render: ({ run }) => <ResumeCommand run={run} /> },
 ];
 
-/** A repo with no run state at all: the three commands that put some there. */
 const NoRunsYet = () => (
 	<EmptyState
 		icon={ScrollText}
@@ -103,7 +98,6 @@ const NoRunsYet = () => (
 	/>
 );
 
-/** Runs there are, but none the reader asked for — so the way out is widening the filters. */
 const NoMatches = ({ onClearFilters }: { onClearFilters?: () => void }) => (
 	<EmptyState
 		title="No runs match these filters."
@@ -126,13 +120,8 @@ interface Props {
 }
 
 /**
- * Every run this repo has, narrowed to what a reader asked for, with each
- * coordinator's phase runs folded under it.
- *
- * Both empty states are chosen here rather than by the page, because this is
- * the one place holding the unfiltered rows and the filtered ones at once:
- * "no runs yet" and "no runs match" are different answers, and telling them
- * apart anywhere else would mean filtering a second time.
+ * Both empty states are chosen here because this is the one place holding the
+ * unfiltered and the filtered rows at once.
  */
 export const RunsTable = ({ runs, filters, onSort, onClearFilters }: Props) => {
 	const [expandedKeys, setExpandedKeys] = useState<string[]>([]);

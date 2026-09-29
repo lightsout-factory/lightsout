@@ -6,5 +6,4 @@ interface Params {
 	id: string;
 }
 
-/** One catalog entry by id, or undefined when no command answers to it. */
 export const getCommandCatalogEntry = ({ id }: Params): CommandCatalogEntry | undefined => commandCatalog.find((entry) => entry.id === id);

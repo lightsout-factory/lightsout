@@ -10,18 +10,9 @@ interface Params {
 }
 
 /**
- * Every run id this repo has state for, sorted — or, given a ticket branch,
- * only the ids in that ticket's own runs folder.
- *
- * Narrowing is what stops listing one plan's runs from reading another plan's:
- * a filter over the whole history still opens every manifest there is. The
- * no-argument call keeps its whole-repo meaning for the three readers that
- * genuinely want it — the runs list, the standards-health decline counts, and
- * the engine's public API.
- *
- * A location that has never held a run is an empty list rather than an error —
- * reports that aggregate across runs must be runnable on a repo with no
- * history.
+ * Narrowing to one ticket stops listing one plan's runs from opening every
+ * manifest there is. A location that has never held a run is an empty list, so
+ * cross-run reports work on a repo with no history.
  */
 export const listRunIds = async ({ cwd, workOrderName }: Params): Promise<string[]> => {
 	const locations =

@@ -1,15 +1,11 @@
 interface Params {
-	/** The engine's rendered evidence brief for this assignment. */
 	brief: string;
 }
 
 /**
- * The collected-evidence section: the engine's brief under a heading of its own,
- * plus the contract that says how far it goes.
- *
- * The brief is inlined verbatim. Paraphrasing or truncating it would send the
- * writer back to the files the engine read for it, which is the repeated
- * retrieval this role exists to remove.
+ * The brief is inlined verbatim: paraphrasing or truncating it would send the
+ * writer back to re-read the files, the repeated retrieval this role exists to
+ * remove.
  */
 export const evidenceSection = ({ brief }: Params): string =>
 	`## Collected source evidence

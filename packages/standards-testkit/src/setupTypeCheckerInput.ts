@@ -8,26 +8,15 @@ interface Params extends Partial<Omit<TypeCheckerInput, 'kind' | 'typedFiles' | 
 	dependencies?: Array<[string, string[]]>;
 }
 
-/** Where the arranged files live, so a relative import has a folder to resolve against. */
 const root = '/repo';
 
-/**
- * `noLib`, because the arranged files are a few lines each and never touch a
- * global — loading the standard library into every rule's unit test would cost
- * more than everything those tests do together.
- */
+/** `noLib`: loading the standard library into every rule's unit test would cost more than the tests themselves. */
 const options: ts.CompilerOptions = { target: ts.ScriptTarget.Latest, strict: true, noEmit: true, noLib: true };
 
 /**
- * A real compiler host with two methods replaced: the arranged files are served
- * from memory, and imports among them are resolved by path rather than by
- * TypeScript's own resolver.
- *
- * Resolution is taken over rather than left alone because the resolver reaches
- * the filesystem through a dozen host methods, and an import it cannot resolve
- * does not fail — it types the importer's values as `any`, and a rule reading
- * those types then reports nothing. A test arranging a cross-file type would
- * pass while proving the opposite of what it says.
+ * Imports are resolved by path rather than by TypeScript's resolver, which
+ * reaches the real filesystem: an import it cannot resolve types the importer's
+ * values as `any` silently, and a rule reading them would report nothing.
  */
 const setupHost = ({ trees }: { trees: Map<string, ts.SourceFile> }): ts.CompilerHost => {
 	const host = ts.createCompilerHost(options, true);
@@ -46,17 +35,10 @@ const setupHost = ({ trees }: { trees: Map<string, ts.SourceFile> }): ts.Compile
 	return host;
 };
 
-/**
- * The input a `type-checker` check receives: the arranged sources as one
- * program, each paired with a checker that resolves names across them.
- *
- * @param sources - each file and its text, as pairs; paths are taken as repo-relative and rooted under `/repo`
- * @param dependencies - declared dependency names per package directory, as pairs — the same shape the other factories take, so a rule needing a framework carve-out is arranged the same way whichever input it reads
- */
+/** @param sources - each file and its text, as pairs; paths are repo-relative and rooted under `/repo` */
 export const setupTypeCheckerInput = ({ sources = [], dependencies = [], ...overrides }: Params = {}): StandardsCheckInput => {
-	// Parsed once and carried by path, so the tree the program holds and the tree
-	// a check is handed are the same object — a checker only answers about nodes
-	// from its own program.
+	// Parsed once so the program's tree and the check's tree are the same
+	// object: a checker only answers about nodes from its own program.
 	const parsed = sources.map(([path, text]) => ({ path, sourceFile: ts.createSourceFile(resolve(root, path), text, ts.ScriptTarget.Latest, true) }));
 	const trees = new Map(parsed.map(({ sourceFile }) => [sourceFile.fileName, sourceFile]));
 	const program = ts.createProgram({ rootNames: [...trees.keys()], options, host: setupHost({ trees }) });

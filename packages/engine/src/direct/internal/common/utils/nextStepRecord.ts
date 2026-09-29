@@ -7,7 +7,6 @@ interface Params {
 	id: string;
 }
 
-/** The next attempt of a step, its attempt count carried forward from whatever the manifest already holds. */
 export const nextStepRecord = ({ run, id }: Params): StepRecord => ({
 	id,
 	status: RunStatus.Running,

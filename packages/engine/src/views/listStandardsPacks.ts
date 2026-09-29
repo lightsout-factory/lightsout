@@ -6,16 +6,7 @@ interface Params {
 	cwd: string;
 }
 
-/**
- * The packs this repo loads, as the packs page lists them — identity and counts,
- * no rules.
- *
- * Never throws. A repo with no config, no pack beside it and nothing bundled
- * above it answers with an empty list, and the page says so; the reason is in the
- * server log.
- *
- * @param cwd - the repo whose config decides which packs load
- */
+/** Never throws: a repo with no loadable pack answers an empty list, and the reason goes to the server log. */
 export const listStandardsPacks = async ({ cwd }: Params): Promise<StandardsPackListing[]> => {
 	const bundles = await listStandardsPackBundles({ cwd });
 

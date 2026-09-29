@@ -45,13 +45,9 @@ const mergeBranch = async ({ context, state, outcome }: { context: LaneContext; 
 };
 
 /**
- * The serial ship lane: the oldest waiting ready branch, merged now rather than
- * at the end of a wave.
- *
- * It tests the BUILDS in flight and not the retired slots, so a budget every
- * builder has been retired from still merges what is already finished — a merge
- * asks nobody a question. Run before the builders, so a slot that frees goes to
- * a branch already waiting rather than to a build that has not started.
+ * Tests the builds in flight, not the retired slots, so a budget whose builders
+ * are all retired still merges what is finished. Runs before the builders, so a
+ * freed slot goes to a branch already waiting.
  */
 export const startShip = ({ context, state, flight }: Params): void => {
 	const waiting = flight.ships > 0 || flight.builds >= context.settings.maxParallel ? undefined : state.readyToShip.shift();

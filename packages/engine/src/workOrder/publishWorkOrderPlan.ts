@@ -19,7 +19,6 @@ interface Params {
 	/** The plan's address, `<ticket-branch>/<plan-id>`. */
 	address: string;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	onProgress: (message: string) => void;
 }
@@ -31,13 +30,11 @@ interface TicketPlanPublishReport {
 	published: string[];
 	/** Titles under this plan's own prefix from an earlier publish that this run did not write. Reported, never deleted. */
 	stale: string[];
-	/** Set when the publish stopped — the one sentence saying why. */
 	error?: string;
 	/** Set when the plan's files landed but `state.json` does not say so. */
 	recordError?: string;
 }
 
-/** The change the record takes once the plan's files have landed: the new marker, and `planning` becoming `ready`. */
 const recordPublishedPlan =
 	({ planId, markerSha256, name }: { planId: string; markerSha256: string; name: string }) =>
 	(current: WorkOrderState | undefined): WorkOrderState | { error: string } => {
@@ -57,7 +54,6 @@ const recordPublishedPlan =
 		};
 	};
 
-/** Remember the generation this machine has just published, only once the record itself carries it. */
 const recordMarkerLocally = async ({ cwd, name, planId, markerSha256 }: { cwd: string; name: string; planId: string; markerSha256: string }) =>
 	recordWorkOrderSyncState({
 		workOrderFolder: await workOrderFolderDir({ cwd, name }),
@@ -66,12 +62,8 @@ const recordMarkerLocally = async ({ cwd, name, planId, markerSha256 }: { cwd: s
 	});
 
 /**
- * Put the new generation in the work order state and in this machine's sidecar,
- * and say whether `state.json` itself landed.
- *
- * The sidecar is written only once the record carries the marker, so an
- * interrupted publish leaves both naming the old generation — which is a plan
- * that can simply be published again, rather than one that looks divergent.
+ * The sidecar is written only once the record carries the marker, so an interrupted publish leaves
+ * both naming the old generation: a plan that can be published again rather than one that looks divergent.
  */
 const recordPlanPublish = async ({
 	cwd,
@@ -113,7 +105,6 @@ const recordPlanPublish = async ({
 	return remembered === undefined ? { published: landed } : { published: landed, recordError: remembered.error };
 };
 
-/** The brainstorm generation, the plan generation, and the record — in that order, keeping every title that did land. */
 const publishGenerations = async ({
 	cwd,
 	address,
@@ -163,20 +154,9 @@ const publishGenerations = async ({
 };
 
 /**
- * Publish one plan of a ticket: its brainstorm generation when the notes have
- * moved, then its own files under its plan id, then the work order state that says
- * which generation of that plan the ticket now carries.
- *
- * The order is what makes the ticket readable at every point in between. The
- * notes go first because the plan generation no longer carries them; the record
- * goes last because it names the marker the plan generation ends with, and a
- * record naming a marker no attachment matches would look like a divergence to
- * every other machine.
- *
- * The sidecar is written only after the record itself carries the new marker,
- * so an interrupted publish leaves the plan publishable again rather than
- * divergent: both the record and the sidecar still name the old generation, and
- * running `lightsout plan publish` a second time finishes the job.
+ * Notes go first because the plan generation does not carry them. The record goes last because it
+ * names the plan generation's marker, and a record naming a marker no attachment matches looks
+ * divergent to every other machine.
  */
 export const publishWorkOrderPlan = async ({ cwd, address, config, env, onProgress }: Params): Promise<TicketPlanPublishReport> => {
 	const parsed = parsePlanAddress({ name: address });

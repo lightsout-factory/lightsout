@@ -18,14 +18,7 @@ interface Params {
 	packagesDir: string;
 }
 
-/**
- * One parsed source file per path in `source`, produced once for the whole run.
- * Parsing is the expensive half of an AST rule, so several rules sharing this
- * input pay for it once between them.
- *
- * Parents are set on the nodes: a rule that has to ask what encloses a node
- * cannot walk back up without them, and there is no cheaper moment to record it.
- */
+/** Parents are set on the nodes: a rule that asks what encloses a node cannot walk back up without them. */
 export const buildSyntaxTreeInput = async ({
 	cwd,
 	source,

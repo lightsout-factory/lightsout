@@ -9,11 +9,9 @@ import type { CoverageScope } from '#src/coverage/internal/common/types/Coverage
 const rootScope = 'root';
 
 /**
- * Every package under packagesDir that defines the coverage template's run
- * script, narrowed to one package when the caller named a scope. The
- * script-missing skip mirrors `runPackageGates`: a scoped template fans out to
- * packages the consumer never hand-tuned, and one with nothing to measure is
- * legitimate.
+ * A package without the template's run script is skipped, mirroring
+ * `runPackageGates`: a scoped template fans out to packages the consumer never
+ * hand-tuned, and one with nothing to measure is legitimate.
  */
 const listPackageScopes = async ({
 	cwd,
@@ -63,10 +61,8 @@ interface Params {
 }
 
 /**
- * Which commands make up a coverage measurement, and where each writes its
- * summary. Monorepo mode — a scoped coverage template — measures packages
- * ONLY: `gates.*` is the root-group gate, and a whole-repo root measure would
- * count every package file a second time under a scope no batch belongs to.
+ * A scoped coverage template measures packages only: a whole-repo root measure
+ * would count every package file a second time under a scope no batch belongs to.
  */
 export const resolveCoverageScopes = async ({ cwd, config, summaryPath, scope }: Params): Promise<CoverageScope[]> => {
 	const template = config['package-gates']?.['test-coverage'];

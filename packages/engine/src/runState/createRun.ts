@@ -37,13 +37,10 @@ interface Params {
 }
 
 /**
- * Create a new run: fresh id, run directory, and initial manifest on disk.
- *
- * The plan paths are recorded cwd-relative whatever form the caller used: the
- * manifest's contract is repo-relative, every reader joins the record onto the
- * repo, and an absolute `--plan` written as given would be joined onto it too
- * and read back as a missing file. Enforced here, at the one place a manifest
- * is born, rather than by each pipeline remembering to.
+ * Plan paths are recorded repo-relative whatever form the caller used: every
+ * reader joins the record onto the repo, so an absolute `--plan` written as
+ * given would read back as a missing file. Enforced here, where every manifest
+ * is born.
  */
 export const createRun = async ({
 	cwd,
@@ -77,10 +74,8 @@ export const createRun = async ({
 		harness: driver,
 		config,
 		branch,
-		// Absolute, because the reader that wants it is standing in another checkout
-		// and has nothing to join a relative path onto. Written from what this
-		// function already holds rather than threaded down from three pipeline entry
-		// points: `cwd` IS the checkout the run's work happens in.
+		// Absolute, because the reader that wants it stands in another checkout
+		// and has nothing to join a relative path onto.
 		workspace: resolve(cwd),
 		willShip,
 		status: RunStatus.Pending,

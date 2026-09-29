@@ -10,12 +10,6 @@ interface Params {
 	result: CoverageResult;
 }
 
-/**
- * Render a finished coverage run: the status line, one line per batch, every
- * set-aside file with the agent's own reason, the per-scope before → after
- * table, and where the evidence landed. Reporting only — the command owns the
- * exit code, so this stays callable from a test without ending the process.
- */
 export const printCoverageResult = ({ result }: Params): void => {
 	const { manifest, setAside, before, after } = result;
 	const batchSteps = manifest.steps.filter((step) => step.id.startsWith('batch-'));

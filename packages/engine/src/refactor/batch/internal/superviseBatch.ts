@@ -19,27 +19,18 @@ interface Params {
 	driver: Driver;
 	config: LightsoutConfig;
 	batchId: string;
-	/** The plan text (standalone banner), for the supervisor's context. */
 	planContent: string;
 	/** The gate output that survived the cheap fix retries. */
 	gateError: string;
-	/** Invocations spent on the batch so far, for the supervisor's context. */
 	attempts: number;
-	/** Cheap-fix retry cap, named in the escalation message. */
 	maxCheapFixRetries: number;
 	onProgress: (message: string) => void;
 	recordUsage: (params: { step: string; usage?: AgentUsage }) => Promise<void>;
-	/** One guided fix attempt through the caller's gate-kind routing. */
 	invokeGuidedFix: (params: { guidance: string }) => Promise<AgentOutcome<unknown>>;
 	/** Re-run the batch's gates after the guided fix, answering their whole verdict. */
 	gates: () => Promise<GateRunResult>;
 }
 
-/**
- * The read-only supervisor's ruling on the red that survived the cheap retries,
- * with its event stream and any rejected output written beside the run so a
- * human can read what it was shown.
- */
 const consultBatchSupervisor = async ({
 	cwd,
 	runId,
@@ -80,17 +71,9 @@ const consultBatchSupervisor = async ({
 };
 
 /**
- * The red-gate exception path for one batch: mechanical retries are
- * exhausted, so a read-only supervisor diagnoses the failure and either
- * grants ONE guided retry or rules it a human problem — escalating with the
- * diagnosis as evidence when even the guided retry stays red.
- *
- * `gateError` stays a plain string: it is the red that survived the cheap
- * retries, and reaching here at all means that red was evidence. The re-run
- * after the guided fix answers a whole verdict, because it can come back having
- * reached none — never got the machine, crashed, or ran past its ceiling — and
- * that escalates naming the reason rather than reporting gates still red, which
- * no command would have established.
+ * The re-run after the guided fix can reach no verdict at all, and that
+ * escalates naming the reason rather than reporting gates still red, which no
+ * command established.
  */
 export const superviseBatch = async ({
 	cwd,
@@ -140,7 +123,6 @@ export const superviseBatch = async ({
 		}
 	}
 
-	// Undefined here means nothing was rate limited, so the gates' own answer decides.
 	if (outcome === undefined) {
 		if (noVerdict !== undefined) {
 			outcome = { kind: SettleKind.Escalated, error: noVerdict };

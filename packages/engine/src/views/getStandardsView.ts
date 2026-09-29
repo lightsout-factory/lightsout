@@ -12,7 +12,6 @@ import { readStandardsSnapshot } from '#src/standardsCheck/readStandardsSnapshot
 import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
 import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
 
-/** Open findings per rule id, counted once so no row has to scan the snapshot for itself. */
 const countByRule = ({ findings }: { findings: StandardsFinding[] }) => {
 	const counts = new Map<string, number>();
 
@@ -23,7 +22,6 @@ const countByRule = ({ findings }: { findings: StandardsFinding[] }) => {
 	return counts;
 };
 
-/** One rule's row: the listing's account of how this repo runs it, joined to the rule's own prose and its refactor history. */
 const buildRuleView = ({
 	listing,
 	rule,
@@ -65,15 +63,9 @@ interface Params {
 }
 
 /**
- * The standards view's whole payload: the latest snapshot's findings, every
- * loaded rule, and the trend across the checks this repo has run.
+ * Every loaded rule gets a row even with no open findings, because the view
+ * answers "what does this repo enforce?"; a repo with no snapshot yet is normal.
  *
- * Every loaded rule gets a row even with no open findings — the view answers
- * "what does this repo enforce?", not only "what is broken today". A repo with
- * no snapshot yet still answers the first question, which is why the absence is
- * a normal state rather than a failure.
- *
- * @param cwd - the repo whose config, packs, run history and snapshots are read
  * @throws {Error} When a declared standards pack cannot be loaded, or the config names a rule no pack declares.
  */
 export const getStandardsView = async ({ cwd }: Params): Promise<StandardsView> => {
@@ -91,9 +83,7 @@ export const getStandardsView = async ({ cwd }: Params): Promise<StandardsView> 
 		const rule = loaded.get(listing.rule);
 		const ruleHealth = health.rules.find((entry) => entry.id === listing.rule);
 
-		// Every listed rule was loaded from a pack and given a health row, so
-		// this skips nothing in practice — it is what keeps a row from ever being
-		// built out of half an answer.
+		// Skips nothing in practice; it keeps a row from being built out of half an answer.
 		if (rule === undefined || ruleHealth === undefined) {
 			continue;
 		}

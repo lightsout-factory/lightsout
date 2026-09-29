@@ -20,20 +20,11 @@ interface Params {
 }
 
 /**
- * The files a round may batch, worst-first (the measurement's own order).
- *
- * Four exclusions, each for its own reason: a scope whose coverage command
- * already exits 0 is done, so work never goes there; a set-aside file is a
- * human's to answer; a fully covered file has nothing left to gain; and a test
- * file is the instrument, never the target — a misconfigured coverage
- * collection can put one in the summary.
- *
- * Untestable source is excluded too: a non-JS/TS file earns no writer, and a
- * barrel or type-only file provably holds no executable code. Those sit at the
- * bottom of a statements ordering, so leaving them in would fill the first
- * batches with guaranteed declines — enough in a row to read as a systemic
- * stop. Classification borrows the consumer's TypeScript; without one, nothing
- * is inert, the same honest degradation grouping makes.
+ * A test file is excluded because a misconfigured coverage collection can put
+ * one in the summary. Untestable source is excluded because it sits at the
+ * bottom of a statements ordering and would fill the first batches with
+ * guaranteed declines, enough in a row to read as a systemic stop. Without the
+ * consumer's TypeScript, nothing is classified inert.
  */
 export const selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, standardsPacks, compiler }: Params): Promise<CoverageFile[]> => {
 	const failingScopes = new Set(measured.totals.filter((total) => !total.passed).map((total) => total.scope));

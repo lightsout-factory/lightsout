@@ -6,11 +6,7 @@ interface Params {
 	run: PipelineRun;
 }
 
-/**
- * Delete the run's approved copies. The manifest records and the review journal
- * stay — they are the evidence; the copies are the working baseline a resume
- * needs and a finished run does not.
- */
+/** The manifest records and the review journal stay: they are the evidence, the copies only a resume's baseline. */
 export const removeApprovedTests = async ({ run }: Params): Promise<void> => {
 	await rm(await approvedTestsDir({ cwd: run.cwd, runId: run.current().runId }), { recursive: true, force: true });
 };

@@ -5,7 +5,6 @@ interface Params {
 	usage?: RunUsage;
 }
 
-/** A run's live usage aggregate: zeros for a fresh run, the manifest's totals on resume. */
 export const seedUsageTotals = ({ usage }: Params): RunUsage => ({
 	invocations: 0,
 	inputTokens: 0,

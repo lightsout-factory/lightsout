@@ -9,17 +9,9 @@ interface Params {
 }
 
 /**
- * Which file on disk a recorded plan path names.
- *
- * Every other repo-relative path a run records is read under the checkout the
- * run works in, but a plan folder now lives in the primary checkout whichever
- * checkout is working — so a recorded tickets-directory path read against a
- * worktree names a file that is not there, silently, as a plan that "does not
- * exist". One answer for the three readers of such a path, rather than the same
- * rule grown three times.
- *
- * Any other path is read against the given checkout, and an absolute one
- * already names a file.
+ * A plan folder lives in the primary checkout whichever checkout is working, so
+ * a recorded work-orders path read against a worktree would silently name a
+ * file that is not there. Any other path is read against the given checkout.
  */
 export const resolveRecordedPlanPath = async ({ cwd, path }: Params): Promise<string> => {
 	// Both separators, because the contract spells a recorded path with forward

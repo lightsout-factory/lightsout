@@ -8,15 +8,8 @@ import { yellow } from '#src/cli/internal/common/terminal/yellow.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { runDoctor } from '#src/doctor/runDoctor.ts';
 
-/**
- * The line a reader gets before a single cent of theirs is spent.
- *
- * The harness name is the part that carries meaning — it is the binary about to
- * be shelled and the subscription about to be billed — so it is read from the
- * config rather than described in general terms. A config that does not parse
- * is not this line's problem: the doctor's own `config` check reports it one
- * line later, and a stack trace here would replace that report.
- */
+// A config that does not parse is left to the doctor's own `config` check, which
+// reports it a line later; a throw here would replace that report.
 const warnBeforeProbing = async ({ cwd }: { cwd: string }) => {
 	const config = await readOptionalConfig({ cwd }).catch(() => undefined);
 
@@ -24,14 +17,9 @@ const warnBeforeProbing = async ({ cwd }: { cwd: string }) => {
 };
 
 /**
- * `lightsout doctor` — the read-only audit of a repo's install, one icon line
- * per check with its fix indented beneath it.
- *
- * `--usage-probe` adds the one check that is not free: a single throwaway agent
- * call against the configured harness, confirming that harness's token fields
- * still reach the engine. It is boolean, so a value-carrying form is a usage
- * error rather than a differently-shaped request, and it is off unless asked
- * for — a plain `doctor` spawns no agent and spends nothing.
+ * `--usage-probe` is the one check that is not free: it spends a real agent call
+ * on the user's own subscription, so it runs only when asked for, and a
+ * value-carrying form is a usage error.
  */
 export const doctorCommand = async ({ cwd, flags }: CommandContext): Promise<void> => {
 	const usageProbe = flags.has('usage-probe');

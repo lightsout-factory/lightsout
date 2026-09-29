@@ -1,10 +1,4 @@
-/**
- * How a forge is asked to merge a pull request.
- *
- * Three values because that is what every forge offers and what `gh pr merge`
- * spells as a flag — the config names one, and the name travels to the command
- * line unchanged.
- */
+/** Spelled as `gh pr merge` spells its flags, so the configured name travels to the command line unchanged. */
 export const ShipMergeMethod = {
 	Merge: 'merge',
 	Squash: 'squash',

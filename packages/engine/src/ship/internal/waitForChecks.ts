@@ -11,27 +11,14 @@ interface Params {
 	allowNoCi: boolean;
 	/** The exact candidate commit this attempt pushed — the only commit whose checks may count. */
 	expectedHead: string;
-	/** Live progress sink — one line per poll. Silent when omitted. */
 	onProgress?: (message: string) => void;
 }
 
 /**
- * Poll the pull request's checks until they settle, or until the wait ceiling
- * is reached.
- *
- * The first poll happens before any sleep, so a pull request whose checks are
- * already green merges without a pause. A poll that cannot be read is retried
- * rather than treated as failure — a transient forge error must not fail a
- * merge — and a run of unreadable polls ends at the same ceiling, carrying
- * `readable: false` so the caller reports a timeout rather than claiming this
- * repository has no CI.
- *
- * An empty check list is never a pass on its own. A repository that has
- * explicitly opted out (`ship.allow-no-ci`) still waits out the registration
- * grace first, because seconds after a pull request is created "no checks" is
- * indistinguishable from "CI has not registered its checks yet". A repository
- * that has not opted out waits to the ceiling and comes back unfinished, which
- * is what lets the caller say `checks-missing` and name the setting.
+ * An unreadable poll is retried rather than failed, and a run of them ends at the ceiling with
+ * `readable: false`, so the caller reports a timeout rather than claiming there is no CI. An empty
+ * list is never a pass on its own: seconds after a pull request opens, no checks looks exactly
+ * like CI that has not registered yet.
  */
 export const waitForChecks = async ({ prNumber, cwd, allowNoCi, expectedHead, onProgress }: Params): Promise<ChecksSummary> => {
 	const { pollIntervalMs, ceilingMs } = remoteWaitTimings;

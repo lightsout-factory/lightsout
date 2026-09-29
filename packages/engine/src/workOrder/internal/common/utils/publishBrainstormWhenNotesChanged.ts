@@ -17,17 +17,15 @@ import type { TicketTrackerTarget } from '#src/workOrder/internal/common/types/T
 
 interface Params {
 	cwd: string;
-	/** The plan's address, `<ticket-branch>/<plan-id>`. */
+	/** `<ticket-branch>/<plan-id>`. */
 	address: string;
 	planId: string;
 	target: TicketTrackerTarget;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	onProgress?: (message: string) => void;
 }
 
-/** The SHA-256 the plan's own brainstorm marker commits for the notes, or undefined when nothing on the ticket commits them. */
 const readCommittedNotesHash = async ({
 	planId,
 	target,
@@ -68,16 +66,9 @@ const readCommittedNotesHash = async ({
 };
 
 /**
- * Publish the plan's brainstorm generation first whenever the notes on disk are
- * not the bytes its own marker commits.
- *
- * `brainstorm-notes.md` belongs to the brainstorm generation now, so a plan
- * publish would otherwise leave a ticket whose plan is current and whose notes
- * are whatever was last brainstormed. Republishing only when the bytes differ
- * is what keeps `plan publish` from re-uploading the notes on every run.
- *
- * A plan folder with no notes is the ordinary case for a plan that was never
- * brainstormed, and publishes nothing.
+ * `brainstorm-notes.md` belongs to the brainstorm generation, so a plan publish
+ * would otherwise leave stale notes on the ticket. Only differing bytes are
+ * republished, so `plan publish` does not re-upload the notes every run.
  */
 export const publishBrainstormWhenNotesChanged = async ({
 	cwd,

@@ -1,9 +1,6 @@
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 
 /**
- * The `onGateResult` sink a `runGates` caller hands over, paired with the list
- * it fills.
- *
  * The keying is the contract: one entry per group and gate kind, so a gate the
  * runner re-ran is reported once, by its last observation. Shared rather than
  * written out at each call site, because two callers spelling that key

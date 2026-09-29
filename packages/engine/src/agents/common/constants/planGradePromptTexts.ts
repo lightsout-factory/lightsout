@@ -7,15 +7,9 @@ import planGapCheckWiringPrompt from '#src/agents/prompts/planGapCheckWiring.md'
 import planGapJudgePrompt from '#src/agents/prompts/planGapJudge.md';
 
 /**
- * Every brief that shapes a plan-grading pass, in a fixed order: the shared
- * reader brief, its three lens briefs, the judge brief, the documentation brief
- * and the re-verification brief. A lens brief changes what a reader looks for as
- * much as the shared brief does, so all seven are in.
- *
- * The grade fingerprint hashes these to decide whether a recorded review still
- * speaks for the current pass. The list lives here, beside the briefs, because a
- * brief renamed or split is this module's own change — a fingerprint assembled
- * elsewhere would silently drop it and go on calling a stale review current.
+ * Every brief that shapes a plan-grading pass, in a fixed order. The grade
+ * fingerprint hashes these to decide whether a recorded review is still current,
+ * so a brief added or split here must join this list or a stale review passes.
  */
 export const planGradePromptTexts = [
 	planGapCheckPrompt,

@@ -17,12 +17,9 @@ interface Params {
 }
 
 /**
- * Assemble the unit-test-writer invocation deterministically. The role prompt,
- * the plan, and the test standards are identical across every writer spawned
- * for a run, so they live in the system prompt — the harness's cache
- * breakpoint sits after it, so the fan-out's spawns share one cached prefix.
- * Only the per-writer subject/must-execute lists and any verification failure
- * vary, and those are the user prompt.
+ * The role prompt, the plan and the test standards are identical across every
+ * writer spawned for a run, so they ride the system prompt and the fan-out's
+ * spawns share one cached prefix.
  */
 export const buildUnitTestWriterInvocation = ({
 	planContent,

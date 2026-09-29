@@ -14,19 +14,11 @@ interface Params {
 	plan: string;
 	title: string;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	onProgress?: (message: string) => void;
 }
 
-/**
- * Change what a plan is called, and nothing else.
- *
- * The id, the plan's folder, its published attachments and any pending ship
- * request are all left exactly as they were — that separation is the whole
- * point of a plan having a mutable title beside a fixed identity, and it is
- * what makes renaming a plan something that never withdraws an approval.
- */
+/** The id, folder, attachments and any ship request stay as they were, so renaming a plan never withdraws an approval. */
 export const retitleWorkOrderPlan = ({ cwd, name, plan, title, config, env, onProgress }: Params): Promise<WorkOrderStateChange | { error: string }> =>
 	changeExistingWorkOrderState({
 		cwd,

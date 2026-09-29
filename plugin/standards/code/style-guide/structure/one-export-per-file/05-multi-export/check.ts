@@ -19,9 +19,7 @@ const isNamedConstantFamily = ({ exports }: { exports: FileExport[] }) => {
 /**
  * Exception 5: a type and the single value typed by it — `interface Config`
  * beside `const defaultConfig: Config`. The default has no consumer the type
- * does not already have, so splitting them buys a second file and nothing
- * else. Exactly two exports, one type-level and one `const` whose declaration
- * line annotates it with the co-located type's name.
+ * does not already have, so splitting them buys a second file and nothing else.
  */
 const isTypedValuePair = ({ exports }: { exports: FileExport[] }) => {
 	const typeEntry = exports.find((entry) => entry.keyword === 'interface' || entry.keyword === 'type');

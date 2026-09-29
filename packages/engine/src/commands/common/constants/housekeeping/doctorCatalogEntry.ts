@@ -2,7 +2,6 @@ import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalog
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 
-/** `lightsout doctor` — the first thing to run when something is not working. */
 export const doctorCatalogEntry: CommandCatalogEntry = {
 	id: 'doctor',
 	cli: 'lightsout doctor',

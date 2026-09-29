@@ -9,24 +9,22 @@ import { parseRuleFolder } from '#src/standardsPacks/internal/common/parsing/par
 import { hasFile } from '#src/standardsPacks/internal/common/utils/hasFile.ts';
 
 interface Params {
-	/** Absolute document folder path (contains document.md). */
+	/** Absolute; contains document.md. */
 	folderPath: string;
-	/** Pack-relative path of the folder. */
+	/** Pack-relative. */
 	documentPath: string;
 	set: StandardsSet;
 	problems: string[];
 }
 
 /**
- * What document.md may declare. A document that names no channel is base — it
- * always applies; a named channel means prose, checks and review all sit out
- * unless the repo runs that framework.
+ * A document naming no channel always applies; a named channel means prose,
+ * checks and review sit out unless the repo runs that framework.
  */
 const documentDeclaration = z.object({
 	channel: z.string().min(1).default('base'),
 });
 
-/** The rule folders directly under a document, in assembly (lexicographic) order. */
 const listRuleFolders = async ({ folderPath }: { folderPath: string }) => {
 	const entries = await readdir(folderPath, { withFileTypes: true }).catch(() => []);
 	const directories = entries
@@ -46,17 +44,7 @@ const listRuleFolders = async ({ folderPath }: { folderPath: string }) => {
 	return folders;
 };
 
-/**
- * Read one document folder: its intro prose, the channel it declares, and every
- * rule folder under it in order. The document's channel is stamped onto each of
- * its rules — prose, check and review move as one unit, so a rule can never be
- * in play while the document that argues for it is not.
- *
- * @param folderPath - absolute path of the folder holding document.md
- * @param documentPath - that folder's pack-relative path
- * @param set - which document tree the folder sits in
- * @param problems - sink the loader throws as one batch
- */
+/** The document's channel is stamped onto its rules, so a rule is never in play while its document is not. */
 export const parseDocumentFolder = async ({
 	folderPath,
 	documentPath,

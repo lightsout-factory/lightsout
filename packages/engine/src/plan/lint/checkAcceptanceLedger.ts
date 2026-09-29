@@ -13,25 +13,19 @@ import { checkMovedAwayLedgerFiles } from '#src/plan/lint/internal/checkMovedAwa
 
 interface Params {
 	plan: ParsedPlan;
-	/** The repository root, read only to open the test file that answers whether a row's test already exists. */
 	cwd: string;
 	/** The finding label: this file's basename. */
 	phase: string;
-	/** Whether `plan.contract` is on — decides only whether an absent section is a finding. */
+	/** Whether `plan.contract` is on; decides only whether an absent section is a finding. */
 	required: boolean;
-	/** The gate keys the config declares, so a row cannot name a gate nothing runs. */
+	/** So a row cannot name a gate nothing runs. */
 	gateKeys: Set<string>;
 }
 
 /**
- * Every source file this plan writes that the prose-files list does not excuse —
- * the files a ledger row has to reach. `getPlanWrittenPaths` rather than the
- * whole heading set: a deleted file and a move's source are named by a heading
- * but written by nobody, so no test can state their behaviour.
- *
- * A rename-only file — one carrying a `## Renames` section — has none: a rename
- * adds no behaviour a new test could state, so it is asked for no row and no
- * prose-files excuse.
+ * `getPlanWrittenPaths` rather than the whole heading set: a deleted file and a
+ * move's source are named by a heading but written by nobody. A rename-only file
+ * has none, because a rename adds no behaviour a new test could state.
  */
 const getCoverablePaths = ({ plan }: { plan: ParsedPlan }) => {
 	if (plan.renames.length > 0) {
@@ -44,12 +38,8 @@ const getCoverablePaths = ({ plan }: { plan: ParsedPlan }) => {
 };
 
 /**
- * Whether a test file already on disk states this name, read from its test-call
- * heads.
- *
- * A quoted-string search would refuse a plan whose chosen name happens to appear
- * in a comment, a `describe` block or a variable in the file it names — none of
- * which is a test that already exists.
+ * Read from test-call heads: a quoted-string search would also match the name in
+ * a comment, a `describe` block or a variable, none of which is an existing test.
  */
 const statesTest = async ({ cwd, testFile, testName }: { cwd: string; testFile: string; testName: string }) => {
 	const content = await readFile(join(cwd, testFile), 'utf8').catch(() => undefined);
@@ -58,24 +48,14 @@ const statesTest = async ({ cwd, testFile, testName }: { cwd: string; testFile: 
 };
 
 /**
- * The path whose content answers whether the row's test already exists.
- *
- * A row may name a move's DESTINATION, which does not exist at plan time. Read
- * literally, the rule below would find nothing there and pass — so a test
- * written for older behaviour could be named as a new criterion's verifier just
- * by moving its file. The move's source is read instead: it holds the cases the
- * destination inherits.
+ * A row may name a move's destination, which does not exist at plan time. The
+ * source is read instead, or an old test could verify a new criterion just by
+ * moving its file.
  */
 const resolveReadPath = ({ plan, testFile }: { plan: ParsedPlan; testFile: string }) => plan.movePaths.find((move) => move.to === testFile)?.from ?? testFile;
 
-/**
- * Gate keys whose command runs tests, and so can carry a per-test result: the
- * unit suite, its instrumented twin, and any custom `test-*` suite the config
- * declares.
- */
 const isTestGate = ({ gate }: { gate: string }) => gate === 'test' || gate.startsWith('test-');
 
-/** One blocking LedgerWellFormed finding — the only check the rules in this file report under. */
 const finding = ({ phase, issue, location, fix }: { phase: string; issue: string; location: string; fix: string }) => ({
 	check: StructuralCheck.LedgerWellFormed,
 	severity: FindingSeverity.Blocking,
@@ -85,7 +65,6 @@ const finding = ({ phase, issue, location, fix }: { phase: string; issue: string
 	fix,
 });
 
-/** LedgerWellFormed — the section's own shape: rows the parser could not read, and prose-files bullets that state no reason. */
 const checkShape = ({ plan, phase, required, coverable }: { plan: ParsedPlan; phase: string; required: boolean; coverable: string[] }) => {
 	const findings: StructuralFinding[] = [];
 
@@ -125,7 +104,6 @@ const checkShape = ({ plan, phase, required, coverable }: { plan: ParsedPlan; ph
 	return findings;
 };
 
-/** LedgerWellFormed — each row on its own terms: a real test file, a configured gate, no duplicate, and a test name the file does not already hold. */
 const checkRows = async ({ plan, cwd, phase, gateKeys }: { plan: ParsedPlan; cwd: string; phase: string; gateKeys: Set<string> }) => {
 	const findings: StructuralFinding[] = [];
 	const seen = new Set<string>();
@@ -204,21 +182,10 @@ const checkRows = async ({ plan, cwd, phase, gateKeys }: { plan: ParsedPlan; cwd
 };
 
 /**
- * LedgerWellFormed and LedgerCovers — the acceptance-test ledger's structural
- * check, in the shape of `checkVerificationScripts`.
- *
- * The rule runs whenever the section is present, whatever the config says: a
- * plan written on a machine with `plan.contract` on and graded on one with it
- * off must not quietly lose its checks. `required` decides one thing only —
- * whether an ABSENT section is a finding.
- *
- * A row may name a test file that already exists, because adding a case to one
- * is ordinary work. What it may not do is name a test that file already holds:
- * a test written for older behaviour must never be locked in as the verifier of
- * a new criterion.
- *
- * The overview variant is never checked; the caller passes implementable files
- * only, exactly as it does for the script check.
+ * Runs whenever the section is present, whatever the config says: a plan written
+ * with `plan.contract` on and graded with it off must not quietly lose its checks.
+ * A row may name an existing test file but not a test it already holds, so a test
+ * written for older behaviour is never locked in as a new criterion's verifier.
  */
 export const checkAcceptanceLedger = async ({ plan, cwd, phase, required, gateKeys }: Params): Promise<StructuralFinding[]> => {
 	const coverable = getCoverablePaths({ plan });

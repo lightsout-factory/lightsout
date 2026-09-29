@@ -13,17 +13,9 @@ interface Params {
 }
 
 /**
- * The optional-config + per-command harness resolution shared by the plan and
- * improve commands, which can run before a lightsout.config.json exists: the
- * config load is non-fatal only when no config file exists, and the harness
- * falls back to claude-code. A config file that IS there but does not parse is a
- * hard error, exactly as it already is for implement, refactor, and resume. The
- * returned config is the EFFECTIVE config — its top-level
- * harness/model/effort are overwritten with this command's resolved values, so
- * downstream reads of `config.model` are already per-command.
- *
- * @returns the effective config and driver, and the absolute path of the config
- *   file read — `undefined` alongside an `undefined` config, when there was none
+ * The returned config is the effective one: its top-level harness, model and
+ * effort are overwritten with this command's resolved values, so downstream
+ * reads of `config.model` are already per-command.
  */
 export const resolveConfigAndDriver = async ({
 	cwd,
@@ -34,10 +26,9 @@ export const resolveConfigAndDriver = async ({
 		() => true,
 		() => false,
 	);
-	// A missing config is fine — plan and improve are the two commands that can run
-	// before one exists. A config that IS there and does not parse is a mistake worth
-	// stopping for: continuing would silently discard every setting in it, including
-	// the removed keys' replacements.
+	// A missing config is fine — plan and improve can run before one exists. A
+	// config that is there and does not parse stops the run: continuing would
+	// silently discard every setting in it.
 	const loaded = present ? await readConfig({ cwd }) : undefined;
 	const { driverName, model, effort } = resolveCommandHarness({ config: loaded, command });
 	const driver = getDriver({ name: driverName });

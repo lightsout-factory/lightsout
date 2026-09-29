@@ -30,25 +30,19 @@ import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
 
 interface Params {
 	cwd: string;
-	/** Absolute paths to the plan file(s) to lint. */
+	/** Absolute. */
 	planPaths: string[];
-	/** The merged decision record every plan file's Decision Log has to agree with. Required: an absent record would silently no-op the currency check. */
+	/** Required: an absent record would silently no-op the currency check. */
 	decisions: DecisionsRecord;
 	config?: LightsoutConfig;
 }
 
-/**
- * Required sections by variant — the fixed heading set the template pins for
- * every repository. `Documentation` and `Acceptance Tests` are the two headings
- * a repository's own config adds, each only to the implementable variants, so
- * neither is written here.
- */
+/** `Documentation` and `Acceptance Tests` are added by a repository's own config, so neither is written here. */
 const requiredSections = {
 	[PlanFileKind.Implementable]: ['Prerequisites', 'Global Constraints', 'Scope Boundaries', 'Verification', 'What Next Plan Expects'],
 	[PlanFileKind.Overview]: ['Phases', 'Phase Declarations', 'Cross-Phase Dependencies', 'Global Constraints'],
 } as const;
 
-/** SectionsPresent — the required headings for this file's variant, plus the ones a declared `docs` block and `plan.contract` add to the implementable ones. */
 const checkSections = ({ phase, docsDeclared, contract }: { phase: PhaseFile; docsDeclared: boolean; contract: boolean }) => {
 	const implementable = phase.plan.variant === PlanFileKind.Implementable;
 
@@ -68,7 +62,6 @@ const checkSections = ({ phase, docsDeclared, contract }: { phase: PhaseFile; do
 		}));
 };
 
-/** NoPlaceholders — no unresolved marker survives into a written plan. */
 const checkPlaceholders = ({ phase }: { phase: PhaseFile }) =>
 	scanPlaceholders({ lines: phase.plan.lines, skipRange: phase.plan.decisionLogRange }).map(({ label, line }) => ({
 		check: StructuralCheck.NoPlaceholders,
@@ -79,7 +72,6 @@ const checkPlaceholders = ({ phase }: { phase: PhaseFile }) =>
 		fix: `resolve '${label}' — every open question must be decided before the plan is written`,
 	}));
 
-/** MoveWellFormed — a `## Files to Move` heading that did not name two paths, so the file it meant to move is nowhere in the parsed plan. */
 const checkMoves = ({ phase }: { phase: PhaseFile }) =>
 	phase.plan.malformedMoveLines.map((line) => ({
 		check: StructuralCheck.MoveWellFormed,
@@ -91,10 +83,8 @@ const checkMoves = ({ phase }: { phase: PhaseFile }) =>
 	}));
 
 /**
- * The script names available to each file's verification commands beyond the
- * manifests: what that phase and every earlier one declares it adds. A phase may
- * legitimately verify with a script only the plan creates, and the overview —
- * which stands for the whole deliverable — sees the union.
+ * A phase may verify with a script only the plan creates, and the overview,
+ * standing for the whole deliverable, sees the union.
  */
 const getDeclaredScripts = ({ overview, phases }: { overview?: PhaseFile; phases: PhaseFile[] }) => {
 	const byPhase = new Map<string, Set<string>>();
@@ -119,11 +109,9 @@ const getDeclaredScripts = ({ overview, phases }: { overview?: PhaseFile; phases
 	return byPhase;
 };
 
-/** A per-file `path-exists` finding the cross-phase pass overruled: a create path an earlier phase provably removes. */
 const isCleared = ({ finding, clearedCreates }: { finding: StructuralFinding; clearedCreates: Set<string> }) =>
 	finding.check === StructuralCheck.PathExists && clearedCreates.has(`${finding.phase}|${finding.location.split(' → ').at(-1)}`);
 
-/** PackagesIdentifiable — a `packagesDir/` path must name a package segment. */
 const checkPackages = ({ phase, packagesDir }: { phase: PhaseFile; packagesDir: string }) =>
 	getPlanNamedPaths({ plan: phase.plan })
 		.filter((path) => path.startsWith(`${packagesDir}/`) && !path.slice(packagesDir.length + 1).includes('/'))
@@ -137,37 +125,10 @@ const checkPackages = ({ phase, packagesDir }: { phase: PhaseFile; packagesDir: 
 		}));
 
 /**
- * The deterministic structural lint — no agent. This is to plans what
- * `runStandardsCheck`'s checks are to code: it keys off the fixed structure the
- * plan template pins (the `##` heading set, the `###` create/modify/move
- * subheadings, the Patterns-to-Mirror bullet code spans, the Verification
- * command spans) and reports each defect as typed data.
- *
- * It runs parse-then-check: every plan path is read and parsed once into an
- * ordered `PhaseFile[]`, provenance is resolved across the implementable files,
- * and only then do the per-file checks run — each told which paths a strictly
- * earlier phase supplies, so a path phase 4 modifies because phase 1 creates it
- * no longer reads as a broken reference. That ordered set is also the seam the
- * cross-phase pass hangs off.
- *
- * Every path a heading names is `stat`ed, and so is every backticked span in
- * the plan's prose — except that a prose span which is shorthand rather than
- * repo-rooted is resolved against a repo index read once per run instead of
- * being `stat`ed. Every verification script is looked up in a package.json
- * (honoring `config.gates` full-command overrides), placeholders and required
- * sections are matched textually, and the size numbers are checked: a
- * blocking ceiling on the files a plan CREATES, a blocking ceiling on every
- * source file it touches (a rename-only plan is exempt), and an advisory note
- * on its touched count against its budget. The `naming-matches` check no-ops
- * without a machine-checkable convention (the facts' `namingConvention` is free-text
- * prose), and `packages-identifiable` only fires on a malformed `packagesDir/`
- * path — both are conservative by design, never guessing.
- *
- * The per-file loop is followed by `lintPlanCrossPhase`, which needs more than
- * one plan file in view and is also the only pass allowed to overrule one: a
- * `path-exists` finding for a create path an earlier phase provably removes is
- * dropped, because delete-then-recreate is legitimate work the per-file check
- * cannot recognise on its own.
+ * Provenance is resolved before the per-file checks run, so each knows which
+ * paths a strictly earlier phase supplies. The cross-phase pass may then drop a
+ * `path-exists` finding, because delete-then-recreate is legitimate work the
+ * per-file check cannot recognise.
  */
 export const lintPlanStructure = async ({ cwd, planPaths, decisions, config }: Params): Promise<StructuralFinding[]> => {
 	const packagesDir = config?.['packages-dir'] ?? defaultPackagesDir;
@@ -182,9 +143,7 @@ export const lintPlanStructure = async ({ cwd, planPaths, decisions, config }: P
 	const phased = isPhasedDeliverable({ hasOverview: overview !== undefined, implementableCount: implementable.length });
 	const provenance = getPhaseProvenance({ phases: implementable });
 	const declaredByPhase = getDeclaredScripts({ overview, phases: implementable });
-	// Read once per lint run rather than once per plan file, for the same reason
-	// `getDeclaredScripts` is hoisted: a ten-file phased plan would otherwise walk
-	// the repo ten times.
+	// Read once per lint run, or a phased plan would walk the repo once per file.
 	const repoIndex = await readRepoPathIndex({ cwd });
 	const syncCommand = buildPlanSyncDecisionsCommand({ cwd, name: decisions.planName }).command;
 	const planned = new Set(provenance.createdBy.keys());

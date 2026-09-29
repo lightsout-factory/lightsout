@@ -11,10 +11,7 @@ interface Params {
 	files: DurablePlanFile[];
 }
 
-/**
- * Read a complete immutable snapshot before the first outward mutation, then
- * append the manifest that commits exactly those bytes.
- */
+/** Reads a complete snapshot before the first outward mutation, so the manifest commits exactly those bytes. */
 export const prepareAttachments = async ({ files }: Params): Promise<{ attachments: PreparedAttachment[] } | { error: string }> => {
 	const durable: PreparedAttachment[] = [];
 	// The brainstorm generation owns `brainstorm-notes.md` outright, so the plan

@@ -9,14 +9,9 @@ interface Params {
 }
 
 /**
- * Every `pending` record, re-offered to this pass's judge batching as the
- * finding it still is: its record id, its representative identity, every
- * observation it holds, and the reason nobody settled it last time.
- *
- * It is the same record-to-gap projection `openFindingGaps` makes, for the state
- * that needs judging rather than the state that needs re-verification. A pending
- * finding is never sent to `verifyOpenFindings`: asking whether the plan now
- * answers a question nobody has ruled on yet is asking the wrong question.
+ * A pending finding goes to the judge, never to `verifyOpenFindings`: asking
+ * whether the plan now answers a question nobody has ruled on yet is asking the
+ * wrong question.
  */
 export const pendingFindingGaps = ({ memory }: Params): GradedGap[] =>
 	memory.findings

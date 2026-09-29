@@ -7,17 +7,7 @@ interface Params {
 	bundle: StandardsPackBundle;
 }
 
-/**
- * The pack page's payload: the listing, the documents that group its rules, and
- * one row per rule.
- *
- * The prose and the fixture text stay behind — the default pack's fixtures alone
- * run to about two megabytes, and inlining them into the page's server-rendered
- * HTML would dwarf the page they decorate. A rule's own text arrives when a
- * reader opens that rule.
- *
- * @param bundle - the pack read whole
- */
+/** Prose and fixture text stay behind: the default pack's fixtures run to megabytes and would dwarf the server-rendered page. */
 export const toStandardsPackView = ({ bundle }: Params): StandardsPackView => ({
 	...toStandardsPackListing({ bundle }),
 	documents: bundle.documents,

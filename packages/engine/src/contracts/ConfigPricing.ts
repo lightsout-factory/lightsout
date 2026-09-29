@@ -1,27 +1,14 @@
 import { z } from 'zod';
 
 /**
- * The optional top-level `pricing` block of `lightsout.config.json` — published
- * rates, keyed by the model identifier a harness was invoked with.
+ * Keyed by the model identifier a harness was invoked with, and read only by
+ * `lightsout report`'s estimated-cost column. Nothing computed from it is
+ * stored, so a saved record stays a statement of what a harness reported. There
+ * is no default, because a rate nobody stated cannot be guessed at.
  *
- * It buys one thing: a separate, clearly labelled estimated-cost column in
- * `lightsout report`. It is read there and nowhere else — no writer, no
- * manifest snapshot and no activity record ever consults it, and nothing
- * computed from it is stored, so the saved record stays a statement of what a
- * harness itself reported.
- *
- * There is no default. A repository that configures no rates loses that one
- * column and keeps every other figure, because a rate nobody stated cannot be
- * guessed at.
- *
- * One rate per token count `HarnessProcessUsage` carries, so no rate can be
- * applied to a count it does not match, and each is US dollars per million
- * tokens — the unit every harness vendor publishes, so a user copies the
- * published number rather than converting it.
- *
- * Each entry is `.strict()`, like every block of the config: a typo in a rate name
- * would then leave that token count silently unpriced while the column still
- * printed a total. It has to fail loudly instead.
+ * Rates are US dollars per million tokens, the unit vendors publish. Each entry
+ * is `.strict()` so a typo in a rate name fails loudly rather than leaving a
+ * token count silently unpriced.
  */
 export const ConfigPricing = z.record(
 	z.string(),

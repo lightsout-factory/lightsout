@@ -17,15 +17,9 @@ interface Params {
 }
 
 /**
- * Who imports whom, across the WHOLE repo rather than the scoped file list: a
- * boundary rule's question is "does anything outside this module reach into
- * it?", and a graph built from the scope alone would answer it wrong whenever
- * the run is narrowed with `--path`.
- *
- * The graph carries what each package declares alongside the edges, because a
- * boundary rule's other question is whether the folder it is judging is one a
- * framework mandates — and that is answered by the declarations, never by the
- * graph.
+ * Built across the whole repo rather than the scoped file list: a boundary
+ * rule asks whether anything outside a module reaches into it, which a graph
+ * built from a `--path` scope would answer wrong.
  */
 export const buildImportGraphInput = async ({
 	cwd,

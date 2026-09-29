@@ -7,26 +7,20 @@ import { getTestSubject } from '../../../../../common/paths/getTestSubject.ts';
 import { isBarrelFile } from '../../../../../common/paths/isBarrelFile.ts';
 import { isOutsideEveryPackage } from '../../../../../common/paths/isOutsideEveryPackage.ts';
 
-/** The workspace package a file belongs to: the longest package directory holding it, `.` for the repo root. */
 const getOwningPackage = ({ path, packageDirectories }: { path: string; packageDirectories: string[] }) =>
 	packageDirectories.filter((directory) => directory === '.' || path.startsWith(`${directory}/`)).sort((first, second) => second.length - first.length)[0];
 
 export const check: StandardsCheckModule = {
 	inputKind: 'import-graph',
 	/**
-	 * Every import names the file that declares what it imports, so a file
-	 * naming an index file of its own package is reported — every index file it
-	 * names in one finding, since the fix is a single edit to its imports.
+	 * Every index file one importer names is one finding, since the fix is a
+	 * single edit to its imports. An index file may still re-export from another,
+	 * its own test may import it, and another package's entry is that package's
+	 * public API.
 	 *
-	 * An index file may still re-export from another (a package entry listing
-	 * what a lower one lists), an index file's own test may import it, a route
-	 * the framework loads is no index file at all, and another package's entry
-	 * is that package's public API.
-	 *
-	 * Where a package keeps its folders is the package's own business, so an
-	 * importer belonging to no package is skipped — and a repo whose manifests
-	 * declare no workspace package is itself the package, so everything in it is
-	 * judged.
+	 * An importer belonging to no package is skipped, since where a package keeps
+	 * its folders is its own business; a repo declaring no workspace package is
+	 * itself the package.
 	 */
 	run: ({ input }): RawStandardsFinding[] => {
 		if (input.kind !== 'import-graph') {

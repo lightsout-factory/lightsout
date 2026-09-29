@@ -4,7 +4,6 @@ import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
 import { resolveWorktreesRoot } from '#src/worktree/resolveWorktreesRoot.ts';
 
 interface Params {
-	/** Where the document is written. */
 	path: string;
 	/** Any checkout of the repository; the worktrees root is derived from its primary. */
 	cwd: string;
@@ -13,15 +12,9 @@ interface Params {
 }
 
 /**
- * The coordinator run's document: one line per admitted work order, naming the
- * worker, the branch its record stores and the worktree a human can reach it in.
- *
- * Both the branch and the worktree come off the entry rather than from the
- * queue's branch template, so the document names the branch the drain will
- * actually build on and the directory it will actually build in.
- *
- * Rewritten in full every time a scan admits work, because work orders now join
- * a run already in flight rather than arriving one wave at a time.
+ * The branch and worktree come off the entry rather than the queue's branch
+ * template, so the document names the branch and directory the drain actually
+ * builds in.
  */
 export const writeQueuePlan = async ({ path, cwd, queued }: Params): Promise<void> => {
 	const root = await resolveWorktreesRoot({ cwd });

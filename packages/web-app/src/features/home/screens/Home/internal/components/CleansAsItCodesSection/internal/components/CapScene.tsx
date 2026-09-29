@@ -7,7 +7,6 @@ interface Props<TFrame extends { status: SceneStatus }> extends SceneProps {
 	scene: CapSceneDefinition<TFrame>;
 }
 
-/** Plays a grow-past-the-limit scene: the growing frames first, then the cleaned-up result, then round again. */
 export const CapScene = <TFrame extends { status: SceneStatus }>({ scene, onFinish }: Props<TFrame>) => (
 	<LoopingScene
 		title={scene.title}

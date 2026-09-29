@@ -7,23 +7,12 @@ interface Params {
 	lane: SprawlLane;
 }
 
-/**
- * The dataset is a module-scope constant and the frames never change, so the
- * replay is done once per lane and held. A chart that recomputed it on every
- * animation tick would rebuild several hundred maps twelve times a second.
- */
+/** The dataset never changes, so each lane is replayed once rather than on every animation tick. */
 const cache = new WeakMap<SprawlDataset, Map<SprawlLane, SprawlLaneState[]>>();
 
 /**
- * Every frame's full state for one lane, replayed once from the deltas.
- *
- * A removal arrives out-of-band, in `removedFiles` and `removedFolders`, so a
- * `lines: 0` in `files` is a real measurement of an emptied file rather than a
- * sentinel — an emptied file is still drawable, a deleted one is not there at
- * all.
- *
- * @param dataset - the committed dataset, oldest frame first
- * @param lane - which of the two histories to replay
+ * Removals arrive in `removedFiles` and `removedFolders`, so `lines: 0` in
+ * `files` is a real emptied file, not a deletion sentinel.
  */
 export const buildSprawlLaneStates = ({ dataset, lane }: Params): SprawlLaneState[] => {
 	const perLane = cache.get(dataset) ?? new Map<SprawlLane, SprawlLaneState[]>();

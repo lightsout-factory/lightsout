@@ -10,24 +10,14 @@ import { drainTasks } from '#src/plan/internal/common/utils/drainTasks.ts';
 import { isRateLimited } from '#src/plan/internal/common/utils/isRateLimited.ts';
 
 interface Params {
-	/** One spawn per plan file × lens, each settling into its own `GapResult`. */
 	tasks: Array<() => Promise<GapResult>>;
-	/** The plan files the fan-out covers — a file is claimed as checked only when every lens returned for it. */
 	selected: DeliverableFile[];
 }
 
 /**
- * Fold every checker's outcome in one pass, after all have settled, so one
- * failure never hides another. A checker that returned contributes its gaps
- * whether or not its siblings failed, and a plan file is claimed as checked only
- * when EVERY lens returned for it — one with a failed or never-started lens is
- * absent rather than reported clean.
- *
- * `phasesChecked` and `read` are two answers on purpose: the first is per plan
- * file and the second per plan file AND brief. Read coverage is recorded per
- * pair, so a brief that returned keeps the reading it was paid for even when a
- * sibling brief failed on the same file — and a brief added later re-runs only
- * itself.
+ * A plan file is claimed as checked only when EVERY lens returned for it. `read`
+ * is per file AND lens, so a lens that returned keeps the reading it was paid
+ * for even when a sibling lens failed on the same file.
  */
 const foldGapResults = ({ selected, results }: { selected: DeliverableFile[]; results: Array<GapResult | undefined> }) => {
 	const gaps: GradedGap[] = [];
@@ -58,12 +48,9 @@ const foldGapResults = ({ selected, results }: { selected: DeliverableFile[]; re
 };
 
 /**
- * Run every gap checker to settlement and fold what came back.
- *
- * A wall met by launching another eighteen spawns into it is still a wall: a
- * five-hour budget does not clear in two minutes, so once one checker
- * rate-limits no further one starts. A hard failure is usually specific to one
- * checker and does NOT stop the queue.
+ * Once one checker rate-limits no further one starts: a usage budget does not
+ * clear in minutes. A hard failure is usually specific to one checker and does
+ * NOT stop the queue.
  */
 export const drainGapCheckers = async ({
 	tasks,

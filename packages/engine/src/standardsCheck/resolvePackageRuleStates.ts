@@ -8,15 +8,10 @@ interface Params {
 }
 
 /**
- * Every loaded rule's severity and settings for this run: the rule's own front
- * matter, with the repo's `standards-checks` entries layered over it. A rule the
- * config does not name keeps its default — silence is never a change.
- *
- * Two protections live here because this is the first moment the valid rule ids
- * exist at all. Two packs claiming one id would make config overrides and
- * site keys ambiguous, and a config key naming no loaded rule is a typo that
- * would otherwise disable a policy its author believes is live — the same
- * refusal the closed rule enum used to give while parsing the config file.
+ * Both refusals live here because this is the first moment the valid rule ids
+ * exist. Two packs claiming one id would make config overrides and site keys
+ * ambiguous, and a config key naming no loaded rule is a typo that would
+ * otherwise disable a policy its author believes is live.
  *
  * @throws {Error} When two packs claim one rule id, or a config entry names no loaded rule.
  */

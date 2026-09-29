@@ -15,11 +15,7 @@ import { FolderCapScene } from '#src/features/home/screens/Home/internal/compone
 import { ReuseScene } from '#src/features/home/screens/Home/internal/components/CleansAsItCodesSection/internal/components/ReuseScene.tsx';
 import { usePrefersReducedMotion } from '#src/features/home/screens/Home/internal/hooks/usePrefersReducedMotion.ts';
 
-/**
- * The three things the section shows, each with the scene that shows it and a
- * line saying where in lightsout it actually happens — a reader who installs
- * will check.
- */
+/** Each `source` names the real rule or planning step, because a reader who installs will check. */
 const benefits: Array<{
 	id: BenefitId;
 	title: string;
@@ -54,13 +50,11 @@ const benefits: Array<{
 	},
 ];
 
-/** What each kind of source is called in the note under a benefit. */
 const sourceLabels: Record<SourceKind, string> = {
 	[SourceKind.StandardsPack]: 'Standards Pack',
 	[SourceKind.Planning]: 'Planning',
 };
 
-/** One benefit as its tab: icon, name, the sentence that explains it, and where it happens: the Standards Pack rule or planning step, by its real name. */
 const BenefitLabel = ({ benefit, isActive }: { benefit: (typeof benefits)[number]; isActive: boolean }) => (
 	<span className="flex items-start gap-4">
 		<span
@@ -87,11 +81,7 @@ const BenefitLabel = ({ benefit, isActive }: { benefit: (typeof benefits)[number
 	</span>
 );
 
-/**
- * The section's last word: these are a sample, and the default pack holds the
- * rest. No count: the sentence reads the same however many rules the pack
- * holds, and the packs page it links to gives the numbers.
- */
+/** No count, so the sentence stays true however many rules the pack holds. */
 const MoreRulesLink = () => (
 	<p className="text-center text-muted-foreground text-base">
 		These are just a few of the rules in the default Standards Pack.{' '}
@@ -103,14 +93,8 @@ const MoreRulesLink = () => (
 );
 
 /**
- * What lightsout does to a codebase while the agent works: three things,
- * each played as a short scene beside its explanation.
- *
- * The tabs open one after another on their own until the reader picks one;
- * from then on the reader is in charge. The open scene sets the pace: the next
- * tab opens as the scene finishes its last frame, on the scene's own timer. A reader who asked for less motion
- * gets neither the cycling nor the animations — each scene shows its finished,
- * cleaned-up state.
+ * The tabs cycle on their own until the reader picks one. A reader who asked
+ * for less motion gets no cycling, and each scene shows its finished state.
  */
 export const CleansAsItCodesSection = () => {
 	const [activeId, setActiveId] = useState<BenefitId>(BenefitId.Folders);
@@ -118,8 +102,7 @@ export const CleansAsItCodesSection = () => {
 	const prefersReduced = usePrefersReducedMotion();
 	const isCycling = isAutoPlaying && !prefersReduced;
 
-	// Opens the next benefit — called by the open scene as it finishes, so the
-	// scene's own clock decides when, and nothing can move on mid-scene.
+	// Called by the open scene as it finishes, so nothing can move on mid-scene.
 	const openNext = useCallback(() => {
 		setActiveId((current) => benefits[(benefits.findIndex((benefit) => benefit.id === current) + 1) % benefits.length].id);
 	}, []);

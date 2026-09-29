@@ -2,21 +2,15 @@ import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 
 interface Params {
-	/** The worktree whose index is read — the directory `git add -A -- .` staged. */
+	/** The directory `git add -A -- .` staged. */
 	cwd: string;
-	/** The most diff characters handed back; the rest is cut. */
 	maxDiffLength: number;
 }
 
 /**
- * Read what is staged under `cwd`: the file list and the diff a commit made now
- * would carry.
- *
- * The `-- .` pathspec keeps the read to the directory `commitWorkOrderWork`
- * stages, and the wide stat width keeps long paths whole. Only the diff is cut
- * to `maxDiffLength` — the stat is the complete record of what changed, so it is
- * never cut. Either read failing answers undefined, never an empty change: an
- * index nobody could read has not been shown to hold nothing.
+ * The wide stat width keeps long paths whole, and the stat is never cut because
+ * it is the complete record of what changed. A failed read answers undefined,
+ * never an empty change: an index nobody could read has not been shown to hold nothing.
  */
 export const readGitStagedChange = async ({ cwd, maxDiffLength }: Params): Promise<{ stat: string; diff: string; truncated: boolean } | undefined> => {
 	const diffCommand = 'git -c core.quotePath=false diff --cached --no-color --no-ext-diff';

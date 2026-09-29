@@ -2,19 +2,10 @@ import type { GateCommands } from '#src/gates/internal/common/types/GateCommands
 import type { GateEntry } from '#src/gates/internal/common/types/GateEntry.ts';
 
 interface Params {
-	/** One group's commands as its block wrote them — the root block's finished commands, or a scoped block's `{package}` templates. */
+	/** The root block's finished commands, or a scoped block's `{package}` templates. */
 	commands: GateCommands;
 }
 
-/**
- * A group's configured commands as an ordered entry list, in the engine's
- * canonical order: check, the unit suite plain then instrumented, each custom
- * suite in the order the config wrote it, then build.
- *
- * No substitution and no selection happens here — every command the block
- * configured gets an entry, and `buildGateStages` decides which of them a run
- * actually schedules.
- */
 export const buildGateEntries = ({ commands }: Params): GateEntry[] => {
 	const declared = [
 		{ family: 'check', name: 'check', command: commands.check },

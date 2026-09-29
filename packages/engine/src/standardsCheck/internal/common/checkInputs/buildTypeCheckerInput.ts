@@ -18,9 +18,6 @@ interface Params {
 }
 
 /**
- * The nearest tsconfig.json at or above a file, or undefined when the walk
- * reaches the repo root without finding one.
- *
  * Nearest rather than the repo's, because a workspace declares its compiler
  * options per package — path aliases above all. A file typed against the wrong
  * config resolves its imports to nothing, and a checker that resolved nothing
@@ -43,10 +40,9 @@ const findNearestConfig = ({ cwd, path, compiler }: { cwd: string; path: string;
 };
 
 /**
- * One program per tsconfig, built from that config's own file list rather than
- * from the paths in scope. A program missing a file its members import types
- * from cannot resolve them, and the check reads the gap as an absence of
- * findings rather than as an absence of information.
+ * Built from each config's own file list rather than the paths in scope: a
+ * program missing a file its members import types from cannot resolve them, and
+ * the check reads the gap as an absence of findings.
  */
 const buildPrograms = ({ configPaths, compiler }: { configPaths: Set<string>; compiler: typeof ts }) => {
 	const programs = new Map<string, ts.Program>();
@@ -67,28 +63,12 @@ const buildPrograms = ({ configPaths, compiler }: { configPaths: Set<string>; co
 };
 
 /**
- * Every file the engine could type, each with the checker of the program that
- * holds it.
+ * Types every reference file too, because a rule that asks "does anything
+ * consume this?" needs the consumers typed, and a consumer may be a test or a
+ * file outside a `--path` scope. Which files a rule may report on is answered
+ * by `source`, `tests` and `files`.
  *
- * The expensive input, and the only one that resolves a name to its
- * declaration: a rule reading this can ask what a value's DECLARED type is,
- * across files, rather than inferring from the characters in front of it. That
- * buys the questions a tree cannot answer — whether a compared literal is a
- * member of a discriminant union, which module's export an imported name really
- * came from — and costs a full type-check of each program, so it is built only
- * when a rule asks for it.
- *
- * Every file in scope AND every reference file, on the same terms as the
- * file-text input's `contents`: a rule that asks "does anything consume this?"
- * needs the consumers typed too, and a consumer may be a test, or a file
- * outside a `--path` scope. Which of them a rule may REPORT on is a separate
- * question, answered by `source`, `tests` and `files` — the same separation
- * every other input draws.
- *
- * A file no program holds is left out rather than guessed at. That covers the
- * ordinary cases — a file excluded by its config, a folder with no tsconfig
- * above it — and keeps the same contract the other typed inputs have: a rule
- * answers about what it was handed.
+ * A file no program holds is left out rather than guessed at.
  */
 export const buildTypeCheckerInput = async ({
 	cwd,

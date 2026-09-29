@@ -2,11 +2,9 @@ import { dim } from '#src/cli/internal/common/terminal/dim.ts';
 
 interface Row {
 	cells: string[];
-	/** Emphasis applied to the whole row, e.g. bold for a totals line. */
 	emphasis?: (text: string) => string;
 	/** Per-cell repaint, given the plain text and the padded text. Returns the padded text to print. */
 	paintCell?: (params: { text: string; padded: string; column: number }) => string;
-	/** Draw a rule above this row. */
 	ruleAbove?: boolean;
 }
 
@@ -16,13 +14,9 @@ interface Params {
 }
 
 /**
- * A box-drawn table: first column left-aligned, the rest right-aligned, columns
- * sized to their widest cell.
- *
- * Geometry is computed on the plain text and the paint is applied afterwards,
+ * Geometry is computed on the plain text and the paint applied afterwards,
  * because an ANSI colour code is invisible on screen but counts toward
- * `String.length` — measuring painted text is what makes a coloured column
- * drift out of alignment.
+ * `String.length`.
  */
 export const renderTable = ({ headers, rows }: Params): string[] => {
 	const allCells = [headers, ...rows.map((row) => row.cells)];

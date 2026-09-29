@@ -6,26 +6,16 @@ import type { WatchTarget } from '#src/cli/internal/common/types/WatchTarget.ts'
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { listRuns } from '#src/views/listRuns.ts';
 
-/** Every run that has not finished, newest first — the order `listRuns` already answers in. */
 const findGoingRuns = async ({ cwd, rootRunId }: { cwd: string; rootRunId?: string }) =>
 	(await listRuns({ cwd })).filter(
 		(run) => (run.status === RunStatus.Running || run.status === RunStatus.Pending) && (rootRunId === undefined || getRunFamilyRoot({ run }) === rootRunId),
 	);
 
 /**
- * The families this choice is between: the ones with a live process behind
- * them, or every going family when none has one.
- *
- * Going by status alone is not enough. A `running` manifest with nothing behind
- * it is an ordinary state here — the status listing already prints `no live
- * process — crashed?` for one — so a single crash leftover beside a freshly
- * started run would make every bare `--watch` ambiguous, which is exactly the
- * call the implement skill makes right after starting a run.
- *
- * Liveness alone is no better: a phased coordinator holds no lock of its own
- * between phases, so in that gap the whole family would read as dead and drop
- * out. The fallback is the same tolerance `watchRunProgress` shows by ending a
- * watch only after two consecutive dead frames.
+ * Status alone is not enough: a crash leftover `running` manifest beside a
+ * freshly started run would make every bare `--watch` ambiguous. Liveness alone
+ * is no better: a phased coordinator holds no lock between phases, so its
+ * family would drop out in that gap. Hence live families first, all otherwise.
  */
 const selectCandidates = ({ families }: { families: RunFamily[] }) => {
 	const live = families.filter((family) => family.runs.some((run) => run.live));
@@ -39,30 +29,14 @@ interface Params {
 	rootRunId?: string;
 	/** How long to wait for a run to start before giving up. */
 	graceMs?: number;
-	/** How often to look while waiting. */
 	pollMs?: number;
 }
 
 /**
- * The run a `--watch` should follow: the one that is going, or the ids of the
- * several that are.
- *
- * The wait exists because of a race the implement skill would otherwise lose.
- * The skill starts the run in the background and the watch immediately after,
- * and a run that has not yet written its first manifest is invisible — so a
- * watch that simply took the newest run would attach to the PREVIOUS run and
- * narrate the wrong work. Waiting for a going run closes that window.
- *
- * Once something is going, the choice is between run FAMILIES rather than runs,
- * and it is never guessed: two unrelated families going at once are named back
- * to the reader so they can pick one with `--run <id>`. Inside the chosen
- * family the most recently updated run is the one painted, which during a phase
- * is the child and between phases is the coordinator.
- *
- * @returns the run to paint and the family it belongs to, the root ids of the
- * families that are ambiguous, or undefined when the grace period passed with
- * nothing going — the caller falls back to the newest run of any status, so a
- * terminal user in a quiet repo still gets one frame.
+ * The wait closes a race: the implement skill starts the run in the background
+ * and the watch immediately after, and a run that has not yet written its first
+ * manifest is invisible, so taking the newest run would attach to the previous
+ * one. Two unrelated families going at once are never guessed between.
  */
 export const resolveWatchTarget = async ({ cwd, rootRunId, graceMs = 60_000, pollMs = 2_000 }: Params): Promise<WatchTarget | undefined> => {
 	const deadline = Date.now() + graceMs;

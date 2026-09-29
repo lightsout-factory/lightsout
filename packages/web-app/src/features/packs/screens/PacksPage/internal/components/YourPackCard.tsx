@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowRight, Plus } from 'lucide-react';
 
-/** The card after the built-in rule sets: a team's own pack, and where the docs say how to write one. */
 export const YourPackCard = () => (
 	<div className="flex flex-col gap-6 rounded-2xl border-2 border-primary-tint-border border-dashed p-6">
 		<span className="flex size-11 items-center justify-center rounded-xl bg-primary-tint text-primary">

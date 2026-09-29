@@ -19,14 +19,9 @@ import { runGateSet } from '#src/gates/internal/runGateSet.ts';
 import { runPackageGates } from '#src/gates/internal/runPackageGates.ts';
 
 /**
- * The codegen command's red as a result, or nothing when it passed or was never
- * configured. A crash or a timeout is reported through its own channel, never
- * as the `generate` family.
- *
- * It runs once, before any group fans out — gates verify, generate mutates, and
- * parallel per-package gates must never race a generator. That makes it a
- * precondition of running gates rather than a gate of its own, so an override's
- * list gets it too, and a checkpoint that is off gets nothing.
+ * Runs once, before any group fans out: generate mutates, and parallel
+ * per-package gates must never race a generator. So it is a precondition of
+ * running gates rather than a gate, and an override's list gets it too.
  */
 const runGenerate = async ({ gate, command }: { gate: RunGate; command: string | undefined }) => {
 	if (command === undefined) {
@@ -48,11 +43,7 @@ const runGenerate = async ({ gate, command }: { gate: RunGate; command: string |
 	};
 };
 
-/**
- * One line saying why a suite stopped appearing in the log — a held tier reads
- * as a broken runner without it. With no family red, it names the no-verdict
- * endings the stage carried instead.
- */
+/** Without this line, a held tier reads as a broken runner. */
 const heldTierMessage = ({ stageResult }: { stageResult: GateRunResult }) => {
 	const noVerdict = [...(stageResult.crashes.length > 0 ? ['crash'] : []), ...(stageResult.timeouts.length > 0 ? ['timeout'] : [])];
 	const reds = stageResult.failedFamilies.length > 0 ? stageResult.failedFamilies : noVerdict;
@@ -60,7 +51,7 @@ const heldTierMessage = ({ stageResult }: { stageResult: GateRunResult }) => {
 	return `gate: expensive gates not started — a cheap gate is red (${reds.join(', ')})`;
 };
 
-/** What an override earns when nothing it named could run: the engine saying the checkpoint had no gates, never a family a fix agent is handed. */
+/** Never a family a fix agent is handed: the checkpoint simply had no gates. */
 const overrideMatchedNothing = ({ gates }: { gates: string[] }): GateRunResult => ({
 	error: `gate-overrides named no gate this run could execute: ${gates.join(', ')} — every named gate is absent from the group(s) that ran at this checkpoint`,
 	failedFamilies: [],
@@ -69,15 +60,7 @@ const overrideMatchedNothing = ({ gates }: { gates: string[] }): GateRunResult =
 	coordination: undefined,
 });
 
-/**
- * One stage across every group in scope, run in parallel and folded into one
- * result — the root group alone, or one call per package.
- *
- * The groups of a stage are disjoint, and the stage boundary is where they all
- * wait: nothing here starts until the stage before it came back green in every
- * group. `context` is absent in a repo with no scoped block, which is also the
- * only shape in which the root group can be the thing that runs.
- */
+/** `context` is absent in a repo with no scoped block, the only shape in which the root group runs. */
 const runGateStage = async ({
 	stage,
 	rootStages,
@@ -113,27 +96,17 @@ interface Params {
 	failFast?: boolean;
 	/** Already resolved by `runGates` — the one place the default is chosen. */
 	schedule: GateSchedule;
-	/** The gate-execution policy `runGates` built, already wired to the reservation's spawn and exit hooks. */
+	/** Already wired to the reservation's spawn and exit hooks. */
 	gate: RunGate;
 	onGateResult?: (result: GateResult) => void;
 	onProgress?: (message: string) => void;
 }
 
 /**
- * The scheduled gate run itself: the codegen command, then every stage, each
- * stage fanning out over the root group or the package groups.
- *
- * Stages are how a schedule holds work back. A `tiered` run has two — the cheap
- * gates, then the expensive ones — and every group in scope finishes the first
- * before any group starts the second, so one package's red lint never costs
- * another package its end-to-end suite. A stage that came back red, a crash or
- * a timeout included, ends the run: the checkpoint has its verdict, or produced
- * none at all, and either way the expensive tier would buy nothing.
- *
- * Split out of `runGates` so the shared gate reservation's lifecycle has
- * somewhere to sit: what a run schedules is a separate decision from whether
- * this machine may run it at all. A module internal, not published by the gates
- * barrel; its behaviour stays pinned by `runGates`' own suites.
+ * Every group in scope finishes a stage before any group starts the next, so
+ * the expensive tier never runs while a cheap gate is red anywhere. A red
+ * stage, a crash or a timeout included, ends the run: the expensive tier would
+ * buy nothing.
  */
 export const runGateSchedule = async ({
 	cwd,

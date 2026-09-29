@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 
-/** One planning step's latest attempt, as the planning record stores it. */
 export const PlanningStepRecord = z.object({
 	step: z.enum(PlanningStep),
 	status: z.enum(RunStatus),

@@ -5,11 +5,8 @@ interface Params {
 }
 
 /**
- * Whether `gh` can speak for this repository's host.
- *
- * One boolean rather than a reason, because both ways it can answer no — the
- * binary is not installed, or it is installed and logged out — need the same
- * fix from the same person, and ship's block message names both.
+ * One boolean rather than a reason: `gh` not installed and `gh` logged out
+ * need the same fix from the same person.
  */
 export const readForgeAuth = async ({ cwd }: Params): Promise<boolean> => {
 	const status = await runGh({ args: ['auth', 'status'], cwd });

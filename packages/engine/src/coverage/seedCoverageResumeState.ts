@@ -19,8 +19,6 @@ interface ResumeState {
 }
 
 /**
- * Rebuild a coverage run's state from persisted step records on resume.
- *
  * A coverage run has no frozen batch list — every round re-measures — so the
  * batch reports themselves are the only durable record of what was set aside,
  * how long the decline streak is, how many batches have run, and which files

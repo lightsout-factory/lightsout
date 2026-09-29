@@ -1,13 +1,6 @@
 import { z } from 'zod';
 
-/**
- * One question waiting in the file-relay mailbox.
- *
- * Written by the queue, read by whoever is draining the mailbox — the plugin's
- * queue skill, or a person with an editor. Everything a reader needs to decide
- * an answer is in the file, so nothing has to be correlated with the queue's
- * stdout.
- */
+/** Everything a reader needs to answer is in the file, so nothing has to be correlated with the queue's stdout. */
 export const RelayQuestion = z.object({
 	/** The ticket's human reference, e.g. 'LO-70'. */
 	ticket: z.string(),

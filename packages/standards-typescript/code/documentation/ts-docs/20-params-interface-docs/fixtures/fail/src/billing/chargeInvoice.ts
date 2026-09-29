@@ -2,9 +2,7 @@
  * The arguments chargeInvoice takes.
  */
 interface Params {
-	/** The invoice id. */
 	invoiceId: string;
-	/** The payer name. */
 	payerName: string;
 }
 

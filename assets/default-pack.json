@@ -13,11 +13,11 @@
     "tanstack"
   ],
   "totals": {
-    "rules": 109,
-    "checked": 51,
+    "rules": 110,
+    "checked": 52,
     "judgment": 58,
     "documents": 24,
-    "withFixtures": 109
+    "withFixtures": 110
   },
   "documents": [
     {
@@ -100,7 +100,8 @@
         "when-to-document",
         "doc-elements",
         "brittle-doc-tags",
-        "params-interface-docs"
+        "params-interface-docs",
+        "no-history-in-comments"
       ]
     },
     {
@@ -1256,17 +1257,17 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Elements\n\n- **Description**: one or two sentences — what it does and why you'd use it. Focus on *why*; the code shows *what*.\n- **`@param`**: name and purpose only — TypeScript owns the type. For object-args functions, `@param` tags document the destructured property names directly. Sentence fragments, lowercase.\n- **`@throws`**: only errors intentionally thrown and expected to be caught: `@throws {ConnectionError} When the database is unreachable`.\n- **`@returns`**: only when the value has semantics the type doesn't show (a `string` that is a JWT; a `boolean` where `true` means \"already existed\").\n- **`@example`**: for complex APIs or non-obvious usage; minimal and runnable.\n- **`@typeParam`**: when a generic's purpose isn't obvious from its name.\n\n## Complete Example\n\n```typescript\ninterface Params<T> {\n\tfn: () => Promise<T>;\n\tmaxAttempts?: number;\n\tbaseDelay?: number;\n}\n\n/**\n * Retries an async operation with exponential backoff.\n *\n * Useful for network requests that may fail transiently.\n *\n * @param fn - async function to retry\n * @param maxAttempts - attempts before giving up\n * @param baseDelay - initial delay in ms, doubles after each failure\n * @throws {RetryExhaustedError} When all retry attempts fail\n */\nexport const retry = async <T>({ fn, maxAttempts = 3, baseDelay = 1000 }: Params<T>): Promise<T> => {\n\t// ...\n};\n```",
+      "prose": "## Elements\n\n- **Description**: one or two sentences — what it does and why you'd use it. Focus on *why*; the code shows *what*.\n- **`@param`**: name and purpose only — TypeScript owns the type. For object-args functions, `@param` tags document the destructured property names directly. Sentence fragments, lowercase.\n- **`@throws`**: only errors intentionally thrown and expected to be caught: `@throws {ConnectionError} When the database is unreachable`.\n- **`@returns`**: only when the value has semantics the type doesn't show (a `string` that is a JWT; a `boolean` where `true` means \"already existed\").\n- **`@example`**: for complex APIs or non-obvious usage; minimal and runnable.\n- **`@typeParam`**: when a generic's purpose isn't obvious from its name.\n- **Interface properties**: a `/** */` comment on a property only when its name and type don't convey the contract (`/** Display name shown in the UI, may differ from username */`). Document an interface at the type level, not on every property.\n\n## Complete Example\n\n```typescript\ninterface Params<T> {\n\tfn: () => Promise<T>;\n\tmaxAttempts?: number;\n\tbaseDelay?: number;\n}\n\n/**\n * Retries an async operation with exponential backoff.\n *\n * Useful for network requests that may fail transiently.\n *\n * @param fn - async function to retry\n * @param maxAttempts - attempts before giving up\n * @param baseDelay - initial delay in ms, doubles after each failure\n * @throws {RetryExhaustedError} When all retry attempts fail\n */\nexport const retry = async <T>({ fn, maxAttempts = 3, baseDelay = 1000 }: Params<T>): Promise<T> => {\n\t// ...\n};\n```",
       "fixtures": [
         {
           "side": "pass",
           "path": "src/billing/chargeInvoice.ts",
-          "text": "/**\n * Charges an invoice against the payer's default method.\n *\n * @param invoiceId - the invoice to charge\n * @throws {PaymentDeclinedError} When the payment method refuses the charge\n */\nexport const chargeInvoice = ({ invoiceId }: { invoiceId: string }): string => invoiceId;\n"
+          "text": "interface Params {\n\tinvoiceId: string;\n\t/** Display name shown on the receipt, which may differ from the account name. */\n\tpayerName: string;\n}\n\n/**\n * Charges an invoice against the payer's default method.\n *\n * @param invoiceId - the invoice to charge\n * @param payerName - name printed on the receipt\n * @throws {PaymentDeclinedError} When the payment method refuses the charge\n */\nexport const chargeInvoice = ({ invoiceId, payerName }: Params): string => `${invoiceId}${payerName}`;\n"
         },
         {
           "side": "fail",
           "path": "src/billing/chargeInvoice.ts",
-          "text": "/**\n * Charges an invoice.\n *\n * @param invoiceId - {string} The id of the invoice, a string\n * @returns a string\n */\nexport const chargeInvoice = ({ invoiceId }: { invoiceId: string }): string => invoiceId;\n"
+          "text": "interface Params {\n\t/** The invoice id. */\n\tinvoiceId: string;\n\t/** The payer name. */\n\tpayerName: string;\n}\n\n/**\n * Charges an invoice.\n *\n * @param invoiceId - {string} The id of the invoice, a string\n * @param payerName - {string} The payer name, a string\n * @returns a string\n */\nexport const chargeInvoice = ({ invoiceId, payerName }: Params): string => `${invoiceId}${payerName}`;\n"
         }
       ],
       "example": {
@@ -3013,6 +3014,36 @@
       }
     },
     {
+      "id": "no-history-in-comments",
+      "set": "code",
+      "documentPath": "code/documentation/ts-docs",
+      "summary": "Where the history of the code belongs.",
+      "channel": "base",
+      "checked": false,
+      "defaultSeverity": "advisory",
+      "defaultSettings": {},
+      "fixtureCounts": {
+        "pass": 1,
+        "fail": 1
+      },
+      "prose": "## No History In Comments\n\nA comment describes the code as it is now. Never record history in one: no dates of past events, no measurements or run counts, no ticket ids, and no account of an earlier design or why it changed. Put that in the commit message, the pull request or the ticket.\n\nA date or number the code depends on today is not history, and it stays: a vendor's retirement date for an API, or a limit an agreement sets.\n\nNothing updates a note about the past when the code changes, so it goes stale and misleads the next reader.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/billing/chargeInvoice.ts",
+          "text": "/**\n * Retries a declined charge twice: the card network treats a third attempt\n * within a day as suspected fraud and blocks the card.\n */\nexport const chargeInvoice = ({ attempt }: { attempt: number }): boolean => attempt < 3;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/chargeInvoice.ts",
+          "text": "/**\n * Retries a declined charge twice. Measured on 2026-03-02: a single retry\n * recovered 4 of 10 declines. This used to live in the checkout form until\n * PAY-212 moved it here.\n */\nexport const chargeInvoice = ({ attempt }: { attempt: number }): boolean => attempt < 3;\n"
+        }
+      ],
+      "example": {
+        "kind": "snippet"
+      }
+    },
+    {
       "id": "object-args",
       "set": "code",
       "documentPath": "code/style-guide/patterns/functions",
@@ -3078,16 +3109,16 @@
       "id": "params-interface-docs",
       "set": "code",
       "documentPath": "code/documentation/ts-docs",
-      "summary": "a doc comment on a function's local Params interface, or on every property inside it",
+      "summary": "Doc comments on a function's Params interface.",
       "channel": "base",
-      "checked": false,
+      "checked": true,
       "defaultSeverity": "advisory",
       "defaultSettings": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Params Interfaces\n\nDo NOT document a function's local `Params` interface — the function's `@param` tags are sufficient. Individual properties inside it may carry `/** */` comments only when name + type don't convey the contract (`/** Display name shown in the UI, may differ from username */`), and document interfaces at the type level, not every property.",
+      "prose": "## Params Interface Docs\n\nNever put a doc comment on a function's `Params` interface. The function's `@param` tags already say what each argument is for.",
       "fixtures": [
         {
           "side": "pass",
@@ -3097,7 +3128,7 @@
         {
           "side": "fail",
           "path": "src/billing/chargeInvoice.ts",
-          "text": "/**\n * The arguments chargeInvoice takes.\n */\ninterface Params {\n\t/** The invoice id. */\n\tinvoiceId: string;\n\t/** The payer name. */\n\tpayerName: string;\n}\n\nexport const chargeInvoice = ({ invoiceId, payerName }: Params): string => `${invoiceId}${payerName}`;\n"
+          "text": "/**\n * The arguments chargeInvoice takes.\n */\ninterface Params {\n\tinvoiceId: string;\n\tpayerName: string;\n}\n\nexport const chargeInvoice = ({ invoiceId, payerName }: Params): string => `${invoiceId}${payerName}`;\n"
         }
       ],
       "example": {

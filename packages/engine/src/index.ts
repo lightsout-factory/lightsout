@@ -53,11 +53,6 @@ export {
 	WorkReport,
 	WritersReport,
 } from '#src/contracts/index.ts';
-/**
- * What `summarizeRun` hands back. Exported as types because a consumer that
- * calls a public function has to be able to name what it got — a report card
- * it can only pass along untyped is half a contract.
- */
 export type { RunSummary } from '#src/runState/common/types/RunSummary.ts';
 export type { StepSummary } from '#src/runState/common/types/StepSummary.ts';
 export { isRunLive } from '#src/runState/isRunLive.ts';

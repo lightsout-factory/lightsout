@@ -1,8 +1,4 @@
-/**
- * Outcome of a `plan draft` run. Lowercase because these are the literal
- * strings the plan-writer agent emits in its JSON report — not the Capitalized
- * form `DecisionSource` uses to share one token with the markdown Decision Log.
- */
+/** Lowercase because these are the literal strings the plan-writer agent emits in its JSON report. */
 export const PlanDraftStatus = {
 	Drafted: 'drafted',
 	Error: 'error',

@@ -4,7 +4,6 @@ import { MetadataTag } from '#src/appUI/badges/MetadataTag.tsx';
 import { formatBytes } from '#src/features/plans/internal/common/utils/formatBytes.ts';
 import { PlanDocumentBody } from '#src/features/plans/screens/PlanDetail/internal/components/PlanDocumentBody.tsx';
 
-/** A file named and sized rather than rendered — the stance the transcripts get, and what the archived phases get too. */
 const FileLine = ({ file }: { file: PlanWorkspaceFile }) => (
 	<li className="flex flex-wrap items-center gap-2 text-sm">
 		<MetadataTag>{file.name}</MetadataTag>
@@ -12,7 +11,6 @@ const FileLine = ({ file }: { file: PlanWorkspaceFile }) => (
 	</li>
 );
 
-/** One list of files a reader is told about and not shown; absent entirely when the workspace has none of that kind. */
 const FileList = ({ title, files }: { title: string; files: PlanWorkspaceFile[] }) =>
 	files.length === 0 ? null : (
 		<section className="flex flex-col gap-1">
@@ -25,12 +23,7 @@ const FileList = ({ title, files }: { title: string; files: PlanWorkspaceFile[] 
 		</section>
 	);
 
-/**
- * One phase file, fetched only once a reader opens it.
- *
- * This workspace alone holds ten of them; rendering every one with the tab would
- * put a megabyte of markdown into a page nobody asked for all of.
- */
+/** Fetched only once opened: rendering every phase with the tab would load far more markdown than a reader asked for. */
 const PhaseFileRow = ({ file }: { file: PlanWorkspaceFile }) => {
 	const [open, setOpen] = useState(false);
 
@@ -49,7 +42,6 @@ interface Props {
 	view: PlanWorkspaceView;
 }
 
-/** The drafted plan itself: the overview or the single plan, its phases, and the files this page names rather than renders. */
 export const PlanTab = ({ view }: Props) => (
 	<div className="flex flex-col gap-4">
 		{view.planFile === undefined ? (

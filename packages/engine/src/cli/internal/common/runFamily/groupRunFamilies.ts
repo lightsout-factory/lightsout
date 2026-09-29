@@ -7,15 +7,8 @@ interface Params {
 }
 
 /**
- * Run listings grouped into families, keyed by root.
- *
- * A phased plan has two live manifests at once — the coordinator and the phase
- * child it started — and counting those as two separate runs would call every
- * phased run ambiguous and refuse to watch any of them. They share a root, so
- * they are one family and one choice.
- *
- * Each family keeps the order the listings arrived in, which for `listRuns` is
- * newest updated first.
+ * A phased plan has two live manifests at once — the coordinator and its phase
+ * child — and counting those as two runs would call every phased run ambiguous.
  */
 export const groupRunFamilies = ({ runs }: Params): RunFamily[] => {
 	const families = new Map<string, RunListing[]>();

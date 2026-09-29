@@ -24,7 +24,6 @@ interface Props {
 	children: ReactNode;
 }
 
-/** The small pill that says where a scene has got to: counting, over the limit, being fixed, or clean. */
 export const StatusChip = ({ status, children }: Props) => (
 	<span
 		data-status={status}

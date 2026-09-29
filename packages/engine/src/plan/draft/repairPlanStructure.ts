@@ -41,15 +41,7 @@ interface Params {
 	overviewPath?: string;
 }
 
-/**
- * One repair round: its own agent runner, so each attempt keeps its own
- * transcript under the name the workspace already uses, pointed at the blocking
- * findings alongside the decisions and facts the plan was written from.
- *
- * Its own activity level too, labelled with that same attempt number, so a row
- * in the report and a transcript in the plan folder are findable from each
- * other.
- */
+/** The activity level and the transcript share the attempt number, so a report row and a transcript are findable from each other. */
 const runRepairAttempt = async ({ params, findings, attempt }: { params: Params; findings: StructuralFinding[]; attempt: number }) => {
 	const { cwd, driver, planPaths, workspaceDir, brainstormDecisionsPath, config, model, effort, permissions, timeoutMs } = params;
 	const round = params.level?.open({ level: ActivityLevelKind.Pass, label: `structural repair ${attempt}` });
@@ -72,21 +64,12 @@ const runRepairAttempt = async ({ params, findings, attempt }: { params: Params;
 };
 
 /**
- * Lint a drafted plan's structure and converge it: each lint failure is
- * corrected by a small repair invocation that Edits the draft in place against
- * the typed findings (the `invokeAgentWithContract` re-emit philosophy applied
- * at the lint level), re-linting after each.
- *
  * The lint always answers, so the unreadable-inputs exit `convergeFindings`
- * offers is unreachable here: a plan file the repairer deleted or broke comes
- * back as a finding rather than as no answer at all.
+ * offers is unreachable here: a plan file the repairer broke comes back as a
+ * finding.
  *
- * Every round regenerates every engine-owned section — the Decision Log, the
- * Global Constraints, the stamped phase counts and the phase sections — before
- * it lints. The repairer is told not to touch any of them, so a round that
- * displaced or damaged one is corrected here rather than handed back to the
- * repairer as a finding it has been forbidden to fix, and a defect the engine
- * can settle from a record never reaches a spawn.
+ * Every round regenerates the engine-owned sections before it lints, because
+ * the repairer is forbidden to touch them and so could never fix one it damaged.
  */
 export const repairPlanStructure = async (params: Params): Promise<PlanRepairResult> => {
 	const { cwd, name, planPaths, decisions, config, progress, overviewPath } = params;

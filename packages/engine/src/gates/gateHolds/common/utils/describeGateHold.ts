@@ -8,10 +8,6 @@ interface Params {
 }
 
 /**
- * The one sentence every refusal site emits for a held ticket.
- *
- * Written once and exported because two modules in different folders emit it —
- * the rule `describeGateCrash` established, that one event gets one spelling.
  * Callers prefix it with the queue's own `${identifier} · ` skip-line shape and
  * never rewrite it.
  *

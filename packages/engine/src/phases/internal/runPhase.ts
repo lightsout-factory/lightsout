@@ -15,7 +15,6 @@ import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 
-/** Replace one step record, merge the coordinator's own fields, and persist — the loop's single write path. */
 const persistStep = ({
 	cwd,
 	manifest,
@@ -34,7 +33,6 @@ const persistStep = ({
 	return writeRunManifest({ cwd, manifest: { ...manifest, ...patch, steps } });
 };
 
-/** What a finished phase leaves on its step: the child's own verdict, the run that reached it, and its real working time. */
 const recordFromChild = ({ step, childResult }: { step: StepRecord; childResult: PipelineResult }) => ({
 	...step,
 	status: childResult.manifest.status,
@@ -44,7 +42,6 @@ const recordFromChild = ({ step, childResult }: { step: StepRecord; childResult:
 	error: childResult.error,
 });
 
-/** Field-wise sum of a child run's usage into the sequence total — an absent child usage leaves the total untouched. */
 const addUsage = ({ total, child }: { total?: RunUsage; child?: RunUsage }) => {
 	if (!child) {
 		return total;
@@ -76,9 +73,8 @@ const readRecordedChild = async ({ cwd, step }: { cwd: string; step: StepRecord 
 };
 
 /**
- * The per-phase run itself, with the one throw the coordinator must not swallow
- * kept separate: every throw becomes this phase's recorded failure except a
- * lock it could not take, which means nothing ran.
+ * Every throw becomes this phase's recorded failure except a lock it could not
+ * take, which means nothing ran.
  *
  * @throws {RunLockError} When the phase cannot take the repo lock.
  */
@@ -98,11 +94,6 @@ const runChild = async (params: Parameters<typeof runImplementPipeline>[0]): Pro
 	return result;
 };
 
-/**
- * What the coordinator records once a phase's child run has settled: the step
- * merged into the coordinator's manifest, plus the result that stops the whole
- * sequence when the child ended short of passing.
- */
 const recordFinishedChild = async ({
 	cwd,
 	manifest,
@@ -160,9 +151,7 @@ interface PhaseParams {
 }
 
 /**
- * One phase, from its resume check to its recorded outcome: the manifest it
- * leaves behind, plus the result that stops the whole sequence when the phase
- * ended short of passing. No result means carry on to the next phase.
+ * No result means carry on to the next phase.
  *
  * @throws {RunLockError} When the phase cannot take the repo lock — nothing ran, so the sequence stays exactly resumable.
  */
@@ -179,8 +168,6 @@ export const runPhase = async ({
 	level,
 	onProgress,
 }: PhaseParams): Promise<{ manifest: RunManifest; result?: PipelineResult }> => {
-	// One string for the narration and the recorded label alike, so the report
-	// and the live progress line can never name a phase differently.
 	const label = `phase ${index + 1}/${total}: ${step.id}`;
 
 	onProgress?.(label);
@@ -214,10 +201,8 @@ export const runPhase = async ({
 			overviewPath: current.plan,
 			parentRunId: current.runId,
 			existing: childManifest,
-			// The sequence's own owned set, taken before the sequence began, is the only
-			// set the unowned-edits guard can mean anything against: a phase that never
-			// started would otherwise snapshot a tree somebody may have sat in for days
-			// and call every edit in it its own.
+			// A phase that never started would otherwise snapshot a tree somebody may
+			// have edited since the sequence began and call every edit in it its own.
 			inheritedBaseline: resumed && childManifest === undefined ? [...current.changedFiles, ...current.baselineDirtyFiles] : undefined,
 			skipRefactor,
 			level: pass,

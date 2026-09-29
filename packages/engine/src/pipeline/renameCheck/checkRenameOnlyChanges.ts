@@ -17,17 +17,12 @@ interface Params {
 	renames: RenameRule[];
 }
 
-/** One changed file to compare: where it started at `HEAD`, and where it sits now. */
 interface Comparison {
 	startPath: string;
 	currentPath: string;
 }
 
-/**
- * The tokens one side holds more of than the other, each with how many more,
- * written for the refusal message. At most twenty are listed, so one rewritten
- * file cannot bury the others.
- */
+// Capped so one rewritten file cannot bury the others in the refusal message.
 const describeSurplus = ({ more, less }: { more: Map<string, number>; less: Map<string, number> }) => {
 	const listedTokenLimit = 20;
 	const surplus = [...more].flatMap(([token, count]) => (count > (less.get(token) ?? 0) ? [`\`${token}\` ×${count - (less.get(token) ?? 0)}`] : []));
@@ -36,11 +31,8 @@ const describeSurplus = ({ more, less }: { more: Map<string, number>; less: Map<
 	return surplus.length > listedTokenLimit ? `${listed} and ${surplus.length - listedTokenLimit} more` : listed;
 };
 
-/**
- * Pair every removed path with the added path its renamed path names; what is
- * left unpaired on either side is a file a rename cannot explain — a rename
- * moves a file, it never creates or deletes one.
- */
+// A rename moves a file and never creates or deletes one, so anything left
+// unpaired is a change no rename explains.
 const pairChanges = ({ removed, added, modified, renames }: { removed: string[]; added: string[]; modified: string[]; renames: RenameRule[] }) => {
 	const unclaimed = new Set(added);
 	const comparisons: Comparison[] = modified.map((path) => ({ startPath: path, currentPath: path }));
@@ -65,7 +57,6 @@ const pairChanges = ({ removed, added, modified, renames }: { removed: string[];
 	return { comparisons, refusals };
 };
 
-/** The refusal line for one compared file, or undefined when its tokens agree once the renames are applied to both sides. */
 const compareContent = async ({ run, comparison, renames }: { run: PipelineRun; comparison: Comparison; renames: RenameRule[] }) => {
 	const { startPath, currentPath } = comparison;
 	// `git show HEAD:<path>` resolves from the repository root; the `./` prefix
@@ -82,11 +73,8 @@ const compareContent = async ({ run, comparison, renames }: { run: PipelineRun; 
 	return addedTokens === '' && removedTokens === '' ? undefined : `- ${label}: added ${addedTokens || 'nothing'}; removed ${removedTokens || 'nothing'}`;
 };
 
-/**
- * The removed paths `HEAD` tracks. A path git reports removed that `HEAD` never
- * held was created and deleted within the run — absent from both sides, it is no
- * change at all.
- */
+// A path git reports removed that `HEAD` never held was created and deleted
+// within the run, so it is no change at all.
 const removedSinceHead = async ({ run, paths }: { run: PipelineRun; paths: string[] }) => {
 	const tracked: string[] = [];
 
@@ -100,23 +88,11 @@ const removedSinceHead = async ({ run, paths }: { run: PipelineRun; paths: strin
 };
 
 /**
- * The deterministic judgment a rename-only plan's checkpoint runs in place of
- * the agent test-change review: every file the phase changed must differ from
- * `HEAD` only by the declared renames.
+ * `HEAD` is the phase's starting state because a phase run commits only when it
+ * passes, which also holds on a resume. Tokens are compared as a multiset because
+ * the formatter re-wraps lines and re-sorts imports when their paths change.
  *
- * `HEAD` is the phase's starting state, because a phase run commits only when it
- * passes — and it is the same answer on a resume. Files dirty before the run,
- * configured generated paths and the engine's own run state are left out. Both
- * sides have the renames applied and must then hold the same multiset of tokens,
- * whitespace and trailing commas ignored: the formatter re-wraps lines and
- * re-sorts imports when their paths change, and none of that is a change the
- * renames fail to explain.
- *
- * It writes nothing to the working tree or the manifest, and it fails closed:
- * when git cannot report the working changes, nothing is proven and the
- * checkpoint is refused.
- *
- * @returns an empty object when every changed file holds only the declared renames; `error` naming each refused file otherwise.
+ * It fails closed: when git cannot report the working changes, nothing is proven.
  */
 export const checkRenameOnlyChanges = async ({ run, checkpoint, renames }: Params): Promise<{ error?: string }> => {
 	const changes = await readGitWorkingChanges({ cwd: run.cwd });

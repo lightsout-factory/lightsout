@@ -8,13 +8,9 @@ interface Params {
 }
 
 /**
- * One run's pre-edit standards baseline, validated at the boundary.
- *
- * `undefined` when the file is absent, will not parse as JSON, or fails the
- * contract — never a throw. A run created before the baseline existed and
- * resumed past clean-slate has no file, and one written by an older engine is no
- * more readable than a missing one; both mean "no comparison point", which is a
- * state cleanup has to render rather than an error.
+ * `undefined`, never a throw, when the file is absent, unparseable or fails the
+ * contract: a resumed run can have no baseline, and "no comparison point" is a
+ * state cleanup renders rather than an error.
  */
 export const readRunStandardsBaseline = async ({ cwd, runId }: Params): Promise<StandardsSnapshot | undefined> => {
 	return readJsonFile({ path: await getRunStandardsBaselinePath({ cwd, runId }), schema: StandardsSnapshot });

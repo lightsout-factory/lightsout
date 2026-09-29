@@ -6,18 +6,15 @@ import { isPlanImplementationStarted } from '#src/workOrder/internal/common/reco
 
 interface Params {
 	record: WorkOrderState;
-	/** The plan the exclusion is about. */
 	target: WorkOrderPlan;
 	/** The human's declaration that this plan's implementation is off the branch. */
 	implementationRemoved: boolean;
 }
 
 /**
- * Every refusal decidable from the record alone, checked before a gate run
- * starts and again inside the change, because the record can move while those
- * gates run. An exclusion is final, and the one amendment it takes is a
- * verified removal recorded on top of one that had none — the way back to
- * single-plan mode once a human has taken a later plan's code off the branch.
+ * Checked before the gates and again inside the change, because the record can
+ * move while gates run. An exclusion is final; its one amendment is a verified
+ * removal, the way back once a human has taken the plan's code off the branch.
  */
 export const findExclusionRefusal = ({ record, target, implementationRemoved }: Params): string | undefined => {
 	const started = isPlanImplementationStarted({ plan: target });

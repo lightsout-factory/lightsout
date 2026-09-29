@@ -3,7 +3,6 @@ interface Params {
 	path: string;
 }
 
-/** The highlighter grammar for each file extension a code block is given. */
 const languages: Record<string, string> = {
 	ts: 'typescript',
 	mts: 'typescript',
@@ -17,10 +16,4 @@ const languages: Record<string, string> = {
 	md: 'markdown',
 };
 
-/**
- * The grammar a file is highlighted with, from its extension. A file whose
- * extension has no grammar is shown as plain text rather than guessed at.
- *
- * @param path - the file's path
- */
 export const toCodeLanguage = ({ path }: Params): string | undefined => languages[path.slice(path.lastIndexOf('.') + 1).toLowerCase()];

@@ -41,9 +41,6 @@ interface Params {
 }
 
 /**
- * End a direct run whose gates never started, because another gate run of this
- * repository held the machine for longer than the wait allows.
- *
  * Nothing here was judged, so no fix attempt is spent and no worker is
  * re-invoked; the tree the run built is left exactly where it is.
  */
@@ -59,12 +56,9 @@ const stopDirectOnCoordination = ({ run, record, coordination }: { run: RunState
 };
 
 /**
- * End a direct run on a gate that crashed, or ran past its own time ceiling,
- * instead of failing.
- *
- * Neither reached a verdict, so there is nothing to repair and nothing the next
- * attempt would do differently — it stops without spending an attempt, rather
- * than handing the worker a red no gate command established.
+ * Neither a crash nor a timeout reached a verdict, so there is nothing to
+ * repair: it stops without spending an attempt, rather than handing the worker a
+ * red no gate command established.
  */
 const stopDirectOnNoVerdict = ({
 	run,
@@ -87,10 +81,6 @@ const stopDirectOnNoVerdict = ({
 };
 
 /**
- * Build from the ticket body, gate the result, and hand a red gate back to the
- * worker until the cheap fix budget is spent — the whole of the direct run once
- * the pre-flight baseline has proved the tree green.
- *
  * There is no supervisor, no unit-test writer and no standards review: the
  * repo's gates are the only bar.
  */
@@ -145,24 +135,17 @@ const buildAndVerify = async ({
 };
 
 /**
- * The direct run's body — always entered holding the run lock.
+ * The coverage gate is included from the pre-flight onward, so a repo that
+ * requires tests still requires them.
  *
- * Pre-flight green gate → build from the ticket body → the repo's own gates,
- * with a bounded fix loop → done. The coverage gate is included from the
- * pre-flight onward, so a repo that requires tests still requires them.
+ * A continued run (`existing` set) skips the pre-flight: the gate proves the
+ * tree was green before any agent touched it, and a resumed tree holds the
+ * run's own partial work, so re-running it would fail the run on the changes
+ * the resume exists to preserve.
  *
- * A continued run (`existing` set) adopts that run's manifest rather than
- * minting a second, and skips the pre-flight. That skip is the point rather
- * than an optimisation: the gate exists to prove the tree was green BEFORE any
- * agent touched it, and a resumed tree holds the run's own partial work, so
- * re-running it would fail the run on the very changes the resume exists to
- * preserve. Everything after it is shared by a first run and a resumed one.
- *
- * A run whose `verify` step is already recorded passed skips the worker and the
- * gates as well and goes straight to its commit. The step record decides that,
- * never the run's own status: a run stopped at a refused commit is failed with
- * its gates still green behind it, and rebuilding it would spend a model on
- * work that is already done.
+ * A run whose `verify` step is already recorded passed goes straight to its
+ * commit. The step record decides that, never the run's own status: a run
+ * stopped at a refused commit is failed with its gates still green behind it.
  */
 const executeDirectWork = async ({
 	cwd,
@@ -181,10 +164,8 @@ const executeDirectWork = async ({
 	const run = new RunState({ cwd, config, manifest, onProgress });
 	const stop = ({ record, status, error }: { record: StepRecord; status: RunStatus; error: string }) => stopDirectRun({ run, record, status, error });
 
-	// Declared before the first step starts, so a reader sees every step the run
-	// will take — the ones it has not reached shown pending — from its first
-	// moment. A resumed run declares the same sequence: its pre-flight is
-	// already recorded, so the skip leaves no pending row behind.
+	// Declared up front so a reader sees every step, unreached ones pending. A
+	// resumed run's pre-flight is already recorded, so the skip leaves no pending row.
 	await run.update({ patch: { status: RunStatus.Running, stepOrder: ['pre-flight', 'implement', 'verify'] } });
 
 	if (run.current().steps.some((step) => step.id === 'verify' && step.status === RunStatus.Passed)) {
@@ -218,14 +199,8 @@ const executeDirectWork = async ({
 };
 
 /**
- * Ticket body in, committed diff out — the queue's direct worker, and the whole
- * of what `lightsout implement-direct` does.
- *
- * Answers a `PipelineResult` rather than a new near-identical type, so every
- * existing reader of a run result already understands it. A re-invocation
- * (`answeredQuestion` set) runs in the same tree the previous attempt dirtied
- * and continues that work in place; each invocation mints its own run, so every
- * attempt keeps its own truthful record — except a resume (`existing` set),
- * which deliberately continues the parked run rather than minting a second.
+ * A re-invocation (`answeredQuestion` set) continues the previous attempt's work
+ * in the same tree but mints its own run, so every attempt keeps its own record.
+ * A resume (`existing` set) continues the parked run instead.
  */
 export const runDirectWork = (params: Params): Promise<PipelineResult> => withRunLock({ params, run: executeDirectWork });

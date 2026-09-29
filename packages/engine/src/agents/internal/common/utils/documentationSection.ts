@@ -5,7 +5,6 @@ interface Params {
 	docs: ConfigDocs;
 }
 
-/** The writer's brief on the surfaces this repository declared, and what its plan must say about them. */
 export const documentationSection = ({ docs }: Params): string =>
 	`## Documentation surfaces
 

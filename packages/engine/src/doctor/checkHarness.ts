@@ -20,7 +20,6 @@ interface Params {
 	probeHarness?: (params: { binary: string }) => Promise<{ exitCode: number; stdout: string; stderr: string }>;
 }
 
-/** Probe every harness binary the config references — the global `harness` plus per-command overrides. A fail means some command has no harness to shell. */
 export const checkHarness = async ({ cwd, config, probeHarness }: Params): Promise<DoctorCheck> => {
 	const probe = probeHarness ?? (({ binary: name }) => runCommand({ command: `${name} --version`, cwd, timeoutMs: probeTimeoutMs }));
 	const binaries = [...new Set(getReferencedDriverNames({ config }).map((name) => driverBinaries[name] ?? name))];

@@ -1,11 +1,6 @@
 /**
- * One acceptance test a verification checkpoint must prove.
- *
- * Three fields and no more, so the plan's parsed ledger rows and the manifest's
- * acceptance-test records both satisfy it without a conversion at either call
- * site — the plan threads it from `buildSteps` through `verifyStep` and
- * `runVerificationGates` to `checkAcceptanceTests`, and every hop reads the
- * same shape.
+ * Three fields and no more, so the plan's ledger rows and the manifest's
+ * acceptance-test records both satisfy it without a conversion.
  */
 export interface AcceptanceRow {
 	/** Repo-relative path of the test file stating the criterion. */

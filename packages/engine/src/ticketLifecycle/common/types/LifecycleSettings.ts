@@ -2,10 +2,8 @@ import type { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import type { TrackerStatusRole } from '#src/ticketLifecycle/common/constants/TrackerStatusRole.ts';
 
 /**
- * The lifecycle half of the `queue` config block with every default already
- * applied, exactly as `QueueSettings` and `ShipSettings` are resolved.
- *
- * It lives outside the queue because the command edge writes these two fields
+ * The lifecycle half of the `queue` config block, defaults applied. It lives
+ * outside the queue because the command edge writes these two fields
  * too, and a manual entry point must not have to build a queue to record what
  * a ticket owes and where it sits.
  */

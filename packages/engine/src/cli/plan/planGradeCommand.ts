@@ -30,12 +30,7 @@ interface Params {
 	phases?: string[];
 }
 
-/**
- * Print the gaps in the phase-then-lens order the runner stamped them in, under
- * a heading per plan file. It is handed the BLOCKING gaps alone: a human is
- * shown what they have to act on, and the notes a judge cleared stay in
- * `grade.json` where a human or a later agent can read them.
- */
+// Relies on the phase-then-lens order the runner stamped the gaps in.
 const printGaps = ({ gaps }: { gaps: GradeReport['gaps'] }) => {
 	let heading: string | undefined;
 
@@ -49,22 +44,14 @@ const printGaps = ({ gaps }: { gaps: GradeReport['gaps'] }) => {
 	}
 };
 
-/**
- * One line per weighed plan file: what it weighed, and every threshold it
- * crossed. Nothing is printed when the grade weighed nothing, which is every
- * grade taken with `plan.contract` off.
- */
 const printWeights = ({ weights }: { weights: GradeReport['weights'] }) => {
 	for (const { phase, weight, reasons } of weights) {
 		console.log(`  weight: ${phase} — ${weight}${reasons.length > 0 ? ` (${reasons.join('; ')})` : ''}`);
 	}
 };
 
-/**
- * The letter is the plan's verdict, not the step's outcome: a complete grade
- * exits 0 below whatever its letter, so it records as passed. Read by both
- * records, so the activity row and the planning step can never disagree.
- */
+// The letter is the plan's verdict, not the step's outcome: a complete grade
+// records as passed whatever its letter.
 const gradeStatus = ({ result: graded }: { result: Awaited<ReturnType<typeof runPlanGrade>> }) =>
 	graded.status === PlanRunStatus.PausedRateLimit
 		? RunStatus.PausedRateLimit
@@ -72,10 +59,6 @@ const gradeStatus = ({ result: graded }: { result: Awaited<ReturnType<typeof run
 			? RunStatus.Passed
 			: RunStatus.Failed;
 
-/**
- * How far this pass reached and which rule chose that far — or, when nothing
- * ran, the recorded verdict and the one way to force a new baseline.
- */
 const printScope = ({ grade, reused, memoryPath }: { grade: GradeReport; reused: boolean; memoryPath: string }) => {
 	if (reused) {
 		console.log(`  the recorded passing full review still covers the current inputs — nothing was re-run; delete ${memoryPath} to force a new baseline`);
@@ -88,10 +71,9 @@ const printScope = ({ grade, reused, memoryPath }: { grade: GradeReport; reused:
 };
 
 /**
- * What the verdict rests on, in three numbers rather than one: without the third
- * a human cannot tell an approval this pass read the whole plan for from one
- * granted mostly on earlier readings. It prints even when nothing stood, because
- * a reader comparing two runs needs the number to be there both times.
+ * Without the standing count a human cannot tell an approval this pass read the
+ * whole plan for from one granted mostly on earlier readings. It prints even at
+ * zero so two runs can be compared.
  */
 const printCoverage = ({ grade }: { grade: GradeReport }) => {
 	const stood = grade.covered.filter((phase) => !grade.phasesChecked.includes(phase) && !grade.phasesLight.includes(phase)).length;
@@ -102,29 +84,10 @@ const printCoverage = ({ grade }: { grade: GradeReport }) => {
 };
 
 /**
- * `plan grade` at the terminal.
- *
- * The failure branches are handled here rather than through `exitOnPlanFailure`
- * because a failed or parked run now leaves a real partial report on disk: the
- * helper prints the error and exits before the caller ever sees it, which would
- * throw that report away. An incomplete pass exits 1 — it is not a pass, and a
- * script must be able to tell — while a complete grade exits 0 whatever its
- * verdict.
- *
- * Three paths are printed at the end: the grade path names the latest pass, the
- * history path names every pass this plan has ever had, and the memory path
- * names the record of what is still open and what was settled — the third file a
- * human opens after a grade.
- *
- * The scope line says how far the pass reached and which rule chose that far. A
- * reused review prints in its place: nothing ran, so there is no scope to
- * report, only the recorded verdict and the one way to force a new baseline.
- *
- * The coverage line beneath it says what the whole verdict rests on: how many of
- * the plan's files are covered at their current text, how many of those this pass
- * read, and how many stood from an earlier pass. Approval is granted from that
- * coverage, so a pass that read two files of five and still graded A has to be
- * legible as such rather than looking like a whole-plan review.
+ * Failures are handled here rather than through `exitOnPlanFailure` because a
+ * failed or parked run leaves a partial report on disk, and the helper would exit
+ * before it could be printed. An incomplete pass exits 1; a complete grade exits
+ * 0 whatever its verdict.
  */
 export const planGradeCommand = async ({ cwd, driver, name, standards, config, phases }: Params): Promise<void> => {
 	const result = await recordPlanCommandRun({
@@ -149,8 +112,6 @@ export const planGradeCommand = async ({ cwd, driver, name, standards, config, p
 	const grade = 'grade' in result ? result.grade : undefined;
 	const gradePath = 'gradePath' in result ? result.gradePath : undefined;
 
-	// Nothing was written — the deliverable did not resolve, or `--phase` named
-	// no plan file. The error above is the whole report.
 	if (grade === undefined || gradePath === undefined) {
 		return exitCli({ code: 1 });
 	}
@@ -159,10 +120,7 @@ export const planGradeCommand = async ({ cwd, driver, name, standards, config, p
 		console.log(`\n${yellow('incomplete grade')} — ${grade.incompleteReason ?? 'the pass did not finish'}`);
 	}
 
-	// Three branches, not two: an unknown tree state must not render identically to
-	// a clean one, or a grade whose tree was never read reads as one taken on a
-	// clean tree. Twelve characters is the short sha a human compares against
-	// `git log`; the full sha stays in grade.json.
+	// Three branches, not two: an unknown tree state must not read as a clean one.
 	const treeState = grade.gradedTreeDirty === undefined ? ', tree state unknown' : grade.gradedTreeDirty ? ' plus uncommitted changes' : '';
 	const measuredAgainst = grade.gradedCommit === undefined ? 'outside a git worktree' : `at ${grade.gradedCommit.slice(0, 12)}${treeState}`;
 
@@ -173,8 +131,7 @@ export const planGradeCommand = async ({ cwd, driver, name, standards, config, p
 	printScope({ grade, reused: 'reused' in result && result.reused === true, memoryPath });
 
 	const blocking = getBlockingGaps({ gaps: grade.gaps });
-	// The two kinds of blocking finding are counted apart: a spike in judge
-	// failures must not read as a plan getting worse.
+	// Counted apart so a spike in judge failures does not read as a plan getting worse.
 	const unjudged = blocking.filter((gap) => gap.outcome === GapOutcome.Unjudged).length;
 
 	console.log(`  structural: ${grade.structural.length} · gaps: ${grade.gaps.length} (${blocking.length} blocking, ${unjudged} unjudged)`);

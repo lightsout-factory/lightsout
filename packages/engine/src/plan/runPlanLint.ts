@@ -16,10 +16,9 @@ type RunPlanLintResult =
 	| { status: typeof PlanRunStatus.Failed; error: string };
 
 /**
- * The structural lint as a standalone pass — no agent, no driver, no workspace
- * writes. It resolves the deliverable exactly as grade does and reports the same
- * typed findings, so the plan writer can converge in-session (where its context
- * is already loaded) instead of paying a repair spawn per finding.
+ * The same findings grade reports, with no agent and no workspace writes, so
+ * the plan writer can converge in-session instead of paying a repair spawn per
+ * finding.
  */
 export const runPlanLint = async ({ cwd, name, onProgress }: Params): Promise<RunPlanLintResult> => {
 	const progress = onProgress ?? (() => undefined);

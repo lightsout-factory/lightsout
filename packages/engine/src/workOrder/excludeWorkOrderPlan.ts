@@ -21,15 +21,13 @@ interface Params {
 	/** The human's declaration that this plan's implementation is off the branch, which the branch verification then backs. */
 	implementationRemoved: boolean;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	onProgress?: (message: string) => void;
 }
 
 /**
- * Write the exclusion, re-checking every refusal against the record as it
- * stands now: the gates just held the machine for minutes, and another command
- * on this machine or another may have moved the ticket meanwhile.
+ * Every refusal is re-checked against the record as it stands now: the gates just held the machine
+ * for minutes, and another command may have moved the ticket meanwhile.
  */
 const recordExclusion = async ({
 	params,
@@ -71,16 +69,8 @@ const recordExclusion = async ({
 };
 
 /**
- * Take one plan out of a ticket's implementation order and its shipping
- * requirements, for good.
- *
- * An exclusion is the explicit, recorded decision that a plan is not part of
- * this ticket's work — never a deletion: the plan's files stay in their folder
- * and the plan stays on the record with whatever progress its implementation
- * reached. A plan whose implementation never started is excluded at once; one
- * whose implementation started is only excluded on a branch the repository's
- * own gates have just passed on, because the ticket's remaining plans will
- * build on that branch.
+ * An exclusion is never a deletion: the plan's files and progress stay. A plan whose implementation
+ * started is only excluded on a branch the gates just passed, because the remaining plans build on it.
  */
 export const excludeWorkOrderPlan = async (params: Params): Promise<WorkOrderStateChange | { error: string }> => {
 	const { cwd, name, plan, implementationRemoved, config, env, onProgress } = params;

@@ -6,7 +6,6 @@
  */
 const testCallHead = /(?<![\w$.])(?:xtest|xit|fit|test|it)(?:\.(?:only|skip|concurrent|failing))*(\.each)?/g;
 
-/** The closing character of every bracketed span a call head can be followed by. */
 const closers = new Map([
 	['(', ')'],
 	['{', '}'],
@@ -16,10 +15,6 @@ const closers = new Map([
 const quotes = new Set(["'", '"', '`']);
 
 /**
- * The index closing the span that opens at `from` — a quoted string, a template
- * literal with its `${…}` holes, or a bracketed group — or undefined when the
- * file never closes it.
- *
  * An explicit stack rather than recursion, so one function answers for every
  * nesting a test call head can put in front of its title: `.each` takes a table
  * that is itself an array of objects holding strings.
@@ -73,7 +68,6 @@ const skipSpace = ({ content, from }: { content: string; from: number }) => {
 	return index;
 };
 
-/** The quoted literal starting at `from`, without its quotes, or undefined when there is no title the engine can read there. */
 const readTitle = ({ content, from }: { content: string; from: number }) => {
 	const quote = content[from] ?? '';
 	const end = quotes.has(quote) ? endOfSpan({ content, from }) : undefined;
@@ -91,24 +85,15 @@ const readTitle = ({ content, from }: { content: string; from: number }) => {
 };
 
 interface Params {
-	/** The file's text. */
 	content: string;
 }
 
 /**
- * Every test title a file states, read from its test-call heads rather than
- * from its quoted strings.
+ * Reads test-call heads rather than quoted strings, so a comment, a `describe`
+ * block or a variable holding the same words never reads as a test.
  *
- * The quoted-string search this replaces could not tell a test from a comment,
- * a `describe` block or a variable holding the same words, so a plan naming any
- * of those read as a test already present. A call head is the cheap, compiler-
- * free evidence that a name really is a case; the strong evidence is the
- * runner's own per-test result.
- *
- * An `.each` head's title comes back as its template text, placeholders and all
- * — `matchesTestTitle` is what reads those placeholders as wildcards. A head
- * whose first argument is not a readable literal contributes nothing. Titles
- * come back in source order, duplicates included.
+ * An `.each` title comes back as its template text, placeholders and all, for
+ * `matchesTestTitle` to read as wildcards.
  */
 export const findTestTitles = ({ content }: Params): string[] => {
 	const titles: string[] = [];

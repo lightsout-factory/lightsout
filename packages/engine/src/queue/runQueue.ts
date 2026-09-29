@@ -43,13 +43,8 @@ interface Params {
 }
 
 /**
- * Passed when everything the drain ran shipped and nothing is left waiting on a re-run.
- *
- * A reconciled already-merged ticket is `settled` and never re-offered, so it
- * is not work left: counting it would record an escalated coordinator run for
- * a drain in which everything eligible shipped. A ticket the queue left open is
- * not work left either — it waits on a human decision, and the exit code says
- * the same, which is why both read the one parked rule.
+ * A reconciled already-merged ticket is settled and never re-offered, and a
+ * ticket the queue left open waits on a human, so neither counts as work left.
  */
 const toCoordinatorStatus = ({ drained }: { drained: QueueDrainReport }) => {
 	const unfinished = drained.leftBehind.filter((entry) => entry.settled !== true);
@@ -58,7 +53,6 @@ const toCoordinatorStatus = ({ drained }: { drained: QueueDrainReport }) => {
 	return parked.length === 0 && unfinished.length === 0 ? RunStatus.Passed : RunStatus.Escalated;
 };
 
-/** The locked half of a drain: the coordinator run, the two lanes, then the settled labels. */
 const drainAndShip = async ({
 	cwd,
 	runId,
@@ -91,12 +85,9 @@ const drainAndShip = async ({
 		settings,
 		trackerSettings,
 		shipSettings,
-		// Built here from what the drain already holds: `config` is the effective
-		// config and `driver` the resolved harness, so the merge lane's integration
-		// step recovers with exactly what the builders were given.
+		// The effective config and resolved harness, so the merge lane's
+		// integration step recovers with exactly what the builders were given.
 		shipIntegration: { config, driver },
-		// The same harness the builders get, threaded so the wave's naming step
-		// summarises a ticket's title exactly as `work-order new` does.
 		driver,
 		config,
 		env,
@@ -139,22 +130,11 @@ const drainAndShip = async ({
 };
 
 /**
- * The supervisor: read the tracker, drain what it finds into parallel
- * worktrees, and merge each branch the moment it is ready — then exit.
- *
- * Parked runs come first, because a restart is the resume path: their tickets
- * sit at the in-progress status where the eligible query cannot see them, so
- * they are found on disk instead. Steps from the coordinator run onward hold
- * the repo's run lock, which is what makes two concurrent `lightsout queue`
+ * Parked runs come first because a restart is the resume path: their tickets
+ * sit at the in-progress status the eligible query cannot see, so they are
+ * found on disk. The run lock makes two concurrent `lightsout queue`
  * invocations impossible; each worker takes its own lock in its own worktree,
  * so the two never contend.
- *
- * Building and merging run at the same time: parallel builders fill the slot
- * pool while one serial ship lane merges each branch as soon as it is ready, and
- * every landed merge re-reads the tracker so the tickets it unblocked join the
- * run already in flight. The drain ends when both loops are idle and nothing is
- * left to build or to merge. The run lock and the coordinator run are still one
- * per invocation, and the parked worktree scan still runs only at the start.
  */
 export const runQueue = async ({
 	cwd,

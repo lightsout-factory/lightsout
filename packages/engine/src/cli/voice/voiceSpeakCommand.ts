@@ -3,7 +3,6 @@ import { getSpokenTurnQuestion } from '#src/voice/getSpokenTurnQuestion.ts';
 import { isVoiceOn } from '#src/voice/isVoiceOn.ts';
 import { speakText } from '#src/voice/speakText.ts';
 
-/** Which pi-family event the payload describes. */
 export type VoiceSpeakKind = 'turn' | 'picker';
 
 interface Params {
@@ -13,15 +12,7 @@ interface Params {
 	input: string;
 }
 
-/**
- * The pi-family half of the voice hook: an omp or pi extension pipes an event
- * payload in, and this decides whether it asked something worth reading aloud
- * and, if so, reads it.
- *
- * Same contract as `voice hook` — every failure is swallowed and every path
- * ends normally, because an extension-side error surfaces in the user's own
- * session, and being unhelpful is always preferable to being loud.
- */
+/** Swallows every failure, because an extension-side error surfaces in the user's own session. */
 export const voiceSpeakCommand = async ({ cwd, kind, input }: Params): Promise<void> => {
 	try {
 		if (process.platform !== 'darwin') {

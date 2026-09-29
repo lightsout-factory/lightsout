@@ -12,53 +12,23 @@ import type { DeliverableFile } from '#src/plan/internal/common/types/Deliverabl
 import type { GradeScopeDecision } from '#src/plan/internal/common/types/GradeScopeDecision.ts';
 
 interface Params {
-	/** Every implementable plan file with its text, in deliverable order. */
 	files: DeliverableFile[];
-	/** Overview text for a phased plan; absent for a single plan. */
 	overviewText?: string;
-	/** The memory as it was read at the start of this pass; absent when the file is not there. */
 	memory?: GradeMemory;
-	/** This pass's fingerprint. */
 	inputs: GradeInputs;
-	/** True when a human passed `--phase` — a narrowed pass is never reused and never focused. */
+	/** True when a human passed `--phase`: a narrowed pass is never reused and never focused. */
 	narrowed: boolean;
 }
 
-/** Every plan file the readers would be offered by a full pass. */
 const everyPhase = ({ files }: { files: DeliverableFile[] }) => files.map((file) => basename(file.path));
 
 /**
- * How far this pass must reach, decided by the engine from the plan, the memory,
- * the fingerprint and what the readers have already read — there is no flag,
- * because a human cannot know which phases a repair can reach.
+ * There is no flag, because a human cannot know which phases a repair can reach.
+ * Every rule falls back to a full review: a cheaper pass must never turn an
+ * unresolved blocker into an approval.
  *
- * The rules fire in order and every one of them falls back to a full review,
- * because the global constraint is that a cheaper pass must never turn an
- * unresolved blocker into an approval:
- *
- * 1. A `--phase` narrowing is a human's own choice and replaces nothing.
- * 2. An unread git probe is not evidence the code is unchanged, so it can
- *    neither be reused against nor narrowed against.
- * 3. A recorded passing full review over these very inputs is reported as
- *    current rather than paid for twice.
- * 4. With no memory, or no pass recorded in it, there is no baseline to compare
- *    the plan text against.
- * 5. A non-plan-text input moving means the recorded reading no longer speaks
- *    for this pass at all. A change to the overview's SHARED design text — what
- *    is left once every generated region and every span credited to one phase is
- *    taken out — is context every phase shares; a Decision Log change reaches the
- *    phases its changed rows name; and a change whose reach cannot be placed is a
- *    full review.
- * 6. A single plan has no phase to narrow to.
- * 7. A graph that cannot be built cannot bound anything.
- * 8. What is left is the plan files whose coverage does not stand: the ones this
- *    pass owes a reading. A set covering every file is a full pass by another
- *    name.
- *
- * Nothing here decides whether the plan is approved. That is read from the
- * coverage and the closed findings afterwards, which is why a pass whose
- * coverage already stands everywhere may read nothing at all and still be the
- * pass that grants an A.
+ * Nothing here decides approval, so a pass whose coverage already stands
+ * everywhere may read nothing at all and still grant an A.
  */
 export const decideGradeScope = ({ files, overviewText, memory, inputs, narrowed }: Params): GradeScopeDecision => {
 	const phases = everyPhase({ files });

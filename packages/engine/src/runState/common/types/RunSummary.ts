@@ -2,7 +2,6 @@ import type { RunUsage } from '#src/contracts/run/RunUsage.ts';
 import type { CleanupSummary } from '#src/runState/common/types/CleanupSummary.ts';
 import type { StepSummary } from '#src/runState/common/types/StepSummary.ts';
 
-/** A run's evidence aggregated into one report card — see {@link summarizeRun}. */
 export interface RunSummary {
 	wallMs: number;
 	/** Sum of step durations — actual working time, unlike wall, which spans idle gaps between a failure and its resume. */

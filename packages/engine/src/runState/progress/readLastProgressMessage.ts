@@ -7,11 +7,6 @@ interface Params {
 	runId: string;
 }
 
-/**
- * The last line this run narrated, or undefined when it has narrated nothing
- * a reader can quote — a run started before the log existed, a run whose log
- * holds only malformed lines, or a run that has not spoken yet.
- */
 export const readLastProgressMessage = async ({ cwd, runId }: Params): Promise<string | undefined> => {
 	const records = await readJsonlRecords({ path: await getProgressLogPath({ cwd, runId }), schema: ProgressRecord });
 

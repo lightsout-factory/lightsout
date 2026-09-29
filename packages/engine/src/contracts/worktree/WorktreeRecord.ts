@@ -2,24 +2,18 @@ import { z } from 'zod';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 
 /**
- * Who made one worktree, written to `worktree.json` in that branch's ticket
- * folder, under the PRIMARY checkout.
- *
- * It lives in the primary checkout rather than in the tree it describes, for
- * the reason `BranchState` does: the record has to outlive the removal it
- * attributes, and every linked worktree of one repository has to read the same
- * file. Its caller deletes it after a removal that worked, so a tree that
- * survived a failed removal keeps the record naming its owner.
+ * Lives in the PRIMARY checkout, not the tree it describes: it has to outlive
+ * the removal it attributes, and every linked worktree must read the same file.
+ * It is deleted only after a removal that worked, so a tree that survived a
+ * failed removal still names its owner.
  */
 export const WorktreeRecord = z.object({
-	/** The branch the tree is checked out on, as git names it. */
 	branch: z.string(),
 	owner: z.enum(WorktreeOwner),
-	/** The tree's absolute path, as the creator spelled it. */
 	worktreePath: z.string(),
-	/** ISO timestamp of the creation this record describes. */
+	/** ISO timestamp. */
 	createdAt: z.string(),
-	/** What the branch was cut from, as the creator spelled it — `origin/<default>` for a queue or implement tree, a commit sha for a planning tree pinned to the launching checkout's HEAD. */
+	/** `origin/<default>` for a queue or implement tree, a commit sha for a planning tree pinned to the launching checkout's HEAD. */
 	startPoint: z.string().optional(),
 });
 

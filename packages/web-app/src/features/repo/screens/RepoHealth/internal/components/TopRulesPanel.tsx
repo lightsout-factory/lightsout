@@ -5,20 +5,10 @@ import { ShareBar } from '#src/appUI/ShareBar.tsx';
 import { formatCount } from '#src/common/formatting/formatCount.ts';
 
 interface Props {
-	/** Every loaded rule, as the standards view returned them. Required: the page does not mount this panel until it has them. */
 	rules: StandardsRuleView[];
 }
 
-/**
- * Which rules this repo is breaking most, as bars.
- *
- * Rules with nothing open are dropped before the top five is taken. Five
- * zero-length bars read as data at a glance, and a clean check is the outcome
- * the whole product is selling — so it is said in words instead.
- *
- * Every count is `findingCount` off the engine's own view; nothing here counts
- * findings for itself.
- */
+/** Rules with nothing open are dropped: zero-length bars read as data at a glance, so a clean check is said in words instead. */
 export const TopRulesPanel = ({ rules }: Props) => {
 	// How many rules a glance holds.
 	const topRuleCount = 5;

@@ -17,21 +17,12 @@ interface Params {
 }
 
 /**
- * The confirmed-merge skip: the work orders whose stored branches have not
- * already merged, and one left-behind entry per work order whose branch has.
- *
  * The branch is read off each work order's record rather than rendered from the
- * queue's template, so a prefixed template cannot make the check ask about a
- * branch nothing ever pushed.
+ * template, so a prefixed template cannot make the check ask about a branch
+ * nothing ever pushed.
  *
- * It runs before any worktree is created or any tracker write is made, so the
- * one step that mutates the main checkout is never spent on a ticket the queue
- * is about to skip. What counts as a merge is `establishBranchMerge`'s to say,
- * and this step skips whatever that function establishes and keeps the rest.
- *
- * Sequential rather than parallel: an iteration may remove a worktree in the
- * main checkout, and the queue's rule is that main-checkout mutations do not
- * overlap.
+ * Sequential because an iteration may remove a worktree in the main checkout, and
+ * main-checkout mutations must not overlap.
  */
 export const reconcileMergedTickets = async ({
 	cwd,

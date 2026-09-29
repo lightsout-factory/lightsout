@@ -13,18 +13,13 @@ interface Params {
 }
 
 /**
- * One scan's named work orders folded into the ledger — the single path the
- * opening selection and every re-scan take, so a ticket is admitted once and
- * settled once.
+ * Takes the three lists rather than a `WaveSelection`, because a selection is
+ * produced before anything is named, and that seam keeps selection free of the
+ * network.
  *
- * It takes the three lists directly rather than a `WaveSelection`, because a
- * selection is what a scan produces BEFORE anything is named, and keeping that
- * seam is what keeps selection free of the network.
- *
- * A blocked entry is deliberately NOT marked attempted: that is what lets a
- * later scan offer it once its blocker has merged. It is remembered under its
- * identifier instead, so it stays reportable after later scans stop returning
- * it, and leaves that map only by being admitted or settled.
+ * A blocked entry is deliberately NOT marked attempted, so a later scan can
+ * offer it once its blocker has merged. It is remembered under its identifier
+ * instead, so it stays reportable after later scans stop returning it.
  *
  * @returns the work orders this scan added to the run, in admission order
  */

@@ -2,9 +2,8 @@ interface Params {
 	code: string;
 }
 
-// ANSI paint, no-op when output is piped — alignment is computed on plain
-// text first, so color codes never disturb the table geometry. The returned
-// value is an emphasis callback whose (text) => string shape is a contract.
+// No-op when output is piped. The returned (text) => string shape is a
+// contract: callers pass it on as an emphasis callback.
 export const paint =
 	({ code }: Params): ((text: string) => string) =>
 	(text: string) =>

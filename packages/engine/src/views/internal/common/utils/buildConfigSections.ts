@@ -10,15 +10,8 @@ import type { ConfigView } from '#src/contracts/views/config/ConfigView.ts';
 import { configKeyDescriptions } from '#src/views/internal/common/constants/configKeyDescriptions.ts';
 
 /**
- * What each key holds here: the config's own value, or the default the engine
- * itself applies when it has a named constant for one.
- *
  * The `?? default` lines are the same expressions the engine's own readers use,
- * against the same constants — which is the point of having lifted them. A key
- * with no named default answers `undefined` and becomes a null row the page
- * reads as "default: none".
- *
- * `timeouts` appears as its leaves rather than as the block, because the
+ * against the same constants. `timeouts` appears as its leaves because the
  * defaults are per leaf: a file that sets one must not be shown as claiming the
  * other.
  */
@@ -54,7 +47,6 @@ const configFieldReaders: Record<string, (params: { config: LightsoutConfig }) =
 	docs: ({ config }) => config.docs,
 };
 
-/** The areas of the file, in the order the page reads them, and which keys land in each. */
 const configSectionKeys: Array<{ title: string; keys: string[] }> = [
 	{ title: 'Harness', keys: ['harness', 'model', 'effort', 'permissions', 'commands'] },
 	{ title: 'Gates', keys: ['gates', 'package-gates', 'gate-overrides', 'packages-dir', 'coverage-summary-path', 'executor-file-limit'] },
@@ -74,11 +66,8 @@ const configSectionKeys: Array<{ title: string; keys: string[] }> = [
 ];
 
 /**
- * A resolved value as the contract's JSON field.
- *
- * Parsed rather than cast: the field is `z.json()`, the config's block schemas
- * carry `unknown` catchalls, and running the value through the field's own
- * schema is both the narrowing and the proof that what the page will be handed
+ * Parsed rather than cast: the field is `z.json()` and the config's block
+ * schemas carry `unknown` catchalls, so the parse is the proof that the value
  * survives the wire.
  */
 const toFieldValue = ({ value }: { value: unknown }) => ConfigFieldView.shape.value.parse(value ?? null);
@@ -88,13 +77,7 @@ interface Params {
 	declaredKeys: string[];
 }
 
-/**
- * The config's live keys grouped for the page, each row saying what it holds and
- * who decided that.
- *
- * @param config - the parsed config, which supplies every value
- * @param declaredKeys - every key the file itself wrote, the `timeouts.` leaves spelled out, which supplies every `fromConfig`
- */
+/** @param declaredKeys - every key the file itself wrote, with the `timeouts.` leaves spelled out */
 export const buildConfigSections = ({ config, declaredKeys }: Params): ConfigView['sections'] =>
 	configSectionKeys.map(({ title, keys }) => ({
 		title,

@@ -15,12 +15,9 @@ interface Params {
 }
 
 /**
- * Read a package directory's package.json `name` — the value a
- * workspace filter (`pnpm --filter <name>`) actually wants, which may differ
- * from the directory (e.g. `@feedbackdrop/backend-api`) — and its `scripts`
- * map, which scoped gates consult to skip gates the package doesn't define.
- * A missing or nameless package.json is a hard error: the engine never
- * guesses a filter.
+ * The `name` is what a workspace filter (`pnpm --filter <name>`) wants, and it may
+ * differ from the directory. A missing or nameless package.json is a hard error:
+ * the engine never guesses a filter.
  */
 export const readPackageManifest = async ({ cwd, packagesDir, packageDir }: Params): Promise<{ name: string; scripts: Record<string, string> }> => {
 	const manifestPath = join(cwd, packagesDir, packageDir, 'package.json');

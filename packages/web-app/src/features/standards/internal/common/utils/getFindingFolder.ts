@@ -8,20 +8,10 @@ interface Params {
 }
 
 /**
- * The folder label one finding reduces to.
- *
- * A finding names one or more files and the first is its site, so that one path
- * decides the label; a finding naming no file at all is placed at `.`.
- *
- * The final segment is dropped only when it looks like a file — a dot in it —
- * so a folder site reported by a structure rule keeps its last segment, and a
- * path shorter than `depth` is used whole. That is the convention the engine's
- * `buildDominantPathNote` already computes the single winner with.
- *
- * Shared because two consumers must place a finding identically: the breakdown
- * that writes a folder's label, and the findings table that has to decide which
- * rows sit under the label a reader clicked. A second copy could disagree, and
- * the table would then answer a folder with nothing.
+ * A finding's first file is its site. The last segment is dropped only when it
+ * contains a dot, so a folder site from a structure rule keeps it, matching the
+ * engine's `buildDominantPathNote`. The folder breakdown and the findings table
+ * must place a finding identically, so both use this.
  */
 export const getFindingFolder = ({ finding, depth }: Params): string => {
 	const site = finding.files[0]?.path;

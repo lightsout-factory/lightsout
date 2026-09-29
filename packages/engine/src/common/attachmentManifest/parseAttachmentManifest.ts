@@ -9,14 +9,6 @@ interface Params {
 	isAllowedName: (params: { name: string }) => boolean;
 }
 
-/**
- * Parse and validate an untrusted commit marker before any listed asset is
- * selected.
- *
- * The marker title and the allowed file names are the caller's, because they
- * are the only two things a plan generation and a brainstorm generation differ
- * by — everything else here is the same refusal in the same order.
- */
 export const parseAttachmentManifest = ({ text, markerName, isAllowedName }: Params): { manifest: AttachmentManifest } | { error: string } => {
 	let value: unknown;
 

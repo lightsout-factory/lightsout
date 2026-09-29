@@ -8,11 +8,6 @@ interface Params {
 }
 
 /**
- * The distinct plan files one finding touches, in first-appearance order — the
- * set every per-location rule iterates: which plan texts a judge batch carries,
- * which citations a dismissal must supply, and which locations a closure must
- * confirm one by one.
- *
  * Never sorted: a finding's own `phase` is its representative location, and
  * sorting would move it away from the front.
  */

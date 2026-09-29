@@ -4,10 +4,9 @@ import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 
 /**
- * Run the pipeline; a RunLockError is a clean fail-fast message (no stack, no
- * run state was created). The parameter object shape is imposed by
- * runImplementPipeline (functions.md's externally-imposed-signature exemption),
- * so it is forwarded verbatim rather than re-declared as a `Params` interface.
+ * A RunLockError created no run state, so it is not worth a stack trace. The
+ * parameter shape is imposed by runImplementPipeline (functions.md's
+ * externally-imposed-signature exemption).
  */
 export const runPipelineOrFailFast = async (params: Parameters<typeof runImplementPipeline>[0]): Promise<PipelineResult> => {
 	try {

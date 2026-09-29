@@ -4,29 +4,17 @@ import type { TicketTrackerTarget } from '#src/workOrder/internal/common/types/T
 
 interface Params {
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. Passed rather than read, so a test never mutates `process.env`. */
+	/** Passed rather than read, so a test never mutates `process.env`. */
 	env: NodeJS.ProcessEnv;
-	/** The work order's label, named in every sentence this answers. */
 	workOrderName: string;
-	/** The ticket reference the work order's record carries, or undefined for a work order that belongs to no ticket. */
+	/** Undefined for a work order that belongs to no ticket. */
 	ticketRef: string | undefined;
 }
 
 /**
- * Where a work order's state publishes to: the resolved tracker and the ticket
- * its record names, or why this work order is local only, or why a configured
- * tracker cannot be used.
- *
- * The three answers are deliberately different things. `localOnly` means there
- * is nothing to publish to and never was — no `ticket-tracker` block, or a
- * record carrying no ticket reference — and a local record is then the whole
- * truth. `error` means a tracker IS configured and could not be reached, which
- * must never be passed over: skipping it would let a published record move
- * without this machine ever noticing.
- *
- * The reference is taken rather than derived. Which ticket a work order belongs
- * to is the record's own answer, so nothing here reads a folder name or a
- * branch pattern to rebuild one.
+ * `localOnly` means there is nothing to publish to and never was. `error` means a
+ * configured tracker could not be used, which must never be skipped: a published
+ * record could then move without this machine noticing.
  */
 export const resolveWorkOrderTrackerTarget = ({
 	config,

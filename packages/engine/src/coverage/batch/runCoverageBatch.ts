@@ -29,13 +29,6 @@ interface Params {
 	recordUsage: (params: { step: string; usage?: AgentUsage }) => Promise<void>;
 }
 
-/**
- * Execute one coverage batch to a terminal condition: invoke the unit-test
- * writer on the batch's components, read what its answer already settles, then
- * drive the scoped gates to green (coverage off — it is red by definition
- * mid-run) and re-measure the batch's scope. Any tracked file whose statements
- * percentage strictly improved resolves the batch; none improving declines it.
- */
 export const runCoverageBatch = async ({
 	cwd,
 	runId,
@@ -50,15 +43,12 @@ export const runCoverageBatch = async ({
 }: Params): Promise<CoverageBatchStop> => {
 	const rationale: string[] = [];
 	const reportedFiles = new Set<string>();
-	// Kept by testsOnly, read by finish — the two are the batch's only writer
-	// and only reader of what it changed.
 	let changedFiles: string[] = [];
 	const invoke = createCoverageInvoker({ cwd, runId, driver, config, batch, testStandards, agentTimeoutMs, reportedFiles, rationale, recordUsage });
 
 	// Coverage stays OFF: this run exists because that gate is red.
 	const gates = () => runBatchGates({ cwd, config, coverage: false, runId, step: batch.id, onProgress });
 
-	/** The tests-only verdict, keeping the files it observed for whatever ends the batch. */
 	const testsOnly = async () => {
 		const checked = await checkTestsOnly({ cwd, config, batchId: batch.id, reportedFiles, attributedFiles });
 

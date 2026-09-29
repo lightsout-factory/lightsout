@@ -1,4 +1,3 @@
-/** What a run's recorded plan path turned out to hold. */
 export const PlanDocumentKind = {
 	Markdown: 'markdown',
 	Worklist: 'worklist',

@@ -11,12 +11,9 @@ interface Params {
 }
 
 /**
- * Deterministically re-check the session-authored facts' claims on disk — no
- * agent. Every `filesToModify`/`patternsToMirror` path is `stat`ed; every area
- * script key is looked up in that area's affected packages' package.json plus
- * the repo-root package.json (a miss only when absent from all). An agent
- * claiming a path exists is not evidence; this is. Never throws — the result
- * is data.
+ * An agent claiming a path exists is not evidence; this is. A script is missing
+ * only when absent from the root package.json and every affected package's.
+ * Never throws: the result is data.
  */
 export const verifyFacts = async ({ cwd, facts }: Params): Promise<PathVerification> => {
 	const paths = facts.areas.flatMap((area) => [...area.filesToModify.map((file) => file.path), ...area.patternsToMirror.map((pattern) => pattern.path)]);

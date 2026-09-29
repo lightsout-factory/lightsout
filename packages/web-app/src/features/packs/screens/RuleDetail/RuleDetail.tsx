@@ -14,7 +14,6 @@ import { RuleExamples } from '#src/features/packs/screens/RuleDetail/internal/co
 import { RuleHeader } from '#src/features/packs/screens/RuleDetail/internal/components/RuleHeader.tsx';
 import { RuleNeighbours } from '#src/features/packs/screens/RuleDetail/internal/components/RuleNeighbours.tsx';
 
-/** One part of the page under its heading, set off from the part above by a rule. */
 const Section = ({ title, children }: { title: string; children: ReactNode }) => (
 	<section className="flex flex-col gap-5 border-border border-t pt-8">
 		<h2 className="font-bold text-drop-navy text-xl">{title}</h2>
@@ -26,16 +25,7 @@ interface Props {
 	ruleId: string;
 }
 
-/**
- * One rule whole, read top to bottom: what it is about, the rule's own text as
- * agents read it, examples of code it flags and code it wants, how to configure it, and
- * the rules either side of it — in the same frame as the other pack pages, so
- * the width never changes between them.
- *
- * The check's own source is deliberately absent. What a reader needs in order
- * to agree or disagree is the argument and the examples; how the check is
- * implemented is neither.
- */
+/** The check's source is deliberately left out: a reader judges a rule by its argument and examples, not its implementation. */
 export const RuleDetail = ({ ruleId }: Props) => {
 	const { data: rule } = useSuspenseQuery(defaultPackRuleQueryOptions({ rule: ruleId }));
 	const { data: pack } = useSuspenseQuery(defaultPackQueryOptions());

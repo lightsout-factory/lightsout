@@ -4,7 +4,7 @@ import type { HarnessProcessUsage } from '#src/contracts/activity/HarnessProcess
 
 interface Params {
 	startedAt: string;
-	/** Absent while the level is unfinished — the totals then carry no wall time and no idle time. */
+	/** Absent while the level is unfinished; the totals then carry no wall or idle time. */
 	endedAt?: string;
 	/** Every harness process recorded at or below the node, not just the ones on it. */
 	processes: HarnessProcessMark[];
@@ -15,14 +15,9 @@ interface Window {
 	end: number;
 }
 
-/** The token and cost fields a process may report, in the order a total states them. */
 const usageFields = ['inputTokens', 'outputTokens', 'cacheReadTokens', 'cacheCreationTokens', 'costUsd'] as const;
 
-/**
- * Field by field, absent stays absent: a total is never a zero standing in for
- * silence, because a zero there would be indistinguishable from a harness that
- * really did report nothing spent.
- */
+/** Absent stays absent: a zero would be indistinguishable from a harness that reported nothing spent. */
 const sumUsage = ({ processes }: { processes: HarnessProcessMark[] }) => {
 	const total: HarnessProcessUsage = {};
 
@@ -55,11 +50,7 @@ const unionMs = ({ windows }: { windows: Window[] }) => {
 	return covered;
 };
 
-/**
- * The most windows open at one instant. A window that ends exactly where the
- * next begins is a handover rather than an overlap, so ends are swept before
- * starts at the same moment.
- */
+/** A window ending exactly where the next begins is a handover, not an overlap, so ends sort before starts. */
 const peakOverlap = ({ windows }: { windows: Window[] }) => {
 	const moments = [...windows.map((window) => ({ at: window.end, delta: -1 })), ...windows.map((window) => ({ at: window.start, delta: 1 }))].sort(
 		(left, right) => left.at - right.at || left.delta - right.delta,
@@ -76,13 +67,8 @@ const peakOverlap = ({ windows }: { windows: Window[] }) => {
 };
 
 /**
- * Everything one node of an activity tree reports, computed from its own window
- * and the processes at or below it.
- *
- * It takes the pieces rather than a node because a node cannot exist before its
- * totals do, and it takes the raw descendant processes rather than its
- * children's totals because the union of windows and the peak overlap cannot be
- * reconstructed from totals that already added them up.
+ * Takes raw descendant processes rather than children's totals: the union of
+ * windows and the peak overlap cannot be rebuilt from totals already summed.
  */
 export const totalActivityNode = ({ startedAt, endedAt, processes }: Params): ActivityTotals => {
 	const windows = processes.map((process) => ({ start: Date.parse(process.startedAt), end: Date.parse(process.endedAt) }));

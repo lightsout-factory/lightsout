@@ -6,11 +6,7 @@ interface Params {
 	runId: string;
 }
 
-/**
- * Hand the machine back — but only our own reservation. A document another run
- * has since reclaimed is left exactly where it is, so a reclaim is never undone
- * by the run it replaced.
- */
+/** Only our own reservation, so a reclaim is never undone by the run it replaced. */
 export const releaseGateLock = async ({ lockPath, runId }: Params): Promise<void> => {
 	const holder = readGateLock({ lockPath });
 

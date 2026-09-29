@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { PlanGap } from '#src/contracts/plan/grade/PlanGap.ts';
 
-/** The gap-check agent's contract: the decision-level gaps found in a plan. */
 export const GapCheckReport = z.object({
 	gaps: z.array(PlanGap).default([]),
 });

@@ -17,11 +17,7 @@ interface Params {
 	usage?: AgentUsage;
 }
 
-/**
- * Record one agent invocation's spend: accumulate into the run's totals and
- * append the per-invocation line to agents.jsonl. Runs spend the user's
- * subscription — every spend leaves a line, in every pipeline, identically.
- */
+/** Runs spend the user's subscription, so every spend leaves a line, in every pipeline, identically. */
 export const recordAgentUsage = async ({ cwd, runId, step, model, effort, totals, usage }: Params): Promise<void> => {
 	if (!usage) {
 		return;

@@ -11,7 +11,6 @@ import { PlanPathButton } from '#src/features/runDetail/screens/RunDetail/intern
 import { RunWhatNow } from '#src/features/runDetail/screens/RunDetail/internal/components/RunWhatNow.tsx';
 import { getRunCommand } from '#src/features/runs/common/utils/getRunCommand.ts';
 
-/** One labelled number or word in the header's totals row. */
 const Meta = ({ label, value }: { label: string; value: ReactNode }) => (
 	<div className="flex flex-col gap-0.5">
 		<span className="text-muted-foreground text-xs uppercase tracking-wide">{label}</span>
@@ -26,15 +25,10 @@ interface Props {
 }
 
 /**
- * Who this run is, how it ended, and the four numbers a reader wants first.
- *
- * Wall time and active time are deliberately shown side by side: the first
- * includes the idle gap between a failure and its resume, the second is the
- * working time the steps actually took, and presenting either one as the other
- * would misreport what the run cost.
- *
- * A run the manifest still calls `running` with no process behind it says so in
- * words — the manifest alone is not the whole truth once a process has died.
+ * Wall and active time are shown side by side: wall includes the idle gap between
+ * a failure and its resume, and presenting either as the other misreports the run.
+ * A `running` manifest with no live process is called out, because the manifest
+ * alone is not the truth once a process has died.
  */
 export const RunHeader = ({ view, onOpenPlan }: Props) => {
 	const { listing } = view;

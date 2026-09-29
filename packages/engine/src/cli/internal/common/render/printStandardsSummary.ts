@@ -20,16 +20,9 @@ const countOf = ({ findings, rule, severity }: { findings: StandardsFinding[]; r
 const cell = ({ count }: { count: number }) => (count === 0 ? '—' : `${count}`);
 
 /**
- * The per-rule tally, as a table.
- *
- * Blocking and advisory are separate columns rather than one total, because
- * they ask for different things: a blocking finding is work, an advisory is
- * guidance someone has to judge in context. A repo carrying only advisories is
- * clean, and a single summed number would report it as indebted.
- *
- * Each rule's summary sits dim beneath its own row, the same shape `--list`
- * uses: a tally of rule ids alone tells a reader how much they have without
- * telling them what any of it is.
+ * Blocking and advisory are separate columns rather than one total: a repo
+ * carrying only advisories is clean, and a single summed number would report it
+ * as indebted.
  */
 export const printStandardsSummary = ({ findings, rules, reportPath }: Params): void => {
 	console.log('');

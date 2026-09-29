@@ -8,36 +8,21 @@ import { getComparableSection } from '#src/plan/lint/internal/common/utils/getCo
 import { renderGlobalConstraints } from '#src/plan/sections/renderGlobalConstraints.ts';
 
 interface Params {
-	/** The parsed plan file — read for its `generatedRegionRanges` and its `lines`. */
 	plan: ParsedPlan;
 	/** The finding label: this file's basename. */
 	phase: string;
 	/** The merged decision record, brainstorm rows first. */
 	decisions: DecisionsRecord;
-	/** The command a human runs to fix a finding — `buildPlanSyncDecisionsCommand(...).command`. */
+	/** `buildPlanSyncDecisionsCommand(...).command`. */
 	syncCommand: string;
 }
 
 /**
- * GlobalConstraintsCurrent — a plan file whose `## Global Constraints` is not
- * the section the engine would compose from the saved decision records, or which
- * has no such section at all.
- *
- * It blocks for the reason its Decision Log sibling does: the rules binding a
- * plan are composed from the record, and displayed rules that disagree with it
- * bind an implementing agent to something nobody settled. The remedy is never a
- * hand edit, so the `fix` names the sync command rather than describing what to
- * type.
- *
- * Unlike `checkDecisionLog` it takes no `phased` flag, and the difference is
- * load-bearing: `syncGlobalConstraints` writes the same rendered section into
- * every file of a deliverable — a phase file is handed to an implementing agent
- * on its own, so it carries the rules rather than a pointer to them — so every
- * plan file of every variant is compared against one re-render.
- *
- * Pure and synchronous, like the renderer it compares against: every read-only
- * pass reaches this check, and a check that read the disk a second time could
- * report a difference between two reads rather than a difference the plan has.
+ * Blocking, because displayed rules that disagree with the record bind an agent
+ * to something nobody settled. It takes no `phased` flag: a phase file is handed
+ * to an agent on its own, so every file carries the full rules rather than a
+ * pointer. Pure and synchronous, so it cannot report a difference between two
+ * disk reads rather than one the plan has.
  */
 export const checkGlobalConstraints = ({ plan, phase, decisions, syncCommand }: Params): StructuralFinding[] => {
 	const range = plan.generatedRegionRanges.get(generatedPlanRegions.globalConstraints);

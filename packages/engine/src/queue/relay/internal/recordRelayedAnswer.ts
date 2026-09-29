@@ -26,7 +26,6 @@ interface Params {
 	question: string;
 	answer: string;
 	ticket: TicketSummary;
-	/** The coordinator run's id — `appendJsonlRecords` stamps it on every record. */
 	coordinatorRunId: string;
 	/** The queue's own run directory in the main checkout — the one place the queue writes records. */
 	coordinatorRunDir: string;
@@ -35,9 +34,6 @@ interface Params {
 }
 
 /**
- * One relayed answer, kept in the coordinator run's `decisions.jsonl` and on
- * the ticket, before the worker sees it.
- *
  * A worktree's `.lightsout` belongs to the worker running in it, so the queue's
  * copy lives with the queue's own run, tagged per ticket.
  */

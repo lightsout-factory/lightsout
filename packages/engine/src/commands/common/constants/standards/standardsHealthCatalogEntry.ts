@@ -2,7 +2,6 @@ import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalog
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 
-/** `lightsout standards-health` — reads the run history rather than the code, so it takes nothing but a repository. */
 export const standardsHealthCatalogEntry: CommandCatalogEntry = {
 	id: 'standards-health',
 	cli: 'lightsout standards-health',

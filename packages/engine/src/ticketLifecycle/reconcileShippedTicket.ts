@@ -20,21 +20,17 @@ interface Params {
 }
 
 /**
- * The Done write that follows a positively confirmed merge, and the one
- * sentence saying it did not happen.
+ * Nothing here throws or reports failure by any channel that could make a
+ * shipped branch look unshipped: a tracker failure cannot undo a confirmed
+ * merge, so every failure is a returned sentence the caller prints beside the
+ * ship.
  *
- * Nothing here throws and nothing here reports failure by any channel that
- * could make a shipped branch look unshipped: a tracker failure cannot undo a
- * confirmed merge, so every failure path is a returned sentence the caller
- * prints beside the ship it already recorded as successful.
+ * A repository with no `ticket-tracker` block is answered before a missing
+ * reference is: it never asked for reconciliation, so a warning would be noise
+ * on every ship it runs.
  *
- * A repository with no `ticket-tracker` block is answered before the missing
- * reference is: it never asked for reconciliation, so a warning about a ticket
- * reference would be noise on every ship it ever runs.
- *
- * No planning status is written. The ticket's shaping history is not this
- * write's business — a merge says nothing about what preparation the work
- * needed.
+ * No planning status is written: a merge says nothing about what preparation
+ * the work needed.
  *
  * @returns undefined when the ticket now says Done, or one sentence naming why it does not
  */

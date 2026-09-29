@@ -10,12 +10,8 @@ interface Params {
 }
 
 /**
- * Assigned names a file already carries AS COMMITTED — never the working tree,
- * so a re-entry after a park reads the same verdict as the first pass. A test
- * written for older behaviour cannot stand as a new criterion's verifier, and
- * this is what catches a plan that names one.
- *
- * @returns one line per offending file, empty when the ledger conflicts with nothing.
+ * Reads each file as committed, never the working tree, so a re-entry after a park reads the
+ * same verdict. A test written for older behaviour cannot stand as a new criterion's verifier.
  */
 export const committedLedgerConflicts = async ({ cwd, assignments, movePaths }: Params): Promise<string[]> => {
 	const found = await Promise.all(

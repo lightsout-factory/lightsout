@@ -5,12 +5,6 @@ import { isRateLimitMessage } from '#src/drivers/internal/common/utils/isRateLim
 import { spawnCollect } from '#src/drivers/internal/common/utils/spawnCollect.ts';
 import { writeSystemPromptFile } from '#src/drivers/internal/common/utils/writeSystemPromptFile.ts';
 
-/**
- * The final `result` event of `claude -p --output-format stream-json`
- * (verified against claude 2.1.200). Only `result` and `is_error` drive the
- * driver's verdict; the full raw event — usage, cost, everything — flows to
- * `onEvent` untouched. Parse, don't cast.
- */
 const ResultEnvelope = z.object({
 	result: z.string().optional(),
 	is_error: z.boolean().optional(),
@@ -30,11 +24,9 @@ const ResultEvent = ResultEnvelope.extend({
 });
 
 /**
- * One streamed `assistant` event (verified against claude 2.1.200). Only the
- * input side is read: the harness emits the same message once per content
- * block, so `message.id` is what tells a repeat from a new message, and the
- * streamed `output_tokens` is a placeholder — one captured drafting transcript
- * streamed 86 output tokens against a terminal session figure of 38790.
+ * The harness emits the same message once per content block, so `message.id`
+ * tells a repeat from a new message. The streamed `output_tokens` is a
+ * placeholder, so only the input side is read.
  */
 const AssistantEvent = z.object({
 	type: z.literal('assistant'),
@@ -50,7 +42,6 @@ const AssistantEvent = z.object({
 	}),
 });
 
-/** The terminal event's own counts, normalized. Undefined when it stated neither tokens nor cost. */
 const resultUsage = ({ event }: { event: z.infer<typeof ResultEvent> }) =>
 	event.usage || event.total_cost_usd !== undefined
 		? {
@@ -63,12 +54,8 @@ const resultUsage = ({ event }: { event: z.infer<typeof ResultEvent> }) =>
 		: undefined;
 
 /**
- * Adds up the input-side counts the streamed assistant messages carry, each
- * message once, and answers the running total whenever a fresh one lands.
- *
- * Output tokens and cost stay out of it: the harness knows neither while the
- * message is being emitted, and reporting the streamed placeholder would print
- * a figure hundreds of times too small where "not reported" is the truth.
+ * Output tokens and cost stay out: the harness knows neither while the message
+ * streams, and its placeholder would print a figure far too small.
  */
 const createAssistantUsageTally = () => {
 	const counted = new Set<string>();
@@ -99,16 +86,6 @@ const parseEnvelope = ({ stdout }: { stdout: string }) => {
 	}
 };
 
-/**
- * Driver for the Claude Code CLI in headless mode (`claude -p`).
- *
- * Spawns the user's own installed, logged-in `claude` binary — auth and
- * billing ride the user's existing session (e.g. a Max subscription), and the
- * engine never sees a credential. Stream-json event shapes verified against
- * claude CLI 2.1.200; `--append-system-prompt-file` and
- * `--exclude-dynamic-system-prompt-sections` verified against claude CLI
- * 2.1.218; `--effort` verified against claude CLI 2.1.221.
- */
 export const createClaudeCodeDriver = (): Driver => {
 	const driver: Driver = {
 		name: 'claude-code',

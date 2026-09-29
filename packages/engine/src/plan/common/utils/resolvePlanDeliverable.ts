@@ -20,18 +20,11 @@ interface ResolvedDeliverable {
 }
 
 /**
- * Resolve a plan deliverable to its files, reading the plan's own workspace
- * folder: `plan.md` is the sole deliverable of a single plan; otherwise
- * `overview.md` is context and every `phase<N>-<slug>.md` is a deliverable.
- * Files are matched by name, not by extension, because the folder also holds the
- * plan's working files (`brainstorm-notes.md`, the JSON records) — none of which is a plan
- * to grade. Shared by the dedup and grade passes, which resolve the deliverable
- * identically.
+ * Files are matched by name, not by extension, because the folder also holds
+ * the plan's working files (`brainstorm-notes.md`, the JSON records).
  *
- * Disk-only by design, and it stays that way: `plan dedup` and `plan grade` are
- * read-only passes, so a tracker fetch added here would make every detection
- * pass reach the network unannounced. The error names the fetch instead of
- * doing it — `implement` owns the restore, at its own command edge.
+ * Disk-only by design: a tracker fetch here would make every read-only
+ * detection pass reach the network unannounced. `implement` owns the restore.
  */
 export const resolvePlanDeliverable = async ({ cwd, name }: Params): Promise<ResolvedDeliverable> => {
 	const dir = await planWorkspaceDir({ cwd, name });

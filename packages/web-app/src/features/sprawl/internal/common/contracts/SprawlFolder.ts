@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-/** One folder at one frame — a row of squares in the chart. */
 export const SprawlFolder = z.object({
 	/** Repo-relative folder path. */
 	path: z.string(),

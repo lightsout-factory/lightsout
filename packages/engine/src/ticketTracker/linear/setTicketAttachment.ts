@@ -6,9 +6,9 @@ import { runLinear } from '#src/ticketTracker/linear/internal/runLinear.ts';
 
 interface Params {
 	settings: LinearTrackerSettings;
-	/** The ticket's internal id, from `TrackerTicket.id` — the same thing every other write here takes. */
+	/** `TrackerTicket.id`. */
 	ticketId: string;
-	/** The attachment's title AND the uploaded file's name: one durable file's own name, e.g. 'plan.md'. */
+	/** Both the attachment's title and the uploaded file's name, e.g. 'plan.md'. */
 	title: string;
 	content: Buffer;
 	/** The upload's content type, e.g. 'text/markdown'. */
@@ -16,23 +16,15 @@ interface Params {
 }
 
 /**
- * Put one file on a ticket as a named attachment, replacing any attachment
- * already carrying that title.
- *
- * The replace is what makes a second publish a replacement rather than a
- * doubling: two attachments named for the same file would leave a fetch
- * choosing between them.
- *
- * The read and both writes share one call, so they cannot end up on different
- * deadlines — the rule `appendTicketNote` already follows.
+ * Replaces any attachment with the same title, so a fetch never has to choose
+ * between two copies. The read and both writes share one call and one deadline.
  */
 export const setTicketAttachment = async ({ settings, ticketId, title, content, contentType }: Params): Promise<TrackerFailure | undefined> => {
 	return runLinear({
 		apiKey: settings.apiKey,
 		call: async (client) => {
 			const issue = await client.issue(ticketId);
-			// Paged: an issue carries attachments other integrations wrote, and a
-			// same-titled one on the second page would survive as a duplicate.
+			// Paged: a same-titled attachment on a later page would survive as a duplicate.
 			const attachments = await collectNodes({ connection: await issue.attachments() });
 
 			const payload = await client.fileUpload(contentType, title, content.byteLength);
@@ -43,8 +35,7 @@ export const setTicketAttachment = async ({ settings, ticketId, title, content, 
 			}
 
 			const headers = Object.fromEntries(uploadFile.headers.map(({ key, value }): [string, string] => [key, value]));
-			// `fetch` takes a view over a plain ArrayBuffer; a Node Buffer may sit on
-			// any buffer kind, so copy the bytes into one the request body accepts.
+			// A Node Buffer may sit on a non-plain ArrayBuffer, which `fetch` rejects.
 			const body = new Uint8Array(content);
 			const response = await fetch(uploadFile.uploadUrl, {
 				method: 'PUT',

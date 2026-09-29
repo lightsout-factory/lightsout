@@ -8,16 +8,10 @@ interface Params {
 }
 
 /**
- * Whether a body does nothing but forward one call to a collaborator held on
- * `this` — `update({ patch }) { return this.runState.update({ patch }); }`.
- *
- * This is the exact shape the composition-over-inheritance rule mandates in
- * place of `extends`: the class holds the shared part and reaches it through
- * one-line forwards, which keeps the class surface the only way in. Two
- * classes holding the same collaborator therefore share these bodies BY
- * DESIGN, and a duplicate detector that reports them is reporting the
- * standards' own remedy. Both duplication tiers consult this one predicate so
- * they can never disagree about the exempt shape.
+ * A one-call forward to a `this`-held collaborator is the exact shape the
+ * composition-over-inheritance rule mandates in place of `extends`, so two
+ * classes holding the same collaborator share these bodies BY DESIGN, and a
+ * duplicate detector that reports them is reporting the standards' own remedy.
  *
  * Anything past a single forward — a second statement, a computation, a call
  * on anything but a `this`-held field — is not the mandated shape and stays a

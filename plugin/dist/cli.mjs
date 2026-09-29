@@ -122806,7 +122806,7 @@ var ConfigImplement = external_exports.object({
 
 // src/contracts/ConfigPlan.ts
 var ConfigPlan = external_exports.object({
-  /** When true the writer produces the contract shape with an acceptance-test ledger, the lint requires the ledger section, and the grade weighs each plan file and spawns readers only for heavy ones. Default false: every plan command behaves exactly as before this key existed. */
+  /** When true the writer produces the contract shape with an acceptance-test ledger, the lint requires the ledger section, and the grade weighs each plan file and spawns readers only for heavy ones. Default false. */
   contract: external_exports.boolean().optional(),
   /** The mode a work order's own record is created with: `single-plan`, where plan 001 alone supplies the work order's implementation, or `multiple-plan`, where the work order's plans implement in numeric order on one branch. Default `single-plan`. Read only when a record is created, so changing it never rewrites a work order that already has one. The queue creates the record of a ticket it builds from the ticket body in `single-plan` mode whatever this key says. */
   "default-work-order-mode": external_exports.enum(WorkOrderMode).optional(),
@@ -122943,8 +122943,7 @@ var ConfigShip = external_exports.object({
    * empty may merge after the usual registration grace — the explicit
    * opt-out for a repository that intentionally has no CI. Default false,
    * and never set automatically. It applies only to absent checks: failed,
-   * pending, unreadable and another commit's checks are enforced exactly as
-   * they always were.
+   * pending, unreadable and another commit's checks are still enforced.
    */
   "allow-no-ci": external_exports.boolean().optional(),
   /** When true, a passed `lightsout implement` run chains into ship without `--ship` being typed. Default false. */
@@ -122963,7 +122962,6 @@ var jiraSiteUrl = external_exports.string().url().refine((value) => {
 }, "Jira site-url must be an HTTPS *.atlassian.net origin");
 var ConfigTicketTracker = external_exports.discriminatedUnion("provider", [
   external_exports.object({
-    /** Which tracker the engine talks to. */
     provider: external_exports.literal("linear"),
     /** The Linear team key, e.g. 'LO' — every query is scoped to it. */
     team: external_exports.string().min(1, "Linear trackers need a team"),
@@ -122971,7 +122969,6 @@ var ConfigTicketTracker = external_exports.discriminatedUnion("provider", [
     "api-key-env": external_exports.string().min(1, "Linear trackers need an api-key-env")
   }).strict(),
   external_exports.object({
-    /** Which tracker the engine talks to. */
     provider: external_exports.literal("jira"),
     /** The Jira Cloud origin, normalized by the settings resolver before requests are made. */
     "site-url": jiraSiteUrl,
@@ -123094,10 +123091,9 @@ var StandardsSeverity = {
   /** Worth a look, plausibly intentional — reported and judged, never blocking. */
   Advisory: "advisory",
   /**
-   * Not run. Set by a repo when its own linter already enforces the rule — the
-   * only way a rule stops blocking — or shipped by a pack for a rule a repo
-   * opts into. An opt-in rule a repo never names is not part of its standards
-   * at all, prose included.
+   * Not run. Set by a repo when its own linter already enforces the rule, or
+   * shipped by a pack for an opt-in rule. An opt-in rule a repo never names is
+   * not part of its standards at all, prose included.
    */
   Off: "off"
 };
@@ -123155,55 +123151,36 @@ var LightsoutConfig = external_exports.object({
    */
   "agent-commands": external_exports.array(external_exports.string()).optional(),
   /**
-   * Path prefixes of generated/derived files (e.g. a Prisma client output
-   * dir). Treated like gate artifacts: real files in the diff, but excluded
-   * from changed-file attribution — they never earn agent turns and never
-   * pollute the manifest. The source that generates them is the change.
+   * Path prefixes of generated files, e.g. a Prisma client output dir. They
+   * are excluded from changed-file attribution, because the source that
+   * generates them is the change.
    *
-   * This is also where a repo says its build output lands when the walk
-   * cannot guess it. `listSourceFiles` skips `dist`, `build`, `coverage` and
-   * `out` by name outside a `src` folder; anything else — an output dir with
-   * a house name, or one written inside `src` — is invisible to the engine
-   * until it is named here, and would otherwise be checked as source.
+   * Also where a repo names build output the walk cannot guess:
+   * `listSourceFiles` skips only `dist`, `build`, `coverage` and `out`, and
+   * only outside a `src` folder.
    */
   generated: external_exports.array(external_exports.string()).optional(),
   /**
-   * Path prefixes of third-party code the repo vendors in rather than writes
-   * (e.g. a shadcn/ui component folder a generator drops in and the app then
-   * edits). Excluded from the source walk exactly as `generated` is, so its
-   * conventions are never judged against this repo's standards, it never
-   * becomes a test subject, and it never shows up as prior art.
+   * Path prefixes of third-party code the repo vendors in, e.g. a shadcn/ui
+   * component folder. Excluded from the source walk like `generated`, but a
+   * vendored file is attributed when it changes: it has no source in the
+   * repo, so an edit inside it is the change.
    *
-   * It differs from `generated` in the one way that matters: a vendored file
-   * IS attributed when it changes. Generated output is excluded from
-   * attribution because the source that produced it is the real change;
-   * vendored code has no such source in the repo, so an edit inside it is the
-   * change and must earn its agent turn like any other.
-   *
-   * The engine's exclusion stops the engine's own checks and nothing else. A
-   * repo whose coverage threshold covers the vendored path must exclude it
-   * there too — that gate is the repo's test runner, which the engine only
-   * invokes.
+   * The exclusion stops only the engine's own checks; a repo's coverage
+   * threshold must exclude the path itself.
    */
   vendored: external_exports.array(external_exports.string()).optional(),
   /**
-   * Path to the JSON coverage summary the coverage tooling writes (default
-   * `coverage/coverage-summary.json`) — repo-relative in single-package
-   * repos, package-relative in monorepo mode. `lightsout
-   * test-coverage-to-threshold` reads per-file percentages from it; the file
-   * is the tool-agnostic contract, so a printed coverage table changing
-   * format never breaks the run.
+   * Default `coverage/coverage-summary.json`: repo-relative in
+   * single-package repos, package-relative in monorepo mode. The JSON file,
+   * not a printed table, is the tool-agnostic contract.
    */
   "coverage-summary-path": external_exports.string().optional(),
   /**
    * How many source files one plan or phase may create or modify before the
    * feature executor refuses it. Default 50 (`defaultExecutorFileLimit`).
-   *
-   * It is one key rather than a number per reader because the plan lint's
-   * advisory size warning, the phased-versus-single scope estimate, the plan
-   * template and the executor's own stop rule must agree by construction: a
-   * plan graded against a softer number and then refused at implement time
-   * costs a whole run to learn what the lint already knew.
+   * One key for every reader, because a plan graded against a softer number
+   * and then refused at implement time costs a whole run.
    */
   "executor-file-limit": external_exports.number().positive().optional(),
   /** Directory holding workspace packages, for monorepo scoped gates. Default 'packages'. */
@@ -123912,9 +123889,6 @@ var createPiFamilyDriver = ({ name, variant, command }) => {
         exitCode,
         rateLimited: errored && isRateLimitMessage({ text: `${stdout}
 ${stderr}` }),
-        // The session's own spend, not the final message's: this harness
-        // counts per message, so the last one alone under-reports every
-        // multi-turn agent.
         usage: usage2
       };
     }
@@ -124495,12 +124469,7 @@ var FrictionKind = {
 var FrictionEntry = external_exports.object({
   /** `friction` (something fought the agent) or `decision` (a silent-input guess). Omitted means friction. */
   kind: external_exports.enum(FrictionKind).optional(),
-  /**
-   * Best-effort taxonomy, never load-bearing: an unrecognized label coerces
-   * to `other` instead of failing the whole report — `detail` carries the
-   * real signal. (A live run's valid zero-change report died over an
-   * invented `"scope"` area.)
-   */
+  /** Best-effort taxonomy: an unknown label coerces to `other` rather than failing the whole report; `detail` carries the real signal. */
   area: external_exports.enum(FrictionArea).catch(FrictionArea.Other),
   detail: external_exports.string()
 });
@@ -124563,9 +124532,9 @@ var RunStatus = {
   Running: "running",
   Passed: "passed",
   Failed: "failed",
-  /** Hit the harness rate-limit wall — a first-class pausable state, not an error. Resumes when the window resets. */
+  /** A pausable state, not an error. Resumes when the window resets. */
   PausedRateLimit: "paused-rate-limit",
-  /** Stopped at a caller-set budget ceiling (e.g. refactor --max-batches) — pausable, resume to continue. */
+  /** Stopped at a caller-set budget ceiling (e.g. refactor --max-batches); resume to continue. */
   PausedBudget: "paused-budget",
   /** Supervisor determined a human decision is required. */
   Escalated: "escalated"
@@ -124691,13 +124660,11 @@ import { join as join21 } from "node:path";
 
 // src/contracts/run/PipelineKind.ts
 var PipelineKind = {
-  /** A plan implemented step by step. What a manifest predating the discriminator is read as. */
+  /** What a manifest without the discriminator is read as. */
   Implement: "implement",
-  /** A standards-check work-list burned down batch by batch. */
   Refactor: "refactor",
   /** A coordinator that runs one child run per phase of an overview. */
   Phases: "phases",
-  /** A coverage measurement raised to its threshold batch by batch. */
   Coverage: "coverage",
   /** A coordinator draining a tracker's backlog into parallel worktrees. */
   Queue: "queue",
@@ -124751,13 +124718,9 @@ var matchRuns = ({ known, runId }) => {
   return exact === void 0 ? [...known].filter(([candidate]) => candidate.startsWith(runId)).map(([candidate, runDir]) => ({ runId: candidate, runDir })) : [{ runId, runDir: exact }];
 };
 var RunDirectoryIndex = class {
-  /** One run-id-to-directory map per `cwd` — filled by its first scan, and added to as runs are created. */
   directories = /* @__PURE__ */ new Map();
   scanned = /* @__PURE__ */ new Set();
   /**
-   * Which run a typed id names, and where it is — both from one lookup, so the
-   * two questions can never be answered from two different scans.
-   *
    * @throws {RunNotFoundError} When nothing matches the id, or when a shortened id matches more than one run — which names the matches.
    */
   async resolve({ cwd, runId }) {
@@ -124809,11 +124772,9 @@ var resolveRunDir = async ({ cwd, runId }) => (await runDirectoryIndex.resolve({
 var CleanupEndReason = {
   /** Nothing qualified as work on the first look, so no cleanup agent was ever spawned. */
   NoWork: "no-work",
-  /** No qualifying finding was left standing after a round. */
   Clean: "clean",
   /** Two consecutive rounds left the identical qualifying work list unchanged — a stable disagreement, not something another round can settle. */
   DeclinedTwice: "declined-twice",
-  /** Every round the configured budget allows was spent. */
   BudgetExhausted: "budget-exhausted",
   /** The cleanup agent timed out, returned no usable report, or returned one whose status was not `complete`. */
   AgentFailed: "agent-failed"
@@ -124833,16 +124794,13 @@ var RawStandardsFinding = external_exports.object({
   /** What is true of this one site — the measurement, the names, the span. */
   detail: external_exports.string(),
   /**
-   * What to do about findings of this kind, and any judgment the rule
-   * cannot make for itself. Constant across every finding a rule emits for
-   * the same reason, so a reader is told once rather than once per site.
+   * What to do about findings of this kind. Constant across every finding a
+   * rule emits for the same reason, so a reader is told once rather than per site.
    */
   guidance: external_exports.string().optional(),
   /**
-   * The number a capped rule compared against its cap — lines, files,
-   * parameters. Declared so a later read can tell a site that grew from a site
-   * that merely moved; the `detail` prose states the same number for a human
-   * and is free to be reworded. Absent on every rule that measures nothing.
+   * The number a capped rule compared against its cap, so a later read can tell
+   * a site that grew from one that merely moved; `detail` is free to be reworded.
    */
   measure: external_exports.number().optional()
 });
@@ -124877,15 +124835,12 @@ var StandardsPackRoot = external_exports.object({
   name: external_exports.string().min(1),
   formatVersion: external_exports.literal(1),
   /**
-   * Stamped by the bundler on a built pack, and absent from every authored
-   * one. Building leaves the fixture pairs and unit tests behind — they prove
-   * the pack rather than run it — so a built pack cannot answer the
-   * question `lightsout standards-validate` asks. Without this, that command
-   * reads every stripped fixture as a rule its author forgot, and reports a
-   * fault in each of them instead of one fact about the pack.
+   * Stamped by the bundler on a built pack. Building strips the fixtures, so
+   * without this `lightsout standards-validate` would report every stripped
+   * fixture as a fault instead of one fact about the pack.
    */
   built: external_exports.literal(true).optional(),
-  /** One line a pack page shows under its name. Optional; a pack with none shows only its name. */
+  /** One line a pack page shows under its name. */
   description: external_exports.string().min(1).optional(),
   /** Absolute URL for the pack's own page or repository. */
   homepage: external_exports.url().optional()
@@ -124901,18 +124856,9 @@ var StandardsSet = {
 
 // src/contracts/standardsCheck/StandardsFinding.ts
 var StandardsFinding = external_exports.object({
-  /**
-   * The rule's id, as its folder in a standards package names it. A free
-   * string rather than a closed list: rule identity belongs to the loaded
-   * packages, and the only place the valid ids are known is where those
-   * packages have been read.
-   */
+  /** A free string: the valid ids are known only where the loaded packages have been read. */
   rule: external_exports.string(),
-  /**
-   * Only the two reporting severities. `off` is a CONFIGURATION state — a
-   * rule a repo switched off emits nothing, so a persisted finding at
-   * severity `off` would be a contradiction the schema should refuse.
-   */
+  /** `off` is a configuration state: a rule switched off emits nothing. */
   severity: external_exports.enum([StandardsSeverity.Blocking, StandardsSeverity.Advisory]),
   ...RawStandardsFinding.shape
 });
@@ -124981,9 +124927,8 @@ var WorkReport = external_exports.object({
 
 // src/contracts/run/RefactorStepReport.ts
 var RefactorStepReport = external_exports.object({
-  /** Executor invocations actually spent, carried across a resume. */
+  /** Carried across a resume. */
   roundsUsed: external_exports.number().int().nonnegative(),
-  /** Why cleanup ended. Absent while cleanup is still running or parked mid-loop; set exactly once, when the loop ends. */
   endReason: external_exports.enum(CleanupEndReason).optional(),
   /** Qualifying blocking findings still standing when cleanup ended. */
   remaining: external_exports.array(StandardsFinding),
@@ -124991,7 +124936,6 @@ var RefactorStepReport = external_exports.object({
   inherited: external_exports.array(StandardsFinding),
   /** Findings whose provenance or worsening could not be established. */
   uncertain: external_exports.array(StandardsFinding),
-  /** Cleanup-agent failures: timeout, absent or unusable report, non-complete report. */
   failures: external_exports.array(external_exports.string()),
   /** The judgment reviewer's read before the first round. */
   initialReview: external_exports.array(StandardsFinding),
@@ -124999,7 +124943,6 @@ var RefactorStepReport = external_exports.object({
   finalReview: external_exports.array(StandardsFinding),
   /** Rendered account of what cleanup left behind, or absent when it left nothing. */
   narration: external_exports.string().optional(),
-  /** The last executor report, kept as the account of the final round. */
   lastReport: WorkReport.optional()
 });
 
@@ -125256,14 +125199,12 @@ var readJsonFile = async ({ path, schema }) => {
 
 // src/contracts/worktree/WorktreeRecord.ts
 var WorktreeRecord = external_exports.object({
-  /** The branch the tree is checked out on, as git names it. */
   branch: external_exports.string(),
   owner: external_exports.enum(WorktreeOwner),
-  /** The tree's absolute path, as the creator spelled it. */
   worktreePath: external_exports.string(),
-  /** ISO timestamp of the creation this record describes. */
+  /** ISO timestamp. */
   createdAt: external_exports.string(),
-  /** What the branch was cut from, as the creator spelled it — `origin/<default>` for a queue or implement tree, a commit sha for a planning tree pinned to the launching checkout's HEAD. */
+  /** `origin/<default>` for a queue or implement tree, a commit sha for a planning tree pinned to the launching checkout's HEAD. */
   startPoint: external_exports.string().optional()
 });
 
@@ -125433,27 +125374,20 @@ var maxCheapFixRetries = 2;
 
 // src/contracts/ship/ShipBlockReason.ts
 var ShipBlockReason = {
-  /** Uncommitted or untracked changes in the working tree. */
   DirtyTree: "dirty-tree",
   /** The checkout is on the repository's default branch, or the remote's default branch could not be named. */
   DefaultBranch: "default-branch",
-  /** The branch name does not match the configured ticket pattern. */
   TicketPatternMismatch: "ticket-pattern-mismatch",
   /** The configured `pre-ship` command exited non-zero, or its changes could not be committed. */
   PreShipFailed: "pre-ship-failed",
-  /** `git push --set-upstream origin <branch>` exited non-zero. */
   PushFailed: "push-failed",
   /** `gh` is missing, or is not authenticated for this repository's host. */
   ForgeNotAuthenticated: "forge-not-authenticated",
   /** Not inside a git worktree, on a detached HEAD, or git could not answer within its deadline. */
   GitUnreadable: "git-unreadable",
-  /** The forge refused to open or read the pull request. */
   PullRequestUnavailable: "pull-request-unavailable",
-  /** One or more required checks finished red. */
   ChecksFailed: "checks-failed",
-  /** Checks were still running when the wait ceiling was reached. */
   ChecksTimedOut: "checks-timed-out",
-  /** The forge refused the merge (conflict, protected branch, review required). */
   MergeRejected: "merge-rejected",
   /** Git could not fetch `origin`, could not start the merge, or could not say what commit the branch was on. */
   IntegrationUnavailable: "integration-unavailable",
@@ -126116,7 +126050,7 @@ var defaultGateTimeoutMinutes = 15;
 
 // src/gates/common/constants/GateScheduleKind.ts
 var GateScheduleKind = {
-  /** One stage, the engine's canonical order — what every gate caller that asks for no schedule gets. */
+  /** One stage, the engine's canonical order. */
   Single: "single",
   /** Two stages, cheap then expensive, with every group held at the boundary. */
   Tiered: "tiered",
@@ -126141,11 +126075,10 @@ import { dirname as dirname2 } from "node:path";
 
 // src/gates/gateLock/internal/common/constants/gateLockTimings.ts
 var gateLockTimings = {
-  /** The settled wait limit — 30 minutes, separate from each command's own execution timeout. */
+  /** Separate from each command's own execution timeout. */
   waitCeilingMs: 30 * 6e4,
   /** A gate run frees the machine at an unpredictable moment, and the next run should start promptly. */
   pollIntervalMs: 2e3,
-  /** How often a waiting run says so. Fifteen polls happen between two lines, and the reader wants neither of the other rates. */
   progressIntervalMs: 3e4
 };
 
@@ -126191,14 +126124,12 @@ var GateLock = external_exports.object({
   /** The holder's process. Dead means the engine is gone — half of what makes a leftover reclaimable. */
   pid: external_exports.number().int(),
   runId: external_exports.string(),
-  /** The checkout the holder runs its gates in, which is what a waiting run names. */
   worktree: external_exports.string(),
   /** When the machine was taken, and so the only place a waiter can read the reservation's age from. */
   startedAt: external_exports.string(),
   /**
-   * The process groups of the gate commands executing right now. Gates are
-   * spawned detached, so a killed engine leaves these running: reclaiming on
-   * the dead pid alone would stack a second run's suites on top of them.
+   * Gates are spawned detached, so a killed engine leaves these running:
+   * reclaiming on the dead pid alone would stack a second run on top of them.
    */
   gateGroups: external_exports.array(external_exports.number().int())
 });
@@ -126384,7 +126315,6 @@ import { mkdir as mkdir4, rm as rm4 } from "node:fs/promises";
 
 // src/gates/internal/common/constants/GateEnding.ts
 var GateEnding = {
-  /** Exit 0. */
   Passed: "passed",
   /** A red that is evidence about the code — a gate that failed to spawn included. */
   Failed: "failed",
@@ -126733,10 +126663,8 @@ var mergeGateRunResults = ({ results }) => {
     failedFamilies: [...new Set(results.flatMap((result) => result.failedFamilies))],
     crashes: results.flatMap((result) => result.crashes),
     timeouts: results.flatMap((result) => result.timeouts),
-    // A constant rather than a fold: the inputs here are the groups of a stage
-    // and the stages of a checkpoint, and the reservation is taken around the
-    // whole schedule — so no input this is ever given can carry a coordination
-    // reason, and folding one would be a branch no test could reach.
+    // The reservation is taken around the whole schedule, so no stage or group
+    // result can carry a coordination reason.
     coordination: void 0
   };
 };
@@ -127784,9 +127712,7 @@ var recordShipStep = async ({
 
 // src/ship/forge/common/constants/PullRequestState.ts
 var PullRequestState = {
-  /** Not merged and not closed — ship's resume path adopts one of these. */
   Open: "open",
-  /** Merged into the default branch — the queue's positive evidence that a ticket already shipped. */
   Merged: "merged"
 };
 
@@ -128267,7 +128193,7 @@ var ShippingProgressRecorder = class {
     this.recordPath = getShippingProgressPath({ cwd, branch });
     this.record = freshRecord({ branch, maxAttempts });
   }
-  /** Attempt 1 starts a fresh record, replacing any an earlier ship of the branch left; a later one runs the five attempt steps again under the same start time. */
+  /** Attempt 1 replaces any record an earlier ship left; a later attempt keeps the same start time. */
   beginAttempt({ attempt }) {
     const { branch, maxAttempts } = this.record;
     this.record = attempt === 1 ? freshRecord({ branch, maxAttempts }) : {
@@ -128305,7 +128231,7 @@ var ShippingProgressRecorder = class {
     this.record = { ...this.record, steps: this.record.steps.map((current) => current.id === step ? update(current) : current) };
     this.save();
   }
-  /** Stamps the change and queues a whole-record write behind the ones already queued. Each write holds its own snapshot, because `record` is replaced rather than mutated. */
+  /** Each write holds its own snapshot, because `record` is replaced rather than mutated. */
   save() {
     const record3 = { ...this.record, pid: process.pid, updatedAt: (/* @__PURE__ */ new Date()).toISOString() };
     const recordPath = this.recordPath;
@@ -130270,9 +130196,7 @@ var gradeMemoryFileName = "grade-memory.json";
 
 // src/plan/internal/common/constants/durablePlanFileNames.ts
 var durablePlanFileNames = {
-  /** The plan's working records, each attached when the folder holds it. */
   records: [brainstormNotesFileName, "decisions.json", gradeFileName, gradeMemoryFileName],
-  /** A plan deliverable's own file name, spelled exactly as `resolvePlanDeliverable` matches it. */
   deliverable: /^(?:plan\.md|overview\.md|phase\d+.*\.md)$/
 };
 
@@ -130726,11 +130650,9 @@ import { readFile as readFile17 } from "node:fs/promises";
 
 // src/contracts/run/AcceptanceTestRecord.ts
 var AcceptanceTestRecord = external_exports.object({
-  /** The plan's one-line acceptance criterion, carried so the reviewer sees what the test is for. */
   criterion: external_exports.string().min(1),
-  /** Repo-relative path of the test file the criterion is stated in. */
+  /** Repo-relative. */
   testFile: external_exports.string().min(1),
-  /** The exact test name inside that file. */
   testName: external_exports.string().min(1),
   /** The gate key whose execution has to show this test passing. */
   gate: external_exports.string().min(1)
@@ -130738,7 +130660,7 @@ var AcceptanceTestRecord = external_exports.object({
 
 // src/contracts/run/ApprovedTestRecord.ts
 var ApprovedTestRecord = external_exports.object({
-  /** Repo-relative path of the test-side file. */
+  /** Repo-relative. */
   path: external_exports.string().min(1),
   /** SHA-256 of the approved copy under the run's approved directory. Absent on an approved removal. */
   sha256: external_exports.string().length(64).optional(),
@@ -130758,11 +130680,9 @@ var PackagesSource = {
 
 // src/contracts/run/RunCommit.ts
 var RunCommit = external_exports.object({
-  /** The commit git made, as `git rev-parse HEAD` answered it straight after. */
   sha: external_exports.string(),
-  /** The subject line this unit of work was committed under. */
   subject: external_exports.string(),
-  /** The run that made it — a phase's own child run id, which is why a coordinator's list can name several. */
+  /** A phase's own child run id, which is why a coordinator's list can name several. */
   runId: external_exports.string()
 }).strict();
 
@@ -130791,7 +130711,7 @@ var GateResult = external_exports.object({
   exitCode: external_exports.number().optional(),
   durationMs: external_exports.number().optional(),
   rerun: external_exports.boolean().optional(),
-  /** Present (always `true`) when this red was a test runner that died without reporting a failing test, rather than evidence about the code. */
+  /** A test runner that died without reporting a failing test, rather than evidence about the code. */
   crashed: external_exports.literal(true).optional(),
   /** Present (always `true`) when this attempt was stopped by the gate ceiling rather than returning an exit code. */
   timedOut: external_exports.literal(true).optional(),
@@ -130801,7 +130721,7 @@ var GateResult = external_exports.object({
   reason: external_exports.string().optional(),
   /** Last 2000 chars of stdout+stderr — present only on non-zero exit. */
   outputTail: external_exports.string().optional(),
-  /** Repo-relative directory this execution's per-test results were written to. */
+  /** Repo-relative. */
   testResultsDir: external_exports.string().optional()
 });
 
@@ -130810,9 +130730,9 @@ var StepRecord = external_exports.object({
   id: external_exports.string(),
   status: external_exports.enum(RunStatus),
   attempts: external_exports.number().int().nonnegative(),
-  /** Active time spent in this step, accumulated across attempts and resumes. */
+  /** Active time, accumulated across attempts and resumes. */
   durationMs: external_exports.number().optional(),
-  /** Files this step changed (paths from its reports) — per-step attribution; the run-wide union lives on the manifest. */
+  /** Paths from this step's reports; the run-wide union lives on the manifest. */
   changedFiles: external_exports.array(external_exports.string()).optional(),
   report: external_exports.unknown().optional(),
   error: external_exports.string().optional(),
@@ -130831,71 +130751,55 @@ var RunManifest = external_exports.object({
   runId: external_exports.string(),
   createdAt: external_exports.string(),
   updatedAt: external_exports.string(),
-  /** Path to the plan file the run implements, relative to the target repo. For a phases run this is the overview path. */
+  /** Relative to the target repo. For a phases run this is the overview path. */
   plan: external_exports.string(),
-  /** The plan this run belongs to, named the way the plans directory names it: a plan address `<work-order>/<plan-id>`. Absent on a run that belongs to no plan — a refactor, coverage, queue or direct run, and an implement run built from a plan file outside the plans directory. */
+  /** A plan address `<work-order>/<plan-id>`. Absent on a run that belongs to no plan, including an implement run of a plan file outside the plans directory. */
   planName: external_exports.string().optional(),
-  /** Which pipeline owns this run. Absent on pre-discriminator manifests → implement. */
+  /** Absent means implement. */
   pipeline: external_exports.enum(PipelineKind).optional(),
   /** The ticket this run builds, e.g. 'LO-70'. Absent on a run started from a plan. */
   ticketRef: external_exports.string().optional(),
-  /** Optional overview plan (high-level context for a phased plan), relative to the target repo. */
+  /** Relative to the target repo. */
   overview: external_exports.string().optional(),
-  /** Set on a phase's child run: the run id of the coordinator that started it. Absent on a top-level run. */
+  /** Set on a phase's child run to the coordinator's run id. */
   parentRunId: external_exports.string().optional(),
-  /** Harness the run was started with (a resumed run must reuse it). */
+  /** A resumed run must reuse it. */
   harness: external_exports.string(),
-  /**
-   * Snapshot of the resolved config at run creation — the permanent record
-   * of which settings produced this run. Resume EXECUTES with the current
-   * config file; this records what the run started with.
-   */
+  /** A record of what the run started with; resume executes with the current config file. */
   config: LightsoutConfig.optional(),
   status: external_exports.enum(RunStatus),
-  /** Step id currently executing, or null when no step is in flight. */
   currentStep: external_exports.string().nullable(),
   steps: external_exports.array(StepRecord),
-  /** Step ids the run's pipeline declared at start, in order — what lets a reader show a row for a step the run has not reached. Absent on a pipeline that discovers its steps as it goes (refactor, coverage, phases). */
+  /** Lets a reader show a row for a step not yet reached. Absent on a pipeline that discovers its steps as it goes. */
   stepOrder: external_exports.array(external_exports.string()).optional(),
-  /** The git branch the run was started on, as git named it — the key a ship result is filed under. Absent on a detached HEAD and outside a worktree. */
+  /** The key a ship result is filed under. Absent on a detached HEAD and outside a worktree. */
   branch: external_exports.string().optional(),
-  /** Absolute path of the checkout the run's git work, gates, agents and commit happened in. Absent on a run that built in the checkout it was launched from. */
+  /** Absolute. Absent on a run that built in the checkout it was launched from. */
   workspace: external_exports.string().optional(),
-  /** Resolved before the run started: a passing run will ship this branch. Absent when no ship intent was resolved at all. */
+  /** A passing run will ship this branch. Absent when no ship intent was resolved. */
   willShip: external_exports.boolean().optional(),
-  /** Source files changed so far, accumulated across steps. */
   changedFiles: external_exports.array(external_exports.string()),
-  /** The commits this run left behind, in the order they were made. A phased run's coordinator carries one per phase; every other run carries at most one. */
+  /** A phased run's coordinator carries one per phase; every other run carries at most one. */
   commits: external_exports.array(RunCommit).default([]),
   /**
-   * Package scope (directory names under the packages dir) for scoped
-   * gates. Seeded from the plan front-matter or `--packages`, then expanded
-   * as changed files reveal the true blast radius — never shrunk. Empty in
-   * non-monorepo mode.
+   * Directory names under the packages dir. Expanded as changed files reveal
+   * the blast radius, never shrunk. Empty in non-monorepo mode.
    */
   packages: external_exports.array(external_exports.string()).default([]),
-  /** Where the initial package scope came from — recorded so a derived scope is never mistaken for a declared one. */
+  /** Recorded so a derived scope is never mistaken for a declared one. */
   packagesSource: external_exports.enum(PackagesSource).optional(),
-  /**
-   * Aggregate agent usage across the whole run (per-invocation detail lives
-   * in the run dir's `agents.jsonl`). Absent for drivers reporting nothing.
-   */
+  /** Per-invocation detail lives in the run dir's `agents.jsonl`. Absent for drivers reporting nothing. */
   usage: RunUsage.optional(),
-  /**
-   * Paths already dirty/untracked in git when the run started. Subtracted
-   * from every git snapshot so only files the RUN changed are attributed to
-   * it — agents report what they changed, git reports what actually changed.
-   */
+  /** Paths already dirty when the run started, subtracted from every git snapshot so only the run's own changes are attributed to it. */
   baselineDirtyFiles: external_exports.array(external_exports.string()).default([]),
-  /** Public subject files resolved for the write-tests step — what verify fix re-invocations hand back to writers. */
+  /** What verify fix re-invocations hand back to test writers. */
   testSubjects: external_exports.array(external_exports.string()).default([]),
-  /** The live acceptance-test mapping: one entry per plan ledger row, rewritten by an approved disposition. Empty for a plan with no ledger. */
+  /** One entry per plan ledger row. */
   acceptanceTests: external_exports.array(AcceptanceTestRecord).default([]),
-  /** Test-side files whose approved version is not simply their content at HEAD — a copy the run took, or an approved removal. */
   approvedTests: external_exports.array(ApprovedTestRecord).default([]),
   /** Changed files the write-tests step skipped because nothing public reaches them; re-checked at run end. */
   unreachableChangedFiles: external_exports.array(external_exports.string()).default([]),
-  /** Changed files the write-tests step skipped because the repo's own coverage configuration does not collect them — the set verify fix re-invocations must not demand execution of. */
+  /** Files the repo's coverage configuration does not collect, so verify fix re-invocations must not demand their execution. */
   coverageExcludedChangedFiles: external_exports.array(external_exports.string()).default([])
 });
 
@@ -130981,10 +130885,8 @@ var createRun = async ({
     harness: driver,
     config: config2,
     branch,
-    // Absolute, because the reader that wants it is standing in another checkout
-    // and has nothing to join a relative path onto. Written from what this
-    // function already holds rather than threaded down from three pipeline entry
-    // points: `cwd` IS the checkout the run's work happens in.
+    // Absolute, because the reader that wants it stands in another checkout
+    // and has nothing to join a relative path onto.
     workspace: resolve8(cwd),
     willShip,
     status: RunStatus.Pending,
@@ -131095,7 +130997,6 @@ import { dirname as dirname23, join as join95 } from "node:path";
 var ActivityLevelKind = {
   /** The whole plan folder — every command run inside it folds under one of these. */
   Plan: "plan",
-  /** One invocation of a command, start to exit. */
   CommandRun: "command-run",
   /** A grouping inside a command run: a grading pass, a drafting fan-out, a repair round. */
   Pass: "pass",
@@ -131236,9 +131137,7 @@ var readGitStagedChange = async ({ cwd, maxDiffLength }) => {
 
 // src/contracts/work/CommitMessage.ts
 var CommitMessage = external_exports.object({
-  /** One line of 1 to 64 characters saying what the staged change does. */
   summary: external_exports.string().min(1, "a commit summary says what the change does in at least one character").max(64, "a commit summary is at most 64 characters").regex(/^[^\r\n]*$/u, "a commit summary is one line, with no line break"),
-  /** Optional plain prose, at most 1200 characters. */
   body: external_exports.string().max(1200, "a commit body is at most 1200 characters").optional()
 });
 
@@ -131958,14 +131857,11 @@ var upsertStep = ({ steps, record: record3 }) => {
 var RunState = class {
   cwd;
   config;
-  /** Ceiling for a run's agent invocations, config-resolved once. */
   agentTimeoutMs;
   manifest;
   usageTotals;
   onProgress;
-  // Every narrated line is teed to the run directory as well as forwarded. A
-  // detached run leaves no stdout to tail, so the terminal that started it is
-  // the only place its narration ever existed — and that terminal dies.
+  // Teed to the run directory because a detached run has no stdout to tail.
   progressSink;
   constructor({ cwd, config: config2, manifest, onProgress }) {
     this.cwd = cwd;
@@ -131976,7 +131872,7 @@ var RunState = class {
     this.usageTotals = seedUsageTotals({ usage: manifest.usage });
     this.agentTimeoutMs = (config2.timeouts?.["agent-minutes"] ?? defaultAgentTimeoutMinutes) * 6e4;
   }
-  /** The live manifest — reread after any update/setStep, never cached by callers. */
+  /** Reread after any update/setStep; callers must not cache it. */
   current() {
     return this.manifest;
   }
@@ -131990,13 +131886,6 @@ var RunState = class {
   async setStep({ record: record3, patch }) {
     await this.update({ patch: { ...patch, currentStep: record3.id, steps: upsertStep({ steps: this.manifest.steps, record: record3 }) } });
   }
-  /**
-   * Persist a step's terminal status and the run's, then announce the halt.
-   * The result a halted run reports is the holder's — this is only the
-   * persist-and-announce half, which every kind of run does the same way.
-   *
-   * @param label - what the announcement calls this run, e.g. `coverage run`
-   */
   async stop({ record: record3, status, error: error51, label: label2 }) {
     await this.setStep({ record: { ...record3, status, error: error51 }, patch: { status } });
     this.progress(`${label2} stopped at ${record3.id} \u2014 ${status}`);
@@ -132022,11 +131911,9 @@ var formatUsage = ({ usage: usage2 }) => `in ${formatTokenCount({ count: usage2.
 var PipelineRun = class {
   /** Public: the supervisor consult invokes with its own contract/timeouts, outside invokeRole. */
   driver;
-  // The shared run state is held, not inherited: what this run adds — step
-  // timers, evidence counters, agent invocation — stays visible against a
-  // plain value it forwards to. It stays private for the same reason:
-  // `setStep` and `recordUsage` below add to what they forward, and a caller
-  // holding the state could call the plain versions instead.
+  // The shared run state is held, not inherited, and private: `setStep` and
+  // `recordUsage` add to what they forward, and a caller holding the state
+  // could call the plain versions instead.
   runState;
   // Active time per step, accumulated across attempts and resumes: the
   // timer starts when nextRecord picks the step up (seeded with any prior
@@ -132047,7 +131934,6 @@ var PipelineRun = class {
   get config() {
     return this.runState.config;
   }
-  /** Ceiling for a run's agent invocations, config-resolved once. */
   get agentTimeoutMs() {
     return this.runState.agentTimeoutMs;
   }
@@ -132108,12 +131994,9 @@ var PipelineRun = class {
   openStepLevel({ step }) {
     return this.level?.open({ level: ActivityLevelKind.Step, label: step });
   }
-  // Every agent invocation's full event stream (tool calls, chat text, the
-  // final result) is teed to agents/stream-NN-<step>.jsonl — the chat as
-  // on-disk run evidence, tail-able live for anyone who wants the
-  // play-by-play. The progress stream stays quiet per event: a working
-  // agent fires tools every few seconds, and narrating each one drowned
-  // the terminal. Evidence only: outcomes never depend on it.
+  // Every agent invocation's full event stream is teed to
+  // agents/stream-NN-<step>.jsonl as run evidence, never narrated per event: a
+  // working agent fires tools every few seconds. Outcomes never depend on it.
   agentEventSink({ step }) {
     this.transcriptCount += 1;
     const name = `stream-${String(this.transcriptCount).padStart(2, "0")}-${step}.jsonl`;
@@ -132124,9 +132007,8 @@ var PipelineRun = class {
     });
     return createEventFileSink({ path, ready: path });
   }
-  // A final message that fails its contract is still evidence — persist it
-  // to the run dir before any retry, so a rejected report never has to be
-  // recovered from harness-internal session files again.
+  // A final message that fails its contract is still evidence, so it is
+  // persisted before any retry.
   persistRejected({ step }) {
     return async ({ text, attempt, validationError }) => {
       this.rejectedCount += 1;
@@ -145112,9 +144994,8 @@ var buildCloneSpansInput = async ({ cwd, source, settings, cache, compiler }) =>
           { path: b.sourceId, startLine: b.start.line, endLine: b.end.line },
           { path: a.sourceId, startLine: a.start.line, endLine: a.end.line }
         ],
-        // jscpd's own measure of a clone's size: the distance between the
-        // first and last token of the span. Both ends are optional in its
-        // types, and a span it could not place counts as no tokens.
+        // Both ends are optional in jscpd's types, and a span it could not
+        // place counts as no tokens.
         tokens: (a.end.position ?? 0) - (a.start.position ?? 0)
       });
     }
@@ -148863,10 +148744,8 @@ var runPhase = async ({
       overviewPath: current.plan,
       parentRunId: current.runId,
       existing: childManifest,
-      // The sequence's own owned set, taken before the sequence began, is the only
-      // set the unowned-edits guard can mean anything against: a phase that never
-      // started would otherwise snapshot a tree somebody may have sat in for days
-      // and call every edit in it its own.
+      // A phase that never started would otherwise snapshot a tree somebody may
+      // have edited since the sequence began and call every edit in it its own.
       inheritedBaseline: resumed && childManifest === void 0 ? [...current.changedFiles, ...current.baselineDirtyFiles] : void 0,
       skipRefactor,
       level: pass,
@@ -148987,11 +148866,8 @@ var appendActivityMark = async ({ path, mark }) => {
 
 // src/contracts/activity/ActivityMarkKind.ts
 var ActivityMarkKind = {
-  /** A level opened — its identity, its parent and what it is. */
   LevelStart: "level-start",
-  /** A level closed, and how it settled. */
   LevelEnd: "level-end",
-  /** One harness process, start to finish, with what it reported spending. */
   HarnessProcess: "harness-process"
 };
 
@@ -149081,14 +148957,12 @@ import { join as join97 } from "node:path";
 var GateHold = external_exports.object({
   takenAt: external_exports.string(),
   runId: external_exports.string(),
-  /** The checkout whose gates never started, left exactly where it is. */
   worktreePath: external_exports.string(),
   /** The coordination sentence the wait expiry produced, so it reads the same wherever it surfaces. */
   reason: external_exports.string(),
   /**
-   * Whether the tracker label write has landed. False means it never has, and a
-   * hold in that state is never read as released however the tracker looks —
-   * the absence of a label nobody applied is no evidence at all.
+   * Whether the tracker label write has landed. Until it has, the hold is never
+   * read as released: the absence of a label nobody applied is no evidence.
    */
   labelConfirmed: external_exports.boolean()
 });
@@ -150596,11 +150470,9 @@ var DecisionRow = external_exports.object({
   rationale: external_exports.string(),
   assumption: external_exports.boolean().default(false),
   /**
-   * The phase-file basenames the decision concerns — the same value a grade gap's
-   * or dedup finding's `phase` carries. Absent when the decision concerns the
-   * whole plan or its reach is not established. The names are checked against
-   * the plan's phase files when grading chooses its scope, not when the record is
-   * read.
+   * The phase-file basenames the decision concerns. Absent when it concerns the
+   * whole plan or its reach is not established. The names are checked when
+   * grading chooses its scope, not when the record is read.
    */
   phases: external_exports.array(external_exports.string()).min(1).optional()
 });
@@ -153885,7 +153757,6 @@ var collectSourceEvidence = async ({ cwd, name, facts, config: config2 }) => {
 
 // src/contracts/plan/facts/ExploreArea.ts
 var ExploreArea = external_exports.object({
-  /** The area of the feature this explorer focused on. */
   area: external_exports.string(),
   /** Packages the area touches (repo-relative dirs — used to scope script checks). */
   affectedPackages: external_exports.array(external_exports.string()).default([]),
@@ -154064,9 +153935,8 @@ var isBlockingGap = ({ gap }) => gap.outcome === GapOutcome.NeedsAHuman || gap.o
 // src/cli/internal/common/render/printGradedGap.ts
 var detailOf = ({ gap }) => {
   const lines = {
-    // The refusal note rides this line because a needs-a-human gap is where an
-    // open memory record arrives, and a stored reason nobody prints does not tell
-    // anyone why the re-verification judge declined to close it.
+    // A needs-a-human gap is where an open memory record arrives, so the
+    // re-verification judge's refusal note is printed here or nowhere.
     [GapOutcome.NeedsAHuman]: `   decide: ${gap.humanDecision ?? gap.decision}${gap.options.length > 0 ? ` \u2014 options: ${gap.options.join(" / ")}` : ""}${gap.unjudgedReason === void 0 ? "" : ` \u2014 ${gap.unjudgedReason}`}`,
     [GapOutcome.AgentCanDecide]: `   the agent decides: ${gap.agentDecision ?? ""} \u2014 safe because ${gap.safeBecause ?? ""}`,
     [GapOutcome.AlreadyAnswered]: `   already answered at: ${gap.answerAt ?? ""}`,
@@ -154147,10 +154017,8 @@ var GapObservation = PlanGap.extend({
   /** The plan file's basename — `phase2-cross-phase-checks.md`, or `plan.md`. */
   phase: external_exports.string(),
   /**
-   * Optional because a finding no per-file lens produced must be able to say so
-   * rather than claim a lens it was never given. The whole-plan documentation
-   * checker is the one producer of such a finding today; `phase` stays required,
-   * because every finding is still labelled with a plan file a reader can open.
+   * Optional because a finding no per-file lens produced, such as the whole-plan
+   * documentation checker's, must not claim a lens it was never given.
    */
   lens: external_exports.enum(GapCheckLens).optional()
 });
@@ -154178,22 +154046,16 @@ var GradedGap = GapObservation.extend({
   /** Why nobody settled it, absent when a judge did. */
   unjudgedReason: external_exports.string().optional(),
   /**
-   * The memory record this gap belongs to — the one it was merged into, or the
-   * record it was surfaced from. `matchesFinding` is deliberately not carried
-   * through from the verdict: what is persisted is the id the engine resolved,
-   * never the agent's raw claim.
+   * The memory record this gap belongs to. `matchesFinding` is deliberately not
+   * carried through: what is persisted is the id the engine resolved, never the
+   * agent's raw claim.
    */
   findingId: external_exports.string().optional(),
-  /**
-   * Every observation this finding covers. Empty on a single-observation finding
-   * — read it through
-   * `findingLocations`, which treats empty as the gap's own `phase`.
-   */
+  /** Empty on a single-observation finding — read it through `findingLocations`, which treats empty as the gap's own `phase`. */
   observations: external_exports.array(GapObservation).default([]),
   /**
-   * The engine's per-pass identifier shared by every gap one multi-observation
-   * ruling covered — what lets the memory fold open one record for a group it has
-   * not given a record id yet. Never an agent's to claim.
+   * Shared by every gap one multi-observation ruling covered, so the memory fold
+   * opens one record for a group it has not given a record id yet. Never an agent's to claim.
    */
   groupId: external_exports.string().optional(),
   /** The judge's statement of the one violated requirement or contradiction a confirmed group's members are. */
@@ -154238,11 +154100,9 @@ var StructuralFinding = external_exports.object({
 // src/contracts/plan/memory/GradeDecisionLog.ts
 var GradeDecisionLog = external_exports.object({
   /**
-   * sha256 of the overview's SHARED design text: its content with every
-   * engine-generated region removed and every span credited to one phase
-   * removed. Absent for a plan with no overview at all, and for a pass recorded
-   * before this hash was measured — both of which mean the same thing to its one
-   * reader, that there is no shared overview text to compare.
+   * sha256 of the overview's shared design text: its content with every
+   * engine-generated region and every span credited to one phase removed.
+   * Absent means there is no shared overview text to compare.
    */
   overviewDesign: external_exports.string().optional(),
   /** One entry per merged decision row, in record order, brainstorm rows first. */
@@ -154261,21 +154121,18 @@ var GradeDecisionLog = external_exports.object({
 // src/contracts/plan/memory/GradeInputs.ts
 var GradeInputs = external_exports.object({
   /**
-   * One entry per plan file, overview included, keyed by basename and sorted by
-   * it. `designSha256` is the hash of the text a reader of that file actually
-   * read — its content with every engine-generated region removed and the
-   * overview text credited to it hashed in. Absent means nobody measured it,
-   * which is an entry recorded before design hashes existed or a plan file that
-   * could not be read, and it never compares equal to a present one.
+   * Keyed by basename and sorted by it. `designSha256` hashes the text a reader
+   * of that file actually read — its content with every engine-generated region
+   * removed and the overview text credited to it hashed in. Absent means nobody
+   * measured it, and it never compares equal to a present one.
    */
   planFiles: external_exports.array(external_exports.object({ file: external_exports.string(), sha256: external_exports.string(), designSha256: external_exports.string().optional() })).default([]),
   /** `HEAD` when the pass ran; absent outside a git worktree. */
   gradedCommit: external_exports.string().optional(),
   /**
-   * Every modified or untracked working-tree file with the sha256 of its
-   * content, sorted by path. A path that cannot be read carries the literal
-   * `absent`. Absent altogether when the git probe did not run — which is NOT
-   * an empty list, and never compares equal to anything.
+   * Modified and untracked files, sorted by path. A path that cannot be read
+   * carries the literal `absent`. Absent altogether when the git probe did not
+   * run — which is not an empty list, and never compares equal to anything.
    */
   changedFiles: external_exports.array(external_exports.object({ path: external_exports.string(), sha256: external_exports.string() })).optional(),
   /** sha256 of the supplemental standards text; absent when no standards were threaded in. */
@@ -154286,7 +154143,7 @@ var GradeInputs = external_exports.object({
   prompts: external_exports.string(),
   model: external_exports.string().optional(),
   effort: external_exports.string().optional(),
-  /** Present for every plan whose decisions were read; absent for a pass recorded before the field existed. Read only by the scope comparison. */
+  /** Read only by the scope comparison. */
   decisionLog: GradeDecisionLog.optional(),
   /** sha256 over the canonical JSON of every field above — the one value a comparison uses. */
   sha256: external_exports.string()
@@ -154310,7 +154167,6 @@ var GradeReport = external_exports.object({
   complete: external_exports.boolean().default(true),
   /** True when every check this pass's own scope called for finished — never a whole-plan clean bill, and never an approval. */
   scopeComplete: external_exports.boolean(),
-  /** Why the pass did not finish, absent when it did. */
   incompleteReason: external_exports.string().optional(),
   passed: external_exports.boolean(),
   gradedAt: external_exports.string(),
@@ -154318,7 +154174,6 @@ var GradeReport = external_exports.object({
   gradedCommit: external_exports.string().optional(),
   /** True when the working tree held uncommitted changes at grade time, so `gradedCommit` is a floor rather than an exact description of what was measured. Absent means NOT KNOWN — no commit was read, or the changed-file probe itself failed. It never means clean; only `false` means clean. */
   gradedTreeDirty: external_exports.boolean().optional(),
-  /** How far this pass reached. */
   scope: external_exports.enum(GradeScope),
   /** The plan files a focused pass read — the edited phases and their connected closure. Empty on a full pass. */
   focusedOn: external_exports.array(external_exports.string()).default([]),
@@ -154361,9 +154216,9 @@ var isScopeComplete = ({
   documentationComplete
 }) => (
   // A human's `--phase` narrowing speaks for the files they chose, never for the ones they left out.
-  phases === void 0 && // A pass that offered no plan file at all established nothing. A light file counts: it is an exemption the weighing made, not an unread file.
+  phases === void 0 && // A light file counts: it is an exemption the weighing made, not an unread file.
   (phasesRequired.length > 0 || phasesLight.length > 0) && // `phasesChecked` names a file only when EVERY lens returned for it.
-  phasesRequired.every((phase) => phasesChecked.includes(phase)) && // No memory record carries an unjudged question, so only reading its plan file again can — and a baseline is a request not to.
+  phasesRequired.every((phase) => phasesChecked.includes(phase)) && // Memory never carries an unjudged question, so only re-reading its plan file could settle it — and a baseline is a request not to.
   gaps.every(({ outcome }) => outcome !== GapOutcome.Unjudged) && documentationComplete
 );
 var createGradeReport = ({
@@ -154446,7 +154301,6 @@ var DedupReport = external_exports.object({
   reviewed: external_exports.array(ReviewedCollision),
   /** False when a judge failed or hit the rate-limit wall; the findings above are real but partial. */
   complete: external_exports.boolean().default(true),
-  /** Why the scan did not finish, absent when it did. */
   incompleteReason: external_exports.string().optional(),
   reviewedAt: external_exports.string()
 });
@@ -155004,9 +154858,8 @@ var joinRuling = ({ gap, ruling, noJudgeReason }) => {
     ...rulingFields({ verdict }),
     ...ruling?.answerAt === void 0 ? {} : { answerAt: ruling.answerAt },
     ...ruling?.observations === void 0 ? {} : { groupId: ruling.groupId, sharedDefect: verdict.sharedDefect, observations: ruling.observations },
-    // The agent's raw claim never reaches the record: what is persisted is the id
-    // the engine resolved. A carried finding with no match keeps the record it
-    // already belongs to, or it would open a second one every pass.
+    // A carried finding with no match keeps the record it already belongs to, or
+    // it would open a second one every pass.
     ...verdict.matchesFinding === void 0 ? {} : { findingId: verdict.matchesFinding }
   };
 };
@@ -155043,8 +154896,6 @@ var spawnGapJudge = async ({ params, batch, batchIndex }) => {
     cwd,
     driver,
     workspaceDir,
-    // Numbered by batch rather than named by phase, because a batch may span
-    // several plan files.
     step: `grade-judge-${batchIndex}`,
     level,
     model,
@@ -155103,12 +154954,8 @@ var spawnGapChecker = async ({
     effort,
     permissions,
     timeoutMs,
-    // Two, not one: a reader written off costs the plan file its coverage —
-    // a file is claimed as checked only when every lens returned for it, so
-    // losing readers means re-running the whole pass by hand. Each fresh
-    // invocation still gets its one cheap re-emit, so four spawns is the
-    // worst case. Not three: two is the smallest number that makes "re-run
-    // rather than write off" true, and it caps the worst case at double.
+    // Two, not one: a reader written off costs the plan file its coverage,
+    // since a file is checked only when every lens returned for it.
     maxRoleAttempts: 2
   });
   const outcome = await invokePlanAgent({
@@ -156000,9 +155847,8 @@ var GradeFindingRecord = external_exports.object({
   lastSeen: external_exports.string(),
   status: external_exports.enum(GradeFindingStatus),
   /**
-   * The judge outcome that settled the record, kept verbatim and never rewritten
-   * once written. Absent only on a `pending` record, which no judge has ruled on;
-   * `unjudged` is excluded because it is the engine's stamp, not a ruling.
+   * Never rewritten once written. Absent only on a `pending` record; `unjudged`
+   * is excluded because it is the engine's stamp, not a ruling.
    */
   disposition: external_exports.enum([GapOutcome.NeedsAHuman, GapOutcome.AgentCanDecide, GapOutcome.AlreadyAnswered]).optional(),
   /** Why nobody settled a `pending` record, so the blocker it surfaces as can say what went wrong. */
@@ -156019,10 +155865,9 @@ var GradeFindingRecord = external_exports.object({
   resolutions: external_exports.array(external_exports.object({ phase: external_exports.string(), answerAt: external_exports.string(), verifiedAt: external_exports.string() })).default([]),
   reopened: external_exports.array(external_exports.object({ at: external_exports.string(), reason: external_exports.string(), priorStatus: external_exports.enum(GradeFindingStatus) })).default([]),
   /**
-   * When a re-verification judge last answered about this record, whatever the
-   * answer — closed, refused, or never replied. Absent means NO judge has ever
-   * been asked, which is why it is optional rather than defaulted: an invented
-   * stamp would read as "already asked" and silence the record forever.
+   * Absent means no re-verification judge has ever been asked, which is why it
+   * is optional rather than defaulted: an invented stamp would read as "already
+   * asked" and silence the record forever.
    */
   lastRecheckedAt: external_exports.string().optional()
 });
@@ -156099,8 +155944,8 @@ var runGradePass = async (args) => {
     memory: opened,
     at,
     skipReason: agents.rateLimited ? "the reader fan-out hit the rate-limit wall, so no finding was re-verified" : void 0,
-    // The same value the reader selection narrowed by, never a second closure:
-    // two reach rules that can disagree is the defect one reach rule avoids.
+    // The same value the reader selection narrowed by, never a second closure
+    // that could disagree with it.
     invalidated: found.invalidated
   });
   const merged = mergeFindingRecords({ memory: verified.memory, gaps: agents.gaps, at });
@@ -156114,8 +155959,8 @@ var runGradePass = async (args) => {
     light,
     connections,
     documentationChecked: documentation && agents.documentationComplete,
-    // A human's `--phase` narrowing speaks only for the files they chose, so it
-    // records nothing: writing entries from it is the one way it could buy an approval.
+    // A `--phase` narrowing records nothing: writing entries from it is the one
+    // way it could buy an approval.
     narrowed: phases !== void 0,
     at
   });
@@ -157804,8 +157649,6 @@ var FileQuestionRelay = class {
     this.createProgressSink({ ticket })(`waiting for an answer in ${questionPath}`);
   }
   /**
-   * The answer file's contents once it holds one.
-   *
    * @throws {Error} When the question timeout elapses — both files are removed
    * first, so a late or blank answer never lingers to look live — or when the
    * relay closes under the wait.
@@ -157873,8 +157716,6 @@ var TerminalQuestionRelay = class {
     });
   }
   /**
-   * Put one worker's question to the user and answer with what they typed.
-   *
    * Serialized: a second caller waits until the first answer is in. The answer
    * is on disk and on the ticket before this resolves, so a worker never acts
    * on a decision nothing recorded.
@@ -157903,19 +157744,12 @@ var TerminalQuestionRelay = class {
     this.chain = answered.catch(() => void 0);
     return answered;
   }
-  /**
-   * This ticket's progress writer: every line carries the ticket identifier and
-   * goes through the relay's buffer, so an open question is never buried by the
-   * other workers. The queue hands one to each worker as its `onProgress`.
-   */
   createProgressSink({ ticket }) {
     return (message) => this.write({ line: `${ticket.identifier} \xB7 ${message}` });
   }
-  /** Close the readline interface. Called once, on the way out of the command. */
   close() {
     this.terminal.close();
   }
-  /** Print the question and read one typed line, re-prompting on a blank answer. */
   async putQuestion({ question, ticket }) {
     if (this.ended) {
       throw new Error(noTerminalMessage);
@@ -157941,7 +157775,6 @@ ${question}
       this.flush();
     }
   }
-  /** One line out, or held until the open question has been answered. */
   write({ line }) {
     if (this.prompting) {
       this.held.push(line);
@@ -158025,17 +157858,14 @@ var QueueBoardRecorder = class {
     this.runId = runId;
     this.onProgress = onProgress;
   }
-  /** Rewrite the board from the drain's ledger as it stands now. */
   record({ settled: settled2, lanes }) {
     this.last = copySnapshot({ settled: settled2, lanes });
     this.enqueue();
   }
-  /** A worker has asked a relayed question: its ticket moves to Blocked with the question until the ask settles. */
   markWaiting({ ticket, question }) {
     this.questions.set(ticket.identifier.toLowerCase(), question);
     this.enqueue();
   }
-  /** The worker's relayed question has settled, answered or not. */
   clearWaiting({ ticket }) {
     this.questions.delete(ticket.identifier.toLowerCase());
     this.enqueue();
@@ -158044,7 +157874,6 @@ var QueueBoardRecorder = class {
   flush() {
     return this.chain;
   }
-  /** Queue a write of the last snapshot with the questions open now — nothing until the drain has recorded one. */
   enqueue() {
     if (this.last === void 0) {
       return;
@@ -158052,11 +157881,7 @@ var QueueBoardRecorder = class {
     const pending = { snapshot: this.last, questions: new Map(this.questions), takenAt: (/* @__PURE__ */ new Date()).toISOString() };
     this.chain = this.chain.then(() => this.write(pending)).catch(() => void 0);
   }
-  async write({
-    snapshot,
-    questions,
-    takenAt
-  }) {
+  async write({ snapshot, questions, takenAt }) {
     let path;
     try {
       path = await getQueueBoardPath({ cwd: this.cwd, runId: this.runId });
@@ -158136,7 +157961,6 @@ var BranchPhase = {
 
 // src/contracts/queue/BranchState.ts
 var BranchState = external_exports.object({
-  /** The branch the record describes, as git names it. */
   branch: external_exports.string(),
   phase: external_exports.enum(BranchPhase),
   /** ISO timestamp of the write that last changed the phase. */
@@ -158266,7 +158090,6 @@ var settleMergedSelection = async ({
 var QueueWorker = {
   /** Build straight from the ticket body; the repo's gates are the only bar. */
   Direct: "direct",
-  /** Implement the plan already published to the ticket. */
   Plan: "plan",
   /** Plan the ticket headlessly with the auto-plan skill; the queue then runs the implement pipeline on the plan folder that session wrote. */
   AutoPlan: "auto-plan"
@@ -158350,7 +158173,6 @@ ${title}`,
 
 // src/contracts/work/WorkOrderName.ts
 var WorkOrderName = external_exports.object({
-  /** Three or four lowercase letter-and-digit words joined by single hyphens. */
   words: external_exports.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+){2,3}$/u, "a work order name is three or four lowercase words joined by single hyphens")
 });
 
@@ -160206,12 +160028,9 @@ var drainAndShip = async ({
     settings,
     trackerSettings,
     shipSettings,
-    // Built here from what the drain already holds: `config` is the effective
-    // config and `driver` the resolved harness, so the merge lane's integration
-    // step recovers with exactly what the builders were given.
+    // The effective config and resolved harness, so the merge lane's
+    // integration step recovers with exactly what the builders were given.
     shipIntegration: { config: config2, driver },
-    // The same harness the builders get, threaded so the wave's naming step
-    // summarises a ticket's title exactly as `work-order new` does.
     driver,
     config: config2,
     env,
@@ -160561,9 +160380,8 @@ var RefactorBatch = external_exports.object({
   rule: external_exports.string(),
   /** Grouping folder: `<packagesDir>/<package>` when under it, else the top path segment, else '(root)'. */
   folder: external_exports.string(),
-  /** Blocking-severity work — must-address, re-checked after the agent reports. */
   blocking: external_exports.array(StandardsFinding),
-  /** Judgment-carrying advisories whose files overlap this batch — context, never blocking. */
+  /** Advisories whose files overlap this batch: context, never blocking. */
   advisories: external_exports.array(StandardsFinding)
 });
 
@@ -160572,15 +160390,13 @@ var RefactorWorklist = external_exports.object({
   at: external_exports.string(),
   /** Standards-check scope subpath, '.' for the whole repo. */
   path: external_exports.string(),
-  /** Whether baselined findings were included (burn-down mode). */
+  /** Whether baselined findings were included. */
   all: external_exports.boolean(),
   batches: external_exports.array(RefactorBatch)
 });
 
 // src/refactor/batch/batchFindings.ts
 var rulePriority = [
-  // These are fixed by a file move or a rename — the most mechanical fix there
-  // is, so they lead.
   "banned-folder-name",
   "file-directly-in-common",
   "folder-index-file",
@@ -160673,11 +160489,8 @@ var buildWorklist = async ({ cwd, config: config2, path, all = false }) => {
     all,
     batches: batchFindings({
       blocking: findings.filter((finding3) => finding3.severity === StandardsSeverity.Blocking),
-      // Every advisory, not just the size ones: an advisory IS a judgment
-      // call, and each carries its own guidance line for the agent to apply.
-      // A rule whose advisories never reach the agent can never be judged —
-      // it only ever reports to a human (in-pipeline precedent:
-      // selectStandardsFindings).
+      // Every advisory, not just the size ones: a rule whose advisories never
+      // reach the agent can never be judged, only reported to a human.
       advisories: findings.filter((finding3) => finding3.severity === StandardsSeverity.Advisory),
       packagesDir: config2["packages-dir"] ?? defaultPackagesDir
     })
@@ -160770,14 +160583,9 @@ var closeRefactorRun = async ({ run, worklist }) => {
 var RefactorRun = class {
   declined;
   before;
-  // The shared run state is held, not inherited: the burn-down accounting
-  // below is this run's own, and the methods it shares with every other run
-  // forward to the value it holds.
-  //
-  // Those forwards stay. Publishing this value instead would let a caller
-  // reach through it, and PipelineRun — the sibling holding the same state —
-  // adds a step timer and a usage line to two of the same methods. One way in
-  // per run is what makes those additions unskippable.
+  // The shared run state is held, not inherited, and never published:
+  // PipelineRun adds a step timer and a usage line to two of the same methods,
+  // and one way in per run is what makes such additions unskippable.
   runState;
   constructor({ cwd, config: config2, manifest, declined, before, onProgress }) {
     this.runState = new RunState({ cwd, config: config2, manifest, onProgress });
@@ -160790,7 +160598,6 @@ var RefactorRun = class {
   get config() {
     return this.runState.config;
   }
-  /** Ceiling for a run's agent invocations, config-resolved once. */
   get agentTimeoutMs() {
     return this.runState.agentTimeoutMs;
   }
@@ -160818,7 +160625,6 @@ var RefactorRun = class {
   buildHaltedResult({ error: error51 }) {
     return { ok: false, manifest: this.current(), error: error51, declined: this.declined, before: this.before, after: this.before };
   }
-  /** Persist a step's terminal status (and the run's), announce it, then halt. */
   async stop({ record: record3, status, error: error51 }) {
     await this.runState.stop({ record: record3, status, error: error51, label: "refactor run" });
     return this.buildHaltedResult({ error: error51 });
@@ -161039,11 +160845,9 @@ var invokeBatchAgent = async ({
 
 // src/refactor/batch/internal/common/constants/SettleKind.ts
 var SettleKind = {
-  /** The gates are green: the batch may be classified on its findings. */
   Green: "green",
-  /** Hit the harness rate-limit wall — resumable, not an error. */
+  /** Resumable, not an error. */
   Parked: "parked",
-  /** A human decision is required before this batch can go further. */
   Escalated: "escalated"
 };
 
@@ -161522,11 +161326,10 @@ var runBatch = async ({
 // src/contracts/refactor/BatchReport.ts
 var BatchReport = external_exports.object({
   outcome: external_exports.enum(BatchOutcome),
-  /** Site keys still present after the batch (empty when resolved). */
   remainingSiteKeys: external_exports.array(external_exports.string()),
-  /** The executing agent's account of why findings were declined, from its friction entries. */
+  /** Why findings were declined, from the agent's friction entries. */
   rationale: external_exports.array(external_exports.string()),
-  /** What the batch's agent did about each advisory it was shown, accumulated across the batch's invocations. Absent means it reported none. */
+  /** Accumulated across the batch's invocations. Absent means the agent reported none. */
   advisoryOutcomes: external_exports.array(AdvisoryOutcome).optional()
 });
 
@@ -161741,9 +161544,8 @@ var spanOfActivityNodes = ({ nodes }) => {
   const starts = nodes.map((node) => node.startedAt).sort(byTime);
   const ends = nodes.flatMap((node) => node.endedAt === void 0 ? [] : [node.endedAt]).sort(byTime);
   return {
-    // A record holding no level at all has no window. The placeholder is read
-    // by nothing: with no end there is no wall time, and every other total of
-    // an empty record is zero.
+    // Placeholder for an empty record; nothing reads it, since with no end
+    // there is no wall time.
     startedAt: starts[0] ?? (/* @__PURE__ */ new Date(0)).toISOString(),
     endedAt: ends.length === nodes.length ? ends[ends.length - 1] : void 0
   };
@@ -161859,9 +161661,7 @@ var processRow = ({ node, process: process3, depth, parentAgentMs, pricing }) =>
       "1",
       shareCell({ ms: durationMs, ofMs: parentAgentMs }),
       ...usageCells({ usage: process3.usage }),
-      // Priced through the shared estimator rather than by arithmetic of its
-      // own: the estimator reads a node's processes and children, so one
-      // process is handed to it as this level holding nothing else.
+      // The estimator prices a node, so one process is handed to it as this level holding nothing else.
       ...estimateCells({ node: { ...node, processes: [process3], children: [] }, pricing })
     ],
     ruleAbove: false
@@ -161878,8 +161678,7 @@ var levelRow = ({ node, depth, parentAgentMs, pricing }) => ({
     ...estimateCells({ node, pricing })
   ],
   emphasis: depth === 0 ? bold : void 0,
-  // Roots are ruled apart from each other; everything inside one reads as a
-  // block, because a rule between forty tree rows hides the nesting it draws.
+  // A rule between every tree row would hide the nesting.
   ruleAbove: depth === 0
 });
 var rowsFor = ({ node, depth, parentAgentMs, pricing, headers }) => {
@@ -161952,8 +161751,6 @@ var printTicketRow = ({ target, plans, pricing }) => {
     id: target,
     level: ActivityLevelKind.Plan,
     label: target,
-    // The same window the fold below was built from, so the row's times and
-    // its figures can never have been measured across different spans.
     ...spanOfActivityNodes({ nodes: roots }),
     processes: [],
     totals: totalActivityReports({ reports }),
@@ -162131,11 +161928,9 @@ var HarnessProcessUsage = external_exports.object({
 // src/contracts/activity/HarnessProcessMark.ts
 var HarnessProcessMark = external_exports.object({
   kind: external_exports.literal(ActivityMarkKind.HarnessProcess),
-  /** The level this process ran inside. */
   levelId: external_exports.string(),
   /** The adapter that spawned it — a driver's own name. */
   harness: external_exports.string(),
-  /** The model override in force, when there was one. */
   model: external_exports.string().optional(),
   /** The reasoning effort in force, when one was set; absent means the harness's own default. */
   effort: external_exports.enum(Effort).optional(),
@@ -162488,10 +162283,8 @@ var runSelfCheck = async ({ cwd, config: config2, coverage, checkpoint, wholeRep
         runId,
         step: buildSelfCheckStep({ step }),
         schedule: { kind: GateScheduleKind.Exact, gates: gateNames },
-        // This check runs inside the writing agent's own spawn and records no
-        // verdict anywhere, so a machine another run holds ends it at once
-        // rather than holding a paid session open for the full wait. Every
-        // checkpoint that decides the run still waits the whole ceiling.
+        // An advisory check inside a paid agent session gains nothing from
+        // waiting for a machine another run holds.
         waitForMachine: false,
         onGateResult: collector.onGateResult,
         onProgress
@@ -162712,7 +162505,6 @@ var printStandardsRuleList = ({ rules }) => {
     const settings = describeSettings({ settings: rule.settings });
     return [
       {
-        // The severity IS the state label — nothing to translate, which is the point of naming it `blocking`.
         cells: [rule.rule, rule.fromConfig ? `${rule.severity} (config)` : rule.severity, rule.checked ? "code" : "judgment", rule.doc]
       },
       {
@@ -163254,11 +163046,7 @@ var validateStandardsPack = async ({ pack }) => {
 };
 
 // src/cli/standardsValidateCommand.ts
-var readRequestedPack = async ({ requested, cwd }) => (
-  // resolve() leaves an absolute --pack alone, so both forms the flag accepts
-  // land here.
-  readStandardsPack({ packPath: requested === void 0 ? resolveDefaultStandardsPack() : resolve18(cwd, requested) })
-);
+var readRequestedPack = async ({ requested, cwd }) => readStandardsPack({ packPath: requested === void 0 ? resolveDefaultStandardsPack() : resolve18(cwd, requested) });
 var standardsValidateCommand = async ({ flags, cwd }) => {
   const requested = getStringFlag({ flags, name: "pack" });
   const pack = await readRequestedPack({ requested, cwd }).catch((error51) => {
@@ -163325,8 +163113,7 @@ var renderProgressBlock = ({ title, tag, rows, diagnostics, totals, now }) => {
     ...diagnostics.map((line) => line.length),
     totalsLine.length,
     nowLine?.length ?? 0,
-    // The title line is measured too, or a long title would overhang the rule
-    // it is supposed to sit inside and its padding could go negative.
+    // Measured too, or a long title's padding could go negative.
     title.length + tag.length + 1
   );
   const rule = dim("\u2500".repeat(ruleWidth));
@@ -163420,17 +163207,13 @@ var shippingStepRecord = external_exports.object({
   status: external_exports.enum(RunStatus),
   /** ISO time the step last started. */
   startedAt: external_exports.string().optional(),
-  /** Set once the step finishes. */
   durationMs: external_exports.number().optional()
 });
 var ShippingProgress = external_exports.object({
-  /** The branch as git names it. */
   branch: external_exports.string(),
   /** The current attempt, 1-based. */
   attempt: external_exports.number().int().positive(),
-  /** The ship's own bound on attempts. */
   maxAttempts: external_exports.number().int().positive(),
-  /** The process that records. */
   pid: external_exports.number().int(),
   /** ISO time the ship's first attempt began. */
   startedAt: external_exports.string(),
@@ -163438,7 +163221,6 @@ var ShippingProgress = external_exports.object({
   updatedAt: external_exports.string(),
   /** ISO time the ship sequence finished. Set only once it has. */
   endedAt: external_exports.string().optional(),
-  /** The last progress line the sequence narrated. */
   lastProgress: external_exports.string().optional(),
   steps: external_exports.array(shippingStepRecord)
 });
@@ -163602,9 +163384,8 @@ var isRunLive = ({ manifest, lock }) => {
 
 // src/contracts/run/ProgressRecord.ts
 var ProgressRecord = external_exports.object({
-  /** ISO timestamp the line was narrated. */
+  /** ISO timestamp. */
   at: external_exports.string(),
-  /** The line exactly as the run narrated it, unformatted. */
   message: external_exports.string()
 });
 
@@ -163623,19 +163404,15 @@ var ShipResult = external_exports.object({
   ticketRef: external_exports.string().optional(),
   prNumber: external_exports.number().optional(),
   prUrl: external_exports.string().optional(),
-  /** The pull request's title — the "what shipped" line a tracker comment quotes. */
   prTitle: external_exports.string().optional(),
-  /** Commit the merge produced on the default branch. */
   mergeCommit: external_exports.string().optional(),
   /** ISO timestamp of the merge. */
   mergedAt: external_exports.string().optional(),
   /** Present exactly when status is 'blocked'. */
   reason: external_exports.enum(ShipBlockReason).optional(),
   /**
-   * One human-readable sentence naming what stopped it. When the step that
-   * stopped it ran a command, the sentence is followed by a colon and that
-   * command's output — trimmed, and capped at a few hundred characters, since
-   * this is a hand-off a tracker skill quotes rather than a log.
+   * One sentence naming what stopped it, followed by a colon and the stopping
+   * command's output when there was one — capped, since a tracker skill quotes it.
    */
   detail: external_exports.string().optional(),
   /** Named checks that finished red or never finished — filled for 'checks-failed' and 'checks-timed-out'. */
@@ -163943,17 +163720,10 @@ var QueueBoardTicket = external_exports.object({
   title: external_exports.string().optional(),
   url: external_exports.string().optional(),
   lane: external_exports.enum(QueueLane),
-  /** The queue worker value that builds the ticket. */
   worker: external_exports.string().optional(),
   /**
-   * The work order's label — its folder under the work-orders directory —
-   * recorded for every ticket the board places from a work order, whatever
-   * worker builds it.
-   *
-   * The label rather than the branch, because a plan address and a runs folder
-   * are both named by the label, and a branch carrying a template prefix names
-   * neither. Absent on an entry the queue left behind before a work order
-   * existed, and on a board written by an engine older than this field.
+   * The label rather than the branch: plan addresses and runs folders are named by the
+   * label, and a branch carrying a template prefix names neither.
    */
   workOrderName: external_exports.string().optional(),
   branch: external_exports.string().optional(),
@@ -164427,7 +164197,6 @@ var CoverageRun = class {
   get config() {
     return this.runState.config;
   }
-  /** Ceiling for a run's agent invocations, config-resolved once. */
   get agentTimeoutMs() {
     return this.runState.agentTimeoutMs;
   }
@@ -164454,7 +164223,6 @@ var CoverageRun = class {
   buildHaltedResult({ error: error51 }) {
     return { ok: false, manifest: this.current(), error: error51, setAside: this.setAside, before: this.before, after: this.before };
   }
-  /** Persist a step's terminal status (and the run's), announce it, then halt. */
   async stop({ record: record3, status, error: error51 }) {
     await this.runState.stop({ record: record3, status, error: error51, label: "coverage run" });
     return this.buildHaltedResult({ error: error51 });

@@ -35,12 +35,7 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/**
- * The planning session itself: one headless run of the auto-plan skill on the
- * plan the engine chose.
- *
- * @returns the outcome the worker stops on, or undefined once the plan is written and its folder is on disk
- */
+/** @returns the outcome the worker stops on, or undefined once the plan is written and its folder is on disk */
 const runPlanningSession = async ({
 	cwd,
 	ticket,
@@ -60,8 +55,8 @@ const runPlanningSession = async ({
 	answeredQuestion?: AnsweredQuestion;
 	onProgress?: (message: string) => void;
 }) => {
-	// Under `write` permissions a harness only runs granted prefixes — so the
-	// engine grants itself, and the prompt is told the same words verbatim.
+	// Under `write` permissions a harness only runs granted prefixes, so the
+	// engine grants itself and the prompt is told the same words verbatim.
 	const engineCli = `node ${process.argv[1]}`;
 	const outcome = await invokeAgentWithContract({
 		driver,
@@ -109,18 +104,12 @@ const runPlanningSession = async ({
 };
 
 /**
- * The auto-plan worker: one headless session plans the ticket, and the engine
- * builds what it wrote.
+ * The engine, not the session, chooses which plan is planned, so no name is
+ * ever derived twice.
  *
- * The engine, not the session, chooses which plan is planned: the lowest plan of
- * the ticket still being planned, or a new plan 001 when the ticket has no plans
- * yet. The session is handed that plan's address and told to plan exactly it, so
- * no name is ever derived twice.
- *
- * The session's job ends when the plan is written, graded and published — then
- * it stops, and the queue builds the work order's plans that are ready to implement
- * in numeric order. A build takes hours, so no build lives inside an agent
- * session that could take it down part-way.
+ * The session stops once the plan is published, and the engine builds it: a
+ * build takes hours, so no build lives inside an agent session that could take
+ * it down part-way.
  */
 export const runAutoPlanWorker = async ({
 	cwd,
@@ -145,9 +134,6 @@ export const runAutoPlanWorker = async ({
 		buildWorkOrderPlans({ cwd, workOrderName, ticket, record, config, env, driver, driverName, workOrderRunDir, allowTicketBodyBuild: false, onProgress });
 
 	if (chosen.address === undefined) {
-		// No session is spent on a ticket with nothing waiting to be planned: a plan
-		// already ready to implement is still built, and an eligible ticket still
-		// reaches the ship lane.
 		const built = await build({ record: chosen.record });
 
 		return built.open === undefined ? built : { open: `no plan is waiting to be planned on ${ticket.identifier}: ${built.open}` };
@@ -160,8 +146,8 @@ export const runAutoPlanWorker = async ({
 		return stopped;
 	}
 
-	// Read again rather than reused: publishing the plan moved it from still being
-	// planned to ready to implement, and the build loop reads that progress.
+	// Read again rather than reused: publishing the plan moved its progress to
+	// ready to implement, and the build loop reads that progress.
 	const planned = await pullWorkOrderState({ cwd, name: workOrderName, config, env, onProgress });
 
 	if ('error' in planned) {

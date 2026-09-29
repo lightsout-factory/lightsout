@@ -16,19 +16,9 @@ interface Params {
 }
 
 /**
- * One checkpoint's test-change review: bundle every test-side file that differs
- * from its approved version, put the whole bundle in front of the read-only
- * reviewer, and hold what comes back to the engine's own rules.
- *
- * A clean review moves the baseline forward — approved copies, the rewritten
- * acceptance mapping, one journal line — and the gates run next. A rejection
- * returns the error the checkpoint goes red on before any gate runs, and nothing
- * is written to the manifest: the next attempt re-reviews the whole bundle
- * against the same baseline, so the repairing role is judged against the
- * baseline it was shown.
- *
- * The engine never writes to the working tree here. Restoring a whole shared
- * file is what this mechanism replaces.
+ * A rejection writes nothing to the manifest, so the next attempt re-reviews
+ * the whole bundle against the same baseline the repairing role was shown.
+ * The engine never writes to the working tree here.
  *
  * @returns an empty object when the bundle was empty or every change was
  * approved; `error` when the checkpoint must go red under the review family;

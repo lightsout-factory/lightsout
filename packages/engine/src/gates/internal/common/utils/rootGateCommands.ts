@@ -5,7 +5,7 @@ interface Params {
 	gates: ReturnType<typeof resolveGates>;
 }
 
-/** The root group's commands, the coverage one included whenever the config configures it — `buildGateStages` is what decides whether it is scheduled. */
+/** Coverage is included whenever configured; `buildGateStages` decides whether it is scheduled. */
 export const rootGateCommands = ({ gates }: Params): GateCommands => ({
 	check: gates.check,
 	test: gates.test,

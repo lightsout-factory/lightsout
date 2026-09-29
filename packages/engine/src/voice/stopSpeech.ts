@@ -5,13 +5,7 @@ interface Params {
 	cwd: string;
 }
 
-/**
- * Cut off the reading currently playing, if there is one.
- *
- * A pid that has already exited is the ordinary case, not a failure — the
- * reading simply finished on its own — so the kill is best-effort and the
- * bookkeeping file is cleared either way.
- */
+/** A pid that has already exited is the ordinary case — the reading finished on its own — so the kill is best-effort. */
 export const stopSpeech = async ({ cwd }: Params): Promise<void> => {
 	const pidPath = getVoicePidPath({ cwd });
 	const raw = await readFile(pidPath, 'utf8').catch(() => undefined);

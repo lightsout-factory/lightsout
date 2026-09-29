@@ -1,15 +1,6 @@
 import { z } from 'zod';
 
-/**
- * One explorer agent's facts for one area of a feature: the packages it
- * touches, the files to modify (with a one-line role), the patterns to mirror,
- * the integration points (real signatures + locations), the relevant scripts,
- * and the naming convention. Data, not file contents — the paths are what the
- * engine then verifies on disk. Array fields default to empty so a sparse
- * report still parses at the contract boundary.
- */
 export const ExploreArea = z.object({
-	/** The area of the feature this explorer focused on. */
 	area: z.string(),
 	/** Packages the area touches (repo-relative dirs — used to scope script checks). */
 	affectedPackages: z.array(z.string()).default([]),

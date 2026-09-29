@@ -6,10 +6,9 @@ import { SectionPill } from '#src/features/home/components/SectionPill.tsx';
 import { FlowActor } from '#src/features/home/screens/Home/internal/components/HowItWorksSection/internal/common/constants/FlowActor.ts';
 import { FlowStepCard } from '#src/features/home/screens/Home/internal/components/HowItWorksSection/internal/components/FlowStepCard.tsx';
 
-/** What `/brainstorm` works through with you — everything above the level of code. */
 const brainstormCovers = ['Product design', 'Architecture', 'Edge cases'];
 
-/** What `/plan` produces and proves — each a real step of the planning pipeline. */
+/** Each a real step of the planning pipeline. */
 const planCovers = [
 	'Technical implementation, step by step',
 	'Grilled on every edge case, one question at a time',
@@ -17,14 +16,8 @@ const planCovers = [
 	'Duplicates caught before coding',
 ];
 
-/**
- * The stages `/implement` runs, in order, with the gates run between every one.
- * The acceptance tests come first, written from the plan's test ledger when the
- * plan carries one.
- */
 const implementStages = ['Writes locked acceptance tests', 'Implements the code', 'Writes tests', 'Refactors'];
 
-/** What `ship` does once asked, in order — the last two only after the merge is confirmed. */
 const shipStages = [
 	'Pushes the branch and opens the pull request',
 	'Waits for your CI, then merges',
@@ -32,7 +25,6 @@ const shipStages = [
 	'Removes the worktree and deletes the branch',
 ];
 
-/** A step's contents as a short ticked list under its line, so each card shows the real work it does. */
 const CheckList = ({ items }: { items: string[] }) => (
 	<ul className="flex flex-col gap-1.5 border-border/60 border-t pt-3 text-muted-foreground-strong text-xs">
 		{items.map((item) => (
@@ -44,10 +36,8 @@ const CheckList = ({ items }: { items: string[] }) => (
 	</ul>
 );
 
-/** The arrow between two cards in a zone: right on a wide screen, down on a narrow one. */
 const StepArrow = () => <ChevronRight aria-hidden="true" className="size-5 shrink-0 rotate-90 self-center text-subtle-foreground/60 lg:rotate-0" />;
 
-/** One side of the handoff: a tinted panel named for who works in it, holding that side's steps. */
 const Zone = ({ label, tone, children }: { label: string; tone: FlowActor; children: ReactNode }) => (
 	<div
 		className={cn(
@@ -60,7 +50,6 @@ const Zone = ({ label, tone, children }: { label: string; tone: FlowActor; child
 	</div>
 );
 
-/** The moment the work changes hands, between the two zones. */
 const Handoff = () => (
 	<div className="flex items-center justify-center gap-2 lg:flex-col">
 		<span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30">
@@ -70,11 +59,6 @@ const Handoff = () => (
 	</div>
 );
 
-/**
- * Who does what, as the flow a reader actually runs: the two steps a person
- * decides, the handoff, and the two an agent executes — the headline drawn as
- * two zones, so the split reads at a glance.
- */
 export const HowItWorksSection = () => (
 	<section className="relative w-full px-4 py-24">
 		<div className="mx-auto flex max-w-6xl flex-col gap-14">

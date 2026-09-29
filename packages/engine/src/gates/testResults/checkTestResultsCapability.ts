@@ -4,7 +4,6 @@ import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import { satisfiesGateKey } from '#src/gates/testResults/internal/satisfiesGateKey.ts';
 import { readTestResults } from '#src/gates/testResults/readTestResults.ts';
 
-/** How a repository switches the reporter on, spelled out so the message alone is enough to fix the setup. */
 const setupAdvice = [
 	'',
 	`lightsout sets ${testReporterEnv.reporter} (the reporter file it wrote into the run folder) and ${testReporterEnv.resultsDir} (where that execution's results go) on every gate command.`,
@@ -19,32 +18,16 @@ const setupAdvice = [
 
 interface Params {
 	cwd: string;
-	/** The gate keys the plan's ledger names, distinct. */
 	gates: string[];
-	/** Every gate result the clean-slate checkpoint observed. */
 	results: GateResult[];
-	/** One line per ledger gate that did not run at all. Silent when omitted. */
 	onProgress?: (message: string) => void;
 }
 
 /**
- * The early setup probe: did the configured gates produce any per-test evidence
- * at all?
- *
- * Clean-slate is the last free moment. After it the run starts paying for
- * agents, and a repository whose jest config never loads the reporter would
- * otherwise not find out until its final checkpoint, having bought every agent
- * turn in between.
- *
- * The question is asked per package group rather than per key, because the
- * acceptance check matches evidence per group too: in a monorepo where one
- * package's jest config loads the reporter and another's does not, a row in the
- * second package would otherwise reach its checkpoint with a counting result
- * that proves nothing.
- *
- * A key whose gate did not run at clean-slate is skipped rather than failed — a
- * gate override may legitimately drop it, and the run's final verification is
- * where an unproven row fails.
+ * Probed at clean-slate, the last moment before the run starts paying for agents. Asked per
+ * package group because the acceptance check matches evidence per group. A key whose gate
+ * did not run is skipped: a gate override may drop it, and the final verification is where
+ * an unproven row fails.
  */
 export const checkTestResultsCapability = async ({ cwd, gates, results, onProgress }: Params): Promise<string | undefined> => {
 	const silent: string[] = [];

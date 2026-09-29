@@ -1,21 +1,17 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.5.7/schema.json",
 
-	// Ignored paths come from .gitignore rather than being restated here —
-	// coverage/, .test-dist/, node_modules/, .lightsout/.
+	// Ignored paths come from .gitignore rather than being restated here.
 	"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
 
 	"files": {
 		"includes": [
 			"**",
-			// A standards rule ships pass/fail example folders, and the whole job
-			// of fixtures/fail/ is to hold code that breaks the rule. Linting them
-			// would fail the gate on purpose-built bad examples, and formatting
-			// them could quietly change what the example proves.
+			// fixtures/fail/ holds code that breaks a rule on purpose: linting it would fail the gate,
+			// and formatting it could quietly change what the example proves.
 			"!**/fixtures",
-			// Generated. esbuild owns plugin/dist/, scripts/copyStandards.mjs owns
-			// plugin/standards/, and CI proves both match source by rebuilding and
-			// diffing. Formatting them here would make that check fail forever.
+			// Generated: esbuild owns plugin/dist/ and scripts/copyStandards.mjs owns plugin/standards/.
+			// CI rebuilds and diffs both, so formatting them here would fail that check forever.
 			"!plugin/dist",
 			"!plugin/standards",
 			// Written by the TanStack router plugin. Formatting it would make it
@@ -27,18 +23,12 @@
 			// Harness configuration and skills, not this project's source. The
 			// files in here belong to the tools that read them.
 			"!.claude",
-			// A verbatim copy of FeedbackDrop's stylesheet, kept identical so the
-			// two sites share one design. Its `theme(colors.x.y)` calls are
-			// Tailwind syntax Biome's CSS parser rejects, and FeedbackDrop leaves
-			// its CSS out of Biome the same way.
+			// A verbatim copy of FeedbackDrop's stylesheet, kept identical so the two sites share one
+			// design. Its `theme(colors.x.y)` calls are Tailwind syntax Biome's CSS parser rejects.
 			"!packages/web-app/src/styles/app.css"
 		]
 	},
 
-	// Tabs, single quotes, and a wide line at 160: the settings the repo was
-	// already written in. 160 is also where one-time reformatting churn bottoms
-	// out — 120 doubles it, and wider settings raise it again because Biome
-	// rejoins lines that were hand-wrapped.
 	"formatter": { "enabled": true, "indentStyle": "tab", "lineWidth": 160 },
 	"javascript": { "formatter": { "quoteStyle": "single" } },
 
@@ -52,11 +42,8 @@
 		"enabled": true,
 		"rules": {
 			"preset": "recommended",
-			// useImportType and noExplicitAny are named explicitly even though
-			// `recommended` already turns them on. src/doctor/checkLintRules.ts
-			// reads this file as raw text and looks for these two names, because
-			// the standards state them as binding. Leave them implicit and
-			// lightsout's own doctor reports this repo as unenforced.
+			// Named explicitly although `recommended` turns them on: src/doctor/checkLintRules.ts reads
+			// this file as raw text for these two names, and would otherwise report the repo unenforced.
 			"style": { "useImportType": "error" },
 			"suspicious": { "noExplicitAny": "error" }
 		}
@@ -71,10 +58,7 @@
 			"json": { "parser": { "allowComments": true } }
 		},
 		{
-			// A check takes source text and reads it as code, so its tests feed it
-			// code as a plain string — and code that builds a string contains
-			// `${...}`. Every one of the 30 sites this rule found was that, and
-			// none were outside a test. Off here, still on everywhere else, where
+			// A check's tests feed it code as plain strings, and such code contains `${...}`. Elsewhere
 			// a `${...}` in a plain string really is a forgotten backtick.
 			"includes": ["**/*.test.ts"],
 			"linter": { "rules": { "suspicious": { "noTemplateCurlyInString": "off" } } }

@@ -3,9 +3,9 @@ export const RunStatus = {
 	Running: 'running',
 	Passed: 'passed',
 	Failed: 'failed',
-	/** Hit the harness rate-limit wall — a first-class pausable state, not an error. Resumes when the window resets. */
+	/** A pausable state, not an error. Resumes when the window resets. */
 	PausedRateLimit: 'paused-rate-limit',
-	/** Stopped at a caller-set budget ceiling (e.g. refactor --max-batches) — pausable, resume to continue. */
+	/** Stopped at a caller-set budget ceiling (e.g. refactor --max-batches); resume to continue. */
 	PausedBudget: 'paused-budget',
 	/** Supervisor determined a human decision is required. */
 	Escalated: 'escalated',

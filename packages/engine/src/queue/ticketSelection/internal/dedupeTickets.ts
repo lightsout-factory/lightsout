@@ -11,14 +11,10 @@ interface Params {
 }
 
 /**
- * The queue in the order it will be worked, with each ticket appearing once.
- *
- * A repo whose in-progress status is also an eligible status hands back the same
- * parked ticket from both the resume scan and the eligible list; the resumed
- * entry wins, because it is the one carrying the existing worktree. A ticket
- * carrying more than one planning-status label is removed entirely and
- * announced: the queue only runs what a human unambiguously delegated, and
- * guessing which preparation a ticket still owes could run the wrong worker.
+ * The first copy wins, which is the resumed entry carrying the existing worktree
+ * when a repo's in-progress status is also eligible. A ticket with more than one
+ * planning-status label is removed: guessing which preparation it still owes
+ * could run the wrong worker.
  */
 export const dedupeTickets = ({ tickets, settings, onProgress }: Params): { ordered: TicketSummary[]; leftBehind: LeftBehindTicket[] } => {
 	const leftBehind: LeftBehindTicket[] = [];

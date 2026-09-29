@@ -8,7 +8,6 @@ interface Params {
 	config: LightsoutConfig;
 }
 
-/** The label a planning status resolves to, or the sentence naming the label two of them share. */
 // Annotated because inference would widen each branch with the other's absent
 // key, so neither would satisfy the resolved settings the caller returns.
 const readPlanningStatusLabels = ({
@@ -40,16 +39,12 @@ const readPlanningStatusLabels = ({
 };
 
 /**
- * The lifecycle settings with their defaults applied, or the one sentence
- * saying why the configured ones cannot work.
+ * Every value has a default, because writing a ticket's planning status needs
+ * no queue at all.
  *
- * Every value has a default, so a repository with no `queue` block still
- * resolves — writing a ticket's planning status needs no queue at all.
- *
- * A resolved map sending one label to two planning statuses is refused here: a
- * strict five-key object does not stop the same string twice, and the result
- * would be a ticket the classifier reports ambiguous and the queue skips
- * forever.
+ * One label mapped to two planning statuses is refused here: a strict five-key
+ * object does not stop the same string twice, and the ticket would be reported
+ * ambiguous and skipped by the queue forever.
  */
 export const resolveLifecycleSettings = ({ config }: Params): LifecycleSettings | TrackerFailure => {
 	const queue = config.queue;

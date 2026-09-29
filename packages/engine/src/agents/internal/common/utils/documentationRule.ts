@@ -5,10 +5,9 @@ interface Params {
 }
 
 /**
- * The template's `documentationRule` token: the rule a repository's own config
- * adds to the fixed set, or nothing at all. Always substituted, including with
- * the empty string — a template that reached an agent still carrying a token is
- * what the plan lint's unresolved-token scan is there to catch.
+ * Returns the empty string rather than nothing, because the token is always
+ * substituted: a template that reached an agent still carrying a token is what
+ * the plan lint's unresolved-token scan is there to catch.
  */
 export const documentationRule = ({ docs }: Params): string =>
 	docs === undefined || docs.length === 0

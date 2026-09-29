@@ -22,12 +22,9 @@ import { requireImplementLifecycle } from '#src/ticketLifecycle/requireImplement
 import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts';
 
 /**
- * The pipeline the resolved plan target asks for — every phase of a folder
- * holding an overview, or the one plan — inside the ONE command run this
- * invocation records, written to the plan folder of the LAUNCHING checkout
- * `cwd` names while the source work happens in `workspace`. That is why the
- * record is opened here and not in a pipeline a phased plan calls once per
- * phase; a plan outside the plans directory has no name, and so no folder.
+ * The record is opened here rather than in the pipeline so a phased plan records
+ * one run, not one per phase. It is written to the launching checkout `cwd`,
+ * while the source work happens in `workspace`.
  */
 const runResolvedPipeline = ({
 	cwd,
@@ -121,11 +118,8 @@ export const implementCommand = async ({ flags, cwd }: CommandContext): Promise<
 
 	const { workspace, target } = opened;
 
-	// Before the pipeline, because the whole guarantee is that the ticket records
-	// what it owes and that implementation has begun before an agent touches any
-	// source. There is no `--ref`: implement builds whatever branch the workspace
-	// holds, so the branch's own ticket reference is the one this reads, and a
-	// branch carrying none proceeds untouched.
+	// Before the pipeline, so the ticket records that implementation has begun
+	// before an agent touches any source.
 	const refused = await requireImplementLifecycle({ cwd: workspace.cwd, config: loaded, env: process.env, onProgress: createProgressPrinter() });
 
 	if (refused !== undefined) {
@@ -135,9 +129,6 @@ export const implementCommand = async ({ flags, cwd }: CommandContext): Promise<
 
 	printRunStart({ target, overviewPath, packages, startPhase, config, driver, cwd: workspace.cwd, configPath: resolveConfigPath({ cwd }) });
 
-	// The record's own bookkeeping around the run: the plan is marked implementing
-	// under the id the pipeline is handed, and the outcome is recorded against it.
-	// A run outside a work order, and a ticket with no record, record nothing here.
 	const outcome = await runWorkOrderPlanLifecycle({
 		cwd: workspace.cwd,
 		name: planName,

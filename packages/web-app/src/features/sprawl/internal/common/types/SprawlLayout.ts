@@ -1,13 +1,6 @@
 import type { SprawlBar } from '#src/features/sprawl/internal/common/types/SprawlBar.ts';
 import type { SprawlFolderRow } from '#src/features/sprawl/internal/common/types/SprawlFolderRow.ts';
 
-/**
- * One lane at one frame, reduced to rectangles.
- *
- * A drawing rather than a measurement: the page and the GIF renderer both take
- * their geometry from here, so the two can never disagree about where a bar
- * sits or how big a folder square is.
- */
 export interface SprawlLayout {
 	bars: SprawlBar[];
 	folderRows: SprawlFolderRow[];

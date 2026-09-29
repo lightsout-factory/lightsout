@@ -1,4 +1,3 @@
-/** A jest snapshot, whose bytes ARE the assertion the test makes. */
 const snapshotFileName = /\.snap$/;
 
 interface Params {
@@ -7,12 +6,9 @@ interface Params {
 }
 
 /**
- * Whether a path is a jest snapshot.
- *
  * One spelling, because two questions turn on it: the test-side predicate
  * counts a snapshot as a file the review must see, and the post-gate approval
- * counts it as a file the runner may have written itself. A second snapshot
- * format would otherwise have to be remembered in both places.
+ * counts it as a file the runner may have written itself.
  */
 export const isSnapshotFile = ({ path }: Params): boolean => {
 	return snapshotFileName.test(path);

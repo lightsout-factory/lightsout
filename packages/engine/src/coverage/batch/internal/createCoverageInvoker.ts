@@ -22,11 +22,6 @@ interface Params {
 }
 
 /**
- * The one way a coverage batch spends an invocation. The writer's assignment is
- * identical on every attempt — the batch's members, tested through themselves —
- * and only the gate output that sent the work back differs, so the caller
- * supplies a label and, on a fix, that output.
- *
  * Created once per batch because the invocation count it keeps names the
  * evidence files: two counters would overwrite each other's streams.
  */

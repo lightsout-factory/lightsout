@@ -1,6 +1,4 @@
 /**
- * Why one self-check ended as it did.
- *
  * Only `Ran` carries a gate verdict; the other four each print an ending of
  * their own, none of them is a failure of the change, and none of them may read
  * as a check that passed.

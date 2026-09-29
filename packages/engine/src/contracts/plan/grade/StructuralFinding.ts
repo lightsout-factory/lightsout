@@ -2,11 +2,6 @@ import { z } from 'zod';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 
-/**
- * One deterministic structural defect found linting a plan: which check
- * failed, how hard it gates, which plan file it is in, what the issue is,
- * where in the plan it is, and the exact fix.
- */
 export const StructuralFinding = z.object({
 	check: z.enum(StructuralCheck),
 	/** An advisory finding prints and gates nothing. */

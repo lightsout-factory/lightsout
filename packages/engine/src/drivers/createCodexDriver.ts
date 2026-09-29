@@ -6,17 +6,7 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { isRateLimitMessage } from '#src/drivers/internal/common/utils/isRateLimitMessage.ts';
 import { spawnCollect } from '#src/drivers/internal/common/utils/spawnCollect.ts';
 
-/**
- * Driver for the Codex CLI in non-interactive mode (`codex exec`).
- *
- * Spawns the user's own installed, logged-in `codex` binary — auth and
- * billing ride the user's existing ChatGPT plan, and the engine never sees a
- * credential. Codex has no system-prompt channel, so the role instructions
- * ride at the top of the task text. The final message is read from
- * `--output-last-message` rather than parsed out of the event stream. Flag
- * surface verified against codex-cli 0.146.0. The approval policy is pinned to
- * `never` by the driver, so it is never a setting.
- */
+/** Codex has no system-prompt channel, so the role instructions ride at the top of the task text. */
 export const createCodexDriver = (): Driver => {
 	const driver: Driver = {
 		name: 'codex',

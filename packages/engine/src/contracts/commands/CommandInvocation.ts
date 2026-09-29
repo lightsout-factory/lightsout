@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-/** One shape a command can be invoked in — a command with two shapes has two usage lines. */
 export const CommandInvocation = z.object({
 	/** Stable key matching `CommandFlag.shape`. */
 	id: z.string(),

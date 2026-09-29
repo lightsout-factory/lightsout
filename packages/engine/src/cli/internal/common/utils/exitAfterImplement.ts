@@ -31,34 +31,16 @@ interface Params {
 }
 
 /**
- * End an implement run, shipping the branch first when the run passed and
- * someone asked for it.
+ * The intent is re-resolved from the same inputs the starting command stamped
+ * on the manifest, so the progress view's ship row and the ship here cannot
+ * disagree.
  *
- * Whether anyone asked is `resolveShipIntent`'s answer, not this function's —
- * the command that started the run resolved the same intent from the same
- * inputs and stamped it on the manifest, so the row the progress view draws and
- * the ship that happens here cannot disagree.
+ * A `--ship` against an unusable ticket pattern exits 1 rather than skipping
+ * silently, because the user is not getting the ship they asked for. A blocked
+ * ship after a passed run also exits 1: the code is verified, the merge is not
+ * done.
  *
- * Shipping is opt-in both ways and never the default: implement's end state
- * stays a verified diff a human can still review before it becomes the default
- * branch. A `--ship` asked for against an unusable ticket pattern is a loud
- * exit-1 usage error rather than a silent skip — the user is not getting the
- * ship they asked for, and the message has to say so. A blocked ship after a
- * passed run also exits 1, with the ship result already on disk: the code is
- * verified, the merge is not done, and that is the honest report.
- *
- * A run of a plan inside a ticket folder ships on its ticket's terms instead:
- * `readWorkOrderRunTerms` is asked with the same name the command asked before the
- * run, so a multiple-plan ticket ships exactly when this run satisfies the
- * human's explicit ship request, and a run that therefore does not ship prints
- * the one sentence saying why.
- *
- * The ship runs in the checkout the run's manifest recorded, so a caller that
- * hands over the launching checkout and a caller that hands over the workspace
- * both ship the right tree. A confirmed merge then takes the workspace down
- * before the tracker write, mirroring `shipOneBranch`: the local cleanup
- * happens while the merge is the freshest fact, and the write that can fail
- * without undoing anything comes last.
+ * The tracker write comes last, because it can fail without undoing anything.
  */
 export const exitAfterImplement = async ({ config, cwd, result, shipFlag, noShipFlag, env }: Params): Promise<never> => {
 	const terms = await readWorkOrderRunTerms({
@@ -118,9 +100,7 @@ export const exitAfterImplement = async ({ config, cwd, result, shipFlag, noShip
 		return exitCli({ code: 1 });
 	}
 
-	// Only a lightsout-created standalone worktree comes down, and only now that
-	// the merge is confirmed: the ownership record is what licenses it, so a
-	// checkout the user selected themselves is never removed.
+	// Only now that the merge is confirmed.
 	await removeShippedRunWorkspace({ cwd: workCwd, manifest: result.manifest, onProgress: createProgressPrinter() });
 
 	// The merge is confirmed here too, so the tracker learns it here too — and a

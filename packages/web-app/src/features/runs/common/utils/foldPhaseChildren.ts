@@ -6,12 +6,8 @@ interface Params {
 }
 
 /**
- * Coordinators at the top level, each carrying the phase runs whose
- * `parentRunId` names it.
- *
- * A child whose coordinator is not in this list — filtered away, or deleted —
- * is promoted to the top level rather than dropped: a run must never become
- * unreachable because something else was narrowed out from under it.
+ * A child whose coordinator is not in the list (filtered away or deleted) is
+ * promoted to the top level, so a run never becomes unreachable.
  */
 export const foldPhaseChildren = ({ runs }: Params): RunGroup[] => {
 	const present = new Set(runs.map((run) => run.runId));

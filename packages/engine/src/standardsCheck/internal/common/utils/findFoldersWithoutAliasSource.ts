@@ -5,7 +5,6 @@ interface Params {
 	contents: Map<string, string>;
 }
 
-/** Whether one manifest's text declares an `imports` map — the package-private alias mechanism. */
 const declaresImports = ({ text }: { text: string }) => {
 	let data: unknown;
 
@@ -23,22 +22,12 @@ const declaresImports = ({ text }: { text: string }) => {
 };
 
 /**
- * The folders holding judged files that no alias declaration sits above —
- * neither a `tsconfig.json` nor a `package.json` that declares `imports`.
- *
- * A rule resolving an import needs the path aliases of the package holding the
- * file, and a package that declares them nowhere has none to give. Those rules
- * then cannot tell an alias from a published package, so they stay silent
- * rather than guess — correct, and invisible. This is what makes it visible:
- * the run names the folders it could not answer for, so a clean report is never
+ * Rules that resolve imports stay silent where a package declares no aliases,
+ * rather than guess; naming these folders keeps a clean report from being
  * mistaken for a question nobody asked.
  *
- * A manifest counts only when it actually declares `imports`. Every package
- * ships a `package.json`, so treating the file's mere presence as an answer
- * would report the whole repo covered and this note would never fire again.
- *
- * Folders rather than files, because the answer is identical for every file in
- * one and a list of six hundred paths is not a note anybody reads.
+ * A manifest counts only when it actually declares `imports`: every package
+ * ships a `package.json`, so its mere presence would report the whole repo covered.
  */
 export const findFoldersWithoutAliasSource = ({ files, contents }: Params): string[] => {
 	const answered = new Map<string, boolean>();

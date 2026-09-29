@@ -6,7 +6,7 @@ import { matchesImplementedSnapshot } from '#src/workOrder/internal/common/utils
 
 interface Params {
 	cwd: string;
-	/** The plan's address, `<ticket-branch>/<plan-id>`. */
+	/** `<ticket-branch>/<plan-id>`. */
 	address: string;
 	planId: string;
 	name: string;
@@ -16,13 +16,7 @@ interface Params {
 	syncState: WorkOrderSyncState | undefined;
 }
 
-/**
- * Every refusal that has to be settled before the first attachment goes out.
- *
- * All three are read from the record and the sidecar alone, so a plan the
- * ticket does not hold, one another machine has republished, and one whose
- * implemented scope no longer matches its files each cost nothing to catch.
- */
+/** Settled before the first attachment goes out, so no publish is left half done. */
 export const findPlanPublishRefusal = async ({ cwd, address, planId, name, record, syncState }: Params): Promise<string | undefined> => {
 	const plan = record?.plans.find((entry) => entry.id === planId);
 

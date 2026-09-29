@@ -3,12 +3,8 @@ import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.
 import { isBarrelFile } from '../../../../../common/paths/isBarrelFile.ts';
 
 /**
- * Every file past the cap its extension earns.
- *
- * A barrel is exempt at any length: a barrel is a list of re-exports, and the
- * remedy the finding would ask for — split it, or graduate the concept — is
- * exactly what a module's public API cannot do. True of every spelling the
- * shared name test answers for, `index.tsx` included.
+ * A barrel is exempt at any length: the remedy the finding asks for, split it
+ * or graduate the concept, is what a module's public API cannot do.
  */
 const buildFileFindings = ({ input, settings }: { input: SyntaxTreeInput; settings: Record<string, number> }) => {
 	const findings: RawStandardsFinding[] = [];

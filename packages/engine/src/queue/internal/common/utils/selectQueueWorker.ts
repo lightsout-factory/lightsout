@@ -14,30 +14,18 @@ interface Params {
 }
 
 /**
- * The worker one planning-status-and-tracker-status pair selects, or undefined
- * when the pair is not one the queue takes.
+ * The two shaping states are never automated, and `planning-not-needed` in
+ * Backlog is neither selected nor moved.
  *
- * Exactly three pairs select a worker. A `planning-ready-auto-plan` ticket at
- * any eligible status that is not the ready one is in the pre-implementation
- * waiting area, so it is planned first; `planning-complete` at the ready status
- * implements the plan published to the ticket; `planning-not-needed` at the
- * ready status builds from the ticket body. Everything else is left alone,
- * including the two shaping states, which are never automated, and
- * `planning-not-needed` in Backlog, which the queue neither selects nor moves.
- *
- * An undefined `trackerStatus` satisfies the status half of every rule, which is
- * what lets the parked scan resume a ticket sitting at In Progress. That is also
- * what makes a mid-run relabel land correctly: a queued auto-plan ticket becomes
+ * A mid-run relabel lands correctly: a queued auto-plan ticket becomes
  * `planning-complete` once its plan is published, so a park during its nested
- * implementation resumes as the plan worker — the same work it was doing.
+ * implementation resumes as the plan worker, the same work it was doing.
  */
 export const selectQueueWorker = ({ planningStatus, trackerStatus, readyStatus }: Params): QueueWorker | undefined => {
 	// An undefined status satisfies both halves, which is what lets the parked scan
 	// resume a ticket whose worktree already answered the status question.
 	const atReady = trackerStatus === undefined || trackerStatus === readyStatus;
-	// The ticket reached here from the eligible query, so an eligible status that
-	// is not the ready one is the pre-implementation waiting area the model calls
-	// Backlog.
+	// The ticket came from the eligible query, so any status but the ready one is Backlog.
 	const inBacklog = trackerStatus !== readyStatus;
 	const selected: Record<PlanningStatus, QueueWorker | undefined> = {
 		[PlanningStatus.NeedsBrainstorm]: undefined,

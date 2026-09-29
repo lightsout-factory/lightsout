@@ -6,9 +6,6 @@ interface Params {
 }
 
 /**
- * Every directory holding one of these files, plus each of its ancestors, as
- * repo-relative paths.
- *
  * A file list never names the empty folders between its entries, so a rule that
  * judges folders — one that objects to a folder's name or its place — has to
  * derive them. The repo root (`.`) is never a member: those rules judge named

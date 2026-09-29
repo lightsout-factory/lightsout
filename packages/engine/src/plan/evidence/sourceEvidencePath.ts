@@ -8,13 +8,7 @@ interface Params {
 }
 
 /**
- * The one answer to where a plan's collected source evidence lives: a single
- * record inside that plan's own workspace folder, beside the transcripts and
- * grade records that already make a run reconstructable.
- *
- * The file name is spelled inline because this is its only consumer, and it is
- * deliberately absent from `durablePlanFileNames`: collected evidence is run
- * state, regenerable from the repository and the facts, so it never travels with
- * a published plan.
+ * Deliberately absent from `durablePlanFileNames`: collected evidence is
+ * regenerable run state, so it never travels with a published plan.
  */
 export const sourceEvidencePath = async ({ cwd, name }: Params): Promise<string> => join(await planWorkspaceDir({ cwd, name }), 'source-evidence.json');

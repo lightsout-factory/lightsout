@@ -1,12 +1,6 @@
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 
-/**
- * The glyph the terminal prints for each run/step status.
- *
- * Keyed by `RunStatus` rather than by `string`, so a status added to the union
- * fails the typecheck here instead of reaching a reader as `?` — which is how
- * `paused-budget` came to have no icon at all.
- */
+/** Keyed by `RunStatus` rather than `string`, so a new status fails the typecheck here instead of printing as `?`. */
 export const statusIcons: Record<RunStatus, string> = {
 	[RunStatus.Passed]: '✓',
 	[RunStatus.Failed]: '✗',

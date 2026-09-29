@@ -24,14 +24,9 @@ interface Params {
 }
 
 /**
- * Turn one round's measurement into the batch that round will spend a writer
- * on: the worst file's scope earns the round, and the batch takes whole
- * import-graph components of that scope.
- *
- * Both ways this can come back empty are the run's end, not a batch's: no
- * improvable file left while the gate is still red is a question only a human
- * can answer, and a scope whose candidates its own member pool refuses is an
- * engine bug to surface rather than an empty assignment to spend on.
+ * Both ways this can come back empty end the run, not a batch: no improvable
+ * file left while the gate is red is a human's question, and a scope whose
+ * candidates its own member pool refuses is an engine bug to surface.
  */
 export const buildCoverageRound = async ({ cwd, measured, setAside, standardsPacks, compiler, batchNumber }: Params): Promise<CoverageRound> => {
 	const setAsidePaths = new Set(setAside.flatMap((entry) => entry.files));

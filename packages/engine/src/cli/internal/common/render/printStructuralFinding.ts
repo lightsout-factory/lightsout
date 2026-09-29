@@ -9,12 +9,6 @@ interface Params {
 	write?: (line: string) => void;
 }
 
-/**
- * Render one plan structural finding: its severity marker (the ⚠ icon when it
- * blocks, a dim `note` when it only informs), then the plan file it came from,
- * the check, location and issue, with its fix on the following dim line. The
- * phase label leads every line so a twenty-finding phased run is navigable.
- */
 export const printStructuralFinding = ({ finding, write = console.log }: Params): void => {
 	const marker = finding.severity === FindingSeverity.Advisory ? dim('note') : yellow('⚠');
 

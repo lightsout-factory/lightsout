@@ -9,11 +9,9 @@ interface Params {
 }
 
 /**
- * The test files and their text. `contents` holds the test paths alone, not the
- * whole shared cache: a test-shape rule that could reach source files through
- * its input would be checking something its declaration does not claim.
- *
- * @param cache - the run's shared cache, read through and filled in place
+ * `contents` holds the test paths alone, not the whole shared cache: a
+ * test-shape rule that could reach source files through its input would be
+ * checking something its declaration does not claim.
  */
 export const buildTestFileInput = async ({ cwd, tests, cache }: Params): Promise<TestFileInput> => {
 	const contents = await readIntoCache({ cwd, paths: tests, cache });

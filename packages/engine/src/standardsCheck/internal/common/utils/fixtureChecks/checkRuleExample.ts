@@ -9,15 +9,8 @@ interface Params {
 }
 
 /**
- * Whether a rule's fixtures are the shape its `example` declares, as problem
- * lines. A snippet holds exactly one file a side; a repo's focus file exists on
- * the side that names it. A rule that declares no shape is never a problem —
- * its page reads the shape off the files.
- *
  * Asked here rather than at load, because loading accepts a pack without its
  * fixtures and this is where fixtures are demanded.
- *
- * @param rule - the loaded rule, with its declaration and its fixtures folder
  */
 export const checkRuleExample = async ({ rule }: Params): Promise<string[]> => {
 	const { example } = rule;

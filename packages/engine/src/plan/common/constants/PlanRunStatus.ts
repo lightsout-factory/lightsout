@@ -1,12 +1,6 @@
 /**
- * How a plan command came to rest — the discriminant every plan result union
- * narrows on.
- *
- * One object for the family rather than one per command: the commands answer
- * the same three ways plus their own specialised ends, and a caller that
- * handles `Failed` for draft handles it identically for grade. Spelled as
- * literals at each declaration, the shared ends would be seven independent
- * strings that only agree by accident.
+ * One object for the family rather than one per command, because a caller that
+ * handles `Failed` for draft handles it identically for grade.
  */
 export const PlanRunStatus = {
 	Complete: 'complete',

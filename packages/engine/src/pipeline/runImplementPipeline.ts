@@ -21,11 +21,8 @@ import { buildSteps } from '#src/pipeline/steps/buildSteps/buildSteps.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { withRunLock } from '#src/runState/lock/withRunLock.ts';
 
-// The end-of-run look at the files write-tests skipped as unreachable: later
-// steps (refactor wiring) may have connected them to a public surface, so
-// each is re-resolved before the run finishes — files now reached (or gone
-// from the tree) drop off, and anything still orphaned stays in the manifest
-// under a named warning. A wiring defect is surfaced, never hidden.
+// Later steps may have connected a file write-tests skipped to a public surface,
+// so each is re-resolved; anything still orphaned stays under a named warning.
 const recheckUnreachable = async ({ run }: { run: PipelineRun }) => {
 	const recorded = run.current().unreachableChangedFiles;
 
@@ -49,15 +46,10 @@ const recheckUnreachable = async ({ run }: { run: PipelineRun }) => {
 };
 
 /**
- * How a run whose every step passed ends: the unreachable re-check, the commit,
- * and the stamp or the stop that follows.
- *
- * The commit's position is the whole of it. It runs before the approved copies
- * are removed, because those copies are the baseline a resume diffs against and
- * a refused commit has to leave them on disk — and before the passed stamp,
- * because a run already stamped passed could not be failed by the commit that
- * follows it. Every declared step is recorded passed by now, so the resume a
- * refusal asks for walks straight past all of them and costs only the commit.
+ * The commit runs before the approved copies are removed, because they are the
+ * baseline a resume diffs against and a refused commit must leave them on disk,
+ * and before the passed stamp, because a run stamped passed could not then be
+ * failed by the commit.
  */
 const finishRun = async ({ run, resumed }: { run: PipelineRun; resumed: boolean }): Promise<PipelineResult> => {
 	await recheckUnreachable({ run });
@@ -85,43 +77,32 @@ interface Params {
 	cwd: string;
 	driver: Driver;
 	config: LightsoutConfig;
-	/** The id a fresh run is created under, minted by the caller so the run can be named before it starts. Ignored when resuming. */
+	/** Minted by the caller so the run can be named before it starts. Ignored when resuming. */
 	runId?: string;
-	/** Plan path for a fresh run. Ignored when resuming (the manifest owns it). */
+	/** Ignored when resuming (the manifest owns it). */
 	planPath?: string;
-	/** Optional overview plan path (high-level context for a phased plan). Ignored when resuming. */
+	/** Ignored when resuming. */
 	overviewPath?: string;
-	/** The coordinator's run id when this run is one phase of a sequence. Ignored when resuming — the existing manifest already carries it. */
+	/** Ignored when resuming: the existing manifest already carries it. */
 	parentRunId?: string;
-	/** Package scope override (monorepo mode). Falls back to the plan front-matter `packages:` list. */
+	/** Falls back to the plan front-matter `packages:` list. */
 	packages?: string[];
-	/** Resume: an existing manifest — steps already passed are skipped. */
+	/** Resume: steps already passed are skipped. */
 	existing?: RunManifest;
-	/** What the sequence this run is a phase of already owns — supplied only when that sequence was resumed and this phase had not started, so there is no child manifest to adopt. It seeds the run's baseline in place of a fresh git snapshot. */
+	/** Supplied only when a resumed sequence reaches a phase that had not started, so there is no child manifest to adopt. It seeds the baseline in place of a fresh git snapshot. */
 	inheritedBaseline?: string[];
 	skipRefactor?: boolean;
-	/** The level this run's agent calls open their own step levels under. Absent wherever no run is being recorded — a phase run is handed its phase's pass level, a single run its command run's. */
+	/** Absent wherever no run is being recorded. */
 	level?: ActivityLevel;
-	/** Resolved before the run starts: a passing run will ship this branch. Recorded on the manifest so the progress view can show a ship row. Ignored when resuming — the existing manifest already carries it. */
+	/** Ignored when resuming: the existing manifest already carries it. */
 	willShip?: boolean;
-	/** Live progress sink (steps, gate results, agent reports). Silent when omitted. */
 	onProgress?: (message: string) => void;
 }
 
 /**
- * The pipeline body — always entered holding the run lock (the exported
- * wrapper below acquires and releases it around this).
- *
- * Clean-slate gate → implement → verify → write-tests (one writer per group
- * of public subjects, in parallel) → verify → refactor (looped until a pass
- * changes nothing) → verify → format. Every state transition is persisted
- * before the next action, so a crash, rate-limit park, or escalation at any
- * point leaves a resumable, truthful record on disk — resume re-enters here
- * and walks past every step already marked passed.
- *
- * Changed files flow step to step through the manifest: each agent's typed
- * report is merged with a git snapshot (minus the run's baseline dirt), and
- * the merged list feeds the next role's invocation.
+ * Every state transition is persisted before the next action, so a crash, park
+ * or escalation leaves a resumable record; resume re-enters here and walks past
+ * every step already passed.
  */
 const executePipeline = async ({
 	cwd,
@@ -173,14 +154,11 @@ const executePipeline = async ({
 	const { planContent, overviewContent, standards, testStandards } = prepared;
 
 	// Agents in a consumer nested inside a larger git repo sometimes echo
-	// repo-ROOT-relative paths — computed once, threaded into every derivation
-	// that normalizes report paths.
+	// repo-root-relative paths.
 	const gitPrefix = await readGitPrefix({ cwd });
 	const steps = buildSteps({ run, gitPrefix, planContent, overviewContent, standards, testStandards, skipRefactor });
 
-	// The one moment the exact sequence is known — buildSteps has already
-	// resolved it, --skip-refactor included — so it is the one moment a reader
-	// can be told which steps are still to come.
+	// Only now is the exact step sequence known, --skip-refactor included.
 	await run.update({ patch: { status: RunStatus.Running, stepOrder: steps.map((step) => step.id) } });
 
 	const stopped = await runSteps({ run, steps });
@@ -192,10 +170,5 @@ const executePipeline = async ({
 	return finishRun({ run, resumed: inheritedBaseline !== undefined || existing !== undefined });
 };
 
-/**
- * Public entry: the shared run-lock lifecycle around the pipeline body —
- * acquisition happens before ANY disk write, every exit path releases, and
- * the refactor pipeline takes the same repo lock, so the two can never race
- * one tree.
- */
+/** The refactor pipeline takes the same repo lock, so the two can never race one tree. */
 export const runImplementPipeline = (params: Params): Promise<PipelineResult> => withRunLock({ params, run: executePipeline });

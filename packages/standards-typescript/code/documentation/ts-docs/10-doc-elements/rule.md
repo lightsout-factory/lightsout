@@ -12,6 +12,7 @@ severity: advisory
 - **`@returns`**: only when the value has semantics the type doesn't show (a `string` that is a JWT; a `boolean` where `true` means "already existed").
 - **`@example`**: for complex APIs or non-obvious usage; minimal and runnable.
 - **`@typeParam`**: when a generic's purpose isn't obvious from its name.
+- **Interface properties**: a `/** */` comment on a property only when its name and type don't convey the contract (`/** Display name shown in the UI, may differ from username */`). Document an interface at the type level, not on every property.
 
 ## Complete Example
 

@@ -3,10 +3,9 @@ import { formatDuration } from '@lightsout/shared';
 import { BadgeVariant } from '#src/common/constants/BadgeVariant.ts';
 import { runStatusFamilies } from '#src/common/constants/runStatusFamilies.ts';
 
-// The background for each colour family. Spelled out rather than interpolated
-// because Tailwind only emits classes it can read in the source. Every family
-// is listed, not only the six a run status can reach, so the table stays a
-// total answer for the type rather than one a new variant would silently break.
+// Spelled out rather than interpolated because Tailwind only emits classes it
+// can read in the source. Every family is listed so a new variant cannot
+// silently break the table.
 const segmentColors: Record<BadgeVariant, string> = {
 	[BadgeVariant.Neutral]: 'bg-muted',
 	[BadgeVariant.Running]: 'bg-status-running',
@@ -26,13 +25,8 @@ interface Props {
 }
 
 /**
- * Where the time went: one segment per step, as wide as its share of the run's
- * active time.
- *
- * The segments deliberately need not fill the strip — the shortfall is the run
- * sitting between steps, and hiding it by normalising to 100% would claim time
- * the steps did not spend. A step with no recorded duration still gets a floor
- * so it stays clickable rather than collapsing to nothing.
+ * The segments need not fill the strip: normalising to 100% would claim time the
+ * steps did not spend. A step with no duration gets a floor so it stays clickable.
  */
 export const RunTimeline = ({ steps, activeMs }: Props) => {
 	const minimumWidthPercent = 3;

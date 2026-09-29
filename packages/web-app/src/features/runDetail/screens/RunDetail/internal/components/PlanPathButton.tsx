@@ -8,7 +8,6 @@ interface Props {
 	onOpenPlan: (path: string) => void;
 }
 
-/** A recorded plan path, rendered as the control that opens it in the drawer. */
 export const PlanPathButton = ({ path, label, onOpenPlan }: Props) => (
 	<button
 		type="button"

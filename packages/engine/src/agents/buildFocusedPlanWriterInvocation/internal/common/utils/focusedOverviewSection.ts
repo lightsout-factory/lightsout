@@ -1,17 +1,7 @@
 interface Params {
-	/** The one overview path this spawn authors. */
 	path: string;
 }
 
-/**
- * The overview spawn's brief: author that one file, and nothing else. The phase
- * files are written by separate agents from the declarations this spawn settles,
- * so a phase it does not declare is never authored at all.
- *
- * The `## Phases` row and the matching `### Phase <N> — ` declaration heading are two views of one record and
- * the engine normalises the pairing between them, so the writer states each
- * phase once instead of checking one copy against the other.
- */
 export const focusedOverviewSection = ({ path }: Params): string =>
 	`## Overview only
 

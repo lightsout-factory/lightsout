@@ -1,6 +1,5 @@
 /** How one gate attempt ends. Only `Failed` is evidence about the code. */
 export const GateEnding = {
-	/** Exit 0. */
 	Passed: 'passed',
 	/** A red that is evidence about the code — a gate that failed to spawn included. */
 	Failed: 'failed',

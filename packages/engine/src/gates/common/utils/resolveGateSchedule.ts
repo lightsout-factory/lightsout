@@ -8,9 +8,6 @@ interface Params {
 }
 
 /**
- * A checkpoint's gate schedule: its `gate-overrides` entry when it has one, the
- * engine's two tiers when it does not.
- *
  * Shared rather than restated, because the checkpoint and the self-check that
  * precedes it must resolve the same schedule from the same entry — a second
  * three-branch mapping is how the two would come to disagree.

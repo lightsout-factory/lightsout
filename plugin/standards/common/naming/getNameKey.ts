@@ -13,7 +13,6 @@ const verbSynonyms: Record<string, string> = {
 	check: 'validate',
 };
 
-/** camelCase / kebab-case / snake_case split into lowercase word tokens, with every banned synonym collapsed onto its verb. */
 const getTokens = ({ name }: { name: string }) =>
 	name
 		.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
@@ -28,19 +27,14 @@ interface Params {
 }
 
 /**
- * An export name reduced to a synonym- and word-order-normalized key, so
- * `fetchUserData`, `getUserData` and `userDataGet` all collapse onto one
- * string.
- *
  * Conversion names are the one place word order carries meaning — `hexToRgb`
  * and `rgbToHex` are deliberate opposites, not one concept — so a `to` or
  * `from` token pins the order instead of sorting it away.
  *
- * A deliberate mirror of the engine's `nameKey`, kept identical so this rule
- * and the engine's plan-time prior-art detection never disagree about whether
- * two names are one concept. The copy cannot be collapsed: this package ships
- * as a bare directory with no manifest and no `node_modules`, so every value
- * it imports has to resolve inside its own tree. Change one, change the other.
+ * Kept identical to the engine's copy so this rule and plan-time prior-art
+ * detection never disagree. The copy cannot be collapsed: this package ships as
+ * a bare directory with no manifest and no `node_modules`, so every value it
+ * imports has to resolve inside its own tree. Change one, change the other.
  *
  * @mirrors packages/engine/src/plan/internal/common/naming/getNameKey.ts
  */

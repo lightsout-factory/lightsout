@@ -1,14 +1,12 @@
 import type { WriterResult } from '#src/pipeline/internal/common/types/WriterResult.ts';
 
 interface Params<TGroup> {
-	/** The assignment to warm on, or undefined when there is nothing to warm for. */
 	group: TGroup | undefined;
 	spawnWriter: ({ group, onFirstEvent }: { group: TGroup; onFirstEvent?: () => void }) => Promise<WriterResult<TGroup>>;
 	aggregate: { collect: ({ result }: { result: WriterResult<TGroup> }) => Promise<void> };
 }
 
 interface WarmSpawn<TGroup> {
-	/** The warm-up spawn itself, or undefined when none was made. */
 	warm: Promise<WriterResult<TGroup>> | undefined;
 	/** Fold the warm-up result in, once and only once. */
 	collectWarm: () => Promise<void>;
@@ -18,14 +16,12 @@ interface WarmSpawn<TGroup> {
 }
 
 /**
- * The warm-up spawn and the gate holding the rest behind it. The first
- * assignment goes out alone and the others wait until it emits its first stream
- * event — the moment its response begins is the moment the harness's prompt
- * cache holds the writers' shared system prompt, so the batch that follows reads
- * the cache instead of paying for it once per writer. The gate is raced against
- * the spawn settling, so one that dies or streams nothing (stub drivers) simply
- * falls back to unwarmed behavior. No group means nothing to warm for, and every
- * hook below turns into a no-op.
+ * The first assignment goes out alone and the rest wait for its first stream
+ * event: once its response begins, the harness's prompt cache holds the
+ * writers' shared system prompt, so the batch that follows reads the cache
+ * instead of paying for it once per writer. The gate is raced against the
+ * spawn settling, so a spawn that dies or streams nothing falls back to
+ * unwarmed behavior.
  *
  * @typeParam TGroup - the assignment each writer was given.
  */

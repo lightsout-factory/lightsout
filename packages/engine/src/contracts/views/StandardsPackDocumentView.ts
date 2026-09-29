@@ -1,7 +1,6 @@
 import { StandardsSet } from '@lightsout/standards-contracts';
 import { z } from 'zod';
 
-/** One document folder as a pack's page groups its rules — the header, its intro, and what sits under it. */
 export const StandardsPackDocumentView = z.object({
 	set: z.enum(StandardsSet),
 	path: z.string(),

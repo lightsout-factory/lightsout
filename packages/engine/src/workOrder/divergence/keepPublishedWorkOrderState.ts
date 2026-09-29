@@ -32,13 +32,11 @@ interface Params {
 	cwd: string;
 	name: string;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	target: TicketTrackerTarget;
 	onProgress?: (message: string) => void;
 }
 
-/** The SHA-256 of the marker the ticket actually carries for one plan, so the record's claim can be checked before anything moves. */
 const readPublishedPlanMarker = async ({
 	planId,
 	target,
@@ -67,7 +65,6 @@ const readPublishedPlanMarker = async ({
 		: { error: `the plan generation for ${planId} on ${ticketRef} could not be read: ${text.error}` };
 };
 
-/** Rename one checkout's copy of a plan folder to the next free `.local-<n>` beside it. Nothing is ever deleted. */
 const setPlanFolderAside = async ({
 	checkout,
 	name,
@@ -105,7 +102,6 @@ const setPlanFolderAside = async ({
 	return undefined;
 };
 
-/** Set every local copy of one plan aside, then write the ticket's own copy into the checkout the plan is worked on in. */
 const takePublishedPlan = async ({
 	cwd,
 	name,
@@ -169,7 +165,6 @@ const takePublishedPlan = async ({
 		: undefined;
 };
 
-/** Write the work order's state over this machine's, remember its bytes, and drop the surfaced copy the divergence left behind. */
 const writeKeptRecord = async ({ workOrderFolder, record }: { workOrderFolder: string; record: WorkOrderState }) => {
 	const content = serializeWorkOrderState({ record });
 
@@ -179,19 +174,9 @@ const writeKeptRecord = async ({ workOrderFolder, record }: { workOrderFolder: s
 };
 
 /**
- * Settle a divergence the ticket's way: its record becomes this machine's, and
- * every plan whose files this machine never published or restored is restored
- * from the ticket over a copy set aside rather than deleted.
- *
- * The record is written first because it is the index every later step reads,
- * and each plan's own marker is checked against it before anything is moved: a
- * ticket whose plan files and record disagree is a repair job, not a restore,
- * and moving a folder aside to make room for a restore that cannot succeed
- * would be the one way this command could lose work.
- *
- * Plans only this machine's copy holds are carried into the kept record, so a
- * plan added here while the ticket moved is neither lost nor has its number
- * handed to something else later.
+ * Local plan folders are set aside, never deleted. Each plan's marker is checked
+ * against the record before anything moves: moving a folder aside for a restore
+ * that cannot succeed would be the one way this command could lose work.
  */
 export const keepPublishedWorkOrderState = async ({
 	cwd,

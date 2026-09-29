@@ -7,13 +7,7 @@ interface Props {
 	entry: CommandCatalogEntry;
 }
 
-/**
- * One command on the commands page: what it is called, what it does in a line,
- * what it leaves behind, and — on a machine with a repo — what it has done here.
- *
- * The title is the slash form where the plugin ships a skill and the CLI form
- * otherwise, because that is the string a reader would actually type.
- */
+/** The title is the slash form where the plugin ships a skill, because that is the string a reader would type. */
 export const CommandCard = ({ entry }: Props) => (
 	<article className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4">
 		<div className="flex flex-wrap items-center justify-between gap-2">

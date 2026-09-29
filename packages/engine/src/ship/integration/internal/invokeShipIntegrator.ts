@@ -21,13 +21,8 @@ interface Params {
 }
 
 /**
- * One spawn of the ship-integrator role, validated against the shared work
- * contract.
- *
- * Answers `undefined` when the agent reported `complete`, and a one-line
- * reason otherwise — a refused contract, a rate-limited harness, or a report
- * whose status is anything else. One line and not the whole report, because
- * the caller is bounding attempts rather than reading a transcript.
+ * One line and not the whole report, because the caller is bounding attempts
+ * rather than reading a transcript.
  *
  * Every failure is a value here. A harness that will not answer costs the same
  * bounded attempt a wrong answer costs, instead of escaping as an exception

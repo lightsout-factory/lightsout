@@ -10,16 +10,11 @@ interface Params {
 }
 
 /**
- * One ticket's hold, written to its own file.
+ * The directory is created first, because a repository that has never timed out
+ * does not have one.
  *
- * The directory is created first, because the primary checkout of a repository
- * that has never timed out does not have one — and losing the first hold a
- * repository ever takes would let the very ticket whose gates timed out run
- * again immediately.
- *
- * It never reads or rewrites any other ticket's file. That is the whole reason
- * the record is split per ticket: a writer that touched the folder as a document
- * would drop a hold a second worker recorded a moment earlier.
+ * It never touches any other ticket's file: a writer that rewrote the folder as
+ * one document would drop a hold a second worker recorded a moment earlier.
  */
 export const writeGateHold = async ({ cwd, identifier, hold }: Params): Promise<void> => {
 	const { pathFor } = await getGateHoldPaths({ cwd });

@@ -1,19 +1,15 @@
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 
 /**
- * What each `lightsout.config.json` key is for, in the schema's own words.
- *
  * Transcribed from `LightsoutConfig`'s doc comments rather than read from them:
- * TypeScript doc comments are erased before anything runs, so a transcription is
- * the only honest route to the sentence a reader of the file would see.
+ * TypeScript doc comments are erased before anything runs.
  *
  * The `timeouts.` entries are the block's leaves rather than shape keys: the
- * block's defaults are per leaf, so the page gives each its own row and each row
- * needs its own sentence.
+ * block's defaults are per leaf, so each leaf needs its own row and sentence.
  *
- * This is also what `docs/configuration.md`'s key reference is rendered from, so
- * a sentence edited here changes that document and `pnpm check` fails until
- * `pnpm build:config-reference` has been run.
+ * `docs/configuration.md`'s key reference is rendered from this, so a sentence
+ * edited here fails `pnpm check` until `pnpm build:config-reference` has been
+ * run.
  */
 export const configKeyDescriptions: Record<string, string> = {
 	harness: "Harness name. Supported values are 'claude-code', 'codex', 'omp' (Oh My Pi) and 'pi' (bare upstream pi). Defaults to 'claude-code'.",

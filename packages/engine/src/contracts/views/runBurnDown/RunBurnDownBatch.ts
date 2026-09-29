@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutcome.ts';
 import { RunBurnDownBatchOutcome } from '#src/contracts/views/runBurnDown/RunBurnDownBatchOutcome.ts';
 
-/** One batch of a refactor run's work-list, joined to what the run did about it. */
 export const RunBurnDownBatch = z.object({
 	/** Manifest step id: `batch-NN:<rule>:<folder>`. */
 	id: z.string(),

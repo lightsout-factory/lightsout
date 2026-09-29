@@ -8,14 +8,7 @@ interface Params {
 	settings: LinearTrackerSettings;
 }
 
-/**
- * Every label name the configured team may use — its own labels plus the
- * workspace-level ones, which belong to no team.
- *
- * Paged to exhaustion, because a truncated catalog would report a configured
- * label as missing when it exists, and the caller's whole reason for asking is
- * to refuse a configuration that cannot work.
- */
+/** Includes workspace-level labels, which belong to no team. */
 export const listLabelNames = async ({ settings }: Params): Promise<string[] | TrackerFailure> =>
 	runLinear({
 		apiKey: settings.apiKey,

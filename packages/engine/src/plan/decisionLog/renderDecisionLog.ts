@@ -1,24 +1,14 @@
 import type { DecisionRow } from '#src/contracts/plan/decisions/DecisionRow.ts';
 
 interface Params {
-	/** The merged rows, brainstorm first, in record order. */
+	/** Brainstorm first, in record order. */
 	decisions: DecisionRow[];
 }
 
-/**
- * One authored field as a table cell: trimmed, its pipes escaped so a cell
- * cannot split its own row, and its line breaks folded so a row stays one line.
- * Everything else is written verbatim — the log is a record of what the human
- * settled, never a paraphrase of it.
- */
+/** Everything else is written verbatim: the log records what the human settled, never a paraphrase. */
 const toCell = ({ text }: { text: string }) => text.trim().replaceAll('|', '\\|').replace(/\r?\n/g, '<br>');
 
-/**
- * The 1-based position of the last row carrying each question, keyed by that
- * question. Two rows answering one question are a decision and its revision,
- * and the reader has to be told which one binds without comparing question
- * strings by eye.
- */
+/** Two rows answering one question are a decision and its revision; the last one binds. */
 const bindingRowNumbers = ({ decisions }: { decisions: DecisionRow[] }) => {
 	const binding = new Map<string, number>();
 
@@ -29,12 +19,7 @@ const bindingRowNumbers = ({ decisions }: { decisions: DecisionRow[] }) => {
 	return binding;
 };
 
-/**
- * The Choice cell with the markers a reader needs to weigh the row: an
- * unconfirmed choice, the phase files the row declares it affects, and a choice
- * a later row replaced. The phase files are bare names, because a backticked
- * path in a plan is a claim about the working tree.
- */
+/** Phase files are bare names, because a backticked path in a plan is a claim about the working tree. */
 const toChoiceCell = ({ row, number, binding }: { row: DecisionRow; number: number; binding: Map<string, number> }) => {
 	const bindingNumber = binding.get(row.question);
 	const markers = [
@@ -47,13 +32,10 @@ const toChoiceCell = ({ row, number, binding }: { row: DecisionRow; number: numb
 };
 
 /**
- * The plan's `## Decision Log` section, rendered from the merged decision
- * record — heading line included, no trailing newline, because the section
- * rewriter owns how the section joins the file around it.
+ * No trailing newline: the section rewriter owns how the section joins the file.
  *
- * Pure and synchronous on purpose: the structural lint re-renders this to decide
- * whether a plan file's log is stale, and a renderer that read a clock, a config
- * or the disk would make that check report a difference nobody made.
+ * Pure on purpose: the structural lint re-renders this to decide whether a log is
+ * stale, and reading a clock, config or disk would report differences nobody made.
  */
 export const renderDecisionLog = ({ decisions }: Params): string => {
 	const note = "Composed by `lightsout plan sync-decisions` from this plan's saved decision records. Do not edit by hand.";

@@ -9,8 +9,6 @@ interface Params {
 }
 
 /**
- * A work order lifecycle helper's answer read back in the queue's three terms.
- *
  * A refusal and a passed run read the same for every worker — a record write
  * that failed after a pass parks the ticket, because the ship check reads the
  * record — so only what a failed run tells the human differs per caller.

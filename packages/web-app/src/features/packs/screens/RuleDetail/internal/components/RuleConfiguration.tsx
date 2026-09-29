@@ -5,11 +5,7 @@ import { CodeBlock } from '#src/appUI/CodeBlock.tsx';
 import { severityDisplays } from '#src/common/constants/severityDisplays.ts';
 import { cn } from '#src/common/utils/cn.ts';
 
-/**
- * The config block that sets this rule, written at the pack's own defaults so
- * pasting it changes nothing until a value is edited. A rule with numbers takes
- * the object form, so those numbers are in the block ready to change.
- */
+/** Written at the pack's defaults so pasting it changes nothing until a value is edited. */
 const buildConfigSnippet = ({ rule }: { rule: StandardsPackRuleView }) =>
 	JSON.stringify(
 		{
@@ -25,13 +21,6 @@ interface Props {
 	rule: StandardsPackRuleView;
 }
 
-/**
- * How a repo sets this rule: the three settings a rule can take, with the one
- * the pack ships marked, and the block that goes in `lightsout.config.json`.
- *
- * Stated plainly rather than buried, because a pack a reader cannot argue with
- * is a pack they fork.
- */
 export const RuleConfiguration = ({ rule }: Props) => {
 	const snippet = buildConfigSnippet({ rule });
 

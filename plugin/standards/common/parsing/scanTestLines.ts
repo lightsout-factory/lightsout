@@ -4,14 +4,6 @@ interface Params {
 	pattern: RegExp;
 }
 
-/**
- * Every line of a test file matching `pattern`, as the name it declares and the
- * 1-based line it sits on.
- *
- * Two rules — the mock prefix and the shared `let` — judge declarations one line
- * at a time and differ only in the pattern and in what they then do with the
- * name, so the scan itself is written once and neither rule owns it.
- */
 export const scanTestLines = ({ text, pattern }: Params): Array<{ name: string; line: number }> => {
 	const declared: Array<{ name: string; line: number }> = [];
 

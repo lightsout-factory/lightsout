@@ -2,14 +2,12 @@ import type { CloneSpan, RawStandardsFinding, StandardsCheckModule } from '@ligh
 import { buildRawFinding } from '../../../../common/findings/buildRawFinding.ts';
 import { getSiteGroupKey } from '../../../../common/findings/getSiteGroupKey.ts';
 
-/** Every duplicated span between one pair of files, gathered under the identity they share. */
 interface ClonedPair {
 	files: RawStandardsFinding['files'];
 	spans: number;
 	longest: number;
 }
 
-/** The longer of a span's two sides, in lines — what a reader needs to judge how much code was copied. */
 const getSpanLines = ({ span }: { span: CloneSpan }) => Math.max(...span.files.map(({ startLine, endLine }) => endLine - startLine + 1));
 
 const groupByPair = ({ spans }: { spans: CloneSpan[] }) => {

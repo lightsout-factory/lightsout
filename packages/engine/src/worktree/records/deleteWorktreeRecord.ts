@@ -8,9 +8,6 @@ interface Params {
 }
 
 /**
- * Forget who owned a branch's worktree, tolerating a record that is not there —
- * and a branch no work order claims, which never had one.
- *
  * Best effort and never throws, for the reason `removeWorktree` gives: the tree
  * this described is already gone by the time it runs, and a failed unlink must
  * not turn a shipped branch into a failed one.

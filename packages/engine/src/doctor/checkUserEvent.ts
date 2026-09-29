@@ -14,9 +14,8 @@ interface Params {
 }
 
 /**
- * The component-test standards mandate userEvent only where the package
- * depends on it — agents never add deps mid-run, so the doctor is where the
- * recommendation surfaces for packages still on fireEvent.
+ * The standards mandate userEvent only where the package depends on it, and
+ * agents never add deps mid-run, so the doctor surfaces the recommendation.
  */
 export const checkUserEvent = async ({ packageDirs }: Params): Promise<DoctorCheck | undefined> => {
 	const fireEventOnly: string[] = [];

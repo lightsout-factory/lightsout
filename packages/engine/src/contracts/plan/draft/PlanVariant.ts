@@ -1,7 +1,4 @@
-/**
- * Shape of a written plan deliverable. The CLI `--scope single|phased` maps
- * `phased` → `Overview` (the overview file that fronts the phase files).
- */
+/** The CLI `--scope phased` maps to `Overview`, the file that fronts the phase files. */
 export const PlanVariant = {
 	Single: 'single',
 	Overview: 'overview',

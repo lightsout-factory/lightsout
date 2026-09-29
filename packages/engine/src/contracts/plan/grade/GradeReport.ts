@@ -8,34 +8,11 @@ import { GradeInputs } from '#src/contracts/plan/memory/GradeInputs.ts';
 import { GradeScope } from '#src/contracts/plan/memory/GradeScope.ts';
 
 /**
- * The persisted `grade.json`: a plan's grade plus the evidence behind it — the
- * deterministic structural findings and the agent-found decision gaps. `passed`
- * is the typed verdict the skill reads; it never re-implements a check.
+ * `passed` is the typed verdict the skill reads; it never re-implements a check.
+ * A `complete: false` report is never an A, whatever it found.
  *
- * The coverage fields are what keep a partial pass honest. A checker that fails
- * or hits the rate-limit wall no longer discards everything its siblings found;
- * the report is written with `complete: false` and a `phasesChecked` naming only
- * the files every lens returned for, so a pass that did not finish can never be
- * skimmed as a clean bill. A `complete: false` report is never an A, whatever it
- * found.
- *
- * `complete` speaks for the whole plan rather than for this one pass: every plan
- * file is covered at its current text — by this pass or by a recorded earlier
- * one — the whole-plan documentation record stands, and nothing failed or was
- * withheld. A reader that failed or hit the wall leaves a plan file uncovered,
- * so the pass is incomplete; a judge that failed leaves one finding unweighed,
- * which is recorded as `unjudged` on that gap and blocks the grade on its own —
- * the pass still finished.
- *
- * `scopeComplete` answers a narrower question than `complete`: whether every
- * check THIS pass's own scope called for finished. A focused repair pass that
- * read every phase it owed is scope-complete whether or not the plan beside it
- * is covered. `complete` decides approval; `scopeComplete` decides only whether
- * the pass may become the baseline the next repair narrows against.
- *
- * `gradedAt` alone cannot tell a stale verdict from a current one: a grade taken
- * against code that has since moved on reads exactly like a fresh one. The
- * commit stamp beside it says WHAT was measured, not merely when.
+ * `complete` decides approval; `scopeComplete` decides only whether the pass may
+ * become the baseline the next repair narrows against.
  */
 export const GradeReport = z.object({
 	planName: z.string(),
@@ -54,7 +31,6 @@ export const GradeReport = z.object({
 	complete: z.boolean().default(true),
 	/** True when every check this pass's own scope called for finished — never a whole-plan clean bill, and never an approval. */
 	scopeComplete: z.boolean(),
-	/** Why the pass did not finish, absent when it did. */
 	incompleteReason: z.string().optional(),
 	passed: z.boolean(),
 	gradedAt: z.string(),
@@ -62,7 +38,6 @@ export const GradeReport = z.object({
 	gradedCommit: z.string().optional(),
 	/** True when the working tree held uncommitted changes at grade time, so `gradedCommit` is a floor rather than an exact description of what was measured. Absent means NOT KNOWN — no commit was read, or the changed-file probe itself failed. It never means clean; only `false` means clean. */
 	gradedTreeDirty: z.boolean().optional(),
-	/** How far this pass reached. */
 	scope: z.enum(GradeScope),
 	/** The plan files a focused pass read — the edited phases and their connected closure. Empty on a full pass. */
 	focusedOn: z.array(z.string()).default([]),

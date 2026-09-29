@@ -9,17 +9,9 @@ interface Params {
 }
 
 /**
- * One work order's record as the contract accepts it, or undefined when the
- * folder holds no record, holds one that is not JSON, or holds one the contract
- * refuses.
- *
- * It answers undefined rather than a sentence because both look-ups built on it
- * — which work order stores a branch, and which ticket a plan's work order
- * belongs to — are read-only questions a caller answers for itself. The work
- * order module's own `readWorkOrderStateFile` is the reader that reports WHY a
- * record could not be read, and it stays there: this lives under `common/`
- * because `ship` and `worktree` need it and are already imported by that
- * module, so importing it from there would close a cycle.
+ * Answers undefined rather than a reason; `readWorkOrderStateFile` is the reader
+ * that reports why. This lives under `common/` because `ship` and `worktree` need
+ * it, and importing it from the work order module would close a cycle.
  */
 export const readWorkOrderRecordFile = async ({ workOrderFolder }: Params): Promise<WorkOrderState | undefined> => {
 	const text = await readFile(join(workOrderFolder, workOrderStateFileName), 'utf8').catch(() => undefined);

@@ -4,7 +4,6 @@ import { buildSprawlLayout } from '../packages/web-app/src/features/sprawl/commo
 /** `&`, `<` and `>` in a commit subject would otherwise close the tag they sit in. */
 const escapeText = ({ text }) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/** One stop of the brand gradient, `at` of the way along it. */
 const mixHex = ({ from, to, at }) => {
 	const parse = ({ hex }) => [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
 	const [left, right] = [parse({ hex: from }), parse({ hex: to })];
@@ -16,7 +15,7 @@ const mixHex = ({ from, to, at }) => {
 	return `#${left.map(channel).join('')}`;
 };
 
-/** A filled rectangle, rounded to two places so two runs of this script write the same bytes. */
+/** Rounded to two places so two runs of this script write the same bytes. */
 const rect = ({ x, y, width, height, fill, opacity = 1 }) =>
 	`<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${width.toFixed(2)}" height="${height.toFixed(2)}" fill="${fill}" fill-opacity="${opacity}"/>`;
 
@@ -25,22 +24,16 @@ const line = ({ x1, y1, x2, y2, theme, scale }) =>
 	` stroke="${theme.muted}" stroke-opacity="${theme.mutedOpacity}" stroke-width="${(scale * 0.15).toFixed(2)}"/>`;
 
 /**
- * A line of centred text.
- *
- * The baseline is placed by hand rather than with `dominant-baseline`, whose
- * support varies between renderers: a third of the way up from the middle is
- * where a cap-height face sits centred, and it looks the same everywhere.
+ * The baseline is placed by hand because `dominant-baseline` support varies
+ * between renderers.
  */
 const text = ({ centre, top, band, size, family, weight, fill, opacity = 1, content }) =>
 	`<text x="${centre}" y="${(top + band / 2 + size * 0.35).toFixed(0)}" text-anchor="middle" font-family="${family}"` +
 	` font-weight="${weight}" font-size="${size}" fill="${fill}" fill-opacity="${opacity}">${content}</text>`;
 
 /**
- * One lane, scaled out of the unit box and dropped at its band's top.
- *
- * Bars are painted along the brand gradient by index rather than flat. The page
- * deliberately stays on one token — it defers to whatever the theme says the
- * brand is — while the GIF is the brand artefact the README opens with.
+ * Bars follow the brand gradient here, while the page deliberately stays on one
+ * theme token: the GIF is the brand artefact the README opens with.
  */
 const renderLane = ({ state, maxLines, caps, theme, scale, top }) => {
 	const layout = buildSprawlLayout({ state, maxLines, caps, ...sprawlUnitBox });
@@ -76,26 +69,10 @@ const renderLane = ({ state, maxLines, caps, theme, scale, top }) => {
 };
 
 /**
- * One encoded frame of the README GIF, as an SVG string.
+ * The caption labels the two lanes, so the README never shows the
+ * counterfactual unlabelled.
  *
- * The composition is fixed at 1200 × 630 — a social-card size — and scales
- * whole: a caption strip, the without lane, a gap, the with lane, the frame's
- * own `sha · at · subject` line, and the payoff counter. The caption labels
- * the two lanes, so the README never puts the counterfactual on screen
- * unlabelled.
- *
- * The counter carries one pair for the whole image — the last frame of each
- * lane — because the claim is where the two histories end up rather than where
- * they happen to be mid-way.
- *
- * @param withState - the real history's tree at this frame
- * @param withoutState - the counterfactual's tree at this frame
- * @param maxLines - the shared vertical scale, from `getSprawlMaxLines`
- * @param caps - the standards pack's caps, as the dataset read them
- * @param frame - the frame being drawn, for the caption line
- * @param counter - the last frame's over-cap counts, as `{ without, real }`
- * @param theme - the colour set for this render
- * @param width - 1200, or 800 when the size budget forces the smaller pair
+ * @param counter - the LAST frame's over-cap counts, as `{ without, real }`: the claim is where the histories end up
  */
 export const renderSprawlSvg = ({ withState, withoutState, maxLines, caps, frame, counter, theme, width }) => {
 	const scaleBand = width / 1200;

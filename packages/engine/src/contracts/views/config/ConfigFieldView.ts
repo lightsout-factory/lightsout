@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-/** One config key as the Config page renders it: what it holds here, who decided that, and what the key is for. */
 export const ConfigFieldView = z.object({
 	/** The config key as written in the file, e.g. 'package-gates'. */
 	key: z.string(),

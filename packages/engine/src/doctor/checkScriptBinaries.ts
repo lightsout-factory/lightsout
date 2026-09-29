@@ -8,7 +8,6 @@ interface Params {
 	config: LightsoutConfig;
 }
 
-/** Every gate command's leading binary must resolve on PATH — a missing one fails every run that depends on it. */
 export const checkScriptBinaries = async ({ cwd, config }: Params): Promise<DoctorCheck> => {
 	const gateCommands = [...Object.values(config.gates), ...Object.values(config['package-gates'] ?? {})].filter(
 		(value): value is string => typeof value === 'string',

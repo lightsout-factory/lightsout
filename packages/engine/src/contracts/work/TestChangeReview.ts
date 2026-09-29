@@ -3,10 +3,6 @@ import { TestDisposition } from '#src/contracts/work/TestDisposition.ts';
 import { TestReviewDecision } from '#src/contracts/work/TestReviewDecision.ts';
 
 /**
- * The test-change reviewer's output contract: one verdict per file in the
- * checkpoint's change bundle, plus a disposition for every acceptance test the
- * live mapping states in a file it judged.
- *
  * The engine enforces on top of it what a judge cannot be trusted with — an
  * unreviewed path is a rejection, a verdict outside the bundle is ignored, and
  * every acceptance test must still be locatable by title once the dispositions

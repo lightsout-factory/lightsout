@@ -1,4 +1,3 @@
-/** How a batch attempt came to rest — the discriminant of {@link BatchStop}. */
 export const BatchStopKind = {
 	Parked: 'parked',
 	Failed: 'failed',

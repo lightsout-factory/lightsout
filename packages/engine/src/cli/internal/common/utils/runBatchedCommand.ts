@@ -14,15 +14,13 @@ import { getDriver } from '#src/drivers/getDriver.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 
-/** What every batched pipeline returns: whether it finished, and the manifest it finished against. */
 interface BatchedRunResult {
 	ok: boolean;
 	manifest: RunManifest;
 }
 
-/** Everything the shared prelude resolved, handed to the pipeline the command actually runs. */
 interface BatchedRunStart {
-	/** The EFFECTIVE config — harness/model/effort already overwritten with this command's resolved values. */
+	/** Harness, model and effort already overwritten with this command's resolved values. */
 	config: LightsoutConfig;
 	driver: Driver;
 	maxBatches: number | undefined;
@@ -40,21 +38,8 @@ interface Params<Result extends BatchedRunResult> {
 }
 
 /**
- * The shell the batched, resumable pipeline commands share: resolve the config
- * and harness, validate `--max-batches`, load the run `--run` names, announce
- * the run, then hand off to the pipeline and report what came back.
- *
- * These runs MUTATE the repo, so a missing config — meaning no gates — is a
- * hard error here, never the optional-config fallback `plan` and `improve`
- * get. Every failure on the way in prints one line and exits 1: an unknown
- * run id says which id, a lock collision speaks in the lock's own words, and
- * neither is worth a stack trace.
- *
- * Three exit codes, because a caller has three things to tell apart and only
- * two of them are pass and fail: 0 finished, 2 stopped with work left and can
- * be resumed (`--max-batches`, a rate-limit wall), 1 anything else. A loop that
- * drives `refactor --max-batches 1` used to see the same 1 for "made progress"
- * and "broke", and could only separate them by reading the printed status.
+ * These runs mutate the repo, so a missing config — meaning no gates — is a
+ * hard error here, never the optional-config fallback `plan` and `improve` get.
  */
 export const runBatchedCommand = async <Result extends BatchedRunResult>({ flags, cwd, command, run, print }: Params<Result>): Promise<void> => {
 	const resumeRunId = getStringFlag({ flags, name: 'run' });

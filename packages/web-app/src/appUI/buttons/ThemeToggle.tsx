@@ -4,11 +4,8 @@ import { Theme } from '#src/common/constants/Theme.ts';
 import { useTheme } from '#src/theme/useTheme.ts';
 
 /**
- * Switches between light and dark.
- *
- * The icon says which theme is in force; the accessible name says which one a
- * press selects, because a control whose name is its current state gives a
- * screen-reader user no way to know what pressing it does.
+ * The accessible name says which theme a press selects, not which is in force,
+ * so a screen-reader user knows what pressing it does.
  */
 export const ThemeToggle = () => {
 	const { theme, setTheme } = useTheme();

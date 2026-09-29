@@ -12,9 +12,8 @@ interface Params {
 }
 
 /**
- * The block a run prints for a batch its agent opted out of. The agent's
- * rationale is reproduced verbatim: a decline the reader cannot read is
- * indistinguishable from a run that quietly skipped work.
+ * The agent's rationale is reproduced verbatim: a decline the reader cannot
+ * read is indistinguishable from a run that quietly skipped work.
  */
 export const printBatchOptOut = ({ heading, batchId, lines, hint }: Params): void => {
 	console.log(`\n${yellow(heading)} ${batchId}`);

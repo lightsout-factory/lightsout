@@ -1,27 +1,11 @@
 {
-	// The compiler options every package in this repo shares.
+	// Carries no `paths`, `include` or `exclude`: those are genuinely per-package.
 	//
-	// Deliberately carries no `paths`, no `include` and no `exclude`: those are
-	// the three things that are genuinely per-package, and a base that guessed at
-	// them would be overridden everywhere it was used.
-	//
-	// No `composite` and no project references. References require declaration
-	// emit, and `allowImportingTsExtensions` below cannot coexist with emit — but
-	// that flag is what lets a rule's check.ts import '../../common/utils/x.ts',
-	// which is the specifier Node's type stripping needs when the engine loads
-	// that file from plugin/standards/ on a consumer's machine. References would
-	// break how standards ship in order to speed up a `tsc --noEmit` that already
-	// takes seconds. Cross-package imports resolve through the package manager's
-	// links and each package's `exports` field instead, which is also how esbuild
-	// resolves them.
-	//
-	// Package-private imports resolve the matching way: through each package's
-	// `imports` field (`#src/*` -> `./src/*`), which Node, TypeScript, esbuild,
-	// Vite and Jest all read from the manifest owning the importing file — so a
-	// consumer needs no configuration of its own to load this repo's source. That
-	// is what makes `allowImportingTsExtensions` below load-bearing rather than a
-	// convenience: an `imports` target gets no extension probing from any of
-	// them, so every aliased specifier has to carry the extension it resolves to.
+	// No `composite` and no project references: references require declaration emit, which
+	// `allowImportingTsExtensions` cannot coexist with. That flag is load-bearing: an `imports`
+	// target (`#src/*` -> `./src/*`) gets no extension probing from Node, TypeScript, esbuild, Vite
+	// or Jest, and Node's type stripping needs the extension when the engine loads a rule's
+	// check.ts from plugin/standards/ on a consumer's machine.
 	"compilerOptions": {
 		"target": "ES2022",
 		"module": "ESNext",

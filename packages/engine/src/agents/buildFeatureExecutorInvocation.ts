@@ -32,13 +32,9 @@ interface Params {
 }
 
 /**
- * Assemble the feature-executor invocation deterministically. The engine —
- * not the agent, not a harness skill — owns context assembly: the same inputs
- * always produce byte-identical prompt structure, on the first spawn or the
- * fortieth. Everything stable across a run (overview, plan, standards, granted
- * commands) rides the system prompt the harness caches through, so a fix
- * re-invocation pays only for what actually changed: the changed-file list and
- * the gate output.
+ * The engine owns context assembly, so the same inputs always produce the same
+ * prompt. Everything stable across a run rides the system prompt the harness
+ * caches through, so a fix re-invocation pays only for what changed.
  */
 export const buildFeatureExecutorInvocation = ({
 	planContent,

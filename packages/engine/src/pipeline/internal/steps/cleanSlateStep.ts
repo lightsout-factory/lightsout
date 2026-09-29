@@ -11,19 +11,12 @@ import { writeRunStandardsBaseline } from '#src/runState/standardsBaseline/write
 import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
 
 /**
- * The deterministic findings as they stand before the run's first agent turn,
- * written into the run's own folder.
- *
- * The whole repository rather than the run's subpath, and `all` rather than the
- * committed debt ledger's suppression, because the comparison point has to be
- * complete: a violation hidden today still has to read as inherited tomorrow,
- * when the run's edits make it visible. `persist` is off so a run never clobbers
- * the report the user's own `lightsout standards-check` wrote.
- *
- * Optional evidence, never a gate. A pack that cannot load is recorded and
- * clean-slate still passes — cleanup treats an absent baseline as "no comparison
- * point" rather than inventing provenance, and a run must not be stopped by the
- * part of the machinery that only feeds optional cleanup.
+ * The whole repository and `all` rather than the debt ledger's suppression,
+ * because the comparison point has to be complete: a violation hidden today
+ * must still read as inherited once the run's edits make it visible. `persist`
+ * is off so a run never clobbers the user's own `lightsout standards-check`
+ * report. A failure is recorded, never a gate: cleanup treats an absent
+ * baseline as no comparison point.
  */
 const captureStandardsBaseline = async ({ run }: { run: PipelineRun }) => {
 	run.progress('capturing the pre-edit standards baseline over the whole repository — this is the last moment the tree is the state the run started from');
@@ -51,16 +44,10 @@ interface Params {
 }
 
 /**
- * The clean-slate gate: the codebase must be green before implementation.
- * Coverage runs here too — verify-tests holds the same bar later, so a
- * baseline that already misses it must be the consumer's problem, not the
- * run's.
- *
- * A plan with an acceptance ledger also has its per-test evidence probed here,
- * once the gates are green: this is the last free moment. After it the run
- * starts paying for agents, and a repository whose jest config never loads the
- * engine's reporter would otherwise not find that out until its final
- * checkpoint, having bought every agent turn in between.
+ * Coverage runs here too because verify-tests holds the same bar later, so a
+ * baseline that already misses it is the consumer's problem, not the run's. A
+ * plan with an acceptance ledger has its per-test evidence probed here too:
+ * this is the last moment before the run starts paying for agents.
  */
 export const cleanSlateStep = ({ run, ledgerGates }: Params): PipelineStep['run'] => {
 	return async () => {
@@ -73,10 +60,8 @@ export const cleanSlateStep = ({ run, ledgerGates }: Params): PipelineStep['run'
 		// every one of them would read as a test that never ran.
 		const { error, coordination, timeouts, failures, gates } = await runVerificationGates({ run, coverage: true, checkpoint: 'clean-slate', rows: [] });
 
-		// A gate run that never started is a third case with a third first move,
-		// and it is answered before the timeout-versus-red discrimination below:
-		// that one asks whether a gate which ran finished, and has nothing to say
-		// about gates that were never spent.
+		// A gate run that never started is answered before the timeout-versus-red
+		// check below, which only speaks about gates that ran.
 		if (coordination !== undefined) {
 			return stopOnGateCoordination({ run, stepId: 'clean-slate', record, coordination, error });
 		}

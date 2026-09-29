@@ -13,22 +13,11 @@ interface Params {
 }
 
 /**
- * Resolve both standards sets for a run: which packs the config asks for,
- * which framework channels apply, and the assembled text of each set.
+ * Assembled from the rule folders themselves, so no pre-built copy exists to
+ * drift from its prose.
  *
- * Assembly happens here, from the rule folders themselves, so no pre-built copy
- * exists anywhere to drift from the prose it was built from. Several packs
- * stack in the order the config lists them, each contributing to whichever sets
- * it carries. Both pipelines resolve standards the same way, and a rule this
- * easy to state slightly differently in two places is a rule that drifts.
- *
- * Loading is left to throw — a consumer that declared standards and did not get
- * them must not run, and each pipeline reports that failure in its own terms.
- *
- * @param cwd - the consumer repo
- * @param config - the consumer's config
- * @param packages - the run's package scope, which channel detection reads
- * @throws {Error} When a declared standards pack cannot be loaded.
+ * @throws {Error} When a declared standards pack cannot be loaded: a consumer that
+ * declared standards and did not get them must not run.
  */
 export const resolveStandards = async ({ cwd, config, packages }: Params): Promise<ResolvedStandards> => {
 	const loaded = await resolveStandardsPacks({ cwd, config });

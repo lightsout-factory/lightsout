@@ -8,11 +8,9 @@ interface Gate {
 	isPassed: boolean;
 }
 
-/** One step as the engine records it: what the agent said, and what each gate said back. */
 interface Row {
 	id: string;
 	step: string;
-	/** Set on a step the agent is doing again after a gate sent it back. */
 	isRetry?: boolean;
 	claim: string;
 	gates: Gate[];
@@ -20,14 +18,8 @@ interface Row {
 	outcome?: string;
 }
 
-/** Every gate passing — the ordinary case, spelled out once. */
 const passing = (...names: string[]): Gate[] => names.map((name) => ({ name, isPassed: true }));
 
-/**
- * A staged run, told the way the engine sees it: the agent claims each step is
- * done, and the repo's own lint, type check, tests and build answer. The first
- * claim fails a gate and goes back; the retry is what gets through.
- */
 const rows: Row[] = [
 	{
 		id: 'implement',
@@ -41,20 +33,12 @@ const rows: Row[] = [
 	{ id: 'refactor', step: 'refactor', claim: '“Done.”', gates: passing('lint', 'types', 'build') },
 ];
 
-/**
- * Where each row starts on the log's clock: a row takes one tick to appear, then
- * one tick per gate as each comes back.
- */
+/** A row takes one tick to appear, then one tick per gate as each comes back. */
 const rowStarts = rows.map((_, index) => rows.slice(0, index).reduce((ticks, row) => ticks + 1 + row.gates.length, 0));
 
-/** Every tick the log has, which is also the count once everything is done. */
 const tickCount = rows.reduce((ticks, row) => ticks + 1 + row.gates.length, 0);
 
-/**
- * Frame by frame, how many ticks have happened. A failing gate holds for two
- * extra frames — the failure is the moment the card exists to show — and the
- * finished log holds a while before it starts again.
- */
+/** Ticks elapsed per frame. A failing gate holds two extra frames: the failure is the moment the card exists to show. */
 const frames = [
 	...rows.flatMap((row, rowIndex) => [
 		rowStarts[rowIndex] + 1,
@@ -63,10 +47,8 @@ const frames = [
 	...[1, 2, 3, 4, 5].map(() => tickCount),
 ];
 
-/** The figures under the log. */
 const facts = ['1 failure caught', '67 gate runs', '18m 25s', '$6.61'];
 
-/** A gate's verdict: waiting while it runs, then a tick or a cross — the only colour on the card. */
 const GateChip = ({ gate, isResolved }: { gate: Gate; isResolved: boolean }) => {
 	const state = isResolved ? (gate.isPassed ? 'passed' : 'failed') : 'running';
 	const Icon = { running: LoaderCircle, passed: Check, failed: X }[state];
@@ -88,15 +70,7 @@ const GateChip = ({ gate, isResolved }: { gate: Gate; isResolved: boolean }) => 
 	);
 };
 
-/**
- * A run's log as two columns — what the agent said, and what your gates said
- * back — one row per step. A row appears, then its gates come back one at a
- * time; the one that fails sends the step round again.
- *
- * Every row is always laid out, and the ones not reached yet are only faded
- * out, so the card never changes height while it plays. A reader who asked for
- * less motion sees the finished log.
- */
+/** Every row is always laid out and unreached ones only faded out, so the card never changes height while it plays. */
 export const GateLog = () => {
 	const frame = useLoopingStep({ stepCount: frames.length, stepMs: 450 });
 	const ticks = frames[frame];

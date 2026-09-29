@@ -13,13 +13,6 @@ interface Params {
 	worklist?: FrozenWorklist;
 }
 
-/**
- * One run's list row, work-list and all.
- *
- * Shared by the runs list and the run detail page so the sidebar row and the
- * detail header can never disagree about a run's title, whether it is live, or
- * whether resuming it would do anything.
- */
 export const readRunListing = async ({ cwd, manifest, lock, worklist }: Params): Promise<RunListing> => {
 	const frozen = worklist ?? (manifest.plan.endsWith('worklist.json') ? await readFrozenWorklist({ cwd, manifest }) : undefined);
 

@@ -8,14 +8,7 @@ interface Params {
 	cwd: string;
 }
 
-/**
- * Every dated snapshot reduced to its counts, oldest first — the history a
- * standards trend plots.
- *
- * A file that will not parse is skipped in silence, the way a malformed JSONL
- * line is: one corrupt snapshot must not take the whole trend down with it. A
- * repo with no snapshots directory reads as an empty list.
- */
+/** A file that will not parse is skipped in silence: one corrupt snapshot must not take the whole trend down with it. */
 export const listStandardsSnapshots = async ({ cwd }: Params): Promise<StandardsTrendPoint[]> => {
 	const entries = await readdir(getStandardsSnapshotsDir({ cwd })).catch(() => []);
 	const points: StandardsTrendPoint[] = [];

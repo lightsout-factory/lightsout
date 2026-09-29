@@ -8,10 +8,7 @@ interface Params {
 }
 
 /**
- * One rule of a pack, whole — its argument and every file that proves it.
- *
- * @param bundle - the pack read whole
- * @param rule - the rule id to pull out of it, as its folder name spells it minus the numeric prefix
+ * @param rule - the rule id, as its folder name spells it minus the numeric prefix
  * @throws {StandardsPackRuleNotFoundError} When no rule in the bundle carries the id.
  */
 export const toStandardsPackRuleView = ({ bundle, rule }: Params): StandardsPackRuleView => {

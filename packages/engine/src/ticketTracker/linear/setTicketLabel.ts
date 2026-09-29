@@ -7,7 +7,7 @@ interface Params {
 	settings: LinearTrackerSettings;
 	ticketId: string;
 	label: string | undefined;
-	/** Whether the label should end up on the ticket. False takes it off. */
+	/** False takes the label off. */
 	present: boolean;
 }
 

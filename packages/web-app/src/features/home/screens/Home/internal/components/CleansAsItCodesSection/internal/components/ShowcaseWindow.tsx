@@ -1,12 +1,10 @@
 import type { ReactNode } from 'react';
 
 interface Props {
-	/** What the window is showing, in its title bar. */
 	title: string;
 	children: ReactNode;
 }
 
-/** The white app window each animation plays in: three dots and a title, then the scene. */
 export const ShowcaseWindow = ({ title, children }: Props) => (
 	<div className="w-full overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-blue-900/10">
 		<div className="flex items-center gap-3 border-border/60 border-b bg-muted/80 px-5 py-3.5">

@@ -8,11 +8,8 @@ interface Params {
 }
 
 /**
- * Read and validate a plan workspace's `decisions.json` — the session-authored
- * Decision-Log record `plan draft` builds from. Boundary validation
- * (parse-don't-cast): a missing or corrupt file is a hard error, because
- * drafting a plan from decisions that were never authored would silently produce
- * a bad plan.
+ * A missing or corrupt file is a hard error, because drafting from decisions
+ * that were never authored would silently produce a bad plan.
  */
 export const readDecisions = async ({ cwd, name }: Params): Promise<DecisionsRecord> => {
 	return readPlanWorkspaceFile({

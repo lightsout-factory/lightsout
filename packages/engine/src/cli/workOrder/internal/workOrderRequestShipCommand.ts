@@ -8,14 +8,7 @@ import { readConfig } from '#src/common/config/readConfig.ts';
 import { requestWorkOrderShip } from '#src/workOrder/requestWorkOrderShip.ts';
 import { withdrawWorkOrderShipRequest } from '#src/workOrder/withdrawWorkOrderShipRequest.ts';
 
-/**
- * `lightsout work-order request-ship` at the terminal.
- *
- * Recording a request and withdrawing one are opposite changes to the same
- * field, so naming both — or neither — is refused rather than guessed at. The
- * plan tokens are handed on exactly as typed: a bare number and a full id are
- * both accepted, and the operation resolves them against the ticket's plans.
- */
+/** Plan tokens are handed on as typed: the operation resolves a bare number or a full id against the ticket's plans. */
 export const workOrderRequestShipCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const name = await getRequiredFlag({ flags, name: 'name' });
 	const plans = getListFlag({ flags, name: 'plans' });

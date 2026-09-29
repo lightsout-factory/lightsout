@@ -2,14 +2,9 @@ import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 
 /**
- * What one run of a checkpoint's gates answered — the verdict every repair stage
- * passes along.
- *
- * Declared here, at the lowest folder both `runVerificationGates` and the verify
- * step can reach, rather than derived from the function's return type in the
- * step that consumes it: a shape read back out of a `ReturnType` is owned by
- * nobody, so a change in one module silently reshapes a type declared in the
- * other.
+ * Declared here rather than derived from `runVerificationGates`' return type: a
+ * shape read back out of a `ReturnType` is owned by nobody, so a change in one
+ * module silently reshapes a type declared in the other.
  */
 export interface VerificationResult extends GateRunResult {
 	/** The red gates the step shows and the fix role reads — a crashed or timed-out gate is deliberately absent. */

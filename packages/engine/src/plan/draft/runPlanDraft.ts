@@ -36,32 +36,15 @@ interface Params {
 }
 
 /**
- * Draft a structurally clean plan. The engine owns the *path* (told to the
- * agent) and *verifies* the write; the agent owns the content.
+ * The engine owns the path and verifies the write; the agent owns the content.
  *
- * A single plan is one spawn writing `plan.md`, converged by
- * `repairPlanStructure`. A phased plan is drafted in **two stages**: one spawn
- * authors `overview.md` alone — including the machine-readable per-phase
- * declaration — and then one spawn per declared phase runs concurrently against
- * that declaration. The single all-files spawn this replaces was killed at its
- * thirty-minute ceiling mid-draft on a ten-phase plan; the declaration is what
- * makes the phase agents safe to run at once, because none of them has to read
- * another's unfinished text, and the deterministic cross-phase lint catches the
- * provenance and hand-off mismatches a parallel drafter could introduce.
+ * A phased plan's overview declares every phase before any phase is written,
+ * which is what makes the phase agents safe to run at once: none of them has to
+ * read another's unfinished text.
  *
- * Between the two stages sits a deterministic door check on the declared phase
- * sizes, with a bounded reshape loop behind it: the cheapest moment to refuse an
- * unbuildable phase is before any phase file has been paid for.
- *
- * Every writer is handed source evidence the engine collected once, rather than
- * each re-reading the same files, and asks its harness for a restricted agent
- * environment. A harness applies the controls it can express and runs the rest
- * as an ordinary session, so a draft runs on every harness: the controls save
- * tokens, and the plan is the same without them.
- *
- * `plan draft` overwrites an existing deliverable — it is the from-scratch
- * authoring step, never re-run mid-convergence. Brainstorm's settled rows are
- * merged in at read time, so the plan's own `decisions.json` stays plan-owned.
+ * Overwrites an existing deliverable — it is the from-scratch authoring step,
+ * never re-run mid-convergence. Brainstorm's settled rows are merged in at read
+ * time, so the plan's own `decisions.json` stays plan-owned.
  */
 export const runPlanDraft = async ({
 	cwd,

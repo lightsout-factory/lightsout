@@ -7,7 +7,6 @@ interface Params {
 	gates: ConfigGates;
 }
 
-/** The root gates block, read into the engine's own spelling. */
 interface ResolvedGates {
 	check: string;
 	test: string;
@@ -20,11 +19,7 @@ interface ResolvedGates {
 	extraTests: { name: string; command: string }[];
 }
 
-/**
- * Read a parsed `gates` block. The schema validates and keeps the config's
- * own kebab spelling (so manifests round-trip); this is the one place that
- * spelling is translated for the engine, custom `test-*` suites included.
- */
+/** The schema keeps the config's kebab spelling so manifests round-trip; this translates it for the engine. */
 export const resolveGates = ({ gates }: Params): ResolvedGates => ({
 	check: gates.check,
 	test: gates.test,

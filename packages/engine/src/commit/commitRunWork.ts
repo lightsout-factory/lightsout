@@ -12,9 +12,8 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 
 /**
- * The slice of a run this step touches, structural on purpose: the implement
- * pipeline's `PipelineRun` and the direct pipeline's `RunState` share no
- * declared type, and the commit needs nothing of either beyond these six.
+ * Structural on purpose: the implement pipeline's `PipelineRun` and the direct
+ * pipeline's `RunState` share no declared type.
  */
 interface CommittingRun {
 	cwd: string;
@@ -22,13 +21,11 @@ interface CommittingRun {
 	current(): RunManifest;
 	progress(message: string): void;
 	update({ patch }: { patch: Partial<RunManifest> }): Promise<void>;
-	/** Bills the commit-message agent call to the run. */
 	recordUsage({ step, usage }: { step: string; usage?: AgentUsage }): Promise<void>;
 }
 
 interface Params {
 	run: CommittingRun;
-	/** The harness the pipeline already holds — the commit-message agent runs on it. */
 	driver: Driver;
 	/** The address a pipeline that builds no plan supplies for itself — the direct run's. Omitted by a plan run, whose address is read from the plan the manifest names. */
 	address?: CommitAddress;
@@ -37,19 +34,11 @@ interface Params {
 }
 
 /**
- * Commit one unit of work that passed its own gates, before the run is stamped
- * passed — which is what lets a nine-hour sequence that dies in hour eight keep
- * the eight verified hours.
- *
- * Both pipelines end here, so there is one commit behaviour rather than one per
- * command. The changed-file list the manifest already carries is what tells a
- * unit that genuinely changed nothing from one whose work an earlier attempt
- * already committed: nothing to commit with an empty list is a silent agent and
- * fails the run, while nothing to commit with a list means this unit's commit
- * already landed and the run passes without committing twice. That list is read
- * through the `generated` prefixes, because the direct pipeline records the
- * worker's own report unfiltered — a worker that touched only build output
- * would otherwise pass with nothing on the branch to ship.
+ * Commits before the run is stamped passed, so a long sequence that dies keeps
+ * its verified work. With nothing to commit, an empty changed-file list is a
+ * silent agent and fails, while a non-empty one means an earlier attempt
+ * already committed this unit. The list is filtered through `generated`
+ * because the direct pipeline records the worker's report unfiltered.
  *
  * @returns undefined when the work is in history, or the one sentence saying why it is not
  */
@@ -66,10 +55,8 @@ export const commitRunWork = async ({ run, driver, address, resumed }: Params): 
 		return unowned;
 	}
 
-	// Resolved rather than spelled, because a run's folder is filed under the
-	// ticket it belongs to. A checkout that cannot be read answers no run at all,
-	// which is a refusal to commit rather than a crash: the caller gets the same
-	// sentence it would get from any other unreadable tree.
+	// Resolved because a run's folder is filed under its ticket. An unreadable
+	// checkout refuses to commit rather than crashing.
 	let runDir: string;
 
 	try {
@@ -117,9 +104,7 @@ export const commitRunWork = async ({ run, driver, address, resumed }: Params): 
 	const sha = await readGitHeadCommit({ cwd: run.cwd });
 
 	// Never passed over: the result block reads the recorded commits, so a run
-	// that recorded none would announce work it just committed as already in
-	// history. Failing costs one re-entry, which then finds a clean tree with
-	// changed files recorded and passes.
+	// that recorded none would report its own work as already in history.
 	if (sha === undefined) {
 		return `the work in ${run.cwd} was committed but git could not name the commit — resume the run so the tree is checked again`;
 	}

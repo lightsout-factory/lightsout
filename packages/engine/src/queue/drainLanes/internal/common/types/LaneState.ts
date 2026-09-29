@@ -3,7 +3,6 @@ import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOu
 import type { BuildInFlight } from '#src/queue/internal/common/types/BuildInFlight.ts';
 import type { LeftBehindTicket } from '#src/queue/internal/common/types/LeftBehindTicket.ts';
 
-/** The mutable ledger the drain's two lanes and the tracker re-scan all read and write. */
 export interface LaneState {
 	/** Admitted work orders no builder has picked up yet, in the order they will be. */
 	pending: NamedWorkOrder[];

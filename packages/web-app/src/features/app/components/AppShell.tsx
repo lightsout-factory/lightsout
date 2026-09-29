@@ -3,12 +3,8 @@ import { TopNav } from '#src/features/app/components/TopNav.tsx';
 import { ZoneNav } from '#src/features/app/components/ZoneNav.tsx';
 
 /**
- * The frame of `/app`: the site bar across the top, the local zone's own
- * navigation beside the page, and whatever route is open scrolling in the rest.
- *
- * The main column is a scroll container of its own rather than the document, so
- * a wide table or a run timeline scrolls inside the page instead of pushing the
- * whole layout sideways on a narrow screen.
+ * The main column is its own scroll container rather than the document, so a
+ * wide table scrolls inside the page instead of pushing the layout sideways.
  */
 export const AppShell = () => (
 	<div className="flex h-screen min-h-0 w-full flex-col">

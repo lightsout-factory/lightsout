@@ -9,15 +9,9 @@ interface Params {
 }
 
 /**
- * The blocked label put on one ticket — the write both `takeGateHold` and
- * `syncGateHolds` make, in one place.
- *
  * The tracker's own id is resolved from the human reference first, because
  * Linear addresses a ticket by id and only `getTicketsByIdentifiers` turns one
  * into the other.
- *
- * It adds and never removes, so it takes no flag: only a human removes this
- * label, and a removal branch nothing can reach would be dead code.
  *
  * @returns undefined when the label landed, or one sentence naming why it did not
  */

@@ -4,12 +4,7 @@ interface Params {
 	line: string;
 }
 
-/**
- * The first two backtick-delimited path tokens in a line, in order — the source
- * and destination of a `### ` + "`old/path.ts` → `new/path.ts`" move heading.
- * Returns undefined unless both are present, so a malformed heading is reported
- * by the caller rather than silently parsed as a one-path move.
- */
+/** Undefined unless both paths are present, so a malformed move heading is reported rather than parsed as a one-path move. */
 export const pathPairFromLine = ({ line }: Params): { from: string; to: string } | undefined => {
 	const paths: string[] = [];
 

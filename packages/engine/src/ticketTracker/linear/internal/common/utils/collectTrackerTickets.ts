@@ -15,20 +15,8 @@ interface Params {
 const isFailure = (entry: TrackerTicket | TrackerFailure): entry is TrackerFailure => 'error' in entry;
 
 /**
- * Every issue an answered query names, paged to exhaustion and turned into this
- * module's own shape.
- *
- * Both reads in this module — the label-filtered list and the
- * identifier-filtered lookup — differ only in the filter they ask for; what
- * happens to the answer is one thing, so it is written once. The labels, the
- * blockers and the workflow state of one issue are independent round trips, so
- * they are resolved together rather than one after the other.
- *
- * An issue whose workflow state cannot be read fails the whole read rather than
- * reporting an empty status: an empty status matches none of a caller's
- * selectable pairs, so it would silently drop the ticket from the backlog — and
- * a silently smaller backlog is the one wrong answer this function already
- * refuses to give when it pages to exhaustion.
+ * An unreadable workflow state fails the whole read: an empty status matches
+ * nothing selectable, so it would silently drop the ticket from the backlog.
  */
 export const collectTrackerTickets = async ({ connection }: Params): Promise<TrackerTicket[] | TrackerFailure> => {
 	const issues = await collectNodes({ connection });

@@ -9,7 +9,6 @@ interface Params {
 	id: string;
 }
 
-/** Format the full repository before the following verification step inspects it. */
 export const formatStep = ({ run, id }: Params): PipelineStep => ({
 	id,
 	skip: () => (run.config.gates.format ? undefined : 'no format command configured'),

@@ -7,14 +7,7 @@ import { readConfig } from '#src/common/config/readConfig.ts';
 import { WorkOrderSyncKeep } from '#src/workOrder/common/constants/WorkOrderSyncKeep.ts';
 import { syncWorkOrderState } from '#src/workOrder/syncWorkOrderState.ts';
 
-/**
- * `lightsout work-order sync` at the terminal.
- *
- * With no `--keep` this is the ordinary pull-and-catch-up, which is also how a
- * publish that failed earlier is retried. `--keep` carries out a decision about
- * a divergence, so a word naming neither copy is refused rather than guessed
- * at: keeping one copy sets the other one aside.
- */
+/** With no `--keep` this is the ordinary pull, which is also how a failed publish is retried. */
 export const workOrderSyncCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const name = await getRequiredFlag({ flags, name: 'name' });
 	const asked = getStringFlag({ flags, name: 'keep' });
@@ -35,9 +28,8 @@ export const workOrderSyncCommand = async ({ flags, cwd }: CommandContext): Prom
 		return exitCli({ code: 1 });
 	}
 
-	// `sync` refuses a work order with nowhere to publish to, so the tracker-free
-	// case never reaches this line — naming the reference only when the record
-	// carries one is what keeps that guarantee stated rather than assumed.
+	// `sync` refuses a work order with nowhere to publish to, so the reference is
+	// always set here; checking it keeps that guarantee stated rather than assumed.
 	const carrier = synced.record.ticketRef === undefined ? '' : ` on ${synced.record.ticketRef}`;
 
 	console.log(

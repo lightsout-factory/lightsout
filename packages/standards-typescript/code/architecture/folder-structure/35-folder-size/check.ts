@@ -8,16 +8,12 @@ import { getDirectory } from '../../../../common/paths/getDirectory.ts';
 
 export const check: StandardsCheckModule = {
 	inputKind: 'file-list',
-	// Counts production files only — a test beside its subject is the convention
-	// working, so counting it would push a folder over the cap for obeying a
-	// different rule. Every other file counts, barrels included: the question is
-	// how long the directory listing has grown, and a barrel is a line in it.
+	// Tests are not counted: a test beside its subject is the convention working.
+	// Barrels count, because the question is how long the listing has grown.
 	//
-	// A file the package's framework put there is not counted at all — a route
-	// file, or an entry file the framework resolves by name. A router root's
-	// population is the number of routes the app has, and consolidating it is not
-	// an edit any author is allowed to make; an entry file beside a package's
-	// source is not the author's listing growing either.
+	// A file the package's framework put there is not counted: a router root's
+	// population is the number of routes the app has, and consolidating it is
+	// not an edit any author is allowed to make.
 	run: ({ input, settings }): RawStandardsFinding[] => {
 		const { files, tests } = readPathLists({ input });
 		const carveOuts = getFrameworkCarveOuts({ dependencies: input.kind === 'file-list' ? input.dependencies : new Map<string, string[]>() });
@@ -28,8 +24,7 @@ export const check: StandardsCheckModule = {
 		for (const file of files) {
 			if (!testPaths.has(file)) {
 				// Skipped file by file rather than filtered off the finished map, so a
-				// router root holding two hundred route files contributes no group at
-				// all rather than one that is dropped later.
+				// router root contributes no group at all.
 				if (isFrameworkLoadedFile({ path: file, carveOut: getPathCarveOut({ carveOuts, path: file }) })) {
 					continue;
 				}

@@ -5,8 +5,6 @@ import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { getPositionals } from '#src/cli/internal/common/args/getPositionals.ts';
 
 /**
- * The `brainstorm` command word, dispatching on its first positional.
- *
  * It resolves no config and no driver: `publish` spawns no agent, and it prints
  * no plan-ticket advisory — that belongs to a plan folder being drafted, not to
  * a brainstorm folder being uploaded.

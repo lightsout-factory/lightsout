@@ -7,7 +7,7 @@ import type { TestTargetGroup } from '#src/pipeline/internal/common/types/TestTa
 import { partitionByPackage } from '#src/pipeline/internal/common/utils/partitionByPackage.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 
-/** Pathological guard: an import component above this splits into sorted chunks — no config knob until live evidence asks for one. */
+/** Pathological guard: an import component above this splits into sorted chunks. */
 const maxWriterGroupFiles = 12;
 
 interface Params {
@@ -18,15 +18,11 @@ interface Params {
 }
 
 /**
- * One writer per import-graph component, not per file: files that changed
- * together AND import each other are one test-writing job — the only
- * grouping that puts a boundary and its internals in the same writer's
- * hands. Connectivity spans the union of the changed targets and their
- * public subjects: the walk's reachability may pass through unchanged
- * intermediaries, so the target→subject mapping itself is an authoritative
- * edge alongside the import edges among the targets. Components never cross
- * packages, so partition by packageOf first. Without a consumer TypeScript,
- * groups degrade to one target each — exactly the old fan-out.
+ * One writer per import-graph component, not per file: it is the only grouping
+ * that puts a boundary and its internals in the same writer's hands. The
+ * target→subject mapping counts as an edge beside the import edges, because the
+ * walk's reachability may pass through unchanged intermediaries. Components
+ * never cross packages.
  */
 export const groupTestTargets = async ({ run, subjects, compiler }: Params): Promise<TestTargetGroup[]> => {
 	const targets = [...subjects.keys()];

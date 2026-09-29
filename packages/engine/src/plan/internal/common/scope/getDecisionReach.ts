@@ -3,23 +3,16 @@ import type { GradeDecisionLog } from '#src/contracts/plan/memory/GradeDecisionL
 type DecisionEntry = GradeDecisionLog['rows'][number];
 
 interface Params {
-	/** This pass's decision-log part; absent when this pass could not read the overview. */
+	/** Absent when this pass could not read the overview. */
 	current?: GradeDecisionLog;
-	/** The earlier pass's decision-log part; absent when that pass was recorded before the part existed. */
+	/** Absent when that pass was recorded without a decision-log part. */
 	previous?: GradeDecisionLog;
-	/** Whether the overview's whole-file hash moved between the two passes — `getEditedPhases`' `overviewFileChanged`. */
 	overviewFileChanged: boolean;
-	/** The phase basenames whose own text changed this pass — `getEditedPhases`' `edited`. */
 	edited: string[];
-	/** Every phase-file basename the plan has now. */
 	phaseFiles: string[];
 }
 
-/**
- * The rows of `rows` that `other` cannot pair up with a row of the same hash.
- * Each row of `other` pairs at most once, so a row repeated verbatim is matched
- * once per copy.
- */
+/** Each row of `other` pairs at most once, so a row repeated verbatim is matched once per copy. */
 const unmatchedRows = ({ rows, other }: { rows: DecisionEntry[]; other: DecisionEntry[] }) => {
 	const available = other.map((row) => row.sha256);
 
@@ -34,12 +27,7 @@ const unmatchedRows = ({ rows, other }: { rows: DecisionEntry[]; other: Decision
 	});
 };
 
-/**
- * The changed rows of both passes, joined by every row on either side that
- * shares a changed row's question — which is how a revision covers the phases
- * its predecessor named. `previous` holds the joined rows of the earlier pass,
- * the ones whose scope was read against the earlier phase text.
- */
+/** Rows sharing a changed row's question are joined, which is how a revision covers the phases its predecessor named. */
 const joinedRows = ({ current, previous }: { current: GradeDecisionLog; previous: GradeDecisionLog }) => {
 	const changed = [...unmatchedRows({ rows: current.rows, other: previous.rows }), ...unmatchedRows({ rows: previous.rows, other: current.rows })];
 	const questions = new Set(changed.map((row) => row.questionSha256));
@@ -49,28 +37,14 @@ const joinedRows = ({ current, previous }: { current: GradeDecisionLog; previous
 };
 
 /**
- * Which phase files the Decision Log change between two passes reaches, or why
- * that cannot be placed.
- *
  * Rows are compared as a multiset of row hashes rather than by position, so one
- * deleted row reads as one changed row rather than as every later row moving.
- * The checks run in a fixed order and the first to fail is the answer. Every one
- * of them is a case where the reach is not known — a missing part, an
- * unmeasured or edited shared design text, a log that moved with neither a row
- * changed nor a phase edited, a changed row that names no phases or names a file
- * the plan does not have, and an earlier scope whose connections this pass's
- * phase edits may have cut — and a reach that is not known comes back as an
- * error, never as a narrower answer. Walking the connections from the answer is
- * left to `getAffectedPhases`.
+ * deleted row reads as one changed row rather than as every later row moving. A
+ * reach that is not known comes back as an error, never as a narrower answer.
  *
- * The shared design check is what tells an overview edit every phase reads from
- * one a single phase owns: a phase's own row and declaration block are credited
- * to that phase's design hash, so they move the overview's whole-file hash and
- * arrive here in `edited` — which is why a file move beside an edited phase is
- * placed rather than reported unplaceable.
- *
- * @returns the sorted, deduplicated phase basenames the changed rows name, or an
- * error the caller turns into a full review
+ * A phase's own row and declaration block are credited to that phase's design
+ * hash, so they move the overview's whole-file hash and arrive in `edited`,
+ * which is why a file move beside an edited phase is placed rather than reported
+ * unplaceable.
  */
 export const getDecisionReach = ({ current, previous, overviewFileChanged, edited, phaseFiles }: Params): { phases: string[] } | { error: string } => {
 	if (previous === undefined) {

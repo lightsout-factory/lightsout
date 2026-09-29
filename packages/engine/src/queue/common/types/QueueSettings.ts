@@ -1,22 +1,13 @@
 import type { LifecycleSettings } from '#src/ticketLifecycle/common/types/LifecycleSettings.ts';
 
 /**
- * The `queue` config block with every default already applied.
+ * The `queue` config block with every default already applied, resolved once at
+ * the edge so no step downstream re-decides one.
  *
- * Resolved once at the edge so no step downstream re-decides one, exactly as
- * `ShipSettings` is: a queue handed these may assume they are usable.
- *
- * Tracker identity is not here: it is a `TrackerSettings`, resolved from the
- * `ticket-tracker` block and carried beside these settings, so the queue's own
- * behaviour and the tracker's address are never one object again.
- *
- * The planning-status labels and the tracker status names are not here either,
- * for the same kind of reason: the command edge writes both fields without a
- * queue, so they resolve once in the lifecycle module and the queue carries
- * them rather than owning them.
+ * Lifecycle labels and names are resolved by the lifecycle module rather than
+ * owned here, because the command edge writes them without a queue.
  */
 export interface QueueSettings {
-	/** The planning-status labels and tracker status names, resolved by the lifecycle module. */
 	lifecycle: LifecycleSettings;
 	maxParallel: number;
 	/** Command run once in a fresh worktree; undefined when the repo needs none. */

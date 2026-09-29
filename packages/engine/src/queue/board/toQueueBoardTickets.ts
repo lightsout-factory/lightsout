@@ -12,22 +12,13 @@ import type { LeftBehindTicket } from '#src/queue/internal/common/types/LeftBehi
 interface Params {
 	/** Outcomes and left-behind entries the drain has settled. With nothing else, this is the final board. */
 	settled: QueueDrainReport;
-	/** The lanes of a drain still running, and what the board recorder knows about them. */
 	live?: LiveQueueBoard;
 	/** ISO time of the snapshot: the entry time of every ticket that has just entered its lane. */
 	at: string;
 }
 
-/** A ticket's place on the board before its lane-entry time is known. */
 type Placed = Omit<QueueBoardTicket, 'enteredAt'>;
 
-/**
- * Who the ticket is, the worker building it, and where that work lives.
- *
- * `workOrderName` is the work order's LABEL rather than its branch: a plan
- * address and a runs folder are both built from the label, and a prefixed
- * branch would name neither.
- */
 const describeWork = ({ ticket, name, branch, worktreePath }: { ticket: TicketSummary; name: string; branch: string; worktreePath: string }) => ({
 	identifier: ticket.identifier,
 	title: ticket.title,
@@ -38,7 +29,7 @@ const describeWork = ({ ticket, name, branch, worktreePath }: { ticket: TicketSu
 	worktreePath,
 });
 
-/** A work order with no outcome yet, its branch and worktree read off the record rather than rendered from a template. */
+/** Branch and worktree are read off the record rather than rendered from a template. */
 const describeUnbuilt = ({ workOrder, live }: { workOrder: NamedWorkOrder; live: LiveQueueBoard }) =>
 	describeWork({ ticket: workOrder.ticket, name: workOrder.name, branch: workOrder.branch, worktreePath: join(live.worktreesRoot, workOrder.name) });
 
@@ -50,7 +41,6 @@ const placeLeftBehind = ({ entry, lane, reason }: { entry: LeftBehindTicket; lan
 	reason,
 });
 
-/** A build in flight, unless its worker is waiting for a relayed answer — then the question holds it in Blocked. */
 const placeBuild = ({ build, live }: { build: BuildInFlight; live: LiveQueueBoard }) => {
 	const question = live.questions.get(build.workOrder.ticket.identifier.toLowerCase());
 	const work = { ...describeUnbuilt({ workOrder: build.workOrder, live }), buildStartedAt: build.startedAt };
@@ -58,7 +48,6 @@ const placeBuild = ({ build, live }: { build: BuildInFlight; live: LiveQueueBoar
 	return question === undefined ? { ...work, lane: QueueLane.Building } : { ...work, lane: QueueLane.Blocked, reason: question, question };
 };
 
-/** A settled outcome's lane: shipped, blocked when the ticket was only left open, and parked otherwise. */
 const placeOutcome = ({ outcome }: { outcome: WorkOrderRunOutcome }) => {
 	let lane: QueueLane;
 	let reason: string | undefined;
@@ -97,7 +86,6 @@ const placeLive = ({ live }: { live: LiveQueueBoard }) => [
 	...live.blocked.map((entry) => placeLeftBehind({ entry, lane: QueueLane.Blocked, reason: entry.reason })),
 ];
 
-/** A ticket still in the lane it was last recorded in keeps the time it entered it; any other has just entered. */
 const toEnteredAt = ({ ticket, live, at }: { ticket: Placed; live: LiveQueueBoard | undefined; at: string }) => {
 	const entered = live?.entered.get(ticket.identifier.toLowerCase());
 
@@ -105,15 +93,9 @@ const toEnteredAt = ({ ticket, live, at }: { ticket: Placed; live: LiveQueueBoar
 };
 
 /**
- * Every ticket a drain's records name, each in exactly one board lane.
- *
- * When two records name one ticket, the one that ranks higher places it:
- * settled outcome, settled left-behind entry, Shipping Now, Ship Queue, a build
- * in flight, Build Queue, then a still-held blocked entry. The list runs lane by
- * lane in `QueueLane` order, and each lane keeps its ledger's order.
- *
- * Pure: the caller reads the clock and passes it as `at`, so one snapshot's
- * board is the same however often it is drawn.
+ * When two records name one ticket, the first in `placeSettled` then `placeLive` order places it.
+ * Pure: the caller passes the clock as `at`, so one snapshot's board is the same however often
+ * it is drawn.
  */
 export const toQueueBoardTickets = ({ settled, live, at }: Params): QueueBoardTicket[] => {
 	const records: Placed[] = [...placeSettled({ settled }), ...(live === undefined ? [] : placeLive({ live }))];

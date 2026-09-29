@@ -18,21 +18,13 @@ import { Permissions } from '#src/contracts/Permissions.ts';
 import { StandardsCheckOverrides } from '#src/contracts/StandardsCheckOverrides.ts';
 
 /**
- * Consumer configuration (`lightsout.config.json` at the target repo root).
- * This is the only coupling point between the engine and a consumer, and every
- * block naming an outside service is opt-in — so the engine runs with no
- * tracker, no forge convention and no documentation surfaces at all.
+ * The only coupling point between the engine and a consumer. Every block naming
+ * an outside service is opt-in, so the engine runs with no tracker, forge
+ * convention or documentation surfaces at all.
  *
- * Every key is kebab-case, the spelling of the file rather than of the code
- * that reads it: `package-gates`, `test-coverage`, `agent-commands`. The parsed
- * value keeps that spelling, so a run manifest's config snapshot round-trips
- * through this schema unchanged and a reader of either file sees one
- * vocabulary. Every block is `.strict()`: an unknown key fails parsing, so a
- * typo never silently leaves a setting at its default.
- *
- * Composed from the block contracts beside it — `ConfigGates`, `PackageGates`,
- * `ConfigCommands`, `StandardsCheckOverrides` — each of which pins its own
- * shape in its own test.
+ * Keys are kebab-case, the file's spelling, and the parsed value keeps it, so a
+ * run manifest's config snapshot round-trips unchanged. Every block is
+ * `.strict()`, so a typo never silently leaves a setting at its default.
  */
 export const LightsoutConfig = z
 	.object({
@@ -78,55 +70,36 @@ export const LightsoutConfig = z
 		 */
 		'agent-commands': z.array(z.string()).optional(),
 		/**
-		 * Path prefixes of generated/derived files (e.g. a Prisma client output
-		 * dir). Treated like gate artifacts: real files in the diff, but excluded
-		 * from changed-file attribution — they never earn agent turns and never
-		 * pollute the manifest. The source that generates them is the change.
+		 * Path prefixes of generated files, e.g. a Prisma client output dir. They
+		 * are excluded from changed-file attribution, because the source that
+		 * generates them is the change.
 		 *
-		 * This is also where a repo says its build output lands when the walk
-		 * cannot guess it. `listSourceFiles` skips `dist`, `build`, `coverage` and
-		 * `out` by name outside a `src` folder; anything else — an output dir with
-		 * a house name, or one written inside `src` — is invisible to the engine
-		 * until it is named here, and would otherwise be checked as source.
+		 * Also where a repo names build output the walk cannot guess:
+		 * `listSourceFiles` skips only `dist`, `build`, `coverage` and `out`, and
+		 * only outside a `src` folder.
 		 */
 		generated: z.array(z.string()).optional(),
 		/**
-		 * Path prefixes of third-party code the repo vendors in rather than writes
-		 * (e.g. a shadcn/ui component folder a generator drops in and the app then
-		 * edits). Excluded from the source walk exactly as `generated` is, so its
-		 * conventions are never judged against this repo's standards, it never
-		 * becomes a test subject, and it never shows up as prior art.
+		 * Path prefixes of third-party code the repo vendors in, e.g. a shadcn/ui
+		 * component folder. Excluded from the source walk like `generated`, but a
+		 * vendored file is attributed when it changes: it has no source in the
+		 * repo, so an edit inside it is the change.
 		 *
-		 * It differs from `generated` in the one way that matters: a vendored file
-		 * IS attributed when it changes. Generated output is excluded from
-		 * attribution because the source that produced it is the real change;
-		 * vendored code has no such source in the repo, so an edit inside it is the
-		 * change and must earn its agent turn like any other.
-		 *
-		 * The engine's exclusion stops the engine's own checks and nothing else. A
-		 * repo whose coverage threshold covers the vendored path must exclude it
-		 * there too — that gate is the repo's test runner, which the engine only
-		 * invokes.
+		 * The exclusion stops only the engine's own checks; a repo's coverage
+		 * threshold must exclude the path itself.
 		 */
 		vendored: z.array(z.string()).optional(),
 		/**
-		 * Path to the JSON coverage summary the coverage tooling writes (default
-		 * `coverage/coverage-summary.json`) — repo-relative in single-package
-		 * repos, package-relative in monorepo mode. `lightsout
-		 * test-coverage-to-threshold` reads per-file percentages from it; the file
-		 * is the tool-agnostic contract, so a printed coverage table changing
-		 * format never breaks the run.
+		 * Default `coverage/coverage-summary.json`: repo-relative in
+		 * single-package repos, package-relative in monorepo mode. The JSON file,
+		 * not a printed table, is the tool-agnostic contract.
 		 */
 		'coverage-summary-path': z.string().optional(),
 		/**
 		 * How many source files one plan or phase may create or modify before the
 		 * feature executor refuses it. Default 50 (`defaultExecutorFileLimit`).
-		 *
-		 * It is one key rather than a number per reader because the plan lint's
-		 * advisory size warning, the phased-versus-single scope estimate, the plan
-		 * template and the executor's own stop rule must agree by construction: a
-		 * plan graded against a softer number and then refused at implement time
-		 * costs a whole run to learn what the lint already knew.
+		 * One key for every reader, because a plan graded against a softer number
+		 * and then refused at implement time costs a whole run.
 		 */
 		'executor-file-limit': z.number().positive().optional(),
 		/** Directory holding workspace packages, for monorepo scoped gates. Default 'packages'. */

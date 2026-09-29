@@ -20,7 +20,6 @@ interface Params {
 	/** Kebab plan name — the folder the brainstorm's own files live in. */
 	name: string;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	onProgress: (message: string) => void;
 	/** The plan id every attachment title is namespaced under. */
@@ -28,11 +27,10 @@ interface Params {
 }
 
 interface BrainstormPublishReport {
-	/** The ticket the files landed on, e.g. 'LO-117'. Absent when nothing was published. */
+	/** Absent when nothing was published. */
 	ticketRef?: string;
-	/** Each published attachment's own name, ending with the generation commit marker. */
+	/** Ends with the generation commit marker. */
 	published: string[];
-	/** Set when the publish stopped — the one sentence saying why. */
 	error?: string;
 }
 
@@ -45,12 +43,9 @@ interface PreparedAttachment {
 const contentTypeOf = ({ name }: { name: string }) => (name.endsWith('.json') ? 'application/json' : 'text/markdown');
 
 /**
- * Read the generation as one snapshot before any outward mutation, then append
- * the marker committing exactly those bytes.
- *
- * Only `brainstorm-notes.md` is required: a plan may be shaped by a brainstorm
- * that settled no decision of its own, and refusing that would leave the notes
- * unpublishable.
+ * Read as one snapshot before any outward mutation, so the marker commits
+ * exactly those bytes. Only the notes are required: a brainstorm may settle no
+ * decision of its own.
  */
 const prepareAttachments = async ({ dir }: { dir: string }): Promise<{ attachments: PreparedAttachment[] } | { error: string }> => {
 	const files: PreparedAttachment[] = [];
@@ -111,17 +106,11 @@ const attachBrainstormFiles = async ({
 };
 
 /**
- * Put a brainstorm folder's two files on the ticket its work order's record
- * names, committing their exact names and hashes with
- * `brainstorm-attachments.json` attached last.
+ * Refusals run disk, record, configuration, then network, so the common
+ * failures are answered with no round trip.
  *
- * The refusals are ordered the way `publishPlan` orders its own — disk, then
- * the work order's record, then configuration, then the network — so the two
- * failures a user actually hits are answered with no round trip.
- *
- * No stale attachment is reported. A republish without
- * `brainstorm-decisions.json` does leave that plan's earlier copy of it on the
- * ticket — restore ignores it, because the marker written last does not list it.
+ * A republish without `brainstorm-decisions.json` leaves the earlier copy on the
+ * ticket; restore ignores it because the marker written last does not list it.
  */
 export const publishBrainstorm = async ({ cwd, name, config, env, onProgress, titlePrefix }: Params): Promise<BrainstormPublishReport> => {
 	const prepared = await prepareAttachments({ dir: await planWorkspaceDir({ cwd, name }) });

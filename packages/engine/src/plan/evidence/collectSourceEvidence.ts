@@ -19,22 +19,14 @@ interface Params {
 	/** Kebab plan name — the folder the plan's own files live in. */
 	name: string;
 	facts: PlanFacts;
-	/** Absent = defaults; supplies `packages-dir` for the compiler resolution. */
 	config?: LightsoutConfig;
 }
 
-/**
- * An integration point's `at` reduced to its path half — the text before a
- * trailing `:line` or `:line:column`, and the whole string when there is no such
- * suffix.
- */
 const atPath = ({ at }: { at: string }) => at.replace(/:\d+(?::\d+)?$/, '');
 
 /**
- * Every path the verified facts recorded, with the facts' own words for why each
- * one matters, de-duplicated and in first-seen order. Nothing is discovered
- * here: the explorer already wrote down which files matter, and re-walking the
- * repository would be the discovery this module exists to stop paying for.
+ * Nothing is discovered here: the explorer already wrote down which files
+ * matter, and re-walking the repository is the cost this module exists to avoid.
  */
 const wantedPaths = ({ facts }: { facts: PlanFacts }) => {
 	const wanted = new Map<string, string[]>();
@@ -61,7 +53,6 @@ const wantedPaths = ({ facts }: { facts: PlanFacts }) => {
 	return wanted;
 };
 
-/** One path's evidence, taken from the bytes now on disk. */
 const collectEntry = ({
 	path,
 	content,
@@ -88,28 +79,18 @@ const collectEntry = ({
 };
 
 /**
- * Collect the source evidence for one plan from its verified facts, refreshing
- * whatever has changed, and persist it in the plan's own workspace.
+ * A repository with no TypeScript resolvable stores the whole file rather than
+ * a guess.
  *
- * Reuse is decided by hash alone: an entry whose stored `sha256` equals the hash
- * of the bytes now on disk is carried through with only its roles refreshed, and
- * anything else is re-collected. A file at or under `wholeFileEvidenceLimit` is
- * stored whole; a larger one is reduced to whole definitions with the target
- * repository's own compiler, and a repository with no TypeScript resolvable
- * stores the whole file rather than a guess.
- *
- * Two things it deliberately does not do. The excluded-source-path list is not
- * applied — `excludedSourcePaths` answers "what is not this repository's
- * source" for the checks, and a facts record that names a generated or vendored
- * file named it on purpose. And a path that is not on disk is data rather than
- * an error: `verifyFacts` never checked an integration point's `at`, so the
- * record says the file was absent and the call returns normally.
+ * The excluded-source-path list is deliberately not applied: a facts record that
+ * names a generated or vendored file named it on purpose. A path not on disk is
+ * data rather than an error, because `verifyFacts` never checked an integration
+ * point's `at`.
  */
 export const collectSourceEvidence = async ({ cwd, name, facts, config }: Params): Promise<SourceEvidenceIndex> => {
 	const path = await sourceEvidencePath({ cwd, name });
-	// Unlike the grade memory, an unreadable record is discarded rather than thrown
-	// on: that one holds decisions a human settled and cannot be recomputed, while
-	// this holds bytes the repository still has, so collecting them again is honest.
+	// An unreadable record is discarded rather than thrown on: it holds bytes the
+	// repository still has, so collecting them again is honest.
 	const previous = await readJsonFile({ path, schema: SourceEvidenceIndex });
 	const stored = new Map((previous?.entries ?? []).map((entry) => [entry.path, entry]));
 	const compiler = resolveConsumerTypescript({ cwd, packagesDir: config?.['packages-dir'] ?? defaultPackagesDir });

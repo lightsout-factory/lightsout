@@ -2,7 +2,6 @@ import type { StandardsCheckFunction, StandardsInputKind, StandardsSet } from '@
 import type { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { RuleExample } from '#src/contracts/views/RuleExample.ts';
 
-/** One rule folder, read: its prose, its declaration, and its check when it ships one. */
 export interface LoadedStandardsRule {
 	/** Folder name minus the numeric prefix — unique pack-wide. */
 	id: string;

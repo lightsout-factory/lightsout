@@ -4,7 +4,6 @@ import type { ConfigDocs } from '#src/contracts/ConfigDocs.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 
 interface Params {
-	/** The typed structural findings to resolve, each with its exact fix. */
 	findings: StructuralFinding[];
 	/** Absolute paths of the drafted plan file(s) to Edit in place. */
 	planPaths: string[];
@@ -19,10 +18,9 @@ interface Params {
 }
 
 /**
- * The repairer's brief on the surfaces this repository declared. A missing
- * `## Documentation` heading is now one of the findings it resolves, and its
- * role prompt forbids inventing a section's content — so an unbriefed repairer
- * either breaks that rule or fails the draft.
+ * A missing `## Documentation` heading is one of the findings the repairer
+ * resolves, and its role prompt forbids inventing a section's content, so it
+ * needs the declared surfaces to work from.
  */
 const documentationSection = ({ docs }: { docs: ConfigDocs }) =>
 	`## Documentation surfaces
@@ -36,14 +34,9 @@ plan already says it builds; do not invent a document.
 ${renderDocsSurfaces({ docs })}`;
 
 /**
- * Assemble one draft-repair invocation deterministically: the findings (with
- * their exact fix strings), the plan file paths to edit in place, and the
- * facts/decisions as *paths* the repairer Reads only when a fix requires their
- * content — the common mechanical repair never pays for them. The plan
- * template is deliberately absent — the repair role edits, never re-authors.
- *
- * A repository declaring no documentation surfaces gets a byte-identical
- * invocation to the one it got before the key existed.
+ * The facts and decisions go in as paths the repairer Reads only when a fix
+ * needs them, so the common mechanical repair never pays for them. The plan
+ * template is absent because the repair role edits, never re-authors.
  */
 export const buildPlanRepairInvocation = ({
 	findings,

@@ -1,4 +1,4 @@
-/** Synonym verbs collapse to one canonical form — synonyms are how duplicates hide from name search. */
+/** Synonyms are how duplicates hide from name search. */
 const verbSynonyms: Record<string, string> = {
 	fetch: 'get',
 	load: 'get',
@@ -13,7 +13,6 @@ const verbSynonyms: Record<string, string> = {
 	check: 'validate',
 };
 
-/** camelCase / kebab-case / snake_case → lowercase word tokens, synonyms collapsed. */
 const getTokens = ({ name }: { name: string }) =>
 	name
 		.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
@@ -23,25 +22,18 @@ const getTokens = ({ name }: { name: string }) =>
 		.map((token) => verbSynonyms[token] ?? token);
 
 interface Params {
-	/** An export name (extension already stripped, e.g. via `getExportName`). */
+	/** Extension already stripped, e.g. via `getExportName`. */
 	name: string;
 }
 
 /**
- * The tier-0 duplication comparator: an export name reduced to a synonym- and
- * word-order-normalized token string, so `fetchUserData`, `getUserData`, and
- * `userDataGet` collapse to one key. Conversion names are order-sensitive —
- * `hexToRgb` and `rgbToHex` are deliberate opposites, not one concept — so a
- * `to`/`from` token pins word order instead of sorting.
+ * Conversion names are order-sensitive — `hexToRgb` and `rgbToHex` are
+ * opposites, not one concept — so a `to`/`from` token pins word order instead of
+ * sorting.
  *
- * A deliberate mirror of `getNameKey` in the default standards pack, kept
- * identical so plan-time prior-art detection and the `synonym-export-name` rule never
- * disagree about whether two names are one concept. Neither copy can import
- * the other: a standards pack ships as a bare directory beside the engine,
- * with no manifest and no `node_modules`, so every value it imports has to
- * resolve inside its own tree — and the engine runs against whatever pack
- * `standards-packs` names, so it cannot reach into the default one. Change
- * one, change the other.
+ * Mirrored rather than imported: a standards pack ships as a bare directory with
+ * no `node_modules`, and the engine runs against whatever pack
+ * `standards-packs` names, so neither copy can import the other.
  *
  * @mirrors packages/standards-typescript/common/naming/getNameKey.ts
  */

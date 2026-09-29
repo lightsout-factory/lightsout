@@ -30,19 +30,12 @@ interface Params {
 }
 
 /**
- * Run every phase of a phased plan, in the overview's written order, as its own
- * per-phase run.
- *
- * The coordinator keeps its own run state — one step record per phase — and
- * takes NO repo run lock of its own: each per-phase run acquires and releases
+ * The coordinator takes no repo run lock of its own: each per-phase run takes
  * `.lightsout/lock.json` itself, and a lock held across phases would deadlock
- * the coordinator's own children. Concurrent-start protection comes from the
- * child's lock while a phase runs, plus the fresh-start guard that refuses a
- * second sequence for an overview that already has an unfinished one.
+ * the coordinator's own children.
  *
- * The first phase that ends short of passing stops the whole sequence: later
- * phases build on earlier ones, so a predictable stop beats a clever guess at
- * independence. One `lightsout resume --run <id>` continues from that spot.
+ * The first phase that ends short of passing stops the whole sequence, because
+ * later phases build on earlier ones.
  *
  * @throws {RunLockError} When a phase cannot take the repo lock — nothing ran, so the sequence stays exactly resumable.
  */
@@ -64,9 +57,7 @@ export const runPhasesPipeline = async ({
 	let manifest = initialized.manifest;
 
 	// The coordinator holds no RunState, so the tee that persists a run's
-	// narration does not reach it — and a bare `--watch` shows the coordinator
-	// in the gap between phases, which is exactly where a reader looks. Wrapping
-	// its one callback gives the coordinator a `now` line of its own.
+	// narration does not reach it; without this, `--watch` shows nothing between phases.
 	const sink = createProgressSink({ cwd, runId: manifest.runId });
 	const narrate = (message: string) => {
 		sink(message);

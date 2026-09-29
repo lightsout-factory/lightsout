@@ -4,15 +4,7 @@ import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalog
 import type { CommandFlag } from '#src/contracts/commands/CommandFlag.ts';
 import type { CommandInvocation } from '#src/contracts/commands/CommandInvocation.ts';
 
-/**
- * Every invocation id in the order `lightsout --help` prints it.
- *
- * Not catalog order: the catalog is grouped for the commands page, and the
- * usage text has its own order, which readers and screenshots have seen for
- * months. Kept here rather than exported, so this file holds one export — the
- * coverage test works through `renderUsage()`'s output instead, which catches a
- * missing id just as surely.
- */
+/** Not catalog order: the catalog is grouped for the commands page, and the usage text keeps its own order. */
 const usageOrder = [
 	'implement',
 	'implement-folder',
@@ -61,20 +53,13 @@ const usageOrder = [
 	'voice-hook',
 ];
 
-/** Every flag sharing an exclusivity key, in one bracket: `[--code-checks | --agent-review]`. */
 const renderExclusiveGroup = ({ flags, key }: { flags: CommandFlag[]; key: string }) => {
 	const group = flags.filter((flag) => flag.exclusiveWith === key);
 
 	return `[${group.map((flag) => spellFlag({ flag })).join(' | ')}]`;
 };
 
-/**
- * The flags one invocation shape shows, in the entry's own order.
- *
- * A flag with no `shape` belongs to every shape; one with a `shape` appears
- * only on that line. Flags sharing an `exclusiveWith` key collapse into a
- * single bracket at the position of the first of them.
- */
+/** Flags sharing an `exclusiveWith` key collapse into one bracket at the position of the first of them. */
 const renderFlags = ({ entry, invocation }: { entry: CommandCatalogEntry; invocation: CommandInvocation }) => {
 	const shown = entry.flags.filter((flag) => flag.shape === undefined || flag.shape === invocation.id);
 	const rendered: string[] = [];
@@ -92,10 +77,9 @@ const renderFlags = ({ entry, invocation }: { entry: CommandCatalogEntry; invoca
 	return rendered;
 };
 
-/** The parenthetical gloss, aligned to its column: 55, one-based, with a three-space minimum for a line that already reaches it. */
+/** Aligned to column 55, one-based, with a three-space minimum for a line that already reaches it. */
 const padNote = ({ body, note }: { body: string; note: string }) => `${body}${' '.repeat(Math.max(3, 54 - body.length))}(${note})`;
 
-/** One usage line: two spaces, the command word, the shape's positional words, its flags, and its note. */
 const renderLine = ({ cli, entry, invocation }: { cli: string; entry: CommandCatalogEntry; invocation: CommandInvocation }) => {
 	const words = [cli, invocation.positional, ...renderFlags({ entry, invocation })].filter((word) => word !== undefined);
 	const body = `  ${words.join(' ')}`;
@@ -104,16 +88,11 @@ const renderLine = ({ cli, entry, invocation }: { cli: string; entry: CommandCat
 };
 
 /**
- * The `lightsout --help` text, rendered from the command catalog.
- *
- * One line per id in `usageOrder`, so a skill-only entry — `auto-plan`, which
- * carries neither a `cli` nor an invocation — is never emitted and needs no
- * exclusion rule of its own.
+ * One line per id in `usageOrder`, so a skill-only entry like `auto-plan` is
+ * never emitted and needs no exclusion rule of its own.
  */
 export const renderUsage = (): string => {
 	const header = 'lightsout — deterministic engine for coding agents\n\nusage:';
-	// Belongs to the usage text rather than to any one command, which is why no
-	// catalog entry carries it.
 	const exitCodes = `exit codes (implement, resume, refactor, test-coverage-to-threshold):
   0  finished
   2  stopped with work left and resumable — a --max-batches ceiling, or a harness rate limit

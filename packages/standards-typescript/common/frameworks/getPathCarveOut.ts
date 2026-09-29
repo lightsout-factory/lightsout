@@ -1,9 +1,5 @@
 import type { FrameworkCarveOut } from '../types/FrameworkCarveOut.ts';
 
-/**
- * A path under no package at all, and the doc's plain defaults for one whose
- * package declares no framework these rules know.
- */
 const noCarveOut: FrameworkCarveOut = { directory: '.', entryFiles: [], exemptFolderNames: [], kebabCase: false, routerRoots: [] };
 
 interface Params {
@@ -13,9 +9,6 @@ interface Params {
 	path: string;
 }
 
-/**
- * The carve-out that governs one path — the nearest package's, since the list
- * is ordered longest directory first and the repo root matches everything.
- */
+/** The first match is the nearest package's, since the list is ordered longest directory first. */
 export const getPathCarveOut = ({ carveOuts, path }: Params): FrameworkCarveOut =>
 	carveOuts.find(({ directory }) => directory === '.' || path.startsWith(`${directory}/`)) ?? noCarveOut;

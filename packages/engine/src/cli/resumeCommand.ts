@@ -28,17 +28,8 @@ import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts';
 
-/**
- * Pipelines that own their own resume door, and the whole instruction that
- * sends a reader to it.
- *
- * The instruction rather than a command word, because the doors do not take the
- * same flags: `queue` has no `--run` at all — re-running it IS the resume path.
- * `<id>` is substituted with the run's own.
- *
- * Direct runs are no longer sent anywhere: this door continues them, in the
- * workspace they recorded, from whichever stage they stopped in.
- */
+// The whole instruction rather than a command word, because the doors do not
+// take the same flags: `queue` has no `--run`, since re-running it is the resume.
 const resumeCommandByPipeline: Record<PipelineKind, string | undefined> = {
 	[PipelineKind.Implement]: undefined,
 	[PipelineKind.Phases]: undefined,
@@ -48,14 +39,6 @@ const resumeCommandByPipeline: Record<PipelineKind, string | undefined> = {
 	[PipelineKind.Direct]: undefined,
 };
 
-/**
- * The run `--run` names, once every reason this door is the wrong one has been
- * ruled out — a missing flag, an id nothing on disk matches, a pipeline that
- * owns its own resume command, and a run that already passed.
- *
- * Each of those exits the process rather than answering, so whatever this
- * returns is a run resume may genuinely continue.
- */
 const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandContext['flags'] }) => {
 	const runId = getStringFlag({ flags, name: 'run' });
 
@@ -64,8 +47,7 @@ const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandCon
 		return exitCli({ code: 1 });
 	}
 
-	// A run id the user typed is theirs to get wrong: an unknown one is a
-	// message, never the stack of the manifest path we tried to open.
+	// An unknown run id the user typed is a message, never a stack trace.
 	const manifest = await readRunManifest({ cwd, runId }).catch((error: unknown) => {
 		if (error instanceof RunNotFoundError) {
 			console.error(error.message);
@@ -83,9 +65,8 @@ const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandCon
 		return exitCli({ code: 1 });
 	}
 
-	// A direct run is the one exception. `passed` there means the build and the
-	// gates are done while the commit or the ship is not, and repeating the build
-	// would spend a model on finished work — so it is resumable, from the commit.
+	// A direct run's `passed` means the build and gates are done while the commit
+	// or ship is not, so it is still resumable, from the commit.
 	if (manifest.status === RunStatus.Passed && pipeline !== PipelineKind.Direct) {
 		console.error(`run ${manifest.runId} already passed — nothing to resume`);
 		return exitCli({ code: 1 });
@@ -94,7 +75,6 @@ const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandCon
 	return { manifest, pipeline };
 };
 
-/** The pipeline that continues this run, each given the workspace its source work happens in. */
 const runResumedPipeline = ({
 	pipeline,
 	cwd,
@@ -127,17 +107,11 @@ const runResumedPipeline = ({
 };
 
 /**
- * The run, the driver and the config this continuation goes on with.
+ * The ship intent is restamped because it is resolved fresh for every invocation,
+ * and the progress view draws a ship row from it.
  *
- * The ship intent is restamped rather than assumed, because it is resolved
- * fresh for every invocation: the parked run may have carried `--no-ship`, or
- * the config may have gained `after-implement` since. The field means exactly
- * what it says — this run, in this process, will ship — so the progress view
- * draws a ship row when one is coming and none when it is not.
- *
- * Resume truth is the manifest's recorded harness, never the config (decision
- * 6); the implement entry's model applies only when it targets that same
- * harness, while effort applies unconditionally because it is harness-neutral.
+ * The harness is the manifest's, never the config's. The config's model applies
+ * only when it targets that same harness; effort is harness-neutral.
  */
 const prepareResumedRun = async ({ cwd, manifest, loaded, willShip }: { cwd: string; manifest: RunManifest; loaded: LightsoutConfig; willShip: boolean }) => {
 	const resumable = (manifest.willShip === true) === willShip ? manifest : await writeRunManifest({ cwd, manifest: { ...manifest, willShip } });
@@ -155,9 +129,8 @@ const prepareResumedRun = async ({ cwd, manifest, loaded, willShip }: { cwd: str
 export const resumeCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const skipRefactor = flags.get('skip-refactor') === true;
 	const { manifest, pipeline } = await readResumableRun({ cwd, flags });
-	// Before the config, the guard and the restamp: a run whose recorded workspace
-	// has gone must say so rather than quietly rebuild in the checkout the command
-	// was launched from, and nothing should have been mutated by the time it does.
+	// First, so a run whose recorded workspace has gone says so before anything is
+	// mutated, rather than quietly rebuilding in the launching checkout.
 	const located = await resolveRunCwd({ cwd, manifest });
 
 	if ('error' in located) {
@@ -181,15 +154,7 @@ export const resumeCommand = async ({ flags, cwd }: CommandContext): Promise<voi
 	console.log(`lightsout: resuming run ${manifest.runId} (was: ${manifest.status}, plan: ${manifest.plan})`);
 	printRunHeader({ config, driver, cwd, configPath: resolveConfigPath({ cwd }) });
 
-	// Everything that touches source acts on the workspace; only the run's own
-	// records stay in the checkout the command was launched from.
-	//
-	// The continuation is one more command run under the plan node the first run
-	// wrote — a root level's id IS its label, so no second plan level is opened
-	// and neither process has to read the record to find the other. A DIRECT run
-	// records nothing: its plan path is a frozen ticket body, and the direct
-	// pipeline is outside this record's scope even where the ticket record can
-	// still answer a plan address for it.
+	// A direct run records no command run: its plan path is a frozen ticket body.
 	const outcome = await runWorkOrderPlanLifecycle({
 		cwd: workspace,
 		name,

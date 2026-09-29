@@ -22,15 +22,11 @@ interface Params {
 }
 
 /**
- * `plan dedup` at the terminal.
- *
- * The failure branches are handled here rather than through `exitOnPlanFailure`
- * for the reason `plan grade`'s are: a failed judge now leaves a real partial
- * report on disk, and the helper would exit before the caller could print it.
+ * Failures are handled here rather than through `exitOnPlanFailure` because a
+ * failed judge leaves a partial report on disk, and the helper would exit before
+ * it could be printed.
  */
 export const planDedupCommand = async ({ cwd, driver, name, standards, config }: Params): Promise<void> => {
-	// A written, complete scan is the one case that exits 0 below — one reading,
-	// shared by both records.
 	const statusOf = ({ result: deduped }: { result: Awaited<ReturnType<typeof runPlanDedup>> }) =>
 		deduped.status === PlanRunStatus.PausedRateLimit
 			? RunStatus.PausedRateLimit
@@ -59,8 +55,6 @@ export const planDedupCommand = async ({ cwd, driver, name, standards, config }:
 	const dedup = 'dedup' in result ? result.dedup : undefined;
 	const dedupPath = 'dedupPath' in result ? result.dedupPath : undefined;
 
-	// Nothing was written — the deliverable did not resolve. The error above is
-	// the whole report.
 	if (dedup === undefined || dedupPath === undefined) {
 		return exitCli({ code: 1 });
 	}

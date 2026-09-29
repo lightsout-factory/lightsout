@@ -30,13 +30,9 @@ interface Params {
 }
 
 /**
- * Aggregate a run's evidence into one report card: wall time, gate time,
- * per-step time/invocations/tokens/cost/files, gate re-runs and skips,
- * rejected-report retries, and friction by area. Everything is computed
- * from what the run already persisted (manifest, agents.jsonl,
- * commands.jsonl, friction.jsonl, rejected-* files) — the summary is a
- * view, never a second source of truth. Supervisor invocations are
- * attributed to the step they supervised.
+ * Computed from what the run already persisted: the summary is a view, never a
+ * second source of truth. Supervisor invocations are attributed to the step
+ * they supervised.
  */
 export const summarizeRun = async ({ cwd, manifest }: Params): Promise<RunSummary> => {
 	const runDir = await resolveRunDir({ cwd, runId: manifest.runId });

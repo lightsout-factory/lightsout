@@ -6,28 +6,18 @@ import { runLinear } from '#src/ticketTracker/linear/internal/runLinear.ts';
 
 interface Params {
 	settings: LinearTrackerSettings;
-	/** Label names to match — an issue carrying any one of them is returned once. */
+	/** An issue carrying any one of them is returned once. */
 	labelNames: string[];
 	/** Workflow-state names a ticket may be in to be returned. */
 	statuses: string[];
 }
 
 /**
- * Every ticket carrying one of the named labels and sitting at one of the named
- * statuses, with the labels each one actually carries.
+ * One query for the whole label set, so a ticket carrying two labels comes back
+ * once with both names and the caller decides what the second one means.
  *
- * One query for the whole label set rather than one per label: a ticket
- * carrying two of them comes back once, and the caller can see both names —
- * which is what lets a caller decide what a second label means instead of
- * guessing from which query answered.
- *
- * A failure is returned rather than swallowed, so a bad key or an unreachable
- * API stops the caller instead of reading as an empty backlog.
- *
- * Each returned issue costs one round trip for its labels, one for its
- * relations and one per blocking relation, all inside the same 60s tracker
- * deadline: Linear's issue filter cannot express "has an unfinished blocker",
- * and the blocker identifiers are needed for the report either way.
+ * Blockers cost extra round trips per issue, all inside one tracker deadline:
+ * Linear's issue filter cannot express "has an unfinished blocker".
  */
 export const listTickets = async ({ settings, labelNames, statuses }: Params): Promise<TrackerTicket[] | TrackerFailure> => {
 	if (labelNames.length === 0 || statuses.length === 0) {

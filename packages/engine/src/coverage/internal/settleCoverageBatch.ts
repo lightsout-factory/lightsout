@@ -14,7 +14,6 @@ import { updateFileStrikes } from '#src/coverage/internal/common/utils/updateFil
 interface Params {
 	run: CoverageRun;
 	batch: CoverageBatch;
-	/** The batch's in-flight step record, to be closed out with the outcome. */
 	record: StepRecord;
 	outcome: CoverageBatchStop;
 	/** Consecutive declines up to and excluding this batch. */
@@ -26,21 +25,9 @@ interface Params {
 interface CoverageSettlement {
 	/** Present when this batch ends the whole run — park, failure, escalation. */
 	result?: CoverageResult;
-	/** The streak carried into the next round. */
 	declineStreak: number;
 }
 
-/**
- * Turn one coverage batch's terminal condition into persisted run state: a
- * park, a failure, or an escalation ends the run, while a completed batch
- * records its report and its tests.
- *
- * A declined batch is still a Passed step — its outcome and files are written
- * before the run escalates, so resume never re-spends on it — and three
- * consecutive declines stop the run as systemic rather than a per-batch
- * judgment. A resolved batch pays the free-rider guard instead: a file carried
- * through improving batches without improving is set aside on its own.
- */
 export const settleCoverageBatch = async ({ run, batch, record, outcome, declineStreak, fileStrikes }: Params): Promise<CoverageSettlement> => {
 	if (outcome.kind === CoverageBatchStopKind.Parked) {
 		const error = `run parked: harness rate limited or overloaded — resume with \`lightsout test-coverage-to-threshold --run ${run.current().runId}\` when the window resets.`;

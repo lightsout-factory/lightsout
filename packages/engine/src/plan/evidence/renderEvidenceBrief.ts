@@ -5,15 +5,13 @@ import { wholeFileEvidenceLimit } from '#src/plan/evidence/internal/common/const
 
 interface Params {
 	index: SourceEvidenceIndex;
-	/** Repo-relative paths this assignment needs, in the order they should appear. */
+	/** In the order they should appear. */
 	paths: string[];
 }
 
 /**
- * A fence long enough that the evidence inside it cannot end its own block. A
- * three-backtick wrapper around a file whose docblock holds a fenced example
- * would close at the docblock and spill the rest of the file into the prompt as
- * instructions to the writer.
+ * Longer than any backtick run inside, or a fenced example in a docblock would
+ * close the block and spill the rest of the file into the prompt as instructions.
  */
 const fenceFor = ({ text }: { text: string }) => {
 	const longestRun = [...text.matchAll(/`+/g)].reduce((longest, match) => Math.max(longest, match[0].length), 0);
@@ -21,17 +19,14 @@ const fenceFor = ({ text }: { text: string }) => {
 	return '`'.repeat(Math.max(3, longestRun + 1));
 };
 
-/** The evidence text in a block it cannot break out of, always ending with its own newline. */
 const fenced = ({ text }: { text: string }) => {
 	const fence = fenceFor({ text });
 
 	return `${fence}\n${text.endsWith('\n') ? text : `${text}\n`}${fence}`;
 };
 
-/** Why the facts named this file, in their own words — a block that drops them hands over source with no reason to read it. */
 const roleLines = ({ roles }: { roles: string[] }) => (roles.length === 0 ? ['The facts recorded no role for this file.'] : roles.map((role) => `- ${role}`));
 
-/** One requested path's block: what was collected for it, and what the writer must not read into what is absent. */
 const renderBlock = ({ path, entry }: { path: string; entry: SourceEvidenceEntry | undefined }) => {
 	const lines = [`### \`${path}\``, ''];
 
@@ -58,25 +53,13 @@ const renderBlock = ({ path, entry }: { path: string; entry: SourceEvidenceEntry
 };
 
 /**
- * Render the collected evidence for one assignment as the Markdown section a
- * plan writer reads — heading line included, no trailing newline, because the
- * caller owns how the section joins the text around it.
+ * No trailing newline: the caller owns how the section joins the text around it.
  *
- * Selection lives here rather than in the caller so that "which evidence did
- * this writer get" is one testable function. A writer receives the evidence for
- * the files its own work touches and never the union of every phase's, which is
- * the whole point of assembling per assignment.
+ * Each kind of absence is worded differently on purpose, so a gap in the brief
+ * is never read as a gap in the file.
  *
- * Three absences are stated differently on purpose. A reduced file says the
- * limit it passed, names what survived, and says the rest is one read away, so
- * an absence in the brief is never read as an absence in the file. A file the
- * facts named and disk does not hold is a fact about the repository the writer
- * has to plan around. A path nothing was collected for is a fact about this
- * record, which the writer answers by opening the file.
- *
- * An empty `paths` list renders the empty string: an empty section heading in a
- * prompt reads as "there is no evidence for any of this", which is a different
- * claim from "this spawn needs none".
+ * An empty `paths` list renders the empty string: an empty heading would read as
+ * "there is no evidence for any of this", not "this spawn needs none".
  */
 export const renderEvidenceBrief = ({ index, paths }: Params): string => {
 	if (paths.length === 0) {

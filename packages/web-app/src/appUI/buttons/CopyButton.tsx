@@ -3,25 +3,19 @@ import { type ComponentProps, useEffect, useState } from 'react';
 import { Button } from '#src/appUI/buttons/Button.tsx';
 
 interface Props {
-	/** The text the clipboard receives. */
 	value: string;
-	/** What the control says before it is pressed — always names what will be copied, since three of these sit on one page. */
+	/** Always names what will be copied, since several of these can sit on one page. */
 	label: string;
-	/** The button's look; ghost unless a caller needs the copy to be the thing a reader presses. */
 	variant?: ComponentProps<typeof Button>['variant'];
-	/** Shows the icon alone. The label is still the accessible name, so a screen reader hears what a sighted reader infers from the icon. */
+	/** Shows the icon alone; the label stays the accessible name. */
 	isLabelHidden?: boolean;
 	className?: string;
 }
 
 /**
- * The one copy control in the app: it writes a string to the clipboard and says
- * so for a moment.
- *
  * A browser that refuses the clipboard — an insecure origin, a denied
  * permission — leaves the label where it was rather than throwing into the
- * render tree. Nothing here acts on a run; every use copies text a reader then
- * runs themselves.
+ * render tree.
  */
 export const CopyButton = ({ value, label, variant = 'ghost', isLabelHidden = false, className }: Props) => {
 	const [copied, setCopied] = useState(false);

@@ -8,16 +8,8 @@ interface Params {
 }
 
 /**
- * How every batched run's report ends: what it left in the working tree, where
- * the evidence landed, and why it stopped when it did.
- *
- * The commit reminder is the important half — the engine writes code and never
- * commits it, so an unread tree is the one way a run's work goes missing.
- *
- * A paused run's closing line goes to stdout. `refactor --max-batches 3` that
- * finishes three batches did exactly what it was asked, and printing "resume
- * with …" on stderr under a status of PAUSED-BUDGET read as a run that broke.
- * A run that actually broke still writes to stderr.
+ * A paused run's closing line goes to stdout: a run that stopped at
+ * `--max-batches` did what it was asked, and stderr reads as a run that broke.
  */
 export const printRunFooter = ({ manifest, ending }: Params): void => {
 	if (manifest.changedFiles.length > 0) {

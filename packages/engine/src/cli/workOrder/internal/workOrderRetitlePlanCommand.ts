@@ -6,11 +6,8 @@ import { readConfig } from '#src/common/config/readConfig.ts';
 import { retitleWorkOrderPlan } from '#src/workOrder/retitleWorkOrderPlan.ts';
 
 /**
- * `lightsout work-order retitle-plan` at the terminal.
- *
- * A title is not identity: the plan's id, its folder and any pending ship
- * request are untouched, which is why a rename is the one change to a ticket
- * that never costs it an approval.
+ * A title is not identity: the plan's id, folder and pending ship request are
+ * untouched, so a rename is the one change that never costs a ticket its approval.
  */
 export const workOrderRetitlePlanCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const name = await getRequiredFlag({ flags, name: 'name' });

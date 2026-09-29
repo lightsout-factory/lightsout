@@ -12,11 +12,11 @@ import { withWorkOrderStateLock } from '#src/workOrder/internal/common/utils/wit
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
 
 interface Params {
-	/** Any checkout of the repository: the one record this machine holds is found from it. */
+	/** Any checkout of the repository. */
 	cwd: string;
 	name: string;
 	target: TicketTrackerTarget;
-	/** The hash of the published copy the caller last read, or undefined when the ticket carried none. */
+	/** Undefined when the ticket carried none. */
 	expectedPublishedSha256: string | undefined;
 	onProgress?: (message: string) => void;
 }
@@ -28,15 +28,7 @@ interface AttachParams {
 	onProgress?: (message: string) => void;
 }
 
-/**
- * Put the record on the ticket, or answer the one sentence saying why it did
- * not land.
- *
- * `setTicketAttachment` replaces a same-titled attachment, so the ticket never
- * ends up carrying two records this wrote. It stays private to this file
- * because the guard above it is the whole point: an unguarded attach would
- * overwrite a record another machine published since the pull.
- */
+/** Private to this file: an unguarded attach would overwrite a record another machine published since the pull. */
 const attachTicketRecord = async ({ target, content, onProgress }: AttachParams): Promise<{ error: string } | undefined> => {
 	const { settings, ticketRef } = target;
 	const tickets = await getTicketsByIdentifiers({ settings, identifiers: [ticketRef] });
@@ -63,23 +55,12 @@ const attachTicketRecord = async ({ target, content, onProgress }: AttachParams)
 };
 
 /**
- * The one guarded upload of a work order state: re-read what the ticket carries,
- * and attach only when nothing another machine wrote would be lost.
+ * Trackers offer no compare-and-swap, so re-reading right before the attach
+ * narrows the window in which another machine's publish could be overwritten.
  *
- * The trackers offer no compare-and-swap, so a pull followed by an attach
- * silently overwrites a record published in between — and that machine's next
- * pull would then take this copy over its own change. Re-reading immediately
- * before the attach narrows the window to the attach call itself.
- *
- * What is uploaded is the local record as it stands NOW, read here rather than
- * taken from the caller: local writes are serialized by the record's lock and
- * each one includes every earlier one, so sending the newest is what stops a
- * second command on this machine being undone by an older copy in flight.
- *
- * Three published hashes are accepted beside "the ticket carries none": the one
- * the caller read, the one the sidecar currently names (this machine published
- * those bytes, so a same-machine publish is never another machine's change),
- * and the bytes about to be sent.
+ * The local record is read here rather than taken from the caller, so an older
+ * copy in flight cannot undo a newer command on this machine. The sidecar's hash
+ * is accepted too: this machine published those bytes itself.
  */
 export const attachWorkOrderStateIfUnmoved = async ({
 	cwd,

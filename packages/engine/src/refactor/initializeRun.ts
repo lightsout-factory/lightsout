@@ -24,17 +24,9 @@ interface Params {
 }
 
 /**
- * Resolve a refactor run's manifest + frozen worklist. Resume re-reads the
- * frozen file the manifest's `plan` points at (after refusing manifests owned
- * by the implement pipeline). A fresh run enforces the hard requirements — a
- * git worktree and a CLEAN tree, so the ending diff is entirely the run's —
- * then computes the worklist from the tree and freezes it into the run dir.
- *
- * `allowDirty` trades the clean-tree guarantee for a recorded baseline: the
- * files dirty at start are frozen into the manifest and excluded from batch
- * attribution, so successive runs can stack while commits are frozen. The
- * pre-flight gates still stand — a dirty tree that cannot pass them cannot
- * be refactored either way.
+ * A fresh run requires a clean tree so the ending diff is entirely the run's.
+ * `allowDirty` trades that for a recorded baseline excluded from batch
+ * attribution; the pre-flight gates still stand.
  */
 export const initializeRun = async ({
 	cwd,

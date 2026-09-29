@@ -8,11 +8,9 @@ import { planWorkspacePath } from '#src/plan/planWorkspacePath.ts';
 
 interface Params {
 	record: WorkOrderState;
-	/** The plan an implementation run is about to be started for. */
 	planId: string;
 }
 
-/** How to get the plan standing in the way out of the way: finish its own run, or take it out of the order. */
 const describeLowerPlanRemedy = ({ name, plan }: { name: string; plan: WorkOrderPlan }) => {
 	const finish =
 		plan.implementation === undefined
@@ -22,7 +20,7 @@ const describeLowerPlanRemedy = ({ name, plan }: { name: string; plan: WorkOrder
 	return `${finish}, or take it out of the order with \`lightsout work-order exclude-plan --name ${name} --plan ${plan.id}\``;
 };
 
-/** The lowest plan below this one whose implementation has not finished, if there is one — the plans are held in number order. */
+/** Relies on the record holding its plans in number order. */
 const findLowerPlanBlocker = ({ record, planId }: { record: WorkOrderState; planId: string }) => {
 	const number = planNumberOf({ id: planId });
 	const blocking = record.plans.find(
@@ -35,20 +33,10 @@ const findLowerPlanBlocker = ({ record, planId }: { record: WorkOrderState; plan
 };
 
 /**
- * Whether one plan of a ticket may have an implementation run started for it,
- * as one sentence naming the plan in the way and the command that resolves it —
- * or undefined when the run may go ahead.
- *
- * Every entry point asks here — `implement`, `resume` and the queue's plan
- * build — so the ticket's numeric order and its mode are enforced on every
- * path rather than only in the queue.
- *
- * The plan's OWN `planning`, `ready`, `implementing` and `failed` progress are
- * never refusals: a standalone run is licensed to build a plan a human points
- * it at whatever its progress says, and resuming a failed or paused run is the
- * repair path this rule exists to keep open.
- *
- * @returns the one sentence saying why the run may not start, or undefined when it may
+ * Every entry point asks here (`implement`, `resume` and the queue's build), so numeric order and
+ * mode are enforced on every path. A plan's own progress short of implemented never refuses: a
+ * standalone run may build whatever plan a human points it at, and resuming a failed run is the
+ * repair path.
  */
 export const findPlanImplementationBlocker = ({ record, planId }: Params): string | undefined => {
 	const { name } = record;

@@ -6,14 +6,10 @@ import { getPathCarveOut } from '../../../../../common/frameworks/getPathCarveOu
 import { isFrameworkLoadedFile } from '../../../../../common/frameworks/isFrameworkLoadedFile.ts';
 import { getBaseName } from '../../../../../common/paths/getBaseName.ts';
 
-/**
- * Every index file, wherever it stands — a package's entry holds no code any
- * more than a folder's does. A file the package's framework loads is spared
- * before this is ever asked.
- */
+/** Every index file, wherever it stands: a package's entry holds no code any more than a folder's does. */
 const isIndexFile = ({ path }: { path: string }) => /^index\.tsx?$/.test(getBaseName({ path }));
 
-/** The one statement kind a barrel may hold. `export *` passes here too — how a barrel re-exports is barrel-star's objection, not this rule's. */
+/** `export *` passes here too: how a barrel re-exports is barrel-star's objection, not this rule's. */
 const isReExport = ({ statement, compiler }: { statement: ts.Statement; compiler: typeof ts }) =>
 	compiler.isExportDeclaration(statement) && statement.moduleSpecifier !== undefined;
 
@@ -22,14 +18,10 @@ const buildFileFindings = ({ input }: { input: SyntaxTreeInput }) => {
 	const carveOuts = getFrameworkCarveOuts({ dependencies: input.dependencies });
 
 	for (const [path, tree] of input.trees) {
-		// A file-based router (TanStack, Remix, Next) MANDATES an index route
-		// file, and a route file's content is a route definition — never a
-		// re-export. Judging one is asking for a file the framework forbids, so
-		// the router root is the framework's to name, exactly as
-		// `05-filename-mismatch` and `50-folder-casing` already concede. A
-		// convention-resolved entry file is spared by the same fact: a file the
-		// framework loads is code by definition, and demanding re-export lines of
-		// it asks for a file the framework could not use.
+		// A file-based router MANDATES an index route file whose content is a route
+		// definition, and a convention-resolved entry file is code by definition;
+		// demanding re-export lines of either asks for a file the framework could
+		// not use.
 		if (isFrameworkLoadedFile({ path, carveOut: getPathCarveOut({ carveOuts, path }) })) {
 			continue;
 		}

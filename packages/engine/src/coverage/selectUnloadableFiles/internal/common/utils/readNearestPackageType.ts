@@ -31,9 +31,6 @@ interface Params {
 }
 
 /**
- * The `"type"` of the package.json that governs one file, or undefined when no
- * manifest between the file and its scope root declares one.
- *
  * The *nearest* manifest is what Node and Jest both read, and the distinction
  * is load-bearing: a nested package that sets no `type` is CommonJS even inside
  * a repo whose root manifest says `"type": "module"`. Reading only the scope

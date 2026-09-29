@@ -1,30 +1,19 @@
 import { execFileSync } from 'node:child_process';
 import { isTestFile } from '../packages/engine/src/common/sourceFiles/isTestFile.ts';
 
-/** The files the chart draws as bars: TypeScript source, minus the unit tests beside it and the declaration files the engine's own walk skips. */
 const isBarFile = ({ path }) => /\.tsx?$/.test(path) && !/\.unit\.test\.tsx?$/.test(path) && !path.endsWith('.d.ts');
 
-/** Repo-relative roots of the standards packs in this tree — the folders holding a pack manifest. */
 const findPackRoots = ({ paths }) =>
 	paths.filter((path) => path.endsWith('/lightsout-standards.json')).map((path) => path.slice(0, path.length - '/lightsout-standards.json'.length));
 
 /**
- * A standards pack's own counter-examples, which this chart must not draw.
- *
- * Inside a pack, `fixtures/fail/` holds code written to break the very rule it
- * proves — the widest folder in this repo is a folder-census fixture, and its
- * longest file is a file-size fixture. `listSourceFiles` prunes them for
- * exactly that reason, so a chart that drew them would report a pack's samples
- * as the repository's own sprawl.
- *
- * That walk reads the working tree and this one reads a commit, so the
- * pruning is stated again here rather than shared —
- * `packages/engine/src/common/sourceFiles/listSourceFiles.ts` is the copy to
- * read alongside this one.
+ * A pack's fail fixtures are written to break its rules, so drawing them would
+ * report a pack's samples as the repository's own sprawl. This restates
+ * `listSourceFiles`' pruning because that walk reads the working tree and this
+ * one reads a commit.
  */
 const isPackFixture = ({ path, packRoots }) => packRoots.some((root) => path.startsWith(`${root}/`)) && path.includes('/fixtures/');
 
-/** One commit's tracked files under `packages/`, as `[path, blob oid]` pairs. */
 const readTree = ({ repoRoot, sha }) => {
 	const output = execFileSync('git', ['ls-tree', '-r', '-z', sha, '--', 'packages'], { cwd: repoRoot, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
 
@@ -39,13 +28,9 @@ const readTree = ({ repoRoot, sha }) => {
 };
 
 /**
- * Line counts for a set of blobs, keyed by object id.
- *
- * Keyed by blob rather than by path, because a file that did not change between
- * two commits is the same object: over three hundred commits of two thousand
- * files that is the difference between reading a few thousand blobs and reading
- * half a million. Batched through one `git cat-file` per chunk rather than one
- * child process per file, for the same reason.
+ * Keyed by blob rather than by path, because an unchanged file is the same
+ * object in every commit, so each is read once. Batched through one
+ * `git cat-file` per chunk rather than one child process per file.
  */
 const readBlobLines = ({ repoRoot, oids }) => {
 	const counts = new Map();
@@ -77,16 +62,8 @@ const readBlobLines = ({ repoRoot, oids }) => {
 };
 
 /**
- * Every commit's tree, measured: the TypeScript files with their line counts,
- * and every folder's direct-file population.
- *
- * The folder population is counted the way the `folder-size` check counts it
- * — non-test files of any type sitting directly in the folder, barrels
- * included, subfolders excluded — so a row the chart draws as over cap is over
- * cap by the repo's own measure rather than by one invented for a drawing.
- *
- * @param repoRoot - the repository to read
- * @param commits - the commits to measure, oldest first
+ * Folder populations are counted the way the `folder-size` check counts them,
+ * so a row drawn over cap is over cap by the repo's own measure.
  */
 export const readSprawlTrees = ({ repoRoot, commits }) => {
 	const trees = commits.map((commit) => {

@@ -32,13 +32,8 @@ interface Params {
 }
 
 /**
- * The queue's own spelling of a worktree path, or undefined when the path is
- * not one of the queue's worktrees at all.
- *
- * Git answers filesystem-resolved paths, so wherever the checkout sits behind a
- * symlink the two spellings differ. Re-rooting keeps every path the queue
- * prints, hands to a worker and removes after a merge in one form — the form
- * `createWorktree` builds for a ticket picked up fresh.
+ * Git answers filesystem-resolved paths, which differ behind a symlink; re-rooting keeps every
+ * path the queue prints, hands to a worker and removes in the form `createWorktree` builds.
  */
 const toQueuePath = ({ path, root, realRoot }: { path: string; root: string; realRoot: string }) => {
 	for (const prefix of [root, realRoot]) {
@@ -51,15 +46,9 @@ const toQueuePath = ({ path, root, realRoot }: { path: string; root: string; rea
 };
 
 /**
- * The queue's own worktrees, read from git rather than from the directory
- * listing: a slash-bearing branch template nests directories, so an entry name
- * is not a branch name.
- *
- * Which work order a tree belongs to is the records' answer rather than the
- * branch name's: the work order whose record stores that exact branch supplies
- * both the ticket the scan reconciles against and the label the drain carries
- * onward. A tree no record claims, and one whose work order belongs to no
- * ticket, are both left exactly where they are.
+ * Read from git rather than the directory listing: a slash-bearing branch template nests
+ * directories, so an entry name is not a branch name. The work order comes from the record that
+ * stores the branch, never from the branch name.
  */
 const listQueueWorktrees = async ({ cwd, onProgress }: { cwd: string; onProgress?: (message: string) => void }) => {
 	const listed = await runCommand({ command: 'git worktree list --porcelain', cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
@@ -97,9 +86,8 @@ const listQueueWorktrees = async ({ cwd, onProgress }: { cwd: string; onProgress
 		const record = await readWorktreeRecord({ cwd, branch });
 
 		if (record !== undefined && record.owner !== WorktreeOwner.Queue) {
-			// A tree a standalone run made and may still be building in. A tree
-			// carrying no record at all is one an earlier drain made before
-			// ownership was recorded, and is still ours to resume.
+			// A tree a standalone run made and may still be building in. A tree with no record at all
+			// predates ownership records and is still the queue's to resume.
 			onProgress?.(`leaving ${path} alone — it belongs to a '${record.owner}' run rather than the queue`);
 			continue;
 		}
@@ -111,16 +99,9 @@ const listQueueWorktrees = async ({ cwd, onProgress }: { cwd: string; onProgress
 };
 
 /**
- * Why a parked worktree is left alone rather than resumed, or undefined when
- * its ticket still delegates the work to the queue and nothing holds it.
- *
- * Two causes, asked in that order. A removed planning-status label is the user
- * withdrawing the automation, and a label changed back to a shaping state says
- * the same thing: the tree is theirs to inspect or delete, and the queue names
- * it rather than touching it. A gate hold says a human owes the ticket a look
- * before anything runs again, and it is asked here — before the merge check,
- * and before the drain branch that would clear the parked label — so nothing
- * about a held tree is settled.
+ * A removed planning-status label, or one changed back to a shaping state, is the user
+ * withdrawing the automation. A gate hold is asked before the merge check and before the drain
+ * that would clear the parked label, so nothing about a held tree is settled.
  */
 const describeLeftBehind = ({
 	tree,
@@ -151,29 +132,11 @@ const describeLeftBehind = ({
 };
 
 /**
- * What an earlier drain left on disk, and what each worktree still needs.
- *
- * The tickets are fetched by identifier with NO status filter, because the
- * status filter that keeps the queue polite is exactly what hides a parked
- * ticket from it: a ticket moved to In Progress at pickup is invisible to the
- * eligible list, so the worktree directory is the durable record of parked
- * work.
- *
- * A worktree whose ticket no longer carries a planning-status label is left
- * alone with a warning — a removed label is the user withdrawing the
- * automation, and the tree is theirs to inspect or delete. So is one whose
- * label was changed back to a shaping state, for the same reason.
- *
- * Two questions are then asked of every tree still delegated, in that order.
- * Has the branch merged? — established the same two ways a tracker-picked
- * ticket gets, this queue's own record and then the forge, because a branch
- * someone merged by hand looks exactly like a clean tree carrying commits, and
- * shipping it a second time is the cost of guessing. Does the tracker file the
- * ticket as finished? — because a ticket a human moved to Done or Canceled
- * with its label still on is work nobody is waiting for, and resuming it would
- * write the ticket back to In Progress. A finished ticket whose branch is not
- * merged is reported and its worktree left where it is, whatever the tree
- * holds: it may hold work no one has seen.
+ * Tickets are fetched by identifier with no status filter, because a ticket moved to In Progress
+ * at pickup is invisible to the eligible list. A branch someone merged by hand looks exactly like
+ * a clean tree carrying commits, so merge is established before anything ships. A finished ticket
+ * is never resumed, which would write it back to In Progress, and its unmerged worktree is left
+ * in place because it may hold work no one has seen.
  */
 export const scanParkedWorktrees = async ({ cwd, defaultBranch, settings, trackerSettings, holds, onProgress }: Params): Promise<ParkedWork | QueueFailure> => {
 	const trees = await listQueueWorktrees({ cwd, onProgress });

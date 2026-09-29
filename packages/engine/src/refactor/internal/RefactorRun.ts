@@ -19,22 +19,15 @@ interface ConstructorParams {
 }
 
 /**
- * A refactor run: the state and persistence every run shares, plus the
- * burn-down accounting every exit path of this one reports. The pipeline and
- * its steps mutate run state ONLY through these methods, so the
+ * Pipeline steps mutate run state only through these methods, so the
  * persist-before-the-next-action ordering lives in exactly one place.
  */
 export class RefactorRun {
 	readonly declined: RefactorResult['declined'];
 	readonly before: Record<string, number>;
-	// The shared run state is held, not inherited: the burn-down accounting
-	// below is this run's own, and the methods it shares with every other run
-	// forward to the value it holds.
-	//
-	// Those forwards stay. Publishing this value instead would let a caller
-	// reach through it, and PipelineRun — the sibling holding the same state —
-	// adds a step timer and a usage line to two of the same methods. One way in
-	// per run is what makes those additions unskippable.
+	// The shared run state is held, not inherited, and never published:
+	// PipelineRun adds a step timer and a usage line to two of the same methods,
+	// and one way in per run is what makes such additions unskippable.
 	private readonly runState: RunState;
 
 	constructor({ cwd, config, manifest, declined, before, onProgress }: ConstructorParams) {
@@ -51,7 +44,6 @@ export class RefactorRun {
 		return this.runState.config;
 	}
 
-	/** Ceiling for a run's agent invocations, config-resolved once. */
 	get agentTimeoutMs(): number {
 		return this.runState.agentTimeoutMs;
 	}
@@ -86,7 +78,6 @@ export class RefactorRun {
 		return { ok: false, manifest: this.current(), error, declined: this.declined, before: this.before, after: this.before };
 	}
 
-	/** Persist a step's terminal status (and the run's), announce it, then halt. */
 	async stop({ record, status, error }: { record: StepRecord; status: RunStatus; error: string }): Promise<RefactorResult> {
 		await this.runState.stop({ record, status, error, label: 'refactor run' });
 

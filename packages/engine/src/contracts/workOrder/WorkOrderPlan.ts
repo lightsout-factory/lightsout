@@ -2,16 +2,12 @@ import { z } from 'zod';
 import { PlanId } from '#src/contracts/workOrder/PlanId.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 
-/** A SHA-256 digest as this record spells one: 64 lowercase hex characters. */
 const sha256Digest = z.string().regex(/^[0-9a-f]{64}$/, 'a hash is written as 64 lowercase hex characters');
 
 /**
- * One plan's entry in its ticket's record.
- *
- * Every object here is `.strict()`. The record travels between machines through
- * the tracker, and a reader that quietly stripped a field a newer engine wrote
- * would then write the record back without it; failing the parse loudly is the
- * only outcome that cannot lose another machine's state.
+ * Every object is `.strict()`: the record travels between machines, and a
+ * reader that stripped a newer engine's field would write the record back
+ * without it.
  */
 export const WorkOrderPlan = z
 	.object({

@@ -24,7 +24,6 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/** The hold on disk, or the sentence saying this machine could not record it. */
 const recordHold = async ({ cwd, identifier, hold }: { cwd: string; identifier: string; hold: GateHold }) => {
 	try {
 		await writeGateHold({ cwd, identifier, hold });
@@ -36,16 +35,10 @@ const recordHold = async ({ cwd, identifier, hold }: { cwd: string; identifier: 
 };
 
 /**
- * The durable hold a coordination failure takes on ticket-backed work: the
- * local record first, then the tracker label.
- *
  * The ordering is the contract. The record is written unconfirmed BEFORE the
  * tracker is asked and rewritten confirmed only once the write has landed, so a
  * process killed between the two still leaves a hold nothing walks past — and a
  * label that never landed is never later read as a human releasing the ticket.
- *
- * It reads no other hold and writes no file but its own ticket's, which is what
- * keeps two workers timing out in the same second from losing each other's.
  *
  * Exactly two situations take no hold: a repository with no `ticket-tracker`
  * block, and a run with no ticket reference. There is no label to write and no

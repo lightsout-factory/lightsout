@@ -1,10 +1,8 @@
 import type { FrameworkCarveOut } from '../types/FrameworkCarveOut.ts';
 
 /**
- * Each carve-out keyed on the dependency that earns it. A framework mandate is
- * a fact about what a package declares it depends on, never a guess from what
- * its folders hold — so adding a framework costs one entry here and nothing
- * else.
+ * Keyed on the dependency: a framework mandate is a fact about what a package
+ * declares it depends on, never a guess from what its folders hold.
  *
  * A row carries ONLY what the framework's own documents mandate: the folder a
  * router owns, the casing it imposes, the files it resolves by name. A layout
@@ -29,14 +27,8 @@ interface Params {
 }
 
 /**
- * Which mandates each package's frameworks earn — over folder names and casing,
- * over which folders are modules, and over the files a framework resolves for
- * itself.
- *
- * The engine supplies the dependency facts; what counts as a carve-out is
- * standards content, so the tables live here. A package that declares no
- * framework this list knows still gets an entry — with no exemptions at all,
- * which is the doc's plain default rather than a gap.
+ * A package that declares no framework this list knows still gets an entry —
+ * with no exemptions at all, which is the doc's plain default rather than a gap.
  *
  * Ordered longest directory first, so a caller matching a path against these
  * entries takes the nearest manifest and reaches the repo root (`.`, which

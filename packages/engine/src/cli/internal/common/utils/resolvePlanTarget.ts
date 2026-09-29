@@ -9,16 +9,12 @@ interface Params {
 }
 
 /**
- * Resolve what a --plan value points at. A file (or anything that is not a
- * directory, including a missing path) passes through unchanged — the pipeline
- * already owns the missing-file error. A directory means "run this plan,
- * however it is shaped": overview.md → all phases, plan.md → single run,
- * neither → an error naming both expectations.
+ * A missing path passes through unchanged, because the pipeline already owns
+ * the missing-file error.
  *
- * Where the value is looked for is `resolveRecordedPlanPath`'s answer, not
- * `cwd`'s own: a plan folder lives in the primary checkout whichever checkout
- * the run works in, so a run isolated in a worktree would otherwise find no
- * folder there and take a plan folder for a plain file.
+ * The folder is looked for through `resolveRecordedPlanPath`, not `cwd`: a plan
+ * folder lives in the primary checkout, so a run isolated in a worktree would
+ * otherwise take a plan folder for a plain file.
  */
 export const resolvePlanTarget = async ({ cwd, planPath }: Params): Promise<{ planPath: string } | { overviewPath: string } | { error: string }> => {
 	const dir = await resolveRecordedPlanPath({ cwd, path: planPath });
@@ -37,8 +33,8 @@ export const resolvePlanTarget = async ({ cwd, planPath }: Params): Promise<{ pl
 			() => false,
 		);
 
-	// The joins are built from the user's own path, not the resolved absolute,
-	// so a relative --plan stays relative — the form manifests store today.
+	// Built from the user's own path, not the resolved absolute, so a relative
+	// --plan stays relative — the form manifests store.
 	if (await holds({ name: 'overview.md' })) {
 		return { overviewPath: join(planPath, 'overview.md') };
 	}

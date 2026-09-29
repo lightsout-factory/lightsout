@@ -2,7 +2,6 @@ import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalog
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 
-/** `lightsout friction` — reads what the runs already recorded, so it takes nothing but a repository. */
 export const frictionCatalogEntry: CommandCatalogEntry = {
 	id: 'friction',
 	cli: 'lightsout friction',

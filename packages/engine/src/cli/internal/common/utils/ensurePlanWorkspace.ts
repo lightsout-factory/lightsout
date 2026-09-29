@@ -26,12 +26,8 @@ interface TicketSource {
 }
 
 /**
- * Everything needed to ask a ticket for a plan, or the one sentence saying
- * which part of it this repo does not have.
- *
- * Every sentence names the folder that is missing first, because that is the
- * problem the user is actually looking at; the tracker is only why it could not
- * be solved for them.
+ * Every sentence names the missing folder first, because that is the problem
+ * the user is looking at; the tracker is only why it could not be solved.
  */
 const readTicketSource = async ({ cwd, name, dir }: { cwd: string; name: string; dir: string }): Promise<TicketSource | { error: string }> => {
 	// Unguarded: a config the engine cannot parse must fail loudly here, exactly
@@ -58,13 +54,9 @@ const readTicketSource = async ({ cwd, name, dir }: { cwd: string; name: string;
 };
 
 /**
- * Settle the ticket's record into this machine, then write the addressed plan's
- * own generation into its folder.
- *
- * The record comes first because it is what says the plan exists at all, and a
- * record this machine cannot settle — one that moved here and on the ticket —
- * has to stop the run rather than be worked around: the plan restored under it
- * could be from either side of the divergence.
+ * A record this machine cannot settle — one that moved here and on the ticket —
+ * stops the run, because a plan restored under it could be from either side of
+ * the divergence.
  */
 const fetchTicketPlan = async ({
 	cwd,
@@ -108,37 +100,17 @@ const fetchTicketPlan = async ({
 };
 
 /**
- * Make sure the plan folder a `--plan` value names is on disk — fetching it from
- * the folder's own ticket when it is not — and answer one sentence naming every
- * place looked when none has a plan.
- *
- * A `--plan` value that is not a plan address is left exactly as it was found:
- * every plan lives at `<work-order>/<plan-id>`, so a path that is not one names
- * no plan a ticket could be asked for, and nothing is restored into it.
- *
- * Local disk wins outright, which is what lets a repo that commits its plan
- * folders work with no tracker at all: a folder that is already there is never
- * overwritten, merged into or deleted, whatever the ticket carries.
- *
- * There is no nearer source than disk. A plan folder lives in the main checkout
- * whichever checkout a plan command ran from, so a plan planning finished is
- * already the folder this gate just looked at, and no worktree ever holds a copy
- * to recover.
+ * Local disk wins outright, so a repo that commits its plan folders works with
+ * no tracker at all: a folder already there is never overwritten, merged into
+ * or deleted.
  *
  * The fetch is here, at the command edge, rather than inside
  * `resolvePlanDeliverable`: that resolver is shared by the read-only `plan
- * dedup` and `plan grade` passes, and a network call in it would make every
- * detection pass reach the tracker unannounced.
- *
- * It never throws for a tracker or restore reason and never exits — it hands back one
- * sentence and lets the caller own the exit code, the way every other input
- * check in `implementCommand` does.
+ * dedup` and `plan grade` passes, which must not reach the tracker unannounced.
  */
 export const ensurePlanWorkspace = async ({ cwd, planPath, write = console.log }: Params): Promise<{ error: string } | undefined> => {
 	const name = await planNameFromPath({ cwd, planPath });
 
-	// A `--plan` pointing anywhere outside the repo's plans directory is nobody's
-	// plan workspace and has no ticket to ask.
 	if (name === undefined) {
 		return undefined;
 	}
@@ -149,9 +121,8 @@ export const ensurePlanWorkspace = async ({ cwd, planPath, write = console.log }
 		return undefined;
 	}
 
-	// Asked before the ticket source is read: a path that is not a plan address
-	// names no plan a ticket could be asked for, so nothing about the tracker or
-	// the work order's record may refuse it.
+	// Before the ticket source is read, so nothing about the tracker or the work
+	// order's record may refuse a path that is not a plan address.
 	if (parsePlanAddress({ name }) === undefined) {
 		return undefined;
 	}

@@ -2,7 +2,6 @@ import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalog
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 
-/** `lightsout standards-validate` — a pack author’s gate, which is why its only flag names a pack folder. */
 export const standardsValidateCatalogEntry: CommandCatalogEntry = {
 	id: 'standards-validate',
 	cli: 'lightsout standards-validate',

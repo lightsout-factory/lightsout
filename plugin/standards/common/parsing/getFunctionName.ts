@@ -7,9 +7,6 @@ interface Params {
 }
 
 /**
- * The name a function-like node reports under: its own name, else the variable
- * it is assigned to, else `(anonymous)`.
- *
  * Arrow functions carry no name of their own, so the variable declaration is
  * where the useful label lives — and `(anonymous)` is the honest answer for a
  * callback nobody named, which is also how the rules that must skip callbacks

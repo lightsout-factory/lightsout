@@ -10,10 +10,6 @@ interface Params {
 }
 
 /**
- * The approved version of one test-side file: the run's own copy when the
- * manifest records one, nothing when it records an approved removal, the file's
- * content at `HEAD` otherwise.
- *
  * A run starts from a clean tree, so `HEAD` is the approved repository test
  * until the run approves something newer.
  *

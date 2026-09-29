@@ -3,12 +3,6 @@ import { FrictionEntry } from '#src/contracts/friction/FrictionEntry.ts';
 import { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutcome.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 
-/**
- * The shared output contract for working agent roles (feature-executor,
- * unit-test-writer, refactor-executor). The agent's final message must be
- * exactly this shape as JSON — the engine validates it at the boundary and
- * retries on mismatch. No prose parsing, ever.
- */
 export const WorkReport = z.object({
 	status: z.enum(WorkReportStatus),
 	/** Every source file created or modified, with a one-clause description. */

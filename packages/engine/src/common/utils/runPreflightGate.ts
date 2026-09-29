@@ -23,22 +23,16 @@ interface Params<TResult> {
 	run: GatedRun<TResult>;
 	/** Also run the coverage gate — off for a run whose coverage gate is red by definition. */
 	coverage: boolean;
-	/** The progress line announcing the gate, naming what this run's gates cover. */
 	label: string;
 	/** Sentence put in front of the gate output when the baseline is red. */
 	redBaselineError: string;
 }
 
 /**
- * The pre-flight green gate: the consumer's own gates before any agent spend,
- * skipped when an earlier attempt already passed it. A red gate after a batch
- * can only mean "the batch's doing" if the baseline was green.
- *
- * A baseline gate that returned no verdict — the gate run never got the
- * machine, a gate crashed, or a gate ran past its ceiling — ends the run
- * escalated with its own reason instead, and records no passed pre-flight step,
- * so a later attempt runs the baseline again rather than inheriting a proof
- * nothing established.
+ * The consumer's own gates before any agent spend: a red gate after a batch
+ * can only mean "the batch's doing" if the baseline was green. A baseline that
+ * returned no verdict records no passed step, so a later attempt runs it again
+ * rather than inheriting a proof nothing established.
  *
  * @returns the run-ending result when the baseline is red or returned no verdict, undefined to proceed
  */
@@ -71,10 +65,8 @@ export const runPreflightGate = async <TResult>({ run, coverage, label, redBasel
 	let result: TResult | undefined;
 
 	if (noVerdict !== undefined) {
-		// No baseline gate returned a verdict, so the baseline was neither proved
-		// nor disproved: the run ends for a human naming why, never with the
-		// red-baseline sentence, which asserts something about the consumer's code
-		// that no command here established.
+		// The baseline was neither proved nor disproved, so the red-baseline
+		// sentence would assert something no command established.
 		result = await run.stop({ record, status: RunStatus.Escalated, error: noVerdict });
 	} else if (gates.error) {
 		result = await run.stop({ record, status: RunStatus.Failed, error: `${redBaselineError}\n${gates.error}` });

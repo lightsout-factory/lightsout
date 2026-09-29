@@ -1,7 +1,2 @@
-/**
- * The values the plan template defines as "nothing to declare". They are
- * identifier-shaped, so every check reading backticked spans as names must skip
- * them: a declared absence is not a name being handed over. One declaration, so
- * a spelling the template adds reaches every check at once.
- */
+/** The template's "nothing to declare" values. They are identifier-shaped, so every check reading backticked spans as names must skip them. */
 export const planSentinelTokens = new Set(['none', 'None']);

@@ -1,4 +1,3 @@
-/** One worktree git knows about: where it is, which branch it holds, and the work order whose record claims that branch. */
 export interface ParkedTree {
 	/** The queue's own spelling of the path, already re-rooted by the scan. */
 	path: string;

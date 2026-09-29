@@ -22,13 +22,11 @@ interface Params {
 }
 
 interface PublishReport {
-	/** The ticket the files landed on, e.g. 'LO-54'. Absent when nothing was published. */
 	ticketRef?: string;
 	/** Each published attachment's own name, ending with the generation commit marker. */
 	published: string[];
 	/** Durable-titled attachments outside the committed generation. Reported, never deleted. */
 	stale: string[];
-	/** Set when the publish stopped — the one sentence saying why. */
 	error?: string;
 	/**
 	 * SHA-256 of the commit marker's bytes, set only for a publish in which every
@@ -38,9 +36,6 @@ interface PublishReport {
 }
 
 /**
- * Put a plan folder's durable set on the ticket its work order's record names,
- * committing the exact names and hashes with a manifest attached last.
- *
  * The refusals are ordered disk first, then the work order's own record, then
  * configuration, then the network: the first two are answered with no config
  * and no round trip, and "this folder holds no plan" is the failure a user hits

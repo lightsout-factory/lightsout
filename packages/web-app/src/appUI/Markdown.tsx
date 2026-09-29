@@ -8,7 +8,6 @@ import { slugifyHeading } from '#src/common/utils/slugifyHeading.ts';
 /** Where a plan may link: the web, a repo-relative path, or an anchor in the document itself. */
 const safeHref = /^(https?:\/\/|\/|\.{1,2}\/|#)/;
 
-/** Each `key: value` line of a front-matter block, with surrounding quotes stripped from the value. */
 const parseEntries = ({ lines }: { lines: string[] }) => {
 	const entries: Record<string, string> = {};
 
@@ -27,12 +26,8 @@ const parseEntries = ({ lines }: { lines: string[] }) => {
 };
 
 /**
- * Separate a leading YAML front-matter block from the body; a document without
- * one yields an empty record and its own text back.
- *
- * Line-oriented rather than a YAML parse, and deliberately narrow: only a `---`
- * on the very first line opens a block, so the `---` a plan uses as a
- * horizontal rule further down stays in the body where it belongs.
+ * Only a `---` on the very first line opens a block, so the `---` a plan uses as
+ * a horizontal rule further down stays in the body.
  */
 const splitFrontMatter = ({ text }: { text: string }) => {
 	const lines = text.split('\n');
@@ -46,7 +41,6 @@ const splitFrontMatter = ({ text }: { text: string }) => {
 	return split;
 };
 
-/** One restyled tag. A single renderer behind every entry of the map below, so the look lives in the table and not in twenty near-identical components. */
 const styled = ({ tag, className }: { tag: string; className: string }) => {
 	const Styled = ({ children }: { children?: ReactNode }) => createElement(tag, { className }, children);
 
@@ -54,9 +48,8 @@ const styled = ({ tag, className }: { tag: string; className: string }) => {
 };
 
 /**
- * A heading's plain text, recursing through whatever the parser nested inside
- * it — a heading spelling one word in backticks arrives as an array with an
- * element in the middle, and the id has to come out the same either way.
+ * A heading spelling one word in backticks arrives as an array with an element
+ * in the middle, and the id has to come out the same either way.
  */
 const flattenText = ({ node }: { node: ReactNode }): string => {
 	let text = '';
@@ -72,7 +65,7 @@ const flattenText = ({ node }: { node: ReactNode }): string => {
 	return text;
 };
 
-/** A restyled heading carrying the anchor id a table of contents links to. Only h2 and h3 get one — those are the levels `DocToc` lists. */
+/** Only h2 and h3 get an anchor id — those are the levels `DocToc` lists. */
 const anchored = ({ tag, className }: { tag: string; className: string }) => {
 	const Anchored = ({ children }: { children?: ReactNode }) =>
 		createElement(tag, { className, id: slugifyHeading({ text: flattenText({ node: children }) }) }, children);
@@ -80,13 +73,7 @@ const anchored = ({ tag, className }: { tag: string; className: string }) => {
 	return Anchored;
 };
 
-/**
- * A link in a document.
- *
- * An anchor stays on the page — that is what makes a table of contents work —
- * an allowed href opens in a new tab, and anything else renders as plain text
- * rather than as a link nobody vetted.
- */
+/** An href outside `safeHref` renders as plain text rather than as a link nobody vetted. */
 const MarkdownLink = ({ href, children }: { href?: string; children?: ReactNode }) => {
 	if (href === undefined || !safeHref.test(href)) {
 		return <span className="text-muted-foreground-strong">{children}</span>;
@@ -102,12 +89,8 @@ const MarkdownLink = ({ href, children }: { href?: string; children?: ReactNode 
 };
 
 /**
- * What each element a plan can contain looks like here. The library owns
- * parsing; this map is the whole of this repo's typography for a document.
- *
  * Raw HTML in a plan is never rendered — `react-markdown` drops it unless a
- * `rehype-raw` plugin is added, and none is — so nothing on this page reaches
- * `dangerouslySetInnerHTML`.
+ * `rehype-raw` plugin is added, and none is.
  */
 const components: Components = {
 	h1: styled({ tag: 'h1', className: 'mt-6 mb-3 font-semibold text-foreground text-xl first:mt-0' }),
@@ -136,12 +119,8 @@ interface Props {
 }
 
 /**
- * A markdown document rendered as React nodes.
- *
- * Front matter is lifted out before the library sees the text, so the drawer
- * shows a plan's metadata as metadata rather than rendering a YAML block as a
- * heading. Tables, fenced code, task lists and strikethrough come from
- * `remark-gfm`, which is what plans are actually written in.
+ * Front matter is lifted out before the library sees the text, so a YAML block
+ * shows as metadata rather than rendering as a heading.
  */
 export const Markdown = ({ text }: Props) => {
 	const { frontMatter, body } = splitFrontMatter({ text });

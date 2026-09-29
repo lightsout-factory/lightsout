@@ -9,13 +9,9 @@ interface Params {
 }
 
 /**
- * What the queue last recorded about a branch, or undefined when nothing was
- * ever recorded, no work order claims the branch, the file is unreadable, or
- * its contents do not satisfy the contract.
- *
  * Undefined means "nobody has recorded this branch", never "the branch is
- * building" — the caller decides what to do with an unrecorded branch, and the
- * parked scan is the one place that decides it by looking at git.
+ * building": the parked scan is the one place that decides an unrecorded
+ * branch, by looking at git.
  */
 export const readBranchState = async ({ cwd, branch }: Params): Promise<BranchState | undefined> => {
 	const path = await getBranchStatePath({ cwd, branch });

@@ -4,13 +4,12 @@ import { messageOf } from '#src/common/utils/messageOf.ts';
 import { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 
 interface Params {
-	/** The `state.json` path in the primary checkout's work order folder. */
+	/** In the primary checkout's work order folder. */
 	statePath: string;
-	/** The work order's label, which the record must name as its own. */
+	/** The record must name this as its own. */
 	name: string;
 }
 
-/** The bytes at the state file's path, the absence of the file, or why neither could be established. */
 const readText = async ({ statePath }: { statePath: string }) => {
 	let outcome: { text: string } | { missing: true } | { error: string };
 
@@ -25,7 +24,6 @@ const readText = async ({ statePath }: { statePath: string }) => {
 	return outcome;
 };
 
-/** Whatever the file held, read as this work order's state — or the one sentence saying why it is not one. */
 const readStateText = ({ text, statePath, name }: { text: string; statePath: string; name: string }) => {
 	let value: unknown;
 	let outcome: { record: WorkOrderState } | { error: string } | undefined;
@@ -52,18 +50,9 @@ const readStateText = ({ text, statePath, name }: { text: string; statePath: str
 };
 
 /**
- * Read one work order's state from a path already resolved to the primary
- * checkout.
- *
- * Shared by `readWorkOrderState`, which reads outside the lock, and
- * `updateLocalWorkOrderState`, which reads inside it, so both apply exactly the
- * same rules to the same file.
- *
- * A missing file answers `{ record: undefined }` and nothing else does: every
- * other reader takes undefined to mean no work order has been started here, so
- * a corrupt state file, one the contract refuses, or one naming another work
- * order has to be an error naming the file rather than an invitation to treat a
- * started work order as an unstarted one.
+ * Only a missing file answers `{ record: undefined }`: readers take that to mean
+ * no work order was started, so a corrupt or mismatched file must be an error
+ * rather than make a started work order look unstarted.
  */
 export const readWorkOrderStateFile = async ({ statePath, name }: Params): Promise<{ record: WorkOrderState | undefined } | { error: string }> => {
 	const read = await readText({ statePath });

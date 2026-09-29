@@ -18,7 +18,6 @@ interface Params {
 	config: LightsoutConfig;
 	planContent: string;
 	overviewContent?: string;
-	/** The verification checkpoint in flight. */
 	checkpoint: string;
 	/** The live acceptance-test mapping the reviewer must account for. */
 	acceptanceTests: AcceptanceTestRecord[];
@@ -33,15 +32,12 @@ interface Params {
 }
 
 /**
- * The independent judgment on this checkpoint's test-side changes: a read-only
- * reviewer rules on the whole bundle at once, against the plan.
+ * Read-only whatever the consumer's config grants, and on the supervisor's
+ * timeout rather than the agent one, because it reads and rules rather than
+ * building.
  *
- * Its posture is engine-owned — read-only whatever the consumer's config grants,
- * and on the supervisor's timeout rather than the agent one, because it reads
- * and rules rather than building. Callers own usage recording and the verdict.
- *
- * It lives in this module rather than beside `consultSupervisor` because its
- * params carry the bundle entry type, which is this module's private shape.
+ * Lives here rather than beside `consultSupervisor` because its params carry
+ * this module's private bundle entry type.
  */
 export const consultTestChangeReviewer = async ({
 	driver,

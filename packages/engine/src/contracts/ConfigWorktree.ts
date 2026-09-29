@@ -1,16 +1,10 @@
 import { z } from 'zod';
 
 /**
- * The optional `worktree` block of `lightsout.config.json` — the shared
- * workspace-preparation settings, read by everything that creates a worktree.
- *
- * Top-level rather than nested under `queue` or `implement` because both run the
- * same command: the queue prepares a tree per ticket, and an isolated
- * implementation run prepares one per run. A key living inside either block
- * would read as belonging to that one alone.
- *
- * `.strict()`, like every block of the config: a typo in an opt-in setting has to fail loudly rather
- * than silently leave the default in force.
+ * Top-level because the queue and an isolated implementation run both prepare
+ * worktrees; a key inside either block would read as belonging to that one
+ * alone. `.strict()` so a typo fails loudly rather than silently leaving the
+ * default in force.
  */
 export const ConfigWorktree = z
 	.object({

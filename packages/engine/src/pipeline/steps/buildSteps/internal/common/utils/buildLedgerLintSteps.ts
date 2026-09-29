@@ -8,11 +8,7 @@ interface Params {
 	malformedLines: number[];
 }
 
-/**
- * A plan whose ledger rows are malformed stops the run before anything else: the
- * plan-time lint gives that verdict, and implement must not be more lenient
- * about it. A well-formed ledger contributes no step at all.
- */
+/** Implement must not be more lenient about malformed ledger rows than the plan-time lint is. */
 export const buildLedgerLintSteps = ({ run, malformedLines }: Params): PipelineStep[] =>
 	malformedLines.length === 0
 		? []

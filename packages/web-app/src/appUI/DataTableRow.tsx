@@ -15,11 +15,8 @@ interface Props<TRow> {
 }
 
 /**
- * One `<tr>` of a data table: the disclosure cell, then one `<td>` per column.
- *
- * The leading cell is drawn for every row once the table has a disclosure
- * column, even for a row with nothing under it — otherwise the columns of the
- * rows that do open would sit one place to the right of the ones that do not.
+ * Once the table has a disclosure column, every row draws the leading cell,
+ * even one with nothing under it, so the columns line up across all rows.
  */
 export const DataTableRow = <TRow,>({ row, columns, hasDisclosure = false, isExpanded = false, onToggleExpanded, className }: Props<TRow>) => {
 	const Chevron = isExpanded ? ChevronDown : ChevronRight;

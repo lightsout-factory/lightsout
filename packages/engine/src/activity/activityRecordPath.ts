@@ -6,5 +6,4 @@ interface Params {
 	dir: string;
 }
 
-/** The activity record file inside the given directory. */
 export const activityRecordPath = ({ dir }: Params): string => join(dir, activityRecordFileName);

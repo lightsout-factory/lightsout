@@ -9,14 +9,6 @@ interface Props {
 	runId: string;
 }
 
-/**
- * The run detail page: one run's evidence, and the drawer that opens whichever
- * plan the reader asked to see.
- *
- * The evidence itself is `RunDetailBody`. What is left here is the page's own
- * two concerns — the query it suspends on, and the one piece of view state it
- * owns.
- */
 export const RunDetail = ({ runId }: Props) => {
 	const { data: view } = useSuspenseQuery(runQueryOptions({ runId }));
 	const [planPath, setPlanPath] = useState<string | undefined>(undefined);

@@ -2,15 +2,13 @@ import type { ReactNode } from 'react';
 import { cn } from '#src/common/utils/cn.ts';
 
 interface Props {
-	/** Heading for the panel; omitted, the card is a plain bordered box. */
+	/** Omitted, the card is a plain bordered box. */
 	title?: ReactNode;
-	/** Right-aligned slot on the heading row — a toggle, a count, a copy control. */
 	action?: ReactNode;
 	className?: string;
 	children: ReactNode;
 }
 
-/** The bordered panel every section of a run's evidence sits in. */
 export const Card = ({ title, action, className, children }: Props) => (
 	<section data-slot="card" className={cn('rounded-lg border border-border bg-card text-card-foreground', className)}>
 		{title === undefined ? null : (

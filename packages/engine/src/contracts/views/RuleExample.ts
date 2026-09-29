@@ -2,11 +2,8 @@ import { z } from 'zod';
 import { RuleExampleKind } from '#src/contracts/views/RuleExampleKind.ts';
 
 /**
- * What a rule's `rule.md` declares about its examples, under `example`.
- *
- * A repo names the file each side opens on — the one that shows the defect, or
- * its fix — because a tree of several files has no first file a reader should
- * start from by accident. A snippet names none: its one file is the example.
+ * A repo names the file each side opens on because a tree of several files has
+ * no first file a reader should start from by accident.
  */
 export const RuleExample = z.discriminatedUnion('kind', [
 	z.object({ kind: z.literal(RuleExampleKind.Snippet) }).strict(),

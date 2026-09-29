@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { LoadedJestConfig } from '#src/coverage/internal/common/types/LoadedJestConfig.ts';
 import type { CoverageCollection } from '#src/coverage/selectCollectedFiles/internal/common/types/CoverageCollection.ts';
 
-/** Jest's own default when the key is absent — naming the key replaces it. */
+/** Jest's own default when the key is absent. */
 const defaultIgnorePatterns = ['/node_modules/'];
 
 // Every field degrades to absent rather than failing the read: a shape the
@@ -16,19 +16,10 @@ const JestConfigShape = z.looseObject({
 });
 
 interface Params {
-	/** The scope's loaded Jest configuration, or undefined when the engine could not read one. */
 	loaded: LoadedJestConfig | undefined;
 }
 
-/**
- * A scope's coverage collection settings from an already-loaded Jest
- * configuration, or undefined when there was none to load or its shape is
- * unrecognisable.
- *
- * Undefined is the honest answer and the safe one: every caller reads it as
- * "assume the file is collected", which is exactly the behaviour that shipped
- * before this reader existed.
- */
+/** Undefined is the safe answer: every caller reads it as "assume the file is collected". */
 export const readCoverageCollection = ({ loaded }: Params): CoverageCollection | undefined => {
 	if (loaded === undefined) {
 		return undefined;

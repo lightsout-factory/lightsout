@@ -5,7 +5,6 @@ import { planWorkspacePath } from '#src/plan/planWorkspacePath.ts';
 interface Params {
 	ticketRef: string;
 	ticketTitle: string;
-	/** The ticket body, inlined verbatim. */
 	ticketBody: string;
 	/** How to invoke the engine from inside the session — the exact granted prefix, e.g. `node /path/to/cli.mjs`. */
 	engineCli: string;
@@ -16,20 +15,13 @@ interface Params {
 }
 
 /**
- * Assemble the headless auto-plan worker's invocation.
- *
- * The engine does not re-implement the auto-plan conductor: the prompt sends
- * the session to the skill and constrains only the parts the queue owns — which
- * plan is planned, no interactive questions, one report as the final message,
- * never a ship, and never an implement, because the queue runs the build itself.
- *
- * The plan address is stated rather than derived in the session: the engine chose
- * it, created it on the ticket's record, and looks under exactly that folder once
- * the session has ended.
- *
- * `engineCli` is stated in the prompt verbatim because it is also the command
- * prefix the session is granted. An instruction the grant does not cover fails
- * only at run time, in a headless session nobody is watching.
+ * The prompt sends the session to the auto-plan skill and constrains only what
+ * the queue owns: which plan is planned, no interactive questions, one report as
+ * the final message, and never a ship or an implement, because the queue runs
+ * the build itself. The plan address is stated because the engine chose it and
+ * looks under exactly that folder afterwards. `engineCli` appears verbatim
+ * because it is also the granted command prefix; an instruction the grant does
+ * not cover fails only at run time, in a headless session nobody is watching.
  */
 export const buildQueueAutoPlanInvocation = ({
 	ticketRef,

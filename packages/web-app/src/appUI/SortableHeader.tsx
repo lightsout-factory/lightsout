@@ -11,13 +11,7 @@ interface Props {
 	onSort: (params: { key: string; direction: SortDirection }) => void;
 }
 
-/**
- * The control inside a sortable column's header cell.
- *
- * Pressing the column already in charge flips its direction; pressing any other
- * starts it ascending, which is what a reader means by "sort by this one".
- * `aria-sort` belongs on the owning `<th>`, so this draws the button alone.
- */
+/** `aria-sort` belongs on the owning `<th>`, so this draws the button alone. */
 export const SortableHeader = ({ label, sortKey, activeKey, direction, onSort }: Props) => {
 	const isActive = activeKey === sortKey;
 	const next = isActive && direction === SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;

@@ -8,7 +8,6 @@ interface Params {
 	gitPrefix?: string;
 }
 
-/** Merge report file paths into the step record's own attribution (per-step view of the run-wide `changedFiles`). */
 export const withStepFiles = ({ record, reports, gitPrefix }: Params): StepRecord => ({
 	...record,
 	changedFiles: [

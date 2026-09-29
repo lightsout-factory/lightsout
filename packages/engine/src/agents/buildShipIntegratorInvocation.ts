@@ -77,13 +77,9 @@ const buildAttemptSections = ({ defaultBranch, conflictPaths, branchDiff, ciEvid
 };
 
 /**
- * Assemble the ship integrator's invocation deterministically.
- *
- * Split the way `buildDirectWorkerInvocation` splits: everything stable — the
- * role prompt, the branch pair, the ticket, the standards, the granted
- * commands — rides the system prompt the harness caches through, and
- * everything the attempt itself produced rides the user prompt, so a second
- * attempt pays only for what actually changed.
+ * Everything stable rides the system prompt the harness caches through, and
+ * everything the attempt produced rides the user prompt, so a second attempt
+ * pays only for what changed.
  */
 export const buildShipIntegratorInvocation = (params: Params): { systemPrompt: string; prompt: string } => ({
 	systemPrompt: buildRoleSections(params).join('\n\n---\n\n'),

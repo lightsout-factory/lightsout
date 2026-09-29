@@ -7,12 +7,8 @@ interface Params {
 }
 
 /**
- * List every file currently modified or untracked under `cwd` (paths relative
- * to `cwd`), read from `git status`. This is the engine's second source of
- * changed-file truth: agents report what they changed, git reports what
- * actually changed — and git cannot be sweet-talked. Returns undefined when
- * `cwd` is not inside a git worktree; the engine then degrades to
- * agent-reported files only. Run state under `.lightsout/` is never reported.
+ * Git's own account of what changed, the check on what agents report. Paths are
+ * relative to `cwd`; undefined outside a git worktree.
  */
 export const readGitChangedFiles = async ({ cwd }: Params): Promise<string[] | undefined> => {
 	const prefix = await readGitPrefix({ cwd });
@@ -37,8 +33,7 @@ export const readGitChangedFiles = async ({ cwd }: Params): Promise<string[] | u
 		.map((line) => {
 			const path = line.slice(3);
 			// A rename is recorded as `old -> new`; only the destination is a file
-			// that now exists. Indexed from the last arrow rather than split, so
-			// there is no impossible "no segments" case to guard against.
+			// that now exists.
 			const arrow = path.lastIndexOf(' -> ');
 			const renameTarget = arrow === -1 ? path : path.slice(arrow + ' -> '.length);
 

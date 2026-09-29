@@ -28,11 +28,9 @@ interface Params {
 }
 
 interface RestoredBrainstormFiles {
-	/** File names written into the folder, sorted. Empty when the ticket carries no brainstorm. */
 	restored: string[];
 	/** Names the ticket carried that were already on disk and were left untouched, sorted. */
 	skipped: string[];
-	/** Set when the ticket could not supply one complete, verified generation, or it could not be written. */
 	error?: string;
 }
 
@@ -42,8 +40,6 @@ interface ReadGenerationFile {
 }
 
 /**
- * Read one attachment while retaining its title in every refusal.
- *
  * The result is annotated rather than inferred: without it the two branches
  * widen into one shape carrying an optional `error`, and `'error' in read`
  * stops narrowing at the call site.
@@ -60,7 +56,6 @@ const readAttachment = async ({
 	return typeof text === 'string' ? { text } : { error: `the ticket's ${attachment.title} could not be read: ${text.error}` };
 };
 
-/** Resolve the marker's exact generation, then read and hash-verify every asset it names. */
 const readGeneration = async ({
 	settings,
 	manifest,
@@ -72,7 +67,6 @@ const readGeneration = async ({
 	manifest: AttachmentManifest;
 	selected: TrackerAttachment[];
 	markerName: string;
-	/** Which of this generation's names the marker must have committed. */
 	required: string[];
 }): Promise<{ files: ReadGenerationFile[] } | { error: string }> => {
 	const files: ReadGenerationFile[] = [];
@@ -111,11 +105,8 @@ const readGeneration = async ({
 };
 
 /**
- * Write the verified files into the plan folder, never over one already there.
- *
- * Not the plan restore's write-to-temp-and-rename: that exposes a whole folder
- * with one rename and so requires the folder not to exist, and planning has
- * already authored `facts.json` here by the time this runs.
+ * Not write-to-temp-and-rename: that needs the folder not to exist, and planning
+ * has already written `facts.json` here by the time this runs.
  */
 const writeIntoFolder = async ({ dir, files }: { dir: string; files: ReadGenerationFile[] }) => {
 	const restored: string[] = [];
@@ -141,9 +132,6 @@ const writeIntoFolder = async ({ dir, files }: { dir: string; files: ReadGenerat
 };
 
 /**
- * Rebuild a brainstorm's files from the one generation of this plan committed by
- * `brainstorm-attachments.json`.
- *
  * Any of the generation's own names is evidence a brainstorm was published for
  * this plan, since the plan generation never carries the notes. A ticket with no
  * published brainstorm is the ordinary case and is not a failure.
@@ -155,8 +143,6 @@ export const restoreBrainstormFiles = async ({ cwd, name, identifier, settings, 
 		return { restored: [], skipped: [], error: listed.error };
 	}
 
-	// One plan's namespace is turned back into the single-generation list every
-	// step below already reads, before any of them runs.
 	const attachments = scopeAttachments({ attachments: listed, prefix: titlePrefix });
 	const markerName = attachmentTitle({ prefix: titlePrefix, name: brainstormAttachmentManifestName });
 	const selected = attachments.filter(({ title }) => brainstormAttachmentFileNames.includes(title));

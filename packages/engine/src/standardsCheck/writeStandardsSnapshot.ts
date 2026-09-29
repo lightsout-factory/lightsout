@@ -9,17 +9,7 @@ interface Params {
 	snapshot: StandardsSnapshot;
 }
 
-/**
- * Persist one check result twice: as the latest snapshot — the typed evidence
- * file the refactor pipeline reads as its work-list — and as a dated copy a
- * trend reads.
- *
- * The single writer of both files. Two runs reach it, the standalone check and
- * the CLI command that merges code checks with the agent review, and a format
- * the pipeline parses must not be able to change on one path and not the other.
- * The dated file's name comes from `snapshot.at` rather than a second clock
- * reading, so the pair can never disagree about when the check ran.
- */
+/** The dated file's name comes from `snapshot.at` rather than a second clock reading, so the pair can never disagree about when the check ran. */
 export const writeStandardsSnapshot = async ({ cwd, snapshot }: Params): Promise<void> => {
 	const body = `${JSON.stringify(snapshot, undefined, '\t')}\n`;
 	const snapshotsDir = getStandardsSnapshotsDir({ cwd });

@@ -2,10 +2,9 @@ import { getCommandCatalogEntry } from '#src/commands/getCommandCatalogEntry.ts'
 import { CommandActor } from '#src/contracts/commands/CommandActor.ts';
 import type { CommandStep } from '#src/contracts/commands/CommandStep.ts';
 
-/** The brand gradient every infographic interpolates its card colours between. */
 const theme = { from: '#35d6e8', to: '#b06bf5' };
 
-/** One step as a card. `tone` names a gradient endpoint: the engine's own steps take the far end, everything a person or an agent does takes the near one. */
+/** `tone` names a gradient endpoint: the engine's own steps take the far end, a person's or an agent's the near one. */
 const renderCard = ({ step }: { step: CommandStep }) => ({
 	title: step.title,
 	tag: { label: step.actor, tone: step.actor === CommandActor.Engine ? 'to' : 'from' },
@@ -21,15 +20,12 @@ interface Params {
 }
 
 /**
- * The `flow-graphic` spec JSON for a command's infographic, from its catalog
- * entry.
- *
  * The shape is the one `.claude/skills/flow-graphic/reference/spec.md`
- * documents, which is what `build_graphic.py` reads. Rendering it here rather
- * than committing three hand-written specs is what stops a step's wording
- * drifting between the README's graphic and the command's own page.
+ * documents, which is what `build_graphic.py` reads. Rendered from the catalog
+ * so a step's wording cannot drift between the README's graphic and the
+ * command's own page.
  *
- * @throws {Error} When no command answers to the id, or the command has no graphic — asking for a spec that does not exist is a bug, not an empty file.
+ * @throws {Error} When no command answers to the id, or the command has no graphic.
  */
 export const renderWorkflowSpec = ({ id }: Params): unknown => {
 	const entry = getCommandCatalogEntry({ id });

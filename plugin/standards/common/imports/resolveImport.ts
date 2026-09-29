@@ -5,35 +5,18 @@ import type { ImportTarget } from '../types/ImportTarget.ts';
 import type { PathAliases } from '../types/PathAliases.ts';
 
 /**
- * Extensions probed in the order a bundler would: the file itself, then the
- * folder's barrel.
- *
  * The specifier is tried unchanged first, because `allowImportingTsExtensions`
- * lets a specifier carry its own `.ts` — which is the form Node's type
- * stripping needs, and therefore the form a standards package's own checks are
- * written in. Probed only by appending, `./CloneSpan.ts` becomes a search for
- * `CloneSpan.ts.ts`, and the barrel that used it reads as unresolvable.
+ * lets a specifier carry its own `.ts` — the form Node's type stripping needs.
+ * Probed only by appending, `./CloneSpan.ts` becomes a search for
+ * `CloneSpan.ts.ts`.
  */
 const findFile = ({ base, files }: { base: string; files: Set<string> }): string | undefined =>
 	[base, `${base}.ts`, `${base}.tsx`, `${base}/index.ts`, `${base}/index.tsx`].find((candidate) => files.has(candidate));
 
-/**
- * The one place a probe becomes an answer.
- *
- * Both ways of naming a local file — a relative path and an alias — end here,
- * so what "the run never listed it" means is written once. Spelled out per
- * branch instead, the two copies drift the first time a fourth answer is added.
- */
 const fromProbe = ({ found }: { found: string | undefined }): ImportTarget =>
 	found === undefined ? { kind: ImportTargetKind.Unknown } : { kind: ImportTargetKind.File, path: found };
 
-/**
- * The portion of a specifier a wildcard pattern captures, or undefined when the
- * pattern does not match it.
- *
- * A pattern with no `*` matches only exactly, and captures nothing — which is
- * how TypeScript reads it too.
- */
+/** A pattern with no `*` matches only exactly, and captures nothing — as TypeScript reads it. */
 const capture = ({ pattern, specifier }: { pattern: string; specifier: string }): string | undefined => {
 	const star = pattern.indexOf('*');
 
@@ -50,9 +33,6 @@ const capture = ({ pattern, specifier }: { pattern: string; specifier: string })
 };
 
 /**
- * A specifier shaped like something the package manager could install: a
- * builtin, a bare name, or a scoped name, each with an optional subpath.
- *
  * The point is what it excludes. `@/agents/x` has an empty scope, `~/foo` and
  * `#internal/foo` start with characters no package name may — none of the three
  * could ever be installed, so each is an alias whose mapping this run does not
@@ -61,10 +41,7 @@ const capture = ({ pattern, specifier }: { pattern: string; specifier: string })
 const isPackageSpecifier = ({ specifier }: { specifier: string }): boolean =>
 	/^node:|^(?:@[a-zA-Z0-9][a-zA-Z0-9._-]*\/)?[a-zA-Z0-9][a-zA-Z0-9._-]*(?:\/|$)/.test(specifier);
 
-/**
- * The alias entry that claims a specifier, longest prefix first — TypeScript's
- * own precedence, so `@/common/*` wins over `@/*` for `@/common/utils/x`.
- */
+/** Longest prefix first — TypeScript's own precedence, so `@/common/*` wins over `@/*` for `@/common/utils/x`. */
 const matchAlias = ({ aliases, specifier }: { aliases: PathAliases; specifier: string }) =>
 	[...aliases.patterns]
 		.map(([pattern, targets]) => ({ targets, captured: capture({ pattern, specifier }) }))
@@ -88,14 +65,11 @@ interface Params {
 }
 
 /**
- * What a module specifier points at: a file in scope, a published package, or
- * an answer this run cannot give.
- *
- * The third case is the one that matters. Every barrel in a package that
- * imports through an alias resolves to nothing until the alias map is in hand,
- * and a rule that reads "nothing" as "this barrel exports no files" will report
- * every file in the package as private. Saying `unknown` instead lets each rule
- * decide, and the safe decision — stay silent — is then available to make.
+ * `unknown` matters: a barrel that imports through an alias resolves to nothing
+ * until the alias map is in hand, and a rule reading that as "this barrel
+ * exports no files" would report every file in the package as private. Without
+ * aliases, every non-relative specifier is `unknown`, because an alias and a
+ * published package are written the same way.
  */
 export const resolveImport = ({ from, specifier, files, aliases }: Params): ImportTarget => {
 	// A relative specifier always named a local file, whatever the aliases say.

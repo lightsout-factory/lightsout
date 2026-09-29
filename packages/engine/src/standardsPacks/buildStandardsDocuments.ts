@@ -12,10 +12,8 @@ interface Params {
 	config: LightsoutConfig | undefined;
 }
 
-/** Lexicographic by pack-relative path — assembly order within one channel group. Comparator shape is the caller's. */
 const byPath = (left: LoadedStandardsDocument, right: LoadedStandardsDocument) => (left.path === right.path ? 0 : left.path > right.path ? 1 : -1);
 
-/** A document as an agent reads it: a header naming where it came from, its intro, then its rules in folder order. */
 const renderDocument = ({ name, document, proseById }: { name: string; document: LoadedStandardsDocument; proseById: Map<string, string> }) => {
 	const parts = [document.intro, ...document.ruleIds.map((id) => proseById.get(id) ?? '')].filter((part) => part.length > 0);
 
@@ -23,23 +21,14 @@ const renderDocument = ({ name, document, proseById }: { name: string; document:
 };
 
 /**
- * Assemble a pack's documents for inlining into agent invocations — done at
- * load time, from the rule folders themselves, so there is no pre-built copy
- * anywhere that can drift from the prose it was built from.
- *
- * Base-channel documents come first, then each active channel's in the order
- * given; within a group, documents sort by their pack-relative path. A set
- * with nothing in play is absent rather than empty.
+ * Assembled at load time from the rule folders themselves, so there is no
+ * pre-built copy anywhere that can drift from the prose.
  *
  * A rule the pack ships `off` is one a repo opts into, so its prose is left out
  * until the repo's config names it: an agent told to follow a convention the
  * repo never chose writes code the repo's own reviewers reject. A rule the repo
  * turned off itself keeps its prose — off there means its own linter enforces
  * the rule, and the standard still holds.
- *
- * @param pack - the loaded pack
- * @param channels - framework channels active for the repo being worked on
- * @param config - the repo's config, whose `standards-checks` opts rules in
  */
 export const buildStandardsDocuments = ({ pack, channels, config }: Params): { code?: string; tests?: string } => {
 	const named = config?.['standards-checks'] ?? {};

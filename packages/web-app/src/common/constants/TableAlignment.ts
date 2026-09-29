@@ -1,4 +1,3 @@
-/** Which edge a table column's contents sit against — numbers read right, words read left. */
 export const TableAlignment = {
 	Left: 'left',
 	Center: 'center',

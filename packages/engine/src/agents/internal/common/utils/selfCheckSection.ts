@@ -3,16 +3,7 @@ interface Params {
 	command: string | undefined;
 }
 
-/**
- * The per-spawn brief for the engine's own self-check: the command verbatim,
- * what its exit codes mean, and the rules that keep the loop terminating.
- *
- * One text, shared by the three invocation builders that may emit it, because
- * the rules bind all three identically. A spawn the engine granted no
- * self-check is told nothing about one.
- *
- * @returns the section, or undefined when this spawn was granted no command.
- */
+/** One text, shared by the three invocation builders that may emit it, because the rules bind all three identically. */
 export const selfCheckSection = ({ command }: Params): string | undefined => {
 	if (command === undefined) {
 		return undefined;

@@ -11,20 +11,10 @@ interface Params {
 }
 
 /**
- * The lock of the checkout this run's process actually holds, rather than the
- * lock of the checkout the reader happens to be standing in.
- *
- * The run lock is `<checkout>/.lightsout/lock.json` and is deliberately
- * per-checkout — that is what lets two worktrees of one repository each hold a
- * live run. An isolated run therefore takes its lock in its workspace while its
- * manifest is written back to the checkout the command was launched from, so a
- * reader that kept asking its own checkout would find no holder and brand every
- * healthy isolated run a crash leftover.
- *
- * A recorded workspace that has since been removed falls back rather than
- * failing: a reader asking who holds a run is never the right place to report a
- * missing directory. Whether the holder means the run is live stays
- * `isRunLive`'s judgment, unchanged.
+ * The run lock is per-checkout, so an isolated run locks its workspace while
+ * its manifest lives in the launching checkout; asking the reader's own
+ * checkout would brand every healthy isolated run a crash leftover. A workspace
+ * that has since been removed falls back to `cwd` rather than failing.
  */
 export const readRunProcessLock = async ({ cwd, manifest }: Params): Promise<RunLock | undefined> => {
 	const { workspace } = manifest;

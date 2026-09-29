@@ -8,11 +8,10 @@ interface Params {
 }
 
 /**
- * A cheap formatting-recovery invocation: instead of re-running a whole role
- * prompt (minutes of agent work) when only the report's shape was wrong, ask
- * the agent to re-emit the report from its own rejected message. Reuses the
- * role's system prompt (it carries the contract) — this builder supplies only
- * the user prompt.
+ * Re-emitting from the rejected message is far cheaper than re-running the
+ * whole role when only the report's shape was wrong. The role's own system
+ * prompt carries the contract and is reused, so this builds only the user
+ * prompt.
  */
 export const buildReportReemitterInvocation = ({ rejectedText, validationError }: Params): { prompt: string } => {
 	const sections = [reportReemitterPrompt, `# Validation error\n\n${validationError}`, `# Your previous final message\n\n${rejectedText}`];

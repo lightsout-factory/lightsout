@@ -13,22 +13,9 @@ interface Params {
 }
 
 /**
- * One look at the deterministic checks, split into what cleanup may act on and
- * what it may only record. Never asks the agent to "go find problems" —
- * detection is code.
- *
- * Scoped with `standardsScopeFiles` rather than `sourceFiles`, because a
- * finding may be ABOUT a test file even though a test file never earns an agent
- * turn of its own. Scoping this with the agent-attention list silently discarded
- * every such finding, so the run reported zero blocking while they stood in the
- * tree.
- *
- * `all` is on, so the committed debt ledger suppresses nothing here. With the
- * default suppression a site the ledger accepts would never be seen at all, and
- * a ledgered file this run grew could never qualify; with it off, attribution
- * against the pre-edit baseline does the suppressing instead — an unchanged
- * ledgered site is inherited and buys nothing, one whose measure grew is
- * worsened and does.
+ * Scoped with `standardsScopeFiles` rather than `sourceFiles`, because a finding may be about
+ * a test file. `all` is on so the debt ledger suppresses nothing: attribution against the
+ * pre-edit baseline does the suppressing instead, so a ledgered file this run grew can qualify.
  */
 export const standardsWorkList = async ({
 	run,

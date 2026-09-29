@@ -17,12 +17,8 @@ interface Props {
 }
 
 /**
- * One plan workspace, whole: what it is and how far it got, then six tabs over
- * the records the planning commands left behind.
- *
- * The active tab is component state rather than a URL parameter, matching the
- * run detail: a tab is where a reader is looking, and the plans page keeps the
- * one thing worth sending in a link — the stage filter — in its own URL.
+ * The active tab is component state rather than a URL parameter: a tab is where
+ * a reader is looking, not something worth sending in a link.
  */
 export const PlanDetail = ({ name }: Props) => {
 	const { data: view } = useSuspenseQuery(planWorkspaceQueryOptions({ name }));

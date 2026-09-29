@@ -2,7 +2,7 @@ import { TriangleAlert } from 'lucide-react';
 import { Card } from '#src/appUI/panels/Card.tsx';
 import { groupBy } from '#src/features/runDetail/screens/RunDetail/internal/components/common/utils/groupBy.ts';
 
-/** The first two segments of a path — the package, then the area within it, which is the blast radius a reader reads first. */
+/** The package, then the area within it: the blast radius a reader reads first. */
 const toFolder = ({ path }: { path: string }) => path.split('/').slice(0, 2).join('/');
 
 interface Props {
@@ -11,7 +11,6 @@ interface Props {
 	unreachable: string[];
 }
 
-/** Everything the run changed, by folder, with the unreachable files called out separately. */
 export const ChangedFilesPanel = ({ files, unreachable }: Props) => (
 	<Card title={`Changed files · ${files.length}`}>
 		{files.length === 0 ? (

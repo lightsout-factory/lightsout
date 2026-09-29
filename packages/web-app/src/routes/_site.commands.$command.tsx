@@ -3,7 +3,6 @@ import { AddressNotFound } from '#src/common/components/boundaries/AddressNotFou
 import { commandsQueryOptions } from '#src/features/commands/queries/commandsQueryOptions.ts';
 import { CommandDetail } from '#src/features/commands/screens/CommandDetail/CommandDetail.tsx';
 
-/** No command answers to the word in the path. */
 const CommandNotFound = () => {
 	const { command } = Route.useParams();
 
@@ -25,10 +24,8 @@ const CommandDetailPage = () => {
 };
 
 export const Route = createFileRoute('/_site/commands/$command')({
-	// The whole catalog, warmed once. It is a few kilobytes of static data, so
-	// the loader already holds every entry — which is how it can answer a wrong
-	// id here rather than sending the page off for a second round trip to find
-	// out.
+	// The whole catalog is small static data, so the loader can answer a wrong id
+	// here without a second round trip.
 	loader: async ({ context, params }) => {
 		const commands = await context.queryClient.ensureQueryData(commandsQueryOptions());
 

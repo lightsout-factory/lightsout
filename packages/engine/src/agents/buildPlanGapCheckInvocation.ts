@@ -6,23 +6,18 @@ import { GapCheckLens } from '#src/contracts/plan/grade/GapCheckLens.ts';
 import type { GradeFindingRecord } from '#src/contracts/plan/memory/GradeFindingRecord.ts';
 
 interface Params {
-	/** The plan text to check for decision-level gaps. */
 	planText: string;
 	/** Overview plan text — context for a phased plan, never graded standalone. */
 	overviewText?: string;
 	/** Supplemental code standards, inlined verbatim so standards-conflict can fire. */
 	standards?: string;
 	/**
-	 * The plan's folder, repo-relative — named so the wiring checker can open a
-	 * sibling phase file and compare shapes across a seam. Not the text of those
-	 * files: eight phases inlined into every checker is the
-	 * read-the-whole-plan-at-once shape the fan-out was split away from. Only the
-	 * wiring lens is handed it — the other two briefs push seam work to wiring,
-	 * and a folder they are told to leave alone is an invitation to wander.
-	 * Absent for a single-file plan, which has no siblings.
+	 * The plan's folder, repo-relative, so the wiring checker can open a sibling
+	 * phase file and compare shapes across a seam. Only the wiring lens gets it:
+	 * the other briefs push seam work to wiring, and a folder they are told to
+	 * leave alone invites wandering. Absent for a single-file plan.
 	 */
 	planDir?: string;
-	/** Which of the three jobs this checker is given. */
 	lens: GapCheckLens;
 	/**
 	 * The records for this plan file the memory already holds settled — resolved
@@ -32,7 +27,6 @@ interface Params {
 	settled?: GradeFindingRecord[];
 }
 
-/** How one settled record was settled — the citation that closed it, or the decision the judge said the implementing agent may make. */
 const settlementOf = ({ record }: { record: GradeFindingRecord }) =>
 	record.resolutions[0]?.answerAt ?? record.agentDecision ?? record.answerAt ?? 'settled by an earlier pass';
 
@@ -49,7 +43,6 @@ const settledSection = ({ settled }: { settled: GradeFindingRecord[] }) =>
 		...settled.map((record) => `- ${record.id} (${record.status}) — ${record.gap} — settled by: ${settlementOf({ record })}`),
 	].join('\n');
 
-/** The brief each lens is handed, appended to the shared role prompt. */
 const lensBriefs: Record<GapCheckLens, string> = {
 	[GapCheckLens.Surface]: planGapCheckSurfacePrompt,
 	[GapCheckLens.Wiring]: planGapCheckWiringPrompt,
@@ -57,10 +50,9 @@ const lensBriefs: Record<GapCheckLens, string> = {
 };
 
 /**
- * Assemble one plan gap-check invocation deterministically. A grade run spawns
- * one checker per plan file per lens with the same brief, overview and
- * standards, so those live in the system prompt (the harness caches through it)
- * and only the plan text under check varies between the spawns sharing a lens.
+ * A grade run spawns one checker per plan file per lens with the same brief,
+ * overview and standards, so those ride the system prompt the harness caches
+ * through.
  */
 export const buildPlanGapCheckInvocation = ({
 	planText,

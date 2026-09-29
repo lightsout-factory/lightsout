@@ -9,7 +9,6 @@ interface Params {
 	trackerSettings: TrackerSettings;
 }
 
-/** How a user makes a missing label exist, which is not the same action on the two trackers. */
 const describeFix = ({ provider, missing }: { provider: TrackerSettings['provider']; missing: string[] }) =>
 	provider === 'linear'
 		? `create ${missing.length === 1 ? 'it' : 'them'} on the team`
@@ -18,13 +17,8 @@ const describeFix = ({ provider, missing }: { provider: TrackerSettings['provide
 			`apply ${missing.length === 1 ? 'it' : 'each of them'} to any issue in the project`;
 
 /**
- * The one refusal a queue owes a repository whose configured planning-status
- * labels do not all exist on its tracker.
- *
- * It runs at startup, before any ticket is picked up, because a ticket needing
- * a label the tracker has never heard of would otherwise be omitted in silence.
- * Only the expected labels are checked: nothing here knows any historical
- * spelling.
+ * Runs at startup, before any ticket is picked up, because a ticket needing a
+ * label the tracker has never heard of would otherwise be omitted in silence.
  */
 export const checkPlanningStatusLabels = async ({ settings, trackerSettings }: Params): Promise<QueueFailure | undefined> => {
 	const known = await listLabelNames({ settings: trackerSettings });

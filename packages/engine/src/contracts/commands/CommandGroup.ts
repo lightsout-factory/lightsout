@@ -1,4 +1,3 @@
-/** Which shelf a command sits on — the heading it appears under on the commands page. */
 export const CommandGroup = {
 	Build: 'build',
 	BurnDown: 'burn-down',

@@ -11,14 +11,10 @@ interface Params {
 }
 
 /**
- * Fold one RESOLVED batch's report into the run's per-file strike counts and
- * return the files that just reached the limit.
- *
  * The free-rider guard: a hard file can ride along in improving batches forever
- * without ever tripping the batch-level decline rule, so it earns a set-aside
- * of its own. The live run applies this as each batch resolves and a resumed
- * run replays it from the same persisted reports — one function, so the two can
- * never disagree about which files a human already owns.
+ * without tripping the batch-level decline rule. The live run and a resumed
+ * run's replay both use this, so they never disagree about which files a human
+ * already owns.
  */
 export const updateFileStrikes = ({ batchId, files, fileStrikes }: Params): CoverageSetAside[] => {
 	const setAside: CoverageSetAside[] = [];

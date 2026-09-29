@@ -7,7 +7,6 @@ import { getBaseName } from '../../../../common/paths/getBaseName.ts';
 import { getDirectory } from '../../../../common/paths/getDirectory.ts';
 import { isTestFile } from '../../../../common/paths/isTestFile.ts';
 
-/** Whether a folder is a domain folder — directly under a `common/`, and not one of its four type folders. */
 const isDomainFolder = ({ directory }: { directory: string }) =>
 	getBaseName({ path: getDirectory({ path: directory }) }) === 'common' && !commonTypeFolders.has(getBaseName({ path: directory }));
 

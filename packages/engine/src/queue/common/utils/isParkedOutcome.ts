@@ -4,15 +4,6 @@ interface Params {
 	outcome: WorkOrderRunOutcome;
 }
 
-/**
- * Whether one ticket's outcome is a park: not ready to merge, and not merely
- * left open.
- *
- * Said in one place because three consequences read it — the parked label, the
- * coordinator run's status and the command's exit code — and a ticket the queue
- * left open must look the same to all three: it is waiting on a human decision
- * rather than on a re-run.
- *
- * @returns true when the outcome is work a human has to look at
- */
+// One place, so the parked label, the coordinator status and the exit code
+// never disagree about a ticket left open.
 export const isParkedOutcome = ({ outcome }: Params): boolean => !outcome.ready && outcome.open === undefined;

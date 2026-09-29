@@ -13,11 +13,9 @@ interface Params {
 }
 
 /**
- * Read the optional brainstorm-authored decisions for a plan workspace. Absent
- * file → `undefined`: most plans start from a direct request and never went
- * through `/brainstorm`, so absence is a normal path rather than an error.
- * Present but malformed → throws, because drafting on from decisions the user
- * settled and the engine could not read would re-open them for no reason.
+ * A missing file is normal, because most plans never went through
+ * `/brainstorm`. A malformed one throws, because drafting on without decisions
+ * the user settled would re-open them for no reason.
  */
 export const readBrainstormDecisions = async ({ cwd, name }: Params): Promise<BrainstormDecisions | undefined> => {
 	const filePath = join(await planWorkspaceDir({ cwd, name }), brainstormDecisionsFile);

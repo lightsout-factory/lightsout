@@ -6,22 +6,14 @@ import type { CleanupState } from '#src/pipeline/steps/refactorStep/internal/com
 import { buildCleanupRecord } from '#src/pipeline/steps/refactorStep/internal/common/utils/buildCleanupRecord.ts';
 import { runExecutorPass } from '#src/pipeline/steps/refactorStep/internal/common/utils/runExecutorPass.ts';
 
-/**
- * Whether the tree looks exactly as it did after the previous round.
- *
- * Both lists are measured against the same step-start fingerprint, so a round
- * that touched nothing answers the identical set its predecessor did — and a
- * round that put a file back the way it found it drops that file out again.
- */
+/** Both lists are measured against the same step-start fingerprint, so a round that touched nothing answers the identical set. */
 const sameEdits = ({ before, after }: { before: string[]; after: string[] }) =>
 	before.length === after.length && [...before].sort().join('\n') === [...after].sort().join('\n');
 
 /**
- * Where a round that changed nothing leaves the loop. A work list the agent
- * declines twice running is a stable disagreement — the agent has judged, the
- * checks cannot hear judgment, and another round only re-buys the same answer.
- * Checked before the budget, so a work list declined twice on the round that
- * also spends the last of the budget is recorded as the more specific fact.
+ * A work list declined twice running is a stable disagreement: the checks cannot hear judgment,
+ * so another round only re-buys the same answer. Checked before the budget so the more
+ * specific reason is recorded.
  */
 const foldDecline = ({ context, state, findings, round }: { context: CleanupContext; state: CleanupState; findings: StandardsFinding[]; round: number }) => {
 	const declined = findings
@@ -44,18 +36,13 @@ const foldDecline = ({ context, state, findings, round }: { context: CleanupCont
 interface Params {
 	context: CleanupContext;
 	state: CleanupState;
-	/** The qualifying blocking work list this round hands the executor. */
 	findings: StandardsFinding[];
 	/** Judgment-carrying findings the executor weighs but is never held on — the first round only. */
 	advisories: StandardsFinding[];
 }
 
 /**
- * One cleanup round, folded into the run's cleanup account.
- *
- * Returns the park result when the harness rate limited the invocation, and
- * `undefined` in every other case — including a failed one, because cleanup is
- * best-effort tidying and a broken agent is recorded rather than terminal. A
+ * A failed round is recorded rather than terminal, because cleanup is best-effort tidying. A
  * park spends no round: the resume re-invokes that same one.
  */
 export const runCleanupRound = async ({ context, state, findings, advisories }: Params): Promise<PipelineResult | undefined> => {

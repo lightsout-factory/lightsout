@@ -20,11 +20,10 @@ interface Params {
 }
 
 /**
- * Assemble the ledger-test-writer invocation deterministically. It is the
- * unit-test-writer role with a different assignment — named tests for one file
- * instead of subjects to cover — so the role prompt, the overview, the plan and
- * the test standards ride the system prompt exactly as they do for the coverage
- * writers, and the fan-out's spawns share one cached prefix.
+ * It is the unit-test-writer role with a different assignment, so the role
+ * prompt, overview, plan and test standards ride the system prompt exactly as
+ * they do for the coverage writers, and the fan-out's spawns share one cached
+ * prefix.
  */
 export const buildLedgerTestWriterInvocation = ({
 	planContent,

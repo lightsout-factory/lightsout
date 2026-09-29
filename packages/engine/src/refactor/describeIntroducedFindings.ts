@@ -3,13 +3,10 @@ import { formatFindingText } from '#src/common/findings/formatFindingText.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 
 interface Params {
-	/** What the run introduced, from findIntroducedFindings. */
 	findings: StandardsFinding[];
 }
 
 /**
- * The introduced findings as the run-ending error a human reads.
- *
  * It carries the evidence — what appeared and where — because the reader's
  * first question is which edit did this, and a bare count cannot answer it.
  * The closing line says where the work is, since the engine never commits and

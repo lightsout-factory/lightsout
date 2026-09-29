@@ -13,18 +13,15 @@ interface Params {
 const declarationBlock = ({ label, declaration }: { label: string; declaration: PhaseDeclaration }) =>
 	`### ${label}\n\n\`\`\`json\n${JSON.stringify(declaration, undefined, '\t')}\n\`\`\``;
 
-/** The one writing rule the declaration's `renamesOnly` chooses: the phase file must carry its renames, or must carry none. */
 const renamesBullet = ({ declaration }: { declaration: PhaseDeclaration }) =>
 	declaration.renamesOnly === true
 		? 'This phase is **rename-only**. Its file carries a `## Renames` section, one `-` bullet per rename with the old and new text each in a backtick span; lists nothing under Files to Create; states no Acceptance Tests rows; and carries a `## File Budget` covering every file the rename spans.'
 		: 'This phase is not rename-only: its file carries no `## Renames` section.';
 
 /**
- * The phase spawn's brief: one file, authored against a settled declaration
- * rather than against its sibling phases, which are being written at the same
- * moment and are not on disk. Both sides of every hand-off are derived from the
- * same declaration rows, so the names match by construction rather than by two
- * agents happening to spell them alike.
+ * Sibling phases are written at the same moment and are not on disk, so both
+ * sides of every hand-off derive from the same declaration rows and the names
+ * match by construction.
  */
 export const phaseSection = ({ path, overviewText, declaration, previousDeclaration, touchedFileCeiling }: Params): string =>
 	`## Phase authoring

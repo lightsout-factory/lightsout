@@ -7,18 +7,12 @@ interface Params {
 }
 
 /**
- * Ask git what it actually ignores instead of parsing .gitignore ourselves —
- * `.lightsout` (no slash), `.lightsout/`, and a dozen other spellings are all
- * valid; line-matching false-warned on a real consumer.
- *
- * One entry is probed rather than a folder-by-folder list, because nothing
- * under the state directory is meant to be tracked. A list names a layout, and
- * a layout is what drifts out of step with the engine that writes it.
+ * Asks git rather than parsing .gitignore: many spellings of the entry are
+ * valid, and line-matching cannot recognise them all.
  */
 export const checkGitignore = async ({ cwd }: Params): Promise<DoctorCheck> => {
 	const stateDir = '.lightsout';
-	// A path inside the folder rather than the folder itself, so a consumer who
-	// wrote `.lightsout/` answers exactly as one who wrote `.lightsout`.
+	// A path inside the folder, so `.lightsout/` answers exactly as `.lightsout` does.
 	const result = await runCommand({ command: `git check-ignore -q -- '${stateDir}/probe'`, cwd, timeoutMs: probeTimeoutMs }).catch(() => ({ exitCode: 128 }));
 	const gitUsable = result.exitCode === 0 || result.exitCode === 1;
 

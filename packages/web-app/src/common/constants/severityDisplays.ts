@@ -1,11 +1,6 @@
 import { StandardsSeverity } from '@lightsout/engine/contracts';
 import { type LucideIcon, OctagonX, ToggleLeft, TriangleAlert } from 'lucide-react';
 
-/**
- * How each rule setting is named and drawn wherever a reader meets it: the word
- * a setting list uses, the verb a rule's own tag uses, what the setting does,
- * and the icon and colour it carries on every page.
- */
 export const severityDisplays: Record<StandardsSeverity, { label: string; verb: string; meaning: string; Icon: LucideIcon; iconClass: string }> = {
 	[StandardsSeverity.Blocking]: {
 		label: 'Block',

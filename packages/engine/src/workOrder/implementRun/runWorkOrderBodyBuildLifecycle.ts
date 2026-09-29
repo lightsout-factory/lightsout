@@ -9,23 +9,18 @@ import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
 
 interface Params {
-	/** The checkout the build runs in; the record is resolved through its primary checkout. */
+	/** The record is resolved through its primary checkout. */
 	cwd: string;
-	/** The work order's label — the folder its record sits in. */
 	workOrderName: string;
-	/** Runs the build. A fresh run must be created under exactly the id it is handed. */
+	/** A fresh run must be created under exactly the id it is handed. */
 	run: (params: { runId: string }) => Promise<PipelineResult>;
 }
 
 type TicketBodyBuild = NonNullable<WorkOrderState['ticketBodyBuild']>;
 
 /**
- * Mark the build implementing, re-asking whether the record is still plan-less
- * as it stands inside the lock.
- *
- * The re-ask is the point, as it is for a plan: a record another command changed
- * since the first read — one that gained plan 001 — must not be given a build
- * from the ticket body that no ship rule would read.
+ * Re-asks inside the lock whether the record is still plan-less: one that gained
+ * plan 001 since the first read must not get a build no ship rule would read.
  */
 const recordImplementing = ({ cwd, workOrderName, build }: { cwd: string; workOrderName: string; build: TicketBodyBuild }) =>
 	updateLocalWorkOrderState({
@@ -46,7 +41,7 @@ const recordImplementing = ({ cwd, workOrderName, build }: { cwd: string; workOr
 		},
 	});
 
-/** What the finished run leaves on the record: implemented, failed, or — after a pause — the implementing mark the run started under. */
+/** A paused run leaves the implementing mark it started under. */
 const recordOutcome = async ({ cwd, workOrderName, build, result }: { cwd: string; workOrderName: string; build: TicketBodyBuild; result: PipelineResult }) => {
 	const failed = result.manifest.status === RunStatus.Failed || result.manifest.status === RunStatus.Escalated;
 
@@ -69,22 +64,10 @@ const recordOutcome = async ({ cwd, workOrderName, build, result }: { cwd: strin
 };
 
 /**
- * Wrap one build from the ticket body and record it on the work order record as
- * `ticketBodyBuild`, for a single-plan work order holding no plan 001 — the
- * build the single-plan ship check reads when there is no plan 001 to read.
- *
- * Both queue workers that build from the ticket body go through here: the direct
- * worker and the plan worker's plan-less path. With no record, or a record that
- * is not plan-less, the build runs unchanged and nothing is written, because no
- * ship rule would read it there.
- *
- * Each build replaces the field whole: a new run id, a new start, and no finish
- * until the run ends. A pause leaves it implementing. Every write is local, as
- * plan progress is, and publishing stays with the commands that already publish
- * the record. A refusal is one sentence returned, and a record write that fails
- * after the run is returned beside the result — never thrown or printed.
- *
- * @returns the refusal, or the run's result with a record-write failure beside it
+ * `ticketBodyBuild` is what the single-plan ship check reads when there is no
+ * plan 001. A record that is not plan-less gets nothing written, because no
+ * ship rule would read it. Every write is local; publishing stays with the
+ * commands that already publish the record.
  */
 export const runWorkOrderBodyBuildLifecycle = async ({ cwd, workOrderName, run }: Params): Promise<WorkOrderPlanOutcome> => {
 	const read = await readWorkOrderState({ cwd, name: workOrderName });

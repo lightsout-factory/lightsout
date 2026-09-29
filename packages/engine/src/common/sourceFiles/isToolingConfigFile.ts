@@ -6,17 +6,10 @@ interface Params {
 }
 
 /**
- * True for a tool's own settings file — `jest.config.cjs`, `vite.config.ts`
- * and the like, sitting at the repo root or a package root.
- *
- * The tool that owns the file reads it directly; nothing under test ever
- * imports it, and no coverage report can list it. Demanding that a test run it
- * reports a fault no test could fix, and sending it to a test writer wastes the
- * writer.
- *
- * Location is half the rule. A settings file lives at a root, never inside a
- * source tree, so `src/feature.config.ts` is ordinary code that keeps its test
- * and its place in the coverage numbers.
+ * A tool's own settings file is read by the tool and never imported under test,
+ * so demanding a test run it reports a fault no test could fix. Only a file at
+ * the repo root or a package root counts: `src/feature.config.ts` is ordinary
+ * code.
  */
 export const isToolingConfigFile = ({ path, packagesDir }: Params): boolean => {
 	const segments = path.split('/');

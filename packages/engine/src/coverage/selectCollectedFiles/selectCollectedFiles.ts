@@ -16,15 +16,11 @@ interface Params {
 }
 
 /**
- * Split candidate files by whether the repo's own coverage configuration
- * collects them.
- *
- * One function answers this for every caller on purpose. The gate and the
- * write-tests target selection ask the same question, and two copies of it are
- * exactly how a writer gets asked for a test the gate would then exempt.
+ * The gate and the write-tests target selection both ask this, and two copies
+ * are how a writer gets asked for a test the gate would then exempt.
  *
  * A file no scope measures counts as collected: that is the caller's own
- * question to answer, and the gate already skips it for a different reason.
+ * question to answer.
  */
 export const selectCollectedFiles = async ({ cwd, config, files }: Params): Promise<{ collected: string[]; excluded: string[] }> => {
 	const { root, packagesDir, monorepo, scopes } = await resolveScopeContext({ cwd, config });

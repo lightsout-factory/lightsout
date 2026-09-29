@@ -8,11 +8,6 @@ interface Params {
 }
 
 /**
- * One standards pack as its page shows it: its documents and every rule's
- * listing row.
- *
- * @param cwd - the repo whose config decides which packs load
- * @param name - the pack's `name` from its lightsout-standards.json, which is what the URL carried
  * @throws {StandardsPackNotFoundError} When no pack this repo loads answers to the name.
  */
 export const getStandardsPackView = async ({ cwd, name }: Params): Promise<StandardsPackView> => {

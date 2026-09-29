@@ -7,7 +7,6 @@ import { formatRelativeTime } from '#src/common/formatting/formatRelativeTime.ts
 import { repoRootQueryOptions } from '#src/features/app/queries/repoRootQueryOptions.ts';
 import { configQueryOptions } from '#src/features/config/queries/configQueryOptions.ts';
 
-/** When this repo last did anything, or the sentence a repo that has never run needs instead of a dash. */
 const LastRun = ({ run }: { run: RunListing | undefined }) =>
 	run === undefined ? (
 		<span>no runs yet</span>
@@ -18,27 +17,18 @@ const LastRun = ({ run }: { run: RunListing | undefined }) =>
 	);
 
 interface Props {
-	/** Top-level runs only, newest first — the page has already ordered them, and a phase finishing is not the repo's last run, its coordinator is. */
+	/** Top-level runs only, newest first: a phase finishing is not the repo's last run, its coordinator is. */
 	runs: RunListing[];
 }
 
-/**
- * One line saying which repository this is, what it runs agents with, and when
- * it last did anything.
- *
- * The config is subscribed to rather than suspended on. A `lightsout.config.json`
- * that will not parse is a real state with a real message — one this page
- * deliberately sends the reader to `/app/config` to read — and it should cost
- * two chips here, never the whole health page.
- */
+/** The config is subscribed to rather than suspended on: an unparseable config should cost two chips here, never the whole health page. */
 export const RepoStrip = ({ runs }: Props) => {
 	const {
 		data: { repoRoot },
 	} = useSuspenseQuery(repoRootQueryOptions());
 	const { data: config, isError } = useQuery(configQueryOptions());
-	// `null` is what the view says when the file states neither, and the chip is
-	// dropped rather than filled with the engine's fallback — the Harness section
-	// on /app/config is the page that explains what happens then.
+	// `null` means the file states neither; the chip is dropped rather than showing
+	// the engine's fallback, which /app/config explains.
 	const harness = config?.harness ?? undefined;
 	const model = config?.model ?? undefined;
 

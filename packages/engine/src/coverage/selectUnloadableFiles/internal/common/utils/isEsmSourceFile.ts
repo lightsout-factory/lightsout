@@ -7,16 +7,13 @@ const manifestDecidedExtensions = ['.js', '.jsx'];
 interface Params {
 	/** Repo-relative path — only its extension is read. */
 	path: string;
-	/** The scope's resolved module mode, or undefined when its configuration could not be found or evaluated — which answers `false`, exactly today's behaviour. */
+	/** The scope's resolved module mode, or undefined when its configuration could not be found or evaluated — which answers `false`. */
 	moduleMode: JestModuleMode | undefined;
 	/** The `"type"` of the nearest package.json governing this file, or undefined when none declares one. */
 	packageType: string | undefined;
 }
 
 /**
- * Whether the scope's Jest loads this file as a native ES module, where a
- * module-scope `await` is legal and the file is coverable.
- *
  * Every uncertain answer is `false`. An unread configuration, an extension
  * nothing marks as ESM, and a manifest that declares no `type` all report
  * CommonJS, so this check can only ever add files to the executed bar on

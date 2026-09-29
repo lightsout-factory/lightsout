@@ -1,7 +1,6 @@
 /**
- * How a refactor batch ended. `Declined` is an honest, recorded judgment —
- * the agent reported complete with no changes while site keys persist (the
- * checks cannot hear judgment); it never fails the run by itself.
+ * `Declined` is a recorded judgment: the agent reported complete with no changes
+ * while site keys persist. It never fails the run by itself.
  */
 export const BatchOutcome = {
 	Resolved: 'resolved',

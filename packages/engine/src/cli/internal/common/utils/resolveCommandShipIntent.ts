@@ -15,17 +15,9 @@ interface Params {
 }
 
 /**
- * The ship intent both implement paths settle before their run starts, with the
- * contradictory-flags refusal already reported.
- *
- * Resolving it here rather than at the run's exit is what lets the manifest
- * record what the run is going to do, so the progress view can draw a ship row.
- * `exitAfterImplement` re-resolves the same inputs at the end and agrees by
- * construction.
- *
- * @returns The intent, or undefined when `--ship` and `--no-ship` were both
- * typed — the message is already on stderr and the caller exits 1 without
- * starting any work.
+ * Resolved before the run starts so the manifest records whether it will ship
+ * and the progress view can draw a ship row. Undefined means the contradiction
+ * is already reported on stderr.
  */
 export const resolveCommandShipIntent = ({ config, flags, env, shipRequest }: Params): ShipIntent | undefined => {
 	const intent = resolveShipIntent({

@@ -4,7 +4,6 @@ import { checkKindLabels } from '#src/common/constants/checkKindLabels.ts';
 import { cn } from '#src/common/utils/cn.ts';
 import type { PackRuleFilters } from '#src/features/packs/internal/common/types/PackRuleFilters.ts';
 
-/** The three ways to narrow by kind of check, in the order a reader scans them. */
 const checkOptions: Array<{ label: string; check: CheckKind | undefined }> = [
 	{ label: 'All', check: undefined },
 	...Object.values(CheckKind).map((check) => ({ label: checkKindLabels[check].short, check })),
@@ -15,7 +14,6 @@ interface Props {
 	onFiltersChange: (filters: PackRuleFilters) => void;
 }
 
-/** The search box and the kind-of-check switch above the rule list. */
 export const RuleFilters = ({ filters, onFiltersChange }: Props) => (
 	<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 		<label className="relative flex w-full items-center sm:max-w-sm">

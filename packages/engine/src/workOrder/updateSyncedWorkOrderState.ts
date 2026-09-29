@@ -14,7 +14,6 @@ interface Params {
 	cwd: string;
 	name: string;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	/** The same pure change `updateLocalWorkOrderState` takes, run under the record's lock once the pull has settled what "now" is. */
 	change: (current: WorkOrderState | undefined) => WorkOrderState | { error: string };
@@ -22,20 +21,10 @@ interface Params {
 }
 
 /**
- * Change a work order's state and put the result on the ticket: pull, change under
- * the record's lock, publish.
- *
- * Every `lightsout work-order` subcommand that changes the record goes through
- * here, which is what makes "the local files are the working state and the
- * tracker is the recoverable copy" true of all of them at once. The pull runs
- * first so the change is made against what the ticket actually carries rather
- * than a copy this machine may already be behind; a divergence stops everything
- * with the change never run.
- *
- * A change that reached disk but not the tracker is answered as `publishError`
- * rather than as a failure: the change HAS happened locally, and pretending
- * otherwise would invite a caller to make it twice. The sidecar is left as it
- * was, so the next `lightsout work-order sync` sees this machine ahead and retries.
+ * The pull runs first so the change is made against what the ticket carries, and a divergence stops
+ * everything before the change runs. A change that reached disk but not the tracker is a
+ * `publishError`, not a failure: it has happened locally, and a failure would invite making it
+ * twice. The sidecar is left as it was, so the next `lightsout work-order sync` retries.
  */
 export const updateSyncedWorkOrderState = async ({
 	cwd,

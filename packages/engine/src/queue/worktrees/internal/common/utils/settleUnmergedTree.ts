@@ -19,14 +19,8 @@ interface Params {
 }
 
 /**
- * What a still-delegated, still-unmerged worktree needs next: an outcome the
- * drain reports, or undefined when the tree is drained and its ticket resumes.
- *
- * Clearing the parked label belongs to the resuming half alone — a tree headed
- * for the merge, or one git could not read, stays parked exactly as it is. A
- * label the tracker refuses to clear is a printed sentence rather than a
- * changed answer: the tree is drainable either way, and the drain is where the
- * work is.
+ * Only a tree headed back to a worker has its parked label cleared. A label the tracker refuses
+ * to clear is reported rather than fatal: the tree is drainable either way.
  */
 export const settleUnmergedTree = async ({
 	cwd,

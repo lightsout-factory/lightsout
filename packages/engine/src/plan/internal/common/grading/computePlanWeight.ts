@@ -6,31 +6,22 @@ import { getPlanTouchedPaths } from '#src/plan/internal/common/utils/getPlanTouc
 
 interface Params {
 	plan: ParsedPlan;
-	/** The plan file's basename, for the report. */
 	phase: string;
-	/** Directory prefix each package lives under (`packages` by default). */
 	packagesDir: string;
-	/** The counts above which this file is heavy, already merged over `defaultWeightThresholds`. */
+	/** Already merged over `defaultWeightThresholds`. */
 	thresholds: { createdFiles: number; packages: number };
 }
 
-/** How many packages a plan file reaches into. A path under no package is the repository root, which is one package like any other. */
+/** A path under no package is the repository root, which counts as one package like any other. */
 const countPackages = ({ touched, packagesDir }: { touched: string[]; packagesDir: string }) =>
 	new Set(touched.map((file) => packageOf({ file, packagesDir }) ?? '<root>')).size;
 
 /**
- * Weigh one parsed plan file: heavy enough to earn the reader fan-out, or light
- * enough that the structural lint and the ledger check are the whole grade.
+ * The numbers come from the plan rather than the facts, unlike
+ * `estimatePlanScope`: by grade time the plan itself is the better record.
  *
- * The numbers come from the plan rather than from the facts, which is the one
- * place this differs from `estimatePlanScope`: that runs at draft time, before
- * any plan exists, so the facts are all it has and they carry no create paths at
- * all. By grade time the plan itself is the better record.
- *
- * A file with nothing to mirror is always heavy, whatever its counts. That is
- * not a threshold and has no key: a plan following an existing pattern is
- * checkable against that pattern, and a plan following none is exactly where a
- * reader earns its cost.
+ * A file with nothing to mirror is always heavy, whatever its counts: a plan
+ * following no existing pattern is exactly where a reader earns its cost.
  */
 export const computePlanWeight = ({ plan, phase, packagesDir, thresholds }: Params): PhaseWeight => {
 	const { created, touched } = getPlanTouchedPaths({ plan });

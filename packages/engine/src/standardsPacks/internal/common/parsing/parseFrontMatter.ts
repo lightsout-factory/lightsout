@@ -7,15 +7,11 @@ interface Params {
 
 const frontMatterBlock = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
 
-/** YAML parses to any node type; only a mapping carries declarations. */
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /**
- * Split a markdown file into its leading `---` front matter and the prose that
- * follows. A file with no front matter is not an error — it simply declares
- * nothing, and every field the callers read has a default.
+ * A file with no front matter is not an error: every field callers read has a default.
  *
- * @param text - the whole markdown file
  * @throws {Error} When a front matter block is present but is not valid YAML.
  */
 export const parseFrontMatter = ({ text }: Params): { data: Record<string, unknown>; body: string } => {

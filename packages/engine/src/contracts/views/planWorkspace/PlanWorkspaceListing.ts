@@ -3,13 +3,7 @@ import { PlanGrade } from '#src/contracts/plan/grade/PlanGrade.ts';
 import { PlanStage } from '#src/contracts/views/planWorkspace/PlanStage.ts';
 import { PlanWorkspaceFile } from '#src/contracts/views/planWorkspace/PlanWorkspaceFile.ts';
 
-/**
- * One row of the plans list.
- *
- * Stats the workspace and parses nothing but `grade.json`, so listing every
- * plan a repo has stays cheap however many it accumulates — the same bargain
- * `RunListing` strikes.
- */
+/** Built by parsing nothing but `grade.json`, so listing every plan stays cheap however many accumulate. */
 export const PlanWorkspaceListing = z.object({
 	/** The plan's address under its work order's `plans/` — `<work-order>/<plan-id>`. */
 	name: z.string(),

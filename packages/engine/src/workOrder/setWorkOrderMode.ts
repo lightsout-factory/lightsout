@@ -21,7 +21,6 @@ interface Params {
 	/** Whether the human has approved the consequences a switch to single-plan mode spells out. */
 	approve: boolean;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	onProgress?: (message: string) => void;
 }
@@ -29,22 +28,12 @@ interface Params {
 /** The reason an approved switch records against every plan it drops, fixed so the history reads the same on every ticket. */
 const switchedToSinglePlan = 'switched to single-plan mode';
 
-/** Every plan above 001, which is the set a switch to single-plan mode is about. */
 const laterPlansOf = ({ record }: { record: WorkOrderState }) => record.plans.filter((plan) => planNumberOf({ id: plan.id }) !== 1);
 
-/** A plan whose implementation started and whose removal from the branch has not been recorded and verified. */
 const isUnaccountedImplementation = ({ plan }: { plan: WorkOrderPlan }) =>
 	isPlanImplementationStarted({ plan }) && !(plan.exclusion?.implementationRemoved === true && plan.exclusion.verifiedCommit !== undefined);
 
-/**
- * What approving the switch actually does to this ticket, stated in full before
- * it is done.
- *
- * Every shipping path is named, because nothing ships at the moment the mode
- * changes and the human has to see which command or which drain would. The
- * repository's own `ship.after-implement` value is read rather than described
- * in general, so the sentence is about this repository.
- */
+/** Every shipping path is named because nothing ships when the mode changes, and the human must see which command or drain would. */
 const describeSwitchToSinglePlan = ({
 	record,
 	first,
@@ -68,7 +57,6 @@ const describeSwitchToSinglePlan = ({
 	return `switching work order ${record.name} to single-plan mode means plan ${firstId} alone determines this ticket's implementation and shipping, and ${later.map((plan) => plan.id).join(', ')} would be excluded from both — their files stay on disk, and an exclusion is final. ${chaining}, and the queue ships the branch once plan ${firstId} is implemented whatever that setting says.${eligible} Run the same command again with --approve to make the switch.`;
 };
 
-/** Take every later plan out of the ticket's implementation order, one recorded exclusion each, in number order. */
 const excludeDroppedPlans = ({ record, dropped, at }: { record: WorkOrderState; dropped: WorkOrderPlan[]; at: string }) => {
 	let carried = record;
 
@@ -89,7 +77,6 @@ const excludeDroppedPlans = ({ record, dropped, at }: { record: WorkOrderState; 
 	return carried;
 };
 
-/** The switch to single-plan mode, once its two refusals and its approval have been settled. */
 const switchToSinglePlan = ({
 	record,
 	afterImplement,
@@ -143,19 +130,9 @@ const switchToSinglePlan = ({
 };
 
 /**
- * Change how a ticket's plans are organised, under the rules each direction
- * carries.
- *
- * To multiple-plan is always allowed and always costs the ticket its automatic
- * shipping: from then on the human declares the finish line with a ship
- * request. To single-plan is a scope reduction, so it is previewed rather than
- * done — running it without `--approve` writes nothing and answers with what
- * approving would do, which is also how declining works: you simply do not run
- * it again.
- *
- * Every rule is evaluated inside the store's change callback against the record
- * the pull settled on, so a preview and a refusal alike leave the record's
- * bytes untouched.
+ * To multiple-plan always costs the ticket its automatic shipping. To single-plan is a scope
+ * reduction, so without `--approve` it writes nothing and answers with what approving would do.
+ * Every rule runs inside the change callback, so a preview or a refusal leaves the record untouched.
  */
 export const setWorkOrderMode = async ({ cwd, name, mode, approve, config, env, onProgress }: Params): Promise<WorkOrderStateChange | { error: string }> => {
 	const shipSettings = resolveShipSettings({ config });

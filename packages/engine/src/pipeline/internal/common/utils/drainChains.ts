@@ -12,15 +12,9 @@ interface Params<TGroup> {
 }
 
 /**
- * Drain the chains through `testWriterConcurrency` slots that refill the moment
- * one frees, rather than draining in lockstep: writer durations are wildly
- * uneven — a group of one small module settles in seconds while an oversized
- * component's chunk runs for minutes — so waiting for a whole batch left every
- * other slot idle until its slowest member returned, which on a real fan-out is
- * most of the wall clock.
- *
- * A shared cursor is what makes the slots refill: every runner takes the next
- * unclaimed chain and keeps going until the list is spent or the run parks.
+ * Slots refill the moment one frees rather than draining in lockstep, because
+ * writer durations are wildly uneven and a lockstep batch idles every slot
+ * until its slowest member returns.
  *
  * @typeParam TGroup - the assignment each writer was given; the caller's chains decide it.
  */

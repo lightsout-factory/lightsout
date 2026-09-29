@@ -3,10 +3,8 @@ import { homeMeta } from '#src/features/home/common/constants/homeMeta.ts';
 import { Home } from '#src/features/home/screens/Home/Home.tsx';
 
 export const Route = createFileRoute('/_site/')({
-	// No loader. Home suspends on nothing, and the one query it does read — the
-	// default pack's three numbers — is deliberately left cold: a build on a slow
-	// disk has to paint the headline immediately, and the section stands without
-	// them.
+	// No loader: the default pack's numbers are left cold so the headline paints
+	// immediately, and the section stands without them.
 	head: () => ({ meta: homeMeta }),
 	component: Home,
 });

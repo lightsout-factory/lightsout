@@ -7,16 +7,12 @@ interface Params {
 }
 
 /**
- * Read a plan address, or answer undefined for a name that is not one.
+ * The one reader of the address shape, paired with `formatPlanAddress`, so
+ * nothing else splits a name of its own.
  *
- * This is the one reader of the address shape, paired with `formatPlanAddress`
- * as its one writer, so the separator and the segment rules are spelled in
- * exactly this pair. Everything else asks here — or asks `workOrderNameOf` —
- * rather than splitting a name of its own.
- *
- * Undefined is not a failure on its own: a work order's name is a valid answer
- * wherever a whole ticket is meant, and each caller decides. A first segment that is empty, `.` or `..` is refused
- * because it would resolve outside the plans directory.
+ * Undefined is not a failure: a work order's name is a valid answer wherever a
+ * whole ticket is meant, and each caller decides. A first segment that is
+ * empty, `.` or `..` is refused because it would resolve outside the plans directory.
  */
 export const parsePlanAddress = ({ name }: Params): PlanAddress | undefined => {
 	const [workOrderName, planId, ...beyond] = name.split('/');

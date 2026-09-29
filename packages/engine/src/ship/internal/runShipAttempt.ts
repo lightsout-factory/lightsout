@@ -40,18 +40,11 @@ interface Params {
 	onProgress?: ProgressSink;
 }
 
-/** The attempt's own inputs, with the ticket reference already resolved and the stop fields it would report. */
 interface PrepareParams extends Omit<Params, 'ticket' | 'recorder' | 'workOrderGuard'> {
 	ticketRef: string;
 	stop: ShipStopFields;
 }
 
-/**
- * The verified candidate commit this attempt will publish: the branch
- * integrated with the freshly fetched default branch, prepared, gated and
- * committed — or the stop that ended the attempt before there was one, told
- * apart the way the merge answer below is, by whether it is a commit string.
- */
 const prepareCandidate = async ({ cwd, settings, integration, branch, defaultBranch, ticketRef, branchDiff, ciEvidence, stop, onProgress }: PrepareParams) => {
 	const baselineCommit = await readGitHeadCommit({ cwd });
 
@@ -84,14 +77,9 @@ const prepareCandidate = async ({ cwd, settings, integration, branch, defaultBra
 };
 
 /**
- * The configured merge of the green candidate: the shipped result, or the
- * refusal that ends the attempt — retryable only for a base the forge proved
- * stale.
- *
- * The ticket record is re-asked inside the recorded merge step, after the checks
- * went green and before the forge is asked for anything: a plan added to the
- * ticket while those checks were running takes the branch outside its approved
- * ship request, and this is the last moment that can still stop the merge.
+ * The ticket record is re-asked inside the merge step, after the checks went green: a plan added
+ * while they ran takes the branch outside its approved ship request, and this is the last moment
+ * that can still stop the merge.
  */
 const mergeCandidate = async ({
 	pullRequest,
@@ -149,20 +137,9 @@ const mergeCandidate = async ({
 };
 
 /**
- * One complete shipping attempt: integrate, verify, commit, push, open or adopt
- * the pull request, wait for that commit's checks, and ask for the configured
- * merge.
- *
- * It writes no result, reconciles no ticket and cleans nothing up. Those belong
- * to the invocation rather than the attempt — `runShip` may spend three of
- * these, and a result file per attempt would tell a tracker skill the ship
- * ended twice.
- *
- * `retryable` is narrow on purpose: a confirmed stale base, or failed checks
- * whose evidence was readable enough to repair. Everything else — a local
- * preparation failure, missing CI, a timeout, a policy blocker, an unreadable
- * remote outcome — is the end of the invocation, because another whole attempt
- * would meet exactly the same wall.
+ * It writes no result and cleans nothing up: `runShip` may spend several attempts, and a result
+ * per attempt would tell a tracker skill the ship ended twice. `retryable` is narrow because any
+ * other failure would meet exactly the same wall on another attempt.
  */
 export const runShipAttempt = async ({
 	cwd,

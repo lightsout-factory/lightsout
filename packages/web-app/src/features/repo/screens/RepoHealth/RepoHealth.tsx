@@ -11,17 +11,11 @@ import { runsQueryOptions } from '#src/features/runs/queries/runsQueryOptions.ts
 import { standardsQueryOptions } from '#src/features/standards/queries/standardsQueryOptions.ts';
 
 /**
- * Does anything need me right now, and what is this repo doing?
+ * Suspends on the runs alone: a repo may never have produced a standards check
+ * or a friction log, and waiting on either would leave a new repo's landing page blank.
  *
- * Suspends on the runs alone. The standards check and the friction log are
- * things a repo may never have produced, and a landing page that waited on
- * either would show nothing at all to the repo that most needs telling how to
- * start. Both arrive through `useQuery`, and the surfaces that read them are
- * simply not mounted until they do.
- *
- * Every run count on the page is top-level runs only — one eight-phase implement
- * run is one thing that happened. `HealthTiles` gets the unfiltered list because
- * its spend tile is the one number that must include the phase children.
+ * Run counts use top-level runs only; `HealthTiles` gets the unfiltered list
+ * because its spend tile must include the phase children.
  */
 export const RepoHealth = () => {
 	const { data: runs } = useSuspenseQuery(runsQueryOptions());

@@ -5,8 +5,6 @@ import { HarnessProcessMark } from '#src/contracts/activity/HarnessProcessMark.t
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 
 /**
- * One level of a folded activity tree.
- *
  * There is no `finished` flag: an absent `endedAt` is what unfinished means,
  * and a second spelling of it could contradict the first.
  */

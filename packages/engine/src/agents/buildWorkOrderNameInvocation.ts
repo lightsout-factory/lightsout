@@ -8,8 +8,6 @@ interface Params {
 }
 
 /**
- * Assemble the work-order naming invocation deterministically.
- *
  * The message carries a reference and a title and nothing else: the agent is
  * given one string and asked for a few words, so a repository path, a plan or a
  * run's output would only be context it has to ignore.

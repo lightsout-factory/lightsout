@@ -11,24 +11,20 @@ import type { GapBatch } from '#src/plan/internal/common/types/GapBatch.ts';
 import type { GapRuling } from '#src/plan/internal/common/types/GapRuling.ts';
 
 interface Params {
-	/** Repo root — a cited path is resolved against it before being checked. */
 	cwd: string;
 	batch: GapBatch;
-	/** This batch's judge outcome; `undefined` where the fan-out never started it. */
+	/** `undefined` where the fan-out never started this batch's judge. */
 	outcome?: AgentOutcome<GapBatchVerdict>;
-	/** Every memory record id the plan holds — what a verdict's `matchesFinding` may name. */
+	/** What a verdict's `matchesFinding` may name. */
 	recordIds: Set<string>;
-	/** Why no judge ran, when the caller already knows. */
 	noJudgeReason?: string;
 }
 
-/** One observation the batch supplied, as the accounting reads it. */
 type BatchMember = GapBatch['observations'][number];
 
-/** Whether a string carries anything — an evidence field the judge left blank is the same as one it omitted. */
+/** An evidence field the judge left blank counts the same as one it omitted. */
 const isFilled = ({ value }: { value?: string }) => (value ?? '').trim().length > 0;
 
-/** Whether the verdict carries the evidence its own outcome demands, which is the only thing separating a ruling from a rubber stamp. */
 const hasRequiredEvidence = ({ verdict }: { verdict: GapGroupVerdict }) => {
 	const demanded: Record<GapGroupVerdict['outcome'], boolean> = {
 		[GapOutcome.NeedsAHuman]: isFilled({ value: verdict.humanDecision }),
@@ -40,12 +36,9 @@ const hasRequiredEvidence = ({ verdict }: { verdict: GapGroupVerdict }) => {
 };
 
 /**
- * Why an `already-answered` ruling's citations cannot be believed, or
- * `undefined` when every one stands. It needs one entry per location the covered
- * findings span — exactly the plan texts they contributed to this batch — and
- * each is confirmed against the text of the file it names, never another's: one
- * citation waving away a contradiction observed in two files is the
- * least-restrictive dismissal this exists to refuse.
+ * A dismissal needs one citation per location the covered findings span, each
+ * confirmed against its own file's text: one citation waving away a
+ * contradiction observed in two files is the dismissal this exists to refuse.
  */
 const refuseCitations = async ({ cwd, batch, verdict, covered }: { cwd: string; batch: GapBatch; verdict: GapGroupVerdict; covered: BatchMember[] }) => {
 	const texts = new Map(batch.planTexts.map(({ phase, text }) => [phase, text]));
@@ -76,7 +69,6 @@ const refuseCitations = async ({ cwd, batch, verdict, covered }: { cwd: string; 
 	return reason;
 };
 
-/** Why one ruling cannot be believed for any observation it covers, or `undefined` when it stands — the one place every per-ruling fail-closed branch is spelled. */
 const refuseVerdict = async ({ cwd, batch, verdict, recordIds }: { cwd: string; batch: GapBatch; verdict: GapGroupVerdict; recordIds: Set<string> }) => {
 	const covers = [...new Set(verdict.covers)];
 	const unknown = covers.filter((id) => !batch.observations.some((member) => member.id === id));
@@ -101,7 +93,6 @@ const refuseVerdict = async ({ cwd, batch, verdict, recordIds }: { cwd: string; 
 	return reason;
 };
 
-/** What one standing ruling means for the members it covers: the verdict, and — when two or more stand under it — the group they form. */
 const standingRulings = ({ verdict, members }: { verdict: GapGroupVerdict; members: BatchMember[] }): Array<[number, GapRuling]> => {
 	const observations = dedupeObservations({ observations: members.flatMap(({ gap }) => gapObservations({ gap })) });
 	// The first member's position in the pass belongs to it alone, so the group id
@@ -112,23 +103,14 @@ const standingRulings = ({ verdict, members }: { verdict: GapGroupVerdict; membe
 };
 
 /**
- * The completeness check one batch's verdicts must pass before any of them is
- * believed, and what each surviving ruling means for each observation it
- * covers. Returns one ruling per observation the batch supplied, keyed by its
- * position in the pass's gap array — never fewer.
+ * Returns one ruling per observation the batch supplied, keyed by its position
+ * in the pass's gap array — never fewer.
  *
- * Every observation must be covered by exactly one ruling, using only
- * identifiers the engine handed out. One nobody covered and one covered twice
- * are left unjudged, which blocks: an ambiguous attribution never removes an
- * obligation. A ruling naming an identifier the engine never handed out is void
- * in full, so its known members fail closed, while the rulings beside it, whose
- * attribution is unambiguous, still stand. The evidence rules `matchGapVerdicts`
- * once applied per call apply here per ruling — the evidence each outcome
- * demands, a shared-defect statement for any group, a confirmed citation for
- * every location a dismissal spans, and a `matchesFinding` the memory holds.
- *
- * Nothing here counts, compares or ranks a batch's members: one ruling settles
- * its whole group, and there is no vote anywhere.
+ * Every observation must be covered by exactly one ruling. One nobody covered
+ * and one covered twice are left unjudged, which blocks: an ambiguous
+ * attribution never removes an obligation. A ruling naming an identifier the
+ * engine never handed out is void in full, while the rulings beside it still
+ * stand.
  */
 export const accountBatchVerdicts = async ({ cwd, batch, outcome, recordIds, noJudgeReason }: Params): Promise<Map<number, GapRuling>> => {
 	if (outcome === undefined || !outcome.ok) {

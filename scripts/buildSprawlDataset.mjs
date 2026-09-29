@@ -9,41 +9,23 @@ import { readSprawlTrees } from './readSprawlTrees.mjs';
 import { runScript } from './runScript.mjs';
 
 /**
- * Measures this repository's own shape over its whole history and writes
- * `assets/sprawl-dataset.json`.
+ * Writes `assets/sprawl-dataset.json` for the site's hero animation. Every
+ * number is measured from real history, never invented: the animation is a
+ * claim about this repository. Never hand-edit the output. Run
+ * `pnpm build:sprawl`.
  *
- * The hero animation on the site claims something no screenshot can: that
- * files grow, hit a cap, and split, and that folders fill up and consolidate.
- * A dataset invented to make that claim would be a lie, so every number here is
- * read from somewhere that already existed — line counts from git blobs, folder
- * populations from git trees, the caps from the standards pack's own rule
- * files, and the moments a move was allowed to happen from the refactor runs
- * under `.lightsout/`.
+ * `.lightsout/` is gitignored, so the refactor markers are a LOCAL-ONLY input:
+ * build and commit from the machine that carries the run history. A clean
+ * checkout produces a marker-less dataset and says so.
  *
- * `.lightsout/` is gitignored, so the run markers are a LOCAL-ONLY input and
- * this JSON is the committed output. Build it on the machine that carries the
- * run history and commit it from there; a rebuild on a clean checkout produces
- * a marker-less dataset, which the script says out loud rather than passing off
- * as the same file.
- *
- * Deterministic: the same repo at the same HEAD writes byte-identical output,
- * so `git diff --exit-code assets/sprawl-dataset.json` after a re-run is a
- * usable check. Nothing here reads a clock — `headSha` is the stamp.
- *
- * Never hand-edit the output. Run `pnpm build:sprawl` instead.
+ * Deterministic, with no clock read — `headSha` is the stamp — so
+ * `git diff --exit-code` after a re-run is a usable check.
  */
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** How many commits the animation carries. Beyond this the oldest are dropped, and the count is reported. */
 const maxFrames = 400;
 
-/**
- * Every passed refactor run's `updatedAt`, oldest first — the commits where a
- * move was allowed to happen.
- *
- * A refactor run belongs to no plan and no ticket, so the refactor command's
- * own runs folder is where every one of them is filed.
- */
+/** Every passed refactor run's `updatedAt` — the commits where a move was allowed to happen. */
 const readRefactorMarkers = ({ log }) => {
 	const runsDir = join(repoRoot, '.lightsout', 'refactor', 'runs');
 
@@ -72,12 +54,7 @@ const readRefactorMarkers = ({ log }) => {
 	return markers.sort();
 };
 
-/**
- * The frame indices a refactor run landed on.
- *
- * A marker whose timestamp falls after every frame marks the LAST one, so the
- * newest refactor is never the one that goes missing.
- */
+/** A marker after every frame marks the LAST one, so the newest refactor is never lost. */
 const markFrames = ({ commits, markers }) => {
 	const times = commits.map((commit) => Date.parse(commit.at));
 	const marked = new Set();
@@ -92,7 +69,6 @@ const markFrames = ({ commits, markers }) => {
 	return marked;
 };
 
-/** One lane's change against the frame before it, with removals kept out of `files` and `folders`. */
 const buildDelta = ({ previous, current }) => {
 	const files = [...current.files]
 		.filter(([path, lines]) => previous.files.get(path) !== lines)
@@ -112,7 +88,6 @@ const buildDelta = ({ previous, current }) => {
 	};
 };
 
-/** @param log - where progress goes; the caller owns the console so the function stays testable */
 export const buildSprawlDataset = ({ log = console.log } = {}) => {
 	const caps = readSprawlCaps({ repoRoot });
 	const allCommits = readSprawlCommits({ repoRoot });

@@ -1,15 +1,11 @@
 import { z } from 'zod';
 
 /**
- * One test-side path whose approved version is not simply its content at
- * `HEAD`: either the run holds an approved copy of it, or the run has approved
- * its absence.
- *
- * Exactly one of `sha256` and a true `removed` is set. `approveTestFiles` is
- * the only writer, and it is what upholds that.
+ * A test-side path whose approved version is not its content at `HEAD`. Exactly
+ * one of `sha256` and a true `removed` is set; `approveTestFiles`, the only writer, upholds that.
  */
 export const ApprovedTestRecord = z.object({
-	/** Repo-relative path of the test-side file. */
+	/** Repo-relative. */
 	path: z.string().min(1),
 	/** SHA-256 of the approved copy under the run's approved directory. Absent on an approved removal. */
 	sha256: z.string().length(64).optional(),

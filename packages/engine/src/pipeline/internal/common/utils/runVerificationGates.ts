@@ -13,14 +13,8 @@ import type { VerificationResult } from '#src/pipeline/internal/common/types/Ver
 import { sourceFiles } from '#src/pipeline/internal/common/utils/sourceFiles.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 
-/** A coverage gate that actually ran and came back green — what the per-file executed check needs a report from. */
 const passedCoverage = ({ gate }: { gate: GateResult }) => gate.kind === 'testCoverage' && gate.skipped !== true && gate.exitCode === 0;
 
-/**
- * The per-file accountability check over the report the coverage gate just
- * wrote: every changed file (minus the recorded unreachable ones) must show at
- * least one executed statement.
- */
 const changedFilesExecutedError = ({ run, packagesDir }: { run: PipelineRun; packagesDir: string }) => {
 	const manifest = run.current();
 
@@ -57,27 +51,12 @@ interface Params {
 }
 
 /**
- * The run's verification gates, bound to its live scope and evidence log.
- *
- * How the gates are scheduled is the checkpoint's own `gate-overrides` entry
- * where it has one — exactly those gates, in that order — and the engine's two
- * tiers where it does not: the cheap gates first, the expensive ones only once
- * every package group's cheap gates are green.
- *
- * After the gates, every acceptance test the checkpoint was given must be shown
- * to have executed and passed in the per-test results those gates wrote. It runs
- * before the per-file executed check because it judges the gates that just ran,
- * where that check judges the coverage report they produced — and a checkpoint
- * that cannot prove its acceptance tests has nothing to gain from also being
- * told which files went uncovered.
- *
- * When the coverage gate actually ran and passed, the per-file executed check
- * follows: every changed file (minus the recorded unreachable ones) must show at
- * least one executed statement in the summaries the gate just wrote — the one
- * check the repo-wide threshold cannot make. It follows the gate rather than the
- * `coverage` argument because an override may add the gate where the argument
- * says off, or drop it where the argument says on. At clean-slate the changed
- * set is empty, so the check is a no-op there.
+ * The acceptance check runs before the per-file executed check because it
+ * judges the gates that just ran, and a checkpoint that cannot prove its
+ * acceptance tests gains nothing from also hearing which files went uncovered.
+ * The per-file executed check is the one check the repo-wide threshold cannot
+ * make; it follows whether the coverage gate actually ran and passed, not the
+ * `coverage` argument, because an override may add or drop that gate.
  */
 export const runVerificationGates = async ({ run, coverage, checkpoint, rows, final }: Params): Promise<VerificationResult> => {
 	const packagesDir = run.config['packages-dir'] ?? defaultPackagesDir;

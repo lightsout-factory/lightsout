@@ -17,11 +17,9 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/** The failing runs' output, as one block of diagnostic data the repair attempt is handed. */
 const describeEvidence = ({ evidence }: { evidence: CheckFailure[] }) =>
 	evidence.map((failure) => `## ${failure.name} (run ${failure.runId}, commit ${failure.commit})\n\n${failure.output}`).join('\n\n');
 
-/** What the checks came back as, folded into the stop the sequence owes for it — or nothing, when they were green. */
 export const readCheckStop = async ({ prNumber, candidate, cwd, settings, stop, onProgress }: Params): Promise<ShipAttemptResult | undefined> => {
 	const checks = await waitForChecks({ prNumber, cwd, allowNoCi: settings.allowNoCi, expectedHead: candidate, onProgress });
 

@@ -10,16 +10,9 @@ import { Wordmark } from '#src/features/app/components/Wordmark.tsx';
 const siteLinkClasses = 'font-medium text-muted-foreground-strong transition-colors hover:text-foreground';
 
 /**
- * The site's own pages, in the order the header reads them.
- *
- * Rendered twice — once in the row a wide screen shows, once inside the menu a
- * narrow one opens — so the two can never drift into offering different pages.
- *
- * Public pages only: nothing here leads into the app, which reads a repo these
- * pages never look at.
- *
- * Docs has no index of its own, so the header points at the configuration doc —
- * the one a reader arriving from the front page wants first.
+ * Rendered in both the wide-screen row and the narrow-screen menu, so the two
+ * cannot drift into offering different pages. Docs has no index of its own, so
+ * it points at the configuration doc.
  */
 const SitePages = () => (
 	<>
@@ -35,14 +28,6 @@ const SitePages = () => (
 	</>
 );
 
-/**
- * The header the marketing pages wear.
- *
- * It stays pinned while the page scrolls under it, so a reader deep in a long
- * page is one press from the other pages. The page shows through it, softened,
- * and a rule marks where it ends — the landing page is one long read, and the
- * header has to stay legible over every section it passes.
- */
 export const SiteHeader = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
 

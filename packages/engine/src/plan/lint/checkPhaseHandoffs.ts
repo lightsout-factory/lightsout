@@ -5,37 +5,17 @@ import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import { getComparableTokens } from '#src/plan/internal/common/naming/getComparableTokens.ts';
 
 interface Params {
-	/** Implementable plan files, ordered by phase number. */
+	/** Ordered by phase number. */
 	phases: PhaseFile[];
 }
 
 /**
- * HandoffChained — each phase's `## What Next Plan Expects` must be claimed by
- * the next phase's `## Prerequisites`.
- *
- * Both sides are reduced by `getComparableTokens`, which decides what counts as
- * a name: a path span by its basename, a bare identifier verbatim, the
- * template's sentinel absences skipped and every other span and all prose
- * ignored. That makes this check exactly decidable rather than a sentence diff,
- * and it is spelled there rather than here because the phase graph is built from
- * the same reduction.
- *
- * Names are all this check owns. What a hand-off *carries* — the shape behind
- * the name — is declared once, in the defining phase's file entry, and compared
- * by the wiring gap-check reader, which can open both phases.
- *
- * The two token sets are compared as sets, and the receiving side is never
- * searched as raw text, which would let an identifier match inside a longer word
- * and would count a path mentioned in unrelated prose as a claim. A missing section on either side is already a
- * `sections-present` finding, so the pair is skipped rather than reported twice.
- *
- * Blocking, not advisory: the point of the check is that a mechanical hand-off
- * break never survives to the agent grade. The repair loop is capped at three
- * attempts, so a stubborn false positive surfaces to the human rather than
- * wedging a draft.
- *
- * The final phase is not checked forward: it has no successor, and the template
- * already has it state "None — final phase."
+ * Token sets rather than raw text, which would match an identifier inside a
+ * longer word and count a path in unrelated prose as a claim. Only names are
+ * checked; what a hand-off carries is the wiring gap-check's to compare. Blocking,
+ * so a mechanical break never reaches the agent grade; the capped repair loop
+ * surfaces a stubborn false positive to the human. A missing section is already
+ * a `sections-present` finding, so the pair is skipped.
  */
 export const checkPhaseHandoffs = ({ phases }: Params): StructuralFinding[] => {
 	const findings: StructuralFinding[] = [];

@@ -5,35 +5,19 @@ import ts from 'typescript';
 import { invokedDirectly } from './invokedDirectly.mjs';
 
 /**
- * Do the deliberate copies still agree?
- *
- * A standards package ships as a bare directory beside the engine, with no
- * manifest and no `node_modules`, so every value it imports has to resolve
- * inside its own tree. That makes a handful of small definitions impossible to
- * share and necessary to duplicate — `isTestFile` above all, where the engine's
- * copy decides what counts as a test when it splits a file list, and the
- * package's copy re-asks the same question when a rule counts references. The
- * two disagreeing is not a compile error; it is a rule quietly applying to the
+ * A standards package ships as a bare directory with no `node_modules`, so a
+ * few definitions must be duplicated rather than imported, and two copies
+ * disagreeing is not a compile error — it is a rule quietly applying to the
  * wrong files.
  *
- * Until now the only thing holding them together was a comment saying "change
- * one, change the other", which nothing read.
- *
- * A copy declares its twin with `@mirrors <repo-relative path>` in its
- * docblock. Both are parsed and re-printed WITHOUT comments before comparing,
- * because the prose around each copy is written for its own reader — the
- * engine's `isTestFile` explains what the exemption buys, the package's
- * explains which rules re-ask the question — and only the code has to match.
- *
- * A pair that has to agree in BEHAVIOUR while differing in code is held the
- * other way: `behaviouralMirrors` runs both copies against the same inputs and
- * compares what they return. `getExportName` is the one such pair — the
- * package's copy derives a base name itself where the engine's reaches for
- * `node:path` — so no comparison of code could ever hold it.
+ * A copy declares its twin with `@mirrors <repo-relative path>`. Both are
+ * re-printed WITHOUT comments before comparing, because each copy's prose is
+ * written for its own reader and only the code has to match. A pair that must
+ * agree in behaviour while differing in code is held by `behaviouralMirrors`
+ * instead.
  */
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** Every file declaring a twin, as [copy, twin] repo-relative pairs. */
 const findDeclaredMirrors = () => {
 	const pairs = [];
 
@@ -48,18 +32,14 @@ const findDeclaredMirrors = () => {
 		}
 	}
 
-	// Both copies name each other, so every pair turns up twice; the sorted key
-	// makes the second sighting a duplicate rather than a second comparison.
+	// Both copies name each other, so every pair turns up twice.
 	return [...new Map(pairs.map((pair) => [[...pair].sort().join(' ↔ '), pair])).values()];
 };
 
 /**
- * Pairs that must agree in what they RETURN while differing in what they say.
- *
- * The inputs stay inside the contract both copies document — repo-relative,
- * `/`-separated, or a bare filename. Feeding a Windows separator would split
- * them for a reason neither promises to handle, which is a difference invented
- * by the test rather than one a caller could hit.
+ * The inputs stay inside the contract both copies document — `/`-separated or
+ * a bare filename. A Windows separator would split them for a reason neither
+ * promises to handle.
  */
 const behaviouralMirrors = [
 	{
@@ -85,7 +65,6 @@ const behaviouralMirrors = [
 	},
 ];
 
-/** Run both copies of a behavioural pair over its inputs, reporting the first input they answer differently. */
 const compareBehaviour = async ({ pair }) => {
 	const [left, right] = await Promise.all([import(pathToFileURL(join(repoRoot, pair.left)).href), import(pathToFileURL(join(repoRoot, pair.right)).href)]);
 
@@ -100,7 +79,6 @@ const compareBehaviour = async ({ pair }) => {
 	return undefined;
 };
 
-/** One file's code with every comment dropped and the layout normalized, so only what runs is compared. */
 const codeOf = ({ path }) => {
 	const text = readFileSync(join(repoRoot, path), 'utf8');
 	const sourceFile = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
@@ -108,9 +86,6 @@ const codeOf = ({ path }) => {
 	return ts.createPrinter({ removeComments: true }).printFile(sourceFile);
 };
 
-/**
- * @returns every mirror that has drifted, how many code pairs were compared, and how many behavioural pairs
- */
 export const checkMirrors = async () => {
 	const pairs = findDeclaredMirrors();
 	const problems = [];

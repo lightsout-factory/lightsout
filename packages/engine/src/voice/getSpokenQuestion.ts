@@ -75,14 +75,10 @@ const getQuestionTexts = ({ entries }: { entries: unknown[] }) => {
 };
 
 /**
- * The question the finished turn put to the user, ready to be read aloud — or
- * nothing, when the turn asked none.
+ * Tool calls are ignored here, because the option picker is spoken the moment
+ * it appears.
  *
- * Only the final turn counts: everything before it was already answered. Tool
- * calls are ignored here, because the option picker is spoken the moment it
- * appears rather than after it has been answered.
- *
- * Never throws. This runs inside a hook, where an error would surface as a
+ * Never throws: this runs inside a hook, where an error would surface as a
  * failure in the user's own session.
  */
 export const getSpokenQuestion = async ({ transcriptPath }: Params): Promise<string | undefined> => {

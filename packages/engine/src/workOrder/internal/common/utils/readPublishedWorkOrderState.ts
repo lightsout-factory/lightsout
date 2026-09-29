@@ -10,11 +10,10 @@ import { serializeWorkOrderState } from '#src/workOrder/internal/common/utils/se
 
 interface Params {
 	target: TicketTrackerTarget;
-	/** The work order's label, which the published record must also name as its own. */
+	/** The published record must also name this as its own. */
 	name: string;
 }
 
-/** Whatever the attachment held, read as a record of this ticket — or the one sentence saying why it is not one. */
 const readRecordText = ({ text, name, ticketRef }: { text: string; name: string; ticketRef: string }) => {
 	let value: unknown;
 	let outcome: { published: PublishedWorkOrderState } | { error: string } | undefined;
@@ -47,11 +46,8 @@ const readRecordText = ({ text, name, ticketRef }: { text: string; name: string;
 };
 
 /**
- * The ticket's own copy of its record, or the fact that it carries none.
- *
- * The bytes answered are `serializeWorkOrderState`'s, not the attachment's own
- * text: that is what lets a copy published by an older or differently-ordered
- * writer still compare equal to an identical local record by hash.
+ * Answers `serializeWorkOrderState`'s bytes, not the attachment's text, so a
+ * copy from a differently-ordered writer still hashes equal to an identical record.
  */
 export const readPublishedWorkOrderState = async ({
 	target,

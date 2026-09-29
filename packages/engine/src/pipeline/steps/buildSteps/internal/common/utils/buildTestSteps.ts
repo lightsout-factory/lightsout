@@ -25,13 +25,6 @@ interface Params {
 	featureFix: FixBuilder;
 }
 
-/**
- * The unit-test trio: the writer fan-out, the formatter, and the verification
- * that re-invokes a test writer when a gate fails. The fan-out is skipped when
- * the run changed no source file a test could target, and for a rename-only
- * plan, which writes no tests — its verify-tests repair goes to the feature
- * executor instead.
- */
 export const buildTestSteps = ({
 	run,
 	gitPrefix,

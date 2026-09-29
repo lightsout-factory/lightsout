@@ -3,8 +3,6 @@ import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts'
 import { ActivityMarkKind } from '#src/contracts/activity/ActivityMarkKind.ts';
 
 /**
- * One level opening.
- *
  * No duration is stored on any mark: a duration is two timestamps subtracted,
  * and storing it as well would give the record two answers that can disagree.
  */

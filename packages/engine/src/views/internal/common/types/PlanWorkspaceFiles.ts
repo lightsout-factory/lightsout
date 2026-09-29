@@ -1,12 +1,5 @@
 import type { PlanWorkspaceFile } from '#src/contracts/views/planWorkspace/PlanWorkspaceFile.ts';
 
-/**
- * Every file a plan workspace holds, bucketed by the role its name gives it.
- *
- * Named rather than restated at each call site: the walk produces this shape and
- * the listing builder consumes it, so a hand-copied inline type would be a
- * second contract that drifts the moment a bucket is added.
- */
 export interface PlanWorkspaceFiles {
 	/** `overview.md` when the workspace has one, else `plan.md`. */
 	planFile?: PlanWorkspaceFile;

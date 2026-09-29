@@ -4,7 +4,6 @@ import { Check, ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '#src/appUI/buttons/Button.tsx';
 
-/** One value a reader may narrow to, with how many rows carry it. */
 interface FilterOption {
 	value: string;
 	label: ReactNode;
@@ -17,17 +16,12 @@ interface Props {
 	/** Selected values; empty means no filter. */
 	selected: string[];
 	onChange: (selected: string[]) => void;
-	/** Single-select collapses to at most one value. Defaults to multi-select. */
 	multiple?: boolean;
 }
 
 /**
- * A named set of values a reader narrows a table by.
- *
- * The trigger carries how many are selected rather than listing them, so a
- * filter bar stays one row wide however many values a reader has picked.
- * Pressing a selected value clears it, which is the way back out of every
- * selection.
+ * The trigger shows how many are selected rather than listing them, so a filter
+ * bar stays one row wide however many values are picked.
  */
 export const FilterDropdown = ({ label, options, selected, onChange, multiple = true }: Props) => {
 	const toggle = ({ value }: { value: string }) => {

@@ -14,16 +14,14 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
 import { writeStandardsSnapshot } from '#src/standardsCheck/writeStandardsSnapshot.ts';
 
-/** Progress lines sit under their section heading, indented and dim. */
 const printProgress = (message: string) => console.log(dim(`  ${message}`));
 
-/** Blocking first: findings are the work, and an advisory read first would set the wrong expectation about what a run is asking for. */
+// Blocking first, so an advisory read first does not set the wrong expectation.
 const orderBySeverity = ({ findings }: { findings: StandardsFinding[] }) => [
 	...findings.filter((entry) => entry.severity === StandardsSeverity.Blocking),
 	...findings.filter((entry) => entry.severity === StandardsSeverity.Advisory),
 ];
 
-/** What the code checks found, in the words the finish line says it. */
 const describeCodeFindings = ({ findings }: { findings: StandardsFinding[] }) => {
 	const blocking = findings.filter((entry) => entry.severity === StandardsSeverity.Blocking).length;
 	const advisories = findings.length - blocking;
@@ -37,11 +35,8 @@ const describeCodeFindings = ({ findings }: { findings: StandardsFinding[] }) =>
 		.join(', ');
 };
 
-/**
- * One section's result, printed the moment that half finishes: its findings
- * grouped by rule, then its notes. A reader waiting on the slow half is never
- * kept from the fast half's answer.
- */
+// Printed the moment each half finishes, so a reader waiting on the slow half
+// already has the fast half's answer.
 const printSectionResult = ({ findings, notes }: { findings: StandardsFinding[]; notes: string[] }) => {
 	// The group renderer opens each rule with its own blank line.
 	if (findings.length > 0) {
@@ -58,19 +53,13 @@ const printSectionResult = ({ findings, notes }: { findings: StandardsFinding[];
 };
 
 export const standardsCheckCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
-	// Both paths need the ledger: `--list` prints it whole, the run path reads
-	// each rule's summary from it.
 	const { config, rules } = await readStandardsLedger({ cwd });
 
-	// --list answers "what does this repo enforce?" and runs nothing.
 	if (flags.get('list') === true) {
 		printStandardsRuleList({ rules });
 		return exitCli({ code: 0 });
 	}
 
-	// Neither flag names a half, so both run: this is a standards check, and both
-	// halves are the check. Each flag names the actor, so what a reader switches
-	// off is who does the work, not which rules apply.
 	const codeChecksOnly = flags.get('code-checks') === true;
 	const agentReviewOnly = flags.get('agent-review') === true;
 	const runCodeChecks = codeChecksOnly || !agentReviewOnly;
@@ -114,10 +103,8 @@ export const standardsCheckCommand = async ({ flags, cwd }: CommandContext): Pro
 		notes.push(...reviewed.notes);
 	}
 
-	// The evidence file is the machine half's work-list, so a review-only run
-	// leaves it exactly as the last real check left it rather than overwriting
-	// it with a judgment call. Review findings are advisory by construction, so
-	// the file keeps the blocking-first order the reader saw.
+	// The evidence file is the code checks' work-list, so a review-only run leaves
+	// it as the last real check left it.
 	if (runCodeChecks) {
 		await writeStandardsSnapshot({ cwd, snapshot: { at: new Date().toISOString(), path: checkPath ?? '.', findings, notes } });
 	}

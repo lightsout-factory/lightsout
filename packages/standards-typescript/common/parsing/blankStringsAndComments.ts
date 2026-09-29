@@ -1,9 +1,8 @@
 interface Params {
-	/** A source file's text. */
 	text: string;
 }
 
-/** Overwrite a span with spaces, leaving newlines so every later line number still counts the same. */
+/** Newlines survive so every later line number still counts the same. */
 const blank = ({ chars, from, to }: { chars: string[]; from: number; to: number }) => {
 	for (let index = from; index < to && index < chars.length; index += 1) {
 		if (chars[index] !== '\n') {
@@ -12,7 +11,6 @@ const blank = ({ chars, from, to }: { chars: string[]; from: number; to: number 
 	}
 };
 
-/** Blank a quoted string from its opening quote, honouring backslash escapes. Returns the index after it. */
 const blankQuoted = ({ chars, text, start, quote }: { chars: string[]; text: string; start: number; quote: string }) => {
 	let index = start + 1;
 
@@ -25,7 +23,6 @@ const blankQuoted = ({ chars, text, start, quote }: { chars: string[]; text: str
 	return Math.min(index + 1, text.length);
 };
 
-/** Blank a comment from its opening marker. Returns the index after it. */
 const blankComment = ({ chars, text, start, line }: { chars: string[]; text: string; start: number; line: boolean }) => {
 	const ended = line ? text.indexOf('\n', start) : text.indexOf('*/', start + 2);
 	const stop = ended === -1 ? text.length : ended + (line ? 0 : 2);
@@ -39,12 +36,9 @@ const blankComment = ({ chars, text, start, line }: { chars: string[]; text: str
 const regexPrefixKeywords = new Set(['return', 'typeof', 'case', 'in', 'of', 'do', 'else', 'void', 'new', 'delete', 'instanceof', 'yield', 'await']);
 
 /**
- * Whether a `/` at this position starts a regex literal rather than a division:
- * the classic lexer heuristic. A slash after a value (an identifier, literal,
- * `)` or `]`) divides; a slash where a value is expected (after an operator,
- * an opening bracket, a comma, a keyword like `return`, or at the start)
- * begins a regex. `chars` rather than the original text, so a just-blanked
- * string cannot masquerade as a preceding value.
+ * The classic lexer heuristic: a slash after a value divides, a slash where a
+ * value is expected begins a regex. Reads `chars` rather than the original
+ * text, so a just-blanked string cannot masquerade as a preceding value.
  */
 const startsRegex = ({ chars, before }: { chars: string[]; before: number }) => {
 	let index = before - 1;
@@ -72,12 +66,7 @@ const startsRegex = ({ chars, before }: { chars: string[]; before: number }) => 
 	return !(previous === ')' || previous === ']' || previous === "'" || previous === '"' || previous === '`');
 };
 
-/**
- * The end of a regex literal opened at `start`, honouring backslash escapes
- * and character classes (a `/` inside `[...]` does not close it) — or
- * undefined when no closing `/` arrives before the line ends, which means the
- * slash was not a regex after all.
- */
+/** Undefined when no closing `/` arrives before the line ends, which means the slash was not a regex after all. */
 const findRegexEnd = ({ text, start }: { text: string; start: number }) => {
 	let index = start + 1;
 	let inClass = false;
@@ -104,14 +93,9 @@ const findRegexEnd = ({ text, start }: { text: string; start: number }) => {
 };
 
 /**
- * The same text with every string, template and comment emptied out, so what
- * is left is only code.
- *
  * A rule that scans text for a pattern cannot otherwise tell code from a
- * string that quotes code, and the rules about tests are read by the very
- * files most likely to quote it: a check's own tests pass sample code in as
- * data, and a rule's message names the thing it bans. Both were reported as
- * violations of themselves.
+ * string that quotes code: a check's own tests pass sample code in as data, and
+ * a rule's message names the thing it bans.
  *
  * Every character keeps its position — blanked spans become spaces and
  * newlines survive — so an offset or line number taken from the result points

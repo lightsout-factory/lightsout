@@ -14,7 +14,6 @@ interface Params {
 	configPath: string;
 }
 
-/** The startup lines: what the run was started from, followed by the harness header every run prints. */
 export const printRunStart = ({ target, overviewPath, packages, startPhase, config, driver, cwd, configPath }: Params): void => {
 	console.log(`lightsout: starting run`);
 	console.log(

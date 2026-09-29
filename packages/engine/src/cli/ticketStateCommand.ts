@@ -10,17 +10,15 @@ import { updateTicketLifecycle } from '#src/ticketLifecycle/updateTicketLifecycl
 import { getTicketsByIdentifiers } from '#src/ticketTracker/getTicketsByIdentifiers.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';
 
-/** The roles this command accepts. `Done` is deliberately absent — see the command's own doc comment. */
+// `Done` is deliberately absent: see the command's doc comment.
 const writableStatusRoles = [TrackerStatusRole.Ready, TrackerStatusRole.InProgress];
 
-/** The flag's word as the engine's planning status, or the message naming what it could have been. */
 const parsePlanningStatus = ({ value }: { value: string }) => {
 	const matched = Object.values(PlanningStatus).find((status) => status === value);
 
 	return matched ?? { error: `unknown planning status '${value}' — expected one of ${Object.values(PlanningStatus).join(', ')}` };
 };
 
-/** The flag's word as a status role, or the message saying which two roles a caller may write. */
 const parseTrackerStatusRole = ({ value }: { value: string }) => {
 	const matched = writableStatusRoles.find((role) => role === value);
 
@@ -37,25 +35,13 @@ const parseTrackerStatusRole = ({ value }: { value: string }) => {
 };
 
 /**
- * `lightsout ticket-state` — write a ticket's planning status, its tracker
- * workflow status, or both.
+ * `--tracker-status` takes the engine's role rather than a repository's own
+ * spelling, so one skill line works in every repository. It does not accept
+ * `done`: tracker completion must follow a merged pull request the forge
+ * reported, never a hand-written flag.
  *
- * The deterministic write a workflow skill shells out to at each transition, the
- * way the plan skills already shell out to `lightsout plan publish`: an agent
- * left to its own tracker tooling can neither be relied on nor fail the run, and
- * a non-zero exit here is how the caller learns the write did not happen.
- *
- * `--tracker-status` takes the engine's *role* rather than a repository's own
- * spelling, so one skill line works in every repository and
- * `updateTicketLifecycle` stays the single place a role becomes a status name.
- * It does not accept `done`: tracker completion must reflect shipped code, so
- * every done write in the engine runs downstream of a merged pull request the
- * forge reported, and a flag that could set it without that evidence is exactly
- * the hole that rule closes.
- *
- * `readConfig` rather than the optional reader, for the reason
- * `planPublishCommand` gives: this needs a `ticket-tracker` block, so a
- * repository with no config has nothing to resolve and is refused by name.
+ * `readConfig` rather than the optional reader: this needs a `ticket-tracker`
+ * block, so a repository with no config is refused.
  */
 export const ticketStateCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const ref = await getRequiredFlag({ flags, name: 'ref' });

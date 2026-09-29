@@ -11,15 +11,13 @@ import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
 import { parsePlan } from '#src/plan/parsePlan.ts';
 
 interface Params {
-	/** The overview file's text as the overview spawn wrote it. */
 	overviewText: string;
-	/** The overview's basename — every finding's phase label. */
+	/** The overview's basename: every finding's phase label. */
 	overviewBase: string;
-	/** `executor-file-limit` from config, already defaulted by the caller. */
+	/** Already defaulted by the caller. */
 	executorFileLimit: number;
 }
 
-/** One breakdown defect, before the severity and phase label every one of them shares is stamped on. */
 interface Defect {
 	check: StructuralCheck;
 	severity: StructuralFinding['severity'];
@@ -29,10 +27,8 @@ interface Defect {
 }
 
 /**
- * Every `### Phase <n> — ` block header in the declarations section, read from
- * the section text rather than from the parsed rows: a phase whose block is
- * absent parses identically to one whose bullets all read `none`, and only one
- * of those two is a defect.
+ * Read from the section text rather than the parsed rows: an absent block parses
+ * the same as one whose bullets all read `none`, and only one of those is a defect.
  */
 const declaredBlockFiles = ({ plan }: { plan: ParsedPlan }) => {
 	const files = new Set<string>();
@@ -48,7 +44,6 @@ const declaredBlockFiles = ({ plan }: { plan: ParsedPlan }) => {
 	return files;
 };
 
-/** The breakdown exists at all: a table with rows, and a declaration block behind every row. */
 const sectionDefects = ({ plan, declarations }: { plan: ParsedPlan; declarations: PhaseDeclaration[] }) => {
 	const defects: Defect[] = [];
 	const shared = { check: StructuralCheck.SectionsPresent, severity: FindingSeverity.Blocking };
@@ -78,7 +73,6 @@ const sectionDefects = ({ plan, declarations }: { plan: ParsedPlan; declarations
 	return defects;
 };
 
-/** The numbering runs 1..n with no gaps, and every row's filename agrees with its number — the declaration-only rules, located relative to the overview. */
 const shapeDefects = ({ declarations }: { declarations: PhaseDeclaration[] }) =>
 	getDeclarationDefects({
 		declarations,
@@ -90,12 +84,8 @@ const shapeDefects = ({ declarations }: { declarations: PhaseDeclaration[] }) =>
 	}).map((defect) => ({ check: StructuralCheck.DeclarationConsistent, severity: FindingSeverity.Blocking, ...defect }));
 
 /**
- * The size numbers, read from the declaration alone: the created-file ceiling,
- * the touched-file ceiling (which a phase declared `Renames only` is exempt
- * from), and the advisory budget. This is the only size check that runs before
- * any phase file exists, so a count that cannot be read has to stop the run
- * rather than wave the phase through — the reshaper's job then includes writing
- * a real number.
+ * The only size check that runs before any phase file exists, so a count that
+ * cannot be read stops the run rather than waving the phase through.
  */
 const sizeDefects = ({ declarations, executorFileLimit }: { declarations: PhaseDeclaration[]; executorFileLimit: number }) => {
 	const defects: Defect[] = [];
@@ -154,11 +144,8 @@ const sizeDefects = ({ declarations, executorFileLimit }: { declarations: PhaseD
 };
 
 /**
- * Check a freshly-authored overview's phase breakdown against the size numbers,
- * reading only what the overview declares. This runs immediately after the
- * overview spawn and before any phase file is drafted, which is the cheapest
- * moment a plan can be refused: the alternative is discovering an unbuildable
- * phase after ten phase spawns have been paid for.
+ * Runs right after the overview spawn, before any phase file is drafted: the
+ * cheapest moment a plan can be refused.
  */
 export const checkPhaseBreakdown = ({ overviewText, overviewBase, executorFileLimit }: Params): StructuralFinding[] => {
 	const plan = parsePlan({ content: overviewText, base: overviewBase });

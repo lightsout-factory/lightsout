@@ -5,16 +5,7 @@ interface Params {
 	flags: Map<string, string | true>;
 }
 
-/**
- * How the passed flags fail the command, or undefined when they all belong to
- * it.
- *
- * A misspelt flag used to be silently ignored: `standards-check --code-check`
- * ran the whole check, agent review included, and exited 0, so the run looked
- * like the one that was asked for. A flag a command does not accept is a usage
- * error, answered the way every other usage error here is — this message and
- * the usage text on stderr, exit 1.
- */
+/** An unknown flag is a usage error, so a misspelt flag cannot quietly run a different command than the one asked for. */
 export const getUnknownFlagsMessage = ({ command, flags }: Params): string | undefined => {
 	const accepted = readCommandFlags({ command });
 	const unknown = [...flags.keys()].filter((name) => !accepted.has(name));

@@ -4,12 +4,9 @@ interface Params {
 }
 
 /**
- * The folder a path sits in, or `.` when it sits at the repo root.
- *
- * Written as string work rather than borrowed from `node:path` because a check
- * imports values from inside its own package alone — and because the paths it
- * is handed are repo-relative and `/`-separated whatever the machine, so the
- * platform-aware version would answer the same question with more machinery.
+ * String work rather than `node:path`, because a check imports values from
+ * inside its own package alone, and the paths it is handed are `/`-separated
+ * whatever the machine.
  */
 export const getDirectory = ({ path }: Params): string => {
 	const cut = path.lastIndexOf('/');

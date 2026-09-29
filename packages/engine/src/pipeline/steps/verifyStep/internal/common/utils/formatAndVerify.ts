@@ -13,14 +13,9 @@ interface Params {
 }
 
 /**
- * The formatter, then the review, then the gates — the order every repair
- * attempt re-enters the checkpoint by. A formatter that fails is itself the
- * verdict, under the `format` family, and nothing is judged or run on a tree it
- * could not settle.
- *
- * The review can be rate limited, so this can park: a throttled reviewer said
- * nothing about the tests, and there is no verdict to repair and no failure to
- * escalate.
+ * A formatter that fails is itself the verdict, under the `format` family: nothing is judged or
+ * run on a tree it could not settle. A rate-limited review parks, because it said nothing about
+ * the tests and left no verdict to repair.
  */
 export const formatAndVerify = async ({ context, record }: Params): Promise<RepairOutcome> => {
 	const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames } = context;

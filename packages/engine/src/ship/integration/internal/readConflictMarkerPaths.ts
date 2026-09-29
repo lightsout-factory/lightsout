@@ -4,13 +4,11 @@ interface Params {
 	cwd: string;
 }
 
-/** A line the attempt ADDED that opens or closes a conflict region — the two markers no resolved file ever carries. */
+/** Only the opening and closing markers, the two no resolved file ever carries. */
 const addedMarker = /^\+(?:<{7}|>{7})(?: |$)/;
 
-/** The diff line naming the file the hunks after it belong to. */
 const diffHeader = /^\+\+\+ b\/(.+)$/;
 
-/** Every path a diff introduced a marker into, in the order the diff named them. */
 const scanDiff = ({ diff }: { diff: string }) => {
 	const found: string[] = [];
 	let path: string | undefined;
@@ -30,9 +28,6 @@ const scanDiff = ({ diff }: { diff: string }) => {
 };
 
 /**
- * The paths whose staged or working-tree content this attempt left carrying
- * conflict markers, or `undefined` when git could not be read.
- *
  * An agent that stages a file it never actually settled leaves `git diff
  * --diff-filter=U` empty — staging is what marks a path resolved — so "nothing
  * unmerged" alone cannot say a conflict was settled. Both halves are read

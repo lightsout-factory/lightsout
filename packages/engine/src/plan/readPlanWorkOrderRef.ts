@@ -10,14 +10,9 @@ interface Params {
 }
 
 /**
- * The ticket a plan's work order belongs to, read out of that work order's own
- * record — or undefined when the work order belongs to no ticket, or there is
- * no readable record at all.
- *
- * Nothing reads a ticket id out of a name here any more, which is what removes
- * the false positive the old reader carried: a label like `phase-2-cleanup` no
- * longer reads as ticket `phase-2`, because a label is only a label and
- * `ticketRef` is the one field that answers which ticket the work belongs to.
+ * Never reads a ticket id out of the name: a label like `phase-2-cleanup` is
+ * only a label, and `ticketRef` is the one field that says which ticket the
+ * work belongs to.
  */
 export const readPlanWorkOrderRef = async ({ cwd, name }: Params): Promise<string | undefined> => {
 	const record = await readWorkOrderRecordFile({ workOrderFolder: await workOrderFolderDir({ cwd, name: workOrderNameOf({ name }) }) });

@@ -18,12 +18,10 @@ interface Params {
 	run: PipelineRun;
 	gitPrefix?: string;
 	planContent: string;
-	/** Overview text for a phased run — see `buildRefactorExecutorInvocation`. */
 	overviewContent?: string;
 	standards?: string;
 	/** Already carrying the step's cleanup record in its `report` slot — this pass forwards it rather than writing over it. */
 	record: StepRecord;
-	/** The blocking work-list this round hands the executor. */
 	findings: StandardsFinding[];
 	/** Judgment-carrying findings the executor weighs but is never held on. */
 	advisories: StandardsFinding[];
@@ -31,7 +29,6 @@ interface Params {
 	before: Record<string, string>;
 }
 
-/** Why this invocation produced no usable work, or `undefined` when it did. */
 const failureOf = ({ report, failure }: { report: WorkReport | undefined; failure: string | undefined }) => {
 	if (failure !== undefined) {
 		return `refactor: ${failure}`;
@@ -40,28 +37,14 @@ const failureOf = ({ report, failure }: { report: WorkReport | undefined; failur
 	return report === undefined || report.status === WorkReportStatus.Complete ? undefined : `refactor: ${report.status} — ${report.failures.join('; ')}`;
 };
 
-/** Every scope file whose bytes differ from the step-start fingerprint, or that did not exist then. */
 const editedSince = ({ before, after }: { before: Record<string, string>; after: Record<string, string> }) =>
 	Object.keys(after).filter((file) => after[file] !== before[file]);
 
 /**
- * One cleanup-executor invocation and its aftermath.
- *
- * A rate limit parks the run and comes back as `parked`, exactly as every other
- * step handles one. Every other unsuccessful outcome — a timeout, an absent or
- * unusable report, a report whose status is not `complete` — comes back as a
- * recorded `failure` instead, because cleanup is best-effort tidying and a
- * broken agent must not stop a run. That is why it calls `run.invokeRole`
- * directly rather than `invokeRoleOrStop`, whose non-rate-limited branch fails
- * the run.
- *
- * The tree is read after every invocation that did not park, in this order:
- * `collectChanged` first, so the manifest's changed-file list — and therefore
- * the standards scope — already holds any file the round created; then the
- * fingerprint diff over that widened scope. Fingerprinting first would leave a
- * new file outside the scope map on both sides, so it would never count as
- * edited. This order is what puts a timed-out attempt's partial edits, and a
- * file a report forgot to mention, into the run's changed-file list anyway.
+ * Calls `run.invokeRole` rather than `invokeRoleOrStop`: cleanup is best-effort, so only a rate
+ * limit parks the run and every other failure is recorded. `collectChanged` runs before the
+ * fingerprint diff so a file the round created is already in scope; the other order would
+ * never count a new file as edited.
  */
 export const runExecutorPass = async ({
 	run,

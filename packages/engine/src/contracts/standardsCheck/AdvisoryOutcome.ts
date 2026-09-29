@@ -1,12 +1,7 @@
 import { z } from 'zod';
 import { AdvisoryResponse } from '#src/contracts/standardsCheck/AdvisoryResponse.ts';
 
-/**
- * One advisory finding's fate, as the agent that was shown it reports.
- *
- * An account, never a gate: a missing or partial list is data the health
- * report does not have, not a failure of the work that produced it.
- */
+// An account, never a gate: a missing or partial list is not a failure of the work.
 export const AdvisoryOutcome = z.object({
 	/** The rule id, echoed from the finding as it was given. */
 	rule: z.string(),

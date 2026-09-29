@@ -2,21 +2,13 @@ import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 
 /**
- * Mechanical-first rule order: rules an agent can fix in place come
- * before judgment-heavier duplication work, so a run's early batches are its
- * safest. Rules absent from this list sort last, alphabetically — a rule a
- * standards package brings that this engine has never heard of degrades to
- * "after the known ones", never to an error.
+ * Mechanical fixes come before judgment-heavier duplication work, so a run's
+ * early batches are its safest. Unknown rules sort last rather than erroring.
  *
- * The ids are written out rather than imported, because batching order is
- * engine policy about how a refactor run is paced, not a fact about any rule —
- * a package declares which rules exist, and putting this ordering into the
- * package format would make every third-party package restate a preference it
- * has no stake in.
+ * The ids are written out rather than read from packages: batching order is
+ * engine pacing policy, not a fact a package should have to restate.
  */
 const rulePriority: string[] = [
-	// These are fixed by a file move or a rename — the most mechanical fix there
-	// is, so they lead.
 	'banned-folder-name',
 	'file-directly-in-common',
 	'folder-index-file',
@@ -53,7 +45,7 @@ const rulePriority: string[] = [
 	'synonym-export-name',
 ];
 
-/** A batch above this many findings splits into sorted chunks — one agent job stays readable. */
+/** Keeps one agent job readable. */
 const maxBatchFindings = 12;
 
 const priorityOf = ({ rule }: { rule: string }) => {
@@ -65,21 +57,13 @@ const priorityOf = ({ rule }: { rule: string }) => {
 interface Params {
 	/** Blocking-severity check results — the work. */
 	blocking: StandardsFinding[];
-	/** Advisory-severity results, every rule — attached to batches whose files overlap, never work on their own. */
+	/** Attached to batches whose files overlap, never work on their own. */
 	advisories: StandardsFinding[];
 	/** Monorepo package parent dir, for the grouping folder. */
 	packagesDir: string;
 }
 
-/**
- * Deterministic batching: one batch = one rule × one area of the repo —
- * a single coherent agent job. The area is `<packagesDir>/<package>` for
- * files under it, the top path segment otherwise, `(root)` for bare files.
- * Order is rule priority (mechanical-first) then folder; oversized
- * groups split into sorted chunks of at most 12 findings. Exported from the
- * module barrel deliberately: its ordering/cap edge cases are combinatorial
- * — the test standards' promotion signal — so it carries direct tests.
- */
+/** One batch is one rule in one area of the repo, so each is a single coherent agent job. */
 export const batchFindings = ({ blocking, advisories, packagesDir }: Params): RefactorBatch[] => {
 	const areaOf = ({ path }: { path: string }) => {
 		const segments = path.split('/');
@@ -91,9 +75,8 @@ export const batchFindings = ({ blocking, advisories, packagesDir }: Params): Re
 		return segments.length > 1 && segments[0] ? segments[0] : '(root)';
 	};
 
-	// A finding spanning areas (a duplicate block spanning packages, say) can never be
-	// resolved by an agent scoped to one side — it gets a dedicated cross
-	// batch whose file set covers every side.
+	// A finding spanning areas cannot be resolved by an agent scoped to one side,
+	// so it gets a cross batch covering every side.
 	const folderOf = ({ finding }: { finding: StandardsFinding }) => {
 		const areas = new Set(finding.files.map((file) => areaOf({ path: file.path })));
 

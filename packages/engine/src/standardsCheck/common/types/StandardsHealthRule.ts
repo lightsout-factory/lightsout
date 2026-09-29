@@ -1,13 +1,8 @@
 import type { StandardsSet } from '@lightsout/standards-contracts';
 
 /**
- * One rule's health: whether code checks it, and how the agents that met its
- * findings responded.
- *
- * Blocking sites and advice are counted separately and never mixed. They are
- * recorded by different mechanisms — a blocking site's fate is re-checked on
- * disk, while advice has only the agent's own word for it — and one combined
- * number would let the stronger evidence hide behind the weaker.
+ * Blocking sites and advice are never mixed: a blocking site's fate is
+ * re-checked on disk, while advice has only the agent's own word for it.
  */
 export interface StandardsHealthRule {
 	id: string;

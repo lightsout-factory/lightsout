@@ -13,7 +13,6 @@ import type { StandardsHealth } from '#src/standardsCheck/common/types/Standards
 import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
 import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
 
-/** The running counts for one rule: every field of its report row except the ones the rule itself supplies. */
 type Tally = Omit<StandardsHealthRule, 'id' | 'set' | 'documentPath' | 'checked'>;
 
 const emptyTally = (): Tally => ({
@@ -41,12 +40,6 @@ const tallyFor = ({ tallies, rule }: { tallies: Map<string, Tally>; rule: string
 	return created;
 };
 
-/**
- * One refactor run's recorded evidence: the work-list frozen at its start and
- * the step records that answered it. Anything else — an implement run, a
- * manifest that will not parse, a work-list that has been deleted — is not this
- * report's material.
- */
 const readRefactorRun = async ({ cwd, runId }: { cwd: string; runId: string }) => {
 	const manifest = await readRunManifest({ cwd, runId });
 
@@ -61,13 +54,7 @@ const readRefactorRun = async ({ cwd, runId }: { cwd: string; runId: string }) =
 	return { worklist, steps: manifest.steps };
 };
 
-/**
- * One batch's blocking sites, tallied against what its report says happened.
- * Every frozen site counts as attempted; a site absent from the remaining keys
- * was resolved, one still there in a declined batch was declined, and anything
- * else — including every site of a batch with no parseable report — is
- * untracked, because a batch that failed is not a batch that judged.
- */
+/** A site of a batch with no parseable report is untracked, not declined: a batch that failed is not a batch that judged. */
 const countBatchSites = ({ tallies, blocking, report }: { tallies: Map<string, Tally>; blocking: StandardsFinding[]; report?: BatchReport }) => {
 	const remaining = report ? new Set(report.remainingSiteKeys) : undefined;
 	const leftStanding = new Set<string>();
@@ -104,7 +91,7 @@ const countBatchSites = ({ tallies, blocking, report }: { tallies: Map<string, T
 	}
 };
 
-/** The agent's own account of the advice it was shown — the only record judgment-only rules ever get. */
+/** The only record judgment-only rules ever get. */
 const countAdvice = ({ tallies, outcomes }: { tallies: Map<string, Tally>; outcomes: AdvisoryOutcome[] }) => {
 	for (const entry of outcomes) {
 		const tally = tallyFor({ tallies, rule: entry.rule });
@@ -135,22 +122,7 @@ interface Params {
 	packs: LoadedStandardsPack[];
 }
 
-/**
- * The pack-health report: which rules code checks and which are judgment,
- * counted from the pack's own folders, and how often agents declined each
- * rule's findings, aggregated from this repo's persisted refactor runs.
- *
- * The two questions are deliberately separate from `standards-check`. That
- * command asks whether the code is clean today; this one asks which rules are
- * worth their noise — a question about the rules, answerable only across runs.
- *
- * A run whose manifest or work-list cannot be read is skipped in silence: the
- * report aggregates what is readable, and one corrupt run directory must not
- * take the whole account down with it.
- *
- * @param cwd - the repo whose `.lightsout/runs` history is read
- * @param packs - the loaded standards packs, which supply every rule the report has a row for
- */
+/** A run whose manifest or work-list cannot be read is skipped in silence, so one corrupt run directory cannot take the whole account down. */
 export const buildStandardsHealth = async ({ cwd, packs }: Params): Promise<StandardsHealth> => {
 	const tallies = new Map<string, Tally>();
 

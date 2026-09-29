@@ -7,32 +7,23 @@ import { isBlockingGap } from '#src/plan/common/utils/isBlockingGap.ts';
 
 interface Params {
 	memory: GradeMemory;
-	/** The gaps this pass already produced — a record a BLOCKING one of them carries as `findingId` is not repeated. */
 	gaps: GradedGap[];
-	/** Record id → why `verifyOpenFindings` refused to close it this pass; copied onto that record's surfaced gap. */
+	/** Record id → why `verifyOpenFindings` refused to close it this pass. */
 	refusals?: Map<string, string>;
 }
 
-/** The ruling half of a surfaced record: a human's question for an `open` one, and the unjudged stamp with its stored reason for a `pending` one. */
 const blockingRuling = ({ record, refusals }: { record: GradeFindingRecord; refusals?: Map<string, string> }) =>
 	record.status === GradeFindingStatus.Pending
 		? { outcome: GapOutcome.Unjudged, unjudgedReason: record.unjudgedReason }
 		: { outcome: GapOutcome.NeedsAHuman, humanDecision: record.humanDecision, unjudgedReason: refusals?.get(record.id) };
 
 /**
- * Every record still blocking after a pass — `open` or `pending` — as a blocking
- * gap on the same list the readers' findings arrive on.
- *
- * This is how an unresolved finding keeps blocking when no reader re-reported
- * it: a reader's silence is not evidence the question was answered, and only the
- * re-verification judge closes an open record. It needs no change to
- * `isBlockingGap` — an open record surfaces as `needs-a-human` and a pending one
- * as `unjudged`, both of which that one predicate already blocks on.
+ * A reader's silence is not evidence the question was answered, so every
+ * blocking record surfaces as a gap whether or not a reader re-reported it.
  *
  * A record is skipped only when a gap in this pass carries its id AND that gap
- * is itself blocking. A fresh judge ruling a matched finding `agent-can-decide`
- * or `already-answered` must not be able to hide an open record for a pass —
- * that judge answered a reader's paraphrase, not the record.
+ * is itself blocking. A judge ruling a matched finding non-blocking answered a
+ * reader's paraphrase, not the record, so it must not hide an open record.
  */
 export const openFindingGaps = ({ memory, gaps, refusals }: Params): GradedGap[] => {
 	const carried = new Set(gaps.filter((gap) => isBlockingGap({ gap })).map((gap) => gap.findingId));

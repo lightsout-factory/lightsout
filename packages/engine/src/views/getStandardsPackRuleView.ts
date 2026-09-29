@@ -9,14 +9,10 @@ interface Params {
 }
 
 /**
- * One rule of one pack, with its prose and the files that prove it.
- *
  * Fetched a rule at a time rather than with the pack, because a pack's fixture
- * text runs to megabytes and a page shows one rule's worth of it at once.
+ * text runs to megabytes and a page shows one rule's worth at once.
  *
- * @param cwd - the repo whose config decides which packs load
- * @param name - the pack's `name` from its lightsout-standards.json, which is what the URL carried
- * @param rule - the rule id the URL carried, as its folder name spells it minus the numeric prefix
+ * @param rule - the rule's folder name minus its numeric prefix
  * @throws {StandardsPackNotFoundError} When no pack this repo loads answers to the name.
  * @throws {StandardsPackRuleNotFoundError} When the pack holds no rule of that id.
  */

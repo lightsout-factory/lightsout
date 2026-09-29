@@ -19,14 +19,9 @@ interface Params {
 }
 
 /**
- * One scoped repair of a demonstrated remote-check failure, inside the
- * integration transaction that owns the tree.
- *
- * It calls the integrator once and answers what happened. It does not commit,
- * does not run the gates, does not fetch the evidence and does not own the
- * outer retries — the parent transaction rebuilds, verifies and rolls back, and
- * a complete report here merely earns the tree that verification rather than
- * standing in for it.
+ * The parent transaction rebuilds, verifies and rolls back, so a complete
+ * report here merely earns the tree that verification rather than standing in
+ * for it.
  *
  * Anything but a completed report is a blocked ship carrying the agent's own
  * words: an unclear cause, a fix that would need work the branch never set out

@@ -3,9 +3,8 @@ import { CoverageWorklist } from '#src/contracts/coverage/CoverageWorklist.ts';
 import { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import { PlanDocumentKind } from '#src/contracts/views/PlanDocumentKind.ts';
 
-/** A plan as a reader shows it: markdown prose, a parsed frozen work-list, or a recorded absence. */
 export const PlanDocument = z.object({
-	/** Repo-relative path as asked for. */
+	/** Repo-relative. */
 	path: z.string(),
 	kind: z.enum(PlanDocumentKind),
 	/** Present iff kind is 'markdown'. */

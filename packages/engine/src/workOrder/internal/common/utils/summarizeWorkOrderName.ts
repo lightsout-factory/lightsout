@@ -11,9 +11,8 @@ import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts'
 interface Params {
 	/** The checkout the harness is spawned in. The call reads nothing from it, but every spawn needs a working directory. */
 	cwd: string;
-	/** The tracker's own spelling of the ticket reference the title belongs to. */
+	/** The tracker's own spelling. */
 	ticketRef: string;
-	/** The ticket's title, as the tracker holds it. */
 	title: string;
 	config: LightsoutConfig;
 	/** Test seam for the one agent call — defaults to the harness the config names. */
@@ -21,16 +20,7 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/**
- * The words a work order's label carries, summarised from its ticket's title
- * by the repository's own harness.
- *
- * A read-only one-shot with a fixed two-minute ceiling — the same ceiling the
- * doctor's throwaway call takes, and for the same reason: long enough for a few
- * words from a cold harness, short enough that a hang never holds a command
- * that has written nothing yet. It grants no commands, because the call reads a
- * string and answers a string.
- */
+/** The ceiling is long enough for a few words from a cold harness, short enough that a hang never holds the command. */
 const readSummary = async ({
 	cwd,
 	ticketRef,
@@ -63,14 +53,8 @@ const readSummary = async ({
 };
 
 /**
- * Three or four words naming the work, summarised from the ticket's title.
- *
- * It answers a string and never an error arm. Every failure — a driver that
- * throws, a rate-limited harness, an answer the contract refuses twice — falls
- * back to the mechanical cut of the title and narrates that through
- * `onProgress`. The asymmetry is the point: the name is a label, and a command
- * that refused to create a work order because a model call timed out would be
- * worse than a mechanically cut one.
+ * Never fails: any failure falls back to a mechanical cut of the title, since
+ * refusing to create a work order over a label would be worse.
  */
 export const summarizeWorkOrderName = async ({ cwd, ticketRef, title, config, driver, onProgress }: Params): Promise<string> => {
 	onProgress?.(`summarising the title of ${ticketRef} into a work order name`);

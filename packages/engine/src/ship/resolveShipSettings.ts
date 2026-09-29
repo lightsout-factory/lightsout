@@ -6,7 +6,6 @@ interface Params {
 	config: LightsoutConfig;
 }
 
-/** The compiled pattern, or undefined when the source is not a regular expression at all. */
 const compilePattern = ({ source }: { source: string }) => {
 	try {
 		return new RegExp(source);
@@ -16,14 +15,9 @@ const compilePattern = ({ source }: { source: string }) => {
 };
 
 /**
- * The `ship` block with its defaults applied, or undefined when the configured
- * ticket pattern cannot do its job.
- *
- * A pattern that is not a valid regular expression, or one that captures no
- * `ticket` group, makes every branch unshippable — so it is refused here, once,
- * at startup. The callers turn that into a usage error naming the key rather
- * than into a result file, because a result file records a run and no run
- * happened.
+ * A pattern that is not a valid regular expression, or captures no `ticket`
+ * group, makes every branch unshippable, so it is refused at startup. Callers
+ * report a usage error rather than a result file, because no run happened.
  */
 export const resolveShipSettings = ({ config }: Params): ShipSettings | undefined => {
 	const ship = config.ship;

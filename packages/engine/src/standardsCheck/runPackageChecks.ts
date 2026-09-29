@@ -12,7 +12,6 @@ import { findFoldersWithoutAliasSource } from '#src/standardsCheck/internal/comm
 import { runRuleCheck } from '#src/standardsCheck/internal/common/utils/runRuleCheck.ts';
 import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
 
-/** A rule that will actually run, with everything the run needs already resolved. */
 interface LiveRule {
 	id: string;
 	inputKind: StandardsInputKind;
@@ -22,12 +21,7 @@ interface LiveRule {
 	settings: Record<string, number>;
 }
 
-/**
- * The rules this run executes: the ones that ship a check, are not switched
- * off, and whose document is in play for this repo. Channel gating is
- * all-or-nothing per document — a framework document that does not apply
- * contributes no prose, so it contributes no checks either.
- */
+/** Channel gating is all-or-nothing per document: a framework document that does not apply contributes no prose, so no checks either. */
 const selectLiveRules = ({ packs, states, channels }: { packs: LoadedStandardsPack[]; states: Map<string, ResolvedRuleState>; channels: string[] }) => {
 	const live: LiveRule[] = [];
 
@@ -52,16 +46,9 @@ const selectLiveRules = ({ packs, states, channels }: { packs: LoadedStandardsPa
 	return live;
 };
 
-/** Build one rule's input, from the kinds a single shared build can serve and the one that cannot. */
 type BuildInput = (params: { kind: StandardsInputKind; settings: Record<string, number> }) => Promise<StandardsCheckInput>;
 
-/**
- * Every live rule's findings, walked one input kind at a time so each kind's
- * expensive build happens once and is handed to every rule that asked for it.
- *
- * A kind needing TypeScript when none resolves does not fail the run — its
- * rules are named as skipped and the rest of the check still reports.
- */
+/** A kind needing TypeScript when none resolves does not fail the run: its rules are named as skipped and the rest still report. */
 const runLiveRules = async ({
 	live,
 	buildInput,
@@ -129,20 +116,13 @@ interface Params {
 }
 
 /**
- * Run a standards pack's checks over a repo.
+ * Each input is built once and shared, except clone-spans: its detector is
+ * driven by the asking rule's own `minTokens`, and two rules with different
+ * thresholds are two different detections.
  *
- * The engine does all the reading. Rules are grouped by the input they declared
- * and each input is built once from one shared content cache, so a file ten
- * rules care about is opened once — the clone-spans kind excepted, since its
- * detector is driven by the asking rule's own `minTokens` and two rules with
- * different thresholds are two different detections.
+ * A rule's id and severity are stamped here rather than inside the check, so a
+ * check cannot name them wrong.
  *
- * A rule's id and severity are stamped here rather than inside the check: the
- * id comes from the folder the check was loaded from and the severity from the
- * repo's resolved policy, so a check that could name them itself could also
- * name them wrong.
- *
- * @param channels - the repo's active framework channels
  * @throws {Error} When a check throws or returns something that is not a list of findings — a broken check is a pack bug, not a finding.
  */
 export const runPackageChecks = async ({
@@ -177,11 +157,9 @@ export const runPackageChecks = async ({
 		notes.push(`${skipped.join(', ')} skipped — no typescript resolvable from the target repo`);
 	}
 
-	// Asked only when a file-text rule actually ran, since that is the pass whose
-	// answer depends on finding an alias declaration. Gated on the rules rather
-	// than on whether the cache holds one: a repo that declares aliases nowhere is
-	// precisely the case worth reporting, and testing the cache would stay silent
-	// about it.
+	// Gated on the rules rather than on whether the cache holds an alias
+	// declaration: a repo that declares aliases nowhere is precisely the case
+	// worth reporting.
 	const uncovered = live.some((rule) => rule.inputKind === StandardsInputKind.FileText)
 		? findFoldersWithoutAliasSource({ files: allFiles, contents: cache })
 		: [];

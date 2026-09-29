@@ -31,8 +31,6 @@ export const planLintCommand = async ({ flags, cwd }: CommandContext): Promise<v
 		printStructuralFinding({ finding });
 	}
 
-	// Every finding prints, advisories included; the exit code is the signal the
-	// writer's self-lint loop and humans both read, and only a blocking finding
-	// moves it.
+	// Only a blocking finding moves the exit code, which the writer's self-lint loop reads.
 	return exitCli({ code: blocking.length > 0 ? 1 : 0 });
 };

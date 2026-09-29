@@ -6,7 +6,6 @@ import { isDelegationForwardBody } from '../../../../common/parsing/isDelegation
 import { getOwningPack } from '../../../../common/paths/getOwningPack.ts';
 import { normalizeFunctionTokens } from './normalizeFunctionTokens.ts';
 
-/** One measured function body: where it sits, and what the finding calls it. */
 interface BodySite {
 	name: string;
 	path: string;
@@ -16,14 +15,10 @@ interface BodySite {
 }
 
 /**
- * Every body big enough to be a duplicate candidate, grouped by its normalized
- * token stream. The stream is its own identity — hashing it would buy a shorter
- * key and a collision the rule could never explain to the person reading it.
- *
- * Grouped within one shipped thing rather than across the repo. A standards
- * package installs on machines where the rest of this repo is absent, so a
- * function it shares with the engine cannot be deduplicated — whichever copy
- * went, one side would be left importing what is not there.
+ * The token stream is its own key: a hash would buy a collision the rule could
+ * never explain. Grouped within one shipped pack, because a standards package
+ * installs where the rest of this repo is absent, so a function it shares with
+ * the engine cannot be deduplicated.
  */
 const groupByBody = ({ input, minBodyTokens }: { input: SyntaxTreeInput; minBodyTokens: number }) => {
 	const byBody = new Map<string, BodySite[]>();
@@ -47,10 +42,9 @@ const groupByBody = ({ input, minBodyTokens }: { input: SyntaxTreeInput; minBody
 };
 
 /**
- * The duplicate groups merged by the files they span. Two groups over the SAME
- * file set become one finding naming both: the identity is the paths, and a
- * body in the key would re-mint that identity on any edit — the one thing a
- * debt ledger and a gate cannot survive.
+ * Groups over the same file set become one finding: a body in the key would
+ * re-mint the identity on any edit, which a debt ledger and a gate cannot
+ * survive.
  */
 const mergeByFileSet = ({ groups }: { groups: BodySite[][] }) => {
 	const bySite = new Map<string, { files: RawStandardsFinding['files']; described: string[] }>();

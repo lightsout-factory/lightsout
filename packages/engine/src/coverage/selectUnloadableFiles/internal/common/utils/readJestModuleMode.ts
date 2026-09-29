@@ -14,12 +14,9 @@ const EsmSettings = z.looseObject({
 
 const EsmExtensions = z.looseObject({ extensionsToTreatAsEsm: z.array(z.string()).optional().catch(undefined) });
 
-// The canonical way a TypeScript project turns Jest ESM on is
-// `preset: 'ts-jest/presets/default-esm'`, which sets extensionsToTreatAsEsm
-// inside the preset module rather than in the consumer's own config file.
-// Reading literal top-level keys only would report CommonJS for exactly that
-// repo. Jest's own resolution order, one level deep: Jest does not chain
-// presets, and neither does this.
+// The canonical TypeScript ESM setup, `preset: 'ts-jest/presets/default-esm'`,
+// sets extensionsToTreatAsEsm inside the preset module rather than in the
+// consumer's config. One level deep: Jest does not chain presets.
 const readPresetExtensions = ({ configPath, preset }: { configPath: string; preset: string }) => {
 	const requirePreset = createRequire(configPath);
 
@@ -58,18 +55,13 @@ const readProjectExtensions = ({ projects }: { projects: unknown[] }) => {
 };
 
 interface Params {
-	/** The scope's loaded Jest configuration, or undefined when the engine could not read one. */
 	loaded: LoadedJestConfig | undefined;
 }
 
 /**
- * How a coverage scope's Jest loads its files, from an already-loaded Jest
- * configuration, or undefined when there was none to load.
- *
- * Undefined is the honest answer and the safe one: every caller reads it as
- * "assume CommonJS", which is exactly the behaviour that shipped before this
- * reader existed. A wrong ESM verdict would fail a run on a file no test could
- * ever cover, so the read only ever reports ESM on positive evidence.
+ * Undefined is the safe answer: every caller reads it as "assume CommonJS". A
+ * wrong ESM verdict would fail a run on a file no test could ever cover, so the
+ * read only ever reports ESM on positive evidence.
  */
 export const readJestModuleMode = ({ loaded }: Params): JestModuleMode | undefined => {
 	if (loaded === undefined) {

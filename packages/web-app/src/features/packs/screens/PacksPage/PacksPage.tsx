@@ -6,14 +6,8 @@ import { RuleSetCard } from '#src/features/packs/screens/PacksPage/internal/comp
 import { YourPackCard } from '#src/features/packs/screens/PacksPage/internal/components/YourPackCard.tsx';
 
 /**
- * The Standards Pack lightsout ships, as cards: one per set of rules it holds —
- * TypeScript, React, TanStack — each opening its rules, then a card for a
- * team's own.
- *
- * Static by design: this is what every repo gets out of the box, read from the
- * copy bundled into the app, so it reads the same on the web as on a machine
- * with a repo open. A set with no rules in it is never a card: the listing
- * counts rules per channel and leaves out a channel of prose alone.
+ * Static by design: read from the copy bundled into the app, so it reads the
+ * same on the web as on a machine with a repo open.
  */
 export const PacksPage = () => {
 	const { data: pack } = useSuspenseQuery(defaultPackQueryOptions());

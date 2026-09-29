@@ -13,17 +13,12 @@ import { isBarrelFile } from '../../../../../common/paths/isBarrelFile.ts';
 export const check: StandardsCheckModule = {
 	inputKind: 'file-text',
 	/**
-	 * An index file is a package's entry, and nothing else.
+	 * Every import names the file that declares it, so an index file inside a
+	 * package lists names nothing reads through it. A package's entry is the
+	 * exception, because other packages do read through it.
 	 *
-	 * Every import names the file that declares what it imports, so an index
-	 * file inside a package lists names nothing reads through it. A package's
-	 * entry is the exception, because other packages do: one sitting at the
-	 * package root or its `src/`, or one the manifest names — a subpath export
-	 * pointing into a folder included. A route the framework loads is no index
-	 * file at all.
-	 *
-	 * File text rather than a path list, because which files a package
-	 * publishes is written in its manifest, and only this input carries it.
+	 * File text rather than a path list, because which files a package publishes
+	 * is written in its manifest, and only this input carries it.
 	 */
 	run: ({ input }): RawStandardsFinding[] => {
 		const { files, contents } = readFileTexts({ input });

@@ -15,13 +15,7 @@ interface Props {
 	onOpenPlan: (path: string) => void;
 }
 
-/**
- * One pipeline step: how it ended, what it cost, and its own report.
- *
- * Anchored by its id so the timeline above can jump to it. A step's report is
- * read by shape rather than by the step's name — the manifest stores it
- * opaquely, and the role that produced it is what decides what it holds.
- */
+/** Anchored by its id so the timeline can jump to it. */
 export const StepCard = ({ step, onOpenPlan }: Props) => {
 	const report = summarizeStepReport({ report: step.report });
 

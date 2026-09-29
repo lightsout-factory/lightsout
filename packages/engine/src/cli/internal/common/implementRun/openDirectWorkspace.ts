@@ -18,11 +18,7 @@ interface Params {
 }
 
 /**
- * The checkout an `implement-direct` run builds in, guarded and stocked with the
- * ticket the user named — or the one sentence saying why there is none.
- *
- * The order is the point: the workspace first, then the dirty-tree guard
- * against it, and only then the input copy, so the guard judges the tree the
+ * The dirty-tree guard runs before the input copy, so it judges the tree the
  * run will commit rather than a tree the copy has already touched.
  */
 export const openDirectWorkspace = async ({

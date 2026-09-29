@@ -6,14 +6,6 @@ import { GapOutcome } from '#src/contracts/plan/grade/GapOutcome.ts';
 import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatus.ts';
 
 /**
- * One judged finding as the plan's memory keeps it: what was asked, who settled
- * it, and every state change since.
- *
- * The identity half mirrors `GradedGap`, because a record IS a gap the memory
- * carried across passes. What it adds is provenance a single pass cannot hold —
- * when the question was first raised, the judge outcome that created it, the
- * citations that closed it, and every time a later pass reopened it.
- *
  * The top-level `phase`, `lens`, `area`, `gap`, `decision` and `options` are the
  * record's representative; `observations` holds every reader's own report of the
  * defect once a judge confirms several described one.
@@ -34,9 +26,8 @@ export const GradeFindingRecord = z.object({
 	lastSeen: z.string(),
 	status: z.enum(GradeFindingStatus),
 	/**
-	 * The judge outcome that settled the record, kept verbatim and never rewritten
-	 * once written. Absent only on a `pending` record, which no judge has ruled on;
-	 * `unjudged` is excluded because it is the engine's stamp, not a ruling.
+	 * Never rewritten once written. Absent only on a `pending` record; `unjudged`
+	 * is excluded because it is the engine's stamp, not a ruling.
 	 */
 	disposition: z.enum([GapOutcome.NeedsAHuman, GapOutcome.AgentCanDecide, GapOutcome.AlreadyAnswered]).optional(),
 	/** Why nobody settled a `pending` record, so the blocker it surfaces as can say what went wrong. */
@@ -53,10 +44,9 @@ export const GradeFindingRecord = z.object({
 	resolutions: z.array(z.object({ phase: z.string(), answerAt: z.string(), verifiedAt: z.string() })).default([]),
 	reopened: z.array(z.object({ at: z.string(), reason: z.string(), priorStatus: z.enum(GradeFindingStatus) })).default([]),
 	/**
-	 * When a re-verification judge last answered about this record, whatever the
-	 * answer — closed, refused, or never replied. Absent means NO judge has ever
-	 * been asked, which is why it is optional rather than defaulted: an invented
-	 * stamp would read as "already asked" and silence the record forever.
+	 * Absent means no re-verification judge has ever been asked, which is why it
+	 * is optional rather than defaulted: an invented stamp would read as "already
+	 * asked" and silence the record forever.
 	 */
 	lastRecheckedAt: z.string().optional(),
 });

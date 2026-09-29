@@ -7,14 +7,8 @@ interface Params {
 }
 
 /**
- * `lightsout plan workspace` — the deterministic subcommand both planning skills
- * run first, before they read a single source file.
- *
- * It has one outcome: a refusal never reaches it, because `planCommand` cannot
- * dispatch any subcommand without a checkout and exits with the resolver's
- * sentence first. The absolute path is written alone on the last stdout line,
- * below every progress and announcement line, so a skill reads it back without
- * parsing anything.
+ * The path is written alone on the last stdout line so a planning skill reads it
+ * back without parsing. A refusal never reaches here: `planCommand` exits first.
  */
 export const planWorkspaceCommand = async ({ worktree }: Params): Promise<void> => {
 	console.log(worktree.cwd);

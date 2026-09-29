@@ -24,17 +24,10 @@ export interface FileTextInput {
 	referenceFiles: string[];
 	/**
 	 * Text for every path in `files` ∪ `referenceFiles`, plus every tsconfig.json
-	 * and every package.json sitting above one of them, when present; each file
-	 * read once for the whole run.
+	 * and package.json above one of them, when present.
 	 *
-	 * Every tsconfig, not just the root's, because path aliases are declared per
-	 * package — a rule resolving one file's imports must read the nearest config
-	 * above THAT file, not the workspace's.
-	 *
-	 * The manifests are promised for the same reason: a package may declare its
-	 * aliases in `package.json` → `imports` instead, and they also carry the
-	 * dependency lists a rule needs to tell which framework mandates govern a
-	 * file.
+	 * Every tsconfig and manifest, not just the root's, because path aliases are
+	 * declared per package: a rule must read the nearest config above that file.
 	 */
 	contents: Map<string, string>;
 	/** Repo-relative roots of the standards packs in the tree. Inside one, a `tests/` folder names a document set rather than a directory of tests — pass it to `isTestFile`. */
@@ -66,21 +59,14 @@ export interface TypeCheckerInput {
 	referenceFiles: string[];
 	compiler: typeof ts;
 	/**
-	 * One entry per file the engine could type — every path in `files` ∪
-	 * `referenceFiles`, tests included — holding the parsed tree and a checker
-	 * that answers about it.
+	 * One entry per file the engine could type in `files` ∪ `referenceFiles`.
+	 * Wider than `source` on purpose, because a consumer may be a test or outside a
+	 * `--path` scope; which files a rule may report on is what `source`, `tests`
+	 * and `files` answer.
 	 *
-	 * Wider than `source` on purpose, the same way the file-text input's
-	 * `contents` is: a rule asking "does anything consume this?" needs its
-	 * consumers typed, and a consumer may be a test or a file outside a `--path`
-	 * scope. Which files a rule may REPORT on is a separate question that
-	 * `source`, `tests` and `files` answer.
-	 *
-	 * The checker is handed out per file rather than once for the run because a
-	 * repo has one program per tsconfig, and a type is only meaningful to the
-	 * checker of the program that holds the file. A file no tsconfig covers is
-	 * simply absent — a rule reads what it was given and says nothing about the
-	 * rest, which is the same way it degrades in a repo with no compiler at all.
+	 * The checker is per file because a repo has one program per tsconfig, and a
+	 * type is meaningful only to the checker of the program holding the file. A
+	 * file no tsconfig covers is absent.
 	 */
 	typedFiles: Map<string, { sourceFile: ts.SourceFile; checker: ts.TypeChecker }>;
 	/** What each package declares it depends on, keyed by package root (`.` for the repo). A framework carve-out is keyed on what a package DECLARES, so a typed rule needs this to honour one. */
@@ -120,11 +106,7 @@ export interface CloneSpansInput {
 }
 
 /**
- * The inputs a check may declare, one interface per kind. A check never opens a
- * file: it says which shape it needs and the engine builds that shape once per
- * run from one shared content cache, so every file is read exactly once no
- * matter how many rules want it.
- *
- * The set is closed for now — a pack cannot ship its own reader.
+ * A check never opens a file: the engine builds each shape once per run from one
+ * shared content cache. The set is closed; a pack cannot ship its own reader.
  */
 export type StandardsCheckInput = FileListInput | FileTextInput | SyntaxTreeInput | TypeCheckerInput | TestFileInput | ImportGraphInput | CloneSpansInput;

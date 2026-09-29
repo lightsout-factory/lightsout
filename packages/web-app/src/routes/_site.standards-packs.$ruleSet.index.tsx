@@ -5,19 +5,17 @@ import { toRuleSetChannel } from '#src/features/packs/internal/common/utils/toRu
 import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
 import { RuleSetPage } from '#src/features/packs/screens/RuleSetPage/RuleSetPage.tsx';
 
-/** What the query string may say. Every key optional, because an absent key is how the URL spells "do not narrow on this". */
 interface RuleSetSearch {
 	check?: CheckKind;
 	text?: string;
 }
 
-/** Keeps a query value the vocabulary knows and drops the rest, so a stray value narrows nothing rather than everything. */
+/** A stray value is dropped, so it narrows nothing rather than everything. */
 const validateSearch = (search: Record<string, unknown>): RuleSetSearch => ({
 	check: Object.values(CheckKind).find((kind) => kind === search.check),
 	text: typeof search.text === 'string' && search.text !== '' ? search.text : undefined,
 });
 
-/** The default pack holds no rule in the set the path names. */
 const RuleSetNotFound = () => {
 	const { ruleSet } = Route.useParams();
 
@@ -28,11 +26,7 @@ const RuleSetNotFound = () => {
 	);
 };
 
-/**
- * The route's half of the filter contract: it owns the URL, the page owns the
- * filtering, and both speak the same two words for a kind of check. Every change navigates with `replace: true`, so the back button
- * leaves the page rather than unwinding one keystroke at a time.
- */
+/** Changes navigate with `replace: true`, so back leaves the page rather than unwinding one keystroke at a time. */
 const RuleSetRoutePage = () => {
 	const { ruleSet } = Route.useParams();
 	const search = Route.useSearch();
@@ -51,9 +45,7 @@ const RuleSetRoutePage = () => {
 
 export const Route = createFileRoute('/_site/standards-packs/$ruleSet/')({
 	validateSearch,
-	// The pack, warmed before the first render so the page is server-rendered
-	// whole. A set the pack holds no rules in is a missing address, not an empty
-	// page.
+	// A set the pack holds no rules in is a missing address, not an empty page.
 	loader: async ({ context, params }) => {
 		const channel = toRuleSetChannel({ ruleSet: params.ruleSet });
 		const pack = await context.queryClient.ensureQueryData(defaultPackQueryOptions());

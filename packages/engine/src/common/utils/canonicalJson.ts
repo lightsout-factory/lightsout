@@ -19,14 +19,9 @@ const canonicalize = ({ value }: { value: unknown }): unknown => {
 };
 
 /**
- * A stable JSON encoding: two values that differ only in the order their object
- * keys were written encode identically, while two arrays in different orders do
- * not.
- *
- * It exists because a fingerprint hashed over `JSON.stringify` would move
- * whenever a field was added to an object literal in a different position,
- * reporting an input as changed that nobody touched. Array order is preserved
- * because an ordered list IS its order — a plan's phase files in a different
+ * A fingerprint hashed over `JSON.stringify` would move whenever a field was
+ * added to an object literal in a different position. Array order is kept
+ * because an ordered list is its order: a plan's phase files in a different
  * sequence are a different plan.
  */
 export const canonicalJson = ({ value }: Params): string =>

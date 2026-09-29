@@ -4,17 +4,14 @@ import { buildRawFinding } from '../../../../common/findings/buildRawFinding.ts'
 
 const sourceExtension = /\.(ts|tsx|js|jsx|mjs|cjs)$/;
 
-/** One casing of a colliding name: how to print it, and a real file to anchor the finding to. */
 interface Variant {
 	display: string;
 	representative: string;
 }
 
 /**
- * Every sibling-name collision in the tree, keyed by parent folder and
- * lowercased name. A file's stem joins the comparison alongside its full name,
- * because module resolution reads `Gates.ts` and `gates/` as the same
- * specifier — the collision the full names alone would miss.
+ * A file's stem is compared alongside its full name, because module
+ * resolution reads `Gates.ts` and `gates/` as the same specifier.
  */
 const collectCollisions = ({ files }: { files: string[] }) => {
 	const byParent = new Map<string, Map<string, Map<string, Variant>>>();

@@ -1,8 +1,6 @@
 import { z } from 'zod';
 
 /**
- * What one harness process reported it spent.
- *
  * Every field is optional, which is the whole point. A process killed at its
  * ceiling has token counts from the messages it streamed and no cost — a
  * harness states a session cost only in a terminal result event a killed

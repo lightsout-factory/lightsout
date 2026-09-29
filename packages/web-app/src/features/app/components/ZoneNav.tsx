@@ -8,15 +8,9 @@ const zoneLinkClasses = 'flex shrink-0 items-center gap-2 rounded-md px-3 py-2 t
 const zoneLinkActive = { className: 'bg-sidebar-accent-selected' };
 
 /**
- * The way into the pages that read this machine's repo, headed by the path of
- * the repo they read.
- *
  * Suspends on the repo root rather than subscribing: `/app` only exists on a
  * local server with a repo under it, and its route has the root in the cache
  * before any child renders, so there is no absent or pending case to draw.
- *
- * A column beside the page on a wide screen, a strip under the site bar on a
- * narrow one, so the page itself always keeps the full width.
  */
 export const ZoneNav = () => {
 	const {

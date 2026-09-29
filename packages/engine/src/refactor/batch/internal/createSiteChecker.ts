@@ -7,19 +7,13 @@ interface Params {
 	cwd: string;
 	/** Check scope of the run's worklist. */
 	checkPath?: string;
-	/** Include baselined findings — must match the worklist's mode. */
+	/** Must match the worklist's mode. */
 	checkAll: boolean;
 }
 
 /**
- * A batch's window onto the live tree: what the checks currently find, and
- * which of a frozen set of sites are still standing.
- *
- * The two are bound together because they must ask the same question. A
- * re-check run at a different scope, or with baselined findings counted
- * differently from the worklist that froze the sites, answers about a tree the
- * batch was never working on — and a site that simply fell outside the scope
- * reads as a site the batch resolved.
+ * Bound to the worklist's scope and mode: a re-check at a different scope would
+ * read a site that fell outside it as one the batch resolved.
  */
 export const createSiteChecker = ({ cwd, checkPath, checkAll }: Params): BatchSiteChecker => {
 	const checkLive = () => runStandardsCheck({ cwd, path: checkPath, all: checkAll, persist: false });

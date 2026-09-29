@@ -2,10 +2,8 @@ import { basename, dirname } from 'node:path';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { FrozenWorklist } from '#src/views/internal/common/types/FrozenWorklist.ts';
 
-/** At most this many rule ids read as a label rather than a list; the rest become a count. */
 const namedRuleLimit = 3;
 
-/** The distinct rules a refactor work-list froze, in the order its batches first name them. */
 const describeRules = ({ rules }: { rules: string[] }) => {
 	const distinct = [...new Set(rules)];
 	const named = distinct.slice(0, namedRuleLimit).join(', ');
@@ -22,13 +20,8 @@ interface Params {
 }
 
 /**
- * The human label a run answers to in a list.
- *
- * A frozen work-list names the run better than its path can: two refactor runs
- * differ by which rules they burn down, and their paths are identical. Where
- * there is no work-list, the plan path is the name — a plan's folder for the
- * `plan.md` and `overview.md` a folder is built around, and the file's own name
- * otherwise.
+ * A frozen work-list names the run better than its path: two refactor runs
+ * differ by the rules they burn down, and their paths are identical.
  */
 export const getRunTitle = ({ plan, worklist }: Params): string => {
 	const name = basename(plan);
@@ -39,8 +32,7 @@ export const getRunTitle = ({ plan, worklist }: Params): string => {
 
 	if (worklist?.kind === PipelineKind.Coverage) {
 		// No count: the frozen measurement carries no threshold and no per-file
-		// pass/fail, so there is nothing honest to count in a title. The numbers
-		// live on the detail page, where the run's own totals are in reach.
+		// pass/fail, so there is nothing honest to count in a title.
 		title = PipelineKind.Coverage;
 	} else if (worklist?.kind === PipelineKind.Refactor || name.endsWith('worklist.json')) {
 		title = rules.length > 0 ? `${PipelineKind.Refactor} · ${describeRules({ rules })}` : PipelineKind.Refactor;

@@ -8,19 +8,13 @@ interface Params {
 }
 
 /**
- * Import one rule's check and validate its shape. The only place the engine
- * executes pack code: the .ts file is imported directly under Node's native
- * type stripping, so a check must stay erasable-only and may import values from
- * inside its own pack alone.
+ * The .ts file is imported under Node's native type stripping, so a check must
+ * stay erasable-only and may import values from inside its own pack alone.
  *
- * @param checkPath - absolute path of the rule folder's check.ts
  * @throws {Error} When the file has no `check` export, or that export is not a valid check.
  */
 export const importCheckModule = async ({ checkPath }: Params): Promise<StandardsCheckModule> => {
-	// @vite-ignore: the path is only known at run time — a bundler cannot
-	// pre-resolve which standards pack a consumer will point the engine at,
-	// and must leave this import to Node. Server-only: nothing reachable from
-	// the browser entry imports this module.
+	// The path is only known at run time, so a bundler must leave this import to Node.
 	const imported: Record<string, unknown> = await import(/* @vite-ignore */ pathToFileURL(checkPath).href);
 	const parsed = StandardsCheckModule.safeParse(imported.check);
 

@@ -2,11 +2,9 @@ import testChangeReviewerPrompt from '#src/agents/prompts/testChangeReviewer.md'
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 
 interface Params {
-	/** Full plan content, inlined. */
 	planContent: string;
 	/** Optional overview plan content (phased plans): context only. */
 	overviewContent?: string;
-	/** The verification checkpoint in flight. */
 	checkpoint: string;
 	/** The live acceptance-test mapping — what the reviewer must account for. */
 	acceptanceTests: Pick<AcceptanceTestRecord, 'criterion' | 'testFile' | 'testName'>[];
@@ -20,11 +18,8 @@ interface Params {
 }
 
 /**
- * Assemble the test-change reviewer invocation deterministically. The role
- * prompt, the overview and the plan are the same at every checkpoint of a run,
- * so they ride the system prompt the harness caches through; only the
- * checkpoint's own evidence — the mapping, the changed source files and the
- * change bundle — is paid for again.
+ * The role prompt, the overview and the plan are the same at every checkpoint
+ * of a run, so they ride the system prompt the harness caches through.
  */
 export const buildTestChangeReviewInvocation = ({
 	planContent,

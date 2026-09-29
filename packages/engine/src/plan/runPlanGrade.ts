@@ -34,7 +34,6 @@ type RunPlanGradeResult =
 	| { status: typeof PlanRunStatus.Failed; workspaceDir: string; error: string; grade?: GradeReport; gradePath?: string }
 	| { status: typeof PlanRunStatus.PausedRateLimit; workspaceDir: string; error: string; grade?: GradeReport; gradePath?: string };
 
-/** What one invocation's pass is run from, gathered once by the caller so the runner is handed one object rather than nine arguments. */
 interface PassContext {
 	params: PlanGradeParams;
 	pass: DetectionPass;
@@ -48,14 +47,10 @@ interface PassContext {
 }
 
 /**
- * The pass a blocking structural finding buys: the verdict written and appended,
- * with no agent spawned and the finding memory untouched.
- *
- * It is recorded as an INCOMPLETE pass rather than as a new kind of result,
- * because that is what it is, and every reader of `grade.json` already knows
- * what an incomplete pass means. The memory is left alone because nothing was
- * judged: a stop that rewrote it would move a plan's settled decisions on
- * evidence it never gathered.
+ * Recorded as an incomplete pass, which every reader of `grade.json` already
+ * understands. The finding memory is left alone because nothing was judged: a
+ * stop that rewrote it would move a plan's settled decisions on evidence it
+ * never gathered.
  */
 const stopOnStructure = async ({
 	params,
@@ -93,8 +88,6 @@ const stopOnStructure = async ({
 };
 
 /**
- * The pass the scope decision chose — one pass, and the invocation ends with it.
- *
  * Approval is granted from the read coverage and the closed findings rather than
  * from how far one pass reached, so the pass that reads a repair is the pass that
  * may approve it. A whole-plan review bought afterwards would re-read files the
@@ -121,47 +114,23 @@ const runDecidedPass = async (context: PassContext) => {
 };
 
 /**
- * Read-only detector for a plan's grade: the deterministic structural re-check
- * the draft loop converged against, plus an agent gap-check for decision-level
- * gaps. It writes `grade.json`, appends the pass to the plan's append-only grade
- * history, keeps one durable record per judged finding in `grade-memory.json`,
- * and never edits the plan. A single plan is
- * `.lightsout/work-orders/<work-order-name>/plans/<plan-id>/plan.md`;
- * a phased plan is `overview.md` as context plus each `phase<N>-<slug>.md`.
+ * Never edits the plan.
  *
- * Every plan file a pass reads is checked by three differently-briefed agents at
- * once; each finding they return is then handed to its own judge answering one
- * question, who settles this. Only the findings a judge ruled need a human, plus
- * the ones nobody judged, decide the grade.
+ * A blocking structural finding stops the pass before any agent is spawned,
+ * since those findings alone put the plan below A. The verdict is an incomplete
+ * pass with an empty gap list: a stage that did not run is unchecked, never
+ * passed.
  *
- * **The structural preflight.** A plan the mechanical lint gates on is not worth
- * the semantic fan-out: those findings alone already put it below A. So a
- * blocking structural finding stops the pass before any agent is spawned, and
- * the verdict is written as an INCOMPLETE pass with an empty gap list — a stage
- * that did not run is unchecked, never passed.
+ * A plan file a recorded pass already read at its current text is not read
+ * again, and a pass approves once every plan file is covered at its current
+ * text and every finding is closed, whatever that one pass itself read.
  *
- * **How far a pass reaches** is the engine's decision, from a fingerprint of
- * everything the pass measures — the plan text, the code beside it, the
- * standards, the plan-relevant config, the prompt texts and the model. A
- * re-grade after a repair reads the edited phases and every phase connected to
- * them, falling back to the whole plan whenever that set cannot be established.
- * A recorded decision reaches the phases it names, and the phases connected to
- * them. What is left of that reach is narrowed once more by the read coverage:
- * a plan file a recorded pass already read at the very text it still carries is
- * not read again, and a pass approves once every plan file is covered at its
- * current text and every finding is closed — whatever that one pass itself read.
- * A recorded passing full review that still covers the current inputs is
- * reported as current rather than paid for twice.
+ * A finding nobody has verified as answered keeps blocking even when a later
+ * reader does not report it again; a record closes only when a re-verification
+ * judge cites where the plan now states the answer and the engine confirms it.
  *
- * **What the memory buys.** A question a judge already settled is not
- * re-investigated, and one nobody has verified as answered keeps blocking even
- * when a later reader happens not to report it again — a record closes only when
- * a re-verification judge points at where the plan now states the answer and the
- * engine confirms that citation.
- *
- * A human may still narrow a pass with `phases`, recorded on the report's face
- * exactly as before; the structural lint and the prior-art detection still cover
- * EVERY plan file, because the lint is cross-phase.
+ * The structural lint and prior-art detection cover every plan file even when
+ * `phases` narrows the pass, because the lint is cross-phase.
  */
 export const runPlanGrade = async (params: PlanGradeParams): Promise<RunPlanGradeResult> => {
 	const { cwd, name, phases, onProgress, standards, model, effort } = params;

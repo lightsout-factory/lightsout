@@ -5,19 +5,12 @@ interface Params {
 }
 
 /**
- * The stop reason for a gate run that reached no verdict about the code — it
- * never got the machine, a gate crashed, or a gate ran past its own ceiling.
+ * No caller may spend a fix on such a run or call it red, because no gate
+ * command returned a verdict. Coordination is checked first, then crash, then
+ * timeout; the full gate output rides beside the reason and still names any
+ * other gate.
  *
- * Written once because four settles stop on it the same way: the refactor
- * batch's settle and supervisor stage, the coverage batch's settle and the
- * shared pre-flight baseline. None of them may spend a fix on such a run, and
- * none may call it red, because no gate command here returned a verdict.
- *
- * The checks run coordination, then crash, then timeout, so one run carrying
- * both a crash and a timeout names the crash first; the full gate output rides
- * beside it and still names the other gate.
- *
- * @returns the stop reason, or undefined when the result is a verdict — green, or a red a fix may be spent on
+ * @returns the stop reason, or undefined when the result is a verdict
  */
 export const describeGateNoVerdict = ({ result }: Params): string | undefined => {
 	let reason: string | undefined;

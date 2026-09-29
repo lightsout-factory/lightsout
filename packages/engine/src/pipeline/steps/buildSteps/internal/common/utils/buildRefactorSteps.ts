@@ -19,17 +19,12 @@ interface Params {
 	skipRefactor?: boolean;
 	/** Read at every call rather than captured once, so a re-invocation names the ledger rows as they now stand. */
 	acceptanceTests: () => AcceptanceTestRecord[];
-	/** The plan's declared renames, handed on so the verification context stays complete. */
 	renames: RenameRule[];
 }
 
 /**
- * The refactor steps: the standards-gated loop, formatter, and verification,
- * or nothing when the caller asked to skip them.
- *
- * The code-writing entries scope on `standardsScopeFiles` rather than
- * `sourceFiles`: the gate judges findings on the test files a run wrote, so a
- * run whose only changed files are tests still has standards to answer for.
+ * Scoped on `standardsScopeFiles` rather than `sourceFiles`: the gate judges findings on test
+ * files too, so a run that changed only tests still has standards to answer for.
  */
 export const buildRefactorSteps = ({
 	run,

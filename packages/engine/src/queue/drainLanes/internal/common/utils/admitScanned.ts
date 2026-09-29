@@ -13,15 +13,9 @@ interface Params {
 }
 
 /**
- * One scan's selection named, reconciled against already-merged branches and
- * then folded into the ledger — the one path the opening selection and every
- * re-scan both take.
- *
- * The order is a requirement rather than a preference: the merge check reads
- * each work order's stored branch, so a wave that has not been named has
- * nothing to check. What the naming step left behind joins this scan's settled
- * skips, which is what marks those tickets attempted so no later scan offers
- * them again.
+ * Naming comes first because the merge check reads each work order's stored
+ * branch. The naming step's left-behind tickets join the settled skips, which
+ * marks them attempted so no later scan offers them again.
  *
  * @returns the work orders that joined the run, in admission order
  */

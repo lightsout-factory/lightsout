@@ -22,22 +22,13 @@ import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
 
 /**
- * The checkout a subcommand acts on — the plan's worktree for every subcommand
- * that addresses a plan by name, the launching checkout otherwise — with the
- * ticket advisory said once, against that same checkout.
+ * An unknown subcommand is left unopened so it still reaches the usage error with
+ * nothing printed ahead of it. The config read is the launching checkout's, so an
+ * uncommitted `plan.worktree` edit is obeyed.
  *
- * This is the one place a resolver refusal is handled, for every subcommand
- * alike: no subcommand can be dispatched without a checkout to act on, so the
- * sentence goes to stderr and the process exits 1 with nothing dispatched. An
- * unknown subcommand is excluded, so it still falls through to the usage error
- * with nothing printed ahead of it, and a nameless one reaches its own refusal
- * unchanged. The config read is the launching checkout's, so an uncommitted
- * `plan.worktree` edit is still obeyed.
- *
- * A `--name` that is not a plan address is refused before any tree is cut:
- * every plan of a work order is addressed as the work order's name and the
- * plan's id joined by a slash, so a bare folder name names no plan at all and
- * every subcommand under it would draft, grade or publish the wrong thing.
+ * A `--name` that is not a plan address (`<work order>/<plan id>`) is refused
+ * before any tree is cut: a bare folder name names no plan, and every subcommand
+ * would act on the wrong thing.
  */
 const openDispatchCheckout = async ({ cwd, flags, subcommand }: { cwd: string; flags: CommandContext['flags']; subcommand: string | undefined }) => {
 	const name = getStringFlag({ flags, name: 'name' });
@@ -64,8 +55,8 @@ const openDispatchCheckout = async ({ cwd, flags, subcommand }: { cwd: string; f
 export const planCommand = async ({ flags, rest, cwd: launchingCwd }: CommandContext): Promise<void> => {
 	const subcommand = getPositionals({ args: rest })[0];
 
-	// `workspace` has no --name refusal of its own further down, so a nameless
-	// one is refused here — before any tree is established for it.
+	// `workspace` has no --name refusal of its own, so a nameless one is refused
+	// here, before any tree is established for it.
 	if (subcommand === 'workspace') {
 		await getRequiredFlag({ flags, name: 'name' });
 	}
@@ -77,27 +68,21 @@ export const planCommand = async ({ flags, rest, cwd: launchingCwd }: CommandCon
 		return;
 	}
 
-	// verify-facts is deterministic — no agent, so no resolveConfigAndDriver.
 	if (subcommand === 'verify-facts') {
 		await planVerifyFactsCommand({ flags, rest, cwd });
 		return;
 	}
 
-	// lint is deterministic — no agent, so no resolveConfigAndDriver.
 	if (subcommand === 'lint') {
 		await planLintCommand({ flags, rest, cwd });
 		return;
 	}
 
-	// sync-decisions spawns no agent either — it re-renders the Decision Log from
-	// the saved records and writes the plan files, so it needs no driver.
 	if (subcommand === 'sync-decisions') {
 		await planSyncDecisionsCommand({ flags, rest, cwd });
 		return;
 	}
 
-	// publish spawns no agent either — it reads the plan folder and talks to the
-	// tracker, so it needs no driver.
 	if (subcommand === 'publish') {
 		await planPublishCommand({ flags, rest, cwd });
 		return;
@@ -121,9 +106,8 @@ export const planCommand = async ({ flags, rest, cwd: launchingCwd }: CommandCon
 			return;
 		}
 
-		// A `--phase` present but yielding no values reaches the runner as an empty
-		// list, which it refuses — the "graded less than you asked and said
-		// nothing" failure this work exists to remove.
+		// A `--phase` yielding no values reaches the runner as an empty list, which
+		// it refuses rather than silently grading less than was asked.
 		const phases = getListFlag({ flags, name: 'phase' });
 
 		await planGradeCommand({ cwd, driver, name, standards, config, phases });

@@ -9,7 +9,6 @@ interface Params {
 	config?: LightsoutConfig;
 }
 
-/** The roots the config asks for, absolute — its three-way meaning stated once. */
 const resolveRoots = ({ cwd, standardsPacks }: { cwd: string; standardsPacks: string[] | false | undefined }) => {
 	if (standardsPacks === false) {
 		return [];
@@ -22,11 +21,7 @@ const resolveRoots = ({ cwd, standardsPacks }: { cwd: string; standardsPacks: st
 	return standardsPacks.map((entry) => (isAbsolute(entry) ? entry : resolve(cwd, entry)));
 };
 
-/**
- * Rule ids collide across packs exactly as they collide inside one: a config
- * override or a site key naming the id would be ambiguous. Each pack validated
- * itself at load, so anything left here is a cross-pack clash.
- */
+/** A config override or a site key naming a colliding id would be ambiguous. */
 const findCrossPackDuplicates = ({ packs }: { packs: LoadedStandardsPack[] }) => {
 	const owners = new Map<string, LoadedStandardsPack>();
 	const duplicates: string[] = [];
@@ -47,17 +42,10 @@ const findCrossPackDuplicates = ({ packs }: { packs: LoadedStandardsPack[] }) =>
 };
 
 /**
- * Load every standards pack a run works against — the one place the config's
- * three-way meaning is encoded: unspecified = the pack the plugin ships
- * (announced, never silent), `false` = explicitly none, an array = exactly
- * these roots, each resolved against the consumer repo unless already absolute.
+ * Packs load one at a time, so the first bad root is the one reported. Loading
+ * is left to throw — a consumer that declared standards and did not get them
+ * must not run.
  *
- * Packs load in the order listed, one at a time, so the first bad root is the
- * one reported. Loading is left to throw — a consumer that declared standards
- * and did not get them must not run.
- *
- * @param cwd - the consumer repo, which relative pack roots resolve against
- * @param config - the consumer's config; absent means the bundled default pack
  * @throws {Error} When a declared pack cannot be loaded, or two loaded packs claim one rule id.
  */
 export const resolveStandardsPacks = async ({ cwd, config }: Params): Promise<LoadedStandardsPack[]> => {

@@ -5,11 +5,9 @@ import { SortDirection } from '#src/common/constants/SortDirection.ts';
 import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
 import { cn } from '#src/common/utils/cn.ts';
 
-/** Two sort values of the same column, compared as the type they are. */
 const compareValues = ({ first, second }: { first: string | number; second: string | number }) =>
 	typeof first === 'number' && typeof second === 'number' ? first - second : String(first).localeCompare(String(second));
 
-/** The rows in the active column's own order, or exactly as given when no sortable column is in charge. */
 const orderRows = <TRow,>({
 	rows,
 	columns,
@@ -39,7 +37,6 @@ interface Props<TRow> {
 	sortKey?: string;
 	sortDirection?: SortDirection;
 	onSort?: (params: { key: string; direction: SortDirection }) => void;
-	/** Rendered instead of the table when `rows` is empty. */
 	empty?: ReactNode;
 	/** Table rows rendered under a row when it is expanded; null for a row with nothing under it. */
 	renderExpanded?: (row: TRow) => ReactNode;
@@ -49,13 +46,10 @@ interface Props<TRow> {
 }
 
 /**
- * A real `<table>` inside its own scroll container, so a wide table scrolls
- * sideways rather than pushing the page sideways with it.
+ * Scrolls inside its own container so a wide table does not push the page sideways.
  *
- * Sorting is held by the caller — every consumer keeps it in the URL — but
- * applied here, by the active column's own `sortValue`. That way a column says
- * once how it sorts and no page writes a comparator. Consumers filter; the
- * table orders.
+ * The caller holds the sort state and the table applies it by the column's
+ * `sortValue`, so a column says once how it sorts and no page writes a comparator.
  */
 export const DataTable = <TRow,>({
 	rows,
@@ -84,8 +78,6 @@ export const DataTable = <TRow,>({
 							const key = getRowKey(row);
 							const expanded = renderExpanded?.(row);
 							const isExpanded = expandedKeys.includes(key);
-							// A row the caller returned nothing for has nothing to open, so it
-							// keeps its leading cell and loses only the chevron.
 							const canOpen = hasDisclosure && expanded !== null && expanded !== undefined;
 
 							return (

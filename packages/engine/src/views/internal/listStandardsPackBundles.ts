@@ -6,20 +6,15 @@ import { resolveAuthoredStandardsPack } from '#src/standardsPacks/resolveAuthore
 import { resolveDefaultStandardsPack } from '#src/standardsPacks/resolveDefaultStandardsPack.ts';
 import { standardsPackBundleCache } from '#src/views/internal/common/constants/standardsPackBundleCache.ts';
 
-/** One pack root to read, and whether it is the pack a run loads when the config names none. */
 interface PackRoot {
 	packPath: string;
 	isDefault: boolean;
 }
 
 /**
- * The roots this repo loads, or none — never a throw.
- *
- * A page has to render on a machine with no config, no repo and no authored pack
- * beside it, so every way of ending up with nothing is answered with an empty
- * list and a line in the server log. The run-time `resolveStandardsPacks` keeps
- * the opposite stance, which is correct there: a run that declared standards and
- * did not get them must not proceed.
+ * Never a throw: a page has to render on a machine with no config, no repo and
+ * no authored pack. The run-time `resolveStandardsPacks` rightly throws, since a
+ * run that declared standards and did not get them must not proceed.
  */
 const resolvePackRoots = async ({ cwd }: { cwd: string }) => {
 	let roots: PackRoot[] = [];
@@ -46,16 +41,9 @@ interface Params {
 }
 
 /**
- * Every standards pack this repo loads, read whole from its folder — the source
- * the three pack views project from.
- *
- * A pack that will not load is skipped with a line in the server log rather than
- * failing the page: the viewer says what it could find, and the person who can
- * fix the pack is the one reading the server's output. Two packs claiming one
- * name are the same case, because the name is what a URL addresses a pack by —
- * the first one listed wins and the second is named in the log.
- *
- * @param cwd - the repo whose config decides which packs load, and which relative pack roots resolve against
+ * A pack that will not load is skipped with a server-log line rather than
+ * failing the page. Two packs claiming one name are the same case, because a
+ * URL addresses a pack by its name: the first one listed wins.
  */
 export const listStandardsPackBundles = async ({ cwd }: Params): Promise<StandardsPackBundle[]> => {
 	const bundles: StandardsPackBundle[] = [];

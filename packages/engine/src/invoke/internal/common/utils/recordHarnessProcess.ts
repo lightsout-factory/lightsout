@@ -18,28 +18,13 @@ interface Params {
 }
 
 /**
- * One rung of the ladder: spawn the harness, watch what it reports as it
- * streams, and write one process mark whatever ends it.
+ * A rejection is `timed-out` when the elapsed time reached the ceiling this call
+ * handed the driver, never by matching the rejection's text.
  *
- * It says what the process produced without deciding what happens next, so the
- * loop that decides keeps room for the reasoning behind each of its exits. The
- * mark is evidence rather than a gate — a record that cannot be written must
- * never turn a working agent call into a failed one — and what it claims is
- * only what this function can prove at the moment the spawn settles: a
- * rejection is `timed-out` when the elapsed time reached the ceiling this call
- * handed the driver and `failed` otherwise, never by matching the text of the
- * rejection.
- *
- * Usage cannot wait for the spawn to settle, because a process killed at its
- * ceiling returns no result at all. The latest payload the stream reported is
- * kept as it arrives and written when nothing better came back; a spawn that
- * reported neither writes no usage, never a zero that would be
- * indistinguishable from a real one.
- *
- * That one figure is also handed back, on both arms, so the caller's running
- * total takes exactly what the process mark carries. A second reading of the
- * stream elsewhere would be a second notion of what a spawn spent, and the two
- * records would drift apart again.
+ * Usage is captured from the stream because a process killed at its ceiling
+ * returns no result. A spawn that reported none writes no usage, never a zero
+ * indistinguishable from a real one. The same figure is handed back so the
+ * caller's total cannot drift from the process mark.
  */
 export const recordHarnessProcess = async ({
 	driver,
@@ -66,10 +51,8 @@ export const recordHarnessProcess = async ({
 		endReason = result.rateLimited ? ProcessEndReason.RateLimited : ProcessEndReason.Completed;
 		usage = result.usage ?? streamed;
 	} catch (error) {
-		// Timeouts and spawn failures are step failures the engine records
-		// and the run resumes from — never uncaught crashes that zombie the
-		// manifest. No blind retry: a second identical timeout just doubles
-		// the cost of learning the ceiling is too low.
+		// A step failure the run resumes from, never an uncaught crash that zombies
+		// the manifest. No blind retry: a second identical timeout only doubles the cost.
 		rung = { ok: false, failure: `agent invocation failed: ${messageOf({ error })}` };
 		endReason =
 			invocation.timeoutMs !== undefined && Date.now() - startedAt.getTime() >= invocation.timeoutMs ? ProcessEndReason.TimedOut : ProcessEndReason.Failed;

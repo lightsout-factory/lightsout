@@ -12,10 +12,6 @@ interface Props {
 	ruleSet: string;
 }
 
-/**
- * One rule as a row that opens it: its id and what it catches, its kind of check,
- * and what it does by default — blocks a run, only advises, or waits to be turned on.
- */
 export const RuleRow = ({ rule, ruleSet }: Props) => {
 	const severity = severityDisplays[rule.defaultSeverity];
 

@@ -6,7 +6,7 @@ interface Params {
 	settings: JiraTrackerSettings;
 	ticketId: string;
 	label: string | undefined;
-	/** Whether the label should end up on the ticket. False takes it off. */
+	/** False takes it off. */
 	present: boolean;
 }
 

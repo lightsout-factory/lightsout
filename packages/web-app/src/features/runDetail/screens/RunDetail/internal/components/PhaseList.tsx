@@ -7,13 +7,7 @@ interface Props {
 	steps: RunDetailStep[];
 }
 
-/**
- * A coordinator's phases: which file each ran, how it ended, and the way into
- * the run that did it.
- *
- * The phase file's own name rather than its path, because every phase of one
- * plan sits in one folder and the folder says nothing that tells them apart.
- */
+/** Shows the phase file's name, not its path: every phase of one plan sits in the same folder. */
 export const PhaseList = ({ steps }: Props) => {
 	const phases = steps.filter((step) => step.childRunId !== undefined);
 

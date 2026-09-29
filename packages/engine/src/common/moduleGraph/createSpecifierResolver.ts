@@ -3,9 +3,8 @@ import type { ImportAliases } from '#src/common/types/ImportAliases.ts';
 import type { SpecifierResolver } from '#src/common/types/SpecifierResolver.ts';
 
 interface Params {
-	/** Repo-relative files — the universe specifiers resolve against. */
 	files: string[];
-	/** Each package's package.json `imports`, as `readImportAliases` reads them. Omitted, a `#` specifier resolves by suffix like any other alias. */
+	/** Omitted, a `#` specifier resolves by suffix like any other alias. */
 	importAliases?: ImportAliases;
 }
 
@@ -31,13 +30,9 @@ const matchPattern = ({ pattern, specifier }: { pattern: string; specifier: stri
 };
 
 /**
- * One specifier resolver over one file universe, shared by every pass that
- * must agree on what an import points at (edge collection, barrel surfaces).
- * No tsconfig and no bundler config: relative specifiers resolve against the
- * importing file's folder; a `#` specifier resolves through the package.json
- * `imports` of the package that owns the importing file, the way Node,
- * TypeScript, esbuild and Jest all resolve it; everything else resolves by
- * unique path suffix. Every unresolvable or ambiguous specifier is `undefined`.
+ * Shared by every pass that must agree on what an import points at. It reads
+ * no tsconfig or bundler config, so non-relative, non-`#` specifiers resolve
+ * by unique path suffix.
  */
 export const createSpecifierResolver = ({ files, importAliases = new Map() }: Params): SpecifierResolver => {
 	const byStripped = new Map<string, string>();
@@ -51,9 +46,6 @@ export const createSpecifierResolver = ({ files, importAliases = new Map() }: Pa
 	const resolveRelative = ({ from, specifier }: { from: string; specifier: string }) =>
 		probe({ stripped: posix.normalize(posix.join(posix.dirname(from), stripExtension({ path: specifier }))) });
 
-	// Aliased specifiers (`@/x/y`, `@scope/pkg/src/x`) resolve by unique path
-	// suffix: drop leading segments one tier at a time; the first tier with
-	// exactly one match wins. Multiple matches are ambiguous — no resolution.
 	// Single-segment specifiers (external packages like `react`) never reach
 	// a matchable tier.
 	const resolveBySuffix = ({ specifier }: { specifier: string }) => {
@@ -78,12 +70,8 @@ export const createSpecifierResolver = ({ files, importAliases = new Map() }: Pa
 	};
 
 	// A `#` specifier means one file in the importing package, however many
-	// others share its suffix: `#src/plan/draft/index.ts` beside a
-	// `contracts/plan/draft/index.ts` is not ambiguous to Node, so it is not
-	// ambiguous here. The owning package is the nearest manifest above the
-	// importer, and among its patterns an exact key beats a wildcard and a
-	// longer prefix beats a shorter one. A specifier no pattern of that package
-	// matches falls back to suffix resolution.
+	// others share its suffix, as in Node. Pattern precedence follows Node too:
+	// an exact key beats a wildcard, a longer prefix beats a shorter one.
 	const resolveSubpathImport = ({ from, specifier }: { from: string; specifier: string }) => {
 		const scope = [...importAliases.keys()]
 			.filter((directory) => directory === '.' || from.startsWith(`${directory}/`))

@@ -1,6 +1,5 @@
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 
-/** Deepest directory (depth ≥ 2) holding >50% of findings — undefined when no directory that deep dominates, or the report is too small to diagnose. */
 const findDominantPath = ({ findings }: { findings: StandardsFinding[] }) => {
 	const paths = findings.map((finding) => finding.files[0]?.path).filter((path): path is string => path !== undefined);
 
@@ -44,13 +43,7 @@ interface Params {
 	findings: StandardsFinding[];
 }
 
-/**
- * The self-diagnosis note for a report dominated by one directory, or undefined
- * when the report has none to make. A report whose findings pile up under a
- * single deep path is usually a config gap rather than a code problem (live
- * case: a generated Prisma dir missing from `generated`), so the note names
- * both the directory and the config list that would exclude it.
- */
+/** Findings piled up under one deep path usually mean a config gap, such as generated output missing from `generated`, rather than a code problem. */
 export const buildDominantPathNote = ({ findings }: Params): string | undefined => {
 	const dominant = findDominantPath({ findings });
 

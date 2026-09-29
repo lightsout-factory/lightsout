@@ -2,7 +2,6 @@ import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalog
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';
 
-/** `lightsout self-check` — the engine's own check, granted to a writing agent and run inside that agent's own spawn. */
 export const selfCheckCatalogEntry: CommandCatalogEntry = {
 	id: 'self-check',
 	cli: 'lightsout self-check',

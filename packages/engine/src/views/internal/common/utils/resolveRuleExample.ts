@@ -10,15 +10,6 @@ interface Params {
 	fixtures: StandardsPackFixture[];
 }
 
-/**
- * How a page shows a rule's examples: what its rule.md declares, or, for a pack
- * that declares nothing, what the files make plain. One file or none a side
- * reads as a snippet; more than that is a repo, opening each side on its first
- * file in path order.
- *
- * @param declared - the rule's own declaration
- * @param fixtures - the rule's fixture files
- */
 export const resolveRuleExample = ({ declared, fixtures }: Params): RuleExample => {
 	const pass = fixtures.filter((fixture) => fixture.side === FixtureSide.Pass).map((fixture) => fixture.path);
 	const fail = fixtures.filter((fixture) => fixture.side === FixtureSide.Fail).map((fixture) => fixture.path);

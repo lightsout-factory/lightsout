@@ -13,21 +13,16 @@ import type { SelfCheckResult } from '#src/gates/common/types/SelfCheckResult.ts
 import { runSelfCheck } from '#src/gates/runSelfCheck.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 
-/** What this step's self-check mirrors: the checkpoint it precedes, whether coverage can answer truthfully, and what it is scoped to. */
 interface StepSelfCheck {
-	/** The checkpoint this self-check mirrors, undefined for a pipeline that names none — spelled out so spreading this always carries the key. */
+	/** Required rather than optional so spreading this always carries the key. */
 	checkpoint: string | undefined;
 	coverage: boolean;
 	wholeRepository: boolean;
 }
 
-/** The closing sentence every ending carries — nothing an agent runs decides whether a step passed. */
 const verdictLine = "The engine's own gates run afterwards over the full scope and are the only verdict.";
 
-/**
- * The headline for an ending that ran no gate. None of the four says anything is
- * wrong with the change, and none of them may read as a check that passed.
- */
+// None of these may read as a check that passed, nor as the change being wrong.
 const noGateHeadlines: Record<Exclude<SelfCheckReason, typeof SelfCheckReason.Ran>, string> = {
 	[SelfCheckReason.NothingChanged]: 'nothing to check — the tree holds no change yet',
 	[SelfCheckReason.NothingScheduled]:
@@ -38,15 +33,8 @@ const noGateHeadlines: Record<Exclude<SelfCheckReason, typeof SelfCheckReason.Ra
 		'no gates were run — another gate run of this repository holds the machine, so this check was still waiting for it rather than your change being red',
 };
 
-/**
- * This step's self-check, or nothing where the step has none.
- *
- * Both verification checkpoints map as well as the steps they follow, because a
- * fix re-invocation is the same role built by the same builder: a fix spawn that
- * re-runs the gate it is repairing is where the second repair is saved, and
- * mapping it keeps the role's system prompt byte-identical between a step and
- * its own fix re-invocation.
- */
+// The verification checkpoints map too, so a step's fix re-invocation gets the
+// same self-check and a byte-identical system prompt.
 const selfCheckOfStep = ({ pipeline, step }: { pipeline: PipelineKind | undefined; step: string }): StepSelfCheck | undefined => {
 	// The direct pipeline names no checkpoints and runs the root block over the
 	// whole tree with coverage on, so its self-check mirrors that rather than the
@@ -55,8 +43,8 @@ const selfCheckOfStep = ({ pipeline, step }: { pipeline: PipelineKind | undefine
 		return step === 'implement' ? { checkpoint: undefined, coverage: true, wholeRepository: true } : undefined;
 	}
 
-	// A manifest predating the discriminator reads as the implement pipeline,
-	// which is how every other reader treats one.
+	// A manifest without the discriminator reads as the implement pipeline, as
+	// every other reader treats one.
 	if (pipeline !== undefined && pipeline !== PipelineKind.Implement) {
 		return undefined;
 	}
@@ -68,7 +56,7 @@ const selfCheckOfStep = ({ pipeline, step }: { pipeline: PipelineKind | undefine
 	return step === 'refactor' || step === 'verify-refactor' ? { checkpoint: 'verify-refactor', coverage: true, wholeRepository: false } : undefined;
 };
 
-/** The run's manifest, or the one line explaining why it could not be read — never a stack trace in the agent's shell. */
+// A one-line error, never a stack trace in the agent's shell.
 const readManifest = async ({ cwd, runId }: { cwd: string; runId: string }) => {
 	try {
 		return { manifest: await readRunManifest({ cwd, runId }) };
@@ -77,7 +65,6 @@ const readManifest = async ({ cwd, runId }: { cwd: string; runId: string }) => {
 	}
 };
 
-/** What the gates found, as evidence about the code: the command that went red and the output it left. */
 const printGateFailures = ({ result }: { result: SelfCheckResult }) => {
 	for (const gate of result.gates) {
 		// A timed-out attempt never returned a verdict, so it is not evidence about the code.
@@ -99,14 +86,9 @@ const printGateFailures = ({ result }: { result: SelfCheckResult }) => {
 };
 
 /**
- * The engine's own check of a writing agent's change, run by that agent inside
- * its own spawn.
- *
- * It takes the live run's id and nothing else: step, pipeline, gate schedule and
- * coverage answer are read from that run's manifest, and package scope from the
- * live git diff, so an argument an agent appends can never widen what it runs.
- * It never takes the run lock — the run that spawned the agent already holds it
- * — and it writes nothing to the run's manifest.
+ * Takes the run id and nothing else, reading the rest from the manifest and the
+ * git diff, so an argument an agent appends can never widen what it runs. It never
+ * takes the run lock: the run that spawned the agent already holds it.
  */
 export const selfCheckCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const runId = await getRequiredFlag({ flags, name: 'run' });

@@ -27,17 +27,11 @@ interface Params {
 }
 
 /**
- * The focused plan-writer spawn and everything that can end the draft with it: an
- * agent that failed or rate-limited, a facts/decisions discrepancy the agent
- * found (not a drafting bug — the inputs are wrong, so surface it and never
- * loop), or files it claimed but did not write.
+ * A facts/decisions discrepancy the agent found is not a drafting bug — the
+ * inputs are wrong — so it is surfaced and never looped on.
  *
- * The invocation comes from the focused builder, the engine's rendered evidence
- * brief is threaded in, and the runner requests the focused environment.
- *
- * The granted command prefixes are the sync prefix then the lint prefix, in the order the writer runs them, and a
- * spawn granted nothing asks the harness for nothing. The focused environment
- * narrows the built-in tool set; it never touches this grant.
+ * The focused environment narrows the built-in tool set; it never touches the
+ * command grant.
  */
 export const authorFocusedPlanFiles = async ({
 	context,
@@ -48,8 +42,7 @@ export const authorFocusedPlanFiles = async ({
 	sync,
 }: Params): Promise<{ stop: RunPlanDraftResult } | { planPaths: string[]; report: PlanDraftReport }> => {
 	const { cwd, driver, name, workspaceDir, facts, decisions, executorFileLimit, standards, config, model, effort, permissions, timeoutMs } = context;
-	// Nothing has been checked yet at any of this step's exits, so every one of
-	// them carries an empty advisory set — stated once rather than four times.
+	// Nothing has been checked yet at any of this step's exits.
 	const draftStop = createDraftStop({ workspaceDir, advisories: [] });
 	const invokePlanAgent = createPlanAgentRunner({
 		cwd,

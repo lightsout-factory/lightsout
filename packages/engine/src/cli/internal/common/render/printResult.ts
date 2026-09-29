@@ -11,10 +11,8 @@ import type { RunSummary } from '#src/runState/common/types/RunSummary.ts';
 import { isRunPaused } from '#src/runState/isRunPaused.ts';
 import { summarizeRun } from '#src/runState/summarizeRun.ts';
 
-/** One labelled line of the result block — the label column every line below shares. */
 const label = ({ name, value }: { name: string; value: string }) => console.log(`${name.padEnd(10)}${value}`);
 
-/** What the run's gate commands cost it: how many ran, how many were re-run past a flake, and how many had no script to run. */
 const describeGates = ({ gates }: { gates: RunSummary['gates'] }) => {
 	const parts = [`${gates.commands} command${plural({ count: gates.commands })}`];
 
@@ -29,15 +27,7 @@ const describeGates = ({ gates }: { gates: RunSummary['gates'] }) => {
 	return parts.join(' · ');
 };
 
-/**
- * What the bounded cleanup pass spent and what it left behind.
- *
- * A report, never a verdict: remaining findings are recorded here and the run's
- * own status is untouched by them. A count is named only when there is one —
- * four zeroes say less than the two facts that are always true — and each is
- * labelled the way this block labels everything, number first, as the `gates`
- * line above it does.
- */
+/** A count is named only when there is one: four zeroes say less than the two facts that are always true. */
 const describeCleanup = ({ cleanup }: { cleanup: CleanupSummary }) => {
 	const parts = [`${cleanup.rounds} round${plural({ count: cleanup.rounds })}`, cleanup.endReason ?? 'in progress'];
 
@@ -57,13 +47,8 @@ const describeCleanup = ({ cleanup }: { cleanup: CleanupSummary }) => {
 };
 
 /**
- * What the run left in the branch's history: every commit it made, by short sha
- * and subject.
- *
- * A passing run that added no commit is not a run that produced nothing — its
- * unit's commit landed on an earlier attempt — so it says so rather than
- * leaving a reader to run `git status`. A failed run that committed nothing
- * truthfully has no line at all, which is the undefined below.
+ * A passing run that added no commit had its unit's commit land on an earlier
+ * attempt, so it says so rather than leaving a reader to run `git status`.
  */
 const describeCommits = ({ manifest, ok }: { manifest: RunManifest; ok: boolean }) => {
 	if (manifest.commits.length > 0) {

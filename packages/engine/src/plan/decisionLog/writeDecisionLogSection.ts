@@ -7,17 +7,15 @@ import { writePlanFileIfChanged } from '#src/plan/internal/common/rewriting/writ
 import { parsePlan } from '#src/plan/parsePlan.ts';
 
 interface Params {
-	/** Absolute path of the plan file to rewrite. */
+	/** Absolute. */
 	path: string;
-	/** The rendered section text, heading line included. */
+	/** Heading line included. */
 	section: string;
 }
 
 /**
- * The file's lines with a Decision Log inserted, for a plan file that carries
- * none. `## Global Constraints` is the anchor because every plan variant
- * requires it; a file carrying neither heading is malformed, and the history is
- * appended rather than dropped.
+ * `## Global Constraints` is the anchor because every plan variant requires it;
+ * a file without it is malformed, and the history is appended rather than dropped.
  */
 const insertSection = ({ lines, sectionLines }: { lines: string[]; sectionLines: string[] }) => {
 	const anchor = lines.findIndex((line) => /^##\s+(.+?)\s*$/.exec(line)?.[1] === generatedPlanRegions.globalConstraints);
@@ -29,14 +27,7 @@ const insertSection = ({ lines, sectionLines }: { lines: string[]; sectionLines:
 		: [...lines.slice(0, anchor), ...sectionLines, '', ...lines.slice(anchor)];
 };
 
-/**
- * Put one rendered `## Decision Log` section into one plan file, and touch
- * nothing else.
- *
- * The Decision Log keeps its own writer rather than going through the generic
- * one: it is inserted *before* its anchor instead of after it, and that
- * placement rule is this file's own.
- */
+/** Not the generic section writer: the Decision Log is inserted before its anchor, not after it. */
 export const writeDecisionLogSection = async ({ path, section }: Params): Promise<SyncedPlanFile> => {
 	const original = await readFile(path, 'utf8');
 	const plan = parsePlan({ content: original, base: basename(path) });

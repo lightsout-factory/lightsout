@@ -15,16 +15,6 @@ interface Params {
 	guidance: string;
 }
 
-/**
- * A whole check for a rule that reads test files and reports on what sits
- * inside a hook.
- *
- * `buildHookFinding` already holds the judging of one file's blocks. This
- * holds the rest of the check around it — the input it declares, the read, and
- * the walk across files — so the three rules using it share a body instead of
- * repeating one. Each states only which hooks it reads, what it looks for, and
- * what it says.
- */
 export const buildHookContentCheck = ({ rule, hooks, pattern, detailSuffix, guidance }: Params): StandardsCheckModule => ({
 	inputKind: 'test-file',
 	run: ({ input }) =>

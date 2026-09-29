@@ -9,13 +9,10 @@ import { collectDirectories } from '../../../../common/paths/collectDirectories.
 import { getBaseName } from '../../../../common/paths/getBaseName.ts';
 
 /**
- * Folders that are junk drawers by name at every level — the place code lands
- * when nobody decided where it belongs. Banned even inside `common/`.
- *
- * Framework vocabulary (`components/`, `hooks/`, `services/`, `controllers/`,
- * `models/`) is deliberately NOT here: those names are how React and NestJS
- * projects are actually organised, and banning them cost an un-banning layer
- * of per-framework exceptions that outweighed the rule.
+ * Banned at every level, even inside `common/`. Framework vocabulary
+ * (`components/`, `hooks/`, `services/`, `controllers/`, `models/`) is
+ * deliberately NOT here: those names are how React and NestJS projects are
+ * actually organised.
  */
 const bannedAnywhere = new Set(['helpers', 'lib', 'core', 'misc', 'shared']);
 
@@ -44,10 +41,9 @@ export const check: StandardsCheckModule = {
 			const insideCommon = directory.split('/').slice(0, -1).includes('common');
 			const banned = bannedAnywhere.has(name) || (bannedOutsideCommon.has(name) && !insideCommon);
 
-			// The concession this rule owes, wired rather than assumed away: no
-			// framework in the table mandates a banned name today, so the question
-			// answers no everywhere. The day one does, the rule already concedes
-			// instead of growing an exception layer around itself.
+			// Wired rather than assumed away: no framework in the table mandates a
+			// banned name yet, and when one does the rule concedes instead of growing
+			// an exception layer around itself.
 			if (banned && !isFrameworkNamedFolder({ folder: directory, carveOut })) {
 				findings.push(
 					buildRawFinding({

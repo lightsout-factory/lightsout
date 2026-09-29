@@ -9,42 +9,26 @@ import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';
 import { getComparableSection } from '#src/plan/lint/internal/common/utils/getComparableSection.ts';
 
 interface Params {
-	/** The parsed plan file — read for its `decisionLogRange`, its `lines` and its variant. */
 	plan: ParsedPlan;
 	/** The finding label: this file's basename. */
 	phase: string;
 	/** The merged decision record, brainstorm rows first. */
 	decisions: DecisionsRecord;
-	/** Whether the deliverable this file belongs to is phased — an overview is present, or more than one implementable file is. */
+	/** An overview is present, or more than one implementable file is. */
 	phased: boolean;
-	/** The command a human runs to fix a finding — `buildPlanSyncDecisionsCommand(...).command`. */
+	/** `buildPlanSyncDecisionsCommand(...).command`. */
 	syncCommand: string;
 }
 
-/**
- * The section this file is expected to carry. Decided here rather than by each
- * caller, so the deterministic lint and the dedup precheck cannot ask one plan
- * file for two different sections: a phase file of a phased deliverable carries
- * the pointer at the overview's log, and everything else — a single `plan.md`,
- * a phased deliverable's `overview.md` — carries the full table.
- */
+/** Decided here rather than by each caller, so the lint and the dedup precheck cannot ask one file for two different sections. */
 const expectedSection = ({ plan, decisions, phased }: { plan: ParsedPlan; decisions: DecisionsRecord; phased: boolean }) =>
 	phased && plan.variant === PlanFileKind.Implementable ? decisionLogReference() : renderDecisionLog({ decisions: decisions.decisions });
 
 /**
- * DecisionLogCurrent — a plan file whose `## Decision Log` is not the section
- * the engine would compose from the saved decision records, or which has no
- * such section at all.
- *
- * It blocks: the record is the one authoritative decision history, and a
- * displayed table that disagrees with it is a plan whose reader is told
- * something nobody settled. The remedy is never a hand edit, so the `fix` names
- * the sync command rather than describing what to type — the section belongs to
- * `plan sync-decisions` and to nothing else.
- *
- * Pure and synchronous, like the renderer it compares against: every read-only
- * pass reaches this check, and a check that read the disk a second time could
- * report a difference between two reads rather than a difference the plan has.
+ * Blocking, because the saved record is the one authoritative decision history.
+ * The section is never hand-edited, so the fix names the sync command. Pure and
+ * synchronous: a check that read the disk again could report a difference
+ * between two reads rather than one the plan has.
  */
 export const checkDecisionLog = ({ plan, phase, decisions, phased, syncCommand }: Params): StructuralFinding[] => {
 	const range = plan.decisionLogRange;

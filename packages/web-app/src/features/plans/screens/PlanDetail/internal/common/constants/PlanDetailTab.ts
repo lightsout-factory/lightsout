@@ -1,4 +1,3 @@
-/** The six views a plan workspace is split into, and the value each tab is held by. */
 export const PlanDetailTab = {
 	Plan: 'plan',
 	Decisions: 'decisions',

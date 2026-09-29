@@ -10,16 +10,10 @@ import { appendFriction } from '#src/runState/appendFriction.ts';
 
 interface Params {
 	context: VerifyContext;
-	/** The gate output the fix role has to repair. */
 	errorContext: string;
 	record: StepRecord;
 }
 
-/**
- * One turn of the checkpoint's fix role: invoke it with the error it has to
- * repair, record what it changed, then format and re-run the gates on the tree
- * it left behind.
- */
 export const runFix = async ({ context, errorContext, record }: Params): Promise<RepairOutcome> => {
 	const { run, gitPrefix, id } = context;
 	const fix = await run.invokeRole({ invocation: context.buildFix({ errorContext }), step: id });

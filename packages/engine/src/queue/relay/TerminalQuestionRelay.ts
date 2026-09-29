@@ -11,24 +11,14 @@ const noTerminalMessage = 'there is no terminal to answer on — run `lightsout 
 interface ConstructorParams {
 	settings: QueueSettings;
 	trackerSettings: TrackerSettings;
-	/** Where prompts are printed and answers are typed — `process.stdin` in the CLI, a stream in tests. */
 	input: NodeJS.ReadableStream;
-	/** Where prompts and every worker's progress line are written. */
 	output: NodeJS.WritableStream;
 }
 
 /**
- * The one terminal, shared by every worker in a drain.
- *
- * A class rather than a function because it holds state across calls: the
- * readline interface, the chain that keeps two workers from writing over each
- * other's prompt, and the buffer that holds progress back while a question is
- * on screen. Without that buffer a question is scrolled away by the other
- * in-flight workers, which defeats the one-terminal contract the queue is
- * built on.
- *
- * The terminal implementation of the `QuestionRelay` interface: the one a drain
- * started in a terminal uses, and the default when no mailbox was asked for.
+ * Progress is held back while a question is on screen; without that buffer the
+ * other in-flight workers scroll the question away, which defeats the
+ * one-terminal contract the queue is built on.
  */
 export class TerminalQuestionRelay implements QuestionRelay {
 	private readonly settings: QueueSettings;
@@ -58,8 +48,6 @@ export class TerminalQuestionRelay implements QuestionRelay {
 	}
 
 	/**
-	 * Put one worker's question to the user and answer with what they typed.
-	 *
 	 * Serialized: a second caller waits until the first answer is in. The answer
 	 * is on disk and on the ticket before this resolves, so a worker never acts
 	 * on a decision nothing recorded.
@@ -74,7 +62,6 @@ export class TerminalQuestionRelay implements QuestionRelay {
 	}: {
 		question: string;
 		ticket: TicketSummary;
-		/** The coordinator run's id — `appendJsonlRecords` stamps it on every record. */
 		coordinatorRunId: string;
 		/** The queue's own run directory in the main checkout — the one place the queue writes records. */
 		coordinatorRunDir: string;
@@ -103,21 +90,14 @@ export class TerminalQuestionRelay implements QuestionRelay {
 		return answered;
 	}
 
-	/**
-	 * This ticket's progress writer: every line carries the ticket identifier and
-	 * goes through the relay's buffer, so an open question is never buried by the
-	 * other workers. The queue hands one to each worker as its `onProgress`.
-	 */
 	createProgressSink({ ticket }: { ticket: TicketSummary }): (message: string) => void {
 		return (message: string) => this.write({ line: `${ticket.identifier} · ${message}` });
 	}
 
-	/** Close the readline interface. Called once, on the way out of the command. */
 	close(): void {
 		this.terminal.close();
 	}
 
-	/** Print the question and read one typed line, re-prompting on a blank answer. */
 	private async putQuestion({ question, ticket }: { question: string; ticket: TicketSummary }) {
 		if (this.ended) {
 			throw new Error(noTerminalMessage);
@@ -149,7 +129,6 @@ export class TerminalQuestionRelay implements QuestionRelay {
 		}
 	}
 
-	/** One line out, or held until the open question has been answered. */
 	private write({ line }: { line: string }) {
 		if (this.prompting) {
 			this.held.push(line);

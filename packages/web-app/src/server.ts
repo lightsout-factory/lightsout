@@ -1,9 +1,7 @@
 import { createStartHandler, defaultStreamHandler } from '@tanstack/react-start/server';
 import { createServerEntry } from '@tanstack/react-start/server-entry';
 
-// The handler builds the app's router by calling `getRouter` from
-// src/router.tsx, which the Start plugin resolves by convention — no file
-// imports it, which is why nothing here names it.
+// The Start plugin resolves `getRouter` from src/router.tsx by convention, so nothing imports it.
 const fetch = createStartHandler(defaultStreamHandler);
 
 export default createServerEntry({ fetch });

@@ -3,12 +3,11 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import type { ComponentProps } from 'react';
 import { cn } from '#src/common/utils/cn.ts';
 
-// `cursor-pointer` is stated because Tailwind v4 dropped it from buttons' base
-// styles; every control here is pressable, so every one should say so.
+// `cursor-pointer` is stated because Tailwind v4 leaves it out of buttons' base
+// styles.
 //
-// Unexported on purpose. The upstream shadcn file publishes its variants beside
-// the component, which this repo's one-export-per-file rule forbids; a caller
-// that needs a button-shaped link reaches for `asChild` instead.
+// Unexported because this repo holds one export per file; a caller that needs a
+// button-shaped link uses `asChild`.
 const buttonVariants = cva(
 	'inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all shrink-0 outline-none disabled:pointer-events-none disabled:opacity-50 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] [&_svg]:pointer-events-none [&_svg]:shrink-0',
 	{
@@ -17,7 +16,6 @@ const buttonVariants = cva(
 				default: 'bg-primary text-primary-foreground hover:bg-primary-hover',
 				ghost: 'hover:bg-accent hover:text-accent-foreground',
 				outline: 'border bg-background hover:bg-accent hover:text-accent-foreground',
-				// The primary call to action, and one of the three places the brand gradient is spent.
 				brand: 'bg-[image:var(--brand-gradient)] text-background hover:opacity-90',
 			},
 			size: {

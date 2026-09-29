@@ -6,20 +6,15 @@ import { readImportAliases } from '#src/common/workspace/readImportAliases.ts';
 
 interface Params {
 	cwd: string;
-	/** Repo-relative source files — the ONLY resolution universe; imports landing outside it are simply not edges. */
+	/** Repo-relative; the only resolution universe — imports landing outside it are not edges. */
 	files: string[];
-	/** The consumer's TypeScript module (resolveConsumerTypescript). */
 	compiler: typeof ts;
 }
 
 /**
- * Import edges among the caller's files. An import is a language fact, so
- * this stays born-generic: no tsconfig, no alias tables, no architecture
- * conventions — specifiers resolve only against the caller's file set, and
- * every unresolvable or ambiguous specifier is a missing edge, which only
- * splits groups further (degrading toward per-file fan-out, never toward a
- * wrong grouping). `preProcessFile` lists specifiers without type-checking,
- * so the whole pass costs file reads, not a compile.
+ * Specifiers resolve only against the caller's files. An unresolvable or
+ * ambiguous one is a missing edge, which only splits groups further, never
+ * into a wrong grouping. `preProcessFile` avoids a compile.
  */
 export const collectImportEdges = async ({ cwd, files, compiler }: Params): Promise<Array<{ from: string; to: string }>> => {
 	const resolve = createSpecifierResolver({ files, importAliases: await readImportAliases({ cwd, files }) });

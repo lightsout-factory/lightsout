@@ -4,23 +4,14 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 
 interface Params {
-	/** The qualifying blocking findings still standing when cleanup ended. */
 	findings: StandardsFinding[];
 	report?: WorkReport;
-	/** Executor rounds cleanup spent before it ended. */
 	roundsUsed: number;
 }
 
 /**
- * The recorded account of what bounded cleanup left behind — written to
- * progress and to the step report's `narration` while the run carries on to
- * normal verification.
- *
- * It is not an escalation and must never read as one: nothing here stops a run.
- * It still carries the evidence that made the old escalation worth reading —
- * what is still standing and where, plus the agent's own account of why it left
- * the findings — because a reader who later decides to act on this needs the
- * sites, not opaque keys that send them digging through friction.jsonl.
+ * Not an escalation: nothing here stops a run. It names the sites, because a reader who later
+ * acts on it needs them rather than opaque keys.
  */
 export const describePersistingFindings = ({ findings, report, roundsUsed }: Params): string => {
 	const findingLines = findings.map((finding) => {

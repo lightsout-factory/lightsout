@@ -5,29 +5,17 @@ import { resolveWorkOrderTrackerTarget } from '#src/workOrder/internal/common/ut
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
 
 interface Params {
-	/** The checkout the record is read from — any one, since the primary is resolved inside. */
+	/** Any checkout; the primary is resolved inside. */
 	cwd: string;
-	/** The work order's label. */
 	name: string;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 }
 
 /**
- * This machine's copy of a work order's record, and where that record
- * publishes to.
- *
- * The record is read before the tracker is resolved, because the record is the
- * only thing that says which ticket this work order belongs to. Every operation
- * that reaches the tracker on a work order's behalf begins this way, so the
- * order is stated once here rather than being repeated — and repeated
- * correctly — at each of them.
- *
- * `localOnly` is handed back on the target rather than answered here, because
- * what a work order with nowhere to publish means differs at every call site:
- * a pull answers the local record, a sync refuses, and a plan publish refuses
- * naming the plan.
+ * The record is read first because it alone says which ticket the work order
+ * belongs to. `localOnly` is handed back rather than answered here, because
+ * what it means differs at every call site.
  */
 export const readWorkOrderWithTrackerTarget = async ({
 	cwd,

@@ -7,22 +7,13 @@ interface Params {
 	files: string[];
 }
 
-/** One rule as the reviewer reads it: its id, then its prose exactly as its document states it. */
 const ruleSection = ({ rule }: { rule: Params['rules'][number] }) => `**Rule id: \`${rule.id}\`**\n\n${rule.prose}`;
 
 /**
- * Assemble the standards-review invocation.
- *
  * The rules ride the system prompt because they are identical on every review
- * this repo runs, so the harness caches through them; only the file list, which
- * differs per call, sits in the user prompt.
- *
- * Rules are grouped under the document that states them, and each one's prose
- * goes in whole. The full argument is the point: a summary would let the
- * reviewer match the headline and miss every case the author did not spell out.
- *
- * @param rules - the judgment-only rules in play, in the order they should be read
- * @param files - repo-relative files the review covers
+ * this repo runs, so the harness caches through them. Each rule's prose goes in
+ * whole: a summary would let the reviewer match the headline and miss every
+ * case the author did not spell out.
  */
 export const buildStandardsReviewInvocation = ({ rules, files }: Params): { systemPrompt: string; prompt: string } => {
 	const byDocument = new Map<string, Params['rules']>();

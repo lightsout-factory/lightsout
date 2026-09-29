@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-/** One pack as the packs page lists it: identity, counts, no rules. */
 export const StandardsPackListing = z.object({
 	name: z.string(),
 	description: z.string().optional(),
@@ -11,8 +10,7 @@ export const StandardsPackListing = z.object({
 	rootPath: z.string(),
 	/**
 	 * `rootPath` relative to the repo the view was built for, or absolute when it
-	 * lies outside it — what a `standards-packs` entry would say. Computed in the
-	 * engine view; a browser component cannot.
+	 * lies outside it. Computed in the engine because a browser component cannot.
 	 */
 	path: z.string(),
 	/** Stripped of its fixtures by the bundler — every rule's fixture counts are zero. */

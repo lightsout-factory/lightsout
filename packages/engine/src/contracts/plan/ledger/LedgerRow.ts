@@ -1,11 +1,6 @@
 import { z } from 'zod';
 
-/**
- * One row of a plan's `## Acceptance Tests` ledger: an acceptance criterion, and
- * the test that states it. The ledger is the executable half of a contract plan
- * — a criterion with a named test needs no prose narrating the behaviour, and
- * the gate that runs the test is what proves the criterion was met.
- */
+/** One row of a plan's `## Acceptance Tests` ledger. */
 export const LedgerRow = z.object({
 	/** The acceptance criterion in one line. */
 	criterion: z.string().min(1),

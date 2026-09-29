@@ -1,12 +1,7 @@
 import type { ShipMergeMethod } from '#src/contracts/ship/ShipMergeMethod.ts';
 
-/**
- * The `ship` config block with every default already applied.
- *
- * Resolved once at the edge so no step downstream re-decides one: a pattern
- * compiled here is a pattern every reader agrees on, and a `runShip` handed
- * these may assume they are valid.
- */
+// The `ship` config block with every default applied, resolved once at the edge
+// so no step downstream re-decides one.
 export interface ShipSettings {
 	/** Compiled from the config's `ticket-pattern` source. */
 	ticketPattern: RegExp;

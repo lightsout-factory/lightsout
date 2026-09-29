@@ -24,12 +24,9 @@ interface WalkParams {
 }
 
 /**
- * Walk one set's tree. Any folder holding a document.md is a document and its
- * subtree stops there — everything below it is that document's rule folders.
- * The marker is matched by name alone, so a folder that got the name wrong is
- * reported as an unreadable document rather than silently walked past.
- * Folders with no marker file (a pack's own `common/` helpers, grouping
- * folders) are simply passed through.
+ * Any folder holding a document.md is a document and its subtree stops there —
+ * everything below it is that document's rule folders. Folders with no marker
+ * file (a pack's own `common/` helpers, grouping folders) are passed through.
  */
 const walk = async ({ folderPath, documentPath, set, problems, documents, rules }: WalkParams) => {
 	const entries = await readdir(folderPath, { withFileTypes: true }).catch(() => undefined);
@@ -57,7 +54,7 @@ const walk = async ({ folderPath, documentPath, set, problems, documents, rules 
 	}
 };
 
-/** Pack-wide id collisions — two folders claiming one rule id would make config overrides and site keys ambiguous. */
+/** Two folders claiming one rule id would make config overrides and site keys ambiguous. */
 const findDuplicateIds = ({ rules }: { rules: LoadedStandardsRule[] }) => {
 	const owners = new Map<string, string>();
 	const duplicates: string[] = [];
@@ -76,9 +73,6 @@ const findDuplicateIds = ({ rules }: { rules: LoadedStandardsRule[] }) => {
 };
 
 /**
- * Read a standards pack off disk: its root file, its `code/` and `tests/`
- * document trees, and every rule folder under them.
- *
  * Load-time validation is structure and the honesty rule only — whether each
  * rule's declaration matches what its folder actually ships. Whether a check
  * catches what it claims is a different question, answered by
@@ -130,9 +124,8 @@ export const readStandardsPack = async ({ packPath }: Params): Promise<LoadedSta
 		throw new Error(`standards pack failed to load (${packPath}):\n${problems.map((problem) => `- ${problem}`).join('\n')}`);
 	}
 
-	// Recorded, never required — the same stance the per-rule fixtures take. A
-	// pack that ships one holds every checked rule to it; a pack that does not
-	// is told so by `standards-validate` rather than failed by it.
+	// Recorded, never required: a pack that does not ship one is told so by
+	// `standards-validate` rather than failed by it.
 	const frameworkOwnedFixturesPath = join(packPath, 'fixtures', 'framework-owned');
 	const hasFrameworkOwned = await hasFile({ path: frameworkOwnedFixturesPath });
 

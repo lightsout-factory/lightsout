@@ -4,17 +4,11 @@ import { runCommand } from '#src/common/processes/runCommand.ts';
 interface Params {
 	cwd: string;
 	defaultBranch: string;
-	/** The branch that was just merged, whose local copy is now redundant. */
 	branch: string;
-	/** Live progress sink — one line per step, and one per step that did not work. */
 	onProgress?: (message: string) => void;
 }
 
-/**
- * Whether this checkout is a linked worktree rather than the primary one. The
- * two git directories agree in a primary checkout and differ in a linked one;
- * an unreadable answer counts as primary, so the cleanup below still tries.
- */
+/** An unreadable answer counts as primary, so the cleanup still tries. */
 const isLinkedWorktree = async ({ cwd }: { cwd: string }) => {
 	const result = await runCommand({ command: 'git rev-parse --git-dir --git-common-dir', cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 
@@ -28,22 +22,11 @@ const isLinkedWorktree = async ({ cwd }: { cwd: string }) => {
 };
 
 /**
- * The local half of the cleanup the forge already did remotely: move to the
- * default branch, fast-forward it, and drop the merged branch.
- *
- * Skipped entirely in a linked worktree: the default branch lives in the
- * primary checkout, git refuses to check it out a second time, and the
- * worktree is removed moments later anyway — three failure lines per ship that
- * a reader learns to ignore teach them to ignore the fourth that matters.
- *
- * `git branch -d` rather than `-D`, so a branch git does not consider merged is
- * left alone rather than destroyed — the forge may have squashed, and a squash
- * leaves the local commits unreachable from the default branch.
- *
- * Every step is best effort. The merge has already happened by the time this
- * runs, so a checkout that fails on a stale index must not turn a shipped
- * result into a blocked one — that would tell a tracker skill the work did not
- * ship when it did.
+ * Skipped in a linked worktree: git refuses to check out the default branch a second time, and
+ * routine failure lines teach a reader to ignore the one that matters. `-d` rather than `-D`, so a
+ * branch git does not consider merged (as after a squash) is left rather than destroyed. Every
+ * step is best effort: the merge already happened, and a failed checkout must not turn a shipped
+ * result into a blocked one.
  */
 export const syncDefaultBranch = async ({ cwd, defaultBranch, branch, onProgress }: Params): Promise<void> => {
 	if (await isLinkedWorktree({ cwd })) {

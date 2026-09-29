@@ -5,11 +5,7 @@ import { LinearMark } from '#src/appUI/icons/LinearMark.tsx';
 import { SectionPill } from '#src/features/home/components/SectionPill.tsx';
 import { TicketMock } from '#src/features/home/screens/Home/internal/components/TicketTrailSection/internal/components/TicketMock.tsx';
 
-/**
- * What lightsout writes to a team's tracker today — each a real behaviour of
- * the ticket workflow, worded the way a lead reading this page would care
- * about it.
- */
+/** Each a real behaviour of the ticket workflow today. */
 const trail = [
 	{
 		title: 'Every decision, attached',
@@ -19,11 +15,7 @@ const trail = [
 	{ title: 'Tickets drafted, you approve', body: 'Lightsout drafts new tickets, and files one only once you say so.' },
 ];
 
-/**
- * The enterprise case: a tracker that becomes the record of what the agents
- * decided, why, and who signed off — where the team already looks. Anything
- * not built yet is marked as coming, never claimed.
- */
+/** Anything not built yet is marked as coming, never claimed. */
 export const TicketTrailSection = () => (
 	<section className="relative w-full overflow-hidden px-4 py-24">
 		<div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 lg:grid-cols-2">

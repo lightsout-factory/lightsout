@@ -10,17 +10,9 @@ interface Params {
 }
 
 /**
- * The work a batch actually has left, as the LIVE check sees it.
- *
- * The work-list is frozen when the run starts. By the time a later batch is
- * reached, an earlier one may have fixed one of its sites while editing a file
- * outside its own scope — and the frozen copy also cites pre-run line numbers.
- * Handed the frozen list, an agent went looking for a finding that no longer
- * existed and reported the check as broken, which it was not.
- *
- * An empty result means every site is gone and the batch is already resolved.
- * A shorter one is announced, because "3 blocking" was already printed and a
- * reader who then sees two would otherwise be counting a discrepancy.
+ * Read live rather than from the frozen work-list: an earlier batch may have
+ * fixed a site, and the frozen copy cites pre-run line numbers. A shorter list is
+ * announced because the original count was already printed.
  */
 export const readStandingWork = ({ batch, findings, onProgress }: Params): StandardsFinding[] => {
 	const standing = new Set(matchRemainingFindings({ frozen: batch.blocking, live: findings }));

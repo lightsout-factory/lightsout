@@ -6,15 +6,9 @@ interface Params {
 }
 
 /**
- * The one byte form of a work order state: keys sorted at every depth, arrays in
- * their own order, tab indented with a trailing newline, UTF-8.
- *
- * Every writer and every hasher goes through here, so two machines that build
- * the same record with their object literals written in different orders
- * produce identical bytes — which is what lets a published copy be compared to
- * a local one by hash at all. The re-parse is how `canonicalJson`'s sorted
- * order reaches `JSON.stringify`'s indenting: object key order survives a JSON
- * round trip, so the pretty form carries the canonical order.
+ * Every writer and hasher goes through here, so the same record built on two
+ * machines produces identical bytes and can be compared by hash. The re-parse
+ * carries `canonicalJson`'s key order into `JSON.stringify`'s indenting.
  */
 export const serializeWorkOrderState = ({ record }: Params): Buffer => {
 	const sorted: unknown = JSON.parse(canonicalJson({ value: record }));

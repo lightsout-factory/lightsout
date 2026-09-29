@@ -1,10 +1,4 @@
-/**
- * The five planning steps the planning record tracks, named for the `lightsout
- * plan` subcommand that does each one.
- *
- * The key order is the order the planning block draws its rows in, whatever the
- * record holds.
- */
+/** The key order is the order the planning block draws its rows in, whatever the record holds. */
 export const PlanningStep = {
 	VerifyFacts: 'verify-facts',
 	Draft: 'draft',

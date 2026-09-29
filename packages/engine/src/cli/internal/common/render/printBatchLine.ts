@@ -13,13 +13,7 @@ interface Params {
 	label: string;
 }
 
-/**
- * One batch's line in a run report: outcome icon, the batch id in a fixed
- * column, what became of it, and how many files it touched.
- *
- * An opt-out is not a failure — the agent looked and said no — so it gets its
- * own icon rather than the red one a genuinely failed step earns.
- */
+/** An opt-out is not a failure — the agent looked and said no — so it gets its own icon rather than the red one. */
 export const printBatchLine = ({ step, optedOut, label }: Params): void => {
 	const icon = step.status !== RunStatus.Passed ? red('✗') : optedOut ? yellow('⤫') : green('✓');
 

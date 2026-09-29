@@ -7,15 +7,8 @@ interface Params {
 }
 
 /**
- * The identifiers of every blocking ticket this issue is still waiting on.
- *
- * Linear stores "A blocks B" once, on A; from B's side it is an INVERSE
- * relation, so the blockers of an issue are the `issue` (source) side of its
- * inverse relations whose type is 'blocks'.
- *
- * A blocker whose workflow state cannot be read is kept rather than dropped:
- * waiting one extra run is recoverable, shipping a dependent ahead of its
- * blocker is not.
+ * Linear stores "A blocks B" once, on A, so B's blockers are the source side of
+ * its inverse 'blocks' relations.
  */
 export const getUnfinishedBlockers = async ({ issue }: Params): Promise<string[]> => {
 	const relations = await collectNodes({ connection: await issue.inverseRelations() });

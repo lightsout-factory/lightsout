@@ -20,21 +20,13 @@ interface Params {
 	cwd: string;
 	name: string;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	/** Which copy the human chose, when a divergence has already been surfaced. Absent asks for the ordinary pull-and-catch-up. */
 	keep: WorkOrderSyncKeep | undefined;
 	onProgress?: (message: string) => void;
 }
 
-/**
- * The ordinary sync: pull, and publish a local record that has moved since this
- * machine last sent one.
- *
- * This is how a publish that failed earlier is retried — the sidecar still
- * names older bytes than the record, which is exactly the state a failed
- * publish leaves behind.
- */
+/** This is how a failed earlier publish is retried: the sidecar still names older bytes than the record. */
 const catchUpTicketRecord = async ({
 	cwd,
 	name,
@@ -82,14 +74,8 @@ const catchUpTicketRecord = async ({
 };
 
 /**
- * Bring this machine's work order state and the ticket's own copy back into
- * agreement — by catching up, or by the choice a human made about a divergence.
- *
- * Syncing is the one command whose whole subject is the tracker, so a work
- * order with nowhere to publish to is refused by name rather than quietly
- * answered from local files. Without `--keep` it does what every other command's pull
- * does and then sends anything this machine still owes; with `--keep` it
- * carries out a decision, which is the only way a divergence is ever resolved.
+ * A work order with nowhere to publish to is refused rather than answered from local files, because
+ * syncing is the one command whose subject is the tracker. `--keep` is the only way a divergence is resolved.
  */
 export const syncWorkOrderState = async ({ cwd, name, config, env, keep, onProgress }: Params): Promise<{ record: WorkOrderState } | { error: string }> => {
 	const opened = await readWorkOrderWithTrackerTarget({ cwd, name, config, env });

@@ -18,19 +18,9 @@ interface Params {
 }
 
 /**
- * Where a NEW run goes, from what the caller already knows.
- *
- * A `planName` answers that plan's ticket folder's runs folder — the folder
- * `workOrderNameOf` reads the address into. A `workOrderName` with no plan name answers that same folder reached from the
- * branch, which is how a direct run of a ticket is filed under the ticket it
- * builds. Neither answers the owning command's runs folder.
- *
  * A plan name wins if both arrive, because a plan's address names its ticket
- * too — the two inputs can never disagree.
- *
- * It shares `resolveRunDir`'s verb deliberately: both answer which directory,
- * and separating them by verb would suggest they differ in kind rather than in
- * whether the run exists yet. It creates nothing, for the same reason.
+ * too — the two inputs can never disagree. It creates nothing: whoever writes
+ * into a run folder creates it.
  */
 export const resolveNewRunDir = async ({ cwd, planName, workOrderName, pipeline, runId }: Params): Promise<string> => {
 	const ticket = planName === undefined ? workOrderName : workOrderNameOf({ name: planName });

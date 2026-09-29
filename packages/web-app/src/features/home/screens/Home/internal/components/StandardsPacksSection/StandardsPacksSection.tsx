@@ -12,7 +12,6 @@ import { SectionPill } from '#src/features/home/components/SectionPill.tsx';
 import { PackStats } from '#src/features/home/screens/Home/internal/components/StandardsPacksSection/internal/components/PackStats.tsx';
 import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
 
-/** The three steps a pack is built into, and what it does in each. */
 const steps: Array<{ name: string; body: string; Icon: LucideIcon }> = [
 	{ name: 'Plan', body: 'Your rules shape the plan before any code exists.', Icon: ClipboardPen },
 	{ name: 'Implement', body: 'The agent writes code to the same rules.', Icon: Code },
@@ -20,20 +19,17 @@ const steps: Array<{ name: string; body: string; Icon: LucideIcon }> = [
 ];
 
 /**
- * Where each card's share of the branch line runs, so the three together draw
- * one line across from the first card's middle to the last's. The 0.75rem
- * reaches halfway into the gap on either side.
+ * Together the three spans draw one line from the first card's middle to the
+ * last's. The 0.75rem reaches halfway into the gap on either side.
  */
 const branchSpans = ['left-1/2 -right-3', '-left-3 -right-3', '-left-3 right-1/2'];
 
-/** The rule sets the default pack ships, in the order a reader looks for them; the framework ones switch on when a repo uses the framework. */
 const frameworks = [
 	{ framework: Framework.TypeScript, name: 'TypeScript' },
 	{ framework: Framework.React, name: 'React' },
 	{ framework: Framework.TanStack, name: 'TanStack' },
 ];
 
-/** A card on the lower row: a small title over its contents. */
 const Panel = ({ title, children }: { title: string; children: ReactNode }) => (
 	<div className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-6 shadow-sm lg:p-8">
 		<h3 className="font-bold text-drop-navy text-lg">{title}</h3>
@@ -41,12 +37,7 @@ const Panel = ({ title, children }: { title: string; children: ReactNode }) => (
 	</div>
 );
 
-/**
- * Why lightsout can clean as it codes: the Standards Pack — the rules the
- * agents follow, built into every step rather than pasted into a README, some
- * deterministic checks and some agent checks, ready-made or your own.
- * The pack's numbers are read live and allowed to be missing.
- */
+/** The pack's numbers are read live and allowed to be missing, so the section never suspends on them. */
 export const StandardsPacksSection = () => {
 	const { data: defaultPack } = useQuery(defaultPackQueryOptions());
 

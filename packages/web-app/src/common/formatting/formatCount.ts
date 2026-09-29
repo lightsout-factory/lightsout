@@ -6,5 +6,4 @@ interface Params {
 	plural?: string;
 }
 
-/** A count and its noun, agreeing — '1 file', '3 files', '2 writer batches'. */
 export const formatCount = ({ count, noun, plural }: Params): string => `${count} ${count === 1 ? noun : (plural ?? `${noun}s`)}`;

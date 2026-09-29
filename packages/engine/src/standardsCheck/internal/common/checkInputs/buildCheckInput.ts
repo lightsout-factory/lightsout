@@ -29,12 +29,9 @@ interface Params {
 }
 
 /**
- * Build one check input by kind — the single place the closed set of input
- * kinds turns into data. Both callers that execute package checks (the run and
- * the fixture validation) come through here, so a rule is handed exactly the
- * same shape whether it is checking a repo or its own fixtures.
+ * Both the run and the fixture validation come through here, so a rule is
+ * handed exactly the same shape whether it is checking a repo or its own fixtures.
  *
- * @param kind - the input kind the rule's check declared
  * @throws {Error} When the kind needs TypeScript and none was resolved — callers skip such rules with a note instead.
  */
 export const buildCheckInput = async ({

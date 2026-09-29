@@ -12,26 +12,20 @@ interface Params {
 }
 
 /**
- * Every label name this Jira instance knows about, paged to exhaustion.
+ * Instance-wide rather than project-scoped, because Jira Cloud publishes no
+ * project-scoped label catalog; an instance-wide answer is a superset of the
+ * project's.
  *
- * The endpoint is instance-wide rather than project-scoped, because Jira Cloud
- * publishes no project-scoped label catalog. That is sound for the one question
- * a caller asks — does this label exist — since an instance-wide answer is a
- * superset of the project's.
- *
- * A caller reporting a missing label must therefore tell the user to apply that
- * label to any issue in the project. Never "create the label": a Jira label
- * comes into being the first time an issue carries it, so creating one is an
- * action Jira does not offer.
+ * A caller reporting a missing label must tell the user to apply it to any
+ * issue in the project, never to "create" it: a Jira label comes into being the
+ * first time an issue carries it.
  */
 export const listLabelNames = async ({ settings }: Params): Promise<string[] | TrackerFailure> =>
 	runJira({
 		settings,
 		request: async (client) => {
-			// Large enough that an ordinary catalog arrives in one round trip, small
-			// enough to sit inside any server cap. Sending none would let the engine
-			// reason over a server default it does not control, and a truncated
-			// catalog reports a configured label as missing when it exists.
+			// Sent explicitly: a server default the engine does not control could
+			// truncate the catalog and report a configured label as missing.
 			const labelPageSize = 200;
 			const names: string[] = [];
 			let startAt = 0;

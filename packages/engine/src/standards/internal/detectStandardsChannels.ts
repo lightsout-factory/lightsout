@@ -16,12 +16,10 @@ interface Params {
 }
 
 /**
- * Which framework standards channels apply to this run, detected from the
- * scoped packages' package.json dependencies — a terraform package never
- * pays the React-docs token tax, and a web package gets them without any
- * config. Consumers can override with `standards-channels` in the config.
- * Unreadable manifests contribute nothing (the packages themselves fail
- * later, at gate time, with a better error).
+ * Detected from the scoped packages' dependencies, so a terraform package
+ * never pays the React-docs token tax and a web package needs no config.
+ * Unreadable manifests contribute nothing; the packages themselves fail later
+ * at gate time with a better error.
  */
 export const detectStandardsChannels = async ({ cwd, packagesDir, packages }: Params): Promise<string[]> => {
 	const manifestPaths = packages.length > 0 ? packages.map((name) => join(cwd, packagesDir, name, 'package.json')) : [join(cwd, 'package.json')];

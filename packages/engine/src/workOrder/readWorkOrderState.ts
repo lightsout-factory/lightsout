@@ -12,13 +12,8 @@ interface Params {
 }
 
 /**
- * One work order's state, read from the primary checkout however many worktrees
- * this machine has.
- *
- * No lock is taken: the store writes by rename, so a reader never meets a
- * half-written file. `{ record: undefined }` says only that no `state.json`
- * exists, which every caller reads as "this branch belongs to no work order" — a
- * corrupt record is an error instead, never undefined.
+ * No lock is taken: the store writes by rename, so a reader never meets a half-written file.
+ * `{ record: undefined }` means only that no `state.json` exists; a corrupt record is an error.
  */
 export const readWorkOrderState = async ({ cwd, name }: Params): Promise<{ record: WorkOrderState | undefined } | { error: string }> => {
 	const workOrderFolder = await workOrderFolderDir({ cwd, name });

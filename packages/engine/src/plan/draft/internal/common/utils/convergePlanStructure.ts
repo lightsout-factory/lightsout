@@ -24,20 +24,9 @@ interface Params {
 }
 
 /**
- * The closing move of both draft flows: converge the authored set with
- * `repairPlanStructure` and fold its outcome into the draft's own result — a
- * dead spawn, a rate-limit park, blocking findings handed back, or a clean plan.
- *
- * Spelled once because both flows end identically, and an exit shape that is
- * hand-written twice is one edit away from the two ending differently for no
- * stated reason. The command-run level goes through here for the same reason:
- * wiring it once is what keeps both flows recording one shape.
- *
- * The blocking findings come back beside the result because one caller acts on
- * them rather than returning them: a single plan busting the created-file
- * ceiling is the one finding the structural repairer can never resolve — it is
- * handed exactly one output path and cannot split a plan — so the single flow
- * escalates to a phased re-draft instead of handing it to the human.
+ * The blocking findings come back beside the result because the single flow
+ * acts on them: a busted file ceiling is one the structural repairer can never
+ * resolve, so it escalates to a phased re-draft instead.
  */
 export const convergePlanStructure = async ({
 	context,

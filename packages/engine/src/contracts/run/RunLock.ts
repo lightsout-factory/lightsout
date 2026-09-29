@@ -1,10 +1,8 @@
 import { z } from 'zod';
 
 /**
- * The repo-wide run lock (`.lightsout/lock.json`). One live run per consumer
- * repo — two would fight over the same worktree. The pid is what makes a
- * crash leftover detectable: a lock whose process is dead is stale, not a
- * conflict.
+ * One live run per repo, because two would fight over the same worktree. A lock
+ * whose pid is dead is a crash leftover, stale rather than a conflict.
  */
 export const RunLock = z.object({
 	pid: z.number().int(),

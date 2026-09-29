@@ -9,7 +9,6 @@ interface TabItem {
 	content: ReactNode;
 }
 
-/** The strip and each trigger, per look. The panels below are the same either way. */
 const variantClasses: Record<TabsVariant, { root: string; list: string; trigger: string }> = {
 	[TabsVariant.Underline]: {
 		root: 'flex flex-col gap-4',
@@ -17,7 +16,6 @@ const variantClasses: Record<TabsVariant, { root: string; list: string; trigger:
 		trigger:
 			'-mb-px shrink-0 cursor-pointer whitespace-nowrap border-transparent border-b-2 px-3 py-2 font-medium text-muted-foreground text-sm transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground',
 	},
-	// Tabs stacked as cards on the left, the panel beside them; one column on a narrow screen.
 	[TabsVariant.Side]: {
 		root: 'grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16',
 		list: 'flex min-w-0 flex-col gap-3',
@@ -28,9 +26,7 @@ const variantClasses: Record<TabsVariant, { root: string; list: string; trigger:
 
 interface Props {
 	items: TabItem[];
-	/** Defaults to the underline strip every page-level tab set uses. */
 	variant?: TabsVariant;
-	/** Uncontrolled starting tab; defaults to the first item. */
 	defaultValue?: string;
 	/** Controlled value; when given, `onValueChange` must be too. */
 	value?: string;
@@ -39,11 +35,8 @@ interface Props {
 }
 
 /**
- * A themed tab strip over its panels.
- *
- * Driven by an items array rather than by compound children, so the file holds
- * one export and a caller states its tabs as data — which is what lets a page
- * build them from an engine view instead of hand-writing a trigger each.
+ * Driven by an items array rather than compound children, so the file holds one
+ * export and a caller states its tabs as data.
  */
 export const Tabs = ({ items, variant = TabsVariant.Underline, defaultValue, value, onValueChange, className }: Props) => (
 	<TabsPrimitive.Root

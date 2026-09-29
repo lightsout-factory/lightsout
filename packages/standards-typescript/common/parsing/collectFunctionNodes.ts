@@ -3,26 +3,16 @@ import type { FunctionNode } from '../types/FunctionNode.ts';
 import { getFunctionName } from './getFunctionName.ts';
 
 interface Params {
-	/** One parsed file, as the syntax-tree input holds it. */
 	sourceFile: ts.SourceFile;
 	compiler: typeof ts;
 }
 
-/** The node's body when it is function-like, else undefined. The four guards narrow it, so nothing is asserted. */
 const getBody = ({ node, compiler }: { node: ts.Node; compiler: typeof ts }) =>
 	compiler.isFunctionDeclaration(node) || compiler.isMethodDeclaration(node) || compiler.isArrowFunction(node) || compiler.isFunctionExpression(node)
 		? node.body
 		: undefined;
 
 /**
- * Every function-like node in one parsed file, with the name it reports under
- * and the lines it spans.
- *
- * Parsing is the expensive half of an AST rule and this walk is most of the
- * rest, so the rules that ask "which functions are in this file?" — duplicated
- * bodies, function size — share one answer instead of each writing the same
- * traversal with a different bug in it.
- *
  * Nested functions are included: a callback's body is a duplicate candidate
  * like any other, and a rule that must spare callbacks says so itself by the
  * name they report under.

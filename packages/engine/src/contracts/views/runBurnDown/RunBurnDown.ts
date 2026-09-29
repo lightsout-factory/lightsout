@@ -1,15 +1,7 @@
 import { z } from 'zod';
 import { RunBurnDownBatch } from '#src/contracts/views/runBurnDown/RunBurnDownBatch.ts';
 
-/**
- * What a batch-shaped run burned down — computed once, so a page never parses
- * a step report to draw a before/after.
- *
- * Present on refactor and coverage runs; absent on implement and phases runs,
- * which burn nothing down. The two pipelines fill different halves of it: a
- * refactor run counts sites, a coverage run measures files, and neither
- * borrows the other's fields.
- */
+/** Computed once, so a page never parses a step report to draw a before/after. */
 export const RunBurnDown = z.object({
 	/** Refactor only: blocking findings on the work-list when it froze. Absent for coverage runs, which carry `files` instead. */
 	before: z.number().optional(),

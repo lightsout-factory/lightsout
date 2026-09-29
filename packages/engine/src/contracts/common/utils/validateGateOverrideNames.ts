@@ -12,15 +12,9 @@ interface Params {
 }
 
 /**
- * Every gate a `gate-overrides` list names must be a gate this repo configured,
- * under either gate block.
- *
- * An override is keyed by checkpoint rather than by package, so it schedules
- * whichever groups run there — which is why a suite configured only under
- * `package-gates` is a legal name and does not have to be written into the root
- * block as well. A key whose value is the literal `false` is the explicit
- * coverage opt-out, so it is a gate the repo does not have: scheduling it would
- * be a silent no-op.
+ * An override is keyed by checkpoint rather than by package, so a suite
+ * configured only under `package-gates` is a legal name. A key set to `false`
+ * is the explicit coverage opt-out, and scheduling it would be a silent no-op.
  */
 export const validateGateOverrideNames = ({ overrides, gates, packageGates, ctx }: Params): void => {
 	const blocks = packageGates === undefined ? [gates] : [gates, packageGates];

@@ -9,23 +9,12 @@ interface Params {
 }
 
 /**
- * Where each live finding came from: this run's own edits, or the tree it
- * started from.
+ * Matched on site key, which carries no line number, so an edit above a site
+ * cannot re-mint the key and make an untouched finding read as introduced.
  *
- * Matched on site key, which is the rule id plus the sorted file paths it
- * reports. No line number rides in it, so an edit above a site cannot re-mint
- * the key and make an untouched finding read as introduced.
- *
- * A measured comparison needs a number on BOTH sides. A one-sided `measure` —
- * and every finding at all when the run has no baseline to read — is an absence
- * of evidence, not evidence of growth, so it lands in `uncertain` rather than
- * being guessed at. Only `introduced` and `worsened` are ever handed back as
- * work; the other two are recorded.
- *
- * Changed-file containment is not this helper's job. It is a second filter over
- * the set `selectStandardsFindings` already produced — a folder still counts as
- * changed when a file under it changed, and this is what then keeps that
- * folder's pre-existing finding out of the work list.
+ * A one-sided `measure` — and every finding when the run has no baseline — is
+ * an absence of evidence, not evidence of growth, so it lands in `uncertain`.
+ * Only `introduced` and `worsened` are ever handed back as work.
  */
 export const attributeStandardsFindings = ({ live, baseline }: Params): AttributedFindings => {
 	const attributed: AttributedFindings = { introduced: [], worsened: [], inherited: [], uncertain: [] };

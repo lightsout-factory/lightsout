@@ -15,14 +15,9 @@ interface Params {
 }
 
 /**
- * Fold every phase's outcome in one pass. Failures accumulate with the phase
- * file that produced them rather than short-circuiting, so one bad phase does
- * not hide the other nine, and a rate limit anywhere parks the whole draft —
- * it is resumable, and the phases that did land are overwritten by the re-run.
- *
- * Shared by both fan-outs: how a spawn's outcome becomes a draft status is the
- * same question whichever implementation opened the spawn, and a second copy of
- * the answer would drift the first time either gained a status.
+ * Failures accumulate rather than short-circuiting, so one bad phase does not
+ * hide the others. A rate limit anywhere parks the whole draft: the re-run
+ * overwrites the phases that did land.
  */
 export const foldPhaseOutcomes = async ({ cwd, name, declarations, results }: Params): Promise<AuthorPhaseFilesResult> => {
 	if (results.some((result) => isRateLimited({ result }))) {

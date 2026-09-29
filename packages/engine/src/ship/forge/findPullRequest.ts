@@ -11,14 +11,8 @@ interface Params {
 }
 
 /**
- * The pull request on this branch in the state asked for, or undefined when
- * there is none.
- *
- * Anything unreadable — a non-zero exit, output that is not JSON, a row missing
- * a field — answers undefined, and both callers depend on that. Asked for
- * `Open`, undefined is ship's resume path deciding to open a new pull request.
- * Asked for `Merged`, undefined means the queue never confirmed a merge and
- * runs the worker, so absence of evidence never becomes evidence of a merge.
+ * Anything unreadable answers undefined, and both callers depend on that: asked
+ * for `Merged`, absence of evidence must never become evidence of a merge.
  */
 export const findPullRequest = async ({ branch, cwd, state }: Params): Promise<PullRequestSummary | undefined> => {
 	const listed = await runGh({

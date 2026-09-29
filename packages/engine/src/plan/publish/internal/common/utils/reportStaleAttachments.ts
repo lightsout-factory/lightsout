@@ -15,9 +15,6 @@ interface Params {
 }
 
 /**
- * Every attachment title on the ticket that names a durable plan file of THIS
- * generation which this run did not write.
- *
  * The list is narrowed to the plan's own namespace first, so another plan's
  * titles, this plan's brainstorm titles and the ticket record are all outside
  * the question rather than answers to it. `brainstorm-notes.md` is excluded
@@ -32,9 +29,6 @@ const readStaleTitles = ({ titles, published, titlePrefix }: { titles: string[];
 };
 
 /**
- * Name the durable-titled attachments an earlier publish left on the ticket,
- * and answer with them.
- *
  * The read is advisory: one that did not come back reports itself and answers
  * with nothing, because the files are already on the ticket and a publish that
  * succeeded must not be turned into a reported failure by it.

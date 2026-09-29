@@ -3,11 +3,6 @@ import { Theme } from '#src/common/constants/Theme.ts';
 import { themeStorageKey } from '#src/common/constants/themeStorageKey.ts';
 import { ThemeContext } from '#src/theme/internal/ThemeContext.ts';
 
-/**
- * The stored choice, or undefined when nothing readable is stored — a browser
- * with storage blocked throws on the very first read, and a value from before
- * the choice was light or dark alone is not one of them.
- */
 const readStoredTheme = () => {
 	let stored: Theme | undefined;
 
@@ -38,14 +33,9 @@ interface Props {
 }
 
 /**
- * Holds the theme and keeps the `<html>` class in step with it.
- *
- * Every DOM and storage touch happens in an effect, which never runs on the
- * server — so the server render is inert and the first client render is
- * identical to it. The stored choice is read on mount rather than in
- * `useState`'s initialiser for the same reason: reading it during render would
- * make the two disagree and trip hydration. The inline script in the root
- * document is what stops a viewer who chose dark from seeing light first.
+ * Every DOM and storage touch happens in an effect, and the stored choice is
+ * read on mount rather than in `useState`'s initialiser, so the first client
+ * render matches the server's and hydration does not trip.
  */
 export const ThemeProvider = ({ children, defaultTheme = Theme.Light }: Props) => {
 	const [theme, setStoredTheme] = useState<Theme>(defaultTheme);

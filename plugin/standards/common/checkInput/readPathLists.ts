@@ -6,9 +6,6 @@ interface Params {
 }
 
 /**
- * The paths a check was handed: every file in scope, and the test files among
- * them.
- *
  * Each location rule receives the whole input union, so the narrowing is
  * written once here rather than as a cast per rule. An input carrying no path
  * lists yields empty ones: a rule that declared a path-carrying kind is never

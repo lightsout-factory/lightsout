@@ -16,19 +16,6 @@ interface Props {
 	onFolderFilterChange: (folder: string | undefined) => void;
 }
 
-/**
- * Where the open findings actually sit, as a facet a reader narrows the table
- * with.
- *
- * The single most useful thing a reader learns from a standards report is that
- * most of the debt is in one place, and a flat list hides that. The depth dial
- * is a presentation choice rather than a property of the grouping: three
- * segments reaches a package, four reaches a folder inside one, and which is
- * right depends on the repo looking.
- *
- * The per-folder rule sublist this used to carry is gone — the table beside it
- * is the rule breakdown now, and pressing the folder already selected clears it.
- */
 export const FolderBreakdown = ({ findings, depth, onDepthChange, folderFilter, onFolderFilterChange }: Props) => {
 	const groups = groupFindingsByFolder({ findings, depth });
 	const largest = groups.length === 0 ? 0 : groups[0].count;

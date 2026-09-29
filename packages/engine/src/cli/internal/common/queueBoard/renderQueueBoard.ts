@@ -5,10 +5,7 @@ import { toInlineMarkdown } from '#src/cli/internal/common/queueBoard/toInlineMa
 import type { QueueBoardTicket } from '#src/contracts/queue/QueueBoardTicket.ts';
 import { QueueLane } from '#src/contracts/queue/QueueLane.ts';
 
-/**
- * Each column's header. Keyed by `QueueLane` rather than by `string`, so a lane
- * added to the board fails the typecheck here instead of drawing a blank header.
- */
+/** Keyed by `QueueLane` rather than `string`, so a new lane fails the typecheck here instead of drawing a blank header. */
 const laneLabels: Record<QueueLane, string> = {
 	[QueueLane.Parked]: 'Parked',
 	[QueueLane.Blocked]: 'Blocked',
@@ -19,10 +16,9 @@ const laneLabels: Record<QueueLane, string> = {
 	[QueueLane.Shipped]: 'Shipped',
 };
 
-/** The lanes whose detail lines carry a reason: why a ticket stopped or is held, or a shipped ticket's stale tracker. */
 const lanesWithReason = new Set<QueueLane>([QueueLane.Shipped, QueueLane.Parked, QueueLane.Blocked]);
 
-/** Local 24-hour HH:MM, with no date and no zone — the clock a reader compares against the one on their own screen. */
+/** Local time, because a reader compares it against the clock on their own screen. */
 const toClock = ({ at }: { at: Date }) => `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
 
 const toHeading = ({ state, at }: { state: QueueBoardState; at: Date }) => {
@@ -38,10 +34,9 @@ const toHeading = ({ state, at }: { state: QueueBoardState; at: Date }) => {
 	return heading;
 };
 
-/** A cell holds the identifier alone, linked to the ticket, so no cell wraps over several lines in a terminal. */
+/** The identifier alone, so no cell wraps over several lines in a terminal. */
 const toCell = ({ ticket }: { ticket: QueueBoardTicket }) => formatTicketLink({ ticket: { identifier: ticket.identifier, url: ticket.url } });
 
-/** One ticket's line in the list under the table: `ID · Title`, then its reason when its lane carries one. */
 const toDetailLine = ({ ticket }: { ticket: QueueBoardTicket }) => {
 	const label = formatTicketLink({ ticket: { identifier: ticket.identifier, title: ticket.title } });
 	// Clipped so one long error cannot fill the screen; the queue's own report keeps the full text.
@@ -62,17 +57,8 @@ interface Params {
 }
 
 /**
- * The queue's board as markdown lines: a heading, a blank line, then a table
- * with one column per lane in `QueueLane` order, where row N holds each lane's
- * Nth ticket in input order. An empty lane keeps its column, with an em dash in
- * its first row, so a ticket visibly moves across columns from one post to the
- * next.
- *
- * Each cell holds only the ticket's identifier. Every ticket's title, and its
- * reason when it has one, follow in a list under the table — one line per
- * ticket, in the table's column order — after a blank line that ends the table.
- *
- * Pure — no clock and no terminal paint: the lines are markdown the queue
+ * An empty lane keeps its column, so a ticket visibly moves across columns from
+ * one post to the next. No terminal paint: the lines are markdown the queue
  * skill posts into a conversation.
  */
 export const renderQueueBoard = ({ tickets, state, at }: Params): string[] => {

@@ -29,22 +29,14 @@ const getSpecifiers = ({ text }: { text: string }) => {
 export const check: StandardsCheckModule = {
 	inputKind: 'file-text',
 	/**
-	 * Judged per file against the aliases of the package that holds it — which in
-	 * a monorepo is the only place they are declared, since a shared base config
-	 * cannot name paths that would mean something different in each package.
-	 * Asking the repo root alone, as this rule once did, found no aliases
-	 * anywhere in a workspace and quietly judged nothing.
+	 * Judged against the aliases of the package holding the file: in a monorepo
+	 * that is the only place they are declared, since a shared base config cannot
+	 * name paths that mean something different in each package.
 	 *
-	 * A package with no aliases is told by this very document to use relative
-	 * paths, so the rule has nothing to say there. A package whose aliases could
-	 * not be read is not judged at all: the fix this rule asks for is "write the
-	 * alias instead", and it cannot name one it never saw. Either declaration
-	 * answers — `package.json` → `imports` or `tsconfig.json` →
-	 * `compilerOptions.paths` — which is why the guidance below names both.
-	 *
-	 * Only files inside a `src` tree, which is what those aliases are configured
-	 * to reach, and only specifiers that resolve to a file in scope — which
-	 * silences asset imports, relative for reasons an alias cannot answer.
+	 * A package with no aliases is told to use relative paths, and one whose
+	 * aliases could not be read is not judged: the rule cannot name an alias it
+	 * never saw. Only specifiers that resolve to a file in scope count, which
+	 * silences asset imports.
 	 */
 	run: ({ input }): RawStandardsFinding[] => {
 		const { files, contents } = readFileTexts({ input });

@@ -9,13 +9,8 @@ interface Params {
 }
 
 /**
- * The folder a branch's four machine-local records are filed in: the work
- * order's own folder, beside the plans that branch implements.
- *
- * Undefined is a real answer rather than a failure. The work-orders directory
- * holds work orders, and a folder invented for a branch nothing claims would be
- * a phantom work order — the exact thing slugging a branch into a file name
- * used to create. Every caller reads undefined as "this branch keeps no local
+ * Undefined is a real answer: a folder invented for a branch no work order claims
+ * would be a phantom work order. Callers read it as "this branch keeps no local
  * record".
  */
 export const resolveBranchRecordDir = async ({ cwd, branch }: Params): Promise<string | undefined> => {

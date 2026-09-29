@@ -7,7 +7,6 @@ import { getPlanningProgressPath } from '#src/plan/progress/getPlanningProgressP
 import { writePlanningProgress } from '#src/plan/progress/internal/common/utils/writePlanningProgress.ts';
 import { readPlanningProgress } from '#src/plan/progress/readPlanningProgress.ts';
 
-/** Every other step's entry kept as it was, this step's replaced, and the whole list in `PlanningStep` order. */
 const withEntry = ({ progress, entry }: { progress: PlanningProgress | undefined; entry: PlanningStepRecord }) => {
 	const order = Object.values(PlanningStep);
 	const others = progress?.steps.filter((candidate) => candidate.step !== entry.step) ?? [];
@@ -15,12 +14,7 @@ const withEntry = ({ progress, entry }: { progress: PlanningProgress | undefined
 	return [...others, entry].sort((left, right) => order.indexOf(left.step) - order.indexOf(right.step));
 };
 
-/**
- * Read the record again, rewrite it whole with this step's entry, and answer
- * the entry. A failed write is one stderr line and nothing more: the record is
- * a reader's convenience, and the planning work it describes must not fail
- * because of it.
- */
+/** A failed write is one stderr line: the planning work must not fail over a reader's convenience. */
 const recordEntry = async ({
 	cwd,
 	name,
@@ -47,22 +41,15 @@ interface Params<Result> {
 	cwd: string;
 	name: string;
 	step: PlanningStep;
-	/** The subcommand's own work — the runner call it already makes. */
 	work: () => Promise<Result>;
-	/** The status the finished step records, chosen by the caller to agree with the exit code it then returns. */
+	/** Must agree with the exit code the caller then returns. */
 	statusOf: ({ result }: { result: Result }) => RunStatus;
 }
 
 /**
- * Run one plan subcommand's work and record it in the plan folder's planning
- * record: as running before the work starts, and as `statusOf` says once it
- * settles — or as failed when it throws, with the same error rethrown.
- *
- * The finish is awaited before this settles, so the record lands before the
- * caller reaches `exitCli`. Each write checks the plan folder on its own, so a
- * work that creates the folder still gets its finish written. There is no
- * lock: plan subcommands on one plan folder run one at a time, and a lock would
- * add a failure path to planning work for a record only a reader uses.
+ * The finish is awaited so the record lands before the caller reaches
+ * `exitCli`. There is no lock: plan subcommands on one plan folder run one at a
+ * time, and a lock would add a failure path for a record only a reader uses.
  */
 export const recordPlanningStep = async <Result>({ cwd, name, step, work, statusOf }: Params<Result>): Promise<Result> => {
 	const started = await recordEntry({

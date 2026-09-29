@@ -1,14 +1,9 @@
 import { z } from 'zod';
 
 /**
- * One reader brief's reading of one plan file: what was read, at what text, and
- * what the plan graph joined it to at the time.
- *
- * It is what lets a later pass skip a reading already paid for. `lens` is a
- * plain string rather than the `GapCheckLens` enum for the reason
- * `GradeInputs.effort` is: an entry is only ever compared for equality against
- * the current brief list, never interpreted, so a memory written under a brief
- * the enum later drops must still parse rather than refusing the whole file.
+ * `lens` is a plain string rather than the `GapCheckLens` enum: it is only ever
+ * compared for equality, so a memory written under a brief the enum later drops
+ * must still parse rather than refusing the whole file.
  */
 export const GradeReadCoverage = z.object({
 	/** The plan file's basename — the same label `GradedGap.phase` and `GradeReport.phasesChecked` carry. */

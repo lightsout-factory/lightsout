@@ -13,24 +13,14 @@ interface Params {
 
 interface DurableSet {
 	files: DurablePlanFile[];
-	/** Set when the folder holds no plan deliverable — the one thing nothing can be implemented without. */
 	error?: string;
 }
 
 /**
- * Resolve one plan folder to the files that travel, in the order they are
- * attached.
- *
- * What a plan *is* is answered by `resolvePlanDeliverable` and nowhere else, so
- * a phased plan's overview and every phase file travel without this file ever
- * restating the naming rule. The working records follow, each kept only when
- * the folder holds it: `brainstorm-notes.md` exists only when verify-facts was given
- * `--notes`, so requiring it would refuse a legitimate plan.
- *
- * `DurableSet` is declared here and not exported, the way
- * `resolvePlanDeliverable` declares its own: no caller names the wrapper. The
- * file shape inside it is another matter — publish names it too, so it lives in
- * `common/types/` where both can reach it.
+ * What a plan *is* is answered by `resolvePlanDeliverable` and nowhere else. The
+ * working records are each kept only when the folder holds them:
+ * `brainstorm-notes.md` exists only when verify-facts was given `--notes`, so
+ * requiring it would refuse a legitimate plan.
  */
 export const durablePlanFiles = async ({ cwd, name }: Params): Promise<DurableSet> => {
 	const deliverable = await resolvePlanDeliverable({ cwd, name });

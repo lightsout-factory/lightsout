@@ -8,7 +8,6 @@ import { describeMissingWorkOrder } from '#src/common/utils/describeMissingWorkO
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { pullWorkOrderState } from '#src/workOrder/pullWorkOrderState.ts';
 
-/** One line per plan, and one each for what the work order is waiting on. */
 const renderWorkOrderState = ({ record }: { record: WorkOrderState }) => [
 	// The label leads, because it is what every other subcommand is typed with;
 	// the branch follows, because a prefixed one cannot be read off the label.
@@ -27,11 +26,8 @@ const renderWorkOrderState = ({ record }: { record: WorkOrderState }) => [
 ];
 
 /**
- * `lightsout work-order show` at the terminal.
- *
  * The record is pulled rather than read, so a copy another machine published is
- * taken first and a divergence is reported instead of a stale answer being
- * shown as the truth.
+ * taken first and a divergence is reported instead of a stale answer.
  */
 export const workOrderShowCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const name = await getRequiredFlag({ flags, name: 'name' });

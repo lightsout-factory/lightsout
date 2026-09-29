@@ -43,14 +43,8 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/**
- * The opening record for a branch nobody has recorded yet.
- *
- * `building` is the opening state, not a reset. Writing it over a branch
- * already recorded `ready` and then failing in the worker would leave finished
- * work recorded as unfinished, and the next run would spend another worker on
- * it — so picking a recorded branch up writes nothing.
- */
+// `building` is the opening state, not a reset: writing it over a branch recorded
+// `ready` and then failing would send the next run to rebuild finished work.
 const recordPickup = async ({ cwd, branch, onProgress }: { cwd: string; branch: string; onProgress?: (message: string) => void }) => {
 	if ((await readBranchState({ cwd, branch })) === undefined) {
 		await writeBranchState({ cwd, branch, phase: BranchPhase.Building, onProgress });
@@ -58,13 +52,9 @@ const recordPickup = async ({ cwd, branch, onProgress }: { cwd: string; branch: 
 };
 
 /**
- * The work order's worktree, cut from the default branch or continued in.
- *
  * Creation is the one step that mutates the main checkout, so it alone goes
- * through the shared chain; everything after it runs fully parallel. Reuse is
- * on: a tree an earlier drain parked is continued in, exactly as it always was.
- * The owner is what makes a tree a standalone run made come back as a creation
- * failure rather than a tree to run a worker in.
+ * through the shared chain. The owner makes a tree a standalone run made come back
+ * as a creation failure rather than a tree to run a worker in.
  */
 const createTicketWorktree = ({
 	cwd,
@@ -86,16 +76,9 @@ const createTicketWorktree = ({
 	});
 
 /**
- * The tracker write that claims the ticket, made before ownership begins.
- *
- * Required state is recorded before any source work, so a tracker that cannot
- * record it stops this ticket before its worker touches source. Creating an
- * empty worktree is not source work; the worker is, and this write is complete
- * before it starts. The planning status is deliberately not written here: the
- * pickup must not erase the fact the parked scan re-reads to know which worker
- * to resume, and the implement edge settles it.
- *
- * @returns the one sentence saying why no source work began, or undefined once the ticket is claimed
+ * Made before the worker starts, so a tracker that cannot record it stops the
+ * ticket before any source work. The planning status is deliberately not written:
+ * the parked scan re-reads it to know which worker to resume.
  */
 const claimOwnership = async ({ settings, trackerSettings, ticket }: { settings: QueueSettings; trackerSettings: TrackerSettings; ticket: RunnableTicket }) => {
 	const inProgress = settings.lifecycle.statusNames[TrackerStatusRole.InProgress];
@@ -111,22 +94,9 @@ const claimOwnership = async ({ settings, trackerSettings, ticket }: { settings:
 };
 
 /**
- * One ticket, from pickup to committed-and-ready, or left open.
- *
- * It deliberately does not ship: the queue merges the ready branches serially,
- * and a worker shipping itself would race that order. The worktree is never
- * removed here either — the ship step removes it after a merge, and a parked
- * tree is the evidence a human needs.
- *
- * A branch is settled ready when it carries commits ahead of the default
- * branch — whether or not this session added any — so a resumed ticket whose
- * work was committed by an earlier run is never reported as having changed
- * nothing.
- *
- * A worker that left the ticket open is the third answer: every plan it built was
- * already committed plan by plan, so nothing is committed and no commit is
- * counted here — the branch is recorded open, which is what makes the next drain
- * re-evaluate the ticket rather than merge it.
+ * It deliberately does not ship: the queue merges ready branches serially, and a
+ * worker shipping itself would race that order. The worktree is never removed
+ * here: a parked tree is the evidence a human needs.
  */
 export const runQueueWorkOrder = async ({
 	cwd,
@@ -145,10 +115,6 @@ export const runQueueWorkOrder = async ({
 	onProgress,
 }: Params): Promise<WorkOrderRunOutcome> => {
 	const { ticket, name, branch } = workOrder;
-	// One directory for every commit message file this work order needs: the plan
-	// loop's per-plan commits and the final commit below write to the same place.
-	// It is keyed by the tracker identifier, which names the ticket rather than
-	// the work order.
 	const workOrderRunDir = join(coordinatorRunDir, 'work-orders', ticket.identifier);
 	const created = await createTicketWorktree({ cwd, branch, defaultBranch, setup: settings.setup, serializeWorktreeAdd, onProgress });
 

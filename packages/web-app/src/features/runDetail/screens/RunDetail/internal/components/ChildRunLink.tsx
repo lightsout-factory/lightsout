@@ -1,17 +1,9 @@
 import { Link } from '@tanstack/react-router';
 
 interface Props {
-	/** The child run's full id; the reader is shown its short form. */
 	runId: string;
 }
 
-/**
- * The way into the run a step handed its work to, named by its short id.
- *
- * Three panels point at the same child run — the phase list, the step's own
- * card, and that step's report — so how much of the id is shown, and how the
- * link is dressed, are decided once here rather than three times.
- */
 export const ChildRunLink = ({ runId }: Props) => {
 	const shortId = runId.slice(0, 8);
 

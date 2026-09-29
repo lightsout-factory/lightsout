@@ -6,7 +6,6 @@ interface Params {
 	run: () => Promise<void>;
 }
 
-/** Put a task in flight under a rising key it resolves to, so the drain's race says which one finished. */
 export const trackTask = ({ flight, run }: Params): void => {
 	const key = flight.nextKey;
 

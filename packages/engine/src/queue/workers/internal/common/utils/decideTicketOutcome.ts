@@ -7,7 +7,6 @@ interface Params {
 	record: WorkOrderState;
 }
 
-/** What the record says about the ticket once there is nothing left to build: ship it, leave it open, or park it. */
 export const decideTicketOutcome = ({ record }: Params): WorkerOutcome => {
 	const eligibility = readWorkOrderShipEligibility({ record });
 

@@ -22,12 +22,10 @@ interface Params {
 	/** The work order's label, which is also the branch its plans implement on. */
 	name: string;
 	config: LightsoutConfig;
-	/** The process environment the tracker API key is read from. */
 	env: NodeJS.ProcessEnv;
 	onProgress?: (message: string) => void;
 }
 
-/** Take the ticket's copy: write it as the local record, and remember its bytes as the last synced ones. */
 const takePublished = async ({
 	workOrderFolder,
 	content,
@@ -59,11 +57,7 @@ const takePublished = async ({
 	return outcome;
 };
 
-/**
- * The three-way rule, applied to bytes rather than fields: L is the local
- * record's normalised form, P the published one's, and S what the sidecar says
- * this machine last published or restored.
- */
+/** Compares normalised record bytes, not fields, against the sidecar's note of what this machine last published or restored. */
 const applyThreeWayRule = async ({
 	cwd,
 	workOrderFolder,
@@ -113,19 +107,9 @@ const applyThreeWayRule = async ({
 };
 
 /**
- * The work order's state as this machine should now see it: its own copy, the
- * ticket's copy pulled down over it, or the one sentence saying both have moved.
- *
- * Every command that reads or changes the record starts here, so a machine
- * never works from a copy it already knows is behind. With no tracker
- * configured — or a record carrying no ticket reference — the local record is
- * the whole truth and nothing is reached for; a tracker that IS configured and
- * cannot be read is an error rather than a quiet local-only answer, because
- * passing over it would let a divergence go unnoticed.
- *
- * The tracker is read before the lock is taken and never while it is held: the
- * lock guards a read-modify-write of local files, and holding it across a
- * network call would stall every other command on this machine.
+ * A configured tracker that cannot be read is an error rather than a quiet local-only answer,
+ * because passing over it would hide a divergence. The tracker is read before the lock is taken:
+ * holding the lock across a network call would stall every other command on this machine.
  */
 export const pullWorkOrderState = async ({
 	cwd,

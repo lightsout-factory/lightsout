@@ -2,14 +2,12 @@ import { z } from 'zod';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutcome.ts';
 
-/** The step-record `report` payload a refactor batch persists. */
 export const BatchReport = z.object({
 	outcome: z.enum(BatchOutcome),
-	/** Site keys still present after the batch (empty when resolved). */
 	remainingSiteKeys: z.array(z.string()),
-	/** The executing agent's account of why findings were declined, from its friction entries. */
+	/** Why findings were declined, from the agent's friction entries. */
 	rationale: z.array(z.string()),
-	/** What the batch's agent did about each advisory it was shown, accumulated across the batch's invocations. Absent means it reported none. */
+	/** Accumulated across the batch's invocations. Absent means the agent reported none. */
 	advisoryOutcomes: z.array(AdvisoryOutcome).optional(),
 });
 

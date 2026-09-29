@@ -14,17 +14,15 @@ interface Params {
 	height: number;
 }
 
-/** Bars take the top of the box and folder rows the rest — one split, stated once. */
 const barShare = 0.7;
 
 /** The gap after a folder square, as a fraction of that square's edge. */
 const squareGap = 0.25;
 
-/** Biggest first, ties broken by path so one state always draws in one order. */
+/** Ties break by path so one state always draws in one order. */
 const takeLargest = ({ entries, count }: { entries: [string, number][]; count: number }) =>
 	[...entries].sort(([leftPath, left], [rightPath, right]) => right - left || leftPath.localeCompare(rightPath)).slice(0, count);
 
-/** A folder row's height, and the edge of the squares sitting in it. */
 const measureRow = ({ height }: { height: number }) => {
 	const rowHeight = (height * (1 - barShare)) / sprawlFolderRowCount;
 	// A square's edge as a fraction of its row's height — the rest is the space
@@ -68,19 +66,7 @@ const buildFolderRows = ({ state, cap, height }: { state: SprawlLaneState; cap: 
 	});
 };
 
-/**
- * One lane at one frame, reduced to rectangles in the caller's unit box.
- *
- * Both renderers — the page's inline SVG and the README GIF — call this with
- * the same box, so a folder square is the same square in each and neither gets
- * to invent a size of its own.
- *
- * @param state - the lane's full tree at this frame, from `buildSprawlLaneStates`
- * @param maxLines - the tallest file across every frame of both lanes, from `getSprawlMaxLines`, so the cap line never moves and both lanes share one scale
- * @param caps - the standards pack's own caps, as the dataset read them
- * @param width - the unit box's width
- * @param height - the unit box's height
- */
+/** Both renderers, the page's SVG and the README GIF, call this with the same box, so neither invents its own sizes. */
 export const buildSprawlLayout = ({ state, maxLines, caps, width, height }: Params): SprawlLayout => {
 	const barArea = height * barShare;
 	const { size } = measureRow({ height });
@@ -91,9 +77,7 @@ export const buildSprawlLayout = ({ state, maxLines, caps, width, height }: Para
 		folderRows,
 		capY: maxLines === 0 ? barArea : barArea - (caps.file / maxLines) * barArea,
 		censusX: caps.folderCensus * size * (1 + squareGap),
-		// The census line spans the folder strip, which starts at the topmost row
-		// placed above. A history with no folders yet has no strip, and the line
-		// collapses to nothing at the foot of the box.
+		// With no folders yet there is no strip, and the line collapses to the foot of the box.
 		censusY: Math.min(...folderRows.map((row) => row.y), height),
 	};
 };

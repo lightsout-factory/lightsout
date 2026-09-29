@@ -10,16 +10,12 @@ interface Params {
 }
 
 /**
- * The target repo's own TypeScript module, or undefined when it has none.
- * Bundling the compiler into the committed CLI bundle would add ~8MB for a
- * dependency every TS consumer already has — so the AST tier borrows the
- * consumer's and degrades honestly when absent (JS-only repos). Tries the
- * repo root first, then each workspace package (pnpm hoists nothing by
- * default, so the root often has no typescript while every package does).
+ * Borrows the consumer's compiler rather than bundling one every TS consumer
+ * already has, and answers undefined in a JS-only repo. Workspace packages are
+ * tried after the root because pnpm hoists nothing by default.
  */
 export const resolveConsumerTypescript = ({ cwd, packagesDir = 'packages' }: Params): typeof ts | undefined => {
-	// createRequire rejects relative paths outright (observed live with
-	// `--cwd .`: the whole AST tier silently degraded) — anchor first.
+	// createRequire rejects relative paths, so anchor first.
 	const root = resolve(cwd);
 
 	let packageNames: string[] = [];
@@ -34,9 +30,8 @@ export const resolveConsumerTypescript = ({ cwd, packagesDir = 'packages' }: Par
 
 	for (const manifest of manifests) {
 		try {
-			// A dynamic require is typed `any`; the annotation is what states the
-			// shape. The module either resolves as the compiler or throws, so
-			// there is no runtime shape left to narrow on.
+			// A dynamic require is typed `any`; the module either resolves as the
+			// compiler or throws, so there is no runtime shape to narrow on.
 			const compiler: typeof ts = createRequire(manifest)('typescript');
 
 			return compiler;

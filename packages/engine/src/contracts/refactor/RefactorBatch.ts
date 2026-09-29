@@ -1,20 +1,15 @@
 import { z } from 'zod';
 import { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 
-/**
- * One refactor-run batch: one kind of finding in one area of the repo — a
- * single agent job. Frozen into the run's worklist at start; the batch's
- * site keys are what the post-batch re-check looks for.
- */
+/** One kind of finding in one area of the repo: a single agent job. */
 export const RefactorBatch = z.object({
 	/** Manifest step id: `batch-NN:<rule>:<folder>` — the rule is one of the standards-check rule ids, not a check function. */
 	id: z.string(),
 	rule: z.string(),
 	/** Grouping folder: `<packagesDir>/<package>` when under it, else the top path segment, else '(root)'. */
 	folder: z.string(),
-	/** Blocking-severity work — must-address, re-checked after the agent reports. */
 	blocking: z.array(StandardsFinding),
-	/** Judgment-carrying advisories whose files overlap this batch — context, never blocking. */
+	/** Advisories whose files overlap this batch: context, never blocking. */
 	advisories: z.array(StandardsFinding),
 });
 

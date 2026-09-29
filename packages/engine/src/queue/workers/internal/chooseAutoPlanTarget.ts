@@ -20,14 +20,9 @@ interface Params {
 }
 
 /**
- * A first plan's slug, cut from the ticket title: the first three words of the
- * one slugger the repository has, so a plan's folder never drifts from how a
- * branch is named.
- *
- * `toBranchSlug` already caps its answer at 40 characters of lowercase letters,
- * digits and single hyphens, so three of its words always satisfy the plan-id
- * slug rule. A title with nothing sluggable in it becomes the word plan, because
- * an empty slug is not a plan id.
+ * Uses the branch slugger so a plan's folder never drifts from how a branch is
+ * named; three of its words always satisfy the plan-id slug rule. An empty slug
+ * is not a plan id, hence the fallback.
  */
 const toFirstPlanSlug = ({ title }: { title: string }) => {
 	const words = toBranchSlug({ text: title }).split('-').filter(Boolean).slice(0, 3);
@@ -35,7 +30,6 @@ const toFirstPlanSlug = ({ title }: { title: string }) => {
 	return words.length === 0 ? 'plan' : words.join('-');
 };
 
-/** Plan 001 added to a record that holds none, and the address the session is then handed. */
 const addFirstPlan = async ({ cwd, workOrderName, ticket, config, env, onProgress }: Params) => {
 	const added = await addWorkOrderPlan({
 		cwd,
@@ -51,9 +45,6 @@ const addFirstPlan = async ({ cwd, workOrderName, ticket, config, env, onProgres
 		return added;
 	}
 
-	// A withdrawn ship request, and a local change the tracker did not take,
-	// are both things the drain's reader should see rather than only the
-	// command that changed the record.
 	for (const message of [added.notice, added.publishError].filter((entry) => entry !== undefined)) {
 		onProgress?.(message);
 	}
@@ -62,22 +53,12 @@ const addFirstPlan = async ({ cwd, workOrderName, ticket, config, env, onProgres
 };
 
 /**
- * Which plan the queue's auto-plan session works on, decided by the engine
- * before the session starts.
+ * Decided by the engine before the session starts, so the session never derives
+ * a name. The address is built from the work order's label, because a prefixed
+ * branch would yield an address `parsePlanAddress` rejects.
  *
- * The session never derives a name: it is handed a plan address built from the
- * work order's LABEL — a prefixed branch would yield an address
- * `parsePlanAddress` rejects outright — and told to plan exactly that folder.
- *
- * A record that holds no plans at all, which is the state every work order
- * `lightsout work-order new` writes is in, gets plan 001 added to it; a record
- * that already holds plans gets the lowest one still being planned, so planning
- * follows the same lowest-first order building does. A record with nothing
- * waiting to be planned answers no address at all, and the worker then spends no
- * session on it.
- *
- * A work order with no record AT ALL is a refusal rather than something to
- * create: `lightsout work-order new` is the one writer of a work order's name.
+ * A work order with no record is a refusal rather than something to create:
+ * `lightsout work-order new` is the one writer of a work order's name.
  *
  * @returns the record and the plan address, the record alone when nothing is waiting to be planned, or the refusal to pass along
  */

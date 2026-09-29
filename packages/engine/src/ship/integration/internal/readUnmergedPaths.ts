@@ -5,12 +5,9 @@ interface Params {
 }
 
 /**
- * The repo-relative paths git currently considers unmerged, or `undefined` when
- * git could not be read at all.
- *
- * Undefined and empty are deliberately different answers, exactly as in
- * `readGitHeadCommit`: an unreadable git is missing evidence, and reporting it
- * as "nothing unmerged" would let an unresolved conflict be committed.
+ * Undefined and empty are deliberately different answers: an unreadable git is
+ * missing evidence, and reporting it as "nothing unmerged" would let an
+ * unresolved conflict be committed.
  *
  * Read NUL-delimited and never trimmed, because a path is data: a filename may
  * carry spaces, quotes, a leading space or a newline, and every one of those

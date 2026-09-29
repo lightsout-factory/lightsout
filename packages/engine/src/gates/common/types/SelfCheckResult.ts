@@ -1,7 +1,6 @@
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import type { SelfCheckReason } from '#src/gates/common/constants/SelfCheckReason.ts';
 
-/** What one self-check ended with: why it ended, what it scheduled, and — for a run that reached the gates — what they found. */
 export interface SelfCheckResult {
 	reason: SelfCheckReason;
 	gateNames: string[];
@@ -11,14 +10,9 @@ export interface SelfCheckResult {
 	/** One line per gate that ran past its ceiling on every attempt. Filled only on a `SelfCheckReason.Ran` ending, and empty on every other ending. */
 	timeouts: string[];
 	/**
-	 * Why the machine was never available — who held it, in which worktree, and
-	 * for how long. Set only with `SelfCheckReason.Coordination`, and empty on
-	 * every other ending.
-	 *
-	 * Required-but-possibly-undefined rather than optional, for the same reason
-	 * the channel on `GateRunResult` is: the compiler then finds every literal
-	 * that builds one of these instead of letting one silently inherit a missing
-	 * member.
+	 * Set only with `SelfCheckReason.Coordination`. Required-but-possibly-undefined
+	 * rather than optional, as on `GateRunResult`, so the compiler finds every
+	 * literal that builds one of these.
 	 */
 	coordination: string | undefined;
 }

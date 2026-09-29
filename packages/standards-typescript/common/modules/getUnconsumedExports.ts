@@ -27,9 +27,6 @@ interface Params {
 }
 
 /**
- * Every export in scope that no production file references, each with whether
- * a test still mentions it.
- *
  * Whole-word name counting, which is honest here because one-export-per-file
  * makes every export a distinct searchable name. Conservative by construction:
  * a name mentioned in a comment or a string counts as a reference, so calling a

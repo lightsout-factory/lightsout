@@ -7,18 +7,8 @@ import { commandGroupLabels } from '#src/features/commands/internal/common/const
 import { commandsQueryOptions } from '#src/features/commands/queries/commandsQueryOptions.ts';
 import { CommandCard } from '#src/features/commands/screens/CommandsPage/internal/components/CommandCard.tsx';
 
-/** The four groups in the order the page reads them: building, burning down, the standards themselves, and keeping the install honest. */
 const groupOrder = [CommandGroup.Build, CommandGroup.BurnDown, CommandGroup.Standards, CommandGroup.Housekeeping];
 
-/**
- * Everything lightsout can be asked to do, grouped by what it is for.
- *
- * Every number and every word comes from the engine's own command catalog,
- * which is also what `lightsout --help` and the README infographics render
- * from — so a command that gains a flag gains it here in the same commit.
- *
- * No repo is needed: the catalog is engine source rather than run state.
- */
 export const CommandsPage = () => {
 	const { data: commands } = useSuspenseQuery(commandsQueryOptions());
 

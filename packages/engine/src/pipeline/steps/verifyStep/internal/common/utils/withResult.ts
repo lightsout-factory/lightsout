@@ -7,7 +7,6 @@ interface Params {
 	result: VerificationResult;
 }
 
-/** The step record with this gate run's verdict written into its verification state. */
 export const withResult = ({ record, result }: Params): StepRecord => ({
 	...record,
 	verification: {

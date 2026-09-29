@@ -1,4 +1,3 @@
-/** What one commit is addressed by, before the agent has said what it changes. */
 export interface CommitAddress {
 	/** The ticket reference the subject opens with — the ticket ref, or the run-label fallback. */
 	reference: string;

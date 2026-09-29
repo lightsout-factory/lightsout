@@ -10,12 +10,9 @@ interface Params {
 	/** Supplemental code standards, inlined verbatim — part of what the agent could derive the answer from. */
 	standards?: string;
 	/**
-	 * The plan's folder, repo-relative — named so the judge can open a SIBLING
-	 * phase file its batch does not span when an observation is about a seam. Not
-	 * the text of those files: every phase inlined into every judge is the
-	 * read-the-whole-plan-at-once shape the readers were split away from. The
-	 * judge already has repository access; this tells it where to look. Absent
-	 * for a single-file plan, which has no siblings.
+	 * The plan's folder, repo-relative, so the judge can open a sibling phase file
+	 * its batch does not span when an observation is about a seam. Absent for a
+	 * single-file plan.
 	 */
 	planDir?: string;
 	/** Every record the memory holds for any phase in `planTexts`, de-duplicated by id — what `matchesFinding` may name. */
@@ -24,7 +21,6 @@ interface Params {
 	observations: Array<{ id: string; observation: GapObservation }>;
 }
 
-/** One line per record, and the rule that turns the list into an answer the engine can validate. */
 const recordsSection = ({ records }: { records: GradeFindingRecord[] }) =>
 	[
 		'## Findings already on record',
@@ -41,7 +37,6 @@ const recordsSection = ({ records }: { records: GradeFindingRecord[] }) =>
 		'evidence the earlier clearance was wrong or that its assumptions have changed.',
 	].join('\n');
 
-/** One observation under its engine identifier — the name `covers` must use for it. */
 const observationEntry = ({ id, observation }: { id: string; observation: GapObservation }) =>
 	[
 		`### ${id}`,
@@ -55,11 +50,9 @@ const observationEntry = ({ id, observation }: { id: string; observation: GapObs
 	].join('\n');
 
 /**
- * Assemble one plan gap-judge invocation deterministically. A grade run spawns
- * one judge per candidate batch with the same brief, overview and standards, so
- * those live in the system prompt the harness caches through; the text of every
- * plan file the batch spans and the observations under judgment are the
- * per-invocation prompt.
+ * A grade run spawns one judge per candidate batch with the same brief,
+ * overview and standards, so those ride the system prompt the harness caches
+ * through.
  */
 export const buildPlanGapJudgeInvocation = ({
 	planTexts,

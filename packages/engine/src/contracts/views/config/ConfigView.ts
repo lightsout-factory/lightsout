@@ -2,21 +2,16 @@ import { z } from 'zod';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { ConfigFieldView } from '#src/contracts/views/config/ConfigFieldView.ts';
 
-/** What this repo told lightsout, and what lightsout filled in. */
 export const ConfigView = z.object({
 	/** Absolute path of the lightsout.config.json that was read. */
 	path: z.string(),
 	/**
 	 * The harness as the file states it, e.g. 'claude-code'; null when unset.
-	 *
-	 * Typed at the top level because the repo strip reads it directly, and
-	 * nullable because this view does not resolve defaults — `resolveConfigAndDriver`
-	 * needs a command, and the Harness section is where the fallback is explained.
+	 * Not resolved to a default because `resolveConfigAndDriver` needs a command.
 	 */
 	harness: z.string().nullable(),
 	/** The model as the file states it, e.g. 'claude-opus-5'; null when unset. Same reason. */
 	model: z.string().nullable(),
-	/** Grouped for the page: one section per config area. */
 	sections: z.array(
 		z.object({
 			title: z.string(),

@@ -9,18 +9,14 @@ import { getPlanningProgressPath } from '#src/plan/progress/getPlanningProgressP
 import { readPlanningProgress } from '#src/plan/progress/readPlanningProgress.ts';
 import { isPidAlive } from '#src/runState/isPidAlive.ts';
 
-/** Local 24-hour HH:MM — the clock a reader compares against the one on their own screen. */
+/** Local time, because a reader compares it against the clock on their own screen. */
 const localClock = ({ iso }: { iso: string }) => {
 	const at = new Date(iso);
 
 	return `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
 };
 
-/**
- * The running entries, split by whether the process that recorded them still
- * answers, newest start first in each — so a tie between two goes to the one
- * that started last.
- */
+/** Newest start first, so a tie between two running entries goes to the one that started last. */
 const splitRunning = ({ steps }: { steps: PlanningStepRecord[] }) => {
 	const running = steps.filter((entry) => entry.status === RunStatus.Running).sort((left, right) => Date.parse(right.startedAt) - Date.parse(left.startedAt));
 	const live: PlanningStepRecord[] = [];
@@ -34,9 +30,9 @@ const splitRunning = ({ steps }: { steps: PlanningStepRecord[] }) => {
 };
 
 /**
- * The five fixed rows, whatever the record holds. A running entry whose
- * recording process is gone is drawn failed with no clock: it can no longer
- * finish, and drawing it running would make a crashed plan look busy.
+ * A running entry whose recording process is gone is drawn failed with no
+ * clock: it can no longer finish, and drawing it running would make a crashed
+ * plan look busy.
  */
 const planningRows = ({ steps, live, nowMs }: { steps: PlanningStepRecord[]; live: PlanningStepRecord[]; nowMs: number }) =>
 	Object.values(PlanningStep).map((step) => {
@@ -59,11 +55,7 @@ const planningRows = ({ steps, live, nowMs }: { steps: PlanningStepRecord[]; liv
 		return { id: step, status, attempts: entry.attempts, durationMs };
 	});
 
-/**
- * Wall time from the first step's start — the time between steps is real
- * planning time — to now while a step is live, to the record's last update when
- * a running step's process is gone, and otherwise to the latest finish.
- */
+/** Measured from the first step's start, because the time between steps is real planning time. */
 const planningTotals = ({
 	progress,
 	live,
@@ -85,7 +77,6 @@ const planningTotals = ({
 	return `elapsed ${formatClockDuration({ ms: elapsedMs })} · ${passed} of ${Object.values(PlanningStep).length} passed`;
 };
 
-/** What planning is doing now: a live step first, then a step whose process is gone, then the step that finished last. */
 const planningNow = ({ progress, live, dead }: { progress: PlanningProgress; live: PlanningStepRecord[]; dead: PlanningStepRecord[] }) => {
 	// A running entry has no finish time, so a step whose process is gone never counts as the one that finished last.
 	const [lastFinished] = progress.steps
@@ -110,15 +101,7 @@ interface Params {
 	name: string;
 }
 
-/**
- * A plan's planning block as lines, in the run block's layout. It prints
- * nothing, and never throws for a missing or unreadable record: a missing one
- * draws every step not reached, and an unreadable one answers a single line
- * naming the file.
- *
- * Liveness is judged only by the recorded pid, and the clock is read once, so
- * every time the block shows agrees with every other.
- */
+/** The clock is read once, so every time the block shows agrees with every other. */
 export const loadPlanningProgressBlock = async ({ cwd, name }: Params): Promise<string[]> => {
 	const recordPath = await getPlanningProgressPath({ cwd, name });
 	const nowMs = Date.now();

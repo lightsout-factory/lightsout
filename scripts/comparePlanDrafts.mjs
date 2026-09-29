@@ -4,23 +4,18 @@ import { invokedDirectly } from './invokedDirectly.mjs';
 import { runScript } from './runScript.mjs';
 
 /**
- * Prints one before/after comparison of two plan folders.
- *
  *     node scripts/comparePlanDrafts.mjs <before-folder> <after-folder>
  *
- * The generated Decision Log and the dedicated contract template are a bet that an engine-composed plan costs less to draft and to review without
- * losing requirements. The figures that settle it already exist, spread across each folder's harness stream files and its grade.json; this reads them
- * side by side. Each argument is a directory holding plan.md, or overview.md and its phase files, resolved against the working directory.
- *
- * The script writes nothing, anywhere, ever — the folders it reads are the record of past runs, and a measurement tool that repairs its subject
- * measures the repair. It spawns no agent, makes no network call, and depends on nothing but `node:` builtins and the sibling scripts
- * invokedDirectly.mjs and runScript.mjs, so it runs against a worktree that has installed nothing.
+ * Writes nothing, ever: the folders it reads are the record of past runs, and a
+ * measurement tool that repairs its subject measures the repair. It depends on
+ * nothing but `node:` builtins and sibling scripts, so it runs against a
+ * worktree that has installed nothing.
  */
 
-/** What a figure reads as when it was never measured — which is not the same as measuring zero. */
+/** Never measured is not the same as measuring zero. */
 const unavailable = 'n/a';
 
-/** One `*-stream.jsonl` file's result events, the only event kind carrying a run's cost and elapsed time. */
+/** Result events are the only kind carrying a run's cost and elapsed time. */
 const readResultEvents = ({ path }) => {
 	const events = [];
 
@@ -39,7 +34,6 @@ const readResultEvents = ({ path }) => {
 	return events;
 };
 
-/** Cost and elapsed time summed across the folder's streams whose name starts with one of `prefixes`. */
 const sumStreams = ({ folder, prefixes }) => {
 	const names = readdirSync(folder).filter((name) => name.endsWith('-stream.jsonl') && prefixes.some((prefix) => name.startsWith(prefix)));
 	let costUsd = 0;
@@ -57,7 +51,6 @@ const sumStreams = ({ folder, prefixes }) => {
 	return { costUsd, durationMs };
 };
 
-/** Every plan file in the folder: a single plan, or an overview and its phases. */
 const readPlanFiles = ({ folder }) => {
 	const isPlanFile = ({ name }) => name === 'plan.md' || name === 'overview.md' || (name.startsWith('phase') && name.endsWith('.md'));
 
@@ -67,8 +60,8 @@ const readPlanFiles = ({ folder }) => {
 };
 
 /**
- * One plan file's prose as normalized sentences of eight words or more. Fenced blocks go first: a command line or a template excerpt is quoted
- * material, not prose the writer typed twice. Case, backticks and run-length of whitespace are normalized away so formatting alone cannot hide a repeat.
+ * Fenced blocks are dropped: a command line or template excerpt is quoted material, not prose the writer typed twice. Formatting is normalized away so
+ * it alone cannot hide a repeat.
  */
 const normalizeSentences = ({ text }) => {
 	const prose = [];
@@ -91,7 +84,6 @@ const normalizeSentences = ({ text }) => {
 		.filter((sentence) => sentence.split(' ').filter((word) => word !== '').length >= 8);
 };
 
-/** How much of the folder's prose is said more than once, as a repeat count and a character total. */
 const countDuplicatedText = ({ files }) => {
 	const counts = new Map();
 	let repeats = 0;
@@ -111,7 +103,6 @@ const countDuplicatedText = ({ files }) => {
 	return { repeats, characters };
 };
 
-/** The lines under `## <heading>`, up to the next `##` heading — the span one plan section owns. */
 const sectionLines = ({ text, heading }) => {
 	const lines = text.split('\n');
 	const start = lines.findIndex((line) => line.trim() === `## ${heading}`);
@@ -121,7 +112,6 @@ const sectionLines = ({ text, heading }) => {
 	return end === -1 ? rest : rest.slice(0, end);
 };
 
-/** The folder's grade.json, or undefined when it was never graded or no longer parses. */
 const readGradeReport = ({ folder }) => {
 	const path = join(folder, 'grade.json');
 	let report;
@@ -137,10 +127,9 @@ const readGradeReport = ({ folder }) => {
 	return report;
 };
 
-/** How many requirements the plan states, and how many of them its grade found wanting. */
 const readFidelity = ({ folder, files }) => {
 	const countUnder = ({ text, heading, marker }) => sectionLines({ text, heading }).filter((line) => line.trimStart().startsWith(marker)).length;
-	// Two of the acceptance table's `|` lines are its header and its separator, so only what follows them is a criterion.
+	// Two of the table's `|` lines are its header and separator.
 	const countRows = ({ text }) => Math.max(countUnder({ text, heading: 'Acceptance Tests', marker: '|' }) - 2, 0);
 	const countProse = ({ text }) => countUnder({ text, heading: 'Prose Files', marker: '-' });
 	const blocking = ({ gaps }) => gaps.filter((gap) => gap.outcome === 'needs-a-human' || gap.outcome === 'unjudged').length;
@@ -154,10 +143,6 @@ const readFidelity = ({ folder, files }) => {
 	};
 };
 
-/**
- * One folder's whole reading.
- * @throws {Error} When the path is not a directory, or holds no plan file at all.
- */
 const readFolder = ({ path }) => {
 	const files = existsSync(path) && statSync(path).isDirectory() ? readPlanFiles({ folder: path }) : [];
 
@@ -179,11 +164,9 @@ const formatMinutes = ({ value }) => (value / 60_000).toFixed(1);
 const formatCount = ({ value }) => String(value);
 const formatCell = ({ value, format }) => (value === undefined ? unavailable : format({ value }));
 
-/** The signed difference between the two folders, or the marker when either side was never measured. */
 const formatChange = ({ before, after, format }) =>
 	before === undefined || after === undefined ? unavailable : `${after < before ? '-' : '+'}${format({ value: Math.abs(after - before) })}`;
 
-/** The metric rows in print order, each already rendered to the three cells the table prints. */
 const buildRows = ({ before, after }) => {
 	const metrics = [
 		{ label: 'drafting cost', format: formatCost, of: ({ folder }) => folder.drafting.costUsd },
@@ -208,7 +191,6 @@ const buildRows = ({ before, after }) => {
 	}));
 };
 
-/** Writes the header, a rule, and one line per metric — each column padded to its widest cell. */
 const printTable = ({ rows, before, after }) => {
 	const header = ['metric', before.label, after.label, 'change'];
 	const table = [header, ...rows.map((row) => [row.label, row.before, row.after, row.change])];
@@ -219,10 +201,6 @@ const printTable = ({ rows, before, after }) => {
 	console.log([line({ cells: header }), rule, ...table.slice(1).map((cells) => line({ cells }))].join('\n'));
 };
 
-/**
- * Reads both folders and prints the comparison.
- * @throws {Error} When a folder argument is missing, or names something that is not a plan folder.
- */
 const main = () => {
 	const [beforeArg, afterArg] = process.argv.slice(2);
 

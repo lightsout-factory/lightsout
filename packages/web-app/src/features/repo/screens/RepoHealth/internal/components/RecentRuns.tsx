@@ -29,18 +29,11 @@ const columns: Array<DataTableColumn<RunListing>> = [
 ];
 
 interface Props {
-	/** Top-level runs only, newest first — the page has already ordered them. */
+	/** Top-level runs only, newest first. */
 	runs: RunListing[];
 }
 
-/**
- * The last few things that happened, as a glance rather than as a table to work
- * in.
- *
- * Built on `DataTable` directly rather than on `RunsTable`, which always
- * filters, folds phase children and opens rows — every one of which is the runs
- * page's job and none of which belongs on a landing page.
- */
+/** Built on `DataTable`, not `RunsTable`: filtering, folding phase children and opening rows are the runs page's job, not a landing page's. */
 export const RecentRuns = ({ runs }: Props) => {
 	// How many rows a glance holds before it stops being a glance.
 	const recentRunCount = 8;

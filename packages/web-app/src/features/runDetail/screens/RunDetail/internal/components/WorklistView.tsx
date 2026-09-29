@@ -1,7 +1,6 @@
 import type { PlanDocument } from '@lightsout/engine';
 import type { CoverageWorklist, RefactorWorklist } from '@lightsout/engine/contracts';
 
-/** A coverage run's frozen measurement: what each scope stood at, then the files it stood on. */
 const CoverageMeasurement = ({ worklist }: { worklist: CoverageWorklist }) => (
 	<div className="flex flex-col gap-4">
 		<p className="text-muted-foreground text-xs">measured {worklist.at}</p>
@@ -24,7 +23,6 @@ const CoverageMeasurement = ({ worklist }: { worklist: CoverageWorklist }) => (
 	</div>
 );
 
-/** A refactor run's frozen work-list: one agent job per batch, and the sites each was given. */
 const RefactorBatches = ({ worklist }: { worklist: RefactorWorklist }) => (
 	<div className="flex flex-col gap-4">
 		<p className="text-muted-foreground text-xs">
@@ -54,13 +52,6 @@ interface Props {
 	plan: PlanDocument;
 }
 
-/**
- * A frozen work-list, rendered as work rather than as JSON.
- *
- * A refactor run's plan is a `worklist.json` and a coverage run's is its
- * initial measurement — neither is markdown, and showing either as raw JSON
- * would make the drawer useless for the two pipelines that use it most.
- */
 export const WorklistView = ({ plan }: Props) => (
 	<div className="flex flex-col gap-4">
 		{plan.worklist === undefined ? null : <RefactorBatches worklist={plan.worklist} />}

@@ -9,21 +9,11 @@ interface Params {
 }
 
 /**
- * Approve every snapshot file the gate run itself wrote, so the runner's own
- * output is never bundled at the next checkpoint as somebody's edit to a test.
- *
- * Jest writes a brand-new `.snap` file the first time a case calls
- * `toMatchSnapshot`, during the gate run and with no agent behind it. Only that
- * first write is approved here — a path with no approved record and nothing at
- * `HEAD`. A snapshot recreated over an approved removal is left alone, because
- * jest treats a deleted snapshot as brand new and writes it green: that file is
- * the consequence of an agent's deletion, and it enters the next checkpoint's
- * bundle as an addition for the reviewer to rule on. A snapshot `HEAD` already
- * carries and now differs never reaches here either — jest fails a mismatching
- * snapshot rather than rewriting it, so a changed one is an agent's edit the
- * pre-gate review already saw.
- *
- * @returns how many were approved.
+ * Jest writes a brand-new `.snap` during the gate run with no agent behind it; only that first
+ * write is approved, so the runner's output never reaches the next checkpoint as an edit to a
+ * test. A snapshot recreated over an approved removal is left for the reviewer, because jest
+ * writes a deleted snapshot green. A changed snapshot never reaches here: jest fails a
+ * mismatch rather than rewriting it.
  */
 export const approveRunnerSnapshots = async ({ run }: Params): Promise<number> => {
 	const manifest = run.current();

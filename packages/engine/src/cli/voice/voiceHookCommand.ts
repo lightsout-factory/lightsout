@@ -58,13 +58,8 @@ const getSpokenText = async ({
 };
 
 /**
- * The hook entry: decide whether this turn asked something, and if so read it
- * aloud.
- *
- * Every failure is swallowed and every path ends normally. A hook that exits
- * non-zero surfaces an error in the user's session, and a `PreToolUse` hook
- * that writes to stdout can block the tool it was only meant to narrate — so
- * being unhelpful is always preferable to being loud.
+ * Swallows every failure: a hook that exits non-zero surfaces an error in the
+ * user's session, and a `PreToolUse` hook that writes to stdout can block the tool.
  */
 export const voiceHookCommand = async ({ cwd, input }: Params): Promise<void> => {
 	try {

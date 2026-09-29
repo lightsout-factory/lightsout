@@ -12,7 +12,6 @@ import { BurnDownPanel } from '#src/features/runDetail/screens/RunDetail/interna
 import { PhaseList } from '#src/features/runDetail/screens/RunDetail/internal/components/PhaseList.tsx';
 import { RunTimeline } from '#src/features/runDetail/screens/RunDetail/internal/components/RunTimeline.tsx';
 
-/** A step's report in one line — the whole report is a tab away, so this only has to say which step is worth opening. */
 const describeReport = ({ report }: { report?: object }) => {
 	const summary = summarizeStepReport({ report });
 	let line = '';
@@ -32,7 +31,6 @@ const describeReport = ({ report }: { report?: object }) => {
 	return line;
 };
 
-/** One step, compressed to a row: how it ended, what it cost, and what it said. */
 const StepRow = ({ step, onOpen }: { step: RunDetailStep; onOpen: () => void }) => (
 	<button
 		type="button"
@@ -53,18 +51,9 @@ const StepRow = ({ step, onOpen }: { step: RunDetailStep; onOpen: () => void }) 
 
 interface Props {
 	view: RunDetailView;
-	/** Opens one step's full card in the Steps tab. */
 	onOpenStep: (stepId: string) => void;
 }
 
-/**
- * The run at a glance: where the time went, what it burned down, and one row
- * per step.
- *
- * The rows are deliberately compact — a reader lands here to find which step is
- * worth opening, not to read every report at once, and the Steps tab is where
- * the full cards live.
- */
 export const RunOverviewTab = ({ view, onOpenStep }: Props) => (
 	<div className="flex flex-col gap-6">
 		<Card title="Timeline">

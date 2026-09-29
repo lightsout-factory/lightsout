@@ -8,19 +8,10 @@ interface Params {
 }
 
 /**
- * A sink that appends each event to `path` as one JSON line, in arrival order.
- *
  * The sink returns synchronously because a driver's read loop calls it inline,
- * so the appends are chained through a promise tail instead of awaited. Without
- * that chain the writes race and events land out of order, which stops the
- * transcript being usable as the run's evidence. Write failures are swallowed:
- * evidence is best-effort and must never fail a run, and a failed append leaves
- * the tail resolved so later events still land. `ready` is caught on the way in
- * for the same reason — a sink whose directory could not be created must not
- * wedge, and must not raise an unhandled rejection when no event ever arrives.
- * A promised `path` is awaited inside that same chain, which is what lets a
- * caller whose directory is resolved asynchronously still hand back a
- * synchronous sink.
+ * so appends chain through a promise tail to keep events in order. Failures,
+ * including a rejected `ready`, are swallowed: evidence is best-effort and must
+ * never fail or wedge a run.
  */
 export const createEventFileSink = ({ path, ready }: Params): ((event: unknown) => void) => {
 	let tail: Promise<unknown> = ready ? ready.catch(() => undefined) : Promise.resolve();

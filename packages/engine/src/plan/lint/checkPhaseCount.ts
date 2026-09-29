@@ -3,27 +3,16 @@ import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 
 interface Params {
-	/** How many implementable phases the plan has. */
+	/** Implementable phases only. */
 	phaseCount: number;
-	/** The finding label — the overview's basename. */
+	/** The finding label: the overview's basename. */
 	overviewBase: string;
 }
 
 /**
- * PhaseCount — an advisory note above eight phases.
- *
- * Its `issue` states two counted facts and predicts nothing: the phase count,
- * and `phaseCount * 3` as the number of gap-check agents one grading pass will
- * run (three lenses per phase). Its `fix` says the plan is legal and names the
- * cost in the currency that actually bites — that every one of those checkers
- * can raise gaps the human must decide, in a single sitting. A predicted gap
- * total would be a number the engine cannot know, invented in a user-facing
- * message.
- *
- * Deliberately not a ceiling: splitting one plan into several does not remove
- * cross-phase dependencies, it moves them across a boundary where there is no
- * overview and no check at all — trading a checkable edge for an unchecked one.
- * Phase size is the thing that is capped.
+ * Deliberately not a ceiling: splitting a plan moves its cross-phase
+ * dependencies across a boundary with no overview and no check. The issue states
+ * counted facts only; a predicted gap total is a number the engine cannot know.
  */
 export const checkPhaseCount = ({ phaseCount, overviewBase }: Params): StructuralFinding[] => {
 	const softThreshold = 8;
