@@ -47,7 +47,7 @@ describe('buildUnconsumedExportCheck', () => {
 	test('inside a declared pack, a rule under tests/ declares an export the verdict can reach', async () => {
 		const input = setupFileTextInput({
 			contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
-			standardsPacks: ['standards'],
+			standardsLibraries: ['standards'],
 		});
 
 		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input, options: {} });

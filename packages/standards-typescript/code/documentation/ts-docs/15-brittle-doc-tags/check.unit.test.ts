@@ -8,11 +8,11 @@ import { check } from './check.ts';
 const setupFileTextInput = ({
 	contents,
 	tests = [],
-	standardsPacks = [],
+	standardsLibraries = [],
 }: {
 	contents: Array<[string, string]>;
 	tests?: string[];
-	standardsPacks?: string[];
+	standardsLibraries?: string[];
 }): StandardsCheckInput => {
 	const files = contents.map(([path]) => path);
 
@@ -24,7 +24,7 @@ const setupFileTextInput = ({
 		files,
 		referenceFiles: [],
 		contents: new Map(contents),
-		standardsPacks,
+		standardsLibraries,
 	};
 };
 
@@ -37,7 +37,7 @@ const setupMissingTextInput = (): StandardsCheckInput => ({
 	files: ['src/billing/chargeInvoice.ts'],
 	referenceFiles: [],
 	contents: new Map<string, string>(),
-	standardsPacks: [],
+	standardsLibraries: [],
 });
 
 /** One file's doc comment, wrapped in the block the rule reads. */
@@ -218,7 +218,7 @@ describe('brittle-doc-tags check', () => {
 	test('inside a declared pack, a rule under tests/ is ordinary source and answers for its tags', async () => {
 		const input = setupFileTextInput({
 			contents: [['standards/tests/unit-testing/10-rule/check.ts', '/**\n * @author Ada Lovelace\n */\nexport const checkRule = (): number => 1;']],
-			standardsPacks: ['standards'],
+			standardsLibraries: ['standards'],
 		});
 
 		const findings = await check.run({ input, options: {} });

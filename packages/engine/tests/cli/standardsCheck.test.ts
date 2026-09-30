@@ -15,7 +15,7 @@ import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 const setupEnvStandards = async () => {
 	const libraryPath = await freshCwd();
 	writeRepoFile({ cwd: libraryPath, path: 'lightsout-standards.json', content: '{ "name": "env-standards", "formatVersion": 1 }\n' });
-	writeRepoFile({ cwd: libraryPath, path: 'code/demo/document.md', content: '# Demo\n\nThe document the rule argues under.\n' });
+	writeRepoFile({ cwd: libraryPath, path: 'code/demo/topic.md', content: '# Demo\n\nThe document the rule argues under.\n' });
 	writeRepoFile({
 		cwd: libraryPath,
 		path: 'code/demo/01-only-rule/rule.md',
@@ -156,7 +156,7 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 });
 
 test('cli: standards-check --list marks the rules this repo configured', async () => {
-	const { cwd } = await seedStandardsFixture({ config: { 'standards-checks': { 'synonym-export-name': 'off' } } });
+	const { cwd } = await seedStandardsFixture({ config: { 'standards-rule-settings': { 'synonym-export-name': 'off' } } });
 	const { cwd: defaultCwd } = await seedStandardsFixture();
 
 	const { stdout, code } = await runCli({ args: ['standards-check', '--list', '--cwd', cwd] });

@@ -269,7 +269,7 @@ describe('duplicate-function-body check', () => {
 				['src/common/naming/tokensOf.ts', body('tokensOf')],
 				['standards/common/utils/getTokens.ts', body('getTokens')],
 			],
-			standardsPacks: ['standards'],
+			standardsLibraries: ['standards'],
 		});
 
 		const findings = await check.run({ input, options: { minBodyTokens: 10 } });
@@ -287,7 +287,7 @@ describe('duplicate-function-body check', () => {
 				['standards/common/utils/getTokens.ts', body('getTokens')],
 				['standards/common/utils/splitWords.ts', body('splitWords')],
 			],
-			standardsPacks: ['standards'],
+			standardsLibraries: ['standards'],
 		});
 
 		const findings = await check.run({ input, options: { minBodyTokens: 10 } });

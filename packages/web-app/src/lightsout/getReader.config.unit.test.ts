@@ -15,13 +15,13 @@ const configText = JSON.stringify({
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	'standards-packs': ['./house'],
 	'standards-channels': ['react'],
-	'standards-checks': { 'house-name-things-well': 'off' },
+	'standards-rule-settings': { 'house-name-things-well': 'off' },
 });
 
 /** A house pack of two rules, one blocking by its own front matter and one taking the advisory default. */
 const packFiles: Record<string, string> = {
 	'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 1, description: 'what this shop agrees on' }),
-	'house/code/house/document.md': '---\nchannel: react\n---\n\n# House Style\n\nWhat this shop agrees on.\n',
+	'house/code/house/topic.md': '---\nchannel: react\n---\n\n# House Style\n\nWhat this shop agrees on.\n',
 	'house/code/house/05-house-loose-file/rule.md': '---\nsummary: a source file outside a module\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
 	'house/code/house/10-house-name-things-well/rule.md': '---\nsummary: a name that hides what it does\n---\n\nNames are the cheapest documentation.\n',
 };
@@ -88,7 +88,7 @@ describe('getReader config', () => {
 		expect(view.sections.map((section) => ({ title: section.title, keys: section.fields.map((field) => field.key) }))).toStrictEqual([
 			{ title: 'Harness', keys: ['harness', 'model', 'effort', 'permissions', 'commands'] },
 			{ title: 'Gates', keys: ['gates', 'package-gates', 'gate-overrides', 'packages-dir', 'coverage-summary-path', 'executor-file-limit'] },
-			{ title: 'Standards', keys: ['standards-packs', 'standards-channels', 'standards-checks'] },
+			{ title: 'Standards', keys: ['standards-packs', 'standards-channels', 'standards-rule-settings'] },
 			{ title: 'Agent commands', keys: ['agent-commands'] },
 			{ title: 'Generated', keys: ['generated', 'vendored'] },
 			{ title: 'Timeouts', keys: ['timeouts.agent-minutes', 'timeouts.supervisor-minutes', 'timeouts.gate-minutes'] },

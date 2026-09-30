@@ -48,13 +48,13 @@ describe('setupSyntaxTreeInput', () => {
 
 		// the field the contract names on every arm: a rule reading it out of the
 		// box sees an empty list, not undefined
-		expect(input).toMatchObject({ standardsPacks: [], referenceFiles: [], tests: [], cwd: '/repo' });
+		expect(input).toMatchObject({ standardsLibraries: [], referenceFiles: [], tests: [], cwd: '/repo' });
 	});
 
 	test('any field can be overridden outright, standards pack roots included', () => {
-		const input = setupSyntaxTreeInput({ cwd: '/elsewhere', standardsPacks: ['vendor/acme'] });
+		const input = setupSyntaxTreeInput({ cwd: '/elsewhere', standardsLibraries: ['vendor/acme'] });
 
-		expect(input).toMatchObject({ cwd: '/elsewhere', standardsPacks: ['vendor/acme'] });
+		expect(input).toMatchObject({ cwd: '/elsewhere', standardsLibraries: ['vendor/acme'] });
 	});
 
 	test('dependency pairs become the map the contract declares', () => {

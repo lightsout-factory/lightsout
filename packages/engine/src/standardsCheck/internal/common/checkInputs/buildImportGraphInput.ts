@@ -10,7 +10,7 @@ interface Params {
 	files: string[];
 	referenceFiles: string[];
 	/** Repo-relative standards pack roots, from the walk that listed the files. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 	compiler: typeof ts;
 	/** Monorepo package parent dir (config `packages-dir`, default 'packages'). */
 	packagesDir: string;
@@ -27,12 +27,12 @@ export const buildImportGraphInput = async ({
 	tests,
 	files,
 	referenceFiles,
-	standardsPacks,
+	standardsLibraries,
 	compiler,
 	packagesDir,
 }: Params): Promise<ImportGraphInput> => {
 	const edges = await collectImportEdges({ cwd, files: referenceFiles, compiler });
 	const dependencies = await readPackageDependencies({ cwd, packagesDir });
 
-	return { kind: StandardsInputKind.ImportGraph, cwd, source, tests, files, referenceFiles, standardsPacks, edges, dependencies };
+	return { kind: StandardsInputKind.ImportGraph, cwd, source, tests, files, referenceFiles, standardsLibraries, edges, dependencies };
 };

@@ -1,11 +1,11 @@
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 interface Params {
 	run: PipelineRun;
-	packs: LoadedStandardsPack[];
+	packs: LoadedStandardsLibrary[];
 	channels: string[];
 	/** Repo-relative files to review; an empty list spends no agent. */
 	files: string[];

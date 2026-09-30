@@ -161,7 +161,7 @@ describe('discriminant-const-object check', () => {
 					"import type { InputKind } from '../../../../src/common/constants/InputKind.ts';\n\nexport const run = (input: { kind: InputKind }): boolean => input.kind === 'file-list';\n",
 				],
 			],
-			standardsPacks: ['standards'],
+			standardsLibraries: ['standards'],
 		});
 
 		const findings = await check.run({ input, options: {} });
@@ -188,7 +188,7 @@ describe('discriminant-const-object check', () => {
 					"import type { RuleKind } from '../../../common/constants/RuleKind.ts';\n\nexport const run = (rule: { kind: RuleKind }): boolean => rule.kind === 'file-list';\n",
 				],
 			],
-			standardsPacks: ['standards'],
+			standardsLibraries: ['standards'],
 		});
 
 		const findings = await check.run({ input, options: {} });

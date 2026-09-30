@@ -34,15 +34,15 @@ describe('setupFileTextInput', () => {
 			source: [],
 			tests: [],
 			referenceFiles: [],
-			standardsPacks: [],
+			standardsLibraries: [],
 			contents: new Map(),
 		});
 	});
 
 	test('the pack roots are carried under the name the contract gives them', () => {
-		const input = setupFileTextInput({ standardsPacks: ['vendor/acme'] });
+		const input = setupFileTextInput({ standardsLibraries: ['vendor/acme'] });
 
-		expect(input).toMatchObject({ standardsPacks: ['vendor/acme'] });
+		expect(input).toMatchObject({ standardsLibraries: ['vendor/acme'] });
 	});
 
 	test('any field can be overridden outright', () => {

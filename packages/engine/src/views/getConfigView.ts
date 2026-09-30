@@ -4,8 +4,8 @@ import { readConfigFile } from '#src/common/config/readConfigFile.ts';
 import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
 import type { ConfigView } from '#src/contracts/views/config/ConfigView.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import { resolveStandardsPacks } from '#src/standardsLibraries/resolveStandardsPacks.ts';
 import { ConfigNotFoundError } from '#src/views/ConfigNotFoundError.ts';
 import { buildConfigSections } from '#src/views/internal/common/utils/buildConfigSections.ts';
 
@@ -21,13 +21,13 @@ const listDeclaredKeys = ({ raw }: { raw: string }) => {
 	return [...Object.keys(declared), ...Object.keys(declared.timeouts ?? {}).map((leaf) => `timeouts.${leaf}`)];
 };
 
-const getPackChannels = ({ pack }: { pack: LoadedStandardsPack }) => [...new Set(pack.documents.map((document) => document.channel))].sort();
+const getPackChannels = ({ pack }: { pack: LoadedStandardsLibrary }) => [...new Set(pack.documents.map((document) => document.channel))].sort();
 
 /**
  * `StandardsRuleListing` carries no pack field, and re-parsing its `doc` display
  * string would be a second format to keep true, so the loaded packs answer.
  */
-const mapRuleOwners = ({ packs }: { packs: LoadedStandardsPack[] }) => {
+const mapRuleOwners = ({ packs }: { packs: LoadedStandardsLibrary[] }) => {
 	const owners = new Map<string, { pack: string; channel: string }>();
 
 	for (const pack of packs) {

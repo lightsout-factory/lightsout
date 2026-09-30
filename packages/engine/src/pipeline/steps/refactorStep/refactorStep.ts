@@ -18,7 +18,7 @@ import { runCleanupRound } from '#src/pipeline/steps/refactorStep/internal/commo
 import { standardsWorkList } from '#src/pipeline/steps/refactorStep/internal/common/utils/standardsWorkList.ts';
 import { readRunStandardsBaseline } from '#src/runState/standardsBaseline/readRunStandardsBaseline.ts';
 import { resolveStandardsChannels } from '#src/standards/resolveStandardsChannels.ts';
-import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
+import { resolveStandardsPacks } from '#src/standardsLibraries/resolveStandardsPacks.ts';
 
 interface Params {
 	run: PipelineRun;

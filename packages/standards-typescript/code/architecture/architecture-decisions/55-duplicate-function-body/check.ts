@@ -31,7 +31,7 @@ const groupByBody = ({ input, minBodyTokens }: { input: SyntaxTreeInput; minBody
 			// composition-over-inheritance rule mandates — never a duplicate
 			// candidate, however many classes hold the same collaborator.
 			if (tokens.length >= minBodyTokens && !isDelegationForwardBody({ body, compiler: input.compiler })) {
-				const key = `${getOwningPack({ path, standardsPacks: input.standardsPacks })}:${tokens.join(',')}`;
+				const key = `${getOwningPack({ path, standardsLibraries: input.standardsLibraries })}:${tokens.join(',')}`;
 
 				byBody.set(key, [...(byBody.get(key) ?? []), { name, path, startLine, endLine, tokenCount: tokens.length }]);
 			}

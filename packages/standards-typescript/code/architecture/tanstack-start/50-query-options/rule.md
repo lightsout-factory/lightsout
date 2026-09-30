@@ -27,4 +27,4 @@ export const issuesQueryOptions = ({ searchParams }: Params) =>
 ```
 
 The factory's inferred return type is deliberate — see the return-types note in
-this channel's [document](../document.md).
+this channel's [document](../topic.md).

@@ -18,7 +18,7 @@ export {
 	RawStandardsFinding,
 	StandardsCheckModule,
 	StandardsInputKind,
-	StandardsPackRoot,
+	StandardsLibraryRoot,
 	StandardsSet,
 } from '@lightsout/standards-contracts';
 export { ActivityLevelEnd } from '#src/contracts/activity/ActivityLevelEnd.ts';
@@ -148,7 +148,7 @@ export { RunStatus } from '#src/contracts/run/RunStatus.ts';
 export { RunUsage } from '#src/contracts/run/RunUsage.ts';
 export { StepRecord } from '#src/contracts/run/StepRecord.ts';
 export { TestReviewRecord } from '#src/contracts/run/TestReviewRecord.ts';
-export { StandardsCheckOverrides } from '#src/contracts/StandardsCheckOverrides.ts';
+export { StandardsRuleSettings } from '#src/contracts/StandardsRuleSettings.ts';
 export { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
 export { ShipMergeMethod } from '#src/contracts/ship/ShipMergeMethod.ts';
 export { ShippingProgress } from '#src/contracts/ship/ShippingProgress.ts';

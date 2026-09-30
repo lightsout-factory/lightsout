@@ -4,7 +4,7 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runBatchReview } from '#src/refactor/batch/internal/runBatchReview.ts';
 import { findIntroducedFindings } from '#src/refactor/findIntroducedFindings.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 interface Params {
 	cwd: string;
@@ -12,7 +12,7 @@ interface Params {
 	runId: string;
 	driver: Driver;
 	batch: RefactorBatch;
-	packs: LoadedStandardsPack[];
+	packs: LoadedStandardsLibrary[];
 	/** A document out of play is not reviewed. */
 	channels: string[];
 	/** The pre-edit advisories, machine and agent alike. */

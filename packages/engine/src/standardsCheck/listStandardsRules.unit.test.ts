@@ -110,7 +110,7 @@ const writePack = ({ cwd, at, name, ruleId, severity = StandardsSeverity.Advisor
 	const optionsBlock = optionLines.length === 0 ? '' : `options:\n${optionLines.join('\n')}\n`;
 	const files: Record<string, string> = {
 		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 1 }\n`,
-		'code/demo/document.md': '# Demo\n\nThe document the rule argues under.\n',
+		'code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
 		[`${rulePath}/rule.md`]: `---\nsummary: what ${ruleId} catches\nseverity: ${severity}\n${optionsBlock}---\n\nThe rule prose.\n`,
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 		[`${rulePath}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',
@@ -175,7 +175,7 @@ describe('listStandardsRules', () => {
 		const missing = rules.filter((rule) => {
 			const { name, path } = docPartsOf({ doc: rule.doc });
 
-			return name !== 'lightsout-defaults' || !existsSync(join(cwd, 'packages', 'standards-typescript', path, 'document.md'));
+			return name !== 'lightsout-defaults' || !existsSync(join(cwd, 'packages', 'standards-typescript', path, 'topic.md'));
 		});
 
 		expect(missing.map((rule) => `${rule.rule} → ${rule.doc}`)).toStrictEqual([]);
@@ -246,7 +246,7 @@ describe('listStandardsRules', () => {
 		// is called, where a test sits. The pack reports them and hands them to
 		// the refactor agent, but does not block a repository on day one for a
 		// layout it has not agreed to; a strict repo promotes them in its own
-		// standards-checks, as this repository does
+		// standards-rule-settings, as this repository does
 		expect(severities).toStrictEqual({
 			'banned-folder-name': StandardsSeverity.Advisory,
 			'file-directly-in-common': StandardsSeverity.Advisory,
@@ -316,7 +316,7 @@ describe('listStandardsRules', () => {
 			cwd,
 			config: LightsoutConfig.parse({
 				...baseConfig,
-				'standards-checks': { 'filename-mismatch': 'off', 'duplicate-code-block': { options: { minTokens: 90 } } },
+				'standards-rule-settings': { 'filename-mismatch': 'off', 'duplicate-code-block': { options: { minTokens: 90 } } },
 			}),
 		});
 
@@ -334,12 +334,12 @@ describe('listStandardsRules', () => {
 
 	test('a config key naming no loaded rule refuses the whole listing, and says which ids are real', async () => {
 		const error = await getRejectionError({
-			promise: listStandardsRules({ cwd, config: LightsoutConfig.parse({ ...baseConfig, 'standards-checks': { 'duplicate-code-block-typo': 'off' } }) }),
+			promise: listStandardsRules({ cwd, config: LightsoutConfig.parse({ ...baseConfig, 'standards-rule-settings': { 'duplicate-code-block-typo': 'off' } }) }),
 		});
 
 		// printing a ledger that quietly ignored the typo would confirm a policy
 		// the repo does not actually have
-		expect(error.message).toContain('standards-checks names "duplicate-code-block-typo"');
+		expect(error.message).toContain('standards-rule-settings names "duplicate-code-block-typo"');
 		expect(error.message).toContain('duplicate-code-block');
 	});
 
@@ -408,7 +408,7 @@ describe('listStandardsRules', () => {
 	});
 
 	test("each listing carries the rule's resolved options, config override included", async () => {
-		const config = LightsoutConfig.parse({ ...baseConfig, 'standards-checks': { 'file-size': { options: { tsxFile: 400 } } } });
+		const config = LightsoutConfig.parse({ ...baseConfig, 'standards-rule-settings': { 'file-size': { options: { tsxFile: 400 } } } });
 
 		const rules = await listStandardsRules({ cwd, config });
 

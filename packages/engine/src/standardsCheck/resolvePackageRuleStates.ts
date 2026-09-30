@@ -1,9 +1,9 @@
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 interface Params {
-	packs: LoadedStandardsPack[];
+	packs: LoadedStandardsLibrary[];
 	config?: LightsoutConfig;
 }
 
@@ -32,11 +32,13 @@ export const resolvePackageRuleStates = ({ packs, config }: Params): Map<string,
 		}
 	}
 
-	for (const [id, override] of Object.entries(config?.['standards-checks'] ?? {})) {
+	for (const [id, override] of Object.entries(config?.['standards-rule-settings'] ?? {})) {
 		const state = states.get(id);
 
 		if (state === undefined) {
-			throw new Error(`standards-checks names "${id}", which no loaded standards pack declares — valid rule ids: ${[...states.keys()].sort().join(', ')}`);
+			throw new Error(
+				`standards-rule-settings names "${id}", which no loaded standards pack declares — valid rule ids: ${[...states.keys()].sort().join(', ')}`,
+			);
 		}
 
 		const object = typeof override === 'object' ? override : undefined;

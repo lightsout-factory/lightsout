@@ -11,16 +11,16 @@ const setupRepo = ({
 	paths,
 	edges,
 	scope,
-	standardsPacks = [],
+	standardsLibraries = [],
 	dependencies = [],
 }: {
 	paths: string[];
 	edges: Array<{ from: string; to: string }>;
 	scope?: string[];
-	standardsPacks?: string[];
+	standardsLibraries?: string[];
 	dependencies?: Array<[string, string[]]>;
 }) => {
-	return setupImportGraphInput({ edges, dependencies, source: scope ?? paths, files: scope ?? paths, referenceFiles: paths, standardsPacks });
+	return setupImportGraphInput({ edges, dependencies, source: scope ?? paths, files: scope ?? paths, referenceFiles: paths, standardsLibraries });
 };
 
 /** The ingestion folder most cases below build on: its index file lists `ingestRecords.ts`. */

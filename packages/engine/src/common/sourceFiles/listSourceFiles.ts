@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
-import { standardsPackRootFile } from '#src/common/constants/standardsPackRootFile.ts';
+import { standardsLibraryRootFile } from '#src/common/constants/standardsLibraryRootFile.ts';
 
 /**
  * Skipped only outside a `src` folder: a build tool writes beside `src`, never
@@ -31,18 +31,18 @@ interface Params {
  * Pack roots are reported because `isTestFile` needs them and no caller can
  * cheaply repeat the walk.
  */
-export const listSourceFiles = async ({ cwd, exclude = [] }: Params): Promise<{ files: string[]; standardsPacks: string[] }> => {
+export const listSourceFiles = async ({ cwd, exclude = [] }: Params): Promise<{ files: string[]; standardsLibraries: string[] }> => {
 	const files: string[] = [];
-	const standardsPacks: string[] = [];
+	const standardsLibraries: string[] = [];
 	const fixturesDir = 'fixtures';
 
 	const walk = async (dir: string, insideStandardsPack: boolean, insideSource: boolean) => {
 		const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
-		const isPackRoot = !insideStandardsPack && entries.some((entry) => entry.name === standardsPackRootFile);
+		const isPackRoot = !insideStandardsPack && entries.some((entry) => entry.name === standardsLibraryRootFile);
 		const insidePack = insideStandardsPack || isPackRoot;
 
 		if (isPackRoot) {
-			standardsPacks.push(relative(cwd, dir));
+			standardsLibraries.push(relative(cwd, dir));
 		}
 
 		for (const entry of entries) {
@@ -77,5 +77,5 @@ export const listSourceFiles = async ({ cwd, exclude = [] }: Params): Promise<{ 
 
 	await walk(cwd, false, false);
 
-	return { files: files.sort(), standardsPacks: standardsPacks.sort() };
+	return { files: files.sort(), standardsLibraries: standardsLibraries.sort() };
 };

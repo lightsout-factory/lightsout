@@ -11,7 +11,7 @@ import { listRunIds } from '#src/runState/listRunIds.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
 import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 type Tally = Omit<StandardsHealthRule, 'id' | 'set' | 'documentPath' | 'checked'>;
 
@@ -119,7 +119,7 @@ const countAdvice = ({ tallies, outcomes }: { tallies: Map<string, Tally>; outco
 
 interface Params {
 	cwd: string;
-	packs: LoadedStandardsPack[];
+	packs: LoadedStandardsLibrary[];
 }
 
 /** A run whose manifest or work-list cannot be read is skipped in silence, so one corrupt run directory cannot take the whole account down. */

@@ -47,7 +47,7 @@ describe('buildFileExportCheck', () => {
 	test('inside a declared pack, a rule under tests/ is ordinary source and is judged like any other file', async () => {
 		const input = setupFileTextInput({
 			contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const one = 1;\nexport const two = 2;\n']],
-			standardsPacks: ['standards'],
+			standardsLibraries: ['standards'],
 		});
 
 		expect(await check.run({ input, options: {} })).toStrictEqual([

@@ -24,4 +24,4 @@ export const useIssues = ({ searchParams }: Params) => {
 
 The hook's inferred return type is deliberate — TanStack's generics are the
 contract; see the return-types note in this channel's
-[document](../document.md).
+[document](../topic.md).

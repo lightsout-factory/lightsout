@@ -37,11 +37,11 @@ const ruleFiles = ({ path, summary }: { path: string; summary: string }) => ({
  */
 const packageFiles = ({ at, name }: { at: string; name: string }) => ({
 	[`${at}/lightsout-standards.json`]: `{ "name": "${name}", "formatVersion": 1 }\n`,
-	[`${at}/code/house-style/document.md`]: `# ${name} code\n\nHow this house writes code.\n`,
+	[`${at}/code/house-style/topic.md`]: `# ${name} code\n\nHow this house writes code.\n`,
 	...ruleFiles({ path: `${at}/code/house-style/01-${name}-tabs`, summary: 'indent with tabs' }),
-	[`${at}/code/react-style/document.md`]: '---\nchannel: react\n---\n\n# React code\n\nHow this house writes components.\n',
+	[`${at}/code/react-style/topic.md`]: '---\nchannel: react\n---\n\n# React code\n\nHow this house writes components.\n',
 	...ruleFiles({ path: `${at}/code/react-style/01-${name}-hooks-first`, summary: 'hooks come before handlers' }),
-	[`${at}/tests/house-tests/document.md`]: `# ${name} tests\n\nHow this house writes tests.\n`,
+	[`${at}/tests/house-tests/topic.md`]: `# ${name} tests\n\nHow this house writes tests.\n`,
 	...ruleFiles({ path: `${at}/tests/house-tests/01-${name}-one-assert`, summary: 'one behaviour per test' }),
 });
 
@@ -52,7 +52,7 @@ const packageFiles = ({ at, name }: { at: string; name: string }) => ({
  */
 const codeOnlyPackageFiles = ({ at, name }: { at: string; name: string }) => ({
 	[`${at}/lightsout-standards.json`]: `{ "name": "${name}", "formatVersion": 1 }\n`,
-	[`${at}/code/${name}-style/document.md`]: `# ${name} code\n\nHow this house lints.\n`,
+	[`${at}/code/${name}-style/topic.md`]: `# ${name} code\n\nHow this house lints.\n`,
 	...ruleFiles({ path: `${at}/code/${name}-style/01-${name}-no-any`, summary: 'never write any' }),
 });
 

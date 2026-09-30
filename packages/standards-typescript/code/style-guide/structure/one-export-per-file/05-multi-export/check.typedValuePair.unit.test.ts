@@ -19,7 +19,7 @@ const setupFileTextInput = ({ contents, listedWithoutText = [] }: { contents: Ar
 		files,
 		referenceFiles: [],
 		contents: new Map(contents),
-		standardsPacks: [],
+		standardsLibraries: [],
 	};
 };
 

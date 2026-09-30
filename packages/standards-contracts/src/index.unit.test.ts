@@ -19,7 +19,7 @@ describe('the package entry', () => {
 			'RawStandardsFinding',
 			'StandardsCheckModule',
 			'StandardsInputKind',
-			'StandardsPackRoot',
+			'StandardsLibraryRoot',
 			'StandardsSet',
 		]);
 	});

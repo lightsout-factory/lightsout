@@ -5,8 +5,8 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { reviewBatchOutput } from '#src/refactor/batch/reviewBatchOutput.ts';
 import { readReviewFindings } from '#src/runState/readReviewFindings.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 
 const advisory = (overrides: Partial<StandardsFinding> & { siteKey: string }): StandardsFinding => ({
@@ -40,7 +40,7 @@ const judgmentRules: LoadedStandardsRule[] = ['function-size', 'single-return'].
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 }));
 
-const packs: LoadedStandardsPack[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: judgmentRules }];
+const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: judgmentRules }];
 
 /** A reviewer that reports whatever the test says it saw, and a progress sink to read back. */
 const setupReview = async ({ reported }: { reported: { rule: string; files: { path: string }[]; detail: string }[] }) => {

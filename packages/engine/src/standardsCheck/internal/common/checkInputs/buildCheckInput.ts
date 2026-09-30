@@ -17,7 +17,7 @@ interface Params {
 	files: string[];
 	referenceFiles: string[];
 	/** Repo-relative standards pack roots, from the walk that listed the files. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 	/** Monorepo package parent dir (config `packages-dir`, default 'packages') — every kind that carries `dependencies` reads it. */
 	packagesDir: string;
 	/** The asking rule's resolved options — only the clone-spans detector reads them. */
@@ -41,7 +41,7 @@ export const buildCheckInput = async ({
 	tests,
 	files,
 	referenceFiles,
-	standardsPacks,
+	standardsLibraries,
 	packagesDir,
 	options,
 	cache,
@@ -49,10 +49,10 @@ export const buildCheckInput = async ({
 }: Params): Promise<StandardsCheckInput> => {
 	switch (kind) {
 		case StandardsInputKind.FileList:
-			return buildFileListInput({ cwd, source, tests, files, referenceFiles, standardsPacks, packagesDir });
+			return buildFileListInput({ cwd, source, tests, files, referenceFiles, standardsLibraries, packagesDir });
 
 		case StandardsInputKind.FileText:
-			return buildFileTextInput({ cwd, source, tests, files, referenceFiles, standardsPacks, cache });
+			return buildFileTextInput({ cwd, source, tests, files, referenceFiles, standardsLibraries, cache });
 
 		case StandardsInputKind.TestFile:
 			return buildTestFileInput({ cwd, tests, cache });
@@ -68,14 +68,14 @@ export const buildCheckInput = async ({
 			}
 
 			if (kind === StandardsInputKind.ImportGraph) {
-				return buildImportGraphInput({ cwd, source, tests, files, referenceFiles, standardsPacks, compiler, packagesDir });
+				return buildImportGraphInput({ cwd, source, tests, files, referenceFiles, standardsLibraries, compiler, packagesDir });
 			}
 
 			if (kind === StandardsInputKind.TypeChecker) {
-				return buildTypeCheckerInput({ cwd, source, tests, files, referenceFiles, standardsPacks, compiler, packagesDir });
+				return buildTypeCheckerInput({ cwd, source, tests, files, referenceFiles, standardsLibraries, compiler, packagesDir });
 			}
 
-			return buildSyntaxTreeInput({ cwd, source, tests, files, referenceFiles, standardsPacks, compiler, cache, packagesDir });
+			return buildSyntaxTreeInput({ cwd, source, tests, files, referenceFiles, standardsLibraries, compiler, cache, packagesDir });
 		}
 	}
 };

@@ -41,9 +41,9 @@ const setupDeclaredPack = async () => {
 	const cwd = await seedConfiguredCwd({ config: { 'standards-packs': ['standards/house'] } });
 	const files: Record<string, string> = {
 		'lightsout-standards.json': '{ "name": "house", "formatVersion": 1 }\n',
-		'code/demo/document.md': '# Demo\n\nThe document the rule argues under.\n',
+		'code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
 		'code/demo/01-house-rule/rule.md': '---\nsummary: what house-rule catches\n---\n\nThe rule prose.\n',
-		'code/react-demo/document.md': '---\nchannel: react\n---\n\n# React demo\n\nProse this pack applies only to react repos.\n',
+		'code/react-demo/topic.md': '---\nchannel: react\n---\n\n# React demo\n\nProse this pack applies only to react repos.\n',
 	};
 
 	for (const [path, content] of Object.entries(files)) {
@@ -130,7 +130,7 @@ describe('getConfigView', () => {
 	});
 
 	test('each rule state carries the options it runs with in this repo', async () => {
-		const cwd = await seedConfiguredCwd({ config: { 'standards-checks': { 'folder-size': { options: { cap: 15 } } } } });
+		const cwd = await seedConfiguredCwd({ config: { 'standards-rule-settings': { 'folder-size': { options: { cap: 15 } } } } });
 
 		const view = await getConfigView({ cwd });
 

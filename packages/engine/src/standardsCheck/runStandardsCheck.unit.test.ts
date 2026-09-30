@@ -103,7 +103,7 @@ test('the standards check finds each planted defect and respects the exceptions'
 	// oversized file flagged
 	expect(byRule('file-size').some((finding) => finding.files[0]?.path === 'src/b/huge.ts')).toBeTruthy();
 	// a cap is a layout opinion: the pack ships it advisory, and a repo that wants
-	// it to block promotes it in standards-checks (this one has none)
+	// it to block promotes it in standards-rule-settings (this one has none)
 	expect(byRule('file-size').find((finding) => finding.siteKey === 'file-size:src/b/huge.ts')?.severity).toBe('advisory');
 	// .tsx under its larger cap not flagged
 	expect(byRule('file-size').some((finding) => finding.files[0]?.path === 'src/b/BigView.tsx')).toBeFalsy();
@@ -247,7 +247,7 @@ const writeOwnPack = () => {
 		dir: packPath,
 		files: {
 			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n',
-			'code/house/document.md': '# House Style\n\nWhat this shop agrees on.\n',
+			'code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 			'code/house/05-house-no-loose-files/rule.md':
 				'---\nsummary: a source file outside a module\nchecked: true\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
 			'code/house/05-house-no-loose-files/check.ts':
@@ -346,9 +346,9 @@ const writeChannelPack = () => {
 		dir: packPath,
 		files: {
 			'lightsout-standards.json': '{ "name": "acme-channels", "formatVersion": 1 }\n',
-			'code/house/document.md': '# House Style\n\nWhat this shop agrees on everywhere.\n',
+			'code/house/topic.md': '# House Style\n\nWhat this shop agrees on everywhere.\n',
 			...houseRuleFiles({ documentPath: 'code/house', ruleId: 'house-any-file' }),
-			'code/react/document.md': '---\nchannel: react\n---\n\n# React Style\n\nWhat this shop agrees on in React.\n',
+			'code/react/topic.md': '---\nchannel: react\n---\n\n# React Style\n\nWhat this shop agrees on in React.\n',
 			...houseRuleFiles({ documentPath: 'code/react', ruleId: 'house-react-file' }),
 		},
 	});

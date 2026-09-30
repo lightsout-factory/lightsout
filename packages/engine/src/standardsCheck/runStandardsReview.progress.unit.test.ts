@@ -3,8 +3,8 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverResult } from '#src/drivers/common/types/DriverResult.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 
 // What the caller hears while the review runs: the opening line, the heartbeat
@@ -24,7 +24,7 @@ const judgmentRule = ({ id }: { id: string }): LoadedStandardsRule => ({
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 });
 
-const packOf = ({ ruleIds }: { ruleIds: string[] }): LoadedStandardsPack => ({
+const packOf = ({ ruleIds }: { ruleIds: string[] }): LoadedStandardsLibrary => ({
 	name: 'acme',
 	formatVersion: 1,
 	rootPath: '/packages/acme',

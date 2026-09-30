@@ -2,8 +2,8 @@ import { isAbsolute, resolve } from 'node:path';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { StandardsPackBundle } from '#src/contracts/views/StandardsPackBundle.ts';
-import { resolveAuthoredStandardsPack } from '#src/standardsPacks/resolveAuthoredStandardsPack.ts';
-import { resolveDefaultStandardsPack } from '#src/standardsPacks/resolveDefaultStandardsPack.ts';
+import { resolveAuthoredStandardsLibrary } from '#src/standardsLibraries/resolveAuthoredStandardsLibrary.ts';
+import { resolveDefaultStandardsLibrary } from '#src/standardsLibraries/resolveDefaultStandardsLibrary.ts';
 import { standardsPackBundleCache } from '#src/views/internal/common/constants/standardsPackBundleCache.ts';
 
 interface PackRoot {
@@ -25,7 +25,7 @@ const resolvePackRoots = async ({ cwd }: { cwd: string }) => {
 		if (configured === undefined) {
 			// The authored folder when one is beside `cwd`, else the copy the engine
 			// ships — which carries no fixtures, and whose `built` says so.
-			roots = [{ packPath: resolveAuthoredStandardsPack({ cwd }) ?? resolveDefaultStandardsPack(), isDefault: true }];
+			roots = [{ packPath: resolveAuthoredStandardsLibrary({ cwd }) ?? resolveDefaultStandardsLibrary(), isDefault: true }];
 		} else if (configured !== false) {
 			roots = configured.map((entry) => ({ packPath: isAbsolute(entry) ? entry : resolve(cwd, entry), isDefault: false }));
 		}

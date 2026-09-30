@@ -2,13 +2,13 @@
 
 This package is the default standards pack: the documents lightsout hands an
 agent, and the rules it checks a repository against. A document folder holds a
-`document.md` and one folder per rule, each named `<NN>-<id>` — `rule.md` is
+`topic.md` and one folder per rule, each named `<NN>-<id>` — `rule.md` is
 required, `check.ts` and `fixtures/` are optional. `<NN>` decides the order the
 rules read in and nothing else; the `<id>` — everything after the first dash
 group, per
-`packages/engine/src/standardsPacks/internal/common/parsing/parseRuleFolder.ts:59` — is
+`packages/engine/src/standardsLibraries/internal/common/parsing/parseRuleFolder.ts:59` — is
 the rule's durable key. It is what a finding is written with, what a repository
-names in `standards-checks`, and what a frozen refactor work-list holds, so it
+names in `standards-rule-settings`, and what a frozen refactor work-list holds, so it
 outlives the folder it came from.
 
 This file is authoring notes only. `scripts/copyStandards.mjs` lists
@@ -41,7 +41,7 @@ only what is particular to this pack and this repo.
 - **Finding text:** a measured value stays in it, such as
   `${lineCount} lines (cap ~${cap})`.
 - **Examples are tested here too:**
-  `packages/engine/src/standardsCheck/validateStandardsPack.defaultPack.unit.test.ts`
+  `packages/engine/src/standardsCheck/validateStandardsLibrary.defaultPack.unit.test.ts`
   runs every check against its examples and checks each rule's declared shape.
 
 ## After Changing a Rule
@@ -49,7 +49,7 @@ only what is particular to this pack and this repo.
 1. `pnpm build:default-pack` — the web app reads the pack from one bundled copy,
    `assets/default-pack.json`, and this rebuilds it so the rule's page shows the
    change.
-2. Run the pack tests: `pnpm test:unit -- src/standardsCheck/validateStandardsPack.defaultPack.unit.test.ts src/standardsPacks`
+2. Run the pack tests: `pnpm test:unit -- src/standardsCheck/validateStandardsLibrary.defaultPack.unit.test.ts src/standardsLibraries`
    from `packages/engine`.
 3. Note every other rule that still uses the rule's old name or words, and fix
    each when its own review reaches it.
@@ -64,11 +64,11 @@ not migrated. Migrate all of this in one change:
 - the rule's own `check.ts` (the `rule:` string and any prose naming the id),
   its `check.unit.test.ts` (site keys, `describe` titles, asserted strings) and
   its `fixtures/pass/package.json` name
-- sibling `rule.md` and `document.md` files that cross-link into the folder, and
+- sibling `rule.md` and `topic.md` files that cross-link into the folder, and
   their link text where it names the old id
-- `lightsout.config.json` — its `standards-checks` block is alphabetically
+- `lightsout.config.json` — its `standards-rule-settings` block is alphabetically
   sorted, so re-sort after renaming
-- `docs/configuration.md` — the `standards-checks` example, the strict-profile
+- `docs/configuration.md` — the `standards-rule-settings` example, the strict-profile
   block (a key-for-key copy of `lightsout.config.json`, sorted the same way) and
   the full-config sample
 - `packages/engine/src/refactor/batch/batchFindings.ts` — `rulePriority`

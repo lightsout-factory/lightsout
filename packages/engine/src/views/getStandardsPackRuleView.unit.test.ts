@@ -38,7 +38,7 @@ const setupHouseRepo = async () => {
 		files: {
 			'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-packs': ['./house'] }),
 			'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 1 }),
-			'house/code/house/document.md': '# House Style\n',
+			'house/code/house/topic.md': '# House Style\n',
 			[`${ruleFolder}/rule.md`]: '---\nsummary: a source file outside a module\n---\n\nEvery file belongs to a module.\n',
 			[`${ruleFolder}/fixtures/pass/present.ts`]: 'export const present = 1;\n',
 			[`${ruleFolder}/fixtures/fail/loose.ts`]: 'export const loose = 1;\n',

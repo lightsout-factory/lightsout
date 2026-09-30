@@ -128,28 +128,28 @@ test('listSourceFiles: the standards pack roots the walk passed are reported wit
 		],
 	});
 
-	const { standardsPacks } = await listSourceFiles({ cwd });
+	const { standardsLibraries } = await listSourceFiles({ cwd });
 
 	// every root, repo-relative — a consumer may hold several packages, and each
 	// one names its own document sets
-	expect(standardsPacks).toStrictEqual(['standards', 'vendor/acme-standards']);
+	expect(standardsLibraries).toStrictEqual(['standards', 'vendor/acme-standards']);
 });
 
 test('listSourceFiles: a pack root inside another is not reported twice', async () => {
 	const { cwd } = setupRepo({ files: ['standards/lightsout-standards.json', 'standards/nested/lightsout-standards.json', 'standards/nested/check.ts'] });
 
-	const { standardsPacks } = await listSourceFiles({ cwd });
+	const { standardsLibraries } = await listSourceFiles({ cwd });
 
 	// the outer root already covers everything beneath it
-	expect(standardsPacks).toStrictEqual(['standards']);
+	expect(standardsLibraries).toStrictEqual(['standards']);
 });
 
 test('listSourceFiles: a repo with no standards pack reports none', async () => {
 	const { cwd } = setupRepo({ files: ['src/keep.ts'] });
 
-	const { standardsPacks } = await listSourceFiles({ cwd });
+	const { standardsLibraries } = await listSourceFiles({ cwd });
 
-	expect(standardsPacks).toStrictEqual([]);
+	expect(standardsLibraries).toStrictEqual([]);
 });
 
 test('listSourceFiles: an unreadable directory yields no files rather than throwing', async () => {

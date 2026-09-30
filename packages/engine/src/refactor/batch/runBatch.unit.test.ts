@@ -8,7 +8,7 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runBatch } from '#src/refactor/batch/runBatch.ts';
 import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import { report } from '#tests/helpers/report.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';
@@ -22,7 +22,7 @@ import { writeSource } from '#tests/helpers/writeSource.ts';
  * threading of: they reach the pre-edit read through collectBatchAdvisories and
  * the read of what the batch wrote through the tools it builds.
  */
-const judgmentPacks: LoadedStandardsPack[] = [
+const judgmentPacks: LoadedStandardsLibrary[] = [
 	{
 		name: 'acme',
 		formatVersion: 1,
@@ -61,7 +61,7 @@ const splitFile = ({ dir, file, first, second }: { dir: string; file: string; fi
  * returns the report it claims for that edit, which is the whole of what the
  * batch loop reads.
  */
-const setupBatch = async ({ answer, packs = [] }: { answer: (params: { pass: number; dir: string }) => string; packs?: LoadedStandardsPack[] }) => {
+const setupBatch = async ({ answer, packs = [] }: { answer: (params: { pass: number; dir: string }) => string; packs?: LoadedStandardsLibrary[] }) => {
 	const dir = setupConsumerRepo();
 
 	// The run below already has its folder, because `createRun` makes one before

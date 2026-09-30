@@ -168,14 +168,14 @@ export const check: StandardsCheckModule = {
 			// it imports must resolve inside its own pack. A discriminant declared
 			// anywhere else is one it may not name, so spelling out its literal is not
 			// this rule's finding.
-			const home = getOwningPack({ path, standardsPacks: input.standardsPacks });
+			const home = getOwningPack({ path, standardsLibraries: input.standardsLibraries });
 			const declarations = declarationLines({ sourceFile, compiler: input.compiler });
 			const narrowings = narrowingSites({
 				sourceFile,
 				checker,
 				compiler: input.compiler,
 				constStrings,
-				reachable: ({ declaringPath }) => home === '.' || getOwningPack({ path: declaringPath, standardsPacks: input.standardsPacks }) === home,
+				reachable: ({ declaringPath }) => home === '.' || getOwningPack({ path: declaringPath, standardsLibraries: input.standardsLibraries }) === home,
 			});
 			const families = [...new Set(narrowings.map((site) => site.family))];
 			const detail = [

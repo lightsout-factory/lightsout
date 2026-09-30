@@ -7,7 +7,7 @@ import { buildDominantPathNote } from '#src/standardsCheck/buildDominantPathNote
 import { resolvePackageRuleStates } from '#src/standardsCheck/resolvePackageRuleStates.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
 import { writeStandardsSnapshot } from '#src/standardsCheck/writeStandardsSnapshot.ts';
-import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
+import { resolveStandardsPacks } from '#src/standardsLibraries/resolveStandardsPacks.ts';
 
 interface Params {
 	cwd: string;

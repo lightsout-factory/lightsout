@@ -6,7 +6,7 @@ import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsHealthCommand } from '#src/cli/standardsHealthCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
@@ -18,7 +18,7 @@ import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
 interface BuildStandardsHealthParams {
 	cwd: string;
-	packs: LoadedStandardsPack[];
+	packs: LoadedStandardsLibrary[];
 }
 
 const mockBuildStandardsHealth = jest.fn<(params: BuildStandardsHealthParams) => Promise<StandardsHealth>>();
@@ -28,17 +28,17 @@ interface ResolveStandardsPacksParams {
 	config?: LightsoutConfig;
 }
 
-const mockResolveStandardsPacks = jest.fn<(params: ResolveStandardsPacksParams) => Promise<LoadedStandardsPack[]>>();
+const mockResolveStandardsPacks = jest.fn<(params: ResolveStandardsPacksParams) => Promise<LoadedStandardsLibrary[]>>();
 
 jest.mock('#src/standardsCheck/buildStandardsHealth.ts', () => ({
 	buildStandardsHealth: (params: BuildStandardsHealthParams) => mockBuildStandardsHealth(params),
 }));
-jest.mock('#src/standardsPacks/resolveStandardsPacks.ts', () => ({
+jest.mock('#src/standardsLibraries/resolveStandardsPacks.ts', () => ({
 	resolveStandardsPacks: (params: ResolveStandardsPacksParams) => mockResolveStandardsPacks(params),
 }));
 // -------------------------
 
-const loadedPack: LoadedStandardsPack = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [] };
+const loadedPack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [] };
 
 /** The command over a repo on disk — one holding the given config, or one holding none. */
 const setupCommand = ({ health, config }: { health?: StandardsHealth; config?: Record<string, unknown> } = {}) => {

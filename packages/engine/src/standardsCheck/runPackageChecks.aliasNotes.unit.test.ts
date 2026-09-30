@@ -6,8 +6,8 @@ import { type StandardsCheckFunction, StandardsInputKind } from '@lightsout/stan
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 /** A repo that declares its path aliases nowhere: no tsconfig above anything, and a manifest only when one is asked for. */
 const setupUndeclaredRepo = ({ manifest, folders = ['src', 'src/feature'] }: { manifest?: string; folders?: string[] } = {}) => {
@@ -58,7 +58,7 @@ const rule = ({ id, inputKind }: { id: string; inputKind: StandardsInputKind }):
 
 /** Runs the given rules as one loaded package, at the severities a repo's config would have resolved for them. */
 const runChecks = ({ rules, cwd }: { rules: LoadedStandardsRule[]; cwd: string }) => {
-	const pkg: LoadedStandardsPack = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
+	const pkg: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
 	const states = new Map<string, ResolvedRuleState>(
 		rules.map((entry) => [entry.id, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false }]),
 	);

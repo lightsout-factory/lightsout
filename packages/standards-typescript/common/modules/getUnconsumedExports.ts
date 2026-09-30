@@ -21,7 +21,7 @@ interface Params {
 	/** Text for every file in scope and every reference file. */
 	contents: Map<string, string>;
 	/** Repo-relative standards pack roots, so a pack's `tests/` document set is not read as test code. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 	/** Every package's framework carve-outs, as `getFrameworkCarveOuts` returns them — a framework-resolved file is a consumer, never a barrel. */
 	carveOuts: FrameworkCarveOut[];
 }
@@ -42,7 +42,7 @@ interface Params {
  * every import names the declaring file, so a folder barrel's list is a name
  * nothing reads through, and counting it would hide a dead export behind it.
  */
-export const getUnconsumedExports = ({ files, contents, standardsPacks, carveOuts }: Params): UnconsumedExport[] => {
+export const getUnconsumedExports = ({ files, contents, standardsLibraries, carveOuts }: Params): UnconsumedExport[] => {
 	const scope = new Set(files);
 	const entries = readPackageEntries({ contents });
 	const declarations: Array<{ name: string; file: string }> = [];
@@ -51,7 +51,7 @@ export const getUnconsumedExports = ({ files, contents, standardsPacks, carveOut
 		if (
 			!scope.has(file) ||
 			isBarrelFile({ path: file }) ||
-			isTestFile({ path: file, standardsPacks }) ||
+			isTestFile({ path: file, standardsLibraries }) ||
 			isFrameworkLoadedFile({ path: file, carveOut: getPathCarveOut({ carveOuts, path: file }) })
 		) {
 			continue;
@@ -76,7 +76,7 @@ export const getUnconsumedExports = ({ files, contents, standardsPacks, carveOut
 				continue;
 			}
 
-			if (isTestFile({ path: other, standardsPacks })) {
+			if (isTestFile({ path: other, standardsLibraries })) {
 				reachedBy.test = true;
 			} else if (isFrameworkLoadedFile({ path: other, carveOut: getPathCarveOut({ carveOuts, path: other }) })) {
 				source = true;

@@ -12,7 +12,7 @@ export interface FileListInput {
 	/** Declared dependency names per package dir ('.' for the repo root) — engine-read from each package.json. */
 	dependencies: Map<string, string[]>;
 	/** Repo-relative roots of the standards packs in the tree. Inside one, a `tests/` folder names a document set rather than a directory of tests — pass it to `isTestFile`. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 }
 
 export interface FileTextInput {
@@ -31,7 +31,7 @@ export interface FileTextInput {
 	 */
 	contents: Map<string, string>;
 	/** Repo-relative roots of the standards packs in the tree. Inside one, a `tests/` folder names a document set rather than a directory of tests — pass it to `isTestFile`. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 }
 
 export interface SyntaxTreeInput {
@@ -47,7 +47,7 @@ export interface SyntaxTreeInput {
 	/** What each package declares it depends on, keyed by package root (`.` for the repo). A framework carve-out is keyed on what a package DECLARES, so an AST rule needs this to honour one. */
 	dependencies: Map<string, string[]>;
 	/** Repo-relative roots of the standards packs in the tree. Inside one, a `tests/` folder names a document set rather than a directory of tests — pass it to `isTestFile`. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 }
 
 export interface TypeCheckerInput {
@@ -72,7 +72,7 @@ export interface TypeCheckerInput {
 	/** What each package declares it depends on, keyed by package root (`.` for the repo). A framework carve-out is keyed on what a package DECLARES, so a typed rule needs this to honour one. */
 	dependencies: Map<string, string[]>;
 	/** Repo-relative roots of the standards packs in the tree. Inside one, a `tests/` folder names a document set rather than a directory of tests — pass it to `isTestFile`. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 }
 
 export interface TestFileInput {
@@ -95,7 +95,7 @@ export interface ImportGraphInput {
 	/** What each package declares it depends on, keyed by package root (`.` for the repo). A framework carve-out is keyed on what a package DECLARES, so a boundary rule needs this to honour one — a module folder a framework mandates is not the rule's to judge. */
 	dependencies: Map<string, string[]>;
 	/** Repo-relative roots of the standards packs in the tree. Inside one, a `tests/` folder names a document set rather than a directory of tests — pass it to `isTestFile`. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 }
 
 export interface CloneSpansInput {

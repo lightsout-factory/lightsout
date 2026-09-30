@@ -70,9 +70,9 @@ const executeCoverage = async ({
 	const compiler = resolveConsumerTypescript({ cwd, packagesDir: config['packages-dir'] ?? defaultPackagesDir });
 	// Without the pack roots, a rule check under a pack's `tests/` document set
 	// would be filtered out as a test everywhere.
-	const { standardsPacks } = await listSourceFiles({ cwd });
+	const { standardsLibraries } = await listSourceFiles({ cwd });
 
-	return runCoverageRounds({ run, driver, batchInputs: { testStandards, compiler, standardsPacks }, maxBatches, resumed: seeded });
+	return runCoverageRounds({ run, driver, batchInputs: { testStandards, compiler, standardsLibraries }, maxBatches, resumed: seeded });
 };
 
 /** Every pipeline takes the same repo lock, so no two runs can race one tree. */

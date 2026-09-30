@@ -14,8 +14,8 @@ import {
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 
 /** One loaded package holding a single rule of the asked-for kind, plus the recorder of what it was handed. */
@@ -40,7 +40,7 @@ const loadOneRule = ({ inputKind }: { inputKind: StandardsInputKind }) => {
 		inputKind,
 		run,
 	};
-	const packs: LoadedStandardsPack[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule] }];
+	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule] }];
 	const states = new Map<string, ResolvedRuleState>([['a-rule', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false }]]);
 
 	return { inputs, packs, states };
@@ -241,7 +241,7 @@ describe('runPackageChecks', () => {
 		// says what it is in its filename
 		expect(input).toEqual(
 			expect.objectContaining({
-				standardsPacks: ['standards'],
+				standardsLibraries: ['standards'],
 				source: ['standards/tests/unit-testing/05-rule/check.ts'],
 				tests: ['standards/common/utils/scan.unit.test.ts'],
 			}),
@@ -292,7 +292,7 @@ describe('runPackageChecks', () => {
 				kind: 'type-checker',
 				source: ['src/kind.ts'],
 				tests: ['src/kind.unit.test.ts'],
-				standardsPacks: [],
+				standardsLibraries: [],
 				dependencies: new Map([['.', ['react']]]),
 			}),
 		);

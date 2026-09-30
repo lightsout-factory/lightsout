@@ -95,7 +95,7 @@ const setupMixedRed = async () => {
 				test: 'node -e "process.exit(0)" {package}',
 				'test-coverage': packageGateCommand({ pkg: '@acme/web', flag: coverageFlag }),
 			},
-			'standards-checks': strictProfile,
+			'standards-rule-settings': strictProfile,
 		}),
 	);
 	writeSource({ dir, path: 'packages/api/src/multi.ts', source: multiExport });

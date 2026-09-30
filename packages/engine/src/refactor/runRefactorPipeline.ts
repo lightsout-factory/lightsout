@@ -12,7 +12,7 @@ import type { RefactorResult } from '#src/refactor/RefactorResult.ts';
 import { seedResumeState } from '#src/refactor/seedResumeState.ts';
 import { withRunLock } from '#src/runState/lock/withRunLock.ts';
 import { resolveStandards } from '#src/standards/resolveStandards.ts';
-import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
+import { resolveStandardsPacks } from '#src/standardsLibraries/resolveStandardsPacks.ts';
 
 interface Params {
 	cwd: string;

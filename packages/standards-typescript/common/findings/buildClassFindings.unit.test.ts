@@ -8,7 +8,7 @@ const treeOf = ({ path, text }: { path: string; text: string }) => ts.createSour
 const inputOf = (files: Record<string, string>): SyntaxTreeInput => ({
 	kind: 'syntax-tree',
 	cwd: '/repo',
-	standardsPacks: [],
+	standardsLibraries: [],
 	source: Object.keys(files),
 	tests: [],
 	files: Object.keys(files),

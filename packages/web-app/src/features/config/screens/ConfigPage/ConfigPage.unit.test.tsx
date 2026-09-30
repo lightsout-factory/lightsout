@@ -129,7 +129,7 @@ describe('ConfigPage field rows', () => {
 	});
 
 	test("carries the schema's own sentence about the key, so the page and the contract cannot disagree", () => {
-		setupFieldRow({ field: { key: 'standards-checks', value: null, fromConfig: false, description: 'Per-rule severity and options.' } });
+		setupFieldRow({ field: { key: 'standards-rule-settings', value: null, fromConfig: false, description: 'Per-rule severity and options.' } });
 
 		const description = screen.getByText('Per-rule severity and options.');
 

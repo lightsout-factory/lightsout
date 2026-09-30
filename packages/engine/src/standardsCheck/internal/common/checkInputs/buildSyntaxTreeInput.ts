@@ -10,7 +10,7 @@ interface Params {
 	files: string[];
 	referenceFiles: string[];
 	/** Repo-relative standards pack roots, from the walk that listed the files. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 	/** The consumer's TypeScript — the engine never bundles a compiler of its own. */
 	compiler: typeof ts;
 	cache: Map<string, string>;
@@ -25,7 +25,7 @@ export const buildSyntaxTreeInput = async ({
 	tests,
 	files,
 	referenceFiles,
-	standardsPacks,
+	standardsLibraries,
 	compiler,
 	cache,
 	packagesDir,
@@ -38,5 +38,5 @@ export const buildSyntaxTreeInput = async ({
 		trees.set(path, compiler.createSourceFile(path, text, compiler.ScriptTarget.Latest, true));
 	}
 
-	return { kind: StandardsInputKind.SyntaxTree, cwd, source, tests, files, referenceFiles, standardsPacks, compiler, trees, dependencies };
+	return { kind: StandardsInputKind.SyntaxTree, cwd, source, tests, files, referenceFiles, standardsLibraries, compiler, trees, dependencies };
 };

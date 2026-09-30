@@ -77,7 +77,7 @@ describe('single-file-domain-folder check', () => {
 	});
 
 	test('inside a declared pack, a domain folder under tests/ holds a production file and is judged', async () => {
-		const input = setupFileListInput({ files: ['standards/tests/common/scanning/scanLines.ts'], standardsPacks: ['standards'] });
+		const input = setupFileListInput({ files: ['standards/tests/common/scanning/scanLines.ts'], standardsLibraries: ['standards'] });
 
 		const findings = await check.run({ input, options: {} });
 

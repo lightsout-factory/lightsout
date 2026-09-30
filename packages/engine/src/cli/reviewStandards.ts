@@ -6,7 +6,7 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { getDriver } from '#src/drivers/getDriver.ts';
 import { resolveStandardsChannels } from '#src/standards/resolveStandardsChannels.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
+import { resolveStandardsPacks } from '#src/standardsLibraries/resolveStandardsPacks.ts';
 
 interface Params {
 	cwd: string;

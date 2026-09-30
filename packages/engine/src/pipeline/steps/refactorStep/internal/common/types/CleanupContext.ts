@@ -1,6 +1,6 @@
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 export interface CleanupContext {
 	run: PipelineRun;
@@ -8,7 +8,7 @@ export interface CleanupContext {
 	planContent: string;
 	overviewContent?: string;
 	standards?: string;
-	packs: LoadedStandardsPack[];
+	packs: LoadedStandardsLibrary[];
 	channels: string[];
 	/** The pre-edit baseline's findings, or undefined when the run has none. */
 	baseline: StandardsFinding[] | undefined;

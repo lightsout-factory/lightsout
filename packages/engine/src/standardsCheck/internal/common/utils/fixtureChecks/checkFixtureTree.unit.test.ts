@@ -6,7 +6,7 @@ import { type StandardsCheckFunction, StandardsInputKind } from '@lightsout/stan
 import ts from 'typescript';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { checkFixtureTree } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 
 /** A check that objects to any file named `banned.ts` — small enough to reason about, real enough to fail. */
@@ -26,7 +26,7 @@ const reportsWhatItWasHanded: StandardsCheckFunction = ({ input }) =>
 				{
 					siteKey: 'handed',
 					files: [],
-					detail: `source=${input.source.join('|')} tests=${input.tests.join('|')} packs=${input.standardsPacks.length}`,
+					detail: `source=${input.source.join('|')} tests=${input.tests.join('|')} packs=${input.standardsLibraries.length}`,
 				},
 			]
 		: [];

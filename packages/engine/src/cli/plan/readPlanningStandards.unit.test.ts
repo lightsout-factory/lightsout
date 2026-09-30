@@ -20,7 +20,7 @@ const writeStandardsPackage = ({ cwd, at, name, ruleId, prose, set = 'code' }: S
 	const rulePath = `${set}/demo/01-${ruleId}`;
 	const files: Record<string, string> = {
 		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 1 }\n`,
-		[`${set}/demo/document.md`]: '# Demo\n\nThe document the rule argues under.\n',
+		[`${set}/demo/topic.md`]: '# Demo\n\nThe document the rule argues under.\n',
 		[`${rulePath}/rule.md`]: `---\nsummary: a rule the package declares\n---\n\n${prose}\n`,
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 		[`${rulePath}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',

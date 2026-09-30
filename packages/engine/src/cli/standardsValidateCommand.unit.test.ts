@@ -1,8 +1,8 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsValidateCommand } from '#src/cli/standardsValidateCommand.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 
 // Mocked Imports
@@ -12,15 +12,15 @@ import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 // owns is which pack path it resolves, the order it prints in, and how it
 // ends — all observable with both stubbed.
 
-const mockLoadStandardsPack = jest.fn<(params: { packPath: string }) => Promise<LoadedStandardsPack>>();
+const mockLoadStandardsPack = jest.fn<(params: { packPath: string }) => Promise<LoadedStandardsLibrary>>();
 const mockResolveDefaultStandardsPack = jest.fn<() => string>();
-const mockValidateStandardsPack = jest.fn<(params: { pack: LoadedStandardsPack }) => Promise<{ problems: string[]; notes: string[] }>>();
+const mockValidateStandardsPack = jest.fn<(params: { pack: LoadedStandardsLibrary }) => Promise<{ problems: string[]; notes: string[] }>>();
 
-jest.mock('#src/standardsPacks/readStandardsPack.ts', () => ({ readStandardsPack: (params: { packPath: string }) => mockLoadStandardsPack(params) }));
-jest.mock('#src/standardsPacks/resolveDefaultStandardsPack.ts', () => ({ resolveDefaultStandardsPack: () => mockResolveDefaultStandardsPack() }));
+jest.mock('#src/standardsLibraries/readStandardsLibrary.ts', () => ({ readStandardsLibrary: (params: { packPath: string }) => mockLoadStandardsPack(params) }));
+jest.mock('#src/standardsLibraries/resolveDefaultStandardsLibrary.ts', () => ({ resolveDefaultStandardsLibrary: () => mockResolveDefaultStandardsPack() }));
 
-jest.mock('#src/standardsCheck/validateStandardsPack.ts', () => ({
-	validateStandardsPack: (params: { pack: LoadedStandardsPack }) => mockValidateStandardsPack(params),
+jest.mock('#src/standardsCheck/validateStandardsLibrary.ts', () => ({
+	validateStandardsLibrary: (params: { pack: LoadedStandardsLibrary }) => mockValidateStandardsPack(params),
 }));
 // -------------------------
 
@@ -49,7 +49,7 @@ const setupValidate = ({
 	notes?: string[];
 } = {}) => {
 	const captured = captureCommandOutput();
-	const pack: LoadedStandardsPack = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
+	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
 
 	mockResolveDefaultStandardsPack.mockReturnValue('/plugin/standards');
 	mockLoadStandardsPack.mockResolvedValue(pack);

@@ -2,8 +2,8 @@ import { dim } from '#src/cli/internal/common/terminal/dim.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { resolveStandardsChannels } from '#src/standards/resolveStandardsChannels.ts';
-import { buildStandardsDocuments } from '#src/standardsPacks/buildStandardsDocuments.ts';
-import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
+import { buildStandardsDocuments } from '#src/standardsLibraries/buildStandardsDocuments.ts';
+import { resolveStandardsPacks } from '#src/standardsLibraries/resolveStandardsPacks.ts';
 
 interface Params {
 	cwd: string;

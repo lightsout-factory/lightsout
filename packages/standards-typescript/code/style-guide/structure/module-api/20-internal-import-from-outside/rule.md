@@ -23,4 +23,4 @@ src/ingestion/
 - **Nested folders nest the rule.** `src/ingestion/parser/internal/tokenize.ts` is private to `src/ingestion/parser/`.
 - **`internal/` marks privacy, not a new kind of place.** What goes inside it follows the same placement rules as any other folder — shared helpers in a `common/` under it, a graduated concept in its own folder.
 
-A repo opts into this rule by naming it in `standards-checks`; until it does, nothing here applies to it.
+A repo opts into this rule by naming it in `standards-rule-settings`; until it does, nothing here applies to it.

@@ -13,7 +13,7 @@ import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 // (correct today) cannot.
 interface ListSourceFilesResult {
 	files: string[];
-	standardsPacks: string[];
+	standardsLibraries: string[];
 }
 
 const mockListSourceFiles = jest.fn<() => Promise<ListSourceFilesResult>>();
@@ -75,9 +75,9 @@ describe('checkSourceWalk', () => {
 		// every blind spot: fewer files, no error.
 		// Everything EXCEPT the new file still returned, so the assertion is about
 		// this file rather than about whatever the helper repo seeds.
-		const { files, standardsPacks } = await actual.listSourceFiles({ cwd });
+		const { files, standardsLibraries } = await actual.listSourceFiles({ cwd });
 
-		mockListSourceFiles.mockResolvedValue({ files: files.filter((file) => !file.endsWith('runPlan.ts')), standardsPacks });
+		mockListSourceFiles.mockResolvedValue({ files: files.filter((file) => !file.endsWith('runPlan.ts')), standardsLibraries });
 
 		const check = await checkSourceWalk({ cwd });
 

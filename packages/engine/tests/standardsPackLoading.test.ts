@@ -50,7 +50,7 @@ const setupPack = async ({ passFiles = ['allowed.ts'] }: { passFiles?: string[] 
 		// A standalone pack declares its own module format, so its checks load
 		// as ES modules wherever it is unpacked.
 		'package.json': '{ "type": "module" }\n',
-		'code/demo/document.md': '# Demo\n\nThe document the rule argues under.\n',
+		'code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
 		[`${rulePath}/rule.md`]: ruleMarkdown,
 		[`${rulePath}/check.ts`]: checkSource,
 		[`${rulePath}/fixtures/fail/src/banned.ts`]: 'export const value = 1;\n',

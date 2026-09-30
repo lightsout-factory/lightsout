@@ -6,8 +6,8 @@ import { type CloneSpansInput, type StandardsCheckFunction, type StandardsCheckI
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { delegatingSources, duplicatedSources, offsetImportSources, sharedImportSources, writeSampleSources } from '#tests/helpers/duplicationSamples.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 
@@ -47,7 +47,7 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
 		inputKind: StandardsInputKind.CloneSpans,
 		run,
 	};
-	const packs: LoadedStandardsPack[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule] }];
+	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule] }];
 	const states = new Map<string, ResolvedRuleState>([['duplicate-code-block', { severity: StandardsSeverity.Advisory, options, fromConfig: false }]]);
 
 	return { cwd, inputs, packs, states };
@@ -87,7 +87,7 @@ const setupThresholdRun = ({ lowMinTokens, highMinTokens }: { lowMinTokens: numb
 		buildRule({ id: 'duplicate-code-block-low', minTokens: lowMinTokens, inputs: lowInputs }),
 		buildRule({ id: 'duplicate-code-block-high', minTokens: highMinTokens, inputs: highInputs }),
 	];
-	const packs: LoadedStandardsPack[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules }];
+	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules }];
 	const states = new Map<string, ResolvedRuleState>([
 		['duplicate-code-block-low', { severity: StandardsSeverity.Advisory, options: { minTokens: lowMinTokens }, fromConfig: false }],
 		['duplicate-code-block-high', { severity: StandardsSeverity.Advisory, options: { minTokens: highMinTokens }, fromConfig: false }],

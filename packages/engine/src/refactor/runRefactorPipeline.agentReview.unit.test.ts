@@ -5,7 +5,7 @@ import { describe, expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runRefactorPipeline } from '#src/refactor/runRefactorPipeline.ts';
-import { resolveDefaultStandardsPack } from '#src/standardsPacks/resolveDefaultStandardsPack.ts';
+import { resolveDefaultStandardsLibrary } from '#src/standardsLibraries/resolveDefaultStandardsLibrary.ts';
 import { report } from '#tests/helpers/report.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';
@@ -37,7 +37,7 @@ const filesOffered = ({ prompt }: { prompt: string }) =>
 const writeHousePack = ({ dir }: { dir: string }) => {
 	const files: Record<string, string> = {
 		'lightsout-standards.json': '{ "name": "house", "formatVersion": 1 }\n',
-		'code/demo/document.md': '# Demo\n\nThe document the rule argues under.\n',
+		'code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
 		'code/demo/01-house-rule/rule.md': '---\nsummary: a rule only the house pack declares\n---\n\nThe rule prose.\n',
 	};
 
@@ -69,7 +69,7 @@ const setupReviewedRun = async ({
 	// naming packs opts out of the helper's strict profile, so the planted
 	// multi-export is promoted here — the premise is a batch, not advice
 	const dir = setupConsumerRepo(
-		housePack ? { config: { 'standards-packs': [resolveDefaultStandardsPack(), 'standards/house'], 'standards-checks': strictProfile } } : undefined,
+		housePack ? { config: { 'standards-packs': [resolveDefaultStandardsLibrary(), 'standards/house'], 'standards-rule-settings': strictProfile } } : undefined,
 	);
 
 	if (housePack) {

@@ -6,7 +6,7 @@ import { reviewStandards } from '#src/cli/reviewStandards.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 
 // Mocked Imports
@@ -18,7 +18,7 @@ import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 interface RunStandardsReviewParams {
 	cwd: string;
 	driver: Driver;
-	packs: LoadedStandardsPack[];
+	packs: LoadedStandardsLibrary[];
 	channels: string[];
 	files: string[];
 	timeoutMs?: number;
@@ -31,9 +31,9 @@ jest.mock('#src/standardsCheck/runStandardsReview.ts', () => ({
 	runStandardsReview: (params: RunStandardsReviewParams) => mockRunStandardsReview(params),
 }));
 // -------------------------
-const mockResolveStandardsPacks = jest.fn<(params: { cwd: string; config?: LightsoutConfig }) => Promise<LoadedStandardsPack[]>>();
+const mockResolveStandardsPacks = jest.fn<(params: { cwd: string; config?: LightsoutConfig }) => Promise<LoadedStandardsLibrary[]>>();
 
-jest.mock('#src/standardsPacks/resolveStandardsPacks.ts', () => ({
+jest.mock('#src/standardsLibraries/resolveStandardsPacks.ts', () => ({
 	resolveStandardsPacks: (params: { cwd: string; config?: LightsoutConfig }) => mockResolveStandardsPacks(params),
 }));
 // -------------------------
@@ -41,7 +41,7 @@ jest.mock('#src/standardsPacks/resolveStandardsPacks.ts', () => ({
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 
 /** A loaded pack as the resolver hands one back — only the fields a caller carrying it through can see. */
-const loadedPack = (): LoadedStandardsPack => ({ name: 'acme', formatVersion: 1, rootPath: '/packs/acme', documents: [], rules: [] });
+const loadedPack = (): LoadedStandardsLibrary => ({ name: 'acme', formatVersion: 1, rootPath: '/packs/acme', documents: [], rules: [] });
 
 /** A repo the review reads its own answers off: source files, and a manifest whose dependencies decide the channels. */
 const setupRepo = ({
@@ -50,7 +50,7 @@ const setupRepo = ({
 	sources = ['src/index.ts'],
 }: {
 	dependencies?: Record<string, string>;
-	packs?: LoadedStandardsPack[];
+	packs?: LoadedStandardsLibrary[];
 	sources?: string[];
 } = {}) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-review-'));

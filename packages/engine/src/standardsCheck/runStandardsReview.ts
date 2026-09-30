@@ -7,12 +7,12 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
 import { createAgentHeartbeat } from '#src/standardsCheck/internal/common/utils/createAgentHeartbeat.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 interface Params {
 	cwd: string;
 	driver: Driver;
-	packs: LoadedStandardsPack[];
+	packs: LoadedStandardsLibrary[];
 	/** Active framework channels — judgment rules on inactive channels are not reviewed. */
 	channels: string[];
 	/** Files in scope — changed files at the gate, batch files in refactor, the path scope in the CLI. */
@@ -21,7 +21,7 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-const collectJudgmentRules = ({ packs, channels }: { packs: LoadedStandardsPack[]; channels: string[] }) =>
+const collectJudgmentRules = ({ packs, channels }: { packs: LoadedStandardsLibrary[]; channels: string[] }) =>
 	packs
 		.flatMap((pack) => pack.rules)
 		.filter((rule) => !rule.checked && (rule.channel === 'base' || channels.includes(rule.channel)))

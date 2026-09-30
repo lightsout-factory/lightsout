@@ -66,9 +66,9 @@ const setupRuleDetail = ({ rule = buildStandardsPackRuleView(), rules = packRule
 const configBlockCases: { defaultOptions: Record<string, number>; expected: unknown }[] = [
 	{
 		defaultOptions: { file: 250, tsxFile: 300 },
-		expected: { 'standards-checks': { 'file-size': { severity: 'blocking', options: { file: 250, tsxFile: 300 } } } },
+		expected: { 'standards-rule-settings': { 'file-size': { severity: 'blocking', options: { file: 250, tsxFile: 300 } } } },
 	},
-	{ defaultOptions: {}, expected: { 'standards-checks': { 'file-size': 'blocking' } } },
+	{ defaultOptions: {}, expected: { 'standards-rule-settings': { 'file-size': 'blocking' } } },
 ];
 
 /** The text of every code block captioned with this path, in page order. */
@@ -270,7 +270,7 @@ describe('RuleDetail', () => {
 
 		const snippet = readConfigSnippet();
 
-		expect(snippet).toStrictEqual({ 'standards-checks': { 'type-assertion': 'blocking' } });
+		expect(snippet).toStrictEqual({ 'standards-rule-settings': { 'type-assertion': 'blocking' } });
 	});
 
 	test('puts a rule’s numbers in that block, ready to change', () => {
@@ -281,7 +281,7 @@ describe('RuleDetail', () => {
 
 		const snippet = readConfigSnippet();
 
-		expect(snippet).toStrictEqual({ 'standards-checks': { 'file-size': { severity: 'blocking', options: { maxLines: 250 } } } });
+		expect(snippet).toStrictEqual({ 'standards-rule-settings': { 'file-size': { severity: 'blocking', options: { maxLines: 250 } } } });
 	});
 
 	test.each(configBlockCases)("the config block puts a rule's default numbers under options", ({ defaultOptions, expected }) => {

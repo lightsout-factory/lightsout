@@ -33,13 +33,13 @@ const setupHouseRepo = async () => {
 		files: {
 			'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-packs': ['./house'] }),
 			'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 1 }),
-			'house/code/house/document.md': '---\nchannel: base\n---\n\n# House Style\n',
+			'house/code/house/topic.md': '---\nchannel: base\n---\n\n# House Style\n',
 			'house/code/house/05-zebra-last/rule.md': '---\nsummary: named to sort last\n---\n\nA rule whose id starts with z.\n',
 			'house/code/house/05-zebra-last/fixtures/pass/src/b.ts': 'export const b = 1;\n',
 			'house/code/house/05-zebra-last/fixtures/pass/src/a.ts': 'export const a = 1;\n',
 			'house/code/house/05-zebra-last/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
 			'house/code/house/10-alpha-first/rule.md': '---\nsummary: named to sort first\noptions:\n  cap: 12\n---\n\nA rule whose id starts with a.\n',
-			'house/tests/house/document.md': '---\nchannel: base\n---\n\n# House Tests\n',
+			'house/tests/house/topic.md': '---\nchannel: base\n---\n\n# House Tests\n',
 			'house/tests/house/05-test-rule/rule.md': '---\nsummary: something about tests\n---\n\nTests are code.\n',
 		},
 	});

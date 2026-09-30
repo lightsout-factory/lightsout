@@ -6,17 +6,17 @@ import { getUnconsumedExports } from './getUnconsumedExports.ts';
 const setupRepo = ({
 	scope,
 	contents,
-	standardsPacks = [],
+	standardsLibraries = [],
 	carveOuts = [],
 }: {
 	scope?: string[];
 	contents: Array<[string, string]>;
-	standardsPacks?: string[];
+	standardsLibraries?: string[];
 	carveOuts?: FrameworkCarveOut[];
 }) => ({
 	files: scope ?? contents.map(([path]) => path),
 	contents: new Map(contents),
-	standardsPacks,
+	standardsLibraries,
 	carveOuts,
 });
 
@@ -146,7 +146,7 @@ describe('getUnconsumedExports', () => {
 		const found = getUnconsumedExports(
 			setupRepo({
 				contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
-				standardsPacks: ['standards'],
+				standardsLibraries: ['standards'],
 			}),
 		);
 
@@ -168,7 +168,7 @@ describe('getUnconsumedExports', () => {
 					['src/ingestion/ingestRecords.ts', 'export const ingestRecords = (): number => 1;'],
 					['standards/tests/unit-testing/10-rule/check.ts', 'ingestRecords();'],
 				],
-				standardsPacks: ['standards'],
+				standardsLibraries: ['standards'],
 			}),
 		);
 

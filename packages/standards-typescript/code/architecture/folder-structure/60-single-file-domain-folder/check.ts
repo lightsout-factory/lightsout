@@ -15,8 +15,8 @@ export const check: StandardsCheckModule = {
 	// The always-built type-folder skeleton is never judged, and the test beside
 	// a file does not make a second file.
 	run: ({ input }): RawStandardsFinding[] => {
-		const { files, standardsPacks } = readPathLists({ input });
-		const productionFiles = files.filter((file) => !isTestFile({ path: file, standardsPacks }));
+		const { files, standardsLibraries } = readPathLists({ input });
+		const productionFiles = files.filter((file) => !isTestFile({ path: file, standardsLibraries }));
 
 		return [...collectDirectories({ files })]
 			.sort()

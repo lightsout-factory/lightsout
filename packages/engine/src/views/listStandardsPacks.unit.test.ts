@@ -15,10 +15,10 @@ const writeTree = async ({ dir, files }: { dir: string; files: Record<string, st
 	}
 };
 
-/** The smallest tree `readStandardsPack` accepts: a root file, one document, one judgment-only rule under it. */
+/** The smallest tree `readStandardsLibrary` accepts: a root file, one document, one judgment-only rule under it. */
 const packFiles = ({ root }: { root: Record<string, unknown> }) => ({
 	'lightsout-standards.json': JSON.stringify(root),
-	'code/house/document.md': '# House Style\n\nWhat this shop agrees on.\n',
+	'code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 	'code/house/05-house-loose-file/rule.md': '---\nsummary: a source file outside a module\n---\n\nEvery file belongs to a module.\n',
 });
 
@@ -157,7 +157,7 @@ describe('listStandardsPacks', () => {
 
 	test('counts rules per channel, leaving out a channel that holds prose but no rules', async () => {
 		const { cwd, packPath } = await setupRepoOnADefaultPackElsewhere({ root: { name: 'acme', formatVersion: 1 } });
-		await writeTree({ dir: packPath, files: { 'code/nest/document.md': '---\nchannel: nestjs\n---\n\n# Nest\n\nHow the base rules read in Nest.\n' } });
+		await writeTree({ dir: packPath, files: { 'code/nest/topic.md': '---\nchannel: nestjs\n---\n\n# Nest\n\nHow the base rules read in Nest.\n' } });
 
 		const packs = await listStandardsPacks({ cwd });
 

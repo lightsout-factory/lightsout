@@ -8,8 +8,8 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
 import { resolvePackageRuleStates } from '#src/standardsCheck/resolvePackageRuleStates.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 
@@ -104,7 +104,7 @@ const runChecks = ({
 	exclude?: string[];
 	onProgress?: (message: string) => void;
 }) => {
-	const pkg: LoadedStandardsPack = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
+	const pkg: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
 	const states = new Map<string, ResolvedRuleState>(
 		rules.map((entry) => [entry.id, { severity: severities[entry.id] ?? entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false }]),
 	);
@@ -127,10 +127,10 @@ const setupConfiguredRun = () => {
 		rule({ id: 'folder-size', inputKind: StandardsInputKind.FileList, run: recordOptions({ id: 'folder-size' }), defaultOptions: { cap: 20 } }),
 		rule({ id: 'file-size', inputKind: StandardsInputKind.FileList, run: recordOptions({ id: 'file-size' }), defaultOptions: { file: 250, tsxFile: 300 } }),
 	];
-	const packs: LoadedStandardsPack[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules }];
+	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules }];
 	const config = LightsoutConfig.parse({
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
-		'standards-checks': { 'folder-size': { options: { cap: 2 } } },
+		'standards-rule-settings': { 'folder-size': { options: { cap: 2 } } },
 	});
 	const states = resolvePackageRuleStates({ packs, config });
 
@@ -377,7 +377,7 @@ describe('runPackageChecks', () => {
 	test('leaves a rule out when the run was handed no resolved state for it', async () => {
 		const { cwd } = setupRepo();
 		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
-		const pkg: LoadedStandardsPack = {
+		const pkg: LoadedStandardsLibrary = {
 			name: 'acme',
 			formatVersion: 1,
 			rootPath: '/packages/acme',

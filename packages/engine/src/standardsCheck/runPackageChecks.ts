@@ -10,7 +10,7 @@ import { typescriptInputKinds } from '#src/standardsCheck/internal/common/consta
 import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
 import { findFoldersWithoutAliasSource } from '#src/standardsCheck/internal/common/utils/findFoldersWithoutAliasSource.ts';
 import { runRuleCheck } from '#src/standardsCheck/internal/common/utils/runRuleCheck.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 interface LiveRule {
 	id: string;
@@ -22,7 +22,7 @@ interface LiveRule {
 }
 
 /** Channel gating is all-or-nothing per document: a framework document that does not apply contributes no prose, so no checks either. */
-const selectLiveRules = ({ packs, states, channels }: { packs: LoadedStandardsPack[]; states: Map<string, ResolvedRuleState>; channels: string[] }) => {
+const selectLiveRules = ({ packs, states, channels }: { packs: LoadedStandardsLibrary[]; states: Map<string, ResolvedRuleState>; channels: string[] }) => {
 	const live: LiveRule[] = [];
 
 	for (const rule of packs.flatMap((pack) => pack.rules)) {
@@ -102,7 +102,7 @@ const runLiveRules = async ({
 
 interface Params {
 	cwd: string;
-	packs: LoadedStandardsPack[];
+	packs: LoadedStandardsLibrary[];
 	states: Map<string, ResolvedRuleState>;
 	/** Active framework channels — rules on inactive channels do not run (base always runs). */
 	channels: string[];
@@ -136,10 +136,10 @@ export const runPackageChecks = async ({
 	onProgress,
 }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
 	const progress = onProgress ?? (() => undefined);
-	const { files: repoFiles, standardsPacks } = await listSourceFiles({ cwd, exclude });
+	const { files: repoFiles, standardsLibraries } = await listSourceFiles({ cwd, exclude });
 	const allFiles = repoFiles.filter((file) => !path || file.startsWith(path));
-	const source = allFiles.filter((file) => !isTestFile({ path: file, standardsPacks }));
-	const tests = allFiles.filter((file) => isTestFile({ path: file, standardsPacks }));
+	const source = allFiles.filter((file) => !isTestFile({ path: file, standardsLibraries }));
+	const tests = allFiles.filter((file) => isTestFile({ path: file, standardsLibraries }));
 	const notes: string[] = [];
 
 	progress(`checking ${source.length} source file(s) and ${tests.length} test file(s)`);
@@ -149,7 +149,7 @@ export const runPackageChecks = async ({
 	const cache = new Map<string, string>();
 
 	const buildInput: BuildInput = async ({ kind, options }) =>
-		buildCheckInput({ kind, cwd, source, tests, files: allFiles, referenceFiles: repoFiles, standardsPacks, packagesDir, options, cache, compiler });
+		buildCheckInput({ kind, cwd, source, tests, files: allFiles, referenceFiles: repoFiles, standardsLibraries, packagesDir, options, cache, compiler });
 
 	const { findings, skipped } = await runLiveRules({ live, buildInput, compiler, progress });
 

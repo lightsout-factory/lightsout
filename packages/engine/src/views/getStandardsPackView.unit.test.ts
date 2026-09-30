@@ -37,7 +37,7 @@ const setupHouseRepo = async ({ name = 'acme' }: { name?: string } = {}) => {
 		files: {
 			'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-packs': ['./house'] }),
 			'house/lightsout-standards.json': JSON.stringify({ name, formatVersion: 1, description: 'what this shop agrees on' }),
-			'house/code/house/document.md': '---\nchannel: react\n---\n\n# House Style\n\nWhat this shop agrees on.\n',
+			'house/code/house/topic.md': '---\nchannel: react\n---\n\n# House Style\n\nWhat this shop agrees on.\n',
 			'house/code/house/05-house-loose-file/rule.md':
 				'---\nsummary: a source file outside a module\nchecked: false\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
 			'house/code/house/05-house-loose-file/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
@@ -213,7 +213,7 @@ describe('listStandardsPacks', () => {
 					'standards-packs': ['./missing', './house'],
 				}),
 				'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 1 }),
-				'house/code/house/document.md': '# House Style\n',
+				'house/code/house/topic.md': '# House Style\n',
 				'house/code/house/05-house-loose-file/rule.md': '---\nsummary: a source file outside a module\n---\n',
 			},
 		});

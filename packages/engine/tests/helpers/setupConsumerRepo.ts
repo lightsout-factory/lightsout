@@ -32,7 +32,7 @@ interface Params {
  * a consumer with `writeSource` instead of switching anything off.
  */
 export const reachabilityRulesOff = {
-	'standards-checks': { 'dead-export': 'off', 'test-only-export': 'off' },
+	'standards-rule-settings': { 'dead-export': 'off', 'test-only-export': 'off' },
 };
 
 /** The one source file a repo carries when a test plants none of its own. */
@@ -50,7 +50,7 @@ const defaultSources = { 'src/index.js': 'export const one = 1;\n' };
  *
  * It runs the strict profile (`strictProfile`): the layout rules the pack
  * ships advisory are blocking here, so a planted layout defect is work the
- * pipeline must do. A test's own `standards-checks` merge over it.
+ * pipeline must do. A test's own `standards-rule-settings` merge over it.
  */
 export const setupConsumerRepo = ({ git = true, plan = '# Plan: add feature\n', scripts, config, sources }: Params = {}) => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-test-'));
@@ -70,7 +70,12 @@ export const setupConsumerRepo = ({ git = true, plan = '# Plan: add feature\n', 
 			// wrote: an override naming a rule no loaded pack declares fails config.
 			...('standards-packs' in (config ?? {})
 				? {}
-				: { 'standards-checks': { ...strictProfile, ...(typeof config?.['standards-checks'] === 'object' ? config['standards-checks'] : {}) } }),
+				: {
+						'standards-rule-settings': {
+							...strictProfile,
+							...(typeof config?.['standards-rule-settings'] === 'object' ? config['standards-rule-settings'] : {}),
+						},
+					}),
 		}),
 	);
 

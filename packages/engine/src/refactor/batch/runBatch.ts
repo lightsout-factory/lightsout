@@ -10,7 +10,7 @@ import { runBatchPass } from '#src/refactor/batch/internal/runBatchPass.ts';
 import { readStandingWork } from '#src/refactor/batch/readStandingWork.ts';
 import { BatchStopKind } from '#src/refactor/internal/common/constants/BatchStopKind.ts';
 import type { BatchStop } from '#src/refactor/internal/common/types/BatchStop.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 interface Params {
 	cwd: string;
@@ -18,7 +18,7 @@ interface Params {
 	driver: Driver;
 	config: LightsoutConfig;
 	batch: RefactorBatch;
-	packs: LoadedStandardsPack[];
+	packs: LoadedStandardsLibrary[];
 	channels: string[];
 	/** Check scope of the run's worklist, threaded into the per-batch re-check. */
 	checkPath?: string;

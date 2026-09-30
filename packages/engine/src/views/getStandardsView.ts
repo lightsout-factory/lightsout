@@ -9,8 +9,8 @@ import type { StandardsRuleListing } from '#src/standardsCheck/common/types/Stan
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 import { listStandardsSnapshots } from '#src/standardsCheck/listStandardsSnapshots.ts';
 import { readStandardsSnapshot } from '#src/standardsCheck/readStandardsSnapshot.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
-import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
+import { resolveStandardsPacks } from '#src/standardsLibraries/resolveStandardsPacks.ts';
 
 const countByRule = ({ findings }: { findings: StandardsFinding[] }) => {
 	const counts = new Map<string, number>();

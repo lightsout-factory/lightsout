@@ -17,7 +17,7 @@ interface Params {
 	 * `listSourceFiles` reports them. Only a path beneath one is judged by a
 	 * pack's naming; everything else reads as an ordinary repo.
 	 */
-	standardsPacks?: string[];
+	standardsLibraries?: string[];
 }
 
 /**
@@ -33,8 +33,8 @@ interface Params {
  *
  * @mirrors packages/standards-typescript/common/paths/isTestFile.ts
  */
-export const isTestFile = ({ path, standardsPacks = [] }: Params): boolean => {
-	const inStandardsPack = standardsPacks.some((root) => path.startsWith(`${root}/`));
+export const isTestFile = ({ path, standardsLibraries = [] }: Params): boolean => {
+	const inStandardsPack = standardsLibraries.some((root) => path.startsWith(`${root}/`));
 	const directory = inStandardsPack ? testDirectoryInStandardsPack : testDirectory;
 
 	return directory.test(path) || testFileName.test(path);

@@ -9,7 +9,7 @@ interface Params {
 	/** Text for every file in scope and every reference file. */
 	contents: Map<string, string>;
 	/** Repo-relative standards pack roots, forwarded to the reference counting. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 	/** Every package's framework carve-outs, forwarded to the reference counting. */
 	carveOuts: FrameworkCarveOut[];
 	rule: string;
@@ -25,10 +25,10 @@ interface Params {
  * it disagrees with — a deliberate public API is not a defect — while keeping
  * the others.
  */
-export const buildUnconsumedFindings = ({ files, contents, standardsPacks, carveOuts, rule, matches, detail, guidance }: Params): RawStandardsFinding[] => {
+export const buildUnconsumedFindings = ({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance }: Params): RawStandardsFinding[] => {
 	const byFile = new Map<string, string[]>();
 
-	for (const { file, name, reachedBy } of getUnconsumedExports({ files, contents, standardsPacks, carveOuts })) {
+	for (const { file, name, reachedBy } of getUnconsumedExports({ files, contents, standardsLibraries, carveOuts })) {
 		if (matches(reachedBy)) {
 			byFile.set(file, [...(byFile.get(file) ?? []), name]);
 		}

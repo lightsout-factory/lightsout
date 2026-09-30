@@ -12,7 +12,7 @@ const setupCheck = () => {
 		files: ['src/a.ts'],
 		referenceFiles: [],
 		dependencies: new Map(),
-		standardsPacks: [],
+		standardsLibraries: [],
 	};
 	const options = { cap: 2 };
 	const finding: RawStandardsFinding = { siteKey: 'folder-size:src', files: [{ path: 'src/a.ts' }], detail: 'src holds 3 files' };

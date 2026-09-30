@@ -15,7 +15,7 @@ import { Effort } from '#src/contracts/Effort.ts';
 import { GateOverrides } from '#src/contracts/GateOverrides.ts';
 import { PackageGates } from '#src/contracts/PackageGates.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
-import { StandardsCheckOverrides } from '#src/contracts/StandardsCheckOverrides.ts';
+import { StandardsRuleSettings } from '#src/contracts/StandardsRuleSettings.ts';
 
 /**
  * The only coupling point between the engine and a consumer. Every block naming
@@ -130,8 +130,8 @@ export const LightsoutConfig = z
 		 * docs only).
 		 */
 		'standards-channels': z.array(z.string()).optional(),
-		/** Per-rule severity/options overrides. See `StandardsCheckOverrides`. */
-		'standards-checks': StandardsCheckOverrides.optional(),
+		/** Per-rule severity/options overrides. See `StandardsRuleSettings`. */
+		'standards-rule-settings': StandardsRuleSettings.optional(),
 		/** Opt-in ship settings — branch ticket pattern, pull request body template, merge method. See `ConfigShip`. */
 		ship: ConfigShip.optional(),
 		/** Opt-in auto-plan settings — which of `/auto-plan`'s checkpoints this repo keeps. See `ConfigAutoPlan`. */

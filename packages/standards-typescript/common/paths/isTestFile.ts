@@ -13,7 +13,7 @@ interface Params {
 	/** A repo-relative path. */
 	path: string;
 	/** Repo-relative standards pack roots, as the input carries them. Only a path beneath one is judged by a pack's naming. */
-	standardsPacks?: string[];
+	standardsLibraries?: string[];
 }
 
 /**
@@ -25,8 +25,8 @@ interface Params {
  *
  * @mirrors packages/engine/src/common/sourceFiles/isTestFile.ts
  */
-export const isTestFile = ({ path, standardsPacks = [] }: Params): boolean => {
-	const inStandardsPack = standardsPacks.some((root) => path.startsWith(`${root}/`));
+export const isTestFile = ({ path, standardsLibraries = [] }: Params): boolean => {
+	const inStandardsPack = standardsLibraries.some((root) => path.startsWith(`${root}/`));
 	const directory = inStandardsPack ? testDirectoryInStandardsPack : testDirectory;
 
 	return directory.test(path) || testFileName.test(path);

@@ -16,15 +16,15 @@ has the same shape.
   tests. A repo lists the packs it uses in `standards-packs` in its lightsout
   config, and their documents stack.
 - **Document:** any folder under `code/` or `tests/` that holds a
-  `document.md`, plus one folder per rule. It covers one topic, such as error
-  handling or naming. Its `document.md` is a short intro holding the background
-  every rule in it shares, said once. Folders without a `document.md` only
-  group documents. A `document.md` may start with `channel: <framework>` front
+  `topic.md`, plus one folder per rule. It covers one topic, such as error
+  handling or naming. Its `topic.md` is a short intro holding the background
+  every rule in it shares, said once. Folders without a `topic.md` only
+  group documents. A `topic.md` may start with `channel: <framework>` front
   matter, such as `channel: react`; its rules then apply only to repos that use
   that framework.
 - **Rule:** a folder named `<NN>-<id>`. `<NN>` sets only the reading order. The
   `<id>` is the rule's key: findings are written with it, and a repo names it in
-  `standards-checks` to turn the rule on or off or change its severity.
+  `standards-rule-settings` to turn the rule on or off or change its severity.
   - `rule.md` — required: front matter, then the prose.
   - `check.ts` — optional: code that finds breaks. Declare `checked: true` when
     it exists, and only then.
@@ -42,7 +42,7 @@ example:
   kind: snippet                             # or repo, with focus
 ```
 
-**Who reads what.** An agent gets one document at a time: the `document.md`
+**Who reads what.** An agent gets one document at a time: the `topic.md`
 intro, then the prose of every rule in it, in folder order. It never sees the
 summary or the examples. People see the summary, the prose and the examples on
 the rule's page.
@@ -50,7 +50,7 @@ the rule's page.
 ## Steps
 
 1. **Find the pack and the document, or create them.** The pack root is the
-   folder holding `lightsout-standards.json`. Read the document's `document.md`
+   folder holding `lightsout-standards.json`. Read the document's `topic.md`
    and every rule in it, because the agent reads them together.
    - **No pack yet:** create a folder with a `lightsout-standards.json`, and
      `code/` or `tests/` in it:
@@ -62,14 +62,14 @@ the rule's page.
      Then add the folder to `standards-packs` in the repo's lightsout config,
      so lightsout loads it.
    - **No document for the rule's topic:** create a folder for the topic, such
-     as `code/error-handling/`, with a `document.md` holding a heading and one
+     as `code/error-handling/`, with a `topic.md` holding a heading and one
      line on what the topic covers.
 
 2. **Decide the rule's one job.** A rule is one decision. To decide where one
    rule ends, ask: could a repo want this rule without the one next to it? If
    yes, they are two rules; if no, they are one. If another rule already says
    it, change that rule instead of adding one. Background that several rules
-   share goes in the `document.md` intro, once.
+   share goes in the `topic.md` intro, once.
 
 3. **For an existing rule, list its instructions first.** See
    [Changing an existing rule](#changing-an-existing-rule). Do this before you
@@ -232,7 +232,7 @@ A rename resets every saved finding keyed to the old id, so rename on purpose.
 
 - Rename the folder, keeping `<NN>`, and change the id everywhere it is
   written: the check, its tests, links from other rules and documents, and any
-  config that names it in `standards-checks`.
+  config that names it in `standards-rule-settings`.
 - Renamed means renamed: keep no old names, aliases or "renamed to" messages.
 - Then search every tracked file for the old id as a whole word. Nothing should
   match.

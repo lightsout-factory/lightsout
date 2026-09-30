@@ -4,7 +4,7 @@ import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 const base = { gates: { check: 'c', test: 't', 'test-coverage': false } };
 
 // The block contracts — Gates, PackageGates, ConfigCommands,
-// StandardsCheckOverrides — each pin their own shape in their own test. What
+// StandardsRuleSettings — each pin their own shape in their own test. What
 // this file owns is the composed config: which blocks are required, which are
 // optional, and the top-level fields.
 
@@ -22,22 +22,22 @@ test('LightsoutConfig: each block reaches its own contract, valid and invalid al
 		...base,
 		commands: { implement: { harness: 'codex' } },
 		'package-gates': { check: 'c {package}', test: 't {package}' },
-		'standards-checks': { 'duplicate-code-block': 'off' },
+		'standards-rule-settings': { 'duplicate-code-block': 'off' },
 	});
 
 	expect(parsed.commands).toStrictEqual({ implement: { harness: 'codex' } });
 	expect(parsed['package-gates']).toStrictEqual({ check: 'c {package}', test: 't {package}' });
-	expect(parsed['standards-checks']).toStrictEqual({ 'duplicate-code-block': 'off' });
+	expect(parsed['standards-rule-settings']).toStrictEqual({ 'duplicate-code-block': 'off' });
 
 	// …and each block's own refusals fire through the composition, so wiring a
 	// block in optional never softened it
 	expect(LightsoutConfig.safeParse({ ...base, commands: { implment: {} } }).success).toBe(false);
 	expect(LightsoutConfig.safeParse({ ...base, 'package-gates': { check: 'pnpm check', test: 't {package}' } }).success).toBe(false);
-	expect(LightsoutConfig.safeParse({ ...base, 'standards-checks': { 'duplicate-code-block': 'warn' } }).success).toBe(false);
+	expect(LightsoutConfig.safeParse({ ...base, 'standards-rule-settings': { 'duplicate-code-block': 'warn' } }).success).toBe(false);
 
 	// an absent block leaves no key on the parsed config
 	expect('package-gates' in LightsoutConfig.parse(base)).toBe(false);
-	expect('standards-checks' in LightsoutConfig.parse(base)).toBe(false);
+	expect('standards-rule-settings' in LightsoutConfig.parse(base)).toBe(false);
 });
 
 test('LightsoutConfig: the ship block is optional, keeps its own kebab-case spelling, and stays strict through the composition', () => {
@@ -228,13 +228,13 @@ test.each([
 });
 
 test('LightsoutConfig: standards-packs accepts relative and absolute pack roots, in config order', () => {
-	const standardsPacks = ['standards/house', '/opt/acme-standards'];
+	const standardsLibraries = ['standards/house', '/opt/acme-standards'];
 
-	const parsed = LightsoutConfig.parse({ ...base, 'standards-packs': standardsPacks });
+	const parsed = LightsoutConfig.parse({ ...base, 'standards-packs': standardsLibraries });
 
 	// entries are plain strings either way — the schema carries no path-kind
 	// discrimination, and order is the order packs stack in
-	expect(parsed['standards-packs']).toStrictEqual(standardsPacks);
+	expect(parsed['standards-packs']).toStrictEqual(standardsLibraries);
 });
 
 test('LightsoutConfig: standards-packs accepts false and absence', () => {
@@ -269,10 +269,10 @@ test.each([
 	{ label: 'a standards-packs of null', 'standards-packs': null },
 	{ label: 'a standards-packs of 0', 'standards-packs': 0 },
 	{ label: 'a standards-packs object', 'standards-packs': { roots: ['standards/house'] } },
-])('LightsoutConfig: $label fails parsing', ({ 'standards-packs': standardsPacks }) => {
+])('LightsoutConfig: $label fails parsing', ({ 'standards-packs': standardsLibraries }) => {
 	// the opt-out is the literal false and nothing else — a truthy or nullish value
 	// near it would otherwise read as an opt-out and silently drop every standard
-	expect(LightsoutConfig.safeParse({ ...base, 'standards-packs': standardsPacks }).success).toBe(false);
+	expect(LightsoutConfig.safeParse({ ...base, 'standards-packs': standardsLibraries }).success).toBe(false);
 });
 
 test('LightsoutConfig: the plan block is optional, keeps its own kebab-case spelling, and stays strict through the composition', () => {

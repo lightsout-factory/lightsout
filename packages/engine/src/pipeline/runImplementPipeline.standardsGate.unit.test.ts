@@ -273,7 +273,7 @@ test('a ledgered site the run measurably worsened still qualifies, and an unchan
 	// committed debt ledger at the repo root. The run grows one and rewrites the
 	// other at exactly the same length.
 	const dir = setupConsumerRepo({
-		config: { 'standards-checks': { 'file-size': { severity: 'blocking', options: { file: 6 } } } },
+		config: { 'standards-rule-settings': { 'file-size': { severity: 'blocking', options: { file: 6 } } } },
 		sources: {
 			'src/index.js': 'export const one = 1;\n',
 			'src/grown.js': overCapSource({ name: 'grown', note: 'first', pad: 7 }),
@@ -323,7 +323,7 @@ test('a folder finding already in the baseline never gates a change inside the f
 	// edits one file inside it and creates none, so the folder measures exactly
 	// what the baseline recorded — the case that used to stop an unattended run.
 	const dir = setupConsumerRepo({
-		config: { 'standards-checks': { 'folder-size': { severity: 'blocking', options: { cap: 3 } } } },
+		config: { 'standards-rule-settings': { 'folder-size': { severity: 'blocking', options: { cap: 3 } } } },
 		sources: {
 			'src/index.js': 'export const one = 1;\n',
 			'src/pile/alpha.js': 'export const alpha = () => 1;\n',

@@ -11,7 +11,7 @@ from here and needs nothing else lightsout knows.
   severity itself, because a check that could name them could also name them wrong.
 - `StandardsCheckInput` and the six input kinds — what a check may ask to be
   given. A check never opens a file; it is handed what it asked for.
-- `StandardsPackRoot` — the shape of `lightsout-standards.json`.
+- `StandardsLibraryRoot` — the shape of `lightsout-standards.json`.
 - `StandardsSet` — the two document trees, `code` and `tests`.
 
 ## Import types, never values

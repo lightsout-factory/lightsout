@@ -12,7 +12,7 @@ interface Params {
 	/** A repo-relative path. */
 	path: string;
 	/** Repo-relative roots of the standards packs in the tree, passed straight through to `isTestFile`. */
-	standardsPacks?: string[];
+	standardsLibraries?: string[];
 }
 
 /**
@@ -20,8 +20,8 @@ interface Params {
  * assertion in code: a snapshot is the expected value, and a jest config
  * decides which tests are collected at all.
  */
-export const isTestSideFile = ({ path, standardsPacks }: Params): boolean => {
+export const isTestSideFile = ({ path, standardsLibraries }: Params): boolean => {
 	const name = path.slice(path.lastIndexOf('/') + 1);
 
-	return isTestFile({ path, standardsPacks }) || isSnapshotFile({ path }) || jestConfigFileName.test(name);
+	return isTestFile({ path, standardsLibraries }) || isSnapshotFile({ path }) || jestConfigFileName.test(name);
 };

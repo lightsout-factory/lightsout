@@ -4,8 +4,8 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import type { DriverResult } from '#src/drivers/common/types/DriverResult.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
 	set: 'code',
@@ -20,7 +20,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	...overrides,
 });
 
-const packOf = ({ rules }: { rules: LoadedStandardsRule[] }): LoadedStandardsPack => ({
+const packOf = ({ rules }: { rules: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
 	name: 'acme',
 	formatVersion: 1,
 	rootPath: '/packages/acme',

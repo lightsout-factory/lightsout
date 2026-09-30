@@ -24,7 +24,7 @@ const writeStandardsPack = async () => {
 		dir: packPath,
 		files: {
 			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n',
-			'code/house/document.md': '# House Style\n\nWhat this shop agrees on.\n',
+			'code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 			'code/house/05-house-loose-file/rule.md':
 				'---\nsummary: a source file outside a module\nchecked: true\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
 			'code/house/05-house-loose-file/check.ts':
@@ -50,7 +50,7 @@ const seedStandardsRepo = async ({ overrides, packs }: { overrides?: Record<stri
 			'lightsout.config.json': JSON.stringify({
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				'standards-packs': packs ?? [await writeStandardsPack()],
-				...(overrides ? { 'standards-checks': overrides } : {}),
+				...(overrides ? { 'standards-rule-settings': overrides } : {}),
 			}),
 		},
 	});
@@ -179,7 +179,7 @@ const writeOptionsPack = async () => {
 		dir: packPath,
 		files: {
 			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n',
-			'code/house/document.md': '# House Style\n\nWhat this shop agrees on.\n',
+			'code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 			'code/house/05-house-file-size/rule.md':
 				'---\nsummary: a file over the house line cap\nchecked: false\nseverity: advisory\noptions:\n  file: 250\n  tsxFile: 300\n---\n\nFiles stay short.\n',
 			'code/house/10-house-folder-size/rule.md':

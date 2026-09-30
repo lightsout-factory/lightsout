@@ -29,30 +29,30 @@ describe('isTestFile', () => {
 	});
 
 	test('inside a standards pack, a tests/ directory names a document set rather than test code', () => {
-		const standardsPacks = ['standards'];
+		const standardsLibraries = ['standards'];
 
 		// a rule about how to write tests — its implementation is ordinary source,
 		// and must answer to the source rules like any other file
-		expect(isTestFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts', standardsPacks })).toBe(false);
+		expect(isTestFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts', standardsLibraries })).toBe(false);
 		// the same path with no package declared above it is test code
 		expect(isTestFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts' })).toBe(true);
 	});
 
 	test('a real test inside a standards pack is still test code, by its name', () => {
-		const standardsPacks = ['standards'];
+		const standardsLibraries = ['standards'];
 
-		expect(isTestFile({ path: 'standards/common/utils/scanTestLines.unit.test.ts', standardsPacks })).toBe(true);
+		expect(isTestFile({ path: 'standards/common/utils/scanTestLines.unit.test.ts', standardsLibraries })).toBe(true);
 	});
 
 	test('inside a standards pack, __tests__, __mocks__ and e2e still mark test code', () => {
-		const standardsPacks = ['standards'];
+		const standardsLibraries = ['standards'];
 
 		// only `tests/` collides with a document set name
-		expect(isTestFile({ path: 'standards/common/__mocks__/fs.ts', standardsPacks })).toBe(true);
-		expect(isTestFile({ path: 'standards/e2e/login.ts', standardsPacks })).toBe(true);
+		expect(isTestFile({ path: 'standards/common/__mocks__/fs.ts', standardsLibraries })).toBe(true);
+		expect(isTestFile({ path: 'standards/e2e/login.ts', standardsLibraries })).toBe(true);
 	});
 
 	test('a pack root covers only paths beneath it, never one that merely starts with its name', () => {
-		expect(isTestFile({ path: 'standards-archive/tests/check.ts', standardsPacks: ['standards'] })).toBe(true);
+		expect(isTestFile({ path: 'standards-archive/tests/check.ts', standardsLibraries: ['standards'] })).toBe(true);
 	});
 });

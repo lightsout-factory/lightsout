@@ -2,8 +2,8 @@ import { describe, expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { resolvePackageRuleStates } from '#src/standardsCheck/resolvePackageRuleStates.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
 	set: 'code',
@@ -18,7 +18,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	...overrides,
 });
 
-const standardsPack = ({ name = 'acme', rules }: { name?: string; rules: LoadedStandardsRule[] }): LoadedStandardsPack => ({
+const standardsPack = ({ name = 'acme', rules }: { name?: string; rules: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
 	name,
 	formatVersion: 1,
 	rootPath: `/packages/${name}`,
@@ -28,8 +28,8 @@ const standardsPack = ({ name = 'acme', rules }: { name?: string; rules: LoadedS
 
 const baseConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false as const } };
 
-const setupStates = ({ packs, standardsChecks }: { packs: LoadedStandardsPack[]; standardsChecks?: Record<string, unknown> }) => {
-	const config = LightsoutConfig.parse(standardsChecks === undefined ? baseConfig : { ...baseConfig, 'standards-checks': standardsChecks });
+const setupStates = ({ packs, standardsChecks }: { packs: LoadedStandardsLibrary[]; standardsChecks?: Record<string, unknown> }) => {
+	const config = LightsoutConfig.parse(standardsChecks === undefined ? baseConfig : { ...baseConfig, 'standards-rule-settings': standardsChecks });
 
 	return { states: resolvePackageRuleStates({ packs, config }) };
 };
@@ -127,7 +127,7 @@ describe('resolvePackageRuleStates', () => {
 
 	test('a config naming a rule no pack declares is refused, with the valid ids listed', () => {
 		expect(() => setupStates({ packs: [standardsPack({ rules: twoRules })], standardsChecks: { 'duplicate-code-block-detector': 'off' } })).toThrow(
-			/standards-checks names "duplicate-code-block-detector".*valid rule ids: duplicate-code-block, module-boundary/,
+			/standards-rule-settings names "duplicate-code-block-detector".*valid rule ids: duplicate-code-block, module-boundary/,
 		);
 	});
 

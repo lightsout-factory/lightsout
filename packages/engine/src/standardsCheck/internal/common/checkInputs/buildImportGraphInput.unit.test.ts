@@ -35,7 +35,7 @@ describe('buildImportGraphInput', () => {
 			tests: [],
 			files,
 			referenceFiles: files,
-			standardsPacks: [],
+			standardsLibraries: [],
 			compiler,
 			packagesDir: 'packages',
 		});
@@ -55,7 +55,7 @@ describe('buildImportGraphInput', () => {
 			tests: [],
 			files: ['src/feature/internal.ts'],
 			referenceFiles: ['src/consumer.ts', 'src/feature/internal.ts'],
-			standardsPacks: [],
+			standardsLibraries: [],
 			compiler,
 			packagesDir: 'packages',
 		});
@@ -76,7 +76,7 @@ describe('buildImportGraphInput', () => {
 			tests: [],
 			files,
 			referenceFiles: files,
-			standardsPacks: [],
+			standardsLibraries: [],
 			compiler,
 			packagesDir: 'packages',
 		});

@@ -25,7 +25,7 @@ export const setupSyntaxTreeInput = ({ sources = [], dependencies = [], ...overr
 		tests: [],
 		files: paths,
 		referenceFiles: [],
-		standardsPacks: [],
+		standardsLibraries: [],
 		compiler: ts,
 		trees,
 		dependencies: new Map(dependencies),

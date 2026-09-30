@@ -56,8 +56,8 @@ const behavioralFiles = {
 test('write-tests fan-out: every executable-code kind earns a writer; barrels and type-only files are inert-skipped', async () => {
 	const dir = setupConsumerRepo({
 		config: {
-			'standards-checks': {
-				...reachabilityRulesOff['standards-checks'],
+			'standards-rule-settings': {
+				...reachabilityRulesOff['standards-rule-settings'],
 				// the fixture's `Kind` union is deliberately bare: it is here as a
 				// type-only export the writer selection has to skip, not as code to fix
 				'bare-string-union': 'off',
@@ -148,8 +148,8 @@ test('write-tests fan-out: every executable-code kind earns a writer; barrels an
 test('write-tests fan-out: a deleted source file is skipped, never sent to a writer, and does not escalate the run', async () => {
 	const dir = setupConsumerRepo({
 		config: {
-			'standards-checks': {
-				...reachabilityRulesOff['standards-checks'],
+			'standards-rule-settings': {
+				...reachabilityRulesOff['standards-rule-settings'],
 				// the fixture's `Kind` union is deliberately bare: it is here as a
 				// type-only export the writer selection has to skip, not as code to fix
 				'bare-string-union': 'off',
@@ -229,8 +229,8 @@ test('write-tests fan-out: a deleted source file is skipped, never sent to a wri
 test('write-tests fan-out: an unreadable file that still exists keeps its writer, unlike a deleted one', async () => {
 	const dir = setupConsumerRepo({
 		config: {
-			'standards-checks': {
-				...reachabilityRulesOff['standards-checks'],
+			'standards-rule-settings': {
+				...reachabilityRulesOff['standards-rule-settings'],
 				// the fixture's `Kind` union is deliberately bare: it is here as a
 				// type-only export the writer selection has to skip, not as code to fix
 				'bare-string-union': 'off',

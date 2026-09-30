@@ -21,7 +21,7 @@ const ledgerTestName = 'widget: doubles its input';
  * fixture's shape never reaches the question this suite asks.
  */
 const ledgerRepoConfig = {
-	'standards-checks': { ...reachabilityRulesOff['standards-checks'], 'test-in-tests-folder': 'off', 'test-not-beside-subject': 'off' },
+	'standards-rule-settings': { ...reachabilityRulesOff['standards-rule-settings'], 'test-in-tests-folder': 'off', 'test-not-beside-subject': 'off' },
 };
 
 /** A plan carrying a one-row acceptance ledger the run has to prove. */

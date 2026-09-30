@@ -6,14 +6,14 @@ import { dim } from '#src/cli/internal/common/terminal/dim.ts';
 import { green } from '#src/cli/internal/common/terminal/green.ts';
 import { red } from '#src/cli/internal/common/terminal/red.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import { validateStandardsPack } from '#src/standardsCheck/validateStandardsPack.ts';
-import { readStandardsPack } from '#src/standardsPacks/readStandardsPack.ts';
-import { resolveDefaultStandardsPack } from '#src/standardsPacks/resolveDefaultStandardsPack.ts';
+import { validateStandardsLibrary } from '#src/standardsCheck/validateStandardsLibrary.ts';
+import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary.ts';
+import { resolveDefaultStandardsLibrary } from '#src/standardsLibraries/resolveDefaultStandardsLibrary.ts';
 
 // Async so a default that cannot be located rejects like a pack that cannot be
 // read: one failure path for the caller.
 const readRequestedPack = async ({ requested, cwd }: { requested?: string; cwd: string }) =>
-	readStandardsPack({ packPath: requested === undefined ? resolveDefaultStandardsPack() : resolve(cwd, requested) });
+	readStandardsLibrary({ packPath: requested === undefined ? resolveDefaultStandardsLibrary() : resolve(cwd, requested) });
 
 export const standardsValidateCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const requested = getStringFlag({ flags, name: 'pack' });
@@ -21,7 +21,7 @@ export const standardsValidateCommand = async ({ flags, cwd }: CommandContext): 
 		console.error(messageOf({ error }));
 		return exitCli({ code: 1 });
 	});
-	const { problems, notes } = await validateStandardsPack({ pack });
+	const { problems, notes } = await validateStandardsLibrary({ pack });
 
 	for (const note of notes) {
 		console.log(`${dim('ℹ')} ${dim(note)}`);

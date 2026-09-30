@@ -18,8 +18,8 @@ test('write-tests fan-out: files under __tests__/ are test files, never writer t
 	// escalate a run this test is not about.
 	const dir = setupConsumerRepo({
 		config: {
-			'standards-checks': {
-				...reachabilityRulesOff['standards-checks'],
+			'standards-rule-settings': {
+				...reachabilityRulesOff['standards-rule-settings'],
 				'test-in-tests-folder': 'off',
 				'test-not-beside-subject': 'off',
 			},

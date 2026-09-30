@@ -5,7 +5,7 @@ export const StandardsPackDocumentView = z.object({
 	set: z.enum(StandardsSet),
 	path: z.string(),
 	channel: z.string(),
-	/** document.md body — the group header's collapsible intro. */
+	/** topic.md body — the group header's collapsible intro. */
 	intro: z.string(),
 	/** Rule ids in assembly order. */
 	ruleIds: z.array(z.string()),

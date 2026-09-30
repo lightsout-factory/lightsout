@@ -4,8 +4,8 @@ import { toRepoRelativePath } from '#src/common/utils/toRepoRelativePath.ts';
 import { FixtureSide } from '#src/contracts/views/FixtureSide.ts';
 import type { StandardsPackBundle } from '#src/contracts/views/StandardsPackBundle.ts';
 import type { StandardsPackRuleView } from '#src/contracts/views/StandardsPackRuleView.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
-import { readStandardsPack } from '#src/standardsPacks/readStandardsPack.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
+import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary.ts';
 import { readPackFixtures } from '#src/views/internal/common/utils/readPackFixtures.ts';
 import { resolveRuleExample } from '#src/views/internal/common/utils/resolveRuleExample.ts';
 import { toStandardsPackRuleListing } from '#src/views/internal/common/utils/toStandardsPackRuleListing.ts';
@@ -68,9 +68,9 @@ const toRuleView = async ({ rule }: { rule: LoadedStandardsRule }) => {
 	};
 };
 
-/** The pack read off disk and folded whole, so nothing downstream ever holds a `LoadedStandardsPack`. */
+/** The pack read off disk and folded whole, so nothing downstream ever holds a `LoadedStandardsLibrary`. */
 const readBundle = async ({ packPath, isDefault, cwd }: { packPath: string; isDefault: boolean; cwd: string }) => {
-	const pack = await readStandardsPack({ packPath });
+	const pack = await readStandardsLibrary({ packPath });
 	const rules: StandardsPackRuleView[] = [];
 
 	for (const rule of pack.rules) {

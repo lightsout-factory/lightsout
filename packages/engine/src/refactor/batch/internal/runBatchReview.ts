@@ -3,7 +3,7 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { appendReviewFindings } from '#src/runState/appendReviewFindings.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 interface Params {
 	cwd: string;
@@ -11,7 +11,7 @@ interface Params {
 	runId: string;
 	driver: Driver;
 	batch: RefactorBatch;
-	packs: LoadedStandardsPack[];
+	packs: LoadedStandardsLibrary[];
 	/** A document out of play is not reviewed. */
 	channels: string[];
 	/** The batch's own files before it works, the ones it wrote after. */

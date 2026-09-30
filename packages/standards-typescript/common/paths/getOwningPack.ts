@@ -2,7 +2,7 @@ interface Params {
 	/** A repo-relative path. */
 	path: string;
 	/** Repo-relative standards pack roots, as the input carries them. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 }
 
 /**
@@ -13,5 +13,5 @@ interface Params {
  * The longest matching root wins, so a pack nested inside another belongs to
  * the nearer one.
  */
-export const getOwningPack = ({ path, standardsPacks }: Params): string =>
-	standardsPacks.filter((root) => path.startsWith(`${root}/`)).sort((first, second) => second.length - first.length)[0] ?? '.';
+export const getOwningPack = ({ path, standardsLibraries }: Params): string =>
+	standardsLibraries.filter((root) => path.startsWith(`${root}/`)).sort((first, second) => second.length - first.length)[0] ?? '.';

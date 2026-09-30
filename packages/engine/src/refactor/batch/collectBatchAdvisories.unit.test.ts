@@ -4,8 +4,8 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { collectBatchAdvisories } from '#src/refactor/batch/collectBatchAdvisories.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 
 const finding = (overrides: Partial<StandardsFinding> = {}): StandardsFinding => ({
@@ -38,7 +38,7 @@ const judgmentRule: LoadedStandardsRule = {
 	fixturesPath: '/packages/acme/path-aliases/fixtures',
 };
 
-const packOf = ({ rules }: { rules: LoadedStandardsRule[] }): LoadedStandardsPack => ({
+const packOf = ({ rules }: { rules: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
 	name: 'acme',
 	formatVersion: 1,
 	rootPath: '/packages/acme',

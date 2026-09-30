@@ -37,10 +37,10 @@ export const check: StandardsCheckModule = {
 	// TypeScript files only: in a JavaScript file a type tag is how a type is
 	// declared at all. Tests are left to the test standards.
 	run: ({ input }): RawStandardsFinding[] => {
-		const { files, contents, standardsPacks } = readFileTexts({ input });
+		const { files, contents, standardsLibraries } = readFileTexts({ input });
 
 		return files
-			.filter((file) => /\.tsx?$/.test(file) && !isTestFile({ path: file, standardsPacks }))
+			.filter((file) => /\.tsx?$/.test(file) && !isTestFile({ path: file, standardsLibraries }))
 			.map((file) => {
 				const tags = getBrittleTags({ text: contents.get(file) ?? '' });
 

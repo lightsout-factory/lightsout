@@ -12,7 +12,7 @@ const setupFileTextInput = (): StandardsCheckInput => ({
 	files: ['src/app.ts', 'src/app.unit.test.ts'],
 	referenceFiles: [],
 	contents: new Map<string, string>(),
-	standardsPacks: [],
+	standardsLibraries: [],
 });
 
 describe('readPathLists', () => {
@@ -22,7 +22,7 @@ describe('readPathLists', () => {
 		expect(readPathLists({ input })).toStrictEqual({
 			files: ['src/app.ts', 'src/app.unit.test.ts'],
 			tests: ['src/app.unit.test.ts'],
-			standardsPacks: [],
+			standardsLibraries: [],
 		});
 	});
 
@@ -30,21 +30,21 @@ describe('readPathLists', () => {
 		expect(readPathLists({ input: setupFileTextInput() })).toStrictEqual({
 			files: ['src/app.ts', 'src/app.unit.test.ts'],
 			tests: ['src/app.unit.test.ts'],
-			standardsPacks: [],
+			standardsLibraries: [],
 		});
 	});
 
 	test('carries the pack roots the input declares, rather than a fixed empty list', () => {
-		const input = setupFileListInput({ source: ['standards/tests/unit-testing/10-rule/check.ts'], standardsPacks: ['standards'] });
+		const input = setupFileListInput({ source: ['standards/tests/unit-testing/10-rule/check.ts'], standardsLibraries: ['standards'] });
 
 		expect(readPathLists({ input })).toStrictEqual({
 			files: ['standards/tests/unit-testing/10-rule/check.ts'],
 			tests: [],
-			standardsPacks: ['standards'],
+			standardsLibraries: ['standards'],
 		});
 	});
 
 	test('yields empty lists for a kind that carries none, rather than refusing', () => {
-		expect(readPathLists({ input: setupCloneSpansInput() })).toStrictEqual({ files: [], tests: [], standardsPacks: [] });
+		expect(readPathLists({ input: setupCloneSpansInput() })).toStrictEqual({ files: [], tests: [], standardsLibraries: [] });
 	});
 });
