@@ -10,7 +10,7 @@ import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibra
 const setupDefaultPack = async () => {
 	// The authored pack, anchored on this file — not its build copy under
 	// plugin/, which would pass or fail on whether someone had run `pnpm bundle`.
-	const pack = await readStandardsLibrary({ packPath: join(__dirname, '..', '..', '..', 'standards-typescript') });
+	const pack = await readStandardsLibrary({ packPath: join(__dirname, '..', '..', '..', 'lightsout-standards') });
 
 	return { pack };
 };

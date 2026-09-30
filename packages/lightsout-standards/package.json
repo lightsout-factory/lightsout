@@ -1,5 +1,5 @@
 {
-	"name": "@lightsout/standards-typescript",
+	"name": "@lightsout/lightsout-standards",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -24,7 +24,7 @@
 		"test:unit:coverage": "node --no-sparkplug ../../tooling/jest/runJest.cjs -c jest.config.cjs --coverage"
 	},
 	"nx": {
-		"name": "standards-typescript",
+		"name": "lightsout-standards",
 		"targets": {
 			"bundle": {
 				"outputs": [

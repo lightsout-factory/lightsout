@@ -33,7 +33,7 @@ describe('getDefaultPackBundle', () => {
 	test('carries no machine’s path, since the file is committed and compared byte for byte', () => {
 		const bundle = getDefaultPackBundle();
 
-		expect(bundle.rootPath).toBe('packages/standards-typescript');
+		expect(bundle.rootPath).toBe('packages/lightsout-standards');
 	});
 
 	test('parses the committed library bundle with its ten packs and a repo-relative root', () => {
@@ -47,7 +47,7 @@ describe('getDefaultPackBundle', () => {
 			carriesIsDefault: Object.hasOwn(committedBundle, 'isDefault'),
 		}).toStrictEqual({
 			name: 'lightsout',
-			rootPath: 'packages/standards-typescript',
+			rootPath: 'packages/lightsout-standards',
 			packAddresses: [
 				'lightsout/nestjs',
 				'lightsout/nestjs-app',

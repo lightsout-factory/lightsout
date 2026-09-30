@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
  * writing into the tree it is asking about.
  */
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const source = join(repoRoot, 'packages', 'standards-typescript');
+const source = join(repoRoot, 'packages', 'lightsout-standards');
 const outFlag = process.argv.indexOf('--out');
 
 /**

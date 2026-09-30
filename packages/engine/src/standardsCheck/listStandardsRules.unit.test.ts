@@ -259,7 +259,7 @@ describe('listStandardsRules', () => {
 
 		// the doc column is what makes the output actionable — a row naming a
 		// document that is not there sends the reader nowhere
-		const rulesPath = join(cwd, 'packages', 'standards-typescript', 'rules');
+		const rulesPath = join(cwd, 'packages', 'lightsout-standards', 'rules');
 		const missing = rules.filter((rule) => {
 			const { name, path } = docPartsOf({ doc: rule.doc });
 

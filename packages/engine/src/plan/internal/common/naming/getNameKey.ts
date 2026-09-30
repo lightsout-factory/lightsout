@@ -35,7 +35,7 @@ interface Params {
  * with no `node_modules`, and the engine runs against whatever library
  * `standards-libraries` registers, so neither copy can import the other.
  *
- * @mirrors packages/standards-typescript/common/naming/getNameKey.ts
+ * @mirrors packages/lightsout-standards/common/naming/getNameKey.ts
  */
 export const getNameKey = ({ name }: Params): string => {
 	const tokens = getTokens({ name });

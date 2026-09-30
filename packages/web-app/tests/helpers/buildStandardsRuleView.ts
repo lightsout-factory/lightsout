@@ -24,7 +24,7 @@ export const buildStandardsRuleView = ({
 	history = {},
 }: Params = {}): StandardsRuleView => ({
 	rule,
-	doc: '@lightsout/standards-typescript: code/style-guide/patterns/functions',
+	doc: '@lightsout/lightsout-standards: code/style-guide/patterns/functions',
 	documentPath: 'code/style-guide/patterns/functions',
 	set: StandardsSet.Code,
 	summary: 'a file over the standards line cap',

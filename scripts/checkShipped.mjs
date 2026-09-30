@@ -99,7 +99,7 @@ export const checkShipped = async ({ base = 'origin/main', baseCommit: pinnedBas
 		const difference = firstDifference({ built: join(work, 'standards'), shipped: join(repoRoot, 'plugin', 'standards') });
 
 		if (difference !== undefined) {
-			problems.push(`plugin/standards/ does not match packages/standards-typescript/ — ${difference}`);
+			problems.push(`plugin/standards/ does not match packages/lightsout-standards/ — ${difference}`);
 		}
 	} finally {
 		rmSync(work, { recursive: true, force: true });

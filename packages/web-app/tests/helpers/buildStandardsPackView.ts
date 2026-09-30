@@ -49,7 +49,7 @@ export const buildStandardsPackView = ({
 	return {
 		name: 'lightsout',
 		description: 'The rules lightsout ships.',
-		rootPath: 'packages/standards-typescript',
+		rootPath: 'packages/lightsout-standards',
 		built: false,
 		totals: {
 			rules: rules.length,

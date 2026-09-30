@@ -85,8 +85,8 @@ export const seedSprawlRepo = ({ commits = [], rules, runs }: Params = {}): stri
 			continue;
 		}
 
-		mkdirSync(dirname(join(cwd, 'packages', 'standards-typescript', rule)), { recursive: true });
-		writeFileSync(join(cwd, 'packages', 'standards-typescript', rule), body);
+		mkdirSync(dirname(join(cwd, 'packages', 'lightsout-standards', rule)), { recursive: true });
+		writeFileSync(join(cwd, 'packages', 'lightsout-standards', rule), body);
 	}
 
 	for (const [id, manifest] of Object.entries(runs ?? {})) {

@@ -40,7 +40,7 @@ const readOptions = ({ path }) => {
  * ship a plausible guess.
  */
 export const readSprawlCaps = ({ repoRoot }) => {
-	const packRoot = join(repoRoot, 'packages', 'standards-typescript');
+	const packRoot = join(repoRoot, 'packages', 'lightsout-standards');
 	const caps = {};
 
 	for (const { rule, keys } of capSources) {

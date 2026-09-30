@@ -11,7 +11,7 @@ import { StandardsPackRuleNotFoundError } from '#src/views/StandardsPackRuleNotF
 const setupBundle = () => {
 	const bundle: StandardsPackBundle = {
 		name: 'lightsout',
-		rootPath: '/repo/packages/standards-typescript',
+		rootPath: '/repo/packages/lightsout-standards',
 		built: false,
 		totals: { rules: 1, checked: 1, judgment: 0, topics: 1, packs: 0, withFixtures: 1 },
 		packs: [],

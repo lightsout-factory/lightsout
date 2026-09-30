@@ -24,7 +24,7 @@ const setupDefaultPack = async () => {
 	// Anchored on this file rather than on process.cwd(): the working directory
 	// depends on where the runner was invoked from, which is exactly the sort of
 	// thing that changes when a repo grows a second place to run tests from.
-	const packPath = join(__dirname, '..', '..', '..', 'standards-typescript');
+	const packPath = join(__dirname, '..', '..', '..', 'lightsout-standards');
 
 	return { pack: await readStandardsLibrary({ packPath }) };
 };
@@ -73,7 +73,7 @@ const listCheckFiles = async ({ folder }: { folder: string }): Promise<string[]>
 const setupCheckImports = async () => {
 	const { pack } = await setupDefaultPack();
 	// the same authored folder setupDefaultPack loads, anchored on this file for the same reason
-	const libraryPath = join(__dirname, '..', '..', '..', 'standards-typescript');
+	const libraryPath = join(__dirname, '..', '..', '..', 'lightsout-standards');
 	const manifest: { imports?: unknown } = JSON.parse(await readFile(join(libraryPath, 'package.json'), 'utf8'));
 	const checkFiles = await listCheckFiles({ folder: libraryPath });
 	const checks = await Promise.all(
@@ -92,7 +92,7 @@ const setupCheckImports = async () => {
 const setupLibraryLayout = async () => {
 	const { pack } = await setupDefaultPack();
 	// the same authored folder setupDefaultPack loads, anchored on this file for the same reason
-	const libraryPath = join(__dirname, '..', '..', '..', 'standards-typescript');
+	const libraryPath = join(__dirname, '..', '..', '..', 'lightsout-standards');
 	const folderNames = async ({ folder }: { folder: string }): Promise<string[]> => {
 		const entries = await readdir(folder, { withFileTypes: true });
 
@@ -121,7 +121,7 @@ describe('readStandardsLibrary', () => {
 		// than from any folder, so this is the only place they can come from
 		expect({ description: pack.description, homepage: pack.homepage }).toEqual({
 			description: expect.stringContaining('TypeScript pack'),
-			homepage: 'https://github.com/lightsout-factory/lightsout/tree/main/packages/standards-typescript',
+			homepage: 'https://github.com/lightsout-factory/lightsout/tree/main/packages/lightsout-standards',
 		});
 	});
 

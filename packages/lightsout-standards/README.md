@@ -1,4 +1,4 @@
-# @lightsout/standards-typescript — authoring notes
+# @lightsout/lightsout-standards — authoring notes
 
 This package is the built-in `lightsout` standards library: the topics
 lightsout hands an agent, the rules it checks a repository against, and the

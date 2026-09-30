@@ -12,7 +12,7 @@ const setupBundle = ({ described = true }: { described?: boolean } = {}) => {
 	const bundle: StandardsPackBundle = {
 		name: 'lightsout',
 		...(described ? { description: 'The built-in library.', homepage: 'https://example.com/lightsout' } : {}),
-		rootPath: '/repo/packages/standards-typescript',
+		rootPath: '/repo/packages/lightsout-standards',
 		built: false,
 		totals: { rules: 2, checked: 1, judgment: 1, topics: 1, packs: 1, withFixtures: 1 },
 		packs: [
@@ -85,7 +85,7 @@ describe('toStandardsPackView', () => {
 			name: 'lightsout',
 			description: 'The built-in library.',
 			homepage: 'https://example.com/lightsout',
-			rootPath: '/repo/packages/standards-typescript',
+			rootPath: '/repo/packages/lightsout-standards',
 			built: false,
 			totals: { rules: 2, checked: 1, judgment: 1, topics: 1, packs: 1, withFixtures: 1 },
 			packs: [

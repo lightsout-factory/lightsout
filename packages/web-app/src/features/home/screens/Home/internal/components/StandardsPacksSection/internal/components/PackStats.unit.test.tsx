@@ -7,7 +7,7 @@ import { buildStandardsPackView } from '#tests/helpers/buildStandardsPackView.ts
 /** The bundled library's view with only its totals filled; the stats read nothing else. */
 const buildLibraryView = ({ totals }: { totals: StandardsPackView['totals'] }): StandardsPackView => ({
 	name: 'lightsout',
-	rootPath: 'packages/standards-typescript',
+	rootPath: 'packages/lightsout-standards',
 	built: false,
 	totals,
 	packs: [],

@@ -158,7 +158,7 @@ test('an engine bundle that no longer matches src/ fails', async () => {
  * claim under test, and naming one broke this test when that rule was renamed.
  */
 const findAuthoredRule = async ({ cwd }: { cwd: string }) => {
-	const root = join(cwd, 'packages/standards-typescript');
+	const root = join(cwd, 'packages/lightsout-standards');
 	const entry = (await readdir(root, { recursive: true, withFileTypes: true })).find((candidate) => candidate.isFile() && candidate.name === 'rule.md');
 
 	if (entry === undefined) {
@@ -177,7 +177,7 @@ test('a standards package that no longer matches its authored source fails, nami
 	const { ok, output } = checkShipped({ cwd, base: 'main' });
 
 	expect(ok).toBe(false);
-	expect(output).toMatch(/plugin\/standards\/ does not match packages\/standards-typescript\/ — .*rule\.md differs/);
+	expect(output).toMatch(/plugin\/standards\/ does not match packages\/lightsout-standards\/ — .*rule\.md differs/);
 });
 
 /**

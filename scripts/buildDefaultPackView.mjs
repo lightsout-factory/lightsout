@@ -32,7 +32,7 @@ export const buildDefaultPackView = async () => {
 		);
 	}
 
-	const authoredPackPath = 'packages/standards-typescript';
+	const authoredPackPath = 'packages/lightsout-standards';
 
 	return `${JSON.stringify({ ...bundle, rootPath: authoredPackPath }, undefined, 2)}\n`;
 };
@@ -57,13 +57,13 @@ const main = async () => {
 		const onDisk = readFileSync(outputPath, 'utf8');
 
 		if (onDisk === json) {
-			console.log('assets/default-pack.json matches the built-in library and its packs in packages/standards-typescript/');
+			console.log('assets/default-pack.json matches the built-in library and its packs in packages/lightsout-standards/');
 
 			return;
 		}
 
 		console.error('');
-		console.error('  assets/default-pack.json no longer matches the built-in library and its packs in packages/standards-typescript/.');
+		console.error('  assets/default-pack.json no longer matches the built-in library and its packs in packages/lightsout-standards/.');
 		console.error('  It is what the site and every viewer off this monorepo show for the built-in library and its packs.');
 		console.error('');
 		console.error('    pnpm build:default-pack && git add assets/default-pack.json');

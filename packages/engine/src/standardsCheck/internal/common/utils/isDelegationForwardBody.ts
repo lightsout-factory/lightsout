@@ -13,7 +13,7 @@ interface Params {
  * so two classes holding the same collaborator share these bodies by design.
  * Both duplication tiers consult this one predicate so they never disagree.
  *
- * @mirrors packages/standards-typescript/common/parsing/isDelegationForwardBody.ts
+ * @mirrors packages/lightsout-standards/common/parsing/isDelegationForwardBody.ts
  */
 export const isDelegationForwardBody = ({ body, compiler }: Params): boolean => {
 	const statements = compiler.isBlock(body) ? body.statements : undefined;

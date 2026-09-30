@@ -93,7 +93,7 @@ describe('resolveDefaultStandardsLibrary', () => {
 
 	test('takes the pack the environment names ahead of anything the walk would find', () => {
 		const { root, startDir } = setupTree({ packagedAt: 'plugin/standards' });
-		const authored = join(root, 'packages', 'standards-typescript');
+		const authored = join(root, 'packages', 'lightsout-standards');
 
 		mkdirSync(authored, { recursive: true });
 		writeFileSync(join(authored, 'lightsout-standards.json'), '{ "name": "authored", "formatVersion": 2 }\n');

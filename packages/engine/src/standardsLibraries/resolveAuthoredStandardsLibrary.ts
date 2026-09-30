@@ -20,7 +20,7 @@ export const resolveAuthoredStandardsLibrary = ({ cwd }: Params): string | undef
 	const candidates = [
 		...(override === undefined ? [] : [resolve(override)]),
 		// This monorepo's authored pack, then a repo that IS a pack.
-		join(cwd, 'packages', 'standards-typescript'),
+		join(cwd, 'packages', 'lightsout-standards'),
 		resolve(cwd),
 	];
 

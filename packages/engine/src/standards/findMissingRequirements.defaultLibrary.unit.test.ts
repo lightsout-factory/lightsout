@@ -42,7 +42,7 @@ const listedRequires: Record<string, string[]> = {
  * Anchored on this file rather than on process.cwd().
  */
 const setupDefaultLibrary = async () => {
-	const library = await readStandardsLibrary({ packPath: join(__dirname, '..', '..', '..', 'standards-typescript') });
+	const library = await readStandardsLibrary({ packPath: join(__dirname, '..', '..', '..', 'lightsout-standards') });
 
 	return { library, libraries: [library] };
 };

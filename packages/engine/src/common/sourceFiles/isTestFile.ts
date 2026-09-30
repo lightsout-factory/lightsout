@@ -31,7 +31,7 @@ interface Params {
  * bare directory with no manifest or `node_modules`. Change one, change the
  * other.
  *
- * @mirrors packages/standards-typescript/common/paths/isTestFile.ts
+ * @mirrors packages/lightsout-standards/common/paths/isTestFile.ts
  */
 export const isTestFile = ({ path, standardsLibraries = [] }: Params): boolean => {
 	const inStandardsPack = standardsLibraries.some((root) => path.startsWith(`${root}/`));

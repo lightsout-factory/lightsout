@@ -5,7 +5,7 @@
 # plugin/ is what users actually run — marketplace installs copy it and
 # nothing else. Both halves are committed build outputs (plugin/dist/cli.mjs
 # from packages/engine/src/, plugin/standards/ from
-# packages/standards-typescript/), and the version in
+# packages/lightsout-standards/), and the version in
 # plugin.json is how a user tells one build from another.
 #
 # What "shippable" means lives in scripts/checkShipped.mjs, not here. CI runs
@@ -16,7 +16,7 @@
 # The same two lines guard assets/default-pack.json, which is the authored
 # standards pack the web app carries so a rule page can show its examples off
 # this monorepo. scripts/buildDefaultPackView.mjs --check is what says whether
-# it still matches packages/standards-typescript/, and CI runs that file too.
+# it still matches packages/lightsout-standards/, and CI runs that file too.
 #
 # The version is compared against your local origin/main, which is only as
 # fresh as your last fetch. A stale ref can miss a bump someone else already

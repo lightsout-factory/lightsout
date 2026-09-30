@@ -57,7 +57,7 @@ test('copyStandards --out builds somewhere else and leaves the committed package
 test('the shipped package carries every rule but none of the evidence that only proves it', async () => {
 	const out = await buildInto();
 	const shipped = await filesUnder({ dir: out });
-	const authored = await filesUnder({ dir: join(repoRoot, 'packages', 'standards-typescript') });
+	const authored = await filesUnder({ dir: join(repoRoot, 'packages', 'lightsout-standards') });
 
 	// fixtures and co-located tests are what a package is validated BY, not what
 	// it runs on, got: ${JSON.stringify(shipped.filter((path) => path.includes('fixtures/')))}

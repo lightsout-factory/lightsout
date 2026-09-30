@@ -21,7 +21,7 @@ const writeManifestIn = ({ folder }: { folder: string }) => {
  */
 const setupRepo = ({ monorepoPack = false, repoIsPack = false, named }: { monorepoPack?: boolean; repoIsPack?: boolean; named?: 'pack' | 'notAPack' } = {}) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-authored-pack-'));
-	const monorepoPath = join(cwd, 'packages', 'standards-typescript');
+	const monorepoPath = join(cwd, 'packages', 'lightsout-standards');
 	const namedPath = join(cwd, 'named-folder');
 	const environment = { ...process.env };
 
@@ -51,7 +51,7 @@ const setupRepo = ({ monorepoPack = false, repoIsPack = false, named }: { monore
 };
 
 describe('resolveAuthoredStandardsLibrary', () => {
-	test("finds this monorepo's authored pack under packages/standards-typescript", () => {
+	test("finds this monorepo's authored pack under packages/lightsout-standards", () => {
 		const { cwd, monorepoPath } = setupRepo({ monorepoPack: true });
 
 		const packPath = resolveAuthoredStandardsLibrary({ cwd });
