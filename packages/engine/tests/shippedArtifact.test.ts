@@ -1,6 +1,9 @@
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdtemp, readdir, readFile, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
 import { join, sep } from 'node:path';
+import { promisify } from 'node:util';
 import { expect, test } from '@jest/globals';
 
 // Two properties the shipped plugin rests on that nothing else would notice
@@ -8,6 +11,22 @@ import { expect, test } from '@jest/globals';
 // here rather than left to be discovered by a user.
 
 const repoRoot = join(__dirname, '..', '..', '..');
+const run = promisify(execFile);
+
+/**
+ * The standards package as the build writes it from the authored source today.
+ * A feature branch never commits build output (the pre-ship step does), so the
+ * committed plugin/standards/ can lag the source it will be rebuilt from; the
+ * properties below are properties of what ships, so they are read from a fresh
+ * build rather than from that committed copy.
+ */
+const buildShippedStandards = async (): Promise<string> => {
+	const out = join(await mkdtemp(join(tmpdir(), 'lightsout-shipped-standards-')), 'standards');
+
+	await run('node', [join(repoRoot, 'scripts', 'copyStandards.mjs'), '--out', out], { cwd: repoRoot });
+
+	return out;
+};
 
 /** Every file under a directory, as slash-separated relative paths. */
 const filesUnder = async ({ dir }: { dir: string }): Promise<string[]> => {
@@ -55,7 +74,7 @@ test('no shipped check imports a value through a specifier Node could not resolv
 	//
 	// The shipped copy resolves its own `#common/*` alias through its
 	// package.json, so a specifier that manifest's imports map names resolves too.
-	const shipped = join(repoRoot, 'plugin', 'standards');
+	const shipped = await buildShippedStandards();
 	const manifest = JSON.parse(await readFile(join(shipped, 'package.json'), 'utf8')) as { imports?: Record<string, string> };
 	const importKeys = Object.keys(manifest.imports ?? {});
 	const offenders: string[] = [];
@@ -75,7 +94,7 @@ test('a shipped check may import common/ through the #common alias its package.j
 	// The shipped copy resolves its own `#common/*` alias through
 	// plugin/standards/package.json, so a check importing common/ that way loads
 	// with no node_modules. A bare package name still has nothing to resolve it.
-	const shipped = join(repoRoot, 'plugin', 'standards');
+	const shipped = await buildShippedStandards();
 	const manifest = JSON.parse(await readFile(join(shipped, 'package.json'), 'utf8')) as { imports?: Record<string, string> };
 	const importKeys = Object.keys(manifest.imports ?? {});
 	const specifiers: string[] = [];
