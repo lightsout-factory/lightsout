@@ -37,7 +37,7 @@ describe('test-nested-describe check', () => {
 	test('reports a nested describe whose title names neither a condition nor a variant', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', buildNestedSource({ title: 'padded names' })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -55,7 +55,7 @@ describe('test-nested-describe check', () => {
 	])('leaves a nested describe titling $names alone', async ({ title }) => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', buildNestedSource({ title })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -63,7 +63,7 @@ describe('test-nested-describe check', () => {
 	test('leaves suites sitting side by side alone — the rule reads nesting, not the count of describes', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', siblingSuitesSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -71,7 +71,7 @@ describe('test-nested-describe check', () => {
 	test('names every nested describe of one file in a single finding, each with its own line', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', twoNestedSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -87,7 +87,7 @@ describe('test-nested-describe check', () => {
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

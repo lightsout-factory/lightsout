@@ -10,7 +10,7 @@ describe('folder-casing check', () => {
 	test('reports a folder that follows neither default casing', async () => {
 		const input = setupFileListInput({ files: ['src/only/one-off/a.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -30,7 +30,7 @@ describe('folder-casing check', () => {
 	])('names $folder as $style, so the finding says what is wrong with the name', async ({ folder, style }) => {
 		const input = setupFileListInput({ files: ['src/mixed/alpha/a.ts', 'src/mixed/beta/b.ts', `src/mixed/${folder}/c.ts`] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual([`folder '${folder}' is ${style}`]);
 	});
@@ -38,7 +38,7 @@ describe('folder-casing check', () => {
 	test('leaves both defaults alone — a camelCase category folder and a PascalCase graduated one', async () => {
 		const input = setupFileListInput({ files: ['src/mixed/alpha/a.ts', 'src/HttpClient/HttpClient.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -46,7 +46,7 @@ describe('folder-casing check', () => {
 	test('lets a convention already settled in the directory outrank the default', async () => {
 		const input = setupFileListInput({ files: ['src/settled/a-one/x.ts', 'src/settled/a-two/y.ts', 'src/settled/a-three/z.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -54,7 +54,7 @@ describe('folder-casing check', () => {
 	test('treats half the siblings as no convention at all — a settled directory needs more than half', async () => {
 		const input = setupFileListInput({ files: ['src/tie/a-one/x.ts', 'src/tie/b-two/y.ts', 'src/tie/alpha/z.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-casing:src/tie/a-one', 'folder-casing:src/tie/b-two']);
 	});
@@ -62,7 +62,7 @@ describe('folder-casing check', () => {
 	test('reports both folders when a directory holds only two of the same casing, since one sibling settles nothing', async () => {
 		const input = setupFileListInput({ files: ['src/pair/a-one/x.ts', 'src/pair/b-two/y.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-casing:src/pair/a-one', 'folder-casing:src/pair/b-two']);
 	});
@@ -72,7 +72,7 @@ describe('folder-casing check', () => {
 			files: ['src/feature/__mocks__/logger.ts', 'src/feature/__tests__/Thing.unit.test.ts', 'src/feature/one-off/b.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-casing:src/feature/one-off']);
 	});
@@ -86,7 +86,7 @@ describe('folder-casing check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-casing:src/domain/other-name']);
 	});
@@ -97,7 +97,7 @@ describe('folder-casing check', () => {
 			dependencies: [['.', ['next']]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-casing:src/domain/app/user-name']);
 	});
@@ -105,13 +105,13 @@ describe('folder-casing check', () => {
 	test("judges only paths inside a package's source tree, never the repo's own test tree", async () => {
 		const input = setupFileListInput({ files: ['tests/one-off/a.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

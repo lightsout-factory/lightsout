@@ -113,11 +113,11 @@ describe('StandardsCheckModule', () => {
 	});
 
 	test('keys the contract does not declare are stripped from the check module', () => {
-		const { checkModule, run } = setupModule({ extra: { severity: 'blocking', settings: { maxLines: 40 } } });
+		const { checkModule, run } = setupModule({ extra: { severity: 'blocking', options: { maxLines: 40 } } });
 
 		const parsed = StandardsCheckModule.parse(checkModule);
 
-		// severity and settings come from the rule's front matter, never from the
+		// severity and options come from the rule's front matter, never from the
 		// check file — anything extra a package ships is dropped rather than
 		// silently honored
 		expect(parsed).toStrictEqual({ inputKind: 'file-list', run });

@@ -12,7 +12,7 @@ describe('duplicate-export-name check', () => {
 			source: ['src/billing/formatAmount.ts', 'src/invoices/formatAmount.ts', 'src/invoices/getInvoiceLabel.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -29,7 +29,7 @@ describe('duplicate-export-name check', () => {
 			source: ['src/invoices/formatAmount.ts', 'src/billing/formatAmount.ts', 'src/reports/formatAmount.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -46,7 +46,7 @@ describe('duplicate-export-name check', () => {
 			source: ['src/billing/formatAmount.ts', 'src/invoices/formatAmount.ts', 'src/billing/getTotal.ts', 'src/reports/getTotal.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -69,7 +69,7 @@ describe('duplicate-export-name check', () => {
 			source: ['src/billing/formatAmount.ts', 'src/invoices/formatAmount.tsx', 'src/reports/formatAmount.mts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -84,7 +84,7 @@ describe('duplicate-export-name check', () => {
 	test('one home per name earns no finding', async () => {
 		const input = setupFileListInput({ source: ['src/common/utils/formatAmount.ts', 'src/invoices/getInvoiceLabel.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -92,7 +92,7 @@ describe('duplicate-export-name check', () => {
 	test('an index in every folder is the module convention, not a duplicated name', async () => {
 		const input = setupFileListInput({ source: ['src/billing/index.ts', 'src/invoices/index.ts', 'src/invoices/getInvoiceLabel.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -102,7 +102,7 @@ describe('duplicate-export-name check', () => {
 			source: ['src/billing/index.ts', 'src/invoices/index.tsx', 'src/billing/formatAmount.ts', 'src/invoices/formatAmount.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -120,7 +120,7 @@ describe('duplicate-export-name check', () => {
 			tests: ['src/billing/getTotal.unit.test.ts', 'src/invoices/getTotal.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -131,13 +131,13 @@ describe('duplicate-export-name check', () => {
 			tests: ['tests/helpers/setupCharge.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

@@ -16,7 +16,7 @@ describe('file-size check', () => {
 	test('reports a file past its cap, naming the path, its length and the number it was measured against', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/buildReportSummary.ts', buildSource({ lines: 7 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([
 			{
@@ -32,8 +32,8 @@ describe('file-size check', () => {
 	test("reports the file's line count as the measure, independent of the cap it was measured against", async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/buildReportSummary.ts', buildSource({ lines: 7 })]] });
 
-		const againstSix = await check.run({ input, settings: caps });
-		const againstARetunedCap = await check.run({ input, settings: { file: 3, tsxFile: 9 } });
+		const againstSix = await check.run({ input, options: caps });
+		const againstARetunedCap = await check.run({ input, options: { file: 3, tsxFile: 9 } });
 
 		expect([againstSix[0]?.measure, againstARetunedCap[0]?.measure]).toStrictEqual([7, 7]);
 	});
@@ -41,7 +41,7 @@ describe('file-size check', () => {
 	test('leaves a file measured to exactly its cap — the cap is the last allowed line, not the first banned one', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/buildReportSummary.ts', buildSource({ lines: 6 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -49,7 +49,7 @@ describe('file-size check', () => {
 	test('a .tsx earns the roomier cap, so a file too long for a .ts still passes', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/ReportPanel.tsx', buildSource({ lines: 9 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -57,7 +57,7 @@ describe('file-size check', () => {
 	test('reports a .tsx past the .tsx cap against that roomier number', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/ReportPanel.tsx', buildSource({ lines: 10 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([
 			{
@@ -73,7 +73,7 @@ describe('file-size check', () => {
 	test('a barrel is exempt at any length, since a public API cannot take the split the finding would ask for', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/index.ts', buildSource({ lines: 40 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -81,7 +81,7 @@ describe('file-size check', () => {
 	test('the exemption reads the file name, not the path, so a barrel deep in the tree is exempt too', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/common/utils/index.ts', buildSource({ lines: 40 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -89,7 +89,7 @@ describe('file-size check', () => {
 	test('only the name index.ts is exempt — a file merely holding it is measured like any other', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/indexes.ts', buildSource({ lines: 7 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['file-size:src/reporting/indexes.ts']);
 	});
@@ -97,7 +97,7 @@ describe('file-size check', () => {
 	test('the empty line a terminating newline leaves behind counts, exactly as the line count it replaces did', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/buildReportSummary.ts', `${buildSource({ lines: 6 })}\n`]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings[0]?.detail).toBe('7 lines (cap ~6)');
 	});
@@ -111,7 +111,7 @@ describe('file-size check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['file-size:src/reporting/buildReportSummary.ts', 'file-size:src/reporting/ReportPanel.tsx']);
 	});
@@ -119,7 +119,7 @@ describe('file-size check', () => {
 	test('reports nothing for a repo with no source files rather than refusing', async () => {
 		const input = setupSyntaxTreeInput({ sources: [] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -127,7 +127,7 @@ describe('file-size check', () => {
 	test('a .tsx barrel is exempt too, since a public API cannot take the split whatever dialect it is written in', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/index.tsx', buildSource({ lines: 40 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -142,13 +142,28 @@ describe('file-size check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([]);
 	});
 
+	test('measures ts files against the file option and tsx files against tsxFile', async () => {
+		const input = setupSyntaxTreeInput({
+			sources: [
+				['src/reporting/buildReportSummary.ts', buildSource({ lines: 5 })],
+				['src/reporting/ReportPanel.tsx', buildSource({ lines: 5 })],
+			],
+		});
+
+		const findings = await check.run({ input, options: { file: 4, tsxFile: 5 } });
+
+		expect(findings.map(({ siteKey, detail }) => ({ siteKey, detail }))).toStrictEqual([
+			{ siteKey: 'file-size:src/reporting/buildReportSummary.ts', detail: '5 lines (cap ~4)' },
+		]);
+	});
+
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: caps });
+		const findings = await check.run({ input: setupOtherKindInput(), options: caps });
 
 		expect(findings).toStrictEqual([]);
 	});

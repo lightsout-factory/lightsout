@@ -14,7 +14,7 @@ describe('single-use-scalar check', () => {
 			text: 'const maxRetries = 10;\n\nexport const chargeInvoice = ({ attempt }: { attempt: number }): boolean => attempt < maxRetries;\n',
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -35,7 +35,7 @@ describe('single-use-scalar check', () => {
 	])('reports $kind as a scalar too', async ({ initializer }) => {
 		const input = setupOneFile({ text: `const marker = ${initializer};\n\nexport const chargeInvoice = (): string => \`\${marker}\`;\n` });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe("'marker' is declared at module scope and read once");
 	});
@@ -45,7 +45,7 @@ describe('single-use-scalar check', () => {
 			text: 'const retryWindowMs = 10 * 60_000;\n\nexport const chargeInvoice = ({ elapsedMs }: { elapsedMs: number }): boolean => elapsedMs < retryWindowMs;\n',
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -66,7 +66,7 @@ describe('single-use-scalar check', () => {
 	])('folds numbers joined by $join', async ({ operator }) => {
 		const input = setupOneFile({ text: `const retryWindow = 10 ${operator} 5;\n\nexport const chargeInvoice = (): number => retryWindow;\n` });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe("'retryWindow' is declared at module scope and read once");
 	});
@@ -74,7 +74,7 @@ describe('single-use-scalar check', () => {
 	test('folds a parenthesised arithmetic group, since brackets add grouping rather than a moving part', async () => {
 		const input = setupOneFile({ text: 'const retryWindowMs = (60 * 1000) * 10;\n\nexport const chargeInvoice = (): number => retryWindowMs;\n' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe("'retryWindowMs' is declared at module scope and read once");
 	});
@@ -82,7 +82,7 @@ describe('single-use-scalar check', () => {
 	test('leaves numbers joined by a non-arithmetic operator, which computes rather than names', async () => {
 		const input = setupOneFile({ text: 'const readMask = 1 << 8;\n\nexport const chargeInvoice = (): number => readMask;\n' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -98,7 +98,7 @@ describe('single-use-scalar check', () => {
 			].join('\n'),
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -106,7 +106,7 @@ describe('single-use-scalar check', () => {
 	test('leaves a joined pair of strings, which the arithmetic carve-out never covered', async () => {
 		const input = setupOneFile({ text: "const chargeLabel = 'charge' + 'Invoice';\n\nexport const chargeInvoice = (): string => chargeLabel;\n" });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -116,7 +116,7 @@ describe('single-use-scalar check', () => {
 			text: ['const maxRetries = 10;', "const label = 'charge';", '', 'export const chargeInvoice = (): string => `${label}${maxRetries}`;'].join('\n'),
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe("'maxRetries', 'label' are declared at module scope and read once");
 	});
@@ -126,7 +126,7 @@ describe('single-use-scalar check', () => {
 			text: ["const maxRetries = 10, label = 'charge';", '', 'export const chargeInvoice = (): string => `${label}${maxRetries}`;'].join('\n'),
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe("'maxRetries', 'label' are declared at module scope and read once");
 	});
@@ -144,7 +144,7 @@ describe('single-use-scalar check', () => {
 			].join('\n'),
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe("'maxRetries' is declared at module scope and read once");
 	});
@@ -170,7 +170,7 @@ describe('single-use-scalar check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -196,7 +196,7 @@ describe('single-use-scalar check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -219,7 +219,7 @@ describe('single-use-scalar check', () => {
 			].join('\n'),
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -235,7 +235,7 @@ describe('single-use-scalar check', () => {
 			].join('\n'),
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -247,7 +247,7 @@ describe('single-use-scalar check', () => {
 			),
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -262,7 +262,7 @@ describe('single-use-scalar check', () => {
 			].join('\n'),
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -272,7 +272,7 @@ describe('single-use-scalar check', () => {
 			text: ["const { paid: paidLabel } = { paid: 'Paid' };", '', 'export const chargeInvoice = (): string => paidLabel;'].join('\n'),
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -280,7 +280,7 @@ describe('single-use-scalar check', () => {
 	test('leaves an ambient declaration, which holds no value of its own to move anywhere', async () => {
 		const input = setupOneFile({ text: 'declare const maxRetries: number;\n\nexport const chargeInvoice = (): number => maxRetries;\n' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -288,7 +288,7 @@ describe('single-use-scalar check', () => {
 	test('leaves an exported constant, whose readers are in other files this one cannot count', async () => {
 		const input = setupOneFile({ text: 'export const maxRetries = 10;\n\nexport const chargeInvoice = (): number => maxRetries;\n' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -296,7 +296,7 @@ describe('single-use-scalar check', () => {
 	test('leaves a scalar nothing reads — an unread constant is dead code with a different fix', async () => {
 		const input = setupOneFile({ text: 'const maxRetries = 10;\n\nexport const chargeInvoice = (): number => 1;\n' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -304,13 +304,13 @@ describe('single-use-scalar check', () => {
 	test('leaves a `let`, which is state rather than a hoisted constant', async () => {
 		const input = setupOneFile({ text: 'let attempts = 0;\n\nexport const chargeInvoice = (): number => attempts;\n' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

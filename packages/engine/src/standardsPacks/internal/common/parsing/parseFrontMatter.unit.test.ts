@@ -4,11 +4,11 @@ import { parseFrontMatter } from '#src/standardsPacks/internal/common/parsing/pa
 describe('parseFrontMatter', () => {
 	test('splits a leading block into declarations and the prose that follows', () => {
 		const { data, body } = parseFrontMatter({
-			text: '---\nsummary: one export per file\nchecked: true\nsettings:\n  maxLines: 50\n---\n\n# Functions\n\nProse.\n',
+			text: '---\nsummary: one export per file\nchecked: true\noptions:\n  maxLines: 50\n---\n\n# Functions\n\nProse.\n',
 		});
 
 		// every declared field, typed as YAML read it
-		expect(data).toStrictEqual({ summary: 'one export per file', checked: true, settings: { maxLines: 50 } });
+		expect(data).toStrictEqual({ summary: 'one export per file', checked: true, options: { maxLines: 50 } });
 		// the body starts after the closing marker, untouched
 		expect(body).toBe('\n# Functions\n\nProse.\n');
 	});

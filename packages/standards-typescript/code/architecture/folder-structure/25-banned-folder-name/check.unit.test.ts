@@ -10,7 +10,7 @@ describe('banned-folder-name check', () => {
 	test('reports a folder named for the role of the code it holds', async () => {
 		const input = setupFileListInput({ files: ['src/billing/helpers/formatAmount.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -39,7 +39,7 @@ describe('banned-folder-name check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
 			'banned-folder-name:src/tier/constants',
@@ -64,7 +64,7 @@ describe('banned-folder-name check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -84,7 +84,7 @@ describe('banned-folder-name check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		// the framework vocabulary stays legal because it is off the banned list,
 		// not because a declared dependency un-bans it
@@ -106,7 +106,7 @@ describe('banned-folder-name check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -114,7 +114,7 @@ describe('banned-folder-name check', () => {
 	test('still bans a junk-drawer folder under a common/, since those five are wrong at every level', async () => {
 		const input = setupFileListInput({ files: ['src/mod/common/helpers/n.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['banned-folder-name:src/mod/common/helpers']);
 	});
@@ -122,7 +122,7 @@ describe('banned-folder-name check', () => {
 	test("judges only paths inside a package's source tree, never the repo's own test and script trees", async () => {
 		const input = setupFileListInput({ files: ['src/helpers/a.ts', 'tests/helpers/b.ts', 'scripts/lib/c.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['banned-folder-name:src/helpers']);
 	});
@@ -133,7 +133,7 @@ describe('banned-folder-name check', () => {
 			dependencies: [['packages/api', []]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['banned-folder-name:packages/api/src/billing/helpers']);
 	});
@@ -141,13 +141,13 @@ describe('banned-folder-name check', () => {
 	test('reports each banned folder once however many files it holds, in path order', async () => {
 		const input = setupFileListInput({ files: ['src/b/lib/one.ts', 'src/b/lib/two.ts', 'src/a/core/three.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['banned-folder-name:src/a/core', 'banned-folder-name:src/b/lib']);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

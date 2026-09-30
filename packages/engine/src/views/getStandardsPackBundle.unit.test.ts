@@ -38,7 +38,7 @@ const setupHouseRepo = async () => {
 			'house/code/house/05-zebra-last/fixtures/pass/src/b.ts': 'export const b = 1;\n',
 			'house/code/house/05-zebra-last/fixtures/pass/src/a.ts': 'export const a = 1;\n',
 			'house/code/house/05-zebra-last/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
-			'house/code/house/10-alpha-first/rule.md': '---\nsummary: named to sort first\n---\n\nA rule whose id starts with a.\n',
+			'house/code/house/10-alpha-first/rule.md': '---\nsummary: named to sort first\noptions:\n  cap: 12\n---\n\nA rule whose id starts with a.\n',
 			'house/tests/house/document.md': '---\nchannel: base\n---\n\n# House Tests\n',
 			'house/tests/house/05-test-rule/rule.md': '---\nsummary: something about tests\n---\n\nTests are code.\n',
 		},
@@ -80,6 +80,19 @@ describe('getStandardsPackBundle', () => {
 		const bundle = await getStandardsPackBundle({ cwd, name: 'acme' });
 
 		expect(bundle.rules.map((rule) => rule.id)).toStrictEqual(['alpha-first', 'test-rule', 'zebra-last']);
+	});
+
+	test('carries the numbers each rule.md declares under options as its default options, and none for a rule that declares no options', async () => {
+		const { cwd } = await setupHouseRepo();
+
+		const bundle = await getStandardsPackBundle({ cwd, name: 'acme' });
+		const defaultOptionsById = Object.fromEntries(bundle.rules.map((rule) => [rule.id, rule.defaultOptions]));
+
+		expect(defaultOptionsById).toStrictEqual({
+			'alpha-first': { cap: 12 },
+			'test-rule': {},
+			'zebra-last': {},
+		});
 	});
 
 	test('keeps a rule’s proof in reading order — what the rule wants first, what it catches second', async () => {

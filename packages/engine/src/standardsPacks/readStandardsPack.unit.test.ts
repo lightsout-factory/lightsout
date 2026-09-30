@@ -65,7 +65,7 @@ describe('readStandardsPack', () => {
 				'code/architecture/decisions/document.md': '# Architecture Decisions\n\nUniversal decisions.\n',
 				...ruleFiles({
 					path: 'code/architecture/decisions/02-graduation-rule',
-					markdown: '---\nsummary: a concept earns its folder\nseverity: blocking\nsettings:\n  maxFiles: 20\n---\n\nEvery concept starts as a file.\n',
+					markdown: '---\nsummary: a concept earns its folder\nseverity: blocking\noptions:\n  maxFiles: 20\n---\n\nEvery concept starts as a file.\n',
 				}),
 				...ruleFiles({
 					path: 'code/architecture/decisions/01-module-boundaries',
@@ -107,12 +107,12 @@ describe('readStandardsPack', () => {
 		expect(graduation?.summary).toBe('a concept earns its folder');
 		expect(graduation?.prose).toBe('Every concept starts as a file.');
 		expect(graduation?.defaultSeverity).toBe('blocking');
-		expect(graduation?.defaultSettings).toStrictEqual({ maxFiles: 20 });
+		expect(graduation?.defaultOptions).toStrictEqual({ maxFiles: 20 });
 		expect(graduation?.fixturesPath).toBe(join(packPath, 'code/architecture/decisions/02-graduation-rule/fixtures'));
 		// silence means judgment-only and advisory — the two defaults a rule need not restate
 		expect(boundaries?.checked).toBe(false);
 		expect(boundaries?.defaultSeverity).toBe('advisory');
-		expect(boundaries?.defaultSettings).toStrictEqual({});
+		expect(boundaries?.defaultOptions).toStrictEqual({});
 		// no check declared, so no check loaded
 		expect(boundaries?.inputKind).toBe(undefined);
 		expect(boundaries?.run).toBe(undefined);
@@ -327,7 +327,7 @@ describe('readStandardsPack', () => {
 
 		const pkg = await readStandardsPack({ packPath });
 		const looseFile = pkg.rules.find((rule) => rule.id === 'loose-file');
-		const findings = await looseFile?.run?.({ input: fileListInput({ files: ['src/alpha.ts'] }), settings: {} });
+		const findings = await looseFile?.run?.({ input: fileListInput({ files: ['src/alpha.ts'] }), options: {} });
 
 		// the declaration is honest, so the rule carries the kind its check asked for
 		expect(looseFile?.checked).toBe(true);

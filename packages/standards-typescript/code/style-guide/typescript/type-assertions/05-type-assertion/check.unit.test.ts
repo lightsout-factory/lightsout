@@ -17,7 +17,7 @@ describe('type-assertion check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -43,7 +43,7 @@ describe('type-assertion check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('`as` cast at line 3');
 	});
@@ -55,7 +55,7 @@ describe('type-assertion check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('`as` cast at line 3');
 	});
@@ -76,7 +76,7 @@ describe('type-assertion check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('`as` cast at line 2');
 	});
@@ -95,7 +95,7 @@ describe('type-assertion check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -117,7 +117,7 @@ describe('type-assertion check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('`as` cast at lines 1, 1');
 	});
@@ -139,7 +139,7 @@ describe('type-assertion check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -160,7 +160,7 @@ describe('type-assertion check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -175,7 +175,7 @@ describe('type-assertion check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -185,7 +185,7 @@ describe('type-assertion check', () => {
 			sources: [['src/payloads/readLabel.ts', "// treat the value as a label\nexport const readLabel = (): string => 'as string';\n"]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -204,7 +204,7 @@ describe('type-assertion check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -217,7 +217,7 @@ describe('type-assertion check', () => {
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

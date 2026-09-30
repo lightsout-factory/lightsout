@@ -12,13 +12,13 @@ interface Oversized {
 	endLine: number;
 }
 
-const getSizeCap = ({ name, path, settings }: { name: string; path: string; settings: Record<string, number> }) => {
-	let sized = { cap: settings.function, kind: 'function' };
+const getSizeCap = ({ name, path, options }: { name: string; path: string; options: Record<string, number> }) => {
+	let sized = { cap: options.function, kind: 'function' };
 
 	if (/^use[A-Z]/.test(name)) {
-		sized = { cap: settings.hook, kind: 'hook' };
+		sized = { cap: options.hook, kind: 'hook' };
 	} else if (path.endsWith('.tsx') && /^[A-Z]/.test(name)) {
-		sized = { cap: settings.component, kind: 'component' };
+		sized = { cap: options.component, kind: 'component' };
 	}
 
 	return sized;
@@ -32,17 +32,17 @@ const getOversized = ({
 	path,
 	sourceFile,
 	compiler,
-	settings,
+	options,
 }: {
 	path: string;
 	sourceFile: ts.SourceFile;
 	compiler: typeof ts;
-	settings: Record<string, number>;
+	options: Record<string, number>;
 }) => {
 	const found: Oversized[] = [];
 
 	for (const { name, startLine, endLine } of collectFunctionNodes({ sourceFile, compiler })) {
-		const { cap, kind } = getSizeCap({ name, path, settings });
+		const { cap, kind } = getSizeCap({ name, path, options });
 		const lines = endLine - startLine + 1;
 
 		if (lines > cap && name !== '(anonymous)') {
@@ -57,11 +57,11 @@ const getOversized = ({
  * One finding per file: the work is "open this file and extract", which does not
  * become three jobs because three functions in it are long.
  */
-const buildFileFindings = ({ input, settings }: { input: SyntaxTreeInput; settings: Record<string, number> }) => {
+const buildFileFindings = ({ input, options }: { input: SyntaxTreeInput; options: Record<string, number> }) => {
 	const findings: RawStandardsFinding[] = [];
 
 	for (const [path, sourceFile] of input.trees) {
-		const oversized = getOversized({ path, sourceFile, compiler: input.compiler, settings });
+		const oversized = getOversized({ path, sourceFile, compiler: input.compiler, options });
 
 		if (oversized.length > 0) {
 			findings.push(
@@ -88,5 +88,5 @@ export const check: StandardsCheckModule = {
 	// Measured from the tree rather than counted off the text: the table measures
 	// a function from its signature to its closing brace, and only the parse says
 	// where either of those is.
-	run: ({ input, settings }): RawStandardsFinding[] => (input.kind === 'syntax-tree' ? buildFileFindings({ input, settings }) : []),
+	run: ({ input, options }): RawStandardsFinding[] => (input.kind === 'syntax-tree' ? buildFileFindings({ input, options }) : []),
 };

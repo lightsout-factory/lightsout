@@ -6,12 +6,12 @@ import { isBarrelFile } from '../../../../../common/paths/isBarrelFile.ts';
  * A barrel is exempt at any length: the remedy the finding asks for, split it
  * or graduate the concept, is what a module's public API cannot do.
  */
-const buildFileFindings = ({ input, settings }: { input: SyntaxTreeInput; settings: Record<string, number> }) => {
+const buildFileFindings = ({ input, options }: { input: SyntaxTreeInput; options: Record<string, number> }) => {
 	const findings: RawStandardsFinding[] = [];
 
 	for (const [path, tree] of input.trees) {
 		const lineCount = tree.getFullText().split('\n').length;
-		const cap = path.endsWith('.tsx') ? settings.tsxFile : settings.file;
+		const cap = path.endsWith('.tsx') ? options.tsxFile : options.file;
 
 		if (lineCount > cap && !isBarrelFile({ path })) {
 			findings.push(
@@ -36,5 +36,5 @@ export const check: StandardsCheckModule = {
 	// The line count itself needs no parse, but the rule rides along with the
 	// tree the size and duplication rules already paid for, so the file is read
 	// once for all of them.
-	run: ({ input, settings }): RawStandardsFinding[] => (input.kind === 'syntax-tree' ? buildFileFindings({ input, settings }) : []),
+	run: ({ input, options }): RawStandardsFinding[] => (input.kind === 'syntax-tree' ? buildFileFindings({ input, options }) : []),
 };

@@ -23,7 +23,7 @@ export const buildConfigView = ({ overrides = {} }: Params = {}): ConfigView => 
 	packs: [{ name: 'lightsout-defaults', rootPath: '/repos/lightsout/packages/standards-typescript', isDefault: true, channels: ['base'] }],
 	channels: [],
 	ruleStates: [
-		{ rule: 'file-size', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Blocking, fromConfig: true, settings: { file: 250 } },
+		{ rule: 'file-size', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Blocking, fromConfig: true, options: { file: 250 } },
 	],
 	...overrides,
 });

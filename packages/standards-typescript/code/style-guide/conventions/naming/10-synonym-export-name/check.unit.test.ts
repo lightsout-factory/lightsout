@@ -10,7 +10,7 @@ describe('synonym-export-name check', () => {
 	test('reports two names that differ only by a banned synonym', async () => {
 		const input = setupFileListInput({ files: ['src/profile/getUserData.ts', 'src/users/fetchUserData.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -25,7 +25,7 @@ describe('synonym-export-name check', () => {
 	test('reports two names that differ only by word order', async () => {
 		const input = setupFileListInput({ files: ['src/users/getUserData.ts', 'src/users/userDataGet.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -42,7 +42,7 @@ describe('synonym-export-name check', () => {
 			files: ['src/admin/fetchUserData.ts', 'src/profile/getUserData.ts', 'src/users/fetchUserData.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.files).toStrictEqual([
 			{ path: 'src/admin/fetchUserData.ts' },
@@ -54,7 +54,7 @@ describe('synonym-export-name check', () => {
 	test('leaves two genuinely different names alone', async () => {
 		const input = setupFileListInput({ files: ['src/users/getUserData.ts', 'src/users/getUserRoles.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -62,7 +62,7 @@ describe('synonym-export-name check', () => {
 	test('spares a framework pair — one name spelled for a component and for the route that renders it', async () => {
 		const input = setupFileListInput({ files: ['src/routes/get-started.ts', 'src/screens/GetStarted.tsx'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -70,7 +70,7 @@ describe('synonym-export-name check', () => {
 	test('reads a component file as the name it exports, so the exemption above is a decision rather than a name it never saw', async () => {
 		const input = setupFileListInput({ files: ['src/screens/FetchUserData.tsx', 'src/users/getUserData.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -85,7 +85,7 @@ describe('synonym-export-name check', () => {
 	test('spares opposite conversions, whose word order is the whole point', async () => {
 		const input = setupFileListInput({ files: ['src/color/hexToRgb.ts', 'src/color/rgbToHex.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -93,7 +93,7 @@ describe('synonym-export-name check', () => {
 	test('ignores barrels, whose name says nothing about what the file holds', async () => {
 		const input = setupFileListInput({ files: ['src/users/index.ts', 'src/profile/index.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -104,13 +104,13 @@ describe('synonym-export-name check', () => {
 			tests: ['src/users/getUserData.unit.test.ts', 'src/admin/fetchUserData.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

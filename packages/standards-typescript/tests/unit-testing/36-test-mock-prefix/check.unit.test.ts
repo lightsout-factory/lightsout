@@ -34,7 +34,7 @@ describe('test-mock-prefix check', () => {
 	test('reports a module-scope spy declared without the mock prefix', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildMockSource({ declaration: 'const getProfile = jest.fn<() => string>();' })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -49,7 +49,7 @@ describe('test-mock-prefix check', () => {
 	test('leaves a prefixed declaration alone', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildMockSource({ declaration: 'const mockGetProfile = jest.fn<() => string>();' })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -57,7 +57,7 @@ describe('test-mock-prefix check', () => {
 	test('leaves a spy built inside a factory alone — nothing hoists above a local', async () => {
 		const input = setupTestFileInput({ contents: [[path, factoryLocalSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -65,7 +65,7 @@ describe('test-mock-prefix check', () => {
 	test('names every unprefixed declaration of one file in a single finding', async () => {
 		const input = setupTestFileInput({ contents: [[path, twoUnprefixedSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -81,7 +81,7 @@ describe('test-mock-prefix check', () => {
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

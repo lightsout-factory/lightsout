@@ -10,7 +10,7 @@ describe('test-in-tests-folder check', () => {
 	test('reports a unit test filed away from its subject, naming the folder it was filed into', async () => {
 		const input = setupFileListInput({ source: ['src/feature/getLabel.ts'], tests: ['src/feature/tests/getLabel.unit.test.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -27,7 +27,7 @@ describe('test-in-tests-folder check', () => {
 		async ({ directory }) => {
 			const input = setupFileListInput({ source: ['src/feature/getLabel.ts'], tests: [`src/feature/${directory}/getLabel.unit.test.ts`] });
 
-			const findings = await check.run({ input, settings: {} });
+			const findings = await check.run({ input, options: {} });
 
 			expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([`test-in-tests-folder:src/feature/${directory}/getLabel.unit.test.ts`]);
 		},
@@ -36,7 +36,7 @@ describe('test-in-tests-folder check', () => {
 	test('objects to a refused folder anywhere above the test, not only the one directly holding it', async () => {
 		const input = setupFileListInput({ source: ['src/feature/getLabel.ts'], tests: ['src/tests/feature/nested/getLabel.unit.test.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(['a unit test in src/tests/feature/nested']);
 	});
@@ -44,7 +44,7 @@ describe('test-in-tests-folder check', () => {
 	test('leaves a test sitting beside its subject alone — that is the placement the rule asks for', async () => {
 		const input = setupFileListInput({ source: ['src/feature/getLabel.ts'], tests: ['src/feature/getLabel.unit.test.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -55,7 +55,7 @@ describe('test-in-tests-folder check', () => {
 			tests: ['tests/e2e/runPipeline.e2e.test.ts', 'test/fixtures/buildRepo.ts', '__tests__/legacy/getLabel.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -66,13 +66,13 @@ describe('test-in-tests-folder check', () => {
 			tests: ['src/a/tests/getA.unit.test.ts', 'src/b/getB.unit.test.ts', 'src/b/__tests__/getB.other.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ files }) => files[0]?.path)).toStrictEqual(['src/a/tests/getA.unit.test.ts', 'src/b/__tests__/getB.other.unit.test.ts']);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

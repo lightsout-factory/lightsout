@@ -127,7 +127,7 @@ test('a rule row carries what the rule says, how this repo runs it, and how many
 		checked: true,
 		severity: StandardsSeverity.Blocking,
 		fromConfig: false,
-		settings: {},
+		options: {},
 		findingCount: 2,
 		// no refactor run has met this rule yet
 		history: { attempted: 0, resolved: 0, declined: 0, untracked: 0, adviceApplied: 0, adviceDeclined: 0, adviceAlreadyMet: 0, reasons: [] },
@@ -160,15 +160,46 @@ test('a finding whose rule no pack loads is counted as an orphan, and lands on n
 	expect(view.findings.length).toBe(2);
 });
 
-test('a rule the config overrode says so, and carries the settings this repo runs it at', async () => {
-	const cwd = await seedStandardsRepo({ overrides: { 'house-loose-file': { severity: 'off', settings: { 'max-lines': 400 } } } });
+test('a rule the config overrode says so, and carries the options this repo runs it at', async () => {
+	const cwd = await seedStandardsRepo({ overrides: { 'house-loose-file': { severity: 'off', options: { 'max-lines': 400 } } } });
 	const view = await getStandardsView({ cwd });
 
 	expect(view.rules[0]?.severity).toBe(StandardsSeverity.Off);
 	expect(view.rules[0]?.fromConfig).toBe(true);
-	expect(view.rules[0]?.settings).toStrictEqual({ 'max-lines': 400 });
+	expect(view.rules[0]?.options).toStrictEqual({ 'max-lines': 400 });
 	// the untouched rule keeps its own declaration — silence is never a change
 	expect(view.rules[1]?.fromConfig).toBe(false);
+});
+
+/** A pack whose two judgment-only rules both declare default options in their rule.md headers. */
+const writeOptionsPack = async () => {
+	const packPath = await mkdtemp(join(tmpdir(), 'lightsout-view-options-'));
+
+	await writeTree({
+		dir: packPath,
+		files: {
+			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n',
+			'code/house/document.md': '# House Style\n\nWhat this shop agrees on.\n',
+			'code/house/05-house-file-size/rule.md':
+				'---\nsummary: a file over the house line cap\nchecked: false\nseverity: advisory\noptions:\n  file: 250\n  tsxFile: 300\n---\n\nFiles stay short.\n',
+			'code/house/10-house-folder-size/rule.md':
+				'---\nsummary: a folder over the house file cap\nchecked: false\nseverity: advisory\noptions:\n  cap: 20\n---\n\nFolders stay small.\n',
+		},
+	});
+
+	return packPath;
+};
+
+test('each rule row carries its resolved options', async () => {
+	const cwd = await seedStandardsRepo({ packs: [await writeOptionsPack()], overrides: { 'house-file-size': { options: { tsxFile: 400 } } } });
+
+	const view = await getStandardsView({ cwd });
+
+	// the override merges key by key over the rule.md defaults, and the rule the config never names keeps its own
+	expect(view.rules.map((rule) => ({ rule: rule.rule, options: rule.options, fromConfig: rule.fromConfig }))).toStrictEqual([
+		{ rule: 'house-file-size', options: { file: 250, tsxFile: 400 }, fromConfig: true },
+		{ rule: 'house-folder-size', options: { cap: 20 }, fromConfig: false },
+	]);
 });
 
 test('refactor history is folded onto the rule whose sites a run attempted', async () => {

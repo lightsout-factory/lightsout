@@ -36,7 +36,7 @@ const judgmentRules: LoadedStandardsRule[] = ['function-size', 'single-return'].
 	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
-	defaultSettings: {},
+	defaultOptions: {},
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 }));
 

@@ -34,7 +34,7 @@ describe('multi-export check — the typed-value pair (exception 5)', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -44,7 +44,7 @@ describe('multi-export check — the typed-value pair (exception 5)', () => {
 			contents: [['src/common/types/Theme.ts', ['export interface Theme {', '\tname: string;', '}', '', "export const defaultName = 'dark';"].join('\n')]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toHaveLength(1);
 	});
@@ -66,7 +66,7 @@ describe('multi-export check — the typed-value pair (exception 5)', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toHaveLength(1);
 	});

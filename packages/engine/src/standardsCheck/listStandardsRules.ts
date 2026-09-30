@@ -36,7 +36,7 @@ export const listStandardsRules = async ({ cwd, config }: Params): Promise<Stand
 				checked: rule.checked,
 				severity: state.severity,
 				fromConfig: state.fromConfig,
-				settings: state.settings,
+				options: state.options,
 			});
 		}
 	}

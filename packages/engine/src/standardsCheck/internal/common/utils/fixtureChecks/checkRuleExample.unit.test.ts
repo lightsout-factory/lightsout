@@ -31,7 +31,7 @@ const setupRule = ({ example, fail, pass }: { example?: RuleExample; fail: strin
 			channel: 'base',
 			checked: false,
 			defaultSeverity: StandardsSeverity.Blocking,
-			defaultSettings: {},
+			defaultOptions: {},
 			...(example === undefined ? {} : { example }),
 			fixturesPath,
 		},

@@ -55,7 +55,7 @@ describe('test-shared-let check', () => {
 	test('reports a module-scope let that a beforeEach reassigns', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', sharedLetSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -70,7 +70,7 @@ describe('test-shared-let check', () => {
 	test('names every shared let of one file in a single finding, each with its own line', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', twoSharedLetsSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -88,7 +88,7 @@ describe('test-shared-let check', () => {
 	test('leaves a let declared inside the hook alone — a block local outlives nothing', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', hookLocalLetSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -96,7 +96,7 @@ describe('test-shared-let check', () => {
 	test('leaves a module-scope let alone when only a test writes to it', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', testAssignedLetSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -104,13 +104,13 @@ describe('test-shared-let check', () => {
 	test('leaves a module-scope let alone when the hook only compares it', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', comparedLetSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

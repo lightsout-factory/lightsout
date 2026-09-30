@@ -70,7 +70,7 @@ const setupPack = ({ frameworkOwned = false }: { frameworkOwned?: boolean } = {}
 		channel: 'base',
 		checked: true,
 		defaultSeverity: StandardsSeverity.Advisory,
-		defaultSettings: {},
+		defaultOptions: {},
 		fixturesPath,
 		run: bansTheBannedFile,
 		...overrides,

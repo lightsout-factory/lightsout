@@ -36,7 +36,7 @@ has the same shape.
 summary: "One short sentence for people."   # required
 checked: false                              # true only with a check.ts
 severity: advisory                          # blocking | advisory | off (off = a repo opts in)
-settings:                                   # numbers the check reads, if any
+options:                                    # numbers the check reads, if any
   cap: 20
 example:
   kind: snippet                             # or repo, with focus
@@ -133,7 +133,7 @@ One short sentence saying what the rule is about, for a person deciding at a
 glance whether it makes sense. Agents never read it.
 
 - State the topic at a high level, not the mistake in detail.
-- No jargon, no mechanism, no tool names, no settings keys, no numbers.
+- No jargon, no mechanism, no tool names, no option keys, no numbers.
 - A capital letter at the start and a full stop at the end.
 
 Before: `"a re-export resolved through an index instead of the declaring module"`.
@@ -207,8 +207,8 @@ side as a snippet, anything more as a repo opening on each side's first file.
 
 The `detail` and `guidance` strings a `check.ts` prints are what a person reads
 when the rule fires, so they use the same plain words: no mechanism jargon, no
-tool names. Unlike the summary, they keep numbers and settings keys: the
-measured value, the limit and the setting to change are the useful part of a
+tool names. Unlike the summary, they keep numbers and option keys: the
+measured value, the limit and the option to change are the useful part of a
 finding.
 
 ## Changing an existing rule

@@ -10,7 +10,7 @@ describe('test-not-beside-subject check', () => {
 	test('reports a test whose first name segment names no source file beside it', async () => {
 		const input = setupFileListInput({ source: ['src/feature/getLabel.ts'], tests: ['src/feature/labelling.unit.test.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -26,7 +26,7 @@ describe('test-not-beside-subject check', () => {
 	test('leaves a test sitting beside the file it names alone', async () => {
 		const input = setupFileListInput({ source: ['src/feature/getLabel.ts'], tests: ['src/feature/getLabel.unit.test.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -37,7 +37,7 @@ describe('test-not-beside-subject check', () => {
 			tests: ['src/pipeline/runPipeline.monorepo.unit.test.ts', 'src/pipeline/runPipeline.nested.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -47,7 +47,7 @@ describe('test-not-beside-subject check', () => {
 		async ({ extension }) => {
 			const input = setupFileListInput({ source: [`src/feature/getLabel.${extension}`], tests: ['src/feature/getLabel.unit.test.ts'] });
 
-			const findings = await check.run({ input, settings: {} });
+			const findings = await check.run({ input, options: {} });
 
 			expect(findings).toStrictEqual([]);
 		},
@@ -56,7 +56,7 @@ describe('test-not-beside-subject check', () => {
 	test('a file of that name in another folder does not count — co-location is about this folder', async () => {
 		const input = setupFileListInput({ source: ['src/other/getLabel.ts'], tests: ['src/feature/getLabel.unit.test.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(["no source file named 'getLabel' in src/feature"]);
 	});
@@ -64,7 +64,7 @@ describe('test-not-beside-subject check', () => {
 	test("leaves a package's own tests/ tree alone, whose files name no subject beside them by design", async () => {
 		const input = setupFileListInput({ source: ['src/feature/getLabel.ts'], tests: ['tests/integration/labelling.integration.test.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -75,7 +75,7 @@ describe('test-not-beside-subject check', () => {
 			tests: ['src/a/labelling.unit.test.ts', 'src/b/getB.unit.test.ts', 'src/b/rendering.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
 			'test-not-beside-subject:src/a/labelling.unit.test.ts',
@@ -90,7 +90,7 @@ describe('test-not-beside-subject check', () => {
 			dependencies: [['.', ['@tanstack/react-router']]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -98,13 +98,13 @@ describe('test-not-beside-subject check', () => {
 	test('reports the same pair in a package declaring no router, so the carve-out is what changed the verdict rather than the names', async () => {
 		const input = setupFileListInput({ source: ['src/routes/runs.$runId.tsx'], tests: ['src/routes/runs.$runId.unit.test.tsx'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(["no source file named 'runs' in src/routes"]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

@@ -30,7 +30,7 @@ describe('test-assert-in-hook check', () => {
 	test('reports a beforeEach that asserts, naming the line it opens on', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', buildAssertingHookSource({ hook: 'beforeEach' })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -47,7 +47,7 @@ describe('test-assert-in-hook check', () => {
 		async ({ hook }) => {
 			const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', buildAssertingHookSource({ hook })]] });
 
-			const findings = await check.run({ input, settings: {} });
+			const findings = await check.run({ input, options: {} });
 
 			expect(findings).toStrictEqual([]);
 		},
@@ -56,7 +56,7 @@ describe('test-assert-in-hook check', () => {
 	test('leaves a beforeEach that only arranges alone', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', arrangingHookSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -64,7 +64,7 @@ describe('test-assert-in-hook check', () => {
 	test('names every asserting beforeEach of one file in a single finding', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', twoAssertingHooksSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -80,7 +80,7 @@ describe('test-assert-in-hook check', () => {
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

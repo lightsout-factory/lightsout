@@ -130,7 +130,7 @@ export const LightsoutConfig = z
 		 * docs only).
 		 */
 		'standards-channels': z.array(z.string()).optional(),
-		/** Per-rule severity/settings overrides. See `StandardsCheckOverrides`. */
+		/** Per-rule severity/options overrides. See `StandardsCheckOverrides`. */
 		'standards-checks': StandardsCheckOverrides.optional(),
 		/** Opt-in ship settings — branch ticket pattern, pull request body template, merge method. See `ConfigShip`. */
 		ship: ConfigShip.optional(),

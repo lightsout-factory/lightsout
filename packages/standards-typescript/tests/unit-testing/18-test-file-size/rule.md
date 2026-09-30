@@ -2,7 +2,7 @@
 summary: "a test file over the test-file line cap"
 checked: true
 severity: advisory
-settings:
+options:
   testFile: 400
 ---
 

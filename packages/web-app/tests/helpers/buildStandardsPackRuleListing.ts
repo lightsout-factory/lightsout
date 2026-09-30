@@ -9,7 +9,7 @@ interface Params {
 	channel?: string;
 	checked?: boolean;
 	defaultSeverity?: typeof StandardsSeverity.Blocking | typeof StandardsSeverity.Advisory;
-	defaultSettings?: Record<string, number>;
+	defaultOptions?: Record<string, number>;
 	fixtureCounts?: { pass: number; fail: number };
 }
 
@@ -22,7 +22,7 @@ export const buildStandardsPackRuleListing = ({
 	channel = 'base',
 	checked = true,
 	defaultSeverity = StandardsSeverity.Blocking,
-	defaultSettings = {},
+	defaultOptions = {},
 	fixtureCounts = { pass: 1, fail: 1 },
 }: Params = {}): StandardsPackRuleListing => ({
 	id,
@@ -32,6 +32,6 @@ export const buildStandardsPackRuleListing = ({
 	channel,
 	checked,
 	defaultSeverity,
-	defaultSettings,
+	defaultOptions,
 	fixtureCounts,
 });

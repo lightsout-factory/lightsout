@@ -9,7 +9,7 @@ interface Params {
 	rule: string;
 	run: StandardsCheckFunction;
 	input: StandardsCheckInput;
-	settings: Record<string, number>;
+	options: Record<string, number>;
 }
 
 /**
@@ -18,11 +18,11 @@ interface Params {
  *
  * @throws {Error} When the check throws, or returns something that is not a list of raw findings.
  */
-export const runRuleCheck = async ({ rule, run, input, settings }: Params): Promise<RawStandardsFinding[]> => {
+export const runRuleCheck = async ({ rule, run, input, options }: Params): Promise<RawStandardsFinding[]> => {
 	let returned: unknown;
 
 	try {
-		returned = await run({ input, settings });
+		returned = await run({ input, options });
 	} catch (error) {
 		throw new Error(`standards rule "${rule}" threw while checking: ${messageOf({ error })}`);
 	}

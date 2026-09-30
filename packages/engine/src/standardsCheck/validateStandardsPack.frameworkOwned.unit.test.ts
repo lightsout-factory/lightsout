@@ -109,7 +109,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 	channel: 'base',
 	checked: overrides.run !== undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
-	defaultSettings: {},
+	defaultOptions: {},
 	...overrides,
 });
 

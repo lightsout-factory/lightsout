@@ -26,7 +26,7 @@ describe('test-manual-mock-cleanup check', () => {
 	test('reports a beforeEach that clears mocks by hand, naming the line it opens on', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildHookSource({ hook: 'beforeEach', statement: 'jest.clearAllMocks();' })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -46,7 +46,7 @@ describe('test-manual-mock-cleanup check', () => {
 	])('reports `$statement` in a hook too', async ({ statement }) => {
 		const input = setupTestFileInput({ contents: [[path, buildHookSource({ hook: 'beforeEach', statement })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map((finding) => finding.detail)).toStrictEqual(['beforeEach at line 2 clears mocks by hand']);
 	});
@@ -58,7 +58,7 @@ describe('test-manual-mock-cleanup check', () => {
 	])('reports a $hook clearing mocks as well — this rule reads all four hooks', async ({ hook, detail }) => {
 		const input = setupTestFileInput({ contents: [[path, buildHookSource({ hook, statement: 'jest.clearAllMocks();' })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map((finding) => finding.detail)).toStrictEqual([detail]);
 	});
@@ -66,13 +66,13 @@ describe('test-manual-mock-cleanup check', () => {
 	test('leaves a reset at the top of a setup factory alone — that is the fallback the prose recommends', async () => {
 		const input = setupTestFileInput({ contents: [[path, factoryResetSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

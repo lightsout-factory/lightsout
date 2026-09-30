@@ -51,7 +51,7 @@ describe('oversized-setup-factory check', () => {
 	test('reports a factory past the cap, stating its count and the cap it broke', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildFactorySource({ declaration: sprawlingFactory })]] });
 
-		const findings = await check.run({ input, settings: { maxParams: 3 } });
+		const findings = await check.run({ input, options: { maxParams: 3 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -67,7 +67,7 @@ describe('oversized-setup-factory check', () => {
 	test('measures an async factory by the same cap', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildFactorySource({ declaration: asyncSprawlingFactory })]] });
 
-		const findings = await check.run({ input, settings: { maxParams: 3 } });
+		const findings = await check.run({ input, options: { maxParams: 3 } });
 
 		expect(findings.map((finding) => finding.detail)).toStrictEqual(["'setupInvoice' takes 4 parameters (line 3), over the cap of 3"]);
 	});
@@ -75,7 +75,7 @@ describe('oversized-setup-factory check', () => {
 	test('leaves a factory at the cap alone — the cap is a ceiling, not a target to stay clear of', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildFactorySource({ declaration: cappedFactory })]] });
 
-		const findings = await check.run({ input, settings: { maxParams: 3 } });
+		const findings = await check.run({ input, options: { maxParams: 3 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -83,7 +83,7 @@ describe('oversized-setup-factory check', () => {
 	test('counts a default value holding commas as the one parameter it declares', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildFactorySource({ declaration: bracketedDefaultsFactory })]] });
 
-		const findings = await check.run({ input, settings: { maxParams: 3 } });
+		const findings = await check.run({ input, options: { maxParams: 3 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -91,7 +91,7 @@ describe('oversized-setup-factory check', () => {
 	test('leaves a factory whose default nests an object unjudged, rather than reporting a guessed count', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildFactorySource({ declaration: nestedDefaultFactory })]] });
 
-		const findings = await check.run({ input, settings: { maxParams: 3 } });
+		const findings = await check.run({ input, options: { maxParams: 3 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -99,7 +99,7 @@ describe('oversized-setup-factory check', () => {
 	test('names every sprawling factory of one file in a single finding', async () => {
 		const input = setupTestFileInput({ contents: [[path, twoFactoriesSource]] });
 
-		const findings = await check.run({ input, settings: { maxParams: 3 } });
+		const findings = await check.run({ input, options: { maxParams: 3 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -118,7 +118,7 @@ describe('oversized-setup-factory check', () => {
 	test('sums the declared parameters of every oversized factory into one measure', async () => {
 		const input = setupTestFileInput({ contents: [[path, measuredFactoriesSource]] });
 
-		const findings = await check.run({ input, settings: { maxParams: 3 } });
+		const findings = await check.run({ input, options: { maxParams: 3 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -134,8 +134,31 @@ describe('oversized-setup-factory check', () => {
 		]);
 	});
 
+	test('measures each setup factory against the maxParams option', async () => {
+		const source = [
+			"import { describe, expect, test } from '@jest/globals';",
+			'',
+			'const setupInvoice = ({ a = 1, b = 2, c = 3, d = 4, e = 5 }: Params = {}) => ({ a });',
+			'',
+			'const setupCustomer = ({ a = 1, b = 2, c = 3, d = 4 }: Params = {}) => ({ a });',
+		].join('\n');
+		const input = setupTestFileInput({ contents: [[path, source]] });
+
+		const findings = await check.run({ input, options: { maxParams: 4 } });
+
+		expect(findings).toStrictEqual([
+			{
+				siteKey: 'oversized-setup-factory:src/feature/getLabel.unit.test.ts',
+				files: [{ path: 'src/feature/getLabel.unit.test.ts', startLine: 3, endLine: 3 }],
+				detail: "'setupInvoice' takes 5 parameters (line 3), over the cap of 4",
+				guidance: 'A substantially different arrangement gets a second named factory. Heuristic — judge before acting.',
+				measure: 5,
+			},
+		]);
+	});
+
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: { maxParams: 3 } });
+		const findings = await check.run({ input: setupOtherKindInput(), options: { maxParams: 3 } });
 
 		expect(findings).toStrictEqual([]);
 	});

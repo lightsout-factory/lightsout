@@ -14,7 +14,7 @@ describe('params-interface-docs check', () => {
 			sources: [['src/billing/chargeInvoice.ts', '/** The arguments. */\ninterface Params {\n\tinvoiceId: string;\n}\n']],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -34,7 +34,7 @@ describe('params-interface-docs check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual([
 			'a doc comment on the `Params` interface at line 2',
@@ -47,7 +47,7 @@ describe('params-interface-docs check', () => {
 			sources: [['src/billing/chargeInvoice.ts', 'interface Params {\n\t/** Name printed on the receipt. */\n\tpayerName: string;\n}\n']],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -59,7 +59,7 @@ describe('params-interface-docs check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -69,13 +69,13 @@ describe('params-interface-docs check', () => {
 			sources: [['src/billing/Invoice.ts', '/** An invoice as the billing provider returns it. */\nexport interface Invoice {\n\tid: string;\n}\n']],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

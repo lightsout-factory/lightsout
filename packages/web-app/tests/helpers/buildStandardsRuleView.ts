@@ -6,7 +6,7 @@ interface Params {
 	checked?: boolean;
 	severity?: StandardsRuleView['severity'];
 	fromConfig?: boolean;
-	settings?: Record<string, number>;
+	options?: Record<string, number>;
 	findingCount?: number;
 	prose?: string;
 	history?: Partial<StandardsRuleView['history']>;
@@ -18,7 +18,7 @@ export const buildStandardsRuleView = ({
 	checked = true,
 	severity = StandardsSeverity.Blocking,
 	fromConfig = false,
-	settings = { file: 250 },
+	options = { file: 250 },
 	findingCount = 0,
 	prose = 'Files stay under ~250 lines.',
 	history = {},
@@ -32,7 +32,7 @@ export const buildStandardsRuleView = ({
 	checked,
 	severity,
 	fromConfig,
-	settings,
+	options,
 	findingCount,
 	history: { attempted: 0, resolved: 0, declined: 0, untracked: 0, adviceApplied: 0, adviceDeclined: 0, adviceAlreadyMet: 0, reasons: [], ...history },
 });

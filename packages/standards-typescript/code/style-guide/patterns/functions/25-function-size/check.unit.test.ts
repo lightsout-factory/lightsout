@@ -59,7 +59,7 @@ describe('function-size check', () => {
 	test('reports a function past its cap, naming it, its span and the number it was measured against', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/buildReportSummary.ts', buildArrow({ name: 'buildReportSummary', lines: 7 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([
 			{
@@ -76,7 +76,7 @@ describe('function-size check', () => {
 	test('leaves a function measured to exactly its cap — the cap is the last allowed line, not the first banned one', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/buildReportSummary.ts', buildArrow({ name: 'buildReportSummary', lines: 5 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -84,7 +84,7 @@ describe('function-size check', () => {
 	test('a use-prefixed name earns the roomier hook budget, so a function too long for the function cap still passes', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/useReportRows.ts', buildArrow({ name: 'useReportRows', lines: 8 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -92,7 +92,7 @@ describe('function-size check', () => {
 	test('reports a hook past the hook cap in the words for a hook', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/useReportRows.ts', buildArrow({ name: 'useReportRows', lines: 11 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings[0]?.detail).toBe("hook 'useReportRows' is 11 lines (cap ~9)");
 	});
@@ -100,7 +100,7 @@ describe('function-size check', () => {
 	test('the name decides before the file does: a use-prefixed function in a .tsx is a hook, not a component', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/useReportRows.tsx', buildArrow({ name: 'useReportRows', lines: 11 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings[0]?.detail).toBe("hook 'useReportRows' is 11 lines (cap ~9)");
 	});
@@ -108,7 +108,7 @@ describe('function-size check', () => {
 	test('a capitalized function in a .tsx is a component, on the roomiest cap of the three', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/ReportPanel.tsx', buildArrow({ name: 'ReportPanel', lines: 14 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings[0]?.detail).toBe("component 'ReportPanel' is 14 lines (cap ~12)");
 	});
@@ -116,7 +116,7 @@ describe('function-size check', () => {
 	test('a capitalized function outside a .tsx is a plain function — the capital alone does not make a component', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/ReportPanel.ts', buildArrow({ name: 'ReportPanel', lines: 7 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings[0]?.detail).toBe("function 'ReportPanel' is 7 lines (cap ~5)");
 	});
@@ -124,7 +124,7 @@ describe('function-size check', () => {
 	test('a lowercase function inside a .tsx is a plain function — the file alone does not make a component', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/ReportPanel.tsx', buildArrow({ name: 'renderReportRows', lines: 7 })]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings[0]?.detail).toBe("function 'renderReportRows' is 7 lines (cap ~5)");
 	});
@@ -132,7 +132,7 @@ describe('function-size check', () => {
 	test('a callback nobody named inherits the budget of its parent instead of earning one of its own', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/buildReportSummary.ts', anonymousCallbackSource]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([
 			{
@@ -149,7 +149,7 @@ describe('function-size check', () => {
 	test('a named helper nested in another function is measured on a budget of its own', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/buildReportSummary.ts', nestedHelperSource]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings[0]).toStrictEqual({
 			siteKey: 'function-size:src/reporting/buildReportSummary.ts',
@@ -167,7 +167,7 @@ describe('function-size check', () => {
 	test('a class method is measured like any other function', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/ledger/Ledger.ts', classMethodSource]] });
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings[0]).toStrictEqual({
 			siteKey: 'function-size:src/ledger/Ledger.ts',
@@ -186,7 +186,7 @@ describe('function-size check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings).toStrictEqual([
 			{
@@ -209,8 +209,8 @@ describe('function-size check', () => {
 		const grownInput = setupSyntaxTreeInput({ sources: [['src/reporting/summaries.ts', grownSource]] });
 		const singleInput = setupSyntaxTreeInput({ sources: [['src/reporting/summaries.ts', singleSource]] });
 
-		const grownFindings = await check.run({ input: grownInput, settings: caps });
-		const singleFindings = await check.run({ input: singleInput, settings: caps });
+		const grownFindings = await check.run({ input: grownInput, options: caps });
+		const singleFindings = await check.run({ input: singleInput, options: caps });
 
 		expect([grownFindings[0], singleFindings[0]]).toStrictEqual([
 			{
@@ -244,7 +244,7 @@ describe('function-size check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: caps });
+		const findings = await check.run({ input, options: caps });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
 			'function-size:src/reporting/buildReportSummary.ts',
@@ -252,8 +252,29 @@ describe('function-size check', () => {
 		]);
 	});
 
+	test('reads the function, hook and component caps from options', async () => {
+		const input = setupSyntaxTreeInput({
+			sources: [
+				['src/reporting/buildReportRows.ts', buildArrow({ name: 'buildReportRows', lines: 4 })],
+				['src/reporting/buildReportSummary.ts', buildArrow({ name: 'buildReportSummary', lines: 5 })],
+				['src/reporting/useReportRows.ts', buildArrow({ name: 'useReportRows', lines: 7 })],
+				['src/reporting/useReportTotals.ts', buildArrow({ name: 'useReportTotals', lines: 8 })],
+				['src/reporting/ReportPanel.tsx', buildArrow({ name: 'ReportPanel', lines: 10 })],
+				['src/reporting/ReportTable.tsx', buildArrow({ name: 'ReportTable', lines: 11 })],
+			],
+		});
+
+		const findings = await check.run({ input, options: { function: 4, hook: 7, component: 10 } });
+
+		expect(findings.map(({ siteKey, detail }) => ({ siteKey, detail }))).toStrictEqual([
+			{ siteKey: 'function-size:src/reporting/buildReportSummary.ts', detail: "function 'buildReportSummary' is 5 lines (cap ~4)" },
+			{ siteKey: 'function-size:src/reporting/useReportTotals.ts', detail: "hook 'useReportTotals' is 8 lines (cap ~7)" },
+			{ siteKey: 'function-size:src/reporting/ReportTable.tsx', detail: "component 'ReportTable' is 11 lines (cap ~10)" },
+		]);
+	});
+
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: caps });
+		const findings = await check.run({ input: setupOtherKindInput(), options: caps });
 
 		expect(findings).toStrictEqual([]);
 	});

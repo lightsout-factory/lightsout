@@ -50,7 +50,7 @@ describe('test-strict-equal-matcher check', () => {
 			contents: [['src/feature/getLabel.unit.test.ts', buildStrictEqualSource({ argument: "expect.objectContaining({ id: 'a' })" })]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -70,7 +70,7 @@ describe('test-strict-equal-matcher check', () => {
 	])('reports `$argument` as an asymmetric matcher too', async ({ argument }) => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', buildStrictEqualSource({ argument })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map((finding) => finding.detail)).toStrictEqual(['toStrictEqual with an asymmetric matcher at line(s) 5']);
 	});
@@ -78,7 +78,7 @@ describe('test-strict-equal-matcher check', () => {
 	test('leaves toStrictEqual on a concrete object alone — that is what the matcher is for', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', buildStrictEqualSource({ argument: "{ id: 'a', size: 2 }" })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -86,7 +86,7 @@ describe('test-strict-equal-matcher check', () => {
 	test('leaves a quoted sample line alone — the rule reads what a file does, not what it quotes', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', quotedSampleSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -94,7 +94,7 @@ describe('test-strict-equal-matcher check', () => {
 	test('names every misleading assertion of one file in a single finding', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', twoMisleadingSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -110,7 +110,7 @@ describe('test-strict-equal-matcher check', () => {
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

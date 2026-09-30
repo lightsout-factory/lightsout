@@ -10,7 +10,7 @@ describe('file-directly-in-common check', () => {
 	test('reports a file sitting directly in a common/ folder', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/rate.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -25,7 +25,7 @@ describe('file-directly-in-common check', () => {
 	test('leaves alone a file filed under a type folder inside common/', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/utils/formatRate.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -33,7 +33,7 @@ describe('file-directly-in-common check', () => {
 	test('leaves alone files that sit nowhere near a common/ folder', async () => {
 		const input = setupFileListInput({ files: ['src/billing/rate.ts', 'rate.ts', 'src/common-utils/rate.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -50,7 +50,7 @@ describe('file-directly-in-common check', () => {
 	])('leaves $barrel directly in common/ to the folder-index-file rule, so one wrong file is one finding', async ({ barrel }) => {
 		const input = setupFileListInput({ files: [`src/billing/common/${barrel}`] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -58,7 +58,7 @@ describe('file-directly-in-common check', () => {
 	test('reports a file whose name merely starts with index, since only a real barrel is excused', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/indexer.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -75,7 +75,7 @@ describe('file-directly-in-common check', () => {
 			files: ['src/billing/common/rate.ts', 'src/billing/common/index.ts', 'src/billing/common/utils/formatRate.ts', 'src/pay/common/fee.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map((finding) => finding.siteKey)).toStrictEqual([
 			'file-directly-in-common:src/billing/common/rate.ts',
@@ -86,13 +86,13 @@ describe('file-directly-in-common check', () => {
 	test('leaves a JavaScript-spelled barrel directly in common/ alone, since the shared name test answers for every dialect', async () => {
 		const input = setupFileListInput({ files: ['src/common/index.mjs'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

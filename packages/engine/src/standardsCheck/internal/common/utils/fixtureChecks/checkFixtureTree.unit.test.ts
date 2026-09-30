@@ -41,6 +41,14 @@ const bansTheBannedTypedFile: StandardsCheckFunction = ({ input }) =>
 			detail: 'a file the rule bans',
 		}));
 
+/** A check that flags `src/` when it holds more source files than the `cap` option allows — the only way to see which options reached it. */
+const capsTheSourceFolder: StandardsCheckFunction = ({ input, options }) => {
+	const { cap } = options;
+	const count = input.kind === StandardsInputKind.FileList ? input.source.length : 0;
+
+	return count > cap ? [{ siteKey: 'folder-cap:src', files: [{ path: 'src' }], detail: `${count} files over a cap of ${cap}` }] : [];
+};
+
 /** A tree of source files under `src/`, run against as if it were a whole repo. */
 const setupTree = ({ files }: { files: string[] }) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-fixture-tree-'));
@@ -63,7 +71,7 @@ const rule: LoadedStandardsRule = {
 	channel: 'base',
 	checked: true,
 	defaultSeverity: StandardsSeverity.Advisory,
-	defaultSettings: {},
+	defaultOptions: {},
 	fixturesPath: '/packages/acme/code/style-guide/structure/module-api/05-no-banned-file/fixtures',
 };
 
@@ -118,5 +126,17 @@ describe('checkFixtureTree', () => {
 		const found = await checkFixtureTree({ cwd, rule, inputKind: StandardsInputKind.FileList, run: reportsWhatItWasHanded, label: 'fixtures/pass/' });
 
 		expect(found).toStrictEqual([{ siteKey: 'handed', files: [], detail: 'source=src/allowed.ts tests=src/allowed.unit.test.ts packs=0' }]);
+	});
+
+	test.each([
+		{ cap: 1, expected: [{ siteKey: 'folder-cap:src', files: [{ path: 'src' }], detail: '2 files over a cap of 1' }] },
+		{ cap: 5, expected: [] },
+	])("runs the check with the rule's default options", async ({ cap, expected }) => {
+		const { cwd } = setupTree({ files: ['first.ts', 'second.ts'] });
+		const cappedRule: LoadedStandardsRule = { ...rule, defaultOptions: { cap } };
+
+		const found = await checkFixtureTree({ cwd, rule: cappedRule, inputKind: StandardsInputKind.FileList, run: capsTheSourceFolder, label: 'fixtures/pass/' });
+
+		expect(found).toStrictEqual(expected);
 	});
 });

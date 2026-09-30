@@ -99,8 +99,22 @@ describe('getStandardsPackView', () => {
 			channel: 'base',
 			checked: true,
 			defaultSeverity: 'blocking',
-			defaultSettings: {},
+			defaultOptions: {},
 			fixtureCounts: { pass: 2, fail: 1 },
+		});
+	});
+
+	test('lists each rule with the default options its rule.md declares', async () => {
+		const { cwd } = setupThisRepo();
+
+		const view = await getStandardsPackView({ cwd, name: 'lightsout-defaults' });
+		const defaultOptionsById = Object.fromEntries(
+			view.rules.filter((rule) => rule.id === 'file-size' || rule.id === 'type-assertion').map((rule) => [rule.id, rule.defaultOptions]),
+		);
+
+		expect(defaultOptionsById).toStrictEqual({
+			'file-size': { file: 250, tsxFile: 300 },
+			'type-assertion': {},
 		});
 	});
 

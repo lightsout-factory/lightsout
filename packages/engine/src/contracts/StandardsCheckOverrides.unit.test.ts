@@ -4,7 +4,7 @@ import { StandardsCheckOverrides } from '#src/contracts/StandardsCheckOverrides.
 test('StandardsCheckOverrides: both override forms come through parsing intact', () => {
 	const overrides = {
 		'duplicate-code-block': 'off',
-		'file-size': { severity: 'advisory', settings: { file: 200, tsxFile: 260 } },
+		'file-size': { severity: 'advisory', options: { file: 200, tsxFile: 260 } },
 	};
 
 	// a bare severity and a full object are both recognized, so neither is
@@ -14,7 +14,7 @@ test('StandardsCheckOverrides: both override forms come through parsing intact',
 
 test('StandardsCheckOverrides: a rule the map never names is left alone entirely', () => {
 	// naming one rule says nothing about the other sixteen — silence is never a change
-	expect(StandardsCheckOverrides.parse({ 'function-size': { settings: { function: 40 } } })).toStrictEqual({ 'function-size': { settings: { function: 40 } } });
+	expect(StandardsCheckOverrides.parse({ 'function-size': { options: { function: 40 } } })).toStrictEqual({ 'function-size': { options: { function: 40 } } });
 	// an empty map is valid — every rule already has a default
 	expect(StandardsCheckOverrides.parse({})).toStrictEqual({});
 });
@@ -25,30 +25,30 @@ test.each([{ severity: 'blocking' }, { severity: 'advisory' }, { severity: 'off'
 		// all three states are settable, including off — the only way a repo stops a
 		// rule blocking is by naming it here
 		expect(StandardsCheckOverrides.parse({ 'duplicate-code-block': severity })).toStrictEqual({ 'duplicate-code-block': severity });
-		// the object form reaches the same state, so a repo adding settings later
+		// the object form reaches the same state, so a repo adding options later
 		// never has to restate the severity in a different vocabulary
 		expect(StandardsCheckOverrides.parse({ 'duplicate-code-block': { severity } })).toStrictEqual({ 'duplicate-code-block': { severity } });
 	},
 );
 
-test('StandardsCheckOverrides: an override object may carry severity alone, settings alone, or neither', () => {
+test('StandardsCheckOverrides: an override object may carry severity alone, options alone, or neither', () => {
 	const overrides = {
 		'duplicate-code-block': { severity: 'advisory' },
-		'folder-size': { settings: { cap: 30 } },
+		'folder-size': { options: { cap: 30 } },
 		'barrel-star': {},
 	};
 
-	// both fields are independently optional: severity without settings keeps the
-	// rule's default knobs, settings without severity keeps its default severity,
+	// both fields are independently optional: severity without options keeps the
+	// rule's default knobs, options without severity keeps its default severity,
 	// and an empty object changes nothing at all
 	expect(StandardsCheckOverrides.parse(overrides)).toStrictEqual(overrides);
 });
 
-test('StandardsCheckOverrides: a settings value is checked as a number and nothing more', () => {
-	// settings keys belong to the rule, not this schema, so a zero or a fraction
+test('StandardsCheckOverrides: an option value is checked as a number and nothing more', () => {
+	// option keys belong to the rule, not this schema, so a zero or a fraction
 	// parses here — whether a value makes sense is the rule's own business
-	expect(StandardsCheckOverrides.parse({ 'duplicate-code-block': { settings: { minTokens: 0, ratio: 1.5 } } })).toStrictEqual({
-		'duplicate-code-block': { settings: { minTokens: 0, ratio: 1.5 } },
+	expect(StandardsCheckOverrides.parse({ 'duplicate-code-block': { options: { minTokens: 0, ratio: 1.5 } } })).toStrictEqual({
+		'duplicate-code-block': { options: { minTokens: 0, ratio: 1.5 } },
 	});
 });
 
@@ -66,11 +66,34 @@ test('StandardsCheckOverrides: a rule id this schema has never heard of parses, 
 test.each([
 	{ label: 'a severity outside the three states', overrides: { 'duplicate-code-block': 'warn' } },
 	{ label: 'a severity outside the three states inside an object', overrides: { 'duplicate-code-block': { severity: 'warn' } } },
-	{ label: 'a settings key that is not a number', overrides: { 'duplicate-code-block': { settings: { minTokens: '50' } } } },
+	{ label: 'an option that is not a number', overrides: { 'duplicate-code-block': { options: { minTokens: '50' } } } },
 	{ label: 'an override object carrying a key the shape does not declare', overrides: { 'duplicate-code-block': { severty: 'off' } } },
 	{ label: 'an overrides map that is not an object', overrides: true },
 ])('StandardsCheckOverrides: $label fails parsing', ({ overrides }) => {
 	// a mistyped severity would silently disable an override the user believes is
 	// active — the same reason the commands block is strict
 	expect(StandardsCheckOverrides.safeParse(overrides).success).toBe(false);
+});
+
+type ParseIssue = { code: string; keys?: string[]; errors?: ParseIssue[][] };
+
+// a refusal inside a union sits among the per-branch errors, so walk them all
+const collectIssues = ({ issues }: { issues: ParseIssue[] }): ParseIssue[] =>
+	issues.flatMap((issue) => [issue, ...(issue.errors ?? []).flatMap((branch) => collectIssues({ issues: branch }))]);
+
+test('StandardsCheckOverrides: the object form takes options, and a settings key is refused as unknown', () => {
+	const withOptions = { 'folder-size': { severity: 'blocking', options: { cap: 3 } } };
+	const withSettings = { 'folder-size': { severity: 'blocking', settings: { cap: 3 } } };
+
+	const parsedOptions = StandardsCheckOverrides.parse(withOptions);
+	const parsedSettings = StandardsCheckOverrides.safeParse(withSettings);
+
+	const unrecognizedKeys = collectIssues({ issues: (parsedSettings.error?.issues ?? []) as ParseIssue[] })
+		.filter((issue) => issue.code === 'unrecognized_keys')
+		.map((issue) => issue.keys);
+	expect({ parsedOptions, settingsParsed: parsedSettings.success, unrecognizedKeys }).toStrictEqual({
+		parsedOptions: withOptions,
+		settingsParsed: false,
+		unrecognizedKeys: [['settings']],
+	});
 });

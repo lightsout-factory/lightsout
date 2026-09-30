@@ -25,7 +25,7 @@ const buildRule = ({
 	channel,
 	checked: false,
 	defaultSeverity,
-	defaultSettings: {},
+	defaultOptions: {},
 	fixturesPath: `/pkg/code/example/${id}/fixtures`,
 });
 

@@ -23,7 +23,7 @@ const ruleDeclaration = z.object({
 	summary: z.string().min(1),
 	checked: z.boolean().default(false),
 	severity: z.enum(StandardsSeverity).default(StandardsSeverity.Advisory),
-	settings: z.record(z.string(), z.number()).default({}),
+	options: z.record(z.string(), z.number()).default({}),
 	example: RuleExample.optional(),
 });
 
@@ -94,7 +94,7 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, problems 
 			channel: 'base',
 			checked: declaration.checked,
 			defaultSeverity: declaration.severity,
-			defaultSettings: declaration.settings,
+			defaultOptions: declaration.options,
 			...(declaration.example === undefined ? {} : { example: declaration.example }),
 			...(check === undefined ? {} : { inputKind: check.inputKind, run: check.run }),
 			fixturesPath,

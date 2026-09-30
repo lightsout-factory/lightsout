@@ -12,7 +12,7 @@ const setupRuleView = ({ omit, extra = {} }: { omit?: string; extra?: Record<str
 		checked: true,
 		severity: 'blocking',
 		fromConfig: false,
-		settings: { maxLines: 400 },
+		options: { maxLines: 400 },
 		findingCount: 3,
 		history: {
 			attempted: 5,
@@ -34,7 +34,27 @@ const setupRuleView = ({ omit, extra = {} }: { omit?: string; extra?: Record<str
 	return { ruleView };
 };
 
+const setupOptionsRows = () => {
+	const { ruleView: withOptions } = setupRuleView({ omit: 'settings', extra: { options: { maxLines: 400 } } });
+	const { ruleView: withSettingsOnly } = setupRuleView({ omit: 'options', extra: { settings: { maxLines: 400 } } });
+
+	return { withOptions, withSettingsOnly };
+};
+
 describe('StandardsRuleView', () => {
+	test('StandardsRuleView: a row needs options, and settings does not stand in for them', () => {
+		const { withOptions, withSettingsOnly } = setupOptionsRows();
+
+		const optionsResult = StandardsRuleView.safeParse(withOptions);
+		const settingsResult = StandardsRuleView.safeParse(withSettingsOnly);
+
+		expect({
+			optionsRowParses: optionsResult.success,
+			options: optionsResult.data?.options,
+			settingsRowParses: settingsResult.success,
+		}).toStrictEqual({ optionsRowParses: true, options: { maxLines: 400 }, settingsRowParses: false });
+	});
+
 	test('a rule with findings and refactor history parses with both halves intact', () => {
 		const { ruleView } = setupRuleView();
 
@@ -50,7 +70,7 @@ describe('StandardsRuleView', () => {
 			checked: true,
 			severity: 'blocking',
 			fromConfig: false,
-			settings: { maxLines: 400 },
+			options: { maxLines: 400 },
 			findingCount: 3,
 			history: {
 				attempted: 5,
@@ -154,39 +174,39 @@ describe('StandardsRuleView', () => {
 		}
 	});
 
-	test('a rule with no tunable settings parses with an empty settings map', () => {
-		const { ruleView } = setupRuleView({ extra: { settings: {} } });
+	test('a rule with no tunable options parses with an empty options map', () => {
+		const { ruleView } = setupRuleView({ extra: { options: {} } });
 
 		const parsed = StandardsRuleView.parse(ruleView);
 
 		// most rules take no numbers at all; the map is required but not non-empty
-		expect(parsed.settings).toStrictEqual({});
+		expect(parsed.options).toStrictEqual({});
 	});
 
-	test('every setting a repo tuned is kept under its own key', () => {
-		const { ruleView } = setupRuleView({ extra: { settings: { maxLines: 250, minTokens: 60 } } });
+	test('every option a repo tuned is kept under its own key', () => {
+		const { ruleView } = setupRuleView({ extra: { options: { maxLines: 250, minTokens: 60 } } });
 
 		const parsed = StandardsRuleView.parse(ruleView);
 
-		// the map is open by key — a package names its own settings, and the view
+		// the map is open by key — a package names its own options, and the view
 		// shows whichever ones this repo set
-		expect(parsed.settings).toStrictEqual({ maxLines: 250, minTokens: 60 });
+		expect(parsed.options).toStrictEqual({ maxLines: 250, minTokens: 60 });
 	});
 
-	test('rejects a setting whose value is not a number', () => {
-		for (const settings of [{ maxLines: '400' }, { maxLines: true }, { maxLines: null }]) {
-			const { ruleView } = setupRuleView({ extra: { settings } });
+	test('rejects an option whose value is not a number', () => {
+		for (const options of [{ maxLines: '400' }, { maxLines: true }, { maxLines: null }]) {
+			const { ruleView } = setupRuleView({ extra: { options } });
 
 			const result = StandardsRuleView.safeParse(ruleView);
 
-			// settings are thresholds a check compares against — only numbers are
+			// options are thresholds a check compares against — only numbers are
 			// comparable
 			expect(result.success).toBe(false);
 		}
 	});
 
-	test('rejects a settings value that is not a map at all', () => {
-		const { ruleView } = setupRuleView({ extra: { settings: [['maxLines', 400]] } });
+	test('rejects options that are not a map at all', () => {
+		const { ruleView } = setupRuleView({ extra: { options: [['maxLines', 400]] } });
 
 		const result = StandardsRuleView.safeParse(ruleView);
 
@@ -194,7 +214,7 @@ describe('StandardsRuleView', () => {
 	});
 
 	test('the rule identity and document fields are each required', () => {
-		for (const field of ['rule', 'doc', 'documentPath', 'set', 'summary', 'prose', 'checked', 'severity', 'fromConfig', 'settings']) {
+		for (const field of ['rule', 'doc', 'documentPath', 'set', 'summary', 'prose', 'checked', 'severity', 'fromConfig', 'options']) {
 			const { ruleView } = setupRuleView({ omit: field });
 
 			const result = StandardsRuleView.safeParse(ruleView);

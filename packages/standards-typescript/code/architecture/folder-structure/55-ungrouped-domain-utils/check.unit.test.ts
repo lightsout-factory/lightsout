@@ -12,7 +12,7 @@ describe('ungrouped-domain-utils check', () => {
 			files: ['src/billing/common/utils/formatDate.ts', 'src/billing/common/utils/formatCurrency.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -27,7 +27,7 @@ describe('ungrouped-domain-utils check', () => {
 	test('leaves a lone function alone, since a domain folder starts with the second related function', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/utils/formatDate.ts', 'src/billing/common/utils/parseDate.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -37,7 +37,7 @@ describe('ungrouped-domain-utils check', () => {
 			files: ['src/billing/common/utils/formatDate.ts', 'src/billing/common/utils/formatCurrency.ts', 'src/billing/common/utils/formatAddress.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(["3 'format*' functions in src/billing/common/utils"]);
 	});
@@ -82,7 +82,7 @@ describe('ungrouped-domain-utils check', () => {
 			files: accessVerbs.flatMap((verb) => [`src/${verb}/utils/${verb}Alpha.ts`, `src/${verb}/utils/${verb}Beta.ts`]),
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -92,7 +92,7 @@ describe('ungrouped-domain-utils check', () => {
 			files: ['src/billing/common/utils/formatCurrency.ts', 'src/billing/common/utils/format_date.ts', 'src/billing/common/utils/FormatTime.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(["3 'format*' functions in src/billing/common/utils"]);
 	});
@@ -100,7 +100,7 @@ describe('ungrouped-domain-utils check', () => {
 	test('never groups files whose names carry no leading word at all', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/utils/.eslintrc.ts', 'src/billing/common/utils/.prettierrc.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -110,7 +110,7 @@ describe('ungrouped-domain-utils check', () => {
 			files: ['src/billing/common/formatting/formatDate.ts', 'src/billing/common/formatting/formatCurrency.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -121,7 +121,7 @@ describe('ungrouped-domain-utils check', () => {
 			tests: ['src/billing/common/utils/formatDate.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -129,7 +129,7 @@ describe('ungrouped-domain-utils check', () => {
 	test('groups within one folder alone, so the same verb in two utils/ folders is two lone functions', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/utils/formatDate.ts', 'src/pay/common/utils/formatCurrency.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -144,7 +144,7 @@ describe('ungrouped-domain-utils check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual([
 			"2 'format*' functions in src/billing/common/utils",
@@ -162,7 +162,7 @@ describe('ungrouped-domain-utils check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
 			'ungrouped-domain-utils:src/pay/common/utils/formatCurrency.ts|src/pay/common/utils/formatDate.ts',
@@ -171,7 +171,7 @@ describe('ungrouped-domain-utils check', () => {
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

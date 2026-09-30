@@ -9,8 +9,8 @@ import { blankImportSpans } from '#src/standardsCheck/internal/common/utils/blan
 interface Params {
 	cwd: string;
 	source: string[];
-	/** The duplicate-code-block rule's own resolved settings — the engine honors them because it runs the detector. */
-	settings: Record<string, number>;
+	/** The duplicate-code-block rule's own resolved options — the engine honors them because it runs the detector. */
+	options: Record<string, number>;
 	cache: Map<string, string>;
 	/** The consumer's TypeScript, when the install has one — without it the delegation-forward blanking is skipped, never guessed. */
 	compiler?: typeof ts;
@@ -20,14 +20,14 @@ const formatOf = ({ path }: { path: string }) => (/\.(m|c)?tsx?$/.test(path) ? '
 
 /**
  * The engine runs the detector rather than the rule, so the rule's `minTokens`
- * reaches it as a setting instead of a rule opening files of its own.
+ * reaches it as an option instead of a rule opening files of its own.
  *
  * Imports and delegation forwards are blanked first (newline-preserving): they
  * are non-deduplicable by construction, so counting them would report work
  * nobody can do, and blanking keeps the reported line numbers true.
  */
-export const buildCloneSpansInput = async ({ cwd, source, settings, cache, compiler }: Params): Promise<CloneSpansInput> => {
-	const { minTokens } = settings;
+export const buildCloneSpansInput = async ({ cwd, source, options, cache, compiler }: Params): Promise<CloneSpansInput> => {
+	const { minTokens } = options;
 
 	const texts = await readIntoCache({ cwd, paths: source, cache });
 	const detector = new Detector(new Tokenizer(), new MemoryStore(), [], { minTokens, minLines: 5 });

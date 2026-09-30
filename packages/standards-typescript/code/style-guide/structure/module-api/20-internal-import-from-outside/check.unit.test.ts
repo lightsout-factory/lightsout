@@ -15,7 +15,7 @@ describe('internal-import-from-outside check', () => {
 			edges: [{ from: 'src/reporting/buildReport.ts', to: 'src/ingestion/internal/parseRow.ts' }],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -44,7 +44,7 @@ describe('internal-import-from-outside check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -55,7 +55,7 @@ describe('internal-import-from-outside check', () => {
 			edges: [{ from: 'src/ingestion/ingestRecords.ts', to: 'src/ingestion/parser/internal/tokenize.ts' }],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual([
 			"imports 'src/ingestion/parser/internal/tokenize.ts' — internal to 'src/ingestion/parser', which 'src/ingestion/ingestRecords.ts' is outside of",
@@ -72,7 +72,7 @@ describe('internal-import-from-outside check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ files }) => files)).toStrictEqual([
 			[{ path: 'src/reporting/buildReport.ts' }, { path: 'src/ingestion/internal/parseRow.ts' }, { path: 'src/ingestion/internal/readHeader.ts' }],
@@ -85,7 +85,7 @@ describe('internal-import-from-outside check', () => {
 			edges: [{ from: 'scripts/build.mjs', to: 'internal/secrets.ts' }],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -96,7 +96,7 @@ describe('internal-import-from-outside check', () => {
 			edges: [{ from: 'src/reporting/buildReport.ts', to: 'src/ingestion/internal.ts' }],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -108,13 +108,13 @@ describe('internal-import-from-outside check', () => {
 			scope: ['src/ingestion/internal/parseRow.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('answers nothing for an input of another kind', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

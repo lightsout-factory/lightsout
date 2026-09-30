@@ -14,9 +14,9 @@ export const StandardsRuleView = z.object({
 	prose: z.string(),
 	checked: z.boolean(),
 	severity: z.enum([StandardsSeverity.Blocking, StandardsSeverity.Advisory, StandardsSeverity.Off]),
-	/** True when this repo's config set the severity or the settings. */
+	/** True when this repo's config set the severity or the options. */
 	fromConfig: z.boolean(),
-	settings: z.record(z.string(), z.number()),
+	options: z.record(z.string(), z.number()),
 	/** Open findings for this rule in the latest snapshot. */
 	findingCount: z.number(),
 	history: z.object({

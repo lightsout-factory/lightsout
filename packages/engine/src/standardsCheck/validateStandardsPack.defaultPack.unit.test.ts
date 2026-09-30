@@ -28,4 +28,23 @@ describe('validateStandardsPack on the shipped default pack', () => {
 		// without having been checked, so a skip fails the test too.
 		expect({ problems, skipped: notes.filter((note) => note.includes('not validated')) }).toStrictEqual({ problems: [], skipped: [] });
 	});
+
+	// Every rule with default options is listed with its exact caps, so a rule
+	// whose check reads a cap but loads with empty options fails here too.
+	test('every rule whose check reads a cap loads that cap as a default option', async () => {
+		const { pack } = await setupDefaultPack();
+
+		const rulesWithOptions = pack.rules.filter((rule) => Object.keys(rule.defaultOptions).length > 0);
+		const optionsByRule = Object.fromEntries(rulesWithOptions.map((rule) => [rule.id, rule.defaultOptions]));
+
+		expect(optionsByRule).toStrictEqual({
+			'file-size': { file: 250, tsxFile: 300 },
+			'function-size': { function: 80, hook: 160, component: 200 },
+			'folder-size': { cap: 20 },
+			'test-file-size': { testFile: 400 },
+			'oversized-setup-factory': { maxParams: 6 },
+			'duplicate-code-block': { minTokens: 50 },
+			'duplicate-function-body': { minBodyTokens: 40 },
+		});
+	});
 });

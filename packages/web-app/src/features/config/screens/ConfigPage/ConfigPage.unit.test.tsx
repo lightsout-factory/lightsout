@@ -129,9 +129,9 @@ describe('ConfigPage field rows', () => {
 	});
 
 	test("carries the schema's own sentence about the key, so the page and the contract cannot disagree", () => {
-		setupFieldRow({ field: { key: 'standards-checks', value: null, fromConfig: false, description: 'Per-rule severity and settings.' } });
+		setupFieldRow({ field: { key: 'standards-checks', value: null, fromConfig: false, description: 'Per-rule severity and options.' } });
 
-		const description = screen.getByText('Per-rule severity and settings.');
+		const description = screen.getByText('Per-rule severity and options.');
 
 		expect(description).toBeInTheDocument();
 	});
@@ -177,9 +177,9 @@ describe('ConfigPage packs card', () => {
 
 describe('ConfigPage rule ledger', () => {
 	const ruleStates: ConfigView['ruleStates'] = [
-		{ rule: 'file-size', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Blocking, fromConfig: true, settings: { file: 250 } },
-		{ rule: 'loose-file', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Advisory, fromConfig: false, settings: {} },
-		{ rule: 'naming-boolean', pack: 'acme-house-rules', channel: 'base', severity: StandardsSeverity.Off, fromConfig: true, settings: {} },
+		{ rule: 'file-size', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Blocking, fromConfig: true, options: { file: 250 } },
+		{ rule: 'loose-file', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Advisory, fromConfig: false, options: {} },
+		{ rule: 'naming-boolean', pack: 'acme-house-rules', channel: 'base', severity: StandardsSeverity.Off, fromConfig: true, options: {} },
 	];
 
 	test('lists every loaded rule, whichever pack declared it', () => {
@@ -219,9 +219,9 @@ describe('ConfigPage rule ledger', () => {
 	test('shows the numbers this repo tuned a rule to', () => {
 		setupConfigPage({ overrides: { ruleStates } });
 
-		const setting = screen.getByText(/^file\s+250$/);
+		const option = screen.getByText(/^file\s+250$/);
 
-		expect(setting).toBeInTheDocument();
+		expect(option).toBeInTheDocument();
 	});
 
 	test('leaves a dash where a repo tuned nothing, rather than an empty cell', () => {
@@ -230,6 +230,36 @@ describe('ConfigPage rule ledger', () => {
 		const cells = screen.getAllByText('—');
 
 		expect(cells).toHaveLength(1);
+	});
+
+	test("shows each rule's options in the ledger's options column, and a dash when it has none", () => {
+		setupConfigPage({
+			overrides: {
+				ruleStates: [
+					{
+						rule: 'file-size',
+						pack: 'lightsout-defaults',
+						channel: 'base',
+						severity: StandardsSeverity.Blocking,
+						fromConfig: true,
+						options: { file: 250, tsxFile: 300 },
+					},
+					{ rule: 'loose-file', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Advisory, fromConfig: false, options: {} },
+				],
+			},
+		});
+
+		const header = screen.getByRole('columnheader', { name: 'options' });
+		const column = screen.getAllByRole('columnheader').indexOf(header);
+		const cells = screen
+			.getAllByRole('row')
+			.slice(1)
+			.map((row) => within(row).getAllByRole('cell')[column]);
+		const pairs = within(cells[0])
+			.getAllByText(/^\w+\s+\d+$/)
+			.map((tag) => tag.textContent);
+
+		expect({ pairs, untuned: cells[1].textContent }).toStrictEqual({ pairs: ['file 250', 'tsxFile 300'], untuned: '—' });
 	});
 
 	test('narrows the ledger to the state a reader picked', () => {

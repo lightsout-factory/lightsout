@@ -146,7 +146,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 	channel: 'base',
 	checked: overrides.run !== undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
-	defaultSettings: {},
+	defaultOptions: {},
 	...overrides,
 });
 
@@ -350,7 +350,7 @@ describe('validateStandardsPack', () => {
 					fixturesPath,
 					inputKind: StandardsInputKind.CloneSpans,
 					run: reportsEveryDuplicateSpan,
-					defaultSettings: { minTokens: 50 },
+					defaultOptions: { minTokens: 50 },
 				}),
 			],
 		});

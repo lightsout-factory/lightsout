@@ -43,7 +43,7 @@ const buildRuleView = ({
 		checked: listing.checked,
 		severity: listing.severity,
 		fromConfig: listing.fromConfig,
-		settings: listing.settings,
+		options: listing.options,
 		findingCount,
 		history: {
 			attempted: health.attempted,

@@ -10,7 +10,7 @@ describe('folder-size check', () => {
 	test('reports a folder holding more files than the cap', async () => {
 		const input = setupFileListInput({ files: ['src/wide/a.ts', 'src/wide/b.ts', 'src/wide/c.ts', 'src/wide/d.ts'] });
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -26,7 +26,7 @@ describe('folder-size check', () => {
 	test('leaves a folder sitting exactly at the cap alone', async () => {
 		const input = setupFileListInput({ files: ['src/narrow/a.ts', 'src/narrow/b.ts', 'src/narrow/c.ts'] });
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -34,7 +34,7 @@ describe('folder-size check', () => {
 	test('counts the barrel too, since it is a line in the directory listing like any other', async () => {
 		const input = setupFileListInput({ files: ['src/wide/a.ts', 'src/wide/b.ts', 'src/wide/c.ts', 'src/wide/index.ts'] });
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(['4 files in one flat folder (cap ~3)']);
 	});
@@ -45,7 +45,7 @@ describe('folder-size check', () => {
 			tests: ['src/wide/a.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -55,7 +55,7 @@ describe('folder-size check', () => {
 			files: ['src/wide/a.ts', 'src/wide/b.ts', 'src/wide/c.ts', 'src/wide/d.ts', 'src/wide/deep/e.ts', 'src/wide/deep/f.ts'],
 		});
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -73,7 +73,7 @@ describe('folder-size check', () => {
 			files: ['src/wide/a.ts', 'src/wide/b.ts', 'src/wide/c.ts', 'src/narrow/a.ts', 'src/other/a.ts', 'src/other/b.ts', 'src/other/c.ts'],
 		});
 
-		const findings = await check.run({ input, settings: { cap: 2 } });
+		const findings = await check.run({ input, options: { cap: 2 } });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-size:src/wide', 'folder-size:src/other']);
 	});
@@ -81,7 +81,7 @@ describe('folder-size check', () => {
 	test('names the repo root as the folder when the pile sits at the top level', async () => {
 		const input = setupFileListInput({ files: ['a.ts', 'b.ts', 'c.ts'] });
 
-		const findings = await check.run({ input, settings: { cap: 2 } });
+		const findings = await check.run({ input, options: { cap: 2 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -97,7 +97,7 @@ describe('folder-size check', () => {
 	test('restates the cap it was given, so a configured cap reads back the number in force', async () => {
 		const input = setupFileListInput({ files: Array.from({ length: 21 }, (_, index) => `src/wide/wide${index}.ts`) });
 
-		const findings = await check.run({ input, settings: { cap: 20 } });
+		const findings = await check.run({ input, options: { cap: 20 } });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(['21 files in one flat folder (cap ~20)']);
 	});
@@ -108,7 +108,7 @@ describe('folder-size check', () => {
 			dependencies: [['.', ['@tanstack/react-router']]],
 		});
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -119,7 +119,7 @@ describe('folder-size check', () => {
 			dependencies: [['.', ['@tanstack/react-router']]],
 		});
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(['4 files in one flat folder (cap ~3)']);
 	});
@@ -127,7 +127,7 @@ describe('folder-size check', () => {
 	test('counts src/routes exactly as before in a package declaring no router, so the carve-out is earned by the dependency', async () => {
 		const input = setupFileListInput({ files: ['src/routes/a.tsx', 'src/routes/b.tsx', 'src/routes/c.tsx', 'src/routes/d.tsx'] });
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-size:src/routes']);
 	});
@@ -138,7 +138,7 @@ describe('folder-size check', () => {
 			dependencies: [['.', ['@tanstack/react-router']]],
 		});
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -158,7 +158,7 @@ describe('folder-size check', () => {
 			dependencies: [['.', ['@tanstack/react-router']]],
 		});
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -177,7 +177,7 @@ describe('folder-size check', () => {
 			dependencies: [['.', ['@tanstack/react-start']]],
 		});
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -185,7 +185,7 @@ describe('folder-size check', () => {
 	test('counts those same three files in a package whose framework resolves no entry files, so the dependency is what drops them', async () => {
 		const input = setupFileListInput({ files: ['src/a.ts', 'src/b.ts', 'src/c.ts', 'src/router.tsx', 'src/server.ts', 'src/client.tsx'] });
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(['6 files in one flat folder (cap ~3)']);
 	});
@@ -196,7 +196,7 @@ describe('folder-size check', () => {
 			dependencies: [['.', ['@tanstack/react-start']]],
 		});
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-size:src/features/runs']);
 	});
@@ -219,13 +219,32 @@ describe('folder-size check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-size:packages/api/src/routes']);
 	});
 
+	test('measures each folder against the cap option', async () => {
+		const input = setupFileListInput({ files: ['src/wide/a.ts', 'src/wide/b.ts', 'src/wide/c.ts'] });
+
+		const [findingsAtCapTwo, findingsAtCapThree] = await Promise.all([check.run({ input, options: { cap: 2 } }), check.run({ input, options: { cap: 3 } })]);
+
+		expect({ findingsAtCapTwo, findingsAtCapThree }).toStrictEqual({
+			findingsAtCapTwo: [
+				{
+					siteKey: 'folder-size:src/wide',
+					files: [{ path: 'src/wide' }],
+					detail: '3 files in one flat folder (cap ~2)',
+					guidance: 'Group them by domain, or graduate the concepts hiding in the pile.',
+					measure: 3,
+				},
+			],
+			findingsAtCapThree: [],
+		});
+	});
+
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: { cap: 3 } });
+		const findings = await check.run({ input: setupOtherKindInput(), options: { cap: 3 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -249,7 +268,7 @@ describe('folder-size check', () => {
 			dependencies: [['.', ['@tanstack/react-start']]],
 		});
 
-		const findings = await check.run({ input, settings: { cap: 3 } });
+		const findings = await check.run({ input, options: { cap: 3 } });
 
 		expect(findings.map(({ siteKey, measure }) => ({ siteKey, measure }))).toStrictEqual([
 			{ siteKey: 'folder-size:src/wide', measure: 6 },

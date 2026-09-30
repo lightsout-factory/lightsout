@@ -3,8 +3,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type FileListInput, type StandardsCheckFunction, type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
+import { resolvePackageRuleStates } from '#src/standardsCheck/resolvePackageRuleStates.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
 import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
 import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
@@ -57,15 +59,15 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	channel: 'base',
 	checked: overrides.run !== undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
-	defaultSettings: {},
+	defaultOptions: {},
 	fixturesPath: `/packages/acme/${overrides.id}/fixtures`,
 	...overrides,
 });
 
 /** A check that reports one finding per source file and records what it was handed. */
-const recordingRun = ({ calls }: { calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> }): StandardsCheckFunction => {
-	return ({ input, settings }) => {
-		calls.push({ input, settings });
+const recordingRun = ({ calls }: { calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> }): StandardsCheckFunction => {
+	return ({ input, options }) => {
+		calls.push({ input, options });
 
 		return [{ siteKey: `${input.kind}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
 	};
@@ -104,16 +106,41 @@ const runChecks = ({
 }) => {
 	const pkg: LoadedStandardsPack = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
 	const states = new Map<string, ResolvedRuleState>(
-		rules.map((entry) => [entry.id, { severity: severities[entry.id] ?? entry.defaultSeverity, settings: entry.defaultSettings, fromConfig: false }]),
+		rules.map((entry) => [entry.id, { severity: severities[entry.id] ?? entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false }]),
 	);
 
 	return runPackageChecks({ cwd, packs: [pkg], states, channels, packagesDir, path, exclude, onProgress });
 };
 
+/** Two checked rules, one retuned by the repo's config, with each check recording the options it was run with. */
+const setupConfiguredRun = () => {
+	const { cwd } = setupRepo();
+	const calls: Record<string, Record<string, number>> = {};
+	const recordOptions =
+		({ id }: { id: string }): StandardsCheckFunction =>
+		({ options }) => {
+			calls[id] = options;
+
+			return [];
+		};
+	const rules = [
+		rule({ id: 'folder-size', inputKind: StandardsInputKind.FileList, run: recordOptions({ id: 'folder-size' }), defaultOptions: { cap: 20 } }),
+		rule({ id: 'file-size', inputKind: StandardsInputKind.FileList, run: recordOptions({ id: 'file-size' }), defaultOptions: { file: 250, tsxFile: 300 } }),
+	];
+	const packs: LoadedStandardsPack[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules }];
+	const config = LightsoutConfig.parse({
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		'standards-checks': { 'folder-size': { options: { cap: 2 } } },
+	});
+	const states = resolvePackageRuleStates({ packs, config });
+
+	return { cwd, packs, states, calls };
+};
+
 describe('runPackageChecks', () => {
 	test('stamps each finding with the rule id it came from and the severity the repo resolved', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 
 		const { findings } = await runChecks({
 			cwd,
@@ -129,7 +156,7 @@ describe('runPackageChecks', () => {
 
 	test('builds one input per kind and hands the very same one to every rule that asked for it', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 
 		await runChecks({
 			cwd,
@@ -144,31 +171,31 @@ describe('runPackageChecks', () => {
 		expect(calls[0]?.input).toBe(calls[1]?.input);
 	});
 
-	test('gives each duplicate-block rule its own detection, because the detector runs on that rule settings', async () => {
+	test('gives each duplicate-block rule its own detection, because the detector runs on the options of that rule', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 
 		await runChecks({
 			cwd,
 			rules: [
-				rule({ id: 'duplicate-code-block', inputKind: StandardsInputKind.CloneSpans, run: recordingRun({ calls }), defaultSettings: { minTokens: 50 } }),
+				rule({ id: 'duplicate-code-block', inputKind: StandardsInputKind.CloneSpans, run: recordingRun({ calls }), defaultOptions: { minTokens: 50 } }),
 				rule({
 					id: 'duplicate-code-block-strict',
 					inputKind: StandardsInputKind.CloneSpans,
 					run: recordingRun({ calls }),
-					defaultSettings: { minTokens: 200 },
+					defaultOptions: { minTokens: 200 },
 				}),
 			],
 		});
 
 		expect(calls[0]?.input).not.toBe(calls[1]?.input);
-		expect(calls[0]?.settings).toStrictEqual({ minTokens: 50 });
-		expect(calls[1]?.settings).toStrictEqual({ minTokens: 200 });
+		expect(calls[0]?.options).toStrictEqual({ minTokens: 50 });
+		expect(calls[1]?.options).toStrictEqual({ minTokens: 200 });
 	});
 
 	test('runs nothing for a rule the repo switched off', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 
 		const { findings } = await runChecks({
 			cwd,
@@ -192,7 +219,7 @@ describe('runPackageChecks', () => {
 
 	test('runs a framework rule only when its channel is active for the repo', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 		const reactRule = rule({ id: 'hook-deps', channel: 'react', inputKind: StandardsInputKind.FileText, run: recordingRun({ calls }) });
 
 		const inactive = await runChecks({ cwd, rules: [reactRule], channels: [] });
@@ -205,7 +232,7 @@ describe('runPackageChecks', () => {
 
 	test('skips the compiler-backed rules with one note naming them when no typescript resolves', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 
 		const { findings, notes } = await runChecks({
 			cwd,
@@ -223,7 +250,7 @@ describe('runPackageChecks', () => {
 
 	test('runs the compiler-backed rules when the repo has a typescript to borrow', async () => {
 		const { cwd } = setupRepo({ typescript: true });
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 
 		const { findings, notes } = await runChecks({
 			cwd,
@@ -236,7 +263,7 @@ describe('runPackageChecks', () => {
 
 	test('reads each workspace manifest from the packages dir the repo configured', async () => {
 		const { cwd } = setupWorkspaceRepo();
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 
 		await runChecks({
 			cwd,
@@ -251,7 +278,7 @@ describe('runPackageChecks', () => {
 
 	test('borrows a workspace package typescript from the configured packages dir', async () => {
 		const { cwd } = setupWorkspaceRepo({ typescript: true });
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 
 		const { findings, notes } = await runChecks({
 			cwd,
@@ -267,7 +294,7 @@ describe('runPackageChecks', () => {
 
 	test('scopes the checked files to --path while keeping the whole repo as reference', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 
 		await runChecks({
 			cwd,
@@ -284,7 +311,7 @@ describe('runPackageChecks', () => {
 
 	test('drops the excluded paths a repo declared generated', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 
 		await runChecks({
 			cwd,
@@ -297,7 +324,7 @@ describe('runPackageChecks', () => {
 
 	test('reports progress as the file count first and then each input kind it ran', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 		const messages: string[] = [];
 
 		await runChecks({
@@ -349,7 +376,7 @@ describe('runPackageChecks', () => {
 
 	test('leaves a rule out when the run was handed no resolved state for it', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; settings: Record<string, number> }> = [];
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
 		const pkg: LoadedStandardsPack = {
 			name: 'acme',
 			formatVersion: 1,
@@ -362,5 +389,13 @@ describe('runPackageChecks', () => {
 
 		// severity is policy; with none resolved there is nothing to report at
 		expect(findings).toStrictEqual([]);
+	});
+
+	test('runs each live rule with its resolved options, the config override merged over its defaults', async () => {
+		const { cwd, packs, states, calls } = setupConfiguredRun();
+
+		await runPackageChecks({ cwd, packs, states, channels: [] });
+
+		expect(calls).toStrictEqual({ 'folder-size': { cap: 2 }, 'file-size': { file: 250, tsxFile: 300 } });
 	});
 });

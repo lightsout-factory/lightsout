@@ -18,7 +18,7 @@ interface LiveRule {
 	run: StandardsCheckFunction;
 	/** Only the two reporting severities — an `off` rule never becomes a live one. */
 	severity: StandardsFinding['severity'];
-	settings: Record<string, number>;
+	options: Record<string, number>;
 }
 
 /** Channel gating is all-or-nothing per document: a framework document that does not apply contributes no prose, so no checks either. */
@@ -40,13 +40,13 @@ const selectLiveRules = ({ packs, states, channels }: { packs: LoadedStandardsPa
 			continue;
 		}
 
-		live.push({ id: rule.id, inputKind: rule.inputKind, run: rule.run, severity: state.severity, settings: state.settings });
+		live.push({ id: rule.id, inputKind: rule.inputKind, run: rule.run, severity: state.severity, options: state.options });
 	}
 
 	return live;
 };
 
-type BuildInput = (params: { kind: StandardsInputKind; settings: Record<string, number> }) => Promise<StandardsCheckInput>;
+type BuildInput = (params: { kind: StandardsInputKind; options: Record<string, number> }) => Promise<StandardsCheckInput>;
 
 /** A kind needing TypeScript when none resolves does not fail the run: its rules are named as skipped and the rest still report. */
 const runLiveRules = async ({
@@ -81,15 +81,15 @@ const runLiveRules = async ({
 			let input: StandardsCheckInput;
 
 			if (kind === StandardsInputKind.CloneSpans) {
-				input = await buildInput({ kind, settings: rule.settings });
+				input = await buildInput({ kind, options: rule.options });
 			} else {
-				// Every kind but clone-spans is settings-blind, so one build serves
+				// Every kind but clone-spans is options-blind, so one build serves
 				// every rule that asked for it.
-				shared ??= await buildInput({ kind, settings: rule.settings });
+				shared ??= await buildInput({ kind, options: rule.options });
 				input = shared;
 			}
 
-			const raw = await runRuleCheck({ rule: rule.id, run: rule.run, input, settings: rule.settings });
+			const raw = await runRuleCheck({ rule: rule.id, run: rule.run, input, options: rule.options });
 
 			findings.push(...raw.map((finding) => ({ ...finding, rule: rule.id, severity: rule.severity })));
 		}
@@ -117,7 +117,7 @@ interface Params {
 
 /**
  * Each input is built once and shared, except clone-spans: its detector is
- * driven by the asking rule's own `minTokens`, and two rules with different
+ * driven by the `minTokens` in the asking rule's own options, and two rules with different
  * thresholds are two different detections.
  *
  * A rule's id and severity are stamped here rather than inside the check, so a
@@ -148,8 +148,8 @@ export const runPackageChecks = async ({
 	const live = selectLiveRules({ packs, states, channels });
 	const cache = new Map<string, string>();
 
-	const buildInput: BuildInput = async ({ kind, settings }) =>
-		buildCheckInput({ kind, cwd, source, tests, files: allFiles, referenceFiles: repoFiles, standardsPacks, packagesDir, settings, cache, compiler });
+	const buildInput: BuildInput = async ({ kind, options }) =>
+		buildCheckInput({ kind, cwd, source, tests, files: allFiles, referenceFiles: repoFiles, standardsPacks, packagesDir, options, cache, compiler });
 
 	const { findings, skipped } = await runLiveRules({ live, buildInput, compiler, progress });
 

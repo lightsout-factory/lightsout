@@ -2,7 +2,7 @@
 summary: "a function, hook or component over its line cap"
 checked: true
 severity: advisory
-settings:
+options:
   function: 80
   hook: 160
   component: 200

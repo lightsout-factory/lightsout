@@ -13,7 +13,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
-	defaultSettings: {},
+	defaultOptions: {},
 	fixturesPath: `/packages/acme/${overrides.id}/fixtures`,
 	...overrides,
 });
@@ -35,57 +35,78 @@ const setupStates = ({ packs, standardsChecks }: { packs: LoadedStandardsPack[];
 };
 
 const twoRules = [
-	rule({ id: 'duplicate-code-block', defaultSeverity: StandardsSeverity.Advisory, defaultSettings: { minTokens: 50 } }),
+	rule({ id: 'duplicate-code-block', defaultSeverity: StandardsSeverity.Advisory, defaultOptions: { minTokens: 50 } }),
 	rule({ id: 'module-boundary', defaultSeverity: StandardsSeverity.Blocking }),
 ];
 
 describe('resolvePackageRuleStates', () => {
-	test('a rule the config never names keeps the severity and settings its own front matter declared', () => {
+	test('a rule the config never names keeps the severity and options its own front matter declared', () => {
 		const { states } = setupStates({ packs: [standardsPack({ rules: twoRules })] });
 
-		expect(states.get('duplicate-code-block')).toStrictEqual({ severity: StandardsSeverity.Advisory, settings: { minTokens: 50 }, fromConfig: false });
-		expect(states.get('module-boundary')).toStrictEqual({ severity: StandardsSeverity.Blocking, settings: {}, fromConfig: false });
+		expect(states.get('duplicate-code-block')).toStrictEqual({ severity: StandardsSeverity.Advisory, options: { minTokens: 50 }, fromConfig: false });
+		expect(states.get('module-boundary')).toStrictEqual({ severity: StandardsSeverity.Blocking, options: {}, fromConfig: false });
 	});
 
-	test('a bare severity string replaces the severity and leaves the settings alone', () => {
+	test('a bare severity string replaces the severity and leaves the options alone', () => {
 		const { states } = setupStates({ packs: [standardsPack({ rules: twoRules })], standardsChecks: { 'duplicate-code-block': 'off' } });
 
-		expect(states.get('duplicate-code-block')).toStrictEqual({ severity: StandardsSeverity.Off, settings: { minTokens: 50 }, fromConfig: true });
+		expect(states.get('duplicate-code-block')).toStrictEqual({ severity: StandardsSeverity.Off, options: { minTokens: 50 }, fromConfig: true });
 	});
 
-	test('an object override merges its settings over the front matter rather than replacing them', () => {
+	test('an object override merges its options over the front matter rather than replacing them', () => {
 		const { states } = setupStates({
-			packs: [standardsPack({ rules: [rule({ id: 'file-size', defaultSeverity: StandardsSeverity.Blocking, defaultSettings: { file: 250, tsxFile: 300 } })] })],
-			standardsChecks: { 'file-size': { settings: { file: 400 } } },
+			packs: [standardsPack({ rules: [rule({ id: 'file-size', defaultSeverity: StandardsSeverity.Blocking, defaultOptions: { file: 250, tsxFile: 300 } })] })],
+			standardsChecks: { 'file-size': { options: { file: 400 } } },
 		});
 
-		expect(states.get('file-size')).toStrictEqual({ severity: StandardsSeverity.Blocking, settings: { file: 400, tsxFile: 300 }, fromConfig: true });
+		expect(states.get('file-size')).toStrictEqual({ severity: StandardsSeverity.Blocking, options: { file: 400, tsxFile: 300 }, fromConfig: true });
 	});
 
-	test('an override carrying both a severity and settings applies both', () => {
+	test("an object override merges its options over the rule's default options key by key", () => {
+		const { states } = setupStates({
+			packs: [
+				standardsPack({
+					rules: [
+						rule({ id: 'file-size', defaultSeverity: StandardsSeverity.Blocking, defaultOptions: { file: 250, tsxFile: 300 } }),
+						rule({ id: 'folder-size', defaultSeverity: StandardsSeverity.Blocking, defaultOptions: { cap: 20 } }),
+					],
+				}),
+			],
+			standardsChecks: { 'file-size': { options: { tsxFile: 400 } }, 'folder-size': 'advisory' },
+		});
+
+		const resolved = { fileSize: states.get('file-size'), folderSize: states.get('folder-size') };
+
+		expect(resolved).toStrictEqual({
+			fileSize: { severity: StandardsSeverity.Blocking, options: { file: 250, tsxFile: 400 }, fromConfig: true },
+			folderSize: { severity: StandardsSeverity.Advisory, options: { cap: 20 }, fromConfig: true },
+		});
+	});
+
+	test('an override carrying both a severity and options applies both', () => {
 		const { states } = setupStates({
 			packs: [standardsPack({ rules: twoRules })],
-			standardsChecks: { 'duplicate-code-block': { severity: 'blocking', settings: { minTokens: 80 } } },
+			standardsChecks: { 'duplicate-code-block': { severity: 'blocking', options: { minTokens: 80 } } },
 		});
 
-		expect(states.get('duplicate-code-block')).toStrictEqual({ severity: StandardsSeverity.Blocking, settings: { minTokens: 80 }, fromConfig: true });
+		expect(states.get('duplicate-code-block')).toStrictEqual({ severity: StandardsSeverity.Blocking, options: { minTokens: 80 }, fromConfig: true });
 	});
 
 	test('an empty object override changes nothing but still marks the rule as named by the config', () => {
 		const { states } = setupStates({ packs: [standardsPack({ rules: twoRules })], standardsChecks: { 'duplicate-code-block': {} } });
 
 		// `--list` prints "(config)" from this flag, so naming a rule at all has to show up there
-		expect(states.get('duplicate-code-block')).toStrictEqual({ severity: StandardsSeverity.Advisory, settings: { minTokens: 50 }, fromConfig: true });
+		expect(states.get('duplicate-code-block')).toStrictEqual({ severity: StandardsSeverity.Advisory, options: { minTokens: 50 }, fromConfig: true });
 	});
 
-	test('the resolved settings are a copy, so editing them cannot reach back into the loaded pack', () => {
-		const rules = [rule({ id: 'duplicate-code-block', defaultSettings: { minTokens: 50 } })];
+	test('the resolved options are a copy, so editing them cannot reach back into the loaded pack', () => {
+		const rules = [rule({ id: 'duplicate-code-block', defaultOptions: { minTokens: 50 } })];
 		const { states } = setupStates({ packs: [standardsPack({ rules })] });
-		const resolved = states.get('duplicate-code-block')?.settings ?? {};
+		const resolved = states.get('duplicate-code-block')?.options ?? {};
 
 		resolved.minTokens = 999;
 
-		expect(rules[0]?.defaultSettings).toStrictEqual({ minTokens: 50 });
+		expect(rules[0]?.defaultOptions).toStrictEqual({ minTokens: 50 });
 	});
 
 	test('rules from several packs all get a state', () => {

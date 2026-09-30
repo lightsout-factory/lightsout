@@ -25,7 +25,7 @@ describe('buildUnconsumedExportCheck', () => {
 	});
 
 	test('reports the exports whose verdict the rule claims, in the wording the rule gave', async () => {
-		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input: setupUnusedRepo(), settings: {} });
+		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input: setupUnusedRepo(), options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -39,7 +39,7 @@ describe('buildUnconsumedExportCheck', () => {
 
 	test('claims nothing when the rule’s verdict does not match, so the verdicts stay mutually exclusive', async () => {
 		// the same repo, read by the rule that wants a test mention instead
-		const findings = await buildCheck({ matches: ({ test: byTest }) => byTest }).run({ input: setupUnusedRepo(), settings: {} });
+		const findings = await buildCheck({ matches: ({ test: byTest }) => byTest }).run({ input: setupUnusedRepo(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -50,7 +50,7 @@ describe('buildUnconsumedExportCheck', () => {
 			standardsPacks: ['standards'],
 		});
 
-		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input, settings: {} });
+		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -67,13 +67,13 @@ describe('buildUnconsumedExportCheck', () => {
 			contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
 		});
 
-		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input, settings: {} });
+		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('returns nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await buildCheck({ matches: () => true }).run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await buildCheck({ matches: () => true }).run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -88,7 +88,7 @@ describe('buildUnconsumedExportCheck', () => {
 			],
 		});
 
-		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input, settings: {} });
+		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input, options: {} });
 
 		// with no carve-out derived, that route file reads as a barrel and the
 		// screen it renders as used by nobody

@@ -129,6 +129,16 @@ describe('getConfigView', () => {
 		expect(fileSize).toMatchObject({ fromConfig: true, severity: StandardsSeverity.Blocking });
 	});
 
+	test('each rule state carries the options it runs with in this repo', async () => {
+		const cwd = await seedConfiguredCwd({ config: { 'standards-checks': { 'folder-size': { options: { cap: 15 } } } } });
+
+		const view = await getConfigView({ cwd });
+
+		const folderSize = view.ruleStates.find((state) => state.rule === 'folder-size');
+
+		expect(folderSize).toEqual(expect.objectContaining({ options: { cap: 15 }, fromConfig: true }));
+	});
+
 	test('says a repo with no config has none, rather than answering with the defaults it would have used', async () => {
 		await expect(getConfigView({ cwd: withoutConfig })).rejects.toThrow(ConfigNotFoundError);
 	});

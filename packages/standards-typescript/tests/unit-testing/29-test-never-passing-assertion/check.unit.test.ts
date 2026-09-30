@@ -36,7 +36,7 @@ describe('test-never-passing-assertion check', () => {
 	test('reports expect.objectContaining pairing a key with undefined, naming the file, the line and why it cannot pass', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildAssertionSource({ assertion: readBackAssertion })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -52,7 +52,7 @@ describe('test-never-passing-assertion check', () => {
 	test('names each key on its own line when the matcher spans several, quoted keys included', async () => {
 		const input = setupTestFileInput({ contents: [[path, multiLineSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map((finding) => ({ files: finding.files, detail: finding.detail }))).toStrictEqual([
 			{
@@ -79,7 +79,7 @@ describe('test-never-passing-assertion check', () => {
 	])('leaves $form alone — it states the intent in a form that can pass', async ({ assertion }) => {
 		const input = setupTestFileInput({ contents: [[path, buildAssertionSource({ assertion })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -93,7 +93,7 @@ describe('test-never-passing-assertion check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map((finding) => finding.siteKey)).toStrictEqual([
 			'test-never-passing-assertion:src/workOrder/createWorkOrder.unit.test.ts',
@@ -102,7 +102,7 @@ describe('test-never-passing-assertion check', () => {
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

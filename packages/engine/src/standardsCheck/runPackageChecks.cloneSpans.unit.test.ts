@@ -32,7 +32,7 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
 		linkTypescript({ dir: cwd });
 	}
 
-	const settings = { minTokens: 50 };
+	const options = { minTokens: 50 };
 	const rule: LoadedStandardsRule = {
 		id: 'duplicate-code-block',
 		set: 'code',
@@ -42,15 +42,58 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
 		channel: 'base',
 		checked: true,
 		defaultSeverity: StandardsSeverity.Advisory,
-		defaultSettings: settings,
+		defaultOptions: options,
 		fixturesPath: '/packages/acme/duplicate-code-block/fixtures',
 		inputKind: StandardsInputKind.CloneSpans,
 		run,
 	};
 	const packs: LoadedStandardsPack[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule] }];
-	const states = new Map<string, ResolvedRuleState>([['duplicate-code-block', { severity: StandardsSeverity.Advisory, settings, fromConfig: false }]]);
+	const states = new Map<string, ResolvedRuleState>([['duplicate-code-block', { severity: StandardsSeverity.Advisory, options, fromConfig: false }]]);
 
 	return { cwd, inputs, packs, states };
+};
+
+/**
+ * A repo holding one duplicated block, checked by two duplicate-block rules
+ * that differ only in their `minTokens` option. Each rule records the input
+ * its own run handed it.
+ */
+const setupThresholdRun = ({ lowMinTokens, highMinTokens }: { lowMinTokens: number; highMinTokens: number }) => {
+	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-package-checks-thresholds-'));
+	const lowInputs: StandardsCheckInput[] = [];
+	const highInputs: StandardsCheckInput[] = [];
+
+	writeSampleSources({ dir: cwd, sources: duplicatedSources });
+
+	const buildRule = ({ id, minTokens, inputs }: { id: string; minTokens: number; inputs: StandardsCheckInput[] }): LoadedStandardsRule => ({
+		id,
+		set: 'code',
+		documentPath: 'code/architecture/architecture-decisions',
+		summary: 'the same block of code written out in two or more files',
+		prose: 'the argument for the rule',
+		channel: 'base',
+		checked: true,
+		defaultSeverity: StandardsSeverity.Advisory,
+		defaultOptions: { minTokens },
+		fixturesPath: `/packages/acme/${id}/fixtures`,
+		inputKind: StandardsInputKind.CloneSpans,
+		run: ({ input }) => {
+			inputs.push(input);
+
+			return [];
+		},
+	});
+	const rules = [
+		buildRule({ id: 'duplicate-code-block-low', minTokens: lowMinTokens, inputs: lowInputs }),
+		buildRule({ id: 'duplicate-code-block-high', minTokens: highMinTokens, inputs: highInputs }),
+	];
+	const packs: LoadedStandardsPack[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules }];
+	const states = new Map<string, ResolvedRuleState>([
+		['duplicate-code-block-low', { severity: StandardsSeverity.Advisory, options: { minTokens: lowMinTokens }, fromConfig: false }],
+		['duplicate-code-block-high', { severity: StandardsSeverity.Advisory, options: { minTokens: highMinTokens }, fromConfig: false }],
+	]);
+
+	return { cwd, packs, states, lowInputs, highInputs };
 };
 
 /** The one clone-spans input the run built, narrowed out of the closed kind union. */
@@ -136,5 +179,18 @@ describe('runPackageChecks', () => {
 		// the blanking needs a parsed tree; without one the run reports what the
 		// tokens say rather than pretending to know the shape
 		expect(sitesOf({ input })).toStrictEqual(['src/PipelineRun.ts', 'src/RefactorRun.ts']);
+	});
+
+	test('builds a separate clone detection for each rule from its own minTokens option', async () => {
+		const { cwd, packs, states, lowInputs, highInputs } = setupThresholdRun({ lowMinTokens: 20, highMinTokens: 200 });
+
+		await runPackageChecks({ cwd, packs, states, channels: [] });
+
+		const lowInput = cloneSpansInput({ inputs: lowInputs });
+		const highInput = cloneSpansInput({ inputs: highInputs });
+
+		// the duplicated block clears 20 tokens but not 200, so a single shared
+		// detection would hand both rules the same spans
+		expect({ low: sitesOf({ input: lowInput }), high: highInput.spans }).toStrictEqual({ low: ['src/alpha.ts', 'src/beta.ts'], high: [] });
 	});
 });

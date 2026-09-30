@@ -50,7 +50,7 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	checked: true,
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
-	settings: {},
+	options: {},
 	...overrides,
 });
 
@@ -109,7 +109,7 @@ describe('standardsCheckCommand --list', () => {
 
 	test('a rule’s live numbers ride its summary line, so a retuned knob is visible without opening the config', async () => {
 		const { context, logged } = setupRuleList({
-			rules: [listing({ rule: 'size', summary: 'a file longer than the size cap', settings: { file: 250, tsxFile: 300 } })],
+			rules: [listing({ rule: 'size', summary: 'a file longer than the size cap', options: { file: 250, tsxFile: 300 } })],
 		});
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);

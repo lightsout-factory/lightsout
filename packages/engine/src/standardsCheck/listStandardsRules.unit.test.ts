@@ -94,7 +94,7 @@ interface PackSpec {
 	name: string;
 	ruleId: string;
 	severity?: typeof StandardsSeverity.Blocking | typeof StandardsSeverity.Advisory;
-	settings?: Record<string, number>;
+	options?: Record<string, number>;
 }
 
 /**
@@ -103,15 +103,15 @@ interface PackSpec {
  * so a row read back off it proves the listing carries the pack author's own
  * words rather than the defaults.
  */
-const writePack = ({ cwd, at, name, ruleId, severity = StandardsSeverity.Advisory, settings = {} }: PackSpec & { cwd: string }) => {
+const writePack = ({ cwd, at, name, ruleId, severity = StandardsSeverity.Advisory, options = {} }: PackSpec & { cwd: string }) => {
 	const packPath = join(cwd, at);
 	const rulePath = `code/demo/01-${ruleId}`;
-	const settingLines = Object.entries(settings).map(([key, value]) => `  ${key}: ${value}`);
-	const settingsBlock = settingLines.length === 0 ? '' : `settings:\n${settingLines.join('\n')}\n`;
+	const optionLines = Object.entries(options).map(([key, value]) => `  ${key}: ${value}`);
+	const optionsBlock = optionLines.length === 0 ? '' : `options:\n${optionLines.join('\n')}\n`;
 	const files: Record<string, string> = {
 		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 1 }\n`,
 		'code/demo/document.md': '# Demo\n\nThe document the rule argues under.\n',
-		[`${rulePath}/rule.md`]: `---\nsummary: what ${ruleId} catches\nseverity: ${severity}\n${settingsBlock}---\n\nThe rule prose.\n`,
+		[`${rulePath}/rule.md`]: `---\nsummary: what ${ruleId} catches\nseverity: ${severity}\n${optionsBlock}---\n\nThe rule prose.\n`,
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 		[`${rulePath}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',
 	};
@@ -293,7 +293,7 @@ describe('listStandardsRules', () => {
 
 	test('no file-placement rule carries a number a repo could tune', async () => {
 		const rules = await listStandardsRules({ cwd });
-		const tunable = rules.filter((rule) => durablePathRules.includes(rule.rule) && Object.keys(rule.settings).length > 0);
+		const tunable = rules.filter((rule) => durablePathRules.includes(rule.rule) && Object.keys(rule.options).length > 0);
 
 		// every threshold in this group is a closed list of names from a doc, never a
 		// count — a knob here would be a rule that can be quietly widened until it
@@ -308,7 +308,7 @@ describe('listStandardsRules', () => {
 		expect(duplicateBlock?.severity).toBe(StandardsSeverity.Advisory);
 		expect(duplicateBlock?.fromConfig).toBe(false);
 		// the rule's live numbers travel with it
-		expect(duplicateBlock?.settings).toStrictEqual({ minTokens: 50 });
+		expect(duplicateBlock?.options).toStrictEqual({ minTokens: 50 });
 	});
 
 	test('a rule the config named is marked, so policy reads apart from default', async () => {
@@ -316,7 +316,7 @@ describe('listStandardsRules', () => {
 			cwd,
 			config: LightsoutConfig.parse({
 				...baseConfig,
-				'standards-checks': { 'filename-mismatch': 'off', 'duplicate-code-block': { settings: { minTokens: 90 } } },
+				'standards-checks': { 'filename-mismatch': 'off', 'duplicate-code-block': { options: { minTokens: 90 } } },
 			}),
 		});
 
@@ -325,9 +325,9 @@ describe('listStandardsRules', () => {
 
 		expect(mismatch?.severity).toBe(StandardsSeverity.Off);
 		expect(mismatch?.fromConfig).toBe(true);
-		// a settings-only override still counts as policy
+		// an options-only override still counts as policy
 		expect(duplicateBlock?.fromConfig).toBe(true);
-		expect(duplicateBlock?.settings).toStrictEqual({ minTokens: 90 });
+		expect(duplicateBlock?.options).toStrictEqual({ minTokens: 90 });
 		// and every unnamed rule stays unmarked
 		expect(rules.filter((rule) => rule.fromConfig).length).toBe(2);
 	});
@@ -345,7 +345,7 @@ describe('listStandardsRules', () => {
 
 	test('a row restates what the pack author declared, down to the numbers', async () => {
 		const { cwd: repo } = setupRepo({
-			packs: [{ at: 'standards/house', name: 'house', ruleId: 'house-rule', severity: StandardsSeverity.Blocking, settings: { maxLines: 40 } }],
+			packs: [{ at: 'standards/house', name: 'house', ruleId: 'house-rule', severity: StandardsSeverity.Blocking, options: { maxLines: 40 } }],
 		});
 
 		const rules = await listStandardsRules({ cwd: repo, config: LightsoutConfig.parse({ ...baseConfig, 'standards-packs': ['standards/house'] }) });
@@ -360,7 +360,7 @@ describe('listStandardsRules', () => {
 				checked: false,
 				severity: StandardsSeverity.Blocking,
 				fromConfig: false,
-				settings: { maxLines: 40 },
+				options: { maxLines: 40 },
 			},
 		]);
 	});
@@ -405,5 +405,24 @@ describe('listStandardsRules', () => {
 		// a ledger missing the half that failed to load reads as a repo that enforces less than it does
 		expect(error.message).toContain('standards pack root file not found');
 		expect(error.message).toContain(join(repo, 'standards/ghost', 'lightsout-standards.json'));
+	});
+
+	test("each listing carries the rule's resolved options, config override included", async () => {
+		const config = LightsoutConfig.parse({ ...baseConfig, 'standards-checks': { 'file-size': { options: { tsxFile: 400 } } } });
+
+		const rules = await listStandardsRules({ cwd, config });
+
+		const optionsOf = Object.fromEntries(
+			rules.filter((rule) => ['file-size', 'duplicate-code-block', 'banned-folder-name'].includes(rule.rule)).map((rule) => [rule.rule, rule.options]),
+		);
+
+		// the override replaces only the key it names, so the ts cap keeps its
+		// rule.md default beside the retuned tsx cap; a rule the config never
+		// names shows its own defaults, and a rule with no numbers shows none
+		expect(optionsOf).toStrictEqual({
+			'banned-folder-name': {},
+			'duplicate-code-block': { minTokens: 50 },
+			'file-size': { file: 250, tsxFile: 400 },
+		});
 	});
 });

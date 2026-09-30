@@ -9,7 +9,7 @@ export interface StandardsRuleListing {
 	/** True when the rule ships a check code runs; false when it is judgment an agent has to read. */
 	checked: boolean;
 	severity: StandardsSeverity;
-	/** True when this repo's config set the severity or the settings. */
+	/** True when this repo's config set the severity or the options. */
 	fromConfig: boolean;
-	settings: Record<string, number>;
+	options: Record<string, number>;
 }

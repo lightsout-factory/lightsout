@@ -10,7 +10,7 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	checked: true,
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
-	settings: {},
+	options: {},
 	...overrides,
 });
 
@@ -72,11 +72,29 @@ describe('printStandardsRuleList', () => {
 		const { logged } = setupPrinter();
 
 		printStandardsRuleList({
-			rules: [listing({ rule: 'duplicate-code-block', summary: 'the same block of code written out in two or more files', settings: { minTokens: 90 } })],
+			rules: [listing({ rule: 'duplicate-code-block', summary: 'the same block of code written out in two or more files', options: { minTokens: 90 } })],
 		});
 
 		// a retuned knob is visible without opening the config
 		expect(cellsOf({ logged })[2]?.[0]).toBe('the same block of code written out in two or more files — minTokens 90');
+	});
+
+	test("prints a rule's resolved options beside its summary, and the summary alone when it has none", () => {
+		const { logged } = setupPrinter();
+
+		printStandardsRuleList({
+			rules: [
+				listing({ rule: 'duplicate-code-block', summary: 'the same block of code written out in two or more files', options: { minTokens: 90 } }),
+				listing({ rule: 'multi-export', summary: 'more than one export in a file', options: {} }),
+			],
+		});
+
+		expect(cellsOf({ logged }).slice(1, 5)).toStrictEqual([
+			['duplicate-code-block', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file'],
+			['the same block of code written out in two or more files — minTokens 90', '', '', ''],
+			['multi-export', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file'],
+			['more than one export in a file', '', '', ''],
+		]);
 	});
 
 	test('the totals line counts each state and both kinds of rule, including the rules that run at none', () => {

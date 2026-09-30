@@ -2,7 +2,7 @@
 summary: "more files sitting in one flat folder than the cap allows"
 checked: true
 severity: advisory
-settings:
+options:
   cap: 20
 ---
 

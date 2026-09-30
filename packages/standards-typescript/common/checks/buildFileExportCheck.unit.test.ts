@@ -20,7 +20,7 @@ describe('buildFileExportCheck', () => {
 			],
 		});
 
-		expect(await check.run({ input, settings: {} })).toStrictEqual([
+		expect(await check.run({ input, options: {} })).toStrictEqual([
 			{ siteKey: 'demo-exports:src/pair.ts', files: [{ path: 'src/pair.ts' }], detail: '2 exports', guidance: 'the remedy line' },
 		]);
 	});
@@ -39,7 +39,7 @@ describe('buildFileExportCheck', () => {
 			],
 		});
 
-		expect(await exempting.run({ input, settings: {} })).toStrictEqual([
+		expect(await exempting.run({ input, options: {} })).toStrictEqual([
 			{ siteKey: 'demo-exports:src/pair.ts', files: [{ path: 'src/pair.ts' }], detail: '2 exports', guidance: 'the remedy line' },
 		]);
 	});
@@ -50,7 +50,7 @@ describe('buildFileExportCheck', () => {
 			standardsPacks: ['standards'],
 		});
 
-		expect(await check.run({ input, settings: {} })).toStrictEqual([
+		expect(await check.run({ input, options: {} })).toStrictEqual([
 			{
 				siteKey: 'demo-exports:standards/tests/unit-testing/10-rule/check.ts',
 				files: [{ path: 'standards/tests/unit-testing/10-rule/check.ts' }],
@@ -65,7 +65,7 @@ describe('buildFileExportCheck', () => {
 			contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const one = 1;\nexport const two = 2;\n']],
 		});
 
-		expect(await check.run({ input, settings: {} })).toStrictEqual([]);
+		expect(await check.run({ input, options: {} })).toStrictEqual([]);
 	});
 
 	test('a barrel and a test file are exempt — one declares nothing of its own, the other belongs to the test standards', async () => {
@@ -76,6 +76,6 @@ describe('buildFileExportCheck', () => {
 			],
 		});
 
-		expect(await check.run({ input, settings: {} })).toStrictEqual([]);
+		expect(await check.run({ input, options: {} })).toStrictEqual([]);
 	});
 });

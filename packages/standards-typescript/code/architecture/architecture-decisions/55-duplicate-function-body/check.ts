@@ -71,8 +71,8 @@ export const check: StandardsCheckModule = {
 	// Tier 2 of the duplication ladder: two bodies that match once their names
 	// and literals are set aside are the same function written twice under new
 	// names, which comparing the text side by side cannot see.
-	run: ({ input, settings }): RawStandardsFinding[] => {
-		const groups = input.kind === 'syntax-tree' ? [...groupByBody({ input, minBodyTokens: settings.minBodyTokens }).values()] : [];
+	run: ({ input, options }): RawStandardsFinding[] => {
+		const groups = input.kind === 'syntax-tree' ? [...groupByBody({ input, minBodyTokens: options.minBodyTokens }).values()] : [];
 
 		return [...mergeByFileSet({ groups }).values()].map(({ files, described }) =>
 			buildRawFinding({

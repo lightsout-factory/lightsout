@@ -16,7 +16,7 @@ describe('test-mock-return-in-hook check', () => {
 	test('reports a beforeEach that sets a return value, naming the line it opens on', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildHookSource({ hook: 'beforeEach', setter: 'mockReturnValue' })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -33,7 +33,7 @@ describe('test-mock-return-in-hook check', () => {
 		async ({ setter }) => {
 			const input = setupTestFileInput({ contents: [[path, buildHookSource({ hook: 'beforeEach', setter })]] });
 
-			const findings = await check.run({ input, settings: {} });
+			const findings = await check.run({ input, options: {} });
 
 			expect(findings.map((finding) => finding.detail)).toStrictEqual(['beforeEach at line 2 sets a mock return value']);
 		},
@@ -42,7 +42,7 @@ describe('test-mock-return-in-hook check', () => {
 	test('leaves a one-call override alone — the rule names the four setters and not their Once variants', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildHookSource({ hook: 'beforeEach', setter: 'mockReturnValueOnce' })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -52,14 +52,14 @@ describe('test-mock-return-in-hook check', () => {
 		async ({ hook }) => {
 			const input = setupTestFileInput({ contents: [[path, buildHookSource({ hook, setter: 'mockReturnValue' })]] });
 
-			const findings = await check.run({ input, settings: {} });
+			const findings = await check.run({ input, options: {} });
 
 			expect(findings).toStrictEqual([]);
 		},
 	);
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

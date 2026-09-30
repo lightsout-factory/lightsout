@@ -12,7 +12,7 @@ describe('casing check', () => {
 	test('reports an interface whose name does not start with a capital', async () => {
 		const input = setupOneFile({ text: 'export interface invoice {\n\tlabel: string;\n}\n' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -35,7 +35,7 @@ describe('casing check', () => {
 	])('reports a $kind the table pins to PascalCase', async ({ text, expected }) => {
 		const input = setupOneFile({ text });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe(expected);
 	});
@@ -47,7 +47,7 @@ describe('casing check', () => {
 	])('reports $shape', async ({ text, expected }) => {
 		const input = setupOneFile({ text });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe(expected);
 	});
@@ -55,7 +55,7 @@ describe('casing check', () => {
 	test('gathers every misnamed declaration of one file into one job', async () => {
 		const input = setupOneFile({ text: ['export interface invoice {', '\tlabel: string;', '}', '', 'export const MAX_RETRIES = 10;'].join('\n') });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe("interface 'invoice' is not PascalCase; 'MAX_RETRIES' is not camelCase");
 	});
@@ -68,7 +68,7 @@ describe('casing check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -89,7 +89,7 @@ describe('casing check', () => {
 	test('reaches a declaration nested inside a function, where the same table applies', async () => {
 		const input = setupOneFile({ text: 'export const getLabel = (): string => {\n\tconst max_retries = 10;\n\n\treturn `${max_retries}`;\n};\n' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe("'max_retries' is not camelCase");
 	});
@@ -97,7 +97,7 @@ describe('casing check', () => {
 	test('leaves a file whose names all sit in the casing their row gives', async () => {
 		const input = setupOneFile({ text: 'export interface Invoice {\n\tlabel: string;\n}\n' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -105,7 +105,7 @@ describe('casing check', () => {
 	test('leaves a camelCase value constant, the casing its row of the table gives', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/billing/maxRetries.ts', 'export const maxRetries = 10;\n']] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -115,7 +115,7 @@ describe('casing check', () => {
 			text: ["export const Action = {\n\tAdd: 'add',\n} as const;", '', 'export type Action = (typeof Action)[keyof typeof Action];'].join('\n'),
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -123,7 +123,7 @@ describe('casing check', () => {
 	test('leaves a PascalCase value alone, which is a component or a named constant as often as a mistake', async () => {
 		const input = setupOneFile({ text: 'export const PlanCard = (): null => null;\n' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -131,7 +131,7 @@ describe('casing check', () => {
 	test('leaves an anonymous default-exported class, which has no name for a row to govern', async () => {
 		const input = setupOneFile({ text: 'export default class {\n\tlabel = "invoice";\n}\n' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -141,13 +141,13 @@ describe('casing check', () => {
 			text: 'export const getLabel = (payload: { user_name: string }): string => {\n\tconst { user_name } = payload;\n\n\treturn user_name;\n};\n',
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

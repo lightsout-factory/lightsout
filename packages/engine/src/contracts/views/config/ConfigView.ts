@@ -32,7 +32,7 @@ export const ConfigView = z.object({
 			channel: z.string(),
 			severity: z.enum([StandardsSeverity.Blocking, StandardsSeverity.Advisory, StandardsSeverity.Off]),
 			fromConfig: z.boolean(),
-			settings: z.record(z.string(), z.number()),
+			options: z.record(z.string(), z.number()),
 		}),
 	),
 });

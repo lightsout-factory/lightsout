@@ -14,12 +14,12 @@ export const check: StandardsCheckModule = {
 	// A file the package's framework put there is not counted: a router root's
 	// population is the number of routes the app has, and consolidating it is
 	// not an edit any author is allowed to make.
-	run: ({ input, settings }): RawStandardsFinding[] => {
+	run: ({ input, options }): RawStandardsFinding[] => {
 		const { files, tests } = readPathLists({ input });
 		const carveOuts = getFrameworkCarveOuts({ dependencies: input.kind === 'file-list' ? input.dependencies : new Map<string, string[]>() });
 		const testPaths = new Set(tests);
 		const filesPerDirectory = new Map<string, string[]>();
-		const { cap } = settings;
+		const { cap } = options;
 
 		for (const file of files) {
 			if (!testPaths.has(file)) {

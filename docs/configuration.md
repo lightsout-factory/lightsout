@@ -256,7 +256,7 @@ is overwritten the next time `pnpm build:config-reference` runs.
 | `gate-overrides` | no | Opt-in per-checkpoint gate schedules, keyed by the four verification checkpoints — `clean-slate`, `verify-implement`, `verify-tests` and `verify-refactor`. A checkpoint listed with an array runs exactly those gates, in that order, with no tiering, and a red one stops the rest of the list; `"off"` runs no gates at all there, `gates.generate` included. A checkpoint the block does not list keeps the engine’s default: the cheap gates first — check, then the unit suite — and the expensive ones, each custom `test-*` suite and the build, only once every package group’s cheap gates are green. A name must be a gate this repo configures under `gates` or `package-gates`; `generate` and `format` may not be named. |
 | `standards-packs` | no | Standards packs a run works against. Unspecified = the pack the plugin ships; `false` = explicitly none; an array = exactly these pack roots, each the folder holding `lightsout-standards.json`, repo-relative or absolute. One pack carries both the code and the test documents, which is why there is a single key rather than two. A root that cannot be loaded is a hard error. |
 | `standards-channels` | no | Framework channels of the loaded standards packs (e.g. 'react', 'tanstack'). Unspecified = detected per run from the scoped packages' package.json dependencies; an array REPLACES detection, and an empty one means base documents only. |
-| `standards-checks` | no | Per-rule severity and settings overrides for `lightsout standards-check`, keyed by rule id. A rule not named here keeps its pack’s default — silence is never a change. |
+| `standards-checks` | no | Per-rule severity and options overrides for `lightsout standards-check`, keyed by rule id. A rule not named here keeps its pack’s default — silence is never a change. |
 | `ship` | no | Opt-in `lightsout ship` settings: the branch ticket pattern whose `ticket` capture group becomes the result’s ticket reference, the pull request body template, the merge method, whether a passed implement run chains into ship, an optional pre-ship command that prepares the release candidate before it is verified, and the explicit exception for a repository that intentionally has no CI. |
 | `ticket-tracker` | no | Opt-in tracker identity: which provider the engine talks to and that provider’s address and credential environment variables — a Linear team and API key, or a Jira Cloud site, project, API token and account email. Every command that reads or writes a ticket resolves it from here, so tracker identity is spelled once rather than once per command. |
 | `worktree` | no | Opt-in shared workspace preparation. `worktree.setup` is the one command run inside a fresh worktree before any agent, such as `pnpm install` — the queue runs it in each ticket worktree it cuts, and an isolated implementation run runs it in the worktree it cuts for itself. An absent block means nothing runs. The block is strict, so a misspelled key fails parsing rather than silently leaving the command unset. |
@@ -324,7 +324,7 @@ under the default order.
 
 ### Standards check rules
 
-Every rule the standards check enforces ships with a default severity and, where it has numbers to measure against, its own settings. `standards-checks` overrides them one rule at a time:
+Every rule the standards check enforces ships with a default severity and, where it has numbers to measure against, its own options. `standards-checks` overrides them one rule at a time:
 
 ```jsonc
 {
@@ -332,9 +332,9 @@ Every rule the standards check enforces ships with a default severity and, where
     // A severity on its own.
     "filename-mismatch": "off",
     "duplicate-code-block": "blocking",
-    // Or an object, to change the severity, the rule's settings, or both.
-    "file-size": { "settings": { "file": 300, "tsxFile": 400 } },
-    "folder-size": { "severity": "blocking", "settings": { "cap": 15 } },
+    // Or an object, to change the severity, the rule's options, or both.
+    "file-size": { "options": { "file": 300, "tsxFile": 400 } },
+    "folder-size": { "severity": "blocking", "options": { "cap": 15 } },
   },
 }
 ```
@@ -924,9 +924,9 @@ The following example shows how the optional configuration fields fit together:
     // Our linter already enforces this one.
     "filename-mismatch": "off",
     // Ask for a longer duplicated stretch before it counts.
-    "duplicate-code-block": { "settings": { "minTokens": 70 } },
+    "duplicate-code-block": { "options": { "minTokens": 70 } },
     // .tsx files here carry more JSX than the default budget assumes.
-    "file-size": { "settings": { "tsxFile": 400 } },
+    "file-size": { "options": { "tsxFile": 400 } },
   },
 }
 ```

@@ -106,7 +106,7 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	checked: true,
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
-	settings: {},
+	options: {},
 	...overrides,
 });
 

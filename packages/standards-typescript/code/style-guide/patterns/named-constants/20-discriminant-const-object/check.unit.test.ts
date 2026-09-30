@@ -24,7 +24,7 @@ describe('discriminant-const-object check', () => {
 			sources: [['src/common/types/SyncEvent.ts', "export interface FileAddedEvent {\n\tkind: 'file-added';\n\tpath: string;\n}\n"]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -39,7 +39,7 @@ describe('discriminant-const-object check', () => {
 	test('a field pointing at the const object is the shape the rule asks for', async () => {
 		const input = setupTypeCheckerInput({ sources: family() });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -49,7 +49,7 @@ describe('discriminant-const-object check', () => {
 			sources: [['src/common/types/SyncEvent.ts', "export interface A {\n\tkind: 'a';\n}\n\nexport interface B {\n\tkind: 'b';\n}\n"]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('field typed as a raw string literal at lines 2, 6');
 	});
@@ -61,7 +61,7 @@ describe('discriminant-const-object check', () => {
 			sources: [['src/common/types/Mode.ts', "export type Mode = 'fast' | 'slow';\n\nexport const run = (mode = 'fast'): string => mode;\n"]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -80,7 +80,7 @@ describe('discriminant-const-object check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -103,7 +103,7 @@ describe('discriminant-const-object check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('SyncEventKind narrowed against a raw string literal at line 5');
 	});
@@ -116,7 +116,7 @@ describe('discriminant-const-object check', () => {
 			sources: [...family(), ['src/sync/label.ts', "export const label = (name: string): string => (name === 'file-added' ? 'added' : 'other');\n"]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -129,7 +129,7 @@ describe('discriminant-const-object check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		// There is no member to reference. Declaring one is what
 		// `bare-string-union` asks for, and this rule has nothing to say until it
@@ -145,7 +145,7 @@ describe('discriminant-const-object check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		// `typeof` types as the operator's own eight-member union, and the const
 		// object above holds one of those strings by coincidence.
@@ -164,7 +164,7 @@ describe('discriminant-const-object check', () => {
 			standardsPacks: ['standards'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		// A package ships as a bare directory with no node_modules, so every value
 		// a check imports has to resolve inside it. The literal is not a choice.
@@ -191,7 +191,7 @@ describe('discriminant-const-object check', () => {
 			standardsPacks: ['standards'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -209,7 +209,7 @@ describe('discriminant-const-object check', () => {
 			source: ['src/common/types/Missing.ts', 'src/common/types/SyncEvent.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -232,7 +232,7 @@ describe('discriminant-const-object check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('SyncEventKind narrowed against a raw string literal at line 3');
 	});
@@ -248,7 +248,7 @@ describe('discriminant-const-object check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('SyncEventKind narrowed against a raw string literal at line 3');
 	});
@@ -264,7 +264,7 @@ describe('discriminant-const-object check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -282,7 +282,7 @@ describe('discriminant-const-object check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -292,7 +292,7 @@ describe('discriminant-const-object check', () => {
 			sources: [['src/common/types/Job.ts', 'export interface Job {\n\tretries: 3;\n\tname: string;\n\tkind;\n}\n']],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -302,7 +302,7 @@ describe('discriminant-const-object check', () => {
 			sources: [...family(), ['src/sync/peek.ts', "export const peek = (event: { kind: 'file-added' }): boolean => event.kind === 'file-added';\n"]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('field typed as a raw string literal at line 1; "file-added" narrowed against a raw string literal at line 1');
 	});
@@ -319,7 +319,7 @@ describe('discriminant-const-object check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -335,7 +335,7 @@ describe('discriminant-const-object check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -344,13 +344,13 @@ describe('discriminant-const-object check', () => {
 		// What a repo with no tsconfig hands this check. The engine leaves such a
 		// file out rather than typing it against the wrong options, so the check
 		// has to answer about an empty set.
-		const findings = await check.run({ input: setupTypeCheckerInput(), settings: {} });
+		const findings = await check.run({ input: setupTypeCheckerInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('answers nothing for an input kind it did not ask for', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

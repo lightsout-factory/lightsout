@@ -28,7 +28,7 @@ export const resolvePackageRuleStates = ({ packs, config }: Params): Map<string,
 			}
 
 			owners.set(rule.id, pack.name);
-			states.set(rule.id, { severity: rule.defaultSeverity, settings: { ...rule.defaultSettings }, fromConfig: false });
+			states.set(rule.id, { severity: rule.defaultSeverity, options: { ...rule.defaultOptions }, fromConfig: false });
 		}
 	}
 
@@ -43,7 +43,7 @@ export const resolvePackageRuleStates = ({ packs, config }: Params): Map<string,
 
 		states.set(id, {
 			severity: (typeof override === 'string' ? override : object?.severity) ?? state.severity,
-			settings: { ...state.settings, ...object?.settings },
+			options: { ...state.options, ...object?.options },
 			fromConfig: true,
 		});
 	}

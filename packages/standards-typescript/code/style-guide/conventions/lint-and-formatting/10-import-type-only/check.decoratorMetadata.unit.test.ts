@@ -25,7 +25,7 @@ describe('import-type-only check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -44,7 +44,7 @@ describe('import-type-only check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -63,7 +63,7 @@ describe('import-type-only check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -74,7 +74,7 @@ describe('import-type-only check', () => {
 			lines: ["import { EventDate } from './EventDate';", '', '@Entity()', 'export class EventRow {', '\tat: EventDate;', '}'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(["'./EventDate' is used only in type positions"]);
 	});
@@ -94,7 +94,7 @@ describe('import-type-only check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(["'./EventDate' is used only in type positions"]);
 	});

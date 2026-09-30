@@ -17,6 +17,6 @@ export const toStandardsPackRuleListing = ({ rule, fixtureCounts }: Params): Sta
 	channel: rule.channel,
 	checked: rule.checked,
 	defaultSeverity: rule.defaultSeverity,
-	defaultSettings: rule.defaultSettings,
+	defaultOptions: rule.defaultOptions,
 	fixtureCounts,
 });

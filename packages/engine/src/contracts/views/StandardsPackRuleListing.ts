@@ -17,7 +17,8 @@ export const StandardsPackRuleListing = z.object({
 	checked: z.boolean(),
 	/** `off` for a rule a repo opts into. */
 	defaultSeverity: z.enum(StandardsSeverity),
-	defaultSettings: z.record(z.string(), z.number()),
+	/** The numbers the rule.md header declares under `options`. */
+	defaultOptions: z.record(z.string(), z.number()),
 	/** How many files each fixture side holds; both zero for a built pack. */
 	fixtureCounts: z.object({ pass: z.number(), fail: z.number() }),
 });

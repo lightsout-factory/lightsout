@@ -54,7 +54,7 @@ describe('brittle-doc-tags check', () => {
 	test('reports a tag git already owns', async () => {
 		const input = setupDocComment({ lines: ['Charges an invoice.', '', '@author Ada Lovelace'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -80,7 +80,7 @@ describe('brittle-doc-tags check', () => {
 	])('reports $named', async ({ tag, named }) => {
 		const input = setupDocComment({ lines: [tag] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe(`${named} in a doc comment`);
 	});
@@ -88,7 +88,7 @@ describe('brittle-doc-tags check', () => {
 	test('reports a tag in a component file, which the document governs the same way', async () => {
 		const input = setupDocComment({ lines: ['@author Ada Lovelace'], path: 'src/billing/InvoiceRow.tsx' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -103,7 +103,7 @@ describe('brittle-doc-tags check', () => {
 	test('reports a see tag pointing at a URL', async () => {
 		const input = setupDocComment({ lines: ['@see https://example.com/billing'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('@see with a URL in a doc comment');
 	});
@@ -111,7 +111,7 @@ describe('brittle-doc-tags check', () => {
 	test('names each banned tag once, however often the file repeats it', async () => {
 		const input = setupDocComment({ lines: ['@author Ada Lovelace', '@author Grace Hopper', '@todo handle partial payments'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('@author, @todo in a doc comment');
 	});
@@ -140,7 +140,7 @@ describe('brittle-doc-tags check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('@author, @todo in a doc comment');
 	});
@@ -157,7 +157,7 @@ describe('brittle-doc-tags check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -165,7 +165,7 @@ describe('brittle-doc-tags check', () => {
 	test('accepts @typeParam, which the word boundary keeps from reading as @type', async () => {
 		const input = setupDocComment({ lines: ['@typeParam Row - the row shape the caller reads back'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -173,7 +173,7 @@ describe('brittle-doc-tags check', () => {
 	test('accepts the link form the section offers in place of a URL', async () => {
 		const input = setupDocComment({ lines: ['@see {@link Invoice}'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -181,7 +181,7 @@ describe('brittle-doc-tags check', () => {
 	test('accepts @deprecated, whose ban turns on the migration path beside it rather than the tag', async () => {
 		const input = setupDocComment({ lines: ['@deprecated Use chargeOrder instead.'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -191,7 +191,7 @@ describe('brittle-doc-tags check', () => {
 			contents: [['src/billing/chargeInvoice.ts', '// @todo handle partial payments\nexport const chargeInvoice = (): number => 1;']],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -199,7 +199,7 @@ describe('brittle-doc-tags check', () => {
 	test('ignores a JavaScript file, where a type tag is how a type is declared at all', async () => {
 		const input = setupDocComment({ lines: ['@type {import("jest").Config}'], path: 'tools/jest.config.js' });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -210,7 +210,7 @@ describe('brittle-doc-tags check', () => {
 			tests: ['src/billing/chargeInvoice.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -221,7 +221,7 @@ describe('brittle-doc-tags check', () => {
 			standardsPacks: ['standards'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -238,7 +238,7 @@ describe('brittle-doc-tags check', () => {
 			contents: [['standards/tests/unit-testing/10-rule/check.ts', '/**\n * @author Ada Lovelace\n */\nexport const checkRule = (): number => 1;']],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -252,7 +252,7 @@ describe('brittle-doc-tags check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toEqual([
 			expect.objectContaining({ siteKey: 'brittle-doc-tags:src/billing/chargeInvoice.ts', detail: '@author in a doc comment' }),
@@ -263,13 +263,13 @@ describe('brittle-doc-tags check', () => {
 	test('reports nothing for a file in scope whose text the run did not carry', async () => {
 		const input = setupMissingTextInput();
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

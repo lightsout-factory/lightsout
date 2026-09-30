@@ -2,7 +2,7 @@
 summary: "the same block of code written out in two or more files"
 checked: true
 severity: advisory
-settings:
+options:
   minTokens: 50
 ---
 

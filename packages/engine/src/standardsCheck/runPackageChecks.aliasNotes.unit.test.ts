@@ -50,7 +50,7 @@ const rule = ({ id, inputKind }: { id: string; inputKind: StandardsInputKind }):
 	channel: 'base',
 	checked: true,
 	defaultSeverity: StandardsSeverity.Advisory,
-	defaultSettings: {},
+	defaultOptions: {},
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 	inputKind,
 	run: reportingRun,
@@ -60,7 +60,7 @@ const rule = ({ id, inputKind }: { id: string; inputKind: StandardsInputKind }):
 const runChecks = ({ rules, cwd }: { rules: LoadedStandardsRule[]; cwd: string }) => {
 	const pkg: LoadedStandardsPack = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
 	const states = new Map<string, ResolvedRuleState>(
-		rules.map((entry) => [entry.id, { severity: entry.defaultSeverity, settings: entry.defaultSettings, fromConfig: false }]),
+		rules.map((entry) => [entry.id, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false }]),
 	);
 
 	return runPackageChecks({ cwd, packs: [pkg], states, channels: [] });

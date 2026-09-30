@@ -4,8 +4,8 @@ import { buildRawFinding } from '../findings/buildRawFinding.ts';
 
 interface Params {
 	rule: string;
-	/** Which of the rule's resolved settings holds the limit it measures against. */
-	setting: string;
+	/** Names the rule option that holds the limit it measures against. */
+	option: string;
 	/** What one test file broke and the sites to report it against, or undefined when the file is within the limit. */
 	report: ({
 		file,
@@ -19,11 +19,11 @@ interface Params {
 	guidance: string;
 }
 
-export const buildTestLimitCheck = ({ rule, setting, report, guidance }: Params): StandardsCheckModule => ({
+export const buildTestLimitCheck = ({ rule, option, report, guidance }: Params): StandardsCheckModule => ({
 	inputKind: 'test-file',
-	run: ({ input, settings }): RawStandardsFinding[] =>
+	run: ({ input, options }): RawStandardsFinding[] =>
 		readTestFiles({ input }).flatMap(({ file, text }) => {
-			const violation = report({ file, text, limit: settings[setting] });
+			const violation = report({ file, text, limit: options[option] });
 
 			return violation === undefined ? [] : [buildRawFinding({ rule, files: violation.files, detail: violation.detail, guidance, measure: violation.measure })];
 		}),

@@ -20,7 +20,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
-	defaultSettings: {},
+	defaultOptions: {},
 	fixturesPath: `/packages/acme/${overrides.id}/fixtures`,
 	...overrides,
 });

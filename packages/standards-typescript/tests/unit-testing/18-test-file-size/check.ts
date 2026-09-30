@@ -3,7 +3,7 @@ import { buildTestLimitCheck } from '../../../common/checks/buildTestLimitCheck.
 
 export const check: StandardsCheckModule = buildTestLimitCheck({
 	rule: 'test-file-size',
-	setting: 'testFile',
+	option: 'testFile',
 	report: ({ file, text, limit }) => {
 		const lineCount = text.split('\n').length;
 

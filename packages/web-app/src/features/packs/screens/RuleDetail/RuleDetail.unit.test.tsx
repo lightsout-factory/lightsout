@@ -62,6 +62,15 @@ const setupRuleDetail = ({ rule = buildStandardsPackRuleView(), rules = packRule
 	return { rule };
 };
 
+/** A rule with default numbers, and one without: the first gets them under options, the second the bare severity. */
+const configBlockCases: { defaultOptions: Record<string, number>; expected: unknown }[] = [
+	{
+		defaultOptions: { file: 250, tsxFile: 300 },
+		expected: { 'standards-checks': { 'file-size': { severity: 'blocking', options: { file: 250, tsxFile: 300 } } } },
+	},
+	{ defaultOptions: {}, expected: { 'standards-checks': { 'file-size': 'blocking' } } },
+];
+
 /** The text of every code block captioned with this path, in page order. */
 const readCode = ({ caption }: { caption: string }) => screen.getAllByText(caption).map((label) => label.closest('figure')?.querySelector('pre')?.textContent);
 
@@ -266,13 +275,24 @@ describe('RuleDetail', () => {
 
 	test('puts a rule’s numbers in that block, ready to change', () => {
 		setupRuleDetail({
-			rule: buildStandardsPackRuleView({ id: 'file-size', overrides: { defaultSettings: { maxLines: 250 } } }),
+			rule: buildStandardsPackRuleView({ id: 'file-size', overrides: { defaultOptions: { maxLines: 250 } } }),
 			rules: [buildStandardsPackRuleListing({ id: 'file-size' })],
 		});
 
 		const snippet = readConfigSnippet();
 
-		expect(snippet).toStrictEqual({ 'standards-checks': { 'file-size': { severity: 'blocking', settings: { maxLines: 250 } } } });
+		expect(snippet).toStrictEqual({ 'standards-checks': { 'file-size': { severity: 'blocking', options: { maxLines: 250 } } } });
+	});
+
+	test.each(configBlockCases)("the config block puts a rule's default numbers under options", ({ defaultOptions, expected }) => {
+		setupRuleDetail({
+			rule: buildStandardsPackRuleView({ id: 'file-size', overrides: { defaultOptions } }),
+			rules: [buildStandardsPackRuleListing({ id: 'file-size' })],
+		});
+
+		const snippet = readConfigSnippet();
+
+		expect(snippet).toStrictEqual(expected);
 	});
 
 	test('offers that block for copying, since it is meant to be pasted rather than retyped', () => {

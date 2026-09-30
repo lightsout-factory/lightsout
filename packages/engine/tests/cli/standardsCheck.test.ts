@@ -1,9 +1,31 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { expect, test } from '@jest/globals';
+import { expect, jest, test } from '@jest/globals';
+import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { readRuleTotals } from '#tests/helpers/readRuleTotals.ts';
 import { runCli } from '#tests/helpers/runCli.ts';
 import { seedStandardsFixture } from '#tests/helpers/seedStandardsFixture.ts';
+import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
+
+/**
+ * A one-rule library the built-in override points at, so a listing read back
+ * off it proves the CLI child loaded this folder rather than plugin/standards/.
+ * restoreMocks puts the variable back after the test.
+ */
+const setupEnvStandards = async () => {
+	const libraryPath = await freshCwd();
+	writeRepoFile({ cwd: libraryPath, path: 'lightsout-standards.json', content: '{ "name": "env-standards", "formatVersion": 1 }\n' });
+	writeRepoFile({ cwd: libraryPath, path: 'code/demo/document.md', content: '# Demo\n\nThe document the rule argues under.\n' });
+	writeRepoFile({
+		cwd: libraryPath,
+		path: 'code/demo/01-only-rule/rule.md',
+		content: '---\nsummary: what only-rule catches\nseverity: advisory\n---\n\nThe rule prose.\n',
+	});
+	jest.replaceProperty(process.env, 'LIGHTSOUT_DEFAULT_STANDARDS', libraryPath);
+	const { cwd } = await seedStandardsFixture();
+
+	return { cwd };
+};
 
 test('cli: standards-check prints each finding, the rule breakdown, and exits 0', async () => {
 	const { cwd } = await seedStandardsFixture();
@@ -159,6 +181,18 @@ test('cli: standards-check --path narrows the run to one subtree', async () => {
 	const report = JSON.parse(await readFile(join(cwd, '.lightsout', 'standards-check.json'), 'utf8'));
 	// the flag reaches the engine as the checked subpath
 	expect(report.path).toBe('src/a');
+	expect(stderr).toBe('');
+	expect(code).toBe(0);
+});
+
+test('cli: standards-check --list loads the built-in library that LIGHTSOUT_DEFAULT_STANDARDS names', async () => {
+	const { cwd } = await setupEnvStandards();
+
+	const { stdout, stderr, code } = await runCli({ args: ['standards-check', '--list', '--cwd', cwd] });
+
+	expect(stdout).toMatch(/│ only-rule\s+│\s+advisory\s+│\s+judgment\s+│\s+env-standards: code\/demo\s+│/);
+	// the committed plugin copy never loaded beside it
+	expect(stdout).not.toMatch(/│\s+lightsout-defaults:/);
 	expect(stderr).toBe('');
 	expect(code).toBe(0);
 });

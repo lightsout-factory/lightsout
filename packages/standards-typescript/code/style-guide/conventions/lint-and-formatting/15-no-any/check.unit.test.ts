@@ -12,7 +12,7 @@ describe('no-any check', () => {
 			sources: [['src/parsing/parseRecord.ts', 'export const parseRecord = ({ raw }: { raw: any }): string => String(raw);\n']],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -38,7 +38,7 @@ describe('no-any check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe('`any` at lines 1, 3');
 	});
@@ -52,7 +52,7 @@ describe('no-any check', () => {
 			sources: [['src/parsing/parseRecord.ts', [comment, 'export const parseRecord = ({ raw }: { raw: any }): string => String(raw);'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -62,7 +62,7 @@ describe('no-any check', () => {
 			sources: [['src/parsing/parseRecord.ts', 'export const parseRecord = ({ raw }: { raw: any }): string => String(raw); // biome-ignore lint: vendor\n']],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -77,7 +77,7 @@ describe('no-any check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey, detail }) => ({ siteKey, detail }))).toStrictEqual([
 			{ siteKey: 'no-any:src/parsing/parseRecord.ts', detail: '`any` at line 3' },
@@ -89,7 +89,7 @@ describe('no-any check', () => {
 			sources: [['src/parsing/parseRecord.ts', 'export const parseRecord = ({ raw }: { raw: unknown }): string => String(raw);\n']],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -99,7 +99,7 @@ describe('no-any check', () => {
 			sources: [['src/parsing/parseRecord.ts', "export const parseRecord = (): string => {\n\tconst any = 'anything';\n\n\treturn any;\n};\n"]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -112,7 +112,7 @@ describe('no-any check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -125,7 +125,7 @@ describe('no-any check', () => {
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

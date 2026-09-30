@@ -2,7 +2,7 @@
 summary: "a file over the standards line cap"
 checked: true
 severity: advisory
-settings:
+options:
   file: 250
   tsxFile: 300
 ---

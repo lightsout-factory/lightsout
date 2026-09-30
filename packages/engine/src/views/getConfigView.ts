@@ -89,7 +89,7 @@ export const getConfigView = async ({ cwd }: Params): Promise<ConfigView> => {
 							channel: owner.channel,
 							severity: listing.severity,
 							fromConfig: listing.fromConfig,
-							settings: listing.settings,
+							options: listing.options,
 						},
 					];
 		}),

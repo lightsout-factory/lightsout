@@ -20,7 +20,7 @@ describe('duplicate-code-block check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minTokens: 50 } });
+		const findings = await check.run({ input, options: { minTokens: 50 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -55,7 +55,7 @@ describe('duplicate-code-block check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minTokens: 50 } });
+		const findings = await check.run({ input, options: { minTokens: 50 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -92,7 +92,7 @@ describe('duplicate-code-block check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minTokens: 50 } });
+		const findings = await check.run({ input, options: { minTokens: 50 } });
 
 		expect(findings[0]?.detail).toBe('2 duplicated block(s), the longest 30 lines');
 	});
@@ -110,7 +110,7 @@ describe('duplicate-code-block check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minTokens: 50 } });
+		const findings = await check.run({ input, options: { minTokens: 50 } });
 
 		expect(findings[0]?.detail).toBe('1 duplicated block(s), the longest 9 lines');
 	});
@@ -135,7 +135,7 @@ describe('duplicate-code-block check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minTokens: 50 } });
+		const findings = await check.run({ input, options: { minTokens: 50 } });
 
 		expect(findings.map(({ siteKey, files }) => ({ siteKey, sites: files.length }))).toStrictEqual([
 			{ siteKey: 'duplicate-code-block:src/a/alpha.ts|src/b/beta.ts', sites: 4 },
@@ -162,7 +162,7 @@ describe('duplicate-code-block check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minTokens: 50 } });
+		const findings = await check.run({ input, options: { minTokens: 50 } });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
 			'duplicate-code-block:src/a/alpha.ts|src/b/beta.ts',
@@ -173,13 +173,13 @@ describe('duplicate-code-block check', () => {
 	test('a repo the detector found no copy in earns no finding', async () => {
 		const input = setupCloneSpansInput({ spans: [] });
 
-		const findings = await check.run({ input, settings: { minTokens: 50 } });
+		const findings = await check.run({ input, options: { minTokens: 50 } });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupFileListInput({ files: ['src/a/alpha.ts'] }), settings: { minTokens: 50 } });
+		const findings = await check.run({ input: setupFileListInput({ files: ['src/a/alpha.ts'] }), options: { minTokens: 50 } });
 
 		expect(findings).toStrictEqual([]);
 	});

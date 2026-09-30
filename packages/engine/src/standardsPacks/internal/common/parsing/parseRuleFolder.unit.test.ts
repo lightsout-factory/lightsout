@@ -73,4 +73,27 @@ describe('parseRuleFolder', () => {
 
 		expect({ rule, problemCount: problems.length }).toStrictEqual({ rule: undefined, problemCount: 1 });
 	});
+
+	test.each([
+		{ frontMatter: 'summary: an internal file imported from outside\noptions:\n  cap: 12', expected: { cap: 12 } },
+		{ frontMatter: 'summary: an internal file imported from outside', expected: {} },
+	])('reads the numbers a rule declares under options as its default options', async ({ frontMatter, expected }) => {
+		const { folderPath } = setupRuleFolder({ frontMatter });
+
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems: [] });
+
+		expect(rule?.defaultOptions).toStrictEqual(expected);
+	});
+
+	test('refuses an option that is not a number, and drops the rule', async () => {
+		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: an internal file imported from outside\noptions:\n  cap: soon' });
+		const problems: string[] = [];
+
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems });
+
+		expect({ rule, problems }).toEqual({
+			rule: undefined,
+			problems: [expect.stringContaining('code/modules/01-internal-import-from-outside/rule.md')],
+		});
+	});
 });

@@ -330,7 +330,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -360,7 +360,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -390,7 +390,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -434,7 +434,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 1
@@ -483,7 +483,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -513,7 +513,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -557,7 +557,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 1
@@ -596,7 +596,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 4
@@ -660,7 +660,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 3,
         "fail": 2
@@ -709,7 +709,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 3,
         "fail": 2
@@ -758,7 +758,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -788,7 +788,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -818,7 +818,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 1
@@ -857,7 +857,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -887,7 +887,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -917,7 +917,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 5,
         "fail": 2
@@ -976,7 +976,7 @@
       "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 3,
         "fail": 1
@@ -1020,7 +1020,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -1050,7 +1050,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -1094,7 +1094,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 5,
         "fail": 3
@@ -1158,7 +1158,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -1188,7 +1188,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 4
@@ -1252,7 +1252,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -1282,7 +1282,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {
+      "defaultOptions": {
         "minTokens": 50
       },
       "fixtureCounts": {
@@ -1338,7 +1338,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -1382,7 +1382,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {
+      "defaultOptions": {
         "minBodyTokens": 40
       },
       "fixtureCounts": {
@@ -1428,7 +1428,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 1
@@ -1467,7 +1467,7 @@
       "channel": "tanstack",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -1511,7 +1511,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -1555,7 +1555,7 @@
       "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -1599,7 +1599,7 @@
       "channel": "tanstack",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -1643,7 +1643,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {
+      "defaultOptions": {
         "file": 250,
         "tsxFile": 300
       },
@@ -1685,7 +1685,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 5,
         "fail": 1
@@ -1739,7 +1739,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 5,
         "fail": 3
@@ -1803,7 +1803,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 3,
         "fail": 1
@@ -1847,7 +1847,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 2
@@ -1901,7 +1901,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {
+      "defaultOptions": {
         "cap": 20
       },
       "fixtureCounts": {
@@ -2157,7 +2157,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -2187,7 +2187,7 @@
       "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -2217,7 +2217,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {
+      "defaultOptions": {
         "function": 80,
         "hook": 160,
         "component": 200
@@ -2251,7 +2251,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 3,
         "fail": 3
@@ -2305,7 +2305,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 5,
         "fail": 4
@@ -2374,7 +2374,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -2404,7 +2404,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 3,
         "fail": 2
@@ -2453,7 +2453,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "off",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 3,
         "fail": 3
@@ -2507,7 +2507,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -2537,7 +2537,7 @@
       "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -2567,7 +2567,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 3,
         "fail": 3
@@ -2621,7 +2621,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -2651,7 +2651,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 3,
         "fail": 3
@@ -2705,7 +2705,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -2749,7 +2749,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 4
@@ -2813,7 +2813,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 1
@@ -2862,7 +2862,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -2892,7 +2892,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -2922,7 +2922,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -2952,7 +2952,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -2982,7 +2982,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 1
@@ -3021,7 +3021,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -3051,7 +3051,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -3081,7 +3081,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {
+      "defaultOptions": {
         "maxParams": 6
       },
       "fixtureCounts": {
@@ -3113,7 +3113,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -3143,7 +3143,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -3173,7 +3173,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -3217,7 +3217,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -3261,7 +3261,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -3291,7 +3291,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 2
@@ -3330,7 +3330,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 2
@@ -3369,7 +3369,7 @@
       "channel": "tanstack",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 1
@@ -3408,7 +3408,7 @@
       "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -3438,7 +3438,7 @@
       "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -3482,7 +3482,7 @@
       "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 5,
         "fail": 2
@@ -3541,7 +3541,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 3,
         "fail": 3
@@ -3595,7 +3595,7 @@
       "channel": "tanstack",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 1
@@ -3634,7 +3634,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -3664,7 +3664,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 4
@@ -3728,7 +3728,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -3772,7 +3772,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 4
@@ -3836,7 +3836,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -3866,7 +3866,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 1
@@ -3915,7 +3915,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 5,
         "fail": 2
@@ -3974,7 +3974,7 @@
       "channel": "tanstack",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4004,7 +4004,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4034,7 +4034,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {
+      "defaultOptions": {
         "testFile": 400
       },
       "fixtureCounts": {
@@ -4066,7 +4066,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -4110,7 +4110,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4140,7 +4140,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4170,7 +4170,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4200,7 +4200,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4230,7 +4230,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4260,7 +4260,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 1
@@ -4309,7 +4309,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4339,7 +4339,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4369,7 +4369,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 5,
         "fail": 2
@@ -4428,7 +4428,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 6,
         "fail": 2
@@ -4492,7 +4492,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4522,7 +4522,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4552,7 +4552,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4582,7 +4582,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -4626,7 +4626,7 @@
       "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4656,7 +4656,7 @@
       "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4686,7 +4686,7 @@
       "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -4716,7 +4716,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 2
@@ -4770,7 +4770,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -4814,7 +4814,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -4858,7 +4858,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 1
@@ -4897,7 +4897,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 2,
         "fail": 2
@@ -4941,7 +4941,7 @@
       "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 5,
         "fail": 5
@@ -5015,7 +5015,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
@@ -5045,7 +5045,7 @@
       "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
-      "defaultSettings": {},
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1

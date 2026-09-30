@@ -34,7 +34,7 @@ describe('multi-export check', () => {
 			contents: [['src/common/types/Config.ts', ['export interface Config {', '\tname: string;', '}', '', 'export const maxRetries = 3;'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -55,7 +55,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -78,7 +78,7 @@ describe('multi-export check', () => {
 			contents: [['src/sync/fetchBatch.ts', ['export async function fetchBatch(): Promise<void> {}', 'export const batchSize = 10;'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -95,7 +95,7 @@ describe('multi-export check', () => {
 			contents: [['src/common/types/Config.ts', ['export interface Config {', '\tname: string;', '}'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -105,7 +105,7 @@ describe('multi-export check', () => {
 			contents: [['src/sync/runSync.ts', ['const step = 1;', 'const total = 2;'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -116,7 +116,7 @@ describe('multi-export check', () => {
 			listedWithoutText: ['src/common/types/Config.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -141,7 +141,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -163,7 +163,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -192,7 +192,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -216,7 +216,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -240,7 +240,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -261,7 +261,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -282,7 +282,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -312,7 +312,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -334,7 +334,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -347,7 +347,7 @@ describe('multi-export check', () => {
 			contents: [[path, ['export const baseRate = 1;', 'export const taxRate = 2;'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -357,13 +357,13 @@ describe('multi-export check', () => {
 			contents: [['src/billing/index.ts', ['export const baseRate = 1;', 'export const taxRate = 2;'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

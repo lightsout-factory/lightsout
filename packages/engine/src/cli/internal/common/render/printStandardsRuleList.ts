@@ -8,8 +8,8 @@ const countOf = ({ rules, severity }: { rules: StandardsRuleListing[]; severity:
 	rules.filter((rule) => rule.severity === severity).length;
 
 /** Shown so a retuned knob is visible without opening the config. */
-const describeSettings = ({ settings }: { settings: Record<string, number> }) =>
-	Object.entries(settings)
+const describeOptions = ({ options }: { options: Record<string, number> }) =>
+	Object.entries(options)
 		.map(([name, value]) => `${name} ${value}`)
 		.join(', ');
 
@@ -25,14 +25,14 @@ interface Params {
  */
 export const printStandardsRuleList = ({ rules }: Params): void => {
 	const rows = rules.flatMap((rule) => {
-		const settings = describeSettings({ settings: rule.settings });
+		const options = describeOptions({ options: rule.options });
 
 		return [
 			{
 				cells: [rule.rule, rule.fromConfig ? `${rule.severity} (config)` : rule.severity, rule.checked ? 'code' : 'judgment', rule.doc],
 			},
 			{
-				cells: [settings === '' ? rule.summary : `${rule.summary} — ${settings}`, '', '', ''],
+				cells: [options === '' ? rule.summary : `${rule.summary} — ${options}`, '', '', ''],
 				ruleAbove: false,
 				emphasis: dim,
 			},

@@ -38,7 +38,7 @@ export const checkFixtureTree = async ({ cwd, rule, inputKind, run, label, compi
 		// A fixture tree is a miniature repo of its own; it declares no pack.
 		standardsPacks: [],
 		packagesDir: defaultPackagesDir,
-		settings: rule.defaultSettings,
+		options: rule.defaultOptions,
 		cache: new Map<string, string>(),
 		compiler,
 	});
@@ -50,5 +50,5 @@ export const checkFixtureTree = async ({ cwd, rule, inputKind, run, label, compi
 		throw new Error(`no tsconfig.json in ${label}, so none of its ${files.length} file(s) could be typed — a type-checker rule's fixtures need one`);
 	}
 
-	return runRuleCheck({ rule: rule.id, run, input, settings: rule.defaultSettings });
+	return runRuleCheck({ rule: rule.id, run, input, options: rule.defaultOptions });
 };

@@ -31,10 +31,10 @@ const declaredProperties = ({ inner }: { inner: string }) => {
 };
 
 // The cap is the prose's judgment made countable, and a repo may retune it
-// through the rule's settings.
+// through the rule's options.
 export const check: StandardsCheckModule = buildTestLimitCheck({
 	rule: 'oversized-setup-factory',
-	setting: 'maxParams',
+	option: 'maxParams',
 	report: ({ file, text, limit }) => {
 		const sprawling: Array<{ name: string; count: number; startLine: number; endLine: number }> = [];
 

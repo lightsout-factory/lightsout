@@ -20,8 +20,8 @@ interface Params {
 	standardsPacks: string[];
 	/** Monorepo package parent dir (config `packages-dir`, default 'packages') — every kind that carries `dependencies` reads it. */
 	packagesDir: string;
-	/** The asking rule's resolved numbers — only the clone-spans detector reads them. */
-	settings: Record<string, number>;
+	/** The asking rule's resolved options — only the clone-spans detector reads them. */
+	options: Record<string, number>;
 	/** The run's shared content cache — every text-carrying kind draws from it. */
 	cache: Map<string, string>;
 	/** The consumer's TypeScript, when it resolved. */
@@ -43,7 +43,7 @@ export const buildCheckInput = async ({
 	referenceFiles,
 	standardsPacks,
 	packagesDir,
-	settings,
+	options,
 	cache,
 	compiler,
 }: Params): Promise<StandardsCheckInput> => {
@@ -58,7 +58,7 @@ export const buildCheckInput = async ({
 			return buildTestFileInput({ cwd, tests, cache });
 
 		case StandardsInputKind.CloneSpans:
-			return buildCloneSpansInput({ cwd, source, settings, cache, compiler });
+			return buildCloneSpansInput({ cwd, source, options, cache, compiler });
 
 		case StandardsInputKind.SyntaxTree:
 		case StandardsInputKind.TypeChecker:

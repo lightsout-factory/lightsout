@@ -88,7 +88,7 @@ describe('buildCloneSpansInput', () => {
 	test('reports each duplicated span with both of its sites and its token count', async () => {
 		const { cwd } = setupRepo();
 
-		const input = await buildCloneSpansInput({ cwd, source: ['src/alpha.ts', 'src/beta.ts'], settings: { minTokens: 50 }, cache: new Map() });
+		const input = await buildCloneSpansInput({ cwd, source: ['src/alpha.ts', 'src/beta.ts'], options: { minTokens: 50 }, cache: new Map() });
 		const span = input.spans[0];
 
 		expect(input.kind).toBe('clone-spans');
@@ -102,10 +102,29 @@ describe('buildCloneSpansInput', () => {
 	test('honors the asking rule minTokens, because the engine runs the detector', async () => {
 		const { cwd } = setupRepo();
 
-		const input = await buildCloneSpansInput({ cwd, source: ['src/alpha.ts', 'src/beta.ts'], settings: { minTokens: 5000 }, cache: new Map() });
+		const input = await buildCloneSpansInput({ cwd, source: ['src/alpha.ts', 'src/beta.ts'], options: { minTokens: 5000 }, cache: new Map() });
 
 		// nothing in the fixture is 5000 tokens long
 		expect(input.spans).toStrictEqual([]);
+	});
+
+	test('reads its token threshold from the minTokens option it is handed', async () => {
+		const { cwd } = setupRepo();
+		const source = ['src/alpha.ts', 'src/beta.ts'];
+
+		const [aboveBlock, belowBlock] = await Promise.all([
+			buildCloneSpansInput({ cwd, source, options: { minTokens: 5000 }, cache: new Map() }),
+			buildCloneSpansInput({ cwd, source, options: { minTokens: 50 }, cache: new Map() }),
+		]);
+
+		// the duplicated body is well over 50 tokens and far short of 5000
+		expect({
+			spansAboveBlock: aboveBlock.spans,
+			sitesBelowBlock: belowBlock.spans.map((span) => span.files.map((file) => file.path).sort()),
+		}).toStrictEqual({
+			spansAboveBlock: [],
+			sitesBelowBlock: [['src/alpha.ts', 'src/beta.ts']],
+		});
 	});
 
 	test('skips a source file it cannot read instead of abandoning the detection', async () => {
@@ -114,7 +133,7 @@ describe('buildCloneSpansInput', () => {
 		const input = await buildCloneSpansInput({
 			cwd,
 			source: ['src/ghost.ts', 'src/alpha.ts', 'src/beta.ts'],
-			settings: { minTokens: 50 },
+			options: { minTokens: 50 },
 			cache: new Map(),
 		});
 
@@ -124,7 +143,7 @@ describe('buildCloneSpansInput', () => {
 	test('detects clones in plain javascript sources as well as typescript ones', async () => {
 		const { cwd } = setupJavascriptRepo();
 
-		const input = await buildCloneSpansInput({ cwd, source: ['src/alpha.js', 'src/beta.js'], settings: { minTokens: 50 }, cache: new Map() });
+		const input = await buildCloneSpansInput({ cwd, source: ['src/alpha.js', 'src/beta.js'], options: { minTokens: 50 }, cache: new Map() });
 
 		expect(input.spans[0]?.files.map((file) => file.path).sort()).toStrictEqual(['src/alpha.js', 'src/beta.js']);
 	});
@@ -132,7 +151,7 @@ describe('buildCloneSpansInput', () => {
 	test('never reports a shared import block as duplication', async () => {
 		const { cwd } = setupSharedImportRepo();
 
-		const input = await buildCloneSpansInput({ cwd, source: ['src/alpha.ts', 'src/beta.ts'], settings: { minTokens: 50 }, cache: new Map() });
+		const input = await buildCloneSpansInput({ cwd, source: ['src/alpha.ts', 'src/beta.ts'], options: { minTokens: 50 }, cache: new Map() });
 
 		expect(input.spans).toStrictEqual([]);
 	});
@@ -140,7 +159,7 @@ describe('buildCloneSpansInput', () => {
 	test('reports the true line numbers of code that follows an import block', async () => {
 		const { cwd } = setupOffsetImportRepo();
 
-		const input = await buildCloneSpansInput({ cwd, source: ['src/alpha.ts', 'src/beta.ts'], settings: { minTokens: 50 }, cache: new Map() });
+		const input = await buildCloneSpansInput({ cwd, source: ['src/alpha.ts', 'src/beta.ts'], options: { minTokens: 50 }, cache: new Map() });
 		const [alphaLine = 0, betaLine = 0] = ['src/alpha.ts', 'src/beta.ts'].map(
 			(path) => input.spans[0]?.files.find((file) => file.path === path)?.startLine ?? 0,
 		);
@@ -192,7 +211,7 @@ describe('buildCloneSpansInput delegation blanking', () => {
 		const input = await buildCloneSpansInput({
 			cwd,
 			source: ['src/RefactorRun.ts', 'src/PipelineRun.ts'],
-			settings: { minTokens: 50 },
+			options: { minTokens: 50 },
 			cache: new Map(),
 			compiler,
 		});
@@ -203,7 +222,7 @@ describe('buildCloneSpansInput delegation blanking', () => {
 	test('without a compiler the blanking is skipped rather than guessed, so the spans come back', async () => {
 		const { cwd } = setupDelegatingRepo();
 
-		const input = await buildCloneSpansInput({ cwd, source: ['src/RefactorRun.ts', 'src/PipelineRun.ts'], settings: { minTokens: 50 }, cache: new Map() });
+		const input = await buildCloneSpansInput({ cwd, source: ['src/RefactorRun.ts', 'src/PipelineRun.ts'], options: { minTokens: 50 }, cache: new Map() });
 
 		expect(input.spans.length).toBeGreaterThan(0);
 	});

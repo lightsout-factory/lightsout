@@ -18,7 +18,7 @@ describe('folder-index-file check', () => {
 	test('reports an index file in a folder', async () => {
 		const input = setupRepo({ paths: ['src/ingestion/index.ts', 'src/ingestion/ingestRecords.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -33,7 +33,7 @@ describe('folder-index-file check', () => {
 	test('reports every spelling of an index file, under common/ as anywhere else', async () => {
 		const input = setupRepo({ paths: ['src/billing/index.js', 'src/billing/common/utils/index.tsx', 'src/billing/charge.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
 			'folder-index-file:src/billing/index.js',
@@ -44,7 +44,7 @@ describe('folder-index-file check', () => {
 	test('accepts the entry at a package’s root or its src/, in a repo with no manifest', async () => {
 		const input = setupRepo({ paths: ['index.ts', 'src/index.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -58,7 +58,7 @@ describe('folder-index-file check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-index-file:packages/engine/src/queue/index.ts']);
 	});
@@ -66,7 +66,7 @@ describe('folder-index-file check', () => {
 	test('reports a src/index.ts that belongs to no package, since only a package has an entry', async () => {
 		const input = setupRepo({ paths: ['tools/src/index.ts'], manifests: [['packages/web/package.json', {}]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-index-file:tools/src/index.ts']);
 	});
@@ -77,13 +77,13 @@ describe('folder-index-file check', () => {
 			manifests: [['package.json', { dependencies: { '@tanstack/react-router': '1.0.0' } }]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('answers nothing for an input of another kind', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

@@ -44,8 +44,8 @@ const setupSection = ({ prefersReduced = false }: { prefersReduced?: boolean } =
 /** The benefit whose tab is open, by its title. */
 const readOpenBenefit = () => screen.getByRole('tab', { selected: true }).querySelector('.font-bold')?.textContent;
 
-/** A default-pack rule's shipped settings. */
-const readPackSettings = ({ rule }: { rule: string }) => getDefaultPackBundle().rules.find((entry) => entry.id === rule)?.defaultSettings;
+/** A default-pack rule's shipped options. */
+const readPackOptions = ({ rule }: { rule: string }) => getDefaultPackBundle().rules.find((entry) => entry.id === rule)?.defaultOptions;
 
 afterEach(() => {
 	jest.useRealTimers();
@@ -120,8 +120,8 @@ describe('CleansAsItCodesSection', () => {
 
 	test('quotes the caps the default Standards Pack actually ships, so tuning the pack fails here until the page follows', () => {
 		expect(codeCaps).toStrictEqual({
-			folderFiles: readPackSettings({ rule: 'folder-size' })?.cap,
-			fileLines: readPackSettings({ rule: 'file-size' })?.file,
+			folderFiles: readPackOptions({ rule: 'folder-size' })?.cap,
+			fileLines: readPackOptions({ rule: 'file-size' })?.file,
 		});
 	});
 

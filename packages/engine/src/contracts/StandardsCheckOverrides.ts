@@ -14,7 +14,7 @@ export const StandardsCheckOverrides = z.record(
 		z
 			.object({
 				severity: z.enum(StandardsSeverity).optional(),
-				settings: z.record(z.string(), z.number()).optional(),
+				options: z.record(z.string(), z.number()).optional(),
 			})
 			.strict(),
 	]),

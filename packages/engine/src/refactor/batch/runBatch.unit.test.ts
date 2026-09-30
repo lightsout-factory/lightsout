@@ -38,7 +38,7 @@ const judgmentPacks: LoadedStandardsPack[] = [
 				channel: 'base',
 				checked: false,
 				defaultSeverity: StandardsSeverity.Advisory,
-				defaultSettings: {},
+				defaultOptions: {},
 				fixturesPath: '/packages/acme/single-return/fixtures',
 			},
 		],

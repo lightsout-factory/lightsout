@@ -10,7 +10,7 @@ describe('single-file-domain-folder check', () => {
 	test('reports a domain folder holding one file', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/formatting/formatDate.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -26,7 +26,7 @@ describe('single-file-domain-folder check', () => {
 	test('leaves alone a domain folder holding a second related function', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/parsing/parseDate.ts', 'src/billing/common/parsing/parseTime.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -36,7 +36,7 @@ describe('single-file-domain-folder check', () => {
 		async ({ folder }) => {
 			const input = setupFileListInput({ files: [`src/billing/common/${folder}/formatTax.ts`] });
 
-			const findings = await check.run({ input, settings: {} });
+			const findings = await check.run({ input, options: {} });
 
 			expect(findings).toStrictEqual([]);
 		},
@@ -47,7 +47,7 @@ describe('single-file-domain-folder check', () => {
 			files: ['src/billing/common/validation/validateEmail.ts', 'src/billing/common/validation/validateEmail.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['single-file-domain-folder:src/billing/common/validation']);
 	});
@@ -55,7 +55,7 @@ describe('single-file-domain-folder check', () => {
 	test('leaves alone a folder whose only file is a test, since it holds no production file to move', async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/validation/validateEmail.unit.test.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -63,7 +63,7 @@ describe('single-file-domain-folder check', () => {
 	test("counts the folder's own files alone, so a file in a subfolder is not its second", async () => {
 		const input = setupFileListInput({ files: ['src/billing/common/parsing/parseDate.ts', 'src/billing/common/parsing/deep/parseTime.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['single-file-domain-folder:src/billing/common/parsing']);
 	});
@@ -71,7 +71,7 @@ describe('single-file-domain-folder check', () => {
 	test('never judges a one-file folder that sits nowhere under a common/', async () => {
 		const input = setupFileListInput({ files: ['src/billing/features/invoices/getInvoice.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -79,7 +79,7 @@ describe('single-file-domain-folder check', () => {
 	test('inside a declared pack, a domain folder under tests/ holds a production file and is judged', async () => {
 		const input = setupFileListInput({ files: ['standards/tests/common/scanning/scanLines.ts'], standardsPacks: ['standards'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['single-file-domain-folder:standards/tests/common/scanning']);
 	});
@@ -87,7 +87,7 @@ describe('single-file-domain-folder check', () => {
 	test('the same folder with no pack declared above it is test code, so it holds no production file to move', async () => {
 		const input = setupFileListInput({ files: ['standards/tests/common/scanning/scanLines.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -95,7 +95,7 @@ describe('single-file-domain-folder check', () => {
 	test('reports every such folder separately, in path order', async () => {
 		const input = setupFileListInput({ files: ['src/pay/common/rounding/round.ts', 'src/bill/common/formatting/formatDate.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
 			'single-file-domain-folder:src/bill/common/formatting',
@@ -104,7 +104,7 @@ describe('single-file-domain-folder check', () => {
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

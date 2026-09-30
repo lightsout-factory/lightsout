@@ -35,13 +35,13 @@ const loadOneRule = ({ inputKind }: { inputKind: StandardsInputKind }) => {
 		channel: 'base',
 		checked: true,
 		defaultSeverity: StandardsSeverity.Advisory,
-		defaultSettings: {},
+		defaultOptions: {},
 		fixturesPath: '/packages/acme/a-rule/fixtures',
 		inputKind,
 		run,
 	};
 	const packs: LoadedStandardsPack[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule] }];
-	const states = new Map<string, ResolvedRuleState>([['a-rule', { severity: StandardsSeverity.Advisory, settings: {}, fromConfig: false }]]);
+	const states = new Map<string, ResolvedRuleState>([['a-rule', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false }]]);
 
 	return { inputs, packs, states };
 };

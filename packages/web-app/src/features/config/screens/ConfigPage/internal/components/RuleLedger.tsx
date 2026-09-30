@@ -23,8 +23,8 @@ const RuleLink = ({ state }: { state: RuleState }) => (
 	</Link>
 );
 
-const RuleSettings = ({ state }: { state: RuleState }) => {
-	const entries = Object.entries(state.settings);
+const RuleOptions = ({ state }: { state: RuleState }) => {
+	const entries = Object.entries(state.options);
 
 	return entries.length === 0 ? (
 		<span className="text-muted-foreground">—</span>
@@ -52,7 +52,7 @@ const columns: Array<DataTableColumn<RuleState>> = [
 		header: 'set by',
 		render: (state) => <span className="text-muted-foreground">{state.fromConfig ? 'this repo' : 'the pack'}</span>,
 	},
-	{ key: 'settings', header: 'settings', render: (state) => <RuleSettings state={state} /> },
+	{ key: 'options', header: 'options', render: (state) => <RuleOptions state={state} /> },
 ];
 
 interface Props {

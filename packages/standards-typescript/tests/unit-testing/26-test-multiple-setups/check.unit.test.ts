@@ -81,7 +81,7 @@ describe('test-multiple-setups check', () => {
 	test('reports a test that calls more than one setup factory', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', twoSetupsSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -96,7 +96,7 @@ describe('test-multiple-setups check', () => {
 	test('leaves a test with a single arrangement factory alone', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', oneSetupSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -106,7 +106,7 @@ describe('test-multiple-setups check', () => {
 		async ({ call }) => {
 			const input = setupTestFileInput({ contents: [['src/feature/setupWorkspace.unit.test.ts', buildSubjectActSource({ call })]] });
 
-			const findings = await check.run({ input, settings: {} });
+			const findings = await check.run({ input, options: {} });
 
 			expect(findings).toStrictEqual([]);
 		},
@@ -115,7 +115,7 @@ describe('test-multiple-setups check', () => {
 	test('a `setup()` quoted in an expected message is not a second call', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/describeRule.unit.test.ts', quotedSetupSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		// every rule about arrangement has to quote the thing it asks for, so a
 		// test pinning that message would otherwise be reported for saying it
@@ -125,7 +125,7 @@ describe('test-multiple-setups check', () => {
 	test('names every over-arranged test of one file in a single finding', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/getLabel.unit.test.ts', twoOverArrangedSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -141,7 +141,7 @@ describe('test-multiple-setups check', () => {
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

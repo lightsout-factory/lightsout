@@ -45,7 +45,7 @@ describe('test-mock-wrapper-untyped check', () => {
 			contents: [[path, buildFactorySource({ forward: 'saveOrder: (...args: unknown[]) => mockSaveOrder(args[0]),' })]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -62,7 +62,7 @@ describe('test-mock-wrapper-untyped check', () => {
 			contents: [[path, `${buildFactorySource({ forward: 'saveOrder: () => mockSaveOrder(),' })}\n${callAssertion}`]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map((finding) => finding.detail)).toStrictEqual(["'saveOrder' forwards no arguments to mockSaveOrder (line 3)"]);
 	});
@@ -70,7 +70,7 @@ describe('test-mock-wrapper-untyped check', () => {
 	test('leaves a zero-argument forward alone when nothing in the file claims the call took arguments', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildFactorySource({ forward: 'saveOrder: () => mockSaveOrder(),' })]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -80,7 +80,7 @@ describe('test-mock-wrapper-untyped check', () => {
 			contents: [[path, `${buildFactorySource({ forward: 'saveOrder: (params: { id: string }) => mockSaveOrder(params),' })}\n${callAssertion}`]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -88,7 +88,7 @@ describe('test-mock-wrapper-untyped check', () => {
 	test('states both verdicts against one factory that earns them both', async () => {
 		const input = setupTestFileInput({ contents: [[path, bothReasonsSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map((finding) => finding.detail)).toStrictEqual([
 			"a `(...args: unknown[])` wrapper; 'saveOrder' forwards no arguments to mockSaveOrder (line 3)",
@@ -98,7 +98,7 @@ describe('test-mock-wrapper-untyped check', () => {
 	test('names every offending factory of one file in a single finding', async () => {
 		const input = setupTestFileInput({ contents: [[path, twoFactoriesSource]] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -114,7 +114,7 @@ describe('test-mock-wrapper-untyped check', () => {
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

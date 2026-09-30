@@ -36,7 +36,7 @@ describe('import-through-index check', () => {
 			edges: [ingestionBarrelEdge, { from: 'src/reporting/buildReport.ts', to: 'src/ingestion/index.ts' }],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -54,7 +54,7 @@ describe('import-through-index check', () => {
 			edges: [ingestionBarrelEdge, { from: 'src/ingestion/parseRow.ts', to: 'src/ingestion/index.ts' }],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -75,7 +75,7 @@ describe('import-through-index check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -99,7 +99,7 @@ describe('import-through-index check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -127,7 +127,7 @@ describe('import-through-index check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -138,7 +138,7 @@ describe('import-through-index check', () => {
 			edges: [ingestionBarrelEdge, { from: 'src/ingestion/index.unit.test.ts', to: 'src/ingestion/index.ts' }],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -149,7 +149,7 @@ describe('import-through-index check', () => {
 			edges: [ingestionBarrelEdge, { from: 'src/ingestion/ingestRecords.unit.test.ts', to: 'src/ingestion/index.ts' }],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -168,7 +168,7 @@ describe('import-through-index check', () => {
 			dependencies: [['.', ['@tanstack/react-router']]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -196,7 +196,7 @@ describe('import-through-index check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -221,7 +221,7 @@ describe('import-through-index check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -236,7 +236,7 @@ describe('import-through-index check', () => {
 			dependencies: [['.', []]],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['import-through-index:apps/web/src/ingestion/index.ts|scripts/buildDocs.mjs']);
 	});
@@ -248,13 +248,13 @@ describe('import-through-index check', () => {
 			scope: ['src/ingestion/parseRow.ts'],
 		});
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('answers nothing for an input of another kind', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

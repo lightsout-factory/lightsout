@@ -115,7 +115,7 @@ describe('duplicate-function-body check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 5 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 5 } });
 
 		expect(findings).toEqual([
 			{
@@ -138,7 +138,7 @@ describe('duplicate-function-body check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 5 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 5 } });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['duplicate-function-body:src/labels/buildLabel.ts|src/labels/buildTag.ts']);
 	});
@@ -151,7 +151,7 @@ describe('duplicate-function-body check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 5 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 5 } });
 
 		expect(findings.map(({ files }) => files)).toStrictEqual([
 			[
@@ -169,7 +169,7 @@ describe('duplicate-function-body check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 5 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 5 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -182,7 +182,7 @@ describe('duplicate-function-body check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 5 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 5 } });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['duplicate-function-body:src/alpha/AlphaButton.ts|src/beta/BetaButton.ts']);
 	});
@@ -195,7 +195,7 @@ describe('duplicate-function-body check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 5 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 5 } });
 
 		expect(findings).toEqual([
 			{
@@ -217,7 +217,7 @@ describe('duplicate-function-body check', () => {
 	test('a body copied within one file is reported against that file once, with both spans', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/billing/amounts.ts', [formatAmountSource, formatTotalSource].join('\n')]] });
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 5 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 5 } });
 
 		expect(findings.map(({ siteKey, files }) => ({ siteKey, files }))).toStrictEqual([
 			{
@@ -238,7 +238,7 @@ describe('duplicate-function-body check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 200 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 200 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -251,13 +251,13 @@ describe('duplicate-function-body check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 5 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 5 } });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: { minBodyTokens: 40 } });
+		const findings = await check.run({ input: setupOtherKindInput(), options: { minBodyTokens: 40 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -272,7 +272,7 @@ describe('duplicate-function-body check', () => {
 			standardsPacks: ['standards'],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 10 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 10 } });
 
 		// a pack installs where the rest of this repo is absent, so deleting
 		// either copy leaves one side importing what is not there
@@ -290,7 +290,7 @@ describe('duplicate-function-body check', () => {
 			standardsPacks: ['standards'],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 10 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 10 } });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(["'getTokens', 'splitWords' (32 tokens) have the same body under different names"]);
 	});
@@ -311,7 +311,7 @@ describe('duplicate-function-body check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 5 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 5 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -326,7 +326,7 @@ describe('duplicate-function-body check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 5 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 5 } });
 
 		expect(findings.map(({ siteKey, files }) => ({ siteKey, files }))).toStrictEqual([
 			{
@@ -355,7 +355,7 @@ describe('duplicate-function-body check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 5 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 5 } });
 
 		expect(findings).toEqual([
 			{
@@ -374,7 +374,7 @@ describe('duplicate-function-body check', () => {
 	test('a body exactly at the token floor is still a duplicate — the floor is the smallest size that counts', async () => {
 		const input = setupSyntaxTreeInput({ sources: splitWordsPair });
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 32 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 32 } });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(["'getTokens', 'splitWords' (32 tokens) have the same body under different names"]);
 	});
@@ -382,8 +382,27 @@ describe('duplicate-function-body check', () => {
 	test('a body one token short of the floor is silent', async () => {
 		const input = setupSyntaxTreeInput({ sources: splitWordsPair });
 
-		const findings = await check.run({ input, settings: { minBodyTokens: 33 } });
+		const findings = await check.run({ input, options: { minBodyTokens: 33 } });
 
 		expect(findings).toStrictEqual([]);
+	});
+
+	test('reads its body-size threshold from the minBodyTokens option', async () => {
+		const input = setupSyntaxTreeInput({
+			sources: [
+				['src/billing/formatAmount.ts', formatAmountSource],
+				['src/invoices/formatTotal.ts', formatTotalSource],
+			],
+		});
+
+		const [lowFloor, highFloor] = await Promise.all([
+			check.run({ input, options: { minBodyTokens: 5 } }),
+			check.run({ input, options: { minBodyTokens: 500 } }),
+		]);
+
+		expect({ lowFloor: lowFloor.map(({ siteKey }) => siteKey), highFloor }).toStrictEqual({
+			lowFloor: ['duplicate-function-body:src/billing/formatAmount.ts|src/invoices/formatTotal.ts'],
+			highFloor: [],
+		});
 	});
 });

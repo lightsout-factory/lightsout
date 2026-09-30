@@ -18,7 +18,8 @@ export interface LoadedStandardsRule {
 	checked: boolean;
 	/** `off` marks a rule a repo opts into: it runs, and its prose reaches agents, only once the repo's config names it. */
 	defaultSeverity: StandardsSeverity;
-	defaultSettings: Record<string, number>;
+	/** The numbers the rule.md header declares under `options`. */
+	defaultOptions: Record<string, number>;
 	/** Present iff checked. */
 	inputKind?: StandardsInputKind;
 	/** The validated check, present iff checked. */

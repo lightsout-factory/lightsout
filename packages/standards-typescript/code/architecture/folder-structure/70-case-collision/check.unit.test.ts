@@ -10,7 +10,7 @@ describe('case-collision check', () => {
 	test('reports a source file whose stem matches a sibling folder in another casing', async () => {
 		const input = setupFileListInput({ files: ['src/contracts/Gates.ts', 'src/contracts/gates/index.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -26,7 +26,7 @@ describe('case-collision check', () => {
 	test('reports two sibling files whose full names differ only by casing', async () => {
 		const input = setupFileListInput({ files: ['docs/README.md', 'docs/readme.md'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.length).toBe(1);
 		expect(findings[0]?.detail).toBe("'README.md', 'readme.md' differ only by casing in docs");
@@ -35,7 +35,7 @@ describe('case-collision check', () => {
 	test('reports two sibling folders whose names differ only by casing', async () => {
 		const input = setupFileListInput({ files: ['src/Plan/draft.ts', 'src/plan/grade.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings.length).toBe(1);
 		expect(findings[0]?.detail).toBe("'Plan/', 'plan/' differ only by casing in src");
@@ -44,7 +44,7 @@ describe('case-collision check', () => {
 	test('names the repo root as the folder when the collision sits at the top of the tree', async () => {
 		const input = setupFileListInput({ files: ['README.md', 'readme.md'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -60,7 +60,7 @@ describe('case-collision check', () => {
 	test('names the two casings in name order, whichever order the file list gave them', async () => {
 		const input = setupFileListInput({ files: ['docs/readme.md', 'docs/README.md'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings[0]?.detail).toBe("'README.md', 'readme.md' differ only by casing in docs");
 	});
@@ -68,7 +68,7 @@ describe('case-collision check', () => {
 	test('reports each colliding name of one folder as its own job, in name order', async () => {
 		const input = setupFileListInput({ files: ['src/Gates.ts', 'src/gates/index.ts', 'src/Plan/draft.ts', 'src/plan/grade.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -91,7 +91,7 @@ describe('case-collision check', () => {
 	test('leaves a same-cased file and folder pair alone — resolution is ambiguous but identical on every machine', async () => {
 		const input = setupFileListInput({ files: ['src/plan.ts', 'src/plan/draft.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -99,13 +99,13 @@ describe('case-collision check', () => {
 	test('leaves matching names in different folders alone — siblinghood is the whole hazard', async () => {
 		const input = setupFileListInput({ files: ['src/plan/index.ts', 'src/cli/Plan/index.ts'] });
 
-		const findings = await check.run({ input, settings: {} });
+		const findings = await check.run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), settings: {} });
+		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
