@@ -16,6 +16,7 @@
 		}
 	},
 	"gates": {
+		"generate": "pnpm --filter @lightsout/web-app build",
 		"check": "pnpm check",
 		"test": "pnpm test:unit",
 		"test-coverage": "pnpm test:unit:coverage",
