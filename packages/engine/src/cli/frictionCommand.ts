@@ -1,3 +1,4 @@
+import { formatShortRunId } from '@lightsout/shared';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { readFriction } from '#src/runState/readFriction.ts';
@@ -11,7 +12,7 @@ export const frictionCommand = async ({ cwd }: CommandContext): Promise<void> =>
 	}
 
 	for (const entry of entries) {
-		console.log(`[${entry.area}] (run ${entry.runId.slice(0, 8)}, ${entry.step}, ${entry.at}) ${entry.detail}`);
+		console.log(`[${entry.area}] (run ${formatShortRunId({ runId: entry.runId })}, ${entry.step}, ${entry.at}) ${entry.detail}`);
 	}
 
 	return exitCli({ code: 0 });

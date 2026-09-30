@@ -1,4 +1,6 @@
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { syncDefaultBranch } from '#src/ship/internal/syncDefaultBranch.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
@@ -31,6 +33,17 @@ describe('syncDefaultBranch', () => {
 
 		expect(readBranches({ cwd })).toStrictEqual(['main']);
 		expect(progress).toStrictEqual(['sync: git checkout main', 'sync: git pull --ff-only', 'sync: git branch -d lo-60-ship']);
+	});
+
+	test.each(['lo-1;id', 'lo-1-$(touch${IFS}x)'])('drops a merged branch named %s as one literal name, and runs nothing else', async (branch) => {
+		const { cwd, progress, onProgress } = setupSync();
+
+		execFileSync('git', ['checkout', '-q', '-b', branch, 'main'], { cwd, stdio: 'ignore' });
+		await syncDefaultBranch({ cwd, defaultBranch: 'main', branch, onProgress });
+
+		expect(readBranches({ cwd })).toStrictEqual(['lo-60-ship', 'main']);
+		expect(progress).toContain(`sync: git branch -d ${branch}`);
+		expect(existsSync(join(cwd, 'x'))).toBe(false);
 	});
 
 	test('a branch git does not consider merged is left alone rather than destroyed, and the step says so', async () => {

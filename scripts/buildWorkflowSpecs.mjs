@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderWorkflowSpec } from '../packages/engine/src/commands/index.ts';
 import { invokedDirectly } from './invokedDirectly.mjs';
+import { messageOf } from './messageOf.mjs';
 
 /**
  * Writes the `assets/*-workflow.json` specs from the command catalog, so the
@@ -47,7 +48,7 @@ const main = () => {
 		}
 	} catch (error) {
 		console.error('');
-		console.error(`  ${error instanceof Error ? error.message : String(error)}`);
+		console.error(`  ${messageOf({ error })}`);
 		console.error('');
 		process.exitCode = 1;
 

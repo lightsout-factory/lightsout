@@ -1,3 +1,4 @@
+import { formatShortRunId } from '@lightsout/shared';
 import { printBatchLine } from '#src/cli/internal/common/render/printBatchLine.ts';
 import { printBatchOptOut } from '#src/cli/internal/common/render/printBatchOptOut.ts';
 import { printRunFooter } from '#src/cli/internal/common/render/printRunFooter.ts';
@@ -15,7 +16,7 @@ export const printRefactorResult = ({ result }: Params): void => {
 	const batchSteps = manifest.steps.filter((step) => step.id.startsWith('batch-'));
 	const statusLabel = result.ok && declined.length > 0 ? `${manifest.status.toUpperCase()} · ${declined.length} declined` : manifest.status.toUpperCase();
 
-	console.log(`\n${bold(`refactor ${manifest.runId.slice(0, 8)}`)} — ${statusLabel}`);
+	console.log(`\n${bold(`refactor ${formatShortRunId({ runId: manifest.runId })}`)} — ${statusLabel}`);
 
 	for (const step of batchSteps) {
 		const decline = declined.find((entry) => entry.batchId === step.id);

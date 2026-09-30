@@ -1,3 +1,4 @@
+import { formatShortRunId } from '@lightsout/shared';
 import type { RunLock } from '#src/contracts/run/RunLock.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
@@ -75,7 +76,7 @@ export const getRunProgress = async ({ cwd, manifest, lock }: Params): Promise<R
 
 	return {
 		runId: manifest.runId,
-		shortId: manifest.runId.slice(0, 8),
+		shortId: formatShortRunId({ runId: manifest.runId }),
 		title: getRunTitle({ plan: manifest.plan }),
 		status: manifest.status,
 		live,

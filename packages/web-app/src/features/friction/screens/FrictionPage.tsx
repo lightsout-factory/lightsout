@@ -1,4 +1,5 @@
 import type { FrictionArea, FrictionRecord, RunListing } from '@lightsout/engine';
+import { formatShortRunId } from '@lightsout/shared';
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { MessageSquareWarning } from 'lucide-react';
@@ -21,10 +22,9 @@ const improveCommand = 'lightsout improve --engine <path>';
 
 const RunCell = ({ record, runs }: { record: FrictionRecord; runs: RunListing[] }) => {
 	const listing = runs.find((run) => run.runId === record.runId);
-	const shortId = record.runId.slice(0, 8);
 
 	return listing === undefined ? (
-		<MetadataTag title={record.runId}>{shortId}</MetadataTag>
+		<MetadataTag title={record.runId}>{formatShortRunId({ runId: record.runId })}</MetadataTag>
 	) : (
 		<Link to="/app/runs/$runId" params={{ runId: record.runId }} className="flex min-w-0 items-center gap-2 hover:underline hover:underline-offset-2">
 			<MetadataTag>{listing.shortId}</MetadataTag>

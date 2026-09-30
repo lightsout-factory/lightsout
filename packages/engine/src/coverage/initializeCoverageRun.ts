@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { CoverageWorklist } from '#src/contracts/coverage/CoverageWorklist.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
@@ -37,12 +38,12 @@ export const initializeCoverageRun = async ({
 	existing,
 }: Params): Promise<{ manifest: RunManifest; worklist: CoverageWorklist }> => {
 	if (existing) {
-		const pipeline = existing.pipeline ?? 'implement';
+		const pipeline = existing.pipeline ?? PipelineKind.Implement;
 
-		if (pipeline !== 'coverage') {
-			const command = pipeline === 'refactor' ? 'refactor' : 'resume';
+		if (pipeline !== PipelineKind.Coverage) {
+			const resume = formatResumeCommand({ pipeline, runId: existing.runId });
 
-			throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline — resume it with: lightsout ${command} --run ${existing.runId}`);
+			throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline — resume it with: ${resume}`);
 		}
 
 		// Read from the run's own directory rather than by joining the recorded

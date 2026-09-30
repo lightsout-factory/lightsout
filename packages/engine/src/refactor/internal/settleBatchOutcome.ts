@@ -1,14 +1,15 @@
+import { maxConsecutiveDeclines } from '#src/common/constants/maxConsecutiveDeclines.ts';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import { BatchReport } from '#src/contracts/refactor/BatchReport.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { BatchStopKind } from '#src/refactor/internal/common/constants/BatchStopKind.ts';
 import type { BatchStop } from '#src/refactor/internal/common/types/BatchStop.ts';
 import type { RefactorRun } from '#src/refactor/internal/RefactorRun.ts';
 import type { RefactorResult } from '#src/refactor/RefactorResult.ts';
-
-const maxConsecutiveDeclines = 3;
 
 interface Params {
 	run: RefactorRun;
@@ -32,7 +33,8 @@ interface BatchSettlement {
  */
 export const settleBatchOutcome = async ({ run, batch, record, outcome, declineStreak }: Params): Promise<BatchSettlement> => {
 	if (outcome.kind === BatchStopKind.Parked) {
-		const error = `run parked: harness rate limited or overloaded — resume with \`lightsout refactor --run ${run.current().runId}\` when the window resets.`;
+		const resume = formatResumeCommand({ pipeline: PipelineKind.Refactor, runId: run.current().runId });
+		const error = `run parked: harness rate limited or overloaded — resume with \`${resume}\` when the window resets.`;
 
 		return { result: await run.stop({ record, status: RunStatus.PausedRateLimit, error }), declineStreak };
 	}

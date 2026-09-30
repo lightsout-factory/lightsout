@@ -92,7 +92,7 @@ const verifyCandidate = async ({
  * Preparation runs before every verification, so each is measured against the
  * same base.
  *
- * @returns undefined once the gates are green, else why the allowance ran out and which families stayed red
+ * @returns undefined once the gates are green, else why the allowance ran out — with the last repair attempt's own refusal when it gave one — and which families stayed red
  */
 export const repairIntegratedGates = async ({
 	cwd,
@@ -104,6 +104,8 @@ export const repairIntegratedGates = async ({
 	baseCommit,
 	onProgress,
 }: Params): Promise<IntegrationFailure | undefined> => {
+	let refusal: string | undefined;
+
 	for (let attempt = 0; ; attempt += 1) {
 		const verified = await verifyCandidate({ cwd, integration, preShip, baseCommit, onProgress });
 
@@ -118,10 +120,12 @@ export const repairIntegratedGates = async ({
 		}
 
 		if (attempt === maxCheapFixRetries) {
-			return { reason: ShipBlockReason.IntegrationGatesFailed, detail: error, paths: failedFamilies };
+			const detail = refusal === undefined ? error : `${error}\n\nThe last repair attempt reported: ${refusal}`;
+
+			return { reason: ShipBlockReason.IntegrationGatesFailed, detail, paths: failedFamilies };
 		}
 
 		onProgress?.(`integrate: the gates are red — re-invoking the integrator with their output (fix ${attempt + 1} of ${maxCheapFixRetries})`);
-		await invokeShipIntegrator({ cwd, integration, branch, defaultBranch, standards, errorContext: error });
+		refusal = await invokeShipIntegrator({ cwd, integration, branch, defaultBranch, standards, errorContext: error });
 	}
 };

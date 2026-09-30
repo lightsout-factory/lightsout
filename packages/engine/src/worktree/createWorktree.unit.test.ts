@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { existsSync, realpathSync } from 'node:fs';
 import { mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -13,8 +13,8 @@ import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 
 /** The repo a run starts from: fetched once already, standing on the default branch. */
-const setupMainCheckout = async ({ branches = ['lo-70-drain', 'lo-131-plan'] }: { branches?: string[] } = {}) => {
-	const { cwd } = setupBranchRepo();
+const setupMainCheckout = async ({ branches = ['lo-70-drain', 'lo-131-plan'], folderPrefix }: { branches?: string[]; folderPrefix?: string } = {}) => {
+	const { cwd } = setupBranchRepo({ folderPrefix });
 
 	execSync('git config user.name t && git config user.email t@t', { cwd, stdio: 'ignore' });
 
@@ -79,6 +79,34 @@ describe('createWorktree', () => {
 		).toBe('lo-70-drain');
 
 		await cleanUp({ cwd, worktreesRoot, branch: 'lo-70-drain' });
+	});
+
+	test('makes and removes a worktree for a repository whose path holds a space', async () => {
+		const { cwd, worktreesRoot } = await setupMainCheckout({ folderPrefix: 'My Projects app-' });
+
+		const created = await createWorktree({ cwd, branch: 'lo-70-drain', startPoint: 'origin/main', owner: WorktreeOwner.Queue, reuseExisting: true });
+
+		expect(worktreesRoot).toContain('My Projects app-');
+		expect(created).toBe(join(worktreesRoot, 'lo-70-drain'));
+		expect(existsSync(join(String(created), 'README.md'))).toBe(true);
+
+		const removed = await removeWorktree({ cwd, worktreePath: String(created), branch: 'lo-70-drain' });
+
+		expect(removed).toBeUndefined();
+		expect(existsSync(String(created))).toBe(false);
+	});
+
+	test('hands git a branch carrying shell syntax as one literal argument and runs nothing else', async () => {
+		const branch = 'lo-1-$(touch${IFS}x)';
+		const { cwd, worktreesRoot } = await setupMainCheckout({ branches: [] });
+
+		const created = await createWorktree({ cwd, branch, startPoint: 'origin/main', owner: WorktreeOwner.Queue, reuseExisting: true });
+
+		expect(created).toBe(join(worktreesRoot, branch));
+		expect(execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: String(created), encoding: 'utf8' }).trim()).toBe(branch);
+		expect(existsSync(join(cwd, 'x'))).toBe(false);
+
+		await cleanUp({ cwd, worktreesRoot, branch });
 	});
 
 	test('nests a slash-bearing branch under the worktrees root, so a company branch convention needs no engine change', async () => {

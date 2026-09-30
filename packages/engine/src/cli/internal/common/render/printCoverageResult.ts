@@ -1,3 +1,4 @@
+import { formatShortRunId } from '@lightsout/shared';
 import { printBatchLine } from '#src/cli/internal/common/render/printBatchLine.ts';
 import { printBatchOptOut } from '#src/cli/internal/common/render/printBatchOptOut.ts';
 import { printRunFooter } from '#src/cli/internal/common/render/printRunFooter.ts';
@@ -15,7 +16,7 @@ export const printCoverageResult = ({ result }: Params): void => {
 	const batchSteps = manifest.steps.filter((step) => step.id.startsWith('batch-'));
 	const statusLabel = setAside.length > 0 ? `${manifest.status.toUpperCase()} · ${setAside.length} set aside` : manifest.status.toUpperCase();
 
-	console.log(`\n${bold(`test-coverage-to-threshold ${manifest.runId.slice(0, 8)}`)} — ${statusLabel}`);
+	console.log(`\n${bold(`test-coverage-to-threshold ${formatShortRunId({ runId: manifest.runId })}`)} — ${statusLabel}`);
 
 	for (const step of batchSteps) {
 		const aside = setAside.find((entry) => entry.batchId === step.id);

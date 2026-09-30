@@ -17,7 +17,7 @@ import { setTicketAttachment } from '#src/ticketTracker/setTicketAttachment.ts';
 
 interface Params {
 	cwd: string;
-	/** Kebab plan name — the folder the brainstorm's own files live in. */
+	/** The plan address `<work-order>/<plan-id>` — it names the folder the brainstorm's own files live in and the work order whose ticket they publish to. */
 	name: string;
 	config: LightsoutConfig;
 	env: NodeJS.ProcessEnv;

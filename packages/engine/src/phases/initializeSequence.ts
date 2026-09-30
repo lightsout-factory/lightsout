@@ -1,5 +1,6 @@
 import { access, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { toRepoRelativePath } from '#src/common/utils/toRepoRelativePath.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
@@ -93,9 +94,9 @@ export const initializeSequence = async ({
 		const pipeline = existing.pipeline ?? PipelineKind.Implement;
 
 		if (pipeline !== PipelineKind.Phases) {
-			throw new Error(
-				`run ${existing.runId} belongs to the ${pipeline} pipeline — resume it with: lightsout ${pipeline === PipelineKind.Refactor ? 'refactor' : 'resume'} --run ${existing.runId}`,
-			);
+			const resume = formatResumeCommand({ pipeline, runId: existing.runId });
+
+			throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline — resume it with: ${resume}`);
 		}
 
 		return { manifest: existing };
@@ -118,7 +119,9 @@ export const initializeSequence = async ({
 	const unfinished = await findUnfinishedSequence({ cwd, planName: await planNameFromPath({ cwd, planPath: overview }) });
 
 	if (unfinished) {
-		throw new Error(`an unfinished run for this plan already exists — resume with: lightsout resume --run ${unfinished.runId}`);
+		const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: unfinished.runId });
+
+		throw new Error(`an unfinished run for this plan already exists — resume with: ${resume}`);
 	}
 
 	const created = await createRun({ cwd, runId, plan: overview, pipeline: PipelineKind.Phases, driver: driver.name, config, willShip });

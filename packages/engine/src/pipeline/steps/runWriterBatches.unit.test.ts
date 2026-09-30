@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { expect, test } from '@jest/globals';
+import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import { testWriterConcurrency } from '#src/pipeline/internal/common/constants/testWriterConcurrency.ts';
@@ -331,7 +332,7 @@ test('runWriterBatches: a writer that throws surfaces its error only once the wr
 
 	const settled = await runWriterBatches({ run, groups, planContent: '# Plan' }).then(
 		() => ({ message: 'resolved', seen: [...log] }),
-		(error: unknown) => ({ message: error instanceof Error ? error.message : String(error), seen: [...log] }),
+		(error: unknown) => ({ message: messageOf({ error }), seen: [...log] }),
 	);
 
 	expect(settled.message).toBe('harness crashed');
@@ -364,7 +365,7 @@ test('runWriterBatches: two writers that throw surface the error of the one that
 
 	const settled = await runWriterBatches({ run, groups, planContent: '# Plan' }).then(
 		() => ({ message: 'resolved', seen: [...log] }),
-		(error: unknown) => ({ message: error instanceof Error ? error.message : String(error), seen: [...log] }),
+		(error: unknown) => ({ message: messageOf({ error }), seen: [...log] }),
 	);
 
 	// the earlier death wins, and the later thrower had still been given its slot

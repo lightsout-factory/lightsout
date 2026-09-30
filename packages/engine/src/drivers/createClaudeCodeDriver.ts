@@ -139,7 +139,7 @@ export const createClaudeCodeDriver = (): Driver => {
 			}).finally(() => systemPromptFile?.cleanup());
 
 			const envelope = resultEvent ?? parseEnvelope({ stdout });
-			const text = envelope?.result ?? stdout ?? '';
+			const text = envelope?.result ?? stdout;
 			const errored = envelope?.is_error === true || exitCode !== 0;
 			const usage = resultEvent ? resultUsage({ event: resultEvent }) : undefined;
 

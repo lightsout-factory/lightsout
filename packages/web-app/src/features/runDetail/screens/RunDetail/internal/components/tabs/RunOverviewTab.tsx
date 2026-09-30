@@ -1,5 +1,5 @@
 import { PipelineKind } from '@lightsout/engine/contracts';
-import { formatCost, formatDuration } from '@lightsout/shared';
+import { formatCost, formatDuration, formatShortRunId } from '@lightsout/shared';
 import { StatusBadge } from '#src/appUI/badges/StatusBadge.tsx';
 import { Card } from '#src/appUI/panels/Card.tsx';
 import { statusBadgeConfig } from '#src/common/constants/statusBadgeConfig.ts';
@@ -19,7 +19,7 @@ const describeReport = ({ report }: { report?: object }) => {
 	if (summary?.kind === StepReportKind.Batch) {
 		line = `${summary.outcome} · ${formatCount({ count: summary.remaining, noun: 'site' })} still standing`;
 	} else if (summary?.kind === StepReportKind.Phase) {
-		line = `implemented by run ${summary.runId.slice(0, 8)}`;
+		line = `implemented by run ${formatShortRunId({ runId: summary.runId })}`;
 	} else if (summary?.kind === StepReportKind.Writers) {
 		line = `${formatCount({ count: summary.count, noun: 'writer batch', plural: 'writer batches' })} · ${formatCount({ count: summary.fileCount, noun: 'file' })}`;
 	} else if (summary?.kind === StepReportKind.Cleanup) {

@@ -1,4 +1,5 @@
 import { maxCheapFixRetries } from '#src/common/constants/maxCheapFixRetries.ts';
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
 import { ShippingStepId } from '#src/contracts/ship/ShippingStepId.ts';
 import type { ShipResult } from '#src/contracts/ship/ShipResult.ts';
@@ -7,7 +8,6 @@ import type { ShipIntegration } from '#src/ship/common/types/ShipIntegration.ts'
 import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
 import type { ShipWorkOrderGuard } from '#src/ship/common/types/ShipWorkOrderGuard.ts';
 import { checkShipPreconditions } from '#src/ship/internal/checkShipPreconditions.ts';
-import { quoteGitArgument } from '#src/ship/internal/common/utils/quoteGitArgument.ts';
 import { runGit } from '#src/ship/internal/common/utils/runGit.ts';
 import { runShipAttempt } from '#src/ship/internal/runShipAttempt.ts';
 import { syncDefaultBranch } from '#src/ship/internal/syncDefaultBranch.ts';
@@ -62,13 +62,13 @@ const stopShip = ({
  */
 const readBranchDiff = async ({ cwd, defaultBranch }: { cwd: string; defaultBranch: string }) => {
 	const maxDiffCharacters = 32_000;
-	const forkPoint = await runGit({ command: `git merge-base ${quoteGitArgument({ argument: `origin/${defaultBranch}` })} HEAD`, cwd });
+	const forkPoint = await runGit({ command: `git merge-base ${quoteShellArgument({ argument: `origin/${defaultBranch}` })} HEAD`, cwd });
 
 	if (forkPoint === undefined || forkPoint.exitCode !== 0) {
 		return '';
 	}
 
-	const diffed = await runGit({ command: `git diff ${quoteGitArgument({ argument: forkPoint.stdout.trim() })} HEAD`, cwd });
+	const diffed = await runGit({ command: `git diff ${quoteShellArgument({ argument: forkPoint.stdout.trim() })} HEAD`, cwd });
 
 	if (diffed === undefined || diffed.exitCode !== 0) {
 		return '';

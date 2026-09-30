@@ -1,4 +1,6 @@
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import type { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
@@ -39,8 +41,11 @@ export const runWorklistBatches = async ({ run, driver, worklist, batchInputs, m
 
 		if (maxBatches !== undefined && processed >= maxBatches) {
 			await run.update({ patch: { status: RunStatus.PausedBudget, currentStep: null } });
-			run.progress(`budget ceiling (${maxBatches} batch(es)) reached — resume with: lightsout refactor --run ${run.current().runId}`);
-			result = run.buildHaltedResult({ error: `paused at --max-batches ${maxBatches} — resume with: lightsout refactor --run ${run.current().runId}` });
+
+			const resume = formatResumeCommand({ pipeline: PipelineKind.Refactor, runId: run.current().runId });
+
+			run.progress(`budget ceiling (${maxBatches} batch(es)) reached — resume with: ${resume}`);
+			result = run.buildHaltedResult({ error: `paused at --max-batches ${maxBatches} — resume with: ${resume}` });
 
 			break;
 		}

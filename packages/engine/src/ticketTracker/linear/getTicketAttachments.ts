@@ -1,6 +1,7 @@
 import type { TrackerAttachment } from '#src/ticketTracker/common/types/TrackerAttachment.ts';
 import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
 import type { LinearTrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
+import { parseTicketNumber } from '#src/ticketTracker/internal/common/utils/parseTicketNumber.ts';
 import { collectNodes } from '#src/ticketTracker/linear/internal/common/utils/collectNodes.ts';
 import { runLinear } from '#src/ticketTracker/linear/internal/runLinear.ts';
 
@@ -12,12 +13,13 @@ interface Params {
 
 /** A missing ticket is a failure, not an empty list: a wrong team key and an empty ticket are different fixes. */
 export const getTicketAttachments = async ({ settings, identifier }: Params): Promise<TrackerAttachment[] | TrackerFailure> => {
-	const [prefix, number] = identifier.split('-');
-	const issueNumber = prefix?.toLowerCase() === settings.ticketPrefix.toLowerCase() && /^\d+$/u.test(number ?? '') ? Number(number) : Number.NaN;
+	const number = parseTicketNumber({ identifier, ticketPrefix: settings.ticketPrefix });
 
-	if (!Number.isFinite(issueNumber)) {
+	if (number === undefined) {
 		return { error: `'${identifier}' names no ticket number` };
 	}
+
+	const issueNumber = Number(number);
 
 	return runLinear({
 		apiKey: settings.apiKey,

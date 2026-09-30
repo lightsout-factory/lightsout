@@ -1,5 +1,6 @@
 import { mkdir, rename } from 'node:fs/promises';
 import { dirname } from 'node:path';
+import { messageOf } from '#src/common/utils/messageOf.ts';
 import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
 import type { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import type { BranchState } from '#src/contracts/queue/BranchState.ts';
@@ -37,7 +38,7 @@ export const writeBranchState = async ({ cwd, branch, phase, onProgress }: Param
 		await writeJsonFile({ path: `${statePath}.tmp`, value: record });
 		await rename(`${statePath}.tmp`, statePath);
 	} catch (error) {
-		const message = error instanceof Error ? error.message : String(error);
+		const message = messageOf({ error });
 
 		onProgress?.(`the branch state for ${branch} could not be recorded as '${phase}': ${message}`);
 	}

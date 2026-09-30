@@ -1,6 +1,8 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
+import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
@@ -39,8 +41,12 @@ export const initializeRun = async ({
 	existing,
 }: Params): Promise<{ manifest: RunManifest; worklist: RefactorWorklist }> => {
 	if (existing) {
-		if ((existing.pipeline ?? 'implement') !== 'refactor') {
-			throw new Error(`run ${existing.runId} belongs to the implement pipeline — resume it with: lightsout resume --run ${existing.runId}`);
+		const pipeline = existing.pipeline ?? PipelineKind.Implement;
+
+		if (pipeline !== PipelineKind.Refactor) {
+			const resume = formatResumeCommand({ pipeline, runId: existing.runId });
+
+			throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline — resume it with: ${resume}`);
 		}
 
 		// Read from the run's own directory rather than by joining the recorded
@@ -69,7 +75,7 @@ export const initializeRun = async ({
 	// write below lands in a directory that exists.
 	const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Refactor, driver: driver.name, config, baselineDirtyFiles: dirty });
 
-	await writeFile(worklistPath, `${JSON.stringify(worklist, undefined, '\t')}\n`, 'utf8');
+	await writeJsonFile({ path: worklistPath, value: worklist });
 
 	return { manifest, worklist };
 };

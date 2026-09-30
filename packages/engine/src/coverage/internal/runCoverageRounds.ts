@@ -1,4 +1,6 @@
 import type ts from 'typescript';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { runCoverageBatch } from '#src/coverage/batch/runCoverageBatch.ts';
@@ -96,7 +98,7 @@ export const runCoverageRounds = async ({ run, driver, batchInputs, maxBatches, 
 		}
 
 		if (maxBatches !== undefined && processed >= maxBatches) {
-			const resume = `resume with: lightsout test-coverage-to-threshold --run ${run.current().runId}`;
+			const resume = `resume with: ${formatResumeCommand({ pipeline: PipelineKind.Coverage, runId: run.current().runId })}`;
 
 			await run.update({ patch: { status: RunStatus.PausedBudget, currentStep: null } });
 			run.progress(`budget ceiling (${maxBatches} batch(es)) reached — ${resume}`);

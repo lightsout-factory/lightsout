@@ -6,8 +6,6 @@ import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleS
 
 interface Params {
 	config: LightsoutConfig;
-	/** Unread; kept so this and `resolveTrackerSettings`, which a command calls together, are called the same way. */
-	env: NodeJS.ProcessEnv;
 }
 
 /**

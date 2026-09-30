@@ -1,6 +1,7 @@
 import { LinearClient } from '@linear/sdk';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
+import { trackerTimeoutMs } from '#src/ticketTracker/internal/common/constants/trackerTimeoutMs.ts';
 
 interface Params<Result> {
 	apiKey: string;
@@ -13,7 +14,6 @@ interface Params<Result> {
  * `TrackerFailure` value rather than an exception.
  */
 export const runLinear = async <Result>({ apiKey, call }: Params<Result>): Promise<Result | TrackerFailure> => {
-	const trackerTimeoutMs = 60_000;
 	let timer: NodeJS.Timeout | undefined;
 
 	try {

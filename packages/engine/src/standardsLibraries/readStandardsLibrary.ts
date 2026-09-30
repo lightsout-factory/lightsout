@@ -2,13 +2,13 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { StandardsLibraryRoot, StandardsSet } from '@lightsout/standards-contracts';
 import { standardsLibraryRootFile } from '#src/common/constants/standardsLibraryRootFile.ts';
+import { formatSchemaIssues } from '#src/common/utils/formatSchemaIssues.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import type { LoadedStandardsTopic } from '#src/standardsLibraries/common/types/LoadedStandardsTopic.ts';
 import { parsePackFolder } from '#src/standardsLibraries/internal/common/parsing/parsePackFolder.ts';
 import { parseTopicFolder } from '#src/standardsLibraries/internal/common/parsing/parseTopicFolder.ts';
-import { formatSchemaIssues } from '#src/standardsLibraries/internal/common/utils/formatSchemaIssues.ts';
 import { hasFile } from '#src/standardsLibraries/internal/common/utils/hasFile.ts';
 import { resolveRuleRequirements } from '#src/standardsLibraries/internal/common/utils/resolveRuleRequirements.ts';
 
