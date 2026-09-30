@@ -30,11 +30,11 @@ interface Params {
 export const buildFileExportCheck = ({ rule, detail, guidance, getExempt }: Params): StandardsCheckModule => ({
 	inputKind: 'file-text',
 	run: ({ input }): RawStandardsFinding[] => {
-		const { files, contents, standardsPacks } = readFileTexts({ input });
+		const { files, contents, standardsLibraries } = readFileTexts({ input });
 		const exempt = getExempt?.({ files, contents }) ?? new Set<string>();
 
 		return files
-			.filter((file) => !isTestFile({ path: file, standardsPacks }) && !isBarrelFile({ path: file }) && !exempt.has(file))
+			.filter((file) => !isTestFile({ path: file, standardsLibraries }) && !isBarrelFile({ path: file }) && !exempt.has(file))
 			.map((file) => {
 				const violation = detail({ file, exports: readFileExports({ text: contents.get(file) ?? '' }) });
 

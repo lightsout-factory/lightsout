@@ -22,9 +22,9 @@ interface Params {
 export const buildUnconsumedExportCheck = ({ rule, matches, detail, guidance }: Params): StandardsCheckModule => ({
 	inputKind: 'file-text',
 	run: ({ input }) => {
-		const { files, contents, standardsPacks } = readFileTexts({ input });
+		const { files, contents, standardsLibraries } = readFileTexts({ input });
 		const carveOuts = getFrameworkCarveOuts({ dependencies: readManifestDependencies({ contents }) });
 
-		return buildUnconsumedFindings({ files, contents, standardsPacks, carveOuts, rule, matches, detail, guidance });
+		return buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
 	},
 });

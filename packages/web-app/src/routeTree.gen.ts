@@ -24,8 +24,8 @@ import { Route as AppRunsRunIdRouteImport } from './routes/app.runs_.$runId'
 import { Route as AppPlansNameRouteImport } from './routes/app.plans.$name'
 import { Route as SiteDocsDocRouteImport } from './routes/_site.docs.$doc'
 import { Route as SiteCommandsCommandRouteImport } from './routes/_site.commands.$command'
-import { Route as SiteStandardsPacksRuleSetIndexRouteImport } from './routes/_site.standards-packs.$ruleSet.index'
-import { Route as SiteStandardsPacksRuleSetRuleRouteImport } from './routes/_site.standards-packs.$ruleSet.$rule'
+import { Route as SiteStandardsPacksLibraryRulesRuleRouteImport } from './routes/_site.standards-packs.$library.rules.$rule'
+import { Route as SiteStandardsPacksLibraryPacksPackRouteImport } from './routes/_site.standards-packs.$library.packs.$pack'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -101,16 +101,16 @@ const SiteCommandsCommandRoute = SiteCommandsCommandRouteImport.update({
   path: '/commands/$command',
   getParentRoute: () => SiteRoute,
 } as any)
-const SiteStandardsPacksRuleSetIndexRoute =
-  SiteStandardsPacksRuleSetIndexRouteImport.update({
-    id: '/standards-packs/$ruleSet/',
-    path: '/standards-packs/$ruleSet/',
+const SiteStandardsPacksLibraryRulesRuleRoute =
+  SiteStandardsPacksLibraryRulesRuleRouteImport.update({
+    id: '/standards-packs/$library/rules/$rule',
+    path: '/standards-packs/$library/rules/$rule',
     getParentRoute: () => SiteRoute,
   } as any)
-const SiteStandardsPacksRuleSetRuleRoute =
-  SiteStandardsPacksRuleSetRuleRouteImport.update({
-    id: '/standards-packs/$ruleSet/$rule',
-    path: '/standards-packs/$ruleSet/$rule',
+const SiteStandardsPacksLibraryPacksPackRoute =
+  SiteStandardsPacksLibraryPacksPackRouteImport.update({
+    id: '/standards-packs/$library/packs/$pack',
+    path: '/standards-packs/$library/packs/$pack',
     getParentRoute: () => SiteRoute,
   } as any)
 
@@ -129,8 +129,8 @@ export interface FileRoutesByFullPath {
   '/commands/': typeof SiteCommandsIndexRoute
   '/standards-packs/': typeof SiteStandardsPacksIndexRoute
   '/app/plans/': typeof AppPlansIndexRoute
-  '/standards-packs/$ruleSet/$rule': typeof SiteStandardsPacksRuleSetRuleRoute
-  '/standards-packs/$ruleSet/': typeof SiteStandardsPacksRuleSetIndexRoute
+  '/standards-packs/$library/packs/$pack': typeof SiteStandardsPacksLibraryPacksPackRoute
+  '/standards-packs/$library/rules/$rule': typeof SiteStandardsPacksLibraryRulesRuleRoute
 }
 export interface FileRoutesByTo {
   '/app/config': typeof AppConfigRoute
@@ -146,8 +146,8 @@ export interface FileRoutesByTo {
   '/commands': typeof SiteCommandsIndexRoute
   '/standards-packs': typeof SiteStandardsPacksIndexRoute
   '/app/plans': typeof AppPlansIndexRoute
-  '/standards-packs/$ruleSet/$rule': typeof SiteStandardsPacksRuleSetRuleRoute
-  '/standards-packs/$ruleSet': typeof SiteStandardsPacksRuleSetIndexRoute
+  '/standards-packs/$library/packs/$pack': typeof SiteStandardsPacksLibraryPacksPackRoute
+  '/standards-packs/$library/rules/$rule': typeof SiteStandardsPacksLibraryRulesRuleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -166,8 +166,8 @@ export interface FileRoutesById {
   '/_site/commands/': typeof SiteCommandsIndexRoute
   '/_site/standards-packs/': typeof SiteStandardsPacksIndexRoute
   '/app/plans/': typeof AppPlansIndexRoute
-  '/_site/standards-packs/$ruleSet/$rule': typeof SiteStandardsPacksRuleSetRuleRoute
-  '/_site/standards-packs/$ruleSet/': typeof SiteStandardsPacksRuleSetIndexRoute
+  '/_site/standards-packs/$library/packs/$pack': typeof SiteStandardsPacksLibraryPacksPackRoute
+  '/_site/standards-packs/$library/rules/$rule': typeof SiteStandardsPacksLibraryRulesRuleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -186,8 +186,8 @@ export interface FileRouteTypes {
     | '/commands/'
     | '/standards-packs/'
     | '/app/plans/'
-    | '/standards-packs/$ruleSet/$rule'
-    | '/standards-packs/$ruleSet/'
+    | '/standards-packs/$library/packs/$pack'
+    | '/standards-packs/$library/rules/$rule'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/app/config'
@@ -203,8 +203,8 @@ export interface FileRouteTypes {
     | '/commands'
     | '/standards-packs'
     | '/app/plans'
-    | '/standards-packs/$ruleSet/$rule'
-    | '/standards-packs/$ruleSet'
+    | '/standards-packs/$library/packs/$pack'
+    | '/standards-packs/$library/rules/$rule'
   id:
     | '__root__'
     | '/_site'
@@ -222,8 +222,8 @@ export interface FileRouteTypes {
     | '/_site/commands/'
     | '/_site/standards-packs/'
     | '/app/plans/'
-    | '/_site/standards-packs/$ruleSet/$rule'
-    | '/_site/standards-packs/$ruleSet/'
+    | '/_site/standards-packs/$library/packs/$pack'
+    | '/_site/standards-packs/$library/rules/$rule'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -338,18 +338,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteCommandsCommandRouteImport
       parentRoute: typeof SiteRoute
     }
-    '/_site/standards-packs/$ruleSet/': {
-      id: '/_site/standards-packs/$ruleSet/'
-      path: '/standards-packs/$ruleSet'
-      fullPath: '/standards-packs/$ruleSet/'
-      preLoaderRoute: typeof SiteStandardsPacksRuleSetIndexRouteImport
+    '/_site/standards-packs/$library/rules/$rule': {
+      id: '/_site/standards-packs/$library/rules/$rule'
+      path: '/standards-packs/$library/rules/$rule'
+      fullPath: '/standards-packs/$library/rules/$rule'
+      preLoaderRoute: typeof SiteStandardsPacksLibraryRulesRuleRouteImport
       parentRoute: typeof SiteRoute
     }
-    '/_site/standards-packs/$ruleSet/$rule': {
-      id: '/_site/standards-packs/$ruleSet/$rule'
-      path: '/standards-packs/$ruleSet/$rule'
-      fullPath: '/standards-packs/$ruleSet/$rule'
-      preLoaderRoute: typeof SiteStandardsPacksRuleSetRuleRouteImport
+    '/_site/standards-packs/$library/packs/$pack': {
+      id: '/_site/standards-packs/$library/packs/$pack'
+      path: '/standards-packs/$library/packs/$pack'
+      fullPath: '/standards-packs/$library/packs/$pack'
+      preLoaderRoute: typeof SiteStandardsPacksLibraryPacksPackRouteImport
       parentRoute: typeof SiteRoute
     }
   }
@@ -361,8 +361,8 @@ interface SiteRouteChildren {
   SiteDocsDocRoute: typeof SiteDocsDocRoute
   SiteCommandsIndexRoute: typeof SiteCommandsIndexRoute
   SiteStandardsPacksIndexRoute: typeof SiteStandardsPacksIndexRoute
-  SiteStandardsPacksRuleSetRuleRoute: typeof SiteStandardsPacksRuleSetRuleRoute
-  SiteStandardsPacksRuleSetIndexRoute: typeof SiteStandardsPacksRuleSetIndexRoute
+  SiteStandardsPacksLibraryPacksPackRoute: typeof SiteStandardsPacksLibraryPacksPackRoute
+  SiteStandardsPacksLibraryRulesRuleRoute: typeof SiteStandardsPacksLibraryRulesRuleRoute
 }
 
 const SiteRouteChildren: SiteRouteChildren = {
@@ -371,8 +371,10 @@ const SiteRouteChildren: SiteRouteChildren = {
   SiteDocsDocRoute: SiteDocsDocRoute,
   SiteCommandsIndexRoute: SiteCommandsIndexRoute,
   SiteStandardsPacksIndexRoute: SiteStandardsPacksIndexRoute,
-  SiteStandardsPacksRuleSetRuleRoute: SiteStandardsPacksRuleSetRuleRoute,
-  SiteStandardsPacksRuleSetIndexRoute: SiteStandardsPacksRuleSetIndexRoute,
+  SiteStandardsPacksLibraryPacksPackRoute:
+    SiteStandardsPacksLibraryPacksPackRoute,
+  SiteStandardsPacksLibraryRulesRuleRoute:
+    SiteStandardsPacksLibraryRulesRuleRoute,
 }
 
 const SiteRouteWithChildren = SiteRoute._addFileChildren(SiteRouteChildren)

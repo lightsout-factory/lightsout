@@ -1,0 +1,6 @@
+{
+	"description": "For a React app: the node pack plus React.",
+	"include": {
+		"packs": ["lightsout/node", "lightsout/react"]
+	}
+}

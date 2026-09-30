@@ -1,0 +1,6 @@
+{
+	"description": "React code and React component tests: React architecture, component and hook patterns, and component unit tests.",
+	"include": {
+		"topics": ["lightsout/code/architecture/react", "lightsout/code/style-guide/patterns/react-components", "lightsout/tests/unit-testing-react-components"]
+	}
+}

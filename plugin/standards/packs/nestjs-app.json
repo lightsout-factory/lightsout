@@ -1,0 +1,6 @@
+{
+	"description": "For a NestJS app: the node pack plus NestJS.",
+	"include": {
+		"packs": ["lightsout/node", "lightsout/nestjs"]
+	}
+}
