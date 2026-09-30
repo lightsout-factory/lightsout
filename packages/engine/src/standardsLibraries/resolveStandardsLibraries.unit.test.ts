@@ -21,10 +21,10 @@ interface LibrarySpec {
 /** A one-rule standards library written under `at`. */
 const writeLibrary = ({ cwd, at, name }: LibrarySpec & { cwd: string }) => {
 	const libraryPath = join(cwd, at);
-	const rulePath = 'code/demo/01-demo-rule';
+	const rulePath = 'rules/code/demo/01-demo-rule';
 	const files: Record<string, string> = {
-		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 1 }\n`,
-		'code/demo/topic.md': '# Demo\n\nThe topic the rule argues under.\n',
+		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 2 }\n`,
+		'rules/code/demo/topic.md': '# Demo\n\nThe topic the rule argues under.\n',
 		[`${rulePath}/rule.md`]: '---\nsummary: a rule the library declares\n---\n\nThe rule prose.\n',
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 		[`${rulePath}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',

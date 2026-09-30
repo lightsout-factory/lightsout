@@ -4,7 +4,7 @@ import { StandardsLibraryRoot } from '#src/StandardsLibraryRoot.ts';
 const setupRoot = ({ omit, extra = {} }: { omit?: string; extra?: Record<string, unknown> } = {}) => {
 	const root: Record<string, unknown> = {
 		name: 'lightsout defaults',
-		formatVersion: 1,
+		formatVersion: 2,
 		...extra,
 	};
 
@@ -21,7 +21,7 @@ describe('StandardsLibraryRoot', () => {
 
 		const parsed = StandardsLibraryRoot.parse(root);
 
-		expect(parsed).toStrictEqual({ name: 'lightsout defaults', formatVersion: 1 });
+		expect(parsed).toStrictEqual({ name: 'lightsout defaults', formatVersion: 2 });
 	});
 
 	test('the name survives verbatim — it is the text every assembled document header carries', () => {
@@ -45,7 +45,7 @@ describe('StandardsLibraryRoot', () => {
 
 		const parsed = StandardsLibraryRoot.parse(root);
 
-		expect(parsed).toStrictEqual({ name: 'lightsout defaults', formatVersion: 1, built: true });
+		expect(parsed).toStrictEqual({ name: 'lightsout defaults', formatVersion: 2, built: true });
 	});
 
 	test('rejects a root claiming it was not built — the marker is stamped or absent, never argued with', () => {
@@ -64,7 +64,7 @@ describe('StandardsLibraryRoot', () => {
 		// the root file carries only what the folder tree cannot express, and a later
 		// format version may add keys — an unknown key is never worth refusing a
 		// pack over, so it is dropped instead
-		expect(parsed).toStrictEqual({ name: 'lightsout defaults', formatVersion: 1 });
+		expect(parsed).toStrictEqual({ name: 'lightsout defaults', formatVersion: 2 });
 	});
 
 	test('carries the one-line description a pack page shows under the pack name', () => {
@@ -104,7 +104,7 @@ describe('StandardsLibraryRoot', () => {
 
 		const parsed = StandardsLibraryRoot.parse(root);
 
-		expect(parsed).toStrictEqual({ name: 'lightsout defaults', formatVersion: 1 });
+		expect(parsed).toStrictEqual({ name: 'lightsout defaults', formatVersion: 2 });
 	});
 
 	test('a built root keeps both page lines alongside the marker — the shape the bundler stamps out', () => {
@@ -122,7 +122,7 @@ describe('StandardsLibraryRoot', () => {
 		// keys at once, so the two page lines have to survive the build that adds the marker
 		expect(parsed).toStrictEqual({
 			name: 'lightsout defaults',
-			formatVersion: 1,
+			formatVersion: 2,
 			description: 'The default TypeScript pack.',
 			homepage: 'https://github.com/lightsout-factory/lightsout/tree/main/packages/standards-typescript',
 			built: true,
@@ -177,14 +177,35 @@ describe('StandardsLibraryRoot', () => {
 	});
 
 	test('accepts the one format version this engine knows how to read', () => {
-		const { root } = setupRoot({ extra: { formatVersion: 1 } });
+		const { root } = setupRoot({ extra: { formatVersion: 2 } });
 
 		const parsed = StandardsLibraryRoot.parse(root);
 
-		expect(parsed.formatVersion).toBe(1);
+		expect(parsed.formatVersion).toBe(2);
 	});
 
-	test.each([{ formatVersion: 2 }, { formatVersion: 0 }, { formatVersion: '1' }, { formatVersion: true }, { formatVersion: null }])(
+	test('a library root file written against format version 2 parses', () => {
+		const { root } = setupRoot({ extra: { formatVersion: 2 } });
+
+		const result = StandardsLibraryRoot.safeParse(root);
+
+		expect({ success: result.success, formatVersion: result.data?.formatVersion }).toStrictEqual({ success: true, formatVersion: 2 });
+	});
+
+	test('refuses a library root file written against format version 1', () => {
+		const { root } = setupRoot({ extra: { formatVersion: 1 } });
+
+		const result = StandardsLibraryRoot.safeParse(root);
+
+		// format version 2 names the rules/ layout; a version 1 root describes the
+		// deleted root-level layout and is refused at the formatVersion field
+		expect({ success: result.success, paths: result.error?.issues.map((issue) => issue.path) }).toStrictEqual({
+			success: false,
+			paths: [['formatVersion']],
+		});
+	});
+
+	test.each([{ formatVersion: 1 }, { formatVersion: 0 }, { formatVersion: '1' }, { formatVersion: true }, { formatVersion: null }])(
 		'rejects a format version of $formatVersion',
 		({ formatVersion }) => {
 			const { root } = setupRoot({ extra: { formatVersion } });

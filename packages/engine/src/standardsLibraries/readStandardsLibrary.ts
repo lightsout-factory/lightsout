@@ -16,7 +16,21 @@ interface Params {
 	packPath: string;
 }
 
-interface WalkParams {
+/**
+ * Walks one set's tree under the library's rules/ folder. Any folder holding a
+ * topic.md is a document and its subtree stops there —
+ * everything below it is that document's rule folders. Folders with no marker
+ * file (a pack's own `common/` helpers, grouping folders) are passed through.
+ */
+const walk = async ({
+	folderPath,
+	documentPath,
+	set,
+	library,
+	problems,
+	documents,
+	rules,
+}: {
 	folderPath: string;
 	documentPath: string;
 	set: StandardsSet;
@@ -24,14 +38,7 @@ interface WalkParams {
 	problems: string[];
 	documents: LoadedStandardsTopic[];
 	rules: LoadedStandardsRule[];
-}
-
-/**
- * Any folder holding a topic.md is a document and its subtree stops there —
- * everything below it is that document's rule folders. Folders with no marker
- * file (a pack's own `common/` helpers, grouping folders) are passed through.
- */
-const walk = async ({ folderPath, documentPath, set, library, problems, documents, rules }: WalkParams) => {
+}) => {
 	const entries = await readdir(folderPath, { withFileTypes: true }).catch(() => undefined);
 
 	if (entries === undefined) {
@@ -112,19 +119,16 @@ export const readStandardsLibrary = async ({ packPath }: Params): Promise<Loaded
 	const problems: string[] = [];
 	const documents: LoadedStandardsTopic[] = [];
 	const rules: LoadedStandardsRule[] = [];
-	// A topic's path never carries the folder its set sits in, so pack files
-	// address the same topics wherever the trees are.
-	const rulesPath = join(packPath, 'rules');
-	const setsPath = (await hasFile({ path: rulesPath })) ? rulesPath : packPath;
-
+	// A topic's path starts at its set, never at rules/, so a pack file
+	// addresses a topic as code/... or tests/...
 	for (const set of [StandardsSet.Code, StandardsSet.Tests]) {
-		await walk({ folderPath: join(setsPath, set), documentPath: set, set, library: root.data.name, problems, documents, rules });
+		await walk({ folderPath: join(packPath, 'rules', set), documentPath: set, set, library: root.data.name, problems, documents, rules });
 	}
 
 	const packs = await parsePackFolder({ folderPath: join(packPath, 'packs'), problems });
 
 	if (documents.length === 0) {
-		problems.push('pack declares no documents — code/ and tests/ hold no folder with a topic.md');
+		problems.push('pack declares no documents — rules/code/ and rules/tests/ hold no folder with a topic.md');
 	}
 
 	problems.push(...findDuplicateIds({ rules }));

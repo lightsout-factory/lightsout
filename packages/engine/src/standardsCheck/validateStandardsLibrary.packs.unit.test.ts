@@ -41,7 +41,7 @@ const packFile = ({ name, packs = [], topics = [] }: { name: string; packs?: str
 
 const library = ({ name, packs, rules = [] }: { name: string; packs: LoadedStandardsPackFile[]; rules?: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
 	name,
-	formatVersion: 1,
+	formatVersion: 2,
 	rootPath: `/packages/${name}`,
 	documents: [],
 	rules,

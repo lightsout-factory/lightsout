@@ -16,16 +16,16 @@ import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
  */
 const setupEnvStandards = async () => {
 	const libraryPath = await freshCwd();
-	writeRepoFile({ cwd: libraryPath, path: 'lightsout-standards.json', content: '{ "name": "lightsout", "formatVersion": 1 }\n' });
+	writeRepoFile({ cwd: libraryPath, path: 'lightsout-standards.json', content: '{ "name": "lightsout", "formatVersion": 2 }\n' });
 	writeRepoFile({
 		cwd: libraryPath,
 		path: 'packs/node.json',
 		content: '{ "description": "The demo topic.", "include": { "topics": ["lightsout/code/demo"] } }\n',
 	});
-	writeRepoFile({ cwd: libraryPath, path: 'code/demo/topic.md', content: '# Demo\n\nThe document the rule argues under.\n' });
+	writeRepoFile({ cwd: libraryPath, path: 'rules/code/demo/topic.md', content: '# Demo\n\nThe document the rule argues under.\n' });
 	writeRepoFile({
 		cwd: libraryPath,
-		path: 'code/demo/01-only-rule/rule.md',
+		path: 'rules/code/demo/01-only-rule/rule.md',
 		content: '---\nsummary: what only-rule catches\nseverity: advisory\n---\n\nThe rule prose.\n',
 	});
 	jest.replaceProperty(process.env, 'LIGHTSOUT_DEFAULT_STANDARDS', libraryPath);

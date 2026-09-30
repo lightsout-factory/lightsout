@@ -23,7 +23,7 @@ const rule = ({ library, id, requires = [] }: { library: string; id: string; req
 /** A loaded library named `name` holding `rules`, with no topics and no packs. */
 const library = ({ name, rules }: { name: string; rules: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
 	name,
-	formatVersion: 1,
+	formatVersion: 2,
 	rootPath: `/packages/${name}`,
 	documents: [],
 	rules,

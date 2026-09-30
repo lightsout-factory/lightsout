@@ -36,11 +36,11 @@ const ruleFiles = ({ path, summary }: { path: string; summary: string }) => ({
  * registered side by side.
  */
 const packageFiles = ({ at, name }: { at: string; name: string }) => ({
-	[`${at}/lightsout-standards.json`]: `{ "name": "${name}", "formatVersion": 1 }\n`,
-	[`${at}/code/house-style/topic.md`]: `# ${name} code\n\nHow this house writes code.\n`,
-	...ruleFiles({ path: `${at}/code/house-style/01-${name}-tabs`, summary: 'indent with tabs' }),
-	[`${at}/tests/house-tests/topic.md`]: `# ${name} tests\n\nHow this house writes tests.\n`,
-	...ruleFiles({ path: `${at}/tests/house-tests/01-${name}-one-assert`, summary: 'one behaviour per test' }),
+	[`${at}/lightsout-standards.json`]: `{ "name": "${name}", "formatVersion": 2 }\n`,
+	[`${at}/rules/code/house-style/topic.md`]: `# ${name} code\n\nHow this house writes code.\n`,
+	...ruleFiles({ path: `${at}/rules/code/house-style/01-${name}-tabs`, summary: 'indent with tabs' }),
+	[`${at}/rules/tests/house-tests/topic.md`]: `# ${name} tests\n\nHow this house writes tests.\n`,
+	...ruleFiles({ path: `${at}/rules/tests/house-tests/01-${name}-one-assert`, summary: 'one behaviour per test' }),
 	[`${at}/packs/${name}.json`]: JSON.stringify({
 		description: `The ${name} pack.`,
 		include: { topics: [`${name}/code/house-style`, `${name}/tests/house-tests`] },
@@ -53,9 +53,9 @@ const packageFiles = ({ at, name }: { at: string; name: string }) => ({
  * rather than paper over it. Its `<name>/<name>` pack includes the code topic.
  */
 const codeOnlyPackageFiles = ({ at, name }: { at: string; name: string }) => ({
-	[`${at}/lightsout-standards.json`]: `{ "name": "${name}", "formatVersion": 1 }\n`,
-	[`${at}/code/${name}-style/topic.md`]: `# ${name} code\n\nHow this house lints.\n`,
-	...ruleFiles({ path: `${at}/code/${name}-style/01-${name}-no-any`, summary: 'never write any' }),
+	[`${at}/lightsout-standards.json`]: `{ "name": "${name}", "formatVersion": 2 }\n`,
+	[`${at}/rules/code/${name}-style/topic.md`]: `# ${name} code\n\nHow this house lints.\n`,
+	...ruleFiles({ path: `${at}/rules/code/${name}-style/01-${name}-no-any`, summary: 'never write any' }),
 	[`${at}/packs/${name}.json`]: JSON.stringify({ description: `The ${name} pack.`, include: { topics: [`${name}/code/${name}-style`] } }),
 });
 

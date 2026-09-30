@@ -32,12 +32,12 @@ const ruleFiles = ({ path, markdown }: { path: string; markdown: string }) => ({
  * pack problem and a topic problem the loader must report together.
  */
 const setupLibraries = () => {
-	const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n' };
+	const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n' };
 	const validPackPath = writeLibrary({
 		files: {
 			...rootFile,
-			'code/style/topic.md': '# Style\n',
-			...ruleFiles({ path: 'code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+			'rules/code/style/topic.md': '# Style\n',
+			...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
 			'packs/node.json': JSON.stringify({ description: 'Node pack.', include: { packs: ['acme/base'] } }),
 			'packs/base.json': JSON.stringify({ description: 'Base pack.', include: { topics: ['acme/code/style'] }, 'rule-settings': { functions: 'blocking' } }),
 		},
@@ -45,8 +45,8 @@ const setupLibraries = () => {
 	const brokenPackPath = writeLibrary({
 		files: {
 			...rootFile,
-			'code/style/topic.md': '# Style\n',
-			...ruleFiles({ path: 'code/style/01-no-summary', markdown: '---\nchecked: false\n---\n\nProse.\n' }),
+			'rules/code/style/topic.md': '# Style\n',
+			...ruleFiles({ path: 'rules/code/style/01-no-summary', markdown: '---\nchecked: false\n---\n\nProse.\n' }),
 			'packs/broken.json': '{ "description": ',
 			'packs/valid.json': JSON.stringify({ description: 'Valid pack.' }),
 		},

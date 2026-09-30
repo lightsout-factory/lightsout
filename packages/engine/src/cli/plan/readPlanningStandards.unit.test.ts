@@ -17,11 +17,11 @@ interface StandardsPackage {
 
 const writeStandardsPackage = ({ cwd, at, name, ruleId, prose, set = 'code' }: StandardsPackage & { cwd: string }) => {
 	const packagePath = join(cwd, at);
-	const rulePath = `${set}/demo/01-${ruleId}`;
+	const rulePath = `rules/${set}/demo/01-${ruleId}`;
 	const files: Record<string, string> = {
-		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 1 }\n`,
+		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 2 }\n`,
 		'packs/demo.json': JSON.stringify({ description: 'The demo topic and its one rule.', include: { topics: [`${name}/${set}/demo`] } }),
-		[`${set}/demo/topic.md`]: '# Demo\n\nThe document the rule argues under.\n',
+		[`rules/${set}/demo/topic.md`]: '# Demo\n\nThe document the rule argues under.\n',
 		[`${rulePath}/rule.md`]: `---\nsummary: a rule the package declares\n---\n\n${prose}\n`,
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 		[`${rulePath}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',

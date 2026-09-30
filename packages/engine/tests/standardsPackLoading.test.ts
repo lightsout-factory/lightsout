@@ -44,13 +44,13 @@ A file named banned.ts is the example this pack exists to refuse.
  */
 const setupPack = async ({ passFiles = ['allowed.ts'] }: { passFiles?: string[] } = {}) => {
 	const packPath = await mkdtemp(join(tmpdir(), 'lightsout-standards-pack-'));
-	const rulePath = 'code/demo/01-no-banned-file';
+	const rulePath = 'rules/code/demo/01-no-banned-file';
 	const files: Record<string, string> = {
-		'lightsout-standards.json': '{ "name": "demo-standards", "formatVersion": 1 }\n',
+		'lightsout-standards.json': '{ "name": "demo-standards", "formatVersion": 2 }\n',
 		// A standalone pack declares its own module format, so its checks load
 		// as ES modules wherever it is unpacked.
 		'package.json': '{ "type": "module" }\n',
-		'code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
+		'rules/code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
 		[`${rulePath}/rule.md`]: ruleMarkdown,
 		[`${rulePath}/check.ts`]: checkSource,
 		[`${rulePath}/fixtures/fail/src/banned.ts`]: 'export const value = 1;\n',
@@ -108,7 +108,7 @@ export const check = {
 	const files: Record<string, string> = {
 		'package.json': `${JSON.stringify({ type: 'module', imports: { '#common/*': './common/*' } }, null, '\t')}\n`,
 		'common/isBanned.ts': "export const isBanned = (path: string): boolean => path.endsWith('banned.ts');\n",
-		'code/demo/01-no-banned-file/check.ts': aliasedCheckSource,
+		'rules/code/demo/01-no-banned-file/check.ts': aliasedCheckSource,
 	};
 
 	for (const [path, content] of Object.entries(files)) {

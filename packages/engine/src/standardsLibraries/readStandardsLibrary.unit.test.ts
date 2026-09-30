@@ -24,7 +24,7 @@ const setupPack = ({ files = {}, folders = [] }: { files?: Record<string, string
 };
 
 /** The root file every valid pack carries. */
-const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n' };
+const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n' };
 
 /** One rule folder's files: its markdown plus the fixture pair every rule ships. */
 const ruleFiles = ({ path, markdown }: { path: string; markdown: string }) => ({
@@ -38,18 +38,18 @@ describe('readStandardsLibrary', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/architecture/decisions/topic.md': '# Architecture Decisions\n\nUniversal decisions.\n',
+				'rules/code/architecture/decisions/topic.md': '# Architecture Decisions\n\nUniversal decisions.\n',
 				...ruleFiles({
-					path: 'code/architecture/decisions/02-graduation-rule',
+					path: 'rules/code/architecture/decisions/02-graduation-rule',
 					markdown: '---\nsummary: a concept earns its folder\nseverity: blocking\noptions:\n  maxFiles: 20\n---\n\nEvery concept starts as a file.\n',
 				}),
 				...ruleFiles({
-					path: 'code/architecture/decisions/01-module-boundaries',
+					path: 'rules/code/architecture/decisions/01-module-boundaries',
 					markdown: '---\nsummary: cross-module imports go through index.ts\n---\n\nA folder-module has a public API.\n',
 				}),
-				'tests/unit-testing/topic.md': '# Unit Testing\n\nHow to write tests.\n',
+				'rules/tests/unit-testing/topic.md': '# Unit Testing\n\nHow to write tests.\n',
 				...ruleFiles({
-					path: 'tests/unit-testing/01-mock-prefix',
+					path: 'rules/tests/unit-testing/01-mock-prefix',
 					markdown: '---\nsummary: mock variables carry a mock prefix\n---\n\nName mocks so they read as mocks.\n',
 				}),
 			},
@@ -63,7 +63,7 @@ describe('readStandardsLibrary', () => {
 
 		// the root file names the pack and the format it is written against
 		expect(pkg.name).toBe('acme');
-		expect(pkg.formatVersion).toBe(1);
+		expect(pkg.formatVersion).toBe(2);
 		expect(pkg.rootPath).toBe(packPath);
 		// both trees are walked
 		expect(pkg.documents).toHaveLength(2);
@@ -78,7 +78,7 @@ describe('readStandardsLibrary', () => {
 		expect(graduation?.prose).toBe('Every concept starts as a file.');
 		expect(graduation?.defaultSeverity).toBe('blocking');
 		expect(graduation?.defaultOptions).toStrictEqual({ maxFiles: 20 });
-		expect(graduation?.fixturesPath).toBe(join(packPath, 'code/architecture/decisions/02-graduation-rule/fixtures'));
+		expect(graduation?.fixturesPath).toBe(join(packPath, 'rules/code/architecture/decisions/02-graduation-rule/fixtures'));
 		// silence means judgment-only and advisory — the two defaults a rule need not restate
 		expect(boundaries?.checked).toBe(false);
 		expect(boundaries?.defaultSeverity).toBe('advisory');
@@ -92,14 +92,14 @@ describe('readStandardsLibrary', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/architecture/decisions/topic.md': '# Architecture Decisions\n',
+				'rules/code/architecture/decisions/topic.md': '# Architecture Decisions\n',
 				...ruleFiles({
-					path: 'code/architecture/decisions/01-module-boundaries',
+					path: 'rules/code/architecture/decisions/01-module-boundaries',
 					markdown: '---\nsummary: cross-module imports go through index.ts\n---\n\nProse.\n',
 				}),
-				...ruleFiles({ path: 'code/architecture/decisions/02-graduation-rule', markdown: '---\nsummary: a concept earns its folder\n---\n\nProse.\n' }),
-				'tests/unit-testing/topic.md': '# Unit Testing\n',
-				...ruleFiles({ path: 'tests/unit-testing/01-mock-prefix', markdown: '---\nsummary: mock variables carry a mock prefix\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/architecture/decisions/02-graduation-rule', markdown: '---\nsummary: a concept earns its folder\n---\n\nProse.\n' }),
+				'rules/tests/unit-testing/topic.md': '# Unit Testing\n',
+				...ruleFiles({ path: 'rules/tests/unit-testing/01-mock-prefix', markdown: '---\nsummary: mock variables carry a mock prefix\n---\n\nProse.\n' }),
 			},
 		});
 
@@ -126,9 +126,9 @@ describe('readStandardsLibrary', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '# Style\r\n',
+				'rules/code/style/topic.md': '# Style\r\n',
 				...ruleFiles({
-					path: 'code/style/01-functions',
+					path: 'rules/code/style/01-functions',
 					markdown: '---\r\nsummary: one export per file\r\nseverity: blocking\r\n---\r\n\r\nProse.\r\n',
 				}),
 			},
@@ -146,19 +146,19 @@ describe('readStandardsLibrary', () => {
 
 	test('reports every structural and honesty problem in one error rather than the first', async () => {
 		const { packPath } = setupPack({
-			folders: ['code/style/patterns/04-empty-fixtures/fixtures/pass'],
+			folders: ['rules/code/style/patterns/04-empty-fixtures/fixtures/pass'],
 			files: {
 				...rootFile,
-				'code/style/patterns/topic.md': '# Patterns\n',
-				...ruleFiles({ path: 'code/style/patterns/no-prefix', markdown: '---\nsummary: unordered\n---\n\nProse.\n' }),
-				...ruleFiles({ path: 'code/style/patterns/01-checked-without-check', markdown: '---\nsummary: claims a check\nchecked: true\n---\n\nProse.\n' }),
-				...ruleFiles({ path: 'code/style/patterns/02-stray-check', markdown: '---\nsummary: ships an undeclared check\n---\n\nProse.\n' }),
-				'code/style/patterns/02-stray-check/check.ts': 'export const check = { inputKind: "file-list", run: () => [] };\n',
-				...ruleFiles({ path: 'code/style/patterns/03-no-summary', markdown: '---\nchecked: false\n---\n\nProse.\n' }),
-				'code/style/patterns/04-empty-fixtures/rule.md': '---\nsummary: ships no fixtures\n---\n\nProse.\n',
-				...ruleFiles({ path: 'code/style/patterns/05-shared-id', markdown: '---\nsummary: first claimant\n---\n\nProse.\n' }),
-				'tests/unit-testing/topic.md': '# Unit Testing\n',
-				...ruleFiles({ path: 'tests/unit-testing/06-shared-id', markdown: '---\nsummary: second claimant\n---\n\nProse.\n' }),
+				'rules/code/style/patterns/topic.md': '# Patterns\n',
+				...ruleFiles({ path: 'rules/code/style/patterns/no-prefix', markdown: '---\nsummary: unordered\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/patterns/01-checked-without-check', markdown: '---\nsummary: claims a check\nchecked: true\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/patterns/02-stray-check', markdown: '---\nsummary: ships an undeclared check\n---\n\nProse.\n' }),
+				'rules/code/style/patterns/02-stray-check/check.ts': 'export const check = { inputKind: "file-list", run: () => [] };\n',
+				...ruleFiles({ path: 'rules/code/style/patterns/03-no-summary', markdown: '---\nchecked: false\n---\n\nProse.\n' }),
+				'rules/code/style/patterns/04-empty-fixtures/rule.md': '---\nsummary: ships no fixtures\n---\n\nProse.\n',
+				...ruleFiles({ path: 'rules/code/style/patterns/05-shared-id', markdown: '---\nsummary: first claimant\n---\n\nProse.\n' }),
+				'rules/tests/unit-testing/topic.md': '# Unit Testing\n',
+				...ruleFiles({ path: 'rules/tests/unit-testing/06-shared-id', markdown: '---\nsummary: second claimant\n---\n\nProse.\n' }),
 			},
 		});
 
@@ -177,7 +177,7 @@ describe('readStandardsLibrary', () => {
 	});
 
 	test('refuses a pack whose walk finds no document at all', async () => {
-		const { packPath } = setupPack({ files: { ...rootFile, 'code/style/README.md': '# not a document\n' } });
+		const { packPath } = setupPack({ files: { ...rootFile, 'rules/code/style/README.md': '# not a document\n' } });
 
 		const error = await getRejectionError({ promise: readStandardsLibrary({ packPath }) });
 
@@ -187,7 +187,7 @@ describe('readStandardsLibrary', () => {
 
 	test('an authored pack carries no built marker — its fixtures are still beside its rules', async () => {
 		const { packPath } = setupPack({
-			files: { ...rootFile, 'code/architecture/decisions/topic.md': '# Architecture Decisions\n\nUniversal decisions.\n' },
+			files: { ...rootFile, 'rules/code/architecture/decisions/topic.md': '# Architecture Decisions\n\nUniversal decisions.\n' },
 		});
 
 		const pkg = await readStandardsLibrary({ packPath });
@@ -198,8 +198,8 @@ describe('readStandardsLibrary', () => {
 	test('a pack the bundler stamped loads as built, which is how validate knows not to blame its rules', async () => {
 		const { packPath } = setupPack({
 			files: {
-				'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1, "built": true }\n',
-				'code/architecture/decisions/topic.md': '# Architecture Decisions\n\nUniversal decisions.\n',
+				'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2, "built": true }\n',
+				'rules/code/architecture/decisions/topic.md': '# Architecture Decisions\n\nUniversal decisions.\n',
 			},
 		});
 
@@ -209,7 +209,7 @@ describe('readStandardsLibrary', () => {
 	});
 
 	test('refuses a pack whose root file is missing', async () => {
-		const { packPath } = setupPack({ files: { 'code/style/topic.md': '# Style\n' } });
+		const { packPath } = setupPack({ files: { 'rules/code/style/topic.md': '# Style\n' } });
 
 		const error = await getRejectionError({ promise: readStandardsLibrary({ packPath }) });
 
@@ -226,7 +226,7 @@ describe('readStandardsLibrary', () => {
 	});
 
 	test('refuses a pack written against another format version', async () => {
-		const { packPath } = setupPack({ files: { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }' } });
+		const { packPath } = setupPack({ files: { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }' } });
 
 		const error = await getRejectionError({ promise: readStandardsLibrary({ packPath }) });
 
@@ -236,11 +236,11 @@ describe('readStandardsLibrary', () => {
 
 	test('reports an unreadable document and a rule whose front matter is not YAML', async () => {
 		const { packPath } = setupPack({
-			folders: ['code/unreadable/topic.md'],
+			folders: ['rules/code/unreadable/topic.md'],
 			files: {
 				...rootFile,
-				'code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'code/style/01-broken-front-matter', markdown: '---\nsummary: {unclosed\n---\n\nProse.\n' }),
+				'rules/code/style/topic.md': '# Style\n',
+				...ruleFiles({ path: 'rules/code/style/01-broken-front-matter', markdown: '---\nsummary: {unclosed\n---\n\nProse.\n' }),
 			},
 		});
 
@@ -256,8 +256,8 @@ describe('readStandardsLibrary', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '---\ntitle: {unclosed\n---\n\n# Style\n',
-				...ruleFiles({ path: 'code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				'rules/code/style/topic.md': '---\ntitle: {unclosed\n---\n\n# Style\n',
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
 			},
 		});
 
@@ -271,8 +271,8 @@ describe('readStandardsLibrary', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '---\ntitle: Style\n---\n\n# Style\n',
-				...ruleFiles({ path: 'code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				'rules/code/style/topic.md': '---\ntitle: Style\n---\n\n# Style\n',
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
 			},
 		});
 
@@ -288,8 +288,8 @@ describe('readStandardsLibrary', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '---\n- one\n- two\n---\n\n# Style\n',
-				...ruleFiles({ path: 'code/style/01-functions', markdown: '---\n- one\n- two\n---\n\nProse.\n' }),
+				'rules/code/style/topic.md': '---\n- one\n- two\n---\n\n# Style\n',
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\n- one\n- two\n---\n\nProse.\n' }),
 			},
 		});
 
@@ -303,12 +303,12 @@ describe('readStandardsLibrary', () => {
 
 	test('reports a rule whose rule.md cannot be read', async () => {
 		const { packPath } = setupPack({
-			folders: ['code/style/01-unreadable/rule.md'],
+			folders: ['rules/code/style/01-unreadable/rule.md'],
 			files: {
 				...rootFile,
-				'code/style/topic.md': '# Style\n',
-				'code/style/01-unreadable/fixtures/pass/src/example.ts': 'export const example = 1;\n',
-				'code/style/01-unreadable/fixtures/fail/src/example.ts': 'export const example = 2;\n',
+				'rules/code/style/topic.md': '# Style\n',
+				'rules/code/style/01-unreadable/fixtures/pass/src/example.ts': 'export const example = 1;\n',
+				'rules/code/style/01-unreadable/fixtures/fail/src/example.ts': 'export const example = 2;\n',
 			},
 		});
 
@@ -322,11 +322,11 @@ describe('readStandardsLibrary', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/common/utils/shared.ts': 'export const shared = 1;\n',
-				'code/style/topic.md': '# Style\n',
-				'code/style/common/helper.ts': 'export const helper = 1;\n',
-				'code/style/nested/topic.md': '# Nested\n',
-				...ruleFiles({ path: 'code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				'rules/code/common/utils/shared.ts': 'export const shared = 1;\n',
+				'rules/code/style/topic.md': '# Style\n',
+				'rules/code/style/common/helper.ts': 'export const helper = 1;\n',
+				'rules/code/style/nested/topic.md': '# Nested\n',
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
 			},
 		});
 

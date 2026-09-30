@@ -53,23 +53,23 @@ const setupLibraryRepo = async ({ appPacks = ['house/base'] }: { appPacks?: stri
 	await writeTree({
 		dir: libraryPath,
 		files: {
-			'lightsout-standards.json': JSON.stringify({ name: 'house', formatVersion: 1 }),
+			'lightsout-standards.json': JSON.stringify({ name: 'house', formatVersion: 2 }),
 			'packs/base.json': JSON.stringify({ description: 'The base pack.', include: { topics: ['house/code/alpha'] } }),
 			'packs/app.json': JSON.stringify({
 				description: 'The app pack.',
 				include: { packs: appPacks, topics: ['house/tests/beta'] },
 				'rule-settings': { 'house/zebra-check': { severity: 'blocking', options: { cap: 9 } } },
 			}),
-			'tests/beta/topic.md': '# Beta\n\nWhat the beta rules share.\n',
-			'tests/beta/10-mango-note/rule.md': '---\nsummary: a judgment rule about tests\n---\n\nTests read as prose.\n',
-			'code/alpha/topic.md': '# Alpha\n\nWhat the alpha rules share.\n',
-			'code/alpha/20-apple-note/rule.md': '---\nsummary: a judgment rule about code\n---\n\nCode reads as prose.\n',
-			'code/alpha/10-zebra-check/rule.md':
+			'rules/tests/beta/topic.md': '# Beta\n\nWhat the beta rules share.\n',
+			'rules/tests/beta/10-mango-note/rule.md': '---\nsummary: a judgment rule about tests\n---\n\nTests read as prose.\n',
+			'rules/code/alpha/topic.md': '# Alpha\n\nWhat the alpha rules share.\n',
+			'rules/code/alpha/20-apple-note/rule.md': '---\nsummary: a judgment rule about code\n---\n\nCode reads as prose.\n',
+			'rules/code/alpha/10-zebra-check/rule.md':
 				'---\nsummary: a checked rule\nchecked: true\nseverity: advisory\noptions:\n  cap: 5\n  width: 2\n---\n\nStripes are checked.\n',
-			'code/alpha/10-zebra-check/check.ts': zebraCheckSource,
-			'code/alpha/10-zebra-check/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
-			'code/alpha/10-zebra-check/fixtures/pass/src/b.ts': 'export const b = 1;\n',
-			'code/alpha/10-zebra-check/fixtures/pass/src/a.ts': 'export const a = 1;\n',
+			'rules/code/alpha/10-zebra-check/check.ts': zebraCheckSource,
+			'rules/code/alpha/10-zebra-check/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
+			'rules/code/alpha/10-zebra-check/fixtures/pass/src/b.ts': 'export const b = 1;\n',
+			'rules/code/alpha/10-zebra-check/fixtures/pass/src/a.ts': 'export const a = 1;\n',
 		},
 	});
 	jest.replaceProperty(process, 'env', { ...process.env, LIGHTSOUT_DEFAULT_STANDARDS: libraryPath });

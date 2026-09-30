@@ -176,10 +176,11 @@ load, so a missing entry is visible before a run is ever started.
 ## Adding your standards
 
 Standards arrive as **standards packs**. A pack is one file in a standards
-library that selects topics and rules — a `code/` tree of documents for the
-agents that write code, and a `tests/` tree for the agent that writes tests.
-Every rule is a folder inside a topic: its prose, the check that enforces it
-when one is possible, and the example files that prove the check works.
+library that selects topics and rules — topics from the library's `rules/code/`
+tree for the agents that write code, and from its `rules/tests/` tree for the
+agent that writes tests. Every rule is a folder inside a topic: its prose, the
+check that enforces it when one is possible, and the example files that prove
+the check works.
 
 A repository selects one pack, and that pack brings in every rule it needs. In
 a monorepo a package may select a different one with `package-standards-packs`
@@ -212,8 +213,8 @@ package `package-standards-packs` does not name.
 ### Register standards libraries
 
 A **standards library** is a folder holding `lightsout-standards.json`, the
-topics and rules it defines, and a `packs/` folder of pack files that select
-and tune those rules. `standards-libraries` registers libraries beside the one
+topics and rules it defines under `rules/code/` and `rules/tests/`, and a
+`packs/` folder beside them of pack files that select and tune those rules. `standards-libraries` registers libraries beside the one
 lightsout ships. Each key is the library's name, and each value says where the
 library lives:
 

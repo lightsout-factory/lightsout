@@ -26,7 +26,7 @@ const setupPack = ({ files = {}, folders = [] }: { files?: Record<string, string
 };
 
 /** The root file every valid pack carries. */
-const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n' };
+const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n' };
 
 /** One rule folder's files: its markdown plus the fixture pair every rule ships. */
 const ruleFiles = ({ path, markdown }: { path: string; markdown: string }) => ({
@@ -62,9 +62,9 @@ describe('readStandardsLibrary checks', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'code/style/01-loose-file', markdown: '---\nsummary: a source file outside a module\nchecked: true\n---\n\nProse.\n' }),
-				'code/style/01-loose-file/check.ts': checkSource,
+				'rules/code/style/topic.md': '# Style\n',
+				...ruleFiles({ path: 'rules/code/style/01-loose-file', markdown: '---\nsummary: a source file outside a module\nchecked: true\n---\n\nProse.\n' }),
+				'rules/code/style/01-loose-file/check.ts': checkSource,
 			},
 		});
 
@@ -83,9 +83,9 @@ describe('readStandardsLibrary checks', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'code/style/01-bad-check', markdown: '---\nsummary: ships a check it cannot load\nchecked: true\n---\n\nProse.\n' }),
-				'code/style/01-bad-check/check.ts': 'export const check = 5;\n',
+				'rules/code/style/topic.md': '# Style\n',
+				...ruleFiles({ path: 'rules/code/style/01-bad-check', markdown: '---\nsummary: ships a check it cannot load\nchecked: true\n---\n\nProse.\n' }),
+				'rules/code/style/01-bad-check/check.ts': 'export const check = 5;\n',
 			},
 		});
 
@@ -93,16 +93,19 @@ describe('readStandardsLibrary checks', () => {
 
 		// the rule folder is named alongside the file the author has to open
 		expect(error.message).toContain('code/style/01-bad-check: check.ts must export `check` as { inputKind, run }');
-		expect(error.message).toContain(join(packPath, 'code/style/01-bad-check/check.ts'));
+		expect(error.message).toContain(join(packPath, 'rules/code/style/01-bad-check/check.ts'));
 	});
 
 	test('reports a rule whose check.ts cannot be imported at all', async () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'code/style/01-throwing-check', markdown: '---\nsummary: ships a check that fails on import\nchecked: true\n---\n\nProse.\n' }),
-				'code/style/01-throwing-check/check.ts': "throw new Error('this check cannot initialise');\n",
+				'rules/code/style/topic.md': '# Style\n',
+				...ruleFiles({
+					path: 'rules/code/style/01-throwing-check',
+					markdown: '---\nsummary: ships a check that fails on import\nchecked: true\n---\n\nProse.\n',
+				}),
+				'rules/code/style/01-throwing-check/check.ts': "throw new Error('this check cannot initialise');\n",
 			},
 		});
 

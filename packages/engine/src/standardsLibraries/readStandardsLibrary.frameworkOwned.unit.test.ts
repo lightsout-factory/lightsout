@@ -25,7 +25,7 @@ const setupPack = ({ files = {}, folders = [] }: { files?: Record<string, string
 };
 
 /** The root file every valid pack carries. */
-const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n' };
+const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n' };
 
 /** One rule folder's files: its markdown plus the fixture pair every rule ships. */
 const ruleFiles = ({ path, markdown }: { path: string; markdown: string }) => ({
@@ -61,8 +61,8 @@ describe('readStandardsLibrary — the framework-owned fixtures path', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				'rules/code/style/topic.md': '# Style\n',
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
 				'fixtures/framework-owned/nestjs/src/main.ts': 'export const value = 1;\n',
 			},
 		});
@@ -77,8 +77,8 @@ describe('readStandardsLibrary — the framework-owned fixtures path', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				'rules/code/style/topic.md': '# Style\n',
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
 			},
 		});
 

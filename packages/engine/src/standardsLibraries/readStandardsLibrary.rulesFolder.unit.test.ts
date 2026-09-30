@@ -5,7 +5,7 @@ import { describe, expect, test } from '@jest/globals';
 import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary.ts';
 
 /** The root file every valid library carries. */
-const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n' };
+const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n' };
 
 /** One topic folder holding one rule folder, with the fixture pair every rule ships. */
 const topicFiles = ({ path, rule }: { path: string; rule: string }) => ({
@@ -30,7 +30,22 @@ const setupLibrary = ({ files }: { files: Record<string, string> }) => {
 };
 
 describe('readStandardsLibrary — where the topic trees sit', () => {
-	test('loads topics from rules/code and rules/tests when the library root holds a rules folder, recording paths without the rules segment', async () => {
+	test('walks only the rules folder when the library root holds both a rules folder and a root-level code folder', async () => {
+		const { packPath } = setupLibrary({
+			files: {
+				...topicFiles({ path: 'rules/code/style', rule: 'short-functions' }),
+				...topicFiles({ path: 'code/legacy', rule: 'legacy-rule' }),
+			},
+		});
+
+		const library = await readStandardsLibrary({ packPath });
+		const topicPaths = library.documents.map((topic) => topic.path);
+		const ruleIds = library.rules.map((rule) => rule.id);
+
+		expect({ topicPaths, ruleIds }).toStrictEqual({ topicPaths: ['code/style'], ruleIds: ['short-functions'] });
+	});
+
+	test('loads topics from rules/code and rules/tests and records their paths without the rules segment', async () => {
 		const { packPath } = setupLibrary({
 			files: {
 				...topicFiles({ path: 'rules/code/style', rule: 'short-functions' }),
@@ -54,42 +69,15 @@ describe('readStandardsLibrary — where the topic trees sit', () => {
 		});
 	});
 
-	test('walks only the rules folder when the library root holds both a rules folder and a root-level code folder', async () => {
-		const { packPath } = setupLibrary({
-			files: {
-				...topicFiles({ path: 'rules/code/style', rule: 'short-functions' }),
-				...topicFiles({ path: 'code/legacy', rule: 'legacy-rule' }),
-			},
-		});
-
-		const library = await readStandardsLibrary({ packPath });
-		const topicPaths = library.documents.map((topic) => topic.path);
-		const ruleIds = library.rules.map((rule) => rule.id);
-
-		expect({ topicPaths, ruleIds }).toStrictEqual({ topicPaths: ['code/style'], ruleIds: ['short-functions'] });
-	});
-
-	test('loads topics from code and tests at the library root when the library holds no rules folder', async () => {
+	test('refuses a library whose topic folders sit at its root instead of under rules', async () => {
 		const { packPath } = setupLibrary({
 			files: {
 				...topicFiles({ path: 'code/style', rule: 'short-functions' }),
-				...topicFiles({ path: 'tests/unit-testing', rule: 'mock-prefix' }),
 			},
 		});
 
-		const library = await readStandardsLibrary({ packPath });
-		const topics = library.documents.map((topic) => ({ set: topic.set, path: topic.path, ruleIds: topic.ruleIds }));
-		const rules = library.rules.map((rule) => ({ id: rule.id, set: rule.set, documentPath: rule.documentPath }));
+		const loading = readStandardsLibrary({ packPath });
 
-		expect({ topics, rules }).toStrictEqual({
-			topics: [
-				{ set: 'code', path: 'code/style', ruleIds: ['short-functions'] },
-				{ set: 'tests', path: 'tests/unit-testing', ruleIds: ['mock-prefix'] },
-			],
-			rules: [
-				{ id: 'short-functions', set: 'code', documentPath: 'code/style' },
-				{ id: 'mock-prefix', set: 'tests', documentPath: 'tests/unit-testing' },
-			],
-		});
+		await expect(loading).rejects.toThrow(/^- (?=.*\bno\b)(?=.*topic)(?=.*rules\/code)(?=.*rules\/tests).*$/m);
 	});
 });

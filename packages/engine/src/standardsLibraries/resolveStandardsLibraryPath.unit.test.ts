@@ -12,7 +12,7 @@ interface Entry {
 /** Marks a folder as a library root — only the file's presence decides, never its contents. */
 const writeManifestIn = ({ folder }: { folder: string }) => {
 	mkdirSync(folder, { recursive: true });
-	writeFileSync(join(folder, 'lightsout-standards.json'), '{ "name": "house", "formatVersion": 1 }\n');
+	writeFileSync(join(folder, 'lightsout-standards.json'), '{ "name": "house", "formatVersion": 2 }\n');
 };
 
 /** Runs one entry, answering with its folder or the message it threw, so a table of entries is one act. */

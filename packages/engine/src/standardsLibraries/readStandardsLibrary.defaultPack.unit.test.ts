@@ -88,6 +88,22 @@ const setupCheckImports = async () => {
 	return { pack, manifest, checks, commonFolder: join(libraryPath, 'common') + sep };
 };
 
+/** The built-in library loaded as a run loads it, with the folder names at its root and under its rules/ folder. */
+const setupLibraryLayout = async () => {
+	const { pack } = await setupDefaultPack();
+	// the same authored folder setupDefaultPack loads, anchored on this file for the same reason
+	const libraryPath = join(__dirname, '..', '..', '..', 'standards-typescript');
+	const folderNames = async ({ folder }: { folder: string }): Promise<string[]> => {
+		const entries = await readdir(folder, { withFileTypes: true });
+
+		return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+	};
+	const rootFolders = await folderNames({ folder: libraryPath });
+	const rulesFolders = await folderNames({ folder: join(libraryPath, 'rules') });
+
+	return { pack, rootFolders, rulesFolders };
+};
+
 describe('readStandardsLibrary', () => {
 	test('carries all 24 shipped documents, split across the code and tests trees', async () => {
 		const { pack } = await setupDefaultPack();
@@ -166,6 +182,31 @@ describe('readStandardsLibrary', () => {
 			imports: { '#common/*': './common/*' },
 			relativeIntoCommon: [],
 			importsThroughAlias: true,
+			unloadable: [],
+		});
+	});
+
+	test('the built-in library keeps every topic under rules and loads the check of every checked rule', async () => {
+		const { pack, rootFolders, rulesFolders } = await setupLibraryLayout();
+
+		const checked = pack.rules.filter((rule) => rule.checked);
+		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKind === undefined).map((rule) => rule.name);
+
+		// an empty checked-rule list would make "every checked rule" hold vacuously
+		expect(checked.length).toBeGreaterThan(0);
+		expect({
+			formatVersion: pack.formatVersion,
+			rootCode: rootFolders.includes('code'),
+			rootTests: rootFolders.includes('tests'),
+			rulesCode: rulesFolders.includes('code'),
+			rulesTests: rulesFolders.includes('tests'),
+			unloadable,
+		}).toStrictEqual({
+			formatVersion: 2,
+			rootCode: false,
+			rootTests: false,
+			rulesCode: true,
+			rulesTests: true,
 			unloadable: [],
 		});
 	});

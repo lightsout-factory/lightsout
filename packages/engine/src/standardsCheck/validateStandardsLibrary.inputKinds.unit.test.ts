@@ -123,7 +123,7 @@ const validate = ({ rules, built }: { rules: LoadedStandardsRule[]; built?: true
 	// No framework-owned tree anywhere in this file: the invariant's own verdicts
 	// live in validateStandardsLibrary.frameworkOwned.unit.test.ts, and every test
 	// here is about the per-rule pass it runs beside.
-	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, built, rootPath: '/packages/acme', documents: [], rules, packs: [] };
+	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 2, built, rootPath: '/packages/acme', documents: [], rules, packs: [] };
 
 	return validateStandardsLibrary({ library: pack, libraries: [pack] });
 };

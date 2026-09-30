@@ -126,10 +126,10 @@ const setupFileTextRun = () => {
 const setupPackRun = () => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-check-inputs-pack-'));
 
-	mkdirSync(join(cwd, 'standards/tests/unit-testing/05-rule'), { recursive: true });
+	mkdirSync(join(cwd, 'standards/rules/tests/unit-testing/05-rule'), { recursive: true });
 	mkdirSync(join(cwd, 'standards/common/utils'), { recursive: true });
-	writeFileSync(join(cwd, 'standards/lightsout-standards.json'), '{ "name": "acme", "formatVersion": 1 }\n');
-	writeFileSync(join(cwd, 'standards/tests/unit-testing/05-rule/check.ts'), 'export const check = () => [];\n');
+	writeFileSync(join(cwd, 'standards/lightsout-standards.json'), '{ "name": "acme", "formatVersion": 2 }\n');
+	writeFileSync(join(cwd, 'standards/rules/tests/unit-testing/05-rule/check.ts'), 'export const check = () => [];\n');
 	writeFileSync(join(cwd, 'standards/common/utils/scan.unit.test.ts'), "test('scan', () => {});\n");
 
 	return { cwd, ...loadOneRule({ inputKind: StandardsInputKind.FileList }) };
@@ -252,7 +252,7 @@ describe('runPackageChecks', () => {
 		expect(input).toEqual(
 			expect.objectContaining({
 				standardsLibraries: ['standards'],
-				source: ['standards/tests/unit-testing/05-rule/check.ts'],
+				source: ['standards/rules/tests/unit-testing/05-rule/check.ts'],
 				tests: ['standards/common/utils/scan.unit.test.ts'],
 			}),
 		);

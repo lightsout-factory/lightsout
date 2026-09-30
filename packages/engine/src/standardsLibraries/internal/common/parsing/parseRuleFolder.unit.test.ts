@@ -57,12 +57,12 @@ const fileListInput = ({ files }: { files: string[] }): StandardsCheckInput => (
 	standardsLibraries: [],
 });
 
-/** One checked rule folder on disk under `<root>/<libraryPath>/code/style/01-loose-file`, holding the given check files. */
+/** One checked rule folder on disk under `<root>/<libraryPath>/rules/code/style/01-loose-file`, holding the given check files. */
 const writeCheckedRule = ({ root, libraryPath, checkFiles }: { root: string; libraryPath: string; checkFiles: Record<string, string> }) => {
-	const folderPath = join(root, libraryPath, 'code/style/01-loose-file');
+	const folderPath = join(root, libraryPath, 'rules/code/style/01-loose-file');
 
 	mkdirSync(folderPath, { recursive: true });
-	writeFileSync(join(root, libraryPath, 'lightsout-standards.json'), '{ "name": "acme", "formatVersion": 1 }\n');
+	writeFileSync(join(root, libraryPath, 'lightsout-standards.json'), '{ "name": "acme", "formatVersion": 2 }\n');
 	writeFileSync(join(folderPath, 'rule.md'), checkedRuleMarkdown);
 
 	for (const [fileName, content] of Object.entries(checkFiles)) {
@@ -98,7 +98,7 @@ const setupNodeModulesLibraries = () => {
 	writeCheckedRule({ root: linkedRoot, libraryPath: 'libraries/acme', checkFiles: { 'check.ts': checkTsSource } });
 	mkdirSync(join(linkedRoot, 'node_modules'), { recursive: true });
 	symlinkSync(join(linkedRoot, 'libraries/acme'), join(linkedRoot, 'node_modules/acme'), 'dir');
-	const linkedFolderPath = join(linkedRoot, 'node_modules/acme/code/style/01-loose-file');
+	const linkedFolderPath = join(linkedRoot, 'node_modules/acme/rules/code/style/01-loose-file');
 
 	return { installedFolderPath, linkedFolderPath };
 };

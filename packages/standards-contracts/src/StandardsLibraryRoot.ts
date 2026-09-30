@@ -14,7 +14,8 @@ export const StandardsLibraryRoot = z.object({
 		.string()
 		.min(1)
 		.refine((name) => !name.includes('/'), { message: 'must not hold "/" — the library name is the first half of every full rule name <library>/<rule-id>' }),
-	formatVersion: z.literal(1),
+	/** Names the layout: version 2 keeps every topic under the library's rules/code/ and rules/tests/ folders. */
+	formatVersion: z.literal(2),
 	/**
 	 * Stamped by the bundler on a built pack. Building strips the fixtures, so
 	 * without this `lightsout standards-validate` would report every stripped

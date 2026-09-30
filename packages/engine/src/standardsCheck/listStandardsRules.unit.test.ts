@@ -115,13 +115,13 @@ const writeLibrary = ({
 	topics = [`${name}/code/demo`],
 }: LibrarySpec & { cwd: string }) => {
 	const libraryPath = join(cwd, at);
-	const rulePath = `code/demo/01-${ruleId}`;
+	const rulePath = `rules/code/demo/01-${ruleId}`;
 	const optionLines = Object.entries(options).map(([key, value]) => `  ${key}: ${value}`);
 	const optionsBlock = optionLines.length === 0 ? '' : `options:\n${optionLines.join('\n')}\n`;
 	const files: Record<string, string> = {
-		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 1 }\n`,
+		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 2 }\n`,
 		[`packs/${name}.json`]: JSON.stringify({ description: `the ${name} pack`, include: { topics } }),
-		'code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
+		'rules/code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
 		[`${rulePath}/rule.md`]: `---\nsummary: what ${ruleId} catches\nseverity: ${severity}\n${optionsBlock}---\n\nThe rule prose.\n`,
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 		[`${rulePath}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',
@@ -259,13 +259,11 @@ describe('listStandardsRules', () => {
 
 		// the doc column is what makes the output actionable — a row naming a
 		// document that is not there sends the reader nowhere
-		const libraryPath = join(cwd, 'packages', 'standards-typescript');
-		// the loader's rule: the topic trees sit under rules/ when the library holds one
-		const setsPath = existsSync(join(libraryPath, 'rules')) ? join(libraryPath, 'rules') : libraryPath;
+		const rulesPath = join(cwd, 'packages', 'standards-typescript', 'rules');
 		const missing = rules.filter((rule) => {
 			const { name, path } = docPartsOf({ doc: rule.doc });
 
-			return name !== 'lightsout' || !existsSync(join(setsPath, path, 'topic.md'));
+			return name !== 'lightsout' || !existsSync(join(rulesPath, path, 'topic.md'));
 		});
 
 		expect(missing.map((rule) => `${rule.rule} → ${rule.doc}`)).toStrictEqual([]);

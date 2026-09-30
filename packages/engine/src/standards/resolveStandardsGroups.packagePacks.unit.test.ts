@@ -34,13 +34,13 @@ const ruleFiles = ({ path, summary }: { path: string; summary: string }) => ({
  * as well as its name.
  */
 const builtInLibraryFiles = {
-	'lightsout-standards.json': '{ "name": "lightsout", "formatVersion": 1 }\n',
-	'code/base/topic.md': '# Base\n\nHow every package writes code.\n',
-	...ruleFiles({ path: 'code/base/01-tabs', summary: 'indent with tabs' }),
-	'code/react/topic.md': '# React\n\nHow components are written.\n',
-	...ruleFiles({ path: 'code/react/01-hooks-first', summary: 'hooks come before handlers' }),
-	'code/tanstack/topic.md': '# TanStack Start\n\nHow routes load data.\n',
-	...ruleFiles({ path: 'code/tanstack/01-loaders', summary: 'routes load data in loaders' }),
+	'lightsout-standards.json': '{ "name": "lightsout", "formatVersion": 2 }\n',
+	'rules/code/base/topic.md': '# Base\n\nHow every package writes code.\n',
+	...ruleFiles({ path: 'rules/code/base/01-tabs', summary: 'indent with tabs' }),
+	'rules/code/react/topic.md': '# React\n\nHow components are written.\n',
+	...ruleFiles({ path: 'rules/code/react/01-hooks-first', summary: 'hooks come before handlers' }),
+	'rules/code/tanstack/topic.md': '# TanStack Start\n\nHow routes load data.\n',
+	...ruleFiles({ path: 'rules/code/tanstack/01-loaders', summary: 'routes load data in loaders' }),
 	'packs/node.json': JSON.stringify({ description: 'The node pack.', include: { topics: ['lightsout/code/base'] } }),
 	'packs/react-app.json': JSON.stringify({
 		description: 'The react-app pack.',

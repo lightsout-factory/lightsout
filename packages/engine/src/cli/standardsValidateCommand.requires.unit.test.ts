@@ -57,7 +57,7 @@ const setupWarningsOnly = ({ warnings }: { warnings: string[] }) => {
 	const captured = captureCommandOutput();
 	const library: LoadedStandardsLibrary = {
 		name: 'house',
-		formatVersion: 1,
+		formatVersion: 2,
 		rootPath: '/repo/libs/house',
 		documents: [],
 		rules: [

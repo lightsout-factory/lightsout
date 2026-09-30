@@ -71,7 +71,7 @@ const buildPack = ({ name, packs = [], topics = [], rules = [], ruleSettings = {
 
 const buildLibrary = ({ name, topics = [], packs = [] }: LibrarySpec): LoadedStandardsLibrary => ({
 	name,
-	formatVersion: 1,
+	formatVersion: 2,
 	rootPath: `/libraries/${name}`,
 	documents: topics.map((spec) => buildTopic({ library: name, spec })),
 	rules: topics.flatMap((topic) => (topic.rules ?? []).map((spec) => buildRule({ library: name, path: topic.path, spec }))),

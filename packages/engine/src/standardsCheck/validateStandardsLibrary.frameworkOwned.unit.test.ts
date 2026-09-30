@@ -120,7 +120,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 const validate = ({ rules, built, frameworkOwnedFixturesPath }: { rules: LoadedStandardsRule[]; built?: true; frameworkOwnedFixturesPath?: string }) => {
 	const pack: LoadedStandardsLibrary = {
 		name: 'acme',
-		formatVersion: 1,
+		formatVersion: 2,
 		built,
 		rootPath: '/packages/acme',
 		frameworkOwnedFixturesPath,

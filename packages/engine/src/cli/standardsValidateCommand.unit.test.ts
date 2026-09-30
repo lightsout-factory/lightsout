@@ -69,7 +69,7 @@ const setupValidate = ({
 	notes?: string[];
 } = {}) => {
 	const captured = captureCommandOutput();
-	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules, packs: [] };
+	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 2, rootPath: '/packages/acme', documents: [], rules, packs: [] };
 
 	mockResolveDefaultStandardsLibrary.mockReturnValue('/plugin/standards');
 	mockLoadStandardsPack.mockResolvedValue(pack);
@@ -99,7 +99,7 @@ const library = ({
 	rootPath: string;
 	rules?: LoadedStandardsRule[];
 	packs?: LoadedStandardsPackFile[];
-}): LoadedStandardsLibrary => ({ name, formatVersion: 1, rootPath, documents: [], rules, packs });
+}): LoadedStandardsLibrary => ({ name, formatVersion: 2, rootPath, documents: [], rules, packs });
 
 // Each library differs from its namesakes by root, so an equality check tells
 // which copy of a name reached the validator.

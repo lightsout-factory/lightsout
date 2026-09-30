@@ -47,7 +47,7 @@ const buildDocument = ({
 /** A library with two code documents, listed out of path order, plus one tests document. */
 const setupPack = (): LoadedStandardsLibrary => ({
 	name: 'lightsout defaults',
-	formatVersion: 1,
+	formatVersion: 2,
 	rootPath: '/pkg',
 	documents: [
 		buildDocument({ path: 'code/style/patterns', intro: '# Patterns', ruleIds: ['functions', 'classes'] }),

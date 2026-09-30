@@ -253,17 +253,17 @@ const writeOwnPack = () => {
 	writeTree({
 		dir: packPath,
 		files: {
-			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n',
-			'code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
-			'code/house/05-house-no-loose-files/rule.md':
+			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
+			'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
+			'rules/code/house/05-house-no-loose-files/rule.md':
 				'---\nsummary: a source file outside a module\nchecked: true\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
-			'code/house/05-house-no-loose-files/check.ts':
+			'rules/code/house/05-house-no-loose-files/check.ts':
 				'export const check = {\n' +
 				"\tinputKind: 'file-list',\n" +
 				'\trun: ({ input }) => input.files.map((path) => ({ siteKey: `house-no-loose-files:${path}`, files: [{ path }], detail: `${path} sits outside a module` })),\n' +
 				'};\n',
-			'code/house/05-house-no-loose-files/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
-			'code/house/05-house-no-loose-files/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
+			'rules/code/house/05-house-no-loose-files/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
+			'rules/code/house/05-house-no-loose-files/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
 			'packs/house.json': JSON.stringify({ description: 'the house pack', include: { topics: ['acme/code/house'] } }),
 		},
 	});

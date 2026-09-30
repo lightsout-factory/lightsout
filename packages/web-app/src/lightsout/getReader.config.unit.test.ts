@@ -21,10 +21,11 @@ const configText = JSON.stringify({
 
 /** A house library of two rules, one blocking by its own front matter and one taking the advisory default, with a pack bringing in its one topic. */
 const packFiles: Record<string, string> = {
-	'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 1, description: 'what this shop agrees on' }),
-	'house/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
-	'house/code/house/05-house-loose-file/rule.md': '---\nsummary: a source file outside a module\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
-	'house/code/house/10-house-name-things-well/rule.md': '---\nsummary: a name that hides what it does\n---\n\nNames are the cheapest documentation.\n',
+	'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 2, description: 'what this shop agrees on' }),
+	'house/rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
+	'house/rules/code/house/05-house-loose-file/rule.md':
+		'---\nsummary: a source file outside a module\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
+	'house/rules/code/house/10-house-name-things-well/rule.md': '---\nsummary: a name that hides what it does\n---\n\nNames are the cheapest documentation.\n',
 	'house/packs/house.json': JSON.stringify({ description: 'what this shop agrees on', include: { topics: ['acme/code/house'] } }),
 };
 

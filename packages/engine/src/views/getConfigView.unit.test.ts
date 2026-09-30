@@ -40,12 +40,12 @@ const setupRawConfig = async ({ raw }: { raw: string }) => {
 const setupDeclaredPack = async () => {
 	const cwd = await seedConfiguredCwd({ config: { 'standards-libraries': { house: './standards/house' }, 'standards-pack': 'house/house' } });
 	const files: Record<string, string> = {
-		'lightsout-standards.json': '{ "name": "house", "formatVersion": 1 }\n',
+		'lightsout-standards.json': '{ "name": "house", "formatVersion": 2 }\n',
 		'packs/house.json': JSON.stringify({ description: 'the house rules', include: { topics: ['house/code/demo', 'house/code/react-demo'] } }),
-		'code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
-		'code/demo/01-house-rule/rule.md': '---\nsummary: what house-rule catches\n---\n\nThe rule prose.\n',
-		'code/react-demo/topic.md': '# React demo\n\nProse about react code.\n',
-		'code/react-demo/01-react-rule/rule.md': '---\nsummary: what react-rule catches\n---\n\nThe react rule prose.\n',
+		'rules/code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
+		'rules/code/demo/01-house-rule/rule.md': '---\nsummary: what house-rule catches\n---\n\nThe rule prose.\n',
+		'rules/code/react-demo/topic.md': '# React demo\n\nProse about react code.\n',
+		'rules/code/react-demo/01-react-rule/rule.md': '---\nsummary: what react-rule catches\n---\n\nThe react rule prose.\n',
 	};
 
 	for (const [path, content] of Object.entries(files)) {

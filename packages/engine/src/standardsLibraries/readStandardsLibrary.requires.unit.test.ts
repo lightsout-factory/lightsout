@@ -8,7 +8,7 @@ import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 /** A temp standards library named `house` holding the given library-relative files. */
 const writeLibrary = ({ files }: { files: Record<string, string> }) => {
 	const packPath = mkdtempSync(join(tmpdir(), 'lightsout-library-'));
-	const allFiles = { 'lightsout-standards.json': '{ "name": "house", "formatVersion": 1 }\n', 'code/style/topic.md': '# Style\n', ...files };
+	const allFiles = { 'lightsout-standards.json': '{ "name": "house", "formatVersion": 2 }\n', 'rules/code/style/topic.md': '# Style\n', ...files };
 
 	for (const [path, content] of Object.entries(allFiles)) {
 		const absolutePath = join(packPath, path);
@@ -31,8 +31,8 @@ const ruleFiles = ({ path, markdown }: { path: string; markdown: string }) => ({
 const setupSiblingRequires = () => {
 	const packPath = writeLibrary({
 		files: {
-			...ruleFiles({ path: 'code/style/01-a', markdown: '---\nsummary: rule a\nrequires:\n  - b\n---\n\nFollow b.\n' }),
-			...ruleFiles({ path: 'code/style/02-b', markdown: '---\nsummary: rule b\n---\n\nProse.\n' }),
+			...ruleFiles({ path: 'rules/code/style/01-a', markdown: '---\nsummary: rule a\nrequires:\n  - b\n---\n\nFollow b.\n' }),
+			...ruleFiles({ path: 'rules/code/style/02-b', markdown: '---\nsummary: rule b\n---\n\nProse.\n' }),
 		},
 	});
 
@@ -43,8 +43,8 @@ const setupSiblingRequires = () => {
 const setupUnknownRequires = () => {
 	const packPath = writeLibrary({
 		files: {
-			...ruleFiles({ path: 'code/style/01-a', markdown: '---\nsummary: rule a\nrequires:\n  - no-such-first\n---\n\nProse.\n' }),
-			...ruleFiles({ path: 'code/style/02-b', markdown: '---\nsummary: rule b\nrequires:\n  - no-such-second\n---\n\nProse.\n' }),
+			...ruleFiles({ path: 'rules/code/style/01-a', markdown: '---\nsummary: rule a\nrequires:\n  - no-such-first\n---\n\nProse.\n' }),
+			...ruleFiles({ path: 'rules/code/style/02-b', markdown: '---\nsummary: rule b\nrequires:\n  - no-such-second\n---\n\nProse.\n' }),
 		},
 	});
 

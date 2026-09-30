@@ -24,7 +24,7 @@ const setupTree = ({ packagedAt }: { packagedAt?: string } = {}) => {
 
 	if (packagedAt !== undefined) {
 		mkdirSync(join(root, packagedAt), { recursive: true });
-		writeFileSync(join(root, packagedAt, 'lightsout-standards.json'), '{ "name": "lightsout defaults", "formatVersion": 1 }\n');
+		writeFileSync(join(root, packagedAt, 'lightsout-standards.json'), '{ "name": "lightsout defaults", "formatVersion": 2 }\n');
 	}
 
 	return { root, startDir };
@@ -96,7 +96,7 @@ describe('resolveDefaultStandardsLibrary', () => {
 		const authored = join(root, 'packages', 'standards-typescript');
 
 		mkdirSync(authored, { recursive: true });
-		writeFileSync(join(authored, 'lightsout-standards.json'), '{ "name": "authored", "formatVersion": 1 }\n');
+		writeFileSync(join(authored, 'lightsout-standards.json'), '{ "name": "authored", "formatVersion": 2 }\n');
 		process.env.LIGHTSOUT_DEFAULT_STANDARDS = authored;
 
 		// both exist, so this proves precedence rather than mere resolution — the

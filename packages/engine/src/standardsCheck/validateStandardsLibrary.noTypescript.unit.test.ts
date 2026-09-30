@@ -80,7 +80,7 @@ const setupPack = ({ frameworkOwned = false }: { frameworkOwned?: boolean } = {}
 
 	const pack: LoadedStandardsLibrary = {
 		name: 'acme',
-		formatVersion: 1,
+		formatVersion: 2,
 		rootPath: '/packages/acme',
 		frameworkOwnedFixturesPath,
 		documents: [],

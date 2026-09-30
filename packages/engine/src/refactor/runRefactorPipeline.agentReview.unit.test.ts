@@ -35,9 +35,9 @@ const filesOffered = ({ prompt }: { prompt: string }) =>
  */
 const writeHousePack = ({ dir }: { dir: string }) => {
 	const files: Record<string, string> = {
-		'lightsout-standards.json': '{ "name": "house", "formatVersion": 1 }\n',
-		'code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
-		'code/demo/01-house-rule/rule.md': '---\nsummary: a rule only the house pack declares\n---\n\nThe rule prose.\n',
+		'lightsout-standards.json': '{ "name": "house", "formatVersion": 2 }\n',
+		'rules/code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
+		'rules/code/demo/01-house-rule/rule.md': '---\nsummary: a rule only the house pack declares\n---\n\nThe rule prose.\n',
 		'packs/house.json': '{ "description": "The node pack and the house rule.", "include": { "packs": ["lightsout/node"], "topics": ["house/code/demo"] } }\n',
 	};
 

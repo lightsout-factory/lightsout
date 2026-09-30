@@ -26,16 +26,16 @@ const writeStandardsPack = async () => {
 	await writeTree({
 		dir: packPath,
 		files: {
-			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n',
+			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
 			'packs/house.json': housePackFile,
-			'code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
-			'code/house/05-house-loose-file/rule.md':
+			'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
+			'rules/code/house/05-house-loose-file/rule.md':
 				'---\nsummary: a source file outside a module\nchecked: true\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
-			'code/house/05-house-loose-file/check.ts':
+			'rules/code/house/05-house-loose-file/check.ts':
 				"export const check = {\n\tinputKind: 'file-list',\n\trun: ({ input }) => input.files.map((path) => ({ siteKey: `house-loose-file:${path}`, files: [{ path }], detail: 'loose' })),\n};\n",
-			'code/house/05-house-loose-file/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
-			'code/house/05-house-loose-file/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
-			'code/house/10-house-name-things-well/rule.md':
+			'rules/code/house/05-house-loose-file/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
+			'rules/code/house/05-house-loose-file/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
+			'rules/code/house/10-house-name-things-well/rule.md':
 				'---\nsummary: a name that hides what it does\nchecked: false\nseverity: advisory\n---\n\nNames are the cheapest documentation.\n',
 		},
 	});
@@ -214,12 +214,12 @@ const writeOptionsPack = async () => {
 	await writeTree({
 		dir: packPath,
 		files: {
-			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n',
+			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
 			'packs/house.json': housePackFile,
-			'code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
-			'code/house/05-house-file-size/rule.md':
+			'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
+			'rules/code/house/05-house-file-size/rule.md':
 				'---\nsummary: a file over the house line cap\nchecked: false\nseverity: advisory\noptions:\n  file: 250\n  tsxFile: 300\n---\n\nFiles stay short.\n',
-			'code/house/10-house-folder-size/rule.md':
+			'rules/code/house/10-house-folder-size/rule.md':
 				'---\nsummary: a folder over the house file cap\nchecked: false\nseverity: advisory\noptions:\n  cap: 20\n---\n\nFolders stay small.\n',
 		},
 	});
