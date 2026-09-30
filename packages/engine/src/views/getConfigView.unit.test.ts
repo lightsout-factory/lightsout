@@ -220,6 +220,23 @@ describe('getConfigView', () => {
 		expect(findField({ sections: view.sections, key: 'standards-channels' })).toEqual(expect.objectContaining({ value: ['react'], fromConfig: true }));
 	});
 
+	test('reads a standards-libraries map back into the Standards section verbatim, without loading a library it names', async () => {
+		// neither entry exists on disk: the view shows the map and no run reads it yet
+		const libraries = { house: './standards/house', acme: '@acme/standards' };
+		const cwd = await seedConfiguredCwd({ config: { 'standards-libraries': libraries } });
+
+		const view = await getConfigView({ cwd });
+
+		const standards = view.sections.find((section) => section.title === 'Standards');
+		expect(standards?.fields.map((field) => field.key)).toStrictEqual([
+			'standards-packs',
+			'standards-libraries',
+			'standards-channels',
+			'standards-rule-settings',
+		]);
+		expect(findField({ sections: view.sections, key: 'standards-libraries' })).toEqual(expect.objectContaining({ value: libraries, fromConfig: true }));
+	});
+
 	test('reports a declared pack as the repo choosing it, with the channels its own documents declare', async () => {
 		const { cwd } = await setupDeclaredPack();
 

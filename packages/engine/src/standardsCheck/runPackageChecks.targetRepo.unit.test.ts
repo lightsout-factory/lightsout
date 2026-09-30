@@ -88,7 +88,7 @@ const fileListInput = ({ calls }: { calls: Array<{ input: StandardsCheckInput }>
 
 /** Runs the given rules as one loaded package, at the severities their own declarations give them. */
 const runChecks = ({ rules, cwd, packagesDir }: { rules: LoadedStandardsRule[]; cwd: string; packagesDir?: string }) => {
-	const pkg: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
+	const pkg: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules, packs: [] };
 	const states = new Map<string, ResolvedRuleState>(
 		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false }]),
 	);

@@ -84,6 +84,7 @@ const setupPack = ({ frameworkOwned = false }: { frameworkOwned?: boolean } = {}
 		rootPath: '/packages/acme',
 		frameworkOwnedFixturesPath,
 		documents: [],
+		packs: [],
 		rules: [rule({ id: 'dead-export', inputKind: StandardsInputKind.SyntaxTree }), rule({ id: 'no-banned-file', inputKind: StandardsInputKind.FileList })],
 	};
 
@@ -94,7 +95,7 @@ describe('validateStandardsLibrary', () => {
 	test('notes the rules it cannot parse fixtures for and still validates the rest', async () => {
 		const { pack } = setupPack();
 
-		const { problems, notes } = await validateStandardsLibrary({ pack });
+		const { problems, notes } = await validateStandardsLibrary({ library: pack, libraries: [pack] });
 
 		expect(notes).toStrictEqual([
 			'dead-export: not validated — its syntax-tree input needs a typescript this install does not have',
@@ -109,7 +110,7 @@ describe('validateStandardsLibrary', () => {
 	test('holds the rules it can run to the framework-owned invariant and passes silently over the ones it cannot', async () => {
 		const { pack } = setupPack({ frameworkOwned: true });
 
-		const { problems, notes } = await validateStandardsLibrary({ pack });
+		const { problems, notes } = await validateStandardsLibrary({ library: pack, libraries: [pack] });
 
 		// the syntax-tree rule is named once, by the per-rule loop, and not again
 		// per framework — a machine with no compiler would otherwise say it twice

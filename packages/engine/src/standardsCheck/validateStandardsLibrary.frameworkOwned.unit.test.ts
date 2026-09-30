@@ -118,9 +118,18 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 });
 
 const validate = ({ rules, built, frameworkOwnedFixturesPath }: { rules: LoadedStandardsRule[]; built?: true; frameworkOwnedFixturesPath?: string }) => {
-	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, built, rootPath: '/packages/acme', frameworkOwnedFixturesPath, documents: [], rules };
+	const pack: LoadedStandardsLibrary = {
+		name: 'acme',
+		formatVersion: 1,
+		built,
+		rootPath: '/packages/acme',
+		frameworkOwnedFixturesPath,
+		documents: [],
+		rules,
+		packs: [],
+	};
 
-	return validateStandardsLibrary({ pack });
+	return validateStandardsLibrary({ library: pack, libraries: [pack] });
 };
 
 describe('validateStandardsLibrary', () => {
@@ -324,7 +333,7 @@ describe('validateStandardsLibrary', () => {
 		});
 
 		expect(problems).toStrictEqual([
-			'acme is a built pack — its fixtures were left behind when it was built, so there is nothing here to validate. Point --pack at the authored source.',
+			'acme is a built pack — its fixtures were left behind when it was built, so there is nothing here to validate. Point --library at the authored source.',
 		]);
 		expect(notes).toStrictEqual([]);
 	});

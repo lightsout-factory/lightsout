@@ -88,7 +88,7 @@ describe('getReader config', () => {
 		expect(view.sections.map((section) => ({ title: section.title, keys: section.fields.map((field) => field.key) }))).toStrictEqual([
 			{ title: 'Harness', keys: ['harness', 'model', 'effort', 'permissions', 'commands'] },
 			{ title: 'Gates', keys: ['gates', 'package-gates', 'gate-overrides', 'packages-dir', 'coverage-summary-path', 'executor-file-limit'] },
-			{ title: 'Standards', keys: ['standards-packs', 'standards-channels', 'standards-rule-settings'] },
+			{ title: 'Standards', keys: ['standards-packs', 'standards-libraries', 'standards-channels', 'standards-rule-settings'] },
 			{ title: 'Agent commands', keys: ['agent-commands'] },
 			{ title: 'Generated', keys: ['generated', 'vendored'] },
 			{ title: 'Timeouts', keys: ['timeouts.agent-minutes', 'timeouts.supervisor-minutes', 'timeouts.gate-minutes'] },
@@ -101,6 +101,19 @@ describe('getReader config', () => {
 			{ title: 'Implement', keys: ['implement'] },
 			{ title: 'Pricing', keys: ['pricing'] },
 			{ title: 'Docs', keys: ['docs'] },
+		]);
+	});
+
+	test('lists standards-libraries in the Standards area beside the pack keys', async () => {
+		const { reader } = await setupConfigReader();
+
+		const view = await reader.getConfig();
+
+		expect(view.sections.find((section) => section.title === 'Standards')?.fields.map((field) => field.key)).toStrictEqual([
+			'standards-packs',
+			'standards-libraries',
+			'standards-channels',
+			'standards-rule-settings',
 		]);
 	});
 

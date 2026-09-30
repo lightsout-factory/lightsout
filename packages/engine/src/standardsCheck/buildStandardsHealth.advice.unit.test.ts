@@ -36,6 +36,7 @@ const packOf = ({ name = 'acme', rules }: { name?: string; rules: LoadedStandard
 	formatVersion: 1,
 	rootPath: `/packages/${name}`,
 	documents: [],
+	packs: [],
 	rules,
 });
 

@@ -1,0 +1,13 @@
+{
+	"description": "Architecture and module structure: architecture decisions, folder structure, import paths, module boundaries, one export per file and type placement.",
+	"include": {
+		"topics": [
+			"lightsout/code/architecture/architecture-decisions",
+			"lightsout/code/architecture/folder-structure",
+			"lightsout/code/style-guide/structure/import-paths",
+			"lightsout/code/style-guide/structure/module-api",
+			"lightsout/code/style-guide/structure/one-export-per-file",
+			"lightsout/code/style-guide/structure/type-placement"
+		]
+	}
+}

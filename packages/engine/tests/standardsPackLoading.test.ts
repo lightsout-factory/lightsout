@@ -70,13 +70,27 @@ const setupPack = async ({ passFiles = ['allowed.ts'] }: { passFiles?: string[] 
 	return { packPath };
 };
 
+/**
+ * The one-rule pack above, carrying one pack file whose only include entry
+ * names a topic the library does not hold.
+ */
+const setupLibraryWithBrokenPack = async () => {
+	const { packPath } = await setupPack();
+	const packFile = { description: 'A pack that includes a topic nobody wrote.', include: { topics: ['demo-standards/code/missing'] } };
+
+	await mkdir(join(packPath, 'packs'), { recursive: true });
+	await writeFile(join(packPath, 'packs', 'broken.json'), `${JSON.stringify(packFile, null, '\t')}\n`, 'utf8');
+
+	return { libraryPath: packPath };
+};
+
 test('cli: standards-validate loads a pack, runs its check against its fixtures, and exits 0', async () => {
 	const { packPath } = await setupPack();
 
-	const { stdout, stderr, code } = await runCli({ args: ['standards-validate', '--pack', packPath] });
+	const { stdout, stderr, code } = await runCli({ args: ['standards-validate', '--library', packPath] });
 
 	// the check ran from a .ts file the engine imported directly — no build step
-	expect(stdout).toContain('demo-standards — 1 checked rule(s) validated, 0 judgment-only rule(s)');
+	expect(stdout).toContain('demo-standards — 1 checked rule(s) validated, 0 judgment-only rule(s), 0 pack file(s)');
 	expect(stderr).toBe('');
 	expect(code).toBe(0);
 });
@@ -84,7 +98,7 @@ test('cli: standards-validate loads a pack, runs its check against its fixtures,
 test('cli: standards-validate names the rule whose check flags its own pass fixture and exits 1', async () => {
 	const { packPath } = await setupPack({ passFiles: ['banned.ts'] });
 
-	const { stdout, stderr, code } = await runCli({ args: ['standards-validate', '--pack', packPath] });
+	const { stdout, stderr, code } = await runCli({ args: ['standards-validate', '--library', packPath] });
 
 	expect(stdout).toContain('no-banned-file: the pass fixture produced 1 finding(s)');
 	expect(stdout).toContain('1 problem(s) across 1 checked rule(s)');
@@ -95,9 +109,18 @@ test('cli: standards-validate names the rule whose check flags its own pass fixt
 test('cli: standards-validate reports a pack it cannot load and exits 1', async () => {
 	const packPath = await mkdtemp(join(tmpdir(), 'lightsout-standards-empty-'));
 
-	const { stdout, stderr, code } = await runCli({ args: ['standards-validate', '--pack', packPath] });
+	const { stdout, stderr, code } = await runCli({ args: ['standards-validate', '--library', packPath] });
 
 	expect(stdout).toBe('');
 	expect(stderr).toMatch(/standards pack root file not found/);
+	expect(code).toBe(1);
+});
+
+test('cli: standards-validate --library names a pack entry that resolves to nothing and exits 1', async () => {
+	const { libraryPath } = await setupLibraryWithBrokenPack();
+
+	const { stdout, code } = await runCli({ args: ['standards-validate', '--cwd', libraryPath, '--library', libraryPath] });
+
+	expect(stdout).toMatch(/demo-standards\/broken.*demo-standards\/code\/missing|demo-standards\/code\/missing.*demo-standards\/broken/);
 	expect(code).toBe(1);
 });

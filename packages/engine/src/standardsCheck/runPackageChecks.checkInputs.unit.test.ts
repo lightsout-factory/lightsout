@@ -42,7 +42,7 @@ const loadOneRule = ({ inputKind }: { inputKind: StandardsInputKind }) => {
 		inputKind,
 		run,
 	};
-	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule] }];
+	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule], packs: [] }];
 	const states = new Map<string, ResolvedRuleState>([['acme/a-rule', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false }]]);
 
 	return { inputs, packs, states };

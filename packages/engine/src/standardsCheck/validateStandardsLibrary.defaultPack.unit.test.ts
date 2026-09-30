@@ -22,7 +22,7 @@ describe('validateStandardsLibrary on the shipped default pack', () => {
 	test('every check flags its fail fixture and leaves its pass fixture alone, and every rule’s fixtures match the example shape it declares', async () => {
 		const { pack } = await setupDefaultPack();
 
-		const { problems, notes } = await validateStandardsLibrary({ pack });
+		const { problems, notes } = await validateStandardsLibrary({ library: pack, libraries: [pack] });
 
 		// A rule skipped for want of a TypeScript to parse with would pass here
 		// without having been checked, so a skip fails the test too.

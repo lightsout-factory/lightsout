@@ -85,9 +85,9 @@ const validate = ({ rules, built }: { rules: LoadedStandardsRule[]; built?: true
 	// No framework-owned tree anywhere in this file: the invariant's own verdicts
 	// live in validateStandardsLibrary.frameworkOwned.unit.test.ts, and every test
 	// here is about the per-rule pass it runs beside.
-	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, built, rootPath: '/packages/acme', documents: [], rules };
+	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, built, rootPath: '/packages/acme', documents: [], rules, packs: [] };
 
-	return validateStandardsLibrary({ pack });
+	return validateStandardsLibrary({ library: pack, libraries: [pack] });
 };
 
 describe('validateStandardsLibrary', () => {
@@ -136,7 +136,7 @@ describe('validateStandardsLibrary', () => {
 		// two rules, both stripped, and neither named: the build took the fixtures,
 		// so there is nothing here either author could have done differently
 		expect(problems).toStrictEqual([
-			'acme is a built pack — its fixtures were left behind when it was built, so there is nothing here to validate. Point --pack at the authored source.',
+			'acme is a built pack — its fixtures were left behind when it was built, so there is nothing here to validate. Point --library at the authored source.',
 		]);
 		expect(notes).toStrictEqual([]);
 	});

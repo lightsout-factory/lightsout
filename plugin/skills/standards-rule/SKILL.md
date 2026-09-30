@@ -84,7 +84,7 @@ the rule's page.
    variable exists in other harnesses. Then run:
 
    ```sh
-   node "<plugin-root>/dist/cli.mjs" standards-validate --pack <pack-root>
+   node "<plugin-root>/dist/cli.mjs" standards-validate --library <library-root>
    ```
 
    It runs every check against its own examples and checks each rule's

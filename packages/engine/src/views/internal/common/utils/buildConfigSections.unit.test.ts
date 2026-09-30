@@ -102,6 +102,22 @@ describe('buildConfigSections', () => {
 		expect(implement?.fields).toStrictEqual([{ key: 'implement', value: implementBlock, fromConfig: true, description: configKeyDescriptions.implement }]);
 	});
 
+	test('buildConfigSections lists standards-libraries in the Standards section', () => {
+		const libraries = { house: './standards/house', acme: '@acme/standards' };
+		const configs = [{ 'standards-libraries': libraries }, {}];
+
+		const rows = configs.map((config) =>
+			buildSections({ config })
+				.find((section) => section.title === 'Standards')
+				?.fields.find((field) => field.key === 'standards-libraries'),
+		);
+
+		expect(rows).toStrictEqual([
+			{ key: 'standards-libraries', value: libraries, fromConfig: true, description: configKeyDescriptions['standards-libraries'] },
+			{ key: 'standards-libraries', value: null, fromConfig: false, description: configKeyDescriptions['standards-libraries'] },
+		]);
+	});
+
 	test('renders the Implement section as an unset block when the config omits it', () => {
 		const implement = buildSections().find((section) => section.title === 'Implement');
 

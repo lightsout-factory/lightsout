@@ -6,6 +6,7 @@ import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import type { LoadedStandardsTopic } from '#src/standardsLibraries/common/types/LoadedStandardsTopic.ts';
+import { parsePackFolder } from '#src/standardsLibraries/internal/common/parsing/parsePackFolder.ts';
 import { parseTopicFolder } from '#src/standardsLibraries/internal/common/parsing/parseTopicFolder.ts';
 import { formatSchemaIssues } from '#src/standardsLibraries/internal/common/utils/formatSchemaIssues.ts';
 import { hasFile } from '#src/standardsLibraries/internal/common/utils/hasFile.ts';
@@ -115,6 +116,8 @@ export const readStandardsLibrary = async ({ packPath }: Params): Promise<Loaded
 		await walk({ folderPath: join(packPath, set), documentPath: set, set, library: root.data.name, problems, documents, rules });
 	}
 
+	const packs = await parsePackFolder({ folderPath: join(packPath, 'packs'), problems });
+
 	if (documents.length === 0) {
 		problems.push('pack declares no documents — code/ and tests/ hold no folder with a topic.md');
 	}
@@ -140,5 +143,6 @@ export const readStandardsLibrary = async ({ packPath }: Params): Promise<Loaded
 		...(hasFrameworkOwned ? { frameworkOwnedFixturesPath } : {}),
 		documents,
 		rules,
+		packs,
 	};
 };

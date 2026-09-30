@@ -41,7 +41,7 @@ jest.mock('#src/standardsLibraries/resolveStandardsPacks.ts', () => ({
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 
 /** A loaded pack as the resolver hands one back — only the fields a caller carrying it through can see. */
-const loadedPack = (): LoadedStandardsLibrary => ({ name: 'acme', formatVersion: 1, rootPath: '/packs/acme', documents: [], rules: [] });
+const loadedPack = (): LoadedStandardsLibrary => ({ name: 'acme', formatVersion: 1, rootPath: '/packs/acme', documents: [], rules: [], packs: [] });
 
 /** A repo the review reads its own answers off: source files, and a manifest whose dependencies decide the channels. */
 const setupRepo = ({

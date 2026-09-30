@@ -38,7 +38,7 @@ jest.mock('#src/standardsLibraries/resolveStandardsPacks.ts', () => ({
 }));
 // -------------------------
 
-const loadedPack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [] };
+const loadedPack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [], packs: [] };
 
 /** The command over a repo on disk — one holding the given config, or one holding none. */
 const setupCommand = ({ health, config }: { health?: StandardsHealth; config?: Record<string, unknown> } = {}) => {

@@ -275,6 +275,16 @@ test.each([
 	expect(LightsoutConfig.safeParse({ ...base, 'standards-packs': standardsLibraries }).success).toBe(false);
 });
 
+test('LightsoutConfig accepts standards-libraries as a map of names to strings and rejects a non-string value', () => {
+	const parsed = LightsoutConfig.parse({ ...base, 'standards-libraries': { house: './standards/house', acme: '@acme/standards' } });
+
+	// a folder value and a package value are both plain strings — telling them
+	// apart is the path resolver's job, so the map survives parsing as written
+	expect(parsed['standards-libraries']).toStrictEqual({ house: './standards/house', acme: '@acme/standards' });
+	// a value that is not a string names no folder and no package
+	expect(LightsoutConfig.safeParse({ ...base, 'standards-libraries': { house: 42 } }).success).toBe(false);
+});
+
 test('LightsoutConfig: the plan block is optional, keeps its own kebab-case spelling, and stays strict through the composition', () => {
 	const parsed = LightsoutConfig.parse({
 		...base,

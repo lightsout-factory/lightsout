@@ -1,15 +1,17 @@
+import { basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { StandardsCheckModule } from '@lightsout/standards-contracts';
 import { formatSchemaIssues } from '#src/standardsLibraries/internal/common/utils/formatSchemaIssues.ts';
 
 interface Params {
-	/** Absolute path of a rule folder's check.ts. */
+	/** Absolute path of a rule folder's check.ts or check.js. */
 	checkPath: string;
 }
 
 /**
- * The .ts file is imported under Node's native type stripping, so a check must
- * stay erasable-only and may import values from inside its own pack alone.
+ * A check.ts is imported under Node's native type stripping, so it must stay
+ * erasable-only; a check.js is plain JavaScript. Either may import values from
+ * inside its own pack alone.
  *
  * @throws {Error} When the file has no `check` export, or that export is not a valid check.
  */
@@ -20,7 +22,7 @@ export const importCheckModule = async ({ checkPath }: Params): Promise<Standard
 
 	if (!parsed.success) {
 		throw new Error(
-			`check.ts must export \`check\` as { inputKind, run } (${checkPath}): ${formatSchemaIssues({ issues: parsed.error.issues, subject: 'check' })}`,
+			`${basename(checkPath)} must export \`check\` as { inputKind, run } (${checkPath}): ${formatSchemaIssues({ issues: parsed.error.issues, subject: 'check' })}`,
 		);
 	}
 

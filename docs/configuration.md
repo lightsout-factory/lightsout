@@ -187,15 +187,58 @@ two things. A root with no `lightsout-standards.json` in it fails the run too.
 
 Set `standards-packs` to `false` to run with no standards at all.
 
+### Register standards libraries
+
+A **standards library** is a folder holding `lightsout-standards.json`, the
+topics and rules it defines, and a `packs/` folder of pack files that select
+and tune those rules. `standards-libraries` registers libraries beside the one
+lightsout ships. Each key is the library's name, and each value says where the
+library lives:
+
+```json
+{
+  "standards-libraries": {
+    "house": "./standards/house",
+    "acme": "@acme/lightsout-standards"
+  }
+}
+```
+
+- A value starting with `./` or `../`, or an absolute path, is a folder, read
+  against the root of your repository.
+- Any other value is an npm package name, looked up in `node_modules` from the
+  root of your repository upward, the way Node finds a package. A package
+  linked from your own workspace loads from its source folder.
+
+The `name` in the library's `lightsout-standards.json` must equal its key, and
+a library that does not match, or will not load, is a hard error. `lightsout`
+is the built-in library's name and is reserved.
+
+Each pack is one `.json` file in a library's `packs/` folder, addressed
+`<library>/<file-stem>` — `lightsout/node` is `packs/node.json` in the built-in
+library. Only `.json` files there are packs; anything else in the folder is
+ignored.
+
+A rule that lightsout checks with code ships exactly one check file: `check.ts`
+or `check.js`. A library published to npm ships `check.js`, because Node will
+not strip types from a file under `node_modules`, and a `check.ts` found there
+fails the load. A library linked from your own workspace loads from its source
+folder, so it may ship `check.ts`.
+
 ### Commands for working with a pack
 
-`lightsout standards-validate [--pack <path>]` runs every check in a pack
-against its own pass and fail fixtures. Without the flag it validates the pack
-lightsout ships. This is the gate to run while writing a rule: a check that lets
-its fail fixture through catches nothing, and one that flags its pass fixture
-cries wolf. Neither is visible when the pack loads, and both are exactly what an
-author needs told. It validates every rule regardless of channel, because
-authoring covers every channel.
+`lightsout standards-validate [--library <path>]` validates a standards
+library. It runs every check against its own pass and fail fixtures, and it
+checks every pack file: each include entry names a pack, topic or rule that
+exists, each `rule-settings` entry names a rule already in the pack, and no
+packs include each other in a cycle. Without the flag it validates the library
+lightsout ships. A pack's includes resolve against the built-in library and the
+repository's `standards-libraries`, with the validated library in place of the
+one that shares its name. This is the gate to run while writing a rule: a check
+that lets its fail fixture through catches nothing, and one that flags its pass
+fixture cries wolf. Neither is visible when the library loads, and both are
+exactly what an author needs told. It validates every rule regardless of
+channel, because authoring covers every channel.
 
 A pack may also ship one `fixtures/framework-owned/<framework>/` tree per
 framework — a miniature repo whose `package.json` declares that framework, so
@@ -257,6 +300,7 @@ is overwritten the next time `pnpm build:config-reference` runs.
 | `package-gates` | no | Monorepo scoped gate templates — the per-package commands `{package}` is substituted into. Each template runs once per affected package, so a gate runs only for the packages a change touched. |
 | `gate-overrides` | no | Opt-in per-checkpoint gate schedules, keyed by the four verification checkpoints — `clean-slate`, `verify-implement`, `verify-tests` and `verify-refactor`. A checkpoint listed with an array runs exactly those gates, in that order, with no tiering, and a red one stops the rest of the list; `"off"` runs no gates at all there, `gates.generate` included. A checkpoint the block does not list keeps the engine’s default: the cheap gates first — check, then the unit suite — and the expensive ones, each custom `test-*` suite and the build, only once every package group’s cheap gates are green. A name must be a gate this repo configures under `gates` or `package-gates`; `generate` and `format` may not be named. |
 | `standards-packs` | no | Standards packs a run works against. Unspecified = the pack the plugin ships; `false` = explicitly none; an array = exactly these pack roots, each the folder holding `lightsout-standards.json`, repo-relative or absolute. One pack carries both the code and the test documents, which is why there is a single key rather than two. A root that cannot be loaded is a hard error. |
+| `standards-libraries` | no | Standards libraries the repo registers beside the built-in one, each a folder of topics, rules and pack files. Each key is a library name and each value is either a folder — a value starting with `./` or `../`, or an absolute path, read against the repo root — or an npm package name, looked up in the repo’s `node_modules`. A library’s manifest `name` must equal its key, and `lightsout` is built in and reserved. Versions are fixed the way the rest of the repo’s are: by git for a folder, by the lockfile for a package, and by the plugin version for the built-in library. |
 | `standards-channels` | no | Framework channels of the loaded standards packs (e.g. 'react', 'tanstack'). Unspecified = detected per run from the scoped packages' package.json dependencies; an array REPLACES detection, and an empty one means base documents only. |
 | `standards-rule-settings` | no | Per-rule severity and options overrides for `lightsout standards-check`, keyed by full rule name (`<library>/<rule>`), or by short rule id where only one loaded rule has it. A rule not named here keeps its pack’s default — silence is never a change. |
 | `ship` | no | Opt-in `lightsout ship` settings: the branch ticket pattern whose `ticket` capture group becomes the result’s ticket reference, the pull request body template, the merge method, whether a passed implement run chains into ship, an optional pre-ship command that prepares the release candidate before it is verified, and the explicit exception for a repository that intentionally has no CI. |

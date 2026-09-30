@@ -28,6 +28,7 @@ const judgmentPacks: LoadedStandardsLibrary[] = [
 		formatVersion: 1,
 		rootPath: '/packages/acme',
 		documents: [],
+		packs: [],
 		rules: [
 			{
 				id: 'single-return',

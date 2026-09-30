@@ -33,6 +33,7 @@ const standardsPack = ({
 	formatVersion: 1,
 	rootPath,
 	documents: [],
+	packs: [],
 	rules,
 });
 

@@ -27,6 +27,7 @@ const packOf = ({ rules }: { rules: LoadedStandardsRule[] }): LoadedStandardsLib
 	formatVersion: 1,
 	rootPath: '/packages/acme',
 	documents: [],
+	packs: [],
 	rules,
 });
 

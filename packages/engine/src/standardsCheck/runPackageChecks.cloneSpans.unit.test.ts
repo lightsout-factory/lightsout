@@ -49,7 +49,7 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
 		inputKind: StandardsInputKind.CloneSpans,
 		run,
 	};
-	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule] }];
+	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule], packs: [] }];
 	const states = new Map<string, ResolvedRuleState>([['acme/duplicate-code-block', { severity: StandardsSeverity.Advisory, options, fromConfig: false }]]);
 
 	return { cwd, inputs, packs, states };
@@ -91,7 +91,7 @@ const setupThresholdRun = ({ lowMinTokens, highMinTokens }: { lowMinTokens: numb
 		buildRule({ id: 'duplicate-code-block-low', minTokens: lowMinTokens, inputs: lowInputs }),
 		buildRule({ id: 'duplicate-code-block-high', minTokens: highMinTokens, inputs: highInputs }),
 	];
-	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules }];
+	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules, packs: [] }];
 	const states = new Map<string, ResolvedRuleState>([
 		['acme/duplicate-code-block-low', { severity: StandardsSeverity.Advisory, options: { minTokens: lowMinTokens }, fromConfig: false }],
 		['acme/duplicate-code-block-high', { severity: StandardsSeverity.Advisory, options: { minTokens: highMinTokens }, fromConfig: false }],

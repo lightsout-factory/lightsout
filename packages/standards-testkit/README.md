@@ -35,7 +35,7 @@ folders. That is a whole-pack question rather than a single-rule one, and it
 already ships as a command:
 
 ```
-lightsout standards-validate --pack <path to your pack>
+lightsout standards-validate --library <path to your library>
 ```
 
 Every rule is run against both sides of its own example pair, and a rule whose

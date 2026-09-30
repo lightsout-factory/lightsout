@@ -8,9 +8,12 @@ import { typescriptInputKinds } from '#src/standardsCheck/internal/common/consta
 import { checkFixtureTree } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts';
 import { checkRuleExample } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkRuleExample.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack.ts';
 
 interface Params {
-	pack: LoadedStandardsLibrary;
+	library: LoadedStandardsLibrary;
+	/** What the library's packs resolve against — the library itself and the built-in one. */
+	libraries: LoadedStandardsLibrary[];
 }
 
 const FixtureSide = {
@@ -24,7 +27,7 @@ type FixtureSide = (typeof FixtureSide)[keyof typeof FixtureSide];
  * Resolved through `require` rather than a literal `import('typescript')`,
  * which a bundler would answer by pulling the whole compiler into the shipped
  * program. An install that has none cannot validate those rules, which is a
- * note, not a fault in the pack.
+ * note, not a fault in the library.
  */
 const getEngineTypescript = () => {
 	let compiler: typeof ts | undefined;
@@ -40,7 +43,7 @@ const getEngineTypescript = () => {
 	return compiler;
 };
 
-/** Loading accepts a pack without fixtures — a shipped pack carries none — so this is where the pair is demanded. */
+/** Loading accepts a library without fixtures — a shipped library carries none — so this is where the pair is demanded. */
 const missingFixtureSides = async ({ fixturesPath }: { fixturesPath: string }) => {
 	const missing: FixtureSide[] = [];
 
@@ -69,11 +72,11 @@ const namePaths = ({ found }: { found: RawStandardsFinding[] }) => {
  * Its own pass rather than inside the per-rule loop, which skips a rule whose
  * fixture pair is missing: the invariant is unconditional.
  */
-const checkFrameworkOwned = async ({ pack, compiler }: { pack: LoadedStandardsLibrary; compiler?: typeof ts }) => {
-	const { frameworkOwnedFixturesPath } = pack;
-	// Recorded, never required — a pack that holds no rule to the invariant is
+const checkFrameworkOwned = async ({ library, compiler }: { library: LoadedStandardsLibrary; compiler?: typeof ts }) => {
+	const { frameworkOwnedFixturesPath } = library;
+	// Recorded, never required — a library that holds no rule to the invariant is
 	// told so, the same way a judgment-only rule is.
-	const heldNothing = { problems: [], notes: [`${pack.name}: no fixtures/framework-owned/ — no rule was held to the framework-owned invariant`] };
+	const heldNothing = { problems: [], notes: [`${library.name}: no fixtures/framework-owned/ — no rule was held to the framework-owned invariant`] };
 
 	if (frameworkOwnedFixturesPath === undefined) {
 		return heldNothing;
@@ -94,7 +97,7 @@ const checkFrameworkOwned = async ({ pack, compiler }: { pack: LoadedStandardsLi
 	const problems: string[] = [];
 
 	for (const framework of frameworks) {
-		for (const rule of pack.rules) {
+		for (const rule of library.rules) {
 			const { run, inputKind } = rule;
 
 			// Skipped without a word: the per-rule loop already noted a judgment-only
@@ -128,6 +131,21 @@ const checkFrameworkOwned = async ({ pack, compiler }: { pack: LoadedStandardsLi
 	return { problems, notes: [] };
 };
 
+/** Each pack file must resolve: every include entry names something, rule-settings name rules in the pack, and no packs include each other in a cycle. */
+const checkPackFiles = ({ library, libraries }: { library: LoadedStandardsLibrary; libraries: LoadedStandardsLibrary[] }) => {
+	const problems: string[] = [];
+
+	for (const packFile of library.packs) {
+		try {
+			resolveStandardsPack({ address: `${library.name}/${packFile.name}`, libraries });
+		} catch (error) {
+			problems.push(messageOf({ error }));
+		}
+	}
+
+	return problems;
+};
+
 /**
  * The question load time deliberately does not ask: whether a check catches
  * what the rule's prose describes is authoring work, paid for by nobody else.
@@ -137,27 +155,27 @@ const checkFrameworkOwned = async ({ pack, compiler }: { pack: LoadedStandardsLi
  *
  * Fixture runs also refuse a site key that does not start with the rule's own id.
  */
-export const validateStandardsLibrary = async ({ pack }: Params): Promise<{ problems: string[]; notes: string[] }> => {
-	// Read from the pack rather than inferred from missing fixtures: an authored
-	// pack that ships no fixtures yet is a real authoring gap and must keep
+export const validateStandardsLibrary = async ({ library, libraries }: Params): Promise<{ problems: string[]; notes: string[] }> => {
+	// Read from the library rather than inferred from missing fixtures: an authored
+	// library that ships no fixtures yet is a real authoring gap and must keep
 	// reading as one.
-	if (pack.built) {
+	if (library.built) {
 		return {
 			problems: [
-				`${pack.name} is a built pack — its fixtures were left behind when it was built, so there is nothing here to validate. Point --pack at the authored source.`,
+				`${library.name} is a built pack — its fixtures were left behind when it was built, so there is nothing here to validate. Point --library at the authored source.`,
 			],
 			notes: [],
 		};
 	}
 
-	// Resolving TypeScript means loading a multi-megabyte module; a pack whose
+	// Resolving TypeScript means loading a multi-megabyte module; a library whose
 	// rules never ask for a parsed tree should not pay for it.
-	const hasParsingRule = pack.rules.some((rule) => rule.inputKind !== undefined && typescriptInputKinds.has(rule.inputKind));
+	const hasParsingRule = library.rules.some((rule) => rule.inputKind !== undefined && typescriptInputKinds.has(rule.inputKind));
 	const compiler = hasParsingRule ? getEngineTypescript() : undefined;
 	const problems: string[] = [];
 	const notes: string[] = [];
 
-	for (const rule of pack.rules) {
+	for (const rule of library.rules) {
 		const { run, inputKind } = rule;
 		const missing = await missingFixtureSides({ fixturesPath: rule.fixturesPath });
 
@@ -197,10 +215,11 @@ export const validateStandardsLibrary = async ({ pack }: Params): Promise<{ prob
 		}
 	}
 
-	const frameworkOwned = await checkFrameworkOwned({ pack, compiler });
+	const frameworkOwned = await checkFrameworkOwned({ library, compiler });
 
 	problems.push(...frameworkOwned.problems);
 	notes.push(...frameworkOwned.notes);
+	problems.push(...checkPackFiles({ library, libraries }));
 
 	return { problems, notes };
 };

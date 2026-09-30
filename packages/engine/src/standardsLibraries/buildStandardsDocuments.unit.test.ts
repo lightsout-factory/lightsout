@@ -65,6 +65,7 @@ const setupPack = (): LoadedStandardsLibrary => ({
 		buildRule({ id: 'routes', prose: 'Routes are file-based.', channel: 'tanstack' }),
 		buildRule({ id: 'mock-prefix', prose: 'Mocks carry a mock prefix.' }),
 	],
+	packs: [],
 });
 
 /** A pack whose one document holds an ordinary rule and a rule it ships off, for repos to opt into. */

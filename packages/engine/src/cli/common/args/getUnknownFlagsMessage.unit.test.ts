@@ -40,7 +40,7 @@ test('getUnknownFlagsMessage: a command name nothing answers to accepts --cwd an
 	expect(messageFor({ command: 'nonesuch', names: ['plan', 'all'] })).toBe('lightsout nonesuch: unknown flags --plan, --all');
 });
 
-test('getUnknownFlagsMessage: standards-validate takes --pack, and the retired --package spelling is a usage error', () => {
-	expect(messageFor({ command: 'standards-validate', names: ['pack'] })).toBeUndefined();
-	expect(messageFor({ command: 'standards-validate', names: ['package'] })).toBe('lightsout standards-validate: unknown flag --package');
+test('getUnknownFlagsMessage: standards-validate takes --library, and the retired --pack spelling is a usage error', () => {
+	expect(messageFor({ command: 'standards-validate', names: ['library'] })).toBeUndefined();
+	expect(messageFor({ command: 'standards-validate', names: ['pack'] })).toBe('lightsout standards-validate: unknown flag --pack');
 });

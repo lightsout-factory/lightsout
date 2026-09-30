@@ -124,6 +124,15 @@ export const LightsoutConfig = z
 		 */
 		'standards-packs': z.union([z.array(z.string()), z.literal(false)]).optional(),
 		/**
+		 * Standards libraries registered beside the built-in one. Each key is a
+		 * library name; each value is a repo-relative folder (starting `./` or
+		 * `../`, or an absolute path) or an npm package name resolved from the
+		 * repo's `node_modules`. `lightsout` is built in and reserved. Whether a
+		 * key is allowed and matches its library's manifest is checked when the
+		 * libraries load, by `resolveStandardsLibraries`.
+		 */
+		'standards-libraries': z.record(z.string(), z.string()).optional(),
+		/**
 		 * Framework channels of the loaded standards packs (e.g. 'react',
 		 * 'tanstack'). Unspecified = detected per run from the scoped packages'
 		 * package.json dependencies; an array REPLACES detection (empty = base

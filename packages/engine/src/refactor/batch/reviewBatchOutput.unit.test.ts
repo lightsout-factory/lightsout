@@ -42,7 +42,7 @@ const judgmentRules: LoadedStandardsRule[] = ['function-size', 'single-return'].
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 }));
 
-const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: judgmentRules }];
+const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: judgmentRules, packs: [] }];
 
 /** A reviewer that reports whatever the test says it saw, and a progress sink to read back. */
 const setupReview = async ({ reported }: { reported: { rule: string; files: { path: string }[]; detail: string }[] }) => {

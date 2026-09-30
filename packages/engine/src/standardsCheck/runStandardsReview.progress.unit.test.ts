@@ -31,6 +31,7 @@ const packOf = ({ ruleIds }: { ruleIds: string[] }): LoadedStandardsLibrary => (
 	formatVersion: 1,
 	rootPath: '/packages/acme',
 	documents: [],
+	packs: [],
 	rules: ruleIds.map((id) => judgmentRule({ id })),
 });
 

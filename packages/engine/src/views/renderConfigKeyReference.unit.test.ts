@@ -52,6 +52,12 @@ describe('renderConfigKeyReference', () => {
 		expect(planRow).not.toContain('default-ticket-mode');
 	});
 
+	test('the standards-libraries row is optional and says how a folder is told from a package and that lightsout is reserved', () => {
+		const librariesRow = findRow({ key: 'standards-libraries' });
+
+		expect(librariesRow).toMatch(/^\| `standards-libraries` \| no \| .*`\.\/`.*npm package.*manifest `name`.*`lightsout` is built in and reserved/);
+	});
+
 	test('the standards-rule-settings row says a key is a full rule name, or a short id only one loaded rule has', () => {
 		const settingsRow = findRow({ key: 'standards-rule-settings' });
 

@@ -62,7 +62,7 @@ const rule = ({ id, inputKind }: { id: string; inputKind: StandardsInputKind }):
 
 /** Runs the given rules as one loaded package, at the severities a repo's config would have resolved for them. */
 const runChecks = ({ rules, cwd }: { rules: LoadedStandardsRule[]; cwd: string }) => {
-	const pkg: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
+	const pkg: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules, packs: [] };
 	const states = new Map<string, ResolvedRuleState>(
 		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false }]),
 	);

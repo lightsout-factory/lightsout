@@ -81,7 +81,7 @@ const runChecks = ({
 	exclude?: string[];
 	onProgress?: (message: string) => void;
 }) => {
-	const pkg: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
+	const pkg: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules, packs: [] };
 	const states = new Map<string, ResolvedRuleState>(
 		rules.map((entry) => [entry.name, { severity: severities[entry.id] ?? entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false }]),
 	);
@@ -104,7 +104,7 @@ const setupConfiguredRun = () => {
 		rule({ id: 'folder-size', inputKind: StandardsInputKind.FileList, run: recordOptions({ id: 'folder-size' }), defaultOptions: { cap: 20 } }),
 		rule({ id: 'file-size', inputKind: StandardsInputKind.FileList, run: recordOptions({ id: 'file-size' }), defaultOptions: { file: 250, tsxFile: 300 } }),
 	];
-	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules }];
+	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules, packs: [] }];
 	const config = LightsoutConfig.parse({
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'standards-rule-settings': { 'folder-size': { options: { cap: 2 } } },
@@ -124,6 +124,7 @@ const setupFullNameRun = () => {
 			formatVersion: 1,
 			rootPath: '/packages/acme',
 			documents: [],
+			packs: [],
 			rules: [rule({ id: 'size', name: 'acme/size', library: 'acme', inputKind: StandardsInputKind.FileText, run: sizeRun })],
 		},
 	];
@@ -333,6 +334,7 @@ describe('runPackageChecks', () => {
 			formatVersion: 1,
 			rootPath: '/packages/acme',
 			documents: [],
+			packs: [],
 			rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'multi-export', calls }) })],
 		};
 

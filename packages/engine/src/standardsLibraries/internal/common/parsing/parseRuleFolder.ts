@@ -1,5 +1,5 @@
-import { readFile } from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import { readFile, realpath } from 'node:fs/promises';
+import { basename, join, sep } from 'node:path';
 import type { StandardsCheckModule, StandardsSet } from '@lightsout/standards-contracts';
 import { z } from 'zod';
 import { messageOf } from '#src/common/utils/messageOf.ts';
@@ -42,6 +42,61 @@ const getRuleDeclaration = async ({ folderPath, rulePath, found }: { folderPath:
 };
 
 /**
+ * A checked rule ships exactly one check file: `check.ts`, or `check.js` for a
+ * library published to npm. Returns the absolute path of the one it ships, or
+ * nothing when it ships none or both.
+ */
+const findCheckFile = async ({ folderPath, rulePath, checked, found }: { folderPath: string; rulePath: string; checked?: boolean; found: string[] }) => {
+	const shipped: string[] = [];
+
+	for (const fileName of ['check.ts', 'check.js']) {
+		if (await hasFile({ path: join(folderPath, fileName) })) {
+			shipped.push(fileName);
+		}
+	}
+
+	let checkFileName: string | undefined;
+
+	if (shipped.length > 1) {
+		found.push(`${rulePath}: ships both check.ts and check.js — a rule ships one`);
+	} else if (shipped.length === 1) {
+		checkFileName = shipped[0];
+	} else if (checked === true) {
+		found.push(`${rulePath}: declares checked: true but ships no check.ts or check.js`);
+	}
+
+	if (checked === false && checkFileName !== undefined) {
+		found.push(`${rulePath}: ships a ${checkFileName} but does not declare checked: true`);
+	}
+
+	return checkFileName === undefined ? undefined : join(folderPath, checkFileName);
+};
+
+/**
+ * Node refuses to strip types from a check.ts whose real path is under
+ * `node_modules`, so such a file is never imported: its library must publish
+ * check.js. A workspace-linked library resolves to its source folder and
+ * still loads its check.ts.
+ */
+const loadCheck = async ({ checkPath, rulePath, found }: { checkPath: string; rulePath: string; found: string[] }) => {
+	const isTypeScript = basename(checkPath) === 'check.ts';
+	const realPath = isTypeScript ? await realpath(checkPath) : checkPath;
+	let check: StandardsCheckModule | undefined;
+
+	if (isTypeScript && realPath.split(sep).includes('node_modules')) {
+		found.push(`${rulePath}: check.ts sits under node_modules (${realPath}), where Node will not strip types — the library must publish check.js instead`);
+	} else {
+		try {
+			check = await importCheckModule({ checkPath });
+		} catch (error) {
+			found.push(`${rulePath}: ${messageOf({ error })}`);
+		}
+	}
+
+	return check;
+};
+
+/**
  * Problems are collected rather than thrown so one load reports every fault. A
  * rule with any problem is dropped whole: a partial rule would be a check or
  * prose that silently stopped applying.
@@ -57,29 +112,11 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, library, 
 	}
 
 	const { declaration, prose } = await getRuleDeclaration({ folderPath, rulePath, found });
-	const checkPath = join(folderPath, 'check.ts');
-	const hasCheck = await hasFile({ path: checkPath });
-
-	if (declaration?.checked === true && !hasCheck) {
-		found.push(`${rulePath}: declares checked: true but ships no check.ts`);
-	}
-
-	if (declaration?.checked === false && hasCheck) {
-		found.push(`${rulePath}: ships a check.ts but does not declare checked: true`);
-	}
+	const checkPath = await findCheckFile({ folderPath, rulePath, checked: declaration?.checked, found });
+	const check = declaration?.checked === true && checkPath !== undefined ? await loadCheck({ checkPath, rulePath, found }) : undefined;
 
 	// Not required here: a shipped pack may omit fixtures. `standards-validate` demands them.
 	const fixturesPath = join(folderPath, 'fixtures');
-
-	let check: StandardsCheckModule | undefined;
-
-	if (declaration?.checked === true && hasCheck) {
-		try {
-			check = await importCheckModule({ checkPath });
-		} catch (error) {
-			found.push(`${rulePath}: ${messageOf({ error })}`);
-		}
-	}
 
 	problems.push(...found);
 
