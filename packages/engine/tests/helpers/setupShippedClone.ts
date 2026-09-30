@@ -48,6 +48,29 @@ const linkInstalledDependencies = async ({ installed, target }: { installed: str
 };
 
 /**
+ * The clone's working tree made to match this one: every file git tracks or
+ * would track here — committed, changed or new — and none it has deleted.
+ * Ignored files stay out, so neither build output nor node_modules is copied.
+ */
+const mirrorWorkingTree = async ({ dir }: { dir: string }): Promise<void> => {
+	const listFiles = ({ cwd, args }: { cwd: string; args: string[] }) =>
+		runInRepo({ cwd, command: 'git', args: ['ls-files', '-z', ...args] })
+			.split('\0')
+			.filter((path) => path.length > 0);
+
+	for (const path of listFiles({ cwd: dir, args: [] })) {
+		await rm(join(dir, path), { force: true });
+	}
+
+	for (const path of listFiles({ cwd: repoRoot, args: ['--cached', '--others', '--exclude-standard'] })) {
+		if (existsSync(join(repoRoot, path))) {
+			await mkdir(dirname(join(dir, path)), { recursive: true });
+			await cp(join(repoRoot, path), join(dir, path), { verbatimSymlinks: true });
+		}
+	}
+};
+
+/**
  * A clone of this repo with its own history, sharing node_modules by symlink —
  * the check builds the engine, which needs esbuild and the engine's own
  * dependencies.
@@ -59,10 +82,13 @@ const linkInstalledDependencies = async ({ installed, target }: { installed: str
  * links to make, because a package added on the branch but not yet committed has
  * no folder in the clone to link into.
  *
- * `scripts/` is copied from the working tree over what the clone checked out,
- * so these tests exercise the scripts as they stand rather than as they were
- * last committed. Everything else stays at the cloned commit, which is what
- * gives the version comparison a real base to work against.
+ * The clone's files are this working tree as it stands, uncommitted changes
+ * and new files included, committed on top of the cloned history as the
+ * baseline. So these tests exercise the scripts as they stand, against the
+ * source those scripts read as it stands: copying only the scripts over the
+ * last commit breaks the moment a branch renames a folder a script names but
+ * has not committed the rename. The baseline commit is what gives the version
+ * comparison a real base to work against.
  *
  * The engine and the shipped standards are rebuilt and committed on main before
  * branching. esbuild writes each bundled module's path into its output, and
@@ -78,7 +104,7 @@ const buildBaseClone = async () => {
 
 	clones.push(dir);
 	runInRepo({ cwd: repoRoot, command: 'git', args: ['clone', '--quiet', '--no-hardlinks', '--shared', repoRoot, dir] });
-	await cp(join(repoRoot, 'scripts'), join(dir, 'scripts'), { recursive: true });
+	await mirrorWorkingTree({ dir });
 
 	for (const { claude, codex } of [
 		{ claude: shippedManifestPaths.claude, codex: shippedManifestPaths.codex },
