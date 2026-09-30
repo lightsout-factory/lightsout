@@ -6037,9 +6037,9 @@ var require_lexer = __commonJS({
         }
       }
       *parseQuotedScalar() {
-        const quote2 = this.charAt(0);
-        let end = this.buffer.indexOf(quote2, this.pos + 1);
-        if (quote2 === "'") {
+        const quote = this.charAt(0);
+        let end = this.buffer.indexOf(quote, this.pos + 1);
+        if (quote === "'") {
           while (end !== -1 && this.buffer[end + 1] === "'")
             end = this.buffer.indexOf("'", end + 2);
         } else {
@@ -22882,6 +22882,12 @@ var readPlanWorkOrderRef = async ({ cwd, name }) => {
   return record3?.ticketRef;
 };
 
+// src/ticketTracker/internal/common/utils/parseTicketNumber.ts
+var parseTicketNumber = ({ identifier, ticketPrefix }) => {
+  const [prefix, number4] = identifier.split("-");
+  return prefix?.toLowerCase() === ticketPrefix.toLowerCase() && /^\d+$/u.test(number4 ?? "") ? number4 : void 0;
+};
+
 // src/ticketTracker/jira/internal/common/utils/isFinishedJiraStatus.ts
 var isFinishedJiraStatus = ({ categoryKey }) => categoryKey === "done";
 
@@ -23133,6 +23139,9 @@ var toJiraTrackerTicket = ({ issue: issue2, siteUrl, unfinishedBlockers }) => {
   };
 };
 
+// src/ticketTracker/internal/common/constants/trackerTimeoutMs.ts
+var trackerTimeoutMs = 6e4;
+
 // src/ticketTracker/jira/internal/runJira.ts
 var ResponseKind = { Json: "json", Empty: "empty", Text: "text" };
 var createJiraClient = ({ settings }) => {
@@ -23173,7 +23182,6 @@ var createJiraClient = ({ settings }) => {
   return { request };
 };
 var withDeadline = async ({ request }) => {
-  const trackerTimeoutMs = 6e4;
   let timer;
   const deadline = new Promise((_resolve, reject) => {
     timer = setTimeout(() => reject(new Error(`the tracker did not answer within ${trackerTimeoutMs}ms`)), trackerTimeoutMs);
@@ -23195,8 +23203,8 @@ var runJira = async ({ settings, request }) => {
 // src/ticketTracker/jira/getTicketsByIdentifiers.ts
 var fields = ["summary", "description", "priority", "created", "labels", "status", "issuelinks"];
 var matchingKeys = ({ identifiers, ticketPrefix }) => identifiers.flatMap((identifier) => {
-  const [prefix, number4] = identifier.split("-");
-  return prefix?.toLowerCase() === ticketPrefix.toLowerCase() && /^\d+$/u.test(number4 ?? "") ? [`${ticketPrefix}-${number4}`] : [];
+  const number4 = parseTicketNumber({ identifier, ticketPrefix });
+  return number4 === void 0 ? [] : [`${ticketPrefix}-${number4}`];
 });
 var getTicketsByIdentifiers = async ({ settings, identifiers }) => {
   const keys = matchingKeys({ identifiers, ticketPrefix: settings.ticketPrefix });
@@ -121190,7 +121198,6 @@ var LinearClient = class extends LinearSdk {
 
 // src/ticketTracker/linear/internal/runLinear.ts
 var runLinear = async ({ apiKey, call }) => {
-  const trackerTimeoutMs = 6e4;
   let timer;
   try {
     const deadline = new Promise((_resolve, reject) => {
@@ -121206,8 +121213,8 @@ var runLinear = async ({ apiKey, call }) => {
 
 // src/ticketTracker/linear/getTicketsByIdentifiers.ts
 var readIssueNumbers = ({ identifiers, ticketPrefix }) => identifiers.flatMap((identifier) => {
-  const [prefix, number4] = identifier.split("-");
-  return prefix?.toLowerCase() === ticketPrefix.toLowerCase() && /^\d+$/u.test(number4 ?? "") ? [Number(number4)] : [];
+  const number4 = parseTicketNumber({ identifier, ticketPrefix });
+  return number4 === void 0 ? [] : [Number(number4)];
 });
 var getTicketsByIdentifiers2 = async ({ settings, identifiers }) => {
   const issueNumbers = readIssueNumbers({ identifiers, ticketPrefix: settings.ticketPrefix });
@@ -123418,7 +123425,7 @@ var loadRepoEnvFile = async ({ cwd }) => {
       process.env[name] ??= value;
     }
   } catch (error51) {
-    console.error(`lightsout: ignored ${envFilePath}: ${error51 instanceof Error ? error51.message : String(error51)}`);
+    console.error(`lightsout: ignored ${envFilePath}: ${messageOf({ error: error51 })}`);
   }
 };
 
@@ -123705,7 +123712,7 @@ var createClaudeCodeDriver = () => {
         }
       }).finally(() => systemPromptFile?.cleanup());
       const envelope = resultEvent ?? parseEnvelope({ stdout });
-      const text = envelope?.result ?? stdout ?? "";
+      const text = envelope?.result ?? stdout;
       const errored = envelope?.is_error === true || exitCode !== 0;
       const usage2 = resultEvent ? resultUsage({ event: resultEvent }) : void 0;
       return {
@@ -124411,6 +124418,9 @@ var StandardsSet = {
 // src/common/constants/standardsLibraryRootFile.ts
 var standardsLibraryRootFile = "lightsout-standards.json";
 
+// src/common/utils/formatSchemaIssues.ts
+var formatSchemaIssues = ({ issues, subject }) => issues.map((issue2) => `${issue2.path.join(".") || subject} ${issue2.message}`).join("; ");
+
 // src/standardsLibraries/internal/common/parsing/parsePackFolder.ts
 import { readdir as readdir4, readFile as readFile8 } from "node:fs/promises";
 import { join as join15 } from "node:path";
@@ -124431,9 +124441,6 @@ var StandardsPackFile = external_exports.object({
   /** Severity and options for rules already in the pack, applied after every include. */
   "rule-settings": StandardsRuleSettings.optional()
 }).strict();
-
-// src/standardsLibraries/internal/common/utils/formatSchemaIssues.ts
-var formatSchemaIssues = ({ issues, subject }) => issues.map((issue2) => `${issue2.path.join(".") || subject} ${issue2.message}`).join("; ");
 
 // src/standardsLibraries/internal/common/parsing/parsePackFolder.ts
 var parsePackFile = async ({ folderPath, name, problems }) => {
@@ -125330,14 +125337,24 @@ var PackageManifest = external_exports.object({
   name: external_exports.string().min(1),
   scripts: external_exports.record(external_exports.string(), external_exports.string()).optional()
 });
+var parseManifestJson = ({ raw, manifestPath }) => {
+  try {
+    return JSON.parse(raw);
+  } catch (error51) {
+    throw new Error(`package.json at ${manifestPath} is not valid JSON: ${messageOf({ error: error51 })}`);
+  }
+};
 var readPackageManifest = async ({ cwd, packagesDir, packageDir }) => {
   const manifestPath = join24(cwd, packagesDir, packageDir, "package.json");
   const raw = await readFile13(manifestPath, "utf8").catch(() => {
     throw new Error(`declared package '${packageDir}' has no package.json at ${manifestPath}`);
   });
-  const parsed = PackageManifest.safeParse(JSON.parse(raw));
+  const parsed = PackageManifest.safeParse(parseManifestJson({ raw, manifestPath }));
   if (!parsed.success) {
-    throw new Error(`package.json at ${manifestPath} has no "name" \u2014 required for {package} substitution`);
+    const nameless = parsed.error.issues.some((issue2) => issue2.path[0] === "name");
+    throw new Error(
+      nameless ? `package.json at ${manifestPath} has no "name" \u2014 required for {package} substitution` : `package.json at ${manifestPath} is not a valid manifest: ${formatSchemaIssues({ issues: parsed.error.issues, subject: "package.json" })}`
+    );
   }
   return { name: parsed.data.name, scripts: parsed.data.scripts ?? {} };
 };
@@ -125457,6 +125474,29 @@ ${checks.length} check(s) \xB7 ${tally}`);
   return exitCli({ code: counts.fail > 0 ? 1 : 0 });
 };
 
+// ../shared/src/formatting/formatCost.ts
+var formatCost = ({ usd }) => `$${usd.toFixed(2)}`;
+
+// ../shared/src/formatting/formatDuration.ts
+var formatDuration = ({ ms }) => {
+  if (ms === void 0) {
+    return "\u2014";
+  }
+  const seconds = Math.round(ms / 1e3);
+  return seconds >= 60 ? `${Math.floor(seconds / 60)}m ${String(seconds % 60).padStart(2, "0")}s` : `${seconds}s`;
+};
+
+// ../shared/src/formatting/formatShortRunId.ts
+var formatShortRunId = ({ runId }) => runId.slice(0, 8);
+
+// ../shared/src/formatting/formatTokenCount.ts
+var formatTokenCount = ({ count: count2 }) => {
+  if (count2 >= 1e6) {
+    return `${(count2 / 1e6).toFixed(1)}M`;
+  }
+  return count2 >= 1e3 ? `${(count2 / 1e3).toFixed(1)}k` : `${count2}`;
+};
+
 // src/common/utils/readJsonlRecords.ts
 import { readFile as readFile14 } from "node:fs/promises";
 var readJsonlRecords = async ({ path, schema }) => {
@@ -125525,33 +125565,13 @@ var frictionCommand = async ({ cwd }) => {
     return exitCli({ code: 0 });
   }
   for (const entry of entries) {
-    console.log(`[${entry.area}] (run ${entry.runId.slice(0, 8)}, ${entry.step}, ${entry.at}) ${entry.detail}`);
+    console.log(`[${entry.area}] (run ${formatShortRunId({ runId: entry.runId })}, ${entry.step}, ${entry.at}) ${entry.detail}`);
   }
   return exitCli({ code: 0 });
 };
 
 // src/cli/internal/common/render/printResult.ts
 import { basename as basename4 } from "node:path";
-
-// ../shared/src/formatting/formatCost.ts
-var formatCost = ({ usd }) => `$${usd.toFixed(2)}`;
-
-// ../shared/src/formatting/formatDuration.ts
-var formatDuration = ({ ms }) => {
-  if (ms === void 0) {
-    return "\u2014";
-  }
-  const seconds = Math.round(ms / 1e3);
-  return seconds >= 60 ? `${Math.floor(seconds / 60)}m ${String(seconds % 60).padStart(2, "0")}s` : `${seconds}s`;
-};
-
-// ../shared/src/formatting/formatTokenCount.ts
-var formatTokenCount = ({ count: count2 }) => {
-  if (count2 >= 1e6) {
-    return `${(count2 / 1e6).toFixed(1)}M`;
-  }
-  return count2 >= 1e3 ? `${(count2 / 1e3).toFixed(1)}k` : `${count2}`;
-};
 
 // src/contracts/run/RunStatus.ts
 var RunStatus = {
@@ -126021,7 +126041,10 @@ var printResult = async ({ result, cwd }) => {
   const { manifest, ok, error: error51 } = result;
   const summary = await summarizeRun({ cwd, manifest });
   console.log("");
-  label({ name: "run", value: `${manifest.runId.slice(0, 8)} \xB7 ${paintStatus({ status: manifest.status, text: bold(manifest.status.toUpperCase()) })}` });
+  label({
+    name: "run",
+    value: `${formatShortRunId({ runId: manifest.runId })} \xB7 ${paintStatus({ status: manifest.status, text: bold(manifest.status.toUpperCase()) })}`
+  });
   label({ name: "plan", value: basename4(manifest.plan) });
   label({ name: "wall", value: formatDuration({ ms: summary.wallMs }) });
   if (summary.activeMs > 0) {
@@ -126167,6 +126190,9 @@ var readWorktreeRecord = async ({ cwd, branch }) => {
   return path === void 0 ? void 0 : readJsonFile({ path, schema: WorktreeRecord });
 };
 
+// src/common/processes/quoteShellArgument.ts
+var quoteShellArgument = ({ argument }) => `'${argument.split("'").join(`'\\''`)}'`;
+
 // src/common/processes/runOrDescribeFailure.ts
 var runOrDescribeFailure = async ({ command, cwd, timeoutMs = gitTimeoutMs, subject = "git" }) => {
   const result = await runCommand({ command, cwd, timeoutMs }).catch(() => void 0);
@@ -126175,8 +126201,8 @@ var runOrDescribeFailure = async ({ command, cwd, timeoutMs = gitTimeoutMs, subj
 
 // src/worktree/removeWorktree.ts
 var removeWorktree = async ({ cwd, worktreePath, branch }) => {
-  const removal = await runOrDescribeFailure({ command: `git worktree remove --force ${worktreePath}`, cwd });
-  for (const command of ["git worktree prune", `git branch -d ${branch}`]) {
+  const removal = await runOrDescribeFailure({ command: `git worktree remove --force ${quoteShellArgument({ argument: worktreePath })}`, cwd });
+  for (const command of ["git worktree prune", `git branch -d ${quoteShellArgument({ argument: branch })}`]) {
     await runCommand({ command, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
   }
   return removal === void 0 ? void 0 : { error: `git could not remove the worktree at ${worktreePath}: ${removal}` };
@@ -126386,13 +126412,12 @@ var readGitChangedFiles = async ({ cwd }) => {
   if (status?.exitCode !== 0) {
     return void 0;
   }
-  const root = prefix;
   return status.stdout.split("\n").filter(Boolean).map((line) => {
     const path = line.slice(3);
     const arrow = path.lastIndexOf(" -> ");
     const renameTarget = arrow === -1 ? path : path.slice(arrow + " -> ".length);
     return renameTarget.replace(/^"|"$/g, "");
-  }).map((path) => root && path.startsWith(root) ? path.slice(root.length) : path).filter((path) => !path.startsWith(".lightsout/"));
+  }).map((path) => prefix && path.startsWith(prefix) ? path.slice(prefix.length) : path).filter((path) => !path.startsWith(".lightsout/"));
 };
 
 // src/common/git/readGitCurrentBranch.ts
@@ -126411,10 +126436,9 @@ var readGitDefaultBranch = async ({ cwd }) => {
 };
 
 // src/ship/forge/internal/runGh.ts
-var quote = ({ argument }) => `'${argument.split("'").join(`'\\''`)}'`;
 var runGh = async ({ args, cwd }) => {
   const forgeTimeoutMs = 6e4;
-  const command = ["gh", ...args.map((argument) => quote({ argument }))].join(" ");
+  const command = ["gh", ...args.map((argument) => quoteShellArgument({ argument }))].join(" ");
   return runCommand({ command, cwd, timeoutMs: forgeTimeoutMs }).catch((error51) => ({ exitCode: -1, stdout: "", stderr: messageOf({ error: error51 }) }));
 };
 
@@ -126466,9 +126490,6 @@ var checkShipPreconditions = async ({ cwd, ticketPattern }) => {
   }
   return { branch, defaultBranch, ticket };
 };
-
-// src/ship/internal/common/utils/quoteGitArgument.ts
-var quoteGitArgument = ({ argument }) => `'${argument.split("'").join(`'\\''`)}'`;
 
 // src/ship/internal/common/utils/runGit.ts
 var runGit = ({ command, cwd, timeoutMs = gitTimeoutMs }) => runCommand({ command, cwd, timeoutMs }).catch(() => void 0);
@@ -126562,7 +126583,7 @@ var noMerge = ({ failure, baseCommit }) => ({
   failure
 });
 var isAlreadyIntegrated = async ({ cwd, baseCommit }) => {
-  const checked = await runGit({ command: `git merge-base --is-ancestor ${quoteGitArgument({ argument: baseCommit })} HEAD`, cwd });
+  const checked = await runGit({ command: `git merge-base --is-ancestor ${quoteShellArgument({ argument: baseCommit })} HEAD`, cwd });
   if (checked?.exitCode === 0) {
     return { ancestor: true };
   }
@@ -126574,7 +126595,7 @@ var pinDefaultBranch = async ({ cwd, defaultBranch }) => {
   if (fetched === void 0 || fetched.exitCode !== 0) {
     return { error: `git could not fetch origin: ${(fetched?.stderr ?? "git did not answer").trim()}` };
   }
-  const resolved = await runGit({ command: `git rev-parse --verify ${quoteGitArgument({ argument: `origin/${defaultBranch}` })}`, cwd });
+  const resolved = await runGit({ command: `git rev-parse --verify ${quoteShellArgument({ argument: `origin/${defaultBranch}` })}`, cwd });
   if (resolved === void 0 || resolved.exitCode !== 0) {
     return { error: `git could not resolve origin/${defaultBranch} after fetching` };
   }
@@ -126595,7 +126616,7 @@ var mergeDefaultBranch = async ({ cwd, defaultBranch, onProgress }) => {
     onProgress?.(`integrate: origin/${defaultBranch} is already an ancestor \u2014 nothing to merge`);
     return { baseCommit, conflictPaths: [], integrated: false, failure: void 0 };
   }
-  const merged = await runGit({ command: `git merge --no-commit --no-ff ${quoteGitArgument({ argument: baseCommit })}`, cwd });
+  const merged = await runGit({ command: `git merge --no-commit --no-ff ${quoteShellArgument({ argument: baseCommit })}`, cwd });
   if (merged?.exitCode === 0) {
     onProgress?.(`integrate: merged origin/${defaultBranch} cleanly`);
     return { baseCommit, conflictPaths: [], integrated: true, failure: void 0 };
@@ -127985,6 +128006,7 @@ var repairIntegratedGates = async ({
   baseCommit,
   onProgress
 }) => {
+  let refusal;
   for (let attempt = 0; ; attempt += 1) {
     const verified = await verifyCandidate({ cwd, integration, preShip, baseCommit, onProgress });
     if ("blocked" in verified) {
@@ -127995,10 +128017,13 @@ var repairIntegratedGates = async ({
       return void 0;
     }
     if (attempt === maxCheapFixRetries) {
-      return { reason: ShipBlockReason.IntegrationGatesFailed, detail: error51, paths: failedFamilies };
+      const detail = refusal === void 0 ? error51 : `${error51}
+
+The last repair attempt reported: ${refusal}`;
+      return { reason: ShipBlockReason.IntegrationGatesFailed, detail, paths: failedFamilies };
     }
     onProgress?.(`integrate: the gates are red \u2014 re-invoking the integrator with their output (fix ${attempt + 1} of ${maxCheapFixRetries})`);
-    await invokeShipIntegrator({ cwd, integration, branch, defaultBranch, standards, errorContext: error51 });
+    refusal = await invokeShipIntegrator({ cwd, integration, branch, defaultBranch, standards, errorContext: error51 });
   }
 };
 
@@ -128064,7 +128089,7 @@ var describeRemainingState = async ({ cwd, baselineCommit }) => {
 var restorePreIntegrationState = async ({ cwd, baselineCommit, onProgress }) => {
   onProgress?.(`integrate: restoring ${baselineCommit.slice(0, 8)} \u2014 nothing verified, so nothing is kept`);
   const aborted2 = await hasOpenMerge({ cwd }) ? await runGit({ command: "git merge --abort", cwd }) : void 0;
-  const reset = await runGit({ command: `git reset --hard ${quoteGitArgument({ argument: baselineCommit })}`, cwd });
+  const reset = await runGit({ command: `git reset --hard ${quoteShellArgument({ argument: baselineCommit })}`, cwd });
   const cleaned = await runGit({ command: "git clean -fd", cwd });
   const remaining = await describeRemainingState({ cwd, baselineCommit });
   if (remaining === void 0) {
@@ -128222,7 +128247,7 @@ var loadStandards = async ({ cwd, integration }) => {
     const { standards } = await resolveStandards({ cwd, config: integration.config });
     return { standards };
   } catch (error51) {
-    return { error: `the repository's standards could not be loaded: ${error51 instanceof Error ? error51.message : String(error51)}` };
+    return { error: `the repository's standards could not be loaded: ${messageOf({ error: error51 })}` };
   }
 };
 var readUnsettled = async ({ cwd }) => {
@@ -128395,7 +128420,8 @@ var openPullRequest = async ({ branch, cwd, settings, ticket, onProgress }) => {
 // src/ship/internal/pushBranch.ts
 var pushBranch = async ({ branch, cwd }) => {
   const pushTimeoutMs = 6e4;
-  const pushed = await runCommand({ command: `git push --set-upstream origin ${branch}`, cwd, timeoutMs: pushTimeoutMs }).catch((error51) => ({
+  const command = `git push --set-upstream origin ${quoteShellArgument({ argument: branch })}`;
+  const pushed = await runCommand({ command, cwd, timeoutMs: pushTimeoutMs }).catch((error51) => ({
     exitCode: -1,
     stdout: "",
     stderr: messageOf({ error: error51 })
@@ -128406,7 +128432,7 @@ var pushBranch = async ({ branch, cwd }) => {
 // src/ship/internal/publishCandidate.ts
 var readRemoteTip = async ({ branch, cwd }) => {
   const remoteReadTimeoutMs = 6e4;
-  const listed = await runGit({ command: `git ls-remote --heads origin ${quoteGitArgument({ argument: branch })}`, cwd, timeoutMs: remoteReadTimeoutMs });
+  const listed = await runGit({ command: `git ls-remote --heads origin ${quoteShellArgument({ argument: branch })}`, cwd, timeoutMs: remoteReadTimeoutMs });
   return listed?.exitCode === 0 ? listed.stdout.trim().split("	")[0] : void 0;
 };
 var publishCandidate = async ({ branch, cwd, candidate }) => {
@@ -128724,10 +128750,16 @@ var syncDefaultBranch = async ({ cwd, defaultBranch, branch, onProgress }) => {
     onProgress?.("sync: skipped \u2014 this checkout is a linked worktree, and the default branch lives in the primary one");
     return;
   }
-  const steps = [`git checkout ${defaultBranch}`, "git pull --ff-only", `git branch -d ${branch}`];
-  for (const command of steps) {
+  const steps = [
+    ["checkout", defaultBranch],
+    ["pull", "--ff-only"],
+    ["branch", "-d", branch]
+  ];
+  for (const args of steps) {
+    const command = ["git", ...args.map((argument) => quoteShellArgument({ argument }))].join(" ");
+    const label2 = ["git", ...args].join(" ");
     const result = await runCommand({ command, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
-    onProgress?.(result?.exitCode === 0 ? `sync: ${command}` : `sync: ${command} did not work \u2014 leaving the local tree as it is`);
+    onProgress?.(result?.exitCode === 0 ? `sync: ${label2}` : `sync: ${label2} did not work \u2014 leaving the local tree as it is`);
   }
 };
 
@@ -128878,11 +128910,11 @@ var stopShip = ({
 };
 var readBranchDiff = async ({ cwd, defaultBranch }) => {
   const maxDiffCharacters = 32e3;
-  const forkPoint = await runGit({ command: `git merge-base ${quoteGitArgument({ argument: `origin/${defaultBranch}` })} HEAD`, cwd });
+  const forkPoint = await runGit({ command: `git merge-base ${quoteShellArgument({ argument: `origin/${defaultBranch}` })} HEAD`, cwd });
   if (forkPoint === void 0 || forkPoint.exitCode !== 0) {
     return "";
   }
-  const diffed = await runGit({ command: `git diff ${quoteGitArgument({ argument: forkPoint.stdout.trim() })} HEAD`, cwd });
+  const diffed = await runGit({ command: `git diff ${quoteShellArgument({ argument: forkPoint.stdout.trim() })} HEAD`, cwd });
   if (diffed === void 0 || diffed.exitCode !== 0) {
     return "";
   }
@@ -129194,15 +129226,12 @@ var workOrderFileNames = {
 };
 
 // src/ticketTracker/jira/getTicketAttachments.ts
-var issueKeyOf = ({ identifier, ticketPrefix }) => {
-  const [prefix, number4] = identifier.split("-");
-  return prefix?.toLowerCase() === ticketPrefix.toLowerCase() && /^\d+$/u.test(number4 ?? "") ? `${ticketPrefix}-${number4}` : void 0;
-};
 var getTicketAttachments = async ({ settings, identifier }) => {
-  const issueKey = issueKeyOf({ identifier, ticketPrefix: settings.ticketPrefix });
-  if (issueKey === void 0) {
+  const number4 = parseTicketNumber({ identifier, ticketPrefix: settings.ticketPrefix });
+  if (number4 === void 0) {
     return { error: `'${identifier}' names no ticket number` };
   }
+  const issueKey = `${settings.ticketPrefix}-${number4}`;
   return runJira({
     settings,
     request: async (client) => {
@@ -129222,11 +129251,11 @@ var getTicketAttachments = async ({ settings, identifier }) => {
 
 // src/ticketTracker/linear/getTicketAttachments.ts
 var getTicketAttachments2 = async ({ settings, identifier }) => {
-  const [prefix, number4] = identifier.split("-");
-  const issueNumber = prefix?.toLowerCase() === settings.ticketPrefix.toLowerCase() && /^\d+$/u.test(number4 ?? "") ? Number(number4) : Number.NaN;
-  if (!Number.isFinite(issueNumber)) {
+  const number4 = parseTicketNumber({ identifier, ticketPrefix: settings.ticketPrefix });
+  if (number4 === void 0) {
     return { error: `'${identifier}' names no ticket number` };
   }
+  const issueNumber = Number(number4);
   return runLinear({
     apiKey: settings.apiKey,
     call: async (client) => {
@@ -129265,7 +129294,6 @@ var readTicketAsset = async ({ settings, url: url2 }) => {
 
 // src/ticketTracker/linear/readTicketAsset.ts
 var readTicketAsset2 = async ({ settings, url: url2 }) => {
-  const trackerTimeoutMs = 6e4;
   try {
     const assetUrl = new URL(url2);
     if (assetUrl.origin !== "https://uploads.linear.app") {
@@ -130326,7 +130354,7 @@ var writeWorktreeRecord = async ({ cwd, branch, owner, worktreePath, startPoint,
     await writeJsonFile({ path: `${recordPath}.tmp`, value: record3 });
     await rename5(`${recordPath}.tmp`, recordPath);
   } catch (error51) {
-    const message = error51 instanceof Error ? error51.message : String(error51);
+    const message = messageOf({ error: error51 });
     onProgress?.(`the worktree for ${branch} could not be recorded as '${owner}': ${message}`);
   }
 };
@@ -130351,7 +130379,8 @@ var exists = async ({ path }) => {
   return found !== void 0;
 };
 var branchExists = async ({ cwd, branch }) => {
-  const shown = await runCommand({ command: `git rev-parse --verify --quiet refs/heads/${branch}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  const ref = quoteShellArgument({ argument: `refs/heads/${branch}` });
+  const shown = await runCommand({ command: `git rev-parse --verify --quiet ${ref}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
   return shown?.exitCode === 0;
 };
 var describeClaim = async ({ cwd, branch, owner, worktreePath }) => {
@@ -130368,7 +130397,8 @@ var cutTree = async ({
   onProgress
 }) => {
   const adopting = await branchExists({ cwd, branch });
-  const add = adopting ? `git worktree add ${worktreePath} ${branch}` : `git worktree add ${worktreePath} -b ${branch} ${startPoint}`;
+  const [path, name, base] = [worktreePath, branch, startPoint].map((argument) => quoteShellArgument({ argument }));
+  const add = adopting ? `git worktree add ${path} ${name}` : `git worktree add ${path} -b ${name} ${base}`;
   const addFailure = await runOrDescribeFailure({ command: add, cwd });
   if (addFailure !== void 0) {
     return { error: `git could not create a worktree for '${branch}': ${addFailure}` };
@@ -130417,7 +130447,8 @@ var fetchDefaultBranch = async ({ cwd }) => {
 
 // src/common/git/readGitRefCommit.ts
 var readGitRefCommit = async ({ cwd, ref }) => {
-  const named = await runCommand({ command: `git rev-parse --verify --quiet '${ref}^{commit}'`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  const peeled = quoteShellArgument({ argument: `${ref}^{commit}` });
+  const named = await runCommand({ command: `git rev-parse --verify --quiet ${peeled}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
   return named?.exitCode === 0 ? named.stdout.trim() : void 0;
 };
 
@@ -130437,7 +130468,8 @@ var readBranchWorktree = async ({ cwd, branch }) => {
 
 // src/worktree/prepareWorkOrderBranch.ts
 var readAncestry = async ({ cwd, ancestor, descendant }) => {
-  const asked = await runCommand({ command: `git merge-base --is-ancestor ${ancestor} ${descendant}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  const [older, newer] = [ancestor, descendant].map((argument) => quoteShellArgument({ argument }));
+  const asked = await runCommand({ command: `git merge-base --is-ancestor ${older} ${newer}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
   if (asked?.exitCode !== 0 && asked?.exitCode !== 1) {
     return void 0;
   }
@@ -130463,7 +130495,8 @@ var fastForwardTicketBranch = async ({ cwd, branch, local, remote }) => {
       error: `the local branch '${branch}' at ${local} is behind the pushed one at ${remote}, and the worktree at ${holder} is standing on it \u2014 bring it up to date there with \`git pull --ff-only\``
     };
   }
-  const failure = await runOrDescribeFailure({ command: `git branch -f ${branch} ${remote}`, cwd });
+  const [name, commit] = [branch, remote].map((argument) => quoteShellArgument({ argument }));
+  const failure = await runOrDescribeFailure({ command: `git branch -f ${name} ${commit}`, cwd });
   return failure === void 0 ? { startPoint: void 0 } : { error: `git could not move '${branch}' to the pushed commit ${remote}: ${failure}` };
 };
 var prepareWorkOrderBranch = async ({ cwd, branch }) => {
@@ -130763,7 +130796,7 @@ var restoreBrainstormFiles = async ({ cwd, name, identifier, settings, titlePref
   const selected = attachments.filter(({ title }) => brainstormAttachmentFileNames.includes(title));
   const markers = attachments.filter(({ title }) => title === brainstormAttachmentManifestName);
   const marker = markers[0];
-  if (!attachments.some(({ title }) => brainstormAttachmentFileNames.includes(title)) && markers.length === 0) {
+  if (selected.length === 0 && markers.length === 0) {
     return { restored: [], skipped: [] };
   }
   if (marker === void 0 || markers.length > 1) {
@@ -131257,6 +131290,18 @@ var resolveCommandShipIntent = ({ config: config2, flags, env, shipRequest }) =>
 import { access, readFile as readFile19 } from "node:fs/promises";
 import { dirname as dirname14, join as join60 } from "node:path";
 
+// src/common/utils/formatResumeCommand.ts
+var resumeDoor = "lightsout resume --run <id>";
+var resumeCommandByPipeline = {
+  [PipelineKind.Implement]: resumeDoor,
+  [PipelineKind.Phases]: resumeDoor,
+  [PipelineKind.Refactor]: "lightsout refactor --run <id>",
+  [PipelineKind.Coverage]: "lightsout test-coverage-to-threshold --run <id>",
+  [PipelineKind.Queue]: "lightsout queue (a restart resumes parked tickets first)",
+  [PipelineKind.Direct]: resumeDoor
+};
+var formatResumeCommand = ({ pipeline, runId }) => resumeCommandByPipeline[pipeline].replaceAll("<id>", runId);
+
 // src/common/utils/toRepoRelativePath.ts
 import { relative as relative6, resolve as resolve7 } from "node:path";
 var toRepoRelativePath = ({ cwd, path }) => relative6(cwd, resolve7(cwd, path));
@@ -131471,13 +131516,12 @@ var resolveNewRunDir = async ({ cwd, planName, workOrderName, pipeline, runId })
 };
 
 // src/runState/writeRunManifest.ts
-import { rename as rename7, writeFile as writeFile10 } from "node:fs/promises";
+import { rename as rename7 } from "node:fs/promises";
 var writeRunManifest = async ({ cwd, manifest }) => {
   const stamped = { ...manifest, updatedAt: (/* @__PURE__ */ new Date()).toISOString() };
   const manifestPath = await getRunManifestPath({ cwd, runId: manifest.runId });
   const tmpPath = `${manifestPath}.tmp`;
-  await writeFile10(tmpPath, `${JSON.stringify(stamped, null, "	")}
-`, "utf8");
+  await writeJsonFile({ path: tmpPath, value: stamped });
   await rename7(tmpPath, manifestPath);
   return stamped;
 };
@@ -131589,9 +131633,8 @@ var initializeSequence = async ({
   if (existing) {
     const pipeline = existing.pipeline ?? PipelineKind.Implement;
     if (pipeline !== PipelineKind.Phases) {
-      throw new Error(
-        `run ${existing.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: lightsout ${pipeline === PipelineKind.Refactor ? "refactor" : "resume"} --run ${existing.runId}`
-      );
+      const resume = formatResumeCommand({ pipeline, runId: existing.runId });
+      throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${resume}`);
     }
     return { manifest: existing };
   }
@@ -131607,7 +131650,8 @@ var initializeSequence = async ({
   await assertPhaseFilesExist({ cwd, overview, phases });
   const unfinished = await findUnfinishedSequence({ cwd, planName: await planNameFromPath({ cwd, planPath: overview }) });
   if (unfinished) {
-    throw new Error(`an unfinished run for this plan already exists \u2014 resume with: lightsout resume --run ${unfinished.runId}`);
+    const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: unfinished.runId });
+    throw new Error(`an unfinished run for this plan already exists \u2014 resume with: ${resume}`);
   }
   const created = await createRun({ cwd, runId, plan: overview, pipeline: PipelineKind.Phases, driver: driver.name, config: config2, willShip });
   const steps = phases.map((file2, index) => ({
@@ -131638,7 +131682,7 @@ var PhaseReport = external_exports.object({
 });
 
 // src/commit/commitWorkOrderWork.ts
-import { mkdir as mkdir13, writeFile as writeFile11 } from "node:fs/promises";
+import { mkdir as mkdir13, writeFile as writeFile10 } from "node:fs/promises";
 import { join as join61 } from "node:path";
 
 // src/common/sourceFiles/isGeneratedPath.ts
@@ -131648,8 +131692,7 @@ var isGeneratedPath = ({ path, generated }) => generated.some((entry) => {
 });
 
 // src/commit/commitWorkOrderWork.ts
-var toLiteralPathspec = ({ path }) => `':(literal)${path.replaceAll("'", String.raw`'\''`)}'`;
-var toPathspecs = ({ paths }) => paths.map((path) => toLiteralPathspec({ path })).join(" ");
+var toPathspecs = ({ paths }) => paths.map((path) => quoteShellArgument({ argument: `:(literal)${path}` })).join(" ");
 var discardGeneratedChanges = async ({ cwd, paths }) => {
   const pathspecs = toPathspecs({ paths });
   const resetFailure = await runOrDescribeFailure({ command: `git reset -q -- ${pathspecs}`, cwd });
@@ -131704,9 +131747,9 @@ var commitWorkOrderWork = async ({
   const message = await composeMessage({ cwd });
   const messagePath = join61(runDir, "commit-message.txt");
   await mkdir13(runDir, { recursive: true });
-  await writeFile11(messagePath, message.endsWith("\n") ? message : `${message}
+  await writeFile10(messagePath, message.endsWith("\n") ? message : `${message}
 `, "utf8");
-  const commitFailure = await runOrDescribeFailure({ command: `git commit -F ${messagePath}`, cwd });
+  const commitFailure = await runOrDescribeFailure({ command: `git commit -F ${quoteShellArgument({ argument: messagePath })}`, cwd });
   if (commitFailure !== void 0) {
     return { error: `git could not commit the work in ${cwd}: ${commitFailure}` };
   }
@@ -131911,7 +131954,7 @@ var commitRunWork = async ({ run, driver, address, resumed }) => {
     return `${run.cwd} could not be read, so this run's records could not be found \u2014 nothing was committed`;
   }
   const onProgress = (message) => run.progress(message);
-  const resolved = address ?? await readRunCommitAddress({ cwd: run.cwd, manifest, config: run.config, onProgress });
+  const resolved = address ?? await readRunCommitAddress({ cwd: run.cwd, manifest, onProgress });
   const committed = await commitWorkOrderWork({
     cwd: run.cwd,
     composeMessage: ({ cwd }) => composeCommitMessage({
@@ -132381,7 +132424,7 @@ var runSteps = async ({ run, steps }) => {
 };
 
 // src/pipeline/internal/PipelineRun.ts
-import { mkdir as mkdir15, writeFile as writeFile12 } from "node:fs/promises";
+import { mkdir as mkdir15, writeFile as writeFile11 } from "node:fs/promises";
 import { join as join68 } from "node:path";
 
 // src/common/selfCheck/buildSelfCheckCommand.ts
@@ -132576,7 +132619,8 @@ var PipelineRun = class {
     };
   }
   parkMessage() {
-    return `run parked: harness rate limited or overloaded \u2014 resume with \`lightsout resume --run ${this.current().runId}\` when the window resets.`;
+    const { pipeline = PipelineKind.Implement, runId } = this.current();
+    return `run parked: harness rate limited or overloaded \u2014 resume with \`${formatResumeCommand({ pipeline, runId })}\` when the window resets.`;
   }
   async setStep({ record: record3, patch }) {
     const timer = this.stepTimers.get(record3.id);
@@ -132624,7 +132668,7 @@ var PipelineRun = class {
       const dir = join68(await resolveRunDir({ cwd: this.cwd, runId: this.current().runId }), "agents");
       const name = `rejected-${String(this.rejectedCount).padStart(2, "0")}-${step}-attempt${attempt}.txt`;
       await mkdir15(dir, { recursive: true });
-      await writeFile12(join68(dir, name), `# step: ${step} \xB7 invocation attempt ${attempt}
+      await writeFile11(join68(dir, name), `# step: ${step} \xB7 invocation attempt ${attempt}
 # validation: ${validationError}
 
 ${text}`, "utf8");
@@ -132767,7 +132811,7 @@ var checkTestResultsCapability = async ({ cwd, gates, results, onProgress }) => 
 };
 
 // src/pipeline/approvedTests/approveTestFiles.ts
-import { mkdir as mkdir16, readFile as readFile24, rm as rm8, writeFile as writeFile13 } from "node:fs/promises";
+import { mkdir as mkdir16, readFile as readFile24, rm as rm8, writeFile as writeFile12 } from "node:fs/promises";
 import { dirname as dirname16, join as join72 } from "node:path";
 
 // src/pipeline/approvedTests/internal/approvedTestPath.ts
@@ -132789,7 +132833,7 @@ var approveTestFiles = async ({ run, paths }) => {
       continue;
     }
     await mkdir16(dirname16(copy), { recursive: true });
-    await writeFile13(copy, content);
+    await writeFile12(copy, content);
     records.push({ path, sha256: sha256({ content }), removed: false });
   }
   return [...approvedTests.filter((record3) => !paths.includes(record3.path)), ...records];
@@ -133590,7 +133634,7 @@ var writeGateBlockedLabel = async ({ settings, identifier }) => {
 };
 
 // src/gates/gateHolds/internal/common/utils/writeGateHold.ts
-import { mkdir as mkdir17, writeFile as writeFile14 } from "node:fs/promises";
+import { mkdir as mkdir17, writeFile as writeFile13 } from "node:fs/promises";
 import { dirname as dirname20 } from "node:path";
 
 // src/gates/gateHolds/internal/common/utils/getGateHoldPaths.ts
@@ -133605,7 +133649,7 @@ var writeGateHold = async ({ cwd, identifier, hold }) => {
   const { pathFor } = await getGateHoldPaths({ cwd });
   const path = pathFor({ identifier });
   await mkdir17(dirname20(path), { recursive: true });
-  await writeFile14(path, JSON.stringify(hold), "utf8");
+  await writeFile13(path, JSON.stringify(hold), "utf8");
 };
 
 // src/gates/gateHolds/takeGateHold.ts
@@ -133687,7 +133731,7 @@ var writeRunStandardsBaseline = async ({ cwd, runId, snapshot }) => {
 };
 
 // src/standardsCheck/applyStandardsBaseline.ts
-import { readFile as readFile30, writeFile as writeFile15 } from "node:fs/promises";
+import { readFile as readFile30, writeFile as writeFile14 } from "node:fs/promises";
 import { join as join84 } from "node:path";
 var StandardsBaseline = external_exports.object({
   at: external_exports.string(),
@@ -133713,7 +133757,7 @@ var applyStandardsBaseline = async ({
   const baseline = baselineRaw === void 0 ? void 0 : StandardsBaseline.safeParse(baselineJson);
   if (writeBaseline) {
     const siteKeys = [...new Set(findings.map((finding3) => finding3.siteKey))];
-    await writeFile15(baselinePath, `${JSON.stringify({ at: (/* @__PURE__ */ new Date()).toISOString(), path: path ?? ".", siteKeys }, void 0, "	")}
+    await writeFile14(baselinePath, `${JSON.stringify({ at: (/* @__PURE__ */ new Date()).toISOString(), path: path ?? ".", siteKeys }, void 0, "	")}
 `, "utf8");
     notes.push(
       `baseline ${baseline === void 0 ? "written" : "refreshed"}: ${siteKeys.length} site(s) accepted as existing debt \u2014 commit lightsout.standards-baseline.json; future runs report only NEW findings (--all shows everything)`
@@ -145949,7 +145993,7 @@ var runPackageChecks = async ({
 };
 
 // src/standardsCheck/writeStandardsSnapshot.ts
-import { mkdir as mkdir19, writeFile as writeFile16 } from "node:fs/promises";
+import { mkdir as mkdir19, writeFile as writeFile15 } from "node:fs/promises";
 import { join as join90 } from "node:path";
 
 // src/standardsCheck/internal/common/paths/getStandardsCheckPath.ts
@@ -145971,8 +146015,8 @@ var writeStandardsSnapshot = async ({ cwd, snapshot }) => {
   const snapshotsDir = getStandardsSnapshotsDir({ cwd });
   const fileName = `${snapshot.at.replaceAll(":", "-").replaceAll(".", "-")}.json`;
   await mkdir19(snapshotsDir, { recursive: true });
-  await writeFile16(getStandardsCheckPath({ cwd }), body, "utf8");
-  await writeFile16(join90(snapshotsDir, fileName), body, "utf8");
+  await writeFile15(getStandardsCheckPath({ cwd }), body, "utf8");
+  await writeFile15(join90(snapshotsDir, fileName), body, "utf8");
 };
 
 // src/standardsCheck/runStandardsCheck.ts
@@ -146020,7 +146064,7 @@ var captureStandardsBaseline = async ({ run }) => {
     });
     run.progress(`pre-edit standards baseline captured \u2014 ${findings.length} findings`);
   } catch (error51) {
-    const reason = error51 instanceof Error ? error51.message : String(error51);
+    const reason = messageOf({ error: error51 });
     run.progress(`pre-edit standards baseline not captured \u2014 ${reason}. Cleanup will have no comparison point; the run carries on.`);
   }
 };
@@ -146333,13 +146377,13 @@ var skipSpace = ({ content, from }) => {
   return index;
 };
 var readTitle = ({ content, from }) => {
-  const quote2 = content[from] ?? "";
-  const end = quotes.has(quote2) ? endOfSpan({ content, from }) : void 0;
+  const quote = content[from] ?? "";
+  const end = quotes.has(quote) ? endOfSpan({ content, from }) : void 0;
   if (end === void 0) {
     return void 0;
   }
   const raw = content.slice(from + 1, end);
-  return quote2 === "`" && raw.includes("${") ? void 0 : raw;
+  return quote === "`" && raw.includes("${") ? void 0 : raw;
 };
 var findTestTitles = ({ content }) => {
   const titles = [];
@@ -146367,8 +146411,8 @@ var holdsTestTitle = ({ content, testName }) => {
 
 // src/common/git/readGitCommittedFile.ts
 var readGitCommittedFile = async ({ cwd, path }) => {
-  const quoted2 = `'${path.replaceAll("'", `'\\''`)}'`;
-  const shown = await runCommand({ command: `git show HEAD:${quoted2}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  const committed = quoteShellArgument({ argument: `HEAD:${path}` });
+  const shown = await runCommand({ command: `git show ${committed}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
   return shown && shown.exitCode === 0 ? shown.stdout : void 0;
 };
 
@@ -146900,7 +146944,7 @@ var applyTestDispositions = async ({
 };
 
 // src/pipeline/approvedTests/internal/collectTestChanges.ts
-import { mkdir as mkdir20, readFile as readFile35, rm as rm9, writeFile as writeFile17 } from "node:fs/promises";
+import { mkdir as mkdir20, readFile as readFile35, rm as rm9, writeFile as writeFile16 } from "node:fs/promises";
 import { dirname as dirname23, join as join93, relative as relative11 } from "node:path";
 
 // src/pipeline/approvedTests/internal/common/constants/TestChangeKind.ts
@@ -146929,7 +146973,6 @@ var readApprovedTest = async ({ run, path }) => {
 
 // src/pipeline/approvedTests/internal/collectTestChanges.ts
 var emptySide = "/dev/null";
-var quoted = ({ path }) => `'${path.replaceAll("'", `'\\''`)}'`;
 var kindOf = ({ live: live2, approved }) => {
   if (approved === void 0) {
     return TestChangeKind.Added;
@@ -146940,13 +146983,12 @@ var diffOf = async ({ cwd, path, kind, approved, scratch }) => {
   const before = join93(scratch, path);
   if (approved !== void 0) {
     await mkdir20(dirname23(before), { recursive: true });
-    await writeFile17(before, approved, "utf8");
+    await writeFile16(before, approved, "utf8");
   }
   const left = approved === void 0 ? emptySide : relative11(cwd, before);
   const right = kind === TestChangeKind.Removed ? emptySide : path;
-  const shown = await runCommand({ command: `git diff --no-index ${quoted({ path: left })} ${quoted({ path: right })}`, cwd, timeoutMs: gitTimeoutMs }).catch(
-    () => void 0
-  );
+  const [quotedLeft, quotedRight] = [left, right].map((argument) => quoteShellArgument({ argument }));
+  const shown = await runCommand({ command: `git diff --no-index ${quotedLeft} ${quotedRight}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
   return shown !== void 0 && shown.stdout.length > 0 ? shown.stdout : `${path}: ${kind} (no textual diff could be produced)`;
 };
 var collectTestChanges = async ({ run }) => {
@@ -149126,7 +149168,7 @@ var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, tes
 import { randomUUID as randomUUID5 } from "node:crypto";
 
 // src/runState/lock/acquireRunLock.ts
-import { mkdir as mkdir21, unlink as unlink2, writeFile as writeFile18 } from "node:fs/promises";
+import { mkdir as mkdir21, unlink as unlink2, writeFile as writeFile17 } from "node:fs/promises";
 import { dirname as dirname24 } from "node:path";
 
 // src/runState/lock/RunLockError.ts
@@ -149142,7 +149184,7 @@ var acquireRunLock = async ({ cwd, runId }) => {
   let stalePid;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      await writeFile18(lockPath, payload, { flag: "wx" });
+      await writeFile17(lockPath, payload, { flag: "wx" });
       return { stalePid };
     } catch (error51) {
       const isAlreadyHeld = typeof error51 === "object" && error51 !== null && "code" in error51 && error51.code === "EEXIST";
@@ -149350,7 +149392,8 @@ var recordFinishedChild = async ({
   if (childResult.ok) {
     return { manifest: current };
   }
-  const stopped = `phase ${index + 1}/${total} (${step.id}) ended ${child.status} \u2014 resume with: lightsout resume --run ${current.runId}`;
+  const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: current.runId });
+  const stopped = `phase ${index + 1}/${total} (${step.id}) ended ${child.status} \u2014 resume with: ${resume}`;
   return { manifest: current, result: { ok: false, manifest: current, error: childResult.error ? `${stopped}
 ${childResult.error}` : stopped } };
 };
@@ -150059,8 +150102,11 @@ var openDirectWorkspace = async ({
   return "error" in copied ? { error: copied.error } : { workspace, ticketPath: copied.ticketPath ?? ticketPath };
 };
 
-// src/cli/internal/common/implementRun/readBodyBuildPlanName.ts
-var readBodyBuildPlanName = async ({ cwd, branch }) => {
+// src/workOrder/isPlanlessWorkOrder.ts
+var isPlanlessWorkOrder = ({ record: record3 }) => record3.mode === WorkOrderMode.SinglePlan && !record3.plans.some((plan) => planNumberOf({ id: plan.id }) === 1);
+
+// src/cli/internal/common/implementRun/readBodyBuildTarget.ts
+var readBodyBuildTarget = async ({ cwd, branch }) => {
   if (branch === void 0) {
     return void 0;
   }
@@ -150072,8 +150118,11 @@ var readBodyBuildPlanName = async ({ cwd, branch }) => {
   if (record3 === void 0 || record3.mode !== WorkOrderMode.SinglePlan) {
     return void 0;
   }
+  if (isPlanlessWorkOrder({ record: record3 })) {
+    return { workOrderName: record3.name };
+  }
   const first = record3.plans.find((plan) => planNumberOf({ id: plan.id }) === 1 && plan.exclusion === void 0 && plan.progress !== PlanProgress.Implemented);
-  return first === void 0 ? void 0 : formatPlanAddress({ workOrderName: branch, planId: first.id });
+  return first === void 0 ? void 0 : { planName: formatPlanAddress({ workOrderName: branch, planId: first.id }) };
 };
 
 // src/common/utils/describeGateNoVerdict.ts
@@ -150128,7 +150177,7 @@ ${gates.error}` });
 };
 
 // src/direct/internal/common/utils/createDirectRun.ts
-import { writeFile as writeFile19 } from "node:fs/promises";
+import { writeFile as writeFile18 } from "node:fs/promises";
 import { join as join102 } from "node:path";
 var createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, config: config2, willShip }) => {
   const workOrderName = await readGitCurrentBranch({ cwd });
@@ -150144,7 +150193,7 @@ var createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, co
     baselineDirtyFiles: await readGitChangedFiles({ cwd }),
     willShip
   });
-  await writeFile19(ticketPath, ticketBody.endsWith("\n") ? ticketBody : `${ticketBody}
+  await writeFile18(ticketPath, ticketBody.endsWith("\n") ? ticketBody : `${ticketBody}
 `, "utf8");
   return manifest;
 };
@@ -150416,10 +150465,71 @@ var executeDirectWork = async ({
 };
 var runDirectWork = (params) => withRunLock({ params, run: executeDirectWork });
 
+// src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts
+import { randomUUID as randomUUID8 } from "node:crypto";
+var recordImplementing2 = ({ cwd, workOrderName, build }) => updateLocalWorkOrderState({
+  cwd,
+  name: workOrderName,
+  change: (current) => {
+    if (current === void 0) {
+      return { error: `work order ${workOrderName} no longer has a record, so its build from the ticket body cannot be recorded as being implemented` };
+    }
+    if (!isPlanlessWorkOrder({ record: current })) {
+      return {
+        error: `work order ${workOrderName} is no longer a single-plan work order holding no plan 001, so it is not built from the ticket body \u2014 build it through its plans instead`
+      };
+    }
+    return { ...current, ticketBodyBuild: build };
+  }
+});
+var recordOutcome2 = async ({ cwd, workOrderName, build, result }) => {
+  const failed = result.manifest.status === RunStatus.Failed || result.manifest.status === RunStatus.Escalated;
+  if (!result.ok && !failed) {
+    return void 0;
+  }
+  const progress = result.ok ? PlanProgress.Implemented : PlanProgress.Failed;
+  const finishedAt = (/* @__PURE__ */ new Date()).toISOString();
+  const updated = await updateLocalWorkOrderState({
+    cwd,
+    name: workOrderName,
+    change: (current) => current === void 0 ? { error: `work order ${workOrderName} no longer has a record, so the outcome of its build from the ticket body could not be recorded on it` } : { ...current, ticketBodyBuild: { ...build, progress, finishedAt } }
+  });
+  return "error" in updated ? updated.error : void 0;
+};
+var runWorkOrderBodyBuildLifecycle = async ({ cwd, workOrderName, run }) => {
+  const read = await readWorkOrderState({ cwd, name: workOrderName });
+  if ("error" in read) {
+    return { refusal: read.error };
+  }
+  const { record: record3 } = read;
+  if (record3 === void 0 || !isPlanlessWorkOrder({ record: record3 })) {
+    return { result: await run({ runId: randomUUID8() }) };
+  }
+  const build = { runId: randomUUID8(), progress: PlanProgress.Implementing, startedAt: (/* @__PURE__ */ new Date()).toISOString() };
+  const started = await recordImplementing2({ cwd, workOrderName, build });
+  if ("error" in started) {
+    return { refusal: started.error };
+  }
+  const result = await run({ runId: build.runId });
+  const recordError = await recordOutcome2({ cwd, workOrderName, build, result });
+  return recordError === void 0 ? { result } : { result, recordError };
+};
+
 // src/cli/implementDirectCommand.ts
+var runRecordedBuild = async ({
+  cwd,
+  target,
+  build
+}) => {
+  if (target === void 0) {
+    return { result: await build() };
+  }
+  const run = ({ runId }) => build(runId);
+  return "planName" in target ? runWorkOrderPlanLifecycle({ cwd, name: target.planName, run }) : runWorkOrderBodyBuildLifecycle({ cwd, workOrderName: target.workOrderName, run });
+};
 var runDirectBuild = async ({
   cwd,
-  planName,
+  target,
   ticketBody,
   ticketRef,
   driver,
@@ -150428,7 +150538,7 @@ var runDirectBuild = async ({
   willShip
 }) => {
   const build = (runId) => runDirectWork({ cwd, ticketBody, ticketRef, runId, driver, driverName, config: config2, willShip, onProgress: createProgressPrinter() });
-  const outcome = planName === void 0 ? { result: await build() } : await runWorkOrderPlanLifecycle({ cwd, name: planName, run: ({ runId }) => build(runId) });
+  const outcome = await runRecordedBuild({ cwd, target, build });
   if ("refusal" in outcome) {
     return { refusal: outcome.refusal };
   }
@@ -150453,8 +150563,8 @@ var prepareDirectRun = async ({
   if (refused !== void 0) {
     return { error: refused };
   }
-  const planName = await readBodyBuildPlanName({ cwd: workspace.cwd, branch: workspace.branch ?? await readGitCurrentBranch({ cwd: workspace.cwd }) });
-  return typeof planName === "object" ? planName : { ticketRef, config: config2, driver, driverName, planName };
+  const target = await readBodyBuildTarget({ cwd: workspace.cwd, branch: workspace.branch ?? await readGitCurrentBranch({ cwd: workspace.cwd }) });
+  return target !== void 0 && "error" in target ? target : { ticketRef, config: config2, driver, driverName, target };
 };
 var printDirectRunHeader = ({
   workspace,
@@ -150490,11 +150600,11 @@ var implementDirectCommand = async ({ flags, cwd }) => {
     console.error(prepared.error);
     return exitCli({ code: 1 });
   }
-  const { ticketRef, config: config2, driver, driverName, planName } = prepared;
+  const { ticketRef, config: config2, driver, driverName, target } = prepared;
   printDirectRunHeader({ workspace, ticketRef, ticketPath, configPath: resolveConfigPath({ cwd }) });
   const built = await runDirectBuild({
     cwd: workspace.cwd,
-    planName,
+    target,
     ticketBody,
     ticketRef,
     driver,
@@ -150548,7 +150658,9 @@ var promptImprover_default = '# Role: Prompt Improver\n\nYou maintain the agent 
 
 // src/agents/buildPromptImproverInvocation.ts
 var buildPromptImproverInvocation = ({ friction, promptFiles }) => {
-  const entries = friction.map((record3) => `- [${record3.kind ?? "friction"}/${record3.area}] (run ${record3.runId.slice(0, 8)}, step ${record3.step}, ${record3.at}) ${record3.detail}`).join("\n");
+  const entries = friction.map(
+    (record3) => `- [${record3.kind ?? "friction"}/${record3.area}] (run ${formatShortRunId({ runId: record3.runId })}, step ${record3.step}, ${record3.at}) ${record3.detail}`
+  ).join("\n");
   const sections = [
     `# Friction reports
 
@@ -150919,6 +151031,14 @@ var DedupJudgment = external_exports.object({
   verdicts: external_exports.array(DedupVerdict).default([])
 });
 
+// src/plan/common/constants/planAgentTimeouts.ts
+var planAgentTimeouts = {
+  readerMs: 30 * 6e4,
+  judgeMs: 10 * 6e4,
+  dedupMs: 30 * 6e4,
+  draftMs: 30 * 6e4
+};
+
 // src/plan/detectPriorArtCandidates.ts
 import { readFile as readFile43 } from "node:fs/promises";
 import { basename as basename13 } from "node:path";
@@ -151033,7 +151153,7 @@ var getPlanRunStatus = ({ status }) => status === PlanRunStatus.Complete ? RunSt
 var planAgentConcurrency = 12;
 
 // src/plan/internal/common/utils/createPlanAgentRunner.ts
-import { writeFile as writeFile20 } from "node:fs/promises";
+import { writeFile as writeFile19 } from "node:fs/promises";
 import { join as join105 } from "node:path";
 var createPlanAgentRunner = ({
   cwd,
@@ -151066,7 +151186,7 @@ var createPlanAgentRunner = ({
       onEvent,
       onRejectedOutput: async ({ text, attempt }) => {
         const name = `${step}-rejected-${label2 === void 0 ? "" : `${label2}-`}${attempt}.txt`;
-        await writeFile20(join105(workspaceDir, name), text, "utf8").catch(() => void 0);
+        await writeFile19(join105(workspaceDir, name), text, "utf8").catch(() => void 0);
       },
       activity: stepLevel
     });
@@ -151421,7 +151541,7 @@ var spawnDedupJudge = async ({
   pass,
   group
 }) => {
-  const { cwd, driver, standards, model, effort, permissions, timeoutMs = 30 * 60 * 1e3, level } = params;
+  const { cwd, driver, standards, model, effort, permissions, timeoutMs = planAgentTimeouts.dedupMs, level } = params;
   const invokePlanAgent = createPlanAgentRunner({
     cwd,
     driver,
@@ -151622,12 +151742,12 @@ var replaceSectionSpan = ({ lines, start, end, sectionLines }) => {
 };
 
 // src/plan/internal/common/rewriting/writePlanFileIfChanged.ts
-import { writeFile as writeFile21 } from "node:fs/promises";
+import { writeFile as writeFile20 } from "node:fs/promises";
 var writePlanFileIfChanged = async ({ path, original, lines }) => {
   const rewritten = lines.join("\n");
   const updated = rewritten !== original;
   if (updated) {
-    await writeFile21(path, rewritten, "utf8");
+    await writeFile20(path, rewritten, "utf8");
   }
   return { path, updated };
 };
@@ -152436,7 +152556,7 @@ import { readFile as readFile48 } from "node:fs/promises";
 import { basename as basename20 } from "node:path";
 
 // src/plan/draft/stampPhaseCounts.ts
-import { readFile as readFile47, writeFile as writeFile22 } from "node:fs/promises";
+import { readFile as readFile47, writeFile as writeFile21 } from "node:fs/promises";
 import { basename as basename19 } from "node:path";
 
 // src/plan/internal/common/paths/isPlanSourceFile.ts
@@ -152610,7 +152730,7 @@ var stampPhaseCounts = async ({ overviewPath, phasePaths }) => {
   const overviewBase2 = basename19(overviewPath);
   const original = await readFile47(overviewPath, "utf8");
   const stamped = rewriteRows({ lines: original.split("\n"), counts }).join("\n");
-  await writeFile22(overviewPath, stamped, "utf8");
+  await writeFile21(overviewPath, stamped, "utf8");
   return parsePhaseDeclarations({ plan: parsePlan({ content: stamped, base: overviewBase2 }) });
 };
 
@@ -154478,7 +154598,7 @@ var runPlanDraft = async ({
   model,
   effort,
   permissions,
-  timeoutMs = 30 * 60 * 1e3,
+  timeoutMs = planAgentTimeouts.draftMs,
   level,
   onProgress
 }) => {
@@ -155385,11 +155505,11 @@ var confirmPath = async ({ cwd, token }) => {
   return present ? { ok: true } : { ok: false, reason: `cited ${token}, which is not on disk` };
 };
 var confirmQuote = ({ citation, planText }) => {
-  const quote2 = collapseText({ text: citation });
-  if (quote2.length < minimumCitationLength) {
+  const quote = collapseText({ text: citation });
+  if (quote.length < minimumCitationLength) {
     return { ok: false, reason: `citation shorter than ${minimumCitationLength} characters: ${citation}` };
   }
-  const found = collapseText({ text: planText }).includes(quote2);
+  const found = collapseText({ text: planText }).includes(quote);
   return found ? { ok: true } : { ok: false, reason: `citation not found in the plan text: ${citation}` };
 };
 var confirmCitation = async ({ cwd, citation, planText }) => {
@@ -155538,7 +155658,7 @@ var batchRecords = ({ memory, batch }) => [
   ).values()
 ];
 var spawnGapJudge = async ({ params, batch, batchIndex }) => {
-  const { cwd, driver, workspaceDir, overviewText, standards, model, effort, permissions, timeoutMs = 10 * 60 * 1e3, level } = params;
+  const { cwd, driver, workspaceDir, overviewText, standards, model, effort, permissions, timeoutMs = planAgentTimeouts.judgeMs, level } = params;
   const invokePlanAgent = createPlanAgentRunner({
     cwd,
     driver,
@@ -155629,7 +155749,7 @@ var drainGradeAgents = async ({
   documentation,
   progress
 }) => {
-  const timeoutMs = params.timeoutMs ?? 30 * 60 * 1e3;
+  const timeoutMs = params.timeoutMs ?? planAgentTimeouts.readerMs;
   const tasks = selected.flatMap((file2) => gapCheckLenses.map((lens) => () => spawnGapChecker({ params, pass, file: file2, lens, timeoutMs, memory })));
   const [readers, docsCheck] = await Promise.all([
     drainGapCheckers({ tasks, selected }),
@@ -156410,7 +156530,7 @@ var isWorthAsking = ({
   planFiles
 }) => record3.lastRecheckedAt === void 0 || locations.some((location) => invalidated.includes(location) || !planFiles.includes(location));
 var spawnRecheck = async ({ params, pair }) => {
-  const { cwd, driver, workspaceDir, overviewText, standards, model, effort, permissions, timeoutMs = 10 * 60 * 1e3, level } = params;
+  const { cwd, driver, workspaceDir, overviewText, standards, model, effort, permissions, timeoutMs = planAgentTimeouts.judgeMs, level } = params;
   const invokePlanAgent = createPlanAgentRunner({
     cwd,
     driver,
@@ -156646,8 +156766,8 @@ var readJson = async ({ path }) => {
   try {
     const value = JSON.parse(text);
     return { value };
-  } catch (cause) {
-    return { failure: cause instanceof Error ? cause.message : String(cause) };
+  } catch (error51) {
+    return { failure: messageOf({ error: error51 }) };
   }
 };
 var readGradeMemory = async ({ cwd, name }) => {
@@ -157477,7 +157597,7 @@ var ensureBrainstormFiles = async ({ cwd, name, write = console.log }) => {
 };
 
 // src/plan/runPlanVerifyFacts.ts
-import { copyFile, mkdir as mkdir26, writeFile as writeFile23 } from "node:fs/promises";
+import { copyFile, mkdir as mkdir26, writeFile as writeFile22 } from "node:fs/promises";
 import { join as join132, resolve as resolve15 } from "node:path";
 
 // src/contracts/plan/facts/AuthoredFacts.ts
@@ -157581,7 +157701,7 @@ var runPlanVerifyFacts = async ({ cwd, name, notesFile, onProgress }) => {
     verification,
     verifiedAt: (/* @__PURE__ */ new Date()).toISOString()
   };
-  await writeFile23(factsPath, `${JSON.stringify(facts, void 0, "	")}
+  await writeFile22(factsPath, `${JSON.stringify(facts, void 0, "	")}
 `, "utf8");
   const missingPart = verification.missingPaths.length > 0 ? `, ${verification.missingPaths.length} missing: ${verification.missingPaths.join(", ")}` : "";
   progress(
@@ -158639,7 +158759,7 @@ var writeBranchState = async ({ cwd, branch, phase, onProgress }) => {
     await writeJsonFile({ path: `${statePath}.tmp`, value: record3 });
     await rename11(`${statePath}.tmp`, statePath);
   } catch (error51) {
-    const message = error51 instanceof Error ? error51.message : String(error51);
+    const message = messageOf({ error: error51 });
     onProgress?.(`the branch state for ${branch} could not be recorded as '${phase}': ${message}`);
   }
 };
@@ -159046,14 +159166,14 @@ var startBuilds = ({ context, state, flight }) => {
 };
 
 // src/queue/drainLanes/internal/common/utils/writeQueuePlan.ts
-import { writeFile as writeFile24 } from "node:fs/promises";
+import { writeFile as writeFile23 } from "node:fs/promises";
 import { join as join140 } from "node:path";
 var writeQueuePlan = async ({ path, cwd, queued }) => {
   const root = await resolveWorktreesRoot({ cwd });
   const lines = queued.map(
     (workOrder) => `- ${workOrder.ticket.identifier} \xB7 ${workOrder.ticket.worker} \xB7 ${workOrder.branch} \xB7 ${join140(root, workOrder.name)}`
   );
-  await writeFile24(path, `# queue drain
+  await writeFile23(path, `# queue drain
 
 ${lines.join("\n")}
 `, "utf8");
@@ -159523,7 +159643,8 @@ import { join as join142 } from "node:path";
 
 // src/common/git/readGitCommitsAhead.ts
 var readGitCommitsAhead = async ({ cwd, defaultBranch }) => {
-  const counted = await runCommand({ command: `git rev-list --count origin/${defaultBranch}..HEAD`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  const range = quoteShellArgument({ argument: `origin/${defaultBranch}..HEAD` });
+  const counted = await runCommand({ command: `git rev-list --count ${range}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
   if (counted?.exitCode !== 0) {
     return void 0;
   }
@@ -159584,61 +159705,6 @@ var toWorkerOutcome = ({ outcome, onFailedRun }) => {
     return recordError === void 0 ? {} : { error: recordError };
   }
   return onFailedRun({ stated: result.error ?? `the run ended ${result.manifest.status}`, result });
-};
-
-// src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts
-import { randomUUID as randomUUID8 } from "node:crypto";
-
-// src/workOrder/isPlanlessWorkOrder.ts
-var isPlanlessWorkOrder = ({ record: record3 }) => record3.mode === WorkOrderMode.SinglePlan && !record3.plans.some((plan) => planNumberOf({ id: plan.id }) === 1);
-
-// src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts
-var recordImplementing2 = ({ cwd, workOrderName, build }) => updateLocalWorkOrderState({
-  cwd,
-  name: workOrderName,
-  change: (current) => {
-    if (current === void 0) {
-      return { error: `work order ${workOrderName} no longer has a record, so its build from the ticket body cannot be recorded as being implemented` };
-    }
-    if (!isPlanlessWorkOrder({ record: current })) {
-      return {
-        error: `work order ${workOrderName} is no longer a single-plan work order holding no plan 001, so it is not built from the ticket body \u2014 build it through its plans instead`
-      };
-    }
-    return { ...current, ticketBodyBuild: build };
-  }
-});
-var recordOutcome2 = async ({ cwd, workOrderName, build, result }) => {
-  const failed = result.manifest.status === RunStatus.Failed || result.manifest.status === RunStatus.Escalated;
-  if (!result.ok && !failed) {
-    return void 0;
-  }
-  const progress = result.ok ? PlanProgress.Implemented : PlanProgress.Failed;
-  const finishedAt = (/* @__PURE__ */ new Date()).toISOString();
-  const updated = await updateLocalWorkOrderState({
-    cwd,
-    name: workOrderName,
-    change: (current) => current === void 0 ? { error: `work order ${workOrderName} no longer has a record, so the outcome of its build from the ticket body could not be recorded on it` } : { ...current, ticketBodyBuild: { ...build, progress, finishedAt } }
-  });
-  return "error" in updated ? updated.error : void 0;
-};
-var runWorkOrderBodyBuildLifecycle = async ({ cwd, workOrderName, run }) => {
-  const read = await readWorkOrderState({ cwd, name: workOrderName });
-  if ("error" in read) {
-    return { refusal: read.error };
-  }
-  const { record: record3 } = read;
-  if (record3 === void 0 || !isPlanlessWorkOrder({ record: record3 })) {
-    return { result: await run({ runId: randomUUID8() }) };
-  }
-  const build = { runId: randomUUID8(), progress: PlanProgress.Implementing, startedAt: (/* @__PURE__ */ new Date()).toISOString() };
-  const started = await recordImplementing2({ cwd, workOrderName, build });
-  if ("error" in started) {
-    return { refusal: started.error };
-  }
-  const result = await run({ runId: build.runId });
-  const recordError = await recordOutcome2({ cwd, workOrderName, build, result });
-  return recordError === void 0 ? { result } : { result, recordError };
 };
 
 // src/queue/workers/internal/common/utils/buildFromTicketBody.ts
@@ -160813,7 +160879,7 @@ var resolveQueueSettings = ({ config: config2 }) => {
 
 // src/cli/queueCommand.ts
 var resolveQueueStartup = ({ config: config2, env }) => {
-  const settings = resolveQueueSettings({ config: config2, env });
+  const settings = resolveQueueSettings({ config: config2 });
   if ("error" in settings) {
     return { error: settings.error };
   }
@@ -160950,7 +161016,7 @@ var printRefactorResult = ({ result }) => {
   const batchSteps = manifest.steps.filter((step) => step.id.startsWith("batch-"));
   const statusLabel = result.ok && declined.length > 0 ? `${manifest.status.toUpperCase()} \xB7 ${declined.length} declined` : manifest.status.toUpperCase();
   console.log(`
-${bold(`refactor ${manifest.runId.slice(0, 8)}`)} \u2014 ${statusLabel}`);
+${bold(`refactor ${formatShortRunId({ runId: manifest.runId })}`)} \u2014 ${statusLabel}`);
   for (const step of batchSteps) {
     const decline = declined.find((entry) => entry.batchId === step.id);
     printBatchLine({
@@ -161014,7 +161080,7 @@ ${error51 instanceof RunLockError ? error51.message : messageOf({ error: error51
 };
 
 // src/refactor/initializeRun.ts
-import { readFile as readFile63, writeFile as writeFile25 } from "node:fs/promises";
+import { readFile as readFile63 } from "node:fs/promises";
 import { join as join144 } from "node:path";
 
 // src/contracts/refactor/RefactorBatch.ts
@@ -161153,8 +161219,10 @@ var initializeRun = async ({
   existing
 }) => {
   if (existing) {
-    if ((existing.pipeline ?? "implement") !== "refactor") {
-      throw new Error(`run ${existing.runId} belongs to the implement pipeline \u2014 resume it with: lightsout resume --run ${existing.runId}`);
+    const pipeline = existing.pipeline ?? PipelineKind.Implement;
+    if (pipeline !== PipelineKind.Refactor) {
+      const resume = formatResumeCommand({ pipeline, runId: existing.runId });
+      throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${resume}`);
     }
     const frozen = join144(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
     return { manifest: existing, worklist: RefactorWorklist.parse(JSON.parse(await readFile63(frozen, "utf8"))) };
@@ -161172,8 +161240,7 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
   const worklist = await buildWorklist({ cwd, config: config2, path, all });
   const worklistPath = join144(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Refactor, runId }), "worklist.json");
   const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Refactor, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
-  await writeFile25(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
-`, "utf8");
+  await writeJsonFile({ path: worklistPath, value: worklist });
   return { manifest, worklist };
 };
 
@@ -161429,7 +161496,7 @@ var createSiteChecker = ({ cwd, checkPath, checkAll }) => {
 };
 
 // src/refactor/batch/internal/invokeBatchAgent.ts
-import { mkdir as mkdir31, writeFile as writeFile26 } from "node:fs/promises";
+import { mkdir as mkdir31, writeFile as writeFile24 } from "node:fs/promises";
 import { join as join146 } from "node:path";
 var invokeBatchAgent = async ({
   cwd,
@@ -161463,7 +161530,7 @@ var invokeBatchAgent = async ({
     allowedCommands: config2["agent-commands"],
     onEvent: createEventFileSink({ path: streamPath }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile26(join146(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile24(join146(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
   const formatError2 = await runFormatter({ cwd, runId, config: config2, step: batch.id });
@@ -161496,7 +161563,7 @@ var SettleKind = {
 };
 
 // src/refactor/batch/internal/superviseBatch.ts
-import { mkdir as mkdir32, writeFile as writeFile27 } from "node:fs/promises";
+import { mkdir as mkdir32, writeFile as writeFile25 } from "node:fs/promises";
 import { join as join147 } from "node:path";
 var consultBatchSupervisor = async ({
   cwd,
@@ -161521,7 +161588,7 @@ var consultBatchSupervisor = async ({
     attempts,
     onEvent: createEventFileSink({ path: join147(agentsDir, `stream-${slug}-supervisor.jsonl`) }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile27(join147(agentsDir, `rejected-${slug}-supervisor-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile25(join147(agentsDir, `rejected-${slug}-supervisor-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
 };
@@ -161967,6 +162034,9 @@ var runBatch = async ({
   return stop ?? await tools.finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: workFindings.map((finding3) => finding3.siteKey) });
 };
 
+// src/common/constants/maxConsecutiveDeclines.ts
+var maxConsecutiveDeclines = 3;
+
 // src/contracts/refactor/BatchReport.ts
 var BatchReport = external_exports.object({
   outcome: external_exports.enum(BatchOutcome),
@@ -161978,10 +162048,10 @@ var BatchReport = external_exports.object({
 });
 
 // src/refactor/internal/settleBatchOutcome.ts
-var maxConsecutiveDeclines = 3;
 var settleBatchOutcome = async ({ run, batch, record: record3, outcome, declineStreak }) => {
   if (outcome.kind === BatchStopKind.Parked) {
-    const error51 = `run parked: harness rate limited or overloaded \u2014 resume with \`lightsout refactor --run ${run.current().runId}\` when the window resets.`;
+    const resume = formatResumeCommand({ pipeline: PipelineKind.Refactor, runId: run.current().runId });
+    const error51 = `run parked: harness rate limited or overloaded \u2014 resume with \`${resume}\` when the window resets.`;
     return { result: await run.stop({ record: record3, status: RunStatus.PausedRateLimit, error: error51 }), declineStreak };
   }
   if (outcome.kind === BatchStopKind.Failed || outcome.kind === BatchStopKind.Escalated) {
@@ -162022,8 +162092,9 @@ var runWorklistBatches = async ({ run, driver, worklist, batchInputs, maxBatches
     }
     if (maxBatches !== void 0 && processed >= maxBatches) {
       await run.update({ patch: { status: RunStatus.PausedBudget, currentStep: null } });
-      run.progress(`budget ceiling (${maxBatches} batch(es)) reached \u2014 resume with: lightsout refactor --run ${run.current().runId}`);
-      result = run.buildHaltedResult({ error: `paused at --max-batches ${maxBatches} \u2014 resume with: lightsout refactor --run ${run.current().runId}` });
+      const resume = formatResumeCommand({ pipeline: PipelineKind.Refactor, runId: run.current().runId });
+      run.progress(`budget ceiling (${maxBatches} batch(es)) reached \u2014 resume with: ${resume}`);
+      result = run.buildHaltedResult({ error: `paused at --max-batches ${maxBatches} \u2014 resume with: ${resume}` });
       break;
     }
     const record3 = { id: batch.id, status: RunStatus.Running, attempts: (prior?.attempts ?? 0) + 1 };
@@ -162710,14 +162781,7 @@ var readResumeClearance = async ({
 };
 
 // src/cli/resumeCommand.ts
-var resumeCommandByPipeline = {
-  [PipelineKind.Implement]: void 0,
-  [PipelineKind.Phases]: void 0,
-  [PipelineKind.Refactor]: "lightsout refactor --run <id>",
-  [PipelineKind.Coverage]: "lightsout test-coverage-to-threshold --run <id>",
-  [PipelineKind.Queue]: "lightsout queue (a restart resumes parked tickets first)",
-  [PipelineKind.Direct]: void 0
-};
+var resumedHere = [PipelineKind.Implement, PipelineKind.Phases, PipelineKind.Direct];
 var readResumableRun = async ({ cwd, flags }) => {
   const runId = getStringFlag({ flags, name: "run" });
   if (!runId) {
@@ -162732,9 +162796,8 @@ var readResumableRun = async ({ cwd, flags }) => {
     throw error51;
   });
   const pipeline = manifest.pipeline ?? PipelineKind.Implement;
-  const ownCommand = resumeCommandByPipeline[pipeline];
-  if (ownCommand) {
-    console.error(`run ${manifest.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${ownCommand.replaceAll("<id>", manifest.runId)}`);
+  if (!resumedHere.includes(pipeline)) {
+    console.error(`run ${manifest.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${formatResumeCommand({ pipeline, runId: manifest.runId })}`);
     return exitCli({ code: 1 });
   }
   if (manifest.status === RunStatus.Passed && pipeline !== PipelineKind.Direct) {
@@ -164183,7 +164246,7 @@ var getRunProgress = async ({ cwd, manifest, lock }) => {
   }
   return {
     runId: manifest.runId,
-    shortId: manifest.runId.slice(0, 8),
+    shortId: formatShortRunId({ runId: manifest.runId }),
     title: getRunTitle({ plan: manifest.plan }),
     status: manifest.status,
     live: live2,
@@ -164220,7 +164283,7 @@ var buildRunListing = ({ manifest, lock, worklist }) => {
   const live2 = isRunLive({ manifest, lock });
   return {
     runId: manifest.runId,
-    shortId: manifest.runId.slice(0, 8),
+    shortId: formatShortRunId({ runId: manifest.runId }),
     pipeline: manifest.pipeline ?? PipelineKind.Implement,
     status: manifest.status,
     title: getRunTitle({ plan: manifest.plan, worklist }),
@@ -164727,7 +164790,7 @@ var printCoverageResult = ({ result }) => {
   const batchSteps = manifest.steps.filter((step) => step.id.startsWith("batch-"));
   const statusLabel = setAside.length > 0 ? `${manifest.status.toUpperCase()} \xB7 ${setAside.length} set aside` : manifest.status.toUpperCase();
   console.log(`
-${bold(`test-coverage-to-threshold ${manifest.runId.slice(0, 8)}`)} \u2014 ${statusLabel}`);
+${bold(`test-coverage-to-threshold ${formatShortRunId({ runId: manifest.runId })}`)} \u2014 ${statusLabel}`);
   for (const step of batchSteps) {
     const aside = setAside.find((entry) => entry.batchId === step.id);
     printBatchLine({
@@ -164759,7 +164822,7 @@ ${bold(`test-coverage-to-threshold ${manifest.runId.slice(0, 8)}`)} \u2014 ${sta
 };
 
 // src/coverage/initializeCoverageRun.ts
-import { readFile as readFile69, writeFile as writeFile28 } from "node:fs/promises";
+import { readFile as readFile69, writeFile as writeFile26 } from "node:fs/promises";
 import { join as join154 } from "node:path";
 
 // src/coverage/runCoverageCheck.ts
@@ -164839,10 +164902,10 @@ var initializeCoverageRun = async ({
   existing
 }) => {
   if (existing) {
-    const pipeline = existing.pipeline ?? "implement";
-    if (pipeline !== "coverage") {
-      const command = pipeline === "refactor" ? "refactor" : "resume";
-      throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: lightsout ${command} --run ${existing.runId}`);
+    const pipeline = existing.pipeline ?? PipelineKind.Implement;
+    if (pipeline !== PipelineKind.Coverage) {
+      const resume = formatResumeCommand({ pipeline, runId: existing.runId });
+      throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${resume}`);
     }
     const frozen = join154(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
     return { manifest: existing, worklist: CoverageWorklist.parse(JSON.parse(await readFile69(frozen, "utf8"))) };
@@ -164864,7 +164927,7 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
   const worklist = { at: (/* @__PURE__ */ new Date()).toISOString(), totals: measured.totals, files: measured.files };
   const worklistPath = join154(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Coverage, runId }), "worklist.json");
   const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Coverage, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
-  await writeFile28(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
+  await writeFile26(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
 `, "utf8");
   return { manifest, worklist };
 };
@@ -164949,7 +165012,7 @@ The tree is left as it stands \u2014 revert these changes by hand before resumin
 };
 
 // src/coverage/batch/invokeCoverageAgent.ts
-import { mkdir as mkdir33, writeFile as writeFile29 } from "node:fs/promises";
+import { mkdir as mkdir33, writeFile as writeFile27 } from "node:fs/promises";
 import { join as join155 } from "node:path";
 var invokeCoverageAgent = async ({
   cwd,
@@ -164981,7 +165044,7 @@ var invokeCoverageAgent = async ({
     allowedCommands: config2["agent-commands"],
     onEvent: createEventFileSink({ path: streamPath }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile29(join155(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile27(join155(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
   await recordUsage({ step: `${batchId}${label2 ? ` ${label2}` : ""}`, usage: outcome.usage });
@@ -165250,9 +165313,6 @@ var buildCoverageRound = async ({ cwd, measured, setAside, standardsLibraries, c
   return batch.members.length === 0 ? { error: `scope '${scope}' has candidates but the member pool excludes them all \u2014 candidate selection and member filtering disagree; human required` } : { batch };
 };
 
-// src/common/constants/maxConsecutiveDeclines.ts
-var maxConsecutiveDeclines2 = 3;
-
 // src/contracts/coverage/CoverageBatchReport.ts
 var CoverageBatchReport = external_exports.object({
   outcome: external_exports.enum(BatchOutcome),
@@ -165285,7 +165345,8 @@ var updateFileStrikes = ({ batchId, files, fileStrikes }) => {
 // src/coverage/internal/settleCoverageBatch.ts
 var settleCoverageBatch = async ({ run, batch, record: record3, outcome, declineStreak, fileStrikes }) => {
   if (outcome.kind === CoverageBatchStopKind.Parked) {
-    const error51 = `run parked: harness rate limited or overloaded \u2014 resume with \`lightsout test-coverage-to-threshold --run ${run.current().runId}\` when the window resets.`;
+    const resume = formatResumeCommand({ pipeline: PipelineKind.Coverage, runId: run.current().runId });
+    const error51 = `run parked: harness rate limited or overloaded \u2014 resume with \`${resume}\` when the window resets.`;
     return { result: await run.stop({ record: record3, status: RunStatus.PausedRateLimit, error: error51 }), declineStreak };
   }
   if (outcome.kind === CoverageBatchStopKind.Failed || outcome.kind === CoverageBatchStopKind.Escalated) {
@@ -165310,8 +165371,8 @@ var settleCoverageBatch = async ({ run, batch, record: record3, outcome, decline
     settlement.declineStreak = streak;
     run.setAside.push({ batchId: batch.id, files: report2.files.map((file2) => file2.path), rationale: report2.rationale });
     run.progress(`${batch.id}: declined (${report2.files.length} file(s) set aside)`);
-    if (streak >= maxConsecutiveDeclines2) {
-      const error51 = `${maxConsecutiveDeclines2} consecutive batches declined \u2014 likely systemic (standards injection, gate config, or untestable source), not worth further agent spend.`;
+    if (streak >= maxConsecutiveDeclines) {
+      const error51 = `${maxConsecutiveDeclines} consecutive batches declined \u2014 likely systemic (standards injection, gate config, or untestable source), not worth further agent spend.`;
       await run.update({ patch: { status: RunStatus.Escalated, currentStep: null } });
       run.progress(`coverage run stopped after ${batch.id} \u2014 ${RunStatus.Escalated}`);
       settlement.result = run.buildHaltedResult({ error: error51 });
@@ -165370,7 +165431,7 @@ var runCoverageRounds = async ({ run, driver, batchInputs, maxBatches, resumed }
       continue;
     }
     if (maxBatches !== void 0 && processed >= maxBatches) {
-      const resume = `resume with: lightsout test-coverage-to-threshold --run ${run.current().runId}`;
+      const resume = `resume with: ${formatResumeCommand({ pipeline: PipelineKind.Coverage, runId: run.current().runId })}`;
       await run.update({ patch: { status: RunStatus.PausedBudget, currentStep: null } });
       run.progress(`budget ceiling (${maxBatches} batch(es)) reached \u2014 ${resume}`);
       result = run.buildHaltedResult({ error: `paused at --max-batches ${maxBatches} \u2014 ${resume}` });
@@ -165664,7 +165725,7 @@ var isVoiceOn = async ({ cwd }) => {
 
 // src/voice/speakText.ts
 import { spawn as spawn3 } from "node:child_process";
-import { writeFile as writeFile30 } from "node:fs/promises";
+import { writeFile as writeFile28 } from "node:fs/promises";
 
 // src/voice/internal/common/paths/getVoicePidPath.ts
 import { join as join158 } from "node:path";
@@ -165699,7 +165760,7 @@ var speakText = async ({ cwd, text }) => {
   child.stdin?.write(text);
   child.stdin?.end();
   if (child.pid !== void 0) {
-    await writeFile30(getVoicePidPath({ cwd }), String(child.pid), "utf8");
+    await writeFile28(getVoicePidPath({ cwd }), String(child.pid), "utf8");
   }
   child.unref();
 };
@@ -165777,12 +165838,12 @@ var voiceOffCommand = async ({ cwd }) => {
 };
 
 // src/voice/createVoiceMarker.ts
-import { mkdir as mkdir34, writeFile as writeFile31 } from "node:fs/promises";
+import { mkdir as mkdir34, writeFile as writeFile29 } from "node:fs/promises";
 import { dirname as dirname32 } from "node:path";
 var createVoiceMarker = async ({ cwd }) => {
   const markerPath = getVoiceMarkerPath({ cwd });
   await mkdir34(dirname32(markerPath), { recursive: true });
-  await writeFile31(markerPath, "", "utf8");
+  await writeFile29(markerPath, "", "utf8");
 };
 
 // src/cli/voice/voiceOnCommand.ts
