@@ -1,7 +1,7 @@
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
-import { collectFunctionNodes } from '../../../../../common/parsing/collectFunctionNodes.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { collectFunctionNodes } from '#common/parsing/collectFunctionNodes.ts';
 
 interface Oversized {
 	kind: string;

@@ -1,11 +1,11 @@
 import type { StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readManifestDependencies } from '../../../../../common/checkInput/readManifestDependencies.ts';
-import { buildFileExportCheck } from '../../../../../common/checks/buildFileExportCheck.ts';
-import { getFrameworkCarveOuts } from '../../../../../common/frameworks/getFrameworkCarveOuts.ts';
-import { getPathCarveOut } from '../../../../../common/frameworks/getPathCarveOut.ts';
-import { isFrameworkNamedFile } from '../../../../../common/frameworks/isFrameworkNamedFile.ts';
-import { collapseCasing } from '../../../../../common/naming/collapseCasing.ts';
-import { getExportName } from '../../../../../common/naming/getExportName.ts';
+import { readManifestDependencies } from '#common/checkInput/readManifestDependencies.ts';
+import { buildFileExportCheck } from '#common/checks/buildFileExportCheck.ts';
+import { getFrameworkCarveOuts } from '#common/frameworks/getFrameworkCarveOuts.ts';
+import { getPathCarveOut } from '#common/frameworks/getPathCarveOut.ts';
+import { isFrameworkNamedFile } from '#common/frameworks/isFrameworkNamedFile.ts';
+import { collapseCasing } from '#common/naming/collapseCasing.ts';
+import { getExportName } from '#common/naming/getExportName.ts';
 
 /**
  * A framework dot-suffix (`.service`, `.model`, `.dto`, `.entity`) is the

@@ -1,11 +1,11 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
-import { getFrameworkCarveOuts } from '../../../../../common/frameworks/getFrameworkCarveOuts.ts';
-import { getPathCarveOut } from '../../../../../common/frameworks/getPathCarveOut.ts';
-import { isFrameworkLoadedFile } from '../../../../../common/frameworks/isFrameworkLoadedFile.ts';
-import { getTestSubject } from '../../../../../common/paths/getTestSubject.ts';
-import { isBarrelFile } from '../../../../../common/paths/isBarrelFile.ts';
-import { isOutsideEveryPackage } from '../../../../../common/paths/isOutsideEveryPackage.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { getFrameworkCarveOuts } from '#common/frameworks/getFrameworkCarveOuts.ts';
+import { getPathCarveOut } from '#common/frameworks/getPathCarveOut.ts';
+import { isFrameworkLoadedFile } from '#common/frameworks/isFrameworkLoadedFile.ts';
+import { getTestSubject } from '#common/paths/getTestSubject.ts';
+import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
+import { isOutsideEveryPackage } from '#common/paths/isOutsideEveryPackage.ts';
 
 const getOwningPackage = ({ path, packageDirectories }: { path: string; packageDirectories: string[] }) =>
 	packageDirectories.filter((directory) => directory === '.' || path.startsWith(`${directory}/`)).sort((first, second) => second.length - first.length)[0];

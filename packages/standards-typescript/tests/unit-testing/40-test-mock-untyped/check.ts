@@ -1,9 +1,9 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readTestFiles } from '../../../common/checkInput/readTestFiles.ts';
-import { buildLineSites } from '../../../common/findings/buildLineSites.ts';
-import { buildRawFinding } from '../../../common/findings/buildRawFinding.ts';
-import { blankStringsAndComments } from '../../../common/parsing/blankStringsAndComments.ts';
-import { getLineNumber } from '../../../common/parsing/getLineNumber.ts';
+import { readTestFiles } from '#common/checkInput/readTestFiles.ts';
+import { buildLineSites } from '#common/findings/buildLineSites.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { blankStringsAndComments } from '#common/parsing/blankStringsAndComments.ts';
+import { getLineNumber } from '#common/parsing/getLineNumber.ts';
 
 /** `jest.fn` with the character that decides whether it carries a generic: `<` typed, `(` untyped. */
 const spyCall = /jest\.fn\s*([<(])/g;

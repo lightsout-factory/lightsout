@@ -1,6 +1,6 @@
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
 
 const getRootTypeName = ({ name, compiler }: { name: ts.EntityName; compiler: typeof ts }): ts.Identifier =>
 	compiler.isIdentifier(name) ? name : getRootTypeName({ name: name.left, compiler });

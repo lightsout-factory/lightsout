@@ -1,6 +1,6 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { buildClassFindings } from '../../../../../common/findings/buildClassFindings.ts';
+import { buildClassFindings } from '#common/findings/buildClassFindings.ts';
 
 /** The last segment, because it carries the error-family convention the exemption reads. */
 const getBaseName = ({ expression, compiler }: { expression: ts.Expression; compiler: typeof ts }): string => {

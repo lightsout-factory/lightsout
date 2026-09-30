@@ -1,8 +1,8 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readTestFiles } from '../../../common/checkInput/readTestFiles.ts';
-import { buildLineSites } from '../../../common/findings/buildLineSites.ts';
-import { buildRawFinding } from '../../../common/findings/buildRawFinding.ts';
-import { scanTestLines } from '../../../common/parsing/scanTestLines.ts';
+import { readTestFiles } from '#common/checkInput/readTestFiles.ts';
+import { buildLineSites } from '#common/findings/buildLineSites.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { scanTestLines } from '#common/parsing/scanTestLines.ts';
 
 /** A module-scope mock declaration: a `const` whose line starts at column 0, so no block encloses it. */
 const moduleScopeMock = /^const\s+([A-Za-z0-9_$]+)\s*=\s*jest\.fn\b/;

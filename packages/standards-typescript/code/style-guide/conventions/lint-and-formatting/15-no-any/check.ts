@@ -1,6 +1,6 @@
 import type { StandardsCheckModule } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { buildTreeLineCheck } from '../../../../../common/checks/buildTreeLineCheck.ts';
+import { buildTreeLineCheck } from '#common/checks/buildTreeLineCheck.ts';
 
 /**
  * The rule allows a rare, justified `any` behind one of these, on the

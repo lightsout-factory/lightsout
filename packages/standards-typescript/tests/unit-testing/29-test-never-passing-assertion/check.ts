@@ -1,10 +1,10 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readTestFiles } from '../../../common/checkInput/readTestFiles.ts';
-import { buildLineSites } from '../../../common/findings/buildLineSites.ts';
-import { buildRawFinding } from '../../../common/findings/buildRawFinding.ts';
-import { blankStringsAndComments } from '../../../common/parsing/blankStringsAndComments.ts';
-import { readCallBlocks } from '../../../common/parsing/readCallBlocks.ts';
-import type { CallBlock } from '../../../common/types/CallBlock.ts';
+import { readTestFiles } from '#common/checkInput/readTestFiles.ts';
+import { buildLineSites } from '#common/findings/buildLineSites.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { blankStringsAndComments } from '#common/parsing/blankStringsAndComments.ts';
+import { readCallBlocks } from '#common/parsing/readCallBlocks.ts';
+import type { CallBlock } from '#common/types/CallBlock.ts';
 
 /**
  * A property whose value is the bare `undefined`, read with strings blanked —

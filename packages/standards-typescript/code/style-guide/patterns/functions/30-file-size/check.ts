@@ -1,6 +1,6 @@
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
-import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
-import { isBarrelFile } from '../../../../../common/paths/isBarrelFile.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
 
 /**
  * A barrel is exempt at any length: the remedy the finding asks for, split it

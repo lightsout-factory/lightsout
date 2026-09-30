@@ -84,6 +84,43 @@ const setupLibraryWithBrokenPack = async () => {
 	return { libraryPath: packPath };
 };
 
+/**
+ * The one-rule pack above, with its helper moved to the library's common/
+ * folder and its check importing it through the alias the library's
+ * package.json declares, as the built-in library's checks do.
+ */
+const setupLibraryWithImportAlias = async () => {
+	const { packPath } = await setupPack();
+	const aliasedCheckSource = `import { isBanned } from '#common/isBanned.ts';
+
+interface RawFinding {
+	siteKey: string;
+	files: Array<{ path: string }>;
+	detail: string;
+}
+
+export const check = {
+	inputKind: 'file-list' as const,
+	run: ({ input }: { input: { files: string[] } }): RawFinding[] =>
+		input.files.filter(isBanned).map((path) => ({ siteKey: \`no-banned-file:\${path}\`, files: [{ path }], detail: 'a file the rule bans' })),
+};
+`;
+	const files: Record<string, string> = {
+		'package.json': `${JSON.stringify({ type: 'module', imports: { '#common/*': './common/*' } }, null, '\t')}\n`,
+		'common/isBanned.ts': "export const isBanned = (path: string): boolean => path.endsWith('banned.ts');\n",
+		'code/demo/01-no-banned-file/check.ts': aliasedCheckSource,
+	};
+
+	for (const [path, content] of Object.entries(files)) {
+		const absolutePath = join(packPath, path);
+
+		await mkdir(dirname(absolutePath), { recursive: true });
+		await writeFile(absolutePath, content, 'utf8');
+	}
+
+	return { libraryPath: packPath };
+};
+
 test('cli: standards-validate loads a pack, runs its check against its fixtures, and exits 0', async () => {
 	const { packPath } = await setupPack();
 
@@ -123,4 +160,14 @@ test('cli: standards-validate --library names a pack entry that resolves to noth
 
 	expect(stdout).toMatch(/demo-standards\/broken.*demo-standards\/code\/missing|demo-standards\/code\/missing.*demo-standards\/broken/);
 	expect(code).toBe(1);
+});
+
+test("cli: standards-validate loads a check that imports a helper through the library's package.json imports map", async () => {
+	const { libraryPath } = await setupLibraryWithImportAlias();
+
+	const { stdout, stderr, code } = await runCli({ args: ['standards-validate', '--library', libraryPath] });
+
+	expect(stdout).toContain('demo-standards — 1 checked rule(s) validated, 0 judgment-only rule(s), 0 pack file(s)');
+	expect(stderr).toBe('');
+	expect(code).toBe(0);
 });

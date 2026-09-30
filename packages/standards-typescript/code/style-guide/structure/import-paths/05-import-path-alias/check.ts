@@ -1,10 +1,10 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readFileTexts } from '../../../../../common/checkInput/readFileTexts.ts';
-import { ImportTargetKind } from '../../../../../common/constants/ImportTargetKind.ts';
-import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
-import { findPathAliases } from '../../../../../common/imports/findPathAliases.ts';
-import { resolveImport } from '../../../../../common/imports/resolveImport.ts';
-import { isUnderSrc } from '../../../../../common/paths/isUnderSrc.ts';
+import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
+import { ImportTargetKind } from '#common/constants/ImportTargetKind.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { findPathAliases } from '#common/imports/findPathAliases.ts';
+import { resolveImport } from '#common/imports/resolveImport.ts';
+import { isUnderSrc } from '#common/paths/isUnderSrc.ts';
 
 /** The specifier of an import or re-export: the one-line form, and the closing line of a wrapped one. */
 const fromClause = /^(?:import|export)\s[^'"]*from\s*['"]([^'"]+)['"]|^\}\s*from\s*['"]([^'"]+)['"]/;

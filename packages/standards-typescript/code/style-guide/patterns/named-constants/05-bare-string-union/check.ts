@@ -1,6 +1,6 @@
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
 
 const isStringLiteralUnion = ({ node, compiler }: { node: ts.TypeAliasDeclaration; compiler: typeof ts }) =>
 	compiler.isUnionTypeNode(node.type) &&

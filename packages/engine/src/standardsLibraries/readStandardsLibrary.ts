@@ -112,9 +112,13 @@ export const readStandardsLibrary = async ({ packPath }: Params): Promise<Loaded
 	const problems: string[] = [];
 	const documents: LoadedStandardsTopic[] = [];
 	const rules: LoadedStandardsRule[] = [];
+	// A topic's path never carries the folder its set sits in, so pack files
+	// address the same topics wherever the trees are.
+	const rulesPath = join(packPath, 'rules');
+	const setsPath = (await hasFile({ path: rulesPath })) ? rulesPath : packPath;
 
 	for (const set of [StandardsSet.Code, StandardsSet.Tests]) {
-		await walk({ folderPath: join(packPath, set), documentPath: set, set, library: root.data.name, problems, documents, rules });
+		await walk({ folderPath: join(setsPath, set), documentPath: set, set, library: root.data.name, problems, documents, rules });
 	}
 
 	const packs = await parsePackFolder({ folderPath: join(packPath, 'packs'), problems });

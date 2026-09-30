@@ -1,14 +1,14 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readFileTexts } from '../../../../../common/checkInput/readFileTexts.ts';
-import { readManifestDependencies } from '../../../../../common/checkInput/readManifestDependencies.ts';
-import { readPackageEntries } from '../../../../../common/checkInput/readPackageEntries.ts';
-import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
-import { getFrameworkCarveOuts } from '../../../../../common/frameworks/getFrameworkCarveOuts.ts';
-import { getPathCarveOut } from '../../../../../common/frameworks/getPathCarveOut.ts';
-import { isFrameworkLoadedFile } from '../../../../../common/frameworks/isFrameworkLoadedFile.ts';
-import { isPackageEntry } from '../../../../../common/modules/isPackageEntry.ts';
-import { getDirectory } from '../../../../../common/paths/getDirectory.ts';
-import { isBarrelFile } from '../../../../../common/paths/isBarrelFile.ts';
+import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
+import { readManifestDependencies } from '#common/checkInput/readManifestDependencies.ts';
+import { readPackageEntries } from '#common/checkInput/readPackageEntries.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { getFrameworkCarveOuts } from '#common/frameworks/getFrameworkCarveOuts.ts';
+import { getPathCarveOut } from '#common/frameworks/getPathCarveOut.ts';
+import { isFrameworkLoadedFile } from '#common/frameworks/isFrameworkLoadedFile.ts';
+import { isPackageEntry } from '#common/modules/isPackageEntry.ts';
+import { getDirectory } from '#common/paths/getDirectory.ts';
+import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
 
 export const check: StandardsCheckModule = {
 	inputKind: 'file-text',

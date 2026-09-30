@@ -1,9 +1,9 @@
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
-import { buildRawFinding } from '../../../../common/findings/buildRawFinding.ts';
-import { getSiteGroupKey } from '../../../../common/findings/getSiteGroupKey.ts';
-import { collectFunctionNodes } from '../../../../common/parsing/collectFunctionNodes.ts';
-import { isDelegationForwardBody } from '../../../../common/parsing/isDelegationForwardBody.ts';
-import { getOwningPack } from '../../../../common/paths/getOwningPack.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { getSiteGroupKey } from '#common/findings/getSiteGroupKey.ts';
+import { collectFunctionNodes } from '#common/parsing/collectFunctionNodes.ts';
+import { isDelegationForwardBody } from '#common/parsing/isDelegationForwardBody.ts';
+import { getOwningPack } from '#common/paths/getOwningPack.ts';
 import { normalizeFunctionTokens } from './normalizeFunctionTokens.ts';
 
 interface BodySite {

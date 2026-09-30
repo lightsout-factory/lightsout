@@ -1,6 +1,6 @@
 import type { StandardsCheckModule } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { buildTreeLineCheck } from '../../../../common/checks/buildTreeLineCheck.ts';
+import { buildTreeLineCheck } from '#common/checks/buildTreeLineCheck.ts';
 
 const isExported = ({ node, compiler }: { node: ts.Node; compiler: typeof ts }) =>
 	compiler.canHaveModifiers(node) && (compiler.getModifiers(node) ?? []).some((modifier) => modifier.kind === compiler.SyntaxKind.ExportKeyword);

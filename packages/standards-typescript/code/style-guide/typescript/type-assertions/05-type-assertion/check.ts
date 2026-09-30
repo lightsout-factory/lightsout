@@ -1,6 +1,6 @@
 import type { StandardsCheckModule } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { buildTreeLineCheck } from '../../../../../common/checks/buildTreeLineCheck.ts';
+import { buildTreeLineCheck } from '#common/checks/buildTreeLineCheck.ts';
 
 /**
  * `as const` asserts nothing about a value's type — it freezes a literal — and

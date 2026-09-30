@@ -259,10 +259,13 @@ describe('listStandardsRules', () => {
 
 		// the doc column is what makes the output actionable — a row naming a
 		// document that is not there sends the reader nowhere
+		const libraryPath = join(cwd, 'packages', 'standards-typescript');
+		// the loader's rule: the topic trees sit under rules/ when the library holds one
+		const setsPath = existsSync(join(libraryPath, 'rules')) ? join(libraryPath, 'rules') : libraryPath;
 		const missing = rules.filter((rule) => {
 			const { name, path } = docPartsOf({ doc: rule.doc });
 
-			return name !== 'lightsout' || !existsSync(join(cwd, 'packages', 'standards-typescript', path, 'topic.md'));
+			return name !== 'lightsout' || !existsSync(join(setsPath, path, 'topic.md'));
 		});
 
 		expect(missing.map((rule) => `${rule.rule} → ${rule.doc}`)).toStrictEqual([]);

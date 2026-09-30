@@ -1,4 +1,5 @@
-import { join } from 'node:path';
+import { readdir, readFile } from 'node:fs/promises';
+import { dirname, join, resolve, sep } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { StandardsSet } from '@lightsout/standards-contracts';
 import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
@@ -43,6 +44,48 @@ const nodeGroupOf = ({ pack }: { pack: LoadedStandardsLibrary }): StandardsGroup
 			]),
 		),
 	};
+};
+
+/** Folders under the library that hold no authored check: installed packages, coverage output and test data. */
+const skippedFolders = new Set(['node_modules', 'coverage', 'fixtures']);
+
+/** Every `check.ts` under `folder`, wherever its topic tree sits. */
+const listCheckFiles = async ({ folder }: { folder: string }): Promise<string[]> => {
+	const entries = await readdir(folder, { withFileTypes: true });
+	const nested = await Promise.all(
+		entries.map(async (entry) => {
+			const path = join(folder, entry.name);
+			if (entry.isDirectory()) {
+				return skippedFolders.has(entry.name) ? [] : listCheckFiles({ folder: path });
+			}
+
+			return entry.name === 'check.ts' ? [path] : [];
+		}),
+	);
+
+	return nested.flat();
+};
+
+/**
+ * The built-in library's manifest, each of its checks paired with the module
+ * specifiers it imports, and the library loaded as a run loads it.
+ */
+const setupCheckImports = async () => {
+	const { pack } = await setupDefaultPack();
+	// the same authored folder setupDefaultPack loads, anchored on this file for the same reason
+	const libraryPath = join(__dirname, '..', '..', '..', 'standards-typescript');
+	const manifest: { imports?: unknown } = JSON.parse(await readFile(join(libraryPath, 'package.json'), 'utf8'));
+	const checkFiles = await listCheckFiles({ folder: libraryPath });
+	const checks = await Promise.all(
+		checkFiles.map(async (file) => {
+			const text = await readFile(file, 'utf8');
+			const specifiers = [...text.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|^\s*import\s+)'([^']+)'/gm)].map((match) => match[1] ?? '');
+
+			return { file, specifiers };
+		}),
+	);
+
+	return { pack, manifest, checks, commonFolder: join(libraryPath, 'common') + sep };
 };
 
 describe('readStandardsLibrary', () => {
@@ -99,5 +142,31 @@ describe('readStandardsLibrary', () => {
 		// an empty rule list would make "every rule" hold vacuously
 		expect(pack.rules.length).toBeGreaterThan(0);
 		expect({ name: pack.name, misnamed }).toStrictEqual({ name: 'lightsout', misnamed: [] });
+	});
+
+	test("every check that reaches the library's common folder imports it through #common, and every checked rule's check loads", async () => {
+		const { pack, manifest, checks, commonFolder } = await setupCheckImports();
+
+		const relativeIntoCommon = checks.flatMap(({ file, specifiers }) =>
+			specifiers
+				.filter((specifier) => specifier.startsWith('../'))
+				.filter((specifier) => resolve(dirname(file), specifier).startsWith(commonFolder))
+				.map((specifier) => `${file}: ${specifier}`),
+		);
+		const importsThroughAlias = checks.some(({ specifiers }) => specifiers.some((specifier) => specifier.startsWith('#common/')));
+		const checked = pack.rules.filter((rule) => rule.checked);
+		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKind === undefined).map((rule) => rule.name);
+
+		// an empty check list would make "every check" hold vacuously
+		expect({ checkFiles: checks.length > 0, checkedRules: checked.length > 0 }).toStrictEqual({
+			checkFiles: true,
+			checkedRules: true,
+		});
+		expect({ imports: manifest.imports, relativeIntoCommon, importsThroughAlias, unloadable }).toStrictEqual({
+			imports: { '#common/*': './common/*' },
+			relativeIntoCommon: [],
+			importsThroughAlias: true,
+			unloadable: [],
+		});
 	});
 });

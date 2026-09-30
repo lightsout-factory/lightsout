@@ -1,12 +1,12 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readPathLists } from '../../../../common/checkInput/readPathLists.ts';
-import { buildRawFinding } from '../../../../common/findings/buildRawFinding.ts';
-import { getFrameworkCarveOuts } from '../../../../common/frameworks/getFrameworkCarveOuts.ts';
-import { getPathCarveOut } from '../../../../common/frameworks/getPathCarveOut.ts';
-import { getSourceRoot } from '../../../../common/frameworks/getSourceRoot.ts';
-import { isFrameworkNamedFolder } from '../../../../common/frameworks/isFrameworkNamedFolder.ts';
-import { collectDirectories } from '../../../../common/paths/collectDirectories.ts';
-import { getBaseName } from '../../../../common/paths/getBaseName.ts';
+import { readPathLists } from '#common/checkInput/readPathLists.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { getFrameworkCarveOuts } from '#common/frameworks/getFrameworkCarveOuts.ts';
+import { getPathCarveOut } from '#common/frameworks/getPathCarveOut.ts';
+import { getSourceRoot } from '#common/frameworks/getSourceRoot.ts';
+import { isFrameworkNamedFolder } from '#common/frameworks/isFrameworkNamedFolder.ts';
+import { collectDirectories } from '#common/paths/collectDirectories.ts';
+import { getBaseName } from '#common/paths/getBaseName.ts';
 
 /**
  * Banned at every level, even inside `common/`. Framework vocabulary

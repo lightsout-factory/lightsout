@@ -1,10 +1,10 @@
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
-import { getFrameworkCarveOuts } from '../../../../../common/frameworks/getFrameworkCarveOuts.ts';
-import { getPathCarveOut } from '../../../../../common/frameworks/getPathCarveOut.ts';
-import { isFrameworkLoadedFile } from '../../../../../common/frameworks/isFrameworkLoadedFile.ts';
-import { getBaseName } from '../../../../../common/paths/getBaseName.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { getFrameworkCarveOuts } from '#common/frameworks/getFrameworkCarveOuts.ts';
+import { getPathCarveOut } from '#common/frameworks/getPathCarveOut.ts';
+import { isFrameworkLoadedFile } from '#common/frameworks/isFrameworkLoadedFile.ts';
+import { getBaseName } from '#common/paths/getBaseName.ts';
 
 /** Every index file, wherever it stands: a package's entry holds no code any more than a folder's does. */
 const isIndexFile = ({ path }: { path: string }) => /^index\.tsx?$/.test(getBaseName({ path }));

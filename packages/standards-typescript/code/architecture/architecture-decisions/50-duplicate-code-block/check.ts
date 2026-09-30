@@ -1,6 +1,6 @@
 import type { CloneSpan, RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { buildRawFinding } from '../../../../common/findings/buildRawFinding.ts';
-import { getSiteGroupKey } from '../../../../common/findings/getSiteGroupKey.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { getSiteGroupKey } from '#common/findings/getSiteGroupKey.ts';
 
 interface ClonedPair {
 	files: RawStandardsFinding['files'];

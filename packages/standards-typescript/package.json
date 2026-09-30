@@ -5,6 +5,9 @@
 	"type": "module",
 	"description": "The standards lightsout ships: the TypeScript rules its own agents write against.",
 	"license": "MIT",
+	"imports": {
+		"#common/*": "./common/*"
+	},
 	"devDependencies": {
 		"@jest/globals": "catalog:",
 		"@lightsout/standards-contracts": "workspace:*",

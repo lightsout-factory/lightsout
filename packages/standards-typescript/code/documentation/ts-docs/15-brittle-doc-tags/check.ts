@@ -1,7 +1,7 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readFileTexts } from '../../../../common/checkInput/readFileTexts.ts';
-import { buildRawFinding } from '../../../../common/findings/buildRawFinding.ts';
-import { isTestFile } from '../../../../common/paths/isTestFile.ts';
+import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { isTestFile } from '#common/paths/isTestFile.ts';
 
 // Only doc-comment blocks are judged: a tag in a line comment is prose no
 // tooling reads.

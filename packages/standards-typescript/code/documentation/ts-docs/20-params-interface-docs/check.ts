@@ -1,6 +1,6 @@
 import type { StandardsCheckModule } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { buildTreeLineCheck } from '../../../../common/checks/buildTreeLineCheck.ts';
+import { buildTreeLineCheck } from '#common/checks/buildTreeLineCheck.ts';
 
 const findDocumentedParamsLines = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {
 	const text = sourceFile.getFullText();

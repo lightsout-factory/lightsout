@@ -1,7 +1,7 @@
 import type { RawStandardsFinding, StandardsCheckModule, TypeCheckerInput } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
-import { getOwningPack } from '../../../../../common/paths/getOwningPack.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { getOwningPack } from '#common/paths/getOwningPack.ts';
 
 const lineOf = ({ sourceFile, node }: { sourceFile: ts.SourceFile; node: ts.Node }) => sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
 

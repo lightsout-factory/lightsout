@@ -1,6 +1,6 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { buildClassFindings } from '../../../../../common/findings/buildClassFindings.ts';
+import { buildClassFindings } from '#common/findings/buildClassFindings.ts';
 
 const hasModifier = ({ member, kind, compiler }: { member: ts.ClassElement; kind: ts.SyntaxKind; compiler: typeof ts }) => {
 	const modifiers =

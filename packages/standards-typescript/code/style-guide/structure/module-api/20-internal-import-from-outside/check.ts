@@ -1,5 +1,5 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
 
 /** A path with nested `internal/` folders is private to each of them in turn, and an importer has to be inside all. */
 const getOwners = ({ path }: { path: string }) => {

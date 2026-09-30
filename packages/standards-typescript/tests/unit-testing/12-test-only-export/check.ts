@@ -1,5 +1,5 @@
 import type { StandardsCheckModule } from '@lightsout/standards-contracts';
-import { buildUnconsumedExportCheck } from '../../../common/checks/buildUnconsumedExportCheck.ts';
+import { buildUnconsumedExportCheck } from '#common/checks/buildUnconsumedExportCheck.ts';
 
 // Tests are the only mention: a package entry listing the name would have
 // counted as a use, since other packages read it, so a name the package

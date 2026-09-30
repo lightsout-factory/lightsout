@@ -1,9 +1,9 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readPathLists } from '../../../../../common/checkInput/readPathLists.ts';
-import { buildRawFinding } from '../../../../../common/findings/buildRawFinding.ts';
-import { collapseCasing } from '../../../../../common/naming/collapseCasing.ts';
-import { getExportName } from '../../../../../common/naming/getExportName.ts';
-import { getNameKey } from '../../../../../common/naming/getNameKey.ts';
+import { readPathLists } from '#common/checkInput/readPathLists.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { collapseCasing } from '#common/naming/collapseCasing.ts';
+import { getExportName } from '#common/naming/getExportName.ts';
+import { getNameKey } from '#common/naming/getNameKey.ts';
 
 /**
  * Grouped within each key by the name the file uses, because the finding has to

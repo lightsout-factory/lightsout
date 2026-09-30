@@ -5,6 +5,7 @@ import { join, sep } from 'node:path';
 import { promisify } from 'node:util';
 import { expect, test } from '@jest/globals';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { runCli } from '#tests/helpers/runCli.ts';
 
 // The build step that produces the shipped standards package, run as the real
 // subprocess `pnpm bundle` runs. What it leaves out is a contract: the engine
@@ -88,7 +89,32 @@ test('the shipped package carries every rule but none of the evidence that only 
 	);
 
 	expect(shipped).toStrictEqual([...carried, 'package.json'].sort());
-	expect(JSON.parse(await readFile(join(out, 'package.json'), 'utf8'))).toStrictEqual({ type: 'module' });
+});
+
+test("the shipped package.json keeps the library's imports map beside its module type", async () => {
+	const out = await buildInto();
+
+	const text = await readFile(join(out, 'package.json'), 'utf8');
+
+	// the checks reach common/ through #common/*, and in a marketplace install
+	// this manifest is the only one above them; the authored name, scripts and
+	// workspace dependencies still stay out
+	expect(JSON.parse(text)).toStrictEqual({ type: 'module', imports: { '#common/*': './common/*' } });
+	// written like the other manifest the build writes: tab-indented, ending in a newline
+	expect(text).toBe('{\n\t"type": "module",\n\t"imports": {\n\t\t"#common/*": "./common/*"\n\t}\n}\n');
+});
+
+test('the CLI loads every check of the built copy, resolving #common through the shipped package.json', async () => {
+	const out = await buildInto();
+
+	const { stdout, stderr, code } = await runCli({ args: ['standards-validate', '--cwd', out, '--library', out] });
+
+	// reading the library imports every check under real Node before the built
+	// refusal is reached, so a check that cannot resolve #common/* fails the load
+	// and lands on stderr instead
+	expect({ stderr, code }).toStrictEqual({ stderr: '', code: 1 });
+	expect(stdout).toMatch(/is a built pack/);
+	expect(stdout).not.toMatch(/Cannot find (module|package)|ERR_MODULE_NOT_FOUND|ERR_PACKAGE_IMPORT_NOT_DEFINED|check\.ts/);
 });
 
 test('copyStandards refuses an --out with no directory after it rather than building over the shipped package', async () => {
