@@ -1,31 +1,37 @@
 import { describe, expect, test } from '@jest/globals';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import type { DriverResult } from '#src/drivers/common/types/DriverResult.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
+	name: `acme/${overrides.id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
-	defaultSettings: {},
+	defaultOptions: {},
+	requires: [],
 	fixturesPath: `/packages/acme/${overrides.id}/fixtures`,
 	...overrides,
 });
 
-const packOf = ({ rules }: { rules: LoadedStandardsRule[] }): LoadedStandardsPack => ({
-	name: 'acme',
-	formatVersion: 1,
-	rootPath: '/packages/acme',
-	documents: [],
-	rules,
+/** One group whose pack holds `rules`, each at its rule.md default. */
+const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup => ({
+	packages: [''],
+	pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
+	source: StandardsPackSource.Named,
+	states: new Map<string, ResolvedRuleState>(
+		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
+	),
 });
 
 /** A stub harness answering every invocation with `text`, recording the prompts and the full invocations it was given. */
@@ -47,6 +53,45 @@ const setupDriver = ({ result }: { result: DriverResult | (() => DriverResult) }
 
 const reviewText = (findings: Record<string, unknown>[]) => JSON.stringify({ findings });
 
+/**
+ * One group whose pack holds two judgment rules the review must skip — one the
+ * repo turned off, one the pack ships off — while its topic names a third
+ * judgment rule of the library that the pack leaves out altogether.
+ */
+const setupExcludedJudgmentRules = () => {
+	const repoOff = rule({ id: 'repo-off-judgment' });
+	const packOff = rule({ id: 'pack-off-judgment', defaultSeverity: StandardsSeverity.Off });
+	const group: StandardsGroup = {
+		packages: [''],
+		pack: {
+			name: 'acme/house',
+			topics: [
+				{
+					set: 'code',
+					library: 'acme',
+					path: 'code/architecture/folder-structure',
+					intro: '# Folder structure',
+					ruleIds: ['repo-off-judgment', 'pack-off-judgment', 'left-out-judgment'],
+				},
+			],
+			rules: [
+				{ rule: repoOff, severity: StandardsSeverity.Advisory, options: {} },
+				{ rule: packOff, severity: StandardsSeverity.Off, options: {} },
+			],
+		},
+		source: StandardsPackSource.Named,
+		states: new Map<string, ResolvedRuleState>([
+			['acme/repo-off-judgment', { severity: StandardsSeverity.Off, options: {}, fromConfig: true, reachesAgents: true }],
+			['acme/pack-off-judgment', { severity: StandardsSeverity.Off, options: {}, fromConfig: false, reachesAgents: false }],
+		]),
+	};
+	const { driver, prompts } = setupDriver({
+		result: { text: reviewText([{ rule: 'left-out-judgment', files: [{ path: 'src/a.ts' }], detail: 'should never be asked for' }]), exitCode: 0 },
+	});
+
+	return { groups: [group], driver, prompts };
+};
+
 describe('runStandardsReview', () => {
 	test('a reported violation becomes an advisory finding with an engine-derived site key', async () => {
 		const { driver } = setupDriver({
@@ -61,17 +106,17 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
 		expect(notes).toStrictEqual([]);
 		expect(findings).toStrictEqual([
 			{
-				rule: 'common-placement',
+				rule: 'acme/common-placement',
 				severity: StandardsSeverity.Advisory,
-				siteKey: 'common-placement:src/a.ts',
+				siteKey: 'acme/common-placement:src/a.ts',
 				files: [{ path: 'src/a.ts', startLine: 4 }],
 				detail: 'promoted on one consumer',
 				guidance: 'move it back',
@@ -87,51 +132,13 @@ describe('runStandardsReview', () => {
 		const { findings } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
 		// severity is the engine's to stamp — an agent cannot promote its own opinion into work
 		expect(findings[0]?.severity).toBe(StandardsSeverity.Advisory);
-	});
-
-	test('a finding naming a rule no package declares is dropped, and the drop is stated', async () => {
-		const { driver } = setupDriver({
-			result: {
-				text: reviewText([
-					{ rule: 'invented-rule', files: [{ path: 'src/a.ts' }], detail: 'made up' },
-					{ rule: 'common-placement', files: [{ path: 'src/b.ts' }], detail: 'real' },
-				]),
-				exitCode: 0,
-			},
-		});
-
-		const { findings, notes } = await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
-			files: ['src/a.ts', 'src/b.ts'],
-		});
-
-		expect(findings.map((finding) => finding.rule)).toStrictEqual(['common-placement']);
-		expect(notes).toStrictEqual(['agent review: 1 finding(s) dropped — no judgment rule is named invented-rule']);
-	});
-
-	test('a finding with no file to point at is dropped — a site key needs a site', async () => {
-		const { driver } = setupDriver({ result: { text: reviewText([{ rule: 'common-placement', files: [], detail: 'somewhere in the repo' }]), exitCode: 0 } });
-
-		const { findings, notes } = await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
-			files: ['src/a.ts'],
-		});
-
-		expect(findings).toStrictEqual([]);
-		expect(notes).toStrictEqual(['agent review: 1 finding(s) dropped — reported with no file to point at']);
 	});
 
 	test('a harness that cannot answer is a skipped review, not a failure', async () => {
@@ -140,8 +147,8 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -156,8 +163,8 @@ describe('runStandardsReview', () => {
 		const { notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -170,8 +177,8 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'multi-export', checked: true })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -186,41 +193,12 @@ describe('runStandardsReview', () => {
 		await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: [],
 		});
 
 		expect(prompts).toStrictEqual([]);
-	});
-
-	test('a rule on an inactive channel is not reviewed — an out-of-play document contributes nothing', async () => {
-		const { driver, prompts } = setupDriver({ result: { text: reviewText([]), exitCode: 0 } });
-
-		await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'react-hook-order', channel: 'react' })] })],
-			channels: [],
-			files: ['src/a.ts'],
-		});
-
-		expect(prompts).toStrictEqual([]);
-	});
-
-	test('a rule on an active channel is reviewed alongside the base rules', async () => {
-		const { driver, prompts } = setupDriver({ result: { text: reviewText([]), exitCode: 0 } });
-
-		await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'react-hook-order', channel: 'react' }), rule({ id: 'common-placement' })] })],
-			channels: ['react'],
-			files: ['src/a.ts'],
-		});
-
-		expect(prompts.length).toBe(1);
-		expect(prompts[0]).toContain('- src/a.ts');
 	});
 
 	test('a finding the agent gave no guidance for carries none — the key is absent, not empty', async () => {
@@ -231,15 +209,15 @@ describe('runStandardsReview', () => {
 		const { findings } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
 		expect(findings[0]).toStrictEqual({
-			rule: 'common-placement',
+			rule: 'acme/common-placement',
 			severity: StandardsSeverity.Advisory,
-			siteKey: 'common-placement:src/a.ts',
+			siteKey: 'acme/common-placement:src/a.ts',
 			files: [{ path: 'src/a.ts' }],
 			detail: 'promoted on one consumer',
 		});
@@ -251,63 +229,12 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
 		expect({ findings, notes, spawned: prompts.length }).toStrictEqual({ findings: [], notes: [], spawned: 1 });
-	});
-
-	test('repeated invented rule ids are counted every time but named once, in order', async () => {
-		const { driver } = setupDriver({
-			result: {
-				text: reviewText([
-					{ rule: 'zeta-rule', files: [{ path: 'src/a.ts' }], detail: 'made up' },
-					{ rule: 'alpha-rule', files: [{ path: 'src/b.ts' }], detail: 'also made up' },
-					{ rule: 'zeta-rule', files: [{ path: 'src/c.ts' }], detail: 'made up again' },
-				]),
-				exitCode: 0,
-			},
-		});
-
-		const { findings, notes } = await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
-			files: ['src/a.ts', 'src/b.ts', 'src/c.ts'],
-		});
-
-		expect(findings).toStrictEqual([]);
-		expect(notes).toStrictEqual(['agent review: 3 finding(s) dropped — no judgment rule is named alpha-rule, zeta-rule']);
-	});
-
-	test('both kinds of drop are stated separately when one review does both', async () => {
-		const { driver } = setupDriver({
-			result: {
-				text: reviewText([
-					{ rule: 'invented-rule', files: [{ path: 'src/a.ts' }], detail: 'made up' },
-					{ rule: 'common-placement', files: [], detail: 'somewhere in the repo' },
-					{ rule: 'common-placement', files: [{ path: 'src/b.ts' }], detail: 'real' },
-				]),
-				exitCode: 0,
-			},
-		});
-
-		const { findings, notes } = await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
-			files: ['src/a.ts', 'src/b.ts'],
-		});
-
-		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['common-placement:src/b.ts']);
-		expect(notes).toStrictEqual([
-			'agent review: 1 finding(s) dropped — no judgment rule is named invented-rule',
-			'agent review: 1 finding(s) dropped — reported with no file to point at',
-		]);
 	});
 
 	test('judgment rules from every loaded package are put in front of the reviewer', async () => {
@@ -316,8 +243,8 @@ describe('runStandardsReview', () => {
 		await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] }), packOf({ rules: [rule({ id: 'one-export' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] }), groupOf({ rules: [rule({ id: 'one-export' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -331,14 +258,67 @@ describe('runStandardsReview', () => {
 		await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 			timeoutMs: 90_000,
 		});
 
 		// nothing a judgment call concludes may edit the repo it is reading
 		expect(invocations[0]).toEqual(expect.objectContaining({ cwd: '/repo', permissions: 'read-only', timeoutMs: 90_000 }));
+	});
+
+	test('a reported rule resolves to its full name, which the finding and its site key carry', async () => {
+		const { driver } = setupDriver({
+			result: {
+				text: reviewText([
+					{ rule: 'acme/judge', files: [{ path: 'src/a.ts' }, { path: 'src/z.ts' }], detail: 'named in full' },
+					{ rule: 'judge', files: [{ path: 'src/b.ts' }], detail: 'named by short id' },
+				]),
+				exitCode: 0,
+			},
+		});
+
+		const { findings, notes } = await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ rules: [rule({ id: 'judge', name: 'acme/judge', library: 'acme' })] })],
+			packagesDir: 'packages',
+			files: ['src/a.ts', 'src/b.ts', 'src/z.ts'],
+		});
+
+		expect({ notes, keys: findings.map((finding) => ({ rule: finding.rule, siteKey: finding.siteKey })) }).toStrictEqual({
+			notes: [],
+			keys: [
+				{ rule: 'acme/judge', siteKey: 'acme/judge:src/a.ts' },
+				{ rule: 'acme/judge', siteKey: 'acme/judge:src/b.ts' },
+			],
+		});
+	});
+
+	test('a reported rule that resolves to no single judgment rule is dropped and named in a note', async () => {
+		const { driver } = setupDriver({
+			result: {
+				text: reviewText([
+					{ rule: 'nope', files: [{ path: 'src/a.ts' }], detail: 'no such rule' },
+					{ rule: 'judge', files: [{ path: 'src/b.ts' }], detail: 'two libraries hold this id' },
+				]),
+				exitCode: 0,
+			},
+		});
+
+		const { findings, notes } = await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ rules: [rule({ id: 'judge', name: 'acme/judge', library: 'acme' }), rule({ id: 'judge', name: 'house/judge', library: 'house' })] })],
+			packagesDir: 'packages',
+			files: ['src/a.ts', 'src/b.ts'],
+		});
+
+		expect({ findings, notes }).toEqual({
+			findings: [],
+			notes: [expect.stringMatching(/2 finding\(s\) dropped.*\bjudge\b.*\bnope\b/)],
+		});
 	});
 
 	test('a harness that will not start is skipped too — nothing here throws', async () => {
@@ -351,13 +331,40 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
 		// a repo whose harness is absent is not a repo in violation
 		expect(findings).toStrictEqual([]);
 		expect(notes).toStrictEqual(['agent review skipped — agent invocation failed: spawn claude ENOENT']);
+	});
+
+	test('a judgment rule two groups hold is reviewed once, so its short id still names one rule', async () => {
+		const judge = rule({ id: 'judge' });
+		const { driver } = setupDriver({
+			result: { text: reviewText([{ rule: 'judge', files: [{ path: 'src/a.ts' }], detail: 'named by short id' }]), exitCode: 0 },
+		});
+
+		const { findings, notes } = await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ rules: [judge] }), groupOf({ rules: [judge] })],
+			packagesDir: 'packages',
+			files: ['src/a.ts'],
+		});
+
+		// held twice, the short id would read as ambiguous and the finding would be dropped
+		expect({ notes, keys: findings.map((finding) => finding.siteKey) }).toStrictEqual({ notes: [], keys: ['acme/judge:src/a.ts'] });
+	});
+
+	test('runStandardsReview: judgment rules the groups turn off or leave out are never reviewed', async () => {
+		const { groups, driver, prompts } = setupExcludedJudgmentRules();
+
+		const result = await runStandardsReview({ cwd: '/repo', driver, groups, packagesDir: 'packages', files: ['src/a.ts'] });
+
+		// no rule is left to judge, so no agent is spent — and nothing it might have said reaches the findings
+		expect({ result, spawned: prompts.length }).toStrictEqual({ result: { findings: [], notes: [] }, spawned: 0 });
 	});
 });

@@ -1,10 +1,12 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverResult } from '#src/drivers/common/types/DriverResult.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 
 // What the caller hears while the review runs: the opening line, the heartbeat
@@ -13,24 +15,32 @@ import { reviewReport } from '#tests/helpers/reviewReport.ts';
 
 const judgmentRule = ({ id }: { id: string }): LoadedStandardsRule => ({
 	id,
+	name: `acme/${id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
-	defaultSettings: {},
+	defaultOptions: {},
+	requires: [],
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 });
 
-const packOf = ({ ruleIds }: { ruleIds: string[] }): LoadedStandardsPack => ({
-	name: 'acme',
-	formatVersion: 1,
-	rootPath: '/packages/acme',
-	documents: [],
-	rules: ruleIds.map((id) => judgmentRule({ id })),
-});
+/** One group whose pack holds a judgment rule for each of `ruleIds`, every one at advisory. */
+const groupOf = ({ ruleIds }: { ruleIds: string[] }): StandardsGroup => {
+	const rules = ruleIds.map((id) => judgmentRule({ id }));
+
+	return {
+		packages: [''],
+		pack: { name: 'acme/house', topics: [], rules: rules.map((rule) => ({ rule, severity: StandardsSeverity.Advisory, options: {} })) },
+		source: StandardsPackSource.Named,
+		states: new Map<string, ResolvedRuleState>(
+			rules.map((rule) => [rule.name, { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }]),
+		),
+	};
+};
 
 /**
  * A stub harness that streams a Read of `filesRead` distinct files, then runs
@@ -68,8 +78,8 @@ describe('runStandardsReview progress', () => {
 		await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ ruleIds: ['common-placement', 'one-export'] })],
-			channels: [],
+			groups: [groupOf({ ruleIds: ['common-placement', 'one-export'] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts', 'src/b.ts', 'src/c.ts'],
 			onProgress,
 		});
@@ -84,7 +94,14 @@ describe('runStandardsReview progress', () => {
 			result: { text: reviewReport([{ rule: 'common-placement', files: [{ path: 'src/a.ts' }], detail: 'moved too early' }]), exitCode: 0 },
 		});
 
-		await runStandardsReview({ cwd: '/repo', driver, packs: [packOf({ ruleIds: ['common-placement'] })], channels: [], files: ['src/a.ts'], onProgress });
+		await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ ruleIds: ['common-placement'] })],
+			packagesDir: 'packages',
+			files: ['src/a.ts'],
+			onProgress,
+		});
 
 		expect(progress.at(-1)).toMatch(/^✓ Agent review finished in \d+s — 1 advisory to look at$/);
 	});
@@ -103,8 +120,8 @@ describe('runStandardsReview progress', () => {
 		await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ ruleIds: ['common-placement', 'one-export'] })],
-			channels: [],
+			groups: [groupOf({ ruleIds: ['common-placement', 'one-export'] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts', 'src/b.ts'],
 			onProgress,
 		});
@@ -115,7 +132,14 @@ describe('runStandardsReview progress', () => {
 	test('a skipped review still says how long the agent ran before it stopped', async () => {
 		const { driver, progress, onProgress } = setupDriver({ result: { text: 'not a report', exitCode: 1 } });
 
-		await runStandardsReview({ cwd: '/repo', driver, packs: [packOf({ ruleIds: ['common-placement'] })], channels: [], files: ['src/a.ts'], onProgress });
+		await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ ruleIds: ['common-placement'] })],
+			packagesDir: 'packages',
+			files: ['src/a.ts'],
+			onProgress,
+		});
 
 		expect(progress.at(-1)).toMatch(/^Agent review stopped after \d+s\.$/);
 	});
@@ -126,8 +150,8 @@ describe('runStandardsReview progress', () => {
 		await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ ruleIds: ['common-placement'] })],
-			channels: [],
+			groups: [groupOf({ ruleIds: ['common-placement'] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 			timeoutMs: 60 * 60_000,
 			onProgress,
@@ -145,7 +169,14 @@ describe('runStandardsReview progress', () => {
 	test('the heartbeat stops with the agent — a finished review prints no further lines', async () => {
 		const { driver, progress, onProgress } = setupDriver({ result: { text: reviewReport(), exitCode: 0 }, runForMs: 30_000 });
 
-		await runStandardsReview({ cwd: '/repo', driver, packs: [packOf({ ruleIds: ['common-placement'] })], channels: [], files: ['src/a.ts'], onProgress });
+		await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ ruleIds: ['common-placement'] })],
+			packagesDir: 'packages',
+			files: ['src/a.ts'],
+			onProgress,
+		});
 		jest.advanceTimersByTime(120_000);
 
 		expect(progress.filter((line) => line.includes('still running'))).toHaveLength(1);

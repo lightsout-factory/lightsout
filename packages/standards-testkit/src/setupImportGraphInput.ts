@@ -17,7 +17,7 @@ export const setupImportGraphInput = ({ edges = [], dependencies = [], ...overri
 		tests: [],
 		files: paths,
 		referenceFiles: [],
-		standardsPacks: [],
+		standardsLibraries: [],
 		edges,
 		dependencies: new Map(dependencies),
 		...overrides,

@@ -44,8 +44,8 @@ do not pad the list to look thorough.
   environment-changing command. Use the harness's file tools to read. If the
   harness exposes the filesystem only through a shell, use the shell solely
   to read files — never for repository commands.
-- `rule` must be one of the rule ids given to you, spelled exactly. A finding
-  naming any other id is dropped.
+- `rule` must be one of the rule names given to you, copied exactly as given,
+  library prefix included. A finding naming any other rule is dropped.
 - Every finding needs at least one file, with a repo-relative path as it was
   listed to you. Line numbers are welcome when you have them.
 
@@ -59,7 +59,7 @@ output: your actual message starts with `{` and ends with `}`.
 {
 	"findings": [
 		{
-			"rule": "the-rule-id-exactly-as-given",
+			"rule": "library/rule-name-exactly-as-given",
 			"files": [{ "path": "src/example.ts", "startLine": 12, "endLine": 30 }],
 			"detail": "what is true of this site, in the rule's own terms",
 			"guidance": "optional — what to do about findings of this kind"

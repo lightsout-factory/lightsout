@@ -2,8 +2,8 @@ import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { appendReviewFindings } from '#src/runState/appendReviewFindings.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
 
 interface Params {
 	cwd: string;
@@ -11,11 +11,11 @@ interface Params {
 	runId: string;
 	driver: Driver;
 	batch: RefactorBatch;
-	packs: LoadedStandardsPack[];
-	/** A document out of play is not reviewed. */
-	channels: string[];
+	groups: StandardsGroup[];
 	/** The batch's own files before it works, the ones it wrote after. */
 	files: string[];
+	/** Monorepo package parent dir, so each finding is graded by its file's package group. */
+	packagesDir: string;
 	/** false skips the agent entirely — code-checks-only mode. */
 	agentReview: boolean;
 	timeoutMs: number;
@@ -32,9 +32,9 @@ export const runBatchReview = async ({
 	runId,
 	driver,
 	batch,
-	packs,
-	channels,
+	groups,
 	files,
+	packagesDir,
 	agentReview,
 	timeoutMs,
 	onProgress,
@@ -46,9 +46,9 @@ export const runBatchReview = async ({
 	const review = await runStandardsReview({
 		cwd,
 		driver,
-		packs,
-		channels,
+		groups,
 		files,
+		packagesDir,
 		timeoutMs,
 		onProgress: (message) => onProgress(`${batch.id}: ${message}`),
 	});

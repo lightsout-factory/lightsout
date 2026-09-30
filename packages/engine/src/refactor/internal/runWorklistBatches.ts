@@ -11,7 +11,7 @@ interface Params {
 	run: RefactorRun;
 	driver: Driver;
 	worklist: RefactorWorklist;
-	batchInputs: Pick<Parameters<typeof runBatch>[0], 'packs' | 'channels' | 'standards' | 'testStandards' | 'agentReview'>;
+	batchInputs: Pick<Parameters<typeof runBatch>[0], 'groups' | 'standards' | 'testStandards' | 'agentReview'>;
 	/** Stop (parked, resumable) after this many batches this run — budget control. */
 	maxBatches?: number;
 	/** Consecutive declines carried in from persisted steps on resume. */

@@ -1,42 +1,67 @@
-import type { StandardsPackDocumentView, StandardsPackRuleListing, StandardsPackView } from '@lightsout/engine';
+import type { StandardsPackListing, StandardsPackRuleListing, StandardsPackView, StandardsTopicView } from '@lightsout/engine';
 import { StandardsSet } from '@lightsout/engine/contracts';
 import { buildStandardsPackListing } from '#tests/helpers/buildStandardsPackListing.ts';
 import { buildStandardsPackRuleListing } from '#tests/helpers/buildStandardsPackRuleListing.ts';
 
-/** One document per distinct `documentPath` the rules name, each holding its own rules in order. */
-const buildDocuments = ({ rules }: { rules: StandardsPackRuleListing[] }) =>
+/** One topic per distinct `documentPath` the rules name, each holding its own rules in order. */
+const buildTopics = ({ rules }: { rules: StandardsPackRuleListing[] }) =>
 	[...new Set(rules.map((rule) => rule.documentPath))].map(
-		(path): StandardsPackDocumentView => ({
+		(path): StandardsTopicView => ({
 			set: rules.find((rule) => rule.documentPath === path)?.set ?? StandardsSet.Code,
 			path,
-			channel: rules.find((rule) => rule.documentPath === path)?.channel ?? 'base',
 			intro: `What ${path} argues.`,
 			ruleIds: rules.filter((rule) => rule.documentPath === path).map((rule) => rule.id),
 		}),
 	);
 
+/** One pack holding every rule and topic, each rule at its default severity and options. */
+const buildPacks = ({ rules, topics }: { rules: StandardsPackRuleListing[]; topics: StandardsTopicView[] }) => {
+	const checked = rules.filter((rule) => rule.checked).length;
+
+	return [
+		buildStandardsPackListing({
+			topics: topics.map((topic) => `lightsout/${topic.path}`),
+			rules: rules.map((rule) => ({ name: rule.name, severity: rule.defaultSeverity, options: rule.defaultOptions })),
+			totals: { checked, judgment: rules.length - checked },
+		}),
+	];
+};
+
 interface Params {
-	name?: string;
-	isDefault?: boolean;
-	path?: string;
 	rules?: StandardsPackRuleListing[];
-	/** Left out, one document per distinct `documentPath` across the rules. */
-	documents?: StandardsPackDocumentView[];
+	/** Left out, one topic per distinct `documentPath` across the rules. */
+	topics?: StandardsTopicView[];
+	/** Left out, one `node` pack holding every rule. */
+	packs?: StandardsPackListing[];
 	/** Applied last, so a test can drop an optional field the defaults fill. */
 	overrides?: Partial<StandardsPackView>;
 }
 
-/** One pack as its page shows it: the listing row, its documents, and every rule's row. */
+/** The lightsout library as its pages show it: its packs, its topics, and every rule's row. */
 export const buildStandardsPackView = ({
-	name = 'lightsout-defaults',
-	isDefault = true,
-	path = 'packages/standards-typescript',
 	rules = [buildStandardsPackRuleListing()],
-	documents = buildDocuments({ rules }),
+	topics = buildTopics({ rules }),
+	packs = buildPacks({ rules, topics }),
 	overrides = {},
-}: Params = {}): StandardsPackView => ({
-	...buildStandardsPackListing({ name, isDefault, path, totals: { rules: rules.length, checked: rules.filter((rule) => rule.checked).length } }),
-	documents,
-	rules,
-	...overrides,
-});
+}: Params = {}): StandardsPackView => {
+	const checked = rules.filter((rule) => rule.checked).length;
+
+	return {
+		name: 'lightsout',
+		description: 'The rules lightsout ships.',
+		rootPath: 'packages/lightsout-standards',
+		built: false,
+		totals: {
+			rules: rules.length,
+			checked,
+			judgment: rules.length - checked,
+			topics: topics.length,
+			packs: packs.length,
+			withFixtures: rules.filter((rule) => rule.fixtureCounts.pass > 0 && rule.fixtureCounts.fail > 0).length,
+		},
+		packs,
+		topics,
+		rules,
+		...overrides,
+	};
+};

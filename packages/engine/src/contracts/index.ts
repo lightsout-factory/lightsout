@@ -18,7 +18,7 @@ export {
 	RawStandardsFinding,
 	StandardsCheckModule,
 	StandardsInputKind,
-	StandardsPackRoot,
+	StandardsLibraryRoot,
 	StandardsSet,
 } from '@lightsout/standards-contracts';
 export { ActivityLevelEnd } from '#src/contracts/activity/ActivityLevelEnd.ts';
@@ -148,13 +148,15 @@ export { RunStatus } from '#src/contracts/run/RunStatus.ts';
 export { RunUsage } from '#src/contracts/run/RunUsage.ts';
 export { StepRecord } from '#src/contracts/run/StepRecord.ts';
 export { TestReviewRecord } from '#src/contracts/run/TestReviewRecord.ts';
-export { StandardsCheckOverrides } from '#src/contracts/StandardsCheckOverrides.ts';
+export { StandardsRuleSettings } from '#src/contracts/StandardsRuleSettings.ts';
 export { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
 export { ShipMergeMethod } from '#src/contracts/ship/ShipMergeMethod.ts';
 export { ShippingProgress } from '#src/contracts/ship/ShippingProgress.ts';
 export { ShippingStepId } from '#src/contracts/ship/ShippingStepId.ts';
 export { ShipResult } from '#src/contracts/ship/ShipResult.ts';
 export { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
+export { builtInStandardsLibraryName } from '#src/contracts/standards/builtInStandardsLibraryName.ts';
+export { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 export { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutcome.ts';
 export { AdvisoryResponse } from '#src/contracts/standardsCheck/AdvisoryResponse.ts';
 export { ReviewFindingRecord } from '#src/contracts/standardsCheck/ReviewFindingRecord.ts';
@@ -182,13 +184,13 @@ export { RunBurnDown } from '#src/contracts/views/runBurnDown/RunBurnDown.ts';
 export { RunBurnDownBatch } from '#src/contracts/views/runBurnDown/RunBurnDownBatch.ts';
 export { RunBurnDownBatchOutcome } from '#src/contracts/views/runBurnDown/RunBurnDownBatchOutcome.ts';
 export { StandardsPackBundle } from '#src/contracts/views/StandardsPackBundle.ts';
-export { StandardsPackDocumentView } from '#src/contracts/views/StandardsPackDocumentView.ts';
 export { StandardsPackFixture } from '#src/contracts/views/StandardsPackFixture.ts';
 export { StandardsPackListing } from '#src/contracts/views/StandardsPackListing.ts';
 export { StandardsPackRuleListing } from '#src/contracts/views/StandardsPackRuleListing.ts';
 export { StandardsPackRuleView } from '#src/contracts/views/StandardsPackRuleView.ts';
 export { StandardsPackView } from '#src/contracts/views/StandardsPackView.ts';
 export { StandardsRuleView } from '#src/contracts/views/StandardsRuleView.ts';
+export { StandardsTopicView } from '#src/contracts/views/StandardsTopicView.ts';
 export { StandardsTrendPoint } from '#src/contracts/views/StandardsTrendPoint.ts';
 export { StandardsView } from '#src/contracts/views/StandardsView.ts';
 export { CommitMessage } from '#src/contracts/work/CommitMessage.ts';

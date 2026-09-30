@@ -9,7 +9,7 @@ import type { FrozenWorklist } from '#src/views/internal/common/types/FrozenWork
 import { buildRunBurnDown } from '#src/views/internal/common/utils/buildRunBurnDown.ts';
 
 /** One frozen batch, with as many blocking findings as the case asks for. */
-const buildBatch = ({ id, rule = 'multi-export', blocking = 1 }: { id: string; rule?: string; blocking?: number }): RefactorBatch => ({
+const buildBatch = ({ id, rule = 'lightsout/multi-export', blocking = 1 }: { id: string; rule?: string; blocking?: number }): RefactorBatch => ({
 	id,
 	rule,
 	folder: 'packages/engine',
@@ -52,8 +52,8 @@ const frozen = ({ batches }: { batches: RefactorBatch[] }): FrozenWorklist => ({
 describe('buildRunBurnDown', () => {
 	test('a refactor run reports what its work-list froze against what its batches left standing', () => {
 		const batches = [
-			buildBatch({ id: 'batch-01:multi-export:engine', blocking: 3 }),
-			buildBatch({ id: 'batch-02:file-size:engine', rule: 'file-size', blocking: 2 }),
+			buildBatch({ id: 'batch-01:lightsout/multi-export:engine', blocking: 3 }),
+			buildBatch({ id: 'batch-02:lightsout/file-size:engine', rule: 'lightsout/file-size', blocking: 2 }),
 		];
 		const burnDown = buildRunBurnDown({
 			manifest: buildManifest({
@@ -77,10 +77,10 @@ describe('buildRunBurnDown', () => {
 			batchesResolved: 1,
 			batchesDeclined: 1,
 			batches: [
-				{ id: batches[0].id, rule: 'multi-export', folder: 'packages/engine', blocking: 3, outcome: 'resolved', rationale: [], advisoryOutcomes: [] },
+				{ id: batches[0].id, rule: 'lightsout/multi-export', folder: 'packages/engine', blocking: 3, outcome: 'resolved', rationale: [], advisoryOutcomes: [] },
 				{
 					id: batches[1].id,
-					rule: 'file-size',
+					rule: 'lightsout/file-size',
 					folder: 'packages/engine',
 					blocking: 2,
 					outcome: 'declined',
@@ -94,7 +94,10 @@ describe('buildRunBurnDown', () => {
 	});
 
 	test('a batch the run never reached counts its frozen findings as still standing', () => {
-		const batches = [buildBatch({ id: 'batch-01:multi-export:engine', blocking: 4 }), buildBatch({ id: 'batch-02:multi-export:engine', blocking: 6 })];
+		const batches = [
+			buildBatch({ id: 'batch-01:lightsout/multi-export:engine', blocking: 4 }),
+			buildBatch({ id: 'batch-02:lightsout/multi-export:engine', blocking: 6 }),
+		];
 		const burnDown = buildRunBurnDown({
 			manifest: buildManifest({
 				pipeline: PipelineKind.Refactor,
@@ -109,7 +112,7 @@ describe('buildRunBurnDown', () => {
 	});
 
 	test('a batch whose recorded report will not parse is read as never run, not as resolved', () => {
-		const batches = [buildBatch({ id: 'batch-01:multi-export:engine', blocking: 2 })];
+		const batches = [buildBatch({ id: 'batch-01:lightsout/multi-export:engine', blocking: 2 })];
 		const burnDown = buildRunBurnDown({
 			manifest: buildManifest({
 				pipeline: PipelineKind.Refactor,
@@ -122,7 +125,7 @@ describe('buildRunBurnDown', () => {
 	});
 
 	test('the advisories a batch reported are carried whole, so the panel can show what was declined and why', () => {
-		const batches = [buildBatch({ id: 'batch-01:multi-export:engine' })];
+		const batches = [buildBatch({ id: 'batch-01:lightsout/multi-export:engine' })];
 		const advisoryOutcomes = [{ rule: 'comment-narration', siteKey: 'src/a.ts:doThing', outcome: 'declined', reason: 'the comment states a billing rule' }];
 		const burnDown = buildRunBurnDown({
 			manifest: buildManifest({
@@ -138,10 +141,30 @@ describe('buildRunBurnDown', () => {
 	});
 
 	test('a work-list holding no size or crowding batch reports no over-cap count rather than a pair of zeroes', () => {
-		const batches = [buildBatch({ id: 'batch-01:multi-export:engine' })];
+		const batches = [buildBatch({ id: 'batch-01:lightsout/multi-export:engine' })];
 		const burnDown = buildRunBurnDown({ manifest: buildManifest({ pipeline: PipelineKind.Refactor }), worklist: frozen({ batches }) });
 
 		expect(burnDown?.overCap).toBe(undefined);
+	});
+
+	test('over-cap batches are recognised by full rule name', () => {
+		const batches = [
+			buildBatch({ id: 'batch-01:lightsout/file-size:engine', rule: 'lightsout/file-size', blocking: 2 }),
+			buildBatch({ id: 'batch-02:lightsout/naming:engine', rule: 'lightsout/naming', blocking: 3 }),
+		];
+		const burnDown = buildRunBurnDown({
+			manifest: buildManifest({
+				pipeline: PipelineKind.Refactor,
+				steps: [
+					{ id: batches[0].id, status: RunStatus.Passed, attempts: 1, report: { outcome: 'resolved', remainingSiteKeys: [], rationale: [] } },
+					{ id: batches[1].id, status: RunStatus.Passed, attempts: 1, report: { outcome: 'declined', remainingSiteKeys: ['a'], rationale: [] } },
+				],
+			}),
+			worklist: frozen({ batches }),
+		});
+
+		// only the file-size batch counts: its two findings before, none after
+		expect(burnDown?.overCap).toStrictEqual({ before: 2, after: 0 });
 	});
 
 	test('a refactor run whose frozen work-list is missing or unparseable gets no panel at all', () => {

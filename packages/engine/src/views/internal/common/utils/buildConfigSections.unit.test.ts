@@ -102,6 +102,56 @@ describe('buildConfigSections', () => {
 		expect(implement?.fields).toStrictEqual([{ key: 'implement', value: implementBlock, fromConfig: true, description: configKeyDescriptions.implement }]);
 	});
 
+	test('buildConfigSections lists standards-libraries in the Standards section', () => {
+		const libraries = { house: './standards/house', acme: '@acme/standards' };
+		const configs = [{ 'standards-libraries': libraries }, {}];
+
+		const rows = configs.map((config) =>
+			buildSections({ config })
+				.find((section) => section.title === 'Standards')
+				?.fields.find((field) => field.key === 'standards-libraries'),
+		);
+
+		expect(rows).toStrictEqual([
+			{ key: 'standards-libraries', value: libraries, fromConfig: true, description: configKeyDescriptions['standards-libraries'] },
+			{ key: 'standards-libraries', value: null, fromConfig: false, description: configKeyDescriptions['standards-libraries'] },
+		]);
+	});
+
+	test('lists package-standards-packs in the Standards section with the value the file set', () => {
+		const packagePacks = { 'web-app': 'lightsout/react-app' };
+		const configs = [{ 'package-standards-packs': packagePacks }, {}];
+
+		const rows = configs.map((config) => {
+			const fields = buildSections({ config }).find((section) => section.title === 'Standards')?.fields ?? [];
+			const index = fields.findIndex((field) => field.key === 'package-standards-packs');
+
+			return { follows: fields[index - 1]?.key, row: fields[index] };
+		});
+
+		expect(rows).toStrictEqual([
+			{
+				follows: 'standards-pack',
+				row: { key: 'package-standards-packs', value: packagePacks, fromConfig: true, description: configKeyDescriptions['package-standards-packs'] },
+			},
+			{
+				follows: 'standards-pack',
+				row: { key: 'package-standards-packs', value: null, fromConfig: false, description: configKeyDescriptions['package-standards-packs'] },
+			},
+		]);
+	});
+
+	test('buildConfigSections: the Standards section leads with standards-pack and drops the deleted keys', () => {
+		const standards = buildSections({ config: { 'standards-pack': 'lightsout/node' } }).find((section) => section.title === 'Standards');
+
+		const keys = standards?.fields.map((field) => field.key);
+
+		expect({ keys, first: standards?.fields[0] }).toStrictEqual({
+			keys: ['standards-pack', 'package-standards-packs', 'standards-libraries', 'standards-rule-settings'],
+			first: { key: 'standards-pack', value: 'lightsout/node', fromConfig: true, description: configKeyDescriptions['standards-pack'] },
+		});
+	});
+
 	test('renders the Implement section as an unset block when the config omits it', () => {
 		const implement = buildSections().find((section) => section.title === 'Implement');
 

@@ -1,5 +1,5 @@
 interface Params {
-	/** The document's intro — its `document.md` body, which opens on a `# ` heading. */
+	/** The document's intro — its `topic.md` body, which opens on a `# ` heading. */
 	intro: string;
 	/** Pack-relative folder path, the fallback when the intro has no heading. */
 	path: string;

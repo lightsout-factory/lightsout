@@ -13,7 +13,7 @@ const plainRepo: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test
 const monorepo: LightsoutConfig = {
 	...plainRepo,
 	'package-gates': { check: 'pnpm --filter {package} check', test: 'pnpm --filter {package} test' },
-	'standards-packs': false,
+	'standards-pack': false,
 };
 
 const idleDriver: Driver = { name: 'stub', invoke: async () => ({ text: '', exitCode: 0 }) };
@@ -152,7 +152,7 @@ describe('prepareRun', () => {
 	});
 
 	test('a declared standards pack that is missing is reported the same way', async () => {
-		const config: LightsoutConfig = { ...plainRepo, 'standards-packs': ['standards/ghost'] };
+		const config: LightsoutConfig = { ...plainRepo, 'standards-pack': 'lightsout/ghost' };
 		const { run, cwd } = await setupRun({ config });
 
 		write({ cwd, path: 'plan.md', content: '# Plan\n' });
@@ -160,18 +160,31 @@ describe('prepareRun', () => {
 		const prepared = await prepareRun({ run, cwd, config, packages: undefined });
 
 		// loading standards throws; the run has to end with a truthful manifest
-		expect('error' in prepared && prepared.error).toContain('standards pack root file not found');
+		expect('error' in prepared && prepared.error).toContain('pack lightsout/ghost: names no pack');
 	});
 
-	test('loads the standards the roles write against, announcing where the channels came from', async () => {
-		const config = plainRepo;
-		const { run, cwd, progress } = await setupRun({ config });
+	test("prepareRun: a pack that will not load is the run's error, and no channels line is printed", async () => {
+		const missingPackConfig: LightsoutConfig = { ...plainRepo, 'standards-pack': 'lightsout/ghost' };
+		const failing = await setupRun({ config: missingPackConfig });
+		const loading = await setupRun({ config: plainRepo });
 
-		write({ cwd, path: 'plan.md', content: '# Plan\n' });
+		write({ cwd: failing.cwd, path: 'plan.md', content: '# Plan\n' });
+		write({ cwd: loading.cwd, path: 'plan.md', content: '# Plan\n' });
 
-		const prepared = await prepareRun({ run, cwd, config, packages: undefined });
+		const [failed, loaded] = await Promise.all([
+			prepareRun({ run: failing.run, cwd: failing.cwd, config: missingPackConfig, packages: undefined }),
+			prepareRun({ run: loading.run, cwd: loading.cwd, config: plainRepo, packages: undefined }),
+		]);
 
-		expect('error' in prepared ? undefined : prepared.standards).toContain('<!-- lightsout-defaults: code/');
-		expect(progress.some((line) => line.startsWith('standards channels: base'))).toBe(true);
+		// the header names the pack now, so no run prints the old channels line
+		expect({
+			failedError: 'error' in failed ? failed.error : undefined,
+			loadedStandards: 'error' in loaded ? undefined : loaded.standards,
+			channelLines: [...failing.progress, ...loading.progress].filter((line) => line.startsWith('standards channels:')),
+		}).toEqual({
+			failedError: expect.stringContaining('lightsout/ghost'),
+			loadedStandards: expect.stringContaining('<!-- lightsout: code/'),
+			channelLines: [],
+		});
 	});
 });

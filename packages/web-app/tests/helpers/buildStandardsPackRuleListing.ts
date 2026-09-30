@@ -3,35 +3,36 @@ import { StandardsSet, StandardsSeverity } from '@lightsout/engine/contracts';
 
 interface Params {
 	id?: string;
+	/** Left out, the id under the lightsout library. */
+	name?: string;
 	set?: StandardsSet;
 	documentPath?: string;
 	summary?: string;
-	channel?: string;
 	checked?: boolean;
 	defaultSeverity?: typeof StandardsSeverity.Blocking | typeof StandardsSeverity.Advisory;
-	defaultSettings?: Record<string, number>;
+	defaultOptions?: Record<string, number>;
 	fixtureCounts?: { pass: number; fail: number };
 }
 
-/** One rule's row, as a pack's view lists it — an ordinary checked rule with both sides of its proof. */
+/** One rule's row, as a library's view lists it — an ordinary checked rule with both sides of its proof. */
 export const buildStandardsPackRuleListing = ({
 	id = 'type-assertion',
+	name = `lightsout/${id}`,
 	set = StandardsSet.Code,
 	documentPath = 'code/style-guide/typescript/type-assertions',
 	summary = 'When an `as` cast is fine, and when to narrow the type instead.',
-	channel = 'base',
 	checked = true,
 	defaultSeverity = StandardsSeverity.Blocking,
-	defaultSettings = {},
+	defaultOptions = {},
 	fixtureCounts = { pass: 1, fail: 1 },
 }: Params = {}): StandardsPackRuleListing => ({
 	id,
+	name,
 	set,
 	documentPath,
 	summary,
-	channel,
 	checked,
 	defaultSeverity,
-	defaultSettings,
+	defaultOptions,
 	fixtureCounts,
 });

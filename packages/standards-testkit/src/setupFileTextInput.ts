@@ -20,7 +20,7 @@ export const setupFileTextInput = ({ contents = [], ...overrides }: Params = {})
 		tests: [],
 		files: paths,
 		referenceFiles: [],
-		standardsPacks: [],
+		standardsLibraries: [],
 		contents: new Map(contents),
 		...overrides,
 	};

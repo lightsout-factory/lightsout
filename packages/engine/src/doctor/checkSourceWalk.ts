@@ -13,7 +13,7 @@ interface Params {
 const sourceExtension = /\.(m|c)?[jt]sx?$/;
 
 /** `fixtures/` is only a reason inside a standards pack, so the pack roots decide it rather than the name alone. */
-const skipReason = ({ path, generated, standardsPacks }: { path: string; generated: string[]; standardsPacks: string[] }) => {
+const skipReason = ({ path, generated, standardsLibraries }: { path: string; generated: string[]; standardsLibraries: string[] }) => {
 	const segments = path.split('/');
 
 	if (path.endsWith('.d.ts')) {
@@ -32,7 +32,7 @@ const skipReason = ({ path, generated, standardsPacks }: { path: string; generat
 		return 'declared generated';
 	}
 
-	const insidePack = standardsPacks.some((pack) => path.startsWith(`${pack}/`));
+	const insidePack = standardsLibraries.some((pack) => path.startsWith(`${pack}/`));
 
 	if (insidePack && segments.includes('fixtures')) {
 		return 'standards pack fixture';
@@ -61,9 +61,9 @@ export const checkSourceWalk = async ({ cwd, generated = [] }: Params): Promise<
 		.filter((path) => path !== '' && sourceExtension.test(path))
 		.map((path) => relative('.', path));
 
-	const { files, standardsPacks } = await listSourceFiles({ cwd, exclude: generated });
+	const { files, standardsLibraries } = await listSourceFiles({ cwd, exclude: generated });
 	const walked = new Set(files);
-	const unexplained = tracked.filter((path) => !walked.has(path) && skipReason({ path, generated, standardsPacks }) === undefined);
+	const unexplained = tracked.filter((path) => !walked.has(path) && skipReason({ path, generated, standardsLibraries }) === undefined);
 
 	if (unexplained.length === 0) {
 		return { id: 'source-walk', status: 'pass', detail: `walk reads ${files.length} of ${tracked.length} tracked source file(s); every skip is accounted for` };

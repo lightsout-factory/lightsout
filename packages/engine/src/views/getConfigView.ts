@@ -2,10 +2,11 @@ import { z } from 'zod';
 import { parseConfig } from '#src/common/config/parseConfig.ts';
 import { readConfigFile } from '#src/common/config/readConfigFile.ts';
 import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
+import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
 import type { ConfigView } from '#src/contracts/views/config/ConfigView.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
+import { mapPackRules } from '#src/standardsLibraries/mapPackRules.ts';
 import { ConfigNotFoundError } from '#src/views/ConfigNotFoundError.ts';
 import { buildConfigSections } from '#src/views/internal/common/utils/buildConfigSections.ts';
 
@@ -19,24 +20,6 @@ const listDeclaredKeys = ({ raw }: { raw: string }) => {
 	const declared = DeclaredConfig.parse(JSON.parse(raw));
 
 	return [...Object.keys(declared), ...Object.keys(declared.timeouts ?? {}).map((leaf) => `timeouts.${leaf}`)];
-};
-
-const getPackChannels = ({ pack }: { pack: LoadedStandardsPack }) => [...new Set(pack.documents.map((document) => document.channel))].sort();
-
-/**
- * `StandardsRuleListing` carries no pack field, and re-parsing its `doc` display
- * string would be a second format to keep true, so the loaded packs answer.
- */
-const mapRuleOwners = ({ packs }: { packs: LoadedStandardsPack[] }) => {
-	const owners = new Map<string, { pack: string; channel: string }>();
-
-	for (const pack of packs) {
-		for (const rule of pack.rules) {
-			owners.set(rule.id, { pack: pack.name, channel: rule.channel });
-		}
-	}
-
-	return owners;
 };
 
 interface Params {
@@ -59,37 +42,38 @@ export const getConfigView = async ({ cwd }: Params): Promise<ConfigView> => {
 	}
 
 	const config = parseConfig({ raw, configPath });
-	const packs = await resolveStandardsPacks({ cwd, config });
-	const listings = await listStandardsRules({ cwd, config });
-	const owners = mapRuleOwners({ packs });
+	const groups = await resolveStandardsGroups({ cwd, config });
+	const listings = listStandardsRules({ groups });
+	// `StandardsRuleListing` carries no library field, and re-parsing its `doc`
+	// display string would be a second format to keep true, so the pack rules answer.
+	const packRules = mapPackRules({ packs: groups.map((group) => group.pack) });
 
 	return {
 		path: configPath,
 		harness: config.harness ?? null,
 		model: config.model ?? null,
 		sections: buildConfigSections({ config, declaredKeys: listDeclaredKeys({ raw }) }),
-		// A config naming no pack loads exactly the default one, as
-		// `resolveStandardsPacks` encodes.
-		packs: packs.map((pack) => ({
-			name: pack.name,
-			rootPath: pack.rootPath,
-			isDefault: config['standards-packs'] === undefined,
-			channels: getPackChannels({ pack }),
+		standardsGroups: groups.map((group) => ({
+			packages: group.packages,
+			appliesTo: describePackageSet({ packages: group.packages }),
+			pack: group.pack.name,
+			source: group.source,
 		})),
-		channels: config['standards-channels'] ?? [],
 		ruleStates: listings.flatMap((listing) => {
-			const owner = owners.get(listing.rule);
+			const rule = packRules.get(listing.rule);
 
-			return owner === undefined
+			return rule === undefined
 				? []
 				: [
 						{
 							rule: listing.rule,
-							pack: owner.pack,
-							channel: owner.channel,
+							id: rule.id,
+							library: rule.library,
 							severity: listing.severity,
 							fromConfig: listing.fromConfig,
-							settings: listing.settings,
+							options: listing.options,
+							packages: listing.packages,
+							appliesTo: describePackageSet({ packages: listing.packages }),
 						},
 					];
 		}),

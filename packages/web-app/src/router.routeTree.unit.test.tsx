@@ -1,14 +1,12 @@
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
 import type { RunListing, StandardsView } from '@lightsout/engine';
 import { QueryClient } from '@tanstack/react-query';
-import { createRouter, isNotFound } from '@tanstack/react-router';
+import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { QueryKey } from '#src/common/constants/QueryKey.ts';
-import { Theme } from '#src/common/constants/Theme.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import appCssHref from '#src/styles/app.css?url';
-import { ThemeProvider } from '#src/theme/ThemeProvider.tsx';
 import { buildConfigView } from '#tests/helpers/buildConfigView.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
 import { buildStandardsView } from '#tests/helpers/buildStandardsView.ts';
@@ -33,8 +31,8 @@ jest.mock('#src/lightsout/getReader.ts', () => ({
 // -------------------------
 // Which repo is open is answered by walking the real filesystem, so the app
 // frame would otherwise report whatever directory Jest happened to start in.
-// Only the walk is stood in for: whether the site is public is the real
-// `isPublicDeployment`, read from the variable each test sets.
+// Only the walk is stood in for: whether the site is public stays the real
+// `isPublicDeployment`.
 const mockRequireLocalRepoRoot = jest.fn<() => string>();
 
 jest.mock('#src/common/utils/requireLocalRepoRoot.ts', () => ({
@@ -98,7 +96,6 @@ interface FilePage {
 		component: ComponentType;
 		notFoundComponent: ComponentType;
 		head: () => { meta: { title: string }[] };
-		beforeLoad: (input: { context: { queryClient: QueryClient } }) => Promise<void>;
 		loader: (input: { context: { queryClient: QueryClient } }) => Promise<void>;
 	};
 }
@@ -124,28 +121,6 @@ const setupRouteTree = ({ runs = [buildRunListing()], repoRoot = '/repos/lightso
 	return { pages, queryClient, repoRoot, rootPage, runs, standards };
 };
 
-/** The app frame's gate, on a local dev server or on the public site. */
-const setupAppGate = ({ publicSite = false }: { publicSite?: boolean } = {}) => {
-	const { pages, queryClient, repoRoot } = setupRouteTree({ repoRoot: '/repos/other-project' });
-
-	if (publicSite) {
-		process.env.LIGHTSOUT_PUBLIC = '1';
-	}
-
-	return { beforeLoad: pages['/app'].options.beforeLoad, queryClient, repoRoot };
-};
-
-/** What a gate threw, so a test can assert on a refusal that is not an `Error`. */
-const catchRefusal = async ({ attempt }: { attempt: () => Promise<void> }): Promise<unknown> => {
-	try {
-		await attempt();
-	} catch (error) {
-		return error;
-	}
-
-	throw new Error('the gate let the load through where it should have refused');
-};
-
 /** Any route's loader, with the client it fills and the data the reader will answer it with. */
 const setupLoader = ({ id }: { id: string }) => {
 	const { pages, queryClient, runs, standards } = setupRouteTree();
@@ -163,42 +138,6 @@ const setupRootPage = (params: SetupParams = {}) => {
 			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot } },
 			{ queryKey: [QueryKey.Runs], data: runs },
 		],
-	});
-};
-
-/** One of the two frames — `/_site` or `/app` — with a route open inside it. */
-const setupFrame = ({ id, ...params }: SetupParams & { id: string }) => {
-	const { pages, repoRoot, runs } = setupRouteTree(params);
-	const Frame = pages[id].options.component;
-
-	renderWithQueryClient({
-		// The frames carry the theme control, which the root route's provider wraps
-		// in the running app; rendering one on its own has to supply it.
-		ui: (
-			<ThemeProvider defaultTheme={Theme.Dark}>
-				<Frame />
-			</ThemeProvider>
-		),
-		seed: [
-			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot } },
-			{ queryKey: [QueryKey.Runs], data: runs },
-		],
-	});
-};
-
-/** The landing page, with the site frame around it — every link a public visitor starts from. */
-const setupLandingInFrame = () => {
-	const { pages } = setupRouteTree();
-	const Frame = pages['/_site'].options.component;
-	const Landing = pages['/_site/'].options.component;
-
-	renderWithQueryClient({
-		ui: (
-			<ThemeProvider defaultTheme={Theme.Dark}>
-				<Frame />
-				<Landing />
-			</ThemeProvider>
-		),
 	});
 };
 
@@ -257,11 +196,10 @@ const setupRunsPage = ({ runs = [buildRunListing({ title: 'raise coverage' })], 
 // may be named after. `router.tsx` is the tree's only consumer, which makes this
 // a scenario suite on the router: what it serves, as opposed to how it is wired.
 //
-// The sell zone's three standards routes and the run detail route are concerns
-// of their own and have their own suites beside this one; this file carries the
-// shell and the rest of the local zone.
+// The sell zone's standards routes, the run detail route and the two frames
+// around the pages are concerns of their own and have their own suites beside
+// this one; this file carries the rest of the shell and the local zone.
 afterEach(() => {
-	delete process.env.LIGHTSOUT_PUBLIC;
 	jest.clearAllMocks();
 });
 
@@ -286,8 +224,8 @@ describe('routeTree', () => {
 			'/_site/commands/$command',
 			'/_site/docs/$doc',
 			'/_site/standards-packs/',
-			'/_site/standards-packs/$ruleSet/',
-			'/_site/standards-packs/$ruleSet/$rule',
+			'/_site/standards-packs/$library/packs/$pack',
+			'/_site/standards-packs/$library/rules/$rule',
 			'/app',
 			'/app/',
 			'/app/config',
@@ -299,6 +237,24 @@ describe('routeTree', () => {
 			'/app/standards',
 			'__root__',
 		]);
+	});
+
+	test('serves pack and rule pages under their library and no rule-set pages', () => {
+		const { pages } = setupRouteTree();
+
+		const ids = Object.keys(pages);
+
+		expect({
+			packsPage: ids.includes('/_site/standards-packs/'),
+			packPage: ids.includes('/_site/standards-packs/$library/packs/$pack'),
+			rulePage: ids.includes('/_site/standards-packs/$library/rules/$rule'),
+			ruleSetPages: ids.filter((id) => id.includes('$ruleSet')),
+		}).toStrictEqual({
+			packsPage: true,
+			packPage: true,
+			rulePage: true,
+			ruleSetPages: [],
+		});
 	});
 
 	test('names the page, declares its encoding and viewport, and links the stylesheet the app is themed with', () => {
@@ -314,33 +270,6 @@ describe('routeTree', () => {
 		const { rootPage } = setupRouteTree();
 
 		expect(rootPage.loader).toBeUndefined();
-	});
-
-	test('fetches which repo is open before any app page loads, leaving run state to the pages that show it', async () => {
-		const { beforeLoad, queryClient, repoRoot } = setupAppGate();
-
-		await beforeLoad({ context: { queryClient } });
-
-		expect({ repoRoot: queryClient.getQueryData([QueryKey.RepoRoot]), runs: queryClient.getQueryData([QueryKey.Runs]) }).toStrictEqual({
-			repoRoot: { repoRoot },
-			runs: undefined,
-		});
-	});
-
-	test('answers not-found for the whole app on the public site, before any page under it loads', async () => {
-		const { beforeLoad, queryClient } = setupAppGate({ publicSite: true });
-
-		const refusal = await catchRefusal({ attempt: () => beforeLoad({ context: { queryClient } }) });
-
-		expect(isNotFound(refusal)).toBe(true);
-	});
-
-	test('asks the server nothing on the public site, so not even the repo root is fetched', async () => {
-		const { beforeLoad, queryClient } = setupAppGate({ publicSite: true });
-
-		await catchRefusal({ attempt: () => beforeLoad({ context: { queryClient } }) });
-
-		expect(mockRequireLocalRepoRoot).not.toHaveBeenCalled();
 	});
 
 	test('renders the page as an English HTML document', () => {
@@ -365,42 +294,6 @@ describe('routeTree', () => {
 		const open = screen.getByText('the open route');
 
 		expect(open).toBeInTheDocument();
-	});
-
-	test('gives the app frame the local zone when a repo was found', () => {
-		setupFrame({ id: '/app', repoRoot: '/repos/other-project' });
-
-		const zone = screen.getByRole('navigation', { name: 'Your repo' });
-
-		expect(zone.textContent).toContain('Runs');
-	});
-
-	test('leaves the local zone out of the site frame, so the landing page is not wearing a sidebar', () => {
-		setupFrame({ id: '/_site', repoRoot: '/repos/other-project' });
-
-		const zone = screen.queryByRole('navigation', { name: 'Your repo' });
-
-		expect(zone).not.toBeInTheDocument();
-	});
-
-	test('offers the public pages no way into the app, even with a repo found, since they never read one', () => {
-		setupFrame({ id: '/_site', repoRoot: '/repos/other-project' });
-
-		const app = screen.queryByRole('link', { name: 'App' });
-
-		expect(app).not.toBeInTheDocument();
-	});
-
-	test('links nowhere into the app from the landing page or the frame around it', () => {
-		setupLandingInFrame();
-
-		const hrefs = screen.queryAllByRole('link').map((link) => link.getAttribute('href') ?? '');
-
-		// The site's own links are counted too, so an empty render cannot pass as a page with no way into the app.
-		expect({ sitePages: hrefs.includes('/commands'), intoApp: hrefs.filter((href) => href.startsWith('/app')) }).toStrictEqual({
-			sitePages: true,
-			intoApp: [],
-		});
 	});
 
 	test('shows what went wrong when a route throws', () => {

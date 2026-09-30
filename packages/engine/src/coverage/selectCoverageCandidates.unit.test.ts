@@ -33,17 +33,19 @@ const select = async ({
 	files,
 	totals,
 	setAside = [],
-	standardsPacks = [],
+	standardsLibraries = [],
 	compiler,
 }: {
 	cwd: string;
 	files: CoverageFile[];
 	totals: CoverageTotal[];
 	setAside?: string[];
-	standardsPacks?: string[];
+	standardsLibraries?: string[];
 	compiler?: ReturnType<typeof resolveConsumerTypescript>;
 }) =>
-	(await selectCoverageCandidates({ cwd, measured: { files, totals }, setAsidePaths: new Set(setAside), standardsPacks, compiler })).map((entry) => entry.path);
+	(await selectCoverageCandidates({ cwd, measured: { files, totals }, setAsidePaths: new Set(setAside), standardsLibraries, compiler })).map(
+		(entry) => entry.path,
+	);
 
 describe('selectCoverageCandidates', () => {
 	test('a check under a standards pack’s tests/ set is source, not a test — the set name buys no exemption', async () => {
@@ -56,7 +58,7 @@ describe('selectCoverageCandidates', () => {
 			file({ path: 'packages/acme/common/utils/helper.unit.test.ts', statementsPct: 0 }),
 		];
 
-		expect(await select({ cwd, files, totals: [total()], standardsPacks: ['packages/acme'] })).toStrictEqual([
+		expect(await select({ cwd, files, totals: [total()], standardsLibraries: ['packages/acme'] })).toStrictEqual([
 			'packages/acme/tests/unit-testing/05-rule/check.ts',
 		]);
 	});

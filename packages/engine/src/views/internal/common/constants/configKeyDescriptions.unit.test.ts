@@ -36,6 +36,15 @@ describe('configKeyDescriptions', () => {
 		expect(configKeyDescriptions.implement).toMatch(/worktree/i);
 	});
 
+	test('describes package-standards-packs', () => {
+		const described = {
+			declared: Object.hasOwn(LightsoutConfig.shape, 'package-standards-packs'),
+			description: (configKeyDescriptions['package-standards-packs'] ?? '').trim() !== '',
+		};
+
+		expect(described).toStrictEqual({ declared: true, description: true });
+	});
+
 	test('names the fixed touched-file ceiling a File Budget cannot lift, so the page cannot promise an unbounded budget', () => {
 		// a sentence presenting `## File Budget` as the only limit on touched files
 		// is what let a 77-file phase through; the number is read from the lint's own

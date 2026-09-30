@@ -90,7 +90,7 @@ describe('StandardsFinding', () => {
 
 			// rule identity belongs to the loaded packages, so this boundary cannot
 			// hold a closed list without refusing every package but the bundled one.
-			// The typo protection moved to `resolvePackageRuleStates`, which is the
+			// The typo protection moved to `resolveStandardsGroups`, which is the
 			// first place the valid ids are known
 			expect(parsed.rule).toBe(rule);
 		}
@@ -104,7 +104,7 @@ describe('StandardsFinding', () => {
 
 			// the read boundary no longer narrows the id at all: it cannot tell a typo
 			// from a package's own rule name, so it keeps the value verbatim and leaves
-			// the id check to `resolvePackageRuleStates`, which knows the loaded ids
+			// the id check to `resolveStandardsGroups`, which knows the loaded ids
 			expect(parsed.rule).toBe(rule);
 		}
 	});

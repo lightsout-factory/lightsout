@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { ConfigFieldView } from '#src/contracts/views/config/ConfigFieldView.ts';
 
@@ -18,21 +19,37 @@ export const ConfigView = z.object({
 			fields: z.array(ConfigFieldView),
 		}),
 	),
-	/** Standards packs this config loads, by name and root path — links into the pack pages. */
-	packs: z.array(z.object({ name: z.string(), rootPath: z.string(), isDefault: z.boolean(), channels: z.array(z.string()) })),
-	/** The config's `standards-channels` value verbatim; empty when unset (channels are otherwise detected per run, which this view cannot do). */
-	channels: z.array(z.string()),
-	/** Every loaded rule with its effective severity here and whether config set it. */
+	/**
+	 * The groups this repo's standards resolve to, with no package scope: one per
+	 * pack and source. Empty only when standards-pack is false and
+	 * package-standards-packs names no package.
+	 */
+	standardsGroups: z.array(
+		z.object({
+			/** Package folder names under packages-dir; '' is the repo root group. */
+			packages: z.array(z.string()),
+			/** The packages as one label, the root group named first. */
+			appliesTo: z.string(),
+			pack: z.string(),
+			source: z.enum(StandardsPackSource),
+		}),
+	),
+	/** Every rule in the groups' packs, once per distinct state, with its effective severity, whether config set it and where it holds. */
 	ruleStates: z.array(
 		z.object({
+			/** The full rule name `<library>/<rule-id>` — the one a finding carries. */
 			rule: z.string(),
-			/** The pack that declares the rule, named beside it when several packs load. */
-			pack: z.string(),
-			/** The rule's channel — which set of rules it belongs to, and so where the ledger's link to it points. */
-			channel: z.string(),
+			/** The rule's id inside its library — the address the pack pages use. */
+			id: z.string(),
+			/** The library that defines the rule. */
+			library: z.string(),
 			severity: z.enum([StandardsSeverity.Blocking, StandardsSeverity.Advisory, StandardsSeverity.Off]),
 			fromConfig: z.boolean(),
-			settings: z.record(z.string(), z.number()),
+			options: z.record(z.string(), z.number()),
+			/** The package folder names this state applies to; '' is the repo root group. */
+			packages: z.array(z.string()),
+			/** The packages as one label, the root group named first. */
+			appliesTo: z.string(),
 		}),
 	),
 });

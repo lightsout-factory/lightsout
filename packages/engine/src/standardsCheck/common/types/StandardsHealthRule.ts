@@ -5,7 +5,8 @@ import type { StandardsSet } from '@lightsout/standards-contracts';
  * re-checked on disk, while advice has only the agent's own word for it.
  */
 export interface StandardsHealthRule {
-	id: string;
+	/** The full rule name `<library>/<rule-id>` — the one a listing and a finding carry. */
+	rule: string;
 	set: StandardsSet;
 	documentPath: string;
 	checked: boolean;

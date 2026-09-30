@@ -64,15 +64,15 @@ const executeCoverage = async ({
 		return redBaseline;
 	}
 
-	const { testStandards } = await resolveStandards({ cwd, config, packages: [] });
+	const { testStandards } = await resolveStandards({ cwd, config });
 	// Resolved once for the run: without a consumer TypeScript, grouping degrades
 	// to one file per batch component, exactly like the implement fan-out.
 	const compiler = resolveConsumerTypescript({ cwd, packagesDir: config['packages-dir'] ?? defaultPackagesDir });
 	// Without the pack roots, a rule check under a pack's `tests/` document set
 	// would be filtered out as a test everywhere.
-	const { standardsPacks } = await listSourceFiles({ cwd });
+	const { standardsLibraries } = await listSourceFiles({ cwd });
 
-	return runCoverageRounds({ run, driver, batchInputs: { testStandards, compiler, standardsPacks }, maxBatches, resumed: seeded });
+	return runCoverageRounds({ run, driver, batchInputs: { testStandards, compiler, standardsLibraries }, maxBatches, resumed: seeded });
 };
 
 /** Every pipeline takes the same repo lock, so no two runs can race one tree. */

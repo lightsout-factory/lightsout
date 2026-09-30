@@ -45,7 +45,7 @@ describe('StandardsPacksSection', () => {
 
 	test('counts the pack’s deterministic checks and agent checks, from the pack itself', () => {
 		setupSection({
-			pack: { ...buildStandardsPackView(), totals: { rules: 112, checked: 53, judgment: 59, documents: 24, withFixtures: 112 } },
+			pack: { ...buildStandardsPackView(), totals: { rules: 112, checked: 53, judgment: 59, topics: 24, packs: 10, withFixtures: 112 } },
 		});
 
 		expect([screen.getByText('112'), screen.getByText('53'), screen.getByText('59')]).toHaveLength(3);
@@ -66,6 +66,20 @@ describe('StandardsPacksSection', () => {
 		setupSection();
 
 		expect(screen.getByRole('link', { name: 'Browse Standards Packs' })).toHaveAttribute('href', '/standards-packs');
+	});
+
+	test('reads its numbers from the bundled library once it answers', () => {
+		setupSection({
+			pack: { ...buildStandardsPackView(), totals: { rules: 137, checked: 61, judgment: 76, topics: 26, packs: 10, withFixtures: 137 } },
+		});
+
+		const ruleTotal = screen.queryByText('137');
+		const browseLink = screen.getByRole('link', { name: 'Browse Standards Packs' });
+
+		expect({ ruleTotalShown: ruleTotal !== null, browseHref: browseLink.getAttribute('href') }).toStrictEqual({
+			ruleTotalShown: true,
+			browseHref: '/standards-packs',
+		});
 	});
 
 	test('shows the three settings a repo gives each rule', () => {

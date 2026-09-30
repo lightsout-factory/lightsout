@@ -51,7 +51,7 @@ export const setupTypeCheckerInput = ({ sources = [], dependencies = [], ...over
 		tests: [],
 		files: parsed.map(({ path }) => path),
 		referenceFiles: [],
-		standardsPacks: [],
+		standardsLibraries: [],
 		compiler: ts,
 		typedFiles: new Map(parsed.map(({ path, sourceFile }) => [path, { sourceFile, checker }])),
 		dependencies: new Map(dependencies),

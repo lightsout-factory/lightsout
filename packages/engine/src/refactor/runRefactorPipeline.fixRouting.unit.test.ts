@@ -95,7 +95,7 @@ const setupMixedRed = async () => {
 				test: 'node -e "process.exit(0)" {package}',
 				'test-coverage': packageGateCommand({ pkg: '@acme/web', flag: coverageFlag }),
 			},
-			'standards-checks': strictProfile,
+			'standards-rule-settings': strictProfile,
 		}),
 	);
 	writeSource({ dir, path: 'packages/api/src/multi.ts', source: multiExport });
@@ -275,7 +275,7 @@ describe('buildBatchFixInvocation — via runRefactorPipeline', () => {
 		// the heading the executor's role prompt names, or the executor re-fixes blind
 		// to what it was sent to resolve
 		expect(fixPrompt).toContain('# Standards findings (deterministic checks)');
-		expect(fixPrompt).toMatch(/- \[multi-export] src\/multi\.ts/);
+		expect(fixPrompt).toMatch(/- \[lightsout\/multi-export] src\/multi\.ts/);
 	});
 
 	test('carries the live size advisories into the refactor executor’s fix invocation', async () => {
@@ -288,7 +288,7 @@ describe('buildBatchFixInvocation — via runRefactorPipeline', () => {
 		expect(result.ok).toBe(true);
 		// the advisories the pre-batch check recomputed ride the fix pass beside the
 		// findings, so the second pass judges the same context the first one did
-		expect(fixPrompt).toMatch(/- \[function-size] alpha\/multi\.ts:\d+/);
+		expect(fixPrompt).toMatch(/- \[lightsout\/function-size] alpha\/multi\.ts:\d+/);
 	});
 
 	test('asks the fix pass to account for the advisories it carries', async () => {

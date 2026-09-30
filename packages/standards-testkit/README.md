@@ -10,11 +10,11 @@ import { check } from './check.ts';
 test('flags a file over the line cap', () => {
 	const input = setupSyntaxTreeInput({ sources: [['src/big.ts', tooManyLines]] });
 
-	expect(check.run({ input, settings: { file: 250 } })).toHaveLength(1);
+	expect(check.run({ input, options: { file: 250 } })).toHaveLength(1);
 });
 
 test('ignores an input of a kind it did not ask for', () => {
-	expect(check.run({ input: setupOtherKindInput(), settings: {} })).toStrictEqual([]);
+	expect(check.run({ input: setupOtherKindInput(), options: {} })).toStrictEqual([]);
 });
 ```
 
@@ -35,7 +35,7 @@ folders. That is a whole-pack question rather than a single-rule one, and it
 already ships as a command:
 
 ```
-lightsout standards-validate --pack <path to your pack>
+lightsout standards-validate --library <path to your library>
 ```
 
 Every rule is run against both sides of its own example pair, and a rule whose

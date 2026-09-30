@@ -4,7 +4,7 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runBatchReview } from '#src/refactor/batch/internal/runBatchReview.ts';
 import { findIntroducedFindings } from '#src/refactor/findIntroducedFindings.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 
 interface Params {
 	cwd: string;
@@ -12,13 +12,13 @@ interface Params {
 	runId: string;
 	driver: Driver;
 	batch: RefactorBatch;
-	packs: LoadedStandardsPack[];
-	/** A document out of play is not reviewed. */
-	channels: string[];
+	groups: StandardsGroup[];
 	/** The pre-edit advisories, machine and agent alike. */
 	baseline: StandardsFinding[];
 	/** The files the batch's agents actually claimed — the only code this run can have written. */
 	changedFiles: string[];
+	/** Monorepo package parent dir, handed to the review so it grades each finding by its file's package group. */
+	packagesDir: string;
 	/** false skips this read entirely — code-checks-only mode. */
 	agentReview: boolean;
 	timeoutMs: number;
@@ -38,10 +38,10 @@ export const reviewBatchOutput = async ({
 	runId,
 	driver,
 	batch,
-	packs,
-	channels,
+	groups,
 	baseline,
 	changedFiles,
+	packagesDir,
 	agentReview,
 	timeoutMs,
 	onProgress,
@@ -50,7 +50,7 @@ export const reviewBatchOutput = async ({
 		return [];
 	}
 
-	const reviewed = await runBatchReview({ cwd, runId, driver, batch, packs, channels, files: changedFiles, agentReview, timeoutMs, onProgress });
+	const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: changedFiles, packagesDir, agentReview, timeoutMs, onProgress });
 
 	return findIntroducedFindings({ frozen: baseline, live: reviewed, severity: StandardsSeverity.Advisory });
 };

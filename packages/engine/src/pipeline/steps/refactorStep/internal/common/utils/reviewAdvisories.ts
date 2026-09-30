@@ -1,12 +1,12 @@
+import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
 
 interface Params {
 	run: PipelineRun;
-	packs: LoadedStandardsPack[];
-	channels: string[];
+	groups: StandardsGroup[];
 	/** Repo-relative files to review; an empty list spends no agent. */
 	files: string[];
 }
@@ -15,13 +15,13 @@ interface Params {
  * Never throws: a review that could not run narrates why and contributes nothing, because the
  * deterministic checks are the real evidence and must not wait on an opinion.
  */
-export const reviewAdvisories = async ({ run, packs, channels, files }: Params): Promise<StandardsFinding[]> => {
+export const reviewAdvisories = async ({ run, groups, files }: Params): Promise<StandardsFinding[]> => {
 	const review = await runStandardsReview({
 		cwd: run.cwd,
 		driver: run.driver,
-		packs,
-		channels,
+		groups,
 		files,
+		packagesDir: run.config['packages-dir'] ?? defaultPackagesDir,
 		timeoutMs: run.agentTimeoutMs,
 		onProgress: (message) => run.progress(message),
 	});

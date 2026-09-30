@@ -23,7 +23,9 @@ interface Params {
  */
 export const runCli = ({ args }: Params): Promise<{ stdout: string; stderr: string; code: number | null }> =>
 	new Promise((resolve, reject) => {
-		const child = spawn(process.execPath, [cliPath, ...args]);
+		// Passed explicitly: the child otherwise inherits the real process
+		// environment, not the sandbox's, and would miss what the test setup sets.
+		const child = spawn(process.execPath, [cliPath, ...args], { env: { ...process.env } });
 
 		let stdout = '';
 		let stderr = '';

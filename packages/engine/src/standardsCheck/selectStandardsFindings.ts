@@ -11,7 +11,7 @@ interface Params {
  * Severity is the only gate lever. There is no allow-list of blockable rules:
  * one that is off by default and needs remembering to switch on never gets
  * switched on, so a repo that wants a rule to stop blocking says so in its
- * committed `standards-checks` config instead.
+ * committed `standards-rule-settings` config instead.
  */
 export const selectStandardsFindings = ({ findings, changedFiles }: Params): { workList: StandardsFinding[]; advisories: StandardsFinding[] } => {
 	const changed = new Set(changedFiles);

@@ -1,14 +1,18 @@
 import { execSync } from 'node:child_process';
-import { unlinkSync, writeFileSync } from 'node:fs';
+import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runBatch } from '#src/refactor/batch/runBatch.ts';
+import { readReviewFindings } from '#src/runState/readReviewFindings.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { report } from '#tests/helpers/report.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';
@@ -17,31 +21,34 @@ import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { verdict } from '#tests/helpers/verdict.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
 
+const singleReturn: LoadedStandardsRule = {
+	id: 'single-return',
+	name: 'acme/single-return',
+	library: 'acme',
+	set: 'code',
+	documentPath: 'code/style-guide/patterns/single-return',
+	summary: 'more than one exit from a function',
+	prose: 'the argument for the rule',
+	checked: false,
+	defaultSeverity: StandardsSeverity.Advisory,
+	defaultOptions: {},
+	requires: [],
+	fixturesPath: '/packages/acme/single-return/fixtures',
+};
+
 /**
- * One judgment-only rule in one pack — the run's packs, which runBatch owns the
+ * One judgment-only rule in one group — the run's groups, which runBatch owns the
  * threading of: they reach the pre-edit read through collectBatchAdvisories and
  * the read of what the batch wrote through the tools it builds.
  */
-const judgmentPacks: LoadedStandardsPack[] = [
+const judgmentGroups: StandardsGroup[] = [
 	{
-		name: 'acme',
-		formatVersion: 1,
-		rootPath: '/packages/acme',
-		documents: [],
-		rules: [
-			{
-				id: 'single-return',
-				set: 'code',
-				documentPath: 'code/style-guide/patterns/single-return',
-				summary: 'more than one exit from a function',
-				prose: 'the argument for the rule',
-				channel: 'base',
-				checked: false,
-				defaultSeverity: StandardsSeverity.Advisory,
-				defaultSettings: {},
-				fixturesPath: '/packages/acme/single-return/fixtures',
-			},
-		],
+		packages: [''],
+		pack: { name: 'acme/house', topics: [], rules: [{ rule: singleReturn, severity: singleReturn.defaultSeverity, options: singleReturn.defaultOptions }] },
+		source: StandardsPackSource.Named,
+		states: new Map<string, ResolvedRuleState>([
+			[singleReturn.name, { severity: singleReturn.defaultSeverity, options: singleReturn.defaultOptions, fromConfig: false, reachesAgents: true }],
+		]),
 	},
 ];
 
@@ -61,7 +68,7 @@ const splitFile = ({ dir, file, first, second }: { dir: string; file: string; fi
  * returns the report it claims for that edit, which is the whole of what the
  * batch loop reads.
  */
-const setupBatch = async ({ answer, packs = [] }: { answer: (params: { pass: number; dir: string }) => string; packs?: LoadedStandardsPack[] }) => {
+const setupBatch = async ({ answer, groups = [] }: { answer: (params: { pass: number; dir: string }) => string; groups?: StandardsGroup[] }) => {
 	const dir = setupConsumerRepo();
 
 	// The run below already has its folder, because `createRun` makes one before
@@ -74,10 +81,10 @@ const setupBatch = async ({ answer, packs = [] }: { answer: (params: { pass: num
 
 	const { findings } = await runStandardsCheck({ cwd: dir, persist: false });
 	const batch: RefactorBatch = {
-		id: 'batch-01:multi-export:src',
-		rule: 'multi-export',
+		id: 'batch-01:lightsout/multi-export:src',
+		rule: 'lightsout/multi-export',
 		folder: 'src',
-		blocking: findings.filter((finding) => finding.rule === 'multi-export'),
+		blocking: findings.filter((finding) => finding.rule === 'lightsout/multi-export'),
 		advisories: [],
 	};
 	const executorPrompts: string[] = [];
@@ -105,8 +112,7 @@ const setupBatch = async ({ answer, packs = [] }: { answer: (params: { pass: num
 			driver,
 			config,
 			batch,
-			packs,
-			channels: [],
+			groups,
 			checkAll: false,
 			agentReview: true,
 			agentTimeoutMs: 60_000,
@@ -143,10 +149,10 @@ const setupRedGateBatch = async ({ ruling, healOnGuidance = false }: { ruling: R
 
 	const { findings } = await runStandardsCheck({ cwd: dir, persist: false });
 	const batch: RefactorBatch = {
-		id: 'batch-01:multi-export:src',
-		rule: 'multi-export',
+		id: 'batch-01:lightsout/multi-export:src',
+		rule: 'lightsout/multi-export',
 		folder: 'src',
-		blocking: findings.filter((finding) => finding.rule === 'multi-export'),
+		blocking: findings.filter((finding) => finding.rule === 'lightsout/multi-export'),
 		advisories: [],
 	};
 	// Every agent the batch spends, in the order it spent them — which is what
@@ -195,8 +201,7 @@ const setupRedGateBatch = async ({ ruling, healOnGuidance = false }: { ruling: R
 			driver,
 			config,
 			batch,
-			packs: [],
-			channels: [],
+			groups: [],
 			checkAll: false,
 			agentReview: true,
 			agentTimeoutMs: 60_000,
@@ -206,6 +211,74 @@ const setupRedGateBatch = async ({ ruling, healOnGuidance = false }: { ruling: R
 		});
 
 	return { run, spent };
+};
+
+/**
+ * The two-site batch in a repo whose packages live under `apps/`, with one
+ * workspace package `web`, and a group that covers only `web` and holds the
+ * judgment rule.
+ *
+ * On every read the reviewer reports that rule against a `web` file. The file
+ * belongs to the `web` group only when the review places it with `apps` as the
+ * packages dir; under any other dir it is a root file no group covers, and the
+ * review drops it. So a record in the judgment ledger for each read is the proof
+ * that each review had the config's packages-dir.
+ */
+const setupAppsBatch = async () => {
+	const dir = setupConsumerRepo({ config: { 'packages-dir': 'apps' } });
+
+	seedRunFolder({ cwd: dir, runId: 'run-01', pipeline: 'refactor' });
+
+	mkdirSync(join(dir, 'apps', 'web'), { recursive: true });
+	writeFileSync(join(dir, 'apps', 'web', 'package.json'), '{ "name": "web" }\n');
+	writeSource({ dir, path: 'src/one.ts', source: 'export const alphaOne = 1;\nexport const betaOne = 2;\n' });
+	writeSource({ dir, path: 'src/two.ts', source: 'export const alphaTwo = 1;\nexport const betaTwo = 2;\n' });
+	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm fixture', { cwd: dir });
+
+	const { findings } = await runStandardsCheck({ cwd: dir, persist: false });
+	const batch: RefactorBatch = {
+		id: 'batch-01:lightsout/multi-export:src',
+		rule: 'lightsout/multi-export',
+		folder: 'src',
+		blocking: findings.filter((finding) => finding.rule === 'lightsout/multi-export'),
+		advisories: [],
+	};
+	const webGroups: StandardsGroup[] = judgmentGroups.map((group) => ({ ...group, packages: ['web'] }));
+	const config = await readConfig({ cwd: dir });
+	const driver: Driver = {
+		name: 'stub',
+		invoke: async ({ prompt }) => {
+			if (roleOf(prompt) === 'standards-review') {
+				return { text: reviewReport([{ rule: 'acme/single-return', files: [{ path: 'apps/web/src/a.ts' }], detail: 'two exits' }]), exitCode: 0 };
+			}
+
+			splitFile({ dir, file: 'src/one.ts', first: 'alphaOne', second: 'betaOne' });
+			splitFile({ dir, file: 'src/two.ts', first: 'alphaTwo', second: 'betaTwo' });
+
+			return {
+				text: report({ changedFiles: ['src/one.ts', 'src/betaOne.ts', 'src/two.ts', 'src/betaTwo.ts'].map((path) => ({ path, summary: 'split' })) }),
+				exitCode: 0,
+			};
+		},
+	};
+
+	const run = () =>
+		runBatch({
+			cwd: dir,
+			runId: 'run-01',
+			driver,
+			config,
+			batch,
+			groups: webGroups,
+			checkAll: false,
+			agentReview: true,
+			agentTimeoutMs: 60_000,
+			attributedFiles: [],
+			onProgress: () => undefined,
+			recordUsage: async () => undefined,
+		});
+
+	return { dir, batch, run };
 };
 
 describe('runBatch', () => {
@@ -229,7 +302,7 @@ describe('runBatch', () => {
 
 		const stop = await run();
 
-		expect(stop.kind === 'done' && stop.report).toStrictEqual({ outcome: 'declined', remainingSiteKeys: ['multi-export:src/two.ts'], rationale: [] });
+		expect(stop.kind === 'done' && stop.report).toStrictEqual({ outcome: 'declined', remainingSiteKeys: ['lightsout/multi-export:src/two.ts'], rationale: [] });
 		// two passes, never a third — the ceiling is the loop's, not the pass's
 		expect(executorPrompts.length).toBe(2);
 	});
@@ -251,7 +324,7 @@ describe('runBatch', () => {
 
 	test('the run’s packs reach both the pre-edit read and the read of what the batch wrote', async () => {
 		const { run, reviewSystemPrompts } = await setupBatch({
-			packs: judgmentPacks,
+			groups: judgmentGroups,
 			answer: ({ dir }) => {
 				splitFile({ dir, file: 'src/one.ts', first: 'alphaOne', second: 'betaOne' });
 				splitFile({ dir, file: 'src/two.ts', first: 'alphaTwo', second: 'betaTwo' });
@@ -264,7 +337,21 @@ describe('runBatch', () => {
 
 		// the same judgment rules on both sides of the edits — a batch reviewed
 		// against a different set afterwards could report its own baseline as new
-		expect(reviewSystemPrompts.map((systemPrompt) => systemPrompt.includes('Rule id: `single-return`'))).toStrictEqual([true, true]);
+		expect(reviewSystemPrompts.map((systemPrompt) => systemPrompt.includes('Rule: `acme/single-return`'))).toStrictEqual([true, true]);
+	});
+
+	test("passes the config's packages-dir to both batch reviews", async () => {
+		const { dir, batch, run } = await setupAppsBatch();
+
+		await run();
+		const records = await readReviewFindings({ cwd: dir });
+
+		// one record from the pre-edit read and one from the read of what the batch
+		// wrote — each review kept the web file's finding only because it had `apps`
+		expect(records.filter((record) => record.step === batch.id).map((record) => record.siteKey)).toStrictEqual([
+			'acme/single-return:apps/web/src/a.ts',
+			'acme/single-return:apps/web/src/a.ts',
+		]);
 	});
 
 	test('a red gate the cheap fixes cannot clear reaches the supervisor, and an escalate ruling ends the batch', async () => {

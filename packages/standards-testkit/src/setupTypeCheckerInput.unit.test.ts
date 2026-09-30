@@ -71,13 +71,13 @@ describe('setupTypeCheckerInput', () => {
 	test('names no standards pack roots, and no tests or reference files, until a rule asks for them', () => {
 		const input = setupTyped({ sources: [['src/app.ts', 'export const total = 1;\n']] });
 
-		expect(input).toMatchObject({ cwd: '/repo', standardsPacks: [], tests: [], referenceFiles: [] });
+		expect(input).toMatchObject({ cwd: '/repo', standardsLibraries: [], tests: [], referenceFiles: [] });
 	});
 
 	test('a pack root given as an override reaches the check that reads it', () => {
-		const input = setupTypeCheckerInput({ sources: [['src/app.ts', '']], cwd: '/elsewhere', standardsPacks: ['vendor/acme'] }) as TypeCheckerInput;
+		const input = setupTypeCheckerInput({ sources: [['src/app.ts', '']], cwd: '/elsewhere', standardsLibraries: ['vendor/acme'] }) as TypeCheckerInput;
 
-		expect(input).toMatchObject({ cwd: '/elsewhere', standardsPacks: ['vendor/acme'] });
+		expect(input).toMatchObject({ cwd: '/elsewhere', standardsLibraries: ['vendor/acme'] });
 	});
 
 	test('dependency pairs become the map the contract declares', () => {

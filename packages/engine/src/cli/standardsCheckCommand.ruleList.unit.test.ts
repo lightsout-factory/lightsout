@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsCheckCommand } from '#src/cli/standardsCheckCommand.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 
@@ -18,11 +18,10 @@ import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 // beneath.
 
 interface ListStandardsRulesParams {
-	cwd: string;
-	config?: LightsoutConfig;
+	groups: StandardsGroup[];
 }
 
-const mockListStandardsRules = jest.fn<(params: ListStandardsRulesParams) => Promise<StandardsRuleListing[]>>();
+const mockListStandardsRules = jest.fn<(params: ListStandardsRulesParams) => StandardsRuleListing[]>();
 
 interface RunStandardsCheckParams {
 	cwd: string;
@@ -50,7 +49,8 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	checked: true,
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
-	settings: {},
+	options: {},
+	packages: [''],
 	...overrides,
 });
 
@@ -62,7 +62,7 @@ const setupRuleList = ({ rules }: { rules: StandardsRuleListing[] }) => {
 	const captured = captureCommandOutput();
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-test-'));
 
-	mockListStandardsRules.mockResolvedValue(rules);
+	mockListStandardsRules.mockReturnValue(rules);
 
 	return { context: { flags: parseFlags({ args: ['--list'] }), rest: [], cwd }, ...captured };
 };
@@ -86,7 +86,13 @@ describe('standardsCheckCommand --list', () => {
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(cellsOf({ logged })[1]).toStrictEqual(['size', 'blocking (config)', 'code', 'lightsout-defaults: code/style-guide/structure/size']);
+		expect(cellsOf({ logged })[1]).toStrictEqual([
+			'size',
+			'blocking (config)',
+			'code',
+			'lightsout-defaults: code/style-guide/structure/size',
+			'repo root (outside packages)',
+		]);
 	});
 
 	test('a rule no code run will ever catch is listed as judgment — a ledger hiding that would read as though every rule were enforced', async () => {
@@ -104,17 +110,23 @@ describe('standardsCheckCommand --list', () => {
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(cellsOf({ logged })[1]).toStrictEqual(['plan-shape', 'advisory', 'judgment', 'lightsout-defaults: plans/plan-shape']);
+		expect(cellsOf({ logged })[1]).toStrictEqual([
+			'plan-shape',
+			'advisory',
+			'judgment',
+			'lightsout-defaults: plans/plan-shape',
+			'repo root (outside packages)',
+		]);
 	});
 
 	test('a rule’s live numbers ride its summary line, so a retuned knob is visible without opening the config', async () => {
 		const { context, logged } = setupRuleList({
-			rules: [listing({ rule: 'size', summary: 'a file longer than the size cap', settings: { file: 250, tsxFile: 300 } })],
+			rules: [listing({ rule: 'size', summary: 'a file longer than the size cap', options: { file: 250, tsxFile: 300 } })],
 		});
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(cellsOf({ logged })[2]).toStrictEqual(['a file longer than the size cap — file 250, tsxFile 300', '', '', '']);
+		expect(cellsOf({ logged })[2]).toStrictEqual(['a file longer than the size cap — file 250, tsxFile 300', '', '', '', '']);
 	});
 
 	test('a rule with nothing tunable states its summary alone, never a trailing dash with nothing after it', async () => {
@@ -122,7 +134,7 @@ describe('standardsCheckCommand --list', () => {
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(cellsOf({ logged })[2]).toStrictEqual(['more than one export in a file', '', '', '']);
+		expect(cellsOf({ logged })[2]).toStrictEqual(['more than one export in a file', '', '', '', '']);
 	});
 
 	test('the totals line counts every state a rule can be in, so the ledger’s coverage claim is readable at the bottom', async () => {
@@ -139,6 +151,6 @@ describe('standardsCheckCommand --list', () => {
 		const rows = cellsOf({ logged });
 
 		// the honest half of a coverage claim: 3 rules, but only 2 a code run catches
-		expect(rows[rows.length - 1]).toStrictEqual(['3 rule(s)', '1 blocking', '1 advisory, 1 off', '2 by code, 1 by judgment']);
+		expect(rows[rows.length - 1]).toStrictEqual(['3 rule(s)', '1 blocking', '1 advisory, 1 off', '2 by code, 1 by judgment', '']);
 	});
 });

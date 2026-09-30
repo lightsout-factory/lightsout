@@ -24,10 +24,16 @@ interface Prepared {
 }
 
 /**
- * Scope is settled before standards because the bundled defaults are
- * channelled off the scoped packages' dependencies, and both come before any
- * gate, since a gate scoped to a guess proves nothing. Failures are returned
- * rather than thrown so the caller can record them against the run.
+ * Scope is settled before standards because the standards cover the scoped
+ * packages, and both come before any gate, since a gate scoped to a guess
+ * proves nothing. Failures are returned rather than thrown so the caller can
+ * record them against the run.
+ *
+ * Prose is resolved once, here, for the run's starting scope plus the repo
+ * root group. A step that later finds files in another package does not
+ * re-resolve it: the checks and the refactor step resolve their own groups for
+ * the widened scope, so those files are still graded by their own package's
+ * pack.
  */
 export const prepareRun = async ({ run, cwd, config, packages }: Params): Promise<Prepared | { error: string }> => {
 	const manifest = run.current();
@@ -67,17 +73,13 @@ export const prepareRun = async ({ run, cwd, config, packages }: Params): Promis
 	}
 
 	let resolved: ResolvedStandards;
+	// An empty scope covers every workspace package plus the root group, never the root alone.
+	const scoped = run.current().packages;
 
 	try {
-		resolved = await resolveStandards({ cwd, config, packages: run.current().packages });
+		resolved = await resolveStandards({ cwd, config, packages: scoped.length > 0 ? scoped : undefined });
 	} catch (error) {
 		return { error: messageOf({ error }) };
-	}
-
-	if (resolved.requested) {
-		run.progress(
-			`standards channels: base${resolved.channels.length > 0 ? ` + ${resolved.channels.join(' + ')}` : ''} (${resolved.configured ? 'configured' : 'detected from package dependencies'})`,
-		);
 	}
 
 	return { ...sources, standards: resolved.standards, testStandards: resolved.testStandards };

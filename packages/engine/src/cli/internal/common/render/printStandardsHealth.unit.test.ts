@@ -3,7 +3,7 @@ import { printStandardsHealth } from '#src/cli/internal/common/render/printStand
 import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
 import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
 
-const healthRule = (overrides: Partial<StandardsHealthRule> & { id: string }): StandardsHealthRule => ({
+const healthRule = (overrides: Partial<StandardsHealthRule> & { rule: string }): StandardsHealthRule => ({
 	set: 'code',
 	documentPath: 'code/architecture/folder-structure',
 	checked: true,
@@ -48,7 +48,7 @@ describe('printStandardsHealth', () => {
 	test('a rule nobody has ever put to the test reads as dashes, never as zeroes', () => {
 		const { logged } = setupPrinter();
 
-		printStandardsHealth({ health: healthOf({ rules: [healthRule({ id: 'path-aliases', checked: false })] }) });
+		printStandardsHealth({ health: healthOf({ rules: [healthRule({ rule: 'path-aliases', checked: false })] }) });
 
 		// 0% would answer a question nobody asked
 		expect(cellsOf({ logged })[1]).toStrictEqual(['path-aliases', 'judgment', '—', '—', '—', '—', '—', '—', '—']);
@@ -59,7 +59,7 @@ describe('printStandardsHealth', () => {
 
 		printStandardsHealth({
 			health: healthOf({
-				rules: [healthRule({ id: 'multi-export', attempted: 4, resolved: 2, declined: 1, untracked: 1, adviceApplied: 3, adviceDeclined: 1 })],
+				rules: [healthRule({ rule: 'multi-export', attempted: 4, resolved: 2, declined: 1, untracked: 1, adviceApplied: 3, adviceDeclined: 1 })],
 			}),
 		});
 
@@ -71,7 +71,7 @@ describe('printStandardsHealth', () => {
 
 		printStandardsHealth({
 			health: healthOf({
-				rules: [healthRule({ id: 'multi-export', adviceApplied: 1, adviceDeclined: 1, adviceAlreadyMet: 2 })],
+				rules: [healthRule({ rule: 'multi-export', adviceApplied: 1, adviceDeclined: 1, adviceAlreadyMet: 2 })],
 			}),
 		});
 
@@ -88,7 +88,7 @@ describe('printStandardsHealth', () => {
 			health: healthOf({
 				rules: [
 					healthRule({
-						id: 'multi-export',
+						rule: 'multi-export',
 						attempted: 1,
 						declined: 1,
 						reasons: ['[plan] the barrel would break', '[plan] the barrel would break', '[other] deliberate'],
@@ -109,7 +109,7 @@ describe('printStandardsHealth', () => {
 
 		printStandardsHealth({
 			health: healthOf({
-				rules: [healthRule({ id: 'multi-export', attempted: 2, declined: 2, reasons: ['  ', '[plan]\n\tthe barrel   would break'] })],
+				rules: [healthRule({ rule: 'multi-export', attempted: 2, declined: 2, reasons: ['  ', '[plan]\n\tthe barrel   would break'] })],
 			}),
 		});
 
@@ -126,7 +126,7 @@ describe('printStandardsHealth', () => {
 		const { logged } = setupPrinter();
 
 		printStandardsHealth({
-			health: healthOf({ rules: [healthRule({ id: 'multi-export', attempted: 1, declined: 1, reasons: ['x'.repeat(200)] })] }),
+			health: healthOf({ rules: [healthRule({ rule: 'multi-export', attempted: 1, declined: 1, reasons: ['x'.repeat(200)] })] }),
 		});
 
 		const reason = cellsOf({ logged })[2]?.[0] ?? '';
@@ -135,14 +135,37 @@ describe('printStandardsHealth', () => {
 		expect(reason.endsWith('…')).toBe(true);
 	});
 
+	test('the health table prints each rule by its full name', () => {
+		const { logged } = setupPrinter();
+		const rule: StandardsHealthRule = {
+			rule: 'lightsout/function-size',
+			set: 'code',
+			documentPath: 'code/style-guide/patterns/functions',
+			checked: true,
+			attempted: 1,
+			resolved: 1,
+			declined: 0,
+			untracked: 0,
+			adviceApplied: 0,
+			adviceDeclined: 0,
+			adviceAlreadyMet: 0,
+			reasons: [],
+		};
+
+		printStandardsHealth({ health: healthOf({ rules: [rule] }) });
+
+		// two libraries may each hold a function-size rule, so the short id alone names neither
+		expect(cellsOf({ logged })[1]?.[0]).toBe('lightsout/function-size');
+	});
+
 	test('the totals row states the coverage claim and sums both accounts', () => {
 		const { logged } = setupPrinter();
 
 		printStandardsHealth({
 			health: healthOf({
 				rules: [
-					healthRule({ id: 'multi-export', attempted: 2, resolved: 1, declined: 1 }),
-					healthRule({ id: 'path-aliases', checked: false, adviceApplied: 1, adviceDeclined: 1 }),
+					healthRule({ rule: 'multi-export', attempted: 2, resolved: 1, declined: 1 }),
+					healthRule({ rule: 'path-aliases', checked: false, adviceApplied: 1, adviceDeclined: 1 }),
 				],
 			}),
 		});

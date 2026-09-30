@@ -3,13 +3,22 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type CloneSpansInput, type StandardsCheckFunction, type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { delegatingSources, duplicatedSources, offsetImportSources, sharedImportSources, writeSampleSources } from '#tests/helpers/duplicationSamples.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
+
+/** One group whose pack holds `rules` at their rule.md defaults, each rule at the state `states` resolved for it. */
+const groupOf = ({ rules, states }: { rules: LoadedStandardsRule[]; states: Map<string, ResolvedRuleState> }): StandardsGroup => ({
+	packages: [''],
+	pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
+	source: StandardsPackSource.Named,
+	states,
+});
 
 /**
  * A repo holding the given sources, checked by one duplicate-block rule that
@@ -32,25 +41,72 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
 		linkTypescript({ dir: cwd });
 	}
 
-	const settings = { minTokens: 50 };
+	const options = { minTokens: 50 };
 	const rule: LoadedStandardsRule = {
 		id: 'duplicate-code-block',
+		name: 'acme/duplicate-code-block',
+		library: 'acme',
 		set: 'code',
 		documentPath: 'code/architecture/architecture-decisions',
 		summary: 'the same block of code written out in two or more files',
 		prose: 'the argument for the rule',
-		channel: 'base',
 		checked: true,
 		defaultSeverity: StandardsSeverity.Advisory,
-		defaultSettings: settings,
+		defaultOptions: options,
+		requires: [],
 		fixturesPath: '/packages/acme/duplicate-code-block/fixtures',
 		inputKind: StandardsInputKind.CloneSpans,
 		run,
 	};
-	const packs: LoadedStandardsPack[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule] }];
-	const states = new Map<string, ResolvedRuleState>([['duplicate-code-block', { severity: StandardsSeverity.Advisory, settings, fromConfig: false }]]);
+	const states = new Map<string, ResolvedRuleState>([
+		['acme/duplicate-code-block', { severity: StandardsSeverity.Advisory, options, fromConfig: false, reachesAgents: true }],
+	]);
 
-	return { cwd, inputs, packs, states };
+	return { cwd, inputs, groups: [groupOf({ rules: [rule], states })] };
+};
+
+/**
+ * A repo holding one duplicated block, checked by two duplicate-block rules
+ * that differ only in their `minTokens` option. Each rule records the input
+ * its own run handed it.
+ */
+const setupThresholdRun = ({ lowMinTokens, highMinTokens }: { lowMinTokens: number; highMinTokens: number }) => {
+	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-package-checks-thresholds-'));
+	const lowInputs: StandardsCheckInput[] = [];
+	const highInputs: StandardsCheckInput[] = [];
+
+	writeSampleSources({ dir: cwd, sources: duplicatedSources });
+
+	const buildRule = ({ id, minTokens, inputs }: { id: string; minTokens: number; inputs: StandardsCheckInput[] }): LoadedStandardsRule => ({
+		id,
+		name: `acme/${id}`,
+		library: 'acme',
+		set: 'code',
+		documentPath: 'code/architecture/architecture-decisions',
+		summary: 'the same block of code written out in two or more files',
+		prose: 'the argument for the rule',
+		checked: true,
+		defaultSeverity: StandardsSeverity.Advisory,
+		defaultOptions: { minTokens },
+		requires: [],
+		fixturesPath: `/packages/acme/${id}/fixtures`,
+		inputKind: StandardsInputKind.CloneSpans,
+		run: ({ input }) => {
+			inputs.push(input);
+
+			return [];
+		},
+	});
+	const rules = [
+		buildRule({ id: 'duplicate-code-block-low', minTokens: lowMinTokens, inputs: lowInputs }),
+		buildRule({ id: 'duplicate-code-block-high', minTokens: highMinTokens, inputs: highInputs }),
+	];
+	const states = new Map<string, ResolvedRuleState>([
+		['acme/duplicate-code-block-low', { severity: StandardsSeverity.Advisory, options: { minTokens: lowMinTokens }, fromConfig: false, reachesAgents: true }],
+		['acme/duplicate-code-block-high', { severity: StandardsSeverity.Advisory, options: { minTokens: highMinTokens }, fromConfig: false, reachesAgents: true }],
+	]);
+
+	return { cwd, groups: [groupOf({ rules, states })], lowInputs, highInputs };
 };
 
 /** The one clone-spans input the run built, narrowed out of the closed kind union. */
@@ -72,9 +128,9 @@ const startLineOf = ({ input, path }: { input: CloneSpansInput; path: string }) 
 
 describe('runPackageChecks', () => {
 	test('hands a duplicate-block rule both sites of a duplicated span and the tokens it spans', async () => {
-		const { cwd, inputs, packs, states } = setupDuplicationRun({ sources: duplicatedSources });
+		const { cwd, inputs, groups } = setupDuplicationRun({ sources: duplicatedSources });
 
-		await runPackageChecks({ cwd, packs, states, channels: [] });
+		await runPackageChecks({ cwd, groups });
 
 		const input = cloneSpansInput({ inputs });
 
@@ -86,9 +142,9 @@ describe('runPackageChecks', () => {
 	});
 
 	test('reports the line numbers of the file as written, not of the blanked copy the detector read', async () => {
-		const { cwd, inputs, packs, states } = setupDuplicationRun({ sources: offsetImportSources });
+		const { cwd, inputs, groups } = setupDuplicationRun({ sources: offsetImportSources });
 
-		await runPackageChecks({ cwd, packs, states, channels: [] });
+		await runPackageChecks({ cwd, groups });
 
 		const input = cloneSpansInput({ inputs });
 		const alphaLine = startLineOf({ input, path: 'src/alpha.ts' });
@@ -102,9 +158,9 @@ describe('runPackageChecks', () => {
 	});
 
 	test('never counts a shared import list as duplication, because nobody can deduplicate one', async () => {
-		const { cwd, inputs, packs, states } = setupDuplicationRun({ sources: sharedImportSources });
+		const { cwd, inputs, groups } = setupDuplicationRun({ sources: sharedImportSources });
 
-		await runPackageChecks({ cwd, packs, states, channels: [] });
+		await runPackageChecks({ cwd, groups });
 
 		const input = cloneSpansInput({ inputs });
 
@@ -114,9 +170,9 @@ describe('runPackageChecks', () => {
 	});
 
 	test('blanks the composition remedy out of the detection when the repo has a typescript to parse with', async () => {
-		const { cwd, inputs, packs, states } = setupDuplicationRun({ sources: delegatingSources, typescript: true });
+		const { cwd, inputs, groups } = setupDuplicationRun({ sources: delegatingSources, typescript: true });
 
-		await runPackageChecks({ cwd, packs, states, channels: [] });
+		await runPackageChecks({ cwd, groups });
 
 		const input = cloneSpansInput({ inputs });
 
@@ -127,14 +183,27 @@ describe('runPackageChecks', () => {
 	});
 
 	test('leaves the composition remedy in the detection rather than guessing at it when the repo has no typescript', async () => {
-		const { cwd, inputs, packs, states } = setupDuplicationRun({ sources: delegatingSources });
+		const { cwd, inputs, groups } = setupDuplicationRun({ sources: delegatingSources });
 
-		await runPackageChecks({ cwd, packs, states, channels: [] });
+		await runPackageChecks({ cwd, groups });
 
 		const input = cloneSpansInput({ inputs });
 
 		// the blanking needs a parsed tree; without one the run reports what the
 		// tokens say rather than pretending to know the shape
 		expect(sitesOf({ input })).toStrictEqual(['src/PipelineRun.ts', 'src/RefactorRun.ts']);
+	});
+
+	test('builds a separate clone detection for each rule from its own minTokens option', async () => {
+		const { cwd, groups, lowInputs, highInputs } = setupThresholdRun({ lowMinTokens: 20, highMinTokens: 200 });
+
+		await runPackageChecks({ cwd, groups });
+
+		const lowInput = cloneSpansInput({ inputs: lowInputs });
+		const highInput = cloneSpansInput({ inputs: highInputs });
+
+		// the duplicated block clears 20 tokens but not 200, so a single shared
+		// detection would hand both rules the same spans
+		expect({ low: sitesOf({ input: lowInput }), high: highInput.spans }).toStrictEqual({ low: ['src/alpha.ts', 'src/beta.ts'], high: [] });
 	});
 });

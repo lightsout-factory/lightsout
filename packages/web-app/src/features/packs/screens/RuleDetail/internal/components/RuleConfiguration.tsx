@@ -9,8 +9,8 @@ import { cn } from '#src/common/utils/cn.ts';
 const buildConfigSnippet = ({ rule }: { rule: StandardsPackRuleView }) =>
 	JSON.stringify(
 		{
-			'standards-checks': {
-				[rule.id]: Object.keys(rule.defaultSettings).length === 0 ? rule.defaultSeverity : { severity: rule.defaultSeverity, settings: rule.defaultSettings },
+			'standards-rule-settings': {
+				[rule.id]: Object.keys(rule.defaultOptions).length === 0 ? rule.defaultSeverity : { severity: rule.defaultSeverity, options: rule.defaultOptions },
 			},
 		},
 		null,

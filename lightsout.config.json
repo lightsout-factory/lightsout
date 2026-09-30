@@ -16,6 +16,7 @@
 		}
 	},
 	"gates": {
+		"generate": "pnpm --filter @lightsout/web-app build",
 		"check": "pnpm check",
 		"test": "pnpm test:unit",
 		"test-coverage": "pnpm test:unit:coverage",
@@ -74,7 +75,7 @@
 		"test-coverage": "pnpm --filter {package} run test:unit:coverage",
 		"test-e2e": "pnpm --filter {package} run test:e2e"
 	},
-	"standards-checks": {
+	"standards-rule-settings": {
 		"banned-class-shapes": "blocking",
 		"banned-folder-name": "blocking",
 		"bare-string-union": "blocking",

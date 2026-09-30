@@ -5,7 +5,6 @@ import { describe, expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runRefactorPipeline } from '#src/refactor/runRefactorPipeline.ts';
-import { resolveDefaultStandardsPack } from '#src/standardsPacks/resolveDefaultStandardsPack.ts';
 import { report } from '#tests/helpers/report.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';
@@ -17,7 +16,7 @@ import { writeSource } from '#tests/helpers/writeSource.ts';
 const multiExport = 'export const alphaThing = 1;\nexport const betaThing = 2;\n';
 
 /** The rule ids the standards reviewer was handed, in the order its invocation lists them. */
-const ruleIdsOffered = ({ systemPrompt }: { systemPrompt: string }) => [...systemPrompt.matchAll(/Rule id: `([^`]+)`/g)].map(([, id]) => id ?? '');
+const ruleIdsOffered = ({ systemPrompt }: { systemPrompt: string }) => [...systemPrompt.matchAll(/Rule: `([^`]+)`/g)].map(([, id]) => id ?? '');
 
 /** The repo-relative files the standards reviewer was asked to read. */
 const filesOffered = ({ prompt }: { prompt: string }) =>
@@ -27,18 +26,19 @@ const filesOffered = ({ prompt }: { prompt: string }) =>
 		.map((line) => line.slice(2));
 
 /**
- * A one-rule standards pack under `standards/house`, so a run can be pointed at
- * a pack the plugin does not ship. Its only rule is judgment-only (no
- * `check.ts`), which is the half of a pack the batch review reads — and a pack
- * that declares no check contributes no findings, so it is listed alongside the
- * bundled pack rather than instead of it: something has to raise the finding the
- * batch under review is built from.
+ * A one-rule standards library under `standards/house`, with a `house/house`
+ * pack, so a run can be pointed at a pack the plugin does not ship. Its only
+ * rule is judgment-only (no `check.ts`), which is the half of a pack the batch
+ * review reads — and a rule that declares no check contributes no findings, so
+ * the pack includes the bundled `lightsout/node` pack beside its own topic:
+ * something has to raise the finding the batch under review is built from.
  */
 const writeHousePack = ({ dir }: { dir: string }) => {
 	const files: Record<string, string> = {
-		'lightsout-standards.json': '{ "name": "house", "formatVersion": 1 }\n',
-		'code/demo/document.md': '# Demo\n\nThe document the rule argues under.\n',
-		'code/demo/01-house-rule/rule.md': '---\nsummary: a rule only the house pack declares\n---\n\nThe rule prose.\n',
+		'lightsout-standards.json': '{ "name": "house", "formatVersion": 2 }\n',
+		'rules/code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
+		'rules/code/demo/01-house-rule/rule.md': '---\nsummary: a rule only the house pack declares\n---\n\nThe rule prose.\n',
+		'packs/house.json': '{ "description": "The node pack and the house rule.", "include": { "packs": ["lightsout/node"], "topics": ["house/code/demo"] } }\n',
 	};
 
 	for (const [path, content] of Object.entries(files)) {
@@ -62,14 +62,22 @@ const setupReviewedRun = async ({
 	onReview = () => reviewReport(),
 }: {
 	folders?: string[];
-	/** Plant a one-rule pack and name it in `standards-packs`, after the bundled pack. */
+	/** Plant a one-rule library, register it in `standards-libraries`, and name its pack in `standards-pack`. */
 	housePack?: boolean;
 	onReview?: (params: { ruleIds: string[]; files: string[] }) => string;
 } = {}) => {
-	// naming packs opts out of the helper's strict profile, so the planted
+	// naming a pack opts out of the helper's strict profile, so the planted
 	// multi-export is promoted here — the premise is a batch, not advice
 	const dir = setupConsumerRepo(
-		housePack ? { config: { 'standards-packs': [resolveDefaultStandardsPack(), 'standards/house'], 'standards-checks': strictProfile } } : undefined,
+		housePack
+			? {
+					config: {
+						'standards-libraries': { house: './standards/house' },
+						'standards-pack': 'house/house',
+						'standards-rule-settings': strictProfile,
+					},
+				}
+			: undefined,
 	);
 
 	if (housePack) {
@@ -223,9 +231,9 @@ describe('runRefactorPipeline agent review', () => {
 
 		await runRefactorPipeline({ cwd: dir, driver, config });
 
-		// a rule no shipped pack declares, so it can only have come from the root
-		// the config named — and the packs stack rather than replace each other
-		expect(reviewRuleIds[0]).toContain('house-rule');
+		// a rule no shipped pack declares, so it can only have come from the pack
+		// the config named — and that pack's included built-in rules come with it
+		expect(reviewRuleIds[0]).toContain('house/house-rule');
 		expect(reviewRuleIds[0]?.length ?? 0).toBeGreaterThan(1);
 	});
 
@@ -250,6 +258,6 @@ describe('runRefactorPipeline agent review', () => {
 
 		// the batch is real work — a missing answer must not stop it
 		expect(result.ok).toBe(true);
-		expect(progress.some((line) => line.startsWith('batch-01:multi-export:src: agent review skipped —'))).toBe(true);
+		expect(progress.some((line) => line.startsWith('batch-01:lightsout/multi-export:src: agent review skipped —'))).toBe(true);
 	});
 });

@@ -1,8 +1,8 @@
 import { join } from 'node:path';
 import { FixtureSide } from '#src/contracts/views/FixtureSide.ts';
 import { RuleExampleKind } from '#src/contracts/views/RuleExampleKind.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
-import { listFixtureFiles } from '#src/standardsPacks/common/utils/listFixtureFiles.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
+import { listFixtureFiles } from '#src/standardsLibraries/common/utils/listFixtureFiles.ts';
 
 interface Params {
 	rule: LoadedStandardsRule;

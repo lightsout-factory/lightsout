@@ -5,7 +5,7 @@ import { afterEach, jest } from '@jest/globals';
 // plugin/, which the engine's own walk would find: otherwise tests pass or fail
 // on whether someone last ran `pnpm bundle`. Set on process.env because the e2e
 // suites reach the engine as a subprocess, which inherits only the environment.
-process.env.LIGHTSOUT_DEFAULT_STANDARDS = join(__dirname, '..', '..', 'packages', 'standards-typescript');
+process.env.LIGHTSOUT_DEFAULT_STANDARDS = join(__dirname, '..', '..', 'packages', 'lightsout-standards');
 
 // A queue worker exports LIGHTSOUT_NO_SHIP=1 to every gate command it runs,
 // and it silently beats both --ship and the config, so a test expecting a ship

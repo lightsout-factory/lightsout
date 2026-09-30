@@ -253,10 +253,10 @@ test('implementCommand: a repo that declared no opt-ins gets no lines for them �
 
 	await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
-	// an unset coverage gate and an unset standards list read as two different
+	// an unset coverage gate and an unset standards pack read as two different
 	// silences, and the banner says which is which
 	expect(logged).toContain('  gates (root): check=[true] test=[true] coverage=[off (explicit)]');
-	expect(logged).toContain('  standards packs: lightsout-defaults (none configured — set to false to disable, or list pack roots)');
+	expect(logged).toContain('  repo root: lightsout/node (detected)');
 	expect(logged).toContain('  timeouts: agent 60m · supervisor 15m · gate 15m');
 	expect(logged.some((line) => /^ {2}(generate|agent commands|generated|format|gates \((root, opt-in|per package)\))/.test(line))).toBe(false);
 	expect(exitCodes).toStrictEqual([1]);
@@ -290,33 +290,11 @@ test('implementCommand: a command entry that only names a model keeps the global
 });
 
 test('implementCommand: standards packs turned off explicitly say so, rather than reading as the unconfigured default', async () => {
-	const { context, logged } = setupImplement({ args: ['--plan', 'ghost.md'], config: { 'standards-packs': false } });
+	const { context, logged } = setupImplement({ args: ['--plan', 'ghost.md'], config: { 'standards-pack': false } });
 
 	await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
-	expect(logged).toContain('  standards packs: none (explicit)');
-});
-
-test('implementCommand: configured pack roots ride the banner verbatim, in the order the config declared them', async () => {
-	const { context, logged } = setupImplement({
-		args: ['--plan', 'ghost.md'],
-		config: { 'standards-packs': ['standards/house', '/opt/acme-standards'] },
-	});
-
-	await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
-
-	// the banner is what a reader checks the run against, so the roots are
-	// echoed exactly as configured — neither reordered nor resolved to absolute
-	expect(logged).toContain('  standards packs: standards/house, /opt/acme-standards');
-});
-
-test('implementCommand: an empty pack list is still a configured list — the banner never falls back to the defaults wording', async () => {
-	const { context, logged } = setupImplement({ args: ['--plan', 'ghost.md'], config: { 'standards-packs': [] } });
-
-	await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
-
-	expect(logged).toContain('  standards packs: ');
-	expect(logged.some((line) => line.includes('lightsout-defaults'))).toBe(false);
+	expect(logged).toContain('  repo root: none (standards-pack false)');
 });
 
 test('implementCommand: --ship never ships a run that failed — the flag asks for a merge of verified work, and nothing was verified', async () => {

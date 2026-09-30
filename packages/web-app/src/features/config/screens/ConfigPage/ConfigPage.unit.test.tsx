@@ -33,12 +33,12 @@ const setupConfigPage = ({ overrides = {} }: { overrides?: Partial<ConfigView> }
 /**
  * The page reduced to one config key.
  *
- * The packs card marks the pack a repo named none of with a `default` badge of
- * its own, so a row's provenance badge can only be read unambiguously on a page
- * carrying no packs.
+ * The standards card marks how its pack was chosen with a badge of its own, so
+ * a row's provenance badge can only be read unambiguously on a page carrying no
+ * pack group.
  */
 const setupFieldRow = ({ field }: { field: ConfigView['sections'][number]['fields'][number] }) =>
-	setupConfigPage({ overrides: { sections: [{ title: 'Gates', fields: [field] }], packs: [], ruleStates: [] } });
+	setupConfigPage({ overrides: { sections: [{ title: 'Gates', fields: [field] }], standardsGroups: [], ruleStates: [] } });
 
 /** The severity facet over the ledger, opened and then narrowed the way a reader narrows it. */
 const chooseSeverity = ({ name }: { name: RegExp }) => {
@@ -68,7 +68,7 @@ describe('ConfigPage', () => {
 
 		const titles = screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent);
 
-		expect(titles).toStrictEqual(['Harness', 'Gates', 'Standards packs loaded', 'Rules']);
+		expect(titles).toStrictEqual(['Harness', 'Gates', 'Standards pack in use', 'Rules']);
 	});
 
 	test('sends a reader on to the doc that explains every key, since this page only shows what the file holds', () => {
@@ -129,73 +129,122 @@ describe('ConfigPage field rows', () => {
 	});
 
 	test("carries the schema's own sentence about the key, so the page and the contract cannot disagree", () => {
-		setupFieldRow({ field: { key: 'standards-checks', value: null, fromConfig: false, description: 'Per-rule severity and settings.' } });
+		setupFieldRow({ field: { key: 'standards-rule-settings', value: null, fromConfig: false, description: 'Per-rule severity and options.' } });
 
-		const description = screen.getByText('Per-rule severity and settings.');
+		const description = screen.getByText('Per-rule severity and options.');
 
 		expect(description).toBeInTheDocument();
 	});
 });
 
-describe('ConfigPage packs card', () => {
-	test('points each loaded pack at the Standards Packs page, which is where what it says lives', () => {
-		setupConfigPage({
-			overrides: { packs: [{ name: 'acme-house-rules', rootPath: '/repos/lightsout/packages/house', isDefault: false, channels: [] }] },
-		});
-
-		const link = screen.getByRole('link', { name: 'acme-house-rules' });
-
-		expect(link).toHaveAttribute('href', '/standards-packs');
-	});
-
-	test('shows where a pack was read from and which framework documents it carries', () => {
-		setupConfigPage({
-			overrides: { packs: [{ name: 'acme-house-rules', rootPath: '/repos/lightsout/packages/house', isDefault: false, channels: ['base', 'react'] }] },
-		});
-
-		expect(screen.getByText('/repos/lightsout/packages/house')).toBeInTheDocument();
-		expect(screen.getByText('base')).toBeInTheDocument();
-		expect(screen.getByText('react')).toBeInTheDocument();
-	});
-
-	test('marks the pack that loads when the config names none', () => {
-		setupConfigPage({ overrides: { packs: [{ name: 'lightsout-defaults', rootPath: '/packs/defaults', isDefault: true, channels: [] }] } });
-
-		const card = screen.getByRole('heading', { level: 3, name: 'Standards packs loaded' }).closest('section');
-
-		expect(within(card as HTMLElement).getByText('default')).toBeInTheDocument();
-	});
-
-	test('says plainly that no pack loads here, rather than showing an empty card', () => {
-		setupConfigPage({ overrides: { packs: [] } });
-
-		const notice = screen.getByText(/No pack loads here/);
-
-		expect(notice).toBeInTheDocument();
-	});
-});
-
 describe('ConfigPage rule ledger', () => {
 	const ruleStates: ConfigView['ruleStates'] = [
-		{ rule: 'file-size', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Blocking, fromConfig: true, settings: { file: 250 } },
-		{ rule: 'loose-file', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Advisory, fromConfig: false, settings: {} },
-		{ rule: 'naming-boolean', pack: 'acme-house-rules', channel: 'base', severity: StandardsSeverity.Off, fromConfig: true, settings: {} },
+		{
+			rule: 'file-size',
+			id: 'file-size',
+			library: 'lightsout',
+			severity: StandardsSeverity.Blocking,
+			fromConfig: true,
+			options: { file: 250 },
+			packages: [''],
+			appliesTo: 'repo root (outside packages)',
+		},
+		{
+			rule: 'loose-file',
+			id: 'loose-file',
+			library: 'lightsout',
+			severity: StandardsSeverity.Advisory,
+			fromConfig: false,
+			options: {},
+			packages: [''],
+			appliesTo: 'repo root (outside packages)',
+		},
+		{
+			rule: 'naming-boolean',
+			id: 'naming-boolean',
+			library: 'acme-house-rules',
+			severity: StandardsSeverity.Off,
+			fromConfig: true,
+			options: {},
+			packages: [''],
+			appliesTo: 'repo root (outside packages)',
+		},
 	];
 
 	test('lists every loaded rule, whichever pack declared it', () => {
 		setupConfigPage({ overrides: { ruleStates } });
 
-		const rules = screen.getAllByRole('link', { name: /^(file-size|loose-file|naming-boolean)$/ }).map((link) => link.textContent);
+		const rules = screen.getAllByText(/^(file-size|loose-file|naming-boolean)$/).map((cell) => cell.textContent);
 
 		expect(rules).toStrictEqual(['file-size', 'loose-file', 'naming-boolean']);
 	});
 
-	test('points a rule at its page in the set it belongs to', () => {
+	test('points a rule at its page under the library it belongs to', () => {
 		setupConfigPage({ overrides: { ruleStates } });
 
-		const link = screen.getByRole('link', { name: 'naming-boolean' });
+		const link = screen.getByRole('link', { name: 'loose-file' });
 
-		expect(link).toHaveAttribute('href', '/standards-packs/typescript/naming-boolean');
+		expect(link).toHaveAttribute('href', '/standards-packs/lightsout/rules/loose-file');
+	});
+
+	test('the rule ledger shows the full name and links by the rule id', () => {
+		setupConfigPage({
+			overrides: {
+				ruleStates: [
+					{
+						rule: 'lightsout/file-size',
+						id: 'file-size',
+						library: 'lightsout',
+						severity: StandardsSeverity.Blocking,
+						fromConfig: true,
+						options: { file: 250 },
+						packages: [''],
+						appliesTo: 'repo root (outside packages)',
+					},
+				],
+			},
+		});
+
+		const link = screen.getByRole('link', { name: 'lightsout/file-size' });
+
+		expect(link).toHaveAttribute('href', '/standards-packs/lightsout/rules/file-size');
+	});
+
+	test('links each ledger rule to its page under its library', () => {
+		setupConfigPage({
+			overrides: {
+				ruleStates: [
+					{
+						rule: 'lightsout/function-size',
+						id: 'function-size',
+						library: 'lightsout',
+						severity: StandardsSeverity.Blocking,
+						fromConfig: false,
+						options: {},
+						packages: [''],
+						appliesTo: 'repo root (outside packages)',
+					},
+					{
+						rule: 'acme/house-rule',
+						id: 'house-rule',
+						library: 'acme',
+						severity: StandardsSeverity.Advisory,
+						fromConfig: false,
+						options: {},
+						packages: [''],
+						appliesTo: 'repo root (outside packages)',
+					},
+				],
+			},
+		});
+
+		const builtInLink = screen.getByRole('link', { name: 'lightsout/function-size' });
+		const foreignName = screen.getByText('acme/house-rule');
+
+		expect({ href: builtInLink.getAttribute('href'), foreignIsLinked: foreignName.closest('a') !== null }).toStrictEqual({
+			href: '/standards-packs/lightsout/rules/function-size',
+			foreignIsLinked: false,
+		});
 	});
 
 	test('says of each rule whether this repo set its state or the pack did', () => {
@@ -219,9 +268,9 @@ describe('ConfigPage rule ledger', () => {
 	test('shows the numbers this repo tuned a rule to', () => {
 		setupConfigPage({ overrides: { ruleStates } });
 
-		const setting = screen.getByText(/^file\s+250$/);
+		const option = screen.getByText(/^file\s+250$/);
 
-		expect(setting).toBeInTheDocument();
+		expect(option).toBeInTheDocument();
 	});
 
 	test('leaves a dash where a repo tuned nothing, rather than an empty cell', () => {
@@ -230,6 +279,47 @@ describe('ConfigPage rule ledger', () => {
 		const cells = screen.getAllByText('—');
 
 		expect(cells).toHaveLength(1);
+	});
+
+	test("shows each rule's options in the ledger's options column, and a dash when it has none", () => {
+		setupConfigPage({
+			overrides: {
+				ruleStates: [
+					{
+						rule: 'file-size',
+						id: 'file-size',
+						library: 'lightsout',
+						severity: StandardsSeverity.Blocking,
+						fromConfig: true,
+						options: { file: 250, tsxFile: 300 },
+						packages: [''],
+						appliesTo: 'repo root (outside packages)',
+					},
+					{
+						rule: 'loose-file',
+						id: 'loose-file',
+						library: 'lightsout',
+						severity: StandardsSeverity.Advisory,
+						fromConfig: false,
+						options: {},
+						packages: [''],
+						appliesTo: 'repo root (outside packages)',
+					},
+				],
+			},
+		});
+
+		const header = screen.getByRole('columnheader', { name: 'options' });
+		const column = screen.getAllByRole('columnheader').indexOf(header);
+		const cells = screen
+			.getAllByRole('row')
+			.slice(1)
+			.map((row) => within(row).getAllByRole('cell')[column]);
+		const pairs = within(cells[0])
+			.getAllByText(/^\w+\s+\d+$/)
+			.map((tag) => tag.textContent);
+
+		expect({ pairs, untuned: cells[1].textContent }).toStrictEqual({ pairs: ['file 250', 'tsxFile 300'], untuned: '—' });
 	});
 
 	test('narrows the ledger to the state a reader picked', () => {

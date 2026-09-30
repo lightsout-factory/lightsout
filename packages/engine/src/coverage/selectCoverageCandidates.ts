@@ -14,7 +14,7 @@ interface Params {
 	/** Paths already routed to a human — never handed to another writer. */
 	setAsidePaths: Set<string>;
 	/** Repo-relative standards-pack roots, resolved once by the pipeline — a rule check under a pack's `tests/` document set is source, not a test. */
-	standardsPacks: string[];
+	standardsLibraries: string[];
 	/** The consumer's TypeScript module, or undefined — nothing is classified inert without one. */
 	compiler: typeof ts | undefined;
 }
@@ -26,7 +26,7 @@ interface Params {
  * guaranteed declines, enough in a row to read as a systemic stop. Without the
  * consumer's TypeScript, nothing is classified inert.
  */
-export const selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, standardsPacks, compiler }: Params): Promise<CoverageFile[]> => {
+export const selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, standardsLibraries, compiler }: Params): Promise<CoverageFile[]> => {
 	const failingScopes = new Set(measured.totals.filter((total) => !total.passed).map((total) => total.scope));
 	const candidates: CoverageFile[] = [];
 
@@ -35,7 +35,7 @@ export const selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, s
 			!failingScopes.has(file.scope) ||
 			setAsidePaths.has(file.path) ||
 			file.statementsPct >= 100 ||
-			isTestFile({ path: file.path, standardsPacks }) ||
+			isTestFile({ path: file.path, standardsLibraries }) ||
 			!isTestableSourceFile({ path: file.path })
 		) {
 			continue;

@@ -3,14 +3,15 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsRuleView } from '#src/contracts/views/StandardsRuleView.ts';
 import type { StandardsView } from '#src/contracts/views/StandardsView.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 import { buildStandardsHealth } from '#src/standardsCheck/buildStandardsHealth.ts';
 import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
 import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 import { listStandardsSnapshots } from '#src/standardsCheck/listStandardsSnapshots.ts';
 import { readStandardsSnapshot } from '#src/standardsCheck/readStandardsSnapshot.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
-import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
+import { mapPackRules } from '#src/standardsLibraries/mapPackRules.ts';
 
 const countByRule = ({ findings }: { findings: StandardsFinding[] }) => {
 	const counts = new Map<string, number>();
@@ -43,7 +44,7 @@ const buildRuleView = ({
 		checked: listing.checked,
 		severity: listing.severity,
 		fromConfig: listing.fromConfig,
-		settings: listing.settings,
+		options: listing.options,
 		findingCount,
 		history: {
 			attempted: health.attempted,
@@ -63,28 +64,32 @@ interface Params {
 }
 
 /**
- * Every loaded rule gets a row even with no open findings, because the view
- * answers "what does this repo enforce?"; a repo with no snapshot yet is normal.
+ * Every rule in the selected pack gets a row even with no open findings,
+ * because the view answers "what does this repo enforce?"; a repo with no
+ * snapshot yet is normal.
  *
- * @throws {Error} When a declared standards pack cannot be loaded, or the config names a rule no pack declares.
+ * @throws {Error} When the standards pack cannot be loaded, or the config names a rule the pack does not hold.
  */
 export const getStandardsView = async ({ cwd }: Params): Promise<StandardsView> => {
 	const config = await readOptionalConfig({ cwd });
-	const packs = await resolveStandardsPacks({ cwd, config });
-	const listings = await listStandardsRules({ cwd, config });
-	const health = await buildStandardsHealth({ cwd, packs });
+	const groups = await resolveStandardsGroups({ cwd, config });
+	const listings = listStandardsRules({ groups });
+	const health = await buildStandardsHealth({ cwd, groups });
 	const snapshot = await readStandardsSnapshot({ cwd });
 	const findings = snapshot?.findings ?? [];
-	const loaded = new Map(packs.flatMap((pack) => pack.rules).map((rule) => [rule.id, rule]));
+	const loaded = mapPackRules({ packs: groups.map((group) => group.pack) });
 	const counts = countByRule({ findings });
 	const rules: StandardsRuleView[] = [];
 
 	for (const listing of listings) {
 		const rule = loaded.get(listing.rule);
-		const ruleHealth = health.rules.find((entry) => entry.id === listing.rule);
+		const ruleHealth = health.rules.find((entry) => entry.rule === listing.rule);
 
-		// Skips nothing in practice; it keeps a row from being built out of half an answer.
-		if (rule === undefined || ruleHealth === undefined) {
+		// Findings, history and health are keyed by rule, so a rule the list splits
+		// per package keeps its first listing — the widest package set — as its one
+		// row. The other two tests skip nothing in practice; they keep a row from
+		// being built out of half an answer.
+		if (rule === undefined || ruleHealth === undefined || rules.some((row) => row.rule === listing.rule)) {
 			continue;
 		}
 

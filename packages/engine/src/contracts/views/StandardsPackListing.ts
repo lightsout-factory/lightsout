@@ -1,42 +1,34 @@
 import { z } from 'zod';
+import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 
+/** One pack file of a library, resolved: what it says it includes, and what that brings in. */
 export const StandardsPackListing = z.object({
+	/** The pack file's stem — the address segment after the library, e.g. 'node'. */
 	name: z.string(),
+	/** `<library>/<name>`, as a config key or another pack file names it. */
+	address: z.string(),
 	description: z.string().optional(),
-	homepage: z.string().optional(),
-	/** True for the pack a run loads when the config names none. */
-	isDefault: z.boolean(),
-	/** Absolute folder the pack was read from. */
-	rootPath: z.string(),
-	/**
-	 * `rootPath` relative to the repo the view was built for, or absolute when it
-	 * lies outside it. Computed in the engine because a browser component cannot.
-	 */
-	path: z.string(),
-	/** Stripped of its fixtures by the bundler — every rule's fixture counts are zero. */
-	built: z.boolean(),
-	/** Distinct channels across the pack's documents, sorted. */
-	channels: z.array(z.string()),
-	/**
-	 * Rule counts per channel, in `channels` order — only the channels that carry
-	 * at least one rule, so a channel of prose alone is never shown as a set of
-	 * rules it does not have.
-	 */
-	channelTotals: z.array(
+	/** The pack file's include lists as written; a list the file leaves out is empty. */
+	include: z.object({
+		packs: z.array(z.string()),
+		topics: z.array(z.string()),
+		rules: z.array(z.string()),
+	}),
+	/** Addresses of the topics the resolved pack brings in, sorted. */
+	topics: z.array(z.string()),
+	/** Every rule the resolved pack holds, by full name, at the severity and options the pack settles on; sorted by name. */
+	rules: z.array(
 		z.object({
-			channel: z.string(),
-			rules: z.number(),
-			checked: z.number(),
-			judgment: z.number(),
+			name: z.string(),
+			severity: z.enum(StandardsSeverity),
+			options: z.record(z.string(), z.number()),
 		}),
 	),
 	totals: z.object({
 		rules: z.number(),
 		checked: z.number(),
 		judgment: z.number(),
-		documents: z.number(),
-		/** Rules with at least one pass and one fail fixture file. */
-		withFixtures: z.number(),
+		topics: z.number(),
 	}),
 });
 

@@ -30,7 +30,14 @@ jest.mock('@tanstack/react-router', () => ({
 const setupHome = ({ isPackLoaded = false }: { isPackLoaded?: boolean } = {}) => {
 	renderWithQueryClient({
 		ui: <Home />,
-		seed: isPackLoaded ? [{ queryKey: [QueryKey.DefaultPack], data: buildStandardsPackView() }] : [],
+		seed: isPackLoaded
+			? [
+					{
+						queryKey: [QueryKey.DefaultPack],
+						data: buildStandardsPackView({ overrides: { totals: { rules: 137, checked: 61, judgment: 76, topics: 26, packs: 10, withFixtures: 137 } } }),
+					},
+				]
+			: [],
 	});
 };
 
@@ -65,6 +72,8 @@ describe('Home', () => {
 	test('paints the default pack’s numbers once they arrive', () => {
 		setupHome({ isPackLoaded: true });
 
-		expect(screen.getByText('rules in the default TypeScript pack')).toBeInTheDocument();
+		const headline = screen.getByText('rules in the lightsout library').parentElement;
+
+		expect(headline).toHaveTextContent('137 rules in the lightsout library');
 	});
 });

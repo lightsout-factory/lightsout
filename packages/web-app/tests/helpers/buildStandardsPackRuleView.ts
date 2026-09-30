@@ -6,7 +6,7 @@ interface Params {
 	prose?: string;
 	fixtures?: StandardsPackFixture[];
 	example?: RuleExample;
-	/** Applied last, so a test can widen the listing half — a different severity, no settings. */
+	/** Applied last, so a test can widen the listing half — a different severity, no options. */
 	overrides?: Partial<StandardsPackRuleView>;
 }
 

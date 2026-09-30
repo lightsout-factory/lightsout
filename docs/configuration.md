@@ -24,7 +24,14 @@ To run lightsout, define the commands it should use to verify the work:
 
 ### Use lightsout’s code standards
 
-The minimal configuration uses lightsout’s bundled JavaScript and TypeScript standards. Framework-specific standards are added automatically when supported frameworks are detected.
+The minimal configuration uses lightsout’s bundled JavaScript and TypeScript standards. With no `standards-pack` set, lightsout picks one of its own packs from the dependencies in your root `package.json` — and, in a monorepo, for each package from that package’s own `package.json` — checking in this order and taking the first match:
+
+1. TanStack Start (`@tanstack/react-start` or `@tanstack/start`) — `lightsout/tanstack-start-app`
+2. NestJS (`@nestjs/core`) — `lightsout/nestjs-app`
+3. React (`react`, `preact` or `react-dom`) — `lightsout/react-app`
+4. Anything else — `lightsout/node`
+
+The run header names the pack and says it was detected.
 
 ```json
 {
@@ -38,12 +45,14 @@ The minimal configuration uses lightsout’s bundled JavaScript and TypeScript s
 
 ### Use your own standards
 
-Point `standards-packs` at one or more standards packs. Each entry is the
-folder holding a `lightsout-standards.json` file:
+Register your standards library with `standards-libraries` (see
+[Register standards libraries](#register-standards-libraries)), then select one
+of its packs with `standards-pack`, written `<library>/<pack>`:
 
 ```json
 {
-  "standards-packs": ["standards/house-rules"],
+  "standards-libraries": { "house": "./standards/house" },
+  "standards-pack": "house/house-rules",
   "gates": {
     "check": "pnpm check",
     "test": "pnpm test:unit",
@@ -73,7 +82,20 @@ Use `package-gates` to run gates only for packages affected by the current chang
 }
 ```
 
-See [Monorepos](monorepos.md) for package detection and gate-resolution details.
+Use `package-standards-packs` to give a package a standards pack of its own. Each key is the package’s folder name under `packages-dir`, as `--packages` uses it, and each value is a pack address:
+
+```json
+{
+  "standards-pack": "lightsout/node",
+  "package-standards-packs": {
+    "web-app": "lightsout/tanstack-start-app"
+  }
+}
+```
+
+A package the map does not name uses `standards-pack`, or, when that is unset, the pack lightsout detects from the package’s own `package.json`.
+
+See [Monorepos](monorepos.md) for package detection, gate resolution and how standards follow each package.
 
 ## How verification works
 
@@ -153,22 +175,21 @@ load, so a missing entry is visible before a run is ever started.
 
 ## Adding your standards
 
-Standards arrive as **standards packs**. A pack is a folder holding a
-`lightsout-standards.json` file, a `code/` tree of documents for the agents that
-write code, and a `tests/` tree for the agent that writes tests. Every rule is a
-folder inside a document: its prose, the check that enforces it when one is
-possible, and the example files that prove the check works.
+Standards arrive as **standards packs**. A pack is one file in a standards
+library that selects topics and rules — topics from the library's `rules/code/`
+tree for the agents that write code, and from its `rules/tests/` tree for the
+agent that writes tests. Every rule is a folder inside a topic: its prose, the
+check that enforces it when one is possible, and the example files that prove
+the check works.
 
-Lightsout ships one such pack and loads it when you say nothing. Its base
-documents always apply, while the framework-specific documents for React and
-TanStack are added automatically when those frameworks are detected in the
-packages involved in the run.
-
-To use your own instead, list its root folder:
+A repository selects one pack, and that pack brings in every rule it needs. In
+a monorepo a package may select a different one with `package-standards-packs`
+(see [Configure a monorepo](#configure-a-monorepo)). Name the repository's pack
+with `standards-pack`:
 
 ```json
 {
-  "standards-packs": ["standards/house-rules"],
+  "standards-pack": "lightsout/node",
   "gates": {
     "check": "pnpm check",
     "test": "pnpm test:unit",
@@ -177,23 +198,82 @@ To use your own instead, list its root folder:
 }
 ```
 
-Entries load in the order you list them, and each may be a path relative to the
-root of your repository or an absolute path. Listing several stacks their
-documents; two packs that claim the same rule id fail the run rather than
-letting an override mean two things. A root with no `lightsout-standards.json`
-in it fails the run too.
+The pack applies to the repository root and every package
+`package-standards-packs` does not name. With no `standards-pack` set, lightsout
+detects one of its own packs from the root `package.json` for the root, and from
+each package's own `package.json` for that package, as
+[Use lightsout’s code standards](#use-lightsouts-code-standards) describes. A pack that no registered library holds fails the run. Every rule is
+named `<library>/<rule>`, where the library is the `name` in its
+`lightsout-standards.json`, so two libraries may each hold a rule with the same
+short id.
 
-Set `standards-packs` to `false` to run with no standards at all.
+Set `standards-pack` to `false` to run with no standards for the root and every
+package `package-standards-packs` does not name.
+
+### Register standards libraries
+
+A **standards library** is a folder holding `lightsout-standards.json`, the
+topics and rules it defines under `rules/code/` and `rules/tests/`, and a
+`packs/` folder beside them of pack files that select and tune those rules. `standards-libraries` registers libraries beside the one
+lightsout ships. Each key is the library's name, and each value says where the
+library lives:
+
+```json
+{
+  "standards-libraries": {
+    "house": "./standards/house",
+    "acme": "@acme/lightsout-standards"
+  }
+}
+```
+
+- A value starting with `./` or `../`, or an absolute path, is a folder, read
+  against the root of your repository.
+- Any other value is an npm package name, looked up in `node_modules` from the
+  root of your repository upward, the way Node finds a package. A package
+  linked from your own workspace loads from its source folder.
+
+The `name` in the library's `lightsout-standards.json` must equal its key, and
+a library that does not match, or will not load, is a hard error. `lightsout`
+is the built-in library's name and is reserved.
+
+Each pack is one `.json` file in a library's `packs/` folder, addressed
+`<library>/<file-stem>` — `lightsout/node` is `packs/node.json` in the built-in
+library. Only `.json` files there are packs; anything else in the folder is
+ignored.
+
+A rule that lightsout checks with code ships exactly one check file: `check.ts`
+or `check.js`. A library published to npm ships `check.js`, because Node will
+not strip types from a file under `node_modules`, and a `check.ts` found there
+fails the load. A library linked from your own workspace loads from its source
+folder, so it may ship `check.ts`.
 
 ### Commands for working with a pack
 
-`lightsout standards-validate [--pack <path>]` runs every check in a pack
-against its own pass and fail fixtures. Without the flag it validates the pack
-lightsout ships. This is the gate to run while writing a rule: a check that lets
-its fail fixture through catches nothing, and one that flags its pass fixture
-cries wolf. Neither is visible when the pack loads, and both are exactly what an
-author needs told. It validates every rule regardless of channel, because
-authoring covers every channel.
+`lightsout standards-validate [--library <path>]` validates a standards
+library. It runs every check against its own pass and fail fixtures, and it
+checks every pack file: each include entry names a pack, topic or rule that
+exists, each `rule-settings` entry names a rule already in the pack, and no
+packs include each other in a cycle. Without the flag it validates the library
+lightsout ships. A pack's includes resolve against the built-in library and the
+repository's `standards-libraries`, with the validated library in place of the
+one that shares its name. This is the gate to run while writing a rule: a check
+that lets its fail fixture through catches nothing, and one that flags its pass
+fixture cries wolf. Neither is visible when the library loads, and both are
+exactly what an author needs told. It validates every rule regardless of
+channel, because authoring covers every channel. It also judges each pack file
+on its own and warns once for each rule the pack sends to agents without a
+rule that rule requires. Warnings never fail it: a team may mean to take one
+topic pack alone.
+
+A rule's `rule.md` header may list the rules its text depends on under
+`requires:`. A short id names a rule in the same library, and a full name
+(`<library>/<rule>`) names a rule in any library. A name that matches no rule
+fails loading. A required rule is missing when it will not reach agents: the
+pack does not hold it, or the pack holds it at `off` and the repository has
+not turned it on. `standards-validate` warns the library's author about each
+missing requirement, and `lightsout doctor` warns the repository, per package
+group. Runs never warn.
 
 A pack may also ship one `fixtures/framework-owned/<framework>/` tree per
 framework — a miniature repo whose `package.json` declares that framework, so
@@ -224,7 +304,7 @@ failure.
 ## Field reference
 
 The table below lists the top-level keys. A block with keys of its own — `gates`,
-`standards-checks`, `ship`, `ticket-tracker`, `queue`, `plan`, `implement`,
+`standards-rule-settings`, `ship`, `ticket-tracker`, `queue`, `plan`, `implement`,
 `auto-plan` and `docs` — is documented in the
 subsections beneath it.
 
@@ -254,9 +334,10 @@ is overwritten the next time `pnpm build:config-reference` runs.
 | `packages-dir` | no | Directory holding workspace packages, for monorepo scoped gates. Defaults to `packages`. |
 | `package-gates` | no | Monorepo scoped gate templates — the per-package commands `{package}` is substituted into. Each template runs once per affected package, so a gate runs only for the packages a change touched. |
 | `gate-overrides` | no | Opt-in per-checkpoint gate schedules, keyed by the four verification checkpoints — `clean-slate`, `verify-implement`, `verify-tests` and `verify-refactor`. A checkpoint listed with an array runs exactly those gates, in that order, with no tiering, and a red one stops the rest of the list; `"off"` runs no gates at all there, `gates.generate` included. A checkpoint the block does not list keeps the engine’s default: the cheap gates first — check, then the unit suite — and the expensive ones, each custom `test-*` suite and the build, only once every package group’s cheap gates are green. A name must be a gate this repo configures under `gates` or `package-gates`; `generate` and `format` may not be named. |
-| `standards-packs` | no | Standards packs a run works against. Unspecified = the pack the plugin ships; `false` = explicitly none; an array = exactly these pack roots, each the folder holding `lightsout-standards.json`, repo-relative or absolute. One pack carries both the code and the test documents, which is why there is a single key rather than two. A root that cannot be loaded is a hard error. |
-| `standards-channels` | no | Framework channels of the loaded standards packs (e.g. 'react', 'tanstack'). Unspecified = detected per run from the scoped packages' package.json dependencies; an array REPLACES detection, and an empty one means base documents only. |
-| `standards-checks` | no | Per-rule severity and settings overrides for `lightsout standards-check`, keyed by rule id. A rule not named here keeps its pack’s default — silence is never a change. |
+| `standards-pack` | no | The standards pack for the repo root and every package `package-standards-packs` does not name, written `<library>/<pack>`, such as `lightsout/node`. Unset = lightsout detects one of its own packs from the dependencies in the root `package.json` for the root, and in each package’s own `package.json` for that package: `lightsout/tanstack-start-app` for TanStack Start, `lightsout/nestjs-app` for NestJS, `lightsout/react-app` for React, and `lightsout/node` otherwise. `false` = no standards for the root and every package the map does not name. |
+| `package-standards-packs` | no | A standards pack of its own for each package that differs from `standards-pack`. Each key is a package folder name under `packages-dir`, as `--packages` uses it, and each value is a pack address, `<library>/<pack>`. A package the map does not name uses `standards-pack`, or the pack detected from its own `package.json` when that is unset. `false` is accepted only by `standards-pack`, never here. A key naming no workspace package is an error. |
+| `standards-libraries` | no | Standards libraries the repo registers beside the built-in one, each a folder of topics, rules and pack files. Each key is a library name and each value is either a folder — a value starting with `./` or `../`, or an absolute path, read against the repo root — or an npm package name, looked up in the repo’s `node_modules`. A library’s manifest `name` must equal its key, and `lightsout` is built in and reserved. Versions are fixed the way the rest of the repo’s are: by git for a folder, by the lockfile for a package, and by the plugin version for the built-in library. |
+| `standards-rule-settings` | no | Per-rule severity and options settings, applied over the selected pack as the last layer and keyed by full rule name (`<library>/<rule>`), or by short rule id where only one rule in the pack has it. `off` stops a rule running but keeps its prose for agents; `blocking` or `advisory` turns on a rule the pack ships off. An entry naming no rule in the pack is an error. A rule not named here keeps its pack’s setting — silence is never a change. |
 | `ship` | no | Opt-in `lightsout ship` settings: the branch ticket pattern whose `ticket` capture group becomes the result’s ticket reference, the pull request body template, the merge method, whether a passed implement run chains into ship, an optional pre-ship command that prepares the release candidate before it is verified, and the explicit exception for a repository that intentionally has no CI. |
 | `ticket-tracker` | no | Opt-in tracker identity: which provider the engine talks to and that provider’s address and credential environment variables — a Linear team and API key, or a Jira Cloud site, project, API token and account email. Every command that reads or writes a ticket resolves it from here, so tracker identity is spelled once rather than once per command. |
 | `worktree` | no | Opt-in shared workspace preparation. `worktree.setup` is the one command run inside a fresh worktree before any agent, such as `pnpm install` — the queue runs it in each ticket worktree it cuts, and an isolated implementation run runs it in the worktree it cuts for itself. An absent block means nothing runs. The block is strict, so a misspelled key fails parsing rather than silently leaving the command unset. |
@@ -324,17 +405,17 @@ under the default order.
 
 ### Standards check rules
 
-Every rule the standards check enforces ships with a default severity and, where it has numbers to measure against, its own settings. `standards-checks` overrides them one rule at a time:
+Every rule the standards check enforces ships with a default severity and, where it has numbers to measure against, its own options, and the selected pack may change both. `standards-rule-settings` is the final layer over the selected pack, one rule at a time:
 
 ```jsonc
 {
-  "standards-checks": {
+  "standards-rule-settings": {
     // A severity on its own.
     "filename-mismatch": "off",
     "duplicate-code-block": "blocking",
-    // Or an object, to change the severity, the rule's settings, or both.
-    "file-size": { "settings": { "file": 300, "tsxFile": 400 } },
-    "folder-size": { "severity": "blocking", "settings": { "cap": 15 } },
+    // Or an object, to change the severity, the rule's options, or both.
+    "file-size": { "options": { "file": 300, "tsxFile": 400 } },
+    "folder-size": { "severity": "blocking", "options": { "cap": 15 } },
   },
 }
 ```
@@ -345,9 +426,13 @@ The three severities are:
 - `advisory` — reported, and handed to the refactor agent as a judgment call. Never blocks.
 - `off` — not run at all. This is what you set when your own linter already enforces the rule.
 
-A pack may also ship a rule `off`: a convention some repositories want and most do not, which a repository opts into by naming it here at `blocking` or `advisory`. Until it does, the rule neither runs nor reaches an agent's instructions. A rule you turn `off` yourself still reaches them, because the standard still holds and your linter is what enforces it.
+A pack may also ship a rule `off`: a convention some repositories want and most do not, which a repository turns on by naming it here at `blocking` or `advisory`. Until it does, the rule neither runs nor reaches an agent's instructions. A rule you turn `off` yourself stops running but still reaches them, because the standard still holds and your linter is what enforces it.
 
-Severity is the only lever a run gates on. There is no separate list of blockable rules, so the only way to stop a rule blocking is to write `advisory` or `off` for it here — an explicit line in a committed file. A mistyped rule id fails config parsing rather than silently disabling an override you believe is active.
+`lightsout doctor` judges rule requirements after these settings apply, so turning on a publisher-off required rule here clears its warning.
+
+Each key is a full rule name, `<library>/<rule>` such as `lightsout/file-size`, or a short id such as `file-size` that only one rule in the pack has. A key that matches no rule in the selected pack, or a short id that rules in several libraries share, stops the load and names the full candidates, rather than silently disabling a setting you believe is active. Two keys that name the same rule, such as `file-size` and `lightsout/file-size`, stop the load too. Findings, baseline site keys and `standards-check --list` always use full rule names.
+
+Severity is the only lever a run gates on. There is no separate list of blockable rules, so the only way to stop a rule blocking is to write `advisory` or `off` for it here — an explicit line in a committed file.
 
 Run `lightsout standards-check --list` to print every rule with the standards document it enforces and the state it runs at in your repo — the live answer, rather than a list here that goes stale.
 
@@ -359,7 +444,7 @@ A repository that wants the strict profile promotes those rules itself — an ex
 
 ```jsonc
 {
-  "standards-checks": {
+  "standards-rule-settings": {
     "banned-class-shapes": "blocking",
     "banned-folder-name": "blocking",
     "bare-string-union": "blocking",
@@ -822,9 +907,13 @@ The following example shows how the optional configuration fields fit together:
     },
   },
 
-  // Standards packs, and which framework documents apply
-  "standards-packs": ["standards/house-rules"],
-  "standards-channels": [],
+  // The standards pack for the repository root and every package not named below
+  "standards-pack": "lightsout/node",
+
+  // A package whose standards differ, keyed by its folder under packages-dir
+  "package-standards-packs": {
+    "web-app": "lightsout/tanstack-start-app",
+  },
 
   // Repository-wide gates
   "gates": {
@@ -920,13 +1009,13 @@ The following example shows how the optional configuration fields fit together:
   ],
 
   // Per-rule standards-check overrides
-  "standards-checks": {
+  "standards-rule-settings": {
     // Our linter already enforces this one.
     "filename-mismatch": "off",
     // Ask for a longer duplicated stretch before it counts.
-    "duplicate-code-block": { "settings": { "minTokens": 70 } },
+    "duplicate-code-block": { "options": { "minTokens": 70 } },
     // .tsx files here carry more JSX than the default budget assumes.
-    "file-size": { "settings": { "tsxFile": 400 } },
+    "file-size": { "options": { "tsxFile": 400 } },
   },
 }
 ```

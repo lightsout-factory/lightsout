@@ -5,52 +5,59 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsHealthCommand } from '#src/cli/standardsHealthCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
 // Mocked Imports
 // -------------------------
-// Loading a pack off disk and aggregating a repo's run history are other
+// Resolving the repo's standards groups and aggregating a repo's run history are other
 // modules' entry points, each with its own tests. What this command owns is what
 // it hands them, that it renders the result, and how it ends.
 
 interface BuildStandardsHealthParams {
 	cwd: string;
-	packs: LoadedStandardsPack[];
+	groups: StandardsGroup[];
 }
 
 const mockBuildStandardsHealth = jest.fn<(params: BuildStandardsHealthParams) => Promise<StandardsHealth>>();
 
-interface ResolveStandardsPacksParams {
+interface ResolveStandardsGroupsParams {
 	cwd: string;
-	config?: LightsoutConfig;
+	config: LightsoutConfig | undefined;
+	packages?: string[];
 }
 
-const mockResolveStandardsPacks = jest.fn<(params: ResolveStandardsPacksParams) => Promise<LoadedStandardsPack[]>>();
+const mockResolveStandardsGroups = jest.fn<(params: ResolveStandardsGroupsParams) => Promise<StandardsGroup[]>>();
 
 jest.mock('#src/standardsCheck/buildStandardsHealth.ts', () => ({
 	buildStandardsHealth: (params: BuildStandardsHealthParams) => mockBuildStandardsHealth(params),
 }));
-jest.mock('#src/standardsPacks/resolveStandardsPacks.ts', () => ({
-	resolveStandardsPacks: (params: ResolveStandardsPacksParams) => mockResolveStandardsPacks(params),
+jest.mock('#src/standards/resolveStandardsGroups.ts', () => ({
+	resolveStandardsGroups: (params: ResolveStandardsGroupsParams) => mockResolveStandardsGroups(params),
 }));
 // -------------------------
 
-const loadedPack: LoadedStandardsPack = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [] };
+const resolvedGroup: StandardsGroup = {
+	packages: [''],
+	pack: { name: 'acme/house', topics: [], rules: [] },
+	source: StandardsPackSource.Named,
+	states: new Map(),
+};
 
 /** The command over a repo on disk — one holding the given config, or one holding none. */
 const setupCommand = ({ health, config }: { health?: StandardsHealth; config?: Record<string, unknown> } = {}) => {
 	const captured = captureCommandOutput();
 	const cwd = config === undefined ? mkdtempSync(join(tmpdir(), 'lightsout-test-')) : setupConsumerRepo({ git: false, config });
 
-	mockResolveStandardsPacks.mockResolvedValue([loadedPack]);
+	mockResolveStandardsGroups.mockResolvedValue([resolvedGroup]);
 	mockBuildStandardsHealth.mockResolvedValue(
 		health ?? {
 			rules: [
 				{
-					id: 'multi-export',
+					rule: 'lightsout/multi-export',
 					set: 'code',
 					documentPath: 'code/style-guide/structure/one-export-per-file',
 					checked: true,
@@ -87,21 +94,21 @@ describe('standardsHealthCommand', () => {
 
 		await expect(standardsHealthCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(cellsOf({ logged })[1]).toStrictEqual(['multi-export', 'code', '2', '1', '1', '—', '50%', '—', '—']);
+		expect(cellsOf({ logged })[1]).toStrictEqual(['lightsout/multi-export', 'code', '2', '1', '1', '—', '50%', '—', '—']);
 		expect(errors).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([0]);
 	});
 
 	test("the repo's own config decides which packs the report has rows for", async () => {
-		const { context, cwd } = setupCommand({ config: { 'standards-packs': ['standards/house-rules'] } });
+		const { context, cwd } = setupCommand({ config: { 'standards-libraries': { acme: './standards/acme' }, 'standards-pack': 'acme/house' } });
 
 		await expect(standardsHealthCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(mockResolveStandardsPacks.mock.calls[0]?.[0]).toEqual(
-			expect.objectContaining({ cwd, config: expect.objectContaining({ 'standards-packs': ['standards/house-rules'] }) }),
+		expect(mockResolveStandardsGroups.mock.calls[0]?.[0]).toEqual(
+			expect.objectContaining({ cwd, config: expect.objectContaining({ 'standards-pack': 'acme/house' }) }),
 		);
-		// and the run history read is this repo's, beside those packs
-		expect(mockBuildStandardsHealth.mock.calls[0]?.[0]).toStrictEqual({ cwd, packs: [loadedPack] });
+		// and the run history read is this repo's, beside that pack's groups
+		expect(mockBuildStandardsHealth.mock.calls[0]?.[0]).toStrictEqual({ cwd, groups: [resolvedGroup] });
 	});
 
 	test('a repo with no config still gets an answer — the pack lightsout ships, every rule at its default', async () => {
@@ -109,14 +116,14 @@ describe('standardsHealthCommand', () => {
 
 		await expect(standardsHealthCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(mockResolveStandardsPacks.mock.calls[0]?.[0]?.config).toBe(undefined);
+		expect(mockResolveStandardsGroups.mock.calls[0]?.[0]?.config).toBe(undefined);
 	});
 
 	test('packs that cannot be loaded stop the command rather than printing an empty report', async () => {
 		const { context, logged, exitCodes } = setupCommand();
-		mockResolveStandardsPacks.mockRejectedValue(new Error('standards pack "acme" could not be loaded'));
+		mockResolveStandardsGroups.mockRejectedValue(new Error('pack acme/house: names library "acme", which is not registered'));
 
-		await expect(standardsHealthCommand(context)).rejects.toThrow('standards pack "acme" could not be loaded');
+		await expect(standardsHealthCommand(context)).rejects.toThrow('pack acme/house: names library "acme", which is not registered');
 
 		expect(logged).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([]);
@@ -135,7 +142,7 @@ describe('standardsHealthCommand', () => {
 			health: {
 				rules: [
 					{
-						id: 'file-size',
+						rule: 'lightsout/file-size',
 						set: 'code',
 						documentPath: 'code/style-guide/structure/size',
 						checked: true,

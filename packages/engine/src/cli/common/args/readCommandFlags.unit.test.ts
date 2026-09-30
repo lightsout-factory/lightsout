@@ -31,10 +31,10 @@ test('readCommandFlags: a name the usage text never mentions accepts nothing bey
 	expect(readCommandFlags({ command: 'nonesuch' })).toStrictEqual(new Set(['cwd']));
 });
 
-test('readCommandFlags: standards-validate accepts --pack, and the removed --package spelling is not in the set', () => {
+test('readCommandFlags: standards-validate takes --library and no longer takes --pack', () => {
 	const flags = readCommandFlags({ command: 'standards-validate' });
 
-	expect([...flags].sort()).toStrictEqual(['cwd', 'pack']);
+	expect([...flags].sort()).toStrictEqual(['cwd', 'library']);
 });
 
 test('does not accept the removed from flag on the work-order command', () => {

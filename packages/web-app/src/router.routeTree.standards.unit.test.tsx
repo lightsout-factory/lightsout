@@ -27,7 +27,7 @@ jest.mock('@tanstack/react-router', () => {
 				{children}
 			</a>
 		),
-		// The rule-set page writes its filters into the URL. Outside a live router
+		// The pack page writes its filters into the URL. Outside a live router
 		// there is nothing to navigate, and what the route decides — which keys it
 		// writes, and that it replaces rather than pushes — is what this file reads.
 		useNavigate: () => mockNavigate,
@@ -35,10 +35,11 @@ jest.mock('@tanstack/react-router', () => {
 });
 // -------------------------
 
-/** Whatever path parameters a standards-zone route carries — both optional, so one interface serves all three. */
+/** Whatever path parameters a standards-zone route carries — all optional, so one interface serves all three. */
 interface PageParams {
-	ruleSet?: string;
 	rule?: string;
+	library?: string;
+	pack?: string;
 }
 
 /**
@@ -89,27 +90,27 @@ const setupPacksPage = () => {
 };
 
 /**
- * The rule-set route, rendered for one set and one set of URL filters.
+ * The pack route, rendered for one pack and one set of URL filters.
  *
  * `Route.useParams()` and `Route.useSearch()` read the match a live router is
  * showing, so both come from spies rather than from a router driven to the path
  * — which is the routing library's behaviour, not this route's.
  */
-const setupRuleSetPage = ({ search = {} }: { search?: Record<string, unknown> } = {}) => {
+const setupPackPage = ({ search = {} }: { search?: Record<string, unknown> } = {}) => {
 	const { pack, pages } = setupRouteTree();
-	const route = pages['/_site/standards-packs/$ruleSet/'];
-	jest.spyOn(route, 'useParams').mockReturnValue({ ruleSet: 'typescript' });
+	const route = pages['/_site/standards-packs/$library/packs/$pack'];
+	jest.spyOn(route, 'useParams').mockReturnValue({ library: 'lightsout', pack: 'node' });
 	jest.spyOn(route, 'useSearch').mockReturnValue(search);
 	const Page = route.options.component;
 
 	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: [QueryKey.DefaultPack], data: pack }] });
 };
 
-/** The same route's answer for a set the pack does not hold. */
-const setupMissingRuleSetPage = ({ ruleSet = 'vue' }: { ruleSet?: string } = {}) => {
+/** The same route's answer for a pack the library does not hold. */
+const setupMissingPackPage = ({ pack = 'vue' }: { pack?: string } = {}) => {
 	const { pages } = setupRouteTree();
-	const route = pages['/_site/standards-packs/$ruleSet/'];
-	jest.spyOn(route, 'useParams').mockReturnValue({ ruleSet });
+	const route = pages['/_site/standards-packs/$library/packs/$pack'];
+	jest.spyOn(route, 'useParams').mockReturnValue({ library: 'lightsout', pack });
 	const Page = route.options.notFoundComponent;
 
 	renderWithQueryClient({ ui: <Page /> });
@@ -118,8 +119,8 @@ const setupMissingRuleSetPage = ({ ruleSet = 'vue' }: { ruleSet?: string } = {})
 /** The rule page, for one address. */
 const setupRuleDetailPage = ({ rule = 'folder-size' }: { rule?: string } = {}) => {
 	const { pack, pages } = setupRouteTree();
-	const route = pages['/_site/standards-packs/$ruleSet/$rule'];
-	jest.spyOn(route, 'useParams').mockReturnValue({ ruleSet: 'typescript', rule });
+	const route = pages['/_site/standards-packs/$library/rules/$rule'];
+	jest.spyOn(route, 'useParams').mockReturnValue({ library: 'lightsout', rule });
 	const Page = route.options.component;
 
 	renderWithQueryClient({
@@ -131,11 +132,11 @@ const setupRuleDetailPage = ({ rule = 'folder-size' }: { rule?: string } = {}) =
 	});
 };
 
-/** The same route's answer for a rule the set does not carry. */
-const setupMissingRulePage = ({ ruleSet = 'typescript', rule = 'one-exported-function-per-file' }: { ruleSet?: string; rule?: string } = {}) => {
+/** The same route's answer for a rule the library does not carry. */
+const setupMissingRulePage = ({ library = 'lightsout', rule = 'one-exported-function-per-file' }: { library?: string; rule?: string } = {}) => {
 	const { pages } = setupRouteTree();
-	const route = pages['/_site/standards-packs/$ruleSet/$rule'];
-	jest.spyOn(route, 'useParams').mockReturnValue({ ruleSet, rule });
+	const route = pages['/_site/standards-packs/$library/rules/$rule'];
+	jest.spyOn(route, 'useParams').mockReturnValue({ library, rule });
 	const Page = route.options.notFoundComponent;
 
 	renderWithQueryClient({ ui: <Page /> });
@@ -146,13 +147,13 @@ const pressCheckKind = ({ label }: { label: string }) =>
 	fireEvent.click(within(screen.getByRole('group', { name: 'Kind of check' })).getByRole('button', { name: label }));
 
 // The sell zone's three standards routes: what `/standards-packs/`,
-// `/standards-packs/$ruleSet/` and `/standards-packs/$ruleSet/$rule` serve, and
-// what the rule-set route does with the query string it owns.
+// `/standards-packs/$library/packs/$pack` and `/standards-packs/$library/rules/$rule`
+// serve, and what the pack route does with the query string it owns.
 describe('routeTree standards routes', () => {
-	test('the packs route shows a card for each set of rules the shipped pack holds', () => {
+	test('the packs route shows a card for each pack the shipped library holds', () => {
 		setupPacksPage();
 
-		expect(screen.getByRole('heading', { level: 3, name: 'TypeScript' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { level: 3, name: 'lightsout/node' })).toBeInTheDocument();
 	});
 
 	test('the packs route warms its own list before the page renders', async () => {
@@ -163,90 +164,90 @@ describe('routeTree standards routes', () => {
 		expect(queryClient.getQueryData([QueryKey.DefaultPack])).toStrictEqual(pack);
 	});
 
-	test('the rule-set route renders the set the path names, by the name a reader knows it by', () => {
-		setupRuleSetPage();
+	test('the pack route renders the pack the path names, by its address', () => {
+		setupPackPage();
 
-		const heading = screen.getByRole('heading', { level: 1, name: 'TypeScript' });
+		const heading = screen.getByRole('heading', { level: 1, name: 'lightsout/node' });
 
 		expect(heading).toBeInTheDocument();
 	});
 
-	test('the rule-set route names the tab from the path alone, before any query has resolved', () => {
+	test('the pack route names the tab from the path alone, before any query has resolved', () => {
 		const { pages } = setupRouteTree();
 
-		const head = pages['/_site/standards-packs/$ruleSet/'].options.head({ params: { ruleSet: 'react' } });
+		const head = pages['/_site/standards-packs/$library/packs/$pack'].options.head({ params: { library: 'lightsout', pack: 'react' } });
 
-		expect(head.meta).toStrictEqual([{ title: 'react rules — Standards Packs' }]);
+		expect(head.meta).toStrictEqual([{ title: 'lightsout/react — Standards Packs' }]);
 	});
 
-	test('the rule-set route warms the shipped pack before the page renders', async () => {
-		const { loader, pack, queryClient } = setupLoader({ id: '/_site/standards-packs/$ruleSet/' });
+	test('the pack route warms the shipped library before the page renders', async () => {
+		const { loader, pack, queryClient } = setupLoader({ id: '/_site/standards-packs/$library/packs/$pack' });
 
-		await loader({ context: { queryClient }, params: { ruleSet: 'typescript' } });
+		await loader({ context: { queryClient }, params: { library: 'lightsout', pack: 'node' } });
 
 		expect(queryClient.getQueryData([QueryKey.DefaultPack])).toStrictEqual(pack);
 	});
 
-	test('the rule-set route treats a set the pack does not hold as a missing address, not an empty page', async () => {
-		const { loader, queryClient } = setupLoader({ id: '/_site/standards-packs/$ruleSet/' });
+	test('the pack route treats a pack the library does not hold as a missing address, not an empty page', async () => {
+		const { loader, queryClient } = setupLoader({ id: '/_site/standards-packs/$library/packs/$pack' });
 
-		const failure = await loader({ context: { queryClient }, params: { ruleSet: 'vue' } }).catch((error: unknown) => error);
+		const failure = await loader({ context: { queryClient }, params: { library: 'lightsout', pack: 'vue' } }).catch((error: unknown) => error);
 
 		expect(isNotFound(failure)).toBe(true);
 	});
 
-	test("the rule-set route reads the URL's own words and hands the page the filter they mean", () => {
-		setupRuleSetPage({ search: { check: 'agent' } });
+	test("the pack route reads the URL's own words and hands the page the filter they mean", () => {
+		setupPackPage({ search: { check: 'agent' } });
 
 		const option = within(screen.getByRole('group', { name: 'Kind of check' })).getByRole('button', { name: 'Agent' });
 
 		expect(option).toHaveAttribute('aria-pressed', 'true');
 	});
 
-	test('the rule-set route writes a filter change back as those same words, replacing the URL rather than pushing it', () => {
-		setupRuleSetPage();
+	test('the pack route writes a filter change back as those same words, replacing the URL rather than pushing it', () => {
+		setupPackPage();
 
 		pressCheckKind({ label: 'Deterministic' });
 
 		expect(mockNavigate).toHaveBeenCalledWith({ search: { check: 'deterministic', text: undefined }, replace: true });
 	});
 
-	test('the rule-set route drops the key from the URL when the reader goes back to all rules', () => {
-		setupRuleSetPage({ search: { check: 'agent' } });
+	test('the pack route drops the key from the URL when the reader goes back to all rules', () => {
+		setupPackPage({ search: { check: 'agent' } });
 
 		pressCheckKind({ label: 'All' });
 
 		expect(mockNavigate).toHaveBeenCalledWith({ search: { check: undefined, text: undefined }, replace: true });
 	});
 
-	test('the rule-set route carries the search through a change to the switch', () => {
-		setupRuleSetPage({ search: { text: 'cas' } });
+	test('the pack route carries the search through a change to the switch', () => {
+		setupPackPage({ search: { text: 'cas' } });
 
 		pressCheckKind({ label: 'Agent' });
 
 		expect(mockNavigate).toHaveBeenCalledWith({ search: { check: 'agent', text: 'cas' }, replace: true });
 	});
 
-	test('the rule-set route keeps a query value its vocabulary knows', () => {
+	test('the pack route keeps a query value its vocabulary knows', () => {
 		const { pages } = setupRouteTree();
 
-		const search = pages['/_site/standards-packs/$ruleSet/'].options.validateSearch({ check: 'deterministic', text: 'cast' });
+		const search = pages['/_site/standards-packs/$library/packs/$pack'].options.validateSearch({ check: 'deterministic', text: 'cast' });
 
 		expect(search).toStrictEqual({ check: 'deterministic', text: 'cast' });
 	});
 
-	test('the rule-set route ignores a query value outside that vocabulary, rather than filtering to nothing', () => {
+	test('the pack route ignores a query value outside that vocabulary, rather than filtering to nothing', () => {
 		const { pages } = setupRouteTree();
 
-		const search = pages['/_site/standards-packs/$ruleSet/'].options.validateSearch({ check: 'vibes', text: '' });
+		const search = pages['/_site/standards-packs/$library/packs/$pack'].options.validateSearch({ check: 'vibes', text: '' });
 
 		expect(search).toStrictEqual({ check: undefined, text: undefined });
 	});
 
-	test('the rule-set route says which set the pack does not hold', () => {
-		setupMissingRuleSetPage({ ruleSet: 'vue' });
+	test('the pack route says which address the library holds no pack at', () => {
+		setupMissingPackPage({ pack: 'vue' });
 
-		const notice = screen.getByText('vue');
+		const notice = screen.getByText('lightsout/vue');
 
 		expect(notice).toBeInTheDocument();
 	});
@@ -262,46 +263,95 @@ describe('routeTree standards routes', () => {
 	test('the rule route names the tab from the path alone too', () => {
 		const { pages } = setupRouteTree();
 
-		const head = pages['/_site/standards-packs/$ruleSet/$rule'].options.head({ params: { ruleSet: 'typescript', rule: 'object-args' } });
+		const head = pages['/_site/standards-packs/$library/rules/$rule'].options.head({ params: { library: 'lightsout', rule: 'object-args' } });
 
-		expect(head.meta).toStrictEqual([{ title: 'object-args — typescript rules' }]);
+		expect(head.meta).toStrictEqual([{ title: 'lightsout/object-args — Standards Packs' }]);
 	});
 
 	test('the rule route warms the rule it shows', async () => {
-		const { loader, queryClient } = setupLoader({ id: '/_site/standards-packs/$ruleSet/$rule' });
+		const { loader, queryClient } = setupLoader({ id: '/_site/standards-packs/$library/rules/$rule' });
 
-		await loader({ context: { queryClient }, params: { ruleSet: 'typescript', rule: 'folder-size' } });
+		await loader({ context: { queryClient }, params: { library: 'lightsout', rule: 'folder-size' } });
 
 		expect(queryClient.getQueryData<{ id: string }>([QueryKey.DefaultPackRule, 'folder-size'])?.id).toBe('folder-size');
 	});
 
-	test('the rule route treats a real rule under the wrong set as a missing address', async () => {
-		const { loader, queryClient } = setupLoader({ id: '/_site/standards-packs/$ruleSet/$rule' });
+	test('the rule route treats a real rule under the wrong library as a missing address', async () => {
+		const { loader, queryClient } = setupLoader({ id: '/_site/standards-packs/$library/rules/$rule' });
 
-		const failure = await loader({ context: { queryClient }, params: { ruleSet: 'react', rule: 'folder-size' } }).catch((error: unknown) => error);
-
-		expect(isNotFound(failure)).toBe(true);
-	});
-
-	test('the rule route treats a rule the set does not carry as a missing address', async () => {
-		const { loader, queryClient } = setupLoader({ id: '/_site/standards-packs/$ruleSet/$rule' });
-
-		const failure = await loader({ context: { queryClient }, params: { ruleSet: 'typescript', rule: 'no-such-rule' } }).catch((error: unknown) => error);
+		const failure = await loader({ context: { queryClient }, params: { library: 'acme', rule: 'folder-size' } }).catch((error: unknown) => error);
 
 		expect(isNotFound(failure)).toBe(true);
 	});
 
-	test('the rule route puts the set in the trail above the rule, pointing back at its rules', () => {
-		setupRuleDetailPage();
+	test('the rule route treats a rule the library does not carry as a missing address', async () => {
+		const { loader, queryClient } = setupLoader({ id: '/_site/standards-packs/$library/rules/$rule' });
 
-		const crumb = within(screen.getByRole('navigation', { name: 'Breadcrumb' })).getByRole('link', { name: 'TypeScript' });
+		const failure = await loader({ context: { queryClient }, params: { library: 'lightsout', rule: 'no-such-rule' } }).catch((error: unknown) => error);
 
-		expect(crumb).toHaveAttribute('href', '/standards-packs/typescript');
+		expect(isNotFound(failure)).toBe(true);
 	});
 
 	test('the rule route names both halves of an address that leads nowhere', () => {
-		setupMissingRulePage({ ruleSet: 'react', rule: 'one-exported-function-per-file' });
+		setupMissingRulePage({ library: 'acme', rule: 'one-exported-function-per-file' });
 
-		expect([screen.getByText('react'), screen.getByText('one-exported-function-per-file')]).toHaveLength(2);
+		expect([screen.getByText('acme'), screen.getByText('one-exported-function-per-file')]).toHaveLength(2);
+	});
+
+	test('the pack page loader answers not found for a pack or library the bundle does not hold', async () => {
+		const { loader, queryClient } = setupLoader({ id: '/_site/standards-packs/$library/packs/$pack' });
+
+		const outcomes = await Promise.all(
+			[
+				{ library: 'lightsout', pack: 'node' },
+				{ library: 'lightsout', pack: 'vue' },
+				{ library: 'acme', pack: 'node' },
+			].map((params) =>
+				loader({ context: { queryClient }, params }).then(
+					() => 'found',
+					(error: unknown) => (isNotFound(error) ? 'not found' : error),
+				),
+			),
+		);
+
+		expect(outcomes).toStrictEqual(['found', 'not found', 'not found']);
+	});
+
+	test('the rule page loader answers not found for a rule outside the bundled library', async () => {
+		const { loader, queryClient } = setupLoader({ id: '/_site/standards-packs/$library/rules/$rule' });
+
+		const outcomes = await Promise.all(
+			[
+				{ library: 'lightsout', rule: 'function-size' },
+				{ library: 'lightsout', rule: 'no-such-rule' },
+				{ library: 'acme', rule: 'function-size' },
+			].map((params) =>
+				loader({ context: { queryClient }, params }).then(
+					() => 'found',
+					(error: unknown) => (isNotFound(error) ? 'not found' : error),
+				),
+			),
+		);
+		const cachedRule = queryClient.getQueryData<{ id: string }>([QueryKey.DefaultPackRule, 'function-size']);
+
+		expect({ outcomes, cachedRuleId: cachedRule?.id }).toStrictEqual({
+			outcomes: ['found', 'not found', 'not found'],
+			cachedRuleId: 'function-size',
+		});
+	});
+
+	test('the pack page keeps only a known check kind and non-empty search text', () => {
+		const { pages } = setupRouteTree();
+		const { validateSearch } = pages['/_site/standards-packs/$library/packs/$pack'].options;
+
+		const searches = [
+			{ check: 'deterministic', text: 'cast' },
+			{ check: 'vibes', text: '' },
+		].map((search) => validateSearch(search));
+
+		expect(searches).toStrictEqual([
+			{ check: 'deterministic', text: 'cast' },
+			{ check: undefined, text: undefined },
+		]);
 	});
 });

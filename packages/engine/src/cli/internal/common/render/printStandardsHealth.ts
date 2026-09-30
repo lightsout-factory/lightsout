@@ -31,7 +31,7 @@ const ruleRows = ({ rule }: { rule: StandardsHealthRule }) => {
 	return [
 		{
 			cells: [
-				rule.id,
+				rule.rule,
 				rule.checked ? 'code' : 'judgment',
 				count({ value: rule.attempted }),
 				count({ value: rule.resolved }),

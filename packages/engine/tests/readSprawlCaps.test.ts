@@ -9,8 +9,8 @@ import { seedSprawlRepo } from '#tests/helpers/sprawl/seedSprawlRepo.ts';
 // pack's own rule file — and a rule file that cannot answer has to stop the
 // build rather than let a plausible number ship.
 
-const fileSizeRule = 'code/style-guide/patterns/functions/30-file-size/rule.md';
-const functionSizeRule = 'code/style-guide/patterns/functions/25-function-size/rule.md';
+const fileSizeRule = 'rules/code/style-guide/patterns/functions/30-file-size/rule.md';
+const functionSizeRule = 'rules/code/style-guide/patterns/functions/25-function-size/rule.md';
 const repos: string[] = [];
 
 const setupCapsRepo = ({ rules }: { rules?: Record<string, string | undefined> } = {}) => {
@@ -59,9 +59,9 @@ describe('readSprawlCaps', () => {
 		expect(Object.keys(result.caps ?? {})).toStrictEqual(['file', 'tsxFile', 'function', 'testFile', 'folderCensus']);
 	});
 
-	test('stops reading at the first line that is not a setting, so prose below the front matter cannot be mistaken for a cap', () => {
+	test('stops reading at the first line that is not an option, so prose below the front matter cannot be mistaken for a cap', () => {
 		const { cwd } = setupCapsRepo({
-			rules: { [fileSizeRule]: ['---', 'settings:', '  file: 100', '  tsxFile: 120', '---', '', '  tsxFile: 999', ''].join('\n') },
+			rules: { [fileSizeRule]: ['---', 'options:', '  file: 100', '  tsxFile: 120', '---', '', '  tsxFile: 999', ''].join('\n') },
 		});
 
 		const result = readCaps({ cwd });
@@ -69,28 +69,51 @@ describe('readSprawlCaps', () => {
 		expect(result.caps).toEqual(expect.objectContaining({ tsxFile: 120 }));
 	});
 
-	test('refuses when a rule file carries no settings block', () => {
+	test('refuses when a rule file carries no options block', () => {
 		const { cwd } = setupCapsRepo({ rules: { [functionSizeRule]: ['---', 'summary: "no numbers here"', '---', ''].join('\n') } });
 
 		const result = readCaps({ cwd });
 
-		expect(result.error).toMatch(/25-function-size\/rule\.md has no settings: block/);
+		expect(result.error).toMatch(/25-function-size\/rule\.md has no options: block/);
 	});
 
-	test('refuses when a settings block is missing the key the cap is read from', () => {
-		const { cwd } = setupCapsRepo({ rules: { [fileSizeRule]: ['---', 'settings:', '  file: 100', '---', ''].join('\n') } });
+	test('refuses when an options block is missing the key the cap is read from', () => {
+		const { cwd } = setupCapsRepo({ rules: { [fileSizeRule]: ['---', 'options:', '  file: 100', '---', ''].join('\n') } });
 
 		const result = readCaps({ cwd });
 
-		expect(result.error).toMatch(/has no numeric `tsxFile` setting/);
+		expect(result.error).toMatch(/has no numeric `tsxFile` option/);
 	});
 
-	test('refuses when a settings key is present but not a number', () => {
-		const { cwd } = setupCapsRepo({ rules: { [functionSizeRule]: ['---', 'settings:', '  function: soon', '---', ''].join('\n') } });
+	test('refuses when an option is present but not a number', () => {
+		const { cwd } = setupCapsRepo({ rules: { [functionSizeRule]: ['---', 'options:', '  function: soon', '---', ''].join('\n') } });
 
 		const result = readCaps({ cwd });
 
-		expect(result.error).toMatch(/has no numeric `function` setting/);
+		expect(result.error).toMatch(/has no numeric `function` option/);
+	});
+
+	test("reads the caps from each rule file's options block, and refuses a file that has none", () => {
+		const optionsRule = ({ options }: { options: string[] }) => ['---', 'summary: "a rule"', 'options:', ...options, '---', '', 'prose below', ''].join('\n');
+		const { cwd: optionsCwd } = setupCapsRepo({
+			rules: {
+				[fileSizeRule]: optionsRule({ options: ['  file: 110', '  tsxFile: 130'] }),
+				[functionSizeRule]: optionsRule({ options: ['  function: 35'] }),
+				'rules/tests/unit-testing/18-test-file-size/rule.md': optionsRule({ options: ['  testFile: 410'] }),
+				'rules/code/architecture/folder-structure/35-folder-size/rule.md': optionsRule({ options: ['  cap: 4'] }),
+			},
+		});
+		const { cwd: missingCwd } = setupCapsRepo({
+			rules: { [functionSizeRule]: ['---', 'summary: "no numbers here"', 'settings:', '  function: 30', '---', ''].join('\n') },
+		});
+
+		const read = readCaps({ cwd: optionsCwd });
+		const refused = readCaps({ cwd: missingCwd });
+
+		expect({ caps: read.caps, error: refused.error }).toEqual({
+			caps: { file: 110, tsxFile: 130, function: 35, testFile: 410, folderCensus: 4 },
+			error: expect.stringMatching(/25-function-size\/rule\.md has no options: block/),
+		});
 	});
 
 	test('refuses when a rule file the caps come from is not there at all', () => {
@@ -99,5 +122,28 @@ describe('readSprawlCaps', () => {
 		const result = readCaps({ cwd });
 
 		expect(result.error).toMatch(/25-function-size/);
+	});
+
+	test('refuses when the cap rule files sit at the library root instead of under rules', () => {
+		const rootRule = ({ options }: { options: string[] }) => ['---', 'summary: "a rule"', 'options:', ...options, '---', '', 'prose below', ''].join('\n');
+		const { cwd } = setupCapsRepo({
+			rules: {
+				'rules/code/style-guide/patterns/functions/30-file-size/rule.md': undefined,
+				'rules/code/style-guide/patterns/functions/25-function-size/rule.md': undefined,
+				'rules/tests/unit-testing/18-test-file-size/rule.md': undefined,
+				'rules/code/architecture/folder-structure/35-folder-size/rule.md': undefined,
+				'code/style-guide/patterns/functions/30-file-size/rule.md': rootRule({ options: ['  file: 100', '  tsxFile: 120'] }),
+				'code/style-guide/patterns/functions/25-function-size/rule.md': rootRule({ options: ['  function: 30'] }),
+				'tests/unit-testing/18-test-file-size/rule.md': rootRule({ options: ['  testFile: 400'] }),
+				'code/architecture/folder-structure/35-folder-size/rule.md': rootRule({ options: ['  cap: 3'] }),
+			},
+		});
+
+		const result = readCaps({ cwd });
+
+		expect({ carriesCaps: Object.hasOwn(result, 'caps'), error: result.error }).toEqual({
+			carriesCaps: false,
+			error: expect.stringMatching(/rules\/code\/style-guide\/patterns\/functions\/30-file-size\/rule\.md/),
+		});
 	});
 });

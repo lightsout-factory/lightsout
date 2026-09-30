@@ -7,6 +7,7 @@ import { standardsCheckCommand } from '#src/cli/standardsCheckCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
@@ -30,11 +31,10 @@ interface RunStandardsCheckParams {
 const mockRunStandardsCheck = jest.fn<(params: RunStandardsCheckParams) => Promise<{ findings: StandardsFinding[]; notes: string[] }>>();
 
 interface ListStandardsRulesParams {
-	cwd: string;
-	config?: LightsoutConfig;
+	groups: StandardsGroup[];
 }
 
-const mockListStandardsRules = jest.fn<(params: ListStandardsRulesParams) => Promise<StandardsRuleListing[]>>();
+const mockListStandardsRules = jest.fn<(params: ListStandardsRulesParams) => StandardsRuleListing[]>();
 
 interface ReviewStandardsParams {
 	cwd: string;
@@ -84,7 +84,7 @@ const setupCheck = ({
 
 	// The run path reads the listing too — it is where each reported rule's
 	// one-line summary comes from — so the stub answers on both paths.
-	mockListStandardsRules.mockResolvedValue(rules ?? [listing({ rule: 'function-size', summary: 'a function longer than the size cap' })]);
+	mockListStandardsRules.mockReturnValue(rules ?? [listing({ rule: 'function-size', summary: 'a function longer than the size cap' })]);
 
 	mockRunStandardsCheck.mockImplementation(async ({ onProgress }) => {
 		for (const message of check.progress ?? []) {
@@ -106,7 +106,8 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	checked: true,
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
-	settings: {},
+	options: {},
+	packages: [''],
 	...overrides,
 });
 
@@ -118,7 +119,7 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 const setupRuleList = ({ cwd, rules = [listing()] }: { cwd: string; rules?: StandardsRuleListing[] }) => {
 	const captured = captureCommandOutput();
 
-	mockListStandardsRules.mockResolvedValue(rules);
+	mockListStandardsRules.mockReturnValue(rules);
 
 	return { context: { flags: parseFlags({ args: ['--list'] }), rest: [], cwd }, ...captured };
 };
@@ -226,20 +227,25 @@ describe('standardsCheckCommand', () => {
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(listParams()?.config).toBeUndefined();
-		expect(cellsOf({ logged })).toContainEqual(['multi-export', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file']);
+		expect(listParams()?.groups.map(({ pack, source }) => ({ pack: pack.name, source }))).toStrictEqual([{ pack: 'lightsout/node', source: 'detected' }]);
+		expect(cellsOf({ logged })).toContainEqual([
+			'multi-export',
+			'blocking',
+			'code',
+			'lightsout-defaults: code/style-guide/structure/one-export-per-file',
+			'repo root (outside packages)',
+		]);
 		expect(mockRunStandardsCheck).not.toHaveBeenCalled();
 		expect(mockReviewStandards).not.toHaveBeenCalled();
 		expect(exitCodes).toStrictEqual([0]);
 	});
 
 	test('a ledger that cannot be built stops the command before any check runs', async () => {
-		const { context, exitCodes } = setupCheck();
-		mockListStandardsRules.mockRejectedValue(new Error('standards pack "acme" could not be loaded'));
+		const { context, exitCodes } = setupCheck({ config: { 'standards-pack': 'lightsout/no-such-pack' } });
 
-		await expect(standardsCheckCommand(context)).rejects.toThrow('standards pack "acme" could not be loaded');
+		await expect(standardsCheckCommand(context)).rejects.toThrow('pack lightsout/no-such-pack: names no pack');
 
-		// a repo whose configured packages cannot load must not half-run: no check,
+		// a repo whose configured pack cannot load must not half-run: no check,
 		// and no exit code claiming the repo came back clean
 		expect(mockRunStandardsCheck).not.toHaveBeenCalled();
 		expect(exitCodes).toStrictEqual([]);

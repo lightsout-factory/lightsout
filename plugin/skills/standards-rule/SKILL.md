@@ -1,34 +1,50 @@
 ---
 name: standards-rule
-description: Write a new rule for a lightsout standards pack, or review and rewrite an existing one — its name, summary, prose, examples and finding text. Use when the user asks to add, create, review, rename, reword or clean up a standards rule.
+description: Write a new rule for a lightsout standards library, or review and rewrite an existing one — its name, summary, prose, examples and finding text. Use when the user asks to add, create, review, rename, reword or clean up a standards rule.
 ---
 
 # lightsout: standards-rule
 
-A standards pack is what lightsout hands its agents as the rules for writing
-code. This skill writes one rule, or reviews one, so every rule in every pack
-has the same shape.
+A standards library is where lightsout's rules for writing code are defined,
+and a pack picks which of them a repository uses. This skill writes one rule,
+or reviews one, so every rule in every library has the same shape.
 
-## How a pack is built
+## How a library is built
 
-- **Pack:** a folder holding `lightsout-standards.json`, plus a `code/` tree for
-  the agents that write code and a `tests/` tree for the agent that writes
-  tests. A repo lists the packs it uses in `standards-packs` in its lightsout
-  config, and their documents stack.
-- **Document:** any folder under `code/` or `tests/` that holds a
-  `document.md`, plus one folder per rule. It covers one topic, such as error
-  handling or naming. Its `document.md` is a short intro holding the background
-  every rule in it shares, said once. Folders without a `document.md` only
-  group documents. A `document.md` may start with `channel: <framework>` front
-  matter, such as `channel: react`; its rules then apply only to repos that use
-  that framework.
+- **Library:** a folder holding `lightsout-standards.json` (`name`,
+  `formatVersion: 2`, and an optional `description` and `homepage`), a
+  `rules/` folder with `code/` for the agents that write code and `tests/` for
+  the agent that writes tests, and a `packs/` folder. A repository registers a
+  library of its own in `standards-libraries` in its lightsout config, under
+  the same name as the manifest's `name`. `lightsout` is the built-in library,
+  and its name is reserved. Checks load as ES modules, so the library's
+  `package.json` says `"type": "module"`. Helpers several checks share can live
+  in `common/`, imported through an `imports` entry such as `#common/*`, as the
+  built-in library does.
+- **Topic:** a folder under `rules/code/` or `rules/tests/` that holds a
+  `topic.md`, plus one folder per rule. It covers one subject, such as error
+  handling or naming. Its `topic.md` is a title and the background every rule
+  in it shares, said once. Folders without a `topic.md` only group topics. A
+  topic is addressed as `<library>/<path under rules/>`, such as
+  `lightsout/code/architecture/react`.
 - **Rule:** a folder named `<NN>-<id>`. `<NN>` sets only the reading order. The
-  `<id>` is the rule's key: findings are written with it, and a repo names it in
-  `standards-checks` to turn the rule on or off or change its severity.
+  `<id>` is the rule's key, and its full name is `<library>/<id>`. Findings are
+  written with the full name. A short id is accepted wherever it is unique.
   - `rule.md` — required: front matter, then the prose.
   - `check.ts` — optional: code that finds breaks. Declare `checked: true` when
     it exists, and only then.
   - `fixtures/fail/` and `fixtures/pass/` — the Incorrect and Correct examples.
+- **Pack:** one JSON file in `packs/`, addressed as
+  `<library>/<file name without .json>`. It holds a `description`;
+  `include.packs`, `include.topics` and `include.rules`, which all add; and
+  `rule-settings`, which gives a rule in the pack a severity, or a `severity`
+  and `options` (`off` removes the rule). A pack changes which rules apply and
+  how they are graded, never a rule's text or check. When two included packs
+  disagree about a rule, the last one listed wins.
+- **How a repository picks standards:** `standards-pack` names the pack for the
+  repository, `package-standards-packs` names one for each package that
+  differs, and `standards-rule-settings` is the final layer over both. With no
+  pack named, lightsout detects one of its own packs.
 
 `rule.md` front matter:
 
@@ -36,62 +52,74 @@ has the same shape.
 summary: "One short sentence for people."   # required
 checked: false                              # true only with a check.ts
 severity: advisory                          # blocking | advisory | off (off = a repo opts in)
-settings:                                   # numbers the check reads, if any
+options:                                    # numbers the check reads, if any
   cap: 20
 example:
   kind: snippet                             # or repo, with focus
+requires:                                   # rules this rule depends on: a short id in this library, the full name for another
+  - folder-index-file
 ```
 
-**Who reads what.** An agent gets one document at a time: the `document.md`
-intro, then the prose of every rule in it, in folder order. It never sees the
-summary or the examples. People see the summary, the prose and the examples on
-the rule's page.
+A `requires` name that matches no rule fails loading. `standards-validate`
+warns when a pack in the library leaves out a required rule, and `lightsout
+doctor` warns a repository the same way.
+
+**Who reads what.** An agent reads one topic at a time: the `topic.md`
+background, then the prose of every rule in it, in folder order. It never sees
+the summary or the examples. People see the summary, the prose and the
+examples on the rule's page.
 
 ## Steps
 
-1. **Find the pack and the document, or create them.** The pack root is the
-   folder holding `lightsout-standards.json`. Read the document's `document.md`
-   and every rule in it, because the agent reads them together.
-   - **No pack yet:** create a folder with a `lightsout-standards.json`, and
-     `code/` or `tests/` in it:
+1. **Find the library and the topic, or create them.** The library root is the
+   folder holding `lightsout-standards.json`. Read the topic's `topic.md` and
+   every rule in it, because the agent reads them together.
+   - **No library yet:** create a folder with a `lightsout-standards.json` and
+     a `rules/` folder holding `code/` or `tests/`:
 
      ```json
-     { "name": "house-rules", "formatVersion": 1, "description": "What this team agrees on." }
+     { "name": "house-rules", "formatVersion": 2, "description": "What this team agrees on." }
      ```
 
-     Then add the folder to `standards-packs` in the repo's lightsout config,
-     so lightsout loads it.
-   - **No document for the rule's topic:** create a folder for the topic, such
-     as `code/error-handling/`, with a `document.md` holding a heading and one
+     Then register the folder in `standards-libraries` in the repository's
+     lightsout config, under the manifest's `name`, so lightsout loads it.
+   - **No topic for the rule's subject:** create a folder for it, such as
+     `rules/code/error-handling/`, with a `topic.md` holding a heading and one
      line on what the topic covers.
 
 2. **Decide the rule's one job.** A rule is one decision. To decide where one
    rule ends, ask: could a repo want this rule without the one next to it? If
    yes, they are two rules; if no, they are one. If another rule already says
    it, change that rule instead of adding one. Background that several rules
-   share goes in the `document.md` intro, once.
+   share goes in the `topic.md`, once.
 
 3. **For an existing rule, list its instructions first.** See
    [Changing an existing rule](#changing-an-existing-rule). Do this before you
    write a word.
 
 4. **Write the rule** — the name, summary, prose, examples and finding text,
-   as the sections below say.
+   as the sections below say. Add `requires` when the rule only makes sense
+   with another rule.
 
-5. **Validate.** Resolve the plugin root from this loaded skill's absolute
+5. **Put the rule in a pack.** A rule in a topic that a pack already includes
+   arrives with it. Otherwise add the topic to a pack file's `include.topics`,
+   or the rule to its `include.rules`.
+
+6. **Validate.** Resolve the plugin root from this loaded skill's absolute
    path: it is two directories above this `SKILL.md`. In Claude Code,
    `${CLAUDE_PLUGIN_ROOT}` may provide the same path; do not assume that
    variable exists in other harnesses. Then run:
 
    ```sh
-   node "<plugin-root>/dist/cli.mjs" standards-validate --pack <pack-root>
+   node "<plugin-root>/dist/cli.mjs" standards-validate --library <library-root>
    ```
 
-   It runs every check against its own examples and checks each rule's
-   declared example shape. If the repo has its own tests for the pack, run
+   It runs every check against its own examples, checks each rule's declared
+   example shape, checks every pack file, and warns about a required rule that
+   will not reach agents. If the repo has its own tests for the library, run
    them too.
 
-6. **Show the user, and wait.** Show the new rule, the instruction list for a
+7. **Show the user, and wait.** Show the new rule, the instruction list for a
    changed rule, and every new instruction on its own. Commit only what the
    user approves.
 
@@ -119,7 +147,7 @@ the rule's page.
    `no-default-export`.
 7. **Word order follows English:** `duplicate-export-name`, not
    `name-duplicate`. An id that reads as a database column name fails.
-8. **A word the id shares with its document is not always a repeat.** Ids are
+8. **A word the id shares with its topic is not always a repeat.** Ids are
    read in flat lists, such as config keys and findings, with no folder around
    them. Drop the shared word only when the rest of the id already implies it.
 9. **The prose's `##` heading is the id in words:**
@@ -133,7 +161,7 @@ One short sentence saying what the rule is about, for a person deciding at a
 glance whether it makes sense. Agents never read it.
 
 - State the topic at a high level, not the mistake in detail.
-- No jargon, no mechanism, no tool names, no settings keys, no numbers.
+- No jargon, no mechanism, no tool names, no option keys, no numbers.
 - A capital letter at the start and a full stop at the end.
 
 Before: `"a re-export resolved through an index instead of the declaring module"`.
@@ -173,7 +201,7 @@ rule in a few seconds. For a checked rule they are also its tests —
 pass example.
 
 - **Show the whole rule, not half of it.** One example can show both halves.
-- **Follow every other rule in the pack**, so the correct side is correct
+- **Follow every other rule in the library**, so the correct side is correct
   everywhere.
 - **Every file a reader might open has a short, accurate comment** saying what
   is wrong or right, and why.
@@ -207,8 +235,8 @@ side as a snippet, anything more as a repo opening on each side's first file.
 
 The `detail` and `guidance` strings a `check.ts` prints are what a person reads
 when the rule fires, so they use the same plain words: no mechanism jargon, no
-tool names. Unlike the summary, they keep numbers and settings keys: the
-measured value, the limit and the setting to change are the useful part of a
+tool names. Unlike the summary, they keep numbers and option keys: the
+measured value, the limit and the option to change are the useful part of a
 finding.
 
 ## Changing an existing rule
@@ -231,8 +259,9 @@ user approves the change.
 A rename resets every saved finding keyed to the old id, so rename on purpose.
 
 - Rename the folder, keeping `<NN>`, and change the id everywhere it is
-  written: the check, its tests, links from other rules and documents, and any
-  config that names it in `standards-checks`.
+  written: the check, its tests, links from other rules and topics, every pack
+  file that names it, every other rule's `requires` that names it, and any
+  config that names it in `standards-rule-settings`.
 - Renamed means renamed: keep no old names, aliases or "renamed to" messages.
 - Then search every tracked file for the old id as a whole word. Nothing should
   match.

@@ -1,4 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
+import committedBundle from '#assets/default-pack.json';
 import { getDefaultPackBundle } from '#src/lightsout/common/utils/getDefaultPackBundle.ts';
 
 // The committed bundle is the subject: parsing it against `StandardsPackBundle`
@@ -8,13 +9,19 @@ describe('getDefaultPackBundle', () => {
 	test('parses the committed pack against the contract the engine reads it to', () => {
 		const bundle = getDefaultPackBundle();
 
-		expect(bundle.name).toBe('lightsout-defaults');
+		expect(bundle.name).toBe('lightsout');
+	});
+
+	test('the committed bundle carries the built-in library name lightsout', () => {
+		const bundle = getDefaultPackBundle();
+
+		expect(bundle.name).toBe('lightsout');
 	});
 
 	test('is the authored pack rather than the shipped copy, which is the whole reason the app carries it', () => {
 		const bundle = getDefaultPackBundle();
 
-		expect({ built: bundle.built, isDefault: bundle.isDefault }).toStrictEqual({ built: false, isDefault: true });
+		expect(bundle.built).toBe(false);
 	});
 
 	test('still has the fixtures a rule page exists to show', () => {
@@ -26,9 +33,35 @@ describe('getDefaultPackBundle', () => {
 	test('carries no machine’s path, since the file is committed and compared byte for byte', () => {
 		const bundle = getDefaultPackBundle();
 
-		expect({ rootPath: bundle.rootPath, path: bundle.path }).toStrictEqual({
-			rootPath: 'packages/standards-typescript',
-			path: 'packages/standards-typescript',
+		expect(bundle.rootPath).toBe('packages/lightsout-standards');
+	});
+
+	test('parses the committed library bundle with its ten packs and a repo-relative root', () => {
+		const bundle = getDefaultPackBundle();
+
+		expect({
+			name: bundle.name,
+			rootPath: bundle.rootPath,
+			packAddresses: bundle.packs.map((pack) => pack.address),
+			carriesPath: Object.hasOwn(committedBundle, 'path'),
+			carriesIsDefault: Object.hasOwn(committedBundle, 'isDefault'),
+		}).toStrictEqual({
+			name: 'lightsout',
+			rootPath: 'packages/lightsout-standards',
+			packAddresses: [
+				'lightsout/nestjs',
+				'lightsout/nestjs-app',
+				'lightsout/node',
+				'lightsout/react',
+				'lightsout/react-app',
+				'lightsout/structure',
+				'lightsout/tanstack-start',
+				'lightsout/tanstack-start-app',
+				'lightsout/typescript',
+				'lightsout/unit-testing',
+			],
+			carriesPath: false,
+			carriesIsDefault: false,
 		});
 	});
 

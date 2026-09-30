@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, test } from '@jest/globals';
 import { ConfigNotFoundError } from '@lightsout/engine';
+import { StandardsPackSource } from '@lightsout/engine/contracts';
 import type { LightsoutReader } from '#src/lightsout/common/types/LightsoutReader.ts';
 import { getReader } from '#src/lightsout/getReader.ts';
 
@@ -13,26 +14,29 @@ import { getReader } from '#src/lightsout/getReader.ts';
 const configText = JSON.stringify({
 	harness: 'claude-code',
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
-	'standards-packs': ['./house'],
-	'standards-channels': ['react'],
-	'standards-checks': { 'house-name-things-well': 'off' },
+	'standards-libraries': { acme: './house' },
+	'standards-pack': 'acme/house',
+	'standards-rule-settings': { 'house-name-things-well': 'off' },
 });
 
-/** A house pack of two rules, one blocking by its own front matter and one taking the advisory default. */
+/** A house library of two rules, one blocking by its own front matter and one taking the advisory default, with a pack bringing in its one topic. */
 const packFiles: Record<string, string> = {
-	'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 1, description: 'what this shop agrees on' }),
-	'house/code/house/document.md': '---\nchannel: react\n---\n\n# House Style\n\nWhat this shop agrees on.\n',
-	'house/code/house/05-house-loose-file/rule.md': '---\nsummary: a source file outside a module\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
-	'house/code/house/10-house-name-things-well/rule.md': '---\nsummary: a name that hides what it does\n---\n\nNames are the cheapest documentation.\n',
+	'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 2, description: 'what this shop agrees on' }),
+	'house/rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
+	'house/rules/code/house/05-house-loose-file/rule.md':
+		'---\nsummary: a source file outside a module\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
+	'house/rules/code/house/10-house-name-things-well/rule.md': '---\nsummary: a name that hides what it does\n---\n\nNames are the cheapest documentation.\n',
+	'house/packs/house.json': JSON.stringify({ description: 'what this shop agrees on', include: { topics: ['acme/code/house'] } }),
 };
 
 /**
- * A repo of somebody's own: a config that states a harness, names a pack and
- * turns one of that pack's rules off, pointed at through `LIGHTSOUT_REPO`.
+ * A repo of somebody's own: a config that states a harness, registers a
+ * library, selects its pack and turns one of that pack's rules off, pointed at
+ * through `LIGHTSOUT_REPO`.
  *
- * A repo with its own pack rather than the default one, because what the ledger
- * has to get right is which pack declares each rule — a question only a repo
- * naming its own pack can answer wrongly.
+ * A repo with its own library rather than the built-in one, because what the
+ * ledger has to get right is which library defines each rule — a question only
+ * a repo registering its own library can answer wrongly.
  */
 const setupConfigReader = async ({ config = configText }: { config?: string } = {}): Promise<{ reader: LightsoutReader; repoRoot: string }> => {
 	const repoRoot = await mkdtemp(join(tmpdir(), 'lightsout-reader-config-'));
@@ -62,6 +66,32 @@ const setupUnconfiguredRepo = async (): Promise<{ reader: LightsoutReader }> => 
 	return { reader: getReader() };
 };
 
+/** A config that registers the house library as `acme` and selects its one pack by name. */
+const selectedPackConfigText = JSON.stringify({
+	harness: 'claude-code',
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	'standards-libraries': { acme: './house' },
+	'standards-pack': 'acme/house',
+	'standards-rule-settings': { 'house-name-things-well': 'off' },
+});
+
+/**
+ * The house library registered under its own name, with a pack file that
+ * brings in its one topic, and a config selecting that pack.
+ *
+ * A separate arrangement rather than a parameter, because selecting a pack
+ * needs a file in the library's `packs/` folder as well as a different config.
+ */
+const setupSelectedPackReader = async (): Promise<{ reader: LightsoutReader }> => {
+	const { reader, repoRoot } = await setupConfigReader({ config: selectedPackConfigText });
+	const packPath = join(repoRoot, 'house', 'packs', 'house.json');
+
+	await mkdir(dirname(packPath), { recursive: true });
+	await writeFile(packPath, JSON.stringify({ description: 'what this shop agrees on', include: { topics: ['acme/code/house'] } }), 'utf8');
+
+	return { reader };
+};
+
 afterEach(() => {
 	delete process.env.LIGHTSOUT_REPO;
 });
@@ -72,11 +102,10 @@ describe('getReader config', () => {
 
 		const view = await reader.getConfig();
 
-		expect({ path: view.path, harness: view.harness, model: view.model, channels: view.channels }).toStrictEqual({
+		expect({ path: view.path, harness: view.harness, model: view.model }).toStrictEqual({
 			path: join(repoRoot, 'lightsout.config.json'),
 			harness: 'claude-code',
 			model: null,
-			channels: ['react'],
 		});
 	});
 
@@ -88,7 +117,7 @@ describe('getReader config', () => {
 		expect(view.sections.map((section) => ({ title: section.title, keys: section.fields.map((field) => field.key) }))).toStrictEqual([
 			{ title: 'Harness', keys: ['harness', 'model', 'effort', 'permissions', 'commands'] },
 			{ title: 'Gates', keys: ['gates', 'package-gates', 'gate-overrides', 'packages-dir', 'coverage-summary-path', 'executor-file-limit'] },
-			{ title: 'Standards', keys: ['standards-packs', 'standards-channels', 'standards-checks'] },
+			{ title: 'Standards', keys: ['standards-pack', 'package-standards-packs', 'standards-libraries', 'standards-rule-settings'] },
 			{ title: 'Agent commands', keys: ['agent-commands'] },
 			{ title: 'Generated', keys: ['generated', 'vendored'] },
 			{ title: 'Timeouts', keys: ['timeouts.agent-minutes', 'timeouts.supervisor-minutes', 'timeouts.gate-minutes'] },
@@ -101,6 +130,19 @@ describe('getReader config', () => {
 			{ title: 'Implement', keys: ['implement'] },
 			{ title: 'Pricing', keys: ['pricing'] },
 			{ title: 'Docs', keys: ['docs'] },
+		]);
+	});
+
+	test('lists standards-libraries in the Standards area beside the pack keys', async () => {
+		const { reader } = await setupConfigReader();
+
+		const view = await reader.getConfig();
+
+		expect(view.sections.find((section) => section.title === 'Standards')?.fields.map((field) => field.key)).toStrictEqual([
+			'standards-pack',
+			'package-standards-packs',
+			'standards-libraries',
+			'standards-rule-settings',
 		]);
 	});
 
@@ -130,22 +172,32 @@ describe('getReader config', () => {
 		expect(view.sections.flatMap((section) => section.fields).every((field) => field.description.length > 0)).toBe(true);
 	});
 
-	test('carries the packs the config names, with the channels their own documents declare', async () => {
-		const { reader, repoRoot } = await setupConfigReader();
-
-		const view = await reader.getConfig();
-
-		expect(view.packs).toStrictEqual([{ name: 'acme', rootPath: join(repoRoot, 'house'), isDefault: false, channels: ['react'] }]);
-	});
-
 	test('carries every loaded rule with the pack that declares it, its severity here, and who decided that', async () => {
 		const { reader } = await setupConfigReader();
 
 		const view = await reader.getConfig();
 
 		expect(view.ruleStates).toStrictEqual([
-			{ rule: 'house-loose-file', pack: 'acme', channel: 'react', severity: 'blocking', fromConfig: false, settings: {} },
-			{ rule: 'house-name-things-well', pack: 'acme', channel: 'react', severity: 'off', fromConfig: true, settings: {} },
+			{
+				rule: 'acme/house-loose-file',
+				id: 'house-loose-file',
+				library: 'acme',
+				severity: 'blocking',
+				fromConfig: false,
+				options: {},
+				packages: [''],
+				appliesTo: 'repo root (outside packages)',
+			},
+			{
+				rule: 'acme/house-name-things-well',
+				id: 'house-name-things-well',
+				library: 'acme',
+				severity: 'off',
+				fromConfig: true,
+				options: {},
+				packages: [''],
+				appliesTo: 'repo root (outside packages)',
+			},
 		]);
 	});
 
@@ -159,5 +211,29 @@ describe('getReader config', () => {
 		const { reader } = await setupConfigReader({ config: '{ "gates": ' });
 
 		await expect(reader.getConfig()).rejects.toThrow(/is not valid JSON/);
+	});
+
+	test('carries the pack group the config selects, and says it was named', async () => {
+		const { reader } = await setupSelectedPackReader();
+
+		const view = await reader.getConfig();
+
+		expect({ standardsGroups: view.standardsGroups, carriesChannels: Object.hasOwn(view, 'channels') }).toStrictEqual({
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', source: StandardsPackSource.Named }],
+			carriesChannels: false,
+		});
+	});
+
+	test('lists only standards-pack, package-standards-packs, standards-libraries and standards-rule-settings in the Standards area', async () => {
+		const { reader } = await setupSelectedPackReader();
+
+		const view = await reader.getConfig();
+
+		expect(view.sections.find((section) => section.title === 'Standards')?.fields.map((field) => field.key)).toStrictEqual([
+			'standards-pack',
+			'package-standards-packs',
+			'standards-libraries',
+			'standards-rule-settings',
+		]);
 	});
 });

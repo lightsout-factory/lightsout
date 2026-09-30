@@ -15,7 +15,12 @@ import { Effort } from '#src/contracts/Effort.ts';
 import { GateOverrides } from '#src/contracts/GateOverrides.ts';
 import { PackageGates } from '#src/contracts/PackageGates.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
-import { StandardsCheckOverrides } from '#src/contracts/StandardsCheckOverrides.ts';
+import { StandardsRuleSettings } from '#src/contracts/StandardsRuleSettings.ts';
+
+/** One schema for every pack address, so `standards-pack` and `package-standards-packs` refuse a value with one message. */
+const standardsPackAddress = z.string().refine((value) => /^[^/]+\/[^/]+$/.test(value), {
+	message: 'a standards pack is named <library>/<pack> — exactly one slash, the library before it and the pack after it',
+});
 
 /**
  * The only coupling point between the engine and a consumer. Every block naming
@@ -114,24 +119,32 @@ export const LightsoutConfig = z
 		 */
 		'gate-overrides': GateOverrides.optional(),
 		/**
-		 * Standards packs a run works against. Unspecified = the pack the plugin
-		 * ships (announced in the run header); `false` = explicitly none; an array =
-		 * exactly these, where each entry is the root folder of a standards pack —
-		 * the folder holding `lightsout-standards.json` — repo-relative or absolute.
-		 * One key, not two: a pack carries both the code and the test document
-		 * trees, so a second key could only disagree with this one about which pack
-		 * is loaded. A root that cannot be loaded is a hard error.
+		 * The standards pack for the repo root and every package
+		 * `package-standards-packs` does not name, as `<library>/<pack>`. Unset =
+		 * detected, for the root from the root `package.json` and for each package
+		 * from its own; `false` = no standards for the root and every unnamed package.
 		 */
-		'standards-packs': z.union([z.array(z.string()), z.literal(false)]).optional(),
+		'standards-pack': z.union([standardsPackAddress, z.literal(false)]).optional(),
 		/**
-		 * Framework channels of the loaded standards packs (e.g. 'react',
-		 * 'tanstack'). Unspecified = detected per run from the scoped packages'
-		 * package.json dependencies; an array REPLACES detection (empty = base
-		 * docs only).
+		 * A pack of its own for each package that differs from `standards-pack`.
+		 * Keys are package folder names under `packages-dir`, as `--packages` uses
+		 * them; values are pack addresses (`<library>/<pack>`). `false` is not
+		 * accepted here: only `standards-pack` takes it. Parsing never reads the
+		 * disk, so a key naming no workspace package is refused when the groups
+		 * resolve, by `resolveStandardsGroups`.
 		 */
-		'standards-channels': z.array(z.string()).optional(),
-		/** Per-rule severity/settings overrides. See `StandardsCheckOverrides`. */
-		'standards-checks': StandardsCheckOverrides.optional(),
+		'package-standards-packs': z.record(z.string().min(1), standardsPackAddress).optional(),
+		/**
+		 * Standards libraries registered beside the built-in one. Each key is a
+		 * library name; each value is a repo-relative folder (starting `./` or
+		 * `../`, or an absolute path) or an npm package name resolved from the
+		 * repo's `node_modules`. `lightsout` is built in and reserved. Whether a
+		 * key is allowed and matches its library's manifest is checked when the
+		 * libraries load, by `resolveStandardsLibraries`.
+		 */
+		'standards-libraries': z.record(z.string(), z.string()).optional(),
+		/** Per-rule severity/options settings, the final layer over the selected pack. See `StandardsRuleSettings`. */
+		'standards-rule-settings': StandardsRuleSettings.optional(),
 		/** Opt-in ship settings — branch ticket pattern, pull request body template, merge method. See `ConfigShip`. */
 		ship: ConfigShip.optional(),
 		/** Opt-in auto-plan settings — which of `/auto-plan`'s checkpoints this repo keeps. See `ConfigAutoPlan`. */

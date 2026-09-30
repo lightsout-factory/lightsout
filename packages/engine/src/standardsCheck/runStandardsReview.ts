@@ -1,61 +1,66 @@
 import { formatDuration } from '@lightsout/shared';
 import { buildStandardsReviewInvocation } from '#src/agents/buildStandardsReviewInvocation.ts';
+import { collectGroupItems } from '#src/common/utils/collectGroupItems.ts';
+import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
+import { listWorkspacePackages } from '#src/common/workspace/listWorkspacePackages.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsReviewReport } from '#src/contracts/standardsCheck/StandardsReviewReport.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { createAgentHeartbeat } from '#src/standardsCheck/internal/common/utils/createAgentHeartbeat.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import { findFileStandardsGroup } from '#src/standardsCheck/internal/common/utils/findFileStandardsGroup.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
+import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
 
 interface Params {
 	cwd: string;
 	driver: Driver;
-	packs: LoadedStandardsPack[];
-	/** Active framework channels — judgment rules on inactive channels are not reviewed. */
-	channels: string[];
+	groups: StandardsGroup[];
 	/** Files in scope — changed files at the gate, batch files in refactor, the path scope in the CLI. */
 	files: string[];
+	/** Monorepo package parent dir (config['packages-dir'] ?? defaultPackagesDir), so each finding is graded by its file's group. */
+	packagesDir: string;
 	timeoutMs?: number;
 	onProgress?: (message: string) => void;
 }
 
-const collectJudgmentRules = ({ packs, channels }: { packs: LoadedStandardsPack[]; channels: string[] }) =>
-	packs
-		.flatMap((pack) => pack.rules)
-		.filter((rule) => !rule.checked && (rule.channel === 'base' || channels.includes(rule.channel)))
-		.map((rule) => ({ id: rule.id, documentPath: rule.documentPath, prose: rule.prose }));
+interface JudgmentRule {
+	rule: LoadedStandardsRule;
+	/** The packages of every group running the rule at a reporting severity. */
+	packages: Set<string>;
+}
 
-/** Everything dropped is counted and stated — a silent drop would read as a clean review. */
-const toFindings = ({ reported, known }: { reported: StandardsReviewReport['findings']; known: Set<string> }) => {
-	const findings: StandardsFinding[] = [];
-	const unknownRules: string[] = [];
+/** True when the group holding the file runs the rule at a reporting severity. */
+const runsRule = ({ group, name }: { group: StandardsGroup; name: string }) => {
+	const severity = group.states.get(name)?.severity;
+
+	return severity !== undefined && severity !== StandardsSeverity.Off;
+};
+
+/** A judgment rule several groups hold is reviewed once, by full name, with the packages it applies to. */
+const collectJudgmentRules = ({ groups }: { groups: StandardsGroup[] }) =>
+	[
+		...collectGroupItems({
+			groups,
+			itemsOf: ({ group }) => group.pack.rules.map(({ rule }) => rule).filter((rule) => !rule.checked && runsRule({ group, name: rule.name })),
+			keyOf: ({ item }) => item.name,
+		}).values(),
+	].map(({ item, packages }) => ({ rule: item, packages }));
+
+/** Only a rule that does not apply to every package the groups cover is scoped for the reviewer. */
+const toReviewRules = ({ judgmentRules, groups }: { judgmentRules: JudgmentRule[]; groups: StandardsGroup[] }) => {
+	const covered = new Set(groups.flatMap((group) => group.packages));
+
+	return judgmentRules.map(({ rule, packages }) =>
+		packages.size === covered.size ? rule : { ...rule, appliesTo: describePackageSet({ packages: [...packages] }) },
+	);
+};
+
+const dropNotes = ({ unknownRules, unsited, ungrouped, notRun }: { unknownRules: string[]; unsited: number; ungrouped: number; notRun: string[] }) => {
 	const notes: string[] = [];
-	let unsited = 0;
-
-	for (const entry of reported) {
-		const path = entry.files[0]?.path;
-
-		if (!known.has(entry.rule)) {
-			unknownRules.push(entry.rule);
-			continue;
-		}
-
-		if (path === undefined) {
-			unsited += 1;
-			continue;
-		}
-
-		findings.push({
-			rule: entry.rule,
-			severity: StandardsSeverity.Advisory,
-			siteKey: `${entry.rule}:${path}`,
-			files: entry.files,
-			detail: entry.detail,
-			...(entry.guidance === undefined ? {} : { guidance: entry.guidance }),
-		});
-	}
 
 	if (unknownRules.length > 0) {
 		notes.push(`agent review: ${unknownRules.length} finding(s) dropped — no judgment rule is named ${[...new Set(unknownRules)].sort().join(', ')}`);
@@ -65,7 +70,75 @@ const toFindings = ({ reported, known }: { reported: StandardsReviewReport['find
 		notes.push(`agent review: ${unsited} finding(s) dropped — reported with no file to point at`);
 	}
 
-	return { findings, notes };
+	if (ungrouped > 0) {
+		notes.push(`agent review: ${ungrouped} finding(s) dropped — no standards group covers the file's package`);
+	}
+
+	if (notRun.length > 0) {
+		notes.push(`agent review: ${notRun.length} finding(s) dropped — the file's package does not run ${[...new Set(notRun)].sort().join(', ')}`);
+	}
+
+	return notes;
+};
+
+/**
+ * Everything dropped is counted and stated — a silent drop would read as a
+ * clean review. The agent may write a rule's full name or a short id only one
+ * rule in scope holds; either way the finding carries the full name. A finding
+ * stands only where the group holding its file runs the rule.
+ */
+const toFindings = ({
+	reported,
+	rules,
+	groupOfFile,
+}: {
+	reported: StandardsReviewReport['findings'];
+	rules: LoadedStandardsRule[];
+	groupOfFile: (file: string) => StandardsGroup | undefined;
+}) => {
+	const findings: StandardsFinding[] = [];
+	const unknownRules: string[] = [];
+	const notRun: string[] = [];
+	let unsited = 0;
+	let ungrouped = 0;
+
+	for (const entry of reported) {
+		const path = entry.files[0]?.path;
+		const resolved = resolveRuleName({ name: entry.rule, rules });
+
+		if ('problem' in resolved) {
+			unknownRules.push(entry.rule);
+			continue;
+		}
+
+		if (path === undefined) {
+			unsited += 1;
+			continue;
+		}
+
+		const group = groupOfFile(path);
+
+		if (group === undefined) {
+			ungrouped += 1;
+			continue;
+		}
+
+		if (!runsRule({ group, name: resolved.rule.name })) {
+			notRun.push(resolved.rule.name);
+			continue;
+		}
+
+		findings.push({
+			rule: resolved.rule.name,
+			severity: StandardsSeverity.Advisory,
+			siteKey: `${resolved.rule.name}:${path}`,
+			files: entry.files,
+			detail: entry.detail,
+			...(entry.guidance === undefined ? {} : { guidance: entry.guidance }),
+		});
+	}
+
+	return { findings, notes: dropNotes({ unknownRules, unsited, ungrouped, notRun }) };
 };
 
 /**
@@ -77,19 +150,20 @@ const toFindings = ({ reported, known }: { reported: StandardsReviewReport['find
  * reported, and a repo whose harness is absent is not a repo in violation.
  *
  * Site keys are derived here rather than asked for, and a finding naming a rule
- * no loaded pack declares is dropped — an id an agent invented must not be
- * able to enter the findings stream.
+ * no single loaded judgment rule answers to is dropped — a name an agent
+ * invented must not be able to enter the findings stream.
  */
 export const runStandardsReview = async ({
 	cwd,
 	driver,
-	packs,
-	channels,
+	groups,
 	files,
+	packagesDir,
 	timeoutMs,
 	onProgress,
 }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
-	const rules = collectJudgmentRules({ packs, channels });
+	const judgmentRules = collectJudgmentRules({ groups });
+	const rules = judgmentRules.map(({ rule }) => rule);
 
 	// Nothing to read, or nothing to read it against: no agent is spent saying so.
 	if (rules.length === 0 || files.length === 0) {
@@ -110,7 +184,7 @@ export const runStandardsReview = async ({
 	const outcome = await invokeAgentWithContract({
 		driver,
 		cwd,
-		invocation: buildStandardsReviewInvocation({ rules, files }),
+		invocation: buildStandardsReviewInvocation({ rules: toReviewRules({ judgmentRules, groups }), files }),
 		contract: StandardsReviewReport,
 		permissions: Permissions.ReadOnly,
 		timeoutMs,
@@ -125,7 +199,12 @@ export const runStandardsReview = async ({
 		return { findings: [], notes: [`agent review skipped — ${outcome.failure}`] };
 	}
 
-	const result = toFindings({ reported: outcome.report.findings, known: new Set(rules.map((rule) => rule.id)) });
+	const workspacePackages = await listWorkspacePackages({ cwd, packagesDir });
+	const result = toFindings({
+		reported: outcome.report.findings,
+		rules,
+		groupOfFile: (file) => findFileStandardsGroup({ file, groups, packagesDir, workspacePackages }),
+	});
 	const count = result.findings.length;
 	const found = count === 0 ? 'nothing to report' : `${count} advisor${count === 1 ? 'y' : 'ies'} to look at`;
 

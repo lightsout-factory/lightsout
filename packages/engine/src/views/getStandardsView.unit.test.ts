@@ -16,22 +16,26 @@ const writeTree = async ({ dir, files }: { dir: string; files: Record<string, st
 	}
 };
 
-/** A standards pack of somebody's own: one checked rule and one judgment-only rule. */
+/** The pack file that selects the house topic whole, which every library below ships as its `house` pack. */
+const housePackFile = JSON.stringify({ description: 'what this shop agrees on', include: { topics: ['acme/code/house'] } });
+
+/** A standards library of somebody's own, whose house pack holds one checked rule and one judgment-only rule. */
 const writeStandardsPack = async () => {
 	const packPath = await mkdtemp(join(tmpdir(), 'lightsout-view-standards-'));
 
 	await writeTree({
 		dir: packPath,
 		files: {
-			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n',
-			'code/house/document.md': '# House Style\n\nWhat this shop agrees on.\n',
-			'code/house/05-house-loose-file/rule.md':
+			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
+			'packs/house.json': housePackFile,
+			'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
+			'rules/code/house/05-house-loose-file/rule.md':
 				'---\nsummary: a source file outside a module\nchecked: true\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
-			'code/house/05-house-loose-file/check.ts':
+			'rules/code/house/05-house-loose-file/check.ts':
 				"export const check = {\n\tinputKind: 'file-list',\n\trun: ({ input }) => input.files.map((path) => ({ siteKey: `house-loose-file:${path}`, files: [{ path }], detail: 'loose' })),\n};\n",
-			'code/house/05-house-loose-file/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
-			'code/house/05-house-loose-file/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
-			'code/house/10-house-name-things-well/rule.md':
+			'rules/code/house/05-house-loose-file/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
+			'rules/code/house/05-house-loose-file/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
+			'rules/code/house/10-house-name-things-well/rule.md':
 				'---\nsummary: a name that hides what it does\nchecked: false\nseverity: advisory\n---\n\nNames are the cheapest documentation.\n',
 		},
 	});
@@ -39,8 +43,16 @@ const writeStandardsPack = async () => {
 	return packPath;
 };
 
-/** A repo on that pack, optionally overriding one rule's state in its own config. */
-const seedStandardsRepo = async ({ overrides, packs }: { overrides?: Record<string, unknown>; packs?: string[] | false } = {}) => {
+/** A repo that registers that library as acme and selects its house pack, optionally overriding one rule's state in its own config. */
+const seedStandardsRepo = async ({
+	overrides,
+	library,
+	pack = 'acme/house',
+}: {
+	overrides?: Record<string, unknown>;
+	library?: string;
+	pack?: string | false;
+} = {}) => {
 	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-view-repo-'));
 
 	await writeTree({
@@ -49,8 +61,9 @@ const seedStandardsRepo = async ({ overrides, packs }: { overrides?: Record<stri
 			'src/loose.ts': 'export const loose = 1;\n',
 			'lightsout.config.json': JSON.stringify({
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
-				'standards-packs': packs ?? [await writeStandardsPack()],
-				...(overrides ? { 'standards-checks': overrides } : {}),
+				'standards-libraries': { acme: library ?? (await writeStandardsPack()) },
+				'standards-pack': pack,
+				...(overrides ? { 'standards-rule-settings': overrides } : {}),
 			}),
 		},
 	});
@@ -59,9 +72,9 @@ const seedStandardsRepo = async ({ overrides, packs }: { overrides?: Record<stri
 };
 
 const finding = (overrides: Partial<StandardsFinding> = {}): StandardsFinding => ({
-	rule: 'house-loose-file',
+	rule: 'acme/house-loose-file',
 	severity: StandardsSeverity.Blocking,
-	siteKey: 'house-loose-file:src/loose.ts',
+	siteKey: 'acme/house-loose-file:src/loose.ts',
 	files: [{ path: 'src/loose.ts' }],
 	detail: 'loose',
 	...overrides,
@@ -77,7 +90,7 @@ test('a repo that has never run a check still describes what it enforces', async
 	expect(view.findings).toStrictEqual([]);
 	expect(view.notes).toStrictEqual([]);
 	expect(view.trend).toStrictEqual([]);
-	expect(view.rules.map((rule) => rule.rule)).toStrictEqual(['house-loose-file', 'house-name-things-well']);
+	expect(view.rules.map((rule) => rule.rule)).toStrictEqual(['acme/house-loose-file', 'acme/house-name-things-well']);
 	// a judgment-only rule is listed beside the machine-checked one
 	expect(view.totals).toStrictEqual({ rules: 2, checked: 1, judgment: 1, blocking: 0, advisory: 0, orphans: 0 });
 });
@@ -89,7 +102,7 @@ test('a repo with no config at all is described by the standards that ship with 
 	// the bundled pack travels with the engine, so a repo that has configured
 	// nothing still gets an honest account of what it is held to
 	expect(view.totals.rules > 0).toBe(true);
-	expect(view.rules.every((rule) => rule.doc.startsWith('lightsout-defaults: '))).toBe(true);
+	expect(view.rules.every((rule) => rule.doc.startsWith('lightsout: '))).toBe(true);
 	expect(view.at).toBe(undefined);
 });
 
@@ -103,8 +116,8 @@ test('a rule row carries what the rule says, how this repo runs it, and how many
 			path: 'src',
 			findings: [
 				finding(),
-				finding({ siteKey: 'house-loose-file:src/other.ts' }),
-				finding({ rule: 'house-name-things-well', severity: StandardsSeverity.Advisory, siteKey: 'name:src/loose.ts' }),
+				finding({ siteKey: 'acme/house-loose-file:src/other.ts' }),
+				finding({ rule: 'acme/house-name-things-well', severity: StandardsSeverity.Advisory, siteKey: 'name:src/loose.ts' }),
 			],
 			notes: ['2 source file(s) scanned'],
 		},
@@ -118,7 +131,7 @@ test('a rule row carries what the rule says, how this repo runs it, and how many
 	expect(view.path).toBe('src');
 	expect(view.notes).toStrictEqual(['2 source file(s) scanned']);
 	expect(checked).toStrictEqual({
-		rule: 'house-loose-file',
+		rule: 'acme/house-loose-file',
 		doc: 'acme: code/house',
 		documentPath: 'code/house',
 		set: 'code',
@@ -127,7 +140,7 @@ test('a rule row carries what the rule says, how this repo runs it, and how many
 		checked: true,
 		severity: StandardsSeverity.Blocking,
 		fromConfig: false,
-		settings: {},
+		options: {},
 		findingCount: 2,
 		// no refactor run has met this rule yet
 		history: { attempted: 0, resolved: 0, declined: 0, untracked: 0, adviceApplied: 0, adviceDeclined: 0, adviceAlreadyMet: 0, reasons: [] },
@@ -160,15 +173,70 @@ test('a finding whose rule no pack loads is counted as an orphan, and lands on n
 	expect(view.findings.length).toBe(2);
 });
 
-test('a rule the config overrode says so, and carries the settings this repo runs it at', async () => {
-	const cwd = await seedStandardsRepo({ overrides: { 'house-loose-file': { severity: 'off', settings: { 'max-lines': 400 } } } });
+test('findings are counted per full rule name and a short-named finding is an orphan', async () => {
+	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-view-full-names-'));
+
+	await writeStandardsSnapshot({
+		cwd,
+		snapshot: {
+			at: '2026-08-19T12:00:00.000Z',
+			path: '.',
+			findings: [
+				finding({ rule: 'lightsout/function-size', siteKey: 'lightsout/function-size:src/loose.ts' }),
+				finding({ rule: 'function-size', siteKey: 'function-size:src/other.ts' }),
+			],
+			notes: [],
+		},
+	});
+
+	const view = await getStandardsView({ cwd });
+	const row = view.rules.find((rule) => rule.rule === 'lightsout/function-size');
+
+	// only the full name reaches the row; a bare short id is a finding nothing explains
+	expect({ findingCount: row?.findingCount, orphans: view.totals.orphans }).toStrictEqual({ findingCount: 1, orphans: 1 });
+});
+
+test('a rule the config overrode says so, and carries the options this repo runs it at', async () => {
+	const cwd = await seedStandardsRepo({ overrides: { 'house-loose-file': { severity: 'off', options: { 'max-lines': 400 } } } });
 	const view = await getStandardsView({ cwd });
 
 	expect(view.rules[0]?.severity).toBe(StandardsSeverity.Off);
 	expect(view.rules[0]?.fromConfig).toBe(true);
-	expect(view.rules[0]?.settings).toStrictEqual({ 'max-lines': 400 });
+	expect(view.rules[0]?.options).toStrictEqual({ 'max-lines': 400 });
 	// the untouched rule keeps its own declaration — silence is never a change
 	expect(view.rules[1]?.fromConfig).toBe(false);
+});
+
+/** A library whose house pack holds two judgment-only rules that both declare default options in their rule.md headers. */
+const writeOptionsPack = async () => {
+	const packPath = await mkdtemp(join(tmpdir(), 'lightsout-view-options-'));
+
+	await writeTree({
+		dir: packPath,
+		files: {
+			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
+			'packs/house.json': housePackFile,
+			'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
+			'rules/code/house/05-house-file-size/rule.md':
+				'---\nsummary: a file over the house line cap\nchecked: false\nseverity: advisory\noptions:\n  file: 250\n  tsxFile: 300\n---\n\nFiles stay short.\n',
+			'rules/code/house/10-house-folder-size/rule.md':
+				'---\nsummary: a folder over the house file cap\nchecked: false\nseverity: advisory\noptions:\n  cap: 20\n---\n\nFolders stay small.\n',
+		},
+	});
+
+	return packPath;
+};
+
+test('each rule row carries its resolved options', async () => {
+	const cwd = await seedStandardsRepo({ library: await writeOptionsPack(), overrides: { 'house-file-size': { options: { tsxFile: 400 } } } });
+
+	const view = await getStandardsView({ cwd });
+
+	// the override merges key by key over the rule.md defaults, and the rule the config never names keeps its own
+	expect(view.rules.map((rule) => ({ rule: rule.rule, options: rule.options, fromConfig: rule.fromConfig }))).toStrictEqual([
+		{ rule: 'acme/house-file-size', options: { file: 250, tsxFile: 400 }, fromConfig: true },
+		{ rule: 'acme/house-folder-size', options: { cap: 20 }, fromConfig: false },
+	]);
 });
 
 test('refactor history is folded onto the rule whose sites a run attempted', async () => {
@@ -177,7 +245,7 @@ test('refactor history is folded onto the rule whose sites a run attempted', asy
 		at: '2026-01-01T00:00:00.000Z',
 		path: '.',
 		all: false,
-		batches: [{ id: 'batch-00:house-loose-file:src', rule: 'house-loose-file', folder: 'src', blocking: [finding()], advisories: [] }],
+		batches: [{ id: 'batch-00:house-loose-file:src', rule: 'acme/house-loose-file', folder: 'src', blocking: [finding()], advisories: [] }],
 	});
 
 	await seedRunDir({
@@ -231,14 +299,14 @@ test('every history count and reason lands in its own column, on the rule it bel
 		batches: [
 			{
 				id: 'batch-00:house-loose-file:src',
-				rule: 'house-loose-file',
+				rule: 'acme/house-loose-file',
 				folder: 'src',
 				blocking: [finding({ siteKey: 'a' }), finding({ siteKey: 'b' }), finding({ siteKey: 'c' }), finding({ siteKey: 'd' })],
 				advisories: [],
 			},
 			{
 				id: 'batch-01:house-loose-file:lib',
-				rule: 'house-loose-file',
+				rule: 'acme/house-loose-file',
 				folder: 'lib',
 				blocking: [finding({ siteKey: 'e' }), finding({ siteKey: 'f' })],
 				advisories: [],
@@ -262,9 +330,9 @@ test('every history count and reason lands in its own column, on the rule it bel
 						remainingSiteKeys: ['b', 'c', 'd'],
 						rationale: ['the generated module is not ours to split'],
 						advisoryOutcomes: [
-							{ rule: 'house-name-things-well', siteKey: 'name:a', outcome: 'applied' },
-							{ rule: 'house-name-things-well', siteKey: 'name:b', outcome: 'declined', reason: 'the name is a term of art here' },
-							{ rule: 'house-name-things-well', siteKey: 'name:c', outcome: 'declined', reason: 'renaming it would break the published API' },
+							{ rule: 'acme/house-name-things-well', siteKey: 'name:a', outcome: 'applied' },
+							{ rule: 'acme/house-name-things-well', siteKey: 'name:b', outcome: 'declined', reason: 'the name is a term of art here' },
+							{ rule: 'acme/house-name-things-well', siteKey: 'name:c', outcome: 'declined', reason: 'renaming it would break the published API' },
 						],
 					},
 				},
@@ -307,14 +375,14 @@ test('every history count and reason lands in its own column, on the rule it bel
 });
 
 test('a repo that declares no standards packs still reports the findings its last check left', async () => {
-	const cwd = await seedStandardsRepo({ packs: false });
+	const cwd = await seedStandardsRepo({ pack: false });
 
 	await writeStandardsSnapshot({
 		cwd,
 		snapshot: {
 			at: '2026-08-19T12:00:00.000Z',
 			path: '.',
-			findings: [finding(), finding({ rule: 'house-name-things-well', severity: StandardsSeverity.Advisory, siteKey: 'name:src/loose.ts' })],
+			findings: [finding(), finding({ rule: 'acme/house-name-things-well', severity: StandardsSeverity.Advisory, siteKey: 'name:src/loose.ts' })],
 			notes: [],
 		},
 	});
@@ -324,18 +392,105 @@ test('a repo that declares no standards packs still reports the findings its las
 	// nothing states the rules any more, so every finding is one nothing explains
 	expect(view.rules).toStrictEqual([]);
 	expect(view.totals).toStrictEqual({ rules: 0, checked: 0, judgment: 0, blocking: 1, advisory: 1, orphans: 2 });
-	expect(view.findings.map((entry) => entry.siteKey)).toStrictEqual(['house-loose-file:src/loose.ts', 'name:src/loose.ts']);
+	expect(view.findings.map((entry) => entry.siteKey)).toStrictEqual(['acme/house-loose-file:src/loose.ts', 'name:src/loose.ts']);
+});
+
+/** A repo whose root depends on React but whose config selects the node pack by name. */
+const seedSelectedPackRepo = async () => {
+	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-view-selected-pack-'));
+
+	await writeTree({
+		dir: cwd,
+		files: {
+			'package.json': JSON.stringify({ name: 'app', dependencies: { react: '^19.0.0' } }),
+			'lightsout.config.json': JSON.stringify({
+				gates: { check: 'true', test: 'true', 'test-coverage': false },
+				'standards-pack': 'lightsout/node',
+			}),
+		},
+	});
+
+	return cwd;
+};
+
+test('getStandardsView: rows follow the selected pack', async () => {
+	const cwd = await seedSelectedPackRepo();
+
+	const view = await getStandardsView({ cwd });
+	const names = view.rules.map((rule) => rule.rule);
+
+	// a node rule gets its row; a React architecture rule the library holds but the node pack leaves out gets none
+	expect({
+		hasNodeRule: names.includes('lightsout/function-size'),
+		hasReactRule: names.includes('lightsout/component-file-structure'),
+		reactTopicRows: view.rules.filter((rule) => rule.documentPath === 'code/architecture/react').length,
+	}).toStrictEqual({ hasNodeRule: true, hasReactRule: false, reactTopicRows: 0 });
 });
 
 test('a declared standards pack that cannot be loaded fails the view rather than describing half a repo', async () => {
-	const cwd = await seedStandardsRepo({ packs: ['./standards-that-were-never-installed'] });
+	const cwd = await seedStandardsRepo({ library: './standards-that-were-never-installed' });
 
-	await expect(getStandardsView({ cwd })).rejects.toThrow(/standards pack root file not found/);
+	await expect(getStandardsView({ cwd })).rejects.toThrow(/standards library acme \(\.\/standards-that-were-never-installed\) will not load/);
 });
 
 test('a config naming a rule no pack declares fails the view', async () => {
 	const cwd = await seedStandardsRepo({ overrides: { 'house-loose-flie': 'off' } });
 
 	// the typo is caught where the valid ids are known, not silently ignored
-	await expect(getStandardsView({ cwd })).rejects.toThrow(/no loaded standards pack declares/);
+	await expect(getStandardsView({ cwd })).rejects.toThrow(/standards-rule-settings names "house-loose-flie": no rule is named/);
+});
+
+/**
+ * A monorepo whose root and engine run the acme house pack while web-app runs a
+ * relaxed pack that brings in the same house topic with its checked rule
+ * graded advisory, so the rule list holds that rule at two states.
+ */
+const seedSplitRuleRepo = async () => {
+	const library = await writeStandardsPack();
+	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-view-split-rule-'));
+
+	await writeTree({
+		dir: library,
+		files: {
+			'packs/relaxed.json': JSON.stringify({
+				description: 'the house pack with loose files tolerated',
+				include: { packs: ['acme/house'] },
+				'rule-settings': { 'house-loose-file': 'advisory' },
+			}),
+		},
+	});
+	await writeTree({
+		dir: cwd,
+		files: {
+			'package.json': JSON.stringify({ name: 'repo' }),
+			'packages/engine/package.json': JSON.stringify({ name: 'engine' }),
+			'packages/web-app/package.json': JSON.stringify({ name: 'web-app' }),
+			'lightsout.config.json': JSON.stringify({
+				gates: { check: 'true', test: 'true', 'test-coverage': false },
+				'standards-libraries': { acme: library },
+				'standards-pack': 'acme/house',
+				'package-standards-packs': { 'web-app': 'acme/relaxed' },
+			}),
+		},
+	});
+
+	return cwd;
+};
+
+test('keeps one row per rule when the rule list splits a rule across package groups', async () => {
+	const cwd = await seedSplitRuleRepo();
+
+	const view = await getStandardsView({ cwd });
+
+	// the root and engine hold the rule at blocking, the widest listing, so the one row takes that state
+	expect({
+		rows: view.rules.map((rule) => ({ rule: rule.rule, severity: rule.severity })),
+		totals: view.totals,
+	}).toStrictEqual({
+		rows: [
+			{ rule: 'acme/house-loose-file', severity: StandardsSeverity.Blocking },
+			{ rule: 'acme/house-name-things-well', severity: StandardsSeverity.Advisory },
+		],
+		totals: { rules: 2, checked: 1, judgment: 1, blocking: 0, advisory: 0, orphans: 0 },
+	});
 });

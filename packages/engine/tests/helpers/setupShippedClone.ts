@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
-import { cp, mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readdir, readFile, readlink, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { afterAll } from '@jest/globals';
 import { commitAll } from '#tests/helpers/commitAll.ts';
 import { runInRepo } from '#tests/helpers/runInRepo.ts';
@@ -10,35 +10,101 @@ import { shippedManifestPaths } from '#tests/helpers/shippedManifestPaths.ts';
 const repoRoot = join(__dirname, '..', '..', '..', '..');
 const clones: string[] = [];
 
+/** True when a link's target lands inside this repo's own `packages/`: a workspace package, not an installed one. */
+const isWorkspaceLink = ({ linkPath, target }: { linkPath: string; target: string }) => {
+	const landing = relative(join(repoRoot, 'packages'), resolve(dirname(linkPath), target));
+
+	return !landing.startsWith('..') && !landing.startsWith('/');
+};
+
+/**
+ * A package's installed dependencies, linked into the clone one entry at a
+ * time, and a scope folder (`@lightsout/`, `@types/`) one level further.
+ *
+ * Links to this repo's own packages are relative (`../../../standards-contracts`),
+ * so each is recreated with the same target and lands on the clone's copy of
+ * that package. Linking the whole folder instead would resolve them into this
+ * working tree, and the clone's committed engine would be bundled against
+ * sibling packages a branch has changed but not yet committed. Everything else
+ * points at the installed copy, which is what spares the clone an install.
+ */
+const linkInstalledDependencies = async ({ installed, target }: { installed: string; target: string }): Promise<void> => {
+	await mkdir(target, { recursive: true });
+
+	for (const entry of await readdir(installed, { withFileTypes: true })) {
+		const from = join(installed, entry.name);
+		const to = join(target, entry.name);
+
+		if (entry.isSymbolicLink()) {
+			const linkTarget = await readlink(from);
+
+			await symlink(isWorkspaceLink({ linkPath: from, target: linkTarget }) ? linkTarget : from, to);
+		} else if (entry.isDirectory() && entry.name.startsWith('@')) {
+			await linkInstalledDependencies({ installed: from, target: to });
+		} else {
+			await symlink(from, to);
+		}
+	}
+};
+
+/**
+ * The clone's working tree made to match this one: every file git tracks or
+ * would track here — committed, changed or new — and none it has deleted.
+ * Ignored files stay out, so neither build output nor node_modules is copied.
+ */
+const mirrorWorkingTree = async ({ dir }: { dir: string }): Promise<void> => {
+	const listFiles = ({ cwd, args }: { cwd: string; args: string[] }) =>
+		runInRepo({ cwd, command: 'git', args: ['ls-files', '-z', ...args] })
+			.split('\0')
+			.filter((path) => path.length > 0);
+
+	for (const path of listFiles({ cwd: dir, args: [] })) {
+		await rm(join(dir, path), { force: true });
+	}
+
+	for (const path of listFiles({ cwd: repoRoot, args: ['--cached', '--others', '--exclude-standard'] })) {
+		if (existsSync(join(repoRoot, path))) {
+			await mkdir(dirname(join(dir, path)), { recursive: true });
+			await cp(join(repoRoot, path), join(dir, path), { verbatimSymlinks: true });
+		}
+	}
+};
+
 /**
  * A clone of this repo with its own history, sharing node_modules by symlink —
  * the check builds the engine, which needs esbuild and the engine's own
  * dependencies.
  *
- * Every node_modules is linked, not just the root one. This is a workspace, and
+ * Every package's node_modules is linked, not just the root one. This is a workspace, and
  * the package manager installs nothing at the root that a package declared for
  * itself, so a clone with only the root link cannot resolve `zod` and the build
  * fails on the first import. The clone's package list is the authority for which
  * links to make, because a package added on the branch but not yet committed has
  * no folder in the clone to link into.
  *
- * `scripts/` is copied from the working tree over what the clone checked out,
- * so these tests exercise the scripts as they stand rather than as they were
- * last committed. Everything else stays at the cloned commit, which is what
- * gives the version comparison a real base to work against.
+ * The clone's files are this working tree as it stands, uncommitted changes
+ * and new files included, committed on top of the cloned history as the
+ * baseline. So these tests exercise the scripts as they stand, against the
+ * source those scripts read as it stands: copying only the scripts over the
+ * last commit breaks the moment a branch renames a folder a script names but
+ * has not committed the rename. The baseline commit is what gives the version
+ * comparison a real base to work against.
  *
- * The engine is rebuilt and committed on main before branching. esbuild writes
- * each bundled module's path into its output, and this clone reaches its
- * dependencies through a symlink, so those paths are longer here than in a
- * normal checkout. Rebuilding once makes the clone self-consistent, so a test
- * measures the change it made rather than that difference.
+ * The engine and the shipped standards are rebuilt and committed on main before
+ * branching. esbuild writes each bundled module's path into its output, and
+ * this clone reaches its dependencies through a symlink, so those paths are
+ * longer here than in a normal checkout. And a feature branch never commits
+ * build output (the pre-ship step does, after the rebase), so a branch that
+ * changed the authored standards carries a stale shipped copy. Rebuilding both
+ * once makes the clone self-consistent, so a test measures the change it made
+ * rather than either difference.
  */
 const buildBaseClone = async () => {
 	const dir = join(await mkdtemp(join(tmpdir(), 'lightsout-shipped-')), 'repo');
 
 	clones.push(dir);
 	runInRepo({ cwd: repoRoot, command: 'git', args: ['clone', '--quiet', '--no-hardlinks', '--shared', repoRoot, dir] });
-	await cp(join(repoRoot, 'scripts'), join(dir, 'scripts'), { recursive: true });
+	await mirrorWorkingTree({ dir });
 
 	for (const { claude, codex } of [
 		{ claude: shippedManifestPaths.claude, codex: shippedManifestPaths.codex },
@@ -61,11 +127,12 @@ const buildBaseClone = async () => {
 		const installed = join(repoRoot, 'packages', entry.name, 'node_modules');
 
 		if (entry.isDirectory() && existsSync(installed)) {
-			await symlink(installed, join(dir, 'packages', entry.name, 'node_modules'), 'dir');
+			await linkInstalledDependencies({ installed, target: join(dir, 'packages', entry.name, 'node_modules') });
 		}
 	}
 
 	runInRepo({ cwd: dir, command: 'node', args: [join(dir, 'scripts', 'buildEngine.mjs')] });
+	runInRepo({ cwd: dir, command: 'node', args: [join(dir, 'scripts', 'copyStandards.mjs')] });
 
 	// A local clone checks out whatever branch this repo is on, so `main` is not
 	// guaranteed to exist here. It is named explicitly because it is what the

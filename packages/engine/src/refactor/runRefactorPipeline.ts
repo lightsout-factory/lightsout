@@ -12,7 +12,6 @@ import type { RefactorResult } from '#src/refactor/RefactorResult.ts';
 import { seedResumeState } from '#src/refactor/seedResumeState.ts';
 import { withRunLock } from '#src/runState/lock/withRunLock.ts';
 import { resolveStandards } from '#src/standards/resolveStandards.ts';
-import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
 
 interface Params {
 	cwd: string;
@@ -78,13 +77,10 @@ const executeRefactor = async ({
 		return redBaseline;
 	}
 
-	// A refactor run has no package scope of its own, so channels come from the
-	// repo root manifest.
-	const { standards, testStandards, channels } = await resolveStandards({ cwd, config, packages: [] });
 	// Resolved once for the whole run: every batch's agent review reads the same
 	// judgment rules, and re-walking the pack tree per batch would only invite
 	// two batches to disagree about what the standards are.
-	const packs = await resolveStandardsPacks({ cwd, config });
+	const { standards, testStandards, groups } = await resolveStandards({ cwd, config });
 
 	if (!agentReview) {
 		run.progress('code checks only — the per-batch agent review is off for this run');
@@ -94,7 +90,7 @@ const executeRefactor = async ({
 		run,
 		driver,
 		worklist,
-		batchInputs: { packs, channels, standards, testStandards, agentReview },
+		batchInputs: { groups, standards, testStandards, agentReview },
 		maxBatches,
 		declineStreak: seeded.declineStreak,
 	});

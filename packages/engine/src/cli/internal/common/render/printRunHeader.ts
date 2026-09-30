@@ -2,9 +2,12 @@ import { printConfigSource } from '#src/cli/internal/common/render/printConfigSo
 import { defaultAgentTimeoutMinutes } from '#src/common/constants/defaultAgentTimeoutMinutes.ts';
 import { defaultGateTimeoutMinutes } from '#src/common/constants/defaultGateTimeoutMinutes.ts';
 import { defaultSupervisorTimeoutMinutes } from '#src/common/constants/defaultSupervisorTimeoutMinutes.ts';
+import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 
 interface Params {
 	config: LightsoutConfig;
@@ -14,24 +17,41 @@ interface Params {
 	configPath: string;
 }
 
-const describeStandardsPacks = ({ value }: { value: string[] | false | undefined }) => {
-	if (value === false) {
-		return 'none (explicit)';
-	}
+/** The root's pack, then one indented line for each package whose pack address or source differs from the root's. */
+const standardsLinesOf = ({ groups }: { groups: StandardsGroup[] }) => {
+	const root = groups.find((group) => group.packages.includes(''));
+	const packageLines = groups
+		.filter((group) => group !== root && (root === undefined || group.pack.name !== root.pack.name || group.source !== root.source))
+		.flatMap((group) => group.packages.filter((name) => name !== '').map((name) => ({ name, description: `${group.pack.name} (${group.source})` })))
+		.sort((first, second) => first.name.localeCompare(second.name))
+		.map(({ name, description }) => `    ${name}: ${description}`);
+	const rootLine = root === undefined ? '  repo root: none (standards-pack false)' : `  repo root: ${root.pack.name} (${root.source})`;
 
-	if (value === undefined) {
-		return 'lightsout-defaults (none configured — set to false to disable, or list pack roots)';
-	}
-
-	return value.join(', ');
+	return [rootLine, ...packageLines];
 };
 
-export const printRunHeader = ({ config, driver, cwd, configPath }: Params): void => {
+/** Never throws: the header only reports, and `prepareRun` makes the same failure the run's error. */
+const describeStandards = async ({ config, cwd }: { config: LightsoutConfig; cwd: string }) => {
+	let lines: string[];
+
+	try {
+		lines = standardsLinesOf({ groups: await resolveStandardsGroups({ cwd, config }) });
+	} catch (error) {
+		lines = [`  standards: will not load — ${messageOf({ error })}`];
+	}
+
+	return lines;
+};
+
+export const printRunHeader = async ({ config, driver, cwd, configPath }: Params): Promise<void> => {
 	const coverage = config.gates['test-coverage'] === false ? 'off (explicit)' : config.gates['test-coverage'];
 
 	console.log(`  cwd: ${cwd}`);
 	printConfigSource({ configPath });
-	console.log(`  standards packs: ${describeStandardsPacks({ value: config['standards-packs'] })}`);
+	for (const line of await describeStandards({ config, cwd })) {
+		console.log(line);
+	}
+
 	console.log(
 		`  harness: ${driver.name} · model: ${config.model ?? 'harness default'} · effort: ${config.effort ?? 'harness default'} · permissions: ${config.permissions ?? Permissions.Write}`,
 	);

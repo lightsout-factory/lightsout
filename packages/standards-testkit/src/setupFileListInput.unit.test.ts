@@ -18,7 +18,7 @@ describe('setupFileListInput', () => {
 			files: [],
 			referenceFiles: [],
 			dependencies: new Map(),
-			standardsPacks: [],
+			standardsLibraries: [],
 		});
 	});
 
@@ -53,9 +53,9 @@ describe('setupFileListInput', () => {
 	});
 
 	test('any field can be overridden outright', () => {
-		expect(setupFileListInput({ cwd: '/elsewhere', standardsPacks: ['vendor/acme'] })).toMatchObject({
+		expect(setupFileListInput({ cwd: '/elsewhere', standardsLibraries: ['vendor/acme'] })).toMatchObject({
 			cwd: '/elsewhere',
-			standardsPacks: ['vendor/acme'],
+			standardsLibraries: ['vendor/acme'],
 		});
 	});
 });

@@ -1,0 +1,40 @@
+---
+summary: "coverage added file-by-file when driving the module's public API would pin the same behavior — boundary tests are the default, not the mandate"
+checked: false
+severity: advisory
+requires:
+  - files-that-must-not-have-dedicated-tests
+---
+
+## Module Boundary Testing
+
+**Default to testing a module's public API** — the files code outside the
+module calls, each imported from its own file — and cover internals *through*
+it. A boundary test pins
+behavior rather than internal decomposition, so a module's internals can be
+reorganized without touching a single test, and three code changes inside a
+module cost one test update instead of three.
+
+**A direct test on any file is allowed** when the file earns one:
+
+- its cases are combinatorial and driving them all through the boundary is
+  impractical
+- it states a contract meaningful on its own (a parser, a date formatter — a
+  thing callers rely on regardless of which module holds it today)
+- coverage a gate demands is genuinely unreachable through any boundary input
+  (and first ask whether that unreachable branch is dead code)
+
+A direct test needs no ceremony: it does not require making the file public,
+and an existing direct test is not debt to migrate. Write the
+boundary test when both would pin the same behavior; write the direct test when
+the file deserves one.
+
+**Rules that hold either way:**
+
+- Files with no runtime logic — index files, type-only files, pure
+  constants — get no dedicated tests (see the
+  files-that-must-not-have-dedicated-tests rule).
+- If a branch cannot be reached through any input, boundary or direct, it is
+  dead code — flag it for deletion rather than forcing a test onto it.
+- A public export whose only consumers are test files may be a deliberate
+  promotion whose contract the tests pin; deleting it is a human decision.

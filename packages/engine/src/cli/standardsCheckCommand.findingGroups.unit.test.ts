@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsCheckCommand } from '#src/cli/standardsCheckCommand.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 
@@ -29,11 +29,10 @@ interface RunStandardsCheckParams {
 const mockRunStandardsCheck = jest.fn<(params: RunStandardsCheckParams) => Promise<{ findings: StandardsFinding[]; notes: string[] }>>();
 
 interface ListStandardsRulesParams {
-	cwd: string;
-	config?: LightsoutConfig;
+	groups: StandardsGroup[];
 }
 
-const mockListStandardsRules = jest.fn<(params: ListStandardsRulesParams) => Promise<StandardsRuleListing[]>>();
+const mockListStandardsRules = jest.fn<(params: ListStandardsRulesParams) => StandardsRuleListing[]>();
 
 jest.mock('#src/standardsCheck/listStandardsRules.ts', () => ({
 	listStandardsRules: (params: ListStandardsRulesParams) => mockListStandardsRules(params),
@@ -60,7 +59,8 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	checked: true,
 	severity: StandardsSeverity.Advisory,
 	fromConfig: false,
-	settings: {},
+	options: {},
+	packages: [''],
 	...overrides,
 });
 
@@ -73,7 +73,7 @@ const setupFindings = ({ findings }: { findings: StandardsFinding[] }) => {
 	const captured = captureCommandOutput();
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-test-'));
 
-	mockListStandardsRules.mockResolvedValue([listing()]);
+	mockListStandardsRules.mockReturnValue([listing()]);
 	mockRunStandardsCheck.mockResolvedValue({ findings, notes: [] });
 
 	return { context: { flags: parseFlags({ args: ['--code-checks'] }), rest: [], cwd }, ...captured };

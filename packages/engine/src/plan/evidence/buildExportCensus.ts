@@ -20,13 +20,13 @@ interface Params {
  */
 export const buildExportCensus = async ({ cwd, config, exclude = [] }: Params): Promise<ExportCensus> => {
 	const excluded = new Set(exclude);
-	const { files, standardsPacks } = await listSourceFiles({ cwd, exclude: excludedSourcePaths({ config }) });
+	const { files, standardsLibraries } = await listSourceFiles({ cwd, exclude: excludedSourcePaths({ config }) });
 	const buckets: ExportCensus = new Map();
 
 	for (const file of files) {
 		const name = getExportName({ path: file });
 
-		if (isTestFile({ path: file, standardsPacks }) || name === 'index' || excluded.has(file)) {
+		if (isTestFile({ path: file, standardsLibraries }) || name === 'index' || excluded.has(file)) {
 			continue;
 		}
 

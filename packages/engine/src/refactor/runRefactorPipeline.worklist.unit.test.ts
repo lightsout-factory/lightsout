@@ -70,7 +70,7 @@ const setupBaselinedRun = async () => {
 	writeSource({ dir, path: 'src/multi.ts', source: multiExport });
 	writeFileSync(
 		join(dir, 'lightsout.standards-baseline.json'),
-		`${JSON.stringify({ at: '2026-01-01T00:00:00.000Z', path: '.', siteKeys: ['multi-export:src/multi.ts'] })}\n`,
+		`${JSON.stringify({ at: '2026-01-01T00:00:00.000Z', path: '.', siteKeys: ['lightsout/multi-export:src/multi.ts'] })}\n`,
 	);
 	commitAll(dir);
 
@@ -192,9 +192,9 @@ describe('runRefactorPipeline work-list', () => {
 
 		expect(result.ok).toBe(true);
 		// only the in-scope finding counts as work
-		expect(result.before).toStrictEqual({ 'multi-export': 1 });
+		expect(result.before).toStrictEqual({ 'lightsout/multi-export': 1 });
 		// the out-of-scope folder never became a batch
-		expect(result.declined.map((entry) => entry.batchId)).toStrictEqual(['batch-01:multi-export:alpha']);
+		expect(result.declined.map((entry) => entry.batchId)).toStrictEqual(['batch-01:lightsout/multi-export:alpha']);
 		// no agent was pointed outside the scope:\n${prompts.join('\n\n')}
 		expect(prompts.every((prompt) => !prompt.includes('beta/multi.ts'))).toBeTruthy();
 
@@ -202,7 +202,7 @@ describe('runRefactorPipeline work-list', () => {
 
 		// the scope is frozen with the work-list, so resume checks the same subtree
 		expect(worklist.path).toBe('alpha');
-		expect(worklist.batches.map((batch) => batch.id)).toStrictEqual(['batch-01:multi-export:alpha']);
+		expect(worklist.batches.map((batch) => batch.id)).toStrictEqual(['batch-01:lightsout/multi-export:alpha']);
 	});
 
 	test('the frozen work-list carries Finding-severity work with every advisory as context', async () => {
@@ -236,7 +236,7 @@ describe('runRefactorPipeline work-list', () => {
 		expect(advisories.length > 0).toBeTruthy();
 		// EVERY advisory rides along, not just the size ones — each carries its own
 		// guidance, and one the agent never sees is one it can never judge
-		expect([...new Set(advisories.map((advisory) => advisory.rule))].sort()).toStrictEqual(['duplicate-code-block', 'function-size']);
+		expect([...new Set(advisories.map((advisory) => advisory.rule))].sort()).toStrictEqual(['lightsout/duplicate-code-block', 'lightsout/function-size']);
 		// advisories are never batched as work
 		expect([...new Set(worklist.batches.flatMap((batch) => batch.blocking.map((finding) => finding.severity)))]).toStrictEqual(['blocking']);
 	});
@@ -325,9 +325,9 @@ describe('runRefactorPipeline work-list', () => {
 
 		expect(result.ok).toBe(true);
 		// both findings carry the 'multi-export' rule and must accumulate under it
-		expect(result.before).toStrictEqual({ 'multi-export': 2 });
+		expect(result.before).toStrictEqual({ 'lightsout/multi-export': 2 });
 		// nothing was resolved, so the closing re-check tallies the same two
-		expect(result.after).toStrictEqual({ 'multi-export': 2 });
+		expect(result.after).toStrictEqual({ 'lightsout/multi-export': 2 });
 	});
 
 	test('a baselined finding is not work — the run completes as a verdict, spawning nothing', async () => {
@@ -350,9 +350,9 @@ describe('runRefactorPipeline work-list', () => {
 
 		expect(result.ok).toBe(true);
 		// the accepted cluster is the work-list in burn-down mode
-		expect(result.before['multi-export']).toBe(1);
+		expect(result.before['lightsout/multi-export']).toBe(1);
 		// and it burned down
-		expect(result.after['multi-export'] ?? 0).toBe(0);
+		expect(result.after['lightsout/multi-export'] ?? 0).toBe(0);
 		// the batch reached an agent
 		expect(prompts.length > 0).toBeTruthy();
 

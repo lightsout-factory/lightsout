@@ -3,39 +3,31 @@ import type { StandardsPackListing } from '@lightsout/engine';
 interface Params {
 	name?: string;
 	description?: string;
-	isDefault?: boolean;
-	built?: boolean;
-	path?: string;
-	channels?: string[];
-	channelTotals?: StandardsPackListing['channelTotals'];
+	include?: StandardsPackListing['include'];
+	/** Topic addresses the resolved pack brings in. */
+	topics?: string[];
+	rules?: StandardsPackListing['rules'];
 	totals?: Partial<StandardsPackListing['totals']>;
 	/** Applied last, so a test can drop an optional field the defaults fill — `{ description: undefined }`. */
 	overrides?: Partial<StandardsPackListing>;
 }
 
-/** One pack's row, as `listStandardsPacks` hands it back for an ordinary authored pack. */
+/** One pack file of the lightsout library, resolved, as the library's view lists it. */
 export const buildStandardsPackListing = ({
-	name = 'lightsout-defaults',
-	description = 'The default TypeScript pack.',
-	isDefault = true,
-	built = false,
-	path = 'packages/standards-typescript',
-	channels = ['base', 'react'],
-	channelTotals = [
-		{ channel: 'base', rules: 101, checked: 47, judgment: 54 },
-		{ channel: 'react', rules: 10, checked: 5, judgment: 5 },
-	],
+	name = 'node',
+	description = 'Every Node package.',
+	include = { packs: [], topics: [], rules: [] },
+	topics = [],
+	rules = [],
 	totals = {},
 	overrides = {},
 }: Params = {}): StandardsPackListing => ({
 	name,
+	address: `lightsout/${name}`,
 	description,
-	isDefault,
-	rootPath: `/repos/lightsout/${path}`,
-	path,
-	built,
-	channels,
-	channelTotals,
-	totals: { rules: 111, checked: 52, judgment: 59, documents: 24, withFixtures: 111, ...totals },
+	include,
+	topics,
+	rules,
+	totals: { rules: rules.length, checked: rules.length, judgment: 0, topics: topics.length, ...totals },
 	...overrides,
 });

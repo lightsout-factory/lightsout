@@ -11,7 +11,7 @@ import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
  * `shipSettingsFixture` is one copy.
  */
 export const shipIntegrationFixture = (overrides: Partial<ShipIntegration> = {}): ShipIntegration => ({
-	config: { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-packs': false },
+	config: { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': false },
 	driver: createUncalledDriver({ reason: 'the ship integration spawned a harness the test did not arrange one for' }),
 	...overrides,
 });

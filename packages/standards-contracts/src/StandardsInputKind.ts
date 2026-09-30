@@ -11,7 +11,7 @@ export const StandardsInputKind = {
 	TestFile: 'test-file',
 	/** Resolved import edges among the files in scope. */
 	ImportGraph: 'import-graph',
-	/** Engine-run token-duplication spans (jscpd), honoring the rule's own settings. */
+	/** Engine-run token-duplication spans (jscpd), honoring the rule's own options. */
 	CloneSpans: 'clone-spans',
 } as const;
 

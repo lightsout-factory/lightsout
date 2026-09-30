@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
  * writing into the tree it is asking about.
  */
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const source = join(repoRoot, 'packages', 'standards-typescript');
+const source = join(repoRoot, 'packages', 'lightsout-standards');
 const outFlag = process.argv.indexOf('--out');
 
 /**
@@ -47,8 +47,11 @@ if (outFlag !== -1 && process.argv[outFlag + 1] === undefined) {
 
 	// A marketplace install has no manifest above the checks to inherit a module
 	// format from, and the authored package.json names workspace dependencies a
-	// user's machine will not have.
-	writeFileSync(join(destination, 'package.json'), '{\n\t"type": "module"\n}\n');
+	// user's machine will not have. Its imports map is kept: a check in the
+	// shipped copy resolves `#common/*` through this file.
+	const { imports } = JSON.parse(readFileSync(join(source, 'package.json'), 'utf8'));
+
+	writeFileSync(join(destination, 'package.json'), `${JSON.stringify({ type: 'module', imports }, null, '\t')}\n`);
 
 	// `built` lets `lightsout standards-validate` report one fact about the
 	// artifact instead of reading every stripped fixture as a rule its author

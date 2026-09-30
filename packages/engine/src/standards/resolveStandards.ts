@@ -1,40 +1,25 @@
-import { StandardsSet } from '@lightsout/standards-contracts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { ResolvedStandards } from '#src/standards/ResolvedStandards.ts';
-import { resolveStandardsChannels } from '#src/standards/resolveStandardsChannels.ts';
-import { buildStandardsDocuments } from '#src/standardsPacks/buildStandardsDocuments.ts';
-import { resolveStandardsPacks } from '#src/standardsPacks/resolveStandardsPacks.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { buildStandardsDocuments } from '#src/standardsLibraries/buildStandardsDocuments.ts';
 
 interface Params {
 	cwd: string;
-	config: LightsoutConfig;
-	/** Scoped packages whose dependencies decide the framework channels. Empty = base docs only. */
-	packages: string[];
+	config: LightsoutConfig | undefined;
+	/** The command's package scope. Undefined = every workspace package. */
+	packages?: string[];
 }
 
 /**
  * Assembled from the rule folders themselves, so no pre-built copy exists to
  * drift from its prose.
  *
- * @throws {Error} When a declared standards pack cannot be loaded: a consumer that
- * declared standards and did not get them must not run.
+ * @throws {Error} When a pack or library cannot be loaded, or a `standards-rule-settings` entry names no rule in the pack:
+ * a repo that selected standards and did not get them must not run.
  */
 export const resolveStandards = async ({ cwd, config, packages }: Params): Promise<ResolvedStandards> => {
-	const loaded = await resolveStandardsPacks({ cwd, config });
-	const channels = await resolveStandardsChannels({ cwd, config, packages });
-	const assembled = loaded.map((pack) => buildStandardsDocuments({ pack, channels, config }));
+	const groups = await resolveStandardsGroups({ cwd, config, packages });
+	const { code, tests } = buildStandardsDocuments({ groups });
 
-	const stack = ({ set }: { set: StandardsSet }) => {
-		const texts = assembled.map((documents) => documents[set]).filter((text) => text !== undefined);
-
-		return texts.length === 0 ? undefined : texts.join('\n\n');
-	};
-
-	return {
-		standards: stack({ set: StandardsSet.Code }),
-		testStandards: stack({ set: StandardsSet.Tests }),
-		channels,
-		configured: config['standards-channels'] !== undefined,
-		requested: loaded.length > 0,
-	};
+	return { standards: code, testStandards: tests, groups };
 };

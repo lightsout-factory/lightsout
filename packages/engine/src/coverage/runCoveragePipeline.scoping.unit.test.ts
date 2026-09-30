@@ -55,7 +55,7 @@ const setupRepo = ({
 	contents?: Record<string, string>;
 	plant?: Record<string, string>;
 }) => {
-	const dir = setupConsumerRepo({ git: false, scripts: { check, 'test-coverage': 'node coverageGate.cjs' }, config: { 'standards-packs': false } });
+	const dir = setupConsumerRepo({ git: false, scripts: { check, 'test-coverage': 'node coverageGate.cjs' }, config: { 'standards-pack': false } });
 
 	writeFileSync(join(dir, 'coverageGate.cjs'), coverageGate);
 
@@ -96,7 +96,7 @@ const setupMonorepoRepo = ({ scopes }: { scopes: Record<string, Record<string, n
 		git: false,
 		scripts: { 'test-coverage': 'node coverageGate.cjs' },
 		config: {
-			'standards-packs': false,
+			'standards-pack': false,
 			'package-gates': { check: 'true {package}', test: 'true {package}', 'test-coverage': 'node coverageGate.cjs packages/{package}' },
 		},
 	});
@@ -282,8 +282,8 @@ describe('runCoveragePipeline gates and scoping', () => {
 
 	test('inside a standards pack a tests/ document set is source, so its checks are the ones handed to a writer', async () => {
 		const dir = setupRepo({
-			files: { 'standards/tests/unit-testing/05-rule/check.ts': 10, 'standards/common/utils/scan.unit.test.ts': 100, 'src/real.ts': 100 },
-			plant: { 'standards/lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n' },
+			files: { 'standards/rules/tests/unit-testing/05-rule/check.ts': 10, 'standards/common/utils/scan.unit.test.ts': 100, 'src/real.ts': 100 },
+			plant: { 'standards/lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n' },
 		});
 		const { driver, prompts } = stubWriter({ dir });
 
@@ -293,6 +293,6 @@ describe('runCoveragePipeline gates and scoping', () => {
 		// check under `tests/` reads as test code, no candidate is left, and the
 		// round escalates instead of spending a writer
 		expect(result.ok).toBe(true);
-		expect(listedFiles({ prompt: prompts[0] ?? '' })).toStrictEqual(['standards/tests/unit-testing/05-rule/check.ts']);
+		expect(listedFiles({ prompt: prompts[0] ?? '' })).toStrictEqual(['standards/rules/tests/unit-testing/05-rule/check.ts']);
 	});
 });

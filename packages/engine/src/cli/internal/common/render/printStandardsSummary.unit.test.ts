@@ -20,7 +20,8 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	checked: true,
 	severity: StandardsSeverity.Advisory,
 	fromConfig: false,
-	settings: {},
+	options: {},
+	packages: [''],
 	...overrides,
 });
 

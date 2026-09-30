@@ -4,6 +4,7 @@ import { screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { PacksPage } from '#src/features/packs/screens/PacksPage/PacksPage.tsx';
+import { buildStandardsPackListing } from '#tests/helpers/buildStandardsPackListing.ts';
 import { buildStandardsPackView } from '#tests/helpers/buildStandardsPackView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -45,9 +46,6 @@ const setupPacksPage = ({ pack = buildStandardsPackView() }: { pack?: StandardsP
 	renderWithQueryClient({ ui: <PacksPage />, seed: [{ queryKey: [QueryKey.DefaultPack], data: pack }] });
 };
 
-/** The headings of the rule-set cards, in the order the page draws them. */
-const readCardNames = () => screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent);
-
 describe('PacksPage', () => {
 	test('introduces what a Standards Pack is, in one line', () => {
 		setupPacksPage();
@@ -55,44 +53,85 @@ describe('PacksPage', () => {
 		expect(screen.getByRole('heading', { level: 1, name: 'Standards Packs' })).toBeInTheDocument();
 	});
 
-	test('shows one card per set of rules, by the name a reader knows it by, then a card for a team’s own', () => {
-		setupPacksPage();
-
-		expect(readCardNames().slice(0, 3)).toStrictEqual(['TypeScript', 'React', 'Your team’s pack']);
-	});
-
-	test('leaves out a framework the pack holds no rules for', () => {
+	test("shows one card per pack of the library, each linking to that pack's page", () => {
 		setupPacksPage({
-			pack: { ...buildStandardsPackView(), channels: ['base', 'nestjs'], channelTotals: [{ channel: 'base', rules: 97, checked: 45, judgment: 52 }] },
+			pack: buildStandardsPackView({ packs: [buildStandardsPackListing({ name: 'node' }), buildStandardsPackListing({ name: 'react' })] }),
 		});
 
-		expect(readCardNames()).not.toContain('Nestjs');
+		const headings = screen
+			.getAllByRole('heading')
+			.map((heading) => heading.textContent)
+			.filter((text) => text !== 'Standards Packs');
+		const nodeCard = screen.getByRole('link', { name: /lightsout\/node/ });
+		const reactCard = screen.getByRole('link', { name: /lightsout\/react/ });
+		const ruleSetLinks = screen
+			.getAllByRole('link')
+			.map((link) => link.getAttribute('href'))
+			.filter((href) => href?.startsWith('/standards-packs/typescript'));
+
+		expect({
+			headings,
+			nodeHref: nodeCard.getAttribute('href'),
+			reactHref: reactCard.getAttribute('href'),
+			ruleSetLinks,
+		}).toStrictEqual({
+			headings: ['lightsout', 'lightsout/node', 'lightsout/react', 'Your team’s pack'],
+			nodeHref: '/standards-packs/lightsout/packs/node',
+			reactHref: '/standards-packs/lightsout/packs/react',
+			ruleSetLinks: [],
+		});
 	});
 
-	test('opens a card’s rules at the set’s own address', () => {
-		setupPacksPage();
+	// The library's own totals (1 rule, 1 checked, 0 judgment) differ from the pack's, so the counts shown prove they are the pack's.
+	test('names the packs a pack includes and counts its rules by kind of check', () => {
+		setupPacksPage({
+			pack: buildStandardsPackView({
+				packs: [
+					buildStandardsPackListing({
+						name: 'react-app',
+						include: { packs: ['lightsout/node'], topics: [], rules: [] },
+						totals: { rules: 5, checked: 3, judgment: 2 },
+					}),
+				],
+			}),
+		});
 
-		const card = screen.getByRole('link', { name: /React/ });
+		const card = screen.getByRole('link', { name: /lightsout\/react-app/ });
 
-		expect(card).toHaveAttribute('href', '/standards-packs/react');
+		expect([
+			within(card).getByText(/^Includes/).textContent,
+			within(card).queryByText('3 deterministic checks') !== null,
+			within(card).queryByText('2 agent checks') !== null,
+		]).toStrictEqual(['Includes lightsout/node', true, true]);
 	});
 
-	test('says how many rules a set holds, and how many are deterministic checks and agent checks', () => {
-		setupPacksPage();
+	test('leaves out the description and included packs of a pack that has neither', () => {
+		setupPacksPage({
+			pack: buildStandardsPackView({ packs: [buildStandardsPackListing({ name: 'node', overrides: { description: undefined } })] }),
+		});
 
-		const card = screen.getByRole('link', { name: /TypeScript/ });
+		const card = screen.getByRole('link', { name: /lightsout\/node/ });
 
-		expect([within(card).getByText('47 deterministic checks'), within(card).getByText('54 agent checks')]).toHaveLength(2);
+		expect({
+			description: within(card).queryByText('Every Node package.'),
+			includes: within(card).queryByText(/^Includes/),
+		}).toStrictEqual({ description: null, includes: null });
 	});
 
-	test('says when each set applies', () => {
+	test('describes the library under its name when it has a description', () => {
 		setupPacksPage();
 
-		const activations = ['TypeScript', 'React'].map(
-			(name) => within(screen.getByRole('link', { name: new RegExp(name) })).getByText(/^(Always on|On with)/).textContent,
-		);
+		const section = screen.getByRole('region', { name: 'lightsout' });
 
-		expect(activations).toStrictEqual(['Always on', 'On with React']);
+		expect(within(section).queryByText('The rules lightsout ships.')).not.toBeNull();
+	});
+
+	test('shows only the library name when the library has no description', () => {
+		setupPacksPage({ pack: buildStandardsPackView({ overrides: { description: undefined } }) });
+
+		const section = screen.getByRole('region', { name: 'lightsout' });
+
+		expect(within(section).queryByText('The rules lightsout ships.')).toBeNull();
 	});
 
 	test('points a team at the docs for writing its own pack', () => {

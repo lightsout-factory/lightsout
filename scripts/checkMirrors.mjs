@@ -45,7 +45,7 @@ const behaviouralMirrors = [
 	{
 		name: 'getExportName',
 		left: 'packages/engine/src/plan/common/utils/getExportName.ts',
-		right: 'packages/standards-typescript/common/naming/getExportName.ts',
+		right: 'packages/lightsout-standards/common/naming/getExportName.ts',
 		export: 'getExportName',
 		inputs: [
 			'index.ts',

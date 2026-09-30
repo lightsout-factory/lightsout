@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
@@ -22,10 +23,10 @@ const mockRunGates = jest.fn<(params: { cwd: string }) => Promise<GateRunResult>
 
 jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
 // -------------------------
-const mockResolveStandards = jest.fn<(params: { cwd: string; packages: string[] }) => Promise<ResolvedStandards>>();
+const mockResolveStandards = jest.fn<(params: { cwd: string; config: LightsoutConfig | undefined; packages?: string[] }) => Promise<ResolvedStandards>>();
 
 jest.mock('#src/standards/resolveStandards.ts', () => ({
-	resolveStandards: (params: { cwd: string; packages: string[] }) => mockResolveStandards(params),
+	resolveStandards: (params: { cwd: string; config: LightsoutConfig | undefined; packages?: string[] }) => mockResolveStandards(params),
 }));
 // -------------------------
 
@@ -114,7 +115,7 @@ const setupIntegration = ({
 			throw new Error('the declared standards pack could not be loaded');
 		}
 
-		return { standards: '# Standards', channels: [], configured: false, requested: true };
+		return { standards: '# Standards', groups: [] };
 	});
 
 	const invocations: DriverInvocation[] = [];
@@ -181,6 +182,15 @@ describe('integrateDefaultBranch', () => {
 		expect(failure).toEqual(expect.objectContaining({ reason: 'integration-gates-failed' }));
 		expect(readHead({ cwd })).toBe(baselineCommit);
 		expect({ dirty: readDirtyPaths({ cwd }), openMerge: hasOpenMerge({ cwd }) }).toStrictEqual({ dirty: '', openMerge: false });
+	});
+
+	test('loads the standards with no package scope, so they cover every package and the repo root', async () => {
+		const { cwd, integrate } = setupIntegration({ defaultBranchEdit: 'unrelated' });
+
+		await integrate();
+
+		// an empty scope would cover the repo root alone; no scope covers the whole workspace
+		expect(mockResolveStandards).toHaveBeenCalledWith({ cwd, config: shipIntegrationFixture().config });
 	});
 
 	test('blocks a crashed gate under its own reason, spawns no repair and restores the baseline', async () => {

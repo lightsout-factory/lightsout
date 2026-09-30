@@ -28,7 +28,7 @@ describe('commandCatalog flags', () => {
 			['refactor', ['all', 'allow-dirty', 'code-checks', 'cwd', 'max-batches', 'path', 'run']],
 			['test-coverage-to-threshold', ['allow-dirty', 'cwd', 'max-batches', 'run']],
 			['standards-check', ['agent-review', 'all', 'baseline', 'code-checks', 'cwd', 'list', 'path']],
-			['standards-validate', ['cwd', 'pack']],
+			['standards-validate', ['cwd', 'library']],
 			['standards-health', ['cwd']],
 			['status', ['cwd', 'now', 'planning', 'queue', 'run', 'shipping', 'wait', 'watch']],
 			['report', ['cwd', 'json', 'plan']],

@@ -9,8 +9,8 @@ const repoRoot = join(__dirname, '..', '..', '..', '..', '..');
 /** The one engine module the sprawl scripts import; the fixture needs it at the same repo-relative path. */
 const enginePredicate = join('packages', 'engine', 'src', 'common', 'sourceFiles', 'isTestFile.ts');
 
-/** A rule file's front matter, with prose under it so the settings reader has somewhere to stop. */
-const frontMatter = ({ settings }: { settings: string[] }) => ['---', 'summary: "a rule"', 'settings:', ...settings, '---', '', 'prose below', ''].join('\n');
+/** A rule file's front matter, with prose under it so the options reader has somewhere to stop. */
+const frontMatter = ({ options }: { options: string[] }) => ['---', 'summary: "a rule"', 'options:', ...options, '---', '', 'prose below', ''].join('\n');
 
 /**
  * The four rule files `readSprawlCaps.mjs` reads. The numbers are the
@@ -18,10 +18,10 @@ const frontMatter = ({ settings }: { settings: string[] }) => ['---', 'summary: 
  * would go red the day someone tuned a cap.
  */
 const defaultRules: Record<string, string> = {
-	'code/style-guide/patterns/functions/30-file-size/rule.md': frontMatter({ settings: ['  file: 100', '  tsxFile: 120'] }),
-	'code/style-guide/patterns/functions/25-function-size/rule.md': frontMatter({ settings: ['  function: 30'] }),
-	'tests/unit-testing/18-test-file-size/rule.md': frontMatter({ settings: ['  testFile: 400'] }),
-	'code/architecture/folder-structure/35-folder-size/rule.md': frontMatter({ settings: ['  cap: 3'] }),
+	'rules/code/style-guide/patterns/functions/30-file-size/rule.md': frontMatter({ options: ['  file: 100', '  tsxFile: 120'] }),
+	'rules/code/style-guide/patterns/functions/25-function-size/rule.md': frontMatter({ options: ['  function: 30'] }),
+	'rules/tests/unit-testing/18-test-file-size/rule.md': frontMatter({ options: ['  testFile: 400'] }),
+	'rules/code/architecture/folder-structure/35-folder-size/rule.md': frontMatter({ options: ['  cap: 3'] }),
 };
 
 interface Params {
@@ -85,8 +85,8 @@ export const seedSprawlRepo = ({ commits = [], rules, runs }: Params = {}): stri
 			continue;
 		}
 
-		mkdirSync(dirname(join(cwd, 'packages', 'standards-typescript', rule)), { recursive: true });
-		writeFileSync(join(cwd, 'packages', 'standards-typescript', rule), body);
+		mkdirSync(dirname(join(cwd, 'packages', 'lightsout-standards', rule)), { recursive: true });
+		writeFileSync(join(cwd, 'packages', 'lightsout-standards', rule), body);
 	}
 
 	for (const [id, manifest] of Object.entries(runs ?? {})) {

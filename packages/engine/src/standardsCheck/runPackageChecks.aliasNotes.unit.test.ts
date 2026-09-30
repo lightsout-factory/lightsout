@@ -3,11 +3,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type StandardsCheckFunction, StandardsInputKind } from '@lightsout/standards-contracts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 /** A repo that declares its path aliases nowhere: no tsconfig above anything, and a manifest only when one is asked for. */
 const setupUndeclaredRepo = ({ manifest, folders = ['src', 'src/feature'] }: { manifest?: string; folders?: string[] } = {}) => {
@@ -38,32 +39,41 @@ const setupWorkspaceRepo = () => {
 	return { cwd };
 };
 
-/** A check that reports one finding, so an empty note list can be told apart from a rule that never ran. */
-const reportingRun: StandardsCheckFunction = ({ input }) => [{ siteKey: `${input.kind}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
+/** A check for the rule `id` that reports one finding, so an empty note list can be told apart from a rule that never ran. */
+const reportingRun =
+	({ id }: { id: string }): StandardsCheckFunction =>
+	({ input }) => [{ siteKey: `${id}:${input.kind}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
 
 const rule = ({ id, inputKind }: { id: string; inputKind: StandardsInputKind }): LoadedStandardsRule => ({
 	id,
+	name: `acme/${id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: true,
 	defaultSeverity: StandardsSeverity.Advisory,
-	defaultSettings: {},
+	defaultOptions: {},
+	requires: [],
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 	inputKind,
-	run: reportingRun,
+	run: reportingRun({ id }),
 });
 
-/** Runs the given rules as one loaded package, at the severities a repo's config would have resolved for them. */
+/** Runs the given rules as one group's pack, at the severities a repo's config would have resolved for them. */
 const runChecks = ({ rules, cwd }: { rules: LoadedStandardsRule[]; cwd: string }) => {
-	const pkg: LoadedStandardsPack = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
 	const states = new Map<string, ResolvedRuleState>(
-		rules.map((entry) => [entry.id, { severity: entry.defaultSeverity, settings: entry.defaultSettings, fromConfig: false }]),
+		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
 	);
+	const group: StandardsGroup = {
+		packages: [''],
+		pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
+		source: StandardsPackSource.Named,
+		states,
+	};
 
-	return runPackageChecks({ cwd, packs: [pkg], states, channels: [] });
+	return runPackageChecks({ cwd, groups: [group] });
 };
 
 describe('runPackageChecks', () => {
@@ -84,7 +94,7 @@ describe('runPackageChecks', () => {
 
 		expect(notes).toStrictEqual([]);
 		// the rule really did run — an empty note list means answered, not skipped
-		expect(findings.map((finding) => finding.rule)).toStrictEqual(['multi-export']);
+		expect(findings.map((finding) => finding.rule)).toStrictEqual(['acme/multi-export']);
 	});
 
 	test('names the folders anyway when the manifest declares no imports, since every package ships a manifest', async () => {
@@ -137,7 +147,7 @@ describe('runPackageChecks', () => {
 		const { findings, notes } = await runChecks({ cwd, rules: [rule({ id: 'dependency-drift', inputKind: StandardsInputKind.FileList })] });
 
 		expect(notes).toStrictEqual([]);
-		expect(findings.map((finding) => finding.rule)).toStrictEqual(['dependency-drift']);
+		expect(findings.map((finding) => finding.rule)).toStrictEqual(['acme/dependency-drift']);
 	});
 
 	test('names only the first five uncovered folders, because a note carrying every one of them is a note nobody reads', async () => {

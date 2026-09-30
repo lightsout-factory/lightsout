@@ -24,14 +24,16 @@ const setupRule = ({ example, fail, pass }: { example?: RuleExample; fail: strin
 	return {
 		rule: {
 			id: 'dead-export',
+			name: 'acme/dead-export',
+			library: 'acme',
 			set: 'code' as const,
 			documentPath: 'code/architecture',
 			summary: 'an export nothing else references',
 			prose: '',
-			channel: 'base',
 			checked: false,
 			defaultSeverity: StandardsSeverity.Blocking,
-			defaultSettings: {},
+			defaultOptions: {},
+			requires: [],
 			...(example === undefined ? {} : { example }),
 			fixturesPath,
 		},

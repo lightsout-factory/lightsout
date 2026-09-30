@@ -99,7 +99,7 @@ test('refactor: supervisor guidance rescues a red-gated batch', async () => {
 	// the guided retry must rescue the batch: ${result.error}
 	expect(result.ok).toBe(true);
 	// the finding burned down
-	expect(result.after['multi-export'] ?? 0).toBe(0);
+	expect(result.after['lightsout/multi-export'] ?? 0).toBe(0);
 
 	const guided = prompts.find((prompt) => prompt.includes('# Supervisor guidance'));
 

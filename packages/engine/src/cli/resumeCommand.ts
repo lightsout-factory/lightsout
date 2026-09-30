@@ -152,7 +152,7 @@ export const resumeCommand = async ({ flags, cwd }: CommandContext): Promise<voi
 	const { resumable, config, driver } = await prepareResumedRun({ cwd, manifest, loaded, willShip: shipIntent.willShip });
 
 	console.log(`lightsout: resuming run ${manifest.runId} (was: ${manifest.status}, plan: ${manifest.plan})`);
-	printRunHeader({ config, driver, cwd, configPath: resolveConfigPath({ cwd }) });
+	await printRunHeader({ config, driver, cwd, configPath: resolveConfigPath({ cwd }) });
 
 	// A direct run records no command run: its plan path is a frozen ticket body.
 	const outcome = await runWorkOrderPlanLifecycle({

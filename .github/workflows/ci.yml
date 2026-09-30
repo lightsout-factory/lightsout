@@ -77,7 +77,7 @@ jobs:
 
       # scripts/checkShipped.mjs is the only definition of what "shippable"
       # means: the engine bundle matches packages/engine/src/, the standards copy
-      # matches packages/standards-typescript/, and plugin.json
+      # matches packages/lightsout-standards/, and plugin.json
       # carries a new version when either moved.
       # The pre-push hook runs this same file, so a local pass and a CI pass
       # cannot mean different things.

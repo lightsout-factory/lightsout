@@ -12,8 +12,8 @@ const acceptedByIsTestFile = [
 	{ path: 'src/common/utils/packageOf.unit.test.ts' },
 	{ path: 'src/app/App.spec.tsx' },
 	// inside a standards pack, a real test still says so in its filename
-	{ path: 'standards/common/utils/scanTestLines.unit.test.ts', standardsPacks: ['standards'] },
-	{ path: 'standards/common/__mocks__/fs.ts', standardsPacks: ['standards'] },
+	{ path: 'standards/common/utils/scanTestLines.unit.test.ts', standardsLibraries: ['standards'] },
+	{ path: 'standards/common/__mocks__/fs.ts', standardsLibraries: ['standards'] },
 ];
 
 test('isTestSideFile: snapshots and jest config files join the test files, and ordinary source stays out', () => {
@@ -51,8 +51,8 @@ test('isTestSideFile: every path isTestFile accepts is test-side, standards pack
 	const testSideAnswers = acceptedByIsTestFile.map((params) => isTestSideFile(params));
 	// a pack's own rule implementation is source, not test code — the packs argument has to reach isTestFile
 	const packRuleSource = {
-		testFile: isTestFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts', standardsPacks: ['standards'] }),
-		testSide: isTestSideFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts', standardsPacks: ['standards'] }),
+		testFile: isTestFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts', standardsLibraries: ['standards'] }),
+		testSide: isTestSideFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts', standardsLibraries: ['standards'] }),
 		withoutPacks: isTestSideFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts' }),
 	};
 

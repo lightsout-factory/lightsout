@@ -1,0 +1,12 @@
+---
+summary: "a file over the standards line cap"
+checked: true
+severity: advisory
+options:
+  file: 250
+  tsxFile: 300
+---
+
+Files stay under ~250 lines (~300 for `.tsx` — JSX and props interfaces earn the slack) — approaching the cap signals a split or graduation. React components and hooks have their own thresholds (see the react patterns doc when it applies).
+
+The cap exempts an index file in any source dialect — `index.tsx` included — because a package's entry is its public API, which cannot take the remedy a size finding asks for.

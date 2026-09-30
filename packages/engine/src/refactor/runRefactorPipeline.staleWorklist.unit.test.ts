@@ -74,8 +74,8 @@ describe('runRefactorPipeline against a work-list that went stale mid-run', () =
 		// which would send it looking for a finding that no longer exists. (It can
 		// still turn up as fresh advice about the file alpha's agent just wrote —
 		// that is a live finding, not a stale one.)
-		expect(fixPrompts[1]).toContain('[multi-export] beta/two.ts');
-		expect(fixPrompts[1]).not.toContain('[multi-export] beta/one.ts');
-		expect(result.after['multi-export'] ?? 0).toBe(0);
+		expect(fixPrompts[1]).toContain('[lightsout/multi-export] beta/two.ts');
+		expect(fixPrompts[1]).not.toContain('[lightsout/multi-export] beta/one.ts');
+		expect(result.after['lightsout/multi-export'] ?? 0).toBe(0);
 	});
 });

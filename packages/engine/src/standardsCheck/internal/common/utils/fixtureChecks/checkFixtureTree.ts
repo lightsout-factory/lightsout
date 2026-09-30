@@ -5,7 +5,7 @@ import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
 import { buildCheckInput } from '#src/standardsCheck/internal/common/checkInputs/buildCheckInput.ts';
 import { runRuleCheck } from '#src/standardsCheck/internal/common/utils/runRuleCheck.ts';
-import type { LoadedStandardsRule } from '#src/standardsPacks/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 interface Params {
 	/** Absolute path of the tree to check, run against as if it were a whole repo. */
@@ -36,9 +36,9 @@ export const checkFixtureTree = async ({ cwd, rule, inputKind, run, label, compi
 		files,
 		referenceFiles: files,
 		// A fixture tree is a miniature repo of its own; it declares no pack.
-		standardsPacks: [],
+		standardsLibraries: [],
 		packagesDir: defaultPackagesDir,
-		settings: rule.defaultSettings,
+		options: rule.defaultOptions,
 		cache: new Map<string, string>(),
 		compiler,
 	});
@@ -50,5 +50,5 @@ export const checkFixtureTree = async ({ cwd, rule, inputKind, run, label, compi
 		throw new Error(`no tsconfig.json in ${label}, so none of its ${files.length} file(s) could be typed — a type-checker rule's fixtures need one`);
 	}
 
-	return runRuleCheck({ rule: rule.id, run, input, settings: rule.defaultSettings });
+	return runRuleCheck({ rule, run, input, options: rule.defaultOptions });
 };

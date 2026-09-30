@@ -1,6 +1,9 @@
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdtemp, readdir, readFile, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
 import { join, sep } from 'node:path';
+import { promisify } from 'node:util';
 import { expect, test } from '@jest/globals';
 
 // Two properties the shipped plugin rests on that nothing else would notice
@@ -8,6 +11,22 @@ import { expect, test } from '@jest/globals';
 // here rather than left to be discovered by a user.
 
 const repoRoot = join(__dirname, '..', '..', '..');
+const run = promisify(execFile);
+
+/**
+ * The standards package as the build writes it from the authored source today.
+ * A feature branch never commits build output (the pre-ship step does), so the
+ * committed plugin/standards/ can lag the source it will be rebuilt from; the
+ * properties below are properties of what ships, so they are read from a fresh
+ * build rather than from that committed copy.
+ */
+const buildShippedStandards = async (): Promise<string> => {
+	const out = join(await mkdtemp(join(tmpdir(), 'lightsout-shipped-standards-')), 'standards');
+
+	await run('node', [join(repoRoot, 'scripts', 'copyStandards.mjs'), '--out', out], { cwd: repoRoot });
+
+	return out;
+};
 
 /** Every file under a directory, as slash-separated relative paths. */
 const filesUnder = async ({ dir }: { dir: string }): Promise<string[]> => {
@@ -16,6 +35,14 @@ const filesUnder = async ({ dir }: { dir: string }): Promise<string[]> => {
 
 	return files.filter((entry): entry is string => entry !== undefined);
 };
+
+/** Every specifier a source text imports a value through; `import type` lines are skipped. */
+const valueImportSpecifiers = ({ text }: { text: string }): string[] =>
+	[...text.matchAll(/^import(?!\s+type\b)[^;]*?\bfrom\s+'([^']+)'/gm)].map((match) => match[1] ?? '');
+
+/** Whether Node resolves a specifier inside the shipped copy: relative, or a key of its package.json imports map. */
+const resolvesInShippedCopy = ({ specifier, importKeys }: { specifier: string; importKeys: string[] }): boolean =>
+	specifier.startsWith('.') || importKeys.some((key) => (key.endsWith('/*') ? specifier.startsWith(key.slice(0, -1)) : specifier === key));
 
 test('the committed bundle can resolve a typescript from where it will run', () => {
 	// The fixture half of `standards-validate` asks for a compiler by walking up
@@ -44,17 +71,45 @@ test('no shipped check imports a value through a specifier Node could not resolv
 	// them that way. This asserts the property directly, because that rule is
 	// about style everywhere else in the repo and nothing records that here it is
 	// load-bearing.
-	const shipped = join(repoRoot, 'plugin', 'standards');
+	//
+	// The shipped copy resolves its own `#common/*` alias through its
+	// package.json, so a specifier that manifest's imports map names resolves too.
+	const shipped = await buildShippedStandards();
+	const manifest = JSON.parse(await readFile(join(shipped, 'package.json'), 'utf8')) as { imports?: Record<string, string> };
+	const importKeys = Object.keys(manifest.imports ?? {});
 	const offenders: string[] = [];
 
 	for (const path of (await filesUnder({ dir: shipped })).filter((entry) => entry.endsWith('.ts'))) {
-		const text = await readFile(join(shipped, path), 'utf8');
-		const valueImport = /^import(?!\s+type\b)[^\n]*from\s+'(?!\.)/m;
+		const specifiers = valueImportSpecifiers({ text: await readFile(join(shipped, path), 'utf8') });
 
-		if (valueImport.test(text)) {
+		if (specifiers.some((specifier) => !resolvesInShippedCopy({ specifier, importKeys }))) {
 			offenders.push(path);
 		}
 	}
 
 	expect(offenders).toStrictEqual([]);
+});
+
+test('a shipped check may import common/ through the #common alias its package.json maps', async () => {
+	// The shipped copy resolves its own `#common/*` alias through
+	// plugin/standards/package.json, so a check importing common/ that way loads
+	// with no node_modules. A bare package name still has nothing to resolve it.
+	const shipped = await buildShippedStandards();
+	const manifest = JSON.parse(await readFile(join(shipped, 'package.json'), 'utf8')) as { imports?: Record<string, string> };
+	const importKeys = Object.keys(manifest.imports ?? {});
+	const specifiers: string[] = [];
+
+	for (const path of (await filesUnder({ dir: shipped })).filter((entry) => entry.endsWith('.ts'))) {
+		specifiers.push(...valueImportSpecifiers({ text: await readFile(join(shipped, path), 'utf8') }));
+	}
+
+	const bareSpecifiers = valueImportSpecifiers({ text: "import ts from 'typescript';\n" });
+	const scan = {
+		mapsCommon: importKeys.includes('#common/*'),
+		importsThroughCommon: specifiers.some((specifier) => specifier.startsWith('#common/')),
+		unresolved: specifiers.filter((specifier) => !resolvesInShippedCopy({ specifier, importKeys })),
+		bareNameReported: bareSpecifiers.filter((specifier) => !resolvesInShippedCopy({ specifier, importKeys })),
+	};
+
+	expect(scan).toStrictEqual({ mapsCommon: true, importsThroughCommon: true, unresolved: [], bareNameReported: ['typescript'] });
 });

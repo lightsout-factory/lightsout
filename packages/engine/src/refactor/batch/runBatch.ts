@@ -1,3 +1,4 @@
+import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
@@ -10,7 +11,7 @@ import { runBatchPass } from '#src/refactor/batch/internal/runBatchPass.ts';
 import { readStandingWork } from '#src/refactor/batch/readStandingWork.ts';
 import { BatchStopKind } from '#src/refactor/internal/common/constants/BatchStopKind.ts';
 import type { BatchStop } from '#src/refactor/internal/common/types/BatchStop.ts';
-import type { LoadedStandardsPack } from '#src/standardsPacks/common/types/LoadedStandardsPack.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 
 interface Params {
 	cwd: string;
@@ -18,8 +19,7 @@ interface Params {
 	driver: Driver;
 	config: LightsoutConfig;
 	batch: RefactorBatch;
-	packs: LoadedStandardsPack[];
-	channels: string[];
+	groups: StandardsGroup[];
 	/** Check scope of the run's worklist, threaded into the per-batch re-check. */
 	checkPath?: string;
 	/** Must match the worklist's mode. */
@@ -41,8 +41,7 @@ export const runBatch = async ({
 	driver,
 	config,
 	batch,
-	packs,
-	channels,
+	groups,
 	checkPath,
 	checkAll,
 	agentReview,
@@ -53,14 +52,15 @@ export const runBatch = async ({
 	onProgress,
 	recordUsage,
 }: Params): Promise<BatchStop> => {
+	const packagesDir = config['packages-dir'] ?? defaultPackagesDir;
 	const tools = createBatchTools({
 		cwd,
 		runId,
 		driver,
 		config,
 		batch,
-		packs,
-		channels,
+		groups,
+		packagesDir,
 		agentReview,
 		checkPath,
 		checkAll,
@@ -86,9 +86,9 @@ export const runBatch = async ({
 		runId,
 		driver,
 		batch,
-		packs,
-		channels,
+		groups,
 		findings: preCheck.findings,
+		packagesDir,
 		agentReview,
 		timeoutMs: agentTimeoutMs,
 		onProgress,

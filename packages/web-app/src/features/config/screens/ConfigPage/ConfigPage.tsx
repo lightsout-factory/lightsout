@@ -1,9 +1,9 @@
 import type { ConfigView } from '@lightsout/engine';
+import { StandardsPackSource } from '@lightsout/engine/contracts';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { FileCog } from 'lucide-react';
 import { Badge } from '#src/appUI/badges/Badge.tsx';
-import { MetadataTag } from '#src/appUI/badges/MetadataTag.tsx';
 import { PageHeader } from '#src/appUI/headers/PageHeader.tsx';
 import { SettingsCard } from '#src/appUI/panels/SettingsCard.tsx';
 import { BadgeVariant } from '#src/common/constants/BadgeVariant.ts';
@@ -11,22 +11,18 @@ import { configQueryOptions } from '#src/features/config/queries/configQueryOpti
 import { ConfigFieldRow } from '#src/features/config/screens/ConfigPage/internal/components/ConfigFieldRow.tsx';
 import { RuleLedger } from '#src/features/config/screens/ConfigPage/internal/components/RuleLedger.tsx';
 
-const PackRow = ({ pack }: { pack: ConfigView['packs'][number] }) => (
+const sourceBadges: Record<StandardsPackSource, { label: string; variant: BadgeVariant }> = {
+	[StandardsPackSource.Named]: { label: 'named', variant: BadgeVariant.Brand },
+	[StandardsPackSource.Detected]: { label: 'detected', variant: BadgeVariant.Neutral },
+};
+
+const PackRow = ({ group }: { group: ConfigView['standardsGroups'][number] }) => (
 	<div className="flex flex-wrap items-center gap-2 border-border border-b py-3 first:pt-0 last:border-0 last:pb-0">
 		<Link to="/standards-packs" className="font-medium text-sm hover:underline hover:underline-offset-2">
-			{pack.name}
+			{group.pack}
 		</Link>
-		{pack.isDefault ? <Badge variant={BadgeVariant.Neutral}>default</Badge> : null}
-		<MetadataTag className="min-w-0 truncate" title={pack.rootPath}>
-			{pack.rootPath}
-		</MetadataTag>
-		<span className="flex flex-wrap gap-1">
-			{pack.channels.map((channel) => (
-				<Badge key={channel} variant={BadgeVariant.Neutral}>
-					{channel}
-				</Badge>
-			))}
-		</span>
+		<Badge variant={sourceBadges[group.source].variant}>{sourceBadges[group.source].label}</Badge>
+		<p className="w-full text-muted-foreground text-xs">Applies to {group.appliesTo}.</p>
 	</div>
 );
 
@@ -49,13 +45,15 @@ export const ConfigPage = () => {
 					</div>
 				</SettingsCard>
 			))}
-			<SettingsCard title="Standards packs loaded" description="What a run works against here, and where each pack was read from.">
-				{view.packs.length === 0 ? (
-					<p className="text-muted-foreground text-sm">No pack loads here — `standards-packs` is set to false.</p>
+			<SettingsCard title="Standards pack in use" description="The packs a run works against here, how each was chosen and which packages it covers.">
+				{view.standardsGroups.length === 0 ? (
+					<p className="text-muted-foreground text-sm">
+						No standards load here — `standards-pack` is set to false and `package-standards-packs` names no package.
+					</p>
 				) : (
 					<div className="flex flex-col">
-						{view.packs.map((pack) => (
-							<PackRow key={pack.name} pack={pack} />
+						{view.standardsGroups.map((group) => (
+							<PackRow key={group.packages.join(',')} group={group} />
 						))}
 					</div>
 				)}

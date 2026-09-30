@@ -29,7 +29,7 @@ describe('setupImportGraphInput', () => {
 	test('a check reading the standards packs sees an empty list until a test names one', () => {
 		const input = setupImportGraphInput({ edges: [{ from: 'src/a.ts', to: 'src/b.ts' }] });
 
-		expect(input).toMatchObject({ standardsPacks: [] });
+		expect(input).toMatchObject({ standardsLibraries: [] });
 	});
 
 	test('a check reading the declarations sees an empty map until a test names one', () => {
@@ -43,11 +43,11 @@ describe('setupImportGraphInput', () => {
 	});
 
 	test('any field can be overridden outright', () => {
-		const input = setupImportGraphInput({ cwd: '/elsewhere', standardsPacks: ['vendor/acme'], referenceFiles: ['docs/api.md'] });
+		const input = setupImportGraphInput({ cwd: '/elsewhere', standardsLibraries: ['vendor/acme'], referenceFiles: ['docs/api.md'] });
 
 		expect(input).toMatchObject({
 			cwd: '/elsewhere',
-			standardsPacks: ['vendor/acme'],
+			standardsLibraries: ['vendor/acme'],
 			referenceFiles: ['docs/api.md'],
 		});
 	});

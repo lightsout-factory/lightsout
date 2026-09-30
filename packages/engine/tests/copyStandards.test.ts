@@ -1,15 +1,21 @@
 import { execFile } from 'node:child_process';
 import { mkdtemp, readdir, readFile, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, relative, sep } from 'node:path';
+import { join, sep } from 'node:path';
 import { promisify } from 'node:util';
 import { expect, test } from '@jest/globals';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { runCli } from '#tests/helpers/runCli.ts';
 
 // The build step that produces the shipped standards package, run as the real
 // subprocess `pnpm bundle` runs. What it leaves out is a contract: the engine
 // loads a package without fixtures or unit tests, and the pre-push hook and CI
 // both rebuild into a throwaway directory to prove the committed copy matches.
+//
+// Whether the committed copy is current is `scripts/checkShipped.mjs`'s
+// question, not this file's: the pre-push hook, CI and the pre-ship step all
+// ask it. A feature branch never commits build output, so asking it here
+// would fail every branch that changes the authored standards.
 
 const repoRoot = join(__dirname, '..', '..', '..');
 const run = promisify(execFile);
@@ -51,7 +57,7 @@ test('copyStandards --out builds somewhere else and leaves the committed package
 test('the shipped package carries every rule but none of the evidence that only proves it', async () => {
 	const out = await buildInto();
 	const shipped = await filesUnder({ dir: out });
-	const authored = await filesUnder({ dir: join(repoRoot, 'packages', 'standards-typescript') });
+	const authored = await filesUnder({ dir: join(repoRoot, 'packages', 'lightsout-standards') });
 
 	// fixtures and co-located tests are what a package is validated BY, not what
 	// it runs on, got: ${JSON.stringify(shipped.filter((path) => path.includes('fixtures/')))}
@@ -83,19 +89,36 @@ test('the shipped package carries every rule but none of the evidence that only 
 	);
 
 	expect(shipped).toStrictEqual([...carried, 'package.json'].sort());
-	expect(JSON.parse(await readFile(join(out, 'package.json'), 'utf8'))).toStrictEqual({ type: 'module' });
+});
+
+test("the shipped package.json keeps the library's imports map beside its module type", async () => {
+	const out = await buildInto();
+
+	const text = await readFile(join(out, 'package.json'), 'utf8');
+
+	// the checks reach common/ through #common/*, and in a marketplace install
+	// this manifest is the only one above them; the authored name, scripts and
+	// workspace dependencies still stay out
+	expect(JSON.parse(text)).toStrictEqual({ type: 'module', imports: { '#common/*': './common/*' } });
+	// written like the other manifest the build writes: tab-indented, ending in a newline
+	expect(text).toBe('{\n\t"type": "module",\n\t"imports": {\n\t\t"#common/*": "./common/*"\n\t}\n}\n');
+});
+
+test('the CLI loads every check of the built copy, resolving #common through the shipped package.json', async () => {
+	const out = await buildInto();
+
+	const { stdout, stderr, code } = await runCli({ args: ['standards-validate', '--cwd', out, '--library', out] });
+
+	// reading the library imports every check under real Node before the built
+	// refusal is reached, so a check that cannot resolve #common/* fails the load
+	// and lands on stderr instead
+	expect({ stderr, code }).toStrictEqual({ stderr: '', code: 1 });
+	expect(stdout).toMatch(/is a built pack/);
+	expect(stdout).not.toMatch(/Cannot find (module|package)|ERR_MODULE_NOT_FOUND|ERR_PACKAGE_IMPORT_NOT_DEFINED|check\.ts/);
 });
 
 test('copyStandards refuses an --out with no directory after it rather than building over the shipped package', async () => {
 	const failure = await getRejectionError({ promise: run('node', [join(repoRoot, 'scripts', 'copyStandards.mjs'), '--out'], { cwd: repoRoot }) });
 
 	expect((failure as Error & { stderr: string }).stderr).toMatch(/--out needs a directory/);
-});
-
-test('the committed package matches what the script builds today', async () => {
-	const out = await buildInto();
-
-	// the same comparison CI makes, so a stale plugin/standards fails here first
-	expect(await filesUnder({ dir: out })).toStrictEqual(await filesUnder({ dir: join(repoRoot, 'plugin', 'standards') }));
-	expect(relative(repoRoot, out).startsWith('..')).toBe(true);
 });

@@ -94,7 +94,7 @@ export const readSprawlTrees = ({ repoRoot, commits }) => {
 				files.set(path, lineCounts.get(oid));
 			}
 
-			if (!isTestFile({ path, standardsPacks: packRoots })) {
+			if (!isTestFile({ path, standardsLibraries: packRoots })) {
 				const directory = path.slice(0, path.lastIndexOf('/'));
 
 				folders.set(directory, (folders.get(directory) ?? 0) + 1);
