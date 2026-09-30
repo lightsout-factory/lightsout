@@ -157,17 +157,17 @@ test('clean-slate: a red baseline gate writes no standards baseline', async () =
 
 test('clean-slate: a standards pack that cannot load leaves no baseline and does not fail the run', async () => {
 	// The capture reads the repo's config off disk itself, so a config file
-	// naming a pack root that is not there is what makes it throw. The run is
+	// naming a pack no library holds is what makes it throw. The run is
 	// handed standards switched off instead, because every earlier step
-	// resolves the packs in the config it was given and would stop the run
+	// resolves the pack in the config it was given and would stop the run
 	// before clean-slate ever ran.
-	const { dir, driver, config } = await setupCleanSlateRun({ scripts: {}, config: { 'standards-packs': ['standards/ghost'] } });
+	const { dir, driver, config } = await setupCleanSlateRun({ scripts: {}, config: { 'standards-pack': 'lightsout/ghost' } });
 	const progress: string[] = [];
 
 	const result = await runImplementPipeline({
 		cwd: dir,
 		driver,
-		config: { ...config, 'standards-packs': false },
+		config: { ...config, 'standards-pack': false },
 		planPath: 'plan.md',
 		skipRefactor: true,
 		onProgress: (message) => progress.push(message),
@@ -179,11 +179,11 @@ test('clean-slate: a standards pack that cannot load leaves no baseline and does
 	expect(existsSync(baselinePathOf({ dir, runId: result.manifest.runId }))).toBe(false);
 	// and the reader is told what failed, not left to wonder why cleanup has no
 	// comparison point
-	expect(progress.join('\n')).toMatch(/standards pack root file not found/);
+	expect(progress.join('\n')).toMatch(/pack lightsout\/ghost: names no pack/);
 });
 
 test('clean-slate: standards explicitly off still writes a baseline with no findings', async () => {
-	const { dir, driver, config } = await setupCleanSlateRun({ scripts: {}, config: { 'standards-packs': false } });
+	const { dir, driver, config } = await setupCleanSlateRun({ scripts: {}, config: { 'standards-pack': false } });
 
 	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
 

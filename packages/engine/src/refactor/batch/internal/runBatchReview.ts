@@ -2,8 +2,8 @@ import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { appendReviewFindings } from '#src/runState/appendReviewFindings.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 interface Params {
 	cwd: string;
@@ -11,9 +11,7 @@ interface Params {
 	runId: string;
 	driver: Driver;
 	batch: RefactorBatch;
-	packs: LoadedStandardsLibrary[];
-	/** A document out of play is not reviewed. */
-	channels: string[];
+	groups: StandardsGroup[];
 	/** The batch's own files before it works, the ones it wrote after. */
 	files: string[];
 	/** false skips the agent entirely — code-checks-only mode. */
@@ -27,18 +25,7 @@ interface Params {
  * rediscover a judgment finding, so a run that parks or escalates first would
  * otherwise lose the only account of it.
  */
-export const runBatchReview = async ({
-	cwd,
-	runId,
-	driver,
-	batch,
-	packs,
-	channels,
-	files,
-	agentReview,
-	timeoutMs,
-	onProgress,
-}: Params): Promise<StandardsFinding[]> => {
+export const runBatchReview = async ({ cwd, runId, driver, batch, groups, files, agentReview, timeoutMs, onProgress }: Params): Promise<StandardsFinding[]> => {
 	if (!agentReview) {
 		return [];
 	}
@@ -46,8 +33,7 @@ export const runBatchReview = async ({
 	const review = await runStandardsReview({
 		cwd,
 		driver,
-		packs,
-		channels,
+		groups,
 		files,
 		timeoutMs,
 		onProgress: (message) => onProgress(`${batch.id}: ${message}`),

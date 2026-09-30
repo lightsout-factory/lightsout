@@ -1,10 +1,12 @@
 import { describe, expect, test } from '@jest/globals';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import type { DriverResult } from '#src/drivers/common/types/DriverResult.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 // What happens to a reported finding the engine cannot keep: which ones are
@@ -26,13 +28,14 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	...overrides,
 });
 
-const packOf = ({ rules }: { rules: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
-	name: 'acme',
-	formatVersion: 1,
-	rootPath: '/packages/acme',
-	documents: [],
-	packs: [],
-	rules,
+/** One group whose pack holds `rules`, each at its rule.md default. */
+const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup => ({
+	packages: [''],
+	pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
+	source: StandardsPackSource.Named,
+	states: new Map<string, ResolvedRuleState>(
+		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
+	),
 });
 
 /** A stub harness answering every invocation with `text`, recording the prompts and the full invocations it was given. */
@@ -69,8 +72,7 @@ describe('runStandardsReview dropped findings', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts', 'src/b.ts'],
 		});
 
@@ -84,8 +86,7 @@ describe('runStandardsReview dropped findings', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts'],
 		});
 
@@ -108,8 +109,7 @@ describe('runStandardsReview dropped findings', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts', 'src/b.ts', 'src/c.ts'],
 		});
 
@@ -132,8 +132,7 @@ describe('runStandardsReview dropped findings', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts', 'src/b.ts'],
 		});
 

@@ -118,6 +118,17 @@ describe('buildConfigSections', () => {
 		]);
 	});
 
+	test('buildConfigSections: the Standards section leads with standards-pack and drops the deleted keys', () => {
+		const standards = buildSections({ config: { 'standards-pack': 'lightsout/node' } }).find((section) => section.title === 'Standards');
+
+		const keys = standards?.fields.map((field) => field.key);
+
+		expect({ keys, first: standards?.fields[0] }).toStrictEqual({
+			keys: ['standards-pack', 'standards-libraries', 'standards-rule-settings'],
+			first: { key: 'standards-pack', value: 'lightsout/node', fromConfig: true, description: configKeyDescriptions['standards-pack'] },
+		});
+	});
+
 	test('renders the Implement section as an unset block when the config omits it', () => {
 		const implement = buildSections().find((section) => section.title === 'Implement');
 

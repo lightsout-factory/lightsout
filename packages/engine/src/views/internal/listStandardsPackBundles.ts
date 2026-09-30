@@ -1,9 +1,9 @@
-import { isAbsolute, resolve } from 'node:path';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { StandardsPackBundle } from '#src/contracts/views/StandardsPackBundle.ts';
 import { resolveAuthoredStandardsLibrary } from '#src/standardsLibraries/resolveAuthoredStandardsLibrary.ts';
 import { resolveDefaultStandardsLibrary } from '#src/standardsLibraries/resolveDefaultStandardsLibrary.ts';
+import { resolveStandardsLibraryPath } from '#src/standardsLibraries/resolveStandardsLibraryPath.ts';
 import { standardsPackBundleCache } from '#src/views/internal/common/constants/standardsPackBundleCache.ts';
 
 interface PackRoot {
@@ -11,23 +11,39 @@ interface PackRoot {
 	isDefault: boolean;
 }
 
+/** One broken entry is skipped with a server-log line, so it never hides the built-in library or the other entries. */
+const resolveRegisteredRoots = ({ cwd, libraries }: { cwd: string; libraries: Record<string, string> }) => {
+	const roots: PackRoot[] = [];
+
+	for (const [name, value] of Object.entries(libraries)) {
+		try {
+			roots.push({ packPath: resolveStandardsLibraryPath({ cwd, name, value }), isDefault: false });
+		} catch (error) {
+			console.warn(`standards library ${name} could not be listed for ${cwd}: ${messageOf({ error })}`);
+		}
+	}
+
+	return roots;
+};
+
 /**
  * Never a throw: a page has to render on a machine with no config, no repo and
- * no authored pack. The run-time `resolveStandardsPacks` rightly throws, since a
- * run that declared standards and did not get them must not proceed.
+ * no authored library. The run-time `resolveStandardsGroups` rightly throws,
+ * since a run that selected standards and did not get them must not proceed.
  */
 const resolvePackRoots = async ({ cwd }: { cwd: string }) => {
 	let roots: PackRoot[] = [];
 
 	try {
-		const configured = (await readOptionalConfig({ cwd }))?.['standards-packs'];
+		const config = await readOptionalConfig({ cwd });
 
-		if (configured === undefined) {
+		if (config?.['standards-pack'] !== false) {
 			// The authored folder when one is beside `cwd`, else the copy the engine
 			// ships — which carries no fixtures, and whose `built` says so.
-			roots = [{ packPath: resolveAuthoredStandardsLibrary({ cwd }) ?? resolveDefaultStandardsLibrary(), isDefault: true }];
-		} else if (configured !== false) {
-			roots = configured.map((entry) => ({ packPath: isAbsolute(entry) ? entry : resolve(cwd, entry), isDefault: false }));
+			roots = [
+				{ packPath: resolveAuthoredStandardsLibrary({ cwd }) ?? resolveDefaultStandardsLibrary(), isDefault: true },
+				...resolveRegisteredRoots({ cwd, libraries: config?.['standards-libraries'] ?? {} }),
+			];
 		}
 	} catch (error) {
 		console.warn(`standards packs could not be listed for ${cwd}: ${messageOf({ error })}`);

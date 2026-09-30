@@ -114,15 +114,18 @@ export const LightsoutConfig = z
 		 */
 		'gate-overrides': GateOverrides.optional(),
 		/**
-		 * Standards packs a run works against. Unspecified = the pack the plugin
-		 * ships (announced in the run header); `false` = explicitly none; an array =
-		 * exactly these, where each entry is the root folder of a standards pack —
-		 * the folder holding `lightsout-standards.json` — repo-relative or absolute.
-		 * One key, not two: a pack carries both the code and the test document
-		 * trees, so a second key could only disagree with this one about which pack
-		 * is loaded. A root that cannot be loaded is a hard error.
+		 * The one standards pack for the repo root and every package, as
+		 * `<library>/<pack>`. Unset = detected from the root `package.json`'s
+		 * dependencies; `false` = no standards.
 		 */
-		'standards-packs': z.union([z.array(z.string()), z.literal(false)]).optional(),
+		'standards-pack': z
+			.union([
+				z.string().refine((value) => /^[^/]+\/[^/]+$/.test(value), {
+					message: 'a standards pack is named <library>/<pack> — exactly one slash, the library before it and the pack after it',
+				}),
+				z.literal(false),
+			])
+			.optional(),
 		/**
 		 * Standards libraries registered beside the built-in one. Each key is a
 		 * library name; each value is a repo-relative folder (starting `./` or
@@ -132,14 +135,7 @@ export const LightsoutConfig = z
 		 * libraries load, by `resolveStandardsLibraries`.
 		 */
 		'standards-libraries': z.record(z.string(), z.string()).optional(),
-		/**
-		 * Framework channels of the loaded standards packs (e.g. 'react',
-		 * 'tanstack'). Unspecified = detected per run from the scoped packages'
-		 * package.json dependencies; an array REPLACES detection (empty = base
-		 * docs only).
-		 */
-		'standards-channels': z.array(z.string()).optional(),
-		/** Per-rule severity/options overrides. See `StandardsRuleSettings`. */
+		/** Per-rule severity/options settings, the final layer over the selected pack. See `StandardsRuleSettings`. */
 		'standards-rule-settings': StandardsRuleSettings.optional(),
 		/** Opt-in ship settings — branch ticket pattern, pull request body template, merge method. See `ConfigShip`. */
 		ship: ConfigShip.optional(),

@@ -14,12 +14,12 @@ interface Params {
 	configPath: string;
 }
 
-export const printRunStart = ({ target, overviewPath, packages, startPhase, config, driver, cwd, configPath }: Params): void => {
+export const printRunStart = async ({ target, overviewPath, packages, startPhase, config, driver, cwd, configPath }: Params): Promise<void> => {
 	console.log(`lightsout: starting run`);
 	console.log(
 		'overviewPath' in target
 			? `  overview: ${target.overviewPath}${startPhase === undefined ? '' : `\n  start phase: ${startPhase}`}`
 			: `  plan: ${target.planPath}${overviewPath ? `\n  overview: ${overviewPath}` : ''}${packages ? `\n  packages flag: ${packages.join(', ')}` : ''}`,
 	);
-	printRunHeader({ config, driver, cwd, configPath });
+	await printRunHeader({ config, driver, cwd, configPath });
 };

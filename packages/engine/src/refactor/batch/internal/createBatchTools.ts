@@ -11,7 +11,7 @@ import { createSiteChecker } from '#src/refactor/batch/internal/createSiteChecke
 import { invokeBatchAgent } from '#src/refactor/batch/internal/invokeBatchAgent.ts';
 import { settleBatchGates } from '#src/refactor/batch/internal/settleBatchGates.ts';
 import { reviewBatchOutput } from '#src/refactor/batch/reviewBatchOutput.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 
 interface Params {
 	cwd: string;
@@ -19,8 +19,7 @@ interface Params {
 	driver: Driver;
 	config: LightsoutConfig;
 	batch: RefactorBatch;
-	packs: LoadedStandardsLibrary[];
-	channels: string[];
+	groups: StandardsGroup[];
 	/** false skips the review of what the batch wrote — code-checks-only mode. */
 	agentReview: boolean;
 	/** Check scope of the run's worklist, threaded into the per-batch re-check. */
@@ -41,8 +40,7 @@ export const createBatchTools = ({
 	driver,
 	config,
 	batch,
-	packs,
-	channels,
+	groups,
 	agentReview,
 	checkPath,
 	checkAll,
@@ -82,8 +80,7 @@ export const createBatchTools = ({
 			runId,
 			driver,
 			batch,
-			packs,
-			channels,
+			groups,
 			agentReview,
 			baseline,
 			changedFiles: await changedFiles(),

@@ -16,7 +16,10 @@ const writeTree = async ({ dir, files }: { dir: string; files: Record<string, st
 	}
 };
 
-/** A standards pack of somebody's own: one checked rule and one judgment-only rule. */
+/** The pack file that selects the house topic whole, which every library below ships as its `house` pack. */
+const housePackFile = JSON.stringify({ description: 'what this shop agrees on', include: { topics: ['acme/code/house'] } });
+
+/** A standards library of somebody's own, whose house pack holds one checked rule and one judgment-only rule. */
 const writeStandardsPack = async () => {
 	const packPath = await mkdtemp(join(tmpdir(), 'lightsout-view-standards-'));
 
@@ -24,6 +27,7 @@ const writeStandardsPack = async () => {
 		dir: packPath,
 		files: {
 			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n',
+			'packs/house.json': housePackFile,
 			'code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 			'code/house/05-house-loose-file/rule.md':
 				'---\nsummary: a source file outside a module\nchecked: true\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
@@ -39,8 +43,16 @@ const writeStandardsPack = async () => {
 	return packPath;
 };
 
-/** A repo on that pack, optionally overriding one rule's state in its own config. */
-const seedStandardsRepo = async ({ overrides, packs }: { overrides?: Record<string, unknown>; packs?: string[] | false } = {}) => {
+/** A repo that registers that library as acme and selects its house pack, optionally overriding one rule's state in its own config. */
+const seedStandardsRepo = async ({
+	overrides,
+	library,
+	pack = 'acme/house',
+}: {
+	overrides?: Record<string, unknown>;
+	library?: string;
+	pack?: string | false;
+} = {}) => {
 	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-view-repo-'));
 
 	await writeTree({
@@ -49,7 +61,8 @@ const seedStandardsRepo = async ({ overrides, packs }: { overrides?: Record<stri
 			'src/loose.ts': 'export const loose = 1;\n',
 			'lightsout.config.json': JSON.stringify({
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
-				'standards-packs': packs ?? [await writeStandardsPack()],
+				'standards-libraries': { acme: library ?? (await writeStandardsPack()) },
+				'standards-pack': pack,
 				...(overrides ? { 'standards-rule-settings': overrides } : {}),
 			}),
 		},
@@ -194,7 +207,7 @@ test('a rule the config overrode says so, and carries the options this repo runs
 	expect(view.rules[1]?.fromConfig).toBe(false);
 });
 
-/** A pack whose two judgment-only rules both declare default options in their rule.md headers. */
+/** A library whose house pack holds two judgment-only rules that both declare default options in their rule.md headers. */
 const writeOptionsPack = async () => {
 	const packPath = await mkdtemp(join(tmpdir(), 'lightsout-view-options-'));
 
@@ -202,6 +215,7 @@ const writeOptionsPack = async () => {
 		dir: packPath,
 		files: {
 			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 1 }\n',
+			'packs/house.json': housePackFile,
 			'code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 			'code/house/05-house-file-size/rule.md':
 				'---\nsummary: a file over the house line cap\nchecked: false\nseverity: advisory\noptions:\n  file: 250\n  tsxFile: 300\n---\n\nFiles stay short.\n',
@@ -214,7 +228,7 @@ const writeOptionsPack = async () => {
 };
 
 test('each rule row carries its resolved options', async () => {
-	const cwd = await seedStandardsRepo({ packs: [await writeOptionsPack()], overrides: { 'house-file-size': { options: { tsxFile: 400 } } } });
+	const cwd = await seedStandardsRepo({ library: await writeOptionsPack(), overrides: { 'house-file-size': { options: { tsxFile: 400 } } } });
 
 	const view = await getStandardsView({ cwd });
 
@@ -361,7 +375,7 @@ test('every history count and reason lands in its own column, on the rule it bel
 });
 
 test('a repo that declares no standards packs still reports the findings its last check left', async () => {
-	const cwd = await seedStandardsRepo({ packs: false });
+	const cwd = await seedStandardsRepo({ pack: false });
 
 	await writeStandardsSnapshot({
 		cwd,
@@ -381,10 +395,42 @@ test('a repo that declares no standards packs still reports the findings its las
 	expect(view.findings.map((entry) => entry.siteKey)).toStrictEqual(['acme/house-loose-file:src/loose.ts', 'name:src/loose.ts']);
 });
 
-test('a declared standards pack that cannot be loaded fails the view rather than describing half a repo', async () => {
-	const cwd = await seedStandardsRepo({ packs: ['./standards-that-were-never-installed'] });
+/** A repo whose root depends on React but whose config selects the node pack by name. */
+const seedSelectedPackRepo = async () => {
+	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-view-selected-pack-'));
 
-	await expect(getStandardsView({ cwd })).rejects.toThrow(/standards pack root file not found/);
+	await writeTree({
+		dir: cwd,
+		files: {
+			'package.json': JSON.stringify({ name: 'app', dependencies: { react: '^19.0.0' } }),
+			'lightsout.config.json': JSON.stringify({
+				gates: { check: 'true', test: 'true', 'test-coverage': false },
+				'standards-pack': 'lightsout/node',
+			}),
+		},
+	});
+
+	return cwd;
+};
+
+test('getStandardsView: rows follow the selected pack', async () => {
+	const cwd = await seedSelectedPackRepo();
+
+	const view = await getStandardsView({ cwd });
+	const names = view.rules.map((rule) => rule.rule);
+
+	// a node rule gets its row; a React architecture rule the library holds but the node pack leaves out gets none
+	expect({
+		hasNodeRule: names.includes('lightsout/function-size'),
+		hasReactRule: names.includes('lightsout/component-file-structure'),
+		reactTopicRows: view.rules.filter((rule) => rule.documentPath === 'code/architecture/react').length,
+	}).toStrictEqual({ hasNodeRule: true, hasReactRule: false, reactTopicRows: 0 });
+});
+
+test('a declared standards pack that cannot be loaded fails the view rather than describing half a repo', async () => {
+	const cwd = await seedStandardsRepo({ library: './standards-that-were-never-installed' });
+
+	await expect(getStandardsView({ cwd })).rejects.toThrow(/standards library acme \(\.\/standards-that-were-never-installed\) will not load/);
 });
 
 test('a config naming a rule no pack declares fails the view', async () => {

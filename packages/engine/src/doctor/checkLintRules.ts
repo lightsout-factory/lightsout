@@ -14,7 +14,7 @@ interface Params {
  * and lightsout ships no lint preset, so the doctor is where the gap surfaces.
  */
 export const checkLintRules = async ({ config, packageDirs }: Params): Promise<DoctorCheck | undefined> => {
-	if (config['standards-packs'] === false) {
+	if (config['standards-pack'] === false) {
 		return undefined;
 	}
 

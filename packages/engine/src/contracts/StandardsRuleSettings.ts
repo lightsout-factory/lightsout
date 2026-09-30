@@ -3,9 +3,10 @@ import { z } from 'zod';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 
 /**
- * Keyed by rule id. The ids come from the loaded standards packs, so a mistyped
- * one cannot be caught while parsing: `resolvePackageRuleStates` refuses a key
- * naming no loaded rule and lists the valid ids.
+ * Keyed by rule name — a full `<library>/<rule-id>` name, or a short id where it
+ * is unique. The names come from the selected pack, so a mistyped one cannot be
+ * caught while parsing: `resolveStandardsGroups` refuses a key naming no rule in
+ * the pack.
  */
 export const StandardsRuleSettings = z.record(
 	z.string(),

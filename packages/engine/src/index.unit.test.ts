@@ -68,7 +68,6 @@ test('the library entry exposes the readers, the run-state predicates, and the s
 		'StepRecord',
 		'WorkReport',
 		'WritersReport',
-		'buildStandardsHealth',
 		'commandCatalog',
 		'getCommandCatalogEntry',
 		'getConfigView',
@@ -85,7 +84,6 @@ test('the library entry exposes the readers, the run-state predicates, and the s
 		'listRunIds',
 		'listRuns',
 		'listStandardsPacks',
-		'listStandardsRules',
 		'listStandardsSnapshots',
 		'readConfig',
 		'readFriction',
@@ -143,7 +141,6 @@ test('every name arrived as the kind of value a consumer can use, rather than er
 		library.WritersReport,
 	];
 	const readers = [
-		library.buildStandardsHealth,
 		library.getCommandCatalogEntry,
 		library.getConfigView,
 		library.getPlanDocument,
@@ -159,7 +156,6 @@ test('every name arrived as the kind of value a consumer can use, rather than er
 		library.listRunIds,
 		library.listRuns,
 		library.listStandardsPacks,
-		library.listStandardsRules,
 		library.listStandardsSnapshots,
 		library.readConfig,
 		library.readFriction,
@@ -197,4 +193,15 @@ test('every name arrived as the kind of value a consumer can use, rather than er
 			new library.StandardsPackRuleNotFoundError({ name: 'acme', rule: 'house-loose-file' }),
 		].every((error) => error instanceof Error),
 	}).toStrictEqual({ schemas: true, readers: true, constObjects: true, catalog: true, errors: true });
+});
+
+test('the library entry no longer exposes the standards readers that take pack groups', () => {
+	// Both readers take StandardsGroup values, which no caller outside the engine
+	// can build, so an export of either is a surface nobody can use.
+	const exportedNames = Object.keys(library);
+
+	expect({
+		listStandardsRules: exportedNames.includes('listStandardsRules'),
+		buildStandardsHealth: exportedNames.includes('buildStandardsHealth'),
+	}).toStrictEqual({ listStandardsRules: false, buildStandardsHealth: false });
 });

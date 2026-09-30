@@ -9,9 +9,10 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
 import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import { mapPackRules } from '#src/standardsLibraries/mapPackRules.ts';
 
 type Tally = Omit<StandardsHealthRule, 'rule' | 'set' | 'documentPath' | 'checked'>;
 
@@ -119,11 +120,11 @@ const countAdvice = ({ tallies, outcomes }: { tallies: Map<string, Tally>; outco
 
 interface Params {
 	cwd: string;
-	packs: LoadedStandardsLibrary[];
+	groups: StandardsGroup[];
 }
 
 /** A run whose manifest or work-list cannot be read is skipped in silence, so one corrupt run directory cannot take the whole account down. */
-export const buildStandardsHealth = async ({ cwd, packs }: Params): Promise<StandardsHealth> => {
+export const buildStandardsHealth = async ({ cwd, groups }: Params): Promise<StandardsHealth> => {
 	const tallies = new Map<string, Tally>();
 
 	for (const runId of await listRunIds({ cwd })) {
@@ -142,16 +143,16 @@ export const buildStandardsHealth = async ({ cwd, packs }: Params): Promise<Stan
 		}
 	}
 
-	const rules: StandardsHealthRule[] = packs
-		.flatMap((pack) => pack.rules)
-		.map((rule) => ({
-			rule: rule.name,
-			set: rule.set,
-			documentPath: rule.documentPath,
-			checked: rule.checked,
-			...(tallies.get(rule.name) ?? emptyTally()),
-		}))
-		.sort((first, second) => first.rule.localeCompare(second.rule));
+	const rules: StandardsHealthRule[] = [...mapPackRules({ packs: groups.map((group) => group.pack) }).values()].map((rule) => ({
+		rule: rule.name,
+		set: rule.set,
+		documentPath: rule.documentPath,
+		checked: rule.checked,
+		...(tallies.get(rule.name) ?? emptyTally()),
+	}));
+
+	rules.sort((first, second) => first.rule.localeCompare(second.rule));
+
 	const checked = rules.filter((rule) => rule.checked).length;
 
 	return { rules, totals: { rules: rules.length, checked, judgment: rules.length - checked } };

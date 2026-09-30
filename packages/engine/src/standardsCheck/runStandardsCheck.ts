@@ -1,13 +1,11 @@
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
-import { resolveStandardsChannels } from '#src/standards/resolveStandardsChannels.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 import { applyStandardsBaseline } from '#src/standardsCheck/applyStandardsBaseline.ts';
 import { buildDominantPathNote } from '#src/standardsCheck/buildDominantPathNote.ts';
-import { resolvePackageRuleStates } from '#src/standardsCheck/resolvePackageRuleStates.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
 import { writeStandardsSnapshot } from '#src/standardsCheck/writeStandardsSnapshot.ts';
-import { resolveStandardsPacks } from '#src/standardsLibraries/resolveStandardsPacks.ts';
 
 interface Params {
 	cwd: string;
@@ -26,7 +24,7 @@ interface Params {
  * Detection is code — agents are never asked to "go find problems". Baselining
  * is explicit, never a side effect of a check run.
  *
- * @throws {Error} When a declared standards pack cannot be loaded, or a check misbehaves — a repo that asked for standards and did not get them must not run.
+ * @throws {Error} When the standards pack cannot be loaded, or a check misbehaves — a repo that asked for standards and did not get them must not run.
  */
 export const runStandardsCheck = async ({
 	cwd,
@@ -37,16 +35,10 @@ export const runStandardsCheck = async ({
 	onProgress,
 }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
 	const config = await readOptionalConfig({ cwd });
-	const packs = await resolveStandardsPacks({ cwd, config });
-	const states = resolvePackageRuleStates({ packs, config });
-	// An empty package scope means the root package.json decides which frameworks
-	// this repo is in.
-	const channels = await resolveStandardsChannels({ cwd, config, packages: [] });
+	const groups = await resolveStandardsGroups({ cwd, config });
 	const checked = await runPackageChecks({
 		cwd,
-		packs,
-		states,
-		channels,
+		groups,
 		packagesDir: config?.['packages-dir'],
 		path,
 		exclude: excludedSourcePaths({ config }),

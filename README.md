@@ -105,7 +105,7 @@ Completing the task is not enough. Agents should leave the repository better tha
 
 2. **Define your standards and gate commands.**
 
-Add a `lightsout.config.json` to the repository with your code standards and validation commands. Only the `gates` commands are mandatory — everything else is optional with sensible defaults. Leave `standards-packs` out and lightsout uses the standards pack it ships with. See [docs/configuration.md](docs/configuration.md) for all available options.
+Add a `lightsout.config.json` to the repository with your code standards and validation commands. Only the `gates` commands are mandatory — everything else is optional with sensible defaults. Without `standards-pack`, lightsout detects one of its own standards packs from the repository's dependencies. See [docs/configuration.md](docs/configuration.md) for all available options.
 
 The factory runs the work on your own installed, logged-in coding agent.
 Claude Code is the default; set `"harness"` to `"codex"`, `"omp"` (Oh My Pi)

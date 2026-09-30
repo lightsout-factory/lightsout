@@ -10,11 +10,18 @@ import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 /**
  * A one-rule library the built-in override points at, so a listing read back
  * off it proves the CLI child loaded this folder rather than plugin/standards/.
+ * It is named lightsout, as the built-in library must be, and holds the node
+ * pack that detection picks for a repo with no package.json.
  * restoreMocks puts the variable back after the test.
  */
 const setupEnvStandards = async () => {
 	const libraryPath = await freshCwd();
-	writeRepoFile({ cwd: libraryPath, path: 'lightsout-standards.json', content: '{ "name": "env-standards", "formatVersion": 1 }\n' });
+	writeRepoFile({ cwd: libraryPath, path: 'lightsout-standards.json', content: '{ "name": "lightsout", "formatVersion": 1 }\n' });
+	writeRepoFile({
+		cwd: libraryPath,
+		path: 'packs/node.json',
+		content: '{ "description": "The demo topic.", "include": { "topics": ["lightsout/code/demo"] } }\n',
+	});
 	writeRepoFile({ cwd: libraryPath, path: 'code/demo/topic.md', content: '# Demo\n\nThe document the rule argues under.\n' });
 	writeRepoFile({
 		cwd: libraryPath,
@@ -190,9 +197,9 @@ test('cli: standards-check --list loads the built-in library that LIGHTSOUT_DEFA
 
 	const { stdout, stderr, code } = await runCli({ args: ['standards-check', '--list', '--cwd', cwd] });
 
-	expect(stdout).toMatch(/│ env-standards\/only-rule\s+│\s+advisory\s+│\s+judgment\s+│\s+env-standards: code\/demo\s+│/);
-	// the committed plugin copy never loaded beside it
-	expect(stdout).not.toMatch(/│\s+lightsout:/);
+	expect(stdout).toMatch(/│ lightsout\/only-rule\s+│\s+advisory\s+│\s+judgment\s+│\s+lightsout: code\/demo\s+│/);
+	// the committed plugin copy never loaded beside it: no row comes from any other topic
+	expect(stdout).not.toMatch(/│\s+lightsout: (?!code\/demo\s)/);
 	expect(stderr).toBe('');
 	expect(code).toBe(0);
 });

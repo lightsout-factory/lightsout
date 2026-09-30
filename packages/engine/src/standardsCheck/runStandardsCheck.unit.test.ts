@@ -239,12 +239,12 @@ const writeTree = ({ dir, files }: { dir: string; files: Record<string, string> 
 };
 
 /**
- * A standards pack of somebody's own: one document, one rule, one check that
- * flags every source file it is handed. The check is written the way a pack
- * author writes one — a `check` export naming its input kind, and no engine
- * import at run time.
+ * A standards library of somebody's own: one document, one rule, one check that
+ * flags every source file it is handed, and one pack, `acme/house`, bringing
+ * that document in. The check is written the way a library author writes one —
+ * a `check` export naming its input kind, and no engine import at run time.
  *
- * It sits outside the repo it checks, so the pack's own files never show up
+ * It sits outside the repo it checks, so the library's own files never show up
  * in that repo's file list.
  */
 const writeOwnPack = () => {
@@ -264,13 +264,14 @@ const writeOwnPack = () => {
 				'};\n',
 			'code/house/05-house-no-loose-files/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
 			'code/house/05-house-no-loose-files/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
+			'packs/house.json': JSON.stringify({ description: 'the house pack', include: { topics: ['acme/code/house'] } }),
 		},
 	});
 
 	return packPath;
 };
 
-/** A repo whose config brings the house pack instead of the bundled defaults. */
+/** A repo whose config registers the house library and names its pack instead of the bundled defaults. */
 const setupOwnPackRepo = () => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-own-'));
 
@@ -281,7 +282,8 @@ const setupOwnPackRepo = () => {
 			'src/beta.ts': 'export const beta = 2;\n',
 			'lightsout.config.json': JSON.stringify({
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
-				'standards-packs': [writeOwnPack()],
+				'standards-libraries': { acme: writeOwnPack() },
+				'standards-pack': 'acme/house',
 			}),
 		},
 	});
@@ -311,7 +313,11 @@ const setupScopedRepo = () => {
 		files: {
 			'src/keep.ts': 'export const keep = 1;\n',
 			'src/core/inner.ts': 'export const inner = 2;\n',
-			'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-packs': [writeOwnPack()] }),
+			'lightsout.config.json': JSON.stringify({
+				gates: { check: 'true', test: 'true', 'test-coverage': false },
+				'standards-libraries': { acme: writeOwnPack() },
+				'standards-pack': 'acme/house',
+			}),
 		},
 	});
 

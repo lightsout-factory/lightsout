@@ -127,7 +127,7 @@ export const implementCommand = async ({ flags, cwd }: CommandContext): Promise<
 		return exitCli({ code: 1 });
 	}
 
-	printRunStart({ target, overviewPath, packages, startPhase, config, driver, cwd: workspace.cwd, configPath: resolveConfigPath({ cwd }) });
+	await printRunStart({ target, overviewPath, packages, startPhase, config, driver, cwd: workspace.cwd, configPath: resolveConfigPath({ cwd }) });
 
 	const outcome = await runWorkOrderPlanLifecycle({
 		cwd: workspace.cwd,

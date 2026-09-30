@@ -6,7 +6,7 @@ import { readPlanningStandards } from '#src/cli/plan/readPlanningStandards.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 
-/** A one-rule standards pack to write inside the repo, in the code tree unless told otherwise. */
+/** A one-rule standards library to write inside the repo, in the code tree unless told otherwise, with a `demo` pack that includes its one topic. */
 interface StandardsPackage {
 	at: string;
 	name: string;
@@ -20,6 +20,7 @@ const writeStandardsPackage = ({ cwd, at, name, ruleId, prose, set = 'code' }: S
 	const rulePath = `${set}/demo/01-${ruleId}`;
 	const files: Record<string, string> = {
 		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 1 }\n`,
+		'packs/demo.json': JSON.stringify({ description: 'The demo topic and its one rule.', include: { topics: [`${name}/${set}/demo`] } }),
 		[`${set}/demo/topic.md`]: '# Demo\n\nThe document the rule argues under.\n',
 		[`${rulePath}/rule.md`]: `---\nsummary: a rule the package declares\n---\n\n${prose}\n`,
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
@@ -36,8 +37,8 @@ const writeStandardsPackage = ({ cwd, at, name, ruleId, prose, set = 'code' }: S
 
 /**
  * A consumer repo whose manifest carries the given dependencies — the signal
- * framework channels are detected from — holding the declared standards
- * packages.
+ * the standards pack is detected from — holding the declared standards
+ * libraries.
  */
 const setupStandards = ({ dependencies, packages = [] }: { dependencies?: Record<string, string>; packages?: StandardsPackage[] } = {}) => {
 	const captured = captureCommandOutput();
@@ -61,7 +62,7 @@ test('readPlanningStandards: with no config it loads the shipped default package
 	const standards = await readPlanningStandards({ cwd, config: undefined });
 
 	expect(standards ?? '').toMatch(/<!-- lightsout: code\/architecture\/folder-structure -->/);
-	// no framework channel activates without a signal dependency
+	// with no signal dependency the node pack is detected, and it carries no react topic
 	expect((standards ?? '').includes('code/architecture/react')).toBeFalsy();
 	expect(logged).toStrictEqual([]);
 });
@@ -69,7 +70,7 @@ test('readPlanningStandards: with no config it loads the shipped default package
 test('readPlanningStandards: standards turned off explicitly loads nothing at all', async () => {
 	const { cwd, logged } = setupStandards();
 
-	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-packs': false }) });
+	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': false }) });
 
 	expect(standards).toBe(undefined);
 	expect(logged).toStrictEqual([]);
@@ -91,37 +92,15 @@ test('readPlanningStandards: a react dependency in the consumer manifest activat
 	expect(standards ?? '').toMatch(/<!-- lightsout: code\/architecture\/react -->/);
 });
 
-test('readPlanningStandards: configured channels override detection — react docs load with no react dependency present', async () => {
-	const { cwd } = setupStandards();
-
-	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-channels': ['react'] }) });
-
-	expect(standards ?? '').toMatch(/<!-- lightsout: code\/architecture\/react -->/);
-});
-
-test('readPlanningStandards: several declared packages all reach the plan, in config order, one blank line apart', async () => {
-	const { cwd, logged } = setupStandards({
-		packages: [
-			{ at: 'standards/house', name: 'house', ruleId: 'house-rule', prose: 'House prose.' },
-			{ at: 'standards/team', name: 'team', ruleId: 'team-rule', prose: 'Team prose.' },
-		],
-	});
-
-	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-packs': ['standards/house', 'standards/team'] }) });
-
-	// the second package's text picks up where the first one ends, a blank line on
-	expect(standards ?? '').toContain('<!-- house: code/demo -->');
-	expect(standards ?? '').toContain('House prose.\n\n<!-- team: code/demo -->');
-	expect(standards ?? '').toContain('Team prose.');
-	expect(logged).toStrictEqual([]);
-});
-
 test('readPlanningStandards: a package carrying only a test tree contributes nothing, and that is not a failure', async () => {
 	const { cwd, logged } = setupStandards({
 		packages: [{ at: 'standards/tests-only', name: 'tests-only', ruleId: 'mock-prefix', prose: 'Name mocks so they read as mocks.', set: 'tests' }],
 	});
 
-	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-packs': ['standards/tests-only'] }) });
+	const standards = await readPlanningStandards({
+		cwd,
+		config: configWith({ 'standards-libraries': { 'tests-only': './standards/tests-only' }, 'standards-pack': 'tests-only/demo' }),
+	});
 
 	// the package loaded fine — it simply has no code set, so planning gets nothing and nothing is narrated
 	expect(standards).toBe(undefined);
@@ -131,11 +110,25 @@ test('readPlanningStandards: a package carrying only a test tree contributes not
 test('readPlanningStandards: a declared standards pack that does not exist is non-fatal — it narrates and returns nothing', async () => {
 	const { cwd, logged, errors } = setupStandards();
 
-	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-packs': ['missing-standards'] }) });
+	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/missing-standards' }) });
 
 	// planning continues without standards rather than dying on them
 	expect(standards).toBe(undefined);
 	expect(logged.length).toBe(1);
-	expect(logged[0] ?? '').toMatch(/^standards not loaded \(non-fatal\): standards pack root file not found: .*missing-standards/);
+	expect(logged[0] ?? '').toBe('standards not loaded (non-fatal): pack lightsout/missing-standards: names no pack');
 	expect(errors).toStrictEqual([]);
+});
+
+test("readPlanningStandards: planning reads the selected pack's code prose", async () => {
+	const { cwd, logged } = setupStandards({ dependencies: { react: '^19.0.0' } });
+
+	const switchedOff = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': false }) });
+	const detected = await readPlanningStandards({ cwd, config: configWith({}) });
+
+	// standards-pack false selects no pack; with no standards keys the react dependency selects lightsout/react-app
+	expect(switchedOff).toBe(undefined);
+	expect(detected ?? '').toMatch(/<!-- lightsout: code\/architecture\/folder-structure -->/);
+	expect(detected ?? '').toMatch(/<!-- lightsout: code\/architecture\/react -->/);
+	expect((detected ?? '').includes('<!-- lightsout: tests/')).toBeFalsy();
+	expect(logged).toStrictEqual([]);
 });

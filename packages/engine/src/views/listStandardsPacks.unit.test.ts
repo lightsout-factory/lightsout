@@ -44,8 +44,8 @@ const setDefaultPackVariable = ({ packPath }: { packPath?: string }) => {
 	jest.replaceProperty(process, 'env', env);
 };
 
-/** A repo of somebody's own, with the packs its config names written beside it. */
-const setupConfiguredRepo = async ({ packs }: { packs: { folder: string; name: string }[] }) => {
+/** A repo of somebody's own, with the libraries its config registers written beside it, each registered under its folder's name. */
+const setupConfiguredRepo = async ({ libraries }: { libraries: { folder: string; name: string }[] }) => {
 	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-packs-list-'));
 	const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 
@@ -54,13 +54,13 @@ const setupConfiguredRepo = async ({ packs }: { packs: { folder: string; name: s
 		files: {
 			'lightsout.config.json': JSON.stringify({
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
-				'standards-packs': packs.map((pack) => `./${pack.folder}`),
+				'standards-libraries': Object.fromEntries(libraries.map((library) => [library.folder, `./${library.folder}`])),
 			}),
 		},
 	});
 
-	for (const pack of packs) {
-		await writeTree({ dir: join(cwd, pack.folder), files: packFiles({ root: { name: pack.name, formatVersion: 1 } }) });
+	for (const library of libraries) {
+		await writeTree({ dir: join(cwd, library.folder), files: packFiles({ root: { name: library.name, formatVersion: 1 } }) });
 	}
 
 	return { cwd, warn };
@@ -118,7 +118,81 @@ const setupRepoWithARuleAddedAfterAFirstRead = async () => {
 	return { cwd, before: listed[0]?.totals.rules };
 };
 
+/**
+ * Two repos on one built-in library: one sets `standards-pack: false` while
+ * still registering a readable library, the other names no standards key at all.
+ */
+const setupReposReadingStandardsPack = async () => {
+	const builtInPath = await mkdtemp(join(tmpdir(), 'lightsout-packs-builtin-'));
+	const offCwd = await mkdtemp(join(tmpdir(), 'lightsout-packs-off-'));
+	const unsetCwd = await mkdtemp(join(tmpdir(), 'lightsout-packs-unset-'));
+	const gates = { check: 'true', test: 'true', 'test-coverage': false };
+
+	await writeTree({ dir: builtInPath, files: packFiles({ root: { name: 'lightsout', formatVersion: 1 } }) });
+	await writeTree({
+		dir: offCwd,
+		files: {
+			'lightsout.config.json': JSON.stringify({ gates, 'standards-pack': false, 'standards-libraries': { acme: './house' } }),
+		},
+	});
+	await writeTree({ dir: join(offCwd, 'house'), files: packFiles({ root: { name: 'acme', formatVersion: 1 } }) });
+	await writeTree({ dir: unsetCwd, files: { 'lightsout.config.json': JSON.stringify({ gates }) } });
+	setDefaultPackVariable({ packPath: builtInPath });
+
+	return { offCwd, unsetCwd };
+};
+
+/** A repo registering two libraries, where the first entry names a folder that holds no library at all. */
+const setupRepoWithAMissingLibrary = async () => {
+	const builtInPath = await mkdtemp(join(tmpdir(), 'lightsout-packs-builtin-'));
+	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-packs-missing-'));
+	const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+	await writeTree({ dir: builtInPath, files: packFiles({ root: { name: 'lightsout', formatVersion: 1 } }) });
+	await writeTree({
+		dir: cwd,
+		files: {
+			'lightsout.config.json': JSON.stringify({
+				gates: { check: 'true', test: 'true', 'test-coverage': false },
+				'standards-libraries': { missing: './missing', acme: './house' },
+			}),
+		},
+	});
+	await writeTree({ dir: join(cwd, 'house'), files: packFiles({ root: { name: 'acme', formatVersion: 1 } }) });
+	setDefaultPackVariable({ packPath: builtInPath });
+
+	return { cwd, warn };
+};
+
 describe('listStandardsPacks', () => {
+	test('listStandardsPacks: the listing reads standards-pack, not standards-packs', async () => {
+		const { offCwd, unsetCwd } = await setupReposReadingStandardsPack();
+
+		const [off, unset] = await Promise.all([listStandardsPacks({ cwd: offCwd }), listStandardsPacks({ cwd: unsetCwd })]);
+
+		// false lists nothing even beside a registered library; no key lists the built-in library, marked default
+		expect({
+			off,
+			unset: unset.map((pack) => ({ name: pack.name, isDefault: pack.isDefault })),
+		}).toStrictEqual({
+			off: [],
+			unset: [{ name: 'lightsout', isDefault: true }],
+		});
+	});
+
+	test('skips a registered entry whose folder holds no library, and still lists the built-in library and the others', async () => {
+		const { cwd, warn } = await setupRepoWithAMissingLibrary();
+
+		const packs = await listStandardsPacks({ cwd });
+
+		expect(packs.map((pack) => ({ name: pack.name, isDefault: pack.isDefault }))).toStrictEqual([
+			{ name: 'lightsout', isDefault: true },
+			{ name: 'acme', isDefault: false },
+		]);
+		// the skipped entry is named in the server log, where the person who can fix it reads
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining('missing'));
+	});
+
 	test('says where a standards-packs entry would point for a pack that is the repo itself', async () => {
 		const { cwd } = await setupRepoThatIsAPack();
 
@@ -179,7 +253,7 @@ describe('listStandardsPacks', () => {
 
 	test('leaves out the second pack claiming a name the first already took, since the name is what a URL addresses', async () => {
 		const { cwd, warn } = await setupConfiguredRepo({
-			packs: [
+			libraries: [
 				{ folder: 'house', name: 'acme' },
 				{ folder: 'legacy', name: 'acme' },
 			],
@@ -187,22 +261,24 @@ describe('listStandardsPacks', () => {
 
 		const packs = await listStandardsPacks({ cwd });
 
-		expect(packs.map((pack) => pack.path)).toStrictEqual(['house']);
+		// the built-in library is listed ahead of both, and claims a name of its own
+		expect(packs.filter((pack) => !pack.isDefault).map((pack) => pack.path)).toStrictEqual(['house']);
 		// the collision is loud where the person who can fix it reads, not arbitrary in the page
 		expect(warn).toHaveBeenCalledWith(expect.stringContaining('acme'));
 	});
 
 	test('lists both packs a repo stacks, in the order its config names them', async () => {
 		const { cwd } = await setupConfiguredRepo({
-			packs: [
-				{ folder: 'house', name: 'acme' },
-				{ folder: 'extra', name: 'acme-react' },
+			libraries: [
+				{ folder: 'acme', name: 'acme' },
+				{ folder: 'acme-react', name: 'acme-react' },
 			],
 		});
 
 		const packs = await listStandardsPacks({ cwd });
 
-		expect(packs.map((pack) => pack.name)).toStrictEqual(['acme', 'acme-react']);
+		// the built-in library first, then each registered one in its config key order
+		expect(packs.map((pack) => pack.name)).toStrictEqual(['lightsout', 'acme', 'acme-react']);
 	});
 
 	test('answers with nothing when no pack can be found from here, rather than failing the page', async () => {

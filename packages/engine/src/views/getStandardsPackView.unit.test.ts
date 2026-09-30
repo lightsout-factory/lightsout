@@ -35,7 +35,7 @@ const setupHouseRepo = async ({ name = 'acme' }: { name?: string } = {}) => {
 	await writeTree({
 		dir: cwd,
 		files: {
-			'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-packs': ['./house'] }),
+			'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-libraries': { [name]: './house' } }),
 			'house/lightsout-standards.json': JSON.stringify({ name, formatVersion: 1, description: 'what this shop agrees on' }),
 			'house/code/house/topic.md': '---\nchannel: react\n---\n\n# House Style\n\nWhat this shop agrees on.\n',
 			'house/code/house/05-house-loose-file/rule.md':
@@ -177,8 +177,9 @@ describe('listStandardsPacks', () => {
 
 		const packs = await listStandardsPacks({ cwd });
 
-		expect(packs.map((pack) => pack.name)).toStrictEqual(['acme']);
-		expect(Object.keys(packs[0] ?? {}).sort()).toStrictEqual([
+		// the built-in library is always listed first, ahead of the house one
+		expect(packs.map((pack) => pack.name)).toStrictEqual(['lightsout', 'acme']);
+		expect(Object.keys(packs.find((pack) => pack.name === 'acme') ?? {}).sort()).toStrictEqual([
 			'built',
 			'channelTotals',
 			'channels',
@@ -196,7 +197,7 @@ describe('listStandardsPacks', () => {
 
 		await writeTree({
 			dir: cwd,
-			files: { 'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-packs': false }) },
+			files: { 'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': false }) },
 		});
 
 		expect(await listStandardsPacks({ cwd })).toStrictEqual([]);
@@ -210,7 +211,28 @@ describe('listStandardsPacks', () => {
 			files: {
 				'lightsout.config.json': JSON.stringify({
 					gates: { check: 'true', test: 'true', 'test-coverage': false },
-					'standards-packs': ['./missing', './house'],
+					'standards-libraries': { broken: './broken', acme: './house' },
+				}),
+				// the root file is there, so the entry resolves, but the library behind it will not load
+				'broken/lightsout-standards.json': '{ "name": ',
+				'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 1 }),
+				'house/code/house/topic.md': '# House Style\n',
+				'house/code/house/05-house-loose-file/rule.md': '---\nsummary: a source file outside a module\n---\n',
+			},
+		});
+
+		expect((await listStandardsPacks({ cwd })).map((pack) => pack.name)).toStrictEqual(['lightsout', 'acme']);
+	});
+
+	test('lists the built-in library and every readable registered library when one registered entry is broken', async () => {
+		const cwd = await mkdtemp(join(tmpdir(), 'lightsout-packs-broken-library-'));
+
+		await writeTree({
+			dir: cwd,
+			files: {
+				'lightsout.config.json': JSON.stringify({
+					gates: { check: 'true', test: 'true', 'test-coverage': false },
+					'standards-libraries': { missing: './missing', acme: './house' },
 				}),
 				'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 1 }),
 				'house/code/house/topic.md': '# House Style\n',
@@ -218,6 +240,11 @@ describe('listStandardsPacks', () => {
 			},
 		});
 
-		expect((await listStandardsPacks({ cwd })).map((pack) => pack.name)).toStrictEqual(['acme']);
+		const packs = await listStandardsPacks({ cwd });
+
+		expect(packs.map((pack) => ({ name: pack.name, isDefault: pack.isDefault }))).toStrictEqual([
+			{ name: 'lightsout', isDefault: true },
+			{ name: 'acme', isDefault: false },
+		]);
 	});
 });

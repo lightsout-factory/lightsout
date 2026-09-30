@@ -36,7 +36,7 @@ const setupHouseRepo = async () => {
 	await writeTree({
 		dir: cwd,
 		files: {
-			'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-packs': ['./house'] }),
+			'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-libraries': { acme: './house' } }),
 			'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 1 }),
 			'house/code/house/topic.md': '# House Style\n',
 			[`${ruleFolder}/rule.md`]: '---\nsummary: a source file outside a module\n---\n\nEvery file belongs to a module.\n',

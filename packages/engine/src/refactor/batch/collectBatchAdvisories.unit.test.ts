@@ -1,10 +1,12 @@
 import { describe, expect, test } from '@jest/globals';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { collectBatchAdvisories } from '#src/refactor/batch/collectBatchAdvisories.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 
@@ -40,13 +42,13 @@ const judgmentRule: LoadedStandardsRule = {
 	fixturesPath: '/packages/acme/path-aliases/fixtures',
 };
 
-const packOf = ({ rules }: { rules: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
-	name: 'acme',
-	formatVersion: 1,
-	rootPath: '/packages/acme',
-	documents: [],
-	packs: [],
-	rules,
+const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup => ({
+	packages: [''],
+	pack: { name: 'acme/house', topics: [], rules: rules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })) },
+	source: StandardsPackSource.Named,
+	states: new Map<string, ResolvedRuleState>(
+		rules.map((rule) => [rule.name, { severity: rule.defaultSeverity, options: rule.defaultOptions, fromConfig: false, reachesAgents: true }]),
+	),
 });
 
 const setupDriver = ({ text }: { text: string }) => {
@@ -65,8 +67,7 @@ describe('collectBatchAdvisories', () => {
 			runId: 'run-01',
 			driver,
 			batch: batch({ paths: ['src/a.ts'] }),
-			packs: [],
-			channels: [],
+			groups: [],
 			findings: [
 				finding(),
 				finding({ rule: 'dead-export', siteKey: 'dead-export:src/a.ts' }),
@@ -93,8 +94,7 @@ describe('collectBatchAdvisories', () => {
 			runId: 'run-01',
 			driver,
 			batch: batch({ paths: ['src/a.ts'] }),
-			packs: [packOf({ rules: [judgmentRule] })],
-			channels: [],
+			groups: [groupOf({ rules: [judgmentRule] })],
 			findings: [finding()],
 			agentReview: true,
 			timeoutMs: 1000,
@@ -119,8 +119,7 @@ describe('collectBatchAdvisories', () => {
 			runId: 'run-01',
 			driver,
 			batch: batch({ paths: ['src/a.ts'] }),
-			packs: [packOf({ rules: [judgmentRule] })],
-			channels: [],
+			groups: [groupOf({ rules: [judgmentRule] })],
 			findings: [finding()],
 			agentReview: false,
 			timeoutMs: 1000,
@@ -138,8 +137,7 @@ describe('collectBatchAdvisories', () => {
 			runId: 'run-01',
 			driver,
 			batch: batch({ paths: ['src/a.ts'] }),
-			packs: [packOf({ rules: [judgmentRule] })],
-			channels: [],
+			groups: [groupOf({ rules: [judgmentRule] })],
 			findings: [],
 			agentReview: true,
 			timeoutMs: 1000,

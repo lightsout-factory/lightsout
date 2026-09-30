@@ -1,8 +1,8 @@
 import type { ConfigView } from '@lightsout/engine';
-import { StandardsSeverity } from '@lightsout/engine/contracts';
+import { StandardsPackSource, StandardsSeverity } from '@lightsout/engine/contracts';
 
 interface Params {
-	/** Only what a test varies, over a repo whose config states a harness and loads the default pack. */
+	/** Only what a test varies, over a repo whose config states a harness and whose pack is detected. */
 	overrides?: Partial<ConfigView>;
 }
 
@@ -20,13 +20,12 @@ export const buildConfigView = ({ overrides = {} }: Params = {}): ConfigView => 
 			],
 		},
 	],
-	packs: [{ name: 'lightsout', rootPath: '/repos/lightsout/packages/standards-typescript', isDefault: true, channels: ['base'] }],
-	channels: [],
+	standardsGroups: [{ packages: [''], pack: 'lightsout/node', source: StandardsPackSource.Detected }],
 	ruleStates: [
 		{
 			rule: 'lightsout/file-size',
 			id: 'file-size',
-			pack: 'lightsout',
+			library: 'lightsout',
 			channel: 'base',
 			severity: StandardsSeverity.Blocking,
 			fromConfig: true,

@@ -55,8 +55,8 @@ test('StandardsRuleSettings: an option value is checked as a number and nothing 
 test('StandardsRuleSettings: a rule id this schema has never heard of parses, because the packages own the vocabulary', () => {
 	// a third-party standards package brings its own rule ids, so a closed list
 	// here would refuse every package but the bundled one. The typo `size-fil`
-	// is still caught — by `resolvePackageRuleStates`, where the loaded packages
-	// make the valid ids knowable, and it names them in the refusal
+	// is still caught — by `resolveStandardsGroups`, where the selected pack
+	// makes the valid ids knowable, and it names the entry in the refusal
 	expect(StandardsRuleSettings.parse({ 'house-style-no-default-export': 'off', 'size-fil': 'off' })).toStrictEqual({
 		'house-style-no-default-export': 'off',
 		'size-fil': 'off',

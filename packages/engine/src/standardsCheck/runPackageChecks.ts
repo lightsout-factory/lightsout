@@ -5,12 +5,11 @@ import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { buildCheckInput } from '#src/standardsCheck/internal/common/checkInputs/buildCheckInput.ts';
 import { typescriptInputKinds } from '#src/standardsCheck/internal/common/constants/typescriptInputKinds.ts';
-import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
 import { findFoldersWithoutAliasSource } from '#src/standardsCheck/internal/common/utils/findFoldersWithoutAliasSource.ts';
 import { runRuleCheck } from '#src/standardsCheck/internal/common/utils/runRuleCheck.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 interface LiveRule {
 	id: string;
@@ -23,29 +22,27 @@ interface LiveRule {
 	options: Record<string, number>;
 }
 
-/** Channel gating is all-or-nothing per document: a framework document that does not apply contributes no prose, so no checks either. */
-const selectLiveRules = ({ packs, states, channels }: { packs: LoadedStandardsLibrary[]; states: Map<string, ResolvedRuleState>; channels: string[] }) => {
-	const live: LiveRule[] = [];
+/** A rule several groups hold runs once, by full name. */
+const selectLiveRules = ({ groups }: { groups: StandardsGroup[] }) => {
+	const live = new Map<string, LiveRule>();
 
-	for (const rule of packs.flatMap((pack) => pack.rules)) {
-		const state = states.get(rule.name);
+	for (const group of groups) {
+		for (const { rule } of group.pack.rules) {
+			const state = group.states.get(rule.name);
 
-		if (rule.run === undefined || rule.inputKind === undefined || state === undefined) {
-			continue;
+			if (rule.run === undefined || rule.inputKind === undefined || state === undefined || live.has(rule.name)) {
+				continue;
+			}
+
+			if (state.severity === StandardsSeverity.Off) {
+				continue;
+			}
+
+			live.set(rule.name, { id: rule.id, name: rule.name, inputKind: rule.inputKind, run: rule.run, severity: state.severity, options: state.options });
 		}
-
-		if (state.severity === StandardsSeverity.Off) {
-			continue;
-		}
-
-		if (rule.channel !== 'base' && !channels.includes(rule.channel)) {
-			continue;
-		}
-
-		live.push({ id: rule.id, name: rule.name, inputKind: rule.inputKind, run: rule.run, severity: state.severity, options: state.options });
 	}
 
-	return live;
+	return [...live.values()];
 };
 
 type BuildInput = (params: { kind: StandardsInputKind; options: Record<string, number> }) => Promise<StandardsCheckInput>;
@@ -104,10 +101,8 @@ const runLiveRules = async ({
 
 interface Params {
 	cwd: string;
-	packs: LoadedStandardsLibrary[];
-	states: Map<string, ResolvedRuleState>;
-	/** Active framework channels — rules on inactive channels do not run (base always runs). */
-	channels: string[];
+	/** The groups this check covers; a rule runs when a group's pack holds it at a reporting severity. */
+	groups: StandardsGroup[];
 	/** Monorepo package parent dir (config `packages-dir`), default 'packages'. */
 	packagesDir?: string;
 	/** Repo-relative subpath to check (default: the whole repo). */
@@ -130,9 +125,7 @@ interface Params {
  */
 export const runPackageChecks = async ({
 	cwd,
-	packs,
-	states,
-	channels,
+	groups,
 	packagesDir = defaultPackagesDir,
 	path,
 	exclude,
@@ -148,7 +141,7 @@ export const runPackageChecks = async ({
 	progress(`checking ${source.length} source file(s) and ${tests.length} test file(s)`);
 
 	const compiler = resolveConsumerTypescript({ cwd, packagesDir });
-	const live = selectLiveRules({ packs, states, channels });
+	const live = selectLiveRules({ groups });
 	const cache = new Map<string, string>();
 
 	const buildInput: BuildInput = async ({ kind, options }) =>

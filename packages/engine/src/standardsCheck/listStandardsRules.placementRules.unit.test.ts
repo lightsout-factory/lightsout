@@ -1,14 +1,19 @@
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 
 /**
- * The repo the listing is read for — the shipped pack answers regardless,
- * since it travels with the engine. The workspace root rather than the working
+ * The repo the listing is read for — the shipped library answers regardless,
+ * since it travels with the engine, and with no config the repo gets the pack
+ * its root manifest detects. The workspace root rather than the working
  * directory, as the main suite reads it.
  */
 const cwd = join(__dirname, '..', '..', '..', '..');
+
+/** The listing a repo with no config of its own gets: the groups it resolves to, listed. */
+const listDefaults = async () => listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config: undefined }) });
 
 /** The eight file-placement rules code checks — listed rather than derived, because an id no longer says which kind it is. */
 const durablePathRules = [
@@ -36,7 +41,7 @@ const docPartsOf = ({ doc }: { doc: string }) => {
 
 describe('listStandardsRules file-placement rules', () => {
 	test('each file-placement rule names the document that actually states it', async () => {
-		const rules = await listStandardsRules({ cwd });
+		const rules = await listDefaults();
 		const docs = Object.fromEntries(
 			rules.filter((rule) => durablePathRuleNames.includes(rule.rule)).map((rule) => [rule.rule, docPartsOf({ doc: rule.doc }).path]),
 		);
@@ -57,7 +62,7 @@ describe('listStandardsRules file-placement rules', () => {
 	});
 
 	test('the file-placement rules ship advisory — the default pack blocks only what is wrong on its own terms', async () => {
-		const rules = await listStandardsRules({ cwd });
+		const rules = await listDefaults();
 		const severities = Object.fromEntries(rules.filter((rule) => durablePathRuleNames.includes(rule.rule)).map((rule) => [rule.rule, rule.severity]));
 
 		// every file-placement rule is a layout opinion — where a file goes, what a folder
@@ -78,7 +83,7 @@ describe('listStandardsRules file-placement rules', () => {
 	});
 
 	test('no file-placement rule carries a number a repo could tune', async () => {
-		const rules = await listStandardsRules({ cwd });
+		const rules = await listDefaults();
 		const tunable = rules.filter((rule) => durablePathRuleNames.includes(rule.rule) && Object.keys(rule.options).length > 0);
 
 		// every threshold in this group is a closed list of names from a doc, never a

@@ -3,7 +3,7 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runBatchReview } from '#src/refactor/batch/internal/runBatchReview.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 
 interface Params {
 	cwd: string;
@@ -11,9 +11,7 @@ interface Params {
 	runId: string;
 	driver: Driver;
 	batch: RefactorBatch;
-	packs: LoadedStandardsLibrary[];
-	/** A document out of play is not reviewed. */
-	channels: string[];
+	groups: StandardsGroup[];
 	/** A live check's findings, which the machine advisories are filtered out of. */
 	findings: StandardsFinding[];
 	/** false skips the agent's read entirely — code-checks-only mode. */
@@ -32,8 +30,7 @@ export const collectBatchAdvisories = async ({
 	runId,
 	driver,
 	batch,
-	packs,
-	channels,
+	groups,
 	findings,
 	agentReview,
 	timeoutMs,
@@ -42,7 +39,7 @@ export const collectBatchAdvisories = async ({
 	const batchFiles = new Set(batch.blocking.flatMap((finding) => finding.files.map((file) => file.path)));
 	const machine = findings.filter((finding) => finding.severity === StandardsSeverity.Advisory && finding.files.some((file) => batchFiles.has(file.path)));
 
-	const reviewed = await runBatchReview({ cwd, runId, driver, batch, packs, channels, files: [...batchFiles], agentReview, timeoutMs, onProgress });
+	const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: [...batchFiles], agentReview, timeoutMs, onProgress });
 
 	return [...machine, ...reviewed];
 };

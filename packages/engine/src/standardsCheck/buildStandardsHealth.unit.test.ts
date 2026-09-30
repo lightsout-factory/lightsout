@@ -4,11 +4,13 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { BatchReport } from '#src/contracts/refactor/BatchReport.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutcome.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { buildStandardsHealth } from '#src/standardsCheck/buildStandardsHealth.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 
@@ -27,14 +29,37 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	...overrides,
 });
 
-const packOf = ({ name = 'acme', rules }: { name?: string; rules: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
-	name,
-	formatVersion: 1,
-	rootPath: `/packages/${name}`,
-	documents: [],
-	packs: [],
-	rules,
+/**
+ * One group whose pack brings in exactly `rules`, each at its rule.md default.
+ * The topic lists `topicRuleIds`, so a library rule the pack leaves out can
+ * still sit in a topic the pack includes.
+ */
+const groupOf = ({ pack, rules, topicRuleIds }: { pack: string; rules: LoadedStandardsRule[]; topicRuleIds: string[] }): StandardsGroup => ({
+	packages: [''],
+	pack: {
+		name: pack,
+		topics: [
+			{
+				set: 'code',
+				library: 'acme',
+				path: 'code/architecture/folder-structure',
+				channel: 'base',
+				intro: '# Folder Structure',
+				ruleIds: topicRuleIds,
+			},
+		],
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+	},
+	source: StandardsPackSource.Named,
+	states: new Map<string, ResolvedRuleState>(
+		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
+	),
 });
+
+/** The groups of a repo on one pack, `pack`, that brings in exactly `rules`, each listed in its topic. */
+const groupsOf = ({ pack = 'acme/house', rules }: { pack?: string; rules: LoadedStandardsRule[] }) => [
+	groupOf({ pack, rules, topicRuleIds: rules.map((entry) => entry.id) }),
+];
 
 const finding = ({ rule: ruleId, path }: { rule: string; path: string }): StandardsFinding => ({
 	rule: ruleId,
@@ -137,7 +162,7 @@ describe('buildStandardsHealth', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'path-aliases' })] })],
+			groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'path-aliases' })] }),
 		});
 
 		expect(health.totals).toStrictEqual({ rules: 2, checked: 1, judgment: 1 });
@@ -161,7 +186,7 @@ describe('buildStandardsHealth', () => {
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(
 			expect.objectContaining({ attempted: 2, resolved: 1, declined: 1, untracked: 0, reasons: ['[plan] splitting would break the barrel'] }),
@@ -174,7 +199,7 @@ describe('buildStandardsHealth', () => {
 			reports: { 'batch-01': report({ outcome: 'resolved', remainingSiteKeys: ['acme/multi-export:src/a.ts'], rationale: [] }) },
 		});
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 0, declined: 0, untracked: 1 }));
 	});
@@ -182,7 +207,7 @@ describe('buildStandardsHealth', () => {
 	test('a batch with no parseable report is attempted only — a failed batch is not a decline', async () => {
 		const cwd = setupRun({ batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] })] });
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 0, declined: 0, untracked: 1 }));
 	});
@@ -206,7 +231,7 @@ describe('buildStandardsHealth', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'module-boundary', checked: true })] })],
+			groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'module-boundary', checked: true })] }),
 		});
 
 		// the rationale is recorded per batch, so both rules carry it
@@ -221,7 +246,7 @@ describe('buildStandardsHealth', () => {
 			reports: { 'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['acme/multi-export:src/a.ts'] }) },
 		});
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 0, declined: 0 }));
 	});
@@ -233,7 +258,7 @@ describe('buildStandardsHealth', () => {
 			reports: { 'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['acme/multi-export:src/a.ts'] }) },
 		});
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 0, declined: 0, untracked: 0 }));
 	});
@@ -250,7 +275,7 @@ describe('buildStandardsHealth', () => {
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
 
 		expect(health.rules.map((entry) => entry.rule)).toStrictEqual(['acme/multi-export']);
 		expect(health.totals).toStrictEqual({ rules: 1, checked: 1, judgment: 0 });
@@ -272,7 +297,7 @@ describe('buildStandardsHealth', () => {
 			],
 		});
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
 
 		// one corrupt run directory must not take the whole account down with it
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, declined: 1 }));
@@ -294,7 +319,7 @@ describe('buildStandardsHealth', () => {
 			],
 		});
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 1, declined: 0, untracked: 0 }));
 	});
@@ -305,7 +330,7 @@ describe('buildStandardsHealth', () => {
 			unrecordedBatchIds: ['batch-01'],
 		});
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 0, declined: 0, untracked: 1 }));
 	});
@@ -328,7 +353,7 @@ describe('buildStandardsHealth', () => {
 			],
 		});
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(
 			expect.objectContaining({ attempted: 2, resolved: 1, declined: 1, untracked: 0, reasons: ['[other] deliberate'] }),
@@ -340,9 +365,9 @@ describe('buildStandardsHealth', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			packs: [
-				packOf({ name: 'zeta', rules: [rule({ id: 'path-aliases', name: 'zeta/path-aliases', library: 'zeta' })] }),
-				packOf({ name: 'alpha', rules: [rule({ id: 'multi-export', name: 'alpha/multi-export', library: 'alpha', checked: true })] }),
+			groups: [
+				...groupsOf({ pack: 'zeta/house', rules: [rule({ id: 'path-aliases', name: 'zeta/path-aliases', library: 'zeta' })] }),
+				...groupsOf({ pack: 'alpha/house', rules: [rule({ id: 'multi-export', name: 'alpha/multi-export', library: 'alpha', checked: true })] }),
 			],
 		});
 
@@ -362,7 +387,7 @@ describe('buildStandardsHealth', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'module-boundary', checked: true })] })],
+			groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'module-boundary', checked: true })] }),
 		});
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 0, untracked: 1 }));
@@ -382,12 +407,33 @@ describe('buildStandardsHealth', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			packs: [packOf({ name: 'lightsout', rules: [rule({ id: 'function-size', library: 'lightsout', name: 'lightsout/function-size', checked: true })] })],
+			groups: groupsOf({
+				pack: 'lightsout/node',
+				rules: [rule({ id: 'function-size', library: 'lightsout', name: 'lightsout/function-size', checked: true })],
+			}),
 		});
 
 		// the short-named site matches no row, so only the full-name site is tallied
 		expect(health.rules.map((entry) => ({ rule: entry.rule, attempted: entry.attempted, resolved: entry.resolved }))).toStrictEqual([
 			{ rule: 'lightsout/function-size', attempted: 1, resolved: 1 },
 		]);
+	});
+
+	test("buildStandardsHealth: rows follow the groups' packs, not the whole library", async () => {
+		const cwd = mkdtempSync(join(tmpdir(), 'lightsout-health-groups-'));
+		const multiExport = rule({ id: 'multi-export', checked: true });
+		const pathAliases = rule({ id: 'path-aliases' });
+		const groups = [
+			groupOf({ pack: 'acme/structure', rules: [multiExport], topicRuleIds: ['multi-export', 'left-out'] }),
+			groupOf({ pack: 'acme/house', rules: [multiExport, pathAliases], topicRuleIds: ['multi-export', 'path-aliases', 'left-out'] }),
+		];
+
+		const health = await buildStandardsHealth({ cwd, groups });
+
+		// a rule in both packs is one row; left-out sits in the topic, but neither pack brings it in, so it has none
+		expect({ rules: health.rules.map((entry) => entry.rule), totals: health.totals }).toStrictEqual({
+			rules: ['acme/multi-export', 'acme/path-aliases'],
+			totals: { rules: 2, checked: 1, judgment: 1 },
+		});
 	});
 });

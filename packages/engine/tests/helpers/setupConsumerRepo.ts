@@ -66,9 +66,9 @@ export const setupConsumerRepo = ({ git = true, plan = '# Plan: add feature\n', 
 			gates: { check: 'true', test: 'true', 'test-coverage': false, ...scripts },
 			...config,
 			// the strict profile underneath whatever the test overrides — an `off` there
-			// still wins. A repo that names its own packs (or none) gets only what it
-			// wrote: an override naming a rule no loaded pack declares fails config.
-			...('standards-packs' in (config ?? {})
+			// still wins. A repo that names its own pack (or none) gets only what it
+			// wrote: an override naming a rule the pack does not hold fails config.
+			...('standards-pack' in (config ?? {})
 				? {}
 				: {
 						'standards-rule-settings': {

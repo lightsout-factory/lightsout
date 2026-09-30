@@ -31,7 +31,7 @@ const setupHouseRepo = async () => {
 	await writeTree({
 		dir: cwd,
 		files: {
-			'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-packs': ['./house'] }),
+			'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-libraries': { acme: './house' } }),
 			'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 1 }),
 			'house/code/house/topic.md': '---\nchannel: base\n---\n\n# House Style\n',
 			'house/code/house/05-zebra-last/rule.md': '---\nsummary: named to sort last\n---\n\nA rule whose id starts with z.\n',

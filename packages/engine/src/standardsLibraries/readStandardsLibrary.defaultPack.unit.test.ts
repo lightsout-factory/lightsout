@@ -1,8 +1,14 @@
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { StandardsSet } from '@lightsout/standards-contracts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
+import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { buildStandardsDocuments } from '#src/standardsLibraries/buildStandardsDocuments.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary.ts';
+import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack.ts';
 
 /**
  * The pack the plugin ships, loaded from disk exactly as a consumer's run
@@ -20,6 +26,23 @@ const setupDefaultPack = async () => {
 	const packPath = join(__dirname, '..', '..', '..', 'standards-typescript');
 
 	return { pack: await readStandardsLibrary({ packPath }) };
+};
+
+/** The one group a repo whose manifest names no framework gets: the shipped library's node pack, every rule at the pack's own grade. */
+const nodeGroupOf = ({ pack }: { pack: LoadedStandardsLibrary }): StandardsGroup => {
+	const resolved = resolveStandardsPack({ address: 'lightsout/node', libraries: [pack] });
+
+	return {
+		packages: [''],
+		pack: resolved,
+		source: StandardsPackSource.Detected,
+		states: new Map<string, ResolvedRuleState>(
+			resolved.rules.map(({ rule, severity, options }) => [
+				rule.name,
+				{ severity, options, fromConfig: false, reachesAgents: severity !== StandardsSeverity.Off },
+			]),
+		),
+	};
 };
 
 describe('readStandardsLibrary', () => {
@@ -66,27 +89,13 @@ describe('readStandardsLibrary', () => {
 	test('assembles both sets for a repo running no framework, each document headed by where it came from', async () => {
 		const { pack } = await setupDefaultPack();
 
-		const { code, tests } = buildStandardsDocuments({ pack, channels: [], config: undefined });
+		const { code, tests } = buildStandardsDocuments({ groups: [nodeGroupOf({ pack })] });
 
 		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(17);
 		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(2);
 		// the prose itself rides along, not just the headers
 		expect(code ?? '').toContain('One Export Per File');
 		expect(tests ?? '').toContain('Module Boundary Testing');
-	});
-
-	test('brings the framework documents in for a repo that runs them, after the base ones', async () => {
-		const { pack } = await setupDefaultPack();
-
-		const { code, tests } = buildStandardsDocuments({ pack, channels: ['react', 'tanstack'], config: undefined });
-
-		// 17 base + 2 react + 1 tanstack on the code side; 2 base + 1 react on the tests side
-		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(20);
-		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(3);
-		// channel documents land after every base one
-		expect(code?.indexOf('<!-- lightsout: code/architecture/react -->')).toBeGreaterThan(
-			code?.indexOf('<!-- lightsout: code/style-guide/typescript/type-assertions -->') ?? 0,
-		);
 	});
 
 	test('the built-in library is named lightsout and every rule name starts with lightsout/', async () => {

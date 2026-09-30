@@ -6,25 +6,37 @@ import { StandardsReviewReport } from '#src/contracts/standardsCheck/StandardsRe
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { createAgentHeartbeat } from '#src/standardsCheck/internal/common/utils/createAgentHeartbeat.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
 
 interface Params {
 	cwd: string;
 	driver: Driver;
-	packs: LoadedStandardsLibrary[];
-	/** Active framework channels — judgment rules on inactive channels are not reviewed. */
-	channels: string[];
+	groups: StandardsGroup[];
 	/** Files in scope — changed files at the gate, batch files in refactor, the path scope in the CLI. */
 	files: string[];
 	timeoutMs?: number;
 	onProgress?: (message: string) => void;
 }
 
-const collectJudgmentRules = ({ packs, channels }: { packs: LoadedStandardsLibrary[]; channels: string[] }) =>
-	packs.flatMap((pack) => pack.rules).filter((rule) => !rule.checked && (rule.channel === 'base' || channels.includes(rule.channel)));
+/** A judgment rule several groups hold is reviewed once, by full name. */
+const collectJudgmentRules = ({ groups }: { groups: StandardsGroup[] }) => {
+	const rules = new Map<string, LoadedStandardsRule>();
+
+	for (const group of groups) {
+		for (const { rule } of group.pack.rules) {
+			const severity = group.states.get(rule.name)?.severity;
+
+			if (!rule.checked && severity !== undefined && severity !== StandardsSeverity.Off) {
+				rules.set(rule.name, rule);
+			}
+		}
+	}
+
+	return [...rules.values()];
+};
 
 /**
  * Everything dropped is counted and stated — a silent drop would read as a
@@ -87,13 +99,12 @@ const toFindings = ({ reported, rules }: { reported: StandardsReviewReport['find
 export const runStandardsReview = async ({
 	cwd,
 	driver,
-	packs,
-	channels,
+	groups,
 	files,
 	timeoutMs,
 	onProgress,
 }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
-	const rules = collectJudgmentRules({ packs, channels });
+	const rules = collectJudgmentRules({ groups });
 
 	// Nothing to read, or nothing to read it against: no agent is spent saying so.
 	if (rules.length === 0 || files.length === 0) {

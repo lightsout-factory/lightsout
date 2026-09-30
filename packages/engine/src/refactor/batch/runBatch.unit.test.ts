@@ -4,11 +4,14 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runBatch } from '#src/refactor/batch/runBatch.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { report } from '#tests/helpers/report.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';
@@ -17,34 +20,34 @@ import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { verdict } from '#tests/helpers/verdict.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
 
+const singleReturn: LoadedStandardsRule = {
+	id: 'single-return',
+	name: 'acme/single-return',
+	library: 'acme',
+	set: 'code',
+	documentPath: 'code/style-guide/patterns/single-return',
+	summary: 'more than one exit from a function',
+	prose: 'the argument for the rule',
+	channel: 'base',
+	checked: false,
+	defaultSeverity: StandardsSeverity.Advisory,
+	defaultOptions: {},
+	fixturesPath: '/packages/acme/single-return/fixtures',
+};
+
 /**
- * One judgment-only rule in one pack — the run's packs, which runBatch owns the
+ * One judgment-only rule in one group — the run's groups, which runBatch owns the
  * threading of: they reach the pre-edit read through collectBatchAdvisories and
  * the read of what the batch wrote through the tools it builds.
  */
-const judgmentPacks: LoadedStandardsLibrary[] = [
+const judgmentGroups: StandardsGroup[] = [
 	{
-		name: 'acme',
-		formatVersion: 1,
-		rootPath: '/packages/acme',
-		documents: [],
-		packs: [],
-		rules: [
-			{
-				id: 'single-return',
-				name: 'acme/single-return',
-				library: 'acme',
-				set: 'code',
-				documentPath: 'code/style-guide/patterns/single-return',
-				summary: 'more than one exit from a function',
-				prose: 'the argument for the rule',
-				channel: 'base',
-				checked: false,
-				defaultSeverity: StandardsSeverity.Advisory,
-				defaultOptions: {},
-				fixturesPath: '/packages/acme/single-return/fixtures',
-			},
-		],
+		packages: [''],
+		pack: { name: 'acme/house', topics: [], rules: [{ rule: singleReturn, severity: singleReturn.defaultSeverity, options: singleReturn.defaultOptions }] },
+		source: StandardsPackSource.Named,
+		states: new Map<string, ResolvedRuleState>([
+			[singleReturn.name, { severity: singleReturn.defaultSeverity, options: singleReturn.defaultOptions, fromConfig: false, reachesAgents: true }],
+		]),
 	},
 ];
 
@@ -64,7 +67,7 @@ const splitFile = ({ dir, file, first, second }: { dir: string; file: string; fi
  * returns the report it claims for that edit, which is the whole of what the
  * batch loop reads.
  */
-const setupBatch = async ({ answer, packs = [] }: { answer: (params: { pass: number; dir: string }) => string; packs?: LoadedStandardsLibrary[] }) => {
+const setupBatch = async ({ answer, groups = [] }: { answer: (params: { pass: number; dir: string }) => string; groups?: StandardsGroup[] }) => {
 	const dir = setupConsumerRepo();
 
 	// The run below already has its folder, because `createRun` makes one before
@@ -108,8 +111,7 @@ const setupBatch = async ({ answer, packs = [] }: { answer: (params: { pass: num
 			driver,
 			config,
 			batch,
-			packs,
-			channels: [],
+			groups,
 			checkAll: false,
 			agentReview: true,
 			agentTimeoutMs: 60_000,
@@ -198,8 +200,7 @@ const setupRedGateBatch = async ({ ruling, healOnGuidance = false }: { ruling: R
 			driver,
 			config,
 			batch,
-			packs: [],
-			channels: [],
+			groups: [],
 			checkAll: false,
 			agentReview: true,
 			agentTimeoutMs: 60_000,
@@ -254,7 +255,7 @@ describe('runBatch', () => {
 
 	test('the run’s packs reach both the pre-edit read and the read of what the batch wrote', async () => {
 		const { run, reviewSystemPrompts } = await setupBatch({
-			packs: judgmentPacks,
+			groups: judgmentGroups,
 			answer: ({ dir }) => {
 				splitFile({ dir, file: 'src/one.ts', first: 'alphaOne', second: 'betaOne' });
 				splitFile({ dir, file: 'src/two.ts', first: 'alphaTwo', second: 'betaTwo' });

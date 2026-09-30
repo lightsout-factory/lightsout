@@ -10,7 +10,7 @@ import { runBatchPass } from '#src/refactor/batch/internal/runBatchPass.ts';
 import { readStandingWork } from '#src/refactor/batch/readStandingWork.ts';
 import { BatchStopKind } from '#src/refactor/internal/common/constants/BatchStopKind.ts';
 import type { BatchStop } from '#src/refactor/internal/common/types/BatchStop.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 
 interface Params {
 	cwd: string;
@@ -18,8 +18,7 @@ interface Params {
 	driver: Driver;
 	config: LightsoutConfig;
 	batch: RefactorBatch;
-	packs: LoadedStandardsLibrary[];
-	channels: string[];
+	groups: StandardsGroup[];
 	/** Check scope of the run's worklist, threaded into the per-batch re-check. */
 	checkPath?: string;
 	/** Must match the worklist's mode. */
@@ -41,8 +40,7 @@ export const runBatch = async ({
 	driver,
 	config,
 	batch,
-	packs,
-	channels,
+	groups,
 	checkPath,
 	checkAll,
 	agentReview,
@@ -59,8 +57,7 @@ export const runBatch = async ({
 		driver,
 		config,
 		batch,
-		packs,
-		channels,
+		groups,
 		agentReview,
 		checkPath,
 		checkAll,
@@ -86,8 +83,7 @@ export const runBatch = async ({
 		runId,
 		driver,
 		batch,
-		packs,
-		channels,
+		groups,
 		findings: preCheck.findings,
 		agentReview,
 		timeoutMs: agentTimeoutMs,

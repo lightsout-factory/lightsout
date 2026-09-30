@@ -31,7 +31,7 @@ const getNewestMtime = async ({ root }: { root: string }) => {
 
 /**
  * Unlike `toRepoRelativePath`, a pack outside the repo is written out in full
- * rather than as a `../` walk, as a `standards-packs` entry would name it.
+ * rather than as a `../` walk, as a `standards-libraries` entry would name it.
  */
 const toPackEntryPath = ({ rootPath, cwd }: { rootPath: string; cwd: string }) => {
 	const relativePath = toRepoRelativePath({ cwd, path: rootPath });

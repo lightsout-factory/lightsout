@@ -1,11 +1,11 @@
 import { describe, expect, test } from '@jest/globals';
 import { ConfigView } from '#src/contracts/views/config/ConfigView.ts';
 
-const setupConfigView = ({ ruleNumbers }: { ruleNumbers: Record<string, unknown> }) => {
+const setupConfigView = ({ ruleNumbers, source = 'detected' }: { ruleNumbers: Record<string, unknown>; source?: string }) => {
 	const ruleState = {
 		rule: 'lightsout/folder-size',
 		id: 'folder-size',
-		pack: 'lightsout',
+		library: 'lightsout',
 		channel: 'code',
 		severity: 'blocking',
 		fromConfig: true,
@@ -16,8 +16,7 @@ const setupConfigView = ({ ruleNumbers }: { ruleNumbers: Record<string, unknown>
 		harness: 'claude-code',
 		model: null,
 		sections: [],
-		packs: [{ name: 'lightsout', rootPath: '/plugin/standards', isDefault: true, channels: [] }],
-		channels: [],
+		standardsGroups: [{ packages: [''], pack: 'lightsout/node', source }],
 		ruleStates: [ruleState],
 	};
 
@@ -34,9 +33,49 @@ describe('ConfigView', () => {
 
 		expect({ ruleStates: parsedOptions.ruleStates, settingsParsed: parsedSettings.success }).toStrictEqual({
 			ruleStates: [
-				{ rule: 'lightsout/folder-size', id: 'folder-size', pack: 'lightsout', channel: 'code', severity: 'blocking', fromConfig: true, options: { cap: 15 } },
+				{
+					rule: 'lightsout/folder-size',
+					id: 'folder-size',
+					library: 'lightsout',
+					channel: 'code',
+					severity: 'blocking',
+					fromConfig: true,
+					options: { cap: 15 },
+				},
 			],
 			settingsParsed: false,
+		});
+	});
+
+	test.each([
+		{ source: 'named', parses: true },
+		{ source: 'detected', parses: true },
+		{ source: 'configured', parses: false },
+	])('ConfigView: a standards group source of $source parses: $parses', ({ source, parses }) => {
+		const { configView } = setupConfigView({ ruleNumbers: { options: {} }, source });
+
+		const parsed = ConfigView.safeParse(configView);
+
+		expect(parsed.success).toBe(parses);
+	});
+
+	test('ConfigView: a view without standardsGroups is refused, and the deleted packs and channels fields are not carried', () => {
+		const { configView } = setupConfigView({ ruleNumbers: { options: {} } });
+		const withoutGroups = Object.fromEntries(Object.entries(configView).filter(([key]) => key !== 'standardsGroups'));
+
+		const missingGroups = ConfigView.safeParse(withoutGroups);
+		const withOldFields = ConfigView.parse({ ...configView, packs: [], channels: ['react'] });
+
+		expect({
+			missingGroupsParsed: missingGroups.success,
+			carriesPacks: Object.hasOwn(withOldFields, 'packs'),
+			carriesChannels: Object.hasOwn(withOldFields, 'channels'),
+			standardsGroups: withOldFields.standardsGroups,
+		}).toStrictEqual({
+			missingGroupsParsed: false,
+			carriesPacks: false,
+			carriesChannels: false,
+			standardsGroups: [{ packages: [''], pack: 'lightsout/node', source: 'detected' }],
 		});
 	});
 });

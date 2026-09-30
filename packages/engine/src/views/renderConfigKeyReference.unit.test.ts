@@ -64,4 +64,26 @@ describe('renderConfigKeyReference', () => {
 		expect(settingsRow).toMatch(/full rule name \(`<library>\/<rule>`\).*short rule id/);
 		expect(settingsRow).not.toContain('keyed by rule id');
 	});
+
+	test('the standards-pack row is optional and names the address form, the four detected lightsout packs and false for none', () => {
+		const packRow = findRow({ key: 'standards-pack' });
+
+		expect(packRow).toMatch(
+			/^\| `standards-pack` \| no \| .*`<library>\/<pack>`.*root `package\.json`.*`lightsout\/tanstack-start-app`.*`lightsout\/nestjs-app`.*`lightsout\/react-app`.*`lightsout\/node`.*`false`/,
+		);
+	});
+
+	test('the standards-rule-settings row says it is the last layer over the selected pack, and what off, blocking and advisory do there', () => {
+		const settingsRow = findRow({ key: 'standards-rule-settings' });
+
+		expect(settingsRow).toMatch(/over the selected pack as the last layer/);
+		expect(settingsRow).toMatch(/`off` stops a rule running but keeps its prose/);
+		expect(settingsRow).toMatch(/`blocking` or `advisory` turns on a rule the pack ships off/);
+	});
+
+	test('the deleted standards-packs and standards-channels keys have no row', () => {
+		const deletedRows = [findRow({ key: 'standards-packs' }), findRow({ key: 'standards-channels' })];
+
+		expect(deletedRows).toStrictEqual([undefined, undefined]);
+	});
 });

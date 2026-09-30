@@ -3,13 +3,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type FileListInput, type StandardsCheckFunction, type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
-import { resolvePackageRuleStates } from '#src/standardsCheck/resolvePackageRuleStates.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsTopic } from '#src/standardsLibraries/common/types/LoadedStandardsTopic.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 
 /** A repo the checks run against. */
@@ -63,11 +63,18 @@ const fileListInput = ({ calls }: { calls: Array<{ input: StandardsCheckInput }>
 	return input;
 };
 
-/** Runs the given rules as one loaded package, at the severities a repo's config would have resolved for them. */
+/** One group whose pack holds `rules` at their rule.md defaults, each rule at the state `states` resolved for it. */
+const groupOf = ({ rules, states }: { rules: LoadedStandardsRule[]; states: Map<string, ResolvedRuleState> }): StandardsGroup => ({
+	packages: [''],
+	pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
+	source: StandardsPackSource.Named,
+	states,
+});
+
+/** Runs the given rules as one group's pack, at the severities a repo's config would have resolved for them. */
 const runChecks = ({
 	rules,
 	cwd,
-	channels = [],
 	severities = {},
 	path,
 	exclude,
@@ -75,21 +82,27 @@ const runChecks = ({
 }: {
 	rules: LoadedStandardsRule[];
 	cwd: string;
-	channels?: string[];
 	severities?: Record<string, StandardsSeverity>;
 	path?: string;
 	exclude?: string[];
 	onProgress?: (message: string) => void;
 }) => {
-	const pkg: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules, packs: [] };
 	const states = new Map<string, ResolvedRuleState>(
-		rules.map((entry) => [entry.name, { severity: severities[entry.id] ?? entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false }]),
+		rules.map((entry) => {
+			const severity = severities[entry.id] ?? entry.defaultSeverity;
+
+			return [entry.name, { severity, options: entry.defaultOptions, fromConfig: false, reachesAgents: severity !== StandardsSeverity.Off }];
+		}),
 	);
 
-	return runPackageChecks({ cwd, packs: [pkg], states, channels, path, exclude, onProgress });
+	return runPackageChecks({ cwd, groups: [groupOf({ rules, states })], path, exclude, onProgress });
 };
 
-/** Two checked rules, one retuned by the repo's config, with each check recording the options it was run with. */
+/**
+ * Two checked rules, one retuned by the repo's config, with each check
+ * recording the options it was run with. The retuned rule's state carries the
+ * config's options merged over its defaults, as the repo's settings resolve it.
+ */
 const setupConfiguredRun = () => {
 	const { cwd } = setupRepo();
 	const calls: Record<string, Record<string, number>> = {};
@@ -104,33 +117,70 @@ const setupConfiguredRun = () => {
 		rule({ id: 'folder-size', inputKind: StandardsInputKind.FileList, run: recordOptions({ id: 'folder-size' }), defaultOptions: { cap: 20 } }),
 		rule({ id: 'file-size', inputKind: StandardsInputKind.FileList, run: recordOptions({ id: 'file-size' }), defaultOptions: { file: 250, tsxFile: 300 } }),
 	];
-	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules, packs: [] }];
-	const config = LightsoutConfig.parse({
-		gates: { check: 'true', test: 'true', 'test-coverage': false },
-		'standards-rule-settings': { 'folder-size': { options: { cap: 2 } } },
-	});
-	const states = resolvePackageRuleStates({ packs, config });
+	const states = new Map<string, ResolvedRuleState>([
+		['acme/folder-size', { severity: StandardsSeverity.Advisory, options: { cap: 2 }, fromConfig: true, reachesAgents: true }],
+		['acme/file-size', { severity: StandardsSeverity.Advisory, options: { file: 250, tsxFile: 300 }, fromConfig: false, reachesAgents: true }],
+	]);
 
-	return { cwd, packs, states, calls };
+	return { cwd, groups: [groupOf({ rules, states })], calls };
 };
 
 /** One live checked rule `acme/size` whose check writes its site keys with the short id, as every check does. */
 const setupFullNameRun = () => {
 	const { cwd } = setupRepo();
 	const sizeRun: StandardsCheckFunction = () => [{ siteKey: 'size:src/alpha.ts', files: [{ path: 'src/alpha.ts' }], detail: 'too big' }];
-	const packs: LoadedStandardsLibrary[] = [
-		{
-			name: 'acme',
-			formatVersion: 1,
-			rootPath: '/packages/acme',
-			documents: [],
-			packs: [],
-			rules: [rule({ id: 'size', name: 'acme/size', library: 'acme', inputKind: StandardsInputKind.FileText, run: sizeRun })],
-		},
-	];
-	const states = new Map<string, ResolvedRuleState>([['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false }]]);
+	const rules = [rule({ id: 'size', name: 'acme/size', library: 'acme', inputKind: StandardsInputKind.FileText, run: sizeRun })];
+	const states = new Map<string, ResolvedRuleState>([
+		['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
+	]);
 
-	return { cwd, packs, states };
+	return { cwd, groups: [groupOf({ rules, states })] };
+};
+
+/**
+ * One group whose pack holds a live rule `acme/size` and a rule `acme/muted` the
+ * repo turned off, while the library's checked rule `acme/outside` shares their
+ * topic but was left out of the pack. Each check records its id when it runs.
+ */
+const setupGroupRun = () => {
+	const { cwd } = setupRepo();
+	const ran: string[] = [];
+	const reportingRun =
+		({ id }: { id: string }): StandardsCheckFunction =>
+		() => {
+			ran.push(id);
+
+			return [{ siteKey: `${id}:src/alpha.ts`, files: [{ path: 'src/alpha.ts' }], detail: `${id} site` }];
+		};
+	const size = rule({ id: 'size', inputKind: StandardsInputKind.FileText, run: reportingRun({ id: 'size' }) });
+	const muted = rule({ id: 'muted', inputKind: StandardsInputKind.FileText, run: reportingRun({ id: 'muted' }) });
+	const outside = rule({ id: 'outside', inputKind: StandardsInputKind.FileText, run: reportingRun({ id: 'outside' }) });
+	const topic: LoadedStandardsTopic = {
+		set: 'code',
+		library: 'acme',
+		path: 'code/style-guide/structure/module-api',
+		channel: 'base',
+		intro: '# Module API',
+		ruleIds: [size.id, muted.id, outside.id],
+	};
+	const group: StandardsGroup = {
+		packages: [''],
+		pack: {
+			name: 'acme/house',
+			topics: [topic],
+			rules: [
+				{ rule: size, severity: StandardsSeverity.Advisory, options: {} },
+				{ rule: muted, severity: StandardsSeverity.Blocking, options: {} },
+			],
+		},
+		source: StandardsPackSource.Named,
+		states: new Map([
+			['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
+			['acme/muted', { severity: StandardsSeverity.Off, options: {}, fromConfig: true, reachesAgents: true }],
+		]),
+	};
+
+	return { cwd, groups: [group], ran };
 };
 
 describe('runPackageChecks', () => {
@@ -231,19 +281,6 @@ describe('runPackageChecks', () => {
 		expect(notes).toStrictEqual([]);
 	});
 
-	test('runs a framework rule only when its channel is active for the repo', async () => {
-		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
-		const reactRule = rule({ id: 'hook-deps', channel: 'react', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'hook-deps', calls }) });
-
-		const inactive = await runChecks({ cwd, rules: [reactRule], channels: [] });
-		const active = await runChecks({ cwd, rules: [reactRule], channels: ['react'] });
-
-		// a document out of play contributes no prose, so it contributes no checks
-		expect(inactive.findings).toStrictEqual([]);
-		expect(active.findings).toHaveLength(1);
-	});
-
 	test('scopes the checked files to --path while keeping the whole repo as reference', async () => {
 		const { cwd } = setupRepo();
 		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
@@ -329,36 +366,68 @@ describe('runPackageChecks', () => {
 	test('leaves a rule out when the run was handed no resolved state for it', async () => {
 		const { cwd } = setupRepo();
 		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
-		const pkg: LoadedStandardsLibrary = {
-			name: 'acme',
-			formatVersion: 1,
-			rootPath: '/packages/acme',
-			documents: [],
-			packs: [],
-			rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'multi-export', calls }) })],
-		};
+		const rules = [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'multi-export', calls }) })];
 
-		const { findings } = await runPackageChecks({ cwd, packs: [pkg], states: new Map(), channels: [] });
+		const { findings } = await runPackageChecks({ cwd, groups: [groupOf({ rules, states: new Map() })] });
 
 		// severity is policy; with none resolved there is nothing to report at
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('runs each live rule with its resolved options, the config override merged over its defaults', async () => {
-		const { cwd, packs, states, calls } = setupConfiguredRun();
+		const { cwd, groups, calls } = setupConfiguredRun();
 
-		await runPackageChecks({ cwd, packs, states, channels: [] });
+		await runPackageChecks({ cwd, groups });
 
 		expect(calls).toStrictEqual({ 'folder-size': { cap: 2 }, 'file-size': { file: 250, tsxFile: 300 } });
 	});
 
 	test('findings carry the full rule name and a site key prefixed with it', async () => {
-		const { cwd, packs, states } = setupFullNameRun();
+		const { cwd, groups } = setupFullNameRun();
 
-		const { findings } = await runPackageChecks({ cwd, packs, states, channels: [] });
+		const { findings } = await runPackageChecks({ cwd, groups });
 
 		expect(findings).toStrictEqual([
 			{ rule: 'acme/size', severity: StandardsSeverity.Advisory, siteKey: 'acme/size:src/alpha.ts', files: [{ path: 'src/alpha.ts' }], detail: 'too big' },
 		]);
+	});
+
+	test("runPackageChecks: only rules in a group's pack at a reporting severity run", async () => {
+		const { cwd, groups, ran } = setupGroupRun();
+
+		const { findings } = await runPackageChecks({ cwd, groups });
+
+		expect({ ran, findings }).toStrictEqual({
+			ran: ['size'],
+			findings: [
+				{ rule: 'acme/size', severity: StandardsSeverity.Advisory, siteKey: 'acme/size:src/alpha.ts', files: [{ path: 'src/alpha.ts' }], detail: 'size site' },
+			],
+		});
+	});
+
+	test('a checked rule two groups hold runs once, by full name', async () => {
+		const { cwd } = setupRepo();
+		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const rules = [rule({ id: 'size', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'size', calls }) })];
+		const states = new Map<string, ResolvedRuleState>([
+			['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
+		]);
+
+		const { findings } = await runPackageChecks({ cwd, groups: [groupOf({ rules, states }), groupOf({ rules, states })] });
+
+		expect({ runs: calls.length, keys: findings.map((finding) => finding.siteKey) }).toStrictEqual({ runs: 1, keys: ['acme/size:file-text:one'] });
+	});
+
+	test('runPackageChecks: no groups means nothing runs', async () => {
+		const { cwd } = setupRepo();
+		const messages: string[] = [];
+
+		const result = await runPackageChecks({ cwd, groups: [], onProgress: (message) => messages.push(message) });
+
+		// only the file count is reported: no input kind was built, so no check ran
+		expect({ result, messages }).toStrictEqual({
+			result: { findings: [], notes: [] },
+			messages: ['checking 2 source file(s) and 1 test file(s)'],
+		});
 	});
 });

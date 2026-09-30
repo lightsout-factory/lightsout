@@ -1,10 +1,12 @@
 import { describe, expect, test } from '@jest/globals';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import type { DriverResult } from '#src/drivers/common/types/DriverResult.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
@@ -22,13 +24,14 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	...overrides,
 });
 
-const packOf = ({ rules }: { rules: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
-	name: 'acme',
-	formatVersion: 1,
-	rootPath: '/packages/acme',
-	documents: [],
-	packs: [],
-	rules,
+/** One group whose pack holds `rules`, each at its rule.md default. */
+const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup => ({
+	packages: [''],
+	pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
+	source: StandardsPackSource.Named,
+	states: new Map<string, ResolvedRuleState>(
+		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
+	),
 });
 
 /** A stub harness answering every invocation with `text`, recording the prompts and the full invocations it was given. */
@@ -50,6 +53,46 @@ const setupDriver = ({ result }: { result: DriverResult | (() => DriverResult) }
 
 const reviewText = (findings: Record<string, unknown>[]) => JSON.stringify({ findings });
 
+/**
+ * One group whose pack holds two judgment rules the review must skip — one the
+ * repo turned off, one the pack ships off — while its topic names a third
+ * judgment rule of the library that the pack leaves out altogether.
+ */
+const setupExcludedJudgmentRules = () => {
+	const repoOff = rule({ id: 'repo-off-judgment' });
+	const packOff = rule({ id: 'pack-off-judgment', defaultSeverity: StandardsSeverity.Off });
+	const group: StandardsGroup = {
+		packages: [''],
+		pack: {
+			name: 'acme/house',
+			topics: [
+				{
+					set: 'code',
+					library: 'acme',
+					path: 'code/architecture/folder-structure',
+					channel: 'base',
+					intro: '# Folder structure',
+					ruleIds: ['repo-off-judgment', 'pack-off-judgment', 'left-out-judgment'],
+				},
+			],
+			rules: [
+				{ rule: repoOff, severity: StandardsSeverity.Advisory, options: {} },
+				{ rule: packOff, severity: StandardsSeverity.Off, options: {} },
+			],
+		},
+		source: StandardsPackSource.Named,
+		states: new Map<string, ResolvedRuleState>([
+			['acme/repo-off-judgment', { severity: StandardsSeverity.Off, options: {}, fromConfig: true, reachesAgents: true }],
+			['acme/pack-off-judgment', { severity: StandardsSeverity.Off, options: {}, fromConfig: false, reachesAgents: false }],
+		]),
+	};
+	const { driver, prompts } = setupDriver({
+		result: { text: reviewText([{ rule: 'left-out-judgment', files: [{ path: 'src/a.ts' }], detail: 'should never be asked for' }]), exitCode: 0 },
+	});
+
+	return { groups: [group], driver, prompts };
+};
+
 describe('runStandardsReview', () => {
 	test('a reported violation becomes an advisory finding with an engine-derived site key', async () => {
 		const { driver } = setupDriver({
@@ -64,8 +107,7 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts'],
 		});
 
@@ -90,8 +132,7 @@ describe('runStandardsReview', () => {
 		const { findings } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts'],
 		});
 
@@ -105,8 +146,7 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts'],
 		});
 
@@ -121,8 +161,7 @@ describe('runStandardsReview', () => {
 		const { notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts'],
 		});
 
@@ -135,8 +174,7 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'multi-export', checked: true })] })],
 			files: ['src/a.ts'],
 		});
 
@@ -151,41 +189,11 @@ describe('runStandardsReview', () => {
 		await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: [],
 		});
 
 		expect(prompts).toStrictEqual([]);
-	});
-
-	test('a rule on an inactive channel is not reviewed — an out-of-play document contributes nothing', async () => {
-		const { driver, prompts } = setupDriver({ result: { text: reviewText([]), exitCode: 0 } });
-
-		await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'react-hook-order', channel: 'react' })] })],
-			channels: [],
-			files: ['src/a.ts'],
-		});
-
-		expect(prompts).toStrictEqual([]);
-	});
-
-	test('a rule on an active channel is reviewed alongside the base rules', async () => {
-		const { driver, prompts } = setupDriver({ result: { text: reviewText([]), exitCode: 0 } });
-
-		await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'react-hook-order', channel: 'react' }), rule({ id: 'common-placement' })] })],
-			channels: ['react'],
-			files: ['src/a.ts'],
-		});
-
-		expect(prompts.length).toBe(1);
-		expect(prompts[0]).toContain('- src/a.ts');
 	});
 
 	test('a finding the agent gave no guidance for carries none — the key is absent, not empty', async () => {
@@ -196,8 +204,7 @@ describe('runStandardsReview', () => {
 		const { findings } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts'],
 		});
 
@@ -216,8 +223,7 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts'],
 		});
 
@@ -230,8 +236,7 @@ describe('runStandardsReview', () => {
 		await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] }), packOf({ rules: [rule({ id: 'one-export' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] }), groupOf({ rules: [rule({ id: 'one-export' })] })],
 			files: ['src/a.ts'],
 		});
 
@@ -245,8 +250,7 @@ describe('runStandardsReview', () => {
 		await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts'],
 			timeoutMs: 90_000,
 		});
@@ -269,8 +273,7 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'judge', name: 'acme/judge', library: 'acme' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'judge', name: 'acme/judge', library: 'acme' })] })],
 			files: ['src/a.ts', 'src/b.ts', 'src/z.ts'],
 		});
 
@@ -297,11 +300,7 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [
-				packOf({ rules: [rule({ id: 'judge', name: 'acme/judge', library: 'acme' })] }),
-				{ ...packOf({ rules: [rule({ id: 'judge', name: 'house/judge', library: 'house' })] }), name: 'house' },
-			],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'judge', name: 'acme/judge', library: 'acme' }), rule({ id: 'judge', name: 'house/judge', library: 'house' })] })],
 			files: ['src/a.ts', 'src/b.ts'],
 		});
 
@@ -321,13 +320,38 @@ describe('runStandardsReview', () => {
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
 			files: ['src/a.ts'],
 		});
 
 		// a repo whose harness is absent is not a repo in violation
 		expect(findings).toStrictEqual([]);
 		expect(notes).toStrictEqual(['agent review skipped — agent invocation failed: spawn claude ENOENT']);
+	});
+
+	test('a judgment rule two groups hold is reviewed once, so its short id still names one rule', async () => {
+		const judge = rule({ id: 'judge' });
+		const { driver } = setupDriver({
+			result: { text: reviewText([{ rule: 'judge', files: [{ path: 'src/a.ts' }], detail: 'named by short id' }]), exitCode: 0 },
+		});
+
+		const { findings, notes } = await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ rules: [judge] }), groupOf({ rules: [judge] })],
+			files: ['src/a.ts'],
+		});
+
+		// held twice, the short id would read as ambiguous and the finding would be dropped
+		expect({ notes, keys: findings.map((finding) => finding.siteKey) }).toStrictEqual({ notes: [], keys: ['acme/judge:src/a.ts'] });
+	});
+
+	test('runStandardsReview: judgment rules the groups turn off or leave out are never reviewed', async () => {
+		const { groups, driver, prompts } = setupExcludedJudgmentRules();
+
+		const result = await runStandardsReview({ cwd: '/repo', driver, groups, files: ['src/a.ts'] });
+
+		// no rule is left to judge, so no agent is spent — and nothing it might have said reaches the findings
+		expect({ result, spawned: prompts.length }).toStrictEqual({ result: { findings: [], notes: [] }, spawned: 0 });
 	});
 });

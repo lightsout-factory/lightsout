@@ -55,7 +55,7 @@ const setupRepo = ({
 	contents?: Record<string, string>;
 	plant?: Record<string, string>;
 }) => {
-	const dir = setupConsumerRepo({ git: false, scripts: { check, 'test-coverage': 'node coverageGate.cjs' }, config: { 'standards-packs': false } });
+	const dir = setupConsumerRepo({ git: false, scripts: { check, 'test-coverage': 'node coverageGate.cjs' }, config: { 'standards-pack': false } });
 
 	writeFileSync(join(dir, 'coverageGate.cjs'), coverageGate);
 
@@ -96,7 +96,7 @@ const setupMonorepoRepo = ({ scopes }: { scopes: Record<string, Record<string, n
 		git: false,
 		scripts: { 'test-coverage': 'node coverageGate.cjs' },
 		config: {
-			'standards-packs': false,
+			'standards-pack': false,
 			'package-gates': { check: 'true {package}', test: 'true {package}', 'test-coverage': 'node coverageGate.cjs packages/{package}' },
 		},
 	});

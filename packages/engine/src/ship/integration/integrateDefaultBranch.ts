@@ -77,7 +77,7 @@ const guardedStop = async ({ context, failure }: { context: GuardContext; failur
 
 const loadStandards = async ({ cwd, integration }: Pick<Params, 'cwd' | 'integration'>): Promise<{ standards?: string; error?: string }> => {
 	try {
-		const { standards } = await resolveStandards({ cwd, config: integration.config, packages: [] });
+		const { standards } = await resolveStandards({ cwd, config: integration.config });
 
 		return { standards };
 	} catch (error) {

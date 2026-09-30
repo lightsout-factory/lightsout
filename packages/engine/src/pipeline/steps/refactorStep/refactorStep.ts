@@ -17,8 +17,7 @@ import { reviewAdvisories } from '#src/pipeline/steps/refactorStep/internal/comm
 import { runCleanupRound } from '#src/pipeline/steps/refactorStep/internal/common/utils/runCleanupRound.ts';
 import { standardsWorkList } from '#src/pipeline/steps/refactorStep/internal/common/utils/standardsWorkList.ts';
 import { readRunStandardsBaseline } from '#src/runState/standardsBaseline/readRunStandardsBaseline.ts';
-import { resolveStandardsChannels } from '#src/standards/resolveStandardsChannels.ts';
-import { resolveStandardsPacks } from '#src/standardsLibraries/resolveStandardsPacks.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 
 interface Params {
 	run: PipelineRun;
@@ -30,8 +29,9 @@ interface Params {
 
 /** A resume reuses the recorded initial review rather than buying a second one: it describes code the resume has not changed. */
 const buildCleanupContext = async ({ run, gitPrefix, planContent, overviewContent, standards, prior }: Params & { prior: RefactorStepReport | undefined }) => {
-	const packs = await resolveStandardsPacks({ cwd: run.cwd, config: run.config });
-	const channels = await resolveStandardsChannels({ cwd: run.cwd, config: run.config, packages: run.current().packages });
+	// The scope as it stands now, which may have widened since the run began; empty covers every package.
+	const scoped = run.current().packages;
+	const groups = await resolveStandardsGroups({ cwd: run.cwd, config: run.config, packages: scoped.length > 0 ? scoped : undefined });
 	const baseline = await readRunStandardsBaseline({ cwd: run.cwd, runId: run.current().runId });
 
 	return {
@@ -40,12 +40,11 @@ const buildCleanupContext = async ({ run, gitPrefix, planContent, overviewConten
 		planContent,
 		overviewContent,
 		standards,
-		packs,
-		channels,
+		groups,
 		baseline: baseline?.findings,
 		budget: run.config.implement?.refactor?.['max-rounds'] ?? defaultRefactorMaxRounds,
 		before: await fingerprintScopeFiles({ run }),
-		initialReview: prior?.initialReview ?? (await reviewAdvisories({ run, packs, channels, files: sourceFiles({ run }) })),
+		initialReview: prior?.initialReview ?? (await reviewAdvisories({ run, groups, files: sourceFiles({ run }) })),
 	};
 };
 
@@ -84,7 +83,7 @@ const runCleanupRounds = async ({ context, state }: { context: CleanupContext; s
 
 /** Filtered like the opening review's `sourceFiles`, so both reviews read the same kind of file. */
 const finishCleanup = async ({ context, state }: { context: CleanupContext; state: CleanupState }) => {
-	const { run, packs, channels } = context;
+	const { run, groups } = context;
 
 	if (state.endReason === CleanupEndReason.AgentFailed) {
 		state.remaining = (await standardsWorkList({ run, baseline: context.baseline })).workList;
@@ -92,7 +91,7 @@ const finishCleanup = async ({ context, state }: { context: CleanupContext; stat
 
 	const reviewed = state.edited.filter((file) => !isTestFile({ path: file }));
 
-	state.finalReview = reviewed.length === 0 ? context.initialReview : await reviewAdvisories({ run, packs, channels, files: reviewed });
+	state.finalReview = reviewed.length === 0 ? context.initialReview : await reviewAdvisories({ run, groups, files: reviewed });
 
 	if (state.remaining.length > 0) {
 		state.narration = describePersistingFindings({ findings: state.remaining, report: state.lastReport, roundsUsed: state.roundsUsed });

@@ -23,7 +23,17 @@ describe('checkLintRules', () => {
 		const { packageDirs } = setupPackage({ files: { 'biome.json': '{}' } });
 
 		// no standards means no mechanical rules to enforce them
-		expect(await checkLintRules({ config: { ...config, 'standards-packs': false }, packageDirs })).toBe(undefined);
+		expect(await checkLintRules({ config: { ...config, 'standards-pack': false }, packageDirs })).toBe(undefined);
+	});
+
+	test('checkLintRules: standards-pack false skips the check', async () => {
+		const { packageDirs } = setupPackage({ files: { 'biome.json': '{}' } });
+
+		const skipped = await checkLintRules({ config: { ...config, 'standards-pack': false }, packageDirs });
+		const ran = await checkLintRules({ config, packageDirs });
+
+		// only standards-pack false turns the check off; naming no standards key selects a detected pack
+		expect({ skipped, ranId: ran?.id, ranStatus: ran?.status }).toStrictEqual({ skipped: undefined, ranId: 'lint-rules', ranStatus: 'note' });
 	});
 
 	test('flags a biome config that does not enforce the rules the standards assume', async () => {

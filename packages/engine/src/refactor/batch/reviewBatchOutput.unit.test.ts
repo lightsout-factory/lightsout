@@ -1,11 +1,13 @@
 import { describe, expect, test } from '@jest/globals';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { reviewBatchOutput } from '#src/refactor/batch/reviewBatchOutput.ts';
 import { readReviewFindings } from '#src/runState/readReviewFindings.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 
@@ -42,7 +44,16 @@ const judgmentRules: LoadedStandardsRule[] = ['function-size', 'single-return'].
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 }));
 
-const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: judgmentRules, packs: [] }];
+const groups: StandardsGroup[] = [
+	{
+		packages: [''],
+		pack: { name: 'acme/house', topics: [], rules: judgmentRules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })) },
+		source: StandardsPackSource.Named,
+		states: new Map<string, ResolvedRuleState>(
+			judgmentRules.map((rule) => [rule.name, { severity: rule.defaultSeverity, options: rule.defaultOptions, fromConfig: false, reachesAgents: true }]),
+		),
+	},
+];
 
 /** A reviewer that reports whatever the test says it saw, and a progress sink to read back. */
 const setupReview = async ({ reported }: { reported: { rule: string; files: { path: string }[]; detail: string }[] }) => {
@@ -56,8 +67,7 @@ const setupReview = async ({ reported }: { reported: { rule: string; files: { pa
 			runId: 'run-01',
 			driver,
 			batch,
-			packs,
-			channels: [],
+			groups,
 			baseline,
 			changedFiles,
 			agentReview: true,
@@ -142,8 +152,7 @@ describe('reviewBatchOutput', () => {
 			runId: 'run-01',
 			driver,
 			batch,
-			packs,
-			channels: [],
+			groups,
 			baseline: [],
 			changedFiles: ['src/a.ts'],
 			agentReview: false,
@@ -169,8 +178,7 @@ describe('reviewBatchOutput', () => {
 			runId: 'run-01',
 			driver,
 			batch,
-			packs,
-			channels: [],
+			groups,
 			baseline: [],
 			changedFiles: [],
 			agentReview: true,
@@ -191,8 +199,7 @@ describe('reviewBatchOutput', () => {
 			runId: 'run-01',
 			driver,
 			batch,
-			packs,
-			channels: [],
+			groups,
 			baseline: [],
 			changedFiles: ['src/a.ts'],
 			agentReview: true,

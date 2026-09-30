@@ -227,54 +227,6 @@ test.each([
 	expect(LightsoutConfig.safeParse({ ...base, 'executor-file-limit': value }).success).toBe(false);
 });
 
-test('LightsoutConfig: standards-packs accepts relative and absolute pack roots, in config order', () => {
-	const standardsLibraries = ['standards/house', '/opt/acme-standards'];
-
-	const parsed = LightsoutConfig.parse({ ...base, 'standards-packs': standardsLibraries });
-
-	// entries are plain strings either way — the schema carries no path-kind
-	// discrimination, and order is the order packs stack in
-	expect(parsed['standards-packs']).toStrictEqual(standardsLibraries);
-});
-
-test('LightsoutConfig: standards-packs accepts false and absence', () => {
-	const parsed = LightsoutConfig.parse({ ...base, 'standards-packs': false });
-
-	// false is the explicit opt-out, distinct from an absent field
-	expect(parsed['standards-packs']).toBe(false);
-	// the field stays optional — an absent field means the shipped default pack loads
-	expect(LightsoutConfig.safeParse(base).success).toBe(true);
-});
-
-test('LightsoutConfig: a non-string standards-packs entry fails parsing', () => {
-	// entries are plain strings — an object entry is a hard error
-	expect(LightsoutConfig.safeParse({ ...base, 'standards-packs': [{ path: 'standards/house' }] }).success).toBe(false);
-	// a bare string in place of the array is a hard error
-	expect(LightsoutConfig.safeParse({ ...base, 'standards-packs': 'standards/house' }).success).toBe(false);
-});
-
-test('LightsoutConfig: an empty standards-packs array parses and stays empty', () => {
-	const parsed = LightsoutConfig.parse({ ...base, 'standards-packs': [] });
-
-	// an array says "exactly these", so an empty one says "exactly none" and must
-	// survive parsing as itself — collapsing it to absence would load the shipped
-	// default pack the config just declined
-	expect(parsed['standards-packs']).toStrictEqual([]);
-	// and it is a present key, unlike an absent field
-	expect('standards-packs' in parsed).toBe(true);
-});
-
-test.each([
-	{ label: 'a standards-packs of true', 'standards-packs': true },
-	{ label: 'a standards-packs of null', 'standards-packs': null },
-	{ label: 'a standards-packs of 0', 'standards-packs': 0 },
-	{ label: 'a standards-packs object', 'standards-packs': { roots: ['standards/house'] } },
-])('LightsoutConfig: $label fails parsing', ({ 'standards-packs': standardsLibraries }) => {
-	// the opt-out is the literal false and nothing else — a truthy or nullish value
-	// near it would otherwise read as an opt-out and silently drop every standard
-	expect(LightsoutConfig.safeParse({ ...base, 'standards-packs': standardsLibraries }).success).toBe(false);
-});
-
 test('LightsoutConfig accepts standards-libraries as a map of names to strings and rejects a non-string value', () => {
 	const parsed = LightsoutConfig.parse({ ...base, 'standards-libraries': { house: './standards/house', acme: '@acme/standards' } });
 
@@ -283,6 +235,42 @@ test('LightsoutConfig accepts standards-libraries as a map of names to strings a
 	expect(parsed['standards-libraries']).toStrictEqual({ house: './standards/house', acme: '@acme/standards' });
 	// a value that is not a string names no folder and no package
 	expect(LightsoutConfig.safeParse({ ...base, 'standards-libraries': { house: 42 } }).success).toBe(false);
+});
+
+test('LightsoutConfig: standards-pack takes a library/pack address or false', () => {
+	const named = LightsoutConfig.parse({ ...base, 'standards-pack': 'lightsout/node' });
+	const off = LightsoutConfig.parse({ ...base, 'standards-pack': false });
+
+	// a library/pack address and false both survive parsing as written
+	expect({ named: named['standards-pack'], off: off['standards-pack'] }).toStrictEqual({ named: 'lightsout/node', off: false });
+	// a pack name with no library says nothing about where the pack lives
+	expect(LightsoutConfig.safeParse({ ...base, 'standards-pack': 'node' }).success).toBe(false);
+	// only false switches standards off — true selects no pack
+	expect(LightsoutConfig.safeParse({ ...base, 'standards-pack': true }).success).toBe(false);
+});
+
+test.each([
+	{ label: 'a second slash', address: 'lightsout/node/extra' },
+	{ label: 'no library before the slash', address: '/node' },
+	{ label: 'no pack after the slash', address: 'lightsout/' },
+])('LightsoutConfig: a standards-pack address with $label is refused, and the refusal names the <library>/<pack> form', ({ address }) => {
+	const result = LightsoutConfig.safeParse({ ...base, 'standards-pack': address });
+
+	const messages = (result.error?.issues ?? []).map((issue) => issue.message).join('\n');
+
+	expect({ parsed: result.success, namesForm: /<library>\/<pack>/.test(messages) }).toStrictEqual({ parsed: false, namesForm: true });
+});
+
+test('LightsoutConfig: the deleted standards-packs and standards-channels keys are rejected as unknown', () => {
+	const packs = LightsoutConfig.safeParse({ ...base, 'standards-packs': ['./house'] });
+	const channels = LightsoutConfig.safeParse({ ...base, 'standards-channels': ['react'] });
+
+	// no alias and no migration message: the strict schema refuses each old key
+	// by name, the same way it refuses a typo
+	const unknownKeys = [packs, channels].map((result) =>
+		(result.error?.issues ?? []).flatMap((issue) => (issue.code === 'unrecognized_keys' ? issue.keys : [])),
+	);
+	expect(unknownKeys).toStrictEqual([['standards-packs'], ['standards-channels']]);
 });
 
 test('LightsoutConfig: the plan block is optional, keeps its own kebab-case spelling, and stays strict through the composition', () => {

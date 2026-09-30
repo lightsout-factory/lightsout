@@ -161,14 +161,14 @@ test('standards default on when unspecified; false switches them off explicitly'
 	// bundled defaults inlined
 	expect(defaulted.includes('One Export Per File')).toBeTruthy();
 
-	const disabled = await run({ config: { 'standards-packs': false } });
+	const disabled = await run({ config: { 'standards-pack': false } });
 
 	// false → no standards section
 	expect(disabled.includes('# Standards\n\nThese rules are binding')).toBeFalsy();
 });
 
 test('a declared standards pack that cannot be loaded stops the run before any agent spawns', async () => {
-	const dir = setupConsumerRepo({ config: { 'standards-packs': ['standards/ghost'] } });
+	const dir = setupConsumerRepo({ config: { 'standards-pack': 'lightsout/ghost' } });
 	const driver: Driver = {
 		name: 'stub',
 		invoke: async () => {
@@ -190,7 +190,7 @@ test('a declared standards pack that cannot be loaded stops the run before any a
 	// would leave the run with no record of why it ended
 	expect(result.ok).toBe(false);
 	expect(result.manifest.status).toBe('failed');
-	expect(result.error ?? '').toMatch(/standards pack root file not found/);
+	expect(result.error ?? '').toMatch(/pack lightsout\/ghost: names no pack/);
 
 	const cleanSlate = result.manifest.steps.find((step) => step.id === 'clean-slate');
 
@@ -205,8 +205,8 @@ test('a declared standards pack that cannot be loaded stops the run before any a
  * A run whose implement step lands one clean source file and whose refactor
  * pass declines, so the config is the only thing left deciding what the
  * standards half of the gate does. The reviewer's system prompt is collected —
- * it carries the rules the pack and channel resolution selected, so it is where
- * a config the gate failed to honor shows up — and an empty list of prompts is
+ * it carries the rules the pack resolution selected, so it is where a config
+ * the gate failed to honor shows up — and an empty list of prompts is
  * a review that was never bought at all.
  */
 const setupStandardsConfigRun = async ({ config }: { config: Record<string, unknown> }) => {
@@ -246,7 +246,7 @@ const setupStandardsConfigRun = async ({ config }: { config: Record<string, unkn
 };
 
 test('standards packs off: the refactor gate loads no pack, spends no reviewer, and the loop still completes', async () => {
-	const { dir, driver, config, reviewSystemPrompts } = await setupStandardsConfigRun({ config: { 'standards-packs': false } });
+	const { dir, driver, config, reviewSystemPrompts } = await setupStandardsConfigRun({ config: { 'standards-pack': false } });
 
 	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
 
@@ -255,17 +255,6 @@ test('standards packs off: the refactor gate loads no pack, spends no reviewer, 
 	expect(reviewSystemPrompts).toStrictEqual([]);
 	expect(result.ok).toBe(true);
 	expect(result.manifest.steps.find((step) => step.id === 'refactor')?.status).toBe('passed');
-});
-
-test('standards channels configured: the refactor gate hands the reviewer the named channel rather than what it would detect', async () => {
-	const { dir, driver, config, reviewSystemPrompts } = await setupStandardsConfigRun({ config: { 'standards-channels': ['react'] } });
-
-	await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
-
-	// the fixture repo carries no manifest at all, so detection would have found
-	// no channel and left both of these documents out of the review entirely
-	expect(reviewSystemPrompts[0] ?? '').toContain('## code/architecture/react');
-	expect(reviewSystemPrompts[0] ?? '').toContain('## tests/unit-testing-react-components');
 });
 
 test('a ledgered site the run measurably worsened still qualifies, and an unchanged one does not', async () => {

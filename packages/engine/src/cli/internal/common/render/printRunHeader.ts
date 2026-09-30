@@ -2,9 +2,11 @@ import { printConfigSource } from '#src/cli/internal/common/render/printConfigSo
 import { defaultAgentTimeoutMinutes } from '#src/common/constants/defaultAgentTimeoutMinutes.ts';
 import { defaultGateTimeoutMinutes } from '#src/common/constants/defaultGateTimeoutMinutes.ts';
 import { defaultSupervisorTimeoutMinutes } from '#src/common/constants/defaultSupervisorTimeoutMinutes.ts';
+import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 
 interface Params {
 	config: LightsoutConfig;
@@ -14,24 +16,27 @@ interface Params {
 	configPath: string;
 }
 
-const describeStandardsPacks = ({ value }: { value: string[] | false | undefined }) => {
-	if (value === false) {
-		return 'none (explicit)';
+/** Never throws: the header only reports, and `prepareRun` makes the same failure the run's error. */
+const describeStandards = async ({ config, cwd }: { config: LightsoutConfig; cwd: string }) => {
+	let description: string;
+
+	try {
+		const [root] = await resolveStandardsGroups({ cwd, config });
+
+		description = root === undefined ? 'none — standards-pack is false, so no standards load' : `${root.pack.name} (${root.source})`;
+	} catch (error) {
+		description = `will not load — ${messageOf({ error })}`;
 	}
 
-	if (value === undefined) {
-		return 'lightsout (none configured — set to false to disable, or list pack roots)';
-	}
-
-	return value.join(', ');
+	return description;
 };
 
-export const printRunHeader = ({ config, driver, cwd, configPath }: Params): void => {
+export const printRunHeader = async ({ config, driver, cwd, configPath }: Params): Promise<void> => {
 	const coverage = config.gates['test-coverage'] === false ? 'off (explicit)' : config.gates['test-coverage'];
 
 	console.log(`  cwd: ${cwd}`);
 	printConfigSource({ configPath });
-	console.log(`  standards packs: ${describeStandardsPacks({ value: config['standards-packs'] })}`);
+	console.log(`  standards: ${await describeStandards({ config, cwd })}`);
 	console.log(
 		`  harness: ${driver.name} · model: ${config.model ?? 'harness default'} · effort: ${config.effort ?? 'harness default'} · permissions: ${config.permissions ?? Permissions.Write}`,
 	);

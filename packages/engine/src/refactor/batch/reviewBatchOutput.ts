@@ -4,7 +4,7 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runBatchReview } from '#src/refactor/batch/internal/runBatchReview.ts';
 import { findIntroducedFindings } from '#src/refactor/findIntroducedFindings.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 
 interface Params {
 	cwd: string;
@@ -12,9 +12,7 @@ interface Params {
 	runId: string;
 	driver: Driver;
 	batch: RefactorBatch;
-	packs: LoadedStandardsLibrary[];
-	/** A document out of play is not reviewed. */
-	channels: string[];
+	groups: StandardsGroup[];
 	/** The pre-edit advisories, machine and agent alike. */
 	baseline: StandardsFinding[];
 	/** The files the batch's agents actually claimed — the only code this run can have written. */
@@ -38,8 +36,7 @@ export const reviewBatchOutput = async ({
 	runId,
 	driver,
 	batch,
-	packs,
-	channels,
+	groups,
 	baseline,
 	changedFiles,
 	agentReview,
@@ -50,7 +47,7 @@ export const reviewBatchOutput = async ({
 		return [];
 	}
 
-	const reviewed = await runBatchReview({ cwd, runId, driver, batch, packs, channels, files: changedFiles, agentReview, timeoutMs, onProgress });
+	const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: changedFiles, agentReview, timeoutMs, onProgress });
 
 	return findIntroducedFindings({ frozen: baseline, live: reviewed, severity: StandardsSeverity.Advisory });
 };

@@ -33,17 +33,20 @@ const setupRawConfig = async ({ raw }: { raw: string }) => {
 };
 
 /**
- * A repo that declares a standards pack of its own, holding one rule under a
- * base document and a second document that declares the react channel — so what
- * the view reports about the pack can only have come from the pack's own files.
+ * A repo that registers a standards library of its own and selects its house
+ * pack, holding one rule under a base topic and one under a topic that declares
+ * the react channel — so what the view reports about the pack can only have
+ * come from the library's own files.
  */
 const setupDeclaredPack = async () => {
-	const cwd = await seedConfiguredCwd({ config: { 'standards-packs': ['standards/house'] } });
+	const cwd = await seedConfiguredCwd({ config: { 'standards-libraries': { house: './standards/house' }, 'standards-pack': 'house/house' } });
 	const files: Record<string, string> = {
 		'lightsout-standards.json': '{ "name": "house", "formatVersion": 1 }\n',
+		'packs/house.json': JSON.stringify({ description: 'the house rules', include: { topics: ['house/code/demo', 'house/code/react-demo'] } }),
 		'code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
 		'code/demo/01-house-rule/rule.md': '---\nsummary: what house-rule catches\n---\n\nThe rule prose.\n',
 		'code/react-demo/topic.md': '---\nchannel: react\n---\n\n# React demo\n\nProse this pack applies only to react repos.\n',
+		'code/react-demo/01-react-rule/rule.md': '---\nsummary: what react-rule catches\n---\n\nThe react rule prose.\n',
 	};
 
 	for (const [path, content] of Object.entries(files)) {
@@ -52,6 +55,19 @@ const setupDeclaredPack = async () => {
 		mkdirSync(dirname(absolutePath), { recursive: true });
 		writeFileSync(absolutePath, content);
 	}
+
+	return { cwd };
+};
+
+/**
+ * A repo whose root manifest declares no framework dependency, with a config
+ * carrying `standards` on top of the gates — so detection, when it runs, can
+ * only pick the node pack.
+ */
+const setupFrameworkFreeRepo = async ({ standards = {} }: { standards?: Record<string, unknown> } = {}) => {
+	const cwd = await seedConfiguredCwd({ config: standards });
+
+	await writeFile(join(cwd, 'package.json'), JSON.stringify({ name: 'plain', dependencies: { zod: '^4.0.0' } }), 'utf8');
 
 	return { cwd };
 };
@@ -87,7 +103,7 @@ describe('getConfigView', () => {
 		const view = await getConfigView({ cwd: repoRoot });
 
 		expect(findField({ sections: view.sections, key: 'package-gates' })?.fromConfig).toBe(true);
-		expect(findField({ sections: view.sections, key: 'standards-channels' })?.value).toBeNull();
+		expect(findField({ sections: view.sections, key: 'standards-pack' })?.value).toBeNull();
 	});
 
 	test("carries the schema's own sentence for every row, so the page and the contract cannot disagree", async () => {
@@ -107,18 +123,11 @@ describe('getConfigView', () => {
 		expect(view.model).toBe(model);
 	});
 
-	test('names the packs this config loads, each with the channels its own documents declare', async () => {
-		const view = await getConfigView({ cwd: repoRoot });
-
-		expect(view.packs.length).toBeGreaterThan(0);
-		expect(view.packs[0].isDefault).toBe(true);
-		expect(view.packs[0].channels).toContain('base');
-	});
-
 	test('records the pack behind every rule, which is what the ledger links with', async () => {
 		const view = await getConfigView({ cwd: repoRoot });
 
-		expect(view.ruleStates.every((state) => state.pack === view.packs[0].name)).toBe(true);
+		// the library that defines each rule — this repo registers none, so every rule is the built-in library's
+		expect([...new Set(view.ruleStates.map((state) => state.library))]).toStrictEqual(['lightsout']);
 	});
 
 	test('reports a rule this repo turned up as set by config, at the severity the file asked for', async () => {
@@ -211,29 +220,16 @@ describe('getConfigView', () => {
 		expect(view).toEqual(expect.objectContaining({ harness: 'codex', model: 'gpt-5.2' }));
 	});
 
-	test('carries a configured channel list verbatim, because a repo that named its channels is not detecting them', async () => {
-		const cwd = await seedConfiguredCwd({ config: { 'standards-channels': ['react'] } });
-
-		const view = await getConfigView({ cwd });
-
-		expect(view.channels).toStrictEqual(['react']);
-		expect(findField({ sections: view.sections, key: 'standards-channels' })).toEqual(expect.objectContaining({ value: ['react'], fromConfig: true }));
-	});
-
 	test('reads a standards-libraries map back into the Standards section verbatim, without loading a library it names', async () => {
-		// neither entry exists on disk: the view shows the map and no run reads it yet
+		// neither entry exists on disk: with standards switched off nothing loads a
+		// library, so the view can only be showing the map as the file wrote it
 		const libraries = { house: './standards/house', acme: '@acme/standards' };
-		const cwd = await seedConfiguredCwd({ config: { 'standards-libraries': libraries } });
+		const cwd = await seedConfiguredCwd({ config: { 'standards-libraries': libraries, 'standards-pack': false } });
 
 		const view = await getConfigView({ cwd });
 
 		const standards = view.sections.find((section) => section.title === 'Standards');
-		expect(standards?.fields.map((field) => field.key)).toStrictEqual([
-			'standards-packs',
-			'standards-libraries',
-			'standards-channels',
-			'standards-rule-settings',
-		]);
+		expect(standards?.fields.map((field) => field.key)).toStrictEqual(['standards-pack', 'standards-libraries', 'standards-rule-settings']);
 		expect(findField({ sections: view.sections, key: 'standards-libraries' })).toEqual(expect.objectContaining({ value: libraries, fromConfig: true }));
 	});
 
@@ -243,8 +239,19 @@ describe('getConfigView', () => {
 		const view = await getConfigView({ cwd });
 
 		// the config named no channels at all — 'react' can only have come from the
-		// pack's second document, which is the point of a per-pack channel list
-		expect(view.packs).toEqual([expect.objectContaining({ name: 'house', isDefault: false, channels: ['base', 'react'] })]);
+		// pack's second topic, whose rules carry the channel it declares
+		expect({ standardsGroups: view.standardsGroups, channels: [...new Set(view.ruleStates.map((state) => state.channel))] }).toStrictEqual({
+			standardsGroups: [{ packages: [''], pack: 'house/house', source: 'named' }],
+			channels: ['base', 'react'],
+		});
+	});
+
+	test('reads a named standards-pack back into the Standards section as the address the file wrote', async () => {
+		const { cwd } = await setupDeclaredPack();
+
+		const view = await getConfigView({ cwd });
+
+		expect(findField({ sections: view.sections, key: 'standards-pack' })).toEqual(expect.objectContaining({ value: 'house/house', fromConfig: true }));
 	});
 
 	test('names the declaring pack on a rule that came from a declared pack, which is what the ledger links with', async () => {
@@ -252,7 +259,10 @@ describe('getConfigView', () => {
 
 		const view = await getConfigView({ cwd });
 
-		expect(view.ruleStates).toEqual([expect.objectContaining({ rule: 'house/house-rule', id: 'house-rule', pack: 'house', channel: 'base' })]);
+		expect(view.ruleStates).toEqual([
+			expect.objectContaining({ rule: 'house/house-rule', id: 'house-rule', library: 'house', channel: 'base' }),
+			expect.objectContaining({ rule: 'house/react-rule', id: 'react-rule', library: 'house', channel: 'react' }),
+		]);
 	});
 
 	test('a config that is not JSON at all comes back as that, rather than as a repo that has no config', async () => {
@@ -267,5 +277,33 @@ describe('getConfigView', () => {
 		const { cwd } = await setupRawConfig({ raw: JSON.stringify({ gates: { check: 'pnpm check' } }) });
 
 		await expect(getConfigView({ cwd })).rejects.toThrow(/gates\.test/);
+	});
+
+	test("getConfigView: the view names the detected pack group and each rule's library", async () => {
+		const { cwd } = await setupFrameworkFreeRepo();
+
+		const view = await getConfigView({ cwd });
+
+		expect({
+			standardsGroups: view.standardsGroups,
+			carriesPacks: Object.hasOwn(view, 'packs'),
+			carriesChannels: Object.hasOwn(view, 'channels'),
+			hasRuleStates: view.ruleStates.length > 0,
+			libraries: [...new Set(view.ruleStates.map((state) => state.library))],
+		}).toStrictEqual({
+			standardsGroups: [{ packages: [''], pack: 'lightsout/node', source: 'detected' }],
+			carriesPacks: false,
+			carriesChannels: false,
+			hasRuleStates: true,
+			libraries: ['lightsout'],
+		});
+	});
+
+	test('getConfigView: standards-pack false shows no group and no rule', async () => {
+		const { cwd } = await setupFrameworkFreeRepo({ standards: { 'standards-pack': false } });
+
+		const view = await getConfigView({ cwd });
+
+		expect({ standardsGroups: view.standardsGroups, ruleStates: view.ruleStates }).toStrictEqual({ standardsGroups: [], ruleStates: [] });
 	});
 });

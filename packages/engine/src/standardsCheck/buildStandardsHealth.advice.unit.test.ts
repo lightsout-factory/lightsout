@@ -8,11 +8,13 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { BatchReport } from '#src/contracts/refactor/BatchReport.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutcome.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { buildStandardsHealth } from '#src/standardsCheck/buildStandardsHealth.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 
@@ -31,13 +33,14 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	...overrides,
 });
 
-const packOf = ({ name = 'acme', rules }: { name?: string; rules: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
-	name,
-	formatVersion: 1,
-	rootPath: `/packages/${name}`,
-	documents: [],
-	packs: [],
-	rules,
+/** One group whose pack brings in exactly `rules`, each at its rule.md default. */
+const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup => ({
+	packages: [''],
+	pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
+	source: StandardsPackSource.Named,
+	states: new Map<string, ResolvedRuleState>(
+		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
+	),
 });
 
 const finding = ({ rule: ruleId, path }: { rule: string; path: string }): StandardsFinding => ({
@@ -149,7 +152,7 @@ describe('buildStandardsHealth advice counting', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'path-aliases' })] })],
+			groups: [groupOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'path-aliases' })] })],
 		});
 
 		expect(rowFor({ rules: health.rules, id: 'path-aliases' })).toEqual(
@@ -173,7 +176,7 @@ describe('buildStandardsHealth advice counting', () => {
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'path-aliases' })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'path-aliases' })] })] });
 
 		// counting it as applied would credit the rule with advice nobody acted
 		// on; counting it as declined would blame it for a rejection nobody made
@@ -193,7 +196,7 @@ describe('buildStandardsHealth advice counting', () => {
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'path-aliases' })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'path-aliases' })] })] });
 
 		expect(rowFor({ rules: health.rules, id: 'path-aliases' })).toEqual(expect.objectContaining({ adviceApplied: 0, adviceDeclined: 1, reasons: [] }));
 	});

@@ -193,7 +193,7 @@ const executeDirectWork = async ({
 		return redBaseline;
 	}
 
-	const { standards } = await resolveStandards({ cwd, config, packages: [] });
+	const { standards } = await resolveStandards({ cwd, config });
 
 	return buildAndVerify({ run, driver, ticketRef, ticketBody, standards, answeredQuestion, resumed: existing !== undefined });
 };

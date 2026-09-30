@@ -3,10 +3,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type FileListInput, type StandardsCheckFunction, type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { ResolvedRuleState } from '#src/standardsCheck/internal/common/types/ResolvedRuleState.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 
@@ -86,14 +87,19 @@ const fileListInput = ({ calls }: { calls: Array<{ input: StandardsCheckInput }>
 	return input;
 };
 
-/** Runs the given rules as one loaded package, at the severities their own declarations give them. */
+/** Runs the given rules as one group's pack, at the severities their own declarations give them. */
 const runChecks = ({ rules, cwd, packagesDir }: { rules: LoadedStandardsRule[]; cwd: string; packagesDir?: string }) => {
-	const pkg: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules, packs: [] };
 	const states = new Map<string, ResolvedRuleState>(
-		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false }]),
+		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
 	);
+	const group: StandardsGroup = {
+		packages: [''],
+		pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
+		source: StandardsPackSource.Named,
+		states,
+	};
 
-	return runPackageChecks({ cwd, packs: [pkg], states, channels: [], packagesDir });
+	return runPackageChecks({ cwd, groups: [group], packagesDir });
 };
 
 describe('runPackageChecks target repo', () => {

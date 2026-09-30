@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { ConfigFieldView } from '#src/contracts/views/config/ConfigFieldView.ts';
 
@@ -18,19 +19,17 @@ export const ConfigView = z.object({
 			fields: z.array(ConfigFieldView),
 		}),
 	),
-	/** Standards packs this config loads, by name and root path — links into the pack pages. */
-	packs: z.array(z.object({ name: z.string(), rootPath: z.string(), isDefault: z.boolean(), channels: z.array(z.string()) })),
-	/** The config's `standards-channels` value verbatim; empty when unset (channels are otherwise detected per run, which this view cannot do). */
-	channels: z.array(z.string()),
-	/** Every loaded rule with its effective severity here and whether config set it. */
+	/** The groups this repo's standards resolve to, with no package scope. Empty when standards-pack is false. */
+	standardsGroups: z.array(z.object({ packages: z.array(z.string()), pack: z.string(), source: z.enum(StandardsPackSource) })),
+	/** Every rule in the selected pack with its effective severity here and whether config set it. */
 	ruleStates: z.array(
 		z.object({
 			/** The full rule name `<library>/<rule-id>` — the one a finding carries. */
 			rule: z.string(),
 			/** The rule's id inside its library — the address the pack pages use. */
 			id: z.string(),
-			/** The pack that declares the rule, named beside it when several packs load. */
-			pack: z.string(),
+			/** The library that defines the rule. */
+			library: z.string(),
 			/** The rule's channel — which set of rules it belongs to, and so where the ledger's link to it points. */
 			channel: z.string(),
 			severity: z.enum([StandardsSeverity.Blocking, StandardsSeverity.Advisory, StandardsSeverity.Off]),
