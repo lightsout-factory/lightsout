@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
-import { cp, mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readdir, readFile, readlink, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { afterAll } from '@jest/globals';
 import { commitAll } from '#tests/helpers/commitAll.ts';
 import { runInRepo } from '#tests/helpers/runInRepo.ts';
@@ -10,12 +10,49 @@ import { shippedManifestPaths } from '#tests/helpers/shippedManifestPaths.ts';
 const repoRoot = join(__dirname, '..', '..', '..', '..');
 const clones: string[] = [];
 
+/** True when a link's target lands inside this repo's own `packages/`: a workspace package, not an installed one. */
+const isWorkspaceLink = ({ linkPath, target }: { linkPath: string; target: string }) => {
+	const landing = relative(join(repoRoot, 'packages'), resolve(dirname(linkPath), target));
+
+	return !landing.startsWith('..') && !landing.startsWith('/');
+};
+
+/**
+ * A package's installed dependencies, linked into the clone one entry at a
+ * time, and a scope folder (`@lightsout/`, `@types/`) one level further.
+ *
+ * Links to this repo's own packages are relative (`../../../standards-contracts`),
+ * so each is recreated with the same target and lands on the clone's copy of
+ * that package. Linking the whole folder instead would resolve them into this
+ * working tree, and the clone's committed engine would be bundled against
+ * sibling packages a branch has changed but not yet committed. Everything else
+ * points at the installed copy, which is what spares the clone an install.
+ */
+const linkInstalledDependencies = async ({ installed, target }: { installed: string; target: string }): Promise<void> => {
+	await mkdir(target, { recursive: true });
+
+	for (const entry of await readdir(installed, { withFileTypes: true })) {
+		const from = join(installed, entry.name);
+		const to = join(target, entry.name);
+
+		if (entry.isSymbolicLink()) {
+			const linkTarget = await readlink(from);
+
+			await symlink(isWorkspaceLink({ linkPath: from, target: linkTarget }) ? linkTarget : from, to);
+		} else if (entry.isDirectory() && entry.name.startsWith('@')) {
+			await linkInstalledDependencies({ installed: from, target: to });
+		} else {
+			await symlink(from, to);
+		}
+	}
+};
+
 /**
  * A clone of this repo with its own history, sharing node_modules by symlink —
  * the check builds the engine, which needs esbuild and the engine's own
  * dependencies.
  *
- * Every node_modules is linked, not just the root one. This is a workspace, and
+ * Every package's node_modules is linked, not just the root one. This is a workspace, and
  * the package manager installs nothing at the root that a package declared for
  * itself, so a clone with only the root link cannot resolve `zod` and the build
  * fails on the first import. The clone's package list is the authority for which
@@ -64,7 +101,7 @@ const buildBaseClone = async () => {
 		const installed = join(repoRoot, 'packages', entry.name, 'node_modules');
 
 		if (entry.isDirectory() && existsSync(installed)) {
-			await symlink(installed, join(dir, 'packages', entry.name, 'node_modules'), 'dir');
+			await linkInstalledDependencies({ installed, target: join(dir, 'packages', entry.name, 'node_modules') });
 		}
 	}
 
