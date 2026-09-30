@@ -164,7 +164,7 @@ With the `plan` config block turned on, the plan is a contract rather than a nar
 
 When drafting, the engine reads the source files the verified facts recorded once and hands that evidence to every plan writer, instead of each writer opening the same files again, and it compares each writer's planned symbol names against the repository's existing exports once rather than searching per symbol. Those writers ask their harness for a focused agent environment: no MCP servers, no skill catalogue, and a named list of the tools a plan writer actually uses — with the configured model, effort, permissions and authentication untouched. A harness applies the parts it supports and runs the rest as an ordinary session. Claude Code supports all of it; on Codex and Pi a draft runs in an ordinary session and costs more tokens, but produces the same plan.
 
-When a plan starts from a `/brainstorm` hand-off, the decisions already settled there are carried straight into the plan rather than asked again; a settled decision is re-opened only when exploring the code turns up a concrete conflict.
+When a plan starts from a `/brainstorm` hand-off, the decisions already settled there are carried straight into the plan rather than asked again; a settled decision is re-opened only when exploring the code turns up a concrete conflict. One the planner believes is weak is flagged to you once, with the better alternative and what the settled choice costs, and stands until you change it.
 
 The plan's Decision Log is composed by the engine from the saved decision records rather than typed out by the writer, and so is the Global Constraints section listing the project-wide rules those records settled. `lightsout plan sync-decisions --name <name>` regenerates both sections in every file of the plan, and a decision's named phases show in its Choice cell — run it after a decision is recorded, and again as often as you like: a file whose two sections already match the records is left untouched.
 
@@ -220,9 +220,9 @@ Or start from a plain description:
 
 ### /auto-plan
 
-Plan a ticket without the interview. `/auto-plan` does the work `/plan` does, but answers the questions itself — every question that falls below a written escalation bar. It stops only for the ones two reasonable engineers would answer differently.
+Plan a ticket without the interview. `/auto-plan` follows the same rules `/plan` does — they share one written escalation bar that decides which questions need a person — but answers the questions itself. A question below the bar it answers and lists; one above it, which two reasonable engineers would answer differently in a way you would see, it answers with its recommendation and puts at the top of the proposal. It stops to ask first only when the answer would act outside the plan, such as splitting the ticket, and under `auto-approve-plan`, where nobody reads the proposal, it parks instead of picking.
 
-It then shows one proposal, carrying a digest of every question it answered for itself. Any of those answers can be vetoed there.
+It then shows one proposal: those picks first, any concern it has with a decision already settled, and a digest of every other question it answered for itself. Any of those answers can be changed there.
 
 What happens after you approve — stop at the hand-off line, or start the build — is the `auto-plan` config block's decision. Reach for it when the ticket is shaped enough that you would answer most of the interview with "you decide".
 
