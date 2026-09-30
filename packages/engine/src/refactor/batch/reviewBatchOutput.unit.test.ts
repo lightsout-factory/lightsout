@@ -1,3 +1,5 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
@@ -70,12 +72,33 @@ const setupReview = async ({ reported }: { reported: { rule: string; files: { pa
 			groups,
 			baseline,
 			changedFiles,
+			packagesDir: 'packages',
 			agentReview: true,
 			timeoutMs: 1000,
 			onProgress: (line) => progress.push(line),
 		});
 
 	return { call, cwd, progress };
+};
+
+/**
+ * A repo whose packages live under `apps/`, holding the workspace package `web`,
+ * and a reviewer that reports one rule in `apps/web` and another at the root.
+ * The only group covers the repo root, so `web` is a package no group covers —
+ * but only when the review reads `apps` as the packages directory.
+ */
+const setupPackagesDirReview = async () => {
+	const progress: string[] = [];
+	const cwd = await freshCwd();
+	await mkdir(join(cwd, 'apps', 'web'), { recursive: true });
+	await writeFile(join(cwd, 'apps', 'web', 'package.json'), JSON.stringify({ name: 'web' }));
+	const reported = [
+		{ rule: 'function-size', files: [{ path: 'apps/web/src/a.ts' }], detail: '81 lines' },
+		{ rule: 'single-return', files: [{ path: 'src/a.ts' }], detail: 'six exits' },
+	];
+	const driver: Driver = { name: 'stub', invoke: async () => ({ text: JSON.stringify({ findings: reported }), exitCode: 0 }) };
+
+	return { cwd, driver, progress };
 };
 
 describe('reviewBatchOutput', () => {
@@ -155,6 +178,7 @@ describe('reviewBatchOutput', () => {
 			groups,
 			baseline: [],
 			changedFiles: ['src/a.ts'],
+			packagesDir: 'packages',
 			agentReview: false,
 			timeoutMs: 1000,
 			onProgress: () => undefined,
@@ -181,6 +205,7 @@ describe('reviewBatchOutput', () => {
 			groups,
 			baseline: [],
 			changedFiles: [],
+			packagesDir: 'packages',
 			agentReview: true,
 			timeoutMs: 1000,
 			onProgress: (line) => progress.push(line),
@@ -202,6 +227,7 @@ describe('reviewBatchOutput', () => {
 			groups,
 			baseline: [],
 			changedFiles: ['src/a.ts'],
+			packagesDir: 'packages',
 			agentReview: true,
 			timeoutMs: 1000,
 			onProgress: (line) => progress.push(line),
@@ -209,5 +235,28 @@ describe('reviewBatchOutput', () => {
 
 		expect(introduced).toStrictEqual([]);
 		expect(progress.some((line) => line.startsWith('batch-01:multi-export:src: agent review skipped — '))).toBe(true);
+	});
+
+	test('forwards packagesDir to the batch review of changed files', async () => {
+		const { cwd, driver, progress } = await setupPackagesDirReview();
+
+		const introduced = await reviewBatchOutput({
+			cwd,
+			runId: 'run-01',
+			driver,
+			batch,
+			groups,
+			packagesDir: 'apps',
+			baseline: [],
+			changedFiles: ['apps/web/src/a.ts', 'src/a.ts'],
+			agentReview: true,
+			timeoutMs: 1000,
+			onProgress: (line) => progress.push(line),
+		});
+
+		// read with the default `packages`, the apps/web file would sit at the repo
+		// root and be kept — its drop proves the review graded by `apps`
+		expect(introduced.map((entry) => entry.siteKey)).toStrictEqual(['acme/single-return:src/a.ts']);
+		expect(progress.some((line) => line.includes('no standards group covers the file'))).toBe(true);
 	});
 });

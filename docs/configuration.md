@@ -24,7 +24,7 @@ To run lightsout, define the commands it should use to verify the work:
 
 ### Use lightsout’s code standards
 
-The minimal configuration uses lightsout’s bundled JavaScript and TypeScript standards. With no `standards-pack` set, lightsout picks one of its own packs from the dependencies in your root `package.json`, checking in this order and taking the first match:
+The minimal configuration uses lightsout’s bundled JavaScript and TypeScript standards. With no `standards-pack` set, lightsout picks one of its own packs from the dependencies in your root `package.json` — and, in a monorepo, for each package from that package’s own `package.json` — checking in this order and taking the first match:
 
 1. TanStack Start (`@tanstack/react-start` or `@tanstack/start`) — `lightsout/tanstack-start-app`
 2. NestJS (`@nestjs/core`) — `lightsout/nestjs-app`
@@ -82,7 +82,20 @@ Use `package-gates` to run gates only for packages affected by the current chang
 }
 ```
 
-See [Monorepos](monorepos.md) for package detection and gate-resolution details.
+Use `package-standards-packs` to give a package a standards pack of its own. Each key is the package’s folder name under `packages-dir`, as `--packages` uses it, and each value is a pack address:
+
+```json
+{
+  "standards-pack": "lightsout/node",
+  "package-standards-packs": {
+    "web-app": "lightsout/tanstack-start-app"
+  }
+}
+```
+
+A package the map does not name uses `standards-pack`, or, when that is unset, the pack lightsout detects from the package’s own `package.json`.
+
+See [Monorepos](monorepos.md) for package detection, gate resolution and how standards follow each package.
 
 ## How verification works
 
@@ -168,8 +181,10 @@ agents that write code, and a `tests/` tree for the agent that writes tests.
 Every rule is a folder inside a topic: its prose, the check that enforces it
 when one is possible, and the example files that prove the check works.
 
-A repository selects exactly one pack, and that pack brings in every rule it
-needs. Name it with `standards-pack`:
+A repository selects one pack, and that pack brings in every rule it needs. In
+a monorepo a package may select a different one with `package-standards-packs`
+(see [Configure a monorepo](#configure-a-monorepo)). Name the repository's pack
+with `standards-pack`:
 
 ```json
 {
@@ -182,15 +197,17 @@ needs. Name it with `standards-pack`:
 }
 ```
 
-The pack applies to the repository root and every package in it. With no
-`standards-pack` set, lightsout detects one of its own packs from the root
-`package.json`, as [Use lightsout’s code standards](#use-lightsouts-code-standards)
-describes. A pack that no registered library holds fails the run. Every rule is
+The pack applies to the repository root and every package
+`package-standards-packs` does not name. With no `standards-pack` set, lightsout
+detects one of its own packs from the root `package.json` for the root, and from
+each package's own `package.json` for that package, as
+[Use lightsout’s code standards](#use-lightsouts-code-standards) describes. A pack that no registered library holds fails the run. Every rule is
 named `<library>/<rule>`, where the library is the `name` in its
 `lightsout-standards.json`, so two libraries may each hold a rule with the same
 short id.
 
-Set `standards-pack` to `false` to run with no standards at all.
+Set `standards-pack` to `false` to run with no standards for the root and every
+package `package-standards-packs` does not name.
 
 ### Register standards libraries
 
@@ -304,7 +321,8 @@ is overwritten the next time `pnpm build:config-reference` runs.
 | `packages-dir` | no | Directory holding workspace packages, for monorepo scoped gates. Defaults to `packages`. |
 | `package-gates` | no | Monorepo scoped gate templates — the per-package commands `{package}` is substituted into. Each template runs once per affected package, so a gate runs only for the packages a change touched. |
 | `gate-overrides` | no | Opt-in per-checkpoint gate schedules, keyed by the four verification checkpoints — `clean-slate`, `verify-implement`, `verify-tests` and `verify-refactor`. A checkpoint listed with an array runs exactly those gates, in that order, with no tiering, and a red one stops the rest of the list; `"off"` runs no gates at all there, `gates.generate` included. A checkpoint the block does not list keeps the engine’s default: the cheap gates first — check, then the unit suite — and the expensive ones, each custom `test-*` suite and the build, only once every package group’s cheap gates are green. A name must be a gate this repo configures under `gates` or `package-gates`; `generate` and `format` may not be named. |
-| `standards-pack` | no | The one standards pack for the repo root and every package, written `<library>/<pack>`, such as `lightsout/node`. Unset = lightsout detects one of its own packs from the root `package.json`’s dependencies: `lightsout/tanstack-start-app` for TanStack Start, `lightsout/nestjs-app` for NestJS, `lightsout/react-app` for React, and `lightsout/node` otherwise. `false` = no standards at all. |
+| `standards-pack` | no | The standards pack for the repo root and every package `package-standards-packs` does not name, written `<library>/<pack>`, such as `lightsout/node`. Unset = lightsout detects one of its own packs from the dependencies in the root `package.json` for the root, and in each package’s own `package.json` for that package: `lightsout/tanstack-start-app` for TanStack Start, `lightsout/nestjs-app` for NestJS, `lightsout/react-app` for React, and `lightsout/node` otherwise. `false` = no standards for the root and every package the map does not name. |
+| `package-standards-packs` | no | A standards pack of its own for each package that differs from `standards-pack`. Each key is a package folder name under `packages-dir`, as `--packages` uses it, and each value is a pack address, `<library>/<pack>`. A package the map does not name uses `standards-pack`, or the pack detected from its own `package.json` when that is unset. `false` is accepted only by `standards-pack`, never here. A key naming no workspace package is an error. |
 | `standards-libraries` | no | Standards libraries the repo registers beside the built-in one, each a folder of topics, rules and pack files. Each key is a library name and each value is either a folder — a value starting with `./` or `../`, or an absolute path, read against the repo root — or an npm package name, looked up in the repo’s `node_modules`. A library’s manifest `name` must equal its key, and `lightsout` is built in and reserved. Versions are fixed the way the rest of the repo’s are: by git for a folder, by the lockfile for a package, and by the plugin version for the built-in library. |
 | `standards-rule-settings` | no | Per-rule severity and options settings, applied over the selected pack as the last layer and keyed by full rule name (`<library>/<rule>`), or by short rule id where only one rule in the pack has it. `off` stops a rule running but keeps its prose for agents; `blocking` or `advisory` turns on a rule the pack ships off. An entry naming no rule in the pack is an error. A rule not named here keeps its pack’s setting — silence is never a change. |
 | `ship` | no | Opt-in `lightsout ship` settings: the branch ticket pattern whose `ticket` capture group becomes the result’s ticket reference, the pull request body template, the merge method, whether a passed implement run chains into ship, an optional pre-ship command that prepares the release candidate before it is verified, and the explicit exception for a repository that intentionally has no CI. |
@@ -874,8 +892,13 @@ The following example shows how the optional configuration fields fit together:
     },
   },
 
-  // The one standards pack the repository works against
+  // The standards pack for the repository root and every package not named below
   "standards-pack": "lightsout/node",
+
+  // A package whose standards differ, keyed by its folder under packages-dir
+  "package-standards-packs": {
+    "web-app": "lightsout/tanstack-start-app",
+  },
 
   // Repository-wide gates
   "gates": {

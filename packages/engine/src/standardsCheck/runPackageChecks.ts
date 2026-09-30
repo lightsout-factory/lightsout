@@ -1,15 +1,24 @@
-import { type StandardsCheckFunction, type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
+import { type RawStandardsFinding, type StandardsCheckFunction, type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
+import { canonicalJson } from '#src/common/utils/canonicalJson.ts';
+import { listWorkspacePackages } from '#src/common/workspace/listWorkspacePackages.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { buildCheckInput } from '#src/standardsCheck/internal/common/checkInputs/buildCheckInput.ts';
 import { typescriptInputKinds } from '#src/standardsCheck/internal/common/constants/typescriptInputKinds.ts';
+import { findFileStandardsGroup } from '#src/standardsCheck/internal/common/utils/findFileStandardsGroup.ts';
 import { findFoldersWithoutAliasSource } from '#src/standardsCheck/internal/common/utils/findFoldersWithoutAliasSource.ts';
 import { runRuleCheck } from '#src/standardsCheck/internal/common/utils/runRuleCheck.ts';
+
+interface Grader {
+	group: StandardsGroup;
+	/** Only the two reporting severities — a group running the rule `off` never grades it. */
+	severity: StandardsFinding['severity'];
+}
 
 interface LiveRule {
 	id: string;
@@ -17,12 +26,12 @@ interface LiveRule {
 	name: string;
 	inputKind: StandardsInputKind;
 	run: StandardsCheckFunction;
-	/** Only the two reporting severities — an `off` rule never becomes a live one. */
-	severity: StandardsFinding['severity'];
 	options: Record<string, number>;
+	/** Each group running the rule at these options, with the severity it grades at. */
+	graders: Grader[];
 }
 
-/** A rule several groups hold runs once, by full name. */
+/** A rule runs once per distinct options, for every group that holds it at those options and a reporting severity. */
 const selectLiveRules = ({ groups }: { groups: StandardsGroup[] }) => {
 	const live = new Map<string, LiveRule>();
 
@@ -30,15 +39,15 @@ const selectLiveRules = ({ groups }: { groups: StandardsGroup[] }) => {
 		for (const { rule } of group.pack.rules) {
 			const state = group.states.get(rule.name);
 
-			if (rule.run === undefined || rule.inputKind === undefined || state === undefined || live.has(rule.name)) {
+			if (rule.run === undefined || rule.inputKind === undefined || state === undefined || state.severity === StandardsSeverity.Off) {
 				continue;
 			}
 
-			if (state.severity === StandardsSeverity.Off) {
-				continue;
-			}
+			const key = canonicalJson({ value: [rule.name, state.options] });
+			const entry = live.get(key) ?? { id: rule.id, name: rule.name, inputKind: rule.inputKind, run: rule.run, options: state.options, graders: [] };
 
-			live.set(rule.name, { id: rule.id, name: rule.name, inputKind: rule.inputKind, run: rule.run, severity: state.severity, options: state.options });
+			entry.graders.push({ group, severity: state.severity });
+			live.set(key, entry);
 		}
 	}
 
@@ -47,20 +56,33 @@ const selectLiveRules = ({ groups }: { groups: StandardsGroup[] }) => {
 
 type BuildInput = (params: { kind: StandardsInputKind; options: Record<string, number> }) => Promise<StandardsCheckInput>;
 
+type GroupOfFile = (file: string | undefined) => StandardsGroup | undefined;
+
+/** A finding is kept only when the group holding its first file runs this rule at these options, and takes that group's severity. */
+const gradeFindings = ({ rule, raw, groupOfFile }: { rule: LiveRule; raw: RawStandardsFinding[]; groupOfFile: GroupOfFile }) =>
+	raw.flatMap((finding) => {
+		const group = groupOfFile(finding.files[0]?.path);
+		const grader = rule.graders.find((candidate) => candidate.group === group);
+
+		return grader === undefined ? [] : [{ ...finding, rule: rule.name, severity: grader.severity }];
+	});
+
 /** A kind needing TypeScript when none resolves does not fail the run: its rules are named as skipped and the rest still report. */
 const runLiveRules = async ({
 	live,
 	buildInput,
+	groupOfFile,
 	compiler,
 	progress,
 }: {
 	live: LiveRule[];
 	buildInput: BuildInput;
+	groupOfFile: GroupOfFile;
 	compiler: ReturnType<typeof resolveConsumerTypescript>;
 	progress: (message: string) => void;
 }) => {
 	const findings: StandardsFinding[] = [];
-	const skipped: string[] = [];
+	const skipped = new Set<string>();
 
 	for (const kind of Object.values(StandardsInputKind)) {
 		const rules = live.filter((rule) => rule.inputKind === kind);
@@ -70,7 +92,10 @@ const runLiveRules = async ({
 		}
 
 		if (compiler === undefined && typescriptInputKinds.has(kind)) {
-			skipped.push(...rules.map((rule) => rule.name));
+			for (const rule of rules) {
+				skipped.add(rule.name);
+			}
+
 			continue;
 		}
 
@@ -90,18 +115,18 @@ const runLiveRules = async ({
 
 			const raw = await runRuleCheck({ rule, run: rule.run, input, options: rule.options });
 
-			findings.push(...raw.map((finding) => ({ ...finding, rule: rule.name, severity: rule.severity })));
+			findings.push(...gradeFindings({ rule, raw, groupOfFile }));
 		}
 
 		progress(`${kind}: done`);
 	}
 
-	return { findings, skipped };
+	return { findings, skipped: [...skipped] };
 };
 
 interface Params {
 	cwd: string;
-	/** The groups this check covers; a rule runs when a group's pack holds it at a reporting severity. */
+	/** The groups this check covers; a rule runs when a group's pack holds it at a reporting severity, and grades the findings in that group's files. */
 	groups: StandardsGroup[];
 	/** Monorepo package parent dir (config `packages-dir`), default 'packages'. */
 	packagesDir?: string;
@@ -119,7 +144,10 @@ interface Params {
  *
  * A rule's full name and severity are stamped here rather than inside the
  * check, so a check cannot name them wrong; its site keys arrive already
- * prefixed with that full name.
+ * prefixed with that full name. Every check reads the whole repo as reference
+ * files, and each finding is graded by the group holding its first file: a
+ * finding in a file no group covers, or whose group runs the rule `off` or at
+ * other options, is dropped.
  *
  * @throws {Error} When a check throws or returns something that is not a list of findings — a broken check is a pack bug, not a finding.
  */
@@ -143,11 +171,13 @@ export const runPackageChecks = async ({
 	const compiler = resolveConsumerTypescript({ cwd, packagesDir });
 	const live = selectLiveRules({ groups });
 	const cache = new Map<string, string>();
+	const workspacePackages = await listWorkspacePackages({ cwd, packagesDir });
+	const groupOfFile: GroupOfFile = (file) => findFileStandardsGroup({ file, groups, packagesDir, workspacePackages });
 
 	const buildInput: BuildInput = async ({ kind, options }) =>
 		buildCheckInput({ kind, cwd, source, tests, files: allFiles, referenceFiles: repoFiles, standardsLibraries, packagesDir, options, cache, compiler });
 
-	const { findings, skipped } = await runLiveRules({ live, buildInput, compiler, progress });
+	const { findings, skipped } = await runLiveRules({ live, buildInput, groupOfFile, compiler, progress });
 
 	if (skipped.length > 0) {
 		notes.push(`${skipped.join(', ')} skipped — no typescript resolvable from the target repo`);

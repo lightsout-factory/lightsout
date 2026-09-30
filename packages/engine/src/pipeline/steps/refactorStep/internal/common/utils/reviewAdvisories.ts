@@ -1,3 +1,4 @@
+import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
@@ -20,6 +21,7 @@ export const reviewAdvisories = async ({ run, groups, files }: Params): Promise<
 		driver: run.driver,
 		groups,
 		files,
+		packagesDir: run.config['packages-dir'] ?? defaultPackagesDir,
 		timeoutMs: run.agentTimeoutMs,
 		onProgress: (message) => run.progress(message),
 	});

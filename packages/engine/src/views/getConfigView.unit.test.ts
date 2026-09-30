@@ -229,7 +229,12 @@ describe('getConfigView', () => {
 		const view = await getConfigView({ cwd });
 
 		const standards = view.sections.find((section) => section.title === 'Standards');
-		expect(standards?.fields.map((field) => field.key)).toStrictEqual(['standards-pack', 'standards-libraries', 'standards-rule-settings']);
+		expect(standards?.fields.map((field) => field.key)).toStrictEqual([
+			'standards-pack',
+			'package-standards-packs',
+			'standards-libraries',
+			'standards-rule-settings',
+		]);
 		expect(findField({ sections: view.sections, key: 'standards-libraries' })).toEqual(expect.objectContaining({ value: libraries, fromConfig: true }));
 	});
 
@@ -241,7 +246,7 @@ describe('getConfigView', () => {
 		// the config named no channels at all — 'react' can only have come from the
 		// pack's second topic, whose rules carry the channel it declares
 		expect({ standardsGroups: view.standardsGroups, channels: [...new Set(view.ruleStates.map((state) => state.channel))] }).toStrictEqual({
-			standardsGroups: [{ packages: [''], pack: 'house/house', source: 'named' }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'house/house', source: 'named' }],
 			channels: ['base', 'react'],
 		});
 	});
@@ -291,7 +296,7 @@ describe('getConfigView', () => {
 			hasRuleStates: view.ruleStates.length > 0,
 			libraries: [...new Set(view.ruleStates.map((state) => state.library))],
 		}).toStrictEqual({
-			standardsGroups: [{ packages: [''], pack: 'lightsout/node', source: 'detected' }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: 'detected' }],
 			carriesPacks: false,
 			carriesChannels: false,
 			hasRuleStates: true,

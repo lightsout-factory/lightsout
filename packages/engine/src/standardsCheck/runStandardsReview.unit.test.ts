@@ -108,6 +108,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -133,6 +134,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -147,6 +149,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -162,6 +165,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -175,6 +179,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'multi-export', checked: true })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -190,6 +195,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: [],
 		});
 
@@ -205,6 +211,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -224,6 +231,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -237,6 +245,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] }), groupOf({ rules: [rule({ id: 'one-export' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -251,6 +260,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 			timeoutMs: 90_000,
 		});
@@ -274,6 +284,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'judge', name: 'acme/judge', library: 'acme' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts', 'src/b.ts', 'src/z.ts'],
 		});
 
@@ -301,6 +312,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'judge', name: 'acme/judge', library: 'acme' }), rule({ id: 'judge', name: 'house/judge', library: 'house' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts', 'src/b.ts'],
 		});
 
@@ -321,6 +333,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -339,6 +352,7 @@ describe('runStandardsReview', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [judge] }), groupOf({ rules: [judge] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -349,7 +363,7 @@ describe('runStandardsReview', () => {
 	test('runStandardsReview: judgment rules the groups turn off or leave out are never reviewed', async () => {
 		const { groups, driver, prompts } = setupExcludedJudgmentRules();
 
-		const result = await runStandardsReview({ cwd: '/repo', driver, groups, files: ['src/a.ts'] });
+		const result = await runStandardsReview({ cwd: '/repo', driver, groups, packagesDir: 'packages', files: ['src/a.ts'] });
 
 		// no rule is left to judge, so no agent is spent — and nothing it might have said reaches the findings
 		expect({ result, spawned: prompts.length }).toStrictEqual({ result: { findings: [], notes: [] }, spawned: 0 });

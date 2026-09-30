@@ -20,7 +20,7 @@ export const buildConfigView = ({ overrides = {} }: Params = {}): ConfigView => 
 			],
 		},
 	],
-	standardsGroups: [{ packages: [''], pack: 'lightsout/node', source: StandardsPackSource.Detected }],
+	standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: StandardsPackSource.Detected }],
 	ruleStates: [
 		{
 			rule: 'lightsout/file-size',
@@ -30,6 +30,8 @@ export const buildConfigView = ({ overrides = {} }: Params = {}): ConfigView => 
 			severity: StandardsSeverity.Blocking,
 			fromConfig: true,
 			options: { file: 250 },
+			packages: [''],
+			appliesTo: 'repo root (outside packages)',
 		},
 	],
 	...overrides,

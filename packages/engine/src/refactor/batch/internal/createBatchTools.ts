@@ -20,6 +20,8 @@ interface Params {
 	config: LightsoutConfig;
 	batch: RefactorBatch;
 	groups: StandardsGroup[];
+	/** Monorepo package parent dir, handed to the output review so it grades each finding by its file's package group. */
+	packagesDir: string;
 	/** false skips the review of what the batch wrote — code-checks-only mode. */
 	agentReview: boolean;
 	/** Check scope of the run's worklist, threaded into the per-batch re-check. */
@@ -41,6 +43,7 @@ export const createBatchTools = ({
 	config,
 	batch,
 	groups,
+	packagesDir,
 	agentReview,
 	checkPath,
 	checkAll,
@@ -81,6 +84,7 @@ export const createBatchTools = ({
 			driver,
 			batch,
 			groups,
+			packagesDir,
 			agentReview,
 			baseline,
 			changedFiles: await changedFiles(),

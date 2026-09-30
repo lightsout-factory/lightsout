@@ -1,4 +1,5 @@
 import { defaultAgentTimeoutMinutes } from '#src/common/constants/defaultAgentTimeoutMinutes.ts';
+import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
@@ -27,6 +28,7 @@ export const reviewStandards = async ({ cwd, config, path, onProgress }: Params)
 		driver: getDriver({ name: config?.harness ?? 'claude-code' }),
 		groups,
 		files,
+		packagesDir: config?.['packages-dir'] ?? defaultPackagesDir,
 		timeoutMs: (config?.timeouts?.['agent-minutes'] ?? defaultAgentTimeoutMinutes) * 60_000,
 		onProgress,
 	});

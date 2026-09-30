@@ -85,8 +85,11 @@ export const getStandardsView = async ({ cwd }: Params): Promise<StandardsView> 
 		const rule = loaded.get(listing.rule);
 		const ruleHealth = health.rules.find((entry) => entry.rule === listing.rule);
 
-		// Skips nothing in practice; it keeps a row from being built out of half an answer.
-		if (rule === undefined || ruleHealth === undefined) {
+		// Findings, history and health are keyed by rule, so a rule the list splits
+		// per package keeps its first listing — the widest package set — as its one
+		// row. The other two tests skip nothing in practice; they keep a row from
+		// being built out of half an answer.
+		if (rule === undefined || ruleHealth === undefined || rules.some((row) => row.rule === listing.rule)) {
 			continue;
 		}
 

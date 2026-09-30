@@ -34,7 +34,7 @@ test('printRunHeader: a minimal config renders exactly the always-present lines,
 	expect(logged).toStrictEqual([
 		'  cwd: /repo',
 		'  config: /repo/lightsout.config.json',
-		'  standards: lightsout/node (detected)',
+		'  repo root: lightsout/node (detected)',
 		'  harness: claude-code · model: harness default · effort: harness default · permissions: write',
 		'  timeouts: agent 60m · supervisor 15m · gate 15m',
 		'  gates (root): check=[pnpm check] test=[pnpm test:unit] coverage=[pnpm test:coverage]',
@@ -47,7 +47,7 @@ test('the header names the built-in library lightsout when no standards are conf
 	await printRunHeader({ config, driver, cwd, configPath });
 
 	// a repo with no package.json declares nothing, so the built-in library's node pack is detected
-	expect(lineFor({ logged, label: 'standards' })).toBe('  standards: lightsout/node (detected)');
+	expect(lineFor({ logged, label: 'repo root' })).toBe('  repo root: lightsout/node (detected)');
 });
 
 test('printRunHeader: the config line names the file the run loaded, which need not sit under the cwd the run builds in', async () => {
@@ -73,7 +73,7 @@ test('printRunHeader: standards turned off explicitly are announced as such', as
 
 	await printRunHeader({ config, driver, cwd, configPath });
 
-	expect(lineFor({ logged, label: 'standards' })).toBe('  standards: none — standards-pack is false, so no standards load');
+	expect(lineFor({ logged, label: 'repo root' })).toBe('  repo root: none (standards-pack false)');
 });
 
 test('printRunHeader: configured timeouts replace the 60m/15m/15m defaults', async () => {
@@ -173,7 +173,7 @@ test('printRunHeader: an unset standards-pack prints the detected pack and says 
 
 	await printRunHeader({ config, driver, cwd, configPath });
 
-	expect(lineFor({ logged, label: 'standards' })).toMatch(/lightsout\/node.*detected/);
+	expect(lineFor({ logged, label: 'repo root' })).toMatch(/lightsout\/node.*detected/);
 });
 
 test.each([
@@ -184,7 +184,7 @@ test.each([
 
 	await printRunHeader({ config, driver, cwd, configPath });
 
-	expect(lineFor({ logged, label: 'standards' })).toMatch(expected);
+	expect(lineFor({ logged, label: 'repo root' })).toMatch(expected);
 });
 
 test('printRunHeader: a pack that will not load is named in the header without failing it', async () => {
@@ -195,3 +195,69 @@ test('printRunHeader: a pack that will not load is named in the header without f
 	await expect(printing).resolves.toBeUndefined();
 	expect(lineFor({ logged, label: 'standards' })).toMatch(/lightsout\/no-such-pack/);
 });
+
+/** A monorepo on disk: a plain root manifest, and one plain manifest per workspace package. */
+const setupPackageStandardsHeader = async ({ config, packages }: { config: Partial<LightsoutConfig>; packages: string[] }) => {
+	const cwd = await freshCwd();
+
+	writeRepoFile({ cwd, path: 'package.json', content: JSON.stringify({ name: 'plain-repo', dependencies: { zod: '^4.0.0' } }) });
+
+	for (const name of packages) {
+		writeRepoFile({ cwd, path: `packages/${name}/package.json`, content: JSON.stringify({ name, dependencies: { zod: '^4.0.0' } }) });
+	}
+
+	const { config: fullConfig, driver, logged } = setupHeader({ config });
+
+	return { config: fullConfig, driver, cwd, logged };
+};
+
+/** The root standards line and the lines after it, up to the harness line, each trimmed and marked when indented deeper than the root line. */
+const standardsLinesOf = ({ logged }: { logged: string[] }) => {
+	const start = logged.findIndex((line) => line.trimStart().startsWith('repo root:'));
+	const end = logged.findIndex((line) => line.trimStart().startsWith('harness:'));
+	const rootIndent = (logged[start] ?? '').length - (logged[start] ?? '').trimStart().length;
+
+	return logged.slice(start, end).map((line) => ({ text: line.trim(), nested: line.length - line.trimStart().length > rootIndent }));
+};
+
+interface PackageStandardsCase {
+	config: Partial<LightsoutConfig>;
+	packages: string[];
+	expected: { text: string; nested: boolean }[];
+}
+
+const packageStandardsCases: PackageStandardsCase[] = [
+	{
+		config: { 'package-standards-packs': { 'web-app': 'lightsout/react-app', tools: 'lightsout/node' } },
+		packages: ['engine', 'tools', 'web-app'],
+		expected: [
+			{ text: 'repo root: lightsout/node (detected)', nested: false },
+			{ text: 'tools: lightsout/node (named)', nested: true },
+			{ text: 'web-app: lightsout/react-app (named)', nested: true },
+		],
+	},
+	{
+		config: {},
+		packages: ['engine'],
+		expected: [{ text: 'repo root: lightsout/node (detected)', nested: false }],
+	},
+	{
+		config: { 'standards-pack': false, 'package-standards-packs': { 'web-app': 'lightsout/react-app' } },
+		packages: ['engine', 'web-app'],
+		expected: [
+			{ text: 'repo root: none (standards-pack false)', nested: false },
+			{ text: 'web-app: lightsout/react-app (named)', nested: true },
+		],
+	},
+];
+
+test.each(packageStandardsCases)(
+	"prints the repo root pack and one indented line per package whose pack address or source differs from the root's",
+	async ({ config: standardsConfig, packages, expected }) => {
+		const { config, driver, cwd, logged } = await setupPackageStandardsHeader({ config: standardsConfig, packages });
+
+		await printRunHeader({ config, driver, cwd, configPath });
+
+		expect(standardsLinesOf({ logged })).toStrictEqual(expected);
+	},
+);

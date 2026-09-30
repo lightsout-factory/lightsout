@@ -1,3 +1,4 @@
+import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
@@ -51,6 +52,7 @@ export const runBatch = async ({
 	onProgress,
 	recordUsage,
 }: Params): Promise<BatchStop> => {
+	const packagesDir = config['packages-dir'] ?? defaultPackagesDir;
 	const tools = createBatchTools({
 		cwd,
 		runId,
@@ -58,6 +60,7 @@ export const runBatch = async ({
 		config,
 		batch,
 		groups,
+		packagesDir,
 		agentReview,
 		checkPath,
 		checkAll,
@@ -85,6 +88,7 @@ export const runBatch = async ({
 		batch,
 		groups,
 		findings: preCheck.findings,
+		packagesDir,
 		agentReview,
 		timeoutMs: agentTimeoutMs,
 		onProgress,

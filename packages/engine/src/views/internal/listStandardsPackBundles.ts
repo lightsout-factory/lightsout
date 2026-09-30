@@ -37,14 +37,14 @@ const resolvePackRoots = async ({ cwd }: { cwd: string }) => {
 	try {
 		const config = await readOptionalConfig({ cwd });
 
-		if (config?.['standards-pack'] !== false) {
-			// The authored folder when one is beside `cwd`, else the copy the engine
-			// ships — which carries no fixtures, and whose `built` says so.
-			roots = [
-				{ packPath: resolveAuthoredStandardsLibrary({ cwd }) ?? resolveDefaultStandardsLibrary(), isDefault: true },
-				...resolveRegisteredRoots({ cwd, libraries: config?.['standards-libraries'] ?? {} }),
-			];
-		}
+		// The authored folder when one is beside `cwd`, else the copy the engine
+		// ships — which carries no fixtures, and whose `built` says so. Listed
+		// whatever `standards-pack` says: `false` turns off the repo pack, not the
+		// libraries a package named in `package-standards-packs` can still use.
+		roots = [
+			{ packPath: resolveAuthoredStandardsLibrary({ cwd }) ?? resolveDefaultStandardsLibrary(), isDefault: true },
+			...resolveRegisteredRoots({ cwd, libraries: config?.['standards-libraries'] ?? {} }),
+		];
 	} catch (error) {
 		console.warn(`standards packs could not be listed for ${cwd}: ${messageOf({ error })}`);
 	}

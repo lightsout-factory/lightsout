@@ -270,7 +270,7 @@ describe('resumeCommand', () => {
 
 		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(logged).toContain('  standards: none — standards-pack is false, so no standards load');
+		expect(logged).toContain('  repo root: none (standards-pack false)');
 	});
 
 	test('the harness the run started with wins over the config, and that config harness keeps its model to itself', async () => {

@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { unlinkSync, writeFileSync } from 'node:fs';
+import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
@@ -8,6 +8,7 @@ import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSourc
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runBatch } from '#src/refactor/batch/runBatch.ts';
+import { readReviewFindings } from '#src/runState/readReviewFindings.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
@@ -212,6 +213,74 @@ const setupRedGateBatch = async ({ ruling, healOnGuidance = false }: { ruling: R
 	return { run, spent };
 };
 
+/**
+ * The two-site batch in a repo whose packages live under `apps/`, with one
+ * workspace package `web`, and a group that covers only `web` and holds the
+ * judgment rule.
+ *
+ * On every read the reviewer reports that rule against a `web` file. The file
+ * belongs to the `web` group only when the review places it with `apps` as the
+ * packages dir; under any other dir it is a root file no group covers, and the
+ * review drops it. So a record in the judgment ledger for each read is the proof
+ * that each review had the config's packages-dir.
+ */
+const setupAppsBatch = async () => {
+	const dir = setupConsumerRepo({ config: { 'packages-dir': 'apps' } });
+
+	seedRunFolder({ cwd: dir, runId: 'run-01', pipeline: 'refactor' });
+
+	mkdirSync(join(dir, 'apps', 'web'), { recursive: true });
+	writeFileSync(join(dir, 'apps', 'web', 'package.json'), '{ "name": "web" }\n');
+	writeSource({ dir, path: 'src/one.ts', source: 'export const alphaOne = 1;\nexport const betaOne = 2;\n' });
+	writeSource({ dir, path: 'src/two.ts', source: 'export const alphaTwo = 1;\nexport const betaTwo = 2;\n' });
+	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm fixture', { cwd: dir });
+
+	const { findings } = await runStandardsCheck({ cwd: dir, persist: false });
+	const batch: RefactorBatch = {
+		id: 'batch-01:lightsout/multi-export:src',
+		rule: 'lightsout/multi-export',
+		folder: 'src',
+		blocking: findings.filter((finding) => finding.rule === 'lightsout/multi-export'),
+		advisories: [],
+	};
+	const webGroups: StandardsGroup[] = judgmentGroups.map((group) => ({ ...group, packages: ['web'] }));
+	const config = await readConfig({ cwd: dir });
+	const driver: Driver = {
+		name: 'stub',
+		invoke: async ({ prompt }) => {
+			if (roleOf(prompt) === 'standards-review') {
+				return { text: reviewReport([{ rule: 'acme/single-return', files: [{ path: 'apps/web/src/a.ts' }], detail: 'two exits' }]), exitCode: 0 };
+			}
+
+			splitFile({ dir, file: 'src/one.ts', first: 'alphaOne', second: 'betaOne' });
+			splitFile({ dir, file: 'src/two.ts', first: 'alphaTwo', second: 'betaTwo' });
+
+			return {
+				text: report({ changedFiles: ['src/one.ts', 'src/betaOne.ts', 'src/two.ts', 'src/betaTwo.ts'].map((path) => ({ path, summary: 'split' })) }),
+				exitCode: 0,
+			};
+		},
+	};
+
+	const run = () =>
+		runBatch({
+			cwd: dir,
+			runId: 'run-01',
+			driver,
+			config,
+			batch,
+			groups: webGroups,
+			checkAll: false,
+			agentReview: true,
+			agentTimeoutMs: 60_000,
+			attributedFiles: [],
+			onProgress: () => undefined,
+			recordUsage: async () => undefined,
+		});
+
+	return { dir, batch, run };
+};
+
 describe('runBatch', () => {
 	test('a requeue that changes the tree and still leaves a site standing spends the budget and declines', async () => {
 		const { run, executorPrompts } = await setupBatch({
@@ -269,6 +338,20 @@ describe('runBatch', () => {
 		// the same judgment rules on both sides of the edits — a batch reviewed
 		// against a different set afterwards could report its own baseline as new
 		expect(reviewSystemPrompts.map((systemPrompt) => systemPrompt.includes('Rule: `acme/single-return`'))).toStrictEqual([true, true]);
+	});
+
+	test("passes the config's packages-dir to both batch reviews", async () => {
+		const { dir, batch, run } = await setupAppsBatch();
+
+		await run();
+		const records = await readReviewFindings({ cwd: dir });
+
+		// one record from the pre-edit read and one from the read of what the batch
+		// wrote — each review kept the web file's finding only because it had `apps`
+		expect(records.filter((record) => record.step === batch.id).map((record) => record.siteKey)).toStrictEqual([
+			'acme/single-return:apps/web/src/a.ts',
+			'acme/single-return:apps/web/src/a.ts',
+		]);
 	});
 
 	test('a red gate the cheap fixes cannot clear reaches the supervisor, and an escalate ruling ends the batch', async () => {

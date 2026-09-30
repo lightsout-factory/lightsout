@@ -439,3 +439,58 @@ test('a config naming a rule no pack declares fails the view', async () => {
 	// the typo is caught where the valid ids are known, not silently ignored
 	await expect(getStandardsView({ cwd })).rejects.toThrow(/standards-rule-settings names "house-loose-flie": no rule is named/);
 });
+
+/**
+ * A monorepo whose root and engine run the acme house pack while web-app runs a
+ * relaxed pack that brings in the same house topic with its checked rule
+ * graded advisory, so the rule list holds that rule at two states.
+ */
+const seedSplitRuleRepo = async () => {
+	const library = await writeStandardsPack();
+	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-view-split-rule-'));
+
+	await writeTree({
+		dir: library,
+		files: {
+			'packs/relaxed.json': JSON.stringify({
+				description: 'the house pack with loose files tolerated',
+				include: { packs: ['acme/house'] },
+				'rule-settings': { 'house-loose-file': 'advisory' },
+			}),
+		},
+	});
+	await writeTree({
+		dir: cwd,
+		files: {
+			'package.json': JSON.stringify({ name: 'repo' }),
+			'packages/engine/package.json': JSON.stringify({ name: 'engine' }),
+			'packages/web-app/package.json': JSON.stringify({ name: 'web-app' }),
+			'lightsout.config.json': JSON.stringify({
+				gates: { check: 'true', test: 'true', 'test-coverage': false },
+				'standards-libraries': { acme: library },
+				'standards-pack': 'acme/house',
+				'package-standards-packs': { 'web-app': 'acme/relaxed' },
+			}),
+		},
+	});
+
+	return cwd;
+};
+
+test('keeps one row per rule when the rule list splits a rule across package groups', async () => {
+	const cwd = await seedSplitRuleRepo();
+
+	const view = await getStandardsView({ cwd });
+
+	// the root and engine hold the rule at blocking, the widest listing, so the one row takes that state
+	expect({
+		rows: view.rules.map((rule) => ({ rule: rule.rule, severity: rule.severity })),
+		totals: view.totals,
+	}).toStrictEqual({
+		rows: [
+			{ rule: 'acme/house-loose-file', severity: StandardsSeverity.Blocking },
+			{ rule: 'acme/house-name-things-well', severity: StandardsSeverity.Advisory },
+		],
+		totals: { rules: 2, checked: 1, judgment: 1, blocking: 0, advisory: 0, orphans: 0 },
+	});
+});

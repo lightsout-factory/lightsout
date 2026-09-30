@@ -14,6 +14,8 @@ interface Params {
 	groups: StandardsGroup[];
 	/** A live check's findings, which the machine advisories are filtered out of. */
 	findings: StandardsFinding[];
+	/** Monorepo package parent dir, handed to the review so it grades each finding by its file's package group. */
+	packagesDir: string;
 	/** false skips the agent's read entirely — code-checks-only mode. */
 	agentReview: boolean;
 	timeoutMs: number;
@@ -32,6 +34,7 @@ export const collectBatchAdvisories = async ({
 	batch,
 	groups,
 	findings,
+	packagesDir,
 	agentReview,
 	timeoutMs,
 	onProgress,
@@ -39,7 +42,7 @@ export const collectBatchAdvisories = async ({
 	const batchFiles = new Set(batch.blocking.flatMap((finding) => finding.files.map((file) => file.path)));
 	const machine = findings.filter((finding) => finding.severity === StandardsSeverity.Advisory && finding.files.some((file) => batchFiles.has(file.path)));
 
-	const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: [...batchFiles], agentReview, timeoutMs, onProgress });
+	const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: [...batchFiles], packagesDir, agentReview, timeoutMs, onProgress });
 
 	return [...machine, ...reviewed];
 };

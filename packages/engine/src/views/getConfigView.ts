@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { parseConfig } from '#src/common/config/parseConfig.ts';
 import { readConfigFile } from '#src/common/config/readConfigFile.ts';
 import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
+import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
 import type { ConfigView } from '#src/contracts/views/config/ConfigView.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
@@ -52,7 +53,12 @@ export const getConfigView = async ({ cwd }: Params): Promise<ConfigView> => {
 		harness: config.harness ?? null,
 		model: config.model ?? null,
 		sections: buildConfigSections({ config, declaredKeys: listDeclaredKeys({ raw }) }),
-		standardsGroups: groups.map((group) => ({ packages: group.packages, pack: group.pack.name, source: group.source })),
+		standardsGroups: groups.map((group) => ({
+			packages: group.packages,
+			appliesTo: describePackageSet({ packages: group.packages }),
+			pack: group.pack.name,
+			source: group.source,
+		})),
 		ruleStates: listings.flatMap((listing) => {
 			const rule = packRules.get(listing.rule);
 
@@ -67,6 +73,8 @@ export const getConfigView = async ({ cwd }: Params): Promise<ConfigView> => {
 							severity: listing.severity,
 							fromConfig: listing.fromConfig,
 							options: listing.options,
+							packages: listing.packages,
+							appliesTo: describePackageSet({ packages: listing.packages }),
 						},
 					];
 		}),

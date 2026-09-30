@@ -107,6 +107,7 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
 	options: {},
+	packages: [''],
 	...overrides,
 });
 
@@ -227,7 +228,13 @@ describe('standardsCheckCommand', () => {
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
 		expect(listParams()?.groups.map(({ pack, source }) => ({ pack: pack.name, source }))).toStrictEqual([{ pack: 'lightsout/node', source: 'detected' }]);
-		expect(cellsOf({ logged })).toContainEqual(['multi-export', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file']);
+		expect(cellsOf({ logged })).toContainEqual([
+			'multi-export',
+			'blocking',
+			'code',
+			'lightsout-defaults: code/style-guide/structure/one-export-per-file',
+			'repo root (outside packages)',
+		]);
 		expect(mockRunStandardsCheck).not.toHaveBeenCalled();
 		expect(mockReviewStandards).not.toHaveBeenCalled();
 		expect(exitCodes).toStrictEqual([0]);

@@ -14,6 +14,8 @@ interface Params {
 	groups: StandardsGroup[];
 	/** The batch's own files before it works, the ones it wrote after. */
 	files: string[];
+	/** Monorepo package parent dir, so each finding is graded by its file's package group. */
+	packagesDir: string;
 	/** false skips the agent entirely — code-checks-only mode. */
 	agentReview: boolean;
 	timeoutMs: number;
@@ -25,7 +27,18 @@ interface Params {
  * rediscover a judgment finding, so a run that parks or escalates first would
  * otherwise lose the only account of it.
  */
-export const runBatchReview = async ({ cwd, runId, driver, batch, groups, files, agentReview, timeoutMs, onProgress }: Params): Promise<StandardsFinding[]> => {
+export const runBatchReview = async ({
+	cwd,
+	runId,
+	driver,
+	batch,
+	groups,
+	files,
+	packagesDir,
+	agentReview,
+	timeoutMs,
+	onProgress,
+}: Params): Promise<StandardsFinding[]> => {
 	if (!agentReview) {
 		return [];
 	}
@@ -35,6 +48,7 @@ export const runBatchReview = async ({ cwd, runId, driver, batch, groups, files,
 		driver,
 		groups,
 		files,
+		packagesDir,
 		timeoutMs,
 		onProgress: (message) => onProgress(`${batch.id}: ${message}`),
 	});

@@ -60,6 +60,7 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	severity: StandardsSeverity.Advisory,
 	fromConfig: false,
 	options: {},
+	packages: [''],
 	...overrides,
 });
 

@@ -19,9 +19,22 @@ export const ConfigView = z.object({
 			fields: z.array(ConfigFieldView),
 		}),
 	),
-	/** The groups this repo's standards resolve to, with no package scope. Empty when standards-pack is false. */
-	standardsGroups: z.array(z.object({ packages: z.array(z.string()), pack: z.string(), source: z.enum(StandardsPackSource) })),
-	/** Every rule in the selected pack with its effective severity here and whether config set it. */
+	/**
+	 * The groups this repo's standards resolve to, with no package scope: one per
+	 * pack and source. Empty only when standards-pack is false and
+	 * package-standards-packs names no package.
+	 */
+	standardsGroups: z.array(
+		z.object({
+			/** Package folder names under packages-dir; '' is the repo root group. */
+			packages: z.array(z.string()),
+			/** The packages as one label, the root group named first. */
+			appliesTo: z.string(),
+			pack: z.string(),
+			source: z.enum(StandardsPackSource),
+		}),
+	),
+	/** Every rule in the groups' packs, once per distinct state, with its effective severity, whether config set it and where it holds. */
 	ruleStates: z.array(
 		z.object({
 			/** The full rule name `<library>/<rule-id>` — the one a finding carries. */
@@ -35,6 +48,10 @@ export const ConfigView = z.object({
 			severity: z.enum([StandardsSeverity.Blocking, StandardsSeverity.Advisory, StandardsSeverity.Off]),
 			fromConfig: z.boolean(),
 			options: z.record(z.string(), z.number()),
+			/** The package folder names this state applies to; '' is the repo root group. */
+			packages: z.array(z.string()),
+			/** The packages as one label, the root group named first. */
+			appliesTo: z.string(),
 		}),
 	),
 });

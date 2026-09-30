@@ -6,6 +6,7 @@ import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 
 interface Params {
@@ -16,19 +17,30 @@ interface Params {
 	configPath: string;
 }
 
+/** The root's pack, then one indented line for each package whose pack address or source differs from the root's. */
+const standardsLinesOf = ({ groups }: { groups: StandardsGroup[] }) => {
+	const root = groups.find((group) => group.packages.includes(''));
+	const packageLines = groups
+		.filter((group) => group !== root && (root === undefined || group.pack.name !== root.pack.name || group.source !== root.source))
+		.flatMap((group) => group.packages.filter((name) => name !== '').map((name) => ({ name, description: `${group.pack.name} (${group.source})` })))
+		.sort((first, second) => first.name.localeCompare(second.name))
+		.map(({ name, description }) => `    ${name}: ${description}`);
+	const rootLine = root === undefined ? '  repo root: none (standards-pack false)' : `  repo root: ${root.pack.name} (${root.source})`;
+
+	return [rootLine, ...packageLines];
+};
+
 /** Never throws: the header only reports, and `prepareRun` makes the same failure the run's error. */
 const describeStandards = async ({ config, cwd }: { config: LightsoutConfig; cwd: string }) => {
-	let description: string;
+	let lines: string[];
 
 	try {
-		const [root] = await resolveStandardsGroups({ cwd, config });
-
-		description = root === undefined ? 'none — standards-pack is false, so no standards load' : `${root.pack.name} (${root.source})`;
+		lines = standardsLinesOf({ groups: await resolveStandardsGroups({ cwd, config }) });
 	} catch (error) {
-		description = `will not load — ${messageOf({ error })}`;
+		lines = [`  standards: will not load — ${messageOf({ error })}`];
 	}
 
-	return description;
+	return lines;
 };
 
 export const printRunHeader = async ({ config, driver, cwd, configPath }: Params): Promise<void> => {
@@ -36,7 +48,10 @@ export const printRunHeader = async ({ config, driver, cwd, configPath }: Params
 
 	console.log(`  cwd: ${cwd}`);
 	printConfigSource({ configPath });
-	console.log(`  standards: ${await describeStandards({ config, cwd })}`);
+	for (const line of await describeStandards({ config, cwd })) {
+		console.log(line);
+	}
+
 	console.log(
 		`  harness: ${driver.name} · model: ${config.model ?? 'harness default'} · effort: ${config.effort ?? 'harness default'} · permissions: ${config.permissions ?? Permissions.Write}`,
 	);

@@ -124,13 +124,15 @@ const summarizeGroups = ({ groups }: { groups: StandardsGroup[] }) =>
 	}));
 
 describe('resolveStandardsGroups', () => {
-	test('resolveStandardsGroups: with no standards-pack the root manifest picks the pack and the group covers the whole workspace', async () => {
+	test("resolveStandardsGroups: with no standards-pack the root manifest picks the root group's pack and each package's own manifest picks its pack", async () => {
 		const { cwd } = setupRepo({ rootDependencies: { react: '^19.0.0' }, workspacePackages: ['web', 'api'] });
 
 		const groups = await resolveStandardsGroups({ cwd, config: baseConfig });
 
+		// the packages' manifests declare no framework, so the root's react never reaches them
 		expect(summarizeGroups({ groups })).toStrictEqual([
-			{ packages: ['', 'api', 'web'], pack: 'lightsout/react-app', source: 'detected', rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
+			{ packages: [''], pack: 'lightsout/react-app', source: 'detected', rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
+			{ packages: ['api', 'web'], pack: 'lightsout/node', source: 'detected', rules: ['lightsout/tabs'] },
 		]);
 	});
 

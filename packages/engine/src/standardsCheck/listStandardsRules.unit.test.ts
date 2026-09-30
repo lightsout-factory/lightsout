@@ -192,6 +192,36 @@ const setupGroup = () => {
 	return { groups };
 };
 
+/**
+ * Two groups that split the workspace: the repo root and engine on one pack,
+ * web-app on another. Both packs hold both rules; alpha-rule resolves to the
+ * same state in each, and beta-rule is blocking in the wider group but
+ * advisory in web-app's.
+ */
+const setupSplitGroups = () => {
+	const alpha = loadedRule({ id: 'alpha-rule', library: 'acme' });
+	const beta = loadedRule({ id: 'beta-rule', library: 'acme', checked: true });
+	const packRules: ResolvedPackRule[] = [
+		{ rule: alpha, severity: StandardsSeverity.Advisory, options: {} },
+		{ rule: beta, severity: StandardsSeverity.Advisory, options: { maxLines: 40 } },
+	];
+	const alphaState: ResolvedRuleState = { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true };
+	const rootStates = new Map<string, ResolvedRuleState>([
+		['acme/alpha-rule', alphaState],
+		['acme/beta-rule', { severity: StandardsSeverity.Blocking, options: { maxLines: 40 }, fromConfig: false, reachesAgents: true }],
+	]);
+	const webAppStates = new Map<string, ResolvedRuleState>([
+		['acme/alpha-rule', alphaState],
+		['acme/beta-rule', { severity: StandardsSeverity.Advisory, options: { maxLines: 40 }, fromConfig: false, reachesAgents: true }],
+	]);
+	const groups: StandardsGroup[] = [
+		{ packages: ['', 'engine'], pack: { name: 'acme/node', topics: [], rules: packRules }, source: StandardsPackSource.Detected, states: rootStates },
+		{ packages: ['web-app'], pack: { name: 'acme/react-app', topics: [], rules: packRules }, source: StandardsPackSource.Named, states: webAppStates },
+	];
+
+	return { groups };
+};
+
 describe('listStandardsRules', () => {
 	test('lists every rule the loaded packs declare, sorted by id', async () => {
 		const rules = await listFor({ cwd });
@@ -369,6 +399,7 @@ describe('listStandardsRules', () => {
 				severity: StandardsSeverity.Blocking,
 				fromConfig: false,
 				options: { maxLines: 40 },
+				packages: [''],
 			},
 		]);
 	});
@@ -444,6 +475,7 @@ describe('listStandardsRules', () => {
 				severity: StandardsSeverity.Blocking,
 				fromConfig: false,
 				options: { maxLines: 40 },
+				packages: [''],
 			},
 		]);
 	});
@@ -488,6 +520,7 @@ describe('listStandardsRules', () => {
 					severity: StandardsSeverity.Blocking,
 					fromConfig: true,
 					options: { maxLines: 60 },
+					packages: [''],
 				},
 				{
 					rule: 'team/aardvark-rule',
@@ -497,6 +530,7 @@ describe('listStandardsRules', () => {
 					severity: StandardsSeverity.Advisory,
 					fromConfig: false,
 					options: {},
+					packages: [''],
 				},
 			],
 			unlisted: [],
@@ -509,5 +543,46 @@ describe('listStandardsRules', () => {
 		const listed = listStandardsRules({ groups: [...groups, ...groups] });
 
 		expect(listed.map((listing) => listing.rule)).toStrictEqual(['acme/zebra-rule', 'team/aardvark-rule']);
+	});
+
+	test('lists a rule once per distinct state, naming the packages each state applies to', () => {
+		const { groups } = setupSplitGroups();
+
+		const listed = listStandardsRules({ groups });
+
+		// a rule at one state everywhere is one row covering every package; a rule
+		// graded differently per package is one row per grade, the wider set first
+		expect(listed).toStrictEqual([
+			{
+				rule: 'acme/alpha-rule',
+				doc: 'acme: code/demo',
+				summary: 'what alpha-rule catches',
+				checked: false,
+				severity: StandardsSeverity.Advisory,
+				fromConfig: false,
+				options: {},
+				packages: ['', 'engine', 'web-app'],
+			},
+			{
+				rule: 'acme/beta-rule',
+				doc: 'acme: code/demo',
+				summary: 'what beta-rule catches',
+				checked: true,
+				severity: StandardsSeverity.Blocking,
+				fromConfig: false,
+				options: { maxLines: 40 },
+				packages: ['', 'engine'],
+			},
+			{
+				rule: 'acme/beta-rule',
+				doc: 'acme: code/demo',
+				summary: 'what beta-rule catches',
+				checked: true,
+				severity: StandardsSeverity.Advisory,
+				fromConfig: false,
+				options: { maxLines: 40 },
+				packages: ['web-app'],
+			},
+		]);
 	});
 });

@@ -53,6 +53,7 @@ const columns: Array<DataTableColumn<RuleState>> = [
 		render: (state) => <span className="text-muted-foreground">{state.fromConfig ? 'this repo' : 'the pack'}</span>,
 	},
 	{ key: 'options', header: 'options', render: (state) => <RuleOptions state={state} /> },
+	{ key: 'appliesTo', header: 'applies to', render: (state) => <span className="text-muted-foreground">{state.appliesTo}</span> },
 ];
 
 interface Props {
@@ -76,7 +77,12 @@ export const RuleLedger = ({ ruleStates }: Props) => {
 				selected={severities}
 				onChange={setSeverities}
 			/>
-			<DataTable rows={rows} columns={columns} getRowKey={(state) => state.rule} empty={<EmptyState title="No rules match this severity." />} />
+			<DataTable
+				rows={rows}
+				columns={columns}
+				getRowKey={(state) => `${state.rule} ${state.appliesTo}`}
+				empty={<EmptyState title="No rules match this severity." />}
+			/>
 		</div>
 	);
 };

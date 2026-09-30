@@ -1,5 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { printStandardsRuleList } from '#src/cli/internal/common/render/printStandardsRuleList.ts';
+import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 
@@ -11,6 +12,7 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
 	options: {},
+	packages: [''],
 	...overrides,
 });
 
@@ -42,10 +44,10 @@ describe('printStandardsRuleList', () => {
 		printStandardsRuleList({ rules: [listing()] });
 
 		expect(cellsOf({ logged })).toStrictEqual([
-			['rule', 'state', 'checked by', 'standards doc'],
-			['multi-export', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file'],
-			['more than one export in a file', '', '', ''],
-			['1 rule(s)', '1 blocking', '0 advisory, 0 off', '1 by code, 0 by judgment'],
+			['rule', 'state', 'checked by', 'standards doc', 'applies to'],
+			['multi-export', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file', 'repo root (outside packages)'],
+			['more than one export in a file', '', '', '', ''],
+			['1 rule(s)', '1 blocking', '0 advisory, 0 off', '1 by code, 0 by judgment', ''],
 		]);
 	});
 
@@ -90,10 +92,10 @@ describe('printStandardsRuleList', () => {
 		});
 
 		expect(cellsOf({ logged }).slice(1, 5)).toStrictEqual([
-			['duplicate-code-block', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file'],
-			['the same block of code written out in two or more files — minTokens 90', '', '', ''],
-			['multi-export', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file'],
-			['more than one export in a file', '', '', ''],
+			['duplicate-code-block', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file', 'repo root (outside packages)'],
+			['the same block of code written out in two or more files — minTokens 90', '', '', '', ''],
+			['multi-export', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file', 'repo root (outside packages)'],
+			['more than one export in a file', '', '', '', ''],
 		]);
 	});
 
@@ -110,7 +112,7 @@ describe('printStandardsRuleList', () => {
 			],
 		});
 
-		expect(cellsOf({ logged }).at(-1)).toStrictEqual(['5 rule(s)', '1 blocking', '3 advisory, 1 off', '4 by code, 1 by judgment']);
+		expect(cellsOf({ logged }).at(-1)).toStrictEqual(['5 rule(s)', '1 blocking', '3 advisory, 1 off', '4 by code, 1 by judgment', '']);
 	});
 
 	test('a ledger holding no rules at all still prints its headings and a totals row of zeroes', () => {
@@ -120,8 +122,47 @@ describe('printStandardsRuleList', () => {
 
 		// a package that states no rules is an empty ledger, not a broken one
 		expect(cellsOf({ logged })).toStrictEqual([
-			['rule', 'state', 'checked by', 'standards doc'],
-			['0 rule(s)', '0 blocking', '0 advisory, 0 off', '0 by code, 0 by judgment'],
+			['rule', 'state', 'checked by', 'standards doc', 'applies to'],
+			['0 rule(s)', '0 blocking', '0 advisory, 0 off', '0 by code, 0 by judgment', ''],
 		]);
+	});
+
+	test('prints an applies-to column naming the packages each row covers', () => {
+		const { logged } = setupPrinter();
+
+		printStandardsRuleList({
+			rules: [
+				listing({ rule: 'lightsout/multi-export', packages: ['', 'engine'] }),
+				listing({ rule: 'lightsout/multi-export', severity: StandardsSeverity.Advisory, packages: ['web-app'] }),
+				listing({ rule: 'lightsout/folder-size', packages: [''] }),
+			],
+		});
+
+		const cells = cellsOf({ logged });
+		const column = cells[0]?.indexOf('applies to') ?? -1;
+
+		expect({ column: column >= 0, appliesTo: [cells[1]?.[column], cells[3]?.[column], cells[5]?.[column]] }).toStrictEqual({
+			column: true,
+			appliesTo: [describePackageSet({ packages: ['', 'engine'] }), describePackageSet({ packages: ['web-app'] }), describePackageSet({ packages: [''] })],
+		});
+	});
+
+	test('counts distinct rule names in the totals when a rule has several listings', () => {
+		const { logged } = setupPrinter();
+
+		printStandardsRuleList({
+			rules: [
+				listing({ rule: 'a', severity: StandardsSeverity.Blocking, packages: ['', 'engine'] }),
+				listing({ rule: 'a', severity: StandardsSeverity.Advisory, packages: ['web-app'] }),
+				listing({ rule: 'b', severity: StandardsSeverity.Advisory, packages: ['', 'engine', 'web-app'] }),
+			],
+		});
+
+		// three listings of two rules — the ledger counts rules, not rows
+		const totals = cellsOf({ logged })
+			.at(-1)
+			?.filter((cell) => cell !== '');
+
+		expect(totals).toStrictEqual(['2 rule(s)', '1 blocking', '2 advisory, 0 off', '2 by code, 0 by judgment']);
 	});
 });

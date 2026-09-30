@@ -28,6 +28,7 @@ const configFieldReaders: Record<string, (params: { config: LightsoutConfig }) =
 	'coverage-summary-path': ({ config }) => config['coverage-summary-path'] ?? defaultCoverageSummaryPath,
 	'executor-file-limit': ({ config }) => config['executor-file-limit'] ?? defaultExecutorFileLimit,
 	'standards-pack': ({ config }) => config['standards-pack'],
+	'package-standards-packs': ({ config }) => config['package-standards-packs'],
 	'standards-libraries': ({ config }) => config['standards-libraries'],
 	'standards-rule-settings': ({ config }) => config['standards-rule-settings'],
 	'agent-commands': ({ config }) => config['agent-commands'],
@@ -50,7 +51,7 @@ const configFieldReaders: Record<string, (params: { config: LightsoutConfig }) =
 const configSectionKeys: Array<{ title: string; keys: string[] }> = [
 	{ title: 'Harness', keys: ['harness', 'model', 'effort', 'permissions', 'commands'] },
 	{ title: 'Gates', keys: ['gates', 'package-gates', 'gate-overrides', 'packages-dir', 'coverage-summary-path', 'executor-file-limit'] },
-	{ title: 'Standards', keys: ['standards-pack', 'standards-libraries', 'standards-rule-settings'] },
+	{ title: 'Standards', keys: ['standards-pack', 'package-standards-packs', 'standards-libraries', 'standards-rule-settings'] },
 	{ title: 'Agent commands', keys: ['agent-commands'] },
 	{ title: 'Generated', keys: ['generated', 'vendored'] },
 	{ title: 'Timeouts', keys: ['timeouts.agent-minutes', 'timeouts.supervisor-minutes', 'timeouts.gate-minutes'] },

@@ -192,7 +192,7 @@ describe('listStandardsPacks', () => {
 		]);
 	});
 
-	test('lists nothing for a repo that switched standards off, rather than falling back to the default pack', async () => {
+	test('still lists the built-in library for a repo that switched the repo pack off, since a package the config names can still use it', async () => {
 		const cwd = await mkdtemp(join(tmpdir(), 'lightsout-packs-none-'));
 
 		await writeTree({
@@ -200,7 +200,9 @@ describe('listStandardsPacks', () => {
 			files: { 'lightsout.config.json': JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': false }) },
 		});
 
-		expect(await listStandardsPacks({ cwd })).toStrictEqual([]);
+		expect((await listStandardsPacks({ cwd })).map((pack) => ({ name: pack.name, isDefault: pack.isDefault }))).toStrictEqual([
+			{ name: 'lightsout', isDefault: true },
+		]);
 	});
 
 	test('skips a pack it cannot read and lists the ones it could, so one broken root never blanks the page', async () => {

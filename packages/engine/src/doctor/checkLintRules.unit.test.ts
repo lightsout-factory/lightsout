@@ -36,6 +36,23 @@ describe('checkLintRules', () => {
 		expect({ skipped, ranId: ran?.id, ranStatus: ran?.status }).toStrictEqual({ skipped: undefined, ranId: 'lint-rules', ranStatus: 'note' });
 	});
 
+	test('still checks lint rules when standards-pack is false but package-standards-packs names a package', async () => {
+		const { packageDirs } = setupPackage({ files: { 'biome.json': '{}' } });
+
+		const named = await checkLintRules({
+			config: { ...config, 'standards-pack': false, 'package-standards-packs': { 'web-app': 'lightsout/react-app' } },
+			packageDirs,
+		});
+		const unnamed = await checkLintRules({ config: { ...config, 'standards-pack': false }, packageDirs });
+
+		// a package the map names still gets standards, so its lint gap still matters
+		expect({ namedId: named?.id, namedStatus: named?.status, unnamed }).toStrictEqual({
+			namedId: 'lint-rules',
+			namedStatus: 'note',
+			unnamed: undefined,
+		});
+	});
+
 	test('flags a biome config that does not enforce the rules the standards assume', async () => {
 		const { packageDirs } = setupPackage({ files: { 'biome.json': '{ "linter": {} }' } });
 

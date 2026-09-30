@@ -73,6 +73,7 @@ describe('runStandardsReview dropped findings', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts', 'src/b.ts'],
 		});
 
@@ -87,6 +88,7 @@ describe('runStandardsReview dropped findings', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
@@ -110,6 +112,7 @@ describe('runStandardsReview dropped findings', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts', 'src/b.ts', 'src/c.ts'],
 		});
 
@@ -133,6 +136,7 @@ describe('runStandardsReview dropped findings', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ rules: [rule({ id: 'common-placement' })] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts', 'src/b.ts'],
 		});
 

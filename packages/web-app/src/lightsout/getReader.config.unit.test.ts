@@ -116,7 +116,7 @@ describe('getReader config', () => {
 		expect(view.sections.map((section) => ({ title: section.title, keys: section.fields.map((field) => field.key) }))).toStrictEqual([
 			{ title: 'Harness', keys: ['harness', 'model', 'effort', 'permissions', 'commands'] },
 			{ title: 'Gates', keys: ['gates', 'package-gates', 'gate-overrides', 'packages-dir', 'coverage-summary-path', 'executor-file-limit'] },
-			{ title: 'Standards', keys: ['standards-pack', 'standards-libraries', 'standards-rule-settings'] },
+			{ title: 'Standards', keys: ['standards-pack', 'package-standards-packs', 'standards-libraries', 'standards-rule-settings'] },
 			{ title: 'Agent commands', keys: ['agent-commands'] },
 			{ title: 'Generated', keys: ['generated', 'vendored'] },
 			{ title: 'Timeouts', keys: ['timeouts.agent-minutes', 'timeouts.supervisor-minutes', 'timeouts.gate-minutes'] },
@@ -139,6 +139,7 @@ describe('getReader config', () => {
 
 		expect(view.sections.find((section) => section.title === 'Standards')?.fields.map((field) => field.key)).toStrictEqual([
 			'standards-pack',
+			'package-standards-packs',
 			'standards-libraries',
 			'standards-rule-settings',
 		]);
@@ -176,8 +177,28 @@ describe('getReader config', () => {
 		const view = await reader.getConfig();
 
 		expect(view.ruleStates).toStrictEqual([
-			{ rule: 'acme/house-loose-file', id: 'house-loose-file', library: 'acme', channel: 'react', severity: 'blocking', fromConfig: false, options: {} },
-			{ rule: 'acme/house-name-things-well', id: 'house-name-things-well', library: 'acme', channel: 'react', severity: 'off', fromConfig: true, options: {} },
+			{
+				rule: 'acme/house-loose-file',
+				id: 'house-loose-file',
+				library: 'acme',
+				channel: 'react',
+				severity: 'blocking',
+				fromConfig: false,
+				options: {},
+				packages: [''],
+				appliesTo: 'repo root (outside packages)',
+			},
+			{
+				rule: 'acme/house-name-things-well',
+				id: 'house-name-things-well',
+				library: 'acme',
+				channel: 'react',
+				severity: 'off',
+				fromConfig: true,
+				options: {},
+				packages: [''],
+				appliesTo: 'repo root (outside packages)',
+			},
 		]);
 	});
 
@@ -199,18 +220,19 @@ describe('getReader config', () => {
 		const view = await reader.getConfig();
 
 		expect({ standardsGroups: view.standardsGroups, carriesChannels: Object.hasOwn(view, 'channels') }).toStrictEqual({
-			standardsGroups: [{ packages: [''], pack: 'acme/house', source: StandardsPackSource.Named }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', source: StandardsPackSource.Named }],
 			carriesChannels: false,
 		});
 	});
 
-	test('lists only standards-pack, standards-libraries and standards-rule-settings in the Standards area', async () => {
+	test('lists only standards-pack, package-standards-packs, standards-libraries and standards-rule-settings in the Standards area', async () => {
 		const { reader } = await setupSelectedPackReader();
 
 		const view = await reader.getConfig();
 
 		expect(view.sections.find((section) => section.title === 'Standards')?.fields.map((field) => field.key)).toStrictEqual([
 			'standards-pack',
+			'package-standards-packs',
 			'standards-libraries',
 			'standards-rule-settings',
 		]);

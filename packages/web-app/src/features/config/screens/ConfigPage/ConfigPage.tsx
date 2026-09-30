@@ -16,15 +16,13 @@ const sourceBadges: Record<StandardsPackSource, { label: string; variant: BadgeV
 	[StandardsPackSource.Detected]: { label: 'detected', variant: BadgeVariant.Neutral },
 };
 
-const describePackages = ({ packages }: { packages: string[] }) => packages.map((name) => (name === '' ? 'repo root (outside packages)' : name)).join(', ');
-
 const PackRow = ({ group }: { group: ConfigView['standardsGroups'][number] }) => (
 	<div className="flex flex-wrap items-center gap-2 border-border border-b py-3 first:pt-0 last:border-0 last:pb-0">
 		<Link to="/standards-packs" className="font-medium text-sm hover:underline hover:underline-offset-2">
 			{group.pack}
 		</Link>
 		<Badge variant={sourceBadges[group.source].variant}>{sourceBadges[group.source].label}</Badge>
-		<p className="w-full text-muted-foreground text-xs">Applies to {describePackages({ packages: group.packages })}.</p>
+		<p className="w-full text-muted-foreground text-xs">Applies to {group.appliesTo}.</p>
 	</div>
 );
 
@@ -47,9 +45,11 @@ export const ConfigPage = () => {
 					</div>
 				</SettingsCard>
 			))}
-			<SettingsCard title="Standards pack in use" description="The pack a run works against here, how it was chosen and which packages it covers.">
+			<SettingsCard title="Standards pack in use" description="The packs a run works against here, how each was chosen and which packages it covers.">
 				{view.standardsGroups.length === 0 ? (
-					<p className="text-muted-foreground text-sm">No standards load here — `standards-pack` is set to false.</p>
+					<p className="text-muted-foreground text-sm">
+						No standards load here — `standards-pack` is set to false and `package-standards-packs` names no package.
+					</p>
 				) : (
 					<div className="flex flex-col">
 						{view.standardsGroups.map((group) => (

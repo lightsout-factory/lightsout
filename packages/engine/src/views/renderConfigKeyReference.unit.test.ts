@@ -86,4 +86,10 @@ describe('renderConfigKeyReference', () => {
 
 		expect(deletedRows).toStrictEqual([undefined, undefined]);
 	});
+
+	test('renders a package-standards-packs row as optional', () => {
+		const packagePacksRow = findRow({ key: 'package-standards-packs' });
+
+		expect(packagePacksRow).toMatch(/^\| `package-standards-packs` \| no \| \S/);
+	});
 });

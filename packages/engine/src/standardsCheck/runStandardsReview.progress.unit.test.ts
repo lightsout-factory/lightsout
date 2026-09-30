@@ -79,6 +79,7 @@ describe('runStandardsReview progress', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ ruleIds: ['common-placement', 'one-export'] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts', 'src/b.ts', 'src/c.ts'],
 			onProgress,
 		});
@@ -93,7 +94,14 @@ describe('runStandardsReview progress', () => {
 			result: { text: reviewReport([{ rule: 'common-placement', files: [{ path: 'src/a.ts' }], detail: 'moved too early' }]), exitCode: 0 },
 		});
 
-		await runStandardsReview({ cwd: '/repo', driver, groups: [groupOf({ ruleIds: ['common-placement'] })], files: ['src/a.ts'], onProgress });
+		await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ ruleIds: ['common-placement'] })],
+			packagesDir: 'packages',
+			files: ['src/a.ts'],
+			onProgress,
+		});
 
 		expect(progress.at(-1)).toMatch(/^✓ Agent review finished in \d+s — 1 advisory to look at$/);
 	});
@@ -113,6 +121,7 @@ describe('runStandardsReview progress', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ ruleIds: ['common-placement', 'one-export'] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts', 'src/b.ts'],
 			onProgress,
 		});
@@ -123,7 +132,14 @@ describe('runStandardsReview progress', () => {
 	test('a skipped review still says how long the agent ran before it stopped', async () => {
 		const { driver, progress, onProgress } = setupDriver({ result: { text: 'not a report', exitCode: 1 } });
 
-		await runStandardsReview({ cwd: '/repo', driver, groups: [groupOf({ ruleIds: ['common-placement'] })], files: ['src/a.ts'], onProgress });
+		await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ ruleIds: ['common-placement'] })],
+			packagesDir: 'packages',
+			files: ['src/a.ts'],
+			onProgress,
+		});
 
 		expect(progress.at(-1)).toMatch(/^Agent review stopped after \d+s\.$/);
 	});
@@ -135,6 +151,7 @@ describe('runStandardsReview progress', () => {
 			cwd: '/repo',
 			driver,
 			groups: [groupOf({ ruleIds: ['common-placement'] })],
+			packagesDir: 'packages',
 			files: ['src/a.ts'],
 			timeoutMs: 60 * 60_000,
 			onProgress,
@@ -152,7 +169,14 @@ describe('runStandardsReview progress', () => {
 	test('the heartbeat stops with the agent — a finished review prints no further lines', async () => {
 		const { driver, progress, onProgress } = setupDriver({ result: { text: reviewReport(), exitCode: 0 }, runForMs: 30_000 });
 
-		await runStandardsReview({ cwd: '/repo', driver, groups: [groupOf({ ruleIds: ['common-placement'] })], files: ['src/a.ts'], onProgress });
+		await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ ruleIds: ['common-placement'] })],
+			packagesDir: 'packages',
+			files: ['src/a.ts'],
+			onProgress,
+		});
 		jest.advanceTimersByTime(120_000);
 
 		expect(progress.filter((line) => line.includes('still running'))).toHaveLength(1);

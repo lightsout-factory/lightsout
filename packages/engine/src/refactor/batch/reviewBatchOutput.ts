@@ -17,6 +17,8 @@ interface Params {
 	baseline: StandardsFinding[];
 	/** The files the batch's agents actually claimed — the only code this run can have written. */
 	changedFiles: string[];
+	/** Monorepo package parent dir, handed to the review so it grades each finding by its file's package group. */
+	packagesDir: string;
 	/** false skips this read entirely — code-checks-only mode. */
 	agentReview: boolean;
 	timeoutMs: number;
@@ -39,6 +41,7 @@ export const reviewBatchOutput = async ({
 	groups,
 	baseline,
 	changedFiles,
+	packagesDir,
 	agentReview,
 	timeoutMs,
 	onProgress,
@@ -47,7 +50,7 @@ export const reviewBatchOutput = async ({
 		return [];
 	}
 
-	const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: changedFiles, agentReview, timeoutMs, onProgress });
+	const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: changedFiles, packagesDir, agentReview, timeoutMs, onProgress });
 
 	return findIntroducedFindings({ frozen: baseline, live: reviewed, severity: StandardsSeverity.Advisory });
 };

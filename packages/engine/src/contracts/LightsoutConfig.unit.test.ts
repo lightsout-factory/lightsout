@@ -261,6 +261,34 @@ test.each([
 	expect({ parsed: result.success, namesForm: /<library>\/<pack>/.test(messages) }).toStrictEqual({ parsed: false, namesForm: true });
 });
 
+test('accepts package-standards-packs as a map of package folder to pack address and refuses a value that is not a pack address', () => {
+	const parsed = LightsoutConfig.parse({ ...base, 'package-standards-packs': { 'web-app': 'lightsout/react-app' } });
+
+	// the map survives parsing as written: a package folder name to a pack address
+	expect(parsed['package-standards-packs']).toStrictEqual({ 'web-app': 'lightsout/react-app' });
+
+	// an empty value, false or a number is no pack address, and the issue sits at
+	// the package's own key — only standards-pack takes false
+	const issuePaths = ['', false, 42].map((value) =>
+		(LightsoutConfig.safeParse({ ...base, 'package-standards-packs': { 'web-app': value } }).error?.issues ?? []).map((issue) => issue.path.join('.')),
+	);
+	expect(issuePaths).toStrictEqual([['package-standards-packs.web-app'], ['package-standards-packs.web-app'], ['package-standards-packs.web-app']]);
+
+	// a value with no slash or with two slashes is refused with the very message
+	// standards-pack gives for the same value — one address schema, one refusal
+	const addressRefusalsOf = (result: ReturnType<typeof LightsoutConfig.safeParse>) =>
+		(result.error?.issues ?? []).map((issue) => issue.message).filter((message) => /<library>\/<pack>/.test(message));
+	const refusals = ['react-app', 'lightsout/react/app'].map((address) => {
+		const packageRefusals = addressRefusalsOf(LightsoutConfig.safeParse({ ...base, 'package-standards-packs': { 'web-app': address } }));
+		const repoRefusals = addressRefusalsOf(LightsoutConfig.safeParse({ ...base, 'standards-pack': address }));
+		return { refused: packageRefusals.length > 0, sameAsStandardsPack: packageRefusals.join('\n') === repoRefusals.join('\n') };
+	});
+	expect(refusals).toStrictEqual([
+		{ refused: true, sameAsStandardsPack: true },
+		{ refused: true, sameAsStandardsPack: true },
+	]);
+});
+
 test('LightsoutConfig: the deleted standards-packs and standards-channels keys are rejected as unknown', () => {
 	const packs = LightsoutConfig.safeParse({ ...base, 'standards-packs': ['./house'] });
 	const channels = LightsoutConfig.safeParse({ ...base, 'standards-channels': ['react'] });

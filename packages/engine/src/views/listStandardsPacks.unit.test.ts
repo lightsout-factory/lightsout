@@ -119,27 +119,40 @@ const setupRepoWithARuleAddedAfterAFirstRead = async () => {
 };
 
 /**
- * Two repos on one built-in library: one sets `standards-pack: false` while
- * still registering a readable library, the other names no standards key at all.
+ * Two repos on one built-in library, both with `standards-pack: false`: one
+ * gives its web-app package a pack from a library it registers, the other
+ * registers no library and names no package.
  */
-const setupReposReadingStandardsPack = async () => {
+const setupReposWithTheRepoPackOff = async () => {
 	const builtInPath = await mkdtemp(join(tmpdir(), 'lightsout-packs-builtin-'));
-	const offCwd = await mkdtemp(join(tmpdir(), 'lightsout-packs-off-'));
-	const unsetCwd = await mkdtemp(join(tmpdir(), 'lightsout-packs-unset-'));
+	const namedCwd = await mkdtemp(join(tmpdir(), 'lightsout-packs-pkgnamed-'));
+	const bareCwd = await mkdtemp(join(tmpdir(), 'lightsout-packs-bare-'));
 	const gates = { check: 'true', test: 'true', 'test-coverage': false };
 
 	await writeTree({ dir: builtInPath, files: packFiles({ root: { name: 'lightsout', formatVersion: 1 } }) });
 	await writeTree({
-		dir: offCwd,
+		dir: namedCwd,
 		files: {
-			'lightsout.config.json': JSON.stringify({ gates, 'standards-pack': false, 'standards-libraries': { acme: './house' } }),
+			'lightsout.config.json': JSON.stringify({
+				gates,
+				'standards-pack': false,
+				'standards-libraries': { acme: './house' },
+				'package-standards-packs': { 'web-app': 'acme/house' },
+			}),
+			'packages/web-app/package.json': JSON.stringify({ name: 'web-app' }),
 		},
 	});
-	await writeTree({ dir: join(offCwd, 'house'), files: packFiles({ root: { name: 'acme', formatVersion: 1 } }) });
-	await writeTree({ dir: unsetCwd, files: { 'lightsout.config.json': JSON.stringify({ gates }) } });
+	await writeTree({
+		dir: join(namedCwd, 'house'),
+		files: {
+			...packFiles({ root: { name: 'acme', formatVersion: 1 } }),
+			'packs/house.json': JSON.stringify({ description: 'What this shop agrees on.', include: { topics: ['acme/code/house'] } }),
+		},
+	});
+	await writeTree({ dir: bareCwd, files: { 'lightsout.config.json': JSON.stringify({ gates, 'standards-pack': false }) } });
 	setDefaultPackVariable({ packPath: builtInPath });
 
-	return { offCwd, unsetCwd };
+	return { namedCwd, bareCwd };
 };
 
 /** A repo registering two libraries, where the first entry names a folder that holds no library at all. */
@@ -165,18 +178,21 @@ const setupRepoWithAMissingLibrary = async () => {
 };
 
 describe('listStandardsPacks', () => {
-	test('listStandardsPacks: the listing reads standards-pack, not standards-packs', async () => {
-		const { offCwd, unsetCwd } = await setupReposReadingStandardsPack();
+	test('lists the built-in and registered libraries whatever standards-pack says', async () => {
+		const { namedCwd, bareCwd } = await setupReposWithTheRepoPackOff();
 
-		const [off, unset] = await Promise.all([listStandardsPacks({ cwd: offCwd }), listStandardsPacks({ cwd: unsetCwd })]);
+		const [named, bare] = await Promise.all([listStandardsPacks({ cwd: namedCwd }), listStandardsPacks({ cwd: bareCwd })]);
 
-		// false lists nothing even beside a registered library; no key lists the built-in library, marked default
+		// false turns the repo pack off, not the libraries a named package can still use
 		expect({
-			off,
-			unset: unset.map((pack) => ({ name: pack.name, isDefault: pack.isDefault })),
+			named: named.map((pack) => ({ name: pack.name, isDefault: pack.isDefault })),
+			bare: bare.map((pack) => ({ name: pack.name, isDefault: pack.isDefault })),
 		}).toStrictEqual({
-			off: [],
-			unset: [{ name: 'lightsout', isDefault: true }],
+			named: [
+				{ name: 'lightsout', isDefault: true },
+				{ name: 'acme', isDefault: false },
+			],
+			bare: [{ name: 'lightsout', isDefault: true }],
 		});
 	});
 

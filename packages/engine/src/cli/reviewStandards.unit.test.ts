@@ -21,6 +21,7 @@ interface RunStandardsReviewParams {
 	driver: Driver;
 	groups: StandardsGroup[];
 	files: string[];
+	packagesDir: string;
 	timeoutMs?: number;
 	onProgress?: (message: string) => void;
 }
@@ -173,6 +174,17 @@ describe('reviewStandards', () => {
 		mockRunStandardsReview.mockResolvedValue({ findings: [], notes: [skipNote] });
 
 		await expect(reviewStandards({ cwd })).resolves.toStrictEqual({ findings: [], notes: [skipNote] });
+	});
+
+	test.each([
+		{ config: { gates, 'packages-dir': 'apps' } satisfies LightsoutConfig, packagesDir: 'apps' },
+		{ config: { gates } satisfies LightsoutConfig, packagesDir: 'packages' },
+	])("hands the review the config's packages-dir, defaulting to packages", async ({ config, packagesDir }) => {
+		const cwd = setupRepo({ groups: [resolvedGroup()] });
+
+		await reviewStandards({ cwd, config });
+
+		expect(reviewParams()).toEqual(expect.objectContaining({ packagesDir }));
 	});
 
 	test('reviewStandards: standards-pack false reviews nothing', async () => {

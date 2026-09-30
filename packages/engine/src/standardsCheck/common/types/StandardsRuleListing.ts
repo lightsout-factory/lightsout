@@ -12,4 +12,6 @@ export interface StandardsRuleListing {
 	/** True when this repo's config set the severity or the options. */
 	fromConfig: boolean;
 	options: Record<string, number>;
+	/** The package folder names this row's state applies to; '' is the repo root group. */
+	packages: string[];
 }

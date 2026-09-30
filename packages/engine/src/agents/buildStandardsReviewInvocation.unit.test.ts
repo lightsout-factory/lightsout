@@ -130,4 +130,23 @@ describe('buildStandardsReviewInvocation', () => {
 		// the old blanket ban is gone — on Codex it read as "you cannot read or edit files"
 		expect(prose).not.toContain('Do not run shell commands');
 	});
+
+	test("states a rule's applies-to packages beside its id only when the entry carries them", () => {
+		const { systemPrompt } = buildStandardsReviewInvocation({
+			rules: [
+				{ name: 'lightsout/web-only', documentPath: 'code/architecture/react', prose: 'the web argument', appliesTo: 'web-app' },
+				{ name: 'lightsout/everywhere', documentPath: 'code/architecture/react', prose: 'the shared argument' },
+			],
+			files: ['src/a.ts'],
+		});
+
+		const lines = systemPrompt.split('\n').filter((line) => line.trim() !== '');
+		const lineUnder = (ruleId: string) => lines[lines.indexOf(`**Rule: \`${ruleId}\`**`) + 1];
+
+		// the scoped rule names its packages right under its id; the unscoped rule goes straight to its prose
+		expect({ webOnly: lineUnder('lightsout/web-only')?.includes('web-app'), everywhere: lineUnder('lightsout/everywhere') }).toStrictEqual({
+			webOnly: true,
+			everywhere: 'the shared argument',
+		});
+	});
 });

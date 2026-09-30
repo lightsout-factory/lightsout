@@ -140,7 +140,7 @@ describe('ConfigPage field rows', () => {
 describe('ConfigPage packs card', () => {
 	test('points the pack in use at the Standards Packs page, which is where what it says lives', () => {
 		setupConfigPage({
-			overrides: { standardsGroups: [{ packages: [''], pack: 'acme/house', source: StandardsPackSource.Named }] },
+			overrides: { standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', source: StandardsPackSource.Named }] },
 		});
 
 		const link = screen.getByRole('link', { name: 'acme/house' });
@@ -149,7 +149,11 @@ describe('ConfigPage packs card', () => {
 	});
 
 	test('marks the pack lightsout detected when the config names none', () => {
-		setupConfigPage({ overrides: { standardsGroups: [{ packages: [''], pack: 'lightsout/node', source: StandardsPackSource.Detected }] } });
+		setupConfigPage({
+			overrides: {
+				standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: StandardsPackSource.Detected }],
+			},
+		});
 
 		const card = screen.getByRole('heading', { level: 3, name: 'Standards pack in use' }).closest('section');
 
@@ -160,8 +164,8 @@ describe('ConfigPage packs card', () => {
 		setupConfigPage({
 			overrides: {
 				standardsGroups: [
-					{ packages: [''], pack: 'acme/house', source: StandardsPackSource.Named },
-					{ packages: ['api'], pack: 'lightsout/node', source: StandardsPackSource.Detected },
+					{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', source: StandardsPackSource.Named },
+					{ packages: ['api'], appliesTo: 'api', pack: 'lightsout/node', source: StandardsPackSource.Detected },
 				],
 				ruleStates: [],
 			},
@@ -185,11 +189,13 @@ describe('ConfigPage packs card', () => {
 describe('ConfigPage standards card', () => {
 	test.each([
 		{
-			standardsGroups: [{ packages: ['', 'api'], pack: 'lightsout/node', source: StandardsPackSource.Detected }],
+			standardsGroups: [
+				{ packages: ['', 'api'], appliesTo: 'repo root (outside packages), api', pack: 'lightsout/node', source: StandardsPackSource.Detected },
+			],
 			expected: { href: '/standards-packs', badge: 'detected', coversRepoRoot: true, coversApi: true, announcesNone: false },
 		},
 		{
-			standardsGroups: [{ packages: [''], pack: 'lightsout/node', source: StandardsPackSource.Named }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: StandardsPackSource.Named }],
 			expected: { href: '/standards-packs', badge: 'named', coversRepoRoot: true, coversApi: false, announcesNone: false },
 		},
 		{
@@ -211,6 +217,46 @@ describe('ConfigPage standards card', () => {
 			announcesNone: /standards-pack\b[^.]*false/.test(pageText),
 		}).toStrictEqual(expected);
 	});
+
+	test.each([
+		{
+			standardsGroups: [
+				{ packages: ['', 'engine'], appliesTo: 'repo root (outside packages), engine', pack: 'lightsout/node', source: StandardsPackSource.Named },
+				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/tanstack-start-app', source: StandardsPackSource.Detected },
+			],
+			expected: {
+				rows: [
+					{ pack: 'lightsout/node', badge: 'named', namesItsPackages: true, namesRepoRoot: true },
+					{ pack: 'lightsout/tanstack-start-app', badge: 'detected', namesItsPackages: true, namesRepoRoot: false },
+				],
+				showsEmptyState: false,
+			},
+		},
+		{
+			standardsGroups: [],
+			expected: { rows: [], showsEmptyState: true },
+		},
+	])('draws one row per standards group, naming its pack, whether it was named or detected, and the packages it covers', ({ standardsGroups, expected }) => {
+		setupConfigPage({ overrides: { standardsGroups, ruleStates: [] } });
+
+		const card = screen.getByRole('heading', { level: 3, name: 'Standards pack in use' }).closest('section') as HTMLElement;
+		const rows = within(card)
+			.queryAllByRole('link')
+			.map((link, index) => {
+				const row = link.parentElement as HTMLElement;
+				const rowText = row.textContent ?? '';
+
+				return {
+					pack: link.textContent,
+					badge: within(row).getByText(/^(named|detected)$/).textContent,
+					namesItsPackages: rowText.includes(standardsGroups[index].appliesTo),
+					namesRepoRoot: /repo root/.test(rowText),
+				};
+			});
+		const showsEmptyState = /no standards/i.test(card.textContent ?? '');
+
+		expect({ rows, showsEmptyState }).toStrictEqual(expected);
+	});
 });
 
 describe('ConfigPage rule ledger', () => {
@@ -223,8 +269,20 @@ describe('ConfigPage rule ledger', () => {
 			severity: StandardsSeverity.Blocking,
 			fromConfig: true,
 			options: { file: 250 },
+			packages: [''],
+			appliesTo: 'repo root (outside packages)',
 		},
-		{ rule: 'loose-file', id: 'loose-file', library: 'lightsout', channel: 'base', severity: StandardsSeverity.Advisory, fromConfig: false, options: {} },
+		{
+			rule: 'loose-file',
+			id: 'loose-file',
+			library: 'lightsout',
+			channel: 'base',
+			severity: StandardsSeverity.Advisory,
+			fromConfig: false,
+			options: {},
+			packages: [''],
+			appliesTo: 'repo root (outside packages)',
+		},
 		{
 			rule: 'naming-boolean',
 			id: 'naming-boolean',
@@ -233,6 +291,8 @@ describe('ConfigPage rule ledger', () => {
 			severity: StandardsSeverity.Off,
 			fromConfig: true,
 			options: {},
+			packages: [''],
+			appliesTo: 'repo root (outside packages)',
 		},
 	];
 
@@ -264,6 +324,8 @@ describe('ConfigPage rule ledger', () => {
 						severity: StandardsSeverity.Blocking,
 						fromConfig: true,
 						options: { file: 250 },
+						packages: [''],
+						appliesTo: 'repo root (outside packages)',
 					},
 				],
 			},
@@ -320,8 +382,20 @@ describe('ConfigPage rule ledger', () => {
 						severity: StandardsSeverity.Blocking,
 						fromConfig: true,
 						options: { file: 250, tsxFile: 300 },
+						packages: [''],
+						appliesTo: 'repo root (outside packages)',
 					},
-					{ rule: 'loose-file', id: 'loose-file', library: 'lightsout', channel: 'base', severity: StandardsSeverity.Advisory, fromConfig: false, options: {} },
+					{
+						rule: 'loose-file',
+						id: 'loose-file',
+						library: 'lightsout',
+						channel: 'base',
+						severity: StandardsSeverity.Advisory,
+						fromConfig: false,
+						options: {},
+						packages: [''],
+						appliesTo: 'repo root (outside packages)',
+					},
 				],
 			},
 		});

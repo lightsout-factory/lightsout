@@ -1,3 +1,5 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
@@ -58,6 +60,19 @@ const setupDriver = ({ text }: { text: string }) => {
 	return { driver, progress, onProgress: (message: string) => progress.push(message) };
 };
 
+/** A workspace whose packages live under `apps/`, so only a forwarded packages dir finds them. */
+const setupAppsWorkspace = async () => {
+	const cwd = await freshCwd();
+	await mkdir(join(cwd, 'apps', 'web-app'), { recursive: true });
+	await writeFile(join(cwd, 'apps', 'web-app', 'package.json'), '{}');
+	const { driver, onProgress } = setupDriver({
+		text: JSON.stringify({ findings: [{ rule: 'path-aliases', files: [{ path: 'apps/web-app/src/a.ts' }], detail: 'a relative import' }] }),
+	});
+	const webAppGroup: StandardsGroup = { ...groupOf({ rules: [judgmentRule] }), packages: ['web-app'] };
+
+	return { cwd, driver, onProgress, webAppGroup };
+};
+
 describe('collectBatchAdvisories', () => {
 	test('every machine advisory standing on the batch’s files is included, whichever rule reported it', async () => {
 		const { driver, onProgress } = setupDriver({ text: JSON.stringify({ findings: [] }) });
@@ -76,6 +91,7 @@ describe('collectBatchAdvisories', () => {
 				// and blocking work is never advice
 				finding({ rule: 'multi-export', severity: StandardsSeverity.Blocking, siteKey: 'multi-export:src/a.ts' }),
 			],
+			packagesDir: 'packages',
 			agentReview: true,
 			timeoutMs: 1000,
 			onProgress,
@@ -96,6 +112,7 @@ describe('collectBatchAdvisories', () => {
 			batch: batch({ paths: ['src/a.ts'] }),
 			groups: [groupOf({ rules: [judgmentRule] })],
 			findings: [finding()],
+			packagesDir: 'packages',
 			agentReview: true,
 			timeoutMs: 1000,
 			onProgress,
@@ -121,6 +138,7 @@ describe('collectBatchAdvisories', () => {
 			batch: batch({ paths: ['src/a.ts'] }),
 			groups: [groupOf({ rules: [judgmentRule] })],
 			findings: [finding()],
+			packagesDir: 'packages',
 			agentReview: false,
 			timeoutMs: 1000,
 			onProgress: () => undefined,
@@ -139,6 +157,7 @@ describe('collectBatchAdvisories', () => {
 			batch: batch({ paths: ['src/a.ts'] }),
 			groups: [groupOf({ rules: [judgmentRule] })],
 			findings: [],
+			packagesDir: 'packages',
 			agentReview: true,
 			timeoutMs: 1000,
 			onProgress,
@@ -147,5 +166,25 @@ describe('collectBatchAdvisories', () => {
 		// the batch is still real work — a missing answer must not stop it
 		expect(advisories).toStrictEqual([]);
 		expect(progress.some((line) => line.startsWith('batch-01:multi-export:src: agent review skipped — '))).toBe(true);
+	});
+
+	test('forwards packagesDir to the batch review', async () => {
+		const { cwd, driver, onProgress, webAppGroup } = await setupAppsWorkspace();
+
+		const advisories = await collectBatchAdvisories({
+			cwd,
+			runId: 'run-01',
+			driver,
+			batch: batch({ paths: ['apps/web-app/src/a.ts'] }),
+			groups: [webAppGroup],
+			findings: [],
+			agentReview: true,
+			timeoutMs: 1000,
+			onProgress,
+			packagesDir: 'apps',
+		});
+
+		// the finding survives only when the review places apps/web-app in the web-app group
+		expect(advisories.map((entry) => entry.siteKey)).toStrictEqual(['acme/path-aliases:apps/web-app/src/a.ts']);
 	});
 });

@@ -9,6 +9,8 @@ const setupConfigView = ({ ruleNumbers, source = 'detected' }: { ruleNumbers: Re
 		channel: 'code',
 		severity: 'blocking',
 		fromConfig: true,
+		packages: [''],
+		appliesTo: 'repo root (outside packages)',
 		...ruleNumbers,
 	};
 	const configView = {
@@ -16,14 +18,77 @@ const setupConfigView = ({ ruleNumbers, source = 'detected' }: { ruleNumbers: Re
 		harness: 'claude-code',
 		model: null,
 		sections: [],
-		standardsGroups: [{ packages: [''], pack: 'lightsout/node', source }],
+		standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source }],
 		ruleStates: [ruleState],
 	};
 
 	return { configView };
 };
 
+const setupPerPackageConfigView = () => {
+	const rootGroup = {
+		packages: ['', 'engine'],
+		appliesTo: 'repo root (outside packages), engine',
+		pack: 'lightsout/node',
+		source: 'detected',
+	};
+	const webAppGroup = { packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/react-app', source: 'named' };
+	const ruleState = {
+		rule: 'lightsout/folder-size',
+		id: 'folder-size',
+		library: 'lightsout',
+		channel: 'code',
+		severity: 'blocking',
+		fromConfig: false,
+		options: { cap: 15 },
+		packages: ['', 'engine', 'web-app'],
+		appliesTo: 'repo root (outside packages), engine, web-app',
+	};
+	const buildView = (standardsGroups: Record<string, unknown>[]) => ({
+		path: '/repo/lightsout.config.json',
+		harness: 'claude-code',
+		model: null,
+		sections: [],
+		standardsGroups,
+		ruleStates: [ruleState],
+	});
+	const webAppGroupWithoutAppliesTo = { packages: ['web-app'], pack: 'lightsout/react-app', source: 'named' };
+	const perPackageView = buildView([rootGroup, webAppGroup]);
+	const withoutAppliesToView = buildView([rootGroup, webAppGroupWithoutAppliesTo]);
+	const unknownSourceView = buildView([rootGroup, { ...webAppGroup, source: 'configured' }]);
+
+	return { perPackageView, withoutAppliesToView, unknownSourceView };
+};
+
 describe('ConfigView', () => {
+	test('accepts per-package standards groups and rule-state packages and refuses a group without appliesTo or with an unknown pack source', () => {
+		const { perPackageView, withoutAppliesToView, unknownSourceView } = setupPerPackageConfigView();
+
+		const parsed = ConfigView.parse(perPackageView);
+		const withoutAppliesTo = ConfigView.safeParse(withoutAppliesToView);
+		const unknownSource = ConfigView.safeParse(unknownSourceView);
+
+		expect({
+			standardsGroups: parsed.standardsGroups,
+			ruleStateScopes: parsed.ruleStates.map(({ packages, appliesTo }) => ({ packages, appliesTo })),
+			withoutAppliesToParsed: withoutAppliesTo.success,
+			unknownSourceParsed: unknownSource.success,
+		}).toStrictEqual({
+			standardsGroups: [
+				{
+					packages: ['', 'engine'],
+					appliesTo: 'repo root (outside packages), engine',
+					pack: 'lightsout/node',
+					source: 'detected',
+				},
+				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/react-app', source: 'named' },
+			],
+			ruleStateScopes: [{ packages: ['', 'engine', 'web-app'], appliesTo: 'repo root (outside packages), engine, web-app' }],
+			withoutAppliesToParsed: false,
+			unknownSourceParsed: false,
+		});
+	});
+
 	test('ConfigView: a rule state needs options, and settings does not stand in for them', () => {
 		const { configView: withOptions } = setupConfigView({ ruleNumbers: { options: { cap: 15 } } });
 		const { configView: withSettingsOnly } = setupConfigView({ ruleNumbers: { settings: { cap: 15 } } });
@@ -41,6 +106,8 @@ describe('ConfigView', () => {
 					severity: 'blocking',
 					fromConfig: true,
 					options: { cap: 15 },
+					packages: [''],
+					appliesTo: 'repo root (outside packages)',
 				},
 			],
 			settingsParsed: false,
@@ -75,7 +142,7 @@ describe('ConfigView', () => {
 			missingGroupsParsed: false,
 			carriesPacks: false,
 			carriesChannels: false,
-			standardsGroups: [{ packages: [''], pack: 'lightsout/node', source: 'detected' }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: 'detected' }],
 		});
 	});
 });

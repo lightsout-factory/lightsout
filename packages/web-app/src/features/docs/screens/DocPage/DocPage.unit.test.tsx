@@ -81,6 +81,6 @@ describe('DocPage', () => {
 
 		const entries = readToc().getAllByRole('link');
 
-		expect(entries.map((entry) => entry.textContent)).toStrictEqual(['How package gates work']);
+		expect(entries.map((entry) => entry.textContent)).toStrictEqual(['How package gates work', 'Standards per package']);
 	});
 });
