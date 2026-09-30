@@ -1,7 +1,7 @@
 ---
 name: auto-plan
 description: Plan a ticket alone — self-answers every question below a written escalation bar, shows you one proposal, and rolls onward per the auto-plan config block. Use when the user asks to auto-plan a ticket, plan it without the interview, or hand a ticket straight to the factory. Input is a ticket, a feature description, or a rough-notes file path. Output feeds the `implement` skill.
-allowed-tools: Bash, BashOutput, Read, Write, Edit, Grep, Glob, Task
+allowed-tools: Bash, BashOutput, Read, Write, Edit, Grep, Glob, Task, WebSearch, WebFetch
 ---
 
 # lightsout: auto-plan
@@ -20,54 +20,59 @@ calls. Use the resolved absolute path wherever `<plugin-root>` appears below.
 Confirm `<plugin-root>/dist/cli.mjs` exists; otherwise stop and tell the user to
 reinstall the plugin or run `pnpm bundle`.
 
-## Question format
+## Shaping rules
 
-When this skill does put a question to the user — an escalation, a parked
-question, a vetoed digest row — it uses the labeled four-part shape
-(**Context**, **Question**, **Options**, **Recommendation**) documented in
-the plan skill, which is the authoritative copy and lives at
-`<plugin-root>/skills/plan/SKILL.md`. Read it there rather than
-recalling it. Its durable-delivery rule applies here too: put every complete
-question block in the final response that waits for the user's answer, never
-only in commentary. Two other rules are the easiest to lose and are repeated
-here: **never ask through an option-picker tool** — every question is written
-out in that final response, because a picker's one-line labels cannot carry a
-Context or an Options list — and **one full-format question per final response**.
+**Read `<plugin-root>/skills/plan/shaping-rules.md` before step 0, and follow
+it throughout.** It is the one copy of the rules this skill shares with `plan`
+and `brainstorm`: how to recommend a design, the design check, the escalation
+bar, how to flag a settled decision you believe is weak, and the Question
+format. Its rules on recommending a design bind every self-answer, not only the
+questions put to the user — most of this skill's answers are self-answers.
+
+When this skill does put a question to the user — a checkpoint, a parked
+question, a vetoed digest row — it uses that Question format, **one full-format
+question per final response**. The proposal is the one exception: it carries
+every pick and unresolved gap together, because it is read as one review
+rather than answered one question at a time.
 
 ## The escalation bar
 
-**This section is a cross-skill contract.** The `brainstorm` skill reads it
-here, at `<plugin-root>/skills/auto-plan/SKILL.md`, to test the questions its
-probe turns up — so there is one definition and no second copy. Do not rename
-the heading or move the section without updating that reader.
+The bar is the shaping rules' `## The escalation bar`, applied to every
+question this skill meets; a question below it is answered and listed in the
+assumption digest. What is this skill's own is who answers a question that
+clears it — and that turns on whether a person will read the proposal before
+anything is built.
 
-Escalate a question to the user only when **both** of these hold:
+**Where the proposal will be read, pick and flag.** In an interactive run
+without `auto-approve-plan`, answer a question that clears the bar with the
+option you would recommend and carry on. Record it like a self-answer — with
+the source of the step that met it, `"assumption": true`, and a rationale
+ending `(picked; shown in the proposal)` — run the sync command, and fold it
+into the plan the same way. The
+proposal (step 8) opens with every such pick, each in the Question format with
+the pick as its Recommendation, so the user confirms or changes it before
+anything is built. That is what makes picking safe: a wrong pick costs one plan
+edit at the proposal.
 
-1. Two reasonable engineers, given everything already settled, would choose
-   differently.
-2. The difference is visible to the user or to the product — a name they will
-   read, a behaviour they will see, a cost they will pay, or a decision they
-   will live with.
-
-Fail either one and you answer it yourself.
-
-**A best-practice question never escalates, however hard it is.** How to
-structure a file, which existing pattern to mirror, what to name a private
-helper, where a test goes, how to keep a function under the size cap — the
-standards and the surrounding code answer these, and a user who is asked one
-learns nothing they did not already delegate.
-
-**When you are unsure whether a question clears the bar, answer it yourself and
-put it in the digest.** This is the opposite of the plan skill's "when in doubt,
-escalate", and deliberately so: a wrong self-answer costs one plan edit at the
-proposal, where every self-answer is listed and veto-able, while a needless
-escalation costs the thing this skill exists to save.
-
-**A question that clears the bar is never planned past.** Without
-`auto-approve-plan` it becomes an unscheduled checkpoint: ask it in the Question
-format, one at a time, before the step that depends on it, then fold the answer
-in and carry on. Under `auto-approve-plan` the run parks instead — see
+**Where nobody will read it, park.** Under `auto-approve-plan` — and headless
+under `lightsout queue` — no proposal is read before the build, so a question
+that clears the bar is never planned past: the run parks — see
 [Parking a run](#parking-a-run).
+
+**An answer that acts outside the plan is asked before it is acted on.** A
+question whose answer changes something beyond the plan files — the work
+order's mode, or a scope call that splits the ticket into several plans —
+cannot be undone by editing the plan at the proposal. It is an unscheduled
+checkpoint instead: ask it in the Question format before the step that depends
+on it, then fold the answer in and carry on. Under `auto-approve-plan` the run
+parks.
+
+**A pick made after the proposal was approved is shown again.** With
+`propose-before-draft` the proposal comes before the draft, so the design check,
+the grill or the grade can still make a pick, or flag a settled decision, after
+the user approved it. Before anything is built, show a short amended proposal
+holding only those picks and flags, in step 8's order, and ask for approval of
+them.
 
 ## Convergence invariant
 
@@ -94,7 +99,8 @@ in `decisions.json` and run the sync command before rolling onward.
 
 The only exception is a question that genuinely clears the escalation bar:
 one that cannot be resolved from the record and whose alternatives visibly
-change the product. Park that question using the configured parking path. Do
+change the product. Handle it as [The escalation bar](#the-escalation-bar)
+says: pick and flag where the proposal will be read, park where it will not. Do
 not manufacture such an escalation because convergence is inconvenient or a
 grader labeled it `needs-a-human`.
 
@@ -132,7 +138,9 @@ next re-grade read those phases and the phases connected to them, not the
 whole plan. Step 3 says when to leave the field out.
 
 A settled question is **dropped**, not answered again: it adds no record
-anywhere, and it never enters the bar's routing at all.
+anywhere, and it never enters the bar's routing at all. The one row a settled
+decision may gain is a flag, under the shaping rules'
+`## Flagging a weak settled decision`.
 
 **Re-open a settled decision only for a contradiction you can name at a
 specific `file:line`.** A re-opened decision is recorded as a **new** row that
@@ -145,6 +153,11 @@ brainstorm owns it, and both rows belong in the log.
 
 **A settled decision is not a self-answer.** It never enters the assumption
 digest, because the user already made it.
+
+**A settled decision you believe is weak is built as it stands, and flagged.**
+With no contradiction to name, it is not re-opened: follow the shaping rules'
+`## Flagging a weak settled decision`, record the flag row, and carry the
+concern in the proposal (step 8). Never stop the run for it.
 
 Two further rules are the plan skill's, in its own `## Settled decisions`
 section, and apply here unchanged: the user's latest explicit instruction
@@ -254,7 +267,9 @@ escalation bar instead of asking it.
 
 - **Harvested rows are settled.** Decisions the user already made in this
   session, in the ticket's `## Decisions`, or in a brainstorm row are recorded
-  with `"assumption": false` and never enter the digest.
+  with `"assumption": false` and never enter the digest. A ticket line a
+  `Revises ticket decision:` brainstorm row quotes is not harvested; that row
+  binds instead, as the plan skill's harvest says.
 - **Every self-answer is a row** with `"source": "Elicitation"` and
   `"assumption": true`.
 - **Global constraints.** A project-wide rule the user has already stated (in
@@ -279,9 +294,12 @@ escalation bar instead of asking it.
   empty list.
 
 **4. Propose early** (only when `propose-before-draft` is true). Show the
-proposal now, before any engine agent spends: the design shape in plain words,
-the digest of step 3's self-answers, and the plan folder path. Run step 8's
-proposal handling. On approval, continue to step 5 and show no second proposal.
+proposal now, before any engine agent spends, in step 8's order: the picks and
+flags step 3 made first, then the design shape in plain words, the digest of
+step 3's other self-answers, and the plan folder path. Run step 8's proposal
+handling. On approval, continue to step 5 and show no second proposal — except
+the amended one [The escalation bar](#the-escalation-bar) requires for a pick or
+flag made after approval.
 
 **5. Draft.** Run:
 
@@ -297,26 +315,28 @@ more phases — no phase may pass the created-file ceiling or the touched-file
 ceiling of 70 — then re-run draft. A phase whose whole work is renaming may
 instead be declared rename-only, with the `- **Renames only:** yes` bullet.
 
-**6. Grill it yourself.** Generate the same relentless stream of edge-case
-questions against the drafted plan; grilling intensity never drops. The pass
-interrogates the contract — the file map, the exported signatures, the file each
-new file mirrors, and the acceptance-test ledger — because that is what a plan
-carries that a test cannot state for itself.
+**6. Grill it yourself.** Run the shaping rules' `## The design check` against
+the drafted plan first; an objection you accept is a question like any other
+below, and one that would change a settled decision is flagged instead. Then
+generate the same stream of edge-case questions the plan skill's grill does,
+the one whose answer moves the plan most first. The pass interrogates the
+contract — the file map, the exported signatures, the file each new file
+mirrors, and the acceptance-test ledger — because that is what a plan carries
+that a test cannot state for itself.
 
 - **Drop** a question the record already answers, with no new row.
 - **Route the rest through the bar.** Self-answered → append the row to
   `decisions.json` with `"source": "Grill"`, `"assumption": true` and a
   rationale ending `(self-answered)`, run the sync command, then fold the
-  answer into the plan file via Edit. Above the bar → an unscheduled
-  checkpoint, or a park under `auto-approve-plan`.
+  answer into the plan file via Edit. Above the bar → as
+  [The escalation bar](#the-escalation-bar) says: a pick, a checkpoint, or a
+  park.
 - **Name the phases.** On a phased plan, a Grill row carries `"phases"` naming
   the phase files the answer changes, and a row that re-asks a question names
   the phases its new answer concerns.
-- **Stop rule.** The plan skill grills until the user says stop; there is no
-  user here, so: **stop when one complete pass over every plan file produces no
-  question whose answer would change the plan.** A second pass that only
-  re-treads settled ground is the signal. An unbounded loop with no human in it
-  does not terminate on its own.
+- **Stop rule.** The plan skill's: **stop when one complete pass over every
+  plan file produces no question whose answer would change the plan.** A second
+  pass that only re-treads settled ground is the signal.
 
 **7. Dedup and grade.**
 
@@ -324,8 +344,12 @@ carries that a test cannot state for itself.
 node "<plugin-root>/dist/cli.mjs" plan dedup --name <name>
 ```
 
-Read `.lightsout/work-orders/<work-order>/plans/<plan-id>/dedup.json`. Every finding's `recommendation` is a
-best-practice call and therefore below the bar: **auto-accept them all**. Append
+Read `.lightsout/work-orders/<work-order>/plans/<plan-id>/dedup.json`. Route
+each finding through the bar, as the plan skill's Dedup Review does. Whether to
+reuse, extend or extract is ordinarily a best-practice call and so below the
+bar: **apply the judge's `recommendation`**, or a better resolution when you can
+name why. The rare finding that clears the bar is handled as
+[The escalation bar](#the-escalation-bar) says. Append
 one `decisions.json` row with `"source": "Dedup"` per resolution — on a phased
 plan with `"phases"` naming the finding's `phase` file, plus any other phase
 file the resolution changes — and run the sync command once, then apply each resolution to the plan file the finding's
@@ -380,22 +404,43 @@ and nothing cleared the bar. The proposal and its approval request are the
 deliverable for that turn: do not put any part only in commentary. It carries,
 in this order:
 
+- **the picks**: every question that cleared the bar and was answered with a
+  pick, each in the Question format with the pick as its Recommendation — they
+  open the proposal because they are the answers most likely to be changed;
+- any gap left unresolved, in the Question format;
 - what the plan builds, in plain words — two or three sentences, no jargon;
-- **the assumption digest**: a table of every self-answered question — the
-  question, the choice, and the one-line why — in the order the rows were made;
-- any question that cleared the bar and any gap left unresolved, each in the
-  Question format;
+- **concerns with settled decisions**: each flag raised under the shaping
+  rules' `## Flagging a weak settled decision` — the decision, the concern, the
+  alternative and its cost — noting that the plan builds the settled decision
+  as it stands;
+- **the assumption digest**: a table of every other self-answered question —
+  the question, the choice, and the one-line why — in the order the rows were
+  made;
 - the counts the plan states (files created, files touched) and where the plan
   folder is on disk;
 - what approval does next, read from the config: start the build, or stop.
 
-Then the ask, in one line: approve, veto specific digest rows, or change
-direction.
+Then the ask, in one line: approve, answer a pick differently, change a settled
+decision a concern names, veto specific digest rows, or change direction.
 
+- **A pick answered differently is settled by that answer.** It already carries
+  its Options, so there is nothing to re-ask: append the user's choice to
+  `decisions.json` with `"source": "Converge"` and `"assumption": false`,
+  repeating the pick row's `question` text verbatim so the engine marks the
+  pick superseded, run the sync command, fold it into the plan file via Edit,
+  and re-grade.
+- **A settled decision the user changes** is their latest explicit instruction:
+  record it as the plan skill's `## Settled decisions` says, run the sync
+  command, fold it into the plan file via Edit, and re-grade.
+- **With no proposal shown** — `auto-approve-plan` true and nothing cleared the
+  bar — the concerns with settled decisions still reach the user: their rows
+  are in the plan's Decision Log, and the run's final report lists them in one
+  line each.
 - **A veto re-opens exactly that question.** Ask it live in the Question format,
   append the corrected answer to `decisions.json` with `"source": "Converge"`,
-  run the sync command, fold the answer into the plan file via Edit, re-grade,
-  and show a short amended digest. Never re-draft.
+  repeating the vetoed row's `question` text verbatim, run the sync command,
+  fold the answer into the plan file via Edit, re-grade, and show a short
+  amended digest. Never re-draft.
 - **A change of direction is a stop.** Say plainly that this is what
   the interactive `plan` skill is for, and hand the plan folder over.
 

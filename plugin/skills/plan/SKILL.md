@@ -1,7 +1,7 @@
 ---
 name: plan
 description: Produce a rigorous, implementation-ready plan for a feature — one a fresh-context agent can implement without guessing. Explores the codebase, interviews you to drain what you know, drafts the plan, grills it for edge cases, and grades it to A. Use when the user wants to plan a feature, write an implementation plan, or get a plan graded before implementing. Input is a feature description or a rough-notes file path. Output feeds the `implement` skill.
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Task
+allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Task, WebSearch, WebFetch
 ---
 
 # lightsout: plan
@@ -21,96 +21,29 @@ calls. Use the resolved absolute path wherever `<plugin-root>` appears below.
 Confirm `<plugin-root>/dist/cli.mjs` exists; otherwise stop and tell the user to
 reinstall the plugin or run `pnpm bundle`.
 
-## Question format
+## Shaping rules
 
-**Pick the shape from what the answer is.** Before writing the question,
-ask: does answering it mean inventing a name or a short phrase the code or
-the user will see — a value, a state, a field, a flag, a message? Two or
-more of them: draft the real names as a table under **Options**, one row
-each, first column the name, second column a short description of what that
-thing is. Exactly one: write the drafted wording out inline, in full, rather
-than describing it. Any other question stays prose. The labeled parts below
-apply either way — this test only decides whether the names get written down
-or talked about, and the 1–3 sentence target counts sentences, not table
-rows.
+**Read `<plugin-root>/skills/plan/shaping-rules.md` before step 0, and follow
+it throughout.** It is the one copy of the rules this skill shares with
+`brainstorm` and `auto-plan`: how to recommend a design, the design check, the
+escalation bar that decides which questions reach the user, how to flag a
+settled decision you believe is weak, and the Question format. Every question
+this skill puts to the user — an Elicitation batch, an Approaches fork, a Grill
+escalation, a Dedup finding, a Converge gap — clears that bar and uses that
+format.
 
-Every question this skill puts to the user — Elicitation batches, Grill
-escalations, Dedup findings, Converge gaps — uses this labeled four-part
-shape, in this order:
+What is this skill's own:
 
-**Context:** what the question is about and why it matters, in everyday
-words. Write for someone who has not read the plan or the code — never
-assume they know the plan's internals. State the problem the question
-decides — in everyday words — before naming any options.
-
-**Question:** the question itself, one sentence.
-
-**Vet every option before it is offered.** An option earns its place only if
-you would build it and defend it when asked "is this best practice?". Judge it
-against how established tools solve the same problem and against this
-codebase's own conventions — never against a ticket's wording, or a name or
-shape that happens to be in the conversation already. A name, key or value
-drafted inside an option passes the same test before it is written down. When
-only one option survives, present it alone and ask the user to confirm it;
-never add a weaker alternative to fill a slot.
-
-**Options:** the answers to choose between, one per line, each opening with a
-bracketed number and its name — `(1) <name>: …` — then what it wins and what it
-costs. The number is there so the user can reply with the digit alone; the name
-is what makes the list readable to someone who skipped the paragraphs above.
-When an option carries risk, say what goes wrong if it fails and what catches
-it.
-
-**Recommendation:** the option you recommend, named by its number, and the
-one-line why — so a reply of just that number resolves it. The why names the
-precedent the option follows when one exists ("ESLint keeps rules apart from the
-configs that select them"). A ticket's settled decisions bind the design, but
-its wording is never evidence that an option is best.
-
-**Presentation.** Each labeled part is its own short paragraph — bold label,
-blank line between parts. No bullet dashes on the labels; the blank lines
-are what keep the block readable.
-
-**Extra parts are welcome when needed.** If something the user must know
-fits none of the four labels (a safety note, a cost, a deadline effect),
-add another bold-labeled paragraph rather than forcing it in or leaving
-it out.
-
-**Plain language, always.** No jargon. Never use an internal name — a file,
-symbol, subcommand, or engine term — without saying what it means in
-everyday words. If the reader would need to open a file to answer, the
-question is not ready to ask.
-
-**A label reads like a well-named variable.** Someone who skips straight to
-the options knows what each one is from the label alone — nothing borrowed
-from the paragraphs above it or from its place in the list. `needs-a-human`
-passes; "Not true" and "the third one" do not. When the question is about
-which action to take, name each option by what it does ("copy the file each
-run", "keep the first copy"). When the question asks you to invent a name,
-the drafted name itself is the label. An internal name never appears in a
-label, even one explained earlier in the question — the label names what
-the option does in everyday words (`checker-per-plan-file`, not
-`fourth-lens`).
-
-**Keep each part short.** Aim for 1–3 plain sentences per label. When a
-question outgrows that, treat it as a sign it is really two questions —
-split it.
-
-**Durable question delivery.** A pending decision is the deliverable for that
-turn. Put every complete four-part question block in the final response that
-waits for the user's answer. Never put the full block in commentary and then
-summarize or repeat only its Question in the final response; commentary may
-report progress, but must not contain a decision the user needs to answer.
-
-The final response may carry at most 2 full-format questions. Truly trivial
-yes/no items may share one combined block instead of getting a block each.
-Grill escalations are stricter: one question at a time, always.
-
-Never put a question to the user through an option-picker tool — the kind that
-shows a list of one-line choices to select from. Every question in this phase
-is written out in that final response, in the shape above. A picker's labels
-cannot carry a Context, an Options list, or a drafted table, so what it saves in
-typing it takes out of the user's ability to answer.
+- **A question that clears the escalation bar goes to the user.** One below it
+  you answer yourself, record as an assumption, and list in the assumption
+  digest (step 5). The alignment checkpoint (step 2) narrows this: until the
+  user confirms it, a question whose answer depends on the goal or the design
+  direction counts as clearing the bar, because neither is settled yet. A
+  best-practice question is still yours to answer, before the checkpoint or
+  after.
+- **The final response may carry at most 2 full-format questions.** Truly
+  trivial yes/no items may share one combined block instead of getting a block
+  each. Grill escalations are stricter: one question at a time, always.
 
 ## Settled decisions
 
@@ -160,16 +93,19 @@ are floors, never ceilings, and a criterion's silence about a case decides
 nothing.
 
 A settled question is **dropped**, not answered again. Do not append a
-`Decision Log` row for it and do not mirror one into `decisions.json` — the
-row it would duplicate is already there. Where a step distinguishes answering
-a question yourself from putting it to the user, a settled question is
-neither; it never enters that routing at all.
+`Decision Log` row for it and do not mirror one into `decisions.json` — the row it would
+duplicate is already there. The one row a settled decision may gain is a flag,
+under the shaping rules' `## Flagging a weak settled decision`. Where a step
+distinguishes answering a question yourself from putting it to the user, a
+settled question is neither; it never enters that routing at all.
 
 **Re-open a settled decision only for a contradiction you can name in a
 specific file and line.** A preference for a different approach is not a
 contradiction, and neither is a later step wanting a different answer than an
 earlier one gave. A re-opened decision is asked in the Question format, with
-the contradicting `file:line` stated in the Context.
+the contradicting `file:line` stated in the Context. A settled decision you
+believe is weak, with no contradiction behind it, is not re-opened: flag it
+once, under the shaping rules' `## Flagging a weak settled decision`.
 
 **A re-opened decision keeps both records.** Record the corrected answer as a
 **new** row in `decisions.json`, **repeating the original row's `question`
@@ -199,8 +135,9 @@ a plan whose implementation is already finished belongs in **this** plan — nev
 in an edit to that earlier one.
 
 **This narrows what gets asked, not how hard a step pushes.** Every question
-that is not already settled is still asked, at whatever intensity its step
-calls for. Dropping a settled question is not a licence to drop a hard one.
+that is not already settled is still raised and routed through the escalation
+bar, at whatever intensity its step calls for. Dropping a settled question is
+not a licence to drop a hard one.
 
 ## Steps
 
@@ -344,12 +281,14 @@ warnings into Elicitation.
   conversation before the skill was invoked, record each decision the user
   already made as a decisions row (`Source = "Elicitation"`) before asking
   anything. Those rows are settled — see [Settled decisions](#settled-decisions).
-- **Harvest the ticket.** When the work traces to a ticket, record
-  each line of its `## Decisions` as a decisions row (`Source =
-  "Elicitation"`, `assumption: false`) before asking anything — those are
-  settled. Treat its `## Open questions` as part of the interview's agenda.
-  A "no" the user settles to one of them is a decisions row like any other,
-  and a rejected idea never becomes a new ticket.
+- **Harvest the ticket.** When the work traces to a ticket, record each line of
+  its `## Decisions` as a decisions row (`Source = "Elicitation"`,
+  `assumption: false`) before asking anything — those are settled. A line a brainstorm row
+  revises — one whose `question` begins `Revises ticket decision:` and quotes
+  that line — is not harvested: the brainstorm row is the user's later
+  instruction and binds instead. Treat its `## Open questions` as part of the
+  interview's agenda. A "no" the user settles to one of them is a decisions row
+  like any other, and a rejected idea never becomes a new ticket.
 - **Honor the brainstorm hand-off.** The rows in
   `brainstorm-decisions.json` are decisions already settled with the user, and
   [Settled decisions](#settled-decisions) governs them — never re-asked,
@@ -360,20 +299,23 @@ warnings into Elicitation.
     becomes a binding bullet.
   - Do not copy brainstorm rows into `decisions.json`; `plan draft` reads
     both files and merges them.
-- Ask in the Question format above — at most 2 full-format questions per
-  message. Resolve the decision tree branch by branch, reflect each answer
-  back to converge on a shared understanding. Never ask what the codebase can
-  answer — read it (or re-explore in-context, update facts.json, and re-run
-  `plan verify-facts`) instead.
+- Ask only what clears the escalation bar, in the Question format — at most 2
+  full-format questions per message, the one whose answer moves the design most
+  first. Elicitation drains what only the user knows; a best-practice question
+  is answered, not asked. Resolve the decision tree branch by branch, reflect
+  each answer back to converge on a shared understanding. Never ask what the
+  codebase can answer — read it (or re-explore in-context, update facts.json,
+  and re-run `plan verify-facts`) instead.
 - Continue until the user is **tapped out and aligned** — their bound, not yours.
-- **Alignment checkpoint.** Close by stating back, in plain words: the goal,
-  the design shape, and the kinds of implementation detail you will decide
-  yourself from here (best practice only). The user's explicit confirmation
-  licenses Grill's self-answer routing (step 5); without it, every grill
-  question escalates to the user. A brainstorm hand-off does not stand in for
-  this checkpoint: the plan reads the code after brainstorm ended and may
-  surface things brainstorm could not have known, so the licence to
-  self-answer is still earned here.
+- **Alignment checkpoint.** Close by stating back, in plain words: the goal, the
+  design shape, and the kinds of implementation detail you will decide yourself
+  from here (best practice only). The user's explicit confirmation licenses
+  Grill's self-answer routing (step 5); without it, every grill question that
+  depends on the goal or direction escalates to the user, while a best-practice
+  question is still answered, never asked. A brainstorm hand-off does not stand
+  in for this checkpoint: the plan reads the code after brainstorm ended and may
+  surface things brainstorm could not have known, so the licence to self-answer
+  is still earned here.
 - Author `.lightsout/work-orders/<work-order>/plans/<plan-id>/decisions.json`. Write this **exact** shape
   (the engine hard-parses it; a wrong field name blocks drafting):
   ```json
@@ -404,13 +346,13 @@ naming the chosen approach; [Settled decisions](#settled-decisions) is the
 test. When it is settled, say so in one line ("Design shape settled during
 Elicitation — skipping approaches", or "Approach settled during brainstorm —
 skipping approaches") and move on — never skip silently. Present the genuinely
-different approaches that pass the vetting rule in the Question format — usually
-two or three; when only one passes, present it alone and say in one line why the
-others fell. Context states the design problem
-in everyday words, Question asks which to build, Options gives each approach
-with its wins and costs, Recommendation names one by number with the one-line
-why. Record the
-chosen approach as a decisions row (`Source = "Elicitation"`) before drafting.
+different approaches that survive the shaping rules' `## Recommending a design`,
+in the Question format — as many as survive, with no target count; when only one
+does, present it alone and say in one line why the others fell. Context states
+the design problem in everyday words, Question asks which to build, Options
+gives each approach with its wins and costs, Recommendation names one by number
+with the one-line why. Record the chosen approach as a decisions row
+(`Source = "Elicitation"`) before drafting.
 
 **4. Draft.** Run:
 ```sh
@@ -436,32 +378,35 @@ instead be declared rename-only: a `## Renames` section in its phase file and
 the `- **Renames only:** yes` bullet in its overview declaration.
 
 **5. Grill** — push past conscious knowledge against the *drafted* plan
-(interactive, unbounded):
-- Relentless: generate the full stream of edge-case questions against the
-  draft — grilling intensity never drops. Routing decides who *answers* each
-  question, never whether it gets asked; the settled check below is the one
-  thing that removes a question, and it runs before routing. Explore the
-  codebase instead of asking whenever possible.
+(interactive):
+- **Design check first.** Before the edge-case stream, run the shaping rules'
+  `## The design check` against the drafted plan. An objection you accept
+  becomes a question like any other below — dropped if settled, routed through
+  the bar, and folded into the plan the same way. One that would change a
+  settled decision is flagged under `## Flagging a weak settled decision`
+  instead.
+- Thorough: generate the full stream of edge-case questions against the
+  draft. Routing decides who *answers* each question, never whether it is
+  raised; the settled check below is the one thing that removes a question,
+  and it runs before routing. Explore the codebase instead of asking whenever
+  possible.
 - **Drop a question the record already answers.** Check each generated
   question against the brainstorm rows, `decisions.json` and the draft's
   Decision Log — see [Settled decisions](#settled-decisions) — before routing
   it. A settled question is neither escalated nor self-answered: it is
   dropped, with no new Decision Log row, because the answer is already logged.
   The rest of the stream is unaffected — this removes repeats, not rigour.
-- **Route every question before surfacing it. Escalating to the user is the
-  default** — self-answer is the single exception, allowed only when ALL of
-  these hold: the user confirmed the alignment checkpoint (step 2); the answer
-  follows directly from the established goal, direction, and architecture; and
-  no defensible reading of the user's intent gives a different answer. Fail
-  any one → escalate. (Typical escalations: a genuine fork, anything that
-  could bend the plan's direction, a question with two defensible answers —
-  illustrative, never a filter.) **When in doubt, escalate.**
+- **Route every question through the escalation bar before surfacing it.** One
+  that clears the bar is escalated. One below it is self-answered — subject to
+  the alignment checkpoint, as [Shaping rules](#shaping-rules) says. A question
+  you are unsure about is self-answered and listed, as the shaping rules say.
 - **Self-answered** → append the row to `decisions.json` with
   `"source": "Grill"`, `"assumption": true` and a rationale ending in
   `(self-answered)`, run the sync command, then fold the answer into `plan.md`
   via Edit. Do not surface it live.
 - **Escalated** → **one question at a time**, in the Question format (one
-  full labeled block per message — never two). After each answer, append the
+  full labeled block per message — never two), the one whose answer moves the
+  plan most first. After each answer, append the
   `decisions.json` row with `"source": "Grill"`, run the sync command, and
   **immediately fold the answer into `plan.md` via Edit**. Do not batch edits
   to the end.
@@ -469,8 +414,10 @@ the `- **Renames only:** yes` bullet in its overview declaration.
   phase files the answer changes, and a row that re-asks a question names the
   phases its new answer concerns — see **Name the phases a decision
   concerns** under [Settled decisions](#settled-decisions).
-- Continue until **the user says stop** — do not self-terminate. Self-answering
-  a question never counts as stopping.
+- **Stop rule.** Stop when one complete pass over every plan file produces no
+  question whose answer would change the plan; a second pass that only
+  re-treads settled ground is the signal. Say the grill is done, and that it
+  goes on if the user wants more. The user may also stop it at any point.
 - **The grill also interrogates the ledger.** With `plan.contract` on, the
   plan carries an `## Acceptance Tests` table and a `## Prose Files` list, and
   three questions belong in the stream like any other: an acceptance criterion
@@ -478,7 +425,7 @@ the `- **Renames only:** yes` bullet in its overview declaration.
   built, and a prose file that a test could have stated after all. Each finding
   lands where it belongs — a `decisions.json` row followed by the sync
   command, or a new ledger row.
-- **Assumption digest.** When the user stops, list every self-answered
+- **Assumption digest.** When the grill stops, list every self-answered
   question with its chosen answer. A veto re-opens that question as an
   escalation — fold the corrected answer into `plan.md` before moving on.
 
@@ -496,13 +443,19 @@ subcommand's; you only conduct the review and apply the chosen edits.
   overlap every run, so a resolution chosen on an earlier pass comes back as a
   finding; apply the resolution already recorded and say in one line that it
   was settled, rather than asking again.
-- `findings` present → surface each remaining finding in the Question format
-  (at most 2 per message): **Context** says in plain words what the plan wants to
-  build and what already exists that overlaps — never bare symbol names;
-  **Question** asks which to pick; **Options** summarizes the resolutions to
-  choose between; **Recommendation** is the judge's `recommendation` in plain
-  words. Get the user's choice per finding **or** offer **auto-accept**
-  (apply every `recommendation`, showing a summary first). Append one
+- `findings` present → route each remaining finding through the escalation
+  bar. Whether to reuse, extend or extract existing code is ordinarily a
+  best-practice call, so most findings fall below it: apply the judge's
+  `recommendation` — or a better resolution, when you can name why — and list
+  each one, in plain words, in a short summary of what was applied. A finding
+  that clears the bar — one whose resolution changes what the user sees, or
+  that the user must weigh — goes to the user in the Question format (at most 2
+  per message): **Context** says in plain words what the plan wants to build
+  and what already exists that overlaps — never bare symbol names; **Question**
+  asks which to pick; **Options** summarizes the resolutions to choose between;
+  **Recommendation** is the judge's `recommendation` in plain words, unless you
+  recommend otherwise and say why. A veto of an applied resolution re-opens it
+  the same way. Append one
   `decisions.json` row with `"source": "Dedup"` per resolution — on a phased
   plan with `"phases"` naming the finding's `phase` file, plus any other phase
   file the resolution changes — and run the sync command once, then apply each
@@ -527,18 +480,20 @@ node "<plugin-root>/dist/cli.mjs" plan grade --name <name>
 ```
 Read `.lightsout/work-orders/<work-order>/plans/<plan-id>/grade.json`:
 - `"passed": true` **and** `"complete": true` → go to handoff.
-- `"passed": false` with `gaps` → surface **only the blocking gaps**: the ones
-  whose `outcome` is `needs-a-human` or `unjudged`. Put each in the Question
-  format (at most 2 per message, recommended-first), **grouped by the gap's
-  `phase`**. Resolve each by appending a `decisions.json` row with
-  `"source": "Converge"` — on a phased plan with `"phases"` naming the gap's
-  `phase` file, plus any other phase file the answer changes — running the
-  sync command, then **editing the plan
-  file the gap's `phase` names** in place via Edit — `plan.md` for a single
-  plan, that `phase<N>-<slug>.md` for a phased one. Then re-run `plan grade`.
-  Repeat until `passed` or the user calls it. **Do NOT re-run `plan draft`** —
-  a re-draft regenerates the plan files and would clobber the Grill edits
-  already folded in.
+- `"passed": false` with `gaps` → work **only the blocking gaps**: the ones
+  whose `outcome` is `needs-a-human` or `unjudged`. A grader's label is
+  evidence, not authority: route each through the escalation bar. One below it
+  you resolve yourself, as an assumption, and list in plain words in a short
+  summary of what was resolved, where a veto re-opens it. One that clears it
+  goes in the Question format (at most 2 per message, recommended-first),
+  **grouped by the gap's `phase`**. Resolve each by appending a `decisions.json`
+  row with `"source": "Converge"` — on a phased plan with `"phases"` naming the
+  gap's `phase` file, plus any other phase file the answer changes — running the
+  sync command, then **editing the plan file the gap's `phase` names** in place
+  via Edit — `plan.md` for a single plan, that `phase<N>-<slug>.md` for a phased
+  one. Then re-run `plan grade`. Repeat until `passed` or the user calls it.
+  **Do NOT re-run `plan draft`** — a re-draft regenerates the plan files and
+  would clobber the Grill edits already folded in.
 - A blocking gap whose answer the record already carries is **not surfaced** —
   see [Settled decisions](#settled-decisions). A re-grade re-reads the plan
   from scratch and can raise a gap over something settled in Elicitation,
@@ -561,15 +516,17 @@ Read `.lightsout/work-orders/<work-order>/plans/<plan-id>/grade.json`:
     `answerAt` says where. Not a question.
   - `unjudged` — nobody weighed this one, so it blocks until someone does.
 - **An `unjudged` gap is a different question from a `needs-a-human` one, and
-  must not be dressed as the same thing.** Surface it in the Question format like
-  any other blocking gap, so it is never silently dropped — and in the same
-  block, say plainly that it blocks because nobody weighed it, not because the
-  plan is thin, and quote its `unjudgedReason`. Say that re-grading will **not**
-  retry that judge: a re-grade re-runs every reader and comes back with a fresh
-  set of findings, so this exact one may simply not reappear, and there is no way
-  to re-judge a single finding. Leave the choice with the user: answer it into
-  the plan, or let it go. Do **not** recommend a re-grade as the remedy — it
-  reads like a retry and is not one.
+  must not be dressed as the same thing.** It is never silently dropped. Below
+  the bar, weigh it yourself, answer it into the plan, and list it in the
+  summary as one nobody had weighed. When it clears the bar, surface it in the
+  Question format like any other blocking gap — and in the same block, say
+  plainly that it blocks because nobody weighed it, not because the plan is
+  thin, and quote its `unjudgedReason`. Say that re-grading will **not** retry
+  that judge: a re-grade re-runs every reader and comes back with a fresh set of
+  findings, so this exact one may simply not reappear, and there is no way to
+  re-judge a single finding. Leave the choice with the user: answer it into the
+  plan, or let it go. Do **not** recommend a re-grade as the remedy — it reads
+  like a retry and is not one.
 - Every gap also carries the `lens` that found it (`surface`, `wiring`,
   `decisions`) — three differently-briefed checkers read every phase, so two
   gaps with the same text and different lenses are two lenses agreeing, not

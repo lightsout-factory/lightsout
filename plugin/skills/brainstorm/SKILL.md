@@ -1,7 +1,7 @@
 ---
 name: brainstorm
 description: Shape a vague idea into a buildable direction through dialogue — checks whether it is one idea or several, offers the competing approaches worth building, with trade-offs and a recommendation, and converges on a design stated in plain words. Use when the user has a rough idea, wants to think through a feature before planning it, or asks to brainstorm. It decides its own outcome — ready to implement, or ready to auto-plan — and always writes the design write-up and the settled decisions, publishing both to the ticket.
-allowed-tools: Bash, Read, Write, Grep, Glob, Task
+allowed-tools: Bash, Read, Write, Grep, Glob, Task, WebSearch, WebFetch
 ---
 
 # lightsout: brainstorm
@@ -17,94 +17,29 @@ description above is the only trigger — no hook, no forced invocation. Writing
 the settled-decisions file below changes nothing about this standing — the skill
 never reads the file back; the engine validates it at draft time.
 
-## Question format
+## Shaping rules
 
-**Pick the shape from what the answer is.** Before writing the question,
-ask: does answering it mean inventing a name or a short phrase the code or
-the user will see — a value, a state, a field, a flag, a message? Two or
-more of them: draft the real names as a table under **Options**, one row
-each, first column the name, second column a short description of what that
-thing is. Exactly one: write the drafted wording out inline, in full, rather
-than describing it. Any other question stays prose. The labeled parts below
-apply either way — this test only decides whether the names get written down
-or talked about, and the 1–3 sentence target counts sentences, not table
-rows.
+**Once the plugin root is resolved (below), read
+`<plugin-root>/skills/plan/shaping-rules.md` before step 1, and follow it
+throughout.** It is the one copy of the rules this skill shares with `plan` and
+`auto-plan`: how to recommend a design, the design check, the escalation bar
+that decides which questions reach the user, how to flag a settled decision you
+believe is weak, and the Question format every question to the user uses.
 
-Every question this skill puts to the user uses this labeled four-part
-shape, in this order:
+A brainstorm has two jobs, and the bar serves both. It draws out the product
+direction only the user holds — who the work serves, what they will see, what
+is in or out — and those questions clear the bar. And it makes the architecture
+the best one available — and those questions mostly do not: a question of which
+design is sounder, when nothing the user sees differs, is yours to answer. The
+user sees every such answer when the design is stated back (step 4) and in the
+settled-decisions table (step 7), marked as an assumption, where either can be
+changed.
 
-**Context:** what the question is about and why it matters, in everyday
-words. Write for someone who has not read the plan or the code — never
-assume they know the plan's internals. State the problem the question
-decides — in everyday words — before naming any options.
+What is this skill's own:
 
-**Question:** the question itself, one sentence.
-
-**Vet every option before it is offered.** An option earns its place only if
-you would build it and defend it when asked "is this best practice?". Judge it
-against how established tools solve the same problem and against this
-codebase's own conventions — never against a ticket's wording, or a name or
-shape that happens to be in the conversation already. A name, key or value
-drafted inside an option passes the same test before it is written down. When
-only one option survives, present it alone and ask the user to confirm it;
-never add a weaker alternative to fill a slot.
-
-**Options:** the answers to choose between, one per line, each opening with a
-bracketed number and its name — `(1) <name>: …` — then what it wins and what it
-costs. The number is there so the user can reply with the digit alone; the name
-is what makes the list readable to someone who skipped the paragraphs above.
-When an option carries risk, say what goes wrong if it fails and what catches
-it.
-
-**Recommendation:** the option you recommend, named by its number, and the
-one-line why — so a reply of just that number resolves it. The why names the
-precedent the option follows when one exists ("ESLint keeps rules apart from the
-configs that select them"). A ticket's settled decisions bind the design, but
-its wording is never evidence that an option is best.
-
-**Presentation.** Each labeled part is its own short paragraph — bold label,
-blank line between parts. No bullet dashes on the labels; the blank lines
-are what keep the block readable.
-
-**Extra parts are welcome when needed.** If something the user must know
-fits none of the four labels (a safety note, a cost, a deadline effect),
-add another bold-labeled paragraph rather than forcing it in or leaving
-it out.
-
-**Plain language, always.** No jargon. Never use an internal name — a file,
-symbol, subcommand, or engine term — without saying what it means in
-everyday words. If the reader would need to open a file to answer, the
-question is not ready to ask.
-
-**A label reads like a well-named variable.** Someone who skips straight to
-the options knows what each one is from the label alone — nothing borrowed
-from the paragraphs above it or from its place in the list. `needs-a-human`
-passes; "Not true" and "the third one" do not. When the question is about
-which action to take, name each option by what it does ("copy the file each
-run", "keep the first copy"). When the question asks you to invent a name,
-the drafted name itself is the label. An internal name never appears in a
-label, even one explained earlier in the question — the label names what
-the option does in everyday words (`checker-per-plan-file`, not
-`fourth-lens`).
-
-**Keep each part short.** Aim for 1–3 plain sentences per label. When a
-question outgrows that, treat it as a sign it is really two questions —
-split it.
-
-**One question at a time is the default here** — brainstorm conversations
-are exploratory, not batched.
-
-**Durable question delivery.** A pending decision is the deliverable for that
-turn. Put the complete four-part question block in the final response that
-waits for the user's answer. Never put the full block in commentary and then
-summarize or repeat only its Question in the final response; commentary may
-report progress, but must not contain a decision the user needs to answer.
-
-Never put a question to the user through an option-picker tool — the kind that
-shows a list of one-line choices to select from. Every question in this phase
-is written out in that final response, in the shape above. A picker's labels
-cannot carry a Context, an Options list, or a drafted table, so what it saves in
-typing it takes out of the user's ability to answer.
+- **A question that clears the escalation bar goes to the user.**
+- **One question at a time** — brainstorm conversations are exploratory, not
+  batched.
 
 ## Plugin root
 
@@ -118,17 +53,22 @@ and confirm `<plugin-root>/dist/cli.mjs` exists before running anything.
 
 **1. Understand the idea.** Let the user talk; reflect back what you heard in
 plain words. Read the codebase in-context (Read/Grep/Glob) when it answers a
-question — never ask what the code can answer.
+question — never ask what the code can answer. Before step 3, read the code the
+idea touches as well: the files it would change, the pattern the nearest
+neighbour follows, and the integration points, as the shaping rules'
+`## Recommending a design` asks.
 
-When the idea traces to a ticket, read the ticket first. Its
-`## Decisions` lines are outcomes the user already settled — never re-ask
-them, and do not copy them into this skill's exit file: the `plan` skill harvests
-the ticket itself, and a copy here would put the same row in the record
-twice. Its `## Open questions` are this conversation's agenda. Its
-acceptance criteria are floors, never ceilings: a criterion naming one case
-does not decide that other cases are out of scope. A "no" the user settles
-here is a decision row like any other, and a rejected idea never becomes a
-new ticket.
+When the idea traces to a ticket, read the ticket first. Its `## Decisions`
+lines are outcomes the user already settled — never re-ask them, and do not copy
+them into this skill's exit file: the `plan` skill harvests the ticket itself,
+and a copy here would put the same row in the record twice. One you believe is
+weak is flagged once, under the shaping rules'
+`## Flagging a weak settled decision`, never re-asked; a line the user changes
+in answer is recorded the way that section says, which revises the line rather
+than copying it. Its `## Open questions` are this conversation's agenda. Its acceptance criteria are floors,
+never ceilings: a criterion naming one case does not decide that other cases are
+out of scope. A "no" the user settles here is a decision row like any other, and
+a rejected idea never becomes a new ticket.
 
 Also read what the ticket already holds:
 
@@ -163,33 +103,39 @@ Two cases are asked before anything is added, in the Question format:
   switch the work order to multiple-plan mode. A no means this idea is not a plan
   on this work order, and the brainstorm says so rather than adding one anyway.
 
-**3. Approaches.** Present the genuinely different ways to build it that pass
-the vetting rule in the Question format — usually two or three; when only one
-passes, present it alone and say in one line why the others fell. Give what
-each wins, what each costs, and which one you recommend and why. Skip only when the user already arrived with a chosen approach, and
-say so in one line.
+**3. Approaches.** Present the genuinely different ways to build it that
+survive the shaping rules' `## Recommending a design`, in the Question format —
+as many as survive, with no target count; when only one does, present it alone
+and say in one line why the others fell. Give what each wins, what each costs,
+and which one you recommend and why. Skip only when the user already arrived
+with a chosen approach, and say so in one line.
 
 **4. Converge.** State the design back in plain words — what gets built, what
-it touches, what is explicitly out — and iterate until the user confirms it
-matches what they meant.
+it touches, what is explicitly out, and the architecture choices you made
+yourself, each with its one-line why — and iterate until the user confirms it
+matches what they meant. This is the one place the user sees the whole design
+at once, so a choice of yours they would make differently surfaces here.
 
-**5. Probe for what is still open.** The session that had the conversation is
-the worst judge of whether it covered everything — believing it did is the
-exact failure this step exists to catch. So hand the work to a reader who was
-not there.
+**5. Probe the design.** The session that had the conversation is the worst
+judge of whether the design is complete, or the best one — believing it is, is
+the exact failure this step exists to catch. So hand the work to a reader who
+was not there.
 
 Write the converged design out in full, plus the ticket when there is one, and
-spawn a subagent with no memory of this conversation. Its brief: read that
-statement and the ticket, read nothing else of the conversation, and answer
-with the questions a builder would still have to guess at.
+spawn a subagent with no memory of this conversation. Its brief carries two
+questions: the shaping rules' `## The design check`, answered against that
+design and the code it touches; and the questions a builder would still have to
+guess at. It reads that statement, the ticket and the code, and nothing else of
+the conversation.
 
-Test each returned question against the escalation bar defined in the
-`auto-plan` skill's `## The escalation bar` section, at
-`<plugin-root>/skills/auto-plan/SKILL.md`. Read it there — that section is the
-one definition of the bar and this skill never restates it. Ask what clears the
-bar in the Question format, one at a time, fold each answer into the design,
-then probe once more. **At most two rounds**, then stop: a loop with a human in
-it spends their attention rather than the machine's.
+Weigh each objection as the design check says, and test each returned question
+against the shaping rules' `## The escalation bar`. Ask what clears the bar in
+the Question format, one at a time, most consequential first; answer the rest
+yourself and record each as an assumption. Fold every answer into the design,
+restate what changed, then probe once more — the second round asks only the
+builder's questions, since the design check runs once. **At most two rounds**,
+then stop: a loop with a human in it spends their attention rather than the
+machine's.
 
 **6. Judge the outcome.** The skill decides this itself; never ask the user
 which exit to take. The brainstorm holds the context needed to judge, so asking
