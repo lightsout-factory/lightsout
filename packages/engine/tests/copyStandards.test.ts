@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
 import { mkdtemp, readdir, readFile, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, relative, sep } from 'node:path';
+import { join, sep } from 'node:path';
 import { promisify } from 'node:util';
 import { expect, test } from '@jest/globals';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
@@ -10,6 +10,11 @@ import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 // subprocess `pnpm bundle` runs. What it leaves out is a contract: the engine
 // loads a package without fixtures or unit tests, and the pre-push hook and CI
 // both rebuild into a throwaway directory to prove the committed copy matches.
+//
+// Whether the committed copy is current is `scripts/checkShipped.mjs`'s
+// question, not this file's: the pre-push hook, CI and the pre-ship step all
+// ask it. A feature branch never commits build output, so asking it here
+// would fail every branch that changes the authored standards.
 
 const repoRoot = join(__dirname, '..', '..', '..');
 const run = promisify(execFile);
@@ -90,12 +95,4 @@ test('copyStandards refuses an --out with no directory after it rather than buil
 	const failure = await getRejectionError({ promise: run('node', [join(repoRoot, 'scripts', 'copyStandards.mjs'), '--out'], { cwd: repoRoot }) });
 
 	expect((failure as Error & { stderr: string }).stderr).toMatch(/--out needs a directory/);
-});
-
-test('the committed package matches what the script builds today', async () => {
-	const out = await buildInto();
-
-	// the same comparison CI makes, so a stale plugin/standards fails here first
-	expect(await filesUnder({ dir: out })).toStrictEqual(await filesUnder({ dir: join(repoRoot, 'plugin', 'standards') }));
-	expect(relative(repoRoot, out).startsWith('..')).toBe(true);
 });
