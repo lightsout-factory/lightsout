@@ -27,11 +27,14 @@ const clones: string[] = [];
  * last committed. Everything else stays at the cloned commit, which is what
  * gives the version comparison a real base to work against.
  *
- * The engine is rebuilt and committed on main before branching. esbuild writes
- * each bundled module's path into its output, and this clone reaches its
- * dependencies through a symlink, so those paths are longer here than in a
- * normal checkout. Rebuilding once makes the clone self-consistent, so a test
- * measures the change it made rather than that difference.
+ * The engine and the shipped standards are rebuilt and committed on main before
+ * branching. esbuild writes each bundled module's path into its output, and
+ * this clone reaches its dependencies through a symlink, so those paths are
+ * longer here than in a normal checkout. And a feature branch never commits
+ * build output (the pre-ship step does, after the rebase), so a branch that
+ * changed the authored standards carries a stale shipped copy. Rebuilding both
+ * once makes the clone self-consistent, so a test measures the change it made
+ * rather than either difference.
  */
 const buildBaseClone = async () => {
 	const dir = join(await mkdtemp(join(tmpdir(), 'lightsout-shipped-')), 'repo');
@@ -66,6 +69,7 @@ const buildBaseClone = async () => {
 	}
 
 	runInRepo({ cwd: dir, command: 'node', args: [join(dir, 'scripts', 'buildEngine.mjs')] });
+	runInRepo({ cwd: dir, command: 'node', args: [join(dir, 'scripts', 'copyStandards.mjs')] });
 
 	// A local clone checks out whatever branch this repo is on, so `main` is not
 	// guaranteed to exist here. It is named explicitly because it is what the
