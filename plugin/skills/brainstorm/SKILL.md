@@ -24,7 +24,8 @@ never reads the file back; the engine validates it at draft time.
 throughout.** It is the one copy of the rules this skill shares with `plan` and
 `auto-plan`: how to recommend a design, the design check, the escalation bar
 that decides which questions reach the user, how to flag a settled decision you
-believe is weak, and the Question format every question to the user uses.
+believe is weak, the Question format every question to the user uses, and the
+Design statement that shows the user a whole design to confirm.
 
 A brainstorm has two jobs, and the bar serves both. It draws out the product
 direction only the user holds — who the work serves, what they will see, what
@@ -103,18 +104,22 @@ Two cases are asked before anything is added, in the Question format:
   switch the work order to multiple-plan mode. A no means this idea is not a plan
   on this work order, and the brainstorm says so rather than adding one anyway.
 
-**3. Approaches.** Present the genuinely different ways to build it that
-survive the shaping rules' `## Recommending a design`, in the Question format —
-as many as survive, with no target count; when only one does, present it alone
-and say in one line why the others fell. Give what each wins, what each costs,
-and which one you recommend and why. Skip only when the user already arrived
-with a chosen approach, and say so in one line.
+**3. Approaches.** When two or more genuinely different ways to build it
+survive the shaping rules' `## Recommending a design`, ask which to build, in
+the Question format — as many as survive, with no target count. Each option
+describes its approach fully enough to be chosen on its own, with what it wins,
+what it costs, and which one you recommend and why. The user is choosing an
+approach here, not approving a design; the design comes in step 4.
 
-**4. Converge.** State the design back in plain words — what gets built, what
-it touches, what is explicitly out, and the architecture choices you made
-yourself, each with its one-line why — and iterate until the user confirms it
-matches what they meant. This is the one place the user sees the whole design
-at once, so a choice of yours they would make differently surfaces here.
+When only one survives, ask nothing here: say in one line why the others fell,
+and go to step 4. Skip the step too when the user already arrived with a chosen
+approach, and say so in one line.
+
+**4. Converge.** Show the design as a Design statement, under the shaping rules'
+`## Design statement`, and iterate until the user confirms it matches what they
+meant. This is the one place the user sees the whole design at once, so a
+choice of yours they would make differently surfaces here — and the only place
+they are asked to approve it.
 
 **5. Probe the design.** The session that had the conversation is the worst
 judge of whether the design is complete, or the best one — believing it is, is
