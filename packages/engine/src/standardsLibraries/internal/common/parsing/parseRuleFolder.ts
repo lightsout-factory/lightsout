@@ -132,8 +132,6 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, library, 
 			documentPath,
 			summary: declaration.summary,
 			prose,
-			// The owning document stamps its own channel over this default.
-			channel: 'base',
 			checked: declaration.checked,
 			defaultSeverity: declaration.severity,
 			defaultOptions: declaration.options,

@@ -11,10 +11,10 @@ interface Params {
  */
 export const toStandardsPackRuleListing = ({ rule, fixtureCounts }: Params): StandardsPackRuleListing => ({
 	id: rule.id,
+	name: rule.name,
 	set: rule.set,
 	documentPath: rule.documentPath,
 	summary: rule.summary,
-	channel: rule.channel,
 	checked: rule.checked,
 	defaultSeverity: rule.defaultSeverity,
 	defaultOptions: rule.defaultOptions,

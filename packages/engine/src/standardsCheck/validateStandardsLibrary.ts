@@ -162,9 +162,6 @@ const checkPackFiles = ({ library, libraries }: { library: LoadedStandardsLibrar
  * The question load time deliberately does not ask: whether a check catches
  * what the rule's prose describes is authoring work, paid for by nobody else.
  *
- * Channels are ignored — authoring covers every channel, whatever the machine
- * doing the authoring happens to run.
- *
  * Fixture runs also refuse a site key that does not start with the rule's own id.
  */
 export const validateStandardsLibrary = async ({ library, libraries }: Params): Promise<{ problems: string[]; notes: string[]; warnings: string[] }> => {

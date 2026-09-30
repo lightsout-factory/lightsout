@@ -34,7 +34,7 @@ const ruleFiles = ({ path, markdown }: { path: string; markdown: string }) => ({
 });
 
 describe('readStandardsLibrary', () => {
-	test('reads documents and their rules in folder order, stamping the document channel onto every rule', async () => {
+	test('reads documents and their rules in folder order', async () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
@@ -47,7 +47,7 @@ describe('readStandardsLibrary', () => {
 					path: 'code/architecture/decisions/01-module-boundaries',
 					markdown: '---\nsummary: cross-module imports go through index.ts\n---\n\nA folder-module has a public API.\n',
 				}),
-				'tests/unit-testing/topic.md': '---\nchannel: react\n---\n\n# Unit Testing\n\nHow to write tests.\n',
+				'tests/unit-testing/topic.md': '# Unit Testing\n\nHow to write tests.\n',
 				...ruleFiles({
 					path: 'tests/unit-testing/01-mock-prefix',
 					markdown: '---\nsummary: mock variables carry a mock prefix\n---\n\nName mocks so they read as mocks.\n',
@@ -60,7 +60,6 @@ describe('readStandardsLibrary', () => {
 		const unitTesting = pkg.documents.find((document) => document.path === 'tests/unit-testing');
 		const graduation = pkg.rules.find((rule) => rule.id === 'graduation-rule');
 		const boundaries = pkg.rules.find((rule) => rule.id === 'module-boundaries');
-		const mockPrefix = pkg.rules.find((rule) => rule.id === 'mock-prefix');
 
 		// the root file names the pack and the format it is written against
 		expect(pkg.name).toBe('acme');
@@ -72,12 +71,7 @@ describe('readStandardsLibrary', () => {
 		expect(unitTesting?.set).toBe('tests');
 		// the numeric prefix orders assembly, not the id
 		expect(decisions?.ruleIds).toStrictEqual(['module-boundaries', 'graduation-rule']);
-		// a document declaring no channel is base; one that declares a channel stamps it on its rules
-		expect(decisions?.channel).toBe('base');
-		expect(boundaries?.channel).toBe('base');
-		expect(unitTesting?.channel).toBe('react');
-		expect(mockPrefix?.channel).toBe('react');
-		// the document's body is its intro, front matter stripped
+		// the document's body is its intro
 		expect(unitTesting?.intro).toBe('# Unit Testing\n\nHow to write tests.');
 		// a rule carries its declaration and its full prose
 		expect(graduation?.summary).toBe('a concept earns its folder');
@@ -132,7 +126,7 @@ describe('readStandardsLibrary', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '---\r\nchannel: react\r\n---\r\n\r\n# Style\r\n',
+				'code/style/topic.md': '# Style\r\n',
 				...ruleFiles({
 					path: 'code/style/01-functions',
 					markdown: '---\r\nsummary: one export per file\r\nseverity: blocking\r\n---\r\n\r\nProse.\r\n',
@@ -144,7 +138,6 @@ describe('readStandardsLibrary', () => {
 		const functions = pkg.rules.find((rule) => rule.id === 'functions');
 
 		// a CRLF file declares exactly what the same LF file would — the markers are found and the prose starts after them
-		expect(pkg.documents[0]?.channel).toBe('react');
 		expect(pkg.documents[0]?.intro).toBe('# Style');
 		expect(functions?.summary).toBe('one export per file');
 		expect(functions?.defaultSeverity).toBe('blocking');
@@ -263,7 +256,7 @@ describe('readStandardsLibrary', () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '---\nchannel: {unclosed\n---\n\n# Style\n',
+				'code/style/topic.md': '---\ntitle: {unclosed\n---\n\n# Style\n',
 				...ruleFiles({ path: 'code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
 			},
 		});
@@ -271,22 +264,22 @@ describe('readStandardsLibrary', () => {
 		const error = await getRejectionError({ promise: readStandardsLibrary({ packPath }) });
 
 		// the document is named alongside the line the author has to look at
-		expect(error.message).toContain('code/style/topic.md: front matter is not valid YAML (starting "channel: {unclosed")');
+		expect(error.message).toContain('code/style/topic.md: front matter is not valid YAML (starting "title: {unclosed")');
 	});
 
-	test('refuses a document whose channel is not a name, dropping the document and the rules it owns', async () => {
+	test('refuses a document whose front matter declares a key, dropping the document and the rules it owns', async () => {
 		const { packPath } = setupPack({
 			files: {
 				...rootFile,
-				'code/style/topic.md': '---\nchannel: 5\n---\n\n# Style\n',
+				'code/style/topic.md': '---\ntitle: Style\n---\n\n# Style\n',
 				...ruleFiles({ path: 'code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
 			},
 		});
 
 		const error = await getRejectionError({ promise: readStandardsLibrary({ packPath }) });
 
-		// a channel decides whether the document applies at all, so a broken one cannot be defaulted past
-		expect(error.message).toContain('code/style/topic.md: channel');
+		// topic.md declares nothing, so a key there is refused by name rather than ignored
+		expect(error.message).toMatch(/code\/style\/topic\.md: .*title/);
 		// with the document dropped, its rules go too — nothing survives to be counted as a document
 		expect(error.message).toContain('pack declares no documents');
 	});
@@ -302,7 +295,7 @@ describe('readStandardsLibrary', () => {
 
 		const error = await getRejectionError({ promise: readStandardsLibrary({ packPath }) });
 
-		// a YAML list names no fields, so the document falls back to base rather than failing
+		// a YAML list names no fields, so the document declares nothing and loads rather than failing
 		expect(error.message).not.toContain('code/style/topic.md');
 		// the same silence is fatal for a rule, whose summary has no default to fall back on
 		expect(error.message).toContain('code/style/01-functions/rule.md: summary');

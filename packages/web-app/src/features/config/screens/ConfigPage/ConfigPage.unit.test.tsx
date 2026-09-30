@@ -1,6 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { ConfigView } from '@lightsout/engine';
-import { StandardsPackSource, StandardsSeverity } from '@lightsout/engine/contracts';
+import { StandardsSeverity } from '@lightsout/engine/contracts';
 import { fireEvent, screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { QueryKey } from '#src/common/constants/QueryKey.ts';
@@ -137,135 +137,12 @@ describe('ConfigPage field rows', () => {
 	});
 });
 
-describe('ConfigPage packs card', () => {
-	test('points the pack in use at the Standards Packs page, which is where what it says lives', () => {
-		setupConfigPage({
-			overrides: { standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', source: StandardsPackSource.Named }] },
-		});
-
-		const link = screen.getByRole('link', { name: 'acme/house' });
-
-		expect(link).toHaveAttribute('href', '/standards-packs');
-	});
-
-	test('marks the pack lightsout detected when the config names none', () => {
-		setupConfigPage({
-			overrides: {
-				standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: StandardsPackSource.Detected }],
-			},
-		});
-
-		const card = screen.getByRole('heading', { level: 3, name: 'Standards pack in use' }).closest('section');
-
-		expect(within(card as HTMLElement).getByText('detected')).toBeInTheDocument();
-	});
-
-	test('speaks a named pack and a detected one in different tones, so a reader tells a choice from a guess at a glance', () => {
-		setupConfigPage({
-			overrides: {
-				standardsGroups: [
-					{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', source: StandardsPackSource.Named },
-					{ packages: ['api'], appliesTo: 'api', pack: 'lightsout/node', source: StandardsPackSource.Detected },
-				],
-				ruleStates: [],
-			},
-		});
-
-		const tones = [screen.getByText('named'), screen.getByText('detected')].map((badge) => badge.className);
-
-		expect(tones[0]).toContain('bg-[image:var(--brand-gradient)]');
-		expect(tones[1]).toContain('text-muted-foreground-strong');
-	});
-
-	test('says plainly that no standards load here, rather than showing an empty card', () => {
-		setupConfigPage({ overrides: { standardsGroups: [] } });
-
-		const notice = screen.getByText(/No standards load here/);
-
-		expect(notice).toBeInTheDocument();
-	});
-});
-
-describe('ConfigPage standards card', () => {
-	test.each([
-		{
-			standardsGroups: [
-				{ packages: ['', 'api'], appliesTo: 'repo root (outside packages), api', pack: 'lightsout/node', source: StandardsPackSource.Detected },
-			],
-			expected: { href: '/standards-packs', badge: 'detected', coversRepoRoot: true, coversApi: true, announcesNone: false },
-		},
-		{
-			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: StandardsPackSource.Named }],
-			expected: { href: '/standards-packs', badge: 'named', coversRepoRoot: true, coversApi: false, announcesNone: false },
-		},
-		{
-			standardsGroups: [],
-			expected: { href: null, badge: null, coversRepoRoot: false, coversApi: false, announcesNone: true },
-		},
-	])('ConfigPage: the standards card shows the pack in use, how it was chosen and what it covers', ({ standardsGroups, expected }) => {
-		setupConfigPage({ overrides: { standardsGroups, ruleStates: [] } });
-
-		const link = screen.queryByRole('link', { name: 'lightsout/node' });
-		const badge = screen.queryByText(/^(named|detected)$/);
-		const pageText = document.body.textContent ?? '';
-
-		expect({
-			href: link?.getAttribute('href') ?? null,
-			badge: badge?.textContent ?? null,
-			coversRepoRoot: /repo root/i.test(pageText),
-			coversApi: /\bapi\b/.test(pageText),
-			announcesNone: /standards-pack\b[^.]*false/.test(pageText),
-		}).toStrictEqual(expected);
-	});
-
-	test.each([
-		{
-			standardsGroups: [
-				{ packages: ['', 'engine'], appliesTo: 'repo root (outside packages), engine', pack: 'lightsout/node', source: StandardsPackSource.Named },
-				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/tanstack-start-app', source: StandardsPackSource.Detected },
-			],
-			expected: {
-				rows: [
-					{ pack: 'lightsout/node', badge: 'named', namesItsPackages: true, namesRepoRoot: true },
-					{ pack: 'lightsout/tanstack-start-app', badge: 'detected', namesItsPackages: true, namesRepoRoot: false },
-				],
-				showsEmptyState: false,
-			},
-		},
-		{
-			standardsGroups: [],
-			expected: { rows: [], showsEmptyState: true },
-		},
-	])('draws one row per standards group, naming its pack, whether it was named or detected, and the packages it covers', ({ standardsGroups, expected }) => {
-		setupConfigPage({ overrides: { standardsGroups, ruleStates: [] } });
-
-		const card = screen.getByRole('heading', { level: 3, name: 'Standards pack in use' }).closest('section') as HTMLElement;
-		const rows = within(card)
-			.queryAllByRole('link')
-			.map((link, index) => {
-				const row = link.parentElement as HTMLElement;
-				const rowText = row.textContent ?? '';
-
-				return {
-					pack: link.textContent,
-					badge: within(row).getByText(/^(named|detected)$/).textContent,
-					namesItsPackages: rowText.includes(standardsGroups[index].appliesTo),
-					namesRepoRoot: /repo root/.test(rowText),
-				};
-			});
-		const showsEmptyState = /no standards/i.test(card.textContent ?? '');
-
-		expect({ rows, showsEmptyState }).toStrictEqual(expected);
-	});
-});
-
 describe('ConfigPage rule ledger', () => {
 	const ruleStates: ConfigView['ruleStates'] = [
 		{
 			rule: 'file-size',
 			id: 'file-size',
 			library: 'lightsout',
-			channel: 'base',
 			severity: StandardsSeverity.Blocking,
 			fromConfig: true,
 			options: { file: 250 },
@@ -276,7 +153,6 @@ describe('ConfigPage rule ledger', () => {
 			rule: 'loose-file',
 			id: 'loose-file',
 			library: 'lightsout',
-			channel: 'base',
 			severity: StandardsSeverity.Advisory,
 			fromConfig: false,
 			options: {},
@@ -287,7 +163,6 @@ describe('ConfigPage rule ledger', () => {
 			rule: 'naming-boolean',
 			id: 'naming-boolean',
 			library: 'acme-house-rules',
-			channel: 'base',
 			severity: StandardsSeverity.Off,
 			fromConfig: true,
 			options: {},
@@ -299,17 +174,17 @@ describe('ConfigPage rule ledger', () => {
 	test('lists every loaded rule, whichever pack declared it', () => {
 		setupConfigPage({ overrides: { ruleStates } });
 
-		const rules = screen.getAllByRole('link', { name: /^(file-size|loose-file|naming-boolean)$/ }).map((link) => link.textContent);
+		const rules = screen.getAllByText(/^(file-size|loose-file|naming-boolean)$/).map((cell) => cell.textContent);
 
 		expect(rules).toStrictEqual(['file-size', 'loose-file', 'naming-boolean']);
 	});
 
-	test('points a rule at its page in the set it belongs to', () => {
+	test('points a rule at its page under the library it belongs to', () => {
 		setupConfigPage({ overrides: { ruleStates } });
 
-		const link = screen.getByRole('link', { name: 'naming-boolean' });
+		const link = screen.getByRole('link', { name: 'loose-file' });
 
-		expect(link).toHaveAttribute('href', '/standards-packs/typescript/naming-boolean');
+		expect(link).toHaveAttribute('href', '/standards-packs/lightsout/rules/loose-file');
 	});
 
 	test('the rule ledger shows the full name and links by the rule id', () => {
@@ -320,7 +195,6 @@ describe('ConfigPage rule ledger', () => {
 						rule: 'lightsout/file-size',
 						id: 'file-size',
 						library: 'lightsout',
-						channel: 'base',
 						severity: StandardsSeverity.Blocking,
 						fromConfig: true,
 						options: { file: 250 },
@@ -333,7 +207,44 @@ describe('ConfigPage rule ledger', () => {
 
 		const link = screen.getByRole('link', { name: 'lightsout/file-size' });
 
-		expect(link).toHaveAttribute('href', '/standards-packs/typescript/file-size');
+		expect(link).toHaveAttribute('href', '/standards-packs/lightsout/rules/file-size');
+	});
+
+	test('links each ledger rule to its page under its library', () => {
+		setupConfigPage({
+			overrides: {
+				ruleStates: [
+					{
+						rule: 'lightsout/function-size',
+						id: 'function-size',
+						library: 'lightsout',
+						severity: StandardsSeverity.Blocking,
+						fromConfig: false,
+						options: {},
+						packages: [''],
+						appliesTo: 'repo root (outside packages)',
+					},
+					{
+						rule: 'acme/house-rule',
+						id: 'house-rule',
+						library: 'acme',
+						severity: StandardsSeverity.Advisory,
+						fromConfig: false,
+						options: {},
+						packages: [''],
+						appliesTo: 'repo root (outside packages)',
+					},
+				],
+			},
+		});
+
+		const builtInLink = screen.getByRole('link', { name: 'lightsout/function-size' });
+		const foreignName = screen.getByText('acme/house-rule');
+
+		expect({ href: builtInLink.getAttribute('href'), foreignIsLinked: foreignName.closest('a') !== null }).toStrictEqual({
+			href: '/standards-packs/lightsout/rules/function-size',
+			foreignIsLinked: false,
+		});
 	});
 
 	test('says of each rule whether this repo set its state or the pack did', () => {
@@ -378,7 +289,6 @@ describe('ConfigPage rule ledger', () => {
 						rule: 'file-size',
 						id: 'file-size',
 						library: 'lightsout',
-						channel: 'base',
 						severity: StandardsSeverity.Blocking,
 						fromConfig: true,
 						options: { file: 250, tsxFile: 300 },
@@ -389,7 +299,6 @@ describe('ConfigPage rule ledger', () => {
 						rule: 'loose-file',
 						id: 'loose-file',
 						library: 'lightsout',
-						channel: 'base',
 						severity: StandardsSeverity.Advisory,
 						fromConfig: false,
 						options: {},

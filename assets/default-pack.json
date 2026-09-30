@@ -2,28 +2,3032 @@
   "name": "lightsout",
   "description": "The default TypeScript pack: architecture, style, documentation and unit-testing rules, 51 of them enforced by code.",
   "homepage": "https://github.com/lightsout-factory/lightsout/tree/main/packages/standards-typescript",
-  "isDefault": true,
   "rootPath": "packages/standards-typescript",
-  "path": "packages/standards-typescript",
   "built": false,
-  "channels": [
-    "base",
-    "nestjs",
-    "react",
-    "tanstack"
-  ],
   "totals": {
     "rules": 110,
     "checked": 52,
     "judgment": 58,
-    "documents": 24,
+    "topics": 24,
+    "packs": 10,
     "withFixtures": 110
   },
-  "documents": [
+  "packs": [
+    {
+      "name": "nestjs",
+      "address": "lightsout/nestjs",
+      "description": "NestJS: how the base rules apply to a NestJS application.",
+      "include": {
+        "packs": [],
+        "topics": [
+          "lightsout/code/architecture/nestjs"
+        ],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/code/architecture/nestjs"
+      ],
+      "rules": [],
+      "totals": {
+        "rules": 0,
+        "checked": 0,
+        "judgment": 0,
+        "topics": 1
+      }
+    },
+    {
+      "name": "nestjs-app",
+      "address": "lightsout/nestjs-app",
+      "description": "For a NestJS app: the node pack plus NestJS.",
+      "include": {
+        "packs": [
+          "lightsout/node",
+          "lightsout/nestjs"
+        ],
+        "topics": [],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/code/architecture/architecture-decisions",
+        "lightsout/code/architecture/folder-structure",
+        "lightsout/code/architecture/nestjs",
+        "lightsout/code/documentation/ts-docs",
+        "lightsout/code/style-guide/conventions/casing",
+        "lightsout/code/style-guide/conventions/file-naming",
+        "lightsout/code/style-guide/conventions/lint-and-formatting",
+        "lightsout/code/style-guide/conventions/naming",
+        "lightsout/code/style-guide/conventions/variable-declaration",
+        "lightsout/code/style-guide/patterns/classes",
+        "lightsout/code/style-guide/patterns/functions",
+        "lightsout/code/style-guide/patterns/named-constants",
+        "lightsout/code/style-guide/structure/import-paths",
+        "lightsout/code/style-guide/structure/module-api",
+        "lightsout/code/style-guide/structure/one-export-per-file",
+        "lightsout/code/style-guide/structure/type-placement",
+        "lightsout/code/style-guide/typescript/return-types",
+        "lightsout/code/style-guide/typescript/type-assertions",
+        "lightsout/tests/unit-test-examples",
+        "lightsout/tests/unit-testing"
+      ],
+      "rules": [
+        {
+          "name": "lightsout/assertions-pin-contracts",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/async",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-class-shapes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-folder-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/bare-string-union",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/barrel-star",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/brittle-doc-tags",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/case-collision",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/circular-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-bright-line",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-graduation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-inheritance",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-surface",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-syntax",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/code-in-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/constants",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/cross-package-sharing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/dead-export",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/derived-lookup-map",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/discriminant-const-object",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/doc-elements",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-code-block",
+          "severity": "advisory",
+          "options": {
+            "minTokens": 50
+          }
+        },
+        {
+          "name": "lightsout/duplicate-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-function-body",
+          "severity": "blocking",
+          "options": {
+            "minBodyTokens": 40
+          }
+        },
+        {
+          "name": "lightsout/explicit-return-type",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-directly-in-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-size",
+          "severity": "advisory",
+          "options": {
+            "file": 250,
+            "tsxFile": 300
+          }
+        },
+        {
+          "name": "lightsout/filename-mismatch",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/files-that-must-not-have-dedicated-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-size",
+          "severity": "advisory",
+          "options": {
+            "cap": 20
+          }
+        },
+        {
+          "name": "lightsout/formatter-config",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/function-size",
+          "severity": "advisory",
+          "options": {
+            "function": 80,
+            "hook": 160,
+            "component": 200
+          }
+        },
+        {
+          "name": "lightsout/import-path-alias",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-through-index",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-time-side-effects",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-type-only",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/internal-import-from-outside",
+          "severity": "off",
+          "options": {}
+        },
+        {
+          "name": "lightsout/jest-spyon-vs-jest-mock",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-boundary-testing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-exports",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-file-to-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-folder-layout",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-out-of-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/multi-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-constant-boundaries",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-constant-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-consistency",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-for-reuse",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-any",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-history-in-comments",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/object-args",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/oversized-setup-factory",
+          "severity": "advisory",
+          "options": {
+            "maxParams": 6
+          }
+        },
+        {
+          "name": "lightsout/params-interface-docs",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/path-aliases",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/per-folder-readmes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/premature-abstraction",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/private-helper-colocation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/props-union-exemption",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/reuse-common-code",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-code-placement",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-package-criteria",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-file-domain-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-return",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-use-scalar",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/synonym-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-assert-in-hook",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-file-size",
+          "severity": "advisory",
+          "options": {
+            "testFile": 400
+          }
+        },
+        {
+          "name": "lightsout/test-in-tests-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-manual-mock-cleanup",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-prefix",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-return-in-hook",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-wrapper-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-multiple-setups",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-nested-describe",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-never-passing-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-not-beside-subject",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-only-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-shared-let",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-strict-equal-matcher",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-support-in-src",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/thin-wrapper-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/top-level-domain-nouns",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-alias-indirection",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/types-and-interfaces",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/ungrouped-domain-utils",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/verbose-names",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/when-to-document",
+          "severity": "advisory",
+          "options": {}
+        }
+      ],
+      "totals": {
+        "rules": 95,
+        "checked": 52,
+        "judgment": 43,
+        "topics": 20
+      }
+    },
+    {
+      "name": "node",
+      "address": "lightsout/node",
+      "description": "The default for a TypeScript package with no detected framework: TypeScript style, structure and unit testing.",
+      "include": {
+        "packs": [
+          "lightsout/typescript",
+          "lightsout/structure",
+          "lightsout/unit-testing"
+        ],
+        "topics": [],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/code/architecture/architecture-decisions",
+        "lightsout/code/architecture/folder-structure",
+        "lightsout/code/documentation/ts-docs",
+        "lightsout/code/style-guide/conventions/casing",
+        "lightsout/code/style-guide/conventions/file-naming",
+        "lightsout/code/style-guide/conventions/lint-and-formatting",
+        "lightsout/code/style-guide/conventions/naming",
+        "lightsout/code/style-guide/conventions/variable-declaration",
+        "lightsout/code/style-guide/patterns/classes",
+        "lightsout/code/style-guide/patterns/functions",
+        "lightsout/code/style-guide/patterns/named-constants",
+        "lightsout/code/style-guide/structure/import-paths",
+        "lightsout/code/style-guide/structure/module-api",
+        "lightsout/code/style-guide/structure/one-export-per-file",
+        "lightsout/code/style-guide/structure/type-placement",
+        "lightsout/code/style-guide/typescript/return-types",
+        "lightsout/code/style-guide/typescript/type-assertions",
+        "lightsout/tests/unit-test-examples",
+        "lightsout/tests/unit-testing"
+      ],
+      "rules": [
+        {
+          "name": "lightsout/assertions-pin-contracts",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/async",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-class-shapes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-folder-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/bare-string-union",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/barrel-star",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/brittle-doc-tags",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/case-collision",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/circular-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-bright-line",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-graduation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-inheritance",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-surface",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-syntax",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/code-in-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/constants",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/cross-package-sharing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/dead-export",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/derived-lookup-map",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/discriminant-const-object",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/doc-elements",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-code-block",
+          "severity": "advisory",
+          "options": {
+            "minTokens": 50
+          }
+        },
+        {
+          "name": "lightsout/duplicate-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-function-body",
+          "severity": "blocking",
+          "options": {
+            "minBodyTokens": 40
+          }
+        },
+        {
+          "name": "lightsout/explicit-return-type",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-directly-in-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-size",
+          "severity": "advisory",
+          "options": {
+            "file": 250,
+            "tsxFile": 300
+          }
+        },
+        {
+          "name": "lightsout/filename-mismatch",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/files-that-must-not-have-dedicated-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-size",
+          "severity": "advisory",
+          "options": {
+            "cap": 20
+          }
+        },
+        {
+          "name": "lightsout/formatter-config",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/function-size",
+          "severity": "advisory",
+          "options": {
+            "function": 80,
+            "hook": 160,
+            "component": 200
+          }
+        },
+        {
+          "name": "lightsout/import-path-alias",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-through-index",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-time-side-effects",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-type-only",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/internal-import-from-outside",
+          "severity": "off",
+          "options": {}
+        },
+        {
+          "name": "lightsout/jest-spyon-vs-jest-mock",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-boundary-testing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-exports",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-file-to-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-folder-layout",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-out-of-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/multi-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-constant-boundaries",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-constant-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-consistency",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-for-reuse",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-any",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-history-in-comments",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/object-args",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/oversized-setup-factory",
+          "severity": "advisory",
+          "options": {
+            "maxParams": 6
+          }
+        },
+        {
+          "name": "lightsout/params-interface-docs",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/path-aliases",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/per-folder-readmes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/premature-abstraction",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/private-helper-colocation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/props-union-exemption",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/reuse-common-code",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-code-placement",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-package-criteria",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-file-domain-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-return",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-use-scalar",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/synonym-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-assert-in-hook",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-file-size",
+          "severity": "advisory",
+          "options": {
+            "testFile": 400
+          }
+        },
+        {
+          "name": "lightsout/test-in-tests-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-manual-mock-cleanup",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-prefix",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-return-in-hook",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-wrapper-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-multiple-setups",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-nested-describe",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-never-passing-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-not-beside-subject",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-only-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-shared-let",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-strict-equal-matcher",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-support-in-src",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/thin-wrapper-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/top-level-domain-nouns",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-alias-indirection",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/types-and-interfaces",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/ungrouped-domain-utils",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/verbose-names",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/when-to-document",
+          "severity": "advisory",
+          "options": {}
+        }
+      ],
+      "totals": {
+        "rules": 95,
+        "checked": 52,
+        "judgment": 43,
+        "topics": 19
+      }
+    },
+    {
+      "name": "react",
+      "address": "lightsout/react",
+      "description": "React code and React component tests: React architecture, component and hook patterns, and component unit tests.",
+      "include": {
+        "packs": [],
+        "topics": [
+          "lightsout/code/architecture/react",
+          "lightsout/code/style-guide/patterns/react-components",
+          "lightsout/tests/unit-testing-react-components"
+        ],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/code/architecture/react",
+        "lightsout/code/style-guide/patterns/react-components",
+        "lightsout/tests/unit-testing-react-components"
+      ],
+      "rules": [
+        {
+          "name": "lightsout/component-file-structure",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-naming-conventions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/framework-basics",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/mocking-component-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/query-priority",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/react-domain-folders",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/react-size-thresholds",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/testing-hooks-in-isolation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/testing-user-interactions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/the-render-pattern",
+          "severity": "advisory",
+          "options": {}
+        }
+      ],
+      "totals": {
+        "rules": 10,
+        "checked": 0,
+        "judgment": 10,
+        "topics": 3
+      }
+    },
+    {
+      "name": "react-app",
+      "address": "lightsout/react-app",
+      "description": "For a React app: the node pack plus React.",
+      "include": {
+        "packs": [
+          "lightsout/node",
+          "lightsout/react"
+        ],
+        "topics": [],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/code/architecture/architecture-decisions",
+        "lightsout/code/architecture/folder-structure",
+        "lightsout/code/architecture/react",
+        "lightsout/code/documentation/ts-docs",
+        "lightsout/code/style-guide/conventions/casing",
+        "lightsout/code/style-guide/conventions/file-naming",
+        "lightsout/code/style-guide/conventions/lint-and-formatting",
+        "lightsout/code/style-guide/conventions/naming",
+        "lightsout/code/style-guide/conventions/variable-declaration",
+        "lightsout/code/style-guide/patterns/classes",
+        "lightsout/code/style-guide/patterns/functions",
+        "lightsout/code/style-guide/patterns/named-constants",
+        "lightsout/code/style-guide/patterns/react-components",
+        "lightsout/code/style-guide/structure/import-paths",
+        "lightsout/code/style-guide/structure/module-api",
+        "lightsout/code/style-guide/structure/one-export-per-file",
+        "lightsout/code/style-guide/structure/type-placement",
+        "lightsout/code/style-guide/typescript/return-types",
+        "lightsout/code/style-guide/typescript/type-assertions",
+        "lightsout/tests/unit-test-examples",
+        "lightsout/tests/unit-testing",
+        "lightsout/tests/unit-testing-react-components"
+      ],
+      "rules": [
+        {
+          "name": "lightsout/assertions-pin-contracts",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/async",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-class-shapes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-folder-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/bare-string-union",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/barrel-star",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/brittle-doc-tags",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/case-collision",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/circular-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-bright-line",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-graduation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-inheritance",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-surface",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-syntax",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/code-in-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/component-file-structure",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/constants",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/cross-package-sharing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/dead-export",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/derived-lookup-map",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/discriminant-const-object",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/doc-elements",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-code-block",
+          "severity": "advisory",
+          "options": {
+            "minTokens": 50
+          }
+        },
+        {
+          "name": "lightsout/duplicate-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-function-body",
+          "severity": "blocking",
+          "options": {
+            "minBodyTokens": 40
+          }
+        },
+        {
+          "name": "lightsout/explicit-return-type",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-directly-in-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-naming-conventions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-size",
+          "severity": "advisory",
+          "options": {
+            "file": 250,
+            "tsxFile": 300
+          }
+        },
+        {
+          "name": "lightsout/filename-mismatch",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/files-that-must-not-have-dedicated-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-size",
+          "severity": "advisory",
+          "options": {
+            "cap": 20
+          }
+        },
+        {
+          "name": "lightsout/formatter-config",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/framework-basics",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/function-size",
+          "severity": "advisory",
+          "options": {
+            "function": 80,
+            "hook": 160,
+            "component": 200
+          }
+        },
+        {
+          "name": "lightsout/import-path-alias",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-through-index",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-time-side-effects",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-type-only",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/internal-import-from-outside",
+          "severity": "off",
+          "options": {}
+        },
+        {
+          "name": "lightsout/jest-spyon-vs-jest-mock",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/mocking-component-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-boundary-testing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-exports",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-file-to-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-folder-layout",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-out-of-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/multi-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-constant-boundaries",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-constant-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-consistency",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-for-reuse",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-any",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-history-in-comments",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/object-args",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/oversized-setup-factory",
+          "severity": "advisory",
+          "options": {
+            "maxParams": 6
+          }
+        },
+        {
+          "name": "lightsout/params-interface-docs",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/path-aliases",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/per-folder-readmes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/premature-abstraction",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/private-helper-colocation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/props-union-exemption",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/query-priority",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/react-domain-folders",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/react-size-thresholds",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/reuse-common-code",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-code-placement",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-package-criteria",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-file-domain-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-return",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-use-scalar",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/synonym-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-assert-in-hook",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-file-size",
+          "severity": "advisory",
+          "options": {
+            "testFile": 400
+          }
+        },
+        {
+          "name": "lightsout/test-in-tests-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-manual-mock-cleanup",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-prefix",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-return-in-hook",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-wrapper-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-multiple-setups",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-nested-describe",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-never-passing-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-not-beside-subject",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-only-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-shared-let",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-strict-equal-matcher",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-support-in-src",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/testing-hooks-in-isolation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/testing-user-interactions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/the-render-pattern",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/thin-wrapper-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/top-level-domain-nouns",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-alias-indirection",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/types-and-interfaces",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/ungrouped-domain-utils",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/verbose-names",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/when-to-document",
+          "severity": "advisory",
+          "options": {}
+        }
+      ],
+      "totals": {
+        "rules": 105,
+        "checked": 52,
+        "judgment": 53,
+        "topics": 22
+      }
+    },
+    {
+      "name": "structure",
+      "address": "lightsout/structure",
+      "description": "Architecture and module structure: architecture decisions, folder structure, import paths, module boundaries, one export per file and type placement.",
+      "include": {
+        "packs": [],
+        "topics": [
+          "lightsout/code/architecture/architecture-decisions",
+          "lightsout/code/architecture/folder-structure",
+          "lightsout/code/style-guide/structure/import-paths",
+          "lightsout/code/style-guide/structure/module-api",
+          "lightsout/code/style-guide/structure/one-export-per-file",
+          "lightsout/code/style-guide/structure/type-placement"
+        ],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/code/architecture/architecture-decisions",
+        "lightsout/code/architecture/folder-structure",
+        "lightsout/code/style-guide/structure/import-paths",
+        "lightsout/code/style-guide/structure/module-api",
+        "lightsout/code/style-guide/structure/one-export-per-file",
+        "lightsout/code/style-guide/structure/type-placement"
+      ],
+      "rules": [
+        {
+          "name": "lightsout/banned-folder-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/barrel-star",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/case-collision",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/circular-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/code-in-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/constants",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/cross-package-sharing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/dead-export",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-code-block",
+          "severity": "advisory",
+          "options": {
+            "minTokens": 50
+          }
+        },
+        {
+          "name": "lightsout/duplicate-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-function-body",
+          "severity": "blocking",
+          "options": {
+            "minBodyTokens": 40
+          }
+        },
+        {
+          "name": "lightsout/file-directly-in-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-size",
+          "severity": "advisory",
+          "options": {
+            "cap": 20
+          }
+        },
+        {
+          "name": "lightsout/import-path-alias",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-through-index",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/internal-import-from-outside",
+          "severity": "off",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-exports",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-file-to-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-folder-layout",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-out-of-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/multi-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/path-aliases",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/per-folder-readmes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/premature-abstraction",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/reuse-common-code",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-code-placement",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-package-criteria",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-file-domain-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/thin-wrapper-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/top-level-domain-nouns",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-alias-indirection",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/types-and-interfaces",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/ungrouped-domain-utils",
+          "severity": "advisory",
+          "options": {}
+        }
+      ],
+      "totals": {
+        "rules": 35,
+        "checked": 19,
+        "judgment": 16,
+        "topics": 6
+      }
+    },
+    {
+      "name": "tanstack-start",
+      "address": "lightsout/tanstack-start",
+      "description": "TanStack Start: how the base rules apply to a TanStack Start application.",
+      "include": {
+        "packs": [],
+        "topics": [
+          "lightsout/code/architecture/tanstack-start"
+        ],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/code/architecture/tanstack-start"
+      ],
+      "rules": [
+        {
+          "name": "lightsout/feature-structure",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-naming-for-server-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/query-options",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/server-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/tanstack-hooks",
+          "severity": "advisory",
+          "options": {}
+        }
+      ],
+      "totals": {
+        "rules": 5,
+        "checked": 0,
+        "judgment": 5,
+        "topics": 1
+      }
+    },
+    {
+      "name": "tanstack-start-app",
+      "address": "lightsout/tanstack-start-app",
+      "description": "For a TanStack Start app: the react-app pack plus TanStack Start.",
+      "include": {
+        "packs": [
+          "lightsout/react-app",
+          "lightsout/tanstack-start"
+        ],
+        "topics": [],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/code/architecture/architecture-decisions",
+        "lightsout/code/architecture/folder-structure",
+        "lightsout/code/architecture/react",
+        "lightsout/code/architecture/tanstack-start",
+        "lightsout/code/documentation/ts-docs",
+        "lightsout/code/style-guide/conventions/casing",
+        "lightsout/code/style-guide/conventions/file-naming",
+        "lightsout/code/style-guide/conventions/lint-and-formatting",
+        "lightsout/code/style-guide/conventions/naming",
+        "lightsout/code/style-guide/conventions/variable-declaration",
+        "lightsout/code/style-guide/patterns/classes",
+        "lightsout/code/style-guide/patterns/functions",
+        "lightsout/code/style-guide/patterns/named-constants",
+        "lightsout/code/style-guide/patterns/react-components",
+        "lightsout/code/style-guide/structure/import-paths",
+        "lightsout/code/style-guide/structure/module-api",
+        "lightsout/code/style-guide/structure/one-export-per-file",
+        "lightsout/code/style-guide/structure/type-placement",
+        "lightsout/code/style-guide/typescript/return-types",
+        "lightsout/code/style-guide/typescript/type-assertions",
+        "lightsout/tests/unit-test-examples",
+        "lightsout/tests/unit-testing",
+        "lightsout/tests/unit-testing-react-components"
+      ],
+      "rules": [
+        {
+          "name": "lightsout/assertions-pin-contracts",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/async",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-class-shapes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-folder-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/bare-string-union",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/barrel-star",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/brittle-doc-tags",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/case-collision",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/circular-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-bright-line",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-graduation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-inheritance",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-surface",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-syntax",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/code-in-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/component-file-structure",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/constants",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/cross-package-sharing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/dead-export",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/derived-lookup-map",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/discriminant-const-object",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/doc-elements",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-code-block",
+          "severity": "advisory",
+          "options": {
+            "minTokens": 50
+          }
+        },
+        {
+          "name": "lightsout/duplicate-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-function-body",
+          "severity": "blocking",
+          "options": {
+            "minBodyTokens": 40
+          }
+        },
+        {
+          "name": "lightsout/explicit-return-type",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/feature-structure",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-directly-in-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-naming-conventions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-naming-for-server-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-size",
+          "severity": "advisory",
+          "options": {
+            "file": 250,
+            "tsxFile": 300
+          }
+        },
+        {
+          "name": "lightsout/filename-mismatch",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/files-that-must-not-have-dedicated-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-size",
+          "severity": "advisory",
+          "options": {
+            "cap": 20
+          }
+        },
+        {
+          "name": "lightsout/formatter-config",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/framework-basics",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/function-size",
+          "severity": "advisory",
+          "options": {
+            "function": 80,
+            "hook": 160,
+            "component": 200
+          }
+        },
+        {
+          "name": "lightsout/import-path-alias",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-through-index",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-time-side-effects",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-type-only",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/internal-import-from-outside",
+          "severity": "off",
+          "options": {}
+        },
+        {
+          "name": "lightsout/jest-spyon-vs-jest-mock",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/mocking-component-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-boundary-testing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-exports",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-file-to-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-folder-layout",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-out-of-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/multi-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-constant-boundaries",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-constant-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-consistency",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-for-reuse",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-any",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-history-in-comments",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/object-args",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/oversized-setup-factory",
+          "severity": "advisory",
+          "options": {
+            "maxParams": 6
+          }
+        },
+        {
+          "name": "lightsout/params-interface-docs",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/path-aliases",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/per-folder-readmes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/premature-abstraction",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/private-helper-colocation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/props-union-exemption",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/query-options",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/query-priority",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/react-domain-folders",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/react-size-thresholds",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/reuse-common-code",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/server-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-code-placement",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-package-criteria",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-file-domain-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-return",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-use-scalar",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/synonym-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/tanstack-hooks",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-assert-in-hook",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-file-size",
+          "severity": "advisory",
+          "options": {
+            "testFile": 400
+          }
+        },
+        {
+          "name": "lightsout/test-in-tests-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-manual-mock-cleanup",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-prefix",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-return-in-hook",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-wrapper-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-multiple-setups",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-nested-describe",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-never-passing-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-not-beside-subject",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-only-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-shared-let",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-strict-equal-matcher",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-support-in-src",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/testing-hooks-in-isolation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/testing-user-interactions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/the-render-pattern",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/thin-wrapper-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/top-level-domain-nouns",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-alias-indirection",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/types-and-interfaces",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/ungrouped-domain-utils",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/verbose-names",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/when-to-document",
+          "severity": "advisory",
+          "options": {}
+        }
+      ],
+      "totals": {
+        "rules": 110,
+        "checked": 52,
+        "judgment": 58,
+        "topics": 23
+      }
+    },
+    {
+      "name": "typescript",
+      "address": "lightsout/typescript",
+      "description": "TypeScript style, conventions and documentation: casing, naming, file names, functions, classes, named constants, return types, type assertions and TSDoc.",
+      "include": {
+        "packs": [],
+        "topics": [
+          "lightsout/code/style-guide/conventions/casing",
+          "lightsout/code/style-guide/conventions/file-naming",
+          "lightsout/code/style-guide/conventions/lint-and-formatting",
+          "lightsout/code/style-guide/conventions/naming",
+          "lightsout/code/style-guide/conventions/variable-declaration",
+          "lightsout/code/style-guide/patterns/classes",
+          "lightsout/code/style-guide/patterns/functions",
+          "lightsout/code/style-guide/patterns/named-constants",
+          "lightsout/code/style-guide/typescript/return-types",
+          "lightsout/code/style-guide/typescript/type-assertions",
+          "lightsout/code/documentation/ts-docs"
+        ],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/code/documentation/ts-docs",
+        "lightsout/code/style-guide/conventions/casing",
+        "lightsout/code/style-guide/conventions/file-naming",
+        "lightsout/code/style-guide/conventions/lint-and-formatting",
+        "lightsout/code/style-guide/conventions/naming",
+        "lightsout/code/style-guide/conventions/variable-declaration",
+        "lightsout/code/style-guide/patterns/classes",
+        "lightsout/code/style-guide/patterns/functions",
+        "lightsout/code/style-guide/patterns/named-constants",
+        "lightsout/code/style-guide/typescript/return-types",
+        "lightsout/code/style-guide/typescript/type-assertions"
+      ],
+      "rules": [
+        {
+          "name": "lightsout/banned-class-shapes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/bare-string-union",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/brittle-doc-tags",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-bright-line",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-graduation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-inheritance",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-surface",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-syntax",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/derived-lookup-map",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/discriminant-const-object",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/doc-elements",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/explicit-return-type",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-size",
+          "severity": "advisory",
+          "options": {
+            "file": 250,
+            "tsxFile": 300
+          }
+        },
+        {
+          "name": "lightsout/filename-mismatch",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/formatter-config",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/function-size",
+          "severity": "advisory",
+          "options": {
+            "function": 80,
+            "hook": 160,
+            "component": 200
+          }
+        },
+        {
+          "name": "lightsout/import-type-only",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-constant-boundaries",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-constant-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-consistency",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-for-reuse",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-any",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-history-in-comments",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/object-args",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/params-interface-docs",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/private-helper-colocation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/props-union-exemption",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-return",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-use-scalar",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/synonym-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/verbose-names",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/when-to-document",
+          "severity": "advisory",
+          "options": {}
+        }
+      ],
+      "totals": {
+        "rules": 34,
+        "checked": 16,
+        "judgment": 18,
+        "topics": 11
+      }
+    },
+    {
+      "name": "unit-testing",
+      "address": "lightsout/unit-testing",
+      "description": "Unit testing: how unit tests are written, with worked examples.",
+      "include": {
+        "packs": [],
+        "topics": [
+          "lightsout/tests/unit-testing",
+          "lightsout/tests/unit-test-examples"
+        ],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/tests/unit-test-examples",
+        "lightsout/tests/unit-testing"
+      ],
+      "rules": [
+        {
+          "name": "lightsout/assertions-pin-contracts",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/async",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/files-that-must-not-have-dedicated-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-time-side-effects",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/jest-spyon-vs-jest-mock",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-boundary-testing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/oversized-setup-factory",
+          "severity": "advisory",
+          "options": {
+            "maxParams": 6
+          }
+        },
+        {
+          "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-assert-in-hook",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-file-size",
+          "severity": "advisory",
+          "options": {
+            "testFile": 400
+          }
+        },
+        {
+          "name": "lightsout/test-in-tests-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-manual-mock-cleanup",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-prefix",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-return-in-hook",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-wrapper-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-multiple-setups",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-nested-describe",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-never-passing-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-not-beside-subject",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-only-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-shared-let",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-strict-equal-matcher",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-support-in-src",
+          "severity": "advisory",
+          "options": {}
+        }
+      ],
+      "totals": {
+        "rules": 26,
+        "checked": 17,
+        "judgment": 9,
+        "topics": 2
+      }
+    }
+  ],
+  "topics": [
     {
       "set": "code",
       "path": "code/architecture/architecture-decisions",
-      "channel": "base",
       "intro": "# Architecture Decisions\n\nUniversal architectural decisions that apply across the codebase.",
       "ruleIds": [
         "module-file-to-folder",
@@ -40,7 +3044,6 @@
     {
       "set": "code",
       "path": "code/architecture/folder-structure",
-      "channel": "base",
       "intro": "# Folder Structure\n\nShared code lives in `common/` folders. A `common/` folder sits inside the folder whose code shares it, so where it sits shows who uses it: `src/common/` serves all of `src/`, and `src/billing/common/` serves only `src/billing/`.\n\nInside `common/`, every file goes in a folder for its kind of code:\n\n| Folder | Holds |\n| --- | --- |\n| `utils/` | Stateless functions, pure or doing I/O (`formatDate`, `loadConfig`) |\n| `types/` | Types (`CopyResult`) |\n| `constants/` | Constants (`defaultConfig`, `Action`) |\n| `services/` | Classes that hold state (`ApiClient`) |\n\nTwo or more functions about one subject can also share a folder named for that subject, such as `formatting/` or `parsing/`: a domain folder.\n\nA package's own architecture document may set its concrete folder layout on top of these rules.",
       "ruleIds": [
         "shared-code-placement",
@@ -63,14 +3066,12 @@
     {
       "set": "code",
       "path": "code/architecture/nestjs",
-      "channel": "nestjs",
       "intro": "# NestJS Architecture\n\nHow the base rules apply to a NestJS application. Two kinds of statement, each\nlabeled by what it is:\n\n- **Mandated** — what NestJS resolves or requires: kebab-case filenames\n  throughout (`events.service.ts`, `create-event.dto.ts`), and `src/main.ts`\n  as the bootstrap entry its CLI resolves. These facts live in the framework\n  carve-out table, which the checks consult — this document refers to them and\n  never restates them as rules.\n- **Applied** — how the base rules read against Nest code. Everything below\n  cites the base rule it applies; none of it overrides one.\n\n**Classes are criterion d, not an exception.** Nest's dependency injection\nrequires classes for services, controllers, resolvers, guards, pipes and\ninterceptors — that is exactly criterion d of the\n[class bright-line](../../style-guide/patterns/classes/05-class-bright-line/rule.md).\nA class Nest does not require still needs one of the other criteria; \"it's a\nNest project\" earns nothing by itself.\n\n**Decorated classes are framework-owned for the class rules.** Extending a\nNest-provided base or implementing its interfaces is the framework's contract,\nper the carve-out in\n[class inheritance](../../style-guide/patterns/classes/30-class-inheritance/rule.md).\nSharing between your *own* classes still composes — hold a collaborator and\ndelegate — exactly as that rule states.\n\n**Constructor-injected types are value imports.** Nest reads injection tokens\nfrom decorator metadata, so a type used in a decorated class's constructor\nmust not be imported with `import type` — the\n[type-only import rule](../../style-guide/conventions/lint-and-formatting/10-import-type-only/rule.md)\ncarves this out; everywhere else in a Nest file, type-only imports stay\ntype-only.\n\n**Modules and folders are ordinary.** A Nest module is wired by decorators\n(`@Module`), not by folders — so folder layout follows the base rules\nunchanged: features grow by the\n[domain-folder rule](../folder-structure/55-ungrouped-domain-utils/rule.md), shared\ncode lands by the [placement rule](../folder-structure/05-shared-code-placement/rule.md),\nand `controllers/`, `services/` and their siblings are legal folder names\neverywhere without declaring anything (the\n[banned-folder-name rule](../folder-structure/25-banned-folder-name/rule.md)\nbans junk drawers, not framework vocabulary). The suffix convention\n(`*.service.ts`, `*.controller.ts`, `*.module.ts`, `*.guard.ts`, `*.dto.ts`)\nis Nest's own documented naming, generated by its CLI — follow it; the\n[filename-match rule](../../style-guide/conventions/file-naming/05-filename-mismatch/rule.md)\nalready reads those dotted kebab names as the framework's.",
       "ruleIds": []
     },
     {
       "set": "code",
       "path": "code/architecture/react",
-      "channel": "react",
       "intro": "# React Architecture\n\nHow the base rules apply to React code. React itself mandates no layout — the\nframework carve-out table deliberately carries no React row — so nothing in\nthis document overrides a base rule. Every rule here is a base rule read\nagainst React's nouns (components, hooks, JSX), and this pack's conventions\nfor React code are stated as conventions, never as framework facts.\n\n**Return types:** React components infer — annotating `JSX.Element` on a component is noise, since the framework's own types are the contract. This is the React form of the explicit-return-type rule's exceptions.",
       "ruleIds": [
         "component-file-structure",
@@ -81,8 +3082,7 @@
     {
       "set": "code",
       "path": "code/architecture/tanstack-start",
-      "channel": "tanstack",
-      "intro": "# TanStack Start Architecture\n\nHow the base rules apply to a TanStack Start application, layered on top of the\n[React channel](../react/topic.md). Two kinds of statement live here, and\neach is labeled by what it is:\n\n- **Mandated** — what TanStack Start resolves by convention: route filenames\n  under `routes/` (including `__root.tsx` and the `/` route's `index.tsx`), and\n  the `router.tsx`, `server.ts` and `client.tsx` entry files. These facts live\n  in the framework carve-out table, which the checks consult — this document\n  refers to them and never restates them as rules.\n- **Applied** — how the base rules (graduation, domain folders, placement,\n  filename-match) read against a TanStack feature. Everything below is this\n  pack's convention, cited to the base rule it applies, never a TanStack\n  requirement.\n\n**Return types:** TanStack query-options factories under a `queries/` folder infer — the inferred `queryOptions` type carries the key and data types a hand-written annotation would flatten. This is the TanStack form of the explicit-return-type rule's exceptions.",
+      "intro": "# TanStack Start Architecture\n\nHow the base rules apply to a TanStack Start application, layered on top of the\n[React topic](../react/topic.md). Two kinds of statement live here, and\neach is labeled by what it is:\n\n- **Mandated** — what TanStack Start resolves by convention: route filenames\n  under `routes/` (including `__root.tsx` and the `/` route's `index.tsx`), and\n  the `router.tsx`, `server.ts` and `client.tsx` entry files. These facts live\n  in the framework carve-out table, which the checks consult — this document\n  refers to them and never restates them as rules.\n- **Applied** — how the base rules (graduation, domain folders, placement,\n  filename-match) read against a TanStack feature. Everything below is this\n  pack's convention, cited to the base rule it applies, never a TanStack\n  requirement.\n\n**Return types:** TanStack query-options factories under a `queries/` folder infer — the inferred `queryOptions` type carries the key and data types a hand-written annotation would flatten. This is the TanStack form of the explicit-return-type rule's exceptions.",
       "ruleIds": [
         "feature-structure",
         "server-functions",
@@ -94,7 +3094,6 @@
     {
       "set": "code",
       "path": "code/documentation/ts-docs",
-      "channel": "base",
       "intro": "# TypeScript Documentation Style Guide\n\nHow to write TSDoc/JSDoc *when documentation is warranted* — it does not mandate doc comments on every export.",
       "ruleIds": [
         "when-to-document",
@@ -107,7 +3106,6 @@
     {
       "set": "code",
       "path": "code/style-guide/conventions/casing",
-      "channel": "base",
       "intro": "# Casing",
       "ruleIds": [
         "casing"
@@ -116,7 +3114,6 @@
     {
       "set": "code",
       "path": "code/style-guide/conventions/file-naming",
-      "channel": "base",
       "intro": "# File Naming",
       "ruleIds": [
         "filename-mismatch"
@@ -125,7 +3122,6 @@
     {
       "set": "code",
       "path": "code/style-guide/conventions/lint-and-formatting",
-      "channel": "base",
       "intro": "# Lint, Formatting & Mechanically-Enforced Rules",
       "ruleIds": [
         "formatter-config",
@@ -136,7 +3132,6 @@
     {
       "set": "code",
       "path": "code/style-guide/conventions/naming",
-      "channel": "base",
       "intro": "# Naming",
       "ruleIds": [
         "naming-consistency",
@@ -147,7 +3142,6 @@
     {
       "set": "code",
       "path": "code/style-guide/conventions/variable-declaration",
-      "channel": "base",
       "intro": "# Variable Declaration",
       "ruleIds": [
         "verbose-names",
@@ -157,7 +3151,6 @@
     {
       "set": "code",
       "path": "code/style-guide/patterns/classes",
-      "channel": "base",
       "intro": "# Classes",
       "ruleIds": [
         "class-bright-line",
@@ -171,7 +3164,6 @@
     {
       "set": "code",
       "path": "code/style-guide/patterns/functions",
-      "channel": "base",
       "intro": "# Functions",
       "ruleIds": [
         "object-args",
@@ -184,7 +3176,6 @@
     {
       "set": "code",
       "path": "code/style-guide/patterns/named-constants",
-      "channel": "base",
       "intro": "# Named Constants",
       "ruleIds": [
         "bare-string-union",
@@ -198,7 +3189,6 @@
     {
       "set": "code",
       "path": "code/style-guide/patterns/react-components",
-      "channel": "react",
       "intro": "# Component & Hook Patterns",
       "ruleIds": [
         "react-size-thresholds"
@@ -207,7 +3197,6 @@
     {
       "set": "code",
       "path": "code/style-guide/structure/import-paths",
-      "channel": "base",
       "intro": "# Import Path Strategy",
       "ruleIds": [
         "import-path-alias",
@@ -217,7 +3206,6 @@
     {
       "set": "code",
       "path": "code/style-guide/structure/module-api",
-      "channel": "base",
       "intro": "# Module Boundaries & Exports",
       "ruleIds": [
         "import-through-index",
@@ -231,7 +3219,6 @@
     {
       "set": "code",
       "path": "code/style-guide/structure/one-export-per-file",
-      "channel": "base",
       "intro": "# One Export Per File",
       "ruleIds": [
         "multi-export"
@@ -240,7 +3227,6 @@
     {
       "set": "code",
       "path": "code/style-guide/structure/type-placement",
-      "channel": "base",
       "intro": "# Type & Constant Placement\n\nThese placement rules govern **shared** declarations. An exported type or\nconstant with no second consumer is a file-module wherever its consumers live\n— `common/` placement is earned by sharing, never by kind (see the\n[shared code placement rule](../../../architecture/folder-structure/05-shared-code-placement/rule.md)).",
       "ruleIds": [
         "types-and-interfaces",
@@ -250,7 +3236,6 @@
     {
       "set": "code",
       "path": "code/style-guide/typescript/return-types",
-      "channel": "base",
       "intro": "# Return Types — Explicit on Exports, Inferred Internally",
       "ruleIds": [
         "explicit-return-type"
@@ -259,7 +3244,6 @@
     {
       "set": "code",
       "path": "code/style-guide/typescript/type-assertions",
-      "channel": "base",
       "intro": "# Type assertions (`as`)",
       "ruleIds": [
         "type-assertion"
@@ -268,14 +3252,12 @@
     {
       "set": "tests",
       "path": "tests/unit-test-examples",
-      "channel": "base",
       "intro": "# Unit Test Examples\n\nTwo complete examples of the shape every test in this pack takes. They are illustration, not rules — the rules are in the unit-testing document; these show them applied end to end.\n\nBoth examples follow [Arrange-Act-Assert with setup factories](./unit-testing.md#test-structure--arrange-act-assert-with-setup-factories): arrangement in a named `setup()` factory; act and assertion in the `test`, each call assigned to a named `const`, blank line between the three blocks. Mock cleanup comes from `clearMocks`/`restoreMocks` config (see [Mock Cleanup](./unit-testing.md#mock-cleanup)) — never `beforeEach`.\n\n## Function with Mocked Dependencies\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { UserProfile } from '@/models/user-profile/user-profile';\nimport { AppSettings } from '@/models/app-settings/app-settings';\nimport { getAvatarUrl } from '@/models/user-profile/common/utils/get-avatar-url';\n\n// Mocked Imports\n// -------------------------\nconst mockGetAvatarFromProfile = jest.fn<(params: { profile: UserProfile }) => string | null>();\n\njest.mock('@/models/user-profile/common/utils/get-avatar-from-profile', () => ({\n\tgetAvatarFromProfile: (params: { profile: UserProfile }) =>\n\t\tmockGetAvatarFromProfile(params),\n}));\n// -------------------------\nconst mockGetAvatarFromGravatar = jest.fn<(params: { email: string }) => string | null>();\n\njest.mock('@/models/user-profile/common/utils/get-avatar-from-gravatar', () => ({\n\tgetAvatarFromGravatar: (params: { email: string }) =>\n\t\tmockGetAvatarFromGravatar(params),\n}));\n// -------------------------\n\nconst setupAvatar = ({\n\tprofile = null,\n\tgravatar = null,\n\tsetting,\n}: {\n\tprofile?: string | null;\n\tgravatar?: string | null;\n\tsetting?: 'hasCustomAvatar' | 'useGravatar';\n} = {}) => {\n\tmockGetAvatarFromProfile.mockReturnValue(profile);\n\tmockGetAvatarFromGravatar.mockReturnValue(gravatar);\n\n\tconst userProfile = new UserProfile({\n\t\tprofileData: { email: 'user@example.com', displayName: 'Test User' },\n\t});\n\tconst appSettings = new AppSettings({ isGuest: false, defaultPreferences: {} });\n\tif (setting) {\n\t\tappSettings.set(setting, true);\n\t}\n\n\treturn { userProfile, appSettings };\n};\n\ndescribe('getAvatarUrl', () => {\n\ttest('returns null when no avatar conditions are met', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar();\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBeNull();\n\t});\n\n\ttest('returns the profile avatar when the user has a custom avatar', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar({\n\t\t\tprofile: 'https://cdn.example.com/avatars/user-123.png',\n\t\t\tsetting: 'hasCustomAvatar',\n\t\t});\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBe('https://cdn.example.com/avatars/user-123.png');\n\t});\n});\n```\n\nThe same shape covers async units: the factory uses `mockResolvedValue`/`mockRejectedValue`, the act is `await`ed, and the rejection case asserts with `await expect(getUserData({ userId: '999' })).rejects.toThrow('Not found')`.\n\nFor a class, the factory returns the constructor's collaborators and the act constructs the instance. Asserting the instance's resolved public fields (`expect(person).toEqual(expect.objectContaining(details))`) is still testing *behavior* — for a class whose job is to resolve and expose that state, those fields are the output a consumer reads. \"Test behavior, not internals\" bans reaching into things a consumer never touches (private helpers, caches), not reading the public result.\n\n## Parameterized with test.each\n\n```typescript\nimport { expect, describe, test } from '@jest/globals';\nimport { formatCurrency } from '@/common/utils/format-currency';\n\ndescribe('formatCurrency', () => {\n\ttest.each([\n\t\t{ amount: 100, locale: 'en-US', expected: '$1.00' },\n\t\t{ amount: 100, locale: 'en-GB', expected: '£1.00' },\n\t\t{ amount: 0, locale: 'en-US', expected: '$0.00' },\n\t\t{ amount: -50, locale: 'en-US', expected: '-$0.50' },\n\t])(\n\t\t'formats $amount in $locale as $expected',\n\t\t({ amount, locale, expected }) => {\n\t\t\tconst formatted = formatCurrency({ amount, locale });\n\n\t\t\texpect(formatted).toBe(expected);\n\t\t},\n\t);\n});\n```",
       "ruleIds": []
     },
     {
       "set": "tests",
       "path": "tests/unit-testing",
-      "channel": "base",
       "intro": "# Unit Testing",
       "ruleIds": [
         "precedence-in-repos-with-older-tests",
@@ -309,7 +3291,6 @@
     {
       "set": "tests",
       "path": "tests/unit-testing-react-components",
-      "channel": "react",
       "intro": "# Unit Testing Components & Hooks\n\nComponent tests follow the same [Arrange-Act-Assert with setup factories](./unit-testing.md#test-structure--arrange-act-assert-with-setup-factories) structure as every other test. All mock rules from [unit-testing.md](./unit-testing.md#mocks) apply — typed `jest.fn` generics, typed factory wrappers, no mocking constant modules.",
       "ruleIds": [
         "framework-basics",
@@ -324,10 +3305,10 @@
   "rules": [
     {
       "id": "assertions-pin-contracts",
+      "name": "lightsout/assertions-pin-contracts",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "an assertion that restates the module under test instead of stating its contract independently",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -354,10 +3335,10 @@
     },
     {
       "id": "async",
+      "name": "lightsout/async",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "an async unit arranged or asserted without the resolved/rejected forms the document names",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -384,10 +3365,10 @@
     },
     {
       "id": "banned-class-shapes",
+      "name": "lightsout/banned-class-shapes",
       "set": "code",
       "documentPath": "code/style-guide/patterns/classes",
       "summary": "a class that is only static members, or one stateless method",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -428,10 +3409,10 @@
     },
     {
       "id": "banned-folder-name",
+      "name": "lightsout/banned-folder-name",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "a folder named for the kind of code it holds (`helpers/`, `utils/` outside `common/`) instead of the domain it serves",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -477,10 +3458,10 @@
     },
     {
       "id": "bare-string-union",
+      "name": "lightsout/bare-string-union",
       "set": "code",
       "documentPath": "code/style-guide/patterns/named-constants",
       "summary": "a string-literal union exported with no `const` object behind it",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -507,10 +3488,10 @@
     },
     {
       "id": "barrel-star",
+      "name": "lightsout/barrel-star",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
       "summary": "an index file re-exporting with `export *` instead of naming what it publishes",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -551,10 +3532,10 @@
     },
     {
       "id": "brittle-doc-tags",
+      "name": "lightsout/brittle-doc-tags",
       "set": "code",
       "documentPath": "code/documentation/ts-docs",
       "summary": "a doc comment carrying a tag git, TypeScript or the issue tracker already owns",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -590,10 +3571,10 @@
     },
     {
       "id": "case-collision",
+      "name": "lightsout/case-collision",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "two sibling paths that differ only by casing",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -654,10 +3635,10 @@
     },
     {
       "id": "casing",
+      "name": "lightsout/casing",
       "set": "code",
       "documentPath": "code/style-guide/conventions/casing",
       "summary": "a declaration whose name is not in the casing its kind takes",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -703,10 +3684,10 @@
     },
     {
       "id": "circular-dependencies",
+      "name": "lightsout/circular-dependencies",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
       "summary": "two modules that import each other",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -752,10 +3733,10 @@
     },
     {
       "id": "class-bright-line",
+      "name": "lightsout/class-bright-line",
       "set": "code",
       "documentPath": "code/style-guide/patterns/classes",
       "summary": "a class written where none of the four criteria that license one hold",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -782,10 +3763,10 @@
     },
     {
       "id": "class-graduation",
+      "name": "lightsout/class-graduation",
       "set": "code",
       "documentPath": "code/style-guide/patterns/classes",
       "summary": "a folder created for a class that bundles no private companions",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -812,10 +3793,10 @@
     },
     {
       "id": "class-inheritance",
+      "name": "lightsout/class-inheritance",
       "set": "code",
       "documentPath": "code/style-guide/patterns/classes",
       "summary": "a class extending anything other than an Error",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -851,10 +3832,10 @@
     },
     {
       "id": "class-surface",
+      "name": "lightsout/class-surface",
       "set": "code",
       "documentPath": "code/style-guide/patterns/classes",
       "summary": "a method added to a class for logic that never touches the class's state",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -881,10 +3862,10 @@
     },
     {
       "id": "class-syntax",
+      "name": "lightsout/class-syntax",
       "set": "code",
       "documentPath": "code/style-guide/patterns/classes",
       "summary": "a class whose constructor takes positional arguments, or whose methods declare separate param interfaces",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -911,10 +3892,10 @@
     },
     {
       "id": "code-in-index-file",
+      "name": "lightsout/code-in-index-file",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
       "summary": "an index file holding code instead of only re-export lines",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -970,10 +3951,10 @@
     },
     {
       "id": "component-file-structure",
+      "name": "lightsout/component-file-structure",
       "set": "code",
       "documentPath": "code/architecture/react",
       "summary": "a folder created for a component that bundles no utilities, types or constants",
-      "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1014,10 +3995,10 @@
     },
     {
       "id": "constants",
+      "name": "lightsout/constants",
       "set": "code",
       "documentPath": "code/style-guide/structure/type-placement",
       "summary": "a shared constant filed under `types/` instead of `constants/`",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1044,10 +4025,10 @@
     },
     {
       "id": "cross-package-sharing",
+      "name": "lightsout/cross-package-sharing",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "code two packages need duplicated per package instead of moved to the shared one",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1088,10 +4069,10 @@
     },
     {
       "id": "dead-export",
+      "name": "lightsout/dead-export",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
       "summary": "an export nothing else references",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -1152,10 +4133,10 @@
     },
     {
       "id": "derived-lookup-map",
+      "name": "lightsout/derived-lookup-map",
       "set": "code",
       "documentPath": "code/style-guide/patterns/named-constants",
       "summary": "a constant that merely uses the union kept in the `const` object's file",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1182,10 +4163,10 @@
     },
     {
       "id": "discriminant-const-object",
+      "name": "lightsout/discriminant-const-object",
       "set": "code",
       "documentPath": "code/style-guide/patterns/named-constants",
       "summary": "a discriminant field typed as a raw string literal instead of the `const` object's member",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1246,10 +4227,10 @@
     },
     {
       "id": "doc-elements",
+      "name": "lightsout/doc-elements",
       "set": "code",
       "documentPath": "code/documentation/ts-docs",
       "summary": "a tag carrying what its type already says, or a description repeating the code",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1276,10 +4257,10 @@
     },
     {
       "id": "duplicate-code-block",
+      "name": "lightsout/duplicate-code-block",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
       "summary": "the same block of code written out in two or more files",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {
@@ -1332,10 +4313,10 @@
     },
     {
       "id": "duplicate-export-name",
+      "name": "lightsout/duplicate-export-name",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
       "summary": "the same export name declared in more than one place",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1376,10 +4357,10 @@
     },
     {
       "id": "duplicate-function-body",
+      "name": "lightsout/duplicate-function-body",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
       "summary": "two functions with the same body under different variable names",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {
@@ -1422,10 +4403,10 @@
     },
     {
       "id": "explicit-return-type",
+      "name": "lightsout/explicit-return-type",
       "set": "code",
       "documentPath": "code/style-guide/typescript/return-types",
       "summary": "an exported function with no declared return type",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -1461,10 +4442,10 @@
     },
     {
       "id": "feature-structure",
+      "name": "lightsout/feature-structure",
       "set": "code",
       "documentPath": "code/architecture/tanstack-start",
       "summary": "a feature folder pre-creating layout the graduation rule has not earned",
-      "channel": "tanstack",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1505,10 +4486,10 @@
     },
     {
       "id": "file-directly-in-common",
+      "name": "lightsout/file-directly-in-common",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "Files in `common/` go in a folder for their kind of code.",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1549,10 +4530,10 @@
     },
     {
       "id": "file-naming-conventions",
+      "name": "lightsout/file-naming-conventions",
       "set": "code",
       "documentPath": "code/architecture/react",
       "summary": "a React file whose name does not carry the casing its kind mandates",
-      "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1593,10 +4574,10 @@
     },
     {
       "id": "file-naming-for-server-functions",
+      "name": "lightsout/file-naming-for-server-functions",
       "set": "code",
       "documentPath": "code/architecture/tanstack-start",
       "summary": "a server function file that does not carry its mandated casing",
-      "channel": "tanstack",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1637,10 +4618,10 @@
     },
     {
       "id": "file-size",
+      "name": "lightsout/file-size",
       "set": "code",
       "documentPath": "code/style-guide/patterns/functions",
       "summary": "a file over the standards line cap",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {
@@ -1679,10 +4660,10 @@
     },
     {
       "id": "filename-mismatch",
+      "name": "lightsout/filename-mismatch",
       "set": "code",
       "documentPath": "code/style-guide/conventions/file-naming",
       "summary": "a filename that does not match the export it holds",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1690,7 +4671,7 @@
         "pass": 5,
         "fail": 1
       },
-      "prose": "The file name always matches the **exported item's name, including its casing** (see the table below). Resolve the casing in this order:\n\n1. **Existing files in the same directory** — match their convention\n2. **The package's framework doc** — e.g., NestJS packages use `kebab-case.{suffix}.ts` (see the [NestJS channel document](../../../../architecture/nestjs/topic.md))\n3. **Default** (new/empty directory, no framework rule): match the export name's own casing per the rule above\n\n| Convention                          | Applies to                                  | Example                                |\n| ----------------------------------- | ------------------------------------------- | -------------------------------------- |\n| camelCase matching the export name  | functions, value constants                  | `buildVersionedLabel.ts`, `maxRetries.ts` |\n| PascalCase matching the export name | classes, interfaces, types, named constants | `UserProfile.ts`, `Action.ts`          |\n| kebab-case (framework-mandated)     | per framework doc                           | `get-frontend-domain.ts`               |\n\n**Framework mandates override the name entirely.** A file router owns every name inside its route directory — `__root.tsx`, `runs.$runId.tsx`, `standards.tsx` — even though each of those files exports one `Route` const. Files under a package's declared router directory (`routes/` for TanStack Router and Remix, `app/` and `pages/` for Next, `app/` for Expo Router) are exempt from this rule for the same reason NestJS's `events.service.ts` is. A framework's convention-resolved entry files are framework-named too — TanStack Start resolves `src/router.tsx` (which exports `getRouter`), `src/server.ts` and `src/client.tsx` by convention, and NestJS resolves `src/main.ts` — so those names are the framework's rather than the export's.\n\n**Framework mandates override casing entirely** — e.g., NestJS services are `events.service.ts` even though the class itself is PascalCase.",
+      "prose": "The file name always matches the **exported item's name, including its casing** (see the table below). Resolve the casing in this order:\n\n1. **Existing files in the same directory** — match their convention\n2. **The package's framework doc** — e.g., NestJS packages use `kebab-case.{suffix}.ts` (see the [NestJS topic](../../../../architecture/nestjs/topic.md))\n3. **Default** (new/empty directory, no framework rule): match the export name's own casing per the rule above\n\n| Convention                          | Applies to                                  | Example                                |\n| ----------------------------------- | ------------------------------------------- | -------------------------------------- |\n| camelCase matching the export name  | functions, value constants                  | `buildVersionedLabel.ts`, `maxRetries.ts` |\n| PascalCase matching the export name | classes, interfaces, types, named constants | `UserProfile.ts`, `Action.ts`          |\n| kebab-case (framework-mandated)     | per framework doc                           | `get-frontend-domain.ts`               |\n\n**Framework mandates override the name entirely.** A file router owns every name inside its route directory — `__root.tsx`, `runs.$runId.tsx`, `standards.tsx` — even though each of those files exports one `Route` const. Files under a package's declared router directory (`routes/` for TanStack Router and Remix, `app/` and `pages/` for Next, `app/` for Expo Router) are exempt from this rule for the same reason NestJS's `events.service.ts` is. A framework's convention-resolved entry files are framework-named too — TanStack Start resolves `src/router.tsx` (which exports `getRouter`), `src/server.ts` and `src/client.tsx` by convention, and NestJS resolves `src/main.ts` — so those names are the framework's rather than the export's.\n\n**Framework mandates override casing entirely** — e.g., NestJS services are `events.service.ts` even though the class itself is PascalCase.",
       "fixtures": [
         {
           "side": "pass",
@@ -1733,10 +4714,10 @@
     },
     {
       "id": "files-that-must-not-have-dedicated-tests",
+      "name": "lightsout/files-that-must-not-have-dedicated-tests",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a dedicated test file on a source file that holds no runtime logic",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1797,10 +4778,10 @@
     },
     {
       "id": "folder-casing",
+      "name": "lightsout/folder-casing",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "a folder whose casing is none of the three the document allows",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1841,10 +4822,10 @@
     },
     {
       "id": "folder-index-file",
+      "name": "lightsout/folder-index-file",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
       "summary": "an `index.ts` in a folder that is not a package's entry",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -1895,10 +4876,10 @@
     },
     {
       "id": "folder-size",
+      "name": "lightsout/folder-size",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "more files sitting in one flat folder than the cap allows",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {
@@ -2151,10 +5132,10 @@
     },
     {
       "id": "formatter-config",
+      "name": "lightsout/formatter-config",
       "set": "code",
       "documentPath": "code/style-guide/conventions/lint-and-formatting",
       "summary": "formatting written against a convention the project's own formatter config does not use",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2181,10 +5162,10 @@
     },
     {
       "id": "framework-basics",
+      "name": "lightsout/framework-basics",
       "set": "tests",
       "documentPath": "tests/unit-testing-react-components",
       "summary": "a component test importing the wrong testing library, extension or interaction helper for the package",
-      "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2211,10 +5192,10 @@
     },
     {
       "id": "function-size",
+      "name": "lightsout/function-size",
       "set": "code",
       "documentPath": "code/style-guide/patterns/functions",
       "summary": "a function, hook or component over its line cap",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {
@@ -2245,10 +5226,10 @@
     },
     {
       "id": "import-path-alias",
+      "name": "lightsout/import-path-alias",
       "set": "code",
       "documentPath": "code/style-guide/structure/import-paths",
       "summary": "a relative import path in a package that configures aliases",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2299,10 +5280,10 @@
     },
     {
       "id": "import-through-index",
+      "name": "lightsout/import-through-index",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
       "summary": "an import through an `index.ts` of the importer's own package instead of from the file that declares the name",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2368,10 +5349,10 @@
     },
     {
       "id": "import-time-side-effects",
+      "name": "lightsout/import-time-side-effects",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a module that acts at import time tested without a fresh instance or its own environment",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2398,10 +5379,10 @@
     },
     {
       "id": "import-type-only",
+      "name": "lightsout/import-type-only",
       "set": "code",
       "documentPath": "code/style-guide/conventions/lint-and-formatting",
       "summary": "an import used only in type positions declared without `import type`",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -2447,10 +5428,10 @@
     },
     {
       "id": "internal-import-from-outside",
+      "name": "lightsout/internal-import-from-outside",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
       "summary": "a file inside an `internal/` folder imported from outside the folder that holds it",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "off",
       "defaultOptions": {},
@@ -2501,10 +5482,10 @@
     },
     {
       "id": "jest-spyon-vs-jest-mock",
+      "name": "lightsout/jest-spyon-vs-jest-mock",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "`jest.mock` where a spy on the object already held would do, or the reverse",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2531,10 +5512,10 @@
     },
     {
       "id": "mocking-component-dependencies",
+      "name": "lightsout/mocking-component-dependencies",
       "set": "tests",
       "documentPath": "tests/unit-testing-react-components",
       "summary": "a mocked hook, store or child component that hides coverage instead of a boundary",
-      "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2561,10 +5542,10 @@
     },
     {
       "id": "module-boundary-testing",
+      "name": "lightsout/module-boundary-testing",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "coverage added file-by-file when driving the module's public API would pin the same behavior — boundary tests are the default, not the mandate",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2615,10 +5596,10 @@
     },
     {
       "id": "module-exports",
+      "name": "lightsout/module-exports",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
       "summary": "an item exported somewhere other than the line it is defined on",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2645,10 +5626,10 @@
     },
     {
       "id": "module-file-to-folder",
+      "name": "lightsout/module-file-to-folder",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
       "summary": "When a module should stay one file, and when it should become a folder.",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2699,10 +5680,10 @@
     },
     {
       "id": "module-folder-layout",
+      "name": "lightsout/module-folder-layout",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "What goes inside a module folder.",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2743,10 +5724,10 @@
     },
     {
       "id": "module-out-of-common",
+      "name": "lightsout/module-out-of-common",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "When shared code has grown too big for `common/`.",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2807,10 +5788,10 @@
     },
     {
       "id": "multi-export",
+      "name": "lightsout/multi-export",
       "set": "code",
       "documentPath": "code/style-guide/structure/one-export-per-file",
       "summary": "more than one export in a file, outside the closed exception list",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2856,10 +5837,10 @@
     },
     {
       "id": "named-constant-boundaries",
+      "name": "lightsout/named-constant-boundaries",
       "set": "code",
       "documentPath": "code/style-guide/patterns/named-constants",
       "summary": "an incoming string cast into the union at a boundary instead of validated into it",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2886,10 +5867,10 @@
     },
     {
       "id": "named-constant-casing",
+      "name": "lightsout/named-constant-casing",
       "set": "code",
       "documentPath": "code/style-guide/patterns/named-constants",
       "summary": "a named constant in camelCase, or a lone value constant in PascalCase",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2916,10 +5897,10 @@
     },
     {
       "id": "naming-consistency",
+      "name": "lightsout/naming-consistency",
       "set": "code",
       "documentPath": "code/style-guide/conventions/naming",
       "summary": "a second convention introduced into a domain that already standardized on one",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2946,10 +5927,10 @@
     },
     {
       "id": "naming-for-reuse",
+      "name": "lightsout/naming-for-reuse",
       "set": "code",
       "documentPath": "code/style-guide/conventions/naming",
       "summary": "a name that says where a value is used rather than what it is",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -2976,10 +5957,10 @@
     },
     {
       "id": "no-any",
+      "name": "lightsout/no-any",
       "set": "code",
       "documentPath": "code/style-guide/conventions/lint-and-formatting",
       "summary": "an `any` annotation with no lint-suppression comment licensing it",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -3015,10 +5996,10 @@
     },
     {
       "id": "no-history-in-comments",
+      "name": "lightsout/no-history-in-comments",
       "set": "code",
       "documentPath": "code/documentation/ts-docs",
       "summary": "Where the history of the code belongs.",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3045,10 +6026,10 @@
     },
     {
       "id": "object-args",
+      "name": "lightsout/object-args",
       "set": "code",
       "documentPath": "code/style-guide/patterns/functions",
       "summary": "a function taking positional arguments where no external contract dictates the shape",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3075,10 +6056,10 @@
     },
     {
       "id": "oversized-setup-factory",
+      "name": "lightsout/oversized-setup-factory",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a setup factory grown past its parameter cap",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {
@@ -3107,10 +6088,10 @@
     },
     {
       "id": "params-interface-docs",
+      "name": "lightsout/params-interface-docs",
       "set": "code",
       "documentPath": "code/documentation/ts-docs",
       "summary": "Doc comments on a function's Params interface.",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3137,10 +6118,10 @@
     },
     {
       "id": "path-aliases",
+      "name": "lightsout/path-aliases",
       "set": "code",
       "documentPath": "code/style-guide/structure/import-paths",
       "summary": "an alias written from memory instead of read from the package's own declaration",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3167,10 +6148,10 @@
     },
     {
       "id": "per-folder-readmes",
+      "name": "lightsout/per-folder-readmes",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "a folder README restating structure these rules already give",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3211,10 +6192,10 @@
     },
     {
       "id": "precedence-in-repos-with-older-tests",
+      "name": "lightsout/precedence-in-repos-with-older-tests",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "these standards describe the tests you write, not a mandate to renovate the ones already there",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3255,10 +6236,10 @@
     },
     {
       "id": "premature-abstraction",
+      "name": "lightsout/premature-abstraction",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
       "summary": "an abstraction built before two or three concrete uses called for it",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3285,10 +6266,10 @@
     },
     {
       "id": "private-helper-colocation",
+      "name": "lightsout/private-helper-colocation",
       "set": "code",
       "documentPath": "code/style-guide/patterns/functions",
       "summary": "a helper a second file needs while it still sits unexported in the first",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3324,10 +6305,10 @@
     },
     {
       "id": "props-union-exemption",
+      "name": "lightsout/props-union-exemption",
       "set": "code",
       "documentPath": "code/style-guide/patterns/named-constants",
       "summary": "a domain value claiming the props exemption while it also appears in domain logic",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3363,10 +6344,10 @@
     },
     {
       "id": "query-options",
+      "name": "lightsout/query-options",
       "set": "code",
       "documentPath": "code/architecture/tanstack-start",
       "summary": "TanStack Query options declared outside the feature's `queries/` folder",
-      "channel": "tanstack",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3374,7 +6355,7 @@
         "pass": 2,
         "fail": 1
       },
-      "prose": "### Query Options\n\nQuery-options factories live in the feature's `queries/` folder — the\nconventional [domain folder](../../folder-structure/55-ungrouped-domain-utils/rule.md)\nfor a feature's query definitions (a grouping, not a module, per\n[a domain folder is not a module](../../folder-structure/15-module-out-of-common/rule.md)).\nThis pack's convention — consistency across TanStack repos is worth the noun —\nnot a TanStack requirement.\n\n```typescript\n// features/issues/queries/issuesQueryOptions.ts\ninterface Params {\n\tsearchParams: IssuesSearchParams;\n}\n\nexport const issuesQueryOptions = ({ searchParams }: Params) =>\n\tqueryOptions({\n\t\tqueryKey: [QueryKey.Issues, searchParams],\n\t\tqueryFn: () => findAllIssuesServerFn({ data: searchParams }),\n\t});\n```\n\nThe factory's inferred return type is deliberate — see the return-types note in\nthis channel's [document](../topic.md).",
+      "prose": "### Query Options\n\nQuery-options factories live in the feature's `queries/` folder — the\nconventional [domain folder](../../folder-structure/55-ungrouped-domain-utils/rule.md)\nfor a feature's query definitions (a grouping, not a module, per\n[a domain folder is not a module](../../folder-structure/15-module-out-of-common/rule.md)).\nThis pack's convention — consistency across TanStack repos is worth the noun —\nnot a TanStack requirement.\n\n```typescript\n// features/issues/queries/issuesQueryOptions.ts\ninterface Params {\n\tsearchParams: IssuesSearchParams;\n}\n\nexport const issuesQueryOptions = ({ searchParams }: Params) =>\n\tqueryOptions({\n\t\tqueryKey: [QueryKey.Issues, searchParams],\n\t\tqueryFn: () => findAllIssuesServerFn({ data: searchParams }),\n\t});\n```\n\nThe factory's inferred return type is deliberate — see the return-types note in\nthis topic's [background](../topic.md).",
       "fixtures": [
         {
           "side": "pass",
@@ -3402,10 +6383,10 @@
     },
     {
       "id": "query-priority",
+      "name": "lightsout/query-priority",
       "set": "tests",
       "documentPath": "tests/unit-testing-react-components",
       "summary": "a query reaching for a test id where a role, label or text would find the element",
-      "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3432,10 +6413,10 @@
     },
     {
       "id": "react-domain-folders",
+      "name": "lightsout/react-domain-folders",
       "set": "code",
       "documentPath": "code/architecture/react",
       "summary": "two or more related JSX-producing functions left ungrouped in `utils/`",
-      "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3476,10 +6457,10 @@
     },
     {
       "id": "react-size-thresholds",
+      "name": "lightsout/react-size-thresholds",
       "set": "code",
       "documentPath": "code/style-guide/patterns/react-components",
       "summary": "a component or hook measured as the wrong kind, judged against the base threshold instead of its own, or past its own",
-      "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3535,10 +6516,10 @@
     },
     {
       "id": "reuse-common-code",
+      "name": "lightsout/reuse-common-code",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "Look for existing shared code before writing new code.",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3589,10 +6570,10 @@
     },
     {
       "id": "server-functions",
+      "name": "lightsout/server-functions",
       "set": "code",
       "documentPath": "code/architecture/tanstack-start",
       "summary": "a server function living outside a `serverFns/` folder, or wrapped in a one-file folder it has not earned",
-      "channel": "tanstack",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3628,10 +6609,10 @@
     },
     {
       "id": "setup-factories",
+      "name": "lightsout/setup-factories",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a setup factory that arranges through anything but its own parameters",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3658,10 +6639,10 @@
     },
     {
       "id": "shared-code-placement",
+      "name": "lightsout/shared-code-placement",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "Which `common/` folder shared code belongs in.",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3722,10 +6703,10 @@
     },
     {
       "id": "shared-package-criteria",
+      "name": "lightsout/shared-package-criteria",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "a framework-dependent or single-consumer item placed in the shared package",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3766,10 +6747,10 @@
     },
     {
       "id": "single-file-domain-folder",
+      "name": "lightsout/single-file-domain-folder",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "When a domain folder in `common/` has too few files to be a folder.",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3830,10 +6811,10 @@
     },
     {
       "id": "single-return",
+      "name": "lightsout/single-return",
       "set": "code",
       "documentPath": "code/style-guide/patterns/functions",
       "summary": "business logic returning from several branches instead of once at the end",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3860,10 +6841,10 @@
     },
     {
       "id": "single-use-scalar",
+      "name": "lightsout/single-use-scalar",
       "set": "code",
       "documentPath": "code/style-guide/conventions/variable-declaration",
       "summary": "a module-scope scalar constant only one place reads",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3909,10 +6890,10 @@
     },
     {
       "id": "synonym-export-name",
+      "name": "lightsout/synonym-export-name",
       "set": "code",
       "documentPath": "code/style-guide/conventions/naming",
       "summary": "two exports that name the same concept with different verbs — `getUser` beside `fetchUser` is usually the same code written twice",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3968,10 +6949,10 @@
     },
     {
       "id": "tanstack-hooks",
+      "name": "lightsout/tanstack-hooks",
       "set": "code",
       "documentPath": "code/architecture/tanstack-start",
       "summary": "a query-wrapping hook outside the feature's `hooks/` folder",
-      "channel": "tanstack",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3979,7 +6960,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "### Hooks\n\nCustom hooks that wrap queries or manage state live in the feature's `hooks/`\nfolder — the same convention the\n[React channel's naming rule](../../react/30-file-naming-conventions/rule.md)\nderives (`useX` export → `camelCase.ts`), applied to TanStack query wrappers:\n\n```typescript\n// features/issues/hooks/useIssues.ts\ninterface Params {\n\tsearchParams: IssuesSearchParams;\n}\n\nexport const useIssues = ({ searchParams }: Params) => {\n\treturn useSuspenseQuery(issuesQueryOptions({ searchParams }));\n};\n```\n\nThe hook's inferred return type is deliberate — TanStack's generics are the\ncontract; see the return-types note in this channel's\n[document](../topic.md).",
+      "prose": "### Hooks\n\nCustom hooks that wrap queries or manage state live in the feature's `hooks/`\nfolder — the same convention the\n[React topic's naming rule](../../react/30-file-naming-conventions/rule.md)\nderives (`useX` export → `camelCase.ts`), applied to TanStack query wrappers:\n\n```typescript\n// features/issues/hooks/useIssues.ts\ninterface Params {\n\tsearchParams: IssuesSearchParams;\n}\n\nexport const useIssues = ({ searchParams }: Params) => {\n\treturn useSuspenseQuery(issuesQueryOptions({ searchParams }));\n};\n```\n\nThe hook's inferred return type is deliberate — TanStack's generics are the\ncontract; see the return-types note in this topic's\n[background](../topic.md).",
       "fixtures": [
         {
           "side": "pass",
@@ -3998,10 +6979,10 @@
     },
     {
       "id": "test-assert-in-hook",
+      "name": "lightsout/test-assert-in-hook",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "an assertion in a beforeEach instead of the test body",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -4028,10 +7009,10 @@
     },
     {
       "id": "test-file-size",
+      "name": "lightsout/test-file-size",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a test file over the test-file line cap",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {
@@ -4060,10 +7041,10 @@
     },
     {
       "id": "test-in-tests-folder",
+      "name": "lightsout/test-in-tests-folder",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a unit test in a separate tests directory instead of beside its subject",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4104,10 +7085,10 @@
     },
     {
       "id": "test-manual-mock-cleanup",
+      "name": "lightsout/test-manual-mock-cleanup",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "manual mock cleanup in a lifecycle hook, which the Jest config already does",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4134,10 +7115,10 @@
     },
     {
       "id": "test-mock-prefix",
+      "name": "lightsout/test-mock-prefix",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a module-scope mock variable without the `mock` prefix Jest hoisting needs",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -4164,10 +7145,10 @@
     },
     {
       "id": "test-mock-return-in-hook",
+      "name": "lightsout/test-mock-return-in-hook",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a mock return value set in a beforeEach instead of the setup factory",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4194,10 +7175,10 @@
     },
     {
       "id": "test-mock-untyped",
+      "name": "lightsout/test-mock-untyped",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a `jest.fn()` with no generic, so the spy does not match the real signature",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -4224,10 +7205,10 @@
     },
     {
       "id": "test-mock-wrapper-untyped",
+      "name": "lightsout/test-mock-wrapper-untyped",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a `jest.mock` factory wrapper that discards the arguments it is called with",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -4254,10 +7235,10 @@
     },
     {
       "id": "test-multiple-setups",
+      "name": "lightsout/test-multiple-setups",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "more than one setup factory call in one test",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4303,10 +7284,10 @@
     },
     {
       "id": "test-nested-describe",
+      "name": "lightsout/test-nested-describe",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a nested `describe` outside the `when …` / `for …` exception",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4333,10 +7314,10 @@
     },
     {
       "id": "test-never-passing-assertion",
+      "name": "lightsout/test-never-passing-assertion",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "an assertion written so that it can never pass — `expect.objectContaining` pairing a key with `undefined`",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -4363,10 +7344,10 @@
     },
     {
       "id": "test-not-beside-subject",
+      "name": "lightsout/test-not-beside-subject",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a test file whose folder holds no source file it could be testing",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4422,10 +7403,10 @@
     },
     {
       "id": "test-only-export",
+      "name": "lightsout/test-only-export",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "an export only its own tests reference",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4486,10 +7467,10 @@
     },
     {
       "id": "test-shared-let",
+      "name": "lightsout/test-shared-let",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a `let` reassigned in a beforeEach — mutable state shared across tests",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -4516,10 +7497,10 @@
     },
     {
       "id": "test-strict-equal-matcher",
+      "name": "lightsout/test-strict-equal-matcher",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "`toStrictEqual` with an asymmetric matcher — strict in name only",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -4546,10 +7527,10 @@
     },
     {
       "id": "test-structure-arrange-act-assert-with-setup-factories",
+      "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "a test that does not read as arrange, act, assert with its arrangement in a `setup()` factory",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4576,10 +7557,10 @@
     },
     {
       "id": "test-support-in-src",
+      "name": "lightsout/test-support-in-src",
       "set": "tests",
       "documentPath": "tests/unit-testing",
       "summary": "shared test fixtures or mocks living under `src/`",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4620,10 +7601,10 @@
     },
     {
       "id": "testing-hooks-in-isolation",
+      "name": "lightsout/testing-hooks-in-isolation",
       "set": "tests",
       "documentPath": "tests/unit-testing-react-components",
       "summary": "a hook test that mocks more framework primitives than the hook under test uses",
-      "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4650,10 +7631,10 @@
     },
     {
       "id": "testing-user-interactions",
+      "name": "lightsout/testing-user-interactions",
       "set": "tests",
       "documentPath": "tests/unit-testing-react-components",
       "summary": "an interaction test that groups the target query with arrange instead of the act",
-      "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4680,10 +7661,10 @@
     },
     {
       "id": "the-render-pattern",
+      "name": "lightsout/the-render-pattern",
       "set": "tests",
       "documentPath": "tests/unit-testing-react-components",
       "summary": "a component test that renders outside the setup factory or destructures queries from render()",
-      "channel": "react",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4710,10 +7691,10 @@
     },
     {
       "id": "thin-wrapper-functions",
+      "name": "lightsout/thin-wrapper-functions",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
       "summary": "a function that only renames parameters or forwards to another",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4764,10 +7745,10 @@
     },
     {
       "id": "top-level-domain-nouns",
+      "name": "lightsout/top-level-domain-nouns",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "a top-level folder naming a technical layer rather than a capability the product has",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4808,10 +7789,10 @@
     },
     {
       "id": "type-alias-indirection",
+      "name": "lightsout/type-alias-indirection",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
       "summary": "a file that exists only to alias another type",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4852,10 +7833,10 @@
     },
     {
       "id": "type-assertion",
+      "name": "lightsout/type-assertion",
       "set": "code",
       "documentPath": "code/style-guide/typescript/type-assertions",
       "summary": "an `as` cast in source code, where narrowing would prove the type instead",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -4891,10 +7872,10 @@
     },
     {
       "id": "types-and-interfaces",
+      "name": "lightsout/types-and-interfaces",
       "set": "code",
       "documentPath": "code/style-guide/structure/type-placement",
       "summary": "a shared type-level declaration living somewhere other than `common/types/`",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4935,10 +7916,10 @@
     },
     {
       "id": "ungrouped-domain-utils",
+      "name": "lightsout/ungrouped-domain-utils",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
       "summary": "When functions about one subject in `utils/` should get their own folder.",
-      "channel": "base",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -5009,10 +7990,10 @@
     },
     {
       "id": "verbose-names",
+      "name": "lightsout/verbose-names",
       "set": "code",
       "documentPath": "code/style-guide/conventions/variable-declaration",
       "summary": "an abbreviated name outside a small loop or a well-known convention",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -5039,10 +8020,10 @@
     },
     {
       "id": "when-to-document",
+      "name": "lightsout/when-to-document",
       "set": "code",
       "documentPath": "code/documentation/ts-docs",
       "summary": "a doc comment on an export whose name and types already say it, or an inline comment narrating the next line",
-      "channel": "base",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},

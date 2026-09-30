@@ -61,7 +61,6 @@ const sizeRule = ({ sites }: { sites: Site[] }) => {
 		documentPath: 'code/style-guide/structure/module-api',
 		summary: 'a file too big to read',
 		prose: 'the argument for the rule',
-		channel: 'base',
 		checked: true,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},

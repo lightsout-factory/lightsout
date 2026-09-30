@@ -1,10 +1,10 @@
 interface ConstructorParams {
-	/** The pack that was found. */
+	/** The library that was searched. */
 	name: string;
 	rule: string;
 }
 
-/** Separate from `StandardsPackNotFoundError` so a page can say which half of the address was wrong. */
+/** A rule page's address names a rule the bundled library does not hold; the page turns this into its not-found answer. */
 export class StandardsPackRuleNotFoundError extends Error {
 	constructor({ name, rule }: ConstructorParams) {
 		super(`standards pack "${name}" holds no rule named "${rule}"`);

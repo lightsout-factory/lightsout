@@ -26,7 +26,6 @@ export const buildConfigView = ({ overrides = {} }: Params = {}): ConfigView => 
 			rule: 'lightsout/file-size',
 			id: 'file-size',
 			library: 'lightsout',
-			channel: 'base',
 			severity: StandardsSeverity.Blocking,
 			fromConfig: true,
 			options: { file: 250 },

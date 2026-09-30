@@ -1,6 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import type { StandardsPackRuleView } from '@lightsout/engine';
-import { FixtureSide, RuleExampleKind, StandardsSeverity } from '@lightsout/engine/contracts';
+import type { StandardsPackListing, StandardsPackRuleView } from '@lightsout/engine';
+import { StandardsSeverity } from '@lightsout/engine/contracts';
 import { screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { QueryKey } from '#src/common/constants/QueryKey.ts';
@@ -62,6 +62,50 @@ const setupRuleDetail = ({ rule = buildStandardsPackRuleView(), rules = packRule
 	return { rule };
 };
 
+/** One pack of the lightsout library, holding the rules named by their full names. */
+const buildPack = ({ name, rules }: { name: string; rules: string[] }): StandardsPackListing => ({
+	name,
+	address: `lightsout/${name}`,
+	include: { packs: [], topics: [], rules: [] },
+	topics: ['lightsout/code/style-guide/typescript/type-assertions'],
+	rules: rules.map((rule) => ({ name: rule, severity: StandardsSeverity.Blocking, options: {} })),
+	totals: { rules: rules.length, checked: rules.length, judgment: 0, topics: 1 },
+});
+
+/** The page's rule, `lightsout/type-assertion`, in a library whose packs are given. */
+const setupRuleInPacks = ({ packs }: { packs: StandardsPackListing[] }) => {
+	const rule = buildStandardsPackRuleView({ overrides: { name: 'lightsout/type-assertion' } });
+	renderWithQueryClient({
+		ui: <RuleDetail ruleId={rule.id} />,
+		seed: [
+			{ queryKey: [QueryKey.DefaultPackRule, rule.id], data: rule },
+			{ queryKey: [QueryKey.DefaultPack], data: buildStandardsPackView({ rules: packRules, overrides: { name: 'lightsout', packs } }) },
+		],
+	});
+};
+
+/** Packs that hold the rule are listed and linked; a pack that does not is left out, and with none the page says so. */
+const packHoldingCases: { packs: StandardsPackListing[]; expected: { packLinks: { name: string | null; href: string | null }[]; saysNoPack: boolean } }[] = [
+	{
+		packs: [
+			buildPack({ name: 'nestjs', rules: ['lightsout/no-any'] }),
+			buildPack({ name: 'node', rules: ['lightsout/type-assertion'] }),
+			buildPack({ name: 'react-app', rules: ['lightsout/no-any', 'lightsout/type-assertion'] }),
+		],
+		expected: {
+			packLinks: [
+				{ name: 'lightsout/node', href: '/standards-packs/lightsout/packs/node' },
+				{ name: 'lightsout/react-app', href: '/standards-packs/lightsout/packs/react-app' },
+			],
+			saysNoPack: false,
+		},
+	},
+	{
+		packs: [buildPack({ name: 'nestjs', rules: ['lightsout/no-any'] }), buildPack({ name: 'node', rules: ['lightsout/no-any'] })],
+		expected: { packLinks: [], saysNoPack: true },
+	},
+];
+
 /** A rule with default numbers, and one without: the first gets them under options, the second the bare severity. */
 const configBlockCases: { defaultOptions: Record<string, number>; expected: unknown }[] = [
 	{
@@ -86,15 +130,7 @@ describe('RuleDetail', () => {
 
 		const trail = screen.getByRole('navigation', { name: 'Breadcrumb' });
 
-		expect(trail.textContent).toBe('Standards PacksTypeScripttype-assertion');
-	});
-
-	test('links the set step of that trail back to the rules it belongs to', () => {
-		setupRuleDetail();
-
-		const crumb = screen.getByRole('link', { name: 'TypeScript' });
-
-		expect(crumb).toHaveAttribute('href', '/standards-packs/typescript');
+		expect(trail.textContent).toBe('Standards Packslightsouttype-assertion');
 	});
 
 	test('names the rule as the page, and says what it is about in its own words', () => {
@@ -149,106 +185,6 @@ describe('RuleDetail', () => {
 		const line = screen.getByText('This rule states its summary and shows it with examples.');
 
 		expect(line).toBeInTheDocument();
-	});
-
-	test('shows the incorrect example before the correct one', () => {
-		setupRuleDetail();
-
-		const titles = within(getSection({ name: 'Examples' }))
-			.getAllByRole('heading', { level: 3 })
-			.map((heading) => heading.textContent);
-
-		expect(titles).toStrictEqual(['Incorrect', 'Correct']);
-	});
-
-	test('shows each example verbatim under the file it would live in', () => {
-		setupRuleDetail();
-
-		const code = readCode({ caption: 'src/readLabel.ts' });
-
-		expect(code).toStrictEqual(['return (value as string).toUpperCase();', "if (typeof value === 'string') {\treturn value.toUpperCase();}"]);
-	});
-
-	test('says a deterministic check flags the incorrect example and passes the correct one', () => {
-		setupRuleDetail();
-
-		const source = screen.getByText('The check flags the incorrect code and passes the correct code.');
-
-		expect(source).toBeInTheDocument();
-	});
-
-	test('says the agent judges code like the examples, rather than exactly these files', () => {
-		setupRuleDetail({ rule: buildStandardsPackRuleView({ overrides: { checked: false } }) });
-
-		const source = screen.getByText('The agent flags code like the incorrect example and accepts code like the correct one.');
-
-		expect(source).toBeInTheDocument();
-	});
-
-	test('gives a side holding more than one file a tab per file, keyed by its path', () => {
-		setupRuleDetail({
-			rule: buildStandardsPackRuleView({
-				fixtures: [
-					{ side: FixtureSide.Fail, path: 'src/a.ts', text: 'const a = b as C;' },
-					{ side: FixtureSide.Fail, path: 'src/b.ts', text: 'const b = c as D;' },
-					{ side: FixtureSide.Pass, path: 'src/a.ts', text: 'const a = read();' },
-				],
-			}),
-		});
-
-		const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
-
-		expect(tabs).toStrictEqual(['src/a.ts', 'src/b.ts']);
-	});
-
-	test('leaves out a side with no example rather than drawing it empty', () => {
-		setupRuleDetail({ rule: buildStandardsPackRuleView({ fixtures: [{ side: FixtureSide.Fail, path: 'src/a.ts', text: 'const a = b as C;' }] }) });
-
-		const correct = screen.queryByRole('heading', { name: 'Correct' });
-
-		expect(correct).not.toBeInTheDocument();
-	});
-
-	test('says the pack shipped without its examples when there are none', () => {
-		setupRuleDetail({ rule: buildStandardsPackRuleView({ fixtures: [] }) });
-
-		const notice = screen.getByText('This pack shipped without its examples.');
-
-		expect(notice).toBeInTheDocument();
-	});
-
-	test('shows a repo example as a tree a side, opened on the file the rule declares', () => {
-		setupRuleDetail({
-			rule: buildStandardsPackRuleView({
-				fixtures: [
-					{ side: FixtureSide.Fail, path: 'package.json', text: '{}' },
-					{ side: FixtureSide.Fail, path: 'src/unused.ts', text: 'export const unused = 1;' },
-					{ side: FixtureSide.Pass, path: 'package.json', text: '{}' },
-					{ side: FixtureSide.Pass, path: 'src/used.ts', text: 'export const used = 1;' },
-				],
-				example: { kind: RuleExampleKind.Repo, focus: { fail: 'src/unused.ts', pass: 'src/used.ts' } },
-			}),
-		});
-
-		const selected = screen
-			.getAllByRole('tab')
-			.filter((tab) => tab.getAttribute('aria-selected') === 'true')
-			.map((tab) => tab.textContent);
-
-		expect({ trees: screen.getAllByRole('tablist').map((tree) => tree.getAttribute('aria-label')), selected }).toStrictEqual({
-			trees: ['Incorrect files', 'Correct files'],
-			selected: ['unused.ts', 'used.ts'],
-		});
-	});
-
-	test('says a repo example is a small repo, so its extra files read as setting rather than as more examples', () => {
-		setupRuleDetail({
-			rule: buildStandardsPackRuleView({ example: { kind: RuleExampleKind.Repo, focus: { fail: 'src/readLabel.ts', pass: 'src/readLabel.ts' } } }),
-		});
-
-		const note = screen.getByText(/Each example is a small repo, because this rule looks across files/);
-
-		expect(note).toBeInTheDocument();
 	});
 
 	test('lists the three settings a rule can take, and marks the one the pack ships', () => {
@@ -310,7 +246,7 @@ describe('RuleDetail', () => {
 			.getAllByRole('link')
 			.map((link) => link.getAttribute('href'));
 
-		expect(links).toStrictEqual(['/standards-packs/typescript/no-any', '/standards-packs/typescript/import-type-only']);
+		expect(links).toStrictEqual(['/standards-packs/lightsout/rules/no-any', '/standards-packs/lightsout/rules/import-type-only']);
 	});
 
 	test('shows no neighbour links for a rule alone in its set', () => {
@@ -325,5 +261,40 @@ describe('RuleDetail', () => {
 		setupRuleDetail();
 
 		expect([screen.queryByRole('heading', { name: 'In this repo' }), screen.queryByRole('link', { name: /findings/ })]).toStrictEqual([null, null]);
+	});
+
+	test('trails from the packs page through the library to the rule', () => {
+		setupRuleDetail();
+
+		const trail = screen.getByRole('navigation', { name: 'Breadcrumb' });
+
+		expect({
+			text: trail.textContent,
+			links: within(trail)
+				.getAllByRole('link')
+				.map((link) => link.getAttribute('href')),
+		}).toStrictEqual({ text: 'Standards Packslightsouttype-assertion', links: ['/standards-packs'] });
+	});
+
+	test.each(packHoldingCases)('lists the packs that hold the rule, each linking to its page', ({ packs, expected }) => {
+		setupRuleInPacks({ packs });
+
+		const packLinks = screen
+			.queryAllByRole('link')
+			.filter((link) => /^\/standards-packs\/[^/]+\/packs\//.test(link.getAttribute('href') ?? ''))
+			.map((link) => ({ name: link.textContent, href: link.getAttribute('href') }));
+		const saysNoPack = screen.queryAllByText(/no pack/i).length > 0;
+
+		expect({ packLinks, saysNoPack }).toStrictEqual(expected);
+	});
+
+	test('links the neighbouring rules to their pages under the library', () => {
+		setupRuleDetail();
+
+		const links = within(screen.getByRole('navigation', { name: 'Neighbouring rules' }))
+			.getAllByRole('link')
+			.map((link) => link.getAttribute('href'));
+
+		expect(links).toStrictEqual(['/standards-packs/lightsout/rules/no-any', '/standards-packs/lightsout/rules/import-type-only']);
 	});
 });

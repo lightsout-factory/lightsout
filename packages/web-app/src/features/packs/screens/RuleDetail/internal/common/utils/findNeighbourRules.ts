@@ -1,18 +1,15 @@
-import type { StandardsPackDocumentView, StandardsPackRuleListing } from '@lightsout/engine';
-import { groupRulesByDocument } from '#src/features/packs/internal/common/utils/groupRulesByDocument.ts';
+import type { StandardsPackRuleListing, StandardsTopicView } from '@lightsout/engine';
+import { groupRulesByTopic } from '#src/features/packs/internal/common/utils/groupRulesByTopic.ts';
 
 interface Params {
-	documents: StandardsPackDocumentView[];
+	topics: StandardsTopicView[];
 	rules: StandardsPackRuleListing[];
 	ruleId: string;
 }
 
-export const findNeighbourRules = ({ documents, rules, ruleId }: Params): { previous?: StandardsPackRuleListing; next?: StandardsPackRuleListing } => {
-	const channel = rules.find((rule) => rule.id === ruleId)?.channel;
-	const ordered = groupRulesByDocument({
-		documents: documents.filter((document) => document.channel === channel),
-		rules: rules.filter((rule) => rule.channel === channel),
-	}).flatMap((group) => group.rules);
+/** Walks the whole library in reading order, so the last rule of one topic steps into the first rule of the next. */
+export const findNeighbourRules = ({ topics, rules, ruleId }: Params): { previous?: StandardsPackRuleListing; next?: StandardsPackRuleListing } => {
+	const ordered = groupRulesByTopic({ topics, rules }).flatMap((group) => group.rules);
 	const index = ordered.findIndex((rule) => rule.id === ruleId);
 
 	return index === -1 ? {} : { previous: ordered[index - 1], next: ordered[index + 1] };

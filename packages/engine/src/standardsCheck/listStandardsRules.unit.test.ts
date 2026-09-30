@@ -157,7 +157,6 @@ const loadedRule = (overrides: Partial<LoadedStandardsRule> & { id: string; libr
 	documentPath: 'code/demo',
 	summary: `what ${overrides.id} catches`,
 	prose: 'The rule prose.',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},

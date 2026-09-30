@@ -69,7 +69,6 @@ export const getConfigView = async ({ cwd }: Params): Promise<ConfigView> => {
 							rule: listing.rule,
 							id: rule.id,
 							library: rule.library,
-							channel: rule.channel,
 							severity: listing.severity,
 							fromConfig: listing.fromConfig,
 							options: listing.options,

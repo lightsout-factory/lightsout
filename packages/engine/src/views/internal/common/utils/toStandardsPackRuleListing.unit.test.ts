@@ -7,10 +7,10 @@ import { toStandardsPackRuleListing } from '#src/views/internal/common/utils/toS
 const setupRule = ({ defaultOptions }: { defaultOptions: Record<string, number> }) => {
 	const rule = {
 		id: 'file-size',
+		name: 'lightsout/file-size',
 		set: StandardsSet.Code,
 		documentPath: 'code/style-guide/patterns/functions',
 		summary: 'Keep each file under its line cap.',
-		channel: 'base',
 		checked: true,
 		defaultSeverity: StandardsSeverity.Blocking,
 		defaultOptions,

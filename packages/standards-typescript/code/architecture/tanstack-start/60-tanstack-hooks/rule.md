@@ -10,7 +10,7 @@ requires:
 
 Custom hooks that wrap queries or manage state live in the feature's `hooks/`
 folder — the same convention the
-[React channel's naming rule](../../react/30-file-naming-conventions/rule.md)
+[React topic's naming rule](../../react/30-file-naming-conventions/rule.md)
 derives (`useX` export → `camelCase.ts`), applied to TanStack query wrappers:
 
 ```typescript
@@ -25,5 +25,5 @@ export const useIssues = ({ searchParams }: Params) => {
 ```
 
 The hook's inferred return type is deliberate — TanStack's generics are the
-contract; see the return-types note in this channel's
-[document](../topic.md).
+contract; see the return-types note in this topic's
+[background](../topic.md).

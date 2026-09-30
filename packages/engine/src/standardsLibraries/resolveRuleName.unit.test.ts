@@ -12,7 +12,6 @@ const rule = ({ library, id }: { library: string; id: string }): LoadedStandards
 	documentPath: 'code/demo',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},

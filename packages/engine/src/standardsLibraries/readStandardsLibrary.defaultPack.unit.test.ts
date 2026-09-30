@@ -13,8 +13,8 @@ import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPa
 /**
  * The pack the plugin ships, loaded from disk exactly as a consumer's run
  * loads it. This is the only test that reads the real default pack, so it is
- * where the shipped tree's shape is pinned: how many documents it carries, which
- * channels it offers, and that every rule claiming a check ships one.
+ * where the shipped tree's shape is pinned: how many documents it carries and
+ * that every rule claiming a check ships one.
  */
 const setupDefaultPack = async () => {
 	// The authored pack, not its build copy under plugin/ — a test that read
@@ -64,13 +64,6 @@ describe('readStandardsLibrary', () => {
 			description: expect.stringContaining('TypeScript pack'),
 			homepage: 'https://github.com/lightsout-factory/lightsout/tree/main/packages/standards-typescript',
 		});
-	});
-
-	test('offers exactly the base, nestjs, react, and tanstack channels', async () => {
-		const { pack } = await setupDefaultPack();
-
-		// a channel no document declares could never be activated by a repo
-		expect([...new Set(pack.documents.map((document) => document.channel))].sort()).toStrictEqual(['base', 'nestjs', 'react', 'tanstack']);
 	});
 
 	test('every rule declaring a check ships one that can be run', async () => {

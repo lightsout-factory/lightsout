@@ -37,7 +37,6 @@ const judgmentRule: LoadedStandardsRule = {
 	documentPath: 'code/style-guide/structure/import-paths',
 	summary: 'a relative import in an aliased package',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},

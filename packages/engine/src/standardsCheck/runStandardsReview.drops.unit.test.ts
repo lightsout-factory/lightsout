@@ -20,7 +20,6 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},

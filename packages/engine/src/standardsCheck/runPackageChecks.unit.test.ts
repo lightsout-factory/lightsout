@@ -35,7 +35,6 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: overrides.run !== undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
@@ -160,7 +159,6 @@ const setupGroupRun = () => {
 		set: 'code',
 		library: 'acme',
 		path: 'code/style-guide/structure/module-api',
-		channel: 'base',
 		intro: '# Module API',
 		ruleIds: [size.id, muted.id, outside.id],
 	};

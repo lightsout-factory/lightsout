@@ -46,7 +46,6 @@ const rule = ({ id, checked, requires }: { id: string; checked: boolean; require
 	documentPath: 'code/architecture/react',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked,
 	defaultSeverity: 'advisory',
 	defaultOptions: {},

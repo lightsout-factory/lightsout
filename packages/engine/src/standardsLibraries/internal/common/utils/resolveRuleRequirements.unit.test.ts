@@ -12,7 +12,6 @@ const rule = ({ id, requires }: { id: string; requires: string[] }): LoadedStand
 	documentPath: 'code/demo',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},

@@ -30,7 +30,6 @@ const setupRule = ({ example, fail, pass }: { example?: RuleExample; fail: strin
 			documentPath: 'code/architecture',
 			summary: 'an export nothing else references',
 			prose: '',
-			channel: 'base',
 			checked: false,
 			defaultSeverity: StandardsSeverity.Blocking,
 			defaultOptions: {},

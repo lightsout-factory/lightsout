@@ -8,7 +8,7 @@ export const YourPackCard = () => (
 		</span>
 		<div className="flex flex-col gap-1">
 			<h3 className="font-bold text-drop-navy text-xl">Your team’s pack</h3>
-			<p className="text-muted-foreground text-sm leading-relaxed">Write your own rules, and use them alone or stack them on these.</p>
+			<p className="text-muted-foreground text-sm leading-relaxed">Write a library of your own rules, then build a pack from your rules and these.</p>
 		</div>
 		<Link
 			to="/docs/$doc"

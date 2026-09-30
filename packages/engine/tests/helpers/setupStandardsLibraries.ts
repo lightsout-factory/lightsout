@@ -46,7 +46,6 @@ const buildRule = ({ library, path, spec }: { library: string; path: string; spe
 	documentPath: path,
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: spec.severity ?? StandardsSeverity.Blocking,
 	defaultOptions: spec.options ?? {},
@@ -58,7 +57,6 @@ const buildTopic = ({ library, spec }: { library: string; spec: TopicSpec }): Lo
 	set: 'code',
 	library,
 	path: spec.path,
-	channel: 'base',
 	intro: `# ${spec.path}`,
 	ruleIds: (spec.rules ?? []).map((rule) => rule.id),
 });

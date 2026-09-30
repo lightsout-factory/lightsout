@@ -13,7 +13,6 @@ const rule = ({ library, id, requires = [] }: { library: string; id: string; req
 	documentPath: 'code/demo',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},

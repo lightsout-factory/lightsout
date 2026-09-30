@@ -52,7 +52,6 @@ const rule = ({ id, inputKind }: { id: string; inputKind: StandardsInputKind }):
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},

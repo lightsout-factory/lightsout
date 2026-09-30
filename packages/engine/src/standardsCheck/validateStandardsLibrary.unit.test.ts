@@ -74,7 +74,6 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: overrides.run !== undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
@@ -214,17 +213,17 @@ describe('validateStandardsLibrary', () => {
 		]);
 	});
 
-	test('validates every rule in the pack, whatever channel it sits on', async () => {
+	test('validates every rule in the pack, not only the first', async () => {
 		const { catching, blind } = setupTwoRuleFixtures();
 
 		const { problems } = await validate({
 			rules: [
 				rule({ id: 'base-rule', fixturesPath: catching, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'base-rule' }) }),
-				rule({ id: 'react-rule', channel: 'react', fixturesPath: blind, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'react-rule' }) }),
+				rule({ id: 'react-rule', fixturesPath: blind, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'react-rule' }) }),
 			],
 		});
 
-		// authoring covers every channel, whatever the machine doing it runs
+		// a rule whose check is blind is reported even when the rule before it passes
 		expect(problems).toStrictEqual(['react-rule: the fail fixture produced no finding — the check does not catch what the rule describes']);
 	});
 

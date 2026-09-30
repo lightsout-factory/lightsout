@@ -8,7 +8,7 @@ interface Params {
 }
 
 /**
- * @param rule - the rule id, as its folder name spells it minus the numeric prefix
+ * @param rule - the short rule id a page address carries, not the full `<library>/<id>` name
  * @throws {StandardsPackRuleNotFoundError} When no rule in the bundle carries the id.
  */
 export const toStandardsPackRuleView = ({ bundle, rule }: Params): StandardsPackRuleView => {

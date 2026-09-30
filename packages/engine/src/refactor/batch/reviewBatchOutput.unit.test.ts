@@ -39,7 +39,6 @@ const judgmentRules: LoadedStandardsRule[] = ['function-size', 'single-return'].
 	documentPath: `code/style-guide/patterns/${id}`,
 	summary: `the ${id} rule`,
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},

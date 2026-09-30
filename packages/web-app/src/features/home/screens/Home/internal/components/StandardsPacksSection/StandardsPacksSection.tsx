@@ -37,9 +37,9 @@ const Panel = ({ title, children }: { title: string; children: ReactNode }) => (
 	</div>
 );
 
-/** The pack's numbers are read live and allowed to be missing, so the section never suspends on them. */
+/** The library's numbers are read live and allowed to be missing, so the section never suspends on them. */
 export const StandardsPacksSection = () => {
-	const { data: defaultPack } = useQuery(defaultPackQueryOptions());
+	const { data: library } = useQuery(defaultPackQueryOptions());
 
 	return (
 		<section className="relative w-full px-4 py-24">
@@ -84,7 +84,7 @@ export const StandardsPacksSection = () => {
 				<FadeIn delayMs={400}>
 					<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 						<Panel title="More than a linter">
-							<PackStats pack={defaultPack} />
+							<PackStats library={library} />
 							<div className="flex flex-col gap-3">
 								<p className="text-muted-foreground text-sm">Each rule is yours to set:</p>
 								<ul className="flex flex-wrap gap-x-6 gap-y-2">
@@ -118,7 +118,7 @@ export const StandardsPacksSection = () => {
 								</li>
 							</ul>
 							<p className="text-muted-foreground text-sm leading-relaxed">
-								Framework rules switch on when your repo uses the framework. Write your own rules, and use them alone or stack them on ours.
+								lightsout picks the ready-made pack that matches each package’s framework. Or build your own pack from our rules and yours.
 							</p>
 							<Link
 								to="/standards-packs"

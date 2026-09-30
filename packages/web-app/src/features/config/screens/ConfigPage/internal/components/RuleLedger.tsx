@@ -1,5 +1,5 @@
 import type { ConfigView } from '@lightsout/engine';
-import { StandardsSeverity } from '@lightsout/engine/contracts';
+import { builtInStandardsLibraryName, StandardsSeverity } from '@lightsout/engine/contracts';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Badge } from '#src/appUI/badges/Badge.tsx';
@@ -9,19 +9,22 @@ import { EmptyState } from '#src/appUI/EmptyState.tsx';
 import { FilterDropdown } from '#src/appUI/FilterDropdown.tsx';
 import { severityBadgeVariants } from '#src/common/constants/severityBadgeVariants.ts';
 import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
-import { toRuleSetSlug } from '#src/features/packs/internal/common/utils/toRuleSetSlug.ts';
 
 type RuleState = ConfigView['ruleStates'][number];
 
-const RuleLink = ({ state }: { state: RuleState }) => (
-	<Link
-		to="/standards-packs/$ruleSet/$rule"
-		params={{ ruleSet: toRuleSetSlug({ channel: state.channel }), rule: state.id }}
-		className="font-mono text-sm hover:underline hover:underline-offset-2"
-	>
-		{state.rule}
-	</Link>
-);
+/** The public pack pages bundle only the built-in library, so a rule from any other library is its full name as plain text. */
+const RuleLink = ({ state }: { state: RuleState }) =>
+	state.library === builtInStandardsLibraryName ? (
+		<Link
+			to="/standards-packs/$library/rules/$rule"
+			params={{ library: state.library, rule: state.id }}
+			className="font-mono text-sm hover:underline hover:underline-offset-2"
+		>
+			{state.rule}
+		</Link>
+	) : (
+		<span className="font-mono text-sm">{state.rule}</span>
+	);
 
 const RuleOptions = ({ state }: { state: RuleState }) => {
 	const entries = Object.entries(state.options);

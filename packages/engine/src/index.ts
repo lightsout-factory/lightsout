@@ -38,7 +38,6 @@ export {
 	RunView,
 	StandardsFinding,
 	StandardsPackBundle,
-	StandardsPackDocumentView,
 	StandardsPackFixture,
 	StandardsPackListing,
 	StandardsPackRuleListing,
@@ -47,6 +46,7 @@ export {
 	StandardsRuleView,
 	StandardsSeverity,
 	StandardsSnapshot,
+	StandardsTopicView,
 	StandardsTrendPoint,
 	StandardsView,
 	StepRecord,
@@ -64,20 +64,14 @@ export { readRunManifest } from '#src/runState/readRunManifest.ts';
 export { summarizeRun } from '#src/runState/summarizeRun.ts';
 export { listStandardsSnapshots } from '#src/standardsCheck/listStandardsSnapshots.ts';
 export { ConfigNotFoundError } from '#src/views/ConfigNotFoundError.ts';
-export { toStandardsPackListing } from '#src/views/common/utils/toStandardsPackListing.ts';
 export { toStandardsPackRuleView } from '#src/views/common/utils/toStandardsPackRuleView.ts';
 export { toStandardsPackView } from '#src/views/common/utils/toStandardsPackView.ts';
 export { getConfigView } from '#src/views/getConfigView.ts';
 export { getPlanDocument } from '#src/views/getPlanDocument.ts';
 export { getPlanWorkspace } from '#src/views/getPlanWorkspace.ts';
 export { getRunView } from '#src/views/getRunView.ts';
-export { getStandardsPackBundle } from '#src/views/getStandardsPackBundle.ts';
-export { getStandardsPackRuleView } from '#src/views/getStandardsPackRuleView.ts';
-export { getStandardsPackView } from '#src/views/getStandardsPackView.ts';
 export { getStandardsView } from '#src/views/getStandardsView.ts';
 export { listPlanWorkspaces } from '#src/views/listPlanWorkspaces.ts';
 export { listRuns } from '#src/views/listRuns.ts';
-export { listStandardsPacks } from '#src/views/listStandardsPacks.ts';
 export { PlanWorkspaceNotFoundError } from '#src/views/PlanWorkspaceNotFoundError.ts';
-export { StandardsPackNotFoundError } from '#src/views/StandardsPackNotFoundError.ts';
 export { StandardsPackRuleNotFoundError } from '#src/views/StandardsPackRuleNotFoundError.ts';

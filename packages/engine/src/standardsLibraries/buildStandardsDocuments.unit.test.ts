@@ -25,7 +25,6 @@ const buildRule = ({
 	documentPath: 'code/example',
 	summary: `${id} summary`,
 	prose,
-	channel: 'base',
 	checked: false,
 	defaultSeverity,
 	defaultOptions: {},
@@ -43,7 +42,7 @@ const buildDocument = ({
 	intro: string;
 	ruleIds: string[];
 	set?: LoadedStandardsTopic['set'];
-}): LoadedStandardsTopic => ({ set, library: 'lightsout defaults', path, channel: 'base', intro, ruleIds });
+}): LoadedStandardsTopic => ({ set, library: 'lightsout defaults', path, intro, ruleIds });
 
 /** A library with two code documents, listed out of path order, plus one tests document. */
 const setupPack = (): LoadedStandardsLibrary => ({

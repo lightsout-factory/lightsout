@@ -1,7 +1,3 @@
----
-channel: react
----
-
 # React Architecture
 
 How the base rules apply to React code. React itself mandates no layout — the

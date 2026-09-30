@@ -110,7 +110,6 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: overrides.run !== undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},

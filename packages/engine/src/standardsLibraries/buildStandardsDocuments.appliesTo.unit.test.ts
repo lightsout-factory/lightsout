@@ -16,7 +16,6 @@ const buildRule = ({ id, title, text, set = StandardsSet.Code }: { id: string; t
 	documentPath: `${set}/example`,
 	summary: `${id} summary`,
 	prose: `## ${title}\n\n${text}`,
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
@@ -39,7 +38,6 @@ const buildTopic = ({
 	set,
 	library: 'lightsout',
 	path,
-	channel: 'base',
 	intro: `# ${title}\n\nBackground for ${title}.`,
 	ruleIds,
 });

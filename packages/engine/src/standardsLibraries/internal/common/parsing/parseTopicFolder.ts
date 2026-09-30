@@ -19,13 +19,8 @@ interface Params {
 	problems: string[];
 }
 
-/**
- * A document naming no channel always applies; a named channel means prose,
- * checks and review sit out unless the repo runs that framework.
- */
-const documentDeclaration = z.object({
-	channel: z.string().min(1).default('base'),
-});
+/** topic.md declares nothing: any front matter key there is a problem, never silently ignored. */
+const topicDeclaration = z.object({}).strict();
 
 const listRuleFolders = async ({ folderPath }: { folderPath: string }) => {
 	const entries = await readdir(folderPath, { withFileTypes: true }).catch(() => []);
@@ -46,7 +41,7 @@ const listRuleFolders = async ({ folderPath }: { folderPath: string }) => {
 	return folders;
 };
 
-/** The document's channel is stamped onto its rules, so a rule is never in play while its document is not. */
+/** A topic whose topic.md fails to parse yields nothing, so its rules never load without the background they share. */
 export const parseTopicFolder = async ({
 	folderPath,
 	documentPath,
@@ -64,7 +59,7 @@ export const parseTopicFolder = async ({
 
 	const { declaration, body: intro } = parseDeclaration({
 		text,
-		schema: documentDeclaration,
+		schema: topicDeclaration,
 		filePath: `${documentPath}/topic.md`,
 		problems,
 	});
@@ -74,7 +69,7 @@ export const parseTopicFolder = async ({
 		const rule = await parseRuleFolder({ folderPath: join(folderPath, name), set, documentPath, library, problems });
 
 		if (rule !== undefined && declaration !== undefined) {
-			rules.push({ ...rule, channel: declaration.channel });
+			rules.push(rule);
 		}
 	}
 
@@ -82,7 +77,7 @@ export const parseTopicFolder = async ({
 
 	if (declaration !== undefined) {
 		parsedDocument = {
-			document: { set, library, path: documentPath, channel: declaration.channel, intro, ruleIds: rules.map((rule) => rule.id) },
+			document: { set, library, path: documentPath, intro, ruleIds: rules.map((rule) => rule.id) },
 			rules,
 		};
 	}

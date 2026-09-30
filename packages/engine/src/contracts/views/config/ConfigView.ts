@@ -43,8 +43,6 @@ export const ConfigView = z.object({
 			id: z.string(),
 			/** The library that defines the rule. */
 			library: z.string(),
-			/** The rule's channel — which set of rules it belongs to, and so where the ledger's link to it points. */
-			channel: z.string(),
 			severity: z.enum([StandardsSeverity.Blocking, StandardsSeverity.Advisory, StandardsSeverity.Off]),
 			fromConfig: z.boolean(),
 			options: z.record(z.string(), z.number()),

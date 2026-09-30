@@ -16,8 +16,6 @@ export interface LoadedStandardsRule {
 	summary: string;
 	/** rule.md body — the rule's full prose argument. */
 	prose: string;
-	/** Inherited from the owning document's front matter — 'base' when it declares none. */
-	channel: string;
 	/** True when the folder declares (and ships) a machine check. */
 	checked: boolean;
 	/** `off` marks a rule a repo opts into: it runs, and its prose reaches agents, only once the repo's config names it. */

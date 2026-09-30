@@ -1,11 +1,7 @@
----
-channel: tanstack
----
-
 # TanStack Start Architecture
 
 How the base rules apply to a TanStack Start application, layered on top of the
-[React channel](../react/topic.md). Two kinds of statement live here, and
+[React topic](../react/topic.md). Two kinds of statement live here, and
 each is labeled by what it is:
 
 - **Mandated** — what TanStack Start resolves by convention: route filenames

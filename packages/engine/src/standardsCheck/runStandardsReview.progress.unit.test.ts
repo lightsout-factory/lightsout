@@ -21,7 +21,6 @@ const judgmentRule = ({ id }: { id: string }): LoadedStandardsRule => ({
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},

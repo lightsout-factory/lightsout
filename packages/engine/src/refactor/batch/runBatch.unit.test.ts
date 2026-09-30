@@ -29,7 +29,6 @@ const singleReturn: LoadedStandardsRule = {
 	documentPath: 'code/style-guide/patterns/single-return',
 	summary: 'more than one exit from a function',
 	prose: 'the argument for the rule',
-	channel: 'base',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},

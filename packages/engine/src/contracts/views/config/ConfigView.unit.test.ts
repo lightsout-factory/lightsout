@@ -6,7 +6,6 @@ const setupConfigView = ({ ruleNumbers, source = 'detected' }: { ruleNumbers: Re
 		rule: 'lightsout/folder-size',
 		id: 'folder-size',
 		library: 'lightsout',
-		channel: 'code',
 		severity: 'blocking',
 		fromConfig: true,
 		packages: [''],
@@ -37,7 +36,6 @@ const setupPerPackageConfigView = () => {
 		rule: 'lightsout/folder-size',
 		id: 'folder-size',
 		library: 'lightsout',
-		channel: 'code',
 		severity: 'blocking',
 		fromConfig: false,
 		options: { cap: 15 },
@@ -102,7 +100,6 @@ describe('ConfigView', () => {
 					rule: 'lightsout/folder-size',
 					id: 'folder-size',
 					library: 'lightsout',
-					channel: 'code',
 					severity: 'blocking',
 					fromConfig: true,
 					options: { cap: 15 },
@@ -144,5 +141,15 @@ describe('ConfigView', () => {
 			carriesChannels: false,
 			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: 'detected' }],
 		});
+	});
+
+	test('ConfigView: a rule state handed a leftover channel parses without it', () => {
+		const { configView } = setupConfigView({ ruleNumbers: { options: {}, channel: 'code' } });
+
+		const parsed = ConfigView.parse(configView);
+
+		expect(parsed.ruleStates.map((state) => ({ rule: state.rule, carriesChannel: Object.hasOwn(state, 'channel') }))).toStrictEqual([
+			{ rule: 'lightsout/folder-size', carriesChannel: false },
+		]);
 	});
 });

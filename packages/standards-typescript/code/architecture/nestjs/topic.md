@@ -1,7 +1,3 @@
----
-channel: nestjs
----
-
 # NestJS Architecture
 
 How the base rules apply to a NestJS application. Two kinds of statement, each
