@@ -20,6 +20,7 @@ const buildRule = ({ id, title, text, set = StandardsSet.Code }: { id: string; t
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
+	requires: [],
 	fixturesPath: `/pkg/${set}/example/${id}/fixtures`,
 });
 

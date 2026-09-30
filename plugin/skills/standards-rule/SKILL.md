@@ -40,7 +40,13 @@ options:                                    # numbers the check reads, if any
   cap: 20
 example:
   kind: snippet                             # or repo, with focus
+requires:                                   # the rules this rule's text depends on: a short id in this library, the full name for another
+  - folder-index-file
 ```
+
+A `requires` name that matches no rule fails loading. `standards-validate`
+warns when a pack in the library leaves out a required rule, and `lightsout
+doctor` warns a repo the same way.
 
 **Who reads what.** An agent gets one document at a time: the `topic.md`
 intro, then the prose of every rule in it, in folder order. It never sees the

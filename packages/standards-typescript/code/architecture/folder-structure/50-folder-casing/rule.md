@@ -2,6 +2,8 @@
 summary: "a folder whose casing is none of the three the document allows"
 checked: true
 severity: advisory
+requires:
+  - case-collision
 ---
 
 ## Folder Naming

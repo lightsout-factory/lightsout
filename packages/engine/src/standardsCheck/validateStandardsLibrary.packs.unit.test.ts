@@ -63,6 +63,7 @@ const setupBrokenPacks = () => {
 		checked: true,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
+		requires: [],
 		inputKind: StandardsInputKind.FileList,
 		run: bansTheBannedFile,
 		fixturesPath,

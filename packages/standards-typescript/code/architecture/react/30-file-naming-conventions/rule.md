@@ -2,6 +2,9 @@
 summary: "a React file whose name does not carry the casing its kind mandates"
 checked: false
 severity: advisory
+requires:
+  - filename-mismatch
+  - folder-casing
 ---
 
 ## File Naming Conventions

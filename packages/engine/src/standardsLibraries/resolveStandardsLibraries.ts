@@ -2,6 +2,7 @@ import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { builtInStandardsLibraryName } from '#src/contracts/standards/builtInStandardsLibraryName.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import { findUnresolvedRequirements } from '#src/standardsLibraries/findUnresolvedRequirements.ts';
 import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary.ts';
 import { resolveDefaultStandardsLibrary } from '#src/standardsLibraries/resolveDefaultStandardsLibrary.ts';
 import { resolveStandardsLibraryPath } from '#src/standardsLibraries/resolveStandardsLibraryPath.ts';
@@ -34,7 +35,7 @@ const readRegisteredLibrary = async ({ cwd, name, value }: { cwd: string; name: 
  * so the first bad entry is the one reported. Loading is left to throw — a
  * repo that registered a library and did not get it must not run.
  *
- * @throws {Error} When an entry resolves to no library, a library will not load, a manifest name differs from its key, a key is reserved or not one path segment, or the built-in library is not named lightsout.
+ * @throws {Error} When an entry resolves to no library, a library will not load, a rule requires a rule no loaded library declares, a manifest name differs from its key, a key is reserved or not one path segment, or the built-in library is not named lightsout.
  */
 export const resolveStandardsLibraries = async ({ cwd, config, builtIn }: Params): Promise<LoadedStandardsLibrary[]> => {
 	const builtInLibrary = builtIn ?? (await readStandardsLibrary({ packPath: resolveDefaultStandardsLibrary() }));
@@ -49,6 +50,13 @@ export const resolveStandardsLibraries = async ({ cwd, config, builtIn }: Params
 
 	for (const [name, value] of Object.entries(config?.['standards-libraries'] ?? {})) {
 		libraries.push(await readRegisteredLibrary({ cwd, name, value }));
+	}
+
+	// Only now can an entry naming another library be checked: that library may load after the one requiring it.
+	const unresolved = findUnresolvedRequirements({ libraries });
+
+	if (unresolved.length > 0) {
+		throw new Error(`standards libraries require rules that no loaded library declares:\n${unresolved.map((line) => `- ${line}`).join('\n')}`);
 	}
 
 	return libraries;

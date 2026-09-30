@@ -5,6 +5,7 @@ import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { dim } from '#src/cli/internal/common/terminal/dim.ts';
 import { green } from '#src/cli/internal/common/terminal/green.ts';
 import { red } from '#src/cli/internal/common/terminal/red.ts';
+import { yellow } from '#src/cli/internal/common/terminal/yellow.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { builtInStandardsLibraryName } from '#src/contracts/standards/builtInStandardsLibraryName.ts';
@@ -42,10 +43,15 @@ export const standardsValidateCommand = async ({ flags, cwd }: CommandContext): 
 		console.error(messageOf({ error }));
 		return exitCli({ code: 1 });
 	});
-	const { problems, notes } = await validateStandardsLibrary({ library, libraries });
+	const { problems, notes, warnings } = await validateStandardsLibrary({ library, libraries });
 
 	for (const note of notes) {
 		console.log(`${dim('ℹ')} ${dim(note)}`);
+	}
+
+	// Never counted toward the exit code: a pack may leave a requirement out on purpose.
+	for (const warning of warnings) {
+		console.log(`${yellow('⚠')} ${warning}`);
 	}
 
 	for (const problem of problems) {

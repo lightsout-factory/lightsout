@@ -17,7 +17,9 @@ import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 const mockLoadStandardsPack = jest.fn<(params: { packPath: string }) => Promise<LoadedStandardsLibrary>>();
 const mockResolveDefaultStandardsLibrary = jest.fn<() => string>();
 const mockValidateStandardsPack =
-	jest.fn<(params: { library: LoadedStandardsLibrary; libraries: LoadedStandardsLibrary[] }) => Promise<{ problems: string[]; notes: string[] }>>();
+	jest.fn<
+		(params: { library: LoadedStandardsLibrary; libraries: LoadedStandardsLibrary[] }) => Promise<{ problems: string[]; notes: string[]; warnings: string[] }>
+	>();
 
 jest.mock('#src/standardsLibraries/readStandardsLibrary.ts', () => ({ readStandardsLibrary: (params: { packPath: string }) => mockLoadStandardsPack(params) }));
 jest.mock('#src/standardsLibraries/resolveDefaultStandardsLibrary.ts', () => ({ resolveDefaultStandardsLibrary: () => mockResolveDefaultStandardsLibrary() }));
@@ -51,6 +53,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	checked: false,
 	defaultSeverity: 'advisory',
 	defaultOptions: {},
+	requires: [],
 	fixturesPath: `/packages/acme/${overrides.id}/fixtures`,
 	...overrides,
 });
@@ -74,7 +77,7 @@ const setupValidate = ({
 	// No config and no registered library: the validated library is the only one its packs resolve against.
 	mockReadOptionalConfig.mockResolvedValue(undefined);
 	mockResolveStandardsLibraries.mockResolvedValue([]);
-	mockValidateStandardsPack.mockResolvedValue({ problems, notes });
+	mockValidateStandardsPack.mockResolvedValue({ problems, notes, warnings: [] });
 
 	return { context: { flags: parseFlags({ args }), rest: [], cwd: '/repo' }, pack, ...captured };
 };
@@ -159,7 +162,7 @@ const setupRegisteredLibraries = ({
 
 		return [builtIn ?? shippedBuiltIn, ...registered];
 	});
-	mockValidateStandardsPack.mockResolvedValue({ problems: [], notes: [] });
+	mockValidateStandardsPack.mockResolvedValue({ problems: [], notes: [], warnings: [] });
 
 	return { context: { flags: parseFlags({ args }), rest: [], cwd: '/repo' }, ...captured };
 };

@@ -2,6 +2,8 @@
 summary: "a server function file that does not carry its mandated casing"
 checked: false
 severity: advisory
+requires:
+  - filename-mismatch
 ---
 
 ### File Naming for Server Functions

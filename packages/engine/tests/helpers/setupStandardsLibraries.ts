@@ -50,6 +50,7 @@ const buildRule = ({ library, path, spec }: { library: string; path: string; spe
 	checked: false,
 	defaultSeverity: spec.severity ?? StandardsSeverity.Blocking,
 	defaultOptions: spec.options ?? {},
+	requires: [],
 	fixturesPath: `/libraries/${library}/${path}/${spec.id}/fixtures`,
 });
 

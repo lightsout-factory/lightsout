@@ -260,7 +260,19 @@ one that shares its name. This is the gate to run while writing a rule: a check
 that lets its fail fixture through catches nothing, and one that flags its pass
 fixture cries wolf. Neither is visible when the library loads, and both are
 exactly what an author needs told. It validates every rule regardless of
-channel, because authoring covers every channel.
+channel, because authoring covers every channel. It also judges each pack file
+on its own and warns once for each rule the pack sends to agents without a
+rule that rule requires. Warnings never fail it: a team may mean to take one
+topic pack alone.
+
+A rule's `rule.md` header may list the rules its text depends on under
+`requires:`. A short id names a rule in the same library, and a full name
+(`<library>/<rule>`) names a rule in any library. A name that matches no rule
+fails loading. A required rule is missing when it will not reach agents: the
+pack does not hold it, or the pack holds it at `off` and the repository has
+not turned it on. `standards-validate` warns the library's author about each
+missing requirement, and `lightsout doctor` warns the repository, per package
+group. Runs never warn.
 
 A pack may also ship one `fixtures/framework-owned/<framework>/` tree per
 framework — a miniature repo whose `package.json` declares that framework, so
@@ -414,6 +426,8 @@ The three severities are:
 - `off` — not run at all. This is what you set when your own linter already enforces the rule.
 
 A pack may also ship a rule `off`: a convention some repositories want and most do not, which a repository turns on by naming it here at `blocking` or `advisory`. Until it does, the rule neither runs nor reaches an agent's instructions. A rule you turn `off` yourself stops running but still reaches them, because the standard still holds and your linter is what enforces it.
+
+`lightsout doctor` judges rule requirements after these settings apply, so turning on a publisher-off required rule here clears its warning.
 
 Each key is a full rule name, `<library>/<rule>` such as `lightsout/file-size`, or a short id such as `file-size` that only one rule in the pack has. A key that matches no rule in the selected pack, or a short id that rules in several libraries share, stops the load and names the full candidates, rather than silently disabling a setting you believe is active. Two keys that name the same rule, such as `file-size` and `lightsout/file-size`, stop the load too. Findings, baseline site keys and `standards-check --list` always use full rule names.
 

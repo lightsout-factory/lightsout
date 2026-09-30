@@ -41,6 +41,7 @@ const judgmentRule: LoadedStandardsRule = {
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
+	requires: [],
 	fixturesPath: '/packages/acme/path-aliases/fixtures',
 };
 

@@ -2,6 +2,8 @@
 summary: "a server function living outside a `serverFns/` folder, or wrapped in a one-file folder it has not earned"
 checked: false
 severity: advisory
+requires:
+  - ungrouped-domain-utils
 ---
 
 ### Server Functions

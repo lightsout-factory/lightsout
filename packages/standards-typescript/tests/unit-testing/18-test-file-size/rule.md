@@ -4,6 +4,8 @@ checked: true
 severity: advisory
 options:
   testFile: 400
+requires:
+  - module-boundary-testing
 ---
 
 ## Test Files Have a Line Cap Too

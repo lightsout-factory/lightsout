@@ -7,6 +7,8 @@ example:
   focus:
     fail: src/getInvoiceLabel.ts
     pass: src/getInvoiceLabel.ts
+requires:
+  - shared-code-placement
 ---
 
 ## Reuse Common Code

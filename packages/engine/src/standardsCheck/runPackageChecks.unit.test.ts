@@ -39,6 +39,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	checked: overrides.run !== undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
+	requires: [],
 	fixturesPath: `/packages/acme/${overrides.id}/fixtures`,
 	...overrides,
 });

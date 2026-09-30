@@ -65,6 +65,7 @@ const sizeRule = ({ sites }: { sites: Site[] }) => {
 		checked: true,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
+		requires: [],
 		fixturesPath: '/packages/acme/size/fixtures',
 		inputKind: StandardsInputKind.FileList,
 		run,

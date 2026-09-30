@@ -2,6 +2,13 @@
 summary: "a feature folder pre-creating layout the graduation rule has not earned"
 checked: false
 severity: advisory
+requires:
+  - component-file-structure
+  - folder-index-file
+  - query-options
+  - server-functions
+  - shared-code-placement
+  - ungrouped-domain-utils
 ---
 
 ## Feature Structure

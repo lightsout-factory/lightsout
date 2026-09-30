@@ -427,8 +427,9 @@ Check an install end to end before blaming the work. `lightsout doctor` reads
 the repository and reports one line per check — whether the config parses, which
 harness it names and whether that binary answers, whether run state is ignored
 by git, whether every scoped gate has a script, and what the bundled standards
-assume about the linter and the test setup. Each warning or failure carries the
-exact change that clears it. It never edits anything.
+assume about the linter and the test setup. It also warns when a package's pack
+sends a rule to agents without a rule that rule requires. Each warning or
+failure carries the exact change that clears it. It never edits anything.
 
 ```text
 lightsout doctor
@@ -615,7 +616,7 @@ Three commands answer questions about the standards themselves, rather than abou
 
 `lightsout standards-check` reports what your repository breaks today. It has two halves and runs both by default: the checks your rules ship as code, and an agent reading the rules no code can check. `--code-checks` runs only the first, `--agent-review` only the second. The agent's findings are always advice — they never fail a run. A run including the code checks writes its report to `.lightsout/standards-check.json`; a review-only run prints and writes nothing, leaving that file as the last real check left it.
 
-`lightsout standards-validate` validates a standards library: it runs every rule's check against its own pass and fail fixtures, and checks that every pack file in the library resolves. It is the gate to run while writing a rule: a check that lets its fail fixture through catches nothing, and one that flags its pass fixture cries wolf.
+`lightsout standards-validate` validates a standards library: it runs every rule's check against its own pass and fail fixtures, and checks that every pack file in the library resolves. It is the gate to run while writing a rule: a check that lets its fail fixture through catches nothing, and one that flags its pass fixture cries wolf. It also warns, per pack in the library, about required rules the pack leaves out, and a warning never fails it.
 
 `lightsout standards-health` reports on the rules themselves — which are checked by code, which are left to judgment, and how often agents declined each one's findings, with the reasons they gave. The counts come from the refactor runs recorded in `.lightsout/runs/`, so a repository with no history still gets the coverage half.
 

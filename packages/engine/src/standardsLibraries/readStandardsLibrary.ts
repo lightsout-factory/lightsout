@@ -10,6 +10,7 @@ import { parsePackFolder } from '#src/standardsLibraries/internal/common/parsing
 import { parseTopicFolder } from '#src/standardsLibraries/internal/common/parsing/parseTopicFolder.ts';
 import { formatSchemaIssues } from '#src/standardsLibraries/internal/common/utils/formatSchemaIssues.ts';
 import { hasFile } from '#src/standardsLibraries/internal/common/utils/hasFile.ts';
+import { resolveRuleRequirements } from '#src/standardsLibraries/internal/common/utils/resolveRuleRequirements.ts';
 
 interface Params {
 	packPath: string;
@@ -124,6 +125,11 @@ export const readStandardsLibrary = async ({ packPath }: Params): Promise<Loaded
 
 	problems.push(...findDuplicateIds({ rules }));
 
+	// After the duplicate check: a short id resolves only while one rule holds it.
+	const requirements = resolveRuleRequirements({ library: root.data.name, rules });
+
+	problems.push(...requirements.problems);
+
 	if (problems.length > 0) {
 		throw new Error(`standards pack failed to load (${packPath}):\n${problems.map((problem) => `- ${problem}`).join('\n')}`);
 	}
@@ -142,7 +148,7 @@ export const readStandardsLibrary = async ({ packPath }: Params): Promise<Loaded
 		rootPath: packPath,
 		...(hasFrameworkOwned ? { frameworkOwnedFixturesPath } : {}),
 		documents,
-		rules,
+		rules: requirements.rules,
 		packs,
 	};
 };

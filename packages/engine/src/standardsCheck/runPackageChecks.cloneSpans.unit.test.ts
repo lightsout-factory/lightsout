@@ -54,6 +54,7 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
 		checked: true,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: options,
+		requires: [],
 		fixturesPath: '/packages/acme/duplicate-code-block/fixtures',
 		inputKind: StandardsInputKind.CloneSpans,
 		run,
@@ -89,6 +90,7 @@ const setupThresholdRun = ({ lowMinTokens, highMinTokens }: { lowMinTokens: numb
 		checked: true,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: { minTokens },
+		requires: [],
 		fixturesPath: `/packages/acme/${id}/fixtures`,
 		inputKind: StandardsInputKind.CloneSpans,
 		run: ({ input }) => {

@@ -25,6 +25,7 @@ const judgmentRule = ({ id }: { id: string }): LoadedStandardsRule => ({
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
+	requires: [],
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 });
 

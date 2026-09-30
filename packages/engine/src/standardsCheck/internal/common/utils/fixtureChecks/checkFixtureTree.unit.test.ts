@@ -74,6 +74,7 @@ const rule: LoadedStandardsRule = {
 	checked: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
+	requires: [],
 	fixturesPath: '/packages/acme/code/style-guide/structure/module-api/05-no-banned-file/fixtures',
 };
 

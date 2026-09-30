@@ -2,6 +2,8 @@
 summary: "a query-wrapping hook outside the feature's `hooks/` folder"
 checked: false
 severity: advisory
+requires:
+  - file-naming-conventions
 ---
 
 ### Hooks

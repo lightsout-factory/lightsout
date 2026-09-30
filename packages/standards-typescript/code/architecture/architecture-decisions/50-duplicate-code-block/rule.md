@@ -4,6 +4,9 @@ checked: true
 severity: advisory
 options:
   minTokens: 50
+requires:
+  - class-inheritance
+  - thin-wrapper-functions
 ---
 
 ### Duplicated Patterns & Logic

@@ -34,6 +34,7 @@ const setupRule = ({ example, fail, pass }: { example?: RuleExample; fail: strin
 			checked: false,
 			defaultSeverity: StandardsSeverity.Blocking,
 			defaultOptions: {},
+			requires: [],
 			...(example === undefined ? {} : { example }),
 			fixturesPath,
 		},

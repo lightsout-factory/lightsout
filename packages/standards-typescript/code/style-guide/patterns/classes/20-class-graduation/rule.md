@@ -2,6 +2,8 @@
 summary: "a folder created for a class that bundles no private companions"
 checked: false
 severity: advisory
+requires:
+  - module-file-to-folder
 ---
 
 ## File vs Folder — The Graduation Rule

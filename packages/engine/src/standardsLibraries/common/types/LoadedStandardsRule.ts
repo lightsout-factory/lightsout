@@ -24,6 +24,8 @@ export interface LoadedStandardsRule {
 	defaultSeverity: StandardsSeverity;
 	/** The numbers the rule.md header declares under `options`. */
 	defaultOptions: Record<string, number>;
+	/** Full names of the rules this rule's text depends on — the rule.md `requires` list, resolved when the library is read. */
+	requires: string[];
 	/** Present iff checked. */
 	inputKind?: StandardsInputKind;
 	/** The validated check, present iff checked. */

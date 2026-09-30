@@ -2,6 +2,10 @@
 summary: "two or more related JSX-producing functions left ungrouped in `utils/`"
 checked: false
 severity: advisory
+requires:
+  - folder-index-file
+  - module-out-of-common
+  - ungrouped-domain-utils
 ---
 
 ## Domain Folders

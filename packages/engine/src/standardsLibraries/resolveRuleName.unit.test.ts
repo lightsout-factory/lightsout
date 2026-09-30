@@ -16,6 +16,7 @@ const rule = ({ library, id }: { library: string; id: string }): LoadedStandards
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
+	requires: [],
 	fixturesPath: `/packages/${library}/${id}/fixtures`,
 });
 

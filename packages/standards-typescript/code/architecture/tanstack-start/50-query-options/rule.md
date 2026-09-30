@@ -2,6 +2,9 @@
 summary: "TanStack Query options declared outside the feature's `queries/` folder"
 checked: false
 severity: advisory
+requires:
+  - module-out-of-common
+  - ungrouped-domain-utils
 ---
 
 ### Query Options

@@ -56,6 +56,7 @@ const rule = ({ id, inputKind }: { id: string; inputKind: StandardsInputKind }):
 	checked: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
+	requires: [],
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 	inputKind,
 	run: reportingRun({ id }),

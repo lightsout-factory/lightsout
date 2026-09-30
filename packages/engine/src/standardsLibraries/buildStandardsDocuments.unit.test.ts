@@ -29,6 +29,7 @@ const buildRule = ({
 	checked: false,
 	defaultSeverity,
 	defaultOptions: {},
+	requires: [],
 	fixturesPath: `/pkg/code/example/${id}/fixtures`,
 });
 

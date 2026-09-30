@@ -4,10 +4,12 @@ import { join } from 'node:path';
 import type { RawStandardsFinding } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
 import { messageOf } from '#src/common/utils/messageOf.ts';
+import { findMissingRequirements } from '#src/standards/findMissingRequirements.ts';
 import { typescriptInputKinds } from '#src/standardsCheck/internal/common/constants/typescriptInputKinds.ts';
 import { checkFixtureTree } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts';
 import { checkRuleExample } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkRuleExample.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import { findUnresolvedRequirements } from '#src/standardsLibraries/findUnresolvedRequirements.ts';
 import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack.ts';
 
 interface Params {
@@ -131,19 +133,29 @@ const checkFrameworkOwned = async ({ library, compiler }: { library: LoadedStand
 	return { problems, notes: [] };
 };
 
-/** Each pack file must resolve: every include entry names something, rule-settings name rules in the pack, and no packs include each other in a cycle. */
+/**
+ * Each pack file must resolve: every include entry names something, rule-settings name rules in the pack, and no packs include each other in a cycle.
+ * A pack that resolves is judged on its own for requirements it leaves out — a warning, since a team may mean to take one topic pack alone.
+ */
 const checkPackFiles = ({ library, libraries }: { library: LoadedStandardsLibrary; libraries: LoadedStandardsLibrary[] }) => {
 	const problems: string[] = [];
+	const warnings: string[] = [];
 
 	for (const packFile of library.packs) {
+		const address = `${library.name}/${packFile.name}`;
+
 		try {
-			resolveStandardsPack({ address: `${library.name}/${packFile.name}`, libraries });
+			const pack = resolveStandardsPack({ address, libraries });
+
+			for (const { rule, required } of findMissingRequirements({ rules: pack.rules })) {
+				warnings.push(`${pack.name}: ${rule} requires ${required}, which the pack does not send to agents`);
+			}
 		} catch (error) {
 			problems.push(messageOf({ error }));
 		}
 	}
 
-	return problems;
+	return { problems, warnings };
 };
 
 /**
@@ -155,7 +167,7 @@ const checkPackFiles = ({ library, libraries }: { library: LoadedStandardsLibrar
  *
  * Fixture runs also refuse a site key that does not start with the rule's own id.
  */
-export const validateStandardsLibrary = async ({ library, libraries }: Params): Promise<{ problems: string[]; notes: string[] }> => {
+export const validateStandardsLibrary = async ({ library, libraries }: Params): Promise<{ problems: string[]; notes: string[]; warnings: string[] }> => {
 	// Read from the library rather than inferred from missing fixtures: an authored
 	// library that ships no fixtures yet is a real authoring gap and must keep
 	// reading as one.
@@ -165,6 +177,7 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 				`${library.name} is a built pack — its fixtures were left behind when it was built, so there is nothing here to validate. Point --library at the authored source.`,
 			],
 			notes: [],
+			warnings: [],
 		};
 	}
 
@@ -219,7 +232,11 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 
 	problems.push(...frameworkOwned.problems);
 	notes.push(...frameworkOwned.notes);
-	problems.push(...checkPackFiles({ library, libraries }));
+	problems.push(...findUnresolvedRequirements({ libraries }));
 
-	return { problems, notes };
+	const packFiles = checkPackFiles({ library, libraries });
+
+	problems.push(...packFiles.problems);
+
+	return { problems, notes, warnings: packFiles.warnings };
 };

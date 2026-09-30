@@ -33,6 +33,7 @@ const singleReturn: LoadedStandardsRule = {
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
+	requires: [],
 	fixturesPath: '/packages/acme/single-return/fixtures',
 };
 

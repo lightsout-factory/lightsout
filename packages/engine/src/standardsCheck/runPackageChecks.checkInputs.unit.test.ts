@@ -39,6 +39,7 @@ const loadOneRule = ({ inputKind }: { inputKind: StandardsInputKind }) => {
 		checked: true,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
+		requires: [],
 		fixturesPath: '/packages/acme/a-rule/fixtures',
 		inputKind,
 		run,

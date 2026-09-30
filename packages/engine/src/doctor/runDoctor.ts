@@ -10,6 +10,7 @@ import { checkHarnessUsage } from '#src/doctor/checkHarnessUsage.ts';
 import { checkJestMocks } from '#src/doctor/checkJestMocks.ts';
 import { checkJestReporter } from '#src/doctor/checkJestReporter.ts';
 import { checkLintRules } from '#src/doctor/checkLintRules.ts';
+import { checkRuleRequirements } from '#src/doctor/checkRuleRequirements.ts';
 import { checkScriptBinaries } from '#src/doctor/checkScriptBinaries.ts';
 import { checkSourceWalk } from '#src/doctor/checkSourceWalk.ts';
 import { checkUserEvent } from '#src/doctor/checkUserEvent.ts';
@@ -88,6 +89,7 @@ export const runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }: 
 	pushOptional({ checks, check: await checkJestReporter({ cwd, packageDirs }) });
 	pushOptional({ checks, check: await checkUserEvent({ packageDirs }) });
 	pushOptional({ checks, check: await checkLintRules({ config, packageDirs }) });
+	pushOptional({ checks, check: await checkRuleRequirements({ cwd, config }) });
 
 	for (const audit of configuredPathAudits({ config })) {
 		pushOptional({ checks, check: await checkConfiguredPaths({ cwd, ...audit }) });

@@ -27,6 +27,7 @@ const ruleDeclaration = z.object({
 	severity: z.enum(StandardsSeverity).default(StandardsSeverity.Advisory),
 	options: z.record(z.string(), z.number()).default({}),
 	example: RuleExample.optional(),
+	requires: z.array(z.string().min(1)).default([]),
 });
 
 const getRuleDeclaration = async ({ folderPath, rulePath, found }: { folderPath: string; rulePath: string; found: string[] }) => {
@@ -136,6 +137,8 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, library, 
 			checked: declaration.checked,
 			defaultSeverity: declaration.severity,
 			defaultOptions: declaration.options,
+			// As written: readStandardsLibrary resolves the names once every rule of the library is loaded.
+			requires: declaration.requires,
 			...(declaration.example === undefined ? {} : { example: declaration.example }),
 			...(check === undefined ? {} : { inputKind: check.inputKind, run: check.run }),
 			fixturesPath,

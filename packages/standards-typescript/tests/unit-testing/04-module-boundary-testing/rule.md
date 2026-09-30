@@ -2,6 +2,8 @@
 summary: "coverage added file-by-file when driving the module's public API would pin the same behavior — boundary tests are the default, not the mandate"
 checked: false
 severity: advisory
+requires:
+  - files-that-must-not-have-dedicated-tests
 ---
 
 ## Module Boundary Testing

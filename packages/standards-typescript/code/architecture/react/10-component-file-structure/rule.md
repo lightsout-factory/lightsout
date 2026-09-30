@@ -2,6 +2,11 @@
 summary: "a folder created for a component that bundles no utilities, types or constants"
 checked: false
 severity: advisory
+requires:
+  - folder-index-file
+  - module-folder-layout
+  - single-file-domain-folder
+  - ungrouped-domain-utils
 ---
 
 ## Component File Structure

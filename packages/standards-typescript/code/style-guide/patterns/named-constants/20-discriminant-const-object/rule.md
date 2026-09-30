@@ -2,6 +2,8 @@
 summary: "a discriminant field typed as a raw string literal instead of the `const` object's member"
 checked: true
 severity: advisory
+requires:
+  - bare-string-union
 ---
 
 ## Discriminants Use the `const` Object

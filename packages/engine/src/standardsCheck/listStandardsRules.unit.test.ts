@@ -161,6 +161,7 @@ const loadedRule = (overrides: Partial<LoadedStandardsRule> & { id: string; libr
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
+	requires: [],
 	fixturesPath: `/packages/${overrides.library}/${overrides.id}/fixtures`,
 	...overrides,
 });
