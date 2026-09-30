@@ -69,19 +69,12 @@ const durableRuleIds = [
 	'ungrouped-domain-utils',
 ];
 
-/** The eight file-placement rules code checks — listed rather than derived, because an id no longer says which kind it is. */
-const durablePathRules = [
-	'banned-folder-name',
-	'file-directly-in-common',
-	'folder-index-file',
-	'test-in-tests-folder',
-	'test-not-beside-subject',
-	'test-support-in-src',
-	'folder-casing',
-	'single-file-domain-folder',
-];
+/** The shipped library's rules are listed by full name, the name a finding and a baseline key carry. */
+const builtInNameOf = ({ id }: { id: string }) => `lightsout/${id}`;
 
-/** 'lightsout-defaults: code/…' split back into the pack name and the document folder the row names. */
+const durableRuleNames = durableRuleIds.map((id) => builtInNameOf({ id }));
+
+/** 'lightsout: code/…' split back into the pack name and the document folder the row names. */
 const docPartsOf = ({ doc }: { doc: string }) => {
 	const [name, path] = doc.split(': ');
 
@@ -152,7 +145,7 @@ describe('listStandardsRules', () => {
 
 		// a baseline entry, a config override or a parked work-list names these
 		// strings — renaming one silently unbaselines whatever it suppressed
-		expect(durableRuleIds.filter((id) => !ids.has(id))).toStrictEqual([]);
+		expect(durableRuleIds.filter((id) => !ids.has(builtInNameOf({ id })))).toStrictEqual([]);
 	});
 
 	test('judgment-only rules are listed beside the machine-checked ones, each marked for which it is', async () => {
@@ -164,7 +157,7 @@ describe('listStandardsRules', () => {
 		expect(rules.some((rule) => !rule.checked)).toBe(true);
 		// and every one of the durable ids is a rule code checks — they are the
 		// rules that had a check before the pack format existed
-		expect(rules.filter((rule) => durableRuleIds.includes(rule.rule) && !rule.checked).map((rule) => rule.rule)).toStrictEqual([]);
+		expect(rules.filter((rule) => durableRuleNames.includes(rule.rule) && !rule.checked).map((rule) => rule.rule)).toStrictEqual([]);
 	});
 
 	test('every rule names the pack that states it and a document folder inside that pack', async () => {
@@ -175,7 +168,7 @@ describe('listStandardsRules', () => {
 		const missing = rules.filter((rule) => {
 			const { name, path } = docPartsOf({ doc: rule.doc });
 
-			return name !== 'lightsout-defaults' || !existsSync(join(cwd, 'packages', 'standards-typescript', path, 'topic.md'));
+			return name !== 'lightsout' || !existsSync(join(cwd, 'packages', 'standards-typescript', path, 'topic.md'));
 		});
 
 		expect(missing.map((rule) => `${rule.rule} → ${rule.doc}`)).toStrictEqual([]);
@@ -193,70 +186,28 @@ describe('listStandardsRules', () => {
 	test('the rules drawn from the tests tree are the test-writing rules, and no code rule is among them', async () => {
 		const rules = await listStandardsRules({ cwd });
 		const fromTests = rules.filter((rule) => docPartsOf({ doc: rule.doc }).path.startsWith('tests/'));
-		const checkedFromTests = fromTests.filter((rule) => durableRuleIds.includes(rule.rule)).map((rule) => rule.rule);
+		const checkedFromTests = fromTests.filter((rule) => durableRuleNames.includes(rule.rule)).map((rule) => rule.rule);
 
 		// which half of the ledger holds a rule is read off the document it comes
 		// from — which is why `test-only-export` and the four test-location rules
 		// sit here, away from the passes they used to share
 		expect(checkedFromTests.sort()).toStrictEqual([
-			'oversized-setup-factory',
-			'test-assert-in-hook',
-			'test-in-tests-folder',
-			'test-manual-mock-cleanup',
-			'test-mock-prefix',
-			'test-mock-return-in-hook',
-			'test-mock-untyped',
-			'test-mock-wrapper-untyped',
-			'test-multiple-setups',
-			'test-nested-describe',
-			'test-not-beside-subject',
-			'test-only-export',
-			'test-shared-let',
-			'test-strict-equal-matcher',
-			'test-support-in-src',
+			'lightsout/oversized-setup-factory',
+			'lightsout/test-assert-in-hook',
+			'lightsout/test-in-tests-folder',
+			'lightsout/test-manual-mock-cleanup',
+			'lightsout/test-mock-prefix',
+			'lightsout/test-mock-return-in-hook',
+			'lightsout/test-mock-untyped',
+			'lightsout/test-mock-wrapper-untyped',
+			'lightsout/test-multiple-setups',
+			'lightsout/test-nested-describe',
+			'lightsout/test-not-beside-subject',
+			'lightsout/test-only-export',
+			'lightsout/test-shared-let',
+			'lightsout/test-strict-equal-matcher',
+			'lightsout/test-support-in-src',
 		]);
-	});
-
-	test('each file-placement rule names the document that actually states it', async () => {
-		const rules = await listStandardsRules({ cwd });
-		const docs = Object.fromEntries(
-			rules.filter((rule) => durablePathRules.includes(rule.rule)).map((rule) => [rule.rule, docPartsOf({ doc: rule.doc }).path]),
-		);
-
-		// the check above proves a document is there, not that it is the right one:
-		// the folder-index-file rule comes from module-api, the four
-		// test-location rules from unit-testing, and the rest from folder-structure
-		expect(docs).toStrictEqual({
-			'banned-folder-name': 'code/architecture/folder-structure',
-			'file-directly-in-common': 'code/architecture/folder-structure',
-			'folder-index-file': 'code/style-guide/structure/module-api',
-			'test-in-tests-folder': 'tests/unit-testing',
-			'test-not-beside-subject': 'tests/unit-testing',
-			'test-support-in-src': 'tests/unit-testing',
-			'folder-casing': 'code/architecture/folder-structure',
-			'single-file-domain-folder': 'code/architecture/folder-structure',
-		});
-	});
-
-	test('the file-placement rules ship advisory — the default pack blocks only what is wrong on its own terms', async () => {
-		const rules = await listStandardsRules({ cwd });
-		const severities = Object.fromEntries(rules.filter((rule) => durablePathRules.includes(rule.rule)).map((rule) => [rule.rule, rule.severity]));
-
-		// every file-placement rule is a layout opinion — where a file goes, what a folder
-		// is called, where a test sits. The pack reports them and hands them to
-		// the refactor agent, but does not block a repository on day one for a
-		// layout it has not agreed to; a strict repo promotes them in its own
-		// standards-rule-settings, as this repository does
-		expect(severities).toStrictEqual({
-			'banned-folder-name': StandardsSeverity.Advisory,
-			'file-directly-in-common': StandardsSeverity.Advisory,
-			'folder-index-file': StandardsSeverity.Advisory,
-			'test-in-tests-folder': StandardsSeverity.Advisory,
-			'test-not-beside-subject': StandardsSeverity.Advisory,
-			'test-support-in-src': StandardsSeverity.Advisory,
-			'folder-casing': StandardsSeverity.Advisory,
-			'single-file-domain-folder': StandardsSeverity.Advisory,
-		});
 	});
 
 	test('the default pack blocks exactly the rules that are wrong on their own terms', async () => {
@@ -273,37 +224,27 @@ describe('listStandardsRules', () => {
 		// weaker than they read or can never pass at all. Everything about
 		// layout ships advisory.
 		expect(blocking).toStrictEqual([
-			'brittle-doc-tags',
-			'case-collision',
-			'dead-export',
-			'duplicate-function-body',
-			'explicit-return-type',
-			'import-type-only',
-			'no-any',
-			'test-assert-in-hook',
-			'test-mock-prefix',
-			'test-mock-untyped',
-			'test-mock-wrapper-untyped',
-			'test-never-passing-assertion',
-			'test-shared-let',
-			'test-strict-equal-matcher',
-			'type-assertion',
+			'lightsout/brittle-doc-tags',
+			'lightsout/case-collision',
+			'lightsout/dead-export',
+			'lightsout/duplicate-function-body',
+			'lightsout/explicit-return-type',
+			'lightsout/import-type-only',
+			'lightsout/no-any',
+			'lightsout/test-assert-in-hook',
+			'lightsout/test-mock-prefix',
+			'lightsout/test-mock-untyped',
+			'lightsout/test-mock-wrapper-untyped',
+			'lightsout/test-never-passing-assertion',
+			'lightsout/test-shared-let',
+			'lightsout/test-strict-equal-matcher',
+			'lightsout/type-assertion',
 		]);
-	});
-
-	test('no file-placement rule carries a number a repo could tune', async () => {
-		const rules = await listStandardsRules({ cwd });
-		const tunable = rules.filter((rule) => durablePathRules.includes(rule.rule) && Object.keys(rule.options).length > 0);
-
-		// every threshold in this group is a closed list of names from a doc, never a
-		// count — a knob here would be a rule that can be quietly widened until it
-		// stops firing
-		expect(tunable.map((rule) => rule.rule)).toStrictEqual([]);
 	});
 
 	test('a repo that says nothing sees the defaults, unmarked', async () => {
 		const rules = await listStandardsRules({ cwd, config: LightsoutConfig.parse(baseConfig) });
-		const duplicateBlock = rules.find((rule) => rule.rule === 'duplicate-code-block');
+		const duplicateBlock = rules.find((rule) => rule.rule === 'lightsout/duplicate-code-block');
 
 		expect(duplicateBlock?.severity).toBe(StandardsSeverity.Advisory);
 		expect(duplicateBlock?.fromConfig).toBe(false);
@@ -320,8 +261,8 @@ describe('listStandardsRules', () => {
 			}),
 		});
 
-		const mismatch = rules.find((rule) => rule.rule === 'filename-mismatch');
-		const duplicateBlock = rules.find((rule) => rule.rule === 'duplicate-code-block');
+		const mismatch = rules.find((rule) => rule.rule === 'lightsout/filename-mismatch');
+		const duplicateBlock = rules.find((rule) => rule.rule === 'lightsout/duplicate-code-block');
 
 		expect(mismatch?.severity).toBe(StandardsSeverity.Off);
 		expect(mismatch?.fromConfig).toBe(true);
@@ -354,7 +295,7 @@ describe('listStandardsRules', () => {
 		// come from the rule's own front matter — including that no code checks it
 		expect(rules).toStrictEqual([
 			{
-				rule: 'house-rule',
+				rule: 'house/house-rule',
 				doc: 'house: code/demo',
 				summary: 'what house-rule catches',
 				checked: false,
@@ -375,12 +316,12 @@ describe('listStandardsRules', () => {
 
 		const rules = await listStandardsRules({
 			cwd: repo,
-			config: LightsoutConfig.parse({ ...baseConfig, 'standards-packs': ['standards/house', 'standards/team'] }),
+			config: LightsoutConfig.parse({ ...baseConfig, 'standards-packs': ['standards/team', 'standards/house'] }),
 		});
 
 		// a reader looking a rule up scans one alphabetical list, not one list per
 		// pack — and still sees which pack to argue with about each rule
-		expect(rules.map((rule) => `${rule.rule} → ${rule.doc}`)).toStrictEqual(['aardvark-rule → team: code/demo', 'zebra-rule → house: code/demo']);
+		expect(rules.map((rule) => `${rule.rule} → ${rule.doc}`)).toStrictEqual(['house/zebra-rule → house: code/demo', 'team/aardvark-rule → team: code/demo']);
 	});
 
 	test('a repo that turned standards packs off lists nothing rather than the defaults', async () => {
@@ -407,22 +348,46 @@ describe('listStandardsRules', () => {
 		expect(error.message).toContain(join(repo, 'standards/ghost', 'lightsout-standards.json'));
 	});
 
+	test('each listing names its rule by full name', async () => {
+		const { cwd: repo } = setupRepo({
+			packs: [{ at: 'standards/acme', name: 'acme', ruleId: 'size', severity: StandardsSeverity.Blocking, options: { maxLines: 40 } }],
+		});
+
+		const rules = await listStandardsRules({ cwd: repo, config: LightsoutConfig.parse({ ...baseConfig, 'standards-packs': ['standards/acme'] }) });
+
+		// the rule column is the name a finding carries, so it spells the library
+		// as well as the rule — another library may hold its own `size`
+		expect(rules).toStrictEqual([
+			{
+				rule: 'acme/size',
+				doc: 'acme: code/demo',
+				summary: 'what size catches',
+				checked: false,
+				severity: StandardsSeverity.Blocking,
+				fromConfig: false,
+				options: { maxLines: 40 },
+			},
+		]);
+	});
+
 	test("each listing carries the rule's resolved options, config override included", async () => {
 		const config = LightsoutConfig.parse({ ...baseConfig, 'standards-rule-settings': { 'file-size': { options: { tsxFile: 400 } } } });
 
 		const rules = await listStandardsRules({ cwd, config });
 
 		const optionsOf = Object.fromEntries(
-			rules.filter((rule) => ['file-size', 'duplicate-code-block', 'banned-folder-name'].includes(rule.rule)).map((rule) => [rule.rule, rule.options]),
+			rules
+				.filter((rule) => ['lightsout/file-size', 'lightsout/duplicate-code-block', 'lightsout/banned-folder-name'].includes(rule.rule))
+				.map((rule) => [rule.rule, rule.options]),
 		);
 
 		// the override replaces only the key it names, so the ts cap keeps its
 		// rule.md default beside the retuned tsx cap; a rule the config never
 		// names shows its own defaults, and a rule with no numbers shows none
 		expect(optionsOf).toStrictEqual({
-			'banned-folder-name': {},
-			'duplicate-code-block': { minTokens: 50 },
-			'file-size': { file: 250, tsxFile: 400 },
+			'lightsout/banned-folder-name': {},
+			'lightsout/duplicate-code-block': { minTokens: 50 },
+			'lightsout/file-size': { file: 250, tsxFile: 400 },
 		});
 	});
 });

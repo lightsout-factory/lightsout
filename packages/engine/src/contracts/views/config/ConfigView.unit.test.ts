@@ -3,8 +3,9 @@ import { ConfigView } from '#src/contracts/views/config/ConfigView.ts';
 
 const setupConfigView = ({ ruleNumbers }: { ruleNumbers: Record<string, unknown> }) => {
 	const ruleState = {
-		rule: 'folder-size',
-		pack: 'lightsout-defaults',
+		rule: 'lightsout/folder-size',
+		id: 'folder-size',
+		pack: 'lightsout',
 		channel: 'code',
 		severity: 'blocking',
 		fromConfig: true,
@@ -15,7 +16,7 @@ const setupConfigView = ({ ruleNumbers }: { ruleNumbers: Record<string, unknown>
 		harness: 'claude-code',
 		model: null,
 		sections: [],
-		packs: [{ name: 'lightsout-defaults', rootPath: '/plugin/standards', isDefault: true, channels: [] }],
+		packs: [{ name: 'lightsout', rootPath: '/plugin/standards', isDefault: true, channels: [] }],
 		channels: [],
 		ruleStates: [ruleState],
 	};
@@ -32,7 +33,9 @@ describe('ConfigView', () => {
 		const parsedSettings = ConfigView.safeParse(withSettingsOnly);
 
 		expect({ ruleStates: parsedOptions.ruleStates, settingsParsed: parsedSettings.success }).toStrictEqual({
-			ruleStates: [{ rule: 'folder-size', pack: 'lightsout-defaults', channel: 'code', severity: 'blocking', fromConfig: true, options: { cap: 15 } }],
+			ruleStates: [
+				{ rule: 'lightsout/folder-size', id: 'folder-size', pack: 'lightsout', channel: 'code', severity: 'blocking', fromConfig: true, options: { cap: 15 } },
+			],
 			settingsParsed: false,
 		});
 	});

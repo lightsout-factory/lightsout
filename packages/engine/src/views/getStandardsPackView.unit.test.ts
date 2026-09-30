@@ -53,7 +53,7 @@ describe('getStandardsPackView', () => {
 	test('reads the authored default pack this repo ships, with totals that agree with its own rows', async () => {
 		const { cwd } = setupThisRepo();
 
-		const view = await getStandardsPackView({ cwd, name: 'lightsout-defaults' });
+		const view = await getStandardsPackView({ cwd, name: 'lightsout' });
 		const checked = view.rules.filter((rule) => rule.checked).length;
 
 		// The pack grows and shrinks as its rules are written, so no count of it
@@ -76,7 +76,7 @@ describe('getStandardsPackView', () => {
 	test('says the default pack is the one a run loads when the config names none', async () => {
 		const { cwd } = setupThisRepo();
 
-		const view = await getStandardsPackView({ cwd, name: 'lightsout-defaults' });
+		const view = await getStandardsPackView({ cwd, name: 'lightsout' });
 
 		expect({ isDefault: view.isDefault, built: view.built }).toStrictEqual({ isDefault: true, built: false });
 	});
@@ -84,7 +84,7 @@ describe('getStandardsPackView', () => {
 	test('lists every rule as a row and every document as a group, with no prose or fixture text on either', async () => {
 		const { cwd } = setupThisRepo();
 
-		const view = await getStandardsPackView({ cwd, name: 'lightsout-defaults' });
+		const view = await getStandardsPackView({ cwd, name: 'lightsout' });
 		const rule = view.rules.find((entry) => entry.id === 'type-assertion');
 
 		expect(view.rules).toHaveLength(view.totals.rules);
@@ -107,7 +107,7 @@ describe('getStandardsPackView', () => {
 	test('lists each rule with the default options its rule.md declares', async () => {
 		const { cwd } = setupThisRepo();
 
-		const view = await getStandardsPackView({ cwd, name: 'lightsout-defaults' });
+		const view = await getStandardsPackView({ cwd, name: 'lightsout' });
 		const defaultOptionsById = Object.fromEntries(
 			view.rules.filter((rule) => rule.id === 'file-size' || rule.id === 'type-assertion').map((rule) => [rule.id, rule.defaultOptions]),
 		);
@@ -121,7 +121,7 @@ describe('getStandardsPackView', () => {
 	test('names the channels the pack offers, so a reader sees which rules only some repos run', async () => {
 		const { cwd } = setupThisRepo();
 
-		const view = await getStandardsPackView({ cwd, name: 'lightsout-defaults' });
+		const view = await getStandardsPackView({ cwd, name: 'lightsout' });
 
 		expect(view.channels).toStrictEqual(['base', 'nestjs', 'react', 'tanstack']);
 	});

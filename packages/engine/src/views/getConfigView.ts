@@ -28,11 +28,11 @@ const getPackChannels = ({ pack }: { pack: LoadedStandardsLibrary }) => [...new 
  * string would be a second format to keep true, so the loaded packs answer.
  */
 const mapRuleOwners = ({ packs }: { packs: LoadedStandardsLibrary[] }) => {
-	const owners = new Map<string, { pack: string; channel: string }>();
+	const owners = new Map<string, { id: string; pack: string; channel: string }>();
 
 	for (const pack of packs) {
 		for (const rule of pack.rules) {
-			owners.set(rule.id, { pack: pack.name, channel: rule.channel });
+			owners.set(rule.name, { id: rule.id, pack: pack.name, channel: rule.channel });
 		}
 	}
 
@@ -85,6 +85,7 @@ export const getConfigView = async ({ cwd }: Params): Promise<ConfigView> => {
 				: [
 						{
 							rule: listing.rule,
+							id: owner.id,
 							pack: owner.pack,
 							channel: owner.channel,
 							severity: listing.severity,

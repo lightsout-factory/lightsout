@@ -60,7 +60,7 @@ test('readPlanningStandards: with no config it loads the shipped default package
 
 	const standards = await readPlanningStandards({ cwd, config: undefined });
 
-	expect(standards ?? '').toMatch(/<!-- lightsout-defaults: code\/architecture\/folder-structure -->/);
+	expect(standards ?? '').toMatch(/<!-- lightsout: code\/architecture\/folder-structure -->/);
 	// no framework channel activates without a signal dependency
 	expect((standards ?? '').includes('code/architecture/react')).toBeFalsy();
 	expect(logged).toStrictEqual([]);
@@ -80,7 +80,7 @@ test('readPlanningStandards: planning gets the code set only — the test tree i
 
 	const standards = await readPlanningStandards({ cwd, config: configWith({}) });
 
-	expect((standards ?? '').includes('<!-- lightsout-defaults: tests/')).toBeFalsy();
+	expect((standards ?? '').includes('<!-- lightsout: tests/')).toBeFalsy();
 });
 
 test('readPlanningStandards: a react dependency in the consumer manifest activates the react channel', async () => {
@@ -88,7 +88,7 @@ test('readPlanningStandards: a react dependency in the consumer manifest activat
 
 	const standards = await readPlanningStandards({ cwd, config: configWith({}) });
 
-	expect(standards ?? '').toMatch(/<!-- lightsout-defaults: code\/architecture\/react -->/);
+	expect(standards ?? '').toMatch(/<!-- lightsout: code\/architecture\/react -->/);
 });
 
 test('readPlanningStandards: configured channels override detection — react docs load with no react dependency present', async () => {
@@ -96,7 +96,7 @@ test('readPlanningStandards: configured channels override detection — react do
 
 	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-channels': ['react'] }) });
 
-	expect(standards ?? '').toMatch(/<!-- lightsout-defaults: code\/architecture\/react -->/);
+	expect(standards ?? '').toMatch(/<!-- lightsout: code\/architecture\/react -->/);
 });
 
 test('readPlanningStandards: several declared packages all reach the plan, in config order, one blank line apart', async () => {

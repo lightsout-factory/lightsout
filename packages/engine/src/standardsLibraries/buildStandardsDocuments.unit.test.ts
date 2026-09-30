@@ -18,6 +18,8 @@ const buildRule = ({
 	defaultSeverity?: StandardsSeverity;
 }): LoadedStandardsRule => ({
 	id,
+	name: `lightsout defaults/${id}`,
+	library: 'lightsout defaults',
 	set: 'code',
 	documentPath: 'code/example',
 	summary: `${id} summary`,
@@ -41,7 +43,7 @@ const buildDocument = ({
 	ruleIds: string[];
 	set?: LoadedStandardsTopic['set'];
 	channel?: string;
-}): LoadedStandardsTopic => ({ set, path, channel, intro, ruleIds });
+}): LoadedStandardsTopic => ({ set, library: 'lightsout defaults', path, channel, intro, ruleIds });
 
 /** A pack with a base and a react code document, plus one tests document. */
 const setupPack = (): LoadedStandardsLibrary => ({
@@ -72,6 +74,17 @@ const setupOptInPack = (): LoadedStandardsLibrary => ({
 	rules: [
 		buildRule({ id: 'graduation', prose: 'A concept earns its folder.' }),
 		buildRule({ id: 'internal-import', prose: 'Private files live in internal/.', defaultSeverity: StandardsSeverity.Off }),
+	],
+});
+
+/** A library named acme whose one topic holds an ordinary rule and a rule it ships off, each carrying its full name. */
+const setupAcmeOptInLibrary = (): LoadedStandardsLibrary => ({
+	...setupPack(),
+	name: 'acme',
+	documents: [{ ...buildDocument({ path: 'code/modules', intro: '# Modules', ruleIds: ['graduation', 'strict'] }), library: 'acme' }],
+	rules: [
+		{ ...buildRule({ id: 'graduation', prose: 'A concept earns its folder.' }), name: 'acme/graduation', library: 'acme' },
+		{ ...buildRule({ id: 'strict', prose: 'Strict mode stays on.', defaultSeverity: StandardsSeverity.Off }), name: 'acme/strict', library: 'acme' },
 	],
 });
 
@@ -207,5 +220,18 @@ describe('buildStandardsDocuments', () => {
 		const { code } = buildStandardsDocuments({ pack, channels: [], config: buildConfig({ rule: 'graduation', severity: StandardsSeverity.Off }) });
 
 		expect(code).toContain('A concept earns its folder.');
+	});
+
+	test.each([
+		{ named: 'strict', reaches: true },
+		{ named: 'acme/strict', reaches: true },
+		{ named: 'acme/graduation', reaches: false },
+	])('a publisher-off rule named by its full name or its short id reaches the prose', ({ named, reaches }) => {
+		const pack = setupAcmeOptInLibrary();
+		const config = buildConfig({ rule: named, severity: StandardsSeverity.Blocking });
+
+		const { code } = buildStandardsDocuments({ pack, channels: [], config });
+
+		expect((code ?? '').includes('Strict mode stays on.')).toBe(reaches);
 	});
 });

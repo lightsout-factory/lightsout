@@ -334,3 +334,18 @@ test('carries the self-check section, and a standing ban naming the sole excepti
 	expect(prose).toContain('# Granted commands');
 	expect(prose).toContain('self-check');
 });
+
+test('the advisory outcome example uses a full rule name and a site key prefixed with it', () => {
+	const { prompt } = buildRefactorExecutorInvocation({
+		scope,
+		planContent,
+		changedFiles: ['src/widget.ts'],
+		advisories: [finding({ rule: 'lightsout/function-size', siteKey: 'lightsout/function-size:src/widget.ts', severity: StandardsSeverity.Advisory })],
+		reportAdvisoryOutcomes: true,
+	});
+
+	// the agent copies the example's shape, so it must show the full names findings carry
+	expect(prompt).toContain('"rule": "lightsout/function-size", "siteKey": "lightsout/function-size:');
+	expect(prompt).not.toContain('"rule": "function-size"');
+	expect(prompt).not.toContain('"siteKey": "function-size:');
+});

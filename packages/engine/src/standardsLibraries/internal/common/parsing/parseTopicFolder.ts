@@ -14,6 +14,8 @@ interface Params {
 	/** Pack-relative. */
 	documentPath: string;
 	set: StandardsSet;
+	/** The manifest name of the library holding the topic. */
+	library: string;
 	problems: string[];
 }
 
@@ -49,6 +51,7 @@ export const parseTopicFolder = async ({
 	folderPath,
 	documentPath,
 	set,
+	library,
 	problems,
 }: Params): Promise<{ document: LoadedStandardsTopic; rules: LoadedStandardsRule[] } | undefined> => {
 	const text = await readFile(join(folderPath, 'topic.md'), 'utf8').catch(() => undefined);
@@ -68,7 +71,7 @@ export const parseTopicFolder = async ({
 	const rules: LoadedStandardsRule[] = [];
 
 	for (const name of await listRuleFolders({ folderPath })) {
-		const rule = await parseRuleFolder({ folderPath: join(folderPath, name), set, documentPath, problems });
+		const rule = await parseRuleFolder({ folderPath: join(folderPath, name), set, documentPath, library, problems });
 
 		if (rule !== undefined && declaration !== undefined) {
 			rules.push({ ...rule, channel: declaration.channel });
@@ -79,7 +82,7 @@ export const parseTopicFolder = async ({
 
 	if (declaration !== undefined) {
 		parsedDocument = {
-			document: { set, path: documentPath, channel: declaration.channel, intro, ruleIds: rules.map((rule) => rule.id) },
+			document: { set, library, path: documentPath, channel: declaration.channel, intro, ruleIds: rules.map((rule) => rule.id) },
 			rules,
 		};
 	}

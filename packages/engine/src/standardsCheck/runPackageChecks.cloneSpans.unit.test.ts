@@ -35,6 +35,8 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
 	const options = { minTokens: 50 };
 	const rule: LoadedStandardsRule = {
 		id: 'duplicate-code-block',
+		name: 'acme/duplicate-code-block',
+		library: 'acme',
 		set: 'code',
 		documentPath: 'code/architecture/architecture-decisions',
 		summary: 'the same block of code written out in two or more files',
@@ -48,7 +50,7 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
 		run,
 	};
 	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule] }];
-	const states = new Map<string, ResolvedRuleState>([['duplicate-code-block', { severity: StandardsSeverity.Advisory, options, fromConfig: false }]]);
+	const states = new Map<string, ResolvedRuleState>([['acme/duplicate-code-block', { severity: StandardsSeverity.Advisory, options, fromConfig: false }]]);
 
 	return { cwd, inputs, packs, states };
 };
@@ -67,6 +69,8 @@ const setupThresholdRun = ({ lowMinTokens, highMinTokens }: { lowMinTokens: numb
 
 	const buildRule = ({ id, minTokens, inputs }: { id: string; minTokens: number; inputs: StandardsCheckInput[] }): LoadedStandardsRule => ({
 		id,
+		name: `acme/${id}`,
+		library: 'acme',
 		set: 'code',
 		documentPath: 'code/architecture/architecture-decisions',
 		summary: 'the same block of code written out in two or more files',
@@ -89,8 +93,8 @@ const setupThresholdRun = ({ lowMinTokens, highMinTokens }: { lowMinTokens: numb
 	];
 	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules }];
 	const states = new Map<string, ResolvedRuleState>([
-		['duplicate-code-block-low', { severity: StandardsSeverity.Advisory, options: { minTokens: lowMinTokens }, fromConfig: false }],
-		['duplicate-code-block-high', { severity: StandardsSeverity.Advisory, options: { minTokens: highMinTokens }, fromConfig: false }],
+		['acme/duplicate-code-block-low', { severity: StandardsSeverity.Advisory, options: { minTokens: lowMinTokens }, fromConfig: false }],
+		['acme/duplicate-code-block-high', { severity: StandardsSeverity.Advisory, options: { minTokens: highMinTokens }, fromConfig: false }],
 	]);
 
 	return { cwd, packs, states, lowInputs, highInputs };

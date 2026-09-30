@@ -159,7 +159,7 @@ describe('ConfigPage packs card', () => {
 	});
 
 	test('marks the pack that loads when the config names none', () => {
-		setupConfigPage({ overrides: { packs: [{ name: 'lightsout-defaults', rootPath: '/packs/defaults', isDefault: true, channels: [] }] } });
+		setupConfigPage({ overrides: { packs: [{ name: 'lightsout', rootPath: '/packs/defaults', isDefault: true, channels: [] }] } });
 
 		const card = screen.getByRole('heading', { level: 3, name: 'Standards packs loaded' }).closest('section');
 
@@ -177,9 +177,9 @@ describe('ConfigPage packs card', () => {
 
 describe('ConfigPage rule ledger', () => {
 	const ruleStates: ConfigView['ruleStates'] = [
-		{ rule: 'file-size', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Blocking, fromConfig: true, options: { file: 250 } },
-		{ rule: 'loose-file', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Advisory, fromConfig: false, options: {} },
-		{ rule: 'naming-boolean', pack: 'acme-house-rules', channel: 'base', severity: StandardsSeverity.Off, fromConfig: true, options: {} },
+		{ rule: 'file-size', id: 'file-size', pack: 'lightsout', channel: 'base', severity: StandardsSeverity.Blocking, fromConfig: true, options: { file: 250 } },
+		{ rule: 'loose-file', id: 'loose-file', pack: 'lightsout', channel: 'base', severity: StandardsSeverity.Advisory, fromConfig: false, options: {} },
+		{ rule: 'naming-boolean', id: 'naming-boolean', pack: 'acme-house-rules', channel: 'base', severity: StandardsSeverity.Off, fromConfig: true, options: {} },
 	];
 
 	test('lists every loaded rule, whichever pack declared it', () => {
@@ -196,6 +196,28 @@ describe('ConfigPage rule ledger', () => {
 		const link = screen.getByRole('link', { name: 'naming-boolean' });
 
 		expect(link).toHaveAttribute('href', '/standards-packs/typescript/naming-boolean');
+	});
+
+	test('the rule ledger shows the full name and links by the rule id', () => {
+		setupConfigPage({
+			overrides: {
+				ruleStates: [
+					{
+						rule: 'lightsout/file-size',
+						id: 'file-size',
+						pack: 'lightsout',
+						channel: 'base',
+						severity: StandardsSeverity.Blocking,
+						fromConfig: true,
+						options: { file: 250 },
+					},
+				],
+			},
+		});
+
+		const link = screen.getByRole('link', { name: 'lightsout/file-size' });
+
+		expect(link).toHaveAttribute('href', '/standards-packs/typescript/file-size');
 	});
 
 	test('says of each rule whether this repo set its state or the pack did', () => {
@@ -238,13 +260,14 @@ describe('ConfigPage rule ledger', () => {
 				ruleStates: [
 					{
 						rule: 'file-size',
-						pack: 'lightsout-defaults',
+						id: 'file-size',
+						pack: 'lightsout',
 						channel: 'base',
 						severity: StandardsSeverity.Blocking,
 						fromConfig: true,
 						options: { file: 250, tsxFile: 300 },
 					},
-					{ rule: 'loose-file', pack: 'lightsout-defaults', channel: 'base', severity: StandardsSeverity.Advisory, fromConfig: false, options: {} },
+					{ rule: 'loose-file', id: 'loose-file', pack: 'lightsout', channel: 'base', severity: StandardsSeverity.Advisory, fromConfig: false, options: {} },
 				],
 			},
 		});

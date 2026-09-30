@@ -14,7 +14,7 @@ const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
 	(input.kind === StandardsInputKind.FileList ? input.files : [])
 		.filter((file) => file.endsWith('banned.ts'))
 		.map((path) => ({
-			siteKey: `banned:${path}`,
+			siteKey: `no-banned-file:${path}`,
 			files: [{ path }],
 			detail: 'a file the rule bans',
 		}));
@@ -24,7 +24,7 @@ const reportsWhatItWasHanded: StandardsCheckFunction = ({ input }) =>
 	input.kind === StandardsInputKind.FileList
 		? [
 				{
-					siteKey: 'handed',
+					siteKey: 'no-banned-file:handed',
 					files: [],
 					detail: `source=${input.source.join('|')} tests=${input.tests.join('|')} packs=${input.standardsLibraries.length}`,
 				},
@@ -36,7 +36,7 @@ const bansTheBannedTypedFile: StandardsCheckFunction = ({ input }) =>
 	(input.kind === StandardsInputKind.TypeChecker ? [...input.typedFiles.keys()] : [])
 		.filter((path) => path.endsWith('banned.ts'))
 		.map((path) => ({
-			siteKey: `banned:${path}`,
+			siteKey: `no-banned-file:${path}`,
 			files: [{ path }],
 			detail: 'a file the rule bans',
 		}));
@@ -46,7 +46,7 @@ const capsTheSourceFolder: StandardsCheckFunction = ({ input, options }) => {
 	const { cap } = options;
 	const count = input.kind === StandardsInputKind.FileList ? input.source.length : 0;
 
-	return count > cap ? [{ siteKey: 'folder-cap:src', files: [{ path: 'src' }], detail: `${count} files over a cap of ${cap}` }] : [];
+	return count > cap ? [{ siteKey: 'no-banned-file:src', files: [{ path: 'src' }], detail: `${count} files over a cap of ${cap}` }] : [];
 };
 
 /** A tree of source files under `src/`, run against as if it were a whole repo. */
@@ -64,6 +64,8 @@ const setupTree = ({ files }: { files: string[] }) => {
 
 const rule: LoadedStandardsRule = {
 	id: 'no-banned-file',
+	name: 'acme/no-banned-file',
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
@@ -81,7 +83,7 @@ describe('checkFixtureTree', () => {
 
 		const found = await checkFixtureTree({ cwd, rule, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile, label: 'fixtures/pass/' });
 
-		expect(found).toStrictEqual([{ siteKey: 'banned:src/banned.ts', files: [{ path: 'src/banned.ts' }], detail: 'a file the rule bans' }]);
+		expect(found).toStrictEqual([{ siteKey: 'acme/no-banned-file:src/banned.ts', files: [{ path: 'src/banned.ts' }], detail: 'a file the rule bans' }]);
 	});
 
 	test('a type-checker tree with no tsconfig throws a message naming the label it was given, not the folder it read', async () => {
@@ -125,11 +127,11 @@ describe('checkFixtureTree', () => {
 
 		const found = await checkFixtureTree({ cwd, rule, inputKind: StandardsInputKind.FileList, run: reportsWhatItWasHanded, label: 'fixtures/pass/' });
 
-		expect(found).toStrictEqual([{ siteKey: 'handed', files: [], detail: 'source=src/allowed.ts tests=src/allowed.unit.test.ts packs=0' }]);
+		expect(found).toStrictEqual([{ siteKey: 'acme/no-banned-file:handed', files: [], detail: 'source=src/allowed.ts tests=src/allowed.unit.test.ts packs=0' }]);
 	});
 
 	test.each([
-		{ cap: 1, expected: [{ siteKey: 'folder-cap:src', files: [{ path: 'src' }], detail: '2 files over a cap of 1' }] },
+		{ cap: 1, expected: [{ siteKey: 'acme/no-banned-file:src', files: [{ path: 'src' }], detail: '2 files over a cap of 1' }] },
 		{ cap: 5, expected: [] },
 	])("runs the check with the rule's default options", async ({ cap, expected }) => {
 		const { cwd } = setupTree({ files: ['first.ts', 'second.ts'] });

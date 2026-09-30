@@ -17,6 +17,8 @@ import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/L
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
+	name: `acme/${overrides.id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
@@ -125,18 +127,20 @@ const advice = (overrides: Partial<AdvisoryOutcome> & { rule: string; siteKey: s
 });
 
 /** The health row for one rule — the report is sorted by id, not indexed by it. */
-const rowFor = ({ rules, id }: { rules: Awaited<ReturnType<typeof buildStandardsHealth>>['rules']; id: string }) => rules.find((entry) => entry.id === id);
+/** The row of the rule `acme/<id>`, the library every rule here is built in. */
+const rowFor = ({ rules, id }: { rules: Awaited<ReturnType<typeof buildStandardsHealth>>['rules']; id: string }) =>
+	rules.find((entry) => entry.rule === `acme/${id}`);
 
 describe('buildStandardsHealth advice counting', () => {
 	test('advisory outcomes are counted apart from the blocking sites, with their decline reasons', async () => {
 		const cwd = setupRun({
-			batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' })] })],
+			batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] })],
 			reports: {
 				'batch-01': report({
 					outcome: 'resolved',
 					advisoryOutcomes: [
-						advice({ rule: 'path-aliases', siteKey: 'path-aliases:src/a.ts', outcome: 'declined', reason: 'the package defines no alias' }),
-						advice({ rule: 'path-aliases', siteKey: 'path-aliases:src/b.ts', outcome: 'applied' }),
+						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/a.ts', outcome: 'declined', reason: 'the package defines no alias' }),
+						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/b.ts', outcome: 'applied' }),
 					],
 				}),
 			},
@@ -161,8 +165,8 @@ describe('buildStandardsHealth advice counting', () => {
 				'batch-01': report({
 					outcome: 'resolved',
 					advisoryOutcomes: [
-						advice({ rule: 'path-aliases', siteKey: 'path-aliases:src/a.ts', outcome: 'already-met' }),
-						advice({ rule: 'path-aliases', siteKey: 'path-aliases:src/b.ts', outcome: 'applied' }),
+						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/a.ts', outcome: 'already-met' }),
+						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/b.ts', outcome: 'applied' }),
 					],
 				}),
 			},
@@ -183,7 +187,7 @@ describe('buildStandardsHealth advice counting', () => {
 			reports: {
 				'batch-01': report({
 					outcome: 'resolved',
-					advisoryOutcomes: [advice({ rule: 'path-aliases', siteKey: 'path-aliases:src/a.ts', outcome: 'declined' })],
+					advisoryOutcomes: [advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/a.ts', outcome: 'declined' })],
 				}),
 			},
 		});

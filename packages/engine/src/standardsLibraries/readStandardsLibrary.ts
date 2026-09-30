@@ -18,6 +18,7 @@ interface WalkParams {
 	folderPath: string;
 	documentPath: string;
 	set: StandardsSet;
+	library: string;
 	problems: string[];
 	documents: LoadedStandardsTopic[];
 	rules: LoadedStandardsRule[];
@@ -28,7 +29,7 @@ interface WalkParams {
  * everything below it is that document's rule folders. Folders with no marker
  * file (a pack's own `common/` helpers, grouping folders) are passed through.
  */
-const walk = async ({ folderPath, documentPath, set, problems, documents, rules }: WalkParams) => {
+const walk = async ({ folderPath, documentPath, set, library, problems, documents, rules }: WalkParams) => {
 	const entries = await readdir(folderPath, { withFileTypes: true }).catch(() => undefined);
 
 	if (entries === undefined) {
@@ -36,7 +37,7 @@ const walk = async ({ folderPath, documentPath, set, problems, documents, rules 
 	}
 
 	if (entries.some((entry) => entry.name === 'topic.md')) {
-		const parsed = await parseTopicFolder({ folderPath, documentPath, set, problems });
+		const parsed = await parseTopicFolder({ folderPath, documentPath, set, library, problems });
 
 		if (parsed !== undefined) {
 			documents.push(parsed.document);
@@ -49,7 +50,7 @@ const walk = async ({ folderPath, documentPath, set, problems, documents, rules 
 			.sort();
 
 		for (const name of directories) {
-			await walk({ folderPath: join(folderPath, name), documentPath: `${documentPath}/${name}`, set, problems, documents, rules });
+			await walk({ folderPath: join(folderPath, name), documentPath: `${documentPath}/${name}`, set, library, problems, documents, rules });
 		}
 	}
 };
@@ -111,7 +112,7 @@ export const readStandardsLibrary = async ({ packPath }: Params): Promise<Loaded
 	const rules: LoadedStandardsRule[] = [];
 
 	for (const set of [StandardsSet.Code, StandardsSet.Tests]) {
-		await walk({ folderPath: join(packPath, set), documentPath: set, set, problems, documents, rules });
+		await walk({ folderPath: join(packPath, set), documentPath: set, set, library: root.data.name, problems, documents, rules });
 	}
 
 	if (documents.length === 0) {

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { setupOtherKindInput, setupSyntaxTreeInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
@@ -21,7 +23,7 @@ describe('banned-class-shapes check', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'banned-class-shape:src/reporting/ReportGenerator.ts',
+				siteKey: 'banned-class-shapes:src/reporting/ReportGenerator.ts',
 				files: [{ path: 'src/reporting/ReportGenerator.ts' }],
 				detail: "class 'ReportGenerator' is one stateless method",
 				guidance: 'Write module functions instead — one exported function per file — and delete the class.',
@@ -51,7 +53,7 @@ describe('banned-class-shapes check', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'banned-class-shape:src/config/ConfigPaths.ts',
+				siteKey: 'banned-class-shapes:src/config/ConfigPaths.ts',
 				files: [{ path: 'src/config/ConfigPaths.ts' }],
 				detail: "class 'ConfigPaths' declares only static members",
 				guidance: 'Write module functions instead — one exported function per file — and delete the class.',
@@ -204,7 +206,7 @@ describe('banned-class-shapes check', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'banned-class-shape:src/reporting/shapes.ts',
+				siteKey: 'banned-class-shapes:src/reporting/shapes.ts',
 				files: [{ path: 'src/reporting/shapes.ts' }],
 				detail: "class 'ConfigPaths' declares only static members; class 'ReportGenerator' is one stateless method",
 				guidance: 'Write module functions instead — one exported function per file — and delete the class.',
@@ -224,7 +226,7 @@ describe('banned-class-shapes check', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'banned-class-shape:src/reporting/ReportGenerator.ts',
+				siteKey: 'banned-class-shapes:src/reporting/ReportGenerator.ts',
 				files: [{ path: 'src/reporting/ReportGenerator.ts' }],
 				detail: "class 'ReportGenerator' is one stateless method",
 				guidance: 'Write module functions instead — one exported function per file — and delete the class.',
@@ -236,5 +238,19 @@ describe('banned-class-shapes check', () => {
 		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
+	});
+
+	test('site keys start with the rule id banned-class-shapes', async () => {
+		const paths = ['src/config/ConfigPaths.ts', 'src/reporting/ReportGenerator.ts'];
+		const input = setupSyntaxTreeInput({
+			sources: paths.map((path): [string, string] => [path, readFileSync(join(__dirname, 'fixtures', 'fail', path), 'utf8')]),
+		});
+
+		const findings = await check.run({ input, options: {} });
+
+		expect(findings.map((finding) => finding.siteKey).sort()).toStrictEqual([
+			'banned-class-shapes:src/config/ConfigPaths.ts',
+			'banned-class-shapes:src/reporting/ReportGenerator.ts',
+		]);
 	});
 });

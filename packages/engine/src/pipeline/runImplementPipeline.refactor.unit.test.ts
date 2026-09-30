@@ -14,7 +14,7 @@ import { withTestChangeReview } from '#tests/helpers/withTestChangeReview.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
 
 /** The rule ids the standards reviewer was handed, in the order its invocation lists them. */
-const ruleIdsOffered = ({ systemPrompt }: { systemPrompt: string }) => [...systemPrompt.matchAll(/Rule id: `([^`]+)`/g)].map(([, id]) => id ?? '');
+const ruleIdsOffered = ({ systemPrompt }: { systemPrompt: string }) => [...systemPrompt.matchAll(/Rule: `([^`]+)`/g)].map(([, id]) => id ?? '');
 
 /** The repo-relative files the standards reviewer was asked to read, one per list line of its prompt. */
 const filesOffered = ({ prompt }: { prompt: string }) => [...prompt.matchAll(/^- (.+)$/gm)].map(([, path]) => path ?? '');
@@ -143,8 +143,8 @@ test('refactor: a star re-export is cleanup work on its own — severity is the 
 
 	expectDefined(cleanup);
 	// it earned the round alone — no other finding was blocking
-	expect(refactorPrompts[0] ?? '').toMatch(/Blocking —[\s\S]*- \[barrel-star\] src\/index\.ts/);
-	expect(cleanup.remaining.map((finding) => finding.siteKey)).toStrictEqual(['barrel-star:src/index.ts']);
+	expect(refactorPrompts[0] ?? '').toMatch(/Blocking —[\s\S]*- \[lightsout\/barrel-star\] src\/index\.ts/);
+	expect(cleanup.remaining.map((finding) => finding.siteKey)).toStrictEqual(['lightsout/barrel-star:src/index.ts']);
 	// and left standing it is recorded, never a stop
 	expect(result.manifest.steps.find((step) => step.id === 'refactor')?.status).toBe('passed');
 	expect(result.ok).toBe(true);
@@ -216,7 +216,7 @@ test('refactor: a review that could not run is narrated and left behind — the 
 	expectDefined(cleanup);
 	expect(progress.some((line) => line.startsWith('agent review skipped —'))).toBe(true);
 	// the work list the machine checks reported is what cleanup spent its rounds on, and what it recorded
-	expect(cleanup.remaining.map((finding) => finding.siteKey)).toContain('multi-export:src/subject.js');
+	expect(cleanup.remaining.map((finding) => finding.siteKey)).toContain('lightsout/multi-export:src/subject.js');
 	expect(result.ok).toBe(true);
 });
 
@@ -323,9 +323,9 @@ test('an introduced blocking finding on a test file the run wrote is worked and 
 
 	expectDefined(cleanup);
 	// severity still directs the effort: it is handed over as blocking work
-	expect(refactorPrompts[0] ?? '').toMatch(/Blocking —[\s\S]*- \[test-in-tests-folder\]/);
+	expect(refactorPrompts[0] ?? '').toMatch(/Blocking —[\s\S]*- \[lightsout\/test-in-tests-folder\]/);
 	// the executor left it, so it is recorded rather than escalated
-	expect(cleanup.remaining.map((finding) => finding.rule)).toContain('test-in-tests-folder');
+	expect(cleanup.remaining.map((finding) => finding.rule)).toContain('lightsout/test-in-tests-folder');
 	expect(result.manifest.steps.find((step) => step.id === 'refactor')?.status).toBe('passed');
 	expect(result.ok).toBe(true);
 });

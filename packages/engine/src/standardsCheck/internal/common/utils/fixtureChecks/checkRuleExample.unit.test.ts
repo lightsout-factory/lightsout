@@ -24,6 +24,8 @@ const setupRule = ({ example, fail, pass }: { example?: RuleExample; fail: strin
 	return {
 		rule: {
 			id: 'dead-export',
+			name: 'acme/dead-export',
+			library: 'acme',
 			set: 'code' as const,
 			documentPath: 'code/architecture',
 			summary: 'an export nothing else references',

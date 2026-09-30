@@ -26,7 +26,7 @@ describe('readStandardsLibrary', () => {
 	test('carries all 24 shipped documents, split across the code and tests trees', async () => {
 		const { pack } = await setupDefaultPack();
 
-		expect(pack.name).toBe('lightsout-defaults');
+		expect(pack.name).toBe('lightsout');
 		expect(pack.documents).toHaveLength(24);
 		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(21);
 		expect(pack.documents.filter((document) => document.set === StandardsSet.Tests)).toHaveLength(3);
@@ -68,8 +68,8 @@ describe('readStandardsLibrary', () => {
 
 		const { code, tests } = buildStandardsDocuments({ pack, channels: [], config: undefined });
 
-		expect(code?.match(/^<!-- lightsout-defaults: code\/.+ -->$/gm)).toHaveLength(17);
-		expect(tests?.match(/^<!-- lightsout-defaults: tests\/.+ -->$/gm)).toHaveLength(2);
+		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(17);
+		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(2);
 		// the prose itself rides along, not just the headers
 		expect(code ?? '').toContain('One Export Per File');
 		expect(tests ?? '').toContain('Module Boundary Testing');
@@ -81,11 +81,21 @@ describe('readStandardsLibrary', () => {
 		const { code, tests } = buildStandardsDocuments({ pack, channels: ['react', 'tanstack'], config: undefined });
 
 		// 17 base + 2 react + 1 tanstack on the code side; 2 base + 1 react on the tests side
-		expect(code?.match(/^<!-- lightsout-defaults: code\/.+ -->$/gm)).toHaveLength(20);
-		expect(tests?.match(/^<!-- lightsout-defaults: tests\/.+ -->$/gm)).toHaveLength(3);
+		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(20);
+		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(3);
 		// channel documents land after every base one
-		expect(code?.indexOf('<!-- lightsout-defaults: code/architecture/react -->')).toBeGreaterThan(
-			code?.indexOf('<!-- lightsout-defaults: code/style-guide/typescript/type-assertions -->') ?? 0,
+		expect(code?.indexOf('<!-- lightsout: code/architecture/react -->')).toBeGreaterThan(
+			code?.indexOf('<!-- lightsout: code/style-guide/typescript/type-assertions -->') ?? 0,
 		);
+	});
+
+	test('the built-in library is named lightsout and every rule name starts with lightsout/', async () => {
+		const { pack } = await setupDefaultPack();
+
+		const misnamed = pack.rules.filter((rule) => rule.name !== `lightsout/${rule.id}`).map((rule) => rule.name);
+
+		// an empty rule list would make "every rule" hold vacuously
+		expect(pack.rules.length).toBeGreaterThan(0);
+		expect({ name: pack.name, misnamed }).toStrictEqual({ name: 'lightsout', misnamed: [] });
 	});
 });

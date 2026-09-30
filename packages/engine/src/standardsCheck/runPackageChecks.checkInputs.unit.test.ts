@@ -28,6 +28,8 @@ const loadOneRule = ({ inputKind }: { inputKind: StandardsInputKind }) => {
 	};
 	const rule: LoadedStandardsRule = {
 		id: 'a-rule',
+		name: 'acme/a-rule',
+		library: 'acme',
 		set: 'code',
 		documentPath: 'code/style-guide/structure/module-api',
 		summary: 'a rule',
@@ -41,7 +43,7 @@ const loadOneRule = ({ inputKind }: { inputKind: StandardsInputKind }) => {
 		run,
 	};
 	const packs: LoadedStandardsLibrary[] = [{ name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules: [rule] }];
-	const states = new Map<string, ResolvedRuleState>([['a-rule', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false }]]);
+	const states = new Map<string, ResolvedRuleState>([['acme/a-rule', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false }]]);
 
 	return { inputs, packs, states };
 };

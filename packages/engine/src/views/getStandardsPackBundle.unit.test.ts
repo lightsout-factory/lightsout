@@ -111,7 +111,7 @@ describe('getStandardsPackBundle', () => {
 	test('reads the authored default pack a repo loads when its config names none, carrying the proof the shipped copy leaves out', async () => {
 		const { cwd } = setupThisRepo();
 
-		const bundle = await getStandardsPackBundle({ cwd, name: 'lightsout-defaults' });
+		const bundle = await getStandardsPackBundle({ cwd, name: 'lightsout' });
 		const rule = bundle.rules.find((entry) => entry.id === 'type-assertion');
 
 		// the read `assets/default-pack.json` is built from. The copy the engine

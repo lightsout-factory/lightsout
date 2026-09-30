@@ -27,6 +27,8 @@ const batch = ({ paths }: { paths: string[] }): RefactorBatch => ({
 
 const judgmentRule: LoadedStandardsRule = {
 	id: 'path-aliases',
+	name: 'acme/path-aliases',
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/style-guide/structure/import-paths',
 	summary: 'a relative import in an aliased package',
@@ -98,7 +100,7 @@ describe('collectBatchAdvisories', () => {
 			onProgress,
 		});
 
-		expect(advisories.map((entry) => entry.rule)).toStrictEqual(['function-size', 'path-aliases']);
+		expect(advisories.map((entry) => entry.rule)).toStrictEqual(['function-size', 'acme/path-aliases']);
 		// and it arrives as advice, like everything else in this list
 		expect(advisories[1]?.severity).toBe(StandardsSeverity.Advisory);
 	});

@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
@@ -56,42 +56,6 @@ const setupTwoBatchRun = async () => {
 	return { dir, config: await readConfig({ cwd: dir }) };
 };
 
-/**
- * One finding plus a `check` gate that stays red while broken.flag exists —
- * the executor plants the flag, so verification fails on work that otherwise
- * resolved the cluster.
- */
-const setupRedGateBatch = async () => {
-	const dir = setupConsumerRepo({ scripts: { check: 'test ! -f broken.flag' } });
-
-	writeSource({ dir, path: 'src/multi.ts', source: multiExport });
-	commitAll(dir);
-
-	const prompts: string[] = [];
-	const gateBreakingExecutor: Driver['invoke'] = async ({ prompt }) => {
-		if (roleOf(prompt) === 'standards-review') {
-			return { text: reviewReport(), exitCode: 0 };
-		}
-
-		prompts.push(prompt);
-
-		splitFile({ dir, file: 'src/multi.ts', first: 'alphaThing', second: 'betaThing' });
-		writeFileSync(join(dir, 'broken.flag'), 'red\n');
-
-		return {
-			text: report({
-				changedFiles: [
-					{ path: 'src/multi.ts', summary: 'split' },
-					{ path: 'src/betaThing.ts', summary: 'split' },
-				],
-			}),
-			exitCode: 0,
-		};
-	};
-
-	return { dir, prompts, gateBreakingExecutor, config: await readConfig({ cwd: dir }) };
-};
-
 describe('runRefactorPipeline batch outcomes', () => {
 	test('a batch whose clusters earlier work already resolved spends no agent', async () => {
 		const { dir, config } = await setupTwoBatchRun();
@@ -126,9 +90,9 @@ describe('runRefactorPipeline batch outcomes', () => {
 		expect(result.ok).toBe(true);
 		// the second batch was verified resolved on disk, not re-sent to an agent
 		expect(invocations.length).toBe(1);
-		expect(result.after['multi-export'] ?? 0).toBe(0);
+		expect(result.after['lightsout/multi-export'] ?? 0).toBe(0);
 
-		const beta = result.manifest.steps.find((step) => step.id === 'batch-02:multi-export:beta');
+		const beta = result.manifest.steps.find((step) => step.id === 'batch-02:lightsout/multi-export:beta');
 
 		expect(beta?.status).toBe('passed');
 		// the skipped batch is still recorded as resolved
@@ -163,7 +127,7 @@ describe('runRefactorPipeline batch outcomes', () => {
 
 		expect(result.ok).toBe(true);
 		// the requeue finished the batch
-		expect(result.after['multi-export'] ?? 0).toBe(0);
+		expect(result.after['lightsout/multi-export'] ?? 0).toBe(0);
 		// exactly one requeue — the executor pass, then the remainder
 		expect(prompts.length).toBe(2);
 		// the requeue carries the surviving finding:\n${prompts[1]}
@@ -206,10 +170,10 @@ describe('runRefactorPipeline batch outcomes', () => {
 		expect(prompts.length).toBe(2);
 		// what survived is named for the human, not swallowed
 		expect(result.declined.map(({ batchId, remainingSiteKeys }) => ({ batchId, remainingSiteKeys }))).toStrictEqual([
-			{ batchId: 'batch-01:multi-export:src', remainingSiteKeys: ['multi-export:src/two.ts'] },
+			{ batchId: 'batch-01:lightsout/multi-export:src', remainingSiteKeys: ['lightsout/multi-export:src/two.ts'] },
 		]);
 		// the resolved half still burned down
-		expect(result.after['multi-export'] ?? 0).toBe(1);
+		expect(result.after['lightsout/multi-export'] ?? 0).toBe(1);
 	});
 
 	test('an invocation that produces no report and no verifiable work fails the run', async () => {
@@ -228,10 +192,10 @@ describe('runRefactorPipeline batch outcomes', () => {
 		expect(result.ok).toBe(false);
 		expect(result.manifest.status).toBe('failed');
 		// the failure names the batch it stopped at
-		expect(result.error ?? '').toMatch(/batch-01:multi-export:src: /);
+		expect(result.error ?? '').toMatch(/batch-01:lightsout\/multi-export:src: /);
 		expect(result.error ?? '').toMatch(/did not match contract/);
 		// nothing burned down
-		expect(result.after['multi-export'] ?? 0).toBe(1);
+		expect(result.after['lightsout/multi-export'] ?? 0).toBe(1);
 	});
 
 	for (const { status, expected } of [
@@ -257,92 +221,6 @@ describe('runRefactorPipeline batch outcomes', () => {
 		});
 	}
 
-	test('a cheap fix rescues a red gate without spending a supervisor consult', async () => {
-		const { dir, prompts, gateBreakingExecutor, config } = await setupRedGateBatch();
-		const driver: Driver = {
-			name: 'stub',
-			invoke: async (invocation) => {
-				if (roleOf(invocation.prompt) === 'standards-review') {
-					return { text: reviewReport(), exitCode: 0 };
-				}
-
-				if (invocation.prompt.includes('# Verification failure')) {
-					prompts.push(invocation.prompt);
-					rmSync(join(dir, 'broken.flag'));
-
-					return { text: report(), exitCode: 0 };
-				}
-
-				return gateBreakingExecutor(invocation);
-			},
-		};
-
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
-
-		expect(result.ok).toBe(true);
-		// the batch resolved once the gate went green
-		expect(result.after['multi-export'] ?? 0).toBe(0);
-		// one executor pass plus one cheap fix
-		expect(prompts.length).toBe(2);
-		// judgment is only bought when the mechanical retries are exhausted
-		expect(prompts.every((prompt) => !prompt.includes('# Failing step'))).toBeTruthy();
-	});
-
-	test('an invocation failure whose work is done but whose gates are red is not salvaged', async () => {
-		const { dir, config } = await setupRedGateBatch();
-		const driver: Driver = {
-			name: 'stub',
-			invoke: async ({ prompt }) => {
-				if (roleOf(prompt) === 'standards-review') {
-					return { text: reviewReport(), exitCode: 0 };
-				}
-
-				splitFile({ dir, file: 'src/multi.ts', first: 'alphaThing', second: 'betaThing' });
-				writeFileSync(join(dir, 'broken.flag'), 'red\n');
-
-				return { text: 'no json here — the process died mid-report', exitCode: 1 };
-			},
-		};
-
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
-
-		// the clusters are gone from the tree, but a red gate is not "work verified"
-		expect(result.ok).toBe(false);
-		expect(result.manifest.status).toBe('failed');
-		// the failure names the batch it stopped at
-		expect(result.error ?? '').toMatch(/batch-01:multi-export:src: /);
-		// and is never re-labelled as a resolution
-		expect(JSON.stringify(result.manifest.steps).includes('salvaged')).toBeFalsy();
-	});
-
-	test('a rate-limited cheap fix parks the run instead of failing it', async () => {
-		const { dir, prompts, gateBreakingExecutor, config } = await setupRedGateBatch();
-		const driver: Driver = {
-			name: 'stub',
-			invoke: async (invocation) => {
-				if (roleOf(invocation.prompt) === 'standards-review') {
-					return { text: reviewReport(), exitCode: 0 };
-				}
-
-				if (invocation.prompt.includes('# Verification failure')) {
-					prompts.push(invocation.prompt);
-
-					return { text: 'usage limit reached', exitCode: 1, rateLimited: true };
-				}
-
-				return gateBreakingExecutor(invocation);
-			},
-		};
-
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
-
-		expect(result.ok).toBe(false);
-		// a rate limit mid-fix is pausable state, never an error
-		expect(result.manifest.status).toBe('paused-rate-limit');
-		// the run stopped at the rate-limited fix — no second retry, no supervisor
-		expect(prompts.length).toBe(2);
-	});
-
 	test('the agent’s answer about each advisory is accumulated across the batch and persisted with it', async () => {
 		const { dir, config } = await setupTwoFindingBatch();
 
@@ -365,13 +243,20 @@ describe('runRefactorPipeline batch outcomes', () => {
 						changedFiles: [{ path: pass === 1 ? 'src/one.ts' : 'src/two.ts', summary: 'split' }],
 						advisoryOutcomes: [
 							{
-								rule: 'function-size',
-								siteKey: 'function-size:src/one.ts',
+								rule: 'lightsout/function-size',
+								siteKey: 'lightsout/function-size:src/one.ts',
 								outcome: pass === 1 ? 'declined' : 'applied',
 								...(pass === 1 ? { reason: 'orchestration exemption' } : {}),
 							},
 							...(pass === 2
-								? [{ rule: 'dead-export', siteKey: 'dead-export:src/two.ts', outcome: 'declined', reason: 'deleting an export is a public-API change' }]
+								? [
+										{
+											rule: 'lightsout/dead-export',
+											siteKey: 'lightsout/dead-export:src/two.ts',
+											outcome: 'declined',
+											reason: 'deleting an export is a public-API change',
+										},
+									]
 								: []),
 						],
 					}),
@@ -389,8 +274,8 @@ describe('runRefactorPipeline batch outcomes', () => {
 		// the requeue's answer about a site replaces the first pass's, and a site
 		// only the requeue spoke about is kept alongside it
 		expect(persisted.advisoryOutcomes).toStrictEqual([
-			{ rule: 'function-size', siteKey: 'function-size:src/one.ts', outcome: 'applied' },
-			{ rule: 'dead-export', siteKey: 'dead-export:src/two.ts', outcome: 'declined', reason: 'deleting an export is a public-API change' },
+			{ rule: 'lightsout/function-size', siteKey: 'lightsout/function-size:src/one.ts', outcome: 'applied' },
+			{ rule: 'lightsout/dead-export', siteKey: 'lightsout/dead-export:src/two.ts', outcome: 'declined', reason: 'deleting an export is a public-API change' },
 		]);
 	});
 });

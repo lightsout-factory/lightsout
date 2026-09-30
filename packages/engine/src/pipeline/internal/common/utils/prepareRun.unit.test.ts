@@ -171,7 +171,7 @@ describe('prepareRun', () => {
 
 		const prepared = await prepareRun({ run, cwd, config, packages: undefined });
 
-		expect('error' in prepared ? undefined : prepared.standards).toContain('<!-- lightsout-defaults: code/');
+		expect('error' in prepared ? undefined : prepared.standards).toContain('<!-- lightsout: code/');
 		expect(progress.some((line) => line.startsWith('standards channels: base'))).toBe(true);
 	});
 });

@@ -74,7 +74,7 @@ test('buildRefactorExecutorInvocation: the advisory-outcomes ask names the two o
 	// and the worked example carries the same field names the parser reads
 	expect(
 		prompt.includes(
-			'{ "rule": "function-size", "siteKey": "function-size:src/example.ts", "outcome": "declined", "reason": "orchestration exemption applies — every step delegates" }',
+			'{ "rule": "lightsout/function-size", "siteKey": "lightsout/function-size:src/example.ts", "outcome": "declined", "reason": "orchestration exemption applies — every step delegates" }',
 		),
 	).toBeTruthy();
 });

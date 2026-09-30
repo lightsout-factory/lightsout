@@ -8,6 +8,8 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
 import { createAgentHeartbeat } from '#src/standardsCheck/internal/common/utils/createAgentHeartbeat.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
+import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
 
 interface Params {
 	cwd: string;
@@ -22,13 +24,14 @@ interface Params {
 }
 
 const collectJudgmentRules = ({ packs, channels }: { packs: LoadedStandardsLibrary[]; channels: string[] }) =>
-	packs
-		.flatMap((pack) => pack.rules)
-		.filter((rule) => !rule.checked && (rule.channel === 'base' || channels.includes(rule.channel)))
-		.map((rule) => ({ id: rule.id, documentPath: rule.documentPath, prose: rule.prose }));
+	packs.flatMap((pack) => pack.rules).filter((rule) => !rule.checked && (rule.channel === 'base' || channels.includes(rule.channel)));
 
-/** Everything dropped is counted and stated — a silent drop would read as a clean review. */
-const toFindings = ({ reported, known }: { reported: StandardsReviewReport['findings']; known: Set<string> }) => {
+/**
+ * Everything dropped is counted and stated — a silent drop would read as a
+ * clean review. The agent may write a rule's full name or a short id only one
+ * rule in scope holds; either way the finding carries the full name.
+ */
+const toFindings = ({ reported, rules }: { reported: StandardsReviewReport['findings']; rules: LoadedStandardsRule[] }) => {
 	const findings: StandardsFinding[] = [];
 	const unknownRules: string[] = [];
 	const notes: string[] = [];
@@ -36,8 +39,9 @@ const toFindings = ({ reported, known }: { reported: StandardsReviewReport['find
 
 	for (const entry of reported) {
 		const path = entry.files[0]?.path;
+		const resolved = resolveRuleName({ name: entry.rule, rules });
 
-		if (!known.has(entry.rule)) {
+		if ('problem' in resolved) {
 			unknownRules.push(entry.rule);
 			continue;
 		}
@@ -48,9 +52,9 @@ const toFindings = ({ reported, known }: { reported: StandardsReviewReport['find
 		}
 
 		findings.push({
-			rule: entry.rule,
+			rule: resolved.rule.name,
 			severity: StandardsSeverity.Advisory,
-			siteKey: `${entry.rule}:${path}`,
+			siteKey: `${resolved.rule.name}:${path}`,
 			files: entry.files,
 			detail: entry.detail,
 			...(entry.guidance === undefined ? {} : { guidance: entry.guidance }),
@@ -77,8 +81,8 @@ const toFindings = ({ reported, known }: { reported: StandardsReviewReport['find
  * reported, and a repo whose harness is absent is not a repo in violation.
  *
  * Site keys are derived here rather than asked for, and a finding naming a rule
- * no loaded pack declares is dropped — an id an agent invented must not be
- * able to enter the findings stream.
+ * no single loaded judgment rule answers to is dropped — a name an agent
+ * invented must not be able to enter the findings stream.
  */
 export const runStandardsReview = async ({
 	cwd,
@@ -125,7 +129,7 @@ export const runStandardsReview = async ({
 		return { findings: [], notes: [`agent review skipped — ${outcome.failure}`] };
 	}
 
-	const result = toFindings({ reported: outcome.report.findings, known: new Set(rules.map((rule) => rule.id)) });
+	const result = toFindings({ reported: outcome.report.findings, rules });
 	const count = result.findings.length;
 	const found = count === 0 ? 'nothing to report' : `${count} advisor${count === 1 ? 'y' : 'ies'} to look at`;
 

@@ -179,9 +179,11 @@ To use your own instead, list its root folder:
 
 Entries load in the order you list them, and each may be a path relative to the
 root of your repository or an absolute path. Listing several stacks their
-documents; two packs that claim the same rule id fail the run rather than
-letting an override mean two things. A root with no `lightsout-standards.json`
-in it fails the run too.
+documents. Every rule is named `<library>/<rule>`, where the library is the
+`name` in its root's `lightsout-standards.json`, so two libraries with
+different names may each hold a rule with the same short id. Two listed roots
+with the same library name fail the run rather than letting a rule name mean
+two things. A root with no `lightsout-standards.json` in it fails the run too.
 
 Set `standards-packs` to `false` to run with no standards at all.
 
@@ -256,7 +258,7 @@ is overwritten the next time `pnpm build:config-reference` runs.
 | `gate-overrides` | no | Opt-in per-checkpoint gate schedules, keyed by the four verification checkpoints — `clean-slate`, `verify-implement`, `verify-tests` and `verify-refactor`. A checkpoint listed with an array runs exactly those gates, in that order, with no tiering, and a red one stops the rest of the list; `"off"` runs no gates at all there, `gates.generate` included. A checkpoint the block does not list keeps the engine’s default: the cheap gates first — check, then the unit suite — and the expensive ones, each custom `test-*` suite and the build, only once every package group’s cheap gates are green. A name must be a gate this repo configures under `gates` or `package-gates`; `generate` and `format` may not be named. |
 | `standards-packs` | no | Standards packs a run works against. Unspecified = the pack the plugin ships; `false` = explicitly none; an array = exactly these pack roots, each the folder holding `lightsout-standards.json`, repo-relative or absolute. One pack carries both the code and the test documents, which is why there is a single key rather than two. A root that cannot be loaded is a hard error. |
 | `standards-channels` | no | Framework channels of the loaded standards packs (e.g. 'react', 'tanstack'). Unspecified = detected per run from the scoped packages' package.json dependencies; an array REPLACES detection, and an empty one means base documents only. |
-| `standards-rule-settings` | no | Per-rule severity and options overrides for `lightsout standards-check`, keyed by rule id. A rule not named here keeps its pack’s default — silence is never a change. |
+| `standards-rule-settings` | no | Per-rule severity and options overrides for `lightsout standards-check`, keyed by full rule name (`<library>/<rule>`), or by short rule id where only one loaded rule has it. A rule not named here keeps its pack’s default — silence is never a change. |
 | `ship` | no | Opt-in `lightsout ship` settings: the branch ticket pattern whose `ticket` capture group becomes the result’s ticket reference, the pull request body template, the merge method, whether a passed implement run chains into ship, an optional pre-ship command that prepares the release candidate before it is verified, and the explicit exception for a repository that intentionally has no CI. |
 | `ticket-tracker` | no | Opt-in tracker identity: which provider the engine talks to and that provider’s address and credential environment variables — a Linear team and API key, or a Jira Cloud site, project, API token and account email. Every command that reads or writes a ticket resolves it from here, so tracker identity is spelled once rather than once per command. |
 | `worktree` | no | Opt-in shared workspace preparation. `worktree.setup` is the one command run inside a fresh worktree before any agent, such as `pnpm install` — the queue runs it in each ticket worktree it cuts, and an isolated implementation run runs it in the worktree it cuts for itself. An absent block means nothing runs. The block is strict, so a misspelled key fails parsing rather than silently leaving the command unset. |
@@ -347,7 +349,9 @@ The three severities are:
 
 A pack may also ship a rule `off`: a convention some repositories want and most do not, which a repository opts into by naming it here at `blocking` or `advisory`. Until it does, the rule neither runs nor reaches an agent's instructions. A rule you turn `off` yourself still reaches them, because the standard still holds and your linter is what enforces it.
 
-Severity is the only lever a run gates on. There is no separate list of blockable rules, so the only way to stop a rule blocking is to write `advisory` or `off` for it here — an explicit line in a committed file. A mistyped rule id fails config parsing rather than silently disabling an override you believe is active.
+Each key is a full rule name, `<library>/<rule>` such as `lightsout/file-size`, or a short id such as `file-size` that only one loaded rule has. A key that matches no rule, or a short id that rules in several libraries share, stops the load and names the full candidates, rather than silently disabling an override you believe is active. Two keys that name the same rule, such as `file-size` and `lightsout/file-size`, stop the load too. Findings, baseline site keys and `standards-check --list` always use full rule names.
+
+Severity is the only lever a run gates on. There is no separate list of blockable rules, so the only way to stop a rule blocking is to write `advisory` or `off` for it here — an explicit line in a committed file.
 
 Run `lightsout standards-check --list` to print every rule with the standards document it enforces and the state it runs at in your repo — the live answer, rather than a list here that goes stale.
 

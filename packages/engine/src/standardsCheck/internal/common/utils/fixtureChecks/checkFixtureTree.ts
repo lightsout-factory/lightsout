@@ -50,5 +50,5 @@ export const checkFixtureTree = async ({ cwd, rule, inputKind, run, label, compi
 		throw new Error(`no tsconfig.json in ${label}, so none of its ${files.length} file(s) could be typed — a type-checker rule's fixtures need one`);
 	}
 
-	return runRuleCheck({ rule: rule.id, run, input, options: rule.defaultOptions });
+	return runRuleCheck({ rule, run, input, options: rule.defaultOptions });
 };

@@ -124,9 +124,17 @@ describe('getConfigView', () => {
 	test('reports a rule this repo turned up as set by config, at the severity the file asked for', async () => {
 		const view = await getConfigView({ cwd: repoRoot });
 
-		const fileSize = view.ruleStates.find((state) => state.rule === 'file-size');
+		const fileSize = view.ruleStates.find((state) => state.rule === 'lightsout/file-size');
 
 		expect(fileSize).toMatchObject({ fromConfig: true, severity: StandardsSeverity.Blocking });
+	});
+
+	test('each rule state carries its full name and its id inside the library', async () => {
+		const view = await getConfigView({ cwd: repoRoot });
+
+		const fileSize = view.ruleStates.find((state) => state.id === 'file-size');
+
+		expect(fileSize).toEqual(expect.objectContaining({ rule: 'lightsout/file-size', id: 'file-size' }));
 	});
 
 	test('each rule state carries the options it runs with in this repo', async () => {
@@ -134,7 +142,7 @@ describe('getConfigView', () => {
 
 		const view = await getConfigView({ cwd });
 
-		const folderSize = view.ruleStates.find((state) => state.rule === 'folder-size');
+		const folderSize = view.ruleStates.find((state) => state.rule === 'lightsout/folder-size');
 
 		expect(folderSize).toEqual(expect.objectContaining({ options: { cap: 15 }, fromConfig: true }));
 	});
@@ -227,7 +235,7 @@ describe('getConfigView', () => {
 
 		const view = await getConfigView({ cwd });
 
-		expect(view.ruleStates).toEqual([expect.objectContaining({ rule: 'house-rule', pack: 'house', channel: 'base' })]);
+		expect(view.ruleStates).toEqual([expect.objectContaining({ rule: 'house/house-rule', id: 'house-rule', pack: 'house', channel: 'base' })]);
 	});
 
 	test('a config that is not JSON at all comes back as that, rather than as a repo that has no config', async () => {

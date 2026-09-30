@@ -3,6 +3,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { LoadedStandardsTopic } from '#src/standardsLibraries/common/types/LoadedStandardsTopic.ts';
+import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
 
 interface Params {
 	pack: LoadedStandardsLibrary;
@@ -31,8 +32,13 @@ const renderDocument = ({ name, document, proseById }: { name: string; document:
  * the rule, and the standard still holds.
  */
 export const buildStandardsDocuments = ({ pack, channels, config }: Params): { code?: string; tests?: string } => {
-	const named = config?.['standards-rule-settings'] ?? {};
-	const inPlay = pack.rules.filter((rule) => rule.defaultSeverity !== StandardsSeverity.Off || Object.hasOwn(named, rule.id));
+	// A key naming no rule here is ignored: refusing a bad key is resolvePackageRuleStates' job.
+	const namedRules = Object.keys(config?.['standards-rule-settings'] ?? {}).flatMap((key) => {
+		const resolved = resolveRuleName({ name: key, rules: pack.rules });
+
+		return 'rule' in resolved ? [resolved.rule.name] : [];
+	});
+	const inPlay = pack.rules.filter((rule) => rule.defaultSeverity !== StandardsSeverity.Off || namedRules.includes(rule.name));
 	const proseById = new Map<string, string>(inPlay.map((rule) => [rule.id, rule.prose]));
 
 	const renderSet = ({ set }: { set: StandardsSet }) => {

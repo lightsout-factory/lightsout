@@ -16,12 +16,22 @@ const setupRuleFolder = ({ frontMatter }: { frontMatter: string }) => {
 	return { folderPath };
 };
 
+/** One rule folder on disk under the given folder name, declaring only a summary. */
+const setupNamedRuleFolder = ({ folderName }: { folderName: string }) => {
+	const folderPath = join(mkdtempSync(join(tmpdir(), 'lightsout-rule-')), folderName);
+
+	mkdirSync(folderPath, { recursive: true });
+	writeFileSync(join(folderPath, 'rule.md'), '---\nsummary: a file past its size cap\n---\n\nKeep files small.\n');
+
+	return { folderPath };
+};
+
 describe('parseRuleFolder', () => {
 	test('reads a rule the pack ships off, for a repo to opt into', async () => {
 		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: an internal file imported from outside\nseverity: off' });
 		const problems: string[] = [];
 
-		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems });
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', library: 'acme', problems });
 
 		expect({ id: rule?.id, defaultSeverity: rule?.defaultSeverity, problems }).toStrictEqual({
 			id: 'internal-import-from-outside',
@@ -33,7 +43,7 @@ describe('parseRuleFolder', () => {
 	test('defaults a rule that states no severity to advisory', async () => {
 		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: an internal file imported from outside' });
 
-		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems: [] });
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', library: 'acme', problems: [] });
 
 		expect(rule?.defaultSeverity).toBe(StandardsSeverity.Advisory);
 	});
@@ -42,7 +52,7 @@ describe('parseRuleFolder', () => {
 		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: an internal file imported from outside\nseverity: loud' });
 		const problems: string[] = [];
 
-		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems });
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', library: 'acme', problems });
 
 		expect({ rule, problemCount: problems.length }).toStrictEqual({ rule: undefined, problemCount: 1 });
 	});
@@ -52,7 +62,7 @@ describe('parseRuleFolder', () => {
 			frontMatter: 'summary: an internal file imported from outside\nexample:\n  kind: repo\n  focus:\n    fail: src/a.ts\n    pass: src/b.ts',
 		});
 
-		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems: [] });
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', library: 'acme', problems: [] });
 
 		expect(rule?.example).toStrictEqual({ kind: RuleExampleKind.Repo, focus: { fail: 'src/a.ts', pass: 'src/b.ts' } });
 	});
@@ -60,7 +70,7 @@ describe('parseRuleFolder', () => {
 	test('leaves the example undeclared when rule.md says nothing, so the files decide', async () => {
 		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: an internal file imported from outside' });
 
-		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems: [] });
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', library: 'acme', problems: [] });
 
 		expect(rule).not.toHaveProperty('example');
 	});
@@ -69,7 +79,7 @@ describe('parseRuleFolder', () => {
 		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: an internal file imported from outside\nexample:\n  kind: repo' });
 		const problems: string[] = [];
 
-		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems });
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', library: 'acme', problems });
 
 		expect({ rule, problemCount: problems.length }).toStrictEqual({ rule: undefined, problemCount: 1 });
 	});
@@ -80,7 +90,7 @@ describe('parseRuleFolder', () => {
 	])('reads the numbers a rule declares under options as its default options', async ({ frontMatter, expected }) => {
 		const { folderPath } = setupRuleFolder({ frontMatter });
 
-		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems: [] });
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', library: 'acme', problems: [] });
 
 		expect(rule?.defaultOptions).toStrictEqual(expected);
 	});
@@ -89,11 +99,23 @@ describe('parseRuleFolder', () => {
 		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: an internal file imported from outside\noptions:\n  cap: soon' });
 		const problems: string[] = [];
 
-		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', problems });
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', library: 'acme', problems });
 
 		expect({ rule, problems }).toEqual({
 			rule: undefined,
 			problems: [expect.stringContaining('code/modules/01-internal-import-from-outside/rule.md')],
+		});
+	});
+
+	test('a rule parsed for library acme carries the full name acme/size and its library', async () => {
+		const { folderPath } = setupNamedRuleFolder({ folderName: '03-size' });
+
+		const rule = await parseRuleFolder({ folderPath, set: 'code', documentPath: 'code/modules', library: 'acme', problems: [] });
+
+		expect({ id: rule?.id, library: rule?.library, name: rule?.name }).toStrictEqual({
+			id: 'size',
+			library: 'acme',
+			name: 'acme/size',
 		});
 	});
 });

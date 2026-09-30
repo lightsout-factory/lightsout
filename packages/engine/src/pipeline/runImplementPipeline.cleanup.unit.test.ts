@@ -16,7 +16,7 @@ import { withTestChangeReview } from '#tests/helpers/withTestChangeReview.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
 
 /** The judgment rule ids the standards reviewer was handed, so a stub finding can name one a loaded pack actually declares. */
-const ruleIdsOffered = ({ systemPrompt }: { systemPrompt: string }) => [...systemPrompt.matchAll(/Rule id: `([^`]+)`/g)].map(([, id]) => id ?? '');
+const ruleIdsOffered = ({ systemPrompt }: { systemPrompt: string }) => [...systemPrompt.matchAll(/Rule: `([^`]+)`/g)].map(([, id]) => id ?? '');
 
 /**
  * A file well past the 250-line cap: one blocking `file-size` finding whose
@@ -146,7 +146,7 @@ describe('runImplementPipeline', () => {
 		expect({ ok: result.ok, error: result.error }).toStrictEqual({ ok: true, error: undefined });
 		expect(roundsRun()).toBe(0);
 		expect(record).toEqual(expect.objectContaining({ roundsUsed: 0, endReason: 'no-work' }));
-		expect(record.inherited.map((finding) => finding.siteKey)).toContain('file-size:src/big.js');
+		expect(record.inherited.map((finding) => finding.siteKey)).toContain('lightsout/file-size:src/big.js');
 		expect(result.manifest.steps.find((step) => step.id === 'verify-refactor')?.status).toBe('passed');
 	});
 
@@ -182,7 +182,7 @@ describe('runImplementPipeline', () => {
 		expect(result.ok).toBe(true);
 		expect(roundsRun()).toBe(2);
 		expect(record).toEqual(expect.objectContaining({ roundsUsed: 2, endReason: 'budget-exhausted' }));
-		expect(record.remaining.map((finding) => finding.siteKey)).toContain('multi-export:src/subject.js');
+		expect(record.remaining.map((finding) => finding.siteKey)).toContain('lightsout/multi-export:src/subject.js');
 		expect(cleanupOnwards.map((step) => step.status)).toStrictEqual(['passed', 'passed', 'passed']);
 	});
 
@@ -299,7 +299,7 @@ describe('runImplementPipeline', () => {
 		// how much stands and how many rounds bought it, the site it stands on, and
 		// the agent's own reason for leaving it — the evidence a human acts on later
 		expect(record.narration).toMatch(/[1-9]\d* qualifying blocking finding\(s\) still standing after 2 round\(s\)/);
-		expect(record.narration).toContain('multi-export:src/subject.js');
+		expect(record.narration).toContain('lightsout/multi-export:src/subject.js');
 		expect(record.narration).toContain('SPLITTING-THIS-WOULD-BREAK-THE-PUBLIC-API');
 		// the same account reaches a watching human, and none of it claims the run ended
 		expect(progress).toContain(record.narration);
@@ -358,9 +358,9 @@ describe('runImplementPipeline', () => {
 
 		expectDefined(record);
 		expect(record).toEqual(expect.objectContaining({ roundsUsed: 2, endReason: 'declined-twice', failures: [] }));
-		expect(record.remaining.map((finding) => finding.siteKey)).toContain('multi-export:src/subject.js');
-		expect(record.inherited.map((finding) => finding.siteKey)).toContain('file-size:src/big.js');
-		expect(record.uncertain.map((finding) => finding.siteKey)).toContain('multi-export:src/legacy.js');
+		expect(record.remaining.map((finding) => finding.siteKey)).toContain('lightsout/multi-export:src/subject.js');
+		expect(record.inherited.map((finding) => finding.siteKey)).toContain('lightsout/file-size:src/big.js');
+		expect(record.uncertain.map((finding) => finding.siteKey)).toContain('lightsout/multi-export:src/legacy.js');
 		// cleanup changed nothing, so the read taken before the first round stands as the final one too
 		expect([record.initialReview, record.finalReview]).toEqual([
 			[expect.objectContaining({ detail: 'REVIEW-DETAIL-SENTINEL' })],

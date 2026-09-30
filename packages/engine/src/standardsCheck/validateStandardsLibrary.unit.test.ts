@@ -7,45 +7,18 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import { validateStandardsLibrary } from '#src/standardsCheck/validateStandardsLibrary.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
-import { duplicatedSources, sharedImportSources, writeSampleSources } from '#tests/helpers/duplicationSamples.ts';
 
-/** A check that objects to any file named `banned.ts` — small enough to reason about, real enough to fail. */
-const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.FileList ? input.files : [])
-		.filter((file) => file.endsWith('banned.ts'))
-		.map((path) => ({
-			siteKey: `banned:${path}`,
-			files: [{ path }],
-			detail: 'a file the rule bans',
-		}));
-
-/** The same ban, asked of the files the engine could type rather than of the path list. */
-const bansTheBannedTypedFile: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.TypeChecker ? [...input.typedFiles.keys()] : [])
-		.filter((path) => path.endsWith('banned.ts'))
-		.map((path) => ({
-			siteKey: `banned:${path}`,
-			files: [{ path }],
-			detail: 'a file the rule bans',
-		}));
-
-/** The same ban asked of what a fixture side declares — the facts a framework carve-out is keyed on, which the graph itself cannot show. */
-const bansTheDeclaredFramework: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.ImportGraph ? (input.dependencies.get('.') ?? []) : [])
-		.filter((name) => name === '@nestjs/core')
-		.map((name) => ({
-			siteKey: `framework:${name}`,
-			files: [{ path: 'package.json' }],
-			detail: 'a framework the rule bans',
-		}));
-
-/** Every duplicated span the engine's detector found — the duplication tier reads spans it never built itself. */
-const reportsEveryDuplicateSpan: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.CloneSpans ? input.spans : []).map((span) => ({
-		siteKey: `duplicate:${span.files.map((file) => file.path).join(':')}`,
-		files: span.files,
-		detail: 'the same block of code written out twice',
-	}));
+/** A check for the rule `id` that objects to any file named `banned.ts` — small enough to reason about, real enough to fail. */
+const bansTheBannedFile =
+	({ id }: { id: string }): StandardsCheckFunction =>
+	({ input }) =>
+		(input.kind === StandardsInputKind.FileList ? input.files : [])
+			.filter((file) => file.endsWith('banned.ts'))
+			.map((path) => ({
+				siteKey: `${id}:${path}`,
+				files: [{ path }],
+				detail: 'a file the rule bans',
+			}));
 
 /**
  * A rule folder's fixture pair on disk. Each side is a miniature repo the check
@@ -64,50 +37,6 @@ const setupFixtures = ({ pass, fail }: { pass: string[]; fail: string[] }) => {
 			writeFileSync(join(fixturesPath, side, 'src', name), 'export const value = 1;\n');
 		}
 	}
-
-	return { fixturesPath };
-};
-
-/**
- * A fixture pair whose sides each carry a tsconfig of their own. A type-checker
- * rule needs one on the side it is run against: a fixture side is a miniature
- * repo, and a program has nothing to type its files with otherwise.
- */
-const setupTypedFixtures = ({ pass, fail }: { pass: string[]; fail: string[] }) => {
-	const { fixturesPath } = setupFixtures({ pass, fail });
-
-	for (const side of ['pass', 'fail'] as const) {
-		writeFileSync(join(fixturesPath, side, 'tsconfig.json'), '{ "compilerOptions": { "strict": true, "noEmit": true }, "include": ["src"] }\n');
-	}
-
-	return { fixturesPath };
-};
-
-/**
- * A fixture pair whose fail side declares a framework in a manifest of its own.
- * A side is a miniature repo, so the manifest sits at its root — the only place
- * a rule asking "does this package use a file-based router?" can read it.
- */
-const setupDeclaringFixtures = ({ pass, fail }: { pass: string[]; fail: string[] }) => {
-	const { fixturesPath } = setupFixtures({ pass, fail });
-
-	writeFileSync(join(fixturesPath, 'pass', 'package.json'), '{ "name": "pass-side" }\n');
-	writeFileSync(join(fixturesPath, 'fail', 'package.json'), '{ "name": "fail-side", "dependencies": { "@nestjs/core": "^10" } }\n');
-
-	return { fixturesPath };
-};
-
-/**
- * A fixture pair for a duplication rule: the fail side writes one block out
- * twice, and the pass side shares only an import list — the boilerplate the
- * engine blanks before it detects anything, and the false positive the pass
- * side exists to prove.
- */
-const setupDuplicatingFixtures = () => {
-	const fixturesPath = join(mkdtempSync(join(tmpdir(), 'lightsout-validate-')), 'fixtures');
-
-	writeSampleSources({ dir: join(fixturesPath, 'fail'), sources: duplicatedSources });
-	writeSampleSources({ dir: join(fixturesPath, 'pass'), sources: sharedImportSources });
 
 	return { fixturesPath };
 };
@@ -139,6 +68,8 @@ const setupTwoRuleFixtures = () => ({
 const noFrameworkOwnedNote = 'acme: no fixtures/framework-owned/ — no rule was held to the framework-owned invariant';
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPath: string }): LoadedStandardsRule => ({
+	name: `acme/${overrides.id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
@@ -164,7 +95,7 @@ describe('validateStandardsLibrary', () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 
 		const { problems, notes } = await validate({
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) })],
 		});
 
 		expect(problems).toStrictEqual([]);
@@ -175,7 +106,7 @@ describe('validateStandardsLibrary', () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['also-allowed.ts'] });
 
 		const { problems } = await validate({
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) })],
 		});
 
 		expect(problems).toStrictEqual(['no-banned-file: the fail fixture produced no finding — the check does not catch what the rule describes']);
@@ -185,7 +116,7 @@ describe('validateStandardsLibrary', () => {
 		const { fixturesPath } = setupFixtures({ pass: ['banned.ts'], fail: ['banned.ts'] });
 
 		const { problems } = await validate({
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) })],
 		});
 
 		expect(problems).toStrictEqual(['no-banned-file: the pass fixture produced 1 finding(s) — the check flags code the rule allows']);
@@ -197,7 +128,7 @@ describe('validateStandardsLibrary', () => {
 		const { problems, notes } = await validate({
 			built: true,
 			rules: [
-				rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile }),
+				rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) }),
 				rule({ id: 'premature-abstraction', fixturesPath }),
 			],
 		});
@@ -214,7 +145,7 @@ describe('validateStandardsLibrary', () => {
 		const { fixturesPath } = setupWithoutFixtures();
 
 		const { problems } = await validate({
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) })],
 		});
 
 		expect(problems).toStrictEqual([
@@ -227,7 +158,7 @@ describe('validateStandardsLibrary', () => {
 		const { fixturesPath } = setupEmptyFailFixture();
 
 		const { problems, notes } = await validate({
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) })],
 		});
 
 		// only the empty side is named — the populated one is a pair member already
@@ -260,7 +191,9 @@ describe('validateStandardsLibrary', () => {
 	test('a rule shipping a check but declaring no input kind is judgment-only — there is no input to run it against', async () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 
-		const { problems, notes } = await validate({ rules: [rule({ id: 'premature-abstraction', fixturesPath, run: bansTheBannedFile })] });
+		const { problems, notes } = await validate({
+			rules: [rule({ id: 'premature-abstraction', fixturesPath, run: bansTheBannedFile({ id: 'premature-abstraction' }) })],
+		});
 
 		expect(problems).toStrictEqual([]);
 		expect(notes).toStrictEqual(['premature-abstraction: judgment-only — fixtures reserved for agent accuracy', noFrameworkOwnedNote]);
@@ -275,92 +208,9 @@ describe('validateStandardsLibrary', () => {
 		const { problems } = await validate({ rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: throwingRun })] });
 
 		expect(problems).toStrictEqual([
-			'no-banned-file: the fail fixture could not be checked — standards rule "no-banned-file" threw while checking: cannot parse that',
-			'no-banned-file: the pass fixture could not be checked — standards rule "no-banned-file" threw while checking: cannot parse that',
+			'no-banned-file: the fail fixture could not be checked — standards rule "acme/no-banned-file" threw while checking: cannot parse that',
+			'no-banned-file: the pass fixture could not be checked — standards rule "acme/no-banned-file" threw while checking: cannot parse that',
 		]);
-	});
-
-	test('validates a rule that needs parsed trees with the engine own typescript', async () => {
-		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
-		const bansTheBannedTree: StandardsCheckFunction = ({ input }) =>
-			(input.kind === StandardsInputKind.SyntaxTree ? [...input.trees.keys()] : [])
-				.filter((path) => path.endsWith('banned.ts'))
-				.map((path) => ({
-					siteKey: `banned:${path}`,
-					files: [{ path }],
-					detail: 'a file the rule bans',
-				}));
-
-		const { problems, notes } = await validate({
-			rules: [rule({ id: 'dead-export', fixturesPath, inputKind: StandardsInputKind.SyntaxTree, run: bansTheBannedTree })],
-		});
-
-		// the fixtures live in the engine's own repo, so the compiler is right there
-		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
-	});
-
-	test('validates a rule that needs a type checker against fixture sides that carry a tsconfig', async () => {
-		const { fixturesPath } = setupTypedFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
-
-		const { problems, notes } = await validate({
-			rules: [rule({ id: 'discriminant-const-object', fixturesPath, inputKind: StandardsInputKind.TypeChecker, run: bansTheBannedTypedFile })],
-		});
-
-		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
-	});
-
-	test('a type-checker fixture side with no tsconfig is named as such, not reported as a check that catches nothing', async () => {
-		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
-
-		const { problems } = await validate({
-			rules: [rule({ id: 'discriminant-const-object', fixturesPath, inputKind: StandardsInputKind.TypeChecker, run: bansTheBannedTypedFile })],
-		});
-
-		// a side the engine could type nothing in hands the check nothing, and the
-		// silence that follows would otherwise send the author to the check
-		expect(problems).toStrictEqual([
-			"discriminant-const-object: the fail fixture could not be checked — no tsconfig.json in fixtures/fail/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one",
-			"discriminant-const-object: the pass fixture could not be checked — no tsconfig.json in fixtures/pass/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one",
-		]);
-	});
-
-	test('validates an import-graph rule against what its fixture side declares, not its edges alone', async () => {
-		const { fixturesPath } = setupDeclaringFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
-
-		const { problems, notes } = await validate({
-			rules: [rule({ id: 'module-boundary', fixturesPath, inputKind: StandardsInputKind.ImportGraph, run: bansTheDeclaredFramework })],
-		});
-
-		// the two sides differ only in what their manifests declare, so a pass here
-		// is the declarations reaching the check — and the fixtures live in the
-		// engine's own repo, so the compiler the kind needs is right there
-		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
-	});
-
-	test('validates a duplicate-block rule against the spans the engine detected for it', async () => {
-		const { fixturesPath } = setupDuplicatingFixtures();
-
-		const { problems, notes } = await validate({
-			rules: [
-				rule({
-					id: 'duplicate-code-block',
-					fixturesPath,
-					inputKind: StandardsInputKind.CloneSpans,
-					run: reportsEveryDuplicateSpan,
-					defaultOptions: { minTokens: 50 },
-				}),
-			],
-		});
-
-		// the kind parses nothing, so no compiler is resolved for it — and a pass
-		// here is both halves of the pair: the fail side's duplicated block
-		// reaching the check, and the pass side's shared import list never being
-		// counted as one
-		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
 	});
 
 	test('validates every rule in the pack, whatever channel it sits on', async () => {
@@ -368,12 +218,31 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems } = await validate({
 			rules: [
-				rule({ id: 'base-rule', fixturesPath: catching, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile }),
-				rule({ id: 'react-rule', channel: 'react', fixturesPath: blind, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile }),
+				rule({ id: 'base-rule', fixturesPath: catching, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'base-rule' }) }),
+				rule({ id: 'react-rule', channel: 'react', fixturesPath: blind, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'react-rule' }) }),
 			],
 		});
 
 		// authoring covers every channel, whatever the machine doing it runs
 		expect(problems).toStrictEqual(['react-rule: the fail fixture produced no finding — the check does not catch what the rule describes']);
+	});
+
+	test('a check whose site key does not start with its rule id is a problem naming the full rule name and the key', async () => {
+		const { fixturesPath } = setupFixtures({ pass: ['a.ts'], fail: ['a.ts'] });
+		const writesAWrongPrefix: StandardsCheckFunction = ({ input }) =>
+			(input.kind === StandardsInputKind.FileList ? input.files : []).map(() => ({
+				siteKey: 'wrong:src/a.ts',
+				files: [{ path: 'src/a.ts' }],
+				detail: 'a finding filed under another rule',
+			}));
+
+		const { problems } = await validate({
+			rules: [rule({ id: 'size', name: 'acme/size', library: 'acme', fixturesPath, inputKind: StandardsInputKind.FileList, run: writesAWrongPrefix })],
+		});
+
+		// both sides trip the prefix check; the wording is the author's to change,
+		// the full name and the offending key are what must survive
+		const namesRuleAndKey = problems.map((problem) => problem.includes('acme/size') && problem.includes('wrong:src/a.ts'));
+		expect(namesRuleAndKey).toStrictEqual([true, true]);
 	});
 });

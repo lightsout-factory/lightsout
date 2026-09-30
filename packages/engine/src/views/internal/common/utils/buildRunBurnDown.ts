@@ -14,8 +14,8 @@ interface JoinedBatch {
 	remaining: number;
 }
 
-/** `test-file-size` is deliberately outside the set: it never forms a batch. */
-const overCapRules = new Set(['file-size', 'function-size', 'folder-size']);
+/** `lightsout/test-file-size` is deliberately outside the set: it never forms a batch. */
+const overCapRules = new Set(['lightsout/file-size', 'lightsout/function-size', 'lightsout/folder-size']);
 
 const sumOver = ({ entries, read }: { entries: JoinedBatch[]; read: (entry: JoinedBatch) => number }) =>
 	entries.reduce((total, entry) => total + read(entry), 0);

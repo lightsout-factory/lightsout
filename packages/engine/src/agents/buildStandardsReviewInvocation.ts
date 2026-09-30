@@ -1,13 +1,13 @@
 import standardsReviewerPrompt from '#src/agents/prompts/standardsReviewer.md';
 
 interface Params {
-	/** Judgment-only rules in scope: id, document path, and full prose. */
-	rules: { id: string; documentPath: string; prose: string }[];
+	/** Judgment-only rules in scope: full `<library>/<rule-id>` name, document path, and full prose. */
+	rules: { name: string; documentPath: string; prose: string }[];
 	/** Repo-relative files the review covers. */
 	files: string[];
 }
 
-const ruleSection = ({ rule }: { rule: Params['rules'][number] }) => `**Rule id: \`${rule.id}\`**\n\n${rule.prose}`;
+const ruleSection = ({ rule }: { rule: Params['rules'][number] }) => `**Rule: \`${rule.name}\`**\n\n${rule.prose}`;
 
 /**
  * The rules ride the system prompt because they are identical on every review

@@ -51,4 +51,11 @@ describe('renderConfigKeyReference', () => {
 		expect(planRow).toContain('plan.default-work-order-mode');
 		expect(planRow).not.toContain('default-ticket-mode');
 	});
+
+	test('the standards-rule-settings row says a key is a full rule name, or a short id only one loaded rule has', () => {
+		const settingsRow = findRow({ key: 'standards-rule-settings' });
+
+		expect(settingsRow).toMatch(/full rule name \(`<library>\/<rule>`\).*short rule id/);
+		expect(settingsRow).not.toContain('keyed by rule id');
+	});
 });

@@ -25,11 +25,11 @@ describe('StandardsLibraryRoot', () => {
 	});
 
 	test('the name survives verbatim — it is the text every assembled document header carries', () => {
-		const { root } = setupRoot({ extra: { name: 'acme/house-rules' } });
+		const { root } = setupRoot({ extra: { name: 'Acme house-rules' } });
 
 		const parsed = StandardsLibraryRoot.parse(root);
 
-		expect(parsed.name).toBe('acme/house-rules');
+		expect(parsed.name).toBe('Acme house-rules');
 	});
 
 	test('an authored root carries no built marker — its absence is what says the fixtures are still there', () => {
@@ -146,6 +146,25 @@ describe('StandardsLibraryRoot', () => {
 
 		// an empty name would render a document header that identifies no pack
 		expect(result.success).toBe(false);
+	});
+
+	test('rejects a library name holding a slash, since the slash separates a full rule name', () => {
+		const { root: slashed } = setupRoot({ extra: { name: 'acme/core' } });
+		const { root: plain } = setupRoot({ extra: { name: 'acme' } });
+
+		const accepted = [slashed, plain].map((root) => StandardsLibraryRoot.safeParse(root).success);
+
+		// a full rule name is <library>/<rule-id>, so a slash inside the library
+		// name would make the split between library and rule ambiguous
+		expect(accepted).toStrictEqual([false, true]);
+	});
+
+	test('the slash refusal lands on the name field and says the name is the first half of every full rule name', () => {
+		const { root } = setupRoot({ extra: { name: 'acme/core' } });
+
+		const result = StandardsLibraryRoot.safeParse(root);
+
+		expect(result.error?.issues).toEqual([expect.objectContaining({ path: ['name'], message: expect.stringContaining('full rule name') })]);
 	});
 
 	test.each([{ name: 42 }, { name: ['lightsout defaults'] }, { name: null }])('rejects a name that is not a string ($name)', ({ name }) => {

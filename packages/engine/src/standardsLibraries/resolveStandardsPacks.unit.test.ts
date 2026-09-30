@@ -55,7 +55,7 @@ describe('resolveStandardsPacks', () => {
 
 		// unspecified is a real request for the defaults, not silence
 		expect(loaded).toHaveLength(1);
-		expect(loaded[0]?.name).toBe('lightsout-defaults');
+		expect(loaded[0]?.name).toBe('lightsout');
 	});
 
 	test('an absent config loads the defaults the same way', async () => {
@@ -63,7 +63,7 @@ describe('resolveStandardsPacks', () => {
 
 		const loaded = await resolveStandardsPacks({ cwd });
 
-		expect(loaded[0]?.name).toBe('lightsout-defaults');
+		expect(loaded[0]?.name).toBe('lightsout');
 	});
 
 	test('loads nothing at all when packs are turned off explicitly', async () => {
@@ -101,23 +101,54 @@ describe('resolveStandardsPacks', () => {
 		expect(loaded[1]?.rootPath).toBe(teamPath);
 	});
 
-	test('two packs claiming one rule id are refused, with both packs named', async () => {
+	test('two packs claiming one full rule name are refused, with both packs named', async () => {
 		const { cwd } = setupRepo({
 			packs: [
 				{ at: 'standards/house', name: 'house', ruleId: 'shared-rule' },
-				{ at: 'standards/team', name: 'team', ruleId: 'shared-rule' },
+				{ at: 'standards/team', name: 'house', ruleId: 'shared-rule' },
 			],
 		});
 		const config: LightsoutConfig = { ...baseConfig, 'standards-packs': ['standards/house', 'standards/team'] };
 
 		const error = await getRejectionError({ promise: resolveStandardsPacks({ cwd, config }) });
 
-		// an ambiguous id would make a config override and a site key mean two things
-		expect(error.message).toContain('duplicate rule id "shared-rule"');
+		// an ambiguous name would make a config override and a site key mean two things
+		expect(error.message).toContain('duplicate rule name "house/shared-rule"');
 		// the cross-pack header, which is what tells this apart from the clash a single pack catches at its own load
-		expect(error.message).toContain('standards packs disagree about rule ids:');
-		expect(error.message).toContain('house');
-		expect(error.message).toContain('team');
+		expect(error.message).toContain('standards packs disagree about rule names:');
+		expect(error.message).toContain(join(cwd, 'standards/house'));
+		expect(error.message).toContain(join(cwd, 'standards/team'));
+	});
+
+	test('two libraries with different names may each hold the same short rule id', async () => {
+		const { cwd } = setupRepo({
+			packs: [
+				{ at: 'standards/acme', name: 'acme', ruleId: 'size' },
+				{ at: 'standards/house', name: 'house', ruleId: 'size' },
+			],
+		});
+		const config: LightsoutConfig = { ...baseConfig, 'standards-packs': ['standards/acme', 'standards/house'] };
+
+		const loaded = await resolveStandardsPacks({ cwd, config });
+
+		// full names tell the two rules apart, so the shared short id is no clash
+		expect(loaded.flatMap((library) => library.rules.map((rule) => rule.name))).toStrictEqual(['acme/size', 'house/size']);
+	});
+
+	test('two roots claiming one full rule name fail naming the name and both roots', async () => {
+		const { cwd } = setupRepo({
+			packs: [
+				{ at: 'standards/first', name: 'acme', ruleId: 'size' },
+				{ at: 'standards/second', name: 'acme', ruleId: 'size' },
+			],
+		});
+		const config: LightsoutConfig = { ...baseConfig, 'standards-packs': ['standards/first', 'standards/second'] };
+
+		const error = await getRejectionError({ promise: resolveStandardsPacks({ cwd, config }) });
+
+		expect(error.message).toContain('acme/size');
+		expect(error.message).toContain(join(cwd, 'standards/first'));
+		expect(error.message).toContain(join(cwd, 'standards/second'));
 	});
 
 	test('a declared root with no pack in it is a hard error naming the file it looked for', async () => {

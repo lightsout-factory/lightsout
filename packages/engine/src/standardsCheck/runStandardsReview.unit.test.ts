@@ -8,6 +8,8 @@ import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/type
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
+	name: `acme/${overrides.id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
@@ -69,9 +71,9 @@ describe('runStandardsReview', () => {
 		expect(notes).toStrictEqual([]);
 		expect(findings).toStrictEqual([
 			{
-				rule: 'common-placement',
+				rule: 'acme/common-placement',
 				severity: StandardsSeverity.Advisory,
-				siteKey: 'common-placement:src/a.ts',
+				siteKey: 'acme/common-placement:src/a.ts',
 				files: [{ path: 'src/a.ts', startLine: 4 }],
 				detail: 'promoted on one consumer',
 				guidance: 'move it back',
@@ -94,44 +96,6 @@ describe('runStandardsReview', () => {
 
 		// severity is the engine's to stamp — an agent cannot promote its own opinion into work
 		expect(findings[0]?.severity).toBe(StandardsSeverity.Advisory);
-	});
-
-	test('a finding naming a rule no package declares is dropped, and the drop is stated', async () => {
-		const { driver } = setupDriver({
-			result: {
-				text: reviewText([
-					{ rule: 'invented-rule', files: [{ path: 'src/a.ts' }], detail: 'made up' },
-					{ rule: 'common-placement', files: [{ path: 'src/b.ts' }], detail: 'real' },
-				]),
-				exitCode: 0,
-			},
-		});
-
-		const { findings, notes } = await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
-			files: ['src/a.ts', 'src/b.ts'],
-		});
-
-		expect(findings.map((finding) => finding.rule)).toStrictEqual(['common-placement']);
-		expect(notes).toStrictEqual(['agent review: 1 finding(s) dropped — no judgment rule is named invented-rule']);
-	});
-
-	test('a finding with no file to point at is dropped — a site key needs a site', async () => {
-		const { driver } = setupDriver({ result: { text: reviewText([{ rule: 'common-placement', files: [], detail: 'somewhere in the repo' }]), exitCode: 0 } });
-
-		const { findings, notes } = await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
-			files: ['src/a.ts'],
-		});
-
-		expect(findings).toStrictEqual([]);
-		expect(notes).toStrictEqual(['agent review: 1 finding(s) dropped — reported with no file to point at']);
 	});
 
 	test('a harness that cannot answer is a skipped review, not a failure', async () => {
@@ -237,9 +201,9 @@ describe('runStandardsReview', () => {
 		});
 
 		expect(findings[0]).toStrictEqual({
-			rule: 'common-placement',
+			rule: 'acme/common-placement',
 			severity: StandardsSeverity.Advisory,
-			siteKey: 'common-placement:src/a.ts',
+			siteKey: 'acme/common-placement:src/a.ts',
 			files: [{ path: 'src/a.ts' }],
 			detail: 'promoted on one consumer',
 		});
@@ -257,57 +221,6 @@ describe('runStandardsReview', () => {
 		});
 
 		expect({ findings, notes, spawned: prompts.length }).toStrictEqual({ findings: [], notes: [], spawned: 1 });
-	});
-
-	test('repeated invented rule ids are counted every time but named once, in order', async () => {
-		const { driver } = setupDriver({
-			result: {
-				text: reviewText([
-					{ rule: 'zeta-rule', files: [{ path: 'src/a.ts' }], detail: 'made up' },
-					{ rule: 'alpha-rule', files: [{ path: 'src/b.ts' }], detail: 'also made up' },
-					{ rule: 'zeta-rule', files: [{ path: 'src/c.ts' }], detail: 'made up again' },
-				]),
-				exitCode: 0,
-			},
-		});
-
-		const { findings, notes } = await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
-			files: ['src/a.ts', 'src/b.ts', 'src/c.ts'],
-		});
-
-		expect(findings).toStrictEqual([]);
-		expect(notes).toStrictEqual(['agent review: 3 finding(s) dropped — no judgment rule is named alpha-rule, zeta-rule']);
-	});
-
-	test('both kinds of drop are stated separately when one review does both', async () => {
-		const { driver } = setupDriver({
-			result: {
-				text: reviewText([
-					{ rule: 'invented-rule', files: [{ path: 'src/a.ts' }], detail: 'made up' },
-					{ rule: 'common-placement', files: [], detail: 'somewhere in the repo' },
-					{ rule: 'common-placement', files: [{ path: 'src/b.ts' }], detail: 'real' },
-				]),
-				exitCode: 0,
-			},
-		});
-
-		const { findings, notes } = await runStandardsReview({
-			cwd: '/repo',
-			driver,
-			packs: [packOf({ rules: [rule({ id: 'common-placement' })] })],
-			channels: [],
-			files: ['src/a.ts', 'src/b.ts'],
-		});
-
-		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['common-placement:src/b.ts']);
-		expect(notes).toStrictEqual([
-			'agent review: 1 finding(s) dropped — no judgment rule is named invented-rule',
-			'agent review: 1 finding(s) dropped — reported with no file to point at',
-		]);
 	});
 
 	test('judgment rules from every loaded package are put in front of the reviewer', async () => {
@@ -339,6 +252,62 @@ describe('runStandardsReview', () => {
 
 		// nothing a judgment call concludes may edit the repo it is reading
 		expect(invocations[0]).toEqual(expect.objectContaining({ cwd: '/repo', permissions: 'read-only', timeoutMs: 90_000 }));
+	});
+
+	test('a reported rule resolves to its full name, which the finding and its site key carry', async () => {
+		const { driver } = setupDriver({
+			result: {
+				text: reviewText([
+					{ rule: 'acme/judge', files: [{ path: 'src/a.ts' }, { path: 'src/z.ts' }], detail: 'named in full' },
+					{ rule: 'judge', files: [{ path: 'src/b.ts' }], detail: 'named by short id' },
+				]),
+				exitCode: 0,
+			},
+		});
+
+		const { findings, notes } = await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			packs: [packOf({ rules: [rule({ id: 'judge', name: 'acme/judge', library: 'acme' })] })],
+			channels: [],
+			files: ['src/a.ts', 'src/b.ts', 'src/z.ts'],
+		});
+
+		expect({ notes, keys: findings.map((finding) => ({ rule: finding.rule, siteKey: finding.siteKey })) }).toStrictEqual({
+			notes: [],
+			keys: [
+				{ rule: 'acme/judge', siteKey: 'acme/judge:src/a.ts' },
+				{ rule: 'acme/judge', siteKey: 'acme/judge:src/b.ts' },
+			],
+		});
+	});
+
+	test('a reported rule that resolves to no single judgment rule is dropped and named in a note', async () => {
+		const { driver } = setupDriver({
+			result: {
+				text: reviewText([
+					{ rule: 'nope', files: [{ path: 'src/a.ts' }], detail: 'no such rule' },
+					{ rule: 'judge', files: [{ path: 'src/b.ts' }], detail: 'two libraries hold this id' },
+				]),
+				exitCode: 0,
+			},
+		});
+
+		const { findings, notes } = await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			packs: [
+				packOf({ rules: [rule({ id: 'judge', name: 'acme/judge', library: 'acme' })] }),
+				{ ...packOf({ rules: [rule({ id: 'judge', name: 'house/judge', library: 'house' })] }), name: 'house' },
+			],
+			channels: [],
+			files: ['src/a.ts', 'src/b.ts'],
+		});
+
+		expect({ findings, notes }).toEqual({
+			findings: [],
+			notes: [expect.stringMatching(/2 finding\(s\) dropped.*\bjudge\b.*\bnope\b/)],
+		});
 	});
 
 	test('a harness that will not start is skipped too — nothing here throws', async () => {

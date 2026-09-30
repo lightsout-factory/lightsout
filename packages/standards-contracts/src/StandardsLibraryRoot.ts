@@ -5,8 +5,15 @@ import { z } from 'zod';
  * format version may add keys, and an unknown key is never worth refusing a pack over.
  */
 export const StandardsLibraryRoot = z.object({
-	/** Names the pack in the assembled documents' header lines. */
-	name: z.string().min(1),
+	/**
+	 * Names the library in the assembled documents' header lines, and is the
+	 * first half of every full rule name `<library>/<rule-id>` — so it may not
+	 * hold the slash that separates the two.
+	 */
+	name: z
+		.string()
+		.min(1)
+		.refine((name) => !name.includes('/'), { message: 'must not hold "/" — the library name is the first half of every full rule name <library>/<rule-id>' }),
 	formatVersion: z.literal(1),
 	/**
 	 * Stamped by the bundler on a built pack. Building strips the fixtures, so

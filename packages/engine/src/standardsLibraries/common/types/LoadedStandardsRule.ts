@@ -3,8 +3,12 @@ import type { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsS
 import type { RuleExample } from '#src/contracts/views/RuleExample.ts';
 
 export interface LoadedStandardsRule {
-	/** Folder name minus the numeric prefix — unique pack-wide. */
+	/** Folder name minus the numeric prefix — unique inside its library, the address the pack pages and fixture problems use. */
 	id: string;
+	/** The full name `<library>/<rule-id>` — the key every finding, site key, rule state and listing uses. */
+	name: string;
+	/** The manifest name of the library the rule belongs to. */
+	library: string;
 	set: StandardsSet;
 	/** Pack-relative document folder path, e.g. 'code/style-guide/patterns/functions'. */
 	documentPath: string;

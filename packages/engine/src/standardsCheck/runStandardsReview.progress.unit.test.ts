@@ -13,6 +13,8 @@ import { reviewReport } from '#tests/helpers/reviewReport.ts';
 
 const judgmentRule = ({ id }: { id: string }): LoadedStandardsRule => ({
 	id,
+	name: `acme/${id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',

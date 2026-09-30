@@ -256,7 +256,7 @@ test('implementCommand: a repo that declared no opt-ins gets no lines for them �
 	// an unset coverage gate and an unset standards list read as two different
 	// silences, and the banner says which is which
 	expect(logged).toContain('  gates (root): check=[true] test=[true] coverage=[off (explicit)]');
-	expect(logged).toContain('  standards packs: lightsout-defaults (none configured — set to false to disable, or list pack roots)');
+	expect(logged).toContain('  standards packs: lightsout (none configured — set to false to disable, or list pack roots)');
 	expect(logged).toContain('  timeouts: agent 60m · supervisor 15m · gate 15m');
 	expect(logged.some((line) => /^ {2}(generate|agent commands|generated|format|gates \((root, opt-in|per package)\))/.test(line))).toBe(false);
 	expect(exitCodes).toStrictEqual([1]);
@@ -316,7 +316,7 @@ test('implementCommand: an empty pack list is still a configured list — the ba
 	await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
 	expect(logged).toContain('  standards packs: ');
-	expect(logged.some((line) => line.includes('lightsout-defaults'))).toBe(false);
+	expect(logged.some((line) => line.includes('lightsout (none configured'))).toBe(false);
 });
 
 test('implementCommand: --ship never ships a run that failed — the flag asks for a merge of verified work, and nothing was verified', async () => {

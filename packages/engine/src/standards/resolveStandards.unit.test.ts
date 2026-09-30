@@ -62,8 +62,8 @@ describe('resolveStandards', () => {
 
 		const resolved = await resolveStandards({ cwd, config: baseConfig, packages: [] });
 
-		expect(resolved.standards).toContain('<!-- lightsout-defaults: code/');
-		expect(resolved.testStandards).toContain('<!-- lightsout-defaults: tests/');
+		expect(resolved.standards).toContain('<!-- lightsout: code/');
+		expect(resolved.testStandards).toContain('<!-- lightsout: tests/');
 		// unspecified is a real request for the defaults, so the caller still announces it
 		expect(resolved.requested).toBe(true);
 	});

@@ -14,6 +14,8 @@ import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/type
 
 interface LiveRule {
 	id: string;
+	/** The full `<library>/<rule-id>` name every finding carries. */
+	name: string;
 	inputKind: StandardsInputKind;
 	run: StandardsCheckFunction;
 	/** Only the two reporting severities — an `off` rule never becomes a live one. */
@@ -26,7 +28,7 @@ const selectLiveRules = ({ packs, states, channels }: { packs: LoadedStandardsLi
 	const live: LiveRule[] = [];
 
 	for (const rule of packs.flatMap((pack) => pack.rules)) {
-		const state = states.get(rule.id);
+		const state = states.get(rule.name);
 
 		if (rule.run === undefined || rule.inputKind === undefined || state === undefined) {
 			continue;
@@ -40,7 +42,7 @@ const selectLiveRules = ({ packs, states, channels }: { packs: LoadedStandardsLi
 			continue;
 		}
 
-		live.push({ id: rule.id, inputKind: rule.inputKind, run: rule.run, severity: state.severity, options: state.options });
+		live.push({ id: rule.id, name: rule.name, inputKind: rule.inputKind, run: rule.run, severity: state.severity, options: state.options });
 	}
 
 	return live;
@@ -71,7 +73,7 @@ const runLiveRules = async ({
 		}
 
 		if (compiler === undefined && typescriptInputKinds.has(kind)) {
-			skipped.push(...rules.map((rule) => rule.id));
+			skipped.push(...rules.map((rule) => rule.name));
 			continue;
 		}
 
@@ -89,9 +91,9 @@ const runLiveRules = async ({
 				input = shared;
 			}
 
-			const raw = await runRuleCheck({ rule: rule.id, run: rule.run, input, options: rule.options });
+			const raw = await runRuleCheck({ rule, run: rule.run, input, options: rule.options });
 
-			findings.push(...raw.map((finding) => ({ ...finding, rule: rule.id, severity: rule.severity })));
+			findings.push(...raw.map((finding) => ({ ...finding, rule: rule.name, severity: rule.severity })));
 		}
 
 		progress(`${kind}: done`);
@@ -120,8 +122,9 @@ interface Params {
  * driven by the `minTokens` in the asking rule's own options, and two rules with different
  * thresholds are two different detections.
  *
- * A rule's id and severity are stamped here rather than inside the check, so a
- * check cannot name them wrong.
+ * A rule's full name and severity are stamped here rather than inside the
+ * check, so a check cannot name them wrong; its site keys arrive already
+ * prefixed with that full name.
  *
  * @throws {Error} When a check throws or returns something that is not a list of findings — a broken check is a pack bug, not a finding.
  */

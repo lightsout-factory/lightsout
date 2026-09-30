@@ -53,7 +53,7 @@ export const check: StandardsCheckModule = {
 		input.kind === 'syntax-tree'
 			? buildClassFindings({
 					input,
-					rule: 'banned-class-shape',
+					rule: 'banned-class-shapes',
 					guidance: 'Write module functions instead — one exported function per file — and delete the class.',
 					getViolation: getBannedShape,
 				})

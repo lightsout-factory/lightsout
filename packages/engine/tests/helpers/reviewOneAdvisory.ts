@@ -18,7 +18,7 @@ interface Params {
  * has neither of its own.
  */
 export const reviewOneAdvisory = ({ systemPrompt, path }: Params): string => {
-	const rule = /Rule id: `([^`]+)`/.exec(systemPrompt ?? '')?.[1];
+	const rule = /Rule: `([^`]+)`/.exec(systemPrompt ?? '')?.[1];
 
 	return rule === undefined ? reviewReport() : reviewReport([{ rule, files: [{ path }], detail: 'a judgment call for the cleanup pass' }]);
 };

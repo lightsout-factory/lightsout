@@ -32,11 +32,19 @@ test('printRunHeader: a minimal config renders exactly the always-present lines,
 	expect(logged).toStrictEqual([
 		'  cwd: /repo',
 		'  config: /repo/lightsout.config.json',
-		'  standards packs: lightsout-defaults (none configured — set to false to disable, or list pack roots)',
+		'  standards packs: lightsout (none configured — set to false to disable, or list pack roots)',
 		'  harness: claude-code · model: harness default · effort: harness default · permissions: write',
 		'  timeouts: agent 60m · supervisor 15m · gate 15m',
 		'  gates (root): check=[pnpm check] test=[pnpm test:unit] coverage=[pnpm test:coverage]',
 	]);
+});
+
+test('the header names the built-in library lightsout when no standards are configured', () => {
+	const { config, driver, cwd, logged } = setupHeader();
+
+	printRunHeader({ config, driver, cwd, configPath });
+
+	expect(lineFor({ logged, label: 'standards packs' })).toBe('  standards packs: lightsout (none configured — set to false to disable, or list pack roots)');
 });
 
 test('printRunHeader: the config line names the file the run loaded, which need not sit under the cwd the run builds in', () => {

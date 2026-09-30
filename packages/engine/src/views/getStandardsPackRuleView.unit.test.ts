@@ -56,7 +56,7 @@ describe('getStandardsPackRuleView', () => {
 	test("carries the rule's own prose, which is what the page argues from", async () => {
 		const { cwd } = setupThisRepo();
 
-		const view = await getStandardsPackRuleView({ cwd, name: 'lightsout-defaults', rule: 'type-assertion' });
+		const view = await getStandardsPackRuleView({ cwd, name: 'lightsout', rule: 'type-assertion' });
 
 		expect(view.prose).toContain('Avoid `as` casts');
 	});
@@ -64,7 +64,7 @@ describe('getStandardsPackRuleView', () => {
 	test('reads both sides of a proof as whole source trees, so a multi-file fixture arrives whole', async () => {
 		const { cwd } = setupThisRepo();
 
-		const view = await getStandardsPackRuleView({ cwd, name: 'lightsout-defaults', rule: 'type-assertion' });
+		const view = await getStandardsPackRuleView({ cwd, name: 'lightsout', rule: 'type-assertion' });
 
 		// the pass side is a payload reader plus the named-constant file it was
 		// carved out into — a flat read would show the first and drop the carve-out
@@ -79,7 +79,7 @@ describe('getStandardsPackRuleView', () => {
 	test('carries the text of each fixture file, not just its path', async () => {
 		const { cwd } = setupThisRepo();
 
-		const view = await getStandardsPackRuleView({ cwd, name: 'lightsout-defaults', rule: 'type-assertion' });
+		const view = await getStandardsPackRuleView({ cwd, name: 'lightsout', rule: 'type-assertion' });
 		const failing = view.fixtures.find((fixture) => fixture.side === FixtureSide.Fail);
 
 		expect(failing?.text).toContain('as ');
@@ -88,7 +88,7 @@ describe('getStandardsPackRuleView', () => {
 	test('counts the files on each side, so a listing row can say a rule has examples without reading them', async () => {
 		const { cwd } = setupThisRepo();
 
-		const view = await getStandardsPackRuleView({ cwd, name: 'lightsout-defaults', rule: 'type-assertion' });
+		const view = await getStandardsPackRuleView({ cwd, name: 'lightsout', rule: 'type-assertion' });
 
 		expect(view.fixtureCounts).toStrictEqual({ pass: 2, fail: 1 });
 	});
@@ -123,7 +123,7 @@ describe('getStandardsPackRuleView', () => {
 	test('refuses a rule id the pack does not carry, naming the pack that was found', async () => {
 		const { cwd } = setupThisRepo();
 
-		await expect(getStandardsPackRuleView({ cwd, name: 'lightsout-defaults', rule: 'no-such-rule' })).rejects.toThrow(StandardsPackRuleNotFoundError);
+		await expect(getStandardsPackRuleView({ cwd, name: 'lightsout', rule: 'no-such-rule' })).rejects.toThrow(StandardsPackRuleNotFoundError);
 	});
 
 	test('refuses a pack name no pack this repo loads answers to', async () => {

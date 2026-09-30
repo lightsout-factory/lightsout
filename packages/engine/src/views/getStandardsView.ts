@@ -75,13 +75,13 @@ export const getStandardsView = async ({ cwd }: Params): Promise<StandardsView> 
 	const health = await buildStandardsHealth({ cwd, packs });
 	const snapshot = await readStandardsSnapshot({ cwd });
 	const findings = snapshot?.findings ?? [];
-	const loaded = new Map(packs.flatMap((pack) => pack.rules).map((rule) => [rule.id, rule]));
+	const loaded = new Map(packs.flatMap((pack) => pack.rules).map((rule) => [rule.name, rule]));
 	const counts = countByRule({ findings });
 	const rules: StandardsRuleView[] = [];
 
 	for (const listing of listings) {
 		const rule = loaded.get(listing.rule);
-		const ruleHealth = health.rules.find((entry) => entry.id === listing.rule);
+		const ruleHealth = health.rules.find((entry) => entry.rule === listing.rule);
 
 		// Skips nothing in practice; it keeps a row from being built out of half an answer.
 		if (rule === undefined || ruleHealth === undefined) {

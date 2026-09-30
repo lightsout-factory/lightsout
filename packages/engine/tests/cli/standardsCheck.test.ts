@@ -34,11 +34,11 @@ test('cli: standards-check prints each finding, the rule breakdown, and exits 0'
 
 	expect(stderr).toBe('');
 	// each rule gets a heading carrying its severity and count
-	expect(stdout).toMatch(/ℹ synonym-export-name · 1 advisory/);
+	expect(stdout).toMatch(/ℹ lightsout\/synonym-export-name · 1 advisory/);
 	// the shared guidance is stated once, under the rows it covers
 	expect(stdout).toContain('Likely one concept living under two names.');
 	// and the tally is a table, closed off by the report path
-	expect(stdout).toMatch(/│ synonym-export-name\s+│\s+—\s+│\s+1\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+—\s+│\s+1\s+│/);
 	// the rule's summary rides under its own row — a rule id alone says nothing
 	expect(stdout).toMatch(/│ two exports that name the same concept with different verbs[^│]*│/);
 	expect(stdout).toMatch(/report: \.lightsout\/standards-check\.json\n$/);
@@ -68,7 +68,7 @@ test('cli: standards-check writes its typed report to .lightsout/standards-check
 	const report = JSON.parse(await readFile(join(cwd, '.lightsout', 'standards-check.json'), 'utf8'));
 	expect(report.path).toBe('.');
 	// the evidence file carries the findings, not just the printed summary
-	expect(report.findings.some((finding: { rule: string }) => finding.rule === 'synonym-export-name')).toBeTruthy();
+	expect(report.findings.some((finding: { rule: string }) => finding.rule === 'lightsout/synonym-export-name')).toBeTruthy();
 	expect(code).toBe(0);
 });
 
@@ -116,7 +116,7 @@ test('cli: standards-check --all reports the findings the baseline already accep
 	const { stdout, stderr, code } = await runCli({ args: ['standards-check', '--code-checks', '--all', '--cwd', cwd] });
 
 	// a baselined site is printed again under --all
-	expect(stdout).toMatch(/ℹ synonym-export-name · 1 advisory/);
+	expect(stdout).toMatch(/ℹ lightsout\/synonym-export-name · 1 advisory/);
 	expect(stderr).toBe('');
 	expect(code).toBe(0);
 });
@@ -127,10 +127,10 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 	const { stdout, stderr, code } = await runCli({ args: ['standards-check', '--list', '--cwd', cwd] });
 
 	// every rule is listed with the state it runs at, who checks it, and the doc it enforces
-	expect(stdout).toMatch(/│ synonym-export-name\s+│\s+advisory\s+│\s+code\s+│\s+lightsout-defaults: code\/style-guide\/conventions\/naming\s+│/);
-	expect(stdout).toMatch(/│ type-assertion\s+│\s+blocking\s+│\s+code\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/style-guide\/conventions\/naming\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/type-assertion\s+│\s+blocking\s+│\s+code\s+│/);
 	// a rule no check covers is listed too, and says so
-	expect(stdout).toMatch(/│ path-aliases\s+│\s+advisory\s+│\s+judgment\s+│\s+lightsout-defaults: code\/style-guide\/structure\/import-paths\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/path-aliases\s+│\s+advisory\s+│\s+judgment\s+│\s+lightsout: code\/style-guide\/structure\/import-paths\s+│/);
 	// a rule's live numbers ride its summary line
 	expect(stdout).toContain('minTokens 50');
 	// the totals close it off, counting every rule once by state and once by
@@ -144,11 +144,11 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 		byChecker: totals.rules,
 	});
 	// the test-shape rules name the document they enforce
-	expect(stdout).toMatch(/│ test-nested-describe\s+│\s+advisory\s+│\s+code\s+│\s+lightsout-defaults: tests\/unit-testing\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/test-nested-describe\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: tests\/unit-testing\s+│/);
 	// and so do the file-placement rules, across the three docs they come from
-	expect(stdout).toMatch(/│ banned-folder-name\s+│\s+advisory\s+│\s+code\s+│\s+lightsout-defaults: code\/architecture\/folder-structure\s+│/);
-	expect(stdout).toMatch(/│ folder-index-file\s+│\s+advisory\s+│\s+code\s+│\s+lightsout-defaults: code\/style-guide\/structure\/module-api\s+│/);
-	expect(stdout).toMatch(/│ folder-casing\s+│\s+advisory\s+│\s+code\s+│\s+lightsout-defaults: code\/architecture\/folder-structure\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/banned-folder-name\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/architecture\/folder-structure\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/folder-index-file\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/style-guide\/structure\/module-api\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/folder-casing\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/architecture\/folder-structure\s+│/);
 	// --list answers a question about configuration — it never checks the tree
 	expect(stdout.includes('report: .lightsout/standards-check.json')).toBeFalsy();
 	expect(stderr).toBe('');
@@ -163,7 +163,7 @@ test('cli: standards-check --list marks the rules this repo configured', async (
 	const { stdout: defaultStdout } = await runCli({ args: ['standards-check', '--list', '--cwd', defaultCwd] });
 
 	// "this is our policy" reads apart from "this is the default"
-	expect(stdout).toMatch(/│ synonym-export-name\s+│\s+off \(config\)\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+off \(config\)\s+│/);
 	// and the totals move by exactly that one advisory rule turned off
 	const totals = readRuleTotals({ stdout: defaultStdout });
 	expect(readRuleTotals({ stdout })).toStrictEqual({ ...totals, advisory: (totals.advisory ?? 0) - 1, off: (totals.off ?? 0) + 1 });
@@ -190,9 +190,9 @@ test('cli: standards-check --list loads the built-in library that LIGHTSOUT_DEFA
 
 	const { stdout, stderr, code } = await runCli({ args: ['standards-check', '--list', '--cwd', cwd] });
 
-	expect(stdout).toMatch(/│ only-rule\s+│\s+advisory\s+│\s+judgment\s+│\s+env-standards: code\/demo\s+│/);
+	expect(stdout).toMatch(/│ env-standards\/only-rule\s+│\s+advisory\s+│\s+judgment\s+│\s+env-standards: code\/demo\s+│/);
 	// the committed plugin copy never loaded beside it
-	expect(stdout).not.toMatch(/│\s+lightsout-defaults:/);
+	expect(stdout).not.toMatch(/│\s+lightsout:/);
 	expect(stderr).toBe('');
 	expect(code).toBe(0);
 });

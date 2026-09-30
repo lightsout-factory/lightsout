@@ -25,6 +25,8 @@ jest.mock('#src/standardsCheck/validateStandardsLibrary.ts', () => ({
 // -------------------------
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
+	name: `acme/${overrides.id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',

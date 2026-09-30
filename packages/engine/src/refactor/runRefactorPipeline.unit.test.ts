@@ -93,10 +93,10 @@ test('refactor: a run that trades one finding for a new one fails — a burn-dow
 	expect(result.ok).toBe(false);
 	// the run made this one — it was never on the work-list it was handed
 	expect(result.error ?? '').toContain('refactor introduced 1 blocking finding(s) it never set out to fix');
-	expect(result.error ?? '').toContain('multi-export:src/extracted.ts');
+	expect(result.error ?? '').toContain('lightsout/multi-export:src/extracted.ts');
 	// the burn-down still rides out: the table is the evidence for what happened
-	expect(result.before['multi-export']).toBe(1);
-	expect(result.after['multi-export']).toBe(1);
+	expect(result.before['lightsout/multi-export']).toBe(1);
+	expect(result.after['lightsout/multi-export']).toBe(1);
 
 	const manifest = await readRunManifest({ cwd: dir, runId: result.manifest.runId });
 
@@ -111,9 +111,9 @@ test('refactor: a batch the executor fixes is resolved, with a burn-down', async
 
 	expect(result.ok).toBe(true);
 	expect(result.declined.length).toBe(0);
-	expect(result.before['multi-export']).toBe(1);
+	expect(result.before['lightsout/multi-export']).toBe(1);
 	// the multi-export finding burned down
-	expect(result.after['multi-export'] ?? 0).toBe(0);
+	expect(result.after['lightsout/multi-export'] ?? 0).toBe(0);
 
 	const batch = result.manifest.steps.find((step) => step.id.startsWith('batch-'));
 
@@ -130,7 +130,7 @@ test('refactor: zero changes with persisting clusters is a decline — recorded,
 	expect(result.ok).toBe(true);
 	expect(result.declined.length).toBe(1);
 	// the persisting cluster is named
-	expect(result.declined[0]?.remainingSiteKeys[0]?.startsWith('multi-export:')).toBeTruthy();
+	expect(result.declined[0]?.remainingSiteKeys[0]?.startsWith('lightsout/multi-export:')).toBeTruthy();
 	// the agent's rationale rides along
 	expect(result.declined[0]?.rationale[0]?.includes('left as-is')).toBeTruthy();
 });
@@ -162,7 +162,7 @@ test('refactor: --allow-dirty records the standing dirt as baseline and never at
 	const result = await runRefactorPipeline({ cwd: dir, driver: fixingDriver({ dir }), config: await readConfig({ cwd: dir }), allowDirty: true });
 
 	expect(result.ok).toBe(true);
-	expect(result.after['multi-export'] ?? 0).toBe(0);
+	expect(result.after['lightsout/multi-export'] ?? 0).toBe(0);
 	// the dirt is frozen into the manifest as baseline...
 	expect(result.manifest.baselineDirtyFiles).toStrictEqual(['src/uncommitted.ts']);
 	// ...and the batch owns only its own edits, however git sees the union
@@ -250,7 +250,7 @@ test('refactor: a rate limit parks the run; resume finishes it', async () => {
 	expect(resumed.ok).toBe(true);
 	// resume continues the same run
 	expect(resumed.manifest.runId).toBe(parked.manifest.runId);
-	expect(resumed.after['multi-export'] ?? 0).toBe(0);
+	expect(resumed.after['lightsout/multi-export'] ?? 0).toBe(0);
 });
 
 test('refactor: --max-batches parks resumable at the budget ceiling', async () => {
@@ -279,7 +279,7 @@ test('refactor: declines recorded before a park survive the resume (report, stre
 				return { text: reviewReport(), exitCode: 0 };
 			}
 
-			if (invocation.prompt.includes('- [multi-export] alpha/multi.ts')) {
+			if (invocation.prompt.includes('- [lightsout/multi-export] alpha/multi.ts')) {
 				return { text: report({ friction: [{ area: 'other', kind: 'decision', detail: 'alpha left as-is' }] }), exitCode: 0 };
 			}
 
@@ -321,7 +321,7 @@ test('refactor: declines recorded before a park survive the resume (report, stre
 	expect(resumed.declined[0]?.rationale[0]?.includes('alpha left as-is')).toBeTruthy();
 	// and names what still persists, read back off the persisted report rather
 	// than process memory — a decline the human cannot locate is not reviewable
-	expect(resumed.declined[0]?.remainingSiteKeys).toStrictEqual(['multi-export:alpha/multi.ts']);
+	expect(resumed.declined[0]?.remainingSiteKeys).toStrictEqual(['lightsout/multi-export:alpha/multi.ts']);
 });
 
 test('refactor: terminated:scope is a decline that continues, not a run-ending escalation', async () => {
@@ -334,7 +334,7 @@ test('refactor: terminated:scope is a decline that continues, not a run-ending e
 				return { text: reviewReport(), exitCode: 0 };
 			}
 
-			if (invocation.prompt.includes('- [multi-export] alpha/multi.ts')) {
+			if (invocation.prompt.includes('- [lightsout/multi-export] alpha/multi.ts')) {
 				return { text: report({ status: 'terminated:scope', failures: ['cannot be resolved in scope'] }), exitCode: 0 };
 			}
 
@@ -362,7 +362,7 @@ test('refactor: terminated:scope is a decline that continues, not a run-ending e
 	// the refusal reason rides the decline
 	expect(result.declined[0]?.rationale.some((line) => line.includes('cannot be resolved in scope'))).toBeTruthy();
 	// the other batch still ran and resolved
-	expect(result.after['multi-export'] ?? 0).toBe(1);
+	expect(result.after['lightsout/multi-export'] ?? 0).toBe(1);
 });
 
 test('refactor: an invocation failure whose work is verifiably done is salvaged as resolved', async () => {
@@ -389,7 +389,7 @@ test('refactor: an invocation failure whose work is verifiably done is salvaged 
 	// verified work must be salvaged, not failed: ${result.error}
 	expect(result.ok).toBe(true);
 	// the finding is gone
-	expect(result.after['multi-export'] ?? 0).toBe(0);
+	expect(result.after['lightsout/multi-export'] ?? 0).toBe(0);
 
 	const batch = result.manifest.steps.find((step) => step.id.startsWith('batch-'));
 

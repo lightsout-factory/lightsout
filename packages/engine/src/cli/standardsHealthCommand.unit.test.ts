@@ -50,7 +50,7 @@ const setupCommand = ({ health, config }: { health?: StandardsHealth; config?: R
 		health ?? {
 			rules: [
 				{
-					id: 'multi-export',
+					rule: 'lightsout/multi-export',
 					set: 'code',
 					documentPath: 'code/style-guide/structure/one-export-per-file',
 					checked: true,
@@ -87,7 +87,7 @@ describe('standardsHealthCommand', () => {
 
 		await expect(standardsHealthCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(cellsOf({ logged })[1]).toStrictEqual(['multi-export', 'code', '2', '1', '1', '—', '50%', '—', '—']);
+		expect(cellsOf({ logged })[1]).toStrictEqual(['lightsout/multi-export', 'code', '2', '1', '1', '—', '50%', '—', '—']);
 		expect(errors).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([0]);
 	});
@@ -135,7 +135,7 @@ describe('standardsHealthCommand', () => {
 			health: {
 				rules: [
 					{
-						id: 'file-size',
+						rule: 'lightsout/file-size',
 						set: 'code',
 						documentPath: 'code/style-guide/structure/size',
 						checked: true,

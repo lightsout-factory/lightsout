@@ -134,6 +134,8 @@ const checkFrameworkOwned = async ({ pack, compiler }: { pack: LoadedStandardsLi
  *
  * Channels are ignored — authoring covers every channel, whatever the machine
  * doing the authoring happens to run.
+ *
+ * Fixture runs also refuse a site key that does not start with the rule's own id.
  */
 export const validateStandardsLibrary = async ({ pack }: Params): Promise<{ problems: string[]; notes: string[] }> => {
 	// Read from the pack rather than inferred from missing fixtures: an authored

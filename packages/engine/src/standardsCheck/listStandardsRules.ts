@@ -21,7 +21,7 @@ export const listStandardsRules = async ({ cwd, config }: Params): Promise<Stand
 
 	for (const pack of packs) {
 		for (const rule of pack.rules) {
-			const state = states.get(rule.id);
+			const state = states.get(rule.name);
 
 			// Skips nothing in practice; it keeps a rule from ever being listed with
 			// a state nobody resolved.
@@ -30,7 +30,7 @@ export const listStandardsRules = async ({ cwd, config }: Params): Promise<Stand
 			}
 
 			listings.push({
-				rule: rule.id,
+				rule: rule.name,
 				doc: `${pack.name}: ${rule.documentPath}`,
 				summary: rule.summary,
 				checked: rule.checked,

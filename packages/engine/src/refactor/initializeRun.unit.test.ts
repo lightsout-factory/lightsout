@@ -116,13 +116,13 @@ describe('initializeRun', () => {
 
 		const { worklist } = await initializeRun({ cwd, runId: 'run-1', driver, config });
 
-		const batch = worklist.batches.find((entry) => entry.rule === 'multi-export');
+		const batch = worklist.batches.find((entry) => entry.rule === 'lightsout/multi-export');
 
 		// 'packages/web' rather than 'packages': the area is the package, which it
 		// can only be if the default packages folder is the one the engine's own
 		// readers use — a second copy of the word here could disagree with them
 		expect(batch?.folder).toBe('packages/web');
-		expect(batch?.blocking.map((finding) => finding.siteKey)).toStrictEqual(['multi-export:packages/web/src/config.js']);
+		expect(batch?.blocking.map((finding) => finding.siteKey)).toStrictEqual(['lightsout/multi-export:packages/web/src/config.js']);
 	});
 
 	test('reads the packages folder the config names, so a repo whose packages live elsewhere is batched by it', async () => {
@@ -130,7 +130,7 @@ describe('initializeRun', () => {
 
 		const { worklist } = await initializeRun({ cwd, runId: 'run-1', driver, config: { ...config, 'packages-dir': 'modules' } });
 
-		const batch = worklist.batches.find((entry) => entry.rule === 'multi-export');
+		const batch = worklist.batches.find((entry) => entry.rule === 'lightsout/multi-export');
 
 		// nothing sits under 'modules', so the planted file falls back to its top
 		// segment — the configured folder is what decides, never the default

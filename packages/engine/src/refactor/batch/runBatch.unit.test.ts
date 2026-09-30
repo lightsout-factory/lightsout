@@ -31,6 +31,8 @@ const judgmentPacks: LoadedStandardsLibrary[] = [
 		rules: [
 			{
 				id: 'single-return',
+				name: 'acme/single-return',
+				library: 'acme',
 				set: 'code',
 				documentPath: 'code/style-guide/patterns/single-return',
 				summary: 'more than one exit from a function',
@@ -74,10 +76,10 @@ const setupBatch = async ({ answer, packs = [] }: { answer: (params: { pass: num
 
 	const { findings } = await runStandardsCheck({ cwd: dir, persist: false });
 	const batch: RefactorBatch = {
-		id: 'batch-01:multi-export:src',
-		rule: 'multi-export',
+		id: 'batch-01:lightsout/multi-export:src',
+		rule: 'lightsout/multi-export',
 		folder: 'src',
-		blocking: findings.filter((finding) => finding.rule === 'multi-export'),
+		blocking: findings.filter((finding) => finding.rule === 'lightsout/multi-export'),
 		advisories: [],
 	};
 	const executorPrompts: string[] = [];
@@ -143,10 +145,10 @@ const setupRedGateBatch = async ({ ruling, healOnGuidance = false }: { ruling: R
 
 	const { findings } = await runStandardsCheck({ cwd: dir, persist: false });
 	const batch: RefactorBatch = {
-		id: 'batch-01:multi-export:src',
-		rule: 'multi-export',
+		id: 'batch-01:lightsout/multi-export:src',
+		rule: 'lightsout/multi-export',
 		folder: 'src',
-		blocking: findings.filter((finding) => finding.rule === 'multi-export'),
+		blocking: findings.filter((finding) => finding.rule === 'lightsout/multi-export'),
 		advisories: [],
 	};
 	// Every agent the batch spends, in the order it spent them — which is what
@@ -229,7 +231,7 @@ describe('runBatch', () => {
 
 		const stop = await run();
 
-		expect(stop.kind === 'done' && stop.report).toStrictEqual({ outcome: 'declined', remainingSiteKeys: ['multi-export:src/two.ts'], rationale: [] });
+		expect(stop.kind === 'done' && stop.report).toStrictEqual({ outcome: 'declined', remainingSiteKeys: ['lightsout/multi-export:src/two.ts'], rationale: [] });
 		// two passes, never a third — the ceiling is the loop's, not the pass's
 		expect(executorPrompts.length).toBe(2);
 	});
@@ -264,7 +266,7 @@ describe('runBatch', () => {
 
 		// the same judgment rules on both sides of the edits — a batch reviewed
 		// against a different set afterwards could report its own baseline as new
-		expect(reviewSystemPrompts.map((systemPrompt) => systemPrompt.includes('Rule id: `single-return`'))).toStrictEqual([true, true]);
+		expect(reviewSystemPrompts.map((systemPrompt) => systemPrompt.includes('Rule: `acme/single-return`'))).toStrictEqual([true, true]);
 	});
 
 	test('a red gate the cheap fixes cannot clear reaches the supervisor, and an escalate ruling ends the batch', async () => {

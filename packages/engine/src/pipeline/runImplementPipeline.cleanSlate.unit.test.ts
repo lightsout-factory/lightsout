@@ -210,7 +210,7 @@ test('clean-slate: a finding the repo already accepted as debt still lands in th
 
 	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
 	const baseline = StandardsSnapshot.safeParse(JSON.parse(readFileSync(baselinePathOf({ dir, runId: result.manifest.runId }), 'utf8')));
-	const ledgered = (baseline.data?.findings ?? []).filter((finding) => finding.rule === 'multi-export');
+	const ledgered = (baseline.data?.findings ?? []).filter((finding) => finding.rule === 'lightsout/multi-export');
 
 	expect(result.ok).toBe(true);
 	expect(ledgered.map((finding) => finding.files[0]?.path)).toStrictEqual(['src/messy.js']);

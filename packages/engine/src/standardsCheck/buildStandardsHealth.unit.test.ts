@@ -13,6 +13,8 @@ import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/L
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
+	name: `acme/${overrides.id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
@@ -124,7 +126,9 @@ const advice = (overrides: Partial<AdvisoryOutcome> & { rule: string; siteKey: s
 });
 
 /** The health row for one rule — the report is sorted by id, not indexed by it. */
-const rowFor = ({ rules, id }: { rules: Awaited<ReturnType<typeof buildStandardsHealth>>['rules']; id: string }) => rules.find((entry) => entry.id === id);
+/** The row of the rule `acme/<id>`, the library every rule here is built in. */
+const rowFor = ({ rules, id }: { rules: Awaited<ReturnType<typeof buildStandardsHealth>>['rules']; id: string }) =>
+	rules.find((entry) => entry.rule === `acme/${id}`);
 
 describe('buildStandardsHealth', () => {
 	test('coverage is counted off the package folders, so it lands with no run history at all', async () => {
@@ -137,7 +141,7 @@ describe('buildStandardsHealth', () => {
 
 		expect(health.totals).toStrictEqual({ rules: 2, checked: 1, judgment: 1 });
 		// sorted by id, so the report diffs cleanly between runs
-		expect(health.rules.map((entry) => entry.id)).toStrictEqual(['multi-export', 'path-aliases']);
+		expect(health.rules.map((entry) => entry.rule)).toStrictEqual(['acme/multi-export', 'acme/path-aliases']);
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(
 			expect.objectContaining({ attempted: 0, resolved: 0, declined: 0, untracked: 0, adviceApplied: 0, adviceDeclined: 0, reasons: [] }),
 		);
@@ -146,10 +150,13 @@ describe('buildStandardsHealth', () => {
 	test('a site the batch report shows gone is resolved; one still standing in a declined batch is declined', async () => {
 		const cwd = setupRun({
 			batches: [
-				batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' }), finding({ rule: 'multi-export', path: 'src/b.ts' })] }),
+				batch({
+					id: 'batch-01',
+					blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' }), finding({ rule: 'acme/multi-export', path: 'src/b.ts' })],
+				}),
 			],
 			reports: {
-				'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['multi-export:src/b.ts'], rationale: ['[plan] splitting would break the barrel'] }),
+				'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['acme/multi-export:src/b.ts'], rationale: ['[plan] splitting would break the barrel'] }),
 			},
 		});
 
@@ -162,8 +169,8 @@ describe('buildStandardsHealth', () => {
 
 	test('a site left standing in a resolved batch is untracked — only a decline is a decline', async () => {
 		const cwd = setupRun({
-			batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' })] })],
-			reports: { 'batch-01': report({ outcome: 'resolved', remainingSiteKeys: ['multi-export:src/a.ts'], rationale: [] }) },
+			batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] })],
+			reports: { 'batch-01': report({ outcome: 'resolved', remainingSiteKeys: ['acme/multi-export:src/a.ts'], rationale: [] }) },
 		});
 
 		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
@@ -172,7 +179,7 @@ describe('buildStandardsHealth', () => {
 	});
 
 	test('a batch with no parseable report is attempted only — a failed batch is not a decline', async () => {
-		const cwd = setupRun({ batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' })] })] });
+		const cwd = setupRun({ batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] })] });
 
 		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
 
@@ -184,13 +191,13 @@ describe('buildStandardsHealth', () => {
 			batches: [
 				batch({
 					id: 'batch-01',
-					blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' }), finding({ rule: 'module-boundary', path: 'src/b.ts' })],
+					blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' }), finding({ rule: 'acme/module-boundary', path: 'src/b.ts' })],
 				}),
 			],
 			reports: {
 				'batch-01': report({
 					outcome: 'declined',
-					remainingSiteKeys: ['multi-export:src/a.ts', 'module-boundary:src/b.ts'],
+					remainingSiteKeys: ['acme/multi-export:src/a.ts', 'acme/module-boundary:src/b.ts'],
 					rationale: ['[other] both are deliberate'],
 				}),
 			},
@@ -209,8 +216,8 @@ describe('buildStandardsHealth', () => {
 	test('an implement run is not this report’s material', async () => {
 		const cwd = setupRun({
 			pipeline: 'implement',
-			batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' })] })],
-			reports: { 'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['multi-export:src/a.ts'] }) },
+			batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] })],
+			reports: { 'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['acme/multi-export:src/a.ts'] }) },
 		});
 
 		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
@@ -221,8 +228,8 @@ describe('buildStandardsHealth', () => {
 	test('a manifest written before the pipeline field existed reads as an implement run, so it is skipped too', async () => {
 		const cwd = setupRun({
 			pipeline: null,
-			batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' })] })],
-			reports: { 'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['multi-export:src/a.ts'] }) },
+			batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] })],
+			reports: { 'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['acme/multi-export:src/a.ts'] }) },
 		});
 
 		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
@@ -244,7 +251,7 @@ describe('buildStandardsHealth', () => {
 
 		const health = await buildStandardsHealth({ cwd, packs: [packOf({ rules: [rule({ id: 'multi-export', checked: true })] })] });
 
-		expect(health.rules.map((entry) => entry.id)).toStrictEqual(['multi-export']);
+		expect(health.rules.map((entry) => entry.rule)).toStrictEqual(['acme/multi-export']);
 		expect(health.totals).toStrictEqual({ rules: 1, checked: 1, judgment: 0 });
 	});
 
@@ -253,13 +260,13 @@ describe('buildStandardsHealth', () => {
 			runs: [
 				{
 					runId: 'run-broken',
-					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' })] })],
+					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] })],
 					worklistJson: '{ not json at all',
 				},
 				{
 					runId: 'run-good',
-					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/b.ts' })] })],
-					reports: { 'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['multi-export:src/b.ts'], rationale: ['[other] deliberate'] }) },
+					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/b.ts' })] })],
+					reports: { 'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['acme/multi-export:src/b.ts'], rationale: ['[other] deliberate'] }) },
 				},
 			],
 		});
@@ -275,12 +282,12 @@ describe('buildStandardsHealth', () => {
 			runs: [
 				{
 					runId: 'run-broken',
-					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' })] })],
+					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] })],
 					manifestJson: '{ not json at all',
 				},
 				{
 					runId: 'run-good',
-					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/b.ts' })] })],
+					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/b.ts' })] })],
 					reports: { 'batch-01': report({ outcome: 'resolved', remainingSiteKeys: [] }) },
 				},
 			],
@@ -293,7 +300,7 @@ describe('buildStandardsHealth', () => {
 
 	test('a batch the manifest holds no step record for is untracked — a batch that never ran judged nothing', async () => {
 		const cwd = setupRun({
-			batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' })] })],
+			batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] })],
 			unrecordedBatchIds: ['batch-01'],
 		});
 
@@ -307,14 +314,14 @@ describe('buildStandardsHealth', () => {
 			runs: [
 				{
 					runId: 'run-01',
-					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' })] })],
+					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] })],
 					reports: { 'batch-01': report({ outcome: 'resolved', remainingSiteKeys: [] }) },
 				},
 				{
 					runId: 'run-02',
-					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/b.ts' })] })],
+					batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/b.ts' })] })],
 					reports: {
-						'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['multi-export:src/b.ts'], rationale: ['[other] deliberate'] }),
+						'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['acme/multi-export:src/b.ts'], rationale: ['[other] deliberate'] }),
 					},
 				},
 			],
@@ -332,18 +339,21 @@ describe('buildStandardsHealth', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			packs: [packOf({ name: 'zeta', rules: [rule({ id: 'path-aliases' })] }), packOf({ name: 'alpha', rules: [rule({ id: 'multi-export', checked: true })] })],
+			packs: [
+				packOf({ name: 'zeta', rules: [rule({ id: 'path-aliases', name: 'zeta/path-aliases', library: 'zeta' })] }),
+				packOf({ name: 'alpha', rules: [rule({ id: 'multi-export', name: 'alpha/multi-export', library: 'alpha', checked: true })] }),
+			],
 		});
 
-		expect(health.rules.map((entry) => entry.id)).toStrictEqual(['multi-export', 'path-aliases']);
+		expect(health.rules.map((entry) => entry.rule)).toStrictEqual(['alpha/multi-export', 'zeta/path-aliases']);
 		expect(health.totals).toStrictEqual({ rules: 2, checked: 1, judgment: 1 });
 	});
 
 	test('each batch is answered by the step record carrying its own id, not by position', async () => {
 		const cwd = setupRun({
 			batches: [
-				batch({ id: 'batch-01', blocking: [finding({ rule: 'multi-export', path: 'src/a.ts' })] }),
-				batch({ id: 'batch-02', blocking: [finding({ rule: 'module-boundary', path: 'src/b.ts' })] }),
+				batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] }),
+				batch({ id: 'batch-02', blocking: [finding({ rule: 'acme/module-boundary', path: 'src/b.ts' })] }),
 			],
 			reports: { 'batch-02': report({ outcome: 'resolved', remainingSiteKeys: [] }) },
 			unrecordedBatchIds: ['batch-01'],
@@ -356,5 +366,27 @@ describe('buildStandardsHealth', () => {
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 0, untracked: 1 }));
 		expect(rowFor({ rules: health.rules, id: 'module-boundary' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 1, untracked: 0 }));
+	});
+
+	test('health rows are keyed by full rule name and tally only full-name sites', async () => {
+		const cwd = setupRun({
+			batches: [
+				batch({
+					id: 'batch-01',
+					blocking: [finding({ rule: 'lightsout/function-size', path: 'src/a.ts' }), finding({ rule: 'function-size', path: 'src/b.ts' })],
+				}),
+			],
+			reports: { 'batch-01': report({ outcome: 'resolved', remainingSiteKeys: [] }) },
+		});
+
+		const health = await buildStandardsHealth({
+			cwd,
+			packs: [packOf({ name: 'lightsout', rules: [rule({ id: 'function-size', library: 'lightsout', name: 'lightsout/function-size', checked: true })] })],
+		});
+
+		// the short-named site matches no row, so only the full-name site is tallied
+		expect(health.rules.map((entry) => ({ rule: entry.rule, attempted: entry.attempted, resolved: entry.resolved }))).toStrictEqual([
+			{ rule: 'lightsout/function-size', attempted: 1, resolved: 1 },
+		]);
 	});
 });

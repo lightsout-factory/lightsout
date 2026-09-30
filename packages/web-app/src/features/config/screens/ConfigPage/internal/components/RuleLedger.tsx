@@ -16,7 +16,7 @@ type RuleState = ConfigView['ruleStates'][number];
 const RuleLink = ({ state }: { state: RuleState }) => (
 	<Link
 		to="/standards-packs/$ruleSet/$rule"
-		params={{ ruleSet: toRuleSetSlug({ channel: state.channel }), rule: state.rule }}
+		params={{ ruleSet: toRuleSetSlug({ channel: state.channel }), rule: state.id }}
 		className="font-mono text-sm hover:underline hover:underline-offset-2"
 	>
 		{state.rule}

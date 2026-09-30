@@ -17,7 +17,7 @@ import { writeSource } from '#tests/helpers/writeSource.ts';
 const multiExport = 'export const alphaThing = 1;\nexport const betaThing = 2;\n';
 
 /** The rule ids the standards reviewer was handed, in the order its invocation lists them. */
-const ruleIdsOffered = ({ systemPrompt }: { systemPrompt: string }) => [...systemPrompt.matchAll(/Rule id: `([^`]+)`/g)].map(([, id]) => id ?? '');
+const ruleIdsOffered = ({ systemPrompt }: { systemPrompt: string }) => [...systemPrompt.matchAll(/Rule: `([^`]+)`/g)].map(([, id]) => id ?? '');
 
 /** The repo-relative files the standards reviewer was asked to read. */
 const filesOffered = ({ prompt }: { prompt: string }) =>
@@ -225,7 +225,7 @@ describe('runRefactorPipeline agent review', () => {
 
 		// a rule no shipped pack declares, so it can only have come from the root
 		// the config named — and the packs stack rather than replace each other
-		expect(reviewRuleIds[0]).toContain('house-rule');
+		expect(reviewRuleIds[0]).toContain('house/house-rule');
 		expect(reviewRuleIds[0]?.length ?? 0).toBeGreaterThan(1);
 	});
 
@@ -250,6 +250,6 @@ describe('runRefactorPipeline agent review', () => {
 
 		// the batch is real work — a missing answer must not stop it
 		expect(result.ok).toBe(true);
-		expect(progress.some((line) => line.startsWith('batch-01:multi-export:src: agent review skipped —'))).toBe(true);
+		expect(progress.some((line) => line.startsWith('batch-01:lightsout/multi-export:src: agent review skipped —'))).toBe(true);
 	});
 });

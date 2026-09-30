@@ -144,8 +144,8 @@ describe('getReader config', () => {
 		const view = await reader.getConfig();
 
 		expect(view.ruleStates).toStrictEqual([
-			{ rule: 'house-loose-file', pack: 'acme', channel: 'react', severity: 'blocking', fromConfig: false, options: {} },
-			{ rule: 'house-name-things-well', pack: 'acme', channel: 'react', severity: 'off', fromConfig: true, options: {} },
+			{ rule: 'acme/house-loose-file', id: 'house-loose-file', pack: 'acme', channel: 'react', severity: 'blocking', fromConfig: false, options: {} },
+			{ rule: 'acme/house-name-things-well', id: 'house-name-things-well', pack: 'acme', channel: 'react', severity: 'off', fromConfig: true, options: {} },
 		]);
 	});
 

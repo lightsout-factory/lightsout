@@ -20,7 +20,7 @@ const describeStandardsPacks = ({ value }: { value: string[] | false | undefined
 	}
 
 	if (value === undefined) {
-		return 'lightsout-defaults (none configured — set to false to disable, or list pack roots)';
+		return 'lightsout (none configured — set to false to disable, or list pack roots)';
 	}
 
 	return value.join(', ');

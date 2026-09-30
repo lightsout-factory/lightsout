@@ -120,7 +120,7 @@ test('standards gate: findings feed the refactor prompt; a fixing pass clears th
 	// findings section injected into the refactor prompt
 	expect(prompts[0]?.includes('# Standards findings')).toBeTruthy();
 	// the planted violation named in the work-list
-	expect(prompts[0]?.includes('[multi-export] src/messy.js')).toBeTruthy();
+	expect(prompts[0]?.includes('[lightsout/multi-export] src/messy.js')).toBeTruthy();
 	// clean tree injects no findings section
 	expect(prompts[1]?.includes('# Standards findings')).toBeFalsy();
 	// because the fixing pass cleared the gate, so no second round was ever bought
@@ -282,7 +282,7 @@ test('a ledgered site the run measurably worsened still qualifies, and an unchan
 	});
 	writeFileSync(
 		join(dir, 'lightsout.standards-baseline.json'),
-		JSON.stringify({ at: '2026-01-01T00:00:00.000Z', path: '.', siteKeys: ['file-size:src/grown.js', 'file-size:src/steady.js'] }),
+		JSON.stringify({ at: '2026-01-01T00:00:00.000Z', path: '.', siteKeys: ['lightsout/file-size:src/grown.js', 'lightsout/file-size:src/steady.js'] }),
 	);
 	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm ledger', { cwd: dir });
 	// the line-count rule reads a parsed tree, so the repo needs a compiler
@@ -308,13 +308,13 @@ test('a ledgered site the run measurably worsened still qualifies, and an unchan
 
 	// the ledger accepted this site and the run made it bigger — the live check
 	// has to read past the ledger, or accepted debt could grow unwatched
-	expect(refactorPrompts[0] ?? '').toContain('[file-size] src/grown.js');
-	expect(remaining).toContain('file-size:src/grown.js');
+	expect(refactorPrompts[0] ?? '').toContain('[lightsout/file-size] src/grown.js');
+	expect(remaining).toContain('lightsout/file-size:src/grown.js');
 	// the same rule on a file the run rewrote at the same length is debt it
 	// inherited: recorded, never handed back as work
-	expect(refactorPrompts[0] ?? '').not.toContain('[file-size] src/steady.js');
-	expect(cleanup.inherited.map((finding) => finding.siteKey)).toContain('file-size:src/steady.js');
-	expect(remaining).not.toContain('file-size:src/steady.js');
+	expect(refactorPrompts[0] ?? '').not.toContain('[lightsout/file-size] src/steady.js');
+	expect(cleanup.inherited.map((finding) => finding.siteKey)).toContain('lightsout/file-size:src/steady.js');
+	expect(remaining).not.toContain('lightsout/file-size:src/steady.js');
 	expect(result.ok).toBe(true);
 });
 
@@ -349,9 +349,9 @@ test('a folder finding already in the baseline never gates a change inside the f
 
 	// the folder is in scope because a file under it changed — and that is
 	// exactly why it must not be work: the run did not crowd it
-	expect(cleanup.inherited.map((finding) => finding.siteKey)).toContain('folder-size:src/pile');
+	expect(cleanup.inherited.map((finding) => finding.siteKey)).toContain('lightsout/folder-size:src/pile');
 	expect(cleanup.remaining).toStrictEqual([]);
-	expect(refactorPrompts.every((prompt) => !prompt.includes('[folder-size]'))).toBe(true);
+	expect(refactorPrompts.every((prompt) => !prompt.includes('[lightsout/folder-size]'))).toBe(true);
 	expect(result.ok).toBe(true);
 	expect(result.manifest.steps.find((step) => step.id === 'refactor')?.status).toBe('passed');
 });
@@ -387,7 +387,7 @@ test('a run with no baseline records every finding as uncertain', async () => {
 	const cleanup = RefactorStepReport.parse(result.manifest.steps.find((step) => step.id === 'refactor')?.report);
 
 	// no comparison point means no claim about where a finding came from
-	expect(cleanup.uncertain.map((finding) => finding.siteKey)).toContain('multi-export:src/messy.js');
+	expect(cleanup.uncertain.map((finding) => finding.siteKey)).toContain('lightsout/multi-export:src/messy.js');
 	expect(cleanup.remaining).toStrictEqual([]);
 	// nothing qualified, so no cleanup agent was ever spent
 	expect(refactorPrompts).toStrictEqual([]);

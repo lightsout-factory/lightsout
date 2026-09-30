@@ -8,7 +8,13 @@ describe('getDefaultPackBundle', () => {
 	test('parses the committed pack against the contract the engine reads it to', () => {
 		const bundle = getDefaultPackBundle();
 
-		expect(bundle.name).toBe('lightsout-defaults');
+		expect(bundle.name).toBe('lightsout');
+	});
+
+	test('the committed bundle carries the built-in library name lightsout', () => {
+		const bundle = getDefaultPackBundle();
+
+		expect(bundle.name).toBe('lightsout');
 	});
 
 	test('is the authored pack rather than the shipped copy, which is the whole reason the app carries it', () => {

@@ -92,18 +92,20 @@ describe('getRunView', () => {
 	test('a refactor run reports every frozen site against the sites its batches left standing', async () => {
 		const { cwd } = await setupRefactorRun({
 			batches: [
-				{ rule: 'file-size', blocking: 3, report: { outcome: 'resolved', remainingSiteKeys: [], rationale: [] } },
+				{ rule: 'lightsout/file-size', blocking: 3, report: { outcome: 'resolved', remainingSiteKeys: [], rationale: [] } },
 				{
-					rule: 'folder-size',
+					rule: 'lightsout/folder-size',
 					blocking: 2,
 					report: {
 						outcome: 'declined',
-						remainingSiteKeys: ['folder-size:0', 'folder-size:1'],
+						remainingSiteKeys: ['lightsout/folder-size:0', 'lightsout/folder-size:1'],
 						rationale: ['the folder is one public surface'],
-						advisoryOutcomes: [{ rule: 'multi-export', siteKey: 'multi-export:0', outcome: 'declined', reason: 'the second export is the type' }],
+						advisoryOutcomes: [
+							{ rule: 'lightsout/multi-export', siteKey: 'lightsout/multi-export:0', outcome: 'declined', reason: 'the second export is the type' },
+						],
 					},
 				},
-				{ rule: 'multi-export', blocking: 4 },
+				{ rule: 'lightsout/multi-export', blocking: 4 },
 			],
 		});
 
@@ -119,17 +121,35 @@ describe('getRunView', () => {
 			batchesDeclined: 1,
 			batches: [
 				// a report with no advisory list reports none, rather than nothing
-				{ id: 'batch-00:file-size:src', rule: 'file-size', folder: 'src', blocking: 3, outcome: 'resolved', rationale: [], advisoryOutcomes: [] },
 				{
-					id: 'batch-01:folder-size:src',
-					rule: 'folder-size',
+					id: 'batch-00:lightsout/file-size:src',
+					rule: 'lightsout/file-size',
+					folder: 'src',
+					blocking: 3,
+					outcome: 'resolved',
+					rationale: [],
+					advisoryOutcomes: [],
+				},
+				{
+					id: 'batch-01:lightsout/folder-size:src',
+					rule: 'lightsout/folder-size',
 					folder: 'src',
 					blocking: 2,
 					outcome: 'declined',
 					rationale: ['the folder is one public surface'],
-					advisoryOutcomes: [{ rule: 'multi-export', siteKey: 'multi-export:0', outcome: 'declined', reason: 'the second export is the type' }],
+					advisoryOutcomes: [
+						{ rule: 'lightsout/multi-export', siteKey: 'lightsout/multi-export:0', outcome: 'declined', reason: 'the second export is the type' },
+					],
 				},
-				{ id: 'batch-02:multi-export:src', rule: 'multi-export', folder: 'src', blocking: 4, outcome: 'not-run', rationale: [], advisoryOutcomes: [] },
+				{
+					id: 'batch-02:lightsout/multi-export:src',
+					rule: 'lightsout/multi-export',
+					folder: 'src',
+					blocking: 4,
+					outcome: 'not-run',
+					rationale: [],
+					advisoryOutcomes: [],
+				},
 			],
 			// only the size and crowding rules are the sprawl story: three plus two
 			// sites, of which two still stand
@@ -138,7 +158,7 @@ describe('getRunView', () => {
 	});
 
 	test('a batch whose recorded report will not parse reads as never run, leaving its sites standing', async () => {
-		const { cwd } = await setupRefactorRun({ batches: [{ rule: 'function-size', blocking: 2, report: { outcome: 'exploded' } }] });
+		const { cwd } = await setupRefactorRun({ batches: [{ rule: 'lightsout/function-size', blocking: 2, report: { outcome: 'exploded' } }] });
 
 		const view = await getRunView({ cwd, runId: 'run-refactor' });
 
@@ -150,7 +170,15 @@ describe('getRunView', () => {
 			batchesResolved: 0,
 			batchesDeclined: 0,
 			batches: [
-				{ id: 'batch-00:function-size:src', rule: 'function-size', folder: 'src', blocking: 2, outcome: 'not-run', rationale: [], advisoryOutcomes: [] },
+				{
+					id: 'batch-00:lightsout/function-size:src',
+					rule: 'lightsout/function-size',
+					folder: 'src',
+					blocking: 2,
+					outcome: 'not-run',
+					rationale: [],
+					advisoryOutcomes: [],
+				},
 			],
 			overCap: { before: 2, after: 2 },
 		});
@@ -158,7 +186,7 @@ describe('getRunView', () => {
 
 	test('a work-list of nothing but other rules leaves the over-cap count off', async () => {
 		const { cwd } = await setupRefactorRun({
-			batches: [{ rule: 'multi-export', blocking: 1, report: { outcome: 'resolved', remainingSiteKeys: [], rationale: [] } }],
+			batches: [{ rule: 'lightsout/multi-export', blocking: 1, report: { outcome: 'resolved', remainingSiteKeys: [], rationale: [] } }],
 		});
 
 		const view = await getRunView({ cwd, runId: 'run-refactor' });
@@ -169,7 +197,15 @@ describe('getRunView', () => {
 			batchesResolved: 1,
 			batchesDeclined: 0,
 			batches: [
-				{ id: 'batch-00:multi-export:src', rule: 'multi-export', folder: 'src', blocking: 1, outcome: 'resolved', rationale: [], advisoryOutcomes: [] },
+				{
+					id: 'batch-00:lightsout/multi-export:src',
+					rule: 'lightsout/multi-export',
+					folder: 'src',
+					blocking: 1,
+					outcome: 'resolved',
+					rationale: [],
+					advisoryOutcomes: [],
+				},
 			],
 			// no size or crowding batch ran, so there is no sprawl line to draw
 			overCap: undefined,
@@ -186,7 +222,7 @@ describe('getRunView', () => {
 	});
 
 	test('a refactor run whose plan does not name the work-list reports nothing, though the file is there', async () => {
-		const { cwd } = await setupRefactorRun({ batches: [{ rule: 'file-size', blocking: 1 }], plan: 'plans/demo/plan.md' });
+		const { cwd } = await setupRefactorRun({ batches: [{ rule: 'lightsout/file-size', blocking: 1 }], plan: 'plans/demo/plan.md' });
 
 		const view = await getRunView({ cwd, runId: 'run-refactor' });
 

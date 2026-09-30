@@ -21,7 +21,7 @@ import { invokedDirectly } from './invokedDirectly.mjs';
  */
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-const defaultPackName = 'lightsout-defaults';
+const defaultPackName = 'lightsout';
 
 const authoredPackPath = 'packages/standards-typescript';
 

@@ -10,7 +10,7 @@ import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/L
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 
 const advisory = (overrides: Partial<StandardsFinding> & { siteKey: string }): StandardsFinding => ({
-	rule: 'function-size',
+	rule: 'acme/function-size',
 	severity: StandardsSeverity.Advisory,
 	files: [{ path: 'src/a.ts' }],
 	detail: '81 lines',
@@ -29,6 +29,8 @@ const batch: RefactorBatch = {
 
 const judgmentRules: LoadedStandardsRule[] = ['function-size', 'single-return'].map((id) => ({
 	id,
+	name: `acme/${id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: `code/style-guide/patterns/${id}`,
 	summary: `the ${id} rule`,
@@ -70,7 +72,7 @@ describe('reviewBatchOutput', () => {
 	test('a rule the pre-edit review already raised on the file is not reported again', async () => {
 		const { call } = await setupReview({ reported: [{ rule: 'function-size', files: [{ path: 'src/a.ts' }], detail: '81 lines' }] });
 
-		const introduced = await call({ baseline: [advisory({ siteKey: 'function-size:src/a.ts' })], changedFiles: ['src/a.ts'] });
+		const introduced = await call({ baseline: [advisory({ siteKey: 'acme/function-size:src/a.ts' })], changedFiles: ['src/a.ts'] });
 
 		// the executor was shown this one before it started and recorded its answer;
 		// handing it back is churn, not verification
@@ -85,17 +87,17 @@ describe('reviewBatchOutput', () => {
 			],
 		});
 
-		const introduced = await call({ baseline: [advisory({ siteKey: 'function-size:src/a.ts' })], changedFiles: ['src/a.ts'] });
+		const introduced = await call({ baseline: [advisory({ siteKey: 'acme/function-size:src/a.ts' })], changedFiles: ['src/a.ts'] });
 
-		expect(introduced.map((entry) => entry.rule)).toStrictEqual(['single-return']);
+		expect(introduced.map((entry) => entry.rule)).toStrictEqual(['acme/single-return']);
 	});
 
 	test('the same rule on a file the batch created is new — the site key carries the path', async () => {
 		const { call } = await setupReview({ reported: [{ rule: 'function-size', files: [{ path: 'src/extracted.ts' }], detail: '92 lines' }] });
 
-		const introduced = await call({ baseline: [advisory({ siteKey: 'function-size:src/a.ts' })], changedFiles: ['src/a.ts', 'src/extracted.ts'] });
+		const introduced = await call({ baseline: [advisory({ siteKey: 'acme/function-size:src/a.ts' })], changedFiles: ['src/a.ts', 'src/extracted.ts'] });
 
-		expect(introduced.map((entry) => entry.siteKey)).toStrictEqual(['function-size:src/extracted.ts']);
+		expect(introduced.map((entry) => entry.siteKey)).toStrictEqual(['acme/function-size:src/extracted.ts']);
 	});
 
 	test('everything the reviewer saw reaches the repo ledger, not just what is new', async () => {
@@ -106,12 +108,12 @@ describe('reviewBatchOutput', () => {
 			],
 		});
 
-		await call({ baseline: [advisory({ siteKey: 'function-size:src/a.ts' })], changedFiles: ['src/a.ts'] });
+		await call({ baseline: [advisory({ siteKey: 'acme/function-size:src/a.ts' })], changedFiles: ['src/a.ts'] });
 		const recorded = await readReviewFindings({ cwd });
 
 		// the ledger is the account of what a review found, not of what this run
 		// chose to act on — and it carries which run and which batch saw it
-		expect(recorded.map((entry) => entry.rule)).toStrictEqual(['function-size', 'single-return']);
+		expect(recorded.map((entry) => entry.rule)).toStrictEqual(['acme/function-size', 'acme/single-return']);
 		expect(recorded[0]?.runId).toBe('run-01');
 		expect(recorded[0]?.step).toBe('batch-01:multi-export:src');
 	});
@@ -123,7 +125,7 @@ describe('reviewBatchOutput', () => {
 
 		// a judgment finding has no second witness — no code check can rediscover
 		// it — so an unwritten one is simply gone
-		expect((await readReviewFindings({ cwd })).map((entry) => entry.siteKey)).toStrictEqual(['single-return:src/a.ts']);
+		expect((await readReviewFindings({ cwd })).map((entry) => entry.siteKey)).toStrictEqual(['acme/single-return:src/a.ts']);
 	});
 
 	test('code-checks-only mode spends no agent and writes no ledger line', async () => {

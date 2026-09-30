@@ -31,7 +31,7 @@ const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
 	(input.kind === StandardsInputKind.FileList ? input.files : [])
 		.filter((file) => file.endsWith('banned.ts'))
 		.map((path) => ({
-			siteKey: `banned:${path}`,
+			siteKey: `no-banned-file:${path}`,
 			files: [{ path }],
 			detail: 'a file the rule bans',
 		}));
@@ -63,6 +63,8 @@ const setupPack = ({ frameworkOwned = false }: { frameworkOwned?: boolean } = {}
 	}
 
 	const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
+		name: `acme/${overrides.id}`,
+		library: 'acme',
 		set: 'code',
 		documentPath: 'code/style-guide/structure/module-api',
 		summary: 'a rule',

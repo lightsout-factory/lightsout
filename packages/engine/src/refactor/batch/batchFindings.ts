@@ -3,46 +3,47 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 
 /**
  * Mechanical fixes come before judgment-heavier duplication work, so a run's
- * early batches are its safest. Unknown rules sort last rather than erroring.
+ * early batches are its safest. The list names the built-in library's rules by
+ * full name; every other rule sorts last rather than erroring.
  *
- * The ids are written out rather than read from packages: batching order is
- * engine pacing policy, not a fact a package should have to restate.
+ * The names are written out rather than read from libraries: batching order is
+ * engine pacing policy, not a fact a library should have to restate.
  */
 const rulePriority: string[] = [
-	'banned-folder-name',
-	'file-directly-in-common',
-	'folder-index-file',
-	'test-in-tests-folder',
-	'test-not-beside-subject',
-	'test-support-in-src',
-	'import-through-index',
-	'internal-import-from-outside',
-	'multi-export',
-	'filename-mismatch',
-	'test-mock-prefix',
-	'test-mock-return-in-hook',
-	'test-mock-untyped',
-	'test-mock-wrapper-untyped',
-	'test-shared-let',
-	'test-assert-in-hook',
-	'test-nested-describe',
-	'test-manual-mock-cleanup',
-	'test-strict-equal-matcher',
-	'barrel-star',
-	'dead-export',
-	'test-only-export',
-	'file-size',
-	'function-size',
-	'ungrouped-domain-utils',
-	'single-file-domain-folder',
-	'folder-casing',
-	'test-multiple-setups',
-	'oversized-setup-factory',
-	'folder-size',
-	'duplicate-function-body',
-	'duplicate-code-block',
-	'duplicate-export-name',
-	'synonym-export-name',
+	'lightsout/banned-folder-name',
+	'lightsout/file-directly-in-common',
+	'lightsout/folder-index-file',
+	'lightsout/test-in-tests-folder',
+	'lightsout/test-not-beside-subject',
+	'lightsout/test-support-in-src',
+	'lightsout/import-through-index',
+	'lightsout/internal-import-from-outside',
+	'lightsout/multi-export',
+	'lightsout/filename-mismatch',
+	'lightsout/test-mock-prefix',
+	'lightsout/test-mock-return-in-hook',
+	'lightsout/test-mock-untyped',
+	'lightsout/test-mock-wrapper-untyped',
+	'lightsout/test-shared-let',
+	'lightsout/test-assert-in-hook',
+	'lightsout/test-nested-describe',
+	'lightsout/test-manual-mock-cleanup',
+	'lightsout/test-strict-equal-matcher',
+	'lightsout/barrel-star',
+	'lightsout/dead-export',
+	'lightsout/test-only-export',
+	'lightsout/file-size',
+	'lightsout/function-size',
+	'lightsout/ungrouped-domain-utils',
+	'lightsout/single-file-domain-folder',
+	'lightsout/folder-casing',
+	'lightsout/test-multiple-setups',
+	'lightsout/oversized-setup-factory',
+	'lightsout/folder-size',
+	'lightsout/duplicate-function-body',
+	'lightsout/duplicate-code-block',
+	'lightsout/duplicate-export-name',
+	'lightsout/synonym-export-name',
 ];
 
 /** Keeps one agent job readable. */

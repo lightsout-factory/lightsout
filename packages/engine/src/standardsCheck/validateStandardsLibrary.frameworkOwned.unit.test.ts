@@ -13,7 +13,7 @@ const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
 	(input.kind === StandardsInputKind.FileList ? input.files : [])
 		.filter((file) => file.endsWith('banned.ts'))
 		.map((path) => ({
-			siteKey: `banned:${path}`,
+			siteKey: `no-banned-file:${path}`,
 			files: [{ path }],
 			detail: 'a file the rule bans',
 		}));
@@ -26,20 +26,22 @@ const bansTheBannedButChokes: StandardsCheckFunction = ({ input }) => {
 		throw new Error('cannot parse that');
 	}
 
-	return files.filter((file) => file.endsWith('banned.ts')).map((path) => ({ siteKey: `banned:${path}`, files: [{ path }], detail: 'a file the rule bans' }));
+	return files
+		.filter((file) => file.endsWith('banned.ts'))
+		.map((path) => ({ siteKey: `no-banned-file:${path}`, files: [{ path }], detail: 'a file the rule bans' }));
 };
 
 /** A check that objects to every file it is handed — the way to watch one problem line name more paths than it has room for. */
 const bansEveryFile: StandardsCheckFunction = ({ input }) =>
 	(input.kind === StandardsInputKind.FileList ? input.files : []).map((path) => ({
-		siteKey: `banned:${path}`,
+		siteKey: `no-banned-file:${path}`,
 		files: [{ path }],
 		detail: 'a file the rule bans',
 	}));
 
 /** A check that objects to the shape of the tree rather than to any file in it — a finding with nowhere to point. */
 const bansTheWholeTree: StandardsCheckFunction = ({ input }) =>
-	input.kind === StandardsInputKind.FileList && input.files.length > 0 ? [{ siteKey: 'banned:tree', files: [], detail: 'a shape the rule bans' }] : [];
+	input.kind === StandardsInputKind.FileList && input.files.length > 0 ? [{ siteKey: 'no-banned-file:tree', files: [], detail: 'a shape the rule bans' }] : [];
 
 /**
  * A rule folder's fixture pair on disk. Each side is a miniature repo the check
@@ -102,6 +104,8 @@ const setupUnpopulatedFrameworkOwned = () => {
 const noFrameworkOwnedNote = 'acme: no fixtures/framework-owned/ — no rule was held to the framework-owned invariant';
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPath: string }): LoadedStandardsRule => ({
+	name: `acme/${overrides.id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
@@ -223,7 +227,7 @@ describe('validateStandardsLibrary', () => {
 		// the rule's own pair went through cleanly, so the tree is the only thing
 		// the author has to go looking at
 		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree could not be checked — standards rule "no-banned-file" threw while checking: cannot parse that',
+			'no-banned-file: the nestjs framework-owned tree could not be checked — standards rule "acme/no-banned-file" threw while checking: cannot parse that',
 		]);
 		expect(notes).toStrictEqual([]);
 	});

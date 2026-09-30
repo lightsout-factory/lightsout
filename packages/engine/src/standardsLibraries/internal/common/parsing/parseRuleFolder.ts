@@ -15,6 +15,8 @@ interface Params {
 	folderPath: string;
 	set: StandardsSet;
 	documentPath: string;
+	/** The manifest name of the library holding the rule — the first half of its full name. */
+	library: string;
 	/** The loader throws these as one batch. */
 	problems: string[];
 }
@@ -44,7 +46,7 @@ const getRuleDeclaration = async ({ folderPath, rulePath, found }: { folderPath:
  * rule with any problem is dropped whole: a partial rule would be a check or
  * prose that silently stopped applying.
  */
-export const parseRuleFolder = async ({ folderPath, set, documentPath, problems }: Params): Promise<LoadedStandardsRule | undefined> => {
+export const parseRuleFolder = async ({ folderPath, set, documentPath, library, problems }: Params): Promise<LoadedStandardsRule | undefined> => {
 	const folderName = basename(folderPath);
 	const rulePath = `${documentPath}/${folderName}`;
 	const found: string[] = [];
@@ -86,6 +88,8 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, problems 
 	if (found.length === 0 && id !== undefined && declaration !== undefined) {
 		rule = {
 			id,
+			name: `${library}/${id}`,
+			library,
 			set,
 			documentPath,
 			summary: declaration.summary,

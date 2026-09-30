@@ -38,11 +38,15 @@ const setupWorkspaceRepo = () => {
 	return { cwd };
 };
 
-/** A check that reports one finding, so an empty note list can be told apart from a rule that never ran. */
-const reportingRun: StandardsCheckFunction = ({ input }) => [{ siteKey: `${input.kind}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
+/** A check for the rule `id` that reports one finding, so an empty note list can be told apart from a rule that never ran. */
+const reportingRun =
+	({ id }: { id: string }): StandardsCheckFunction =>
+	({ input }) => [{ siteKey: `${id}:${input.kind}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
 
 const rule = ({ id, inputKind }: { id: string; inputKind: StandardsInputKind }): LoadedStandardsRule => ({
 	id,
+	name: `acme/${id}`,
+	library: 'acme',
 	set: 'code',
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
@@ -53,14 +57,14 @@ const rule = ({ id, inputKind }: { id: string; inputKind: StandardsInputKind }):
 	defaultOptions: {},
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 	inputKind,
-	run: reportingRun,
+	run: reportingRun({ id }),
 });
 
 /** Runs the given rules as one loaded package, at the severities a repo's config would have resolved for them. */
 const runChecks = ({ rules, cwd }: { rules: LoadedStandardsRule[]; cwd: string }) => {
 	const pkg: LoadedStandardsLibrary = { name: 'acme', formatVersion: 1, rootPath: '/packages/acme', documents: [], rules };
 	const states = new Map<string, ResolvedRuleState>(
-		rules.map((entry) => [entry.id, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false }]),
+		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false }]),
 	);
 
 	return runPackageChecks({ cwd, packs: [pkg], states, channels: [] });
@@ -84,7 +88,7 @@ describe('runPackageChecks', () => {
 
 		expect(notes).toStrictEqual([]);
 		// the rule really did run — an empty note list means answered, not skipped
-		expect(findings.map((finding) => finding.rule)).toStrictEqual(['multi-export']);
+		expect(findings.map((finding) => finding.rule)).toStrictEqual(['acme/multi-export']);
 	});
 
 	test('names the folders anyway when the manifest declares no imports, since every package ships a manifest', async () => {
@@ -137,7 +141,7 @@ describe('runPackageChecks', () => {
 		const { findings, notes } = await runChecks({ cwd, rules: [rule({ id: 'dependency-drift', inputKind: StandardsInputKind.FileList })] });
 
 		expect(notes).toStrictEqual([]);
-		expect(findings.map((finding) => finding.rule)).toStrictEqual(['dependency-drift']);
+		expect(findings.map((finding) => finding.rule)).toStrictEqual(['acme/dependency-drift']);
 	});
 
 	test('names only the first five uncovered folders, because a note carrying every one of them is a note nobody reads', async () => {

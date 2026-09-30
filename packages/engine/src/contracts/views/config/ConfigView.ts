@@ -25,7 +25,10 @@ export const ConfigView = z.object({
 	/** Every loaded rule with its effective severity here and whether config set it. */
 	ruleStates: z.array(
 		z.object({
+			/** The full rule name `<library>/<rule-id>` — the one a finding carries. */
 			rule: z.string(),
+			/** The rule's id inside its library — the address the pack pages use. */
+			id: z.string(),
 			/** The pack that declares the rule, named beside it when several packs load. */
 			pack: z.string(),
 			/** The rule's channel — which set of rules it belongs to, and so where the ledger's link to it points. */

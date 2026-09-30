@@ -1,9 +1,9 @@
 import type { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 
 export interface StandardsRuleListing {
-	/** The rule id — a plain string, the same one a finding and the config carry. */
+	/** The full rule name `<library>/<rule-id>` — the one a finding carries. */
 	rule: string;
-	/** '<package name>: <document folder>' — which package states the rule, and where in it. */
+	/** '<library name>: <topic folder>' — which library states the rule, and where in it. */
 	doc: string;
 	summary: string;
 	/** True when the rule ships a check code runs; false when it is judgment an agent has to read. */

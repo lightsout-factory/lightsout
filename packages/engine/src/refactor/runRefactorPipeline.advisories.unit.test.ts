@@ -122,7 +122,7 @@ test('refactor: every advisory on the batch’s files rides the executor prompt,
 
 	// a duplicate-block advisory is not a size advisory, and an advisory the agent
 	// never sees is one it can never judge:\n${advisorySection}
-	expect(advisorySection.includes('[duplicate-code-block] alpha/widget.ts')).toBeTruthy();
+	expect(advisorySection.includes('[lightsout/duplicate-code-block] alpha/widget.ts')).toBeTruthy();
 	// its own guidance rides with it — each advisory rule asks for something
 	// different, so a blanket instruction cannot stand in for it
 	expect(advisorySection.includes('Extract the shared block, or say why the copies have to differ.')).toBeTruthy();
