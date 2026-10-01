@@ -1,10 +1,9 @@
 ---
-summary: "an export only its own tests reference"
+summary: "Code that only its own tests use."
 checked: true
 severity: advisory
 ---
 
-An export whose only references anywhere are test files is a hint, not a
-violation: production never calls it, so it may be dead code wearing a test —
-or a deliberate promotion whose contract the tests pin. The finding asks the
-question; a human answers it.
+## Test Only Export
+
+An export whose only references are test files is a question, not a violation. Production never calls it, so it may be dead code that a test keeps alive, or an export made public on purpose whose contract the tests pin. The finding asks the question; a human answers it.

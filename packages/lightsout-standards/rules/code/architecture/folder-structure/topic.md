@@ -1,8 +1,8 @@
 # Folder Structure
 
-Shared code lives in `common/` folders. A `common/` folder sits inside the folder whose code shares it, so where it sits shows who uses it: `src/common/` serves all of `src/`, and `src/billing/common/` serves only `src/billing/`.
+Shared code lives in `common/` folders. A `common/` folder sits inside the folder whose code shares it: `src/common/` serves all of `src/`, and `src/billing/common/` serves only `src/billing/`.
 
-Inside `common/`, every file goes in a folder for its kind of code:
+The folders for each kind of code in `common/`:
 
 | Folder | Holds |
 | --- | --- |
@@ -11,6 +11,4 @@ Inside `common/`, every file goes in a folder for its kind of code:
 | `constants/` | Constants (`defaultConfig`, `Action`) |
 | `services/` | Classes that hold state (`ApiClient`) |
 
-Two or more functions about one subject can also share a folder named for that subject, such as `formatting/` or `parsing/`: a domain folder.
-
-A package's own architecture document may set its concrete folder layout on top of these rules.
+A domain folder is named for one subject. Inside `common/`, it holds two or more functions about that subject, such as `formatting/` or `parsing/`. Outside `common/`, a domain folder groups related modules under the subject's name and has no main file.

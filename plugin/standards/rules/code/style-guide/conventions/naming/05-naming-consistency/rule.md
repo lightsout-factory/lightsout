@@ -1,15 +1,15 @@
 ---
-summary: "a second convention introduced into a domain that already standardized on one"
+summary: "Keeping one naming pattern within an area of the code."
 checked: false
 severity: advisory
 ---
 
 ## Naming Consistency
 
-Standardize patterns within each domain — if the codebase already uses one, follow it; never introduce a competing convention:
+Use one naming pattern for each kind of name within a domain. When the codebase already uses one, follow it; never introduce a competing one.
 
-- Data fetching: one of `getData` / `fetchData` / `loadData`, not a mix
-- Booleans: consistent prefixes (`is`, `has`, `should`, `can`)
-- Event handlers: one pattern (`onSubmit` vs `handleSubmit`)
+- Data fetching: one of `getData`, `fetchData` or `loadData`, not a mix. Beside `getUserData`, a new reader is `getUserSettings`, not `fetchUserSettings`.
+- Booleans: consistent prefixes, such as `is`, `has`, `should` and `can`.
+- Event handlers: one pattern, `onSubmit` or `handleSubmit`.
 
-Subordinate to Naming Consistency above: a domain that already standardized on `fetchData` keeps its verb — the vocabulary governs new domains.
+When names follow one pattern, a reader can guess a name and search finds it.

@@ -1,10 +1,10 @@
 ---
-summary: "an assertion written so that it can never pass — `expect.objectContaining` pairing a key with `undefined`"
+summary: "Assertions written so they can never pass."
 checked: true
 severity: blocking
 ---
 
-### Assertions That Can Never Pass
+## Test Never-Passing Assertion
 
 An assertion that no implementation can satisfy is found by a failed run, and whoever reads the red test has to prove by hand that the test, not the code, is wrong. Write each assertion in a form whose meaning matches how it reads.
 

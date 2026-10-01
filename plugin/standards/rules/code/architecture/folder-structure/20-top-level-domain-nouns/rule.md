@@ -1,9 +1,11 @@
 ---
-summary: "a top-level folder naming a technical layer rather than a capability the product has"
+summary: "What a package's top-level folders are named after."
 checked: false
 severity: advisory
 ---
 
-## Top Level Is Domain Nouns
+## Top-Level Domain Nouns
 
-`src/`'s top level names domains (`billing/`, `issues/`, `sync/`) — capabilities the product has. Infrastructure capabilities are domains too: `git/`, `config/`, `runState/` are valid module names. Navigation is by domain first, for humans and agents alike.
+Name the top-level folders of `src/` for domains, the capabilities the product has: `billing/`, `issues/`, `sync/`. Infrastructure capabilities are domains too: `git/`, `config/`, `runState/`.
+
+People and agents find code by domain first.

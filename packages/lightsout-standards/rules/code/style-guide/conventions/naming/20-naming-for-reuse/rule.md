@@ -1,19 +1,19 @@
 ---
-summary: "a name that says where a value is used rather than what it is"
+summary: "Naming things for what they are, not where they are used."
 checked: false
 severity: advisory
 ---
 
 ## Naming for Reuse
 
-**Name things by what they ARE, never by where or how they're currently used.** The test: could someone use this elsewhere in the app without the name misleading them?
+Name a thing by what it is, never by where or how it is used today. Ask: could someone use it elsewhere in the app without the name misleading them?
 
-| Category | ❌ Context-specific | ✅ Generic, reusable |
-| --- | --- | --- |
-| Value constants | `heroMaxWidth` | `maxContentWidth` |
-| Utils | `formatPricingDate()` | `formatDate()` |
-| Named constants | `HeroButtonVariant` | `ButtonVariant` |
-| Components | `PricingPageCard` | `PlanCard` |
-| Types | `PricingPageProps` | `PlanCardProps` |
+| Context-specific | Generic |
+| --- | --- |
+| `heroMaxWidth` | `maxContentWidth` |
+| `formatPricingDate()` | `formatDate()` |
+| `HeroButtonVariant` | `ButtonVariant` |
 
-Applies to everything you extract or create. A truly feature-specific value may keep a scoped name — but default to generic: narrowing later is free; renaming a widely-used token is expensive.
+This applies to everything you extract or create. Default to the generic name. A value that is truly specific to one feature may keep a scoped name.
+
+Narrowing a name later is free, and renaming a widely used one is expensive.

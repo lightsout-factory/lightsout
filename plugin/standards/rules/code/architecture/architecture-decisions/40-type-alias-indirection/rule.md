@@ -1,9 +1,11 @@
 ---
-summary: "a file that exists only to alias another type"
+summary: "Files that only give another type a new name."
 checked: true
 severity: advisory
 ---
 
-### Type Alias Indirection
+## Type Alias Indirection
 
-Don't create a file just to alias another type (`export type FilterOptions = TableFilterState`) — use the original directly; if the semantic distinction matters, a comment at the usage site beats indirection.
+Never create a file only to give another type a new name, such as `export type FilterOptions = TableFilterState`. Use the original type directly. When the difference in meaning matters, say so in a comment where the type is used.
+
+A comment states the difference without sending every reader through one more file.
