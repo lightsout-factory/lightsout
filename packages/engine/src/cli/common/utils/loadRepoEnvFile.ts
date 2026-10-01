@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseEnv } from 'node:util';
 import { readGitPrimaryCheckout } from '#src/common/git/readGitPrimaryCheckout.ts';
+import { messageOf } from '#src/common/utils/messageOf.ts';
 
 interface Params {
 	/** The directory the command runs in — the repository root, or a linked worktree of it. */
@@ -45,6 +46,6 @@ export const loadRepoEnvFile = async ({ cwd }: Params): Promise<void> => {
 			process.env[name] ??= value;
 		}
 	} catch (error) {
-		console.error(`lightsout: ignored ${envFilePath}: ${error instanceof Error ? error.message : String(error)}`);
+		console.error(`lightsout: ignored ${envFilePath}: ${messageOf({ error })}`);
 	}
 };

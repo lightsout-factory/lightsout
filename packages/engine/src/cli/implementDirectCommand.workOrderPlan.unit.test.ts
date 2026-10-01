@@ -40,14 +40,14 @@ const createdAt = '2026-01-01T00:00:00.000Z';
 /** The id the build answers under when nobody handed it one — a run the record could not have named in advance. */
 const unmintedRunId = 'run-direct-unminted';
 
-const recordOf = ({ mode, progress }: { mode: WorkOrderMode; progress: PlanProgress }): WorkOrderState => ({
+const recordOf = ({ mode, progress, holdsPlan }: { mode: WorkOrderMode; progress: PlanProgress; holdsPlan: boolean }): WorkOrderState => ({
 	schemaVersion: 1,
 	name: workOrderName,
 	ticketRef: 'LO-140',
 	branch: workOrderName,
 	mode,
-	plans: [{ id: planId, title: 'Drain the backlog', progress, createdAt }],
-	history: [{ at: createdAt, kind: WorkOrderEventKind.PlanAdded, detail: `added plan ${planId}` }],
+	plans: holdsPlan ? [{ id: planId, title: 'Drain the backlog', progress, createdAt }] : [],
+	history: holdsPlan ? [{ at: createdAt, kind: WorkOrderEventKind.PlanAdded, detail: `added plan ${planId}` }] : [],
 });
 
 /** Plan 001 as the record holds it now, or undefined when the record cannot be read. */
@@ -64,11 +64,14 @@ const planIn = ({ read }: { read: { record: WorkOrderState | undefined } | { err
 const setupBodyBuild = async ({
 	mode,
 	progress = PlanProgress.Planning,
+	holdsPlan = true,
 	corrupt = false,
 }: {
 	mode: WorkOrderMode;
 	/** How far plan 001's implementation has already got when the build starts. */
 	progress?: PlanProgress;
+	/** Whether the record holds plan 001 at all, rather than being built from the ticket body alone. */
+	holdsPlan?: boolean;
 	/** Whether the written record is then replaced by bytes that are not a record at all. */
 	corrupt?: boolean;
 }) => {
@@ -83,7 +86,7 @@ const setupBodyBuild = async ({
 	writeFileSync(join(cwd, 'ticket.md'), '# Drain the backlog\n\nBuild the thing.\n');
 	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm setup', { cwd, stdio: 'ignore' });
 
-	const seeded = recordOf({ mode, progress });
+	const seeded = recordOf({ mode, progress, holdsPlan });
 	const written = await updateLocalWorkOrderState({ cwd, name: workOrderName, change: () => seeded });
 
 	if ('error' in written) {
@@ -131,6 +134,22 @@ describe('implementDirectCommand ticket plan lifecycle', () => {
 		// a build from the ticket body is none of its plans' implementation
 		expect(multipleRecord).toStrictEqual({ record: multiple.seeded });
 		expect(multiple.runIds).toStrictEqual([unmintedRunId]);
+	});
+
+	test('records a passed build on a single-plan work order that holds no plan 001, so the ship guard can authorize it', async () => {
+		const { context, cwd, runIds } = await setupBodyBuild({ mode: WorkOrderMode.SinglePlan, holdsPlan: false });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const read = await readWorkOrderState({ cwd, name: workOrderName });
+
+		// with no plan 001 the ticket body alone is the implementation, and the
+		// single-plan ship check reads that build off the record — a passed build
+		// the record never saw would leave the ticket refused as unbuilt
+		expect('error' in read ? undefined : read.record?.ticketBodyBuild).toEqual(
+			expect.objectContaining({ runId: runIds[0], progress: PlanProgress.Implemented }),
+		);
+		expect(runIds).not.toContain(unmintedRunId);
 	});
 
 	test('leaves the record alone when single-plan plan 001 is already implemented', async () => {

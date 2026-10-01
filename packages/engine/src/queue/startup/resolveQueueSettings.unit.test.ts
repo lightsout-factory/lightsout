@@ -8,7 +8,7 @@ const configOf = (queue?: LightsoutConfig['queue']): LightsoutConfig => ({ gates
 
 describe('resolveQueueSettings', () => {
 	test('applies every default, so no step downstream re-decides one', () => {
-		const settings = resolveQueueSettings({ config: configOf({ ...queueBlock }), env: { LINEAR_API_KEY: 'lin_key' } });
+		const settings = resolveQueueSettings({ config: configOf({ ...queueBlock }) });
 
 		expect(settings).toStrictEqual({
 			lifecycle: {
@@ -49,10 +49,7 @@ describe('resolveQueueSettings', () => {
 
 		// the preparation command is the one overridable value that is not a queue
 		// setting: it prepares a worktree whoever cut it, so it rides the shared block
-		const settings = resolveQueueSettings({
-			config: { ...overridden, worktree: { setup: 'pnpm install' } },
-			env: { LINEAR_API_KEY: 'lin_key' },
-		});
+		const settings = resolveQueueSettings({ config: { ...overridden, worktree: { setup: 'pnpm install' } } });
 
 		expect(settings).toMatchObject({
 			lifecycle: {
@@ -76,19 +73,19 @@ describe('resolveQueueSettings', () => {
 	});
 
 	test('refuses a worker ceiling that is not a duration, naming the key and the forms it accepts', () => {
-		const settings = resolveQueueSettings({ config: configOf({ ...queueBlock, 'worker-timeout': '240' }), env: { LINEAR_API_KEY: 'lin_key' } });
+		const settings = resolveQueueSettings({ config: configOf({ ...queueBlock, 'worker-timeout': '240' }) });
 
 		expect(settings).toStrictEqual({ error: "`queue.worker-timeout` must be a duration like '90s', '45m' or '4h' — got '240'" });
 	});
 
 	test('refuses a question timeout that is not a duration, so a relayed question never waits on a value nobody can read', () => {
-		const settings = resolveQueueSettings({ config: configOf({ ...queueBlock, 'question-timeout': 'soon' }), env: { LINEAR_API_KEY: 'lin_key' } });
+		const settings = resolveQueueSettings({ config: configOf({ ...queueBlock, 'question-timeout': 'soon' }) });
 
 		expect(settings).toStrictEqual({ error: "`queue.question-timeout` must be a duration like '90s', '45m' or '4h' — got 'soon'" });
 	});
 
 	test('refuses a config with no queue block, naming what the block still has to say', () => {
-		const settings = resolveQueueSettings({ config: configOf(), env: {} });
+		const settings = resolveQueueSettings({ config: configOf() });
 
 		// it answers only for the `queue` block: the tracker API key is
 		// `resolveTrackerSettings`'s to name, and a user hitting one must not be
@@ -101,7 +98,6 @@ describe('resolveQueueSettings', () => {
 	test('refuses a label two planning statuses share, because the queue would report every ticket carrying it ambiguous and skip it forever', () => {
 		const settings = resolveQueueSettings({
 			config: configOf({ ...queueBlock, 'planning-status-labels': { 'planning-complete': 'shaped', 'planning-not-needed': 'shaped' } }),
-			env: { LINEAR_API_KEY: 'lin_key' },
 		});
 
 		expect(settings).toStrictEqual({
@@ -110,16 +106,13 @@ describe('resolveQueueSettings', () => {
 	});
 
 	test('reads the preparation command from the worktree block rather than the queue block', () => {
-		const settings = resolveQueueSettings({
-			config: { ...configOf({ ...queueBlock }), worktree: { setup: 'pnpm install' } },
-			env: { LINEAR_API_KEY: 'lin_key' },
-		});
+		const settings = resolveQueueSettings({ config: { ...configOf({ ...queueBlock }), worktree: { setup: 'pnpm install' } } });
 
 		expect(settings).toMatchObject({ maxParallel: 3, setup: 'pnpm install' });
 	});
 
 	test('starts a queue with no worktree block at all, leaving the preparation command unset', () => {
-		const settings = resolveQueueSettings({ config: configOf({ ...queueBlock }), env: { LINEAR_API_KEY: 'lin_key' } });
+		const settings = resolveQueueSettings({ config: configOf({ ...queueBlock }) });
 
 		expect(settings).toMatchObject({ maxParallel: 3, setup: undefined });
 	});

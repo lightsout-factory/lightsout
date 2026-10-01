@@ -20,6 +20,8 @@ interface Params {
 	 * it off.
 	 */
 	workOrder?: boolean;
+	/** The start of the checkout's folder name — a space in it is how a repository under `~/My Projects` is arranged. */
+	folderPrefix?: string;
 }
 
 /**
@@ -31,9 +33,9 @@ interface Params {
  * rather than a stubbed `git`. The forge is the only thing stubbed, because it
  * is the only thing that would leave the machine.
  */
-export const setupBranchRepo = ({ branch, dirty, remoteHead = true, workOrder = true }: Params = {}) => {
+export const setupBranchRepo = ({ branch, dirty, remoteHead = true, workOrder = true, folderPrefix = 'lightsout-branch-' }: Params = {}) => {
 	const origin = mkdtempSync(join(tmpdir(), 'lightsout-origin-'));
-	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-branch-'));
+	const cwd = mkdtempSync(join(tmpdir(), folderPrefix));
 	const author = '-c user.name=t -c user.email=t@t';
 	const git = (command: string) => execSync(command, { cwd, stdio: 'ignore' });
 

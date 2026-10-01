@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
@@ -53,6 +53,19 @@ describe('removeWorktree', () => {
 
 		expect(existsSync(String(created))).toBe(false);
 		expect(execSync('git branch --list lo-70-drain', { cwd }).toString().trim()).toBe('');
+	});
+
+	test.each(['lo-1;id', 'lo-1-$(touch${IFS}x)'])('removes the tree and merged branch %s as one literal name, and runs nothing else', async (branch) => {
+		const { cwd } = setupMainCheckout();
+		const worktreePath = `${cwd}-worktrees/${branch}`;
+
+		execFileSync('git', ['worktree', 'add', '-q', worktreePath, '-b', branch, 'main'], { cwd, stdio: 'ignore' });
+		const failure = await removeWorktree({ cwd, worktreePath, branch });
+
+		expect(failure).toBeUndefined();
+		expect(existsSync(worktreePath)).toBe(false);
+		expect(execFileSync('git', ['branch', '--list', branch], { cwd, encoding: 'utf8' }).trim()).toBe('');
+		expect(existsSync(join(cwd, 'x'))).toBe(false);
 	});
 
 	test('never throws when the cleanup cannot be done — the merge already happened, and a failed tidy-up is not a failed ship', async () => {

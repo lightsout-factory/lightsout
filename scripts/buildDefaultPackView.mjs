@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getStandardsPackBundle } from '../packages/engine/src/views/getStandardsPackBundle.ts';
 import { invokedDirectly } from './invokedDirectly.mjs';
+import { messageOf } from './messageOf.mjs';
 
 /**
  * Writes `assets/default-pack.json`, the authored built-in library with its
@@ -71,7 +72,7 @@ const main = async () => {
 		process.exitCode = 1;
 	} catch (error) {
 		console.error('');
-		console.error(`  ${error instanceof Error ? error.message : String(error)}`);
+		console.error(`  ${messageOf({ error })}`);
 		console.error('');
 		process.exitCode = 1;
 	}

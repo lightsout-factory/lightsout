@@ -1,4 +1,5 @@
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 
 interface Params {
@@ -11,7 +12,8 @@ interface Params {
  * could not be read" send a worktree to different places.
  */
 export const readGitCommitsAhead = async ({ cwd, defaultBranch }: Params): Promise<number | undefined> => {
-	const counted = await runCommand({ command: `git rev-list --count origin/${defaultBranch}..HEAD`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
+	const range = quoteShellArgument({ argument: `origin/${defaultBranch}..HEAD` });
+	const counted = await runCommand({ command: `git rev-list --count ${range}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 
 	if (counted?.exitCode !== 0) {
 		return undefined;

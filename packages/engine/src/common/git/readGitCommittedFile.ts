@@ -1,4 +1,5 @@
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 
 interface Params {
@@ -12,10 +13,8 @@ interface Params {
  * anything, and a step re-entered after a park reads the same answer.
  */
 export const readGitCommittedFile = async ({ cwd, path }: Params): Promise<string | undefined> => {
-	// The command runs through a shell, so the path is single-quoted to keep it
-	// from becoming shell syntax.
-	const quoted = `'${path.replaceAll("'", `'\\''`)}'`;
-	const shown = await runCommand({ command: `git show HEAD:${quoted}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
+	const committed = quoteShellArgument({ argument: `HEAD:${path}` });
+	const shown = await runCommand({ command: `git show ${committed}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 
 	return shown && shown.exitCode === 0 ? shown.stdout : undefined;
 };

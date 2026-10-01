@@ -9,6 +9,7 @@ import type { GradeFindingRecord } from '#src/contracts/plan/memory/GradeFinding
 import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatus.ts';
 import type { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import { planAgentTimeouts } from '#src/plan/common/constants/planAgentTimeouts.ts';
 import { findingLocations } from '#src/plan/common/utils/findingLocations.ts';
 import { planAgentConcurrency } from '#src/plan/internal/common/constants/planAgentConcurrency.ts';
 import { recheckPlanText } from '#src/plan/internal/common/memory/recheckPlanText.ts';
@@ -94,9 +95,7 @@ const isWorthAsking = ({
 
 /** Each spawn gets its own runner and transcript, because a shared sink interleaves into one unreadable file. */
 const spawnRecheck = async ({ params, pair }: { params: Params; pair: RecheckPair }) => {
-	// The judges' ceiling, not the readers': a judge that never answers leaves
-	// its record open, which blocks, so its failure costs one extra question.
-	const { cwd, driver, workspaceDir, overviewText, standards, model, effort, permissions, timeoutMs = 10 * 60 * 1000, level } = params;
+	const { cwd, driver, workspaceDir, overviewText, standards, model, effort, permissions, timeoutMs = planAgentTimeouts.judgeMs, level } = params;
 	const invokePlanAgent = createPlanAgentRunner({
 		cwd,
 		driver,

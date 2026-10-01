@@ -1,6 +1,6 @@
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import type { MergeOutcome } from '#src/ship/integration/internal/common/types/MergeOutcome.ts';
 import { readUnmergedPaths } from '#src/ship/integration/internal/readUnmergedPaths.ts';
-import { quoteGitArgument } from '#src/ship/internal/common/utils/quoteGitArgument.ts';
 import { runGit } from '#src/ship/internal/common/utils/runGit.ts';
 
 interface Params {
@@ -17,7 +17,7 @@ const noMerge = ({ failure, baseCommit }: { failure: string; baseCommit?: string
 });
 
 const isAlreadyIntegrated = async ({ cwd, baseCommit }: { cwd: string; baseCommit: string }): Promise<{ ancestor: boolean } | { error: string }> => {
-	const checked = await runGit({ command: `git merge-base --is-ancestor ${quoteGitArgument({ argument: baseCommit })} HEAD`, cwd });
+	const checked = await runGit({ command: `git merge-base --is-ancestor ${quoteShellArgument({ argument: baseCommit })} HEAD`, cwd });
 
 	if (checked?.exitCode === 0) {
 		return { ancestor: true };
@@ -36,7 +36,7 @@ const pinDefaultBranch = async ({ cwd, defaultBranch }: { cwd: string; defaultBr
 		return { error: `git could not fetch origin: ${(fetched?.stderr ?? 'git did not answer').trim()}` };
 	}
 
-	const resolved = await runGit({ command: `git rev-parse --verify ${quoteGitArgument({ argument: `origin/${defaultBranch}` })}`, cwd });
+	const resolved = await runGit({ command: `git rev-parse --verify ${quoteShellArgument({ argument: `origin/${defaultBranch}` })}`, cwd });
 
 	if (resolved === undefined || resolved.exitCode !== 0) {
 		return { error: `git could not resolve origin/${defaultBranch} after fetching` };
@@ -80,7 +80,7 @@ export const mergeDefaultBranch = async ({ cwd, defaultBranch, onProgress }: Par
 		return { baseCommit, conflictPaths: [], integrated: false, failure: undefined };
 	}
 
-	const merged = await runGit({ command: `git merge --no-commit --no-ff ${quoteGitArgument({ argument: baseCommit })}`, cwd });
+	const merged = await runGit({ command: `git merge --no-commit --no-ff ${quoteShellArgument({ argument: baseCommit })}`, cwd });
 
 	if (merged?.exitCode === 0) {
 		onProgress?.(`integrate: merged origin/${defaultBranch} cleanly`);

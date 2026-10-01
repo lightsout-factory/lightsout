@@ -31,7 +31,7 @@ import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSetting
  * unshippable configuration is refused before any ticket is built.
  */
 const resolveQueueStartup = ({ config, env }: { config: LightsoutConfig; env: NodeJS.ProcessEnv }) => {
-	const settings = resolveQueueSettings({ config, env });
+	const settings = resolveQueueSettings({ config });
 
 	if ('error' in settings) {
 		return { error: settings.error };

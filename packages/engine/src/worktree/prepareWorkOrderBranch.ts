@@ -1,5 +1,6 @@
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
 import { readGitRefCommit } from '#src/common/git/readGitRefCommit.ts';
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import { runOrDescribeFailure } from '#src/common/processes/runOrDescribeFailure.ts';
 import type { WorktreeFailure } from '#src/worktree/common/types/WorktreeFailure.ts';
@@ -12,7 +13,8 @@ interface Params {
 }
 
 const readAncestry = async ({ cwd, ancestor, descendant }: { cwd: string; ancestor: string; descendant: string }) => {
-	const asked = await runCommand({ command: `git merge-base --is-ancestor ${ancestor} ${descendant}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
+	const [older, newer] = [ancestor, descendant].map((argument) => quoteShellArgument({ argument }));
+	const asked = await runCommand({ command: `git merge-base --is-ancestor ${older} ${newer}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 
 	if (asked?.exitCode !== 0 && asked?.exitCode !== 1) {
 		return undefined;
@@ -50,7 +52,8 @@ const fastForwardTicketBranch = async ({ cwd, branch, local, remote }: { cwd: st
 		};
 	}
 
-	const failure = await runOrDescribeFailure({ command: `git branch -f ${branch} ${remote}`, cwd });
+	const [name, commit] = [branch, remote].map((argument) => quoteShellArgument({ argument }));
+	const failure = await runOrDescribeFailure({ command: `git branch -f ${name} ${commit}`, cwd });
 
 	return failure === undefined ? { startPoint: undefined } : { error: `git could not move '${branch}' to the pushed commit ${remote}: ${failure}` };
 };

@@ -128,6 +128,17 @@ describe('buildSprawlDataset', () => {
 		});
 	});
 
+	test('shortens every frame sha itself rather than letting git choose a width that grows with the repo', () => {
+		const { cwd } = setupGraduationHistory();
+
+		const { dataset } = buildDataset({ cwd });
+
+		const shas = dataset?.frames.map((frame) => frame.sha) ?? [];
+
+		expect(shas).toHaveLength(3);
+		expect(shas.filter((sha) => /^[0-9a-f]{7}$/.test(sha))).toStrictEqual(shas);
+	});
+
 	test('carries the whole tree in the first frame, with both removal lists empty', () => {
 		const { cwd } = setupGraduationHistory();
 

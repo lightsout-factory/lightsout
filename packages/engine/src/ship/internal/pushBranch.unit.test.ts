@@ -1,4 +1,6 @@
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { pushBranch } from '#src/ship/internal/pushBranch.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
@@ -21,6 +23,17 @@ describe('pushBranch', () => {
 		const failure = await pushBranch({ branch: 'lo-60-ship', cwd });
 
 		expect(failure).toBe(undefined);
+	});
+
+	test.each(['lo-1;id', 'lo-1-$(touch${IFS}x)'])('a branch named %s reaches the remote as one literal name, and nothing else runs', async (branch) => {
+		const { cwd, origin } = setupBranchRepo();
+
+		execFileSync('git', ['checkout', '-q', '-b', branch], { cwd, stdio: 'ignore' });
+		const failure = await pushBranch({ branch, cwd });
+
+		expect(failure).toBe(undefined);
+		expect(execFileSync('git', ['branch', '--list', branch, '--format=%(refname:short)'], { cwd: origin, encoding: 'utf8' }).trim()).toBe(branch);
+		expect(existsSync(join(cwd, 'x'))).toBe(false);
 	});
 
 	test('a repo with no origin to push to answers with git’s own words rather than raising', async () => {

@@ -1,6 +1,7 @@
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
 import type { JiraTrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
+import { trackerTimeoutMs } from '#src/ticketTracker/internal/common/constants/trackerTimeoutMs.ts';
 
 interface Params<Result> {
 	settings: JiraTrackerSettings;
@@ -87,7 +88,6 @@ const createJiraClient = ({ settings }: { settings: JiraTrackerSettings }): Jira
 };
 
 const withDeadline = async <Result>({ request }: { request: Promise<Result> }) => {
-	const trackerTimeoutMs = 60_000;
 	let timer: NodeJS.Timeout | undefined;
 	const deadline = new Promise<never>((_resolve, reject) => {
 		timer = setTimeout(() => reject(new Error(`the tracker did not answer within ${trackerTimeoutMs}ms`)), trackerTimeoutMs);

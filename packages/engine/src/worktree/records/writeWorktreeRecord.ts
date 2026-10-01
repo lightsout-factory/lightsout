@@ -1,5 +1,6 @@
 import { mkdir, rename } from 'node:fs/promises';
 import { dirname } from 'node:path';
+import { messageOf } from '#src/common/utils/messageOf.ts';
 import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
 import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import type { WorktreeRecord } from '#src/contracts/worktree/WorktreeRecord.ts';
@@ -40,7 +41,7 @@ export const writeWorktreeRecord = async ({ cwd, branch, owner, worktreePath, st
 		await writeJsonFile({ path: `${recordPath}.tmp`, value: record });
 		await rename(`${recordPath}.tmp`, recordPath);
 	} catch (error) {
-		const message = error instanceof Error ? error.message : String(error);
+		const message = messageOf({ error });
 
 		onProgress?.(`the worktree for ${branch} could not be recorded as '${owner}': ${message}`);
 	}

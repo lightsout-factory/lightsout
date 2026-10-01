@@ -1,4 +1,5 @@
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import { runOrDescribeFailure } from '#src/common/processes/runOrDescribeFailure.ts';
 import type { WorktreeFailure } from '#src/worktree/common/types/WorktreeFailure.ts';
@@ -16,9 +17,9 @@ interface Params {
  * deleted beside a surviving tree leaves the unclaimed tree a later drain would adopt.
  */
 export const removeWorktree = async ({ cwd, worktreePath, branch }: Params): Promise<WorktreeFailure | undefined> => {
-	const removal = await runOrDescribeFailure({ command: `git worktree remove --force ${worktreePath}`, cwd });
+	const removal = await runOrDescribeFailure({ command: `git worktree remove --force ${quoteShellArgument({ argument: worktreePath })}`, cwd });
 
-	for (const command of ['git worktree prune', `git branch -d ${branch}`]) {
+	for (const command of ['git worktree prune', `git branch -d ${quoteShellArgument({ argument: branch })}`]) {
 		await runCommand({ command, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 	}
 

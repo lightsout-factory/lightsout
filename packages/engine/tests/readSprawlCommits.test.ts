@@ -51,12 +51,12 @@ describe('readSprawlCommits', () => {
 		]);
 	});
 
-	test('abbreviates the sha itself rather than letting git choose a width that grows with the repo', () => {
+	test('carries the full sha, so every git command handed one names exactly one commit', () => {
 		const { cwd } = setupHistory({ commits: [{ message: 'a source file', at: '2026-01-01T00:00:00Z', write: { 'packages/app/src/a.ts': 'const a = 1;\n' } }] });
 
 		const commits = readCommits({ cwd });
 
-		expect(commits[0].sha).toMatch(/^[0-9a-f]{7}$/);
+		expect(commits[0].sha).toMatch(/^[0-9a-f]{40}$/);
 	});
 
 	test('keeps a subject that contains a tab whole, rather than truncating it at the field separator', () => {

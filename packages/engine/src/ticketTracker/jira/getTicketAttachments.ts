@@ -1,6 +1,7 @@
 import type { TrackerAttachment } from '#src/ticketTracker/common/types/TrackerAttachment.ts';
 import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
 import type { JiraTrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
+import { parseTicketNumber } from '#src/ticketTracker/internal/common/utils/parseTicketNumber.ts';
 import { runJira } from '#src/ticketTracker/jira/internal/runJira.ts';
 
 interface Params {
@@ -17,18 +18,14 @@ interface AttachmentsResponse {
 	fields: { attachment?: JiraAttachment[] | null };
 }
 
-const issueKeyOf = ({ identifier, ticketPrefix }: { identifier: string; ticketPrefix: string }) => {
-	const [prefix, number] = identifier.split('-');
-
-	return prefix?.toLowerCase() === ticketPrefix.toLowerCase() && /^\d+$/u.test(number ?? '') ? `${ticketPrefix}-${number}` : undefined;
-};
-
 export const getTicketAttachments = async ({ settings, identifier }: Params): Promise<TrackerAttachment[] | TrackerFailure> => {
-	const issueKey = issueKeyOf({ identifier, ticketPrefix: settings.ticketPrefix });
+	const number = parseTicketNumber({ identifier, ticketPrefix: settings.ticketPrefix });
 
-	if (issueKey === undefined) {
+	if (number === undefined) {
 		return { error: `'${identifier}' names no ticket number` };
 	}
+
+	const issueKey = `${settings.ticketPrefix}-${number}`;
 
 	return runJira({
 		settings,

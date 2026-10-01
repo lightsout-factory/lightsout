@@ -1,9 +1,11 @@
 import { dirname, join } from 'node:path';
 import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PhaseReport } from '#src/contracts/run/PhaseReport.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunUsage } from '#src/contracts/run/RunUsage.ts';
@@ -129,7 +131,8 @@ const recordFinishedChild = async ({
 		return { manifest: current };
 	}
 
-	const stopped = `phase ${index + 1}/${total} (${step.id}) ended ${child.status} — resume with: lightsout resume --run ${current.runId}`;
+	const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: current.runId });
+	const stopped = `phase ${index + 1}/${total} (${step.id}) ended ${child.status} — resume with: ${resume}`;
 
 	return { manifest: current, result: { ok: false, manifest: current, error: childResult.error ? `${stopped}\n${childResult.error}` : stopped } };
 };

@@ -3,7 +3,7 @@ import { readRunCommitAddress } from '#src/commit/internal/common/utils/readRunC
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
-import { configOf, manifestOf } from '#tests/helpers/setupCommitRun.ts';
+import { manifestOf } from '#tests/helpers/setupCommitRun.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 // The address is imported from its own file rather than the commit barrel,
@@ -48,7 +48,6 @@ const setupAddress = ({ record = true }: { record?: boolean } = {}) => {
 		cwd,
 		progress,
 		manifest: manifestOf({ plan: `${planFolder}/plan.md`, changedFiles: [], branch: workOrderName }),
-		config: configOf({}),
 		onProgress: (message: string) => {
 			progress.push(message);
 		},
@@ -57,9 +56,9 @@ const setupAddress = ({ record = true }: { record?: boolean } = {}) => {
 
 describe('readRunCommitAddress', () => {
 	test("readRunCommitAddress: answers the record's ticket reference, the plan unit, the template subject and a reason naming the plan title", async () => {
-		const { cwd, manifest, config, onProgress } = setupAddress();
+		const { cwd, manifest, onProgress } = setupAddress();
 
-		const address = await readRunCommitAddress({ cwd, manifest, config, onProgress });
+		const address = await readRunCommitAddress({ cwd, manifest, onProgress });
 
 		expect(address).toEqual({
 			reference: 'LO-158',
@@ -71,9 +70,9 @@ describe('readRunCommitAddress', () => {
 	});
 
 	test('readRunCommitAddress: falls back to the run label for the reference and leaves the title out when no record names the run', async () => {
-		const { cwd, manifest, config, onProgress } = setupAddress({ record: false });
+		const { cwd, manifest, onProgress } = setupAddress({ record: false });
 
-		const address = await readRunCommitAddress({ cwd, manifest, config, onProgress });
+		const address = await readRunCommitAddress({ cwd, manifest, onProgress });
 
 		expect(address).toEqual({
 			reference: 'naming-the-work',

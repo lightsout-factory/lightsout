@@ -1,5 +1,5 @@
 import { basename } from 'node:path';
-import { formatCost, formatDuration, formatTokenCount } from '@lightsout/shared';
+import { formatCost, formatDuration, formatShortRunId, formatTokenCount } from '@lightsout/shared';
 import { printStepTable } from '#src/cli/internal/common/render/printStepTable.ts';
 import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { paintStatus } from '#src/cli/internal/common/terminal/paintStatus.ts';
@@ -68,7 +68,10 @@ export const printResult = async ({ result, cwd }: Params): Promise<void> => {
 	const summary = await summarizeRun({ cwd, manifest });
 
 	console.log('');
-	label({ name: 'run', value: `${manifest.runId.slice(0, 8)} · ${paintStatus({ status: manifest.status, text: bold(manifest.status.toUpperCase()) })}` });
+	label({
+		name: 'run',
+		value: `${formatShortRunId({ runId: manifest.runId })} · ${paintStatus({ status: manifest.status, text: bold(manifest.status.toUpperCase()) })}`,
+	});
 	label({ name: 'plan', value: basename(manifest.plan) });
 	label({ name: 'wall', value: formatDuration({ ms: summary.wallMs }) });
 

@@ -4,6 +4,7 @@ import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocatio
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import type { ShipStepFailure } from '#src/ship/common/types/ShipStepFailure.ts';
 import { repairIntegratedGates } from '#src/ship/integration/internal/repairIntegratedGates.ts';
+import { createRateLimitedDriver } from '#tests/helpers/createRateLimitedDriver.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
 import { recordingDriver } from '#tests/helpers/recordingDriver.ts';
 import { report } from '#tests/helpers/report.ts';
@@ -28,9 +29,9 @@ const green: GateRunResult = { error: undefined, failedFamilies: [], crashes: []
 /** The exact commit the fetched default branch was pinned to — what preparation must be measured against on every pass. */
 const baseCommit = 'a1b2c3d4e5f60718293a4b5c6d7e8f9012345678';
 
-/** A harness that answers every spawn with a complete WorkReport, recording what it was handed. */
-const scriptedIntegrator = ({ invocations }: { invocations: DriverInvocation[] }): Driver =>
-	recordingDriver({ driver: { name: 'stub', invoke: async () => ({ text: report(), exitCode: 0 }) }, invocations });
+/** A harness that answers every spawn with one WorkReport — complete unless a status is given — recording what it was handed. */
+const scriptedIntegrator = ({ invocations, answer = {} }: { invocations: DriverInvocation[]; answer?: Record<string, unknown> }): Driver =>
+	recordingDriver({ driver: { name: 'stub', invoke: async () => ({ text: report(answer), exitCode: 0 }) }, invocations });
 
 interface SetupParams {
 	/** One entry per gate run, in order; the last entry answers every run after it. */
@@ -41,9 +42,38 @@ interface SetupParams {
 	preShip?: string | undefined;
 	/** Use a harness that must never be spawned, so a spawn the test denies is recorded and then loud. */
 	uncalledDriver?: boolean;
+	/** Use a harness that answers every spawn with its subscription wall. */
+	rateLimited?: boolean;
+	/** Overrides for the report every repair attempt answers with, when the test is about an attempt that refused. */
+	answer?: Record<string, unknown>;
 }
 
-const setupRepair = ({ gateRuns = [green], preShipFailure, preShip = 'pnpm run pre-ship', uncalledDriver = false }: SetupParams = {}) => {
+const pickDriver = ({
+	uncalledDriver,
+	rateLimited,
+	answer,
+	invocations,
+}: {
+	uncalledDriver: boolean;
+	rateLimited: boolean;
+	answer?: Record<string, unknown>;
+	invocations: DriverInvocation[];
+}) => {
+	if (uncalledDriver) {
+		return recordingDriver({ driver: createUncalledDriver({ reason: 'a gate that crashed was handed to the integrator' }), invocations });
+	}
+
+	return rateLimited ? createRateLimitedDriver({ invocations }) : scriptedIntegrator({ invocations, answer });
+};
+
+const setupRepair = ({
+	gateRuns = [green],
+	preShipFailure,
+	preShip = 'pnpm run pre-ship',
+	uncalledDriver = false,
+	rateLimited = false,
+	answer,
+}: SetupParams = {}) => {
 	// One log across both stubs, because the order is what is under test.
 	const order: string[] = [];
 	const invocations: DriverInvocation[] = [];
@@ -62,9 +92,7 @@ const setupRepair = ({ gateRuns = [green], preShipFailure, preShip = 'pnpm run p
 		return result;
 	});
 
-	const driver = uncalledDriver
-		? recordingDriver({ driver: createUncalledDriver({ reason: 'a gate that crashed was handed to the integrator' }), invocations })
-		: scriptedIntegrator({ invocations });
+	const driver = pickDriver({ uncalledDriver, rateLimited, answer, invocations });
 
 	const repair = () =>
 		repairIntegratedGates({
@@ -126,6 +154,30 @@ describe('repairIntegratedGates', () => {
 		);
 		expect(invocations).toHaveLength(2);
 		expect(mockRunGates).toHaveBeenCalledTimes(3);
+	});
+
+	test("carries the last repair attempt's refusal into the failure detail", async () => {
+		const red: GateRunResult = { error: 'test: 1 failing', failedFamilies: ['test'], crashes: [], timeouts: [], coordination: undefined };
+		const refusing = setupRepair({
+			gateRuns: [red],
+			answer: { status: 'terminated:scope', summary: 'out of scope', failures: ['the failing test belongs to another ticket'] },
+		});
+
+		const refused = await refusing.repair();
+
+		expect(refused).toEqual(
+			expect.objectContaining({
+				reason: 'integration-gates-failed',
+				detail: expect.stringMatching(/test: 1 failing[\s\S]*the failing test belongs to another ticket/),
+			}),
+		);
+
+		const limited = setupRepair({ gateRuns: [red], rateLimited: true });
+
+		const walled = await limited.repair();
+
+		expect(walled).toEqual(expect.objectContaining({ reason: 'integration-gates-failed', detail: expect.stringMatching(/rate limit/i) }));
+		expect(limited.invocations).toHaveLength(2);
 	});
 
 	test('blocks a crashed gate under its own reason without spending a repair', async () => {

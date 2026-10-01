@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildSprawlLanes } from './buildSprawlLanes.mjs';
 import { invokedDirectly } from './invokedDirectly.mjs';
+import { messageOf } from './messageOf.mjs';
 import { readSprawlCaps } from './readSprawlCaps.mjs';
 import { readSprawlCommits } from './readSprawlCommits.mjs';
 import { readSprawlTrees } from './readSprawlTrees.mjs';
@@ -47,7 +48,7 @@ const readRefactorMarkers = ({ log }) => {
 				markers.push(manifest.updatedAt);
 			}
 		} catch (error) {
-			log(`skipping ${entry}/manifest.json — ${error instanceof Error ? error.message : String(error)}`);
+			log(`skipping ${entry}/manifest.json — ${messageOf({ error })}`);
 		}
 	}
 
@@ -109,8 +110,11 @@ export const buildSprawlDataset = ({ log = console.log } = {}) => {
 	const { withStates, withoutStates } = buildSprawlLanes({ trees, caps });
 	const empty = { files: new Map(), folders: new Map(), overCap: 0 };
 
+	// Shortened here rather than by git, whose `%h` length grows with the object
+	// count and would rewrite every line of a dataset that must be byte-identical
+	// between rebuilds at the same HEAD.
 	const frames = commits.map((commit, index) => ({
-		sha: commit.sha,
+		sha: commit.sha.slice(0, 7),
 		at: commit.at,
 		subject: commit.subject,
 		isRefactorMarker: marked.has(index),

@@ -1,3 +1,4 @@
+import { formatShortRunId } from '@lightsout/shared';
 import promptImproverPrompt from '#src/agents/prompts/promptImprover.md';
 import type { FrictionRecord } from '#src/contracts/friction/FrictionRecord.ts';
 
@@ -10,7 +11,10 @@ interface Params {
 
 export const buildPromptImproverInvocation = ({ friction, promptFiles }: Params): { systemPrompt: string; prompt: string } => {
 	const entries = friction
-		.map((record) => `- [${record.kind ?? 'friction'}/${record.area}] (run ${record.runId.slice(0, 8)}, step ${record.step}, ${record.at}) ${record.detail}`)
+		.map(
+			(record) =>
+				`- [${record.kind ?? 'friction'}/${record.area}] (run ${formatShortRunId({ runId: record.runId })}, step ${record.step}, ${record.at}) ${record.detail}`,
+		)
 		.join('\n');
 
 	const sections = [

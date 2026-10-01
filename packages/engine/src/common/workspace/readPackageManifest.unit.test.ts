@@ -50,3 +50,20 @@ test('readPackageManifest: a nameless package.json is a hard error — the engin
 
 	expect(error.message).toBe(`package.json at ${manifestPath} has no "name" — required for {package} substitution`);
 });
+
+test('readPackageManifest: a package.json that is not JSON is a hard error naming the path', async () => {
+	const { cwd, manifestPath } = setupPackage({ raw: '{ "name": "@acme/api", ' });
+
+	const error = await getRejectionError({ promise: readPackageManifest({ cwd, packagesDir: 'packages', packageDir: 'api' }) });
+
+	expect(error.message).toContain(`package.json at ${manifestPath} is not valid JSON: `);
+});
+
+test('readPackageManifest: a named package.json with a malformed scripts block names the field, never a missing name', async () => {
+	const { cwd, manifestPath } = setupPackage({ raw: JSON.stringify({ name: '@acme/api', scripts: { check: 42 } }) });
+
+	const error = await getRejectionError({ promise: readPackageManifest({ cwd, packagesDir: 'packages', packageDir: 'api' }) });
+
+	expect(error.message).toContain(`package.json at ${manifestPath} is not a valid manifest: scripts.check`);
+	expect(error.message).not.toContain('"name"');
+});

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { CommitFailure } from '#src/commit/internal/common/types/CommitFailure.ts';
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import { runOrDescribeFailure } from '#src/common/processes/runOrDescribeFailure.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
@@ -23,13 +24,8 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-/**
- * `runCommand` spawns through a shell, so the quoting is required, and git's
- * `:(literal)` magic stops a file named `[slug].tsx` being read as a pattern.
- */
-const toLiteralPathspec = ({ path }: { path: string }) => `':(literal)${path.replaceAll("'", String.raw`'\''`)}'`;
-
-const toPathspecs = ({ paths }: { paths: string[] }) => paths.map((path) => toLiteralPathspec({ path })).join(' ');
+/** Git's `:(literal)` magic stops a file named `[slug].tsx` being read as a pattern. */
+const toPathspecs = ({ paths }: { paths: string[] }) => paths.map((path) => quoteShellArgument({ argument: `:(literal)${path}` })).join(' ');
 
 /** @returns git's own words when it refused, or undefined once the tree is clean of them */
 const discardGeneratedChanges = async ({ cwd, paths }: { cwd: string; paths: string[] }) => {
@@ -135,7 +131,7 @@ export const commitWorkOrderWork = async ({
 	await mkdir(runDir, { recursive: true });
 	await writeFile(messagePath, message.endsWith('\n') ? message : `${message}\n`, 'utf8');
 
-	const commitFailure = await runOrDescribeFailure({ command: `git commit -F ${messagePath}`, cwd });
+	const commitFailure = await runOrDescribeFailure({ command: `git commit -F ${quoteShellArgument({ argument: messagePath })}`, cwd });
 
 	if (commitFailure !== undefined) {
 		return { error: `git could not commit the work in ${cwd}: ${commitFailure}` };

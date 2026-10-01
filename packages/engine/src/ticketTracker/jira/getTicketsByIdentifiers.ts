@@ -1,6 +1,7 @@
 import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
 import type { JiraTrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
+import { parseTicketNumber } from '#src/ticketTracker/internal/common/utils/parseTicketNumber.ts';
 import type { JiraIssue } from '#src/ticketTracker/jira/internal/common/types/JiraIssue.ts';
 import { getJiraUnfinishedBlockers } from '#src/ticketTracker/jira/internal/common/utils/getJiraUnfinishedBlockers.ts';
 import { quoteJqlString } from '#src/ticketTracker/jira/internal/common/utils/quoteJqlString.ts';
@@ -22,9 +23,9 @@ const fields = ['summary', 'description', 'priority', 'created', 'labels', 'stat
 
 const matchingKeys = ({ identifiers, ticketPrefix }: { identifiers: string[]; ticketPrefix: string }) =>
 	identifiers.flatMap((identifier) => {
-		const [prefix, number] = identifier.split('-');
+		const number = parseTicketNumber({ identifier, ticketPrefix });
 
-		return prefix?.toLowerCase() === ticketPrefix.toLowerCase() && /^\d+$/u.test(number ?? '') ? [`${ticketPrefix}-${number}`] : [];
+		return number === undefined ? [] : [`${ticketPrefix}-${number}`];
 	});
 
 export const getTicketsByIdentifiers = async ({ settings, identifiers }: Params): Promise<TrackerTicket[] | TrackerFailure> => {

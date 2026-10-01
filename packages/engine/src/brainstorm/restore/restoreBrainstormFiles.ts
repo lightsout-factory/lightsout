@@ -148,7 +148,7 @@ export const restoreBrainstormFiles = async ({ cwd, name, identifier, settings, 
 	const selected = attachments.filter(({ title }) => brainstormAttachmentFileNames.includes(title));
 	const markers = attachments.filter(({ title }) => title === brainstormAttachmentManifestName);
 	const marker = markers[0];
-	if (!attachments.some(({ title }) => brainstormAttachmentFileNames.includes(title)) && markers.length === 0) {
+	if (selected.length === 0 && markers.length === 0) {
 		return { restored: [], skipped: [] };
 	}
 

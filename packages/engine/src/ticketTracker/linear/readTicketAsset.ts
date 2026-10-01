@@ -1,6 +1,7 @@
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
 import type { LinearTrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
+import { trackerTimeoutMs } from '#src/ticketTracker/internal/common/constants/trackerTimeoutMs.ts';
 
 interface Params {
 	settings: LinearTrackerSettings;
@@ -14,8 +15,6 @@ interface Params {
  * GraphQL call, but it keeps the same deadline and returned-failure contract.
  */
 export const readTicketAsset = async ({ settings, url }: Params): Promise<string | TrackerFailure> => {
-	const trackerTimeoutMs = 60_000;
-
 	try {
 		const assetUrl = new URL(url);
 

@@ -1,6 +1,8 @@
 import { maxConsecutiveDeclines } from '#src/common/constants/maxConsecutiveDeclines.ts';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { CoverageBatchReport } from '#src/contracts/coverage/CoverageBatchReport.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { CoverageResult } from '#src/coverage/CoverageResult.ts';
@@ -30,7 +32,8 @@ interface CoverageSettlement {
 
 export const settleCoverageBatch = async ({ run, batch, record, outcome, declineStreak, fileStrikes }: Params): Promise<CoverageSettlement> => {
 	if (outcome.kind === CoverageBatchStopKind.Parked) {
-		const error = `run parked: harness rate limited or overloaded — resume with \`lightsout test-coverage-to-threshold --run ${run.current().runId}\` when the window resets.`;
+		const resume = formatResumeCommand({ pipeline: PipelineKind.Coverage, runId: run.current().runId });
+		const error = `run parked: harness rate limited or overloaded — resume with \`${resume}\` when the window resets.`;
 
 		return { result: await run.stop({ record, status: RunStatus.PausedRateLimit, error }), declineStreak };
 	}

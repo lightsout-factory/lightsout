@@ -1,5 +1,6 @@
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { isTestSideFile } from '#src/common/sourceFiles/isTestSideFile.ts';
+import { messageOf } from '#src/common/utils/messageOf.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { checkTestResultsCapability } from '#src/gates/testResults/checkTestResultsCapability.ts';
 import { approveTestFiles } from '#src/pipeline/approvedTests/approveTestFiles.ts';
@@ -31,7 +32,7 @@ const captureStandardsBaseline = async ({ run }: { run: PipelineRun }) => {
 		});
 		run.progress(`pre-edit standards baseline captured — ${findings.length} findings`);
 	} catch (error) {
-		const reason = error instanceof Error ? error.message : String(error);
+		const reason = messageOf({ error });
 
 		run.progress(`pre-edit standards baseline not captured — ${reason}. Cleanup will have no comparison point; the run carries on.`);
 	}

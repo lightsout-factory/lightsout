@@ -16,6 +16,7 @@ import { runPhasesOrFailFast } from '#src/cli/internal/common/utils/runPhasesOrF
 import { runPipelineOrFailFast } from '#src/cli/internal/common/utils/runPipelineOrFailFast.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
@@ -28,16 +29,8 @@ import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts';
 
-// The whole instruction rather than a command word, because the doors do not
-// take the same flags: `queue` has no `--run`, since re-running it is the resume.
-const resumeCommandByPipeline: Record<PipelineKind, string | undefined> = {
-	[PipelineKind.Implement]: undefined,
-	[PipelineKind.Phases]: undefined,
-	[PipelineKind.Refactor]: 'lightsout refactor --run <id>',
-	[PipelineKind.Coverage]: 'lightsout test-coverage-to-threshold --run <id>',
-	[PipelineKind.Queue]: 'lightsout queue (a restart resumes parked tickets first)',
-	[PipelineKind.Direct]: undefined,
-};
+/** The pipelines this door continues; every other one resumes through its own command. */
+const resumedHere: PipelineKind[] = [PipelineKind.Implement, PipelineKind.Phases, PipelineKind.Direct];
 
 const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandContext['flags'] }) => {
 	const runId = getStringFlag({ flags, name: 'run' });
@@ -58,10 +51,8 @@ const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandCon
 	});
 
 	const pipeline = manifest.pipeline ?? PipelineKind.Implement;
-	const ownCommand = resumeCommandByPipeline[pipeline];
-
-	if (ownCommand) {
-		console.error(`run ${manifest.runId} belongs to the ${pipeline} pipeline — resume it with: ${ownCommand.replaceAll('<id>', manifest.runId)}`);
+	if (!resumedHere.includes(pipeline)) {
+		console.error(`run ${manifest.runId} belongs to the ${pipeline} pipeline — resume it with: ${formatResumeCommand({ pipeline, runId: manifest.runId })}`);
 		return exitCli({ code: 1 });
 	}
 
