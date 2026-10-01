@@ -79,6 +79,7 @@ holds only what is particular to this library and this repo.
   `test-in-tests-folder` keeps its `test-`. `test-mega-factory` became
   `oversized-setup-factory`: a setup factory is a test-only thing, so `test-`
   added nothing. Word order: `folder-size`, not `folder-census`.
+- **Framework topics:** a framework topic states what the framework mandates as fact, and this pack's own conventions as conventions.
 - **The model rule:**
   `rules/code/architecture/architecture-decisions/05-module-file-to-folder/rule.md`
   sets the register for prose.

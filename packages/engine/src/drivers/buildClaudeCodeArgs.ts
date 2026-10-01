@@ -15,8 +15,21 @@ interface Params {
 	permissions?: Permissions;
 	allowedCommands?: string[];
 	environment?: AgentEnvironment;
+	foregroundCommandsOnly?: boolean;
+	timeoutMs?: number;
 	writableDirs?: string[];
 }
+
+/**
+ * Only `env` is set, so authentication, model, effort and permissions are
+ * untouched. Without a timeout there is no engine ceiling to lift the Bash
+ * ceilings to, so the harness default stands.
+ */
+const foregroundCommandsSettings = ({ timeoutMs }: { timeoutMs?: number }) => {
+	const ceiling = timeoutMs === undefined ? {} : { BASH_DEFAULT_TIMEOUT_MS: String(timeoutMs), BASH_MAX_TIMEOUT_MS: String(timeoutMs) };
+
+	return JSON.stringify({ env: { CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: '1', ...ceiling } });
+};
 
 /**
  * `--strict-mcp-config` loads zero MCP servers only because no `--mcp-config` is
@@ -29,8 +42,31 @@ interface Params {
  * which `full-access` maps to; `--safe-mode` disables CLAUDE.md. Each is also a
  * bundle the harness may change between versions, where per-property flags say
  * exactly what is expressed.
+ *
+ * A foreground-commands request becomes one `--settings` env block.
+ * `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` removes the background-shell
+ * mechanism, because a print-mode session kills a background shell seconds
+ * after its final turn. `BASH_DEFAULT_TIMEOUT_MS` and `BASH_MAX_TIMEOUT_MS` lift
+ * the per-command ceiling to the invocation's own, because a foreground command
+ * the harness kills part-way is as unfinished as a backgrounded one. The
+ * variables go through `--settings` rather than the spawn's environment because
+ * Claude Code writes a settings-file `env` entry over an inherited variable, and
+ * `--settings` outranks user, project and local settings. They reach every
+ * process the session starts, including the Claude Code writers `plan draft`
+ * spawns: those are one-turn print-mode sessions with the same failure mode and
+ * their own engine timeouts, so that is accepted rather than stripped.
  */
-export const buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allowedCommands, environment, writableDirs }: Params): string[] => {
+export const buildClaudeCodeArgs = ({
+	systemPromptPath,
+	model,
+	effort,
+	permissions,
+	allowedCommands,
+	environment,
+	foregroundCommandsOnly,
+	timeoutMs,
+	writableDirs,
+}: Params): string[] => {
 	// stream-json (which requires --verbose in print mode) delivers every event
 	// live for transcripts and progress. Excluding the dynamic sections keeps the
 	// default system prompt byte-identical between steps, so its cached prefix holds.
@@ -77,6 +113,10 @@ export const buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissio
 		// variadic, so a list spread across separate arguments would be
 		// ambiguous wherever another flag follows.
 		args.push('--tools', environment.tools.join(','));
+	}
+
+	if (foregroundCommandsOnly) {
+		args.push('--settings', foregroundCommandsSettings({ timeoutMs }));
 	}
 
 	// The grant flag stays last: it is variadic, so a flag emitted after it

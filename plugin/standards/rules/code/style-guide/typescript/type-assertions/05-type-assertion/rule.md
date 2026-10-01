@@ -1,25 +1,21 @@
 ---
-summary: "an `as` cast in source code, where narrowing would prove the type instead"
+summary: "Telling the compiler a type instead of proving it."
 checked: true
 severity: blocking
 ---
 
-Avoid `as` casts. They tell the compiler to trust you instead of proving the type is correct.
+## Type Assertion
 
-- Prefer type narrowing with `typeof`, `instanceof`, or discriminated unions.
-- If an assertion is truly necessary (e.g., a library returns `unknown`), add a brief comment explaining why narrowing is not possible.
-- Exception: **test files** may use `as unknown as T` to force invalid input into a defensive branch for coverage (see the unit-testing standards).
+Never write an `as` cast in source code. A cast tells the compiler to trust you instead of proving the type. Narrow instead, with `typeof`, `instanceof` or a discriminated union. When a value cannot be narrowed where it is used, such as a value of type `unknown` from a library, write a type guard or a validation function for it.
 
-✅ GOOD: Narrowing
+`as const` is not a cast: it fixes a literal's type, and it stays.
 
 ```typescript
+// Incorrect: the compiler takes your word for it
+return (value as string).toUpperCase();
+
+// Correct: the check proves it
 if (typeof value === 'string') {
 	return value.toUpperCase();
 }
-```
-
-❌ BAD: Assertion without justification
-
-```typescript
-return (value as string).toUpperCase();
 ```

@@ -1,6 +1,6 @@
 {
 	"name": "lightsout",
-	"version": "0.42.51",
+	"version": "0.42.54",
 	"description": "Plugins for LightsOut",
 	"slash-commands": "./prompts"
 }

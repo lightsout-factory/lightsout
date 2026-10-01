@@ -1,3 +1,3 @@
-# TypeScript Documentation Style Guide
+# TypeScript Documentation
 
-How to write TSDoc/JSDoc *when documentation is warranted* — it does not mandate doc comments on every export.
+How to write TSDoc and JSDoc when documentation is warranted. It does not mandate a doc comment on every export.

@@ -1,12 +1,11 @@
 ---
-summary: "an assertion that restates the module under test instead of stating its contract independently"
+summary: "What a test asserts against."
 checked: false
 severity: advisory
 ---
 
-### Assertions Pin Contracts
+## Assertions Pin Contracts
 
-- **Assert with literals — never import a constant from the module under test into its own assertions.** A test comparing `x` to `x` is a tautology that passes even when the value is wrong; the literal in the test is the independent second statement of the contract. (Duplication between a source constant and its test literal is contract-pinning, not a DRY violation.) Constants from *other* modules — shared enums the codebase already defines — are fine as inputs.
-- **Pin machine-facing values strictly, human-facing copy loosely.** Error codes, event names, and API fields get exact assertions; UI copy and log messages get `stringContaining`/regex or no assertion at all — wording changes shouldn't fail contract tests.
-- **Construct the subject under test directly; stub only unowned boundaries** (network, filesystem, other modules' services). Don't mock what you own and could simply instantiate.
-- **Prefer behavior assertions over property echoes** — assert what the unit *does* (output, side effect at its boundary), not that a value passed in reappears unchanged.
+- Assert against literals. Never import a constant from the module under test into its own assertions: comparing a value to itself passes even when the value is wrong. The literal is the contract's independent second statement, not duplication. Constants from other modules, such as shared enums, are fine as inputs.
+- Pin machine-facing values exactly: error codes, event names, API fields. Pin human-facing text, such as UI copy and log messages, loosely, with `stringContaining` or a regex, or not at all, so a wording change fails no contract test.
+- Assert what the unit does: its output, or a side effect at its boundary, such as an injected repository called with the right arguments. Never assert that an input comes back unchanged, unless exposing it is the unit's job: for a class whose job is to resolve and expose state, its public fields are its output. Never reach into what a consumer never touches, such as private helpers or caches.

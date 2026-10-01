@@ -1,7 +1,9 @@
 ---
-summary: "an abbreviated name outside a small loop or a well-known convention"
+summary: "Readable names over abbreviations."
 checked: false
 severity: advisory
 ---
 
-- Verbose, readable names — code a new developer understands without extra documentation. Single letters only in small loops (`i`) or well-known conventions (`e` for event).
+## Verbose Names
+
+Use verbose, readable names that a new developer understands without extra documentation. Use a single letter only for a small loop (`i`) or a well-known convention (`e` for an event).

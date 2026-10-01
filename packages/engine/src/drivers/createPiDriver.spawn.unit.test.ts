@@ -124,6 +124,25 @@ test('createPiDriver: the task prompt rides stdin verbatim, sidestepping the arg
 	expect(await readStdin()).toBe('a task\nwith lines');
 });
 
+test.each([{ binary: 'pi' as const }, { binary: 'omp' as const }])(
+	'createPiDriver: $binary answers a foreground-commands request it has no mechanism for, adding nothing to argv',
+	async ({ binary }) => {
+		const { driver, cwd, readArgv } = await setupBinary({
+			binary,
+			stdoutChunks: [event({ type: 'agent_end', messages: [{ role: 'assistant', content: [{ type: 'text', text: 'ok' }] }], isTerminal: true })],
+		});
+
+		const result = await driver.invoke({ prompt: 'task', cwd, foregroundCommandsOnly: true, timeoutMs: 14_400_000 });
+
+		const argv = await readArgv();
+		expect({ exitCode: result.exitCode, text: result.text, argv }).toStrictEqual({
+			exitCode: 0,
+			text: 'ok',
+			argv: ['-p', '--mode', 'json', '--no-session'],
+		});
+	},
+);
+
 test('createPiDriver: a harness that is not installed rejects with the spawn failure', async () => {
 	const { cwd } = await setupWithoutBinaries();
 

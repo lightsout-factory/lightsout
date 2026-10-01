@@ -1,5 +1,5 @@
 ---
-summary: "an interaction test that groups the target query with arrange instead of the act"
+summary: "Testing what a user does."
 checked: false
 severity: advisory
 ---
@@ -20,4 +20,4 @@ test('calls the dismiss handler when the dismiss button is clicked', async () =>
 });
 ```
 
-When the package lacks `@testing-library/user-event`, use `fireEvent` instead — synchronous, no setup object: `fireEvent.click(dismissButton);`. The same grouping rule applies: the target query groups with the act.
+With `fireEvent`, which is synchronous and has no setup object, the same grouping applies: `fireEvent.click(dismissButton);`.

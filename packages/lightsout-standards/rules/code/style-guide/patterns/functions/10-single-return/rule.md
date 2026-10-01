@@ -1,12 +1,12 @@
 ---
-summary: "business logic returning from several branches instead of once at the end"
+summary: "Where a function returns its result."
 checked: false
 severity: advisory
 ---
 
-## Single Return Point
+## Single Return
 
-Business logic uses a single return at the end — one consistent place to find the result, and a shared post-step (a floor, a wrapper, a log) gets written once instead of repeated per branch, where one branch inevitably forgets it. **Exception:** guard clauses at the top may return early for validation/null checks.
+In business logic, return once, at the end. Guard clauses at the top may return early for validation and null checks.
 
 ```typescript
 export const calculateShippingCost = ({ weightKg, isExpress, destination }: Params): number => {
@@ -16,7 +16,7 @@ export const calculateShippingCost = ({ weightKg, isExpress, destination }: Para
 		cost += destination.expressSurcharge;
 	}
 
-	// Minimum-charge floor applies to every path — single return writes it once.
+	// The minimum-charge floor applies to every path, so it is written once.
 	if (cost < destination.minimumCharge) {
 		cost = destination.minimumCharge;
 	}
@@ -24,3 +24,5 @@ export const calculateShippingCost = ({ weightKg, isExpress, destination }: Para
 	return cost;
 };
 ```
+
+One return gives the result one place to be found, and a step every path shares, such as a floor, a wrapper or a log, is written once instead of forgotten in one branch.

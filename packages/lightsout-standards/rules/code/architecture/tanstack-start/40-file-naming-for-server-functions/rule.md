@@ -1,23 +1,13 @@
 ---
-summary: "a server function file that does not carry its mandated casing"
+summary: "How server functions and their files are named."
 checked: false
 severity: advisory
 requires:
   - filename-mismatch
 ---
 
-### File Naming for Server Functions
+## File Naming for Server Functions
 
-The [filename-match rule](../../../style-guide/conventions/file-naming/05-filename-mismatch/rule.md)
-applied to server-function exports — a file is named for what it exports, in
-that export's own casing. The table is derived, not a separate law:
+End a server function's name with `ServerFn`, such as `countIssuesServerFn`, in a file of the same name. A server function's folder takes its name without the suffix: `findIssues/`. A GraphQL document constant is PascalCase, in a file of its name: `FindIssuesDocument.ts`.
 
-| File holds | So its name is | Example |
-|-----------|------------|---------|
-| A server function (`camelCase` export ending `ServerFn`) | `camelCase.ts` ending `ServerFn` | `serverFns/countIssuesServerFn.ts` |
-| A graduated server function's folder | that function's `camelCase/` | `findIssues/` |
-| A GraphQL document (`PascalCase` named constant) | `PascalCase.ts` | `findIssues/FindIssuesDocument.ts` |
-| A query-options factory (`camelCase` export) | `camelCase.ts` | `queries/issuesQueryOptions.ts` |
-
-The `ServerFn` suffix is this pack's convention for making a server call
-recognizable at the import site — TanStack requires no naming.
+The suffix makes a call to the server recognisable where it is imported.

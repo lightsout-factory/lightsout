@@ -1,5 +1,5 @@
 ---
-summary: "an export nothing else references"
+summary: "Code that nothing uses any more."
 checked: true
 severity: blocking
 example:
@@ -9,6 +9,12 @@ example:
     pass: src/index.ts
 ---
 
-### Unused Code
+## Dead Export
 
-Delete unused exports, interfaces, types and functions as soon as they become unused. Keeping them "in case" isn't needed: git history still has them. If you're not sure whether something is used, search before deleting.
+Delete an export that nothing references, not even a test, as soon as it becomes unused. This covers interfaces, types and functions as well as values.
+
+- Never keep code in case it is needed later: version history still has it.
+- When you are not sure whether something is used, search before you delete it.
+- An export that only tests use is `test-only-export`'s question, not this rule's.
+
+Unused code still has to be read, and kept compiling, by everyone who passes it.

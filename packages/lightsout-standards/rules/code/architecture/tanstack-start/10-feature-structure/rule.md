@@ -1,5 +1,5 @@
 ---
-summary: "a feature folder pre-creating layout the graduation rule has not earned"
+summary: "How a feature folder grows."
 checked: false
 severity: advisory
 requires:
@@ -13,30 +13,13 @@ requires:
 
 ## Feature Structure
 
-A feature under `src/features/` is a module — callers import each file it
-offers directly, and it carries no `index.ts`
-([folder-index-file rule](../../../style-guide/structure/module-api/25-folder-index-file/rule.md)) —
-and everything inside it grows by the
-[graduation rule](../../folder-structure/55-ungrouped-domain-utils/rule.md) — a
-single file until companions or a shared subject earn a folder. There is no
-fixed feature tree to stamp out; these are the domain folders a TanStack
-feature *commonly grows*, each created when graduation triggers and never
-before:
+A feature is a module in `src/features/`, such as `src/features/issues/`. It grows only the folders its code needs, each made with its first file and never in advance:
 
-- `screens/` — route-destination components; a screen graduates to its own
-  folder exactly as any component does
-  ([component file structure](../../react/10-component-file-structure/rule.md))
-- `queries/` — query-options factories (see the query-options rule)
-- `serverFns/` — server functions (see the server-functions rule)
-- `hooks/` — query-wrapping hooks
-- `components/` — feature-wide components
-- `common/` — feature-internal shared code
+- `screens/`: components a route renders.
+- `queries/`: query-options factories, as `query-options` says.
+- `serverFns/`: server functions, as `server-functions` says.
+- `hooks/`: custom hooks, as `tanstack-hooks` says.
+- `components/`: components used across the feature.
+- `common/`: code shared inside the feature, placed as `shared-code-placement` says.
 
-Where a piece of code lives — app-wide `src/common/`, feature `common/`, or
-beside its one consumer — is the base
-[placement rule](../../folder-structure/05-shared-code-placement/rule.md), unchanged here.
-
-None of this is TanStack's requirement. What TanStack mandates — route
-filenames under `routes/`, the `router.tsx`/`server.ts`/`client.tsx` entry
-files — lives in the framework carve-out table; the layout above is this
-pack's convention for the code the framework says nothing about.
+There is no fixed tree to stamp out: a folder made before its first file is a guess about code nobody has written.

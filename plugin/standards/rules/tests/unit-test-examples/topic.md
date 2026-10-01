@@ -1,29 +1,27 @@
 # Unit Test Examples
 
-Two complete examples of the shape every test in this pack takes. They are illustration, not rules — the rules are in the unit-testing document; these show them applied end to end.
-
-Both examples follow [Arrange-Act-Assert with setup factories](./unit-testing.md#test-structure--arrange-act-assert-with-setup-factories): arrangement in a named `setup()` factory; act and assertion in the `test`, each call assigned to a named `const`, blank line between the three blocks. Mock cleanup comes from `clearMocks`/`restoreMocks` config (see [Mock Cleanup](./unit-testing.md#mock-cleanup)) — never `beforeEach`.
+Two complete tests, showing the unit-testing rules applied end to end.
 
 ## Function with Mocked Dependencies
 
 ```typescript
 import { expect, describe, test, jest } from '@jest/globals';
-import { UserProfile } from '@/models/user-profile/user-profile';
-import { AppSettings } from '@/models/app-settings/app-settings';
-import { getAvatarUrl } from '@/models/user-profile/common/utils/get-avatar-url';
+import { UserProfile } from '@/profiles/UserProfile';
+import { AppSettings } from '@/settings/AppSettings';
+import { getAvatarUrl } from '@/avatars/getAvatarUrl';
 
 // Mocked Imports
 // -------------------------
 const mockGetAvatarFromProfile = jest.fn<(params: { profile: UserProfile }) => string | null>();
 
-jest.mock('@/models/user-profile/common/utils/get-avatar-from-profile', () => ({
+jest.mock('@/profiles/getAvatarFromProfile', () => ({
 	getAvatarFromProfile: (params: { profile: UserProfile }) =>
 		mockGetAvatarFromProfile(params),
 }));
 // -------------------------
 const mockGetAvatarFromGravatar = jest.fn<(params: { email: string }) => string | null>();
 
-jest.mock('@/models/user-profile/common/utils/get-avatar-from-gravatar', () => ({
+jest.mock('@/gravatar/getAvatarFromGravatar', () => ({
 	getAvatarFromGravatar: (params: { email: string }) =>
 		mockGetAvatarFromGravatar(params),
 }));
@@ -74,15 +72,11 @@ describe('getAvatarUrl', () => {
 });
 ```
 
-The same shape covers async units: the factory uses `mockResolvedValue`/`mockRejectedValue`, the act is `await`ed, and the rejection case asserts with `await expect(getUserData({ userId: '999' })).rejects.toThrow('Not found')`.
-
-For a class, the factory returns the constructor's collaborators and the act constructs the instance. Asserting the instance's resolved public fields (`expect(person).toEqual(expect.objectContaining(details))`) is still testing *behavior* — for a class whose job is to resolve and expose that state, those fields are the output a consumer reads. "Test behavior, not internals" bans reaching into things a consumer never touches (private helpers, caches), not reading the public result.
-
 ## Parameterized with test.each
 
 ```typescript
 import { expect, describe, test } from '@jest/globals';
-import { formatCurrency } from '@/common/utils/format-currency';
+import { formatCurrency } from '@/common/utils/formatCurrency';
 
 describe('formatCurrency', () => {
 	test.each([

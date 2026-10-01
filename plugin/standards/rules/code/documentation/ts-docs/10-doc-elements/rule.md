@@ -1,20 +1,18 @@
 ---
-summary: "a tag carrying what its type already says, or a description repeating the code"
+summary: "What each part of a doc comment should say."
 checked: false
 severity: advisory
 ---
 
-## Elements
+## Doc Elements
 
-- **Description**: one or two sentences — what it does and why you'd use it. Focus on *why*; the code shows *what*.
-- **`@param`**: name and purpose only — TypeScript owns the type. For object-args functions, `@param` tags document the destructured property names directly. Sentence fragments, lowercase.
-- **`@throws`**: only errors intentionally thrown and expected to be caught: `@throws {ConnectionError} When the database is unreachable`.
-- **`@returns`**: only when the value has semantics the type doesn't show (a `string` that is a JWT; a `boolean` where `true` means "already existed").
-- **`@example`**: for complex APIs or non-obvious usage; minimal and runnable.
-- **`@typeParam`**: when a generic's purpose isn't obvious from its name.
-- **Interface properties**: a `/** */` comment on a property only when its name and type don't convey the contract (`/** Display name shown in the UI, may differ from username */`). Document an interface at the type level, not on every property.
-
-## Complete Example
+- **Description:** one or two sentences on what it does and why you'd use it. Focus on why; the code shows what.
+- **`@param`:** the name and its purpose only, because TypeScript owns the type. For a function that takes one object argument (`object-args`), name the destructured properties directly. Write lowercase sentence fragments.
+- **`@throws`:** only for an error thrown on purpose and expected to be caught: `@throws {ConnectionError} When the database is unreachable`.
+- **`@returns`:** only when the value means more than its type shows, such as a `string` that is a JWT, or a `boolean` whose `true` means "already existed".
+- **`@example`:** for a complex API or usage that isn't obvious. Keep it minimal and runnable.
+- **`@typeParam`:** when a generic's purpose isn't obvious from its name.
+- **Interface properties:** document an interface, other than a `Params` interface (`params-interface-docs`), at the type level, not on every property. Comment a property only when its name and type don't convey the contract: `/** Display name shown in the UI, may differ from username */`.
 
 ```typescript
 interface Params<T> {
@@ -24,9 +22,7 @@ interface Params<T> {
 }
 
 /**
- * Retries an async operation with exponential backoff.
- *
- * Useful for network requests that may fail transiently.
+ * Retries an async operation with exponential backoff, for network requests that may fail transiently.
  *
  * @param fn - async function to retry
  * @param maxAttempts - attempts before giving up
