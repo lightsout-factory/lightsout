@@ -90,7 +90,7 @@ export const createClaudeCodeDriver = (): Driver => {
 	const driver: Driver = {
 		name: 'claude-code',
 		invoke: async (invocation) => {
-			const { prompt, systemPrompt, model, effort, permissions, allowedCommands, environment, cwd, timeoutMs, onEvent, onUsage } = invocation;
+			const { prompt, systemPrompt, model, effort, permissions, allowedCommands, environment, writableDirs, cwd, timeoutMs, onEvent, onUsage } = invocation;
 
 			let resultEvent: z.infer<typeof ResultEvent> | undefined;
 			const tallyAssistantUsage = createAssistantUsageTally();
@@ -101,7 +101,7 @@ export const createClaudeCodeDriver = (): Driver => {
 			// path too, and never throws.
 			const { exitCode, stdout, stderr } = await spawnCollect({
 				command: 'claude',
-				args: buildClaudeCodeArgs({ systemPromptPath: systemPromptFile?.path, model, effort, permissions, allowedCommands, environment }),
+				args: buildClaudeCodeArgs({ systemPromptPath: systemPromptFile?.path, model, effort, permissions, allowedCommands, environment, writableDirs }),
 				cwd,
 				stdinText: prompt,
 				timeoutMs,

@@ -35,10 +35,15 @@ import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 // pipelines against a real repository — each covered by its own tests. Stubbing
 // the pair leaves the engine's plan choice and the worker's handling of the
 // record as the only things these cases exercise.
-const mockInvokeAgentWithContract = jest.fn<(params: { invocation: { prompt: string } }) => Promise<AgentOutcome<WorkReport>>>();
+interface InvokeParams {
+	invocation: { prompt: string };
+	writableDirs?: string[];
+}
+
+const mockInvokeAgentWithContract = jest.fn<(params: InvokeParams) => Promise<AgentOutcome<WorkReport>>>();
 
 jest.mock('#src/invoke/invokeAgentWithContract.ts', () => ({
-	invokeAgentWithContract: (params: { invocation: { prompt: string } }) => mockInvokeAgentWithContract(params),
+	invokeAgentWithContract: (params: InvokeParams) => mockInvokeAgentWithContract(params),
 }));
 // -------------------------
 interface BuildTicketPlansParams {
@@ -189,6 +194,7 @@ const setupAutoPlanTicket = ({
 	return {
 		progress,
 		worktreePath,
+		folder,
 		params: {
 			worktreePath,
 			workOrderName: branch,
@@ -246,6 +252,21 @@ describe('runWorkerWithRelay', () => {
 		expect(mockAddTicketPlan).toHaveBeenCalledWith(expect.objectContaining({ name: branch, slug: 'drain-the-backlog', title: 'Drain the backlog' }));
 		expect(progress).toEqual(expect.arrayContaining([expect.stringContaining('ship request was withdrawn'), expect.stringContaining('tracker refused it')]));
 		expect(mockInvokeAgentWithContract.mock.calls[0]?.[0].invocation.prompt).toContain(`${branch}/001-drain-the-backlog`);
+	});
+
+	test('runWorkerWithRelay: an auto-plan session is told its plan folder by absolute path, and granted no extra directory when the folder lies in its own tree', async () => {
+		const { params, folder } = setupAutoPlanTicket();
+
+		const outcome = await runWorkerWithRelay(params);
+
+		const call = mockInvokeAgentWithContract.mock.calls[0]?.[0];
+		// outside any repository the plan folder resolves under the tree itself, so
+		// the session can already write it and no directory is granted beyond it
+		expect({ outcome, namesAbsoluteFolder: call?.invocation.prompt.includes(folder), writableDirs: call?.writableDirs }).toStrictEqual({
+			outcome: {},
+			namesAbsoluteFolder: true,
+			writableDirs: [],
+		});
 	});
 
 	test('runWorkerWithRelay: an auto-plan ticket whose record pull after the session fails builds nothing', async () => {

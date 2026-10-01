@@ -308,4 +308,36 @@ describe('syncPhaseSections', () => {
 			declared: phaseRecord,
 		});
 	});
+
+	test('the composed note names the by-hand edit for a changed phase and plan sync-phases', async () => {
+		const overview = setupOverview();
+
+		const written = await syncPhaseSections({
+			overviewPath: overview.overviewPath,
+			declarations: overview.declarations,
+			phaseFiles: overview.phaseFiles,
+		});
+
+		const after = overview.readOverview();
+		// the note is the first line under each heading; its wording is copy, so each
+		// claim is pinned loosely — what it must name, and the ban it must not carry
+		const noteClaims = ({ heading }: { heading: string }) => {
+			const note = sectionOf({ text: after, heading })
+				.split('\n')
+				.find((line) => line.trim() !== '');
+
+			return {
+				namesPlanDraft: note?.includes('`lightsout plan draft`'),
+				namesByHandEdit: /\bedit\b.*\brow\b.*\bblock\b.*\bchanged phase\b/i.test(note ?? ''),
+				namesSyncPhases: note?.includes('`lightsout plan sync-phases`'),
+				forbidsHandEdit: /do not edit by hand/i.test(note ?? ''),
+			};
+		};
+		const expectedClaims = { namesPlanDraft: true, namesByHandEdit: true, namesSyncPhases: true, forbidsHandEdit: false };
+		expect({
+			updated: written.updated,
+			phases: noteClaims({ heading: 'Phases' }),
+			declarations: noteClaims({ heading: 'Phase Declarations' }),
+		}).toStrictEqual({ updated: true, phases: expectedClaims, declarations: expectedClaims });
+	});
 });

@@ -14,11 +14,11 @@ export const createCodexDriver = (): Driver => {
 			// allowedCommands is deliberately unused: codex's workspace-write
 			// sandbox already permits commands, so the grant that binds is the
 			// prompt-level list the engine injects into the invocation.
-			const { prompt, systemPrompt, model, effort, permissions, cwd, timeoutMs } = invocation;
+			const { prompt, systemPrompt, model, effort, permissions, writableDirs, cwd, timeoutMs } = invocation;
 
 			const outDir = await mkdtemp(join(tmpdir(), 'lightsout-codex-'));
 			const outFile = join(outDir, 'last-message.txt');
-			const args = buildCodexArgs({ outFile, model, effort, permissions });
+			const args = buildCodexArgs({ outFile, model, effort, permissions, writableDirs });
 
 			const fullPrompt = systemPrompt ? `# Role instructions\n\n${systemPrompt}\n\n# Task\n\n${prompt}` : prompt;
 

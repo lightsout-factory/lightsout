@@ -22570,7 +22570,7 @@ var killProcessGroup = ({ child, signal }) => {
 
 // src/common/processes/terminateChildGroups.ts
 var settled = ({ child }) => child.exitCode !== null || child.signalCode !== null;
-var exited = ({ child }) => settled({ child }) ? Promise.resolve() : new Promise((resolve19) => child.once("exit", () => resolve19()));
+var exited = ({ child }) => settled({ child }) ? Promise.resolve() : new Promise((resolve20) => child.once("exit", () => resolve20()));
 var terminateChildGroups = async ({ children, graceMs = killGraceMs }) => {
   const targets = [...children];
   for (const child of targets) {
@@ -22582,8 +22582,8 @@ var terminateChildGroups = async ({ children, graceMs = killGraceMs }) => {
   let grace;
   await Promise.race([
     Promise.all(targets.map((child) => exited({ child }))),
-    new Promise((resolve19) => {
-      grace = setTimeout(resolve19, graceMs);
+    new Promise((resolve20) => {
+      grace = setTimeout(resolve20, graceMs);
     })
   ]);
   clearTimeout(grace);
@@ -22640,7 +22640,7 @@ var relayShutdownSignals = ({ child }) => {
 
 // src/common/processes/collectChildOutput.ts
 var collectChildOutput = ({ child, timeout, onStdoutLine, onTimeout }) => {
-  return new Promise((resolve19, reject) => {
+  return new Promise((resolve20, reject) => {
     let stdout = "";
     let stderr = "";
     let lineBuffer = "";
@@ -22684,7 +22684,7 @@ var collectChildOutput = ({ child, timeout, onStdoutLine, onTimeout }) => {
       clearTimeout(timer);
       stopRelay();
       emitLines({ text: "", flush: true });
-      resolve19({ exitCode: code ?? -1, stdout, stderr });
+      resolve20({ exitCode: code ?? -1, stdout, stderr });
     });
   });
 };
@@ -121419,7 +121419,7 @@ var publishBrainstorm = async ({ cwd, name, config: config2, env, onProgress, ti
 
 // src/cli/common/utils/exitCli.ts
 var exitCli = async ({ code }) => {
-  await Promise.all([process.stdout, process.stderr].map((stream) => new Promise((resolve19) => stream.write("", () => resolve19()))));
+  await Promise.all([process.stdout, process.stderr].map((stream) => new Promise((resolve20) => stream.write("", () => resolve20()))));
   return process.exit(code);
 };
 
@@ -121797,6 +121797,7 @@ var planCatalogEntry = {
     { id: "plan-verify-facts", positional: "verify-facts" },
     { id: "plan-draft", positional: "draft" },
     { id: "plan-sync-decisions", positional: "sync-decisions" },
+    { id: "plan-sync-phases", positional: "sync-phases" },
     { id: "plan-lint", positional: "lint" },
     { id: "plan-dedup", positional: "dedup" },
     { id: "plan-grade", positional: "grade", note: "--phase grades only those phases, and always marks the result incomplete" },
@@ -122598,6 +122599,7 @@ var usageOrder = [
   "plan-verify-facts",
   "plan-draft",
   "plan-sync-decisions",
+  "plan-sync-phases",
   "plan-lint",
   "plan-dedup",
   "plan-grade",
@@ -123558,7 +123560,7 @@ var claudePermissionModes = {
   [Permissions.Write]: "acceptEdits",
   [Permissions.FullAccess]: "bypassPermissions"
 };
-var buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allowedCommands, environment }) => {
+var buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allowedCommands, environment, writableDirs }) => {
   const args = ["-p", "--output-format", "stream-json", "--verbose", "--exclude-dynamic-system-prompt-sections"];
   if (systemPromptPath) {
     args.push("--append-system-prompt-file", systemPromptPath);
@@ -123571,6 +123573,11 @@ var buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allow
   }
   if (permissions) {
     args.push("--permission-mode", claudePermissionModes[permissions]);
+  }
+  if (permissions === void 0 || permissions === Permissions.Write) {
+    for (const dir of writableDirs ?? []) {
+      args.push("--add-dir", dir);
+    }
   }
   if (environment?.noMcpServers) {
     args.push("--strict-mcp-config");
@@ -123679,13 +123686,13 @@ var createClaudeCodeDriver = () => {
   const driver = {
     name: "claude-code",
     invoke: async (invocation) => {
-      const { prompt, systemPrompt, model, effort, permissions, allowedCommands, environment, cwd, timeoutMs, onEvent, onUsage } = invocation;
+      const { prompt, systemPrompt, model, effort, permissions, allowedCommands, environment, writableDirs, cwd, timeoutMs, onEvent, onUsage } = invocation;
       let resultEvent;
       const tallyAssistantUsage = createAssistantUsageTally();
       const systemPromptFile = systemPrompt ? await writeSystemPromptFile({ systemPrompt }) : void 0;
       const { exitCode, stdout, stderr } = await spawnCollect({
         command: "claude",
-        args: buildClaudeCodeArgs({ systemPromptPath: systemPromptFile?.path, model, effort, permissions, allowedCommands, environment }),
+        args: buildClaudeCodeArgs({ systemPromptPath: systemPromptFile?.path, model, effort, permissions, allowedCommands, environment, writableDirs }),
         cwd,
         stdinText: prompt,
         timeoutMs,
@@ -123733,12 +123740,18 @@ import { tmpdir as tmpdir2 } from "node:os";
 import { join as join11 } from "node:path";
 
 // src/drivers/buildCodexArgs.ts
-var buildCodexArgs = ({ outFile, model, effort, permissions }) => {
+var buildCodexArgs = ({ outFile, model, effort, permissions, writableDirs }) => {
   const args = ["exec", "--skip-git-repo-check", "--color", "never", "--output-last-message", outFile];
   if (permissions === Permissions.FullAccess) {
     args.push("--dangerously-bypass-approvals-and-sandbox");
   } else {
-    args.push("--sandbox", permissions === Permissions.ReadOnly ? "read-only" : "workspace-write");
+    const isReadOnly = permissions === Permissions.ReadOnly;
+    args.push("--sandbox", isReadOnly ? "read-only" : "workspace-write");
+    if (!isReadOnly) {
+      for (const dir of writableDirs ?? []) {
+        args.push("--add-dir", dir);
+      }
+    }
     args.push("-c", 'approval_policy="never"');
   }
   if (model) {
@@ -123755,10 +123768,10 @@ var createCodexDriver = () => {
   const driver = {
     name: "codex",
     invoke: async (invocation) => {
-      const { prompt, systemPrompt, model, effort, permissions, cwd, timeoutMs } = invocation;
+      const { prompt, systemPrompt, model, effort, permissions, writableDirs, cwd, timeoutMs } = invocation;
       const outDir = await mkdtemp2(join11(tmpdir2(), "lightsout-codex-"));
       const outFile = join11(outDir, "last-message.txt");
-      const args = buildCodexArgs({ outFile, model, effort, permissions });
+      const args = buildCodexArgs({ outFile, model, effort, permissions, writableDirs });
       const fullPrompt = systemPrompt ? `# Role instructions
 
 ${systemPrompt}
@@ -123790,12 +123803,18 @@ ${stderr}` })
   return driver;
 };
 
+// src/drivers/common/constants/PiVariant.ts
+var PiVariant = {
+  Pi: "pi",
+  Omp: "omp"
+};
+
 // src/drivers/buildPiArgs.ts
 var readOnlyTools = {
-  pi: "read,grep,find,ls",
-  omp: "read,grep,glob,lsp"
+  [PiVariant.Pi]: "read,grep,find,ls",
+  [PiVariant.Omp]: "read,grep,glob,lsp"
 };
-var buildPiArgs = ({ variant, systemPromptPath, model, effort, permissions }) => {
+var buildPiArgs = ({ variant, systemPromptPath, model, effort, permissions, writableDirs }) => {
   const args = ["-p", "--mode", "json", "--no-session"];
   if (systemPromptPath) {
     args.push("--append-system-prompt", systemPromptPath);
@@ -123809,8 +123828,11 @@ var buildPiArgs = ({ variant, systemPromptPath, model, effort, permissions }) =>
   if (permissions === Permissions.ReadOnly) {
     args.push("--tools", readOnlyTools[variant]);
   }
-  if (variant === "omp" && (permissions === Permissions.Write || permissions === Permissions.FullAccess)) {
+  if (variant === PiVariant.Omp && (permissions === Permissions.Write || permissions === Permissions.FullAccess)) {
     args.push("--approval-mode", permissions === Permissions.Write ? "write" : "yolo");
+  }
+  if (variant === PiVariant.Omp && permissions === Permissions.Write) {
+    args.push(...(writableDirs ?? []).map((dir) => `--add-dir=${dir}`));
   }
   return args;
 };
@@ -123871,7 +123893,7 @@ var createPiFamilyDriver = ({ name, variant, command }) => {
   const driver = {
     name,
     invoke: async (invocation) => {
-      const { prompt, systemPrompt, model, effort, permissions, cwd, timeoutMs, onEvent, onUsage } = invocation;
+      const { prompt, systemPrompt, model, effort, permissions, writableDirs, cwd, timeoutMs, onEvent, onUsage } = invocation;
       let agentEnd;
       let lastAssistant;
       let usage2;
@@ -123879,7 +123901,7 @@ var createPiFamilyDriver = ({ name, variant, command }) => {
       const systemPromptFile = systemPrompt ? await writeSystemPromptFile({ systemPrompt }) : void 0;
       const { exitCode, stdout, stderr } = await spawnCollect({
         command,
-        args: buildPiArgs({ variant, systemPromptPath: systemPromptFile?.path, model, effort, permissions }),
+        args: buildPiArgs({ variant, systemPromptPath: systemPromptFile?.path, model, effort, permissions, writableDirs }),
         cwd,
         stdinText: prompt,
         timeoutMs,
@@ -123919,8 +123941,8 @@ ${stderr}` }),
   };
   return driver;
 };
-var createPiDriver = () => createPiFamilyDriver({ name: "pi", variant: "pi", command: "pi" });
-var createOmpDriver = () => createPiFamilyDriver({ name: "omp", variant: "omp", command: "omp" });
+var createPiDriver = () => createPiFamilyDriver({ name: "pi", variant: PiVariant.Pi, command: "pi" });
+var createOmpDriver = () => createPiFamilyDriver({ name: "omp", variant: PiVariant.Omp, command: "omp" });
 
 // src/drivers/getDriver.ts
 var getDriver = ({ name }) => {
@@ -126513,7 +126535,7 @@ var parseForgeJson = ({ stdout }) => {
 var remoteWaitTimings = { pollIntervalMs: 3e4, ceilingMs: 30 * 6e4 };
 
 // src/ship/internal/common/utils/sleep.ts
-var sleep = ({ ms }) => new Promise((resolve19) => setTimeout(resolve19, ms));
+var sleep = ({ ms }) => new Promise((resolve20) => setTimeout(resolve20, ms));
 
 // src/ship/forge/mergePullRequest.ts
 var StateView = external_exports.object({
@@ -126907,6 +126929,7 @@ var invokeAgentWithContract = async ({
   timeoutMs,
   allowedCommands,
   environment,
+  writableDirs,
   maxRoleAttempts = 1,
   onEvent,
   onRejectedOutput,
@@ -126926,7 +126949,7 @@ var invokeAgentWithContract = async ({
     attempt += 1;
     const rung = await recordHarnessProcess({
       driver,
-      invocation: { ...active, cwd, model, effort, permissions, timeoutMs, allowedCommands, environment, onEvent },
+      invocation: { ...active, cwd, model, effort, permissions, timeoutMs, allowedCommands, writableDirs, environment, onEvent },
       activity,
       spawn: attempt,
       reemit: isReemit
@@ -127124,7 +127147,7 @@ var readGateLock = ({ lockPath }) => {
 };
 
 // src/gates/gateLock/internal/acquireGateLock.ts
-var sleep2 = ({ ms }) => new Promise((resolve19) => setTimeout(resolve19, ms));
+var sleep2 = ({ ms }) => new Promise((resolve20) => setTimeout(resolve20, ms));
 var codeOf = ({ error: error51 }) => typeof error51 === "object" && error51 !== null && "code" in error51 ? error51.code : void 0;
 var claimLeftover = ({ lockPath, runId }) => {
   const asidePath = `${lockPath}.claim-${process.pid}-${runId}`;
@@ -129537,7 +129560,7 @@ import { randomUUID as randomUUID2 } from "node:crypto";
 import { mkdirSync as mkdirSync2, readFileSync as readFileSync3, renameSync as renameSync3, unlinkSync as unlinkSync2, writeFileSync as writeFileSync3 } from "node:fs";
 import { join as join46 } from "node:path";
 var LockHolder = external_exports.object({ pid: external_exports.number(), token: external_exports.string(), acquiredAt: external_exports.string() });
-var sleep3 = ({ ms }) => new Promise((resolve19) => setTimeout(resolve19, ms));
+var sleep3 = ({ ms }) => new Promise((resolve20) => setTimeout(resolve20, ms));
 var readHolder = ({ lockPath }) => {
   let holder;
   try {
@@ -132270,7 +132293,7 @@ var readImportAliases = async ({ cwd, files }) => {
 
 // src/common/moduleGraph/collectImportEdges.ts
 var collectImportEdges = async ({ cwd, files, compiler }) => {
-  const resolve19 = createSpecifierResolver({ files, importAliases: await readImportAliases({ cwd, files }) });
+  const resolve20 = createSpecifierResolver({ files, importAliases: await readImportAliases({ cwd, files }) });
   const edges = [];
   for (const from of files) {
     const content = await readFile22(join65(cwd, from), "utf8").catch(() => void 0);
@@ -132279,7 +132302,7 @@ var collectImportEdges = async ({ cwd, files, compiler }) => {
     }
     const specifiers = [...new Set(compiler.preProcessFile(content, true, true).importedFiles.map((imported) => imported.fileName))];
     for (const specifier of specifiers) {
-      const to = resolve19({ from, specifier });
+      const to = resolve20({ from, specifier });
       if (to !== void 0 && to !== from) {
         edges.push({ from, to });
       }
@@ -133852,7 +133875,7 @@ var RabinKarp = class _RabinKarp {
     this.cloneValidators = cloneValidators;
   }
   async run(tokenMap, store) {
-    return new Promise((resolve19) => {
+    return new Promise((resolve20) => {
       let mapFrameInStore;
       let clone3 = null;
       const clones = [];
@@ -133884,7 +133907,7 @@ var RabinKarp = class _RabinKarp {
             if (clone3 && this.validate(clone3)) {
               clones.push(clone3);
             }
-            resolve19(clones);
+            resolve20(clones);
           }
         });
       };
@@ -133982,9 +134005,9 @@ var MemoryStore = class {
     this.values[namespace] = this.values[namespace] || {};
   }
   get(key) {
-    return new Promise((resolve19, reject) => {
+    return new Promise((resolve20, reject) => {
       if (key in this.values[this._namespace]) {
-        resolve19(this.values[this._namespace][key]);
+        resolve20(this.values[this._namespace][key]);
       } else {
         reject(new Error("not found"));
       }
@@ -146242,8 +146265,8 @@ var createWarmSpawn = ({ group, spawnWriter, aggregate }) => {
   let settled2 = false;
   let collected = false;
   let release;
-  const gate = new Promise((resolve19) => {
-    release = resolve19;
+  const gate = new Promise((resolve20) => {
+    release = resolve20;
   });
   const warm = group === void 0 ? void 0 : spawnWriter({ group, onFirstEvent: release }).finally(() => {
     settled2 = true;
@@ -150826,7 +150849,8 @@ var openPlanWorktree = async ({ cwd, config: config2, flags, name }) => {
 };
 
 // src/cli/plan/internal/planWorkspaceCommand.ts
-var planWorkspaceCommand = async ({ worktree }) => {
+var planWorkspaceCommand = async ({ worktree, name }) => {
+  console.log(`plan folder: ${await planWorkspaceDir({ cwd: worktree.cwd, name })}`);
   console.log(worktree.cwd);
   return exitCli({ code: 0 });
 };
@@ -151155,6 +151179,29 @@ var planAgentConcurrency = 12;
 // src/plan/internal/common/utils/createPlanAgentRunner.ts
 import { writeFile as writeFile19 } from "node:fs/promises";
 import { join as join105 } from "node:path";
+
+// src/common/utils/getDirsOutsideCwd.ts
+import { realpath as realpath3 } from "node:fs/promises";
+import { isAbsolute as isAbsolute2, relative as relative12, resolve as resolve15 } from "node:path";
+var resolveReal = ({ path }) => realpath3(path).catch(() => resolve15(path));
+var getDirsOutsideCwd = async ({ cwd, dirs }) => {
+  const realCwd = await resolveReal({ path: cwd });
+  const realDirs = await Promise.all(dirs.map((dir) => resolveReal({ path: dir })));
+  return dirs.filter((_dir, index) => {
+    const fromCwd = relative12(realCwd, realDirs[index] ?? "");
+    return fromCwd === ".." || fromCwd.startsWith("../") || isAbsolute2(fromCwd);
+  });
+};
+
+// src/plan/internal/common/utils/createPlanAgentRunner.ts
+var writableDirsByFolder = /* @__PURE__ */ new Map();
+var getWritableDirs = ({ cwd, workspaceDir }) => {
+  const key = `${cwd}\0${workspaceDir}`;
+  const known = writableDirsByFolder.get(key);
+  const writableDirs = known ?? getDirsOutsideCwd({ cwd, dirs: [workspaceDir] });
+  writableDirsByFolder.set(key, writableDirs);
+  return writableDirs;
+};
 var createPlanAgentRunner = ({
   cwd,
   driver,
@@ -151169,6 +151216,7 @@ var createPlanAgentRunner = ({
   level
 }) => {
   const onEvent = createEventFileSink({ path: join105(workspaceDir, `${step}-stream.jsonl`) });
+  const writableDirs = getWritableDirs({ cwd, workspaceDir });
   return async ({ invocation, contract, label: label2, allowedCommands }) => {
     const stepLevel = level?.open({ level: ActivityLevelKind.Step, label: label2 === void 0 ? step : `${step}-${label2}` });
     const outcome = await invokeAgentWithContract({
@@ -151182,6 +151230,7 @@ var createPlanAgentRunner = ({
       timeoutMs,
       maxRoleAttempts,
       allowedCommands,
+      writableDirs: await writableDirs,
       environment,
       onEvent,
       onRejectedOutput: async ({ text, attempt }) => {
@@ -152205,9 +152254,9 @@ var planWriterEnvironment = {
 };
 
 // src/plan/internal/common/paths/verifyDraftedFiles.ts
-import { isAbsolute as isAbsolute2, join as join109 } from "node:path";
+import { isAbsolute as isAbsolute3, join as join109 } from "node:path";
 var verifyDraftedFiles = async ({ cwd, filesWritten }) => {
-  const planPaths = filesWritten.map((file2) => isAbsolute2(file2.path) ? file2.path : join109(cwd, file2.path));
+  const planPaths = filesWritten.map((file2) => isAbsolute3(file2.path) ? file2.path : join109(cwd, file2.path));
   if (planPaths.length === 0) {
     return { error: "plan-writer reported drafted but listed no files written" };
   }
@@ -152551,12 +152600,12 @@ var convergeFindings = async ({ name, verb, findingNoun, check: check2, unreadab
   return { status: PlanRunStatus.Complete, findings };
 };
 
-// src/plan/draft/repairMechanicalFindings.ts
+// src/plan/sections/syncPhaseSectionsFromFiles.ts
 import { readFile as readFile48 } from "node:fs/promises";
 import { basename as basename20 } from "node:path";
 
 // src/plan/draft/stampPhaseCounts.ts
-import { readFile as readFile47, writeFile as writeFile21 } from "node:fs/promises";
+import { readFile as readFile47 } from "node:fs/promises";
 import { basename as basename19 } from "node:path";
 
 // src/plan/internal/common/paths/isPlanSourceFile.ts
@@ -152729,9 +152778,9 @@ var stampPhaseCounts = async ({ overviewPath, phasePaths }) => {
   const counts = await getCounts({ phasePaths });
   const overviewBase2 = basename19(overviewPath);
   const original = await readFile47(overviewPath, "utf8");
-  const stamped = rewriteRows({ lines: original.split("\n"), counts }).join("\n");
-  await writeFile21(overviewPath, stamped, "utf8");
-  return parsePhaseDeclarations({ plan: parsePlan({ content: stamped, base: overviewBase2 }) });
+  const lines = rewriteRows({ lines: original.split("\n"), counts });
+  await writePlanFileIfChanged({ path: overviewPath, original, lines });
+  return parsePhaseDeclarations({ plan: parsePlan({ content: lines.join("\n"), base: overviewBase2 }) });
 };
 
 // src/plan/sections/renderPhaseDeclaration.ts
@@ -152764,7 +152813,7 @@ var renderPhaseRow = ({ declaration }) => {
 };
 
 // src/plan/sections/syncPhaseSections.ts
-var composedNote = "Composed by `lightsout plan draft` from this plan's phase files. Do not edit by hand.";
+var composedNote = "Composed by `lightsout plan draft` from this plan's phase files. When the phase breakdown changes, edit this row or block for each changed phase, then run `lightsout plan sync-phases` to restate the rest.";
 var renderPhasesSection = ({ declarations }) => {
   const headerRow = "| # | File | Scope | Creates | Touches |";
   const separatorRow = "|---|------|-------|---------|---------|";
@@ -152804,7 +152853,7 @@ var syncPhaseSections = async ({ overviewPath, declarations, phaseFiles }) => {
   return { path: overviewPath, updated: phases.updated || blocks.updated };
 };
 
-// src/plan/draft/repairMechanicalFindings.ts
+// src/plan/sections/syncPhaseSectionsFromFiles.ts
 var withOwnDeclarations = async ({ declarations, phasePaths }) => {
   const owned = /* @__PURE__ */ new Map();
   for (const phasePath of phasePaths) {
@@ -152821,26 +152870,31 @@ var withOwnDeclarations = async ({ declarations, phasePaths }) => {
     return { ...rest, fileBudget: own.fileBudget, ...own.renamesOnly ? { renamesOnly: true } : {} };
   });
 };
+var syncPhaseSectionsFromFiles = async ({ overviewPath, phasePaths }) => {
+  const before = await readFile48(overviewPath, "utf8");
+  const stamped = await stampPhaseCounts({ overviewPath, phasePaths });
+  await syncPhaseSections({
+    overviewPath,
+    declarations: await withOwnDeclarations({ declarations: stamped, phasePaths }),
+    phaseFiles: phasePaths.map((path) => basename20(path))
+  });
+  return { path: overviewPath, updated: await readFile48(overviewPath, "utf8") !== before };
+};
+
+// src/plan/draft/repairMechanicalFindings.ts
 var repairMechanicalFindings = async ({ cwd, name, planPaths, decisions, overviewPath }) => {
   const synced = await syncPlanDecisions({ cwd, name, planPaths, decisions });
   const files = [..."files" in synced ? synced.files : [], ...await syncGlobalConstraints({ planPaths, decisions })];
   if (overviewPath !== void 0) {
     const phasePaths = planPaths.filter((path) => path !== overviewPath);
-    const stamped = await stampPhaseCounts({ overviewPath, phasePaths });
-    files.push(
-      await syncPhaseSections({
-        overviewPath,
-        declarations: await withOwnDeclarations({ declarations: stamped, phasePaths }),
-        phaseFiles: phasePaths.map((path) => basename20(path))
-      })
-    );
+    files.push(await syncPhaseSectionsFromFiles({ overviewPath, phasePaths }));
   }
   return files;
 };
 
 // src/plan/internal/common/paths/readRepoPathIndex.ts
 import { readdir as readdir21 } from "node:fs/promises";
-import { join as join111, relative as relative12 } from "node:path";
+import { join as join111, relative as relative13 } from "node:path";
 var prunedDirs = /* @__PURE__ */ new Set(["node_modules", ".git"]);
 var readEntries = ({ dir }) => readdir21(dir, { withFileTypes: true }).catch(() => void 0);
 var walkFiles = async ({ cwd, dir, entries }) => {
@@ -152851,7 +152905,7 @@ var walkFiles = async ({ cwd, dir, entries }) => {
     }
     const path = join111(dir, entry.name);
     if (!entry.isDirectory()) {
-      files.push(relative12(cwd, path));
+      files.push(relative13(cwd, path));
       continue;
     }
     const nested = await readEntries({ dir: path });
@@ -153584,7 +153638,7 @@ var checkPhaseCount = ({ phaseCount, overviewBase: overviewBase2 }) => {
   ];
 };
 
-// src/plan/lint/internal/common/utils/getDeclarationDefects.ts
+// src/plan/common/utils/getDeclarationDefects.ts
 var getDeclarationDefects = ({ declarations, locations }) => {
   const defects = [];
   const numbered = declarations.filter((declaration) => declaration.number > 0);
@@ -153613,20 +153667,10 @@ var getDeclarationDefects = ({ declarations, locations }) => {
   return defects;
 };
 
-// src/plan/lint/checkPhaseDeclarations.ts
-var stamp2 = ({ defects }) => defects.map((defect) => ({ check: StructuralCheck.DeclarationConsistent, severity: FindingSeverity.Blocking, ...defect }));
-var namesIn = ({ phase }) => {
-  const spans = /* @__PURE__ */ new Set();
-  for (const line of phase.plan.lines) {
-    for (const span of getCodeSpans({ line })) {
-      spans.add(span);
-    }
-  }
-  return { spans, exports: new Set(phase.plan.createPaths.map((path) => getExportName({ path }))) };
-};
-var phaseSetDefects = ({ declarations, phases, overviewBase: overviewBase2 }) => {
+// src/plan/common/utils/getPhaseSetDefects.ts
+var getPhaseSetDefects = ({ declarations, phaseFiles, overviewBase: overviewBase2 }) => {
   const defects = [];
-  for (const declaration of declarations.filter((candidate) => !phases.some((phase) => phase.base === candidate.file))) {
+  for (const declaration of declarations.filter((candidate) => !phaseFiles.includes(candidate.file))) {
     defects.push({
       phase: overviewBase2,
       issue: `the phase breakdown declares '${declaration.file}', which is not one of this plan's phase files`,
@@ -153634,12 +153678,12 @@ var phaseSetDefects = ({ declarations, phases, overviewBase: overviewBase2 }) =>
       fix: "correct the filename, or drop the row and its declaration block"
     });
   }
-  for (const phase of phases.filter((candidate) => !declarations.some((declaration) => declaration.file === candidate.base))) {
+  for (const phaseFile of phaseFiles.filter((candidate) => !declarations.some((declaration) => declaration.file === candidate))) {
     defects.push({
-      phase: phase.base,
+      phase: phaseFile,
       issue: "this phase file has no row in the overview's phase breakdown",
-      location: phase.base,
-      fix: `add a '## Phases' row and a '## Phase Declarations' block for ${phase.base}`
+      location: phaseFile,
+      fix: `add a '## Phases' row and a '## Phase Declarations' block for ${phaseFile}`
     });
   }
   defects.push(
@@ -153653,6 +153697,18 @@ var phaseSetDefects = ({ declarations, phases, overviewBase: overviewBase2 }) =>
     }).map((defect) => ({ phase: overviewBase2, ...defect }))
   );
   return defects;
+};
+
+// src/plan/lint/checkPhaseDeclarations.ts
+var stamp2 = ({ defects }) => defects.map((defect) => ({ check: StructuralCheck.DeclarationConsistent, severity: FindingSeverity.Blocking, ...defect }));
+var namesIn = ({ phase }) => {
+  const spans = /* @__PURE__ */ new Set();
+  for (const line of phase.plan.lines) {
+    for (const span of getCodeSpans({ line })) {
+      spans.add(span);
+    }
+  }
+  return { spans, exports: new Set(phase.plan.createPaths.map((path) => getExportName({ path }))) };
 };
 var numberDefects = ({
   declaration,
@@ -153744,7 +153800,7 @@ var renamesDefects = ({ declaration, phase, overviewBase: overviewBase2 }) => {
   ];
 };
 var checkPhaseDeclarations = ({ declarations, phases, overviewBase: overviewBase2, counts }) => {
-  const defects = phaseSetDefects({ declarations, phases, overviewBase: overviewBase2 });
+  const defects = getPhaseSetDefects({ declarations, phaseFiles: phases.map((phase) => phase.base), overviewBase: overviewBase2 });
   for (const declaration of declarations) {
     const phase = phases.find((candidate) => candidate.base === declaration.file);
     if (phase) {
@@ -154269,8 +154325,7 @@ var composeEngineSections = async ({
 }) => {
   await syncPlanDecisions({ cwd, name, planPaths: phasePaths, decisions });
   await syncGlobalConstraints({ planPaths: [overviewPath, ...phasePaths], decisions });
-  const stamped = await stampPhaseCounts({ overviewPath, phasePaths });
-  await syncPhaseSections({ overviewPath, declarations: stamped, phaseFiles: phasePaths.map((path) => basename27(path)) });
+  await syncPhaseSectionsFromFiles({ overviewPath, phasePaths });
 };
 var draftFocusedPhasedPlan = async ({ context, step }) => {
   const { cwd, driver, name, workspaceDir, facts, decisions, brainstormDecisionsPath, config: config2, executorFileLimit, evidence } = context;
@@ -154501,16 +154556,16 @@ var collectSourceEvidence = async ({ cwd, name, facts, config: config2 }) => {
   const stored = new Map((previous?.entries ?? []).map((entry) => [entry.path, entry]));
   const compiler = resolveConsumerTypescript({ cwd, packagesDir: config2?.["packages-dir"] ?? defaultPackagesDir });
   const entries = [];
-  for (const [relative17, roles] of wantedPaths({ facts })) {
-    const content = await readFile54(join121(cwd, relative17), "utf8").catch(() => void 0);
+  for (const [relative18, roles] of wantedPaths({ facts })) {
+    const content = await readFile54(join121(cwd, relative18), "utf8").catch(() => void 0);
     if (content === void 0) {
-      entries.push({ path: relative17, sha256: "", kind: SourceEvidenceKind.Missing, bytes: 0, text: "", roles, definitions: [] });
+      entries.push({ path: relative18, sha256: "", kind: SourceEvidenceKind.Missing, bytes: 0, text: "", roles, definitions: [] });
       continue;
     }
     const hash3 = sha256({ content });
-    const reusable = stored.get(relative17);
+    const reusable = stored.get(relative18);
     entries.push(
-      reusable !== void 0 && reusable.sha256 === hash3 ? { ...reusable, roles } : collectEntry({ path: relative17, content, hash: hash3, roles, compiler })
+      reusable !== void 0 && reusable.sha256 === hash3 ? { ...reusable, roles } : collectEntry({ path: relative18, content, hash: hash3, roles, compiler })
     );
   }
   const index = SourceEvidenceIndex.parse({
@@ -155146,7 +155201,7 @@ var collapseSide = ({ gap, gaps }) => {
 var collapseGroupedGaps = ({ gaps }) => gaps.flatMap((gap) => (gap.findingId ?? "") === "" ? [gap] : collapseSide({ gap, gaps }));
 
 // src/plan/internal/common/grading/drainGradeAgents.ts
-import { basename as basename31, relative as relative14 } from "node:path";
+import { basename as basename31, relative as relative15 } from "node:path";
 
 // src/agents/prompts/planGapCheck.md
 var planGapCheck_default = '# Role: Check Plan Gaps\n\nYou check a plan for **adequacy**: whether its content is complete and decided\nenough for a fresh-context agent to implement via `lightsout implement` without\nguessing. This is the semantic half of plan quality. You work autonomously and\nyour final message is machine-parsed \u2014 one JSON report, not prose.\n\n**Boundary:** you own **adequacy** \u2014 is the present content enough to build, or\nmust a human decide something. The plan\'s **structure** (paths exist, scripts\nexist, no placeholders, required sections, naming, file-count scope) is already\nverified deterministically in code. Do **not** re-flag structural defects \u2014 only\ndecision-level gaps.\n\n## You are one of three\n\nThree checkers run against this same plan at the same time, each given a\ndifferent brief. Your own brief follows these instructions and **narrows which\nof the gap areas below you report**. Everything all three of us find is kept and\nrecorded as a union \u2014 nothing is voted on and nothing is dropped for being found\nonce. Each finding is then handed to its own judge, which decides who has to\nsettle it, and only the findings that need a human decide the plan\'s grade.\n\nNone of that changes your job: report what you find. The weighing is somebody\nelse\'s.\n\nSo do not compensate for the others. A real gap that belongs to another lens is\nnot lost by your leaving it alone; it is being looked for right now by a checker\nwhose whole job it is. Reporting outside your brief adds a duplicate, not\ncoverage.\n\n## Input\n\nThe task message provides the plan text to check. When present, the overview\nplan (context shared across phases \u2014 read it for design decisions and\ndependencies, but do not grade it standalone) and supplemental code standards\nthe implementing agent will also load are appended to these role instructions\nrather than arriving in the task message.\n\n## What counts as a gap\n\nA gap is something that would make the agent **guess** or that needs a human to\n**decide between valid alternatives**. Flag a check only when the agent could not\nderive the answer from the plan, the overview, the codebase, or the standards.\n\n- **underspecified-surface** \u2014 services/modules described as intent ("create a\n  service") without defined methods/signatures the agent can implement.\n- **unwired-dependency** \u2014 cross-module dependencies where the plan does not make\n  exports match imports, so the agent must invent the contract.\n- **insufficient-detail** \u2014 a file to create/modify lacks enough detail to build\n  it without guessing its behavior.\n- **omitted-decision** \u2014 points where multiple valid approaches exist and the\n  plan picks none (behavior, edge cases, error handling, what to return).\n- **ambiguous-boundary** \u2014 scope boundaries present but so vague the agent cannot\n  tell what is in vs out.\n- **standards-conflict** \u2014 instructions that contradict the supplied standards.\n- **phase-seam-mismatch** \u2014 a value one phase defines and a later phase consumes\n  under a different shape, where both phases state the shape.\n\n## Rules\n\n- `NONE` is a real result. A well-elicited, structurally clean plan should\n  return no gaps. Do not manufacture gaps.\n- Only flag gaps that force the agent to **guess** or need a **human decision**.\n  Details derivable from the codebase, overview, or standards are not gaps.\n- Do not re-flag structural defects (paths, scripts, placeholders, naming,\n  sections, scope) \u2014 those are checked in code.\n- Each gap states what must be decided and the valid options if you can surface\n  them.\n\n## Findings already settled for this plan file\n\nA list of settled findings may be appended to these instructions. Each entry is a\nquestion an earlier pass raised against this very file and someone settled \u2014 a\nhuman answered it into the plan, or a judge showed the implementing agent can\ndecide it or that the plan already answers it.\n\nIt is there so the same question is not asked twice, and it is **context, not\ncoverage**:\n\n- Read every part of this plan file exactly as you would if the list were empty.\n  A settled record never narrows your lens and never excuses skipping a section.\n- Report one of its entries again only when you have **new evidence** the settled\n  answer does not already cover \u2014 the plan changed under it, or the answer turns\n  out not to hold. Say what that evidence is in the gap text.\n- A question the list settles, that the plan still settles, is not a gap.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`. An empty `gaps` array is the clean result.\n\n```\n{\n	"gaps": [\n		{\n			"area": "underspecified-surface|unwired-dependency|insufficient-detail|omitted-decision|ambiguous-boundary|standards-conflict|phase-seam-mismatch",\n			"gap": "<what is missing or ambiguous>",\n			"decision": "<the decision a human must make>",\n			"options": ["<valid alternative>", "..."]\n		}\n	]\n}\n```\n';
@@ -155339,7 +155394,7 @@ var drainGapCheckers = async ({
 };
 
 // src/plan/internal/common/grading/judgeGaps.ts
-import { relative as relative13 } from "node:path";
+import { relative as relative14 } from "node:path";
 
 // src/agents/prompts/planGapJudge.md
 var planGapJudge_default = '# Role: Judge a Plan Gap Batch\n\nYou are handed **several observations** readers raised against a plan, and you\nanswer **one** question about each: who has to settle it. Before that, you\ndecide which of them describe the same underlying defect. You work autonomously\nand your final message is machine-parsed \u2014 one JSON object, not prose.\n\n## What you are given\n\nThe task message provides the text of every plan file the observations span \u2014\none `## Plan file:` section each \u2014 and the observations themselves, each under\nan engine-assigned identifier (`### o1`, `### o4`, \u2026) with its plan file, area,\nlens, finding, decision and offered options. When present, the overview plan\n(shared context for a phased plan \u2014 read it, do not judge it standalone) and\nsupplemental code standards are appended to these role instructions rather than\narriving in the task message.\n\nYou may read the repository. You make no edits.\n\n## The plan\'s other phases\n\nWhen the task message names the plan\'s folder, the plan is phased and its other\nphase files are on disk beside the ones you were given. An observation about\nsomething a neighbouring phase produces or consumes cannot be settled from one\nside alone, and a judge that guesses at the neighbour is the rubber stamp this\nbrief exists to prevent \u2014 so when the neighbour is not one of the plan files you\nwere given, open it and look.\n\nAn observation contained entirely in the files you were given needs none of\nthis. Do not read the whole plan out of thoroughness.\n\n## First: which observations are one defect\n\nThe engine put these observations together because their wording overlaps. That\nis a hint, never proof. Two or more observations are the **same defect** only\nwhen you can state:\n\n- a **common violated requirement or contradiction** every one of them is an\n  instance of, and\n- **one corrective decision** that settles every one of them.\n\nShared wording, a shared symbol or an overlapping file is not enough on its own.\nObservations of one contradiction seen from two phases usually ARE one defect;\ntwo different questions that happen to name the same file usually are NOT.\n\nWhen you are not sure, keep them apart. Being unsure is a normal answer, not a\nfailure: an observation you rule on its own is judged exactly as it would be\nalone.\n\n## The one question\n\nFor each defect \u2014 a confirmed group, or a single observation \u2014 who settles it: a\nhuman, the implementing agent, or nobody, because it is already answered.\n\n## The bar\n\nCould a fresh-context agent implementing this plan derive the answer from the\nplan, the overview, the codebase and the standards \u2014 and be right?\n\nThis is the same bar the reader briefs state, which is why you read the\nrepository rather than the plan text alone. "The plan does not say it" is not\nenough; the question is whether the agent would still get it right.\n\n## The three outcomes, and the evidence each demands\n\n- **`needs-a-human`** \u2014 the agent cannot work it out. Two defensible answers\n  exist and the plan picks neither, or the choice turns on intent nothing in the\n  repository carries. Supply **`humanDecision`**: the decision the human has to\n  make.\n- **`agent-can-decide`** \u2014 the agent can settle it correctly on its own, from\n  the plan, the codebase or the standards. Supply **`agentDecision`** (what it\n  would decide) and **`safeBecause`** (why that choice is safe to make\n  unattended).\n- **`already-answered`** \u2014 the reader missed an answer that is already there.\n  Supply **`answers`**: one entry for **every** plan file the ruling\'s\n  observations span, each naming that file in `phase` and giving, in `answerAt`,\n  either the exact line of **that file** that states the answer \u2014 copied\n  verbatim from its `## Plan file:` section \u2014 or the path of a file on disk.\n  Every file a ruling spans is one of the `## Plan file:` sections you were\n  given, so you are never asked to cite a file you cannot read. One citation\n  waving away a contradiction observed in two files is refused: an answer in one\n  file is no evidence about the other.\n\n## Your rulings\n\nYou return a **list** of rulings.\n\n- A ruling names the identifiers it covers in **`covers`**. Naming two or more is\n  your claim that they are one defect, and it must state that defect in\n  **`sharedDefect`** \u2014 the common requirement or contradiction, in one sentence.\n  Naming one is an ordinary single ruling.\n- **Every identifier you were given must appear in exactly one ruling.** An\n  observation no ruling covers, one covered by two rulings, and any identifier\n  you were not given all leave the affected observations unjudged \u2014 which blocks\n  the plan.\n- A ruling over a group settles the whole group with one outcome. There is no\n  vote: if the members need different outcomes, they are not one defect.\n\n## Findings already on record\n\nThe task message may list the records the plan\'s memory already holds for the\nplan files you were given, each with an id and the state it is in. When it\ndoes, decide **first**, for each ruling, whether it is the **same question** as\none of them.\n\n- If it is, put that record\'s id in the ruling\'s **`matchesFinding`**. If it is\n  not, leave the field unset.\n- Never name an id that is not on the list. One the plan does not hold points\n  nowhere, and the engine treats that whole ruling as no answer at all \u2014 which\n  blocks the plan.\n- Matching is **orthogonal to your ruling**: a matched ruling still gets a full\n  verdict with the evidence its outcome demands.\n- A match you rule `needs-a-human` **reopens** a record someone already closed.\n  Rule that way only on evidence the earlier clearance was wrong, or that the\n  assumptions it rested on have changed. A reader re-wording a settled question\n  is not such evidence.\n\n## Rules\n\n- Judge only the observations you were given. Do not read the plan for new\n  gaps, and do not re-check its structure \u2014 that is verified deterministically\n  in code.\n- The evidence your outcome demands is mandatory. A ruling without it is\n  discarded and every observation it covers is treated as unjudged, which blocks\n  the plan.\n- Cite what you actually read. A citation the engine cannot find in the plan\n  file it names, or a path that is not on disk, is discarded and blocks.\n- When you cannot tell, `needs-a-human` is the safe answer. Asking costs one\n  question; waving something through costs an unattended run that stalls.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`. Include only the evidence fields each outcome demands.\n\n```\n{\n	"verdicts": [\n		{\n			"covers": ["<every identifier this ruling settles>"],\n			"sharedDefect": "<two or more covered: the one defect they all are>",\n			"outcome": "needs-a-human|agent-can-decide|already-answered",\n			"humanDecision": "<needs-a-human only>",\n			"agentDecision": "<agent-can-decide only>",\n			"safeBecause": "<agent-can-decide only>",\n			"answers": [{ "phase": "<a plan file the ruling spans>", "answerAt": "<already-answered only: that file\'s exact line, or a path on disk>" }],\n			"matchesFinding": "<the id of the record this ruling repeats, when one is on the list>"\n		}\n	]\n}\n```\n';
@@ -155495,8 +155550,8 @@ var citationPathToken = ({ citation }) => {
 };
 
 // src/plan/internal/common/paths/citedPathExists.ts
-import { isAbsolute as isAbsolute3, join as join126 } from "node:path";
-var citedPathExists = async ({ cwd, token }) => pathExists({ path: isAbsolute3(token) ? token : join126(cwd, token) });
+import { isAbsolute as isAbsolute4, join as join126 } from "node:path";
+var citedPathExists = async ({ cwd, token }) => pathExists({ path: isAbsolute4(token) ? token : join126(cwd, token) });
 
 // src/plan/internal/common/memory/confirmCitation.ts
 var minimumCitationLength = 24;
@@ -155677,7 +155732,7 @@ var spawnGapJudge = async ({ params, batch, batchIndex }) => {
       standards,
       // Only a phased plan has siblings to point at, and the judge opens one
       // itself when an observation is about a seam its batch does not span.
-      planDir: overviewText === void 0 ? void 0 : relative13(cwd, workspaceDir),
+      planDir: overviewText === void 0 ? void 0 : relative14(cwd, workspaceDir),
       records: batchRecords({ memory: params.memory, batch }),
       observations: batch.observations.map(({ id, gap }) => ({ id, observation: gap }))
     }),
@@ -155732,7 +155787,7 @@ var spawnGapChecker = async ({
       standards,
       // Only a phased plan has siblings to point at, and the wiring checker
       // opens one itself when a consumed name's shape is declared elsewhere.
-      planDir: pass.overviewText === void 0 ? void 0 : relative14(cwd, pass.workspaceDir),
+      planDir: pass.overviewText === void 0 ? void 0 : relative15(cwd, pass.workspaceDir),
       lens,
       settled: phaseFindingRecords({ memory, phase: basename31(file2.path), statuses: settledStatuses })
     }),
@@ -156417,7 +156472,7 @@ var recordPassCoverage = ({
 };
 
 // src/plan/internal/common/memory/verifyOpenFindings.ts
-import { basename as basename37, relative as relative15 } from "node:path";
+import { basename as basename37, relative as relative16 } from "node:path";
 
 // src/agents/prompts/planFindingRecheck.md
 var planFindingRecheck_default = '# Role: Re-check a Settled Plan Question\n\nYou are handed **one** question a human was previously asked to settle, and the\ncurrent text of the plan it was raised against. You answer **one** question\nabout it: does the plan now state the answer? You work autonomously and your\nfinal message is machine-parsed \u2014 one JSON object, not prose.\n\n## What you are given\n\nThe task message provides the current plan text and the single record on file \u2014\nits id, the area it was raised under, what the reader found missing, the\ndecision it demanded, the options offered, and what the original judge said a\nhuman had to decide. When present, the overview plan (shared context for a\nphased plan \u2014 read it, do not judge it standalone) and supplemental code\nstandards are appended to these role instructions rather than arriving in the\ntask message.\n\nYou may read the repository. You make no edits.\n\n## The plan\'s other phases\n\nWhen the task message names the plan\'s folder, the plan is phased and its other\nphase files are on disk beside the text you were given. A question raised\nagainst one phase can be answered in another \u2014 a repair often moves a decision\ninto the overview\'s Decision Log or into the phase that owns the seam. Open a\nsibling when the answer plausibly moved there.\n\n## A record that spans several plan files\n\nA judge may have confirmed that readers in several plan files described one\ndefect, and the record then holds each of their observations. When the task\nmessage says this spawn asks about one plan file of such a record, answer **only\nfor that file**, in the words of that file\'s own observation. The record closes\nonly once every one of its files is confirmed separately, so an answer stated in\na different file is no evidence about this one \u2014 cite the plan text you were\ngiven, never a line from a sibling.\n\n## The two answers\n\n- **`already-answered`** \u2014 the plan now genuinely settles this question. A\n  reader of the plan would not have to guess, invent, or decide anything the\n  record asked about.\n- **`needs-a-human`** \u2014 it does not. Restate the outstanding decision in\n  `humanDecision`, in the terms a human can answer.\n\nYou never rule `agent-can-decide`. Downgrading a human\'s question to an\nassumption the implementing agent may make is not re-verification; it is\nanswering a different question from the one on file. If the plan does not state\nthe answer, the answer is `needs-a-human`.\n\n## The citation rule\n\n`answerAt` is your evidence, and the engine checks it before it closes anything.\n\n- Paste the **exact plan line** that states the answer \u2014 a Decision Log row, a\n  sentence from a file entry, a rule from a Scope Boundaries bullet. Copy it\n  verbatim from the text you were given.\n- Never paraphrase it, never give a heading on its own, and never describe where\n  to look ("see the Decision Log"). The engine looks for your quote in the plan\n  text; a quote it cannot find refuses the closure and the record stays open and\n  blocking.\n- A file path is the one non-quote citation allowed, and it must be a file that\n  is really on disk.\n\nA record you cannot close honestly is a record that should stay open. An\ninvented citation does not close it \u2014 it costs the run a pass and leaves the\nquestion exactly where it was.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`.\n\n```\n{\n	"outcome": "already-answered|needs-a-human",\n	"answerAt": "<already-answered: the exact plan line that states the answer, or a file path on disk>",\n	"humanDecision": "<needs-a-human: the decision still outstanding>"\n}\n```\n';
@@ -156549,7 +156604,7 @@ var spawnRecheck = async ({ params, pair }) => {
       standards,
       // Only a phased plan has siblings to point at, and a record raised
       // against one phase may now be answered in another.
-      planDir: overviewText === void 0 ? void 0 : relative15(cwd, workspaceDir),
+      planDir: overviewText === void 0 ? void 0 : relative16(cwd, workspaceDir),
       record: pair.record,
       observation: pair.observation,
       locations: pair.locations
@@ -157558,6 +157613,59 @@ ${bold(`plan sync-decisions ${name}`)} \u2014 ${result.files.length} file(s)`);
   return exitCli({ code: 0 });
 };
 
+// src/cli/plan/planSyncPhasesCommand.ts
+import { basename as basename45 } from "node:path";
+
+// src/plan/sections/syncPlanPhases.ts
+import { basename as basename44 } from "node:path";
+var missingBlockDefects = ({ declarations, phaseFiles }) => {
+  const unblocked = declarations.filter((row) => row.number > 0 && row.blockRange === void 0 && phaseFiles.includes(row.file));
+  return unblocked.map((row) => ({
+    issue: `phase ${row.number} ('${row.file}') has a '## Phases' row but no '## Phase Declarations' block`,
+    fix: `add a '### Phase ${row.number}' block for ${row.file}`
+  }));
+};
+var syncPlanPhases = async ({ cwd, name }) => {
+  const deliverable = await resolvePlanDeliverable({ cwd, name });
+  if (deliverable.error !== void 0) {
+    return { status: PlanRunStatus.Failed, error: deliverable.error };
+  }
+  if (deliverable.overviewPath === void 0 || deliverable.overviewText === void 0) {
+    return { status: PlanRunStatus.Failed, error: `cannot sync phases for '${name}': it has no overview.md, so there is no phase breakdown to sync` };
+  }
+  const overviewBase2 = basename44(deliverable.overviewPath);
+  const phaseFiles = deliverable.files.map((file3) => basename44(file3.path));
+  const declarations = parsePhaseDeclarations({ plan: parsePlan({ content: deliverable.overviewText, base: overviewBase2 }) });
+  const defects = [...getPhaseSetDefects({ declarations, phaseFiles, overviewBase: overviewBase2 }), ...missingBlockDefects({ declarations, phaseFiles })];
+  if (defects.length > 0) {
+    return {
+      status: PlanRunStatus.Failed,
+      error: [
+        `cannot sync phases for '${name}': the phase files and the overview's breakdown do not line up`,
+        ...defects.map((defect) => `  ${defect.issue} \u2014 ${defect.fix}`),
+        "Adding a missing row or block, and renumbering or renaming phase files, is your own edit; make it, then run this command again."
+      ].join("\n")
+    };
+  }
+  const file2 = await syncPhaseSectionsFromFiles({ overviewPath: deliverable.overviewPath, phasePaths: deliverable.files.map((phase) => phase.path) });
+  return { status: PlanRunStatus.Complete, file: file2 };
+};
+
+// src/cli/plan/planSyncPhasesCommand.ts
+var planSyncPhasesCommand = async ({ flags, cwd }) => {
+  const name = await getRequiredFlag({ flags, name: "name" });
+  const result = await syncPlanPhases({ cwd, name });
+  if (result.status === PlanRunStatus.Failed) {
+    console.error(`
+${result.error}`);
+    return exitCli({ code: 1 });
+  }
+  console.log(`
+${bold(`plan sync-phases ${name}`)}`);
+  console.log(`  ${basename45(result.file.path)} \u2014 ${result.file.updated ? "updated" : "unchanged"}`);
+  return exitCli({ code: 0 });
+};
+
 // src/cli/internal/common/utils/ensureBrainstormFiles.ts
 var report = ({
   restored,
@@ -157597,8 +157705,8 @@ var ensureBrainstormFiles = async ({ cwd, name, write = console.log }) => {
 };
 
 // src/plan/runPlanVerifyFacts.ts
-import { copyFile, mkdir as mkdir26, writeFile as writeFile22 } from "node:fs/promises";
-import { join as join132, resolve as resolve15 } from "node:path";
+import { copyFile, mkdir as mkdir26, writeFile as writeFile21 } from "node:fs/promises";
+import { join as join132, resolve as resolve16 } from "node:path";
 
 // src/contracts/plan/facts/AuthoredFacts.ts
 var AuthoredFacts = external_exports.object({
@@ -157656,7 +157764,7 @@ var snapshotNotes = async ({
   notesFile,
   progress
 }) => {
-  const source = resolve15(cwd, notesFile);
+  const source = resolve16(cwd, notesFile);
   const destination = join132(workspaceDir, "brainstorm-notes.md");
   const alreadyFrozen = await pathExists({ path: destination });
   if (alreadyFrozen) {
@@ -157701,7 +157809,7 @@ var runPlanVerifyFacts = async ({ cwd, name, notesFile, onProgress }) => {
     verification,
     verifiedAt: (/* @__PURE__ */ new Date()).toISOString()
   };
-  await writeFile22(factsPath, `${JSON.stringify(facts, void 0, "	")}
+  await writeFile21(factsPath, `${JSON.stringify(facts, void 0, "	")}
 `, "utf8");
   const missingPart = verification.missingPaths.length > 0 ? `, ${verification.missingPaths.length} missing: ${verification.missingPaths.join(", ")}` : "";
   progress(
@@ -157769,7 +157877,8 @@ var readPlanningStandards = async ({ cwd, config: config2 }) => {
 // src/cli/plan/planCommand.ts
 var openDispatchCheckout = async ({ cwd, flags, subcommand }) => {
   const name = getStringFlag({ flags, name: "name" });
-  if (name === void 0 || !["workspace", "draft", "dedup", "grade", "lint", "publish", "sync-decisions", "verify-facts"].includes(subcommand ?? "")) {
+  const checkoutSubcommands = ["workspace", "draft", "dedup", "grade", "lint", "publish", "sync-decisions", "sync-phases", "verify-facts"];
+  if (name === void 0 || !checkoutSubcommands.includes(subcommand ?? "")) {
     return { cwd, worktree: void 0 };
   }
   if (parsePlanAddress({ name }) === void 0) {
@@ -157785,12 +157894,10 @@ var openDispatchCheckout = async ({ cwd, flags, subcommand }) => {
 };
 var planCommand = async ({ flags, rest, cwd: launchingCwd }) => {
   const subcommand = getPositionals({ args: rest })[0];
-  if (subcommand === "workspace") {
-    await getRequiredFlag({ flags, name: "name" });
-  }
+  const workspaceName = subcommand === "workspace" ? await getRequiredFlag({ flags, name: "name" }) : void 0;
   const { cwd, worktree } = await openDispatchCheckout({ cwd: launchingCwd, flags, subcommand });
-  if (subcommand === "workspace" && worktree !== void 0) {
-    await planWorkspaceCommand({ worktree });
+  if (workspaceName !== void 0 && worktree !== void 0) {
+    await planWorkspaceCommand({ worktree, name: workspaceName });
     return;
   }
   if (subcommand === "verify-facts") {
@@ -157803,6 +157910,10 @@ var planCommand = async ({ flags, rest, cwd: launchingCwd }) => {
   }
   if (subcommand === "sync-decisions") {
     await planSyncDecisionsCommand({ flags, rest, cwd });
+    return;
+  }
+  if (subcommand === "sync-phases") {
+    await planSyncPhasesCommand({ flags, rest, cwd });
     return;
   }
   if (subcommand === "publish") {
@@ -157831,7 +157942,7 @@ var planCommand = async ({ flags, rest, cwd: launchingCwd }) => {
 };
 
 // src/cli/queueCommand.ts
-import { resolve as resolve16 } from "node:path";
+import { resolve as resolve17 } from "node:path";
 
 // src/cli/internal/common/constants/QueueBoardState.ts
 var QueueBoardState = {
@@ -158441,8 +158552,8 @@ var FileQuestionRelay = class {
           throw new Error(`no answer arrived within ${this.settings.questionTimeoutMs}ms for: ${question}`);
         }
         await Promise.race([
-          new Promise((resolve19) => {
-            timer = setTimeout(resolve19, pollMs);
+          new Promise((resolve20) => {
+            timer = setTimeout(resolve20, pollMs);
           }),
           abandoned
         ]);
@@ -159166,14 +159277,14 @@ var startBuilds = ({ context, state, flight }) => {
 };
 
 // src/queue/drainLanes/internal/common/utils/writeQueuePlan.ts
-import { writeFile as writeFile23 } from "node:fs/promises";
+import { writeFile as writeFile22 } from "node:fs/promises";
 import { join as join140 } from "node:path";
 var writeQueuePlan = async ({ path, cwd, queued }) => {
   const root = await resolveWorktreesRoot({ cwd });
   const lines = queued.map(
     (workOrder) => `- ${workOrder.ticket.identifier} \xB7 ${workOrder.ticket.worker} \xB7 ${workOrder.branch} \xB7 ${join140(root, workOrder.name)}`
   );
-  await writeFile23(path, `# queue drain
+  await writeFile22(path, `# queue drain
 
 ${lines.join("\n")}
 `, "utf8");
@@ -159913,7 +160024,7 @@ var buildWorkOrderPlans = async ({
 };
 
 // src/agents/prompts/queueAutoPlan.md
-var queueAutoPlan_default = '# Role: Headless Auto-Plan Worker\n\nYou are running unattended in a git worktree that already holds this ticket\'s\nbranch. Nobody is watching your session. The queue that spawned you relays\nanything you cannot decide to the one terminal a human is sitting at, and\nre-invokes you with their answer.\n\n## What to do\n\n1. Invoke the `lightsout:auto-plan` skill on the ticket appended below and\n   follow it exactly as written. It plans the ticket and publishes the approved\n   durable plan to that ticket.\n2. Your job ends the moment that publish step has succeeded \u2014 report then. A\n   publish failure is a worker failure to report, not a reason to continue from\n   the one local copy. The queue builds the plan itself, as an engine\n   subprocess outside this session, from the plan folder you leave in the\n   worktree: leave the plan in exactly the folder the task message\'s plan\n   address names, because that address is where the engine looks once your\n   session has ended.\n\nThe task message names the exact engine invocation to type. That string is\nalso the only command prefix this session was granted, so wherever the skill\'s\nown text says `lightsout <subcommand>`, run the granted invocation followed by\n`<subcommand>` instead. Anything else will simply be refused.\n\nThe `lightsout:auto-plan` skill ships in the same plugin as the engine that\nspawned you, so a user running the queue has it installed. If your session\ncannot find it, do NOT improvise a planning process: report `failed` with a\nfailure saying the lightsout plugin\'s skills are not available to spawned\nsessions, so the ticket parks with a message a human can act on.\n\n## The worktree may already hold your earlier work\n\nInspect it before assuming it is fresh. A previous invocation of you may have\nwritten a plan folder \u2014 this happens after a relayed answer and after a\nrestart. The folder the task message\'s plan address names is yours, whatever\nelse the worktree holds: do not re-derive a name, and do not touch another\nplan\'s folder. Fold the relayed answer into your own folder and continue from\nwhere the previous invocation stopped, rather than planning it again.\n\n## You have no user\n\nNever ask a question directly \u2014 there is nobody in your session to answer it.\nWhen a question clears the skill\'s escalation bar, stop and report\n`terminated:ambiguity` with the question as the FIRST entry of `failures`. The\nengine relays it to the terminal that started the queue, records the answer on\nthe ticket, and re-invokes you with it. Ask one question at a time.\n\n## Never implement\n\nNever run the engine\'s `implement` subcommand, and never invoke the\n`lightsout:implement` skill. A build takes hours, and a build started inside an\nagent session dies with that session \u2014 which is the very failure this worker\nexists to remove. The queue runs the build itself, outside any session.\n\n## Never ship\n\nNever run `lightsout ship`, and never pass `--ship`. Shipping is the queue\'s\nown step: it rebases each branch onto fresh main and re-runs the gates, one\nbranch at a time. A branch that ships itself races that order.\n\n## The ticket record is the engine\'s\n\nNever add a plan to the ticket, never change the ticket\'s mode, never request or\nwithdraw a ship request, and never exclude a plan. The engine chose the plan you\nare writing and created it on the record before your session started, and the\nqueue decides when the ticket ships. Nothing you do changes either.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. Your\nmessage starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was built, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 omit when clean" }]\n}\n```\n\nReport `complete` only when the plan was written, graded and\npublished to the ticket. Never claim work you did not do \u2014 the engine diffs the\ntree, and a false report is worse than a failed one.\n';
+var queueAutoPlan_default = '# Role: Headless Auto-Plan Worker\n\nYou are running unattended in a git worktree that already holds this ticket\'s\nbranch. Nobody is watching your session. The queue that spawned you relays\nanything you cannot decide to the one terminal a human is sitting at, and\nre-invokes you with their answer.\n\n## What to do\n\n1. Invoke the `lightsout:auto-plan` skill on the ticket appended below and\n   follow it exactly as written. It plans the ticket and publishes the approved\n   durable plan to that ticket.\n2. Your job ends the moment that publish step has succeeded \u2014 report then. A\n   publish failure is a worker failure to report, not a reason to continue from\n   the one local copy. The queue builds the plan itself, as an engine\n   subprocess outside this session, from the plan folder at the absolute path\n   the task message names, which lies in the primary checkout outside this\n   worktree: author the plan in exactly that folder, because that is where the\n   engine looks once your session has ended.\n\nThe task message names the exact engine invocation to type. That string is\nalso the only command prefix this session was granted, so wherever the skill\'s\nown text says `lightsout <subcommand>`, run the granted invocation followed by\n`<subcommand>` instead. Anything else will simply be refused.\n\nThe `lightsout:auto-plan` skill ships in the same plugin as the engine that\nspawned you, so a user running the queue has it installed. If your session\ncannot find it, do NOT improvise a planning process: report `failed` with a\nfailure saying the lightsout plugin\'s skills are not available to spawned\nsessions, so the ticket parks with a message a human can act on.\n\n## The plan folder may already hold your earlier work\n\nInspect the plan folder the task message names, and the worktree\'s code, before\nassuming either is fresh. A previous invocation of you may have written to them\n\u2014 this happens after a relayed answer and after a restart. The plan folder the\ntask message names is yours, whatever else sits beside it: do not re-derive a\nname, and do not touch another plan\'s folder. Fold the relayed answer into your own folder and continue from\nwhere the previous invocation stopped, rather than planning it again.\n\n## You have no user\n\nNever ask a question directly \u2014 there is nobody in your session to answer it.\nWhen a question clears the skill\'s escalation bar, stop and report\n`terminated:ambiguity` with the question as the FIRST entry of `failures`. The\nengine relays it to the terminal that started the queue, records the answer on\nthe ticket, and re-invokes you with it. Ask one question at a time.\n\n## Never implement\n\nNever run the engine\'s `implement` subcommand, and never invoke the\n`lightsout:implement` skill. A build takes hours, and a build started inside an\nagent session dies with that session \u2014 which is the very failure this worker\nexists to remove. The queue runs the build itself, outside any session.\n\n## Never ship\n\nNever run `lightsout ship`, and never pass `--ship`. Shipping is the queue\'s\nown step: it rebases each branch onto fresh main and re-runs the gates, one\nbranch at a time. A branch that ships itself races that order.\n\n## The ticket record is the engine\'s\n\nNever add a plan to the ticket, never change the ticket\'s mode, never request or\nwithdraw a ship request, and never exclude a plan. The engine chose the plan you\nare writing and created it on the record before your session started, and the\nqueue decides when the ticket ships. Nothing you do changes either.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. Your\nmessage starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was built, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 omit when clean" }]\n}\n```\n\nReport `complete` only when the plan was written, graded and\npublished to the ticket. Never claim work you did not do \u2014 the engine diffs the\ntree, and a false report is worse than a failed one.\n';
 
 // src/agents/buildQueueAutoPlanInvocation.ts
 var buildQueueAutoPlanInvocation = ({
@@ -159922,6 +160033,7 @@ var buildQueueAutoPlanInvocation = ({
   ticketBody,
   engineCli,
   planAddress,
+  planFolder,
   answeredQuestion
 }) => {
   const systemPrompt = [queueAutoPlan_default, `# Ticket ${ticketRef}: ${ticketTitle}
@@ -159941,7 +160053,7 @@ Plan exactly this plan and no other:
 
 \`${planAddress}\`
 
-That is its address, and \`${planWorkspacePath({ name: planAddress })}\` is the folder in this worktree it names. Pass the address as \`--name\` to every \`plan\` and \`brainstorm\` subcommand, and leave the plan's files in exactly that folder.
+That is its address, and it names the plan folder \`${planFolder}\`, which lies in the primary checkout, outside this worktree. Run the engine from the worktree and pass the address as \`--name\` to every \`plan\` and \`brainstorm\` subcommand, but author and edit the plan's files in exactly that folder, at that absolute path.
 
 The engine has already added this plan to the ticket's record, so never run \`work-order add-plan\` or any other \`work-order\` subcommand.`
   ];
@@ -159949,7 +160061,7 @@ The engine has already added this plan to the ticket's record, so never run \`wo
     sections.push(
       `# Your question, answered
 
-You stopped and asked this. The worktree already holds whatever you had done when you asked \u2014 continue from there rather than starting over.
+You stopped and asked this. The worktree and the plan folder already hold whatever you had done when you asked \u2014 continue from there rather than starting over.
 
 Question: ${answeredQuestion.question}
 
@@ -160134,6 +160246,7 @@ var runPlanningSession = async ({
   onProgress
 }) => {
   const engineCli = `node ${process.argv[1]}`;
+  const folder = await planWorkspaceDir({ cwd, name: planAddress });
   const outcome = await invokeAgentWithContract({
     driver,
     cwd,
@@ -160143,6 +160256,7 @@ var runPlanningSession = async ({
       ticketBody: ticket.description,
       engineCli,
       planAddress,
+      planFolder: folder,
       answeredQuestion
     }),
     contract: WorkReport,
@@ -160150,7 +160264,8 @@ var runPlanningSession = async ({
     effort: config2.effort,
     permissions: config2.permissions,
     timeoutMs: settings.workerTimeoutMs,
-    allowedCommands: [...config2["agent-commands"] ?? [], engineCli]
+    allowedCommands: [...config2["agent-commands"] ?? [], engineCli],
+    writableDirs: await getDirsOutsideCwd({ cwd, dirs: [folder] })
   });
   if (!outcome.ok) {
     return { error: outcome.failure };
@@ -160163,7 +160278,6 @@ var runPlanningSession = async ({
   if (report2.status !== WorkReportStatus.Complete) {
     return { error: refusal };
   }
-  const folder = await planWorkspaceDir({ cwd, name: planAddress });
   if (!await pathExists({ path: folder })) {
     return { error: `${ticket.identifier}'s auto-plan session reported a finished plan, but no plan folder exists at ${folder} \u2014 nothing was built` };
   }
@@ -160531,7 +160645,7 @@ var checkQueueStartup = async ({ cwd, settings, trackerSettings, shipSettings })
 };
 
 // src/queue/worktrees/scanParkedWorktrees.ts
-import { realpath as realpath3 } from "node:fs/promises";
+import { realpath as realpath4 } from "node:fs/promises";
 import { join as join143 } from "node:path";
 
 // src/queue/worktrees/internal/common/constants/ParkedTreeBucket.ts
@@ -160613,7 +160727,7 @@ var toQueuePath = ({ path, root, realRoot }) => {
 var listQueueWorktrees = async ({ cwd, onProgress }) => {
   const listed = await runCommand({ command: "git worktree list --porcelain", cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
   const root = await resolveWorktreesRoot({ cwd });
-  const realRoot = await realpath3(root).catch(() => root);
+  const realRoot = await realpath4(root).catch(() => root);
   const trees = [];
   for (const block of (listed?.exitCode === 0 ? listed.stdout : "").split("\n\n")) {
     const reported = /^worktree (.+)$/m.exec(block)?.[1];
@@ -160927,7 +161041,7 @@ var buildRelay = async ({
   if (requested === void 0) {
     return new TerminalQuestionRelay({ settings, trackerSettings, input: process.stdin, output: process.stdout });
   }
-  const directory = requested === true ? resolve16(cwd, ".lightsout", "queue", "relay") : resolve16(cwd, requested);
+  const directory = requested === true ? resolve17(cwd, ".lightsout", "queue", "relay") : resolve17(cwd, requested);
   await emptyRelayMailbox({ directory });
   console.log(`relaying questions through ${directory}`);
   return new FileQuestionRelay({ settings, trackerSettings, directory, output: process.stdout });
@@ -161496,7 +161610,7 @@ var createSiteChecker = ({ cwd, checkPath, checkAll }) => {
 };
 
 // src/refactor/batch/internal/invokeBatchAgent.ts
-import { mkdir as mkdir31, writeFile as writeFile24 } from "node:fs/promises";
+import { mkdir as mkdir31, writeFile as writeFile23 } from "node:fs/promises";
 import { join as join146 } from "node:path";
 var invokeBatchAgent = async ({
   cwd,
@@ -161530,7 +161644,7 @@ var invokeBatchAgent = async ({
     allowedCommands: config2["agent-commands"],
     onEvent: createEventFileSink({ path: streamPath }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile24(join146(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile23(join146(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
   const formatError2 = await runFormatter({ cwd, runId, config: config2, step: batch.id });
@@ -161563,7 +161677,7 @@ var SettleKind = {
 };
 
 // src/refactor/batch/internal/superviseBatch.ts
-import { mkdir as mkdir32, writeFile as writeFile25 } from "node:fs/promises";
+import { mkdir as mkdir32, writeFile as writeFile24 } from "node:fs/promises";
 import { join as join147 } from "node:path";
 var consultBatchSupervisor = async ({
   cwd,
@@ -161588,7 +161702,7 @@ var consultBatchSupervisor = async ({
     attempts,
     onEvent: createEventFileSink({ path: join147(agentsDir, `stream-${slug}-supervisor.jsonl`) }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile25(join147(agentsDir, `rejected-${slug}-supervisor-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile24(join147(agentsDir, `rejected-${slug}-supervisor-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
 };
@@ -161875,10 +161989,10 @@ var createFixInvoker = ({ tools, files, workFindings, advisories, standards, tes
 
 // src/refactor/batch/polishBatchOutput.ts
 var polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards, testStandards, onProgress }) => {
-  const resolve19 = () => tools.finish({ outcome: BatchOutcome.Resolved, remainingSiteKeys: [] });
+  const resolve20 = () => tools.finish({ outcome: BatchOutcome.Resolved, remainingSiteKeys: [] });
   const introduced = await tools.reviewOutput({ baseline });
   if (introduced.length === 0) {
-    return resolve19();
+    return resolve20();
   }
   const files = [...new Set(introduced.flatMap((finding3) => finding3.files.map((file2) => file2.path)))];
   onProgress(`${batch.id}: the review of what this batch wrote raised ${introduced.length} new advisory(s) \u2014 spending one polish pass`);
@@ -161902,7 +162016,7 @@ var polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards
   }
   const revived = await tools.remainingSiteKeys({ frozen: workFindings });
   if (revived.length === 0) {
-    return resolve19();
+    return resolve20();
   }
   onProgress(`${batch.id}: the polish pass brought back ${revived.length} site(s) this batch had cleared \u2014 recorded as declined`);
   return tools.finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: revived });
@@ -162716,8 +162830,8 @@ var reportCommand = async ({ cwd, flags }) => {
 
 // src/cli/internal/common/implementRun/continueDirectRun.ts
 import { readFile as readFile64 } from "node:fs/promises";
-import { resolve as resolve17 } from "node:path";
-var readFrozenTicket = ({ cwd, manifest }) => readFile64(resolve17(cwd, manifest.plan), "utf8").catch(() => void 0);
+import { resolve as resolve18 } from "node:path";
+var readFrozenTicket = ({ cwd, manifest }) => readFile64(resolve18(cwd, manifest.plan), "utf8").catch(() => void 0);
 var continueDirectRun = async ({ cwd, workspace, manifest, config: config2, driver, willShip }) => {
   const ticketBody = await readFrozenTicket({ cwd, manifest });
   if (ticketBody === void 0) {
@@ -163576,7 +163690,7 @@ var standardsHealthCommand = async ({ cwd }) => {
 };
 
 // src/cli/standardsValidateCommand.ts
-import { resolve as resolve18 } from "node:path";
+import { resolve as resolve19 } from "node:path";
 
 // src/standardsCheck/validateStandardsLibrary.ts
 import { readdir as readdir25 } from "node:fs/promises";
@@ -163785,7 +163899,7 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
 
 // src/cli/standardsValidateCommand.ts
 var readLibraries = async ({ requested, cwd }) => {
-  const library = await readStandardsLibrary({ packPath: requested === void 0 ? resolveDefaultStandardsLibrary() : resolve18(cwd, requested) });
+  const library = await readStandardsLibrary({ packPath: requested === void 0 ? resolveDefaultStandardsLibrary() : resolve19(cwd, requested) });
   const config2 = await readOptionalConfig({ cwd });
   let libraries;
   if (library.name === builtInStandardsLibraryName) {
@@ -164180,7 +164294,7 @@ var readShipResult = async ({ cwd, branch }) => {
 };
 
 // src/views/internal/common/utils/getRunTitle.ts
-import { basename as basename44, dirname as dirname30 } from "node:path";
+import { basename as basename46, dirname as dirname30 } from "node:path";
 var namedRuleLimit = 3;
 var describeRules = ({ rules }) => {
   const distinct = [...new Set(rules)];
@@ -164189,9 +164303,9 @@ var describeRules = ({ rules }) => {
   return rest > 0 ? `${named} +${rest} more` : named;
 };
 var getRunTitle = ({ plan, worklist }) => {
-  const name = basename44(plan);
+  const name = basename46(plan);
   const stem = name.replace(/\.md$/, "");
-  const folder = basename44(dirname30(plan));
+  const folder = basename46(dirname30(plan));
   const rules = worklist?.kind === PipelineKind.Refactor ? worklist.worklist?.batches.map((batch) => batch.rule) ?? [] : [];
   let title;
   if (worklist?.kind === PipelineKind.Coverage) {
@@ -164822,12 +164936,12 @@ ${bold(`test-coverage-to-threshold ${formatShortRunId({ runId: manifest.runId })
 };
 
 // src/coverage/initializeCoverageRun.ts
-import { readFile as readFile69, writeFile as writeFile26 } from "node:fs/promises";
+import { readFile as readFile69, writeFile as writeFile25 } from "node:fs/promises";
 import { join as join154 } from "node:path";
 
 // src/coverage/runCoverageCheck.ts
 import { readFile as readFile68 } from "node:fs/promises";
-import { join as join153, relative as relative16 } from "node:path";
+import { join as join153, relative as relative17 } from "node:path";
 var CoverageSummaryReport = external_exports.record(external_exports.string(), external_exports.looseObject({ statements: external_exports.looseObject({ pct: external_exports.unknown() }) }));
 var readJsonFile2 = async ({ path }) => {
   try {
@@ -164853,7 +164967,7 @@ var readScopeSummary = async ({ cwd, scope, summaryPath, passed }) => {
       statementsPct = pct;
       continue;
     }
-    files.push({ path: relative16(cwd, key), scope, statementsPct: pct });
+    files.push({ path: relative17(cwd, key), scope, statementsPct: pct });
   }
   return { files, total: { scope, statementsPct, passed } };
 };
@@ -164927,7 +165041,7 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
   const worklist = { at: (/* @__PURE__ */ new Date()).toISOString(), totals: measured.totals, files: measured.files };
   const worklistPath = join154(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Coverage, runId }), "worklist.json");
   const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Coverage, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
-  await writeFile26(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
+  await writeFile25(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
 `, "utf8");
   return { manifest, worklist };
 };
@@ -165012,7 +165126,7 @@ The tree is left as it stands \u2014 revert these changes by hand before resumin
 };
 
 // src/coverage/batch/invokeCoverageAgent.ts
-import { mkdir as mkdir33, writeFile as writeFile27 } from "node:fs/promises";
+import { mkdir as mkdir33, writeFile as writeFile26 } from "node:fs/promises";
 import { join as join155 } from "node:path";
 var invokeCoverageAgent = async ({
   cwd,
@@ -165044,7 +165158,7 @@ var invokeCoverageAgent = async ({
     allowedCommands: config2["agent-commands"],
     onEvent: createEventFileSink({ path: streamPath }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile27(join155(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile26(join155(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
   await recordUsage({ step: `${batchId}${label2 ? ` ${label2}` : ""}`, usage: outcome.usage });
@@ -165725,7 +165839,7 @@ var isVoiceOn = async ({ cwd }) => {
 
 // src/voice/speakText.ts
 import { spawn as spawn3 } from "node:child_process";
-import { writeFile as writeFile28 } from "node:fs/promises";
+import { writeFile as writeFile27 } from "node:fs/promises";
 
 // src/voice/internal/common/paths/getVoicePidPath.ts
 import { join as join158 } from "node:path";
@@ -165760,7 +165874,7 @@ var speakText = async ({ cwd, text }) => {
   child.stdin?.write(text);
   child.stdin?.end();
   if (child.pid !== void 0) {
-    await writeFile28(getVoicePidPath({ cwd }), String(child.pid), "utf8");
+    await writeFile27(getVoicePidPath({ cwd }), String(child.pid), "utf8");
   }
   child.unref();
 };
@@ -165838,12 +165952,12 @@ var voiceOffCommand = async ({ cwd }) => {
 };
 
 // src/voice/createVoiceMarker.ts
-import { mkdir as mkdir34, writeFile as writeFile29 } from "node:fs/promises";
+import { mkdir as mkdir34, writeFile as writeFile28 } from "node:fs/promises";
 import { dirname as dirname32 } from "node:path";
 var createVoiceMarker = async ({ cwd }) => {
   const markerPath = getVoiceMarkerPath({ cwd });
   await mkdir34(dirname32(markerPath), { recursive: true });
-  await writeFile29(markerPath, "", "utf8");
+  await writeFile28(markerPath, "", "utf8");
 };
 
 // src/cli/voice/voiceOnCommand.ts

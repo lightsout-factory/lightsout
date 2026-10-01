@@ -16,6 +16,7 @@ export const planCatalogEntry: CommandCatalogEntry = {
 		{ id: 'plan-verify-facts', positional: 'verify-facts' },
 		{ id: 'plan-draft', positional: 'draft' },
 		{ id: 'plan-sync-decisions', positional: 'sync-decisions' },
+		{ id: 'plan-sync-phases', positional: 'sync-phases' },
 		{ id: 'plan-lint', positional: 'lint' },
 		{ id: 'plan-dedup', positional: 'dedup' },
 		{ id: 'plan-grade', positional: 'grade', note: '--phase grades only those phases, and always marks the result incomplete' },

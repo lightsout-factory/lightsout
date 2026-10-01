@@ -15,6 +15,7 @@ interface Params {
 	permissions?: Permissions;
 	allowedCommands?: string[];
 	environment?: AgentEnvironment;
+	writableDirs?: string[];
 }
 
 /**
@@ -29,7 +30,7 @@ interface Params {
  * bundle the harness may change between versions, where per-property flags say
  * exactly what is expressed.
  */
-export const buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allowedCommands, environment }: Params): string[] => {
+export const buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allowedCommands, environment, writableDirs }: Params): string[] => {
 	// stream-json (which requires --verbose in print mode) delivers every event
 	// live for transcripts and progress. Excluding the dynamic sections keeps the
 	// default system prompt byte-identical between steps, so its cached prefix holds.
@@ -51,6 +52,16 @@ export const buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissio
 
 	if (permissions) {
 		args.push('--permission-mode', claudePermissionModes[permissions]);
+	}
+
+	// Absent permissions leave Claude in its default mode, which confines writes
+	// to the working directories exactly as `acceptEdits` does. One pair per
+	// directory, ahead of every variadic flag: --add-dir is variadic too, so a
+	// single flag followed by every directory would swallow the next argument.
+	if (permissions === undefined || permissions === Permissions.Write) {
+		for (const dir of writableDirs ?? []) {
+			args.push('--add-dir', dir);
+		}
 	}
 
 	if (environment?.noMcpServers) {

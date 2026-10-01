@@ -1,6 +1,7 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
+import { writePlanFileIfChanged } from '#src/plan/internal/common/rewriting/writePlanFileIfChanged.ts';
 import type { PhaseSizeCounts } from '#src/plan/internal/common/types/PhaseSizeCounts.ts';
 import { getPlanTouchedPaths } from '#src/plan/internal/common/utils/getPlanTouchedPaths.ts';
 import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
@@ -75,9 +76,9 @@ export const stampPhaseCounts = async ({ overviewPath, phasePaths }: Params): Pr
 	const counts = await getCounts({ phasePaths });
 	const overviewBase = basename(overviewPath);
 	const original = await readFile(overviewPath, 'utf8');
-	const stamped = rewriteRows({ lines: original.split('\n'), counts }).join('\n');
+	const lines = rewriteRows({ lines: original.split('\n'), counts });
 
-	await writeFile(overviewPath, stamped, 'utf8');
+	await writePlanFileIfChanged({ path: overviewPath, original, lines });
 
-	return parsePhaseDeclarations({ plan: parsePlan({ content: stamped, base: overviewBase }) });
+	return parsePhaseDeclarations({ plan: parsePlan({ content: lines.join('\n'), base: overviewBase }) });
 };

@@ -4,9 +4,9 @@ import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
+import { getDeclarationDefects } from '#src/plan/common/utils/getDeclarationDefects.ts';
 import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';
 import { checkPhaseCount } from '#src/plan/lint/checkPhaseCount.ts';
-import { getDeclarationDefects } from '#src/plan/lint/internal/common/utils/getDeclarationDefects.ts';
 import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
 import { parsePlan } from '#src/plan/parsePlan.ts';
 

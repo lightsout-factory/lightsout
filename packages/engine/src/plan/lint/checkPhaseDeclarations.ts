@@ -2,11 +2,12 @@ import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
+import type { PhaseDefect } from '#src/plan/common/types/PhaseDefect.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import { getExportName } from '#src/plan/common/utils/getExportName.ts';
+import { getPhaseSetDefects } from '#src/plan/common/utils/getPhaseSetDefects.ts';
 import type { PhaseSizeCounts } from '#src/plan/internal/common/types/PhaseSizeCounts.ts';
 import { getCodeSpans } from '#src/plan/internal/common/utils/getCodeSpans.ts';
-import { getDeclarationDefects } from '#src/plan/lint/internal/common/utils/getDeclarationDefects.ts';
 
 interface Params {
 	declarations: PhaseDeclaration[];
@@ -18,14 +19,7 @@ interface Params {
 	counts: Map<string, PhaseSizeCounts>;
 }
 
-interface Defect {
-	phase: string;
-	issue: string;
-	location: string;
-	fix: string;
-}
-
-const stamp = ({ defects }: { defects: Defect[] }): StructuralFinding[] =>
+const stamp = ({ defects }: { defects: PhaseDefect[] }): StructuralFinding[] =>
 	defects.map((defect) => ({ check: StructuralCheck.DeclarationConsistent, severity: FindingSeverity.Blocking, ...defect }));
 
 /** A declared name may appear as a backticked span or as the export name of a created path. */
@@ -41,41 +35,6 @@ const namesIn = ({ phase }: { phase: PhaseFile }) => {
 	return { spans, exports: new Set(phase.plan.createPaths.map((path) => getExportName({ path }))) };
 };
 
-const phaseSetDefects = ({ declarations, phases, overviewBase }: Omit<Params, 'counts'>) => {
-	const defects: Defect[] = [];
-
-	for (const declaration of declarations.filter((candidate) => !phases.some((phase) => phase.base === candidate.file))) {
-		defects.push({
-			phase: overviewBase,
-			issue: `the phase breakdown declares '${declaration.file}', which is not one of this plan's phase files`,
-			location: `${overviewBase} → ${declaration.file}`,
-			fix: 'correct the filename, or drop the row and its declaration block',
-		});
-	}
-
-	for (const phase of phases.filter((candidate) => !declarations.some((declaration) => declaration.file === candidate.base))) {
-		defects.push({
-			phase: phase.base,
-			issue: "this phase file has no row in the overview's phase breakdown",
-			location: phase.base,
-			fix: `add a '## Phases' row and a '## Phase Declarations' block for ${phase.base}`,
-		});
-	}
-
-	defects.push(
-		...getDeclarationDefects({
-			declarations,
-			locations: {
-				declarationsSection: `${overviewBase} → Phase Declarations`,
-				phasesTable: `${overviewBase} → Phases`,
-				phaseRow: (file) => `${overviewBase} → ${file}`,
-			},
-		}).map((defect) => ({ phase: overviewBase, ...defect })),
-	);
-
-	return defects;
-};
-
 const numberDefects = ({
 	declaration,
 	phase,
@@ -87,7 +46,7 @@ const numberDefects = ({
 	overviewBase: string;
 	counts: Map<string, PhaseSizeCounts>;
 }) => {
-	const defects: Defect[] = [];
+	const defects: PhaseDefect[] = [];
 	const actual = counts.get(phase.base);
 	const declaredCounts = [
 		{ label: 'creates', declared: declaration.createdCount, real: actual?.created },
@@ -134,7 +93,7 @@ const numberDefects = ({
 };
 
 const nameDefects = ({ declaration, phase, overviewBase }: { declaration: PhaseDeclaration; phase: PhaseFile; overviewBase: string }) => {
-	const defects: Defect[] = [];
+	const defects: PhaseDefect[] = [];
 	const { spans, exports } = namesIn({ phase });
 	const written = new Set([...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to)]);
 
@@ -191,7 +150,7 @@ const renamesDefects = ({ declaration, phase, overviewBase }: { declaration: Pha
  * declaration could quietly describe a plan that no longer exists.
  */
 export const checkPhaseDeclarations = ({ declarations, phases, overviewBase, counts }: Params): StructuralFinding[] => {
-	const defects = phaseSetDefects({ declarations, phases, overviewBase });
+	const defects = getPhaseSetDefects({ declarations, phaseFiles: phases.map((phase) => phase.base), overviewBase });
 
 	for (const declaration of declarations) {
 		const phase = phases.find((candidate) => candidate.base === declaration.file);

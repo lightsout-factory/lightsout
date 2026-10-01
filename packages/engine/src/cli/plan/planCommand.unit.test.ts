@@ -25,6 +25,7 @@ const mockPlanDedupCommand = jest.fn<(params: unknown) => Promise<void>>();
 const mockPlanGradeCommand = jest.fn<(params: unknown) => Promise<void>>();
 const mockPlanPublishCommand = jest.fn<(params: unknown) => Promise<void>>();
 const mockPlanSyncDecisionsCommand = jest.fn<(params: unknown) => Promise<void>>();
+const mockPlanSyncPhasesCommand = jest.fn<(params: unknown) => Promise<void>>();
 const mockResolveConfigAndDriver = jest.fn<(params: unknown) => Promise<{ config?: LightsoutConfig; driver: Driver; configPath?: string }>>();
 const mockLoadPlanningStandards = jest.fn<(params: unknown) => Promise<string | undefined>>();
 
@@ -50,6 +51,7 @@ jest.mock('#src/cli/plan/planDedupCommand.ts', () => ({ planDedupCommand: (param
 jest.mock('#src/cli/plan/planGradeCommand.ts', () => ({ planGradeCommand: (params: unknown) => mockPlanGradeCommand(params) }));
 jest.mock('#src/cli/plan/planPublishCommand.ts', () => ({ planPublishCommand: (params: unknown) => mockPlanPublishCommand(params) }));
 jest.mock('#src/cli/plan/planSyncDecisionsCommand.ts', () => ({ planSyncDecisionsCommand: (params: unknown) => mockPlanSyncDecisionsCommand(params) }));
+jest.mock('#src/cli/plan/planSyncPhasesCommand.ts', () => ({ planSyncPhasesCommand: (params: unknown) => mockPlanSyncPhasesCommand(params) }));
 jest.mock('#src/cli/internal/common/utils/resolveConfigAndDriver.ts', () => ({
 	resolveConfigAndDriver: (params: unknown) => mockResolveConfigAndDriver(params),
 }));
@@ -85,6 +87,7 @@ const subcommandMocks = [
 	mockPlanGradeCommand,
 	mockPlanPublishCommand,
 	mockPlanSyncDecisionsCommand,
+	mockPlanSyncPhasesCommand,
 ];
 
 const setupPlan = ({ args, repoConfig }: { args: string[]; repoConfig?: Record<string, unknown> }) => {
@@ -178,6 +181,20 @@ describe('planCommand', () => {
 		expect(mockPlanSyncDecisionsCommand).toHaveBeenCalledTimes(1);
 		expect(argsOf(mockPlanSyncDecisionsCommand)?.cwd).toBe(cwd);
 		// regenerating the log reads files and writes files — no config, no driver
+		expect(mockResolveConfigAndDriver).not.toHaveBeenCalled();
+		expect(mockLoadPlanningStandards).not.toHaveBeenCalled();
+	});
+
+	test('routes sync-phases without resolving a harness, because it runs no agent', async () => {
+		const { context, cwd } = setupPlan({ args: ['sync-phases', '--name', 'demo/001-demo'] });
+
+		await planCommand(context);
+
+		expect(mockPlanSyncPhasesCommand).toHaveBeenCalledTimes(1);
+		// the plan's checkout is the one the worktree resolution named for this address
+		expect(mockOpenPlanWorktree).toHaveBeenCalledWith(expect.objectContaining({ cwd, name: 'demo/001-demo' }));
+		expect(argsOf(mockPlanSyncPhasesCommand)?.cwd).toBe(cwd);
+		// restating the overview reads files and writes files — no config, no driver
 		expect(mockResolveConfigAndDriver).not.toHaveBeenCalled();
 		expect(mockLoadPlanningStandards).not.toHaveBeenCalled();
 	});

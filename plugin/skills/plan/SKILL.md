@@ -55,12 +55,13 @@ The user sat through that decision once; asking again spends their attention
 on work already done and invites them to contradict themselves.
 
 By the time the plan is drafted, settled decisions live in three places, and
-all three count:
+all three count (`<plan-folder>` is the absolute path `plan workspace` prints
+in step 0):
 
 | Where | Holds |
 |---|---|
-| `.lightsout/work-orders/<work-order>/plans/<plan-id>/brainstorm-decisions.json` | what was settled with the user in the brainstorm before this session |
-| `.lightsout/work-orders/<work-order>/plans/<plan-id>/decisions.json` | what was settled earlier in this plan session |
+| `<plan-folder>/brainstorm-decisions.json` | what was settled with the user in the brainstorm before this session |
+| `<plan-folder>/decisions.json` | what was settled earlier in this plan session |
 | the drafted plan's `## Decision Log` | a rendering of the rows of both, composed by the engine — read a settled answer here, never write one |
 
 **Record first, refresh, then edit the plan.** The engine composes the
@@ -179,14 +180,7 @@ whether to switch the work order to multiple-plan mode.
 When the request is a rough-notes
 file path (given by the user, or a `/brainstorm` handoff), read it before
 anything else; when it already lives under the plans directory, take `<name>`
-from the path segments below that directory instead of deriving a new one. Also read
-`.lightsout/work-orders/<work-order>/plans/<plan-id>/brainstorm-decisions.json` when it exists — its rows
-are decisions already settled with the user. Absent → nothing changes; that is
-the normal path for a plan that started from a direct request. This read is not
-the only one: the file may arrive during step 1, because `plan verify-facts`
-fetches the brainstorm the ticket carries. Step 2's `Honor the brainstorm
-hand-off` bullet reads the folder again after that command has run rather than
-trusting the answer here.
+from the path segments below that directory instead of deriving a new one.
 
 Once `<name>` is settled, establish the plan's own worktree as the very first
 shell command:
@@ -195,14 +189,27 @@ shell command:
 node "<plugin-root>/dist/cli.mjs" plan workspace --name <name>
 ```
 
-Read the absolute path it prints on its last line, and do every later step from
-that directory — reading source, authoring `facts.json`, and every
-`lightsout plan …` call. The plan folder already in this checkout is copied
-into the tree, so the brainstorm files read above are there too; pass any
-rough-notes path as an absolute one, since it lives in the checkout you started
-from. A nonzero exit is the end of the session — report the sentence it printed
-and stop, never carry on in the launching checkout. The command is safe to
-re-run: a session already standing in the tree is answered the same path.
+It prints two lines. The one starting `plan folder:` gives the absolute path of
+this plan's folder — `<plan-folder>` from here on. It lies under the primary
+checkout, outside the tree, so it outlives the tree once its work ships. The
+last line is the tree's absolute path, alone. Read source and run every
+`lightsout plan …` call from the tree, but author, read and edit every
+plan-folder file — `facts.json`, `decisions.json`, the brainstorm files, and the
+plan files edited in Grill and Converge — at `<plan-folder>`, never at a path
+relative to the tree: a relative path read inside the tree lands in the wrong
+folder. Pass any rough-notes path as an absolute one, since it lives in the
+checkout you started from. A nonzero exit is the end of the session — report
+the sentence it printed and stop, never carry on in the launching checkout. The
+command is safe to re-run: a session already standing in the tree is answered
+the same paths.
+
+Then read `<plan-folder>/brainstorm-decisions.json` when it exists — its rows
+are decisions already settled with the user. Absent → nothing changes; that is
+the normal path for a plan that started from a direct request. This read is not
+the only one: the file may arrive during step 1, because `plan verify-facts`
+fetches the brainstorm the ticket carries. Step 2's `Honor the brainstorm
+hand-off` bullet reads the folder again after that command has run rather than
+trusting the answer here.
 
 The tree is the work order's, read from the branch its record saves, so a later
 plan continues in the tree its earlier plans used and is researched against the
@@ -219,7 +226,7 @@ files the request touches, follow the integration points, and note real
 signatures. For a feature spanning many packages/layers, optionally fan out
 read-only Explore subagents for breadth — either way YOU author the facts, and
 only from paths you actually confirmed by reading them. Author
-`.lightsout/work-orders/<work-order>/plans/<plan-id>/facts.json`. Write this **exact** shape (the engine
+`<plan-folder>/facts.json`. Write this **exact** shape (the engine
 hard-parses it):
 ```json
 {
@@ -244,11 +251,11 @@ node "<plugin-root>/dist/cli.mjs" plan verify-facts --name <name> [--notes "<pat
 It also fetches this plan's own brainstorm from the ticket —
 `brainstorm-notes.md`, plus `brainstorm-decisions.json` when that brainstorm
 settled anything, so its absence is ordinary rather than a fault — into
-`.lightsout/work-orders/<work-order>/plans/<plan-id>/` before it reads anything, so a fresh worktree has
-them without the folder having travelled.
+`<plan-folder>/` before it reads anything, so the folder has them whichever
+machine the brainstorm ran on.
 
 Pass `--notes` when the request came from a rough-notes file — the engine
-freezes a copy at `.lightsout/work-orders/<work-order>/plans/<plan-id>/brainstorm-notes.md` as the plan's first
+freezes a copy at `<plan-folder>/brainstorm-notes.md` as the plan's first
 artifact. Write-once: an existing snapshot is never overwritten, so re-running
 verify-facts never clobbers it (a `/brainstorm`-authored brainstorm-notes.md is already
 home — whether it was written here or just fetched from the ticket — and is
@@ -316,7 +323,7 @@ warnings into Elicitation.
   in for this checkpoint: the plan reads the code after brainstorm ended and may
   surface things brainstorm could not have known, so the licence to self-answer
   is still earned here.
-- Author `.lightsout/work-orders/<work-order>/plans/<plan-id>/decisions.json`. Write this **exact** shape
+- Author `<plan-folder>/decisions.json`. Write this **exact** shape
   (the engine hard-parses it; a wrong field name blocks drafting):
   ```json
   {
@@ -372,12 +379,25 @@ ceiling and the touched-file ceiling of 70 — and then one agent per declared
 phase authors its `phase<N>-<slug>.md` concurrently. So `structural issue(s)` on
 a phased plan may name the overview's **phase breakdown** rather than a phase
 file: a phase that creates more files than one implementing agent may, or that
-touches more files than one implementing agent can finish. The fix there is to
-resplit the phases — edit the overview's `## Phases` table and its
+touches more files than one implementing agent can finish. While no phase file
+exists yet — the breakdown was refused before any was written — the fix is to
+resplit the phases: edit the overview's `## Phases` table and its
 `## Phase Declarations` to spread the created and touched files across more
-phases — and re-run `plan draft`. A phase whose whole work is renaming may
+phases, and re-run `plan draft`. A phase whose whole work is renaming may
 instead be declared rename-only: a `## Renames` section in its phase file and
 the `- **Renames only:** yes` bullet in its overview declaration.
+
+Once phase files exist, never re-draft to change the breakdown. Edit the phase
+files at `<plan-folder>` — split, merge, or move work between them — and, for
+each changed phase, its `## Phases` row and `## Phase Declarations` block in the
+overview, then run:
+```sh
+node "<plugin-root>/dist/cli.mjs" plan sync-phases --name <name>
+```
+It restates every phase's counts, file budget and renames-only flag from the
+phase files and writes only the overview. It refuses — naming each — any phase
+file, row, block or number that does not line up; fix those by hand (add the
+missing row or block, renumber, rename the file) and run it again.
 
 **5. Grill** — push past conscious knowledge against the *drafted* plan
 (interactive):
@@ -437,7 +457,7 @@ Run:
 ```sh
 node "<plugin-root>/dist/cli.mjs" plan dedup --name <name>
 ```
-Read `.lightsout/work-orders/<work-order>/plans/<plan-id>/dedup.json`. Detection and judgment are the
+Read `<plan-folder>/dedup.json`. Detection and judgment are the
 subcommand's; you only conduct the review and apply the chosen edits.
 - `findings` empty → nothing to review; go to Grade.
 - A finding whose resolution the record already carries is **not surfaced** —
@@ -480,7 +500,7 @@ subcommand's; you only conduct the review and apply the chosen edits.
 ```sh
 node "<plugin-root>/dist/cli.mjs" plan grade --name <name>
 ```
-Read `.lightsout/work-orders/<work-order>/plans/<plan-id>/grade.json`:
+Read `<plan-folder>/grade.json`:
 - `"passed": true` **and** `"complete": true` → go to handoff.
 - `"passed": false` with `gaps` → work **only the blocking gaps**: the ones
   whose `outcome` is `needs-a-human` or `unjudged`. A grader's label is
@@ -495,7 +515,9 @@ Read `.lightsout/work-orders/<work-order>/plans/<plan-id>/grade.json`:
   via Edit — `plan.md` for a single plan, that `phase<N>-<slug>.md` for a phased
   one. Then re-run `plan grade`. Repeat until `passed` or the user calls it.
   **Do NOT re-run `plan draft`** — a re-draft regenerates the plan files and
-  would clobber the Grill edits already folded in.
+  would clobber the Grill edits already folded in. An edit that changes the
+  phase breakdown is followed by `plan sync-phases --name <name>`, never a
+  re-draft.
 - A blocking gap whose answer the record already carries is **not surfaced** —
   see [Settled decisions](#settled-decisions). A re-grade re-reads the plan
   from scratch and can raise a gap over something settled in Elicitation,
@@ -505,7 +527,7 @@ Read `.lightsout/work-orders/<work-order>/plans/<plan-id>/grade.json`:
   or a later agent to read. Nothing was dropped; it was weighed and found not to
   need them.
 - Every pass — including one that did not finish — is also appended as one JSON
-  line to `.lightsout/work-orders/<work-order>/plans/<plan-id>/grade-history.jsonl`. `grade.json` is still
+  line to `<plan-folder>/grade-history.jsonl`. `grade.json` is still
   the latest pass and still the only file to branch on; the history is there for
   the user, or for an agent asked to look, to see how a plan's grade moved
   across re-grades and which finding kept coming back. Nothing reads it
@@ -553,7 +575,7 @@ Read `.lightsout/work-orders/<work-order>/plans/<plan-id>/grade.json`:
   and runs the full review automatically once a focused pass clears — there is
   no flag to pass and nothing extra to run.
 - A blocking gap carrying a `findingId` is a finding the plan has seen before.
-  Its record lives in `.lightsout/work-orders/<work-order>/plans/<plan-id>/grade-memory.json`, which the
+  Its record lives in `<plan-folder>/grade-memory.json`, which the
   engine owns: **never edit it**, and never treat a finding's absence from a
   later pass as it being resolved. A record closes only when the plan states the
   answer and the engine's re-verification judge cites where.
@@ -601,14 +623,14 @@ With no ticket, skip both commands.
 
 Then relay the final grade and:
 ```
-Next: run the `implement` skill with .lightsout/work-orders/<work-order>/plans/<plan-id>
+Next: run the `implement` skill with <plan-folder>
 ```
 The same line works for both shapes — the engine reads the folder: an
 `overview.md` runs every phase in order, otherwise the folder's `plan.md` runs
 on its own. To run a single phase of a phased plan by itself, pass that phase
 file instead: run the `implement` skill with
-`.lightsout/work-orders/<work-order>/plans/<plan-id>/phase1-<slug>.md` as the plan and
-`.lightsout/work-orders/<work-order>/plans/<plan-id>/overview.md` as its overview.
+`<plan-folder>/phase1-<slug>.md` as the plan and
+`<plan-folder>/overview.md` as its overview.
 
 List any decisions left unresolved. The grade is
 advisory — the `implement` skill runs whatever plan it is given.

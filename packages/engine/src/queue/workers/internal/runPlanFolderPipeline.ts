@@ -11,7 +11,7 @@ import { toWorkerOutcome } from '#src/queue/workers/internal/common/utils/toWork
 import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts';
 
 interface Params {
-	/** The worktree holding the plan folder, and where the pipeline runs. */
+	/** The worktree the pipeline runs in. The plan folder is resolved from `name` under the primary checkout, not read from this worktree. */
 	cwd: string;
 	/** The plan's address, `<ticket-branch>/<plan-id>`, or the branch-named folder of a ticket with no record. */
 	name: string;

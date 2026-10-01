@@ -108,6 +108,7 @@ describe('commandCatalog', () => {
 			['plan-verify-facts', 'verify-facts'],
 			['plan-draft', 'draft'],
 			['plan-sync-decisions', 'sync-decisions'],
+			['plan-sync-phases', 'sync-phases'],
 			['plan-lint', 'lint'],
 			['plan-dedup', 'dedup'],
 			['plan-grade', 'grade'],
@@ -115,14 +116,26 @@ describe('commandCatalog', () => {
 		]);
 	});
 
-	test('carries plan sync-decisions as its own invocation, between draft and lint', () => {
+	test('carries plan sync-decisions as its own invocation, between draft and sync-phases', () => {
 		const { byId } = setupCatalog();
 		const invocations = byId.get('plan')?.invocations ?? [];
 
 		const placed = invocations.findIndex((invocation) => invocation.positional === 'sync-decisions');
 
 		expect(invocations[placed]).toStrictEqual({ id: 'plan-sync-decisions', positional: 'sync-decisions' });
-		expect([invocations[placed - 1]?.positional, invocations[placed + 1]?.positional]).toStrictEqual(['draft', 'lint']);
+		expect([invocations[placed - 1]?.positional, invocations[placed + 1]?.positional]).toStrictEqual(['draft', 'sync-phases']);
+	});
+
+	test('carries plan sync-phases as its own invocation, directly after sync-decisions', () => {
+		const { byId } = setupCatalog();
+		const invocations = byId.get('plan')?.invocations ?? [];
+
+		const placed = invocations.findIndex((invocation) => invocation.positional === 'sync-phases');
+
+		expect({ invocation: invocations[placed], previous: invocations[placed - 1] }).toStrictEqual({
+			invocation: { id: 'plan-sync-phases', positional: 'sync-phases' },
+			previous: { id: 'plan-sync-decisions', positional: 'sync-decisions' },
+		});
 	});
 
 	test('plan lists its workspace shape ahead of verify-facts, because it runs before anything else', () => {
