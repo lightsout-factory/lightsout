@@ -9,7 +9,7 @@ interface Params {
 }
 
 /**
- * The test standards' Mock Cleanup section assumes clearMocks/restoreMocks in
+ * The `lightsout/test-manual-mock-cleanup` rule assumes clearMocks/restoreMocks in
  * Jest config; agents are forbidden from adding them mid-run (repo-wide
  * behavior change), so the doctor is where the gap gets surfaced.
  */
@@ -40,6 +40,6 @@ export const checkJestMocks = async ({ cwd, packageDirs }: Params): Promise<Doct
 				id: 'jest-mocks',
 				status: 'warn',
 				detail: jestFindings.join('; '),
-				fix: 'add clearMocks: true, restoreMocks: true — then run that package’s FULL test suite: tests relying on import-time or beforeAll mock calls will break and need rework (see test standards, Mock Cleanup)',
+				fix: 'add clearMocks: true, restoreMocks: true — then run that package’s FULL test suite: tests relying on import-time or beforeAll mock calls will break and need rework (see the lightsout/test-manual-mock-cleanup rule)',
 			};
 };
