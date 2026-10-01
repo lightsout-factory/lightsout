@@ -17,6 +17,7 @@ interface Params {
 	environment?: AgentEnvironment;
 	foregroundCommandsOnly?: boolean;
 	timeoutMs?: number;
+	writableDirs?: string[];
 }
 
 /**
@@ -64,6 +65,7 @@ export const buildClaudeCodeArgs = ({
 	environment,
 	foregroundCommandsOnly,
 	timeoutMs,
+	writableDirs,
 }: Params): string[] => {
 	// stream-json (which requires --verbose in print mode) delivers every event
 	// live for transcripts and progress. Excluding the dynamic sections keeps the
@@ -86,6 +88,16 @@ export const buildClaudeCodeArgs = ({
 
 	if (permissions) {
 		args.push('--permission-mode', claudePermissionModes[permissions]);
+	}
+
+	// Absent permissions leave Claude in its default mode, which confines writes
+	// to the working directories exactly as `acceptEdits` does. One pair per
+	// directory, ahead of every variadic flag: --add-dir is variadic too, so a
+	// single flag followed by every directory would swallow the next argument.
+	if (permissions === undefined || permissions === Permissions.Write) {
+		for (const dir of writableDirs ?? []) {
+			args.push('--add-dir', dir);
+		}
 	}
 
 	if (environment?.noMcpServers) {

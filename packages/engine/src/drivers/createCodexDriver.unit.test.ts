@@ -100,6 +100,17 @@ test('createCodexDriver: a foreground-commands request is ignored rather than re
 	});
 });
 
+test("createCodexDriver: the invocation's writable directories reach the spawned process as --add-dir flags", async () => {
+	const { driver, cwd, readArgv } = await setupCodex();
+	const planFolder = '/primary/.lightsout/work-orders/lo-7-search/plans/002-search-basics';
+
+	await driver.invoke({ prompt: 'TASK', cwd, permissions: Permissions.Write, writableDirs: [planFolder] });
+
+	const argv = await readArgv();
+
+	expect(argv.slice(6)).toStrictEqual(['--sandbox', 'workspace-write', '--add-dir', planFolder, '-c', 'approval_policy="never"']);
+});
+
 test('createCodexDriver: codex has no system-prompt channel, so role instructions ride at the top of stdin', async () => {
 	const { driver, cwd, readStdin } = await setupCodex();
 

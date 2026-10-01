@@ -42,7 +42,8 @@
  * `--ticket` and taking the words as typed behind `--title`. Updated once more
  * when `standards-validate` took `--library` in place of `--pack`, validating a
  * standards library's rules and its pack files; the longer flag moves its note
- * to column 68.
+ * to column 68. Updated once more for `lightsout plan sync-phases` — the engine
+ * restating a phased plan's phase table and declarations from its phase files.
  */
 export const usageFixture = `lightsout — deterministic engine for coding agents
 
@@ -74,6 +75,7 @@ usage:
   lightsout plan verify-facts --name <name> [--notes <path>] [--cwd <path>] [--worktree] [--no-worktree]
   lightsout plan draft --name <name> [--scope single|phased] [--cwd <path>] [--worktree] [--no-worktree]
   lightsout plan sync-decisions --name <name> [--cwd <path>] [--worktree] [--no-worktree]
+  lightsout plan sync-phases --name <name> [--cwd <path>] [--worktree] [--no-worktree]
   lightsout plan lint --name <name> [--cwd <path>] [--worktree] [--no-worktree]
   lightsout plan dedup --name <name> [--cwd <path>] [--worktree] [--no-worktree]
   lightsout plan grade --name <name> [--phase <n[,n]>] [--cwd <path>] [--worktree] [--no-worktree]   (--phase grades only those phases, and always marks the result incomplete)

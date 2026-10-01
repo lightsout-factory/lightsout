@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { buildPiArgs, type PiVariant } from '#src/drivers/buildPiArgs.ts';
+import { buildPiArgs } from '#src/drivers/buildPiArgs.ts';
+import { PiVariant } from '#src/drivers/common/constants/PiVariant.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverResult } from '#src/drivers/common/types/DriverResult.ts';
 import { isRateLimitMessage } from '#src/drivers/internal/common/utils/isRateLimitMessage.ts';
@@ -105,7 +106,7 @@ const createPiFamilyDriver = ({ name, variant, command }: PiFamilyParams): Drive
 			// per-command ceiling, so the request is ignored rather than refused.
 			// The queue auto-plan worker's prompt rule and its post-session check
 			// of the planning-progress record cover these harnesses.
-			const { prompt, systemPrompt, model, effort, permissions, cwd, timeoutMs, onEvent, onUsage } = invocation;
+			const { prompt, systemPrompt, model, effort, permissions, writableDirs, cwd, timeoutMs, onEvent, onUsage } = invocation;
 
 			let agentEnd: z.infer<typeof AgentEndEvent> | undefined;
 			let lastAssistant: z.infer<typeof Message> | undefined;
@@ -118,7 +119,7 @@ const createPiFamilyDriver = ({ name, variant, command }: PiFamilyParams): Drive
 			// path too, and never throws.
 			const { exitCode, stdout, stderr } = await spawnCollect({
 				command,
-				args: buildPiArgs({ variant, systemPromptPath: systemPromptFile?.path, model, effort, permissions }),
+				args: buildPiArgs({ variant, systemPromptPath: systemPromptFile?.path, model, effort, permissions, writableDirs }),
 				cwd,
 				stdinText: prompt,
 				timeoutMs,
@@ -171,6 +172,6 @@ const createPiFamilyDriver = ({ name, variant, command }: PiFamilyParams): Drive
 	return driver;
 };
 
-export const createPiDriver = (): Driver => createPiFamilyDriver({ name: 'pi', variant: 'pi', command: 'pi' });
+export const createPiDriver = (): Driver => createPiFamilyDriver({ name: 'pi', variant: PiVariant.Pi, command: 'pi' });
 
-export const createOmpDriver = (): Driver => createPiFamilyDriver({ name: 'omp', variant: 'omp', command: 'omp' });
+export const createOmpDriver = (): Driver => createPiFamilyDriver({ name: 'omp', variant: PiVariant.Omp, command: 'omp' });

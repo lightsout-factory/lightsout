@@ -73,6 +73,11 @@ interface Params<Contract extends z.ZodType> {
 	 */
 	foregroundCommandsOnly?: boolean;
 	/**
+	 * Directories outside `cwd` the session must be able to write, relayed onto
+	 * every rung, the re-emit rung included, for the same reason `environment` is.
+	 */
+	writableDirs?: string[];
+	/**
 	 * Fresh role invocations this call may spend before giving up on the
 	 * contract — the re-run ceiling. Defaults to 1: one role invocation plus its
 	 * one cheap re-emit. Only the plan grade readers raise it, because a reader
@@ -107,6 +112,7 @@ export const invokeAgentWithContract = async <Contract extends z.ZodType>({
 	allowedCommands,
 	environment,
 	foregroundCommandsOnly,
+	writableDirs,
 	maxRoleAttempts = 1,
 	onEvent,
 	onRejectedOutput,
@@ -136,7 +142,7 @@ export const invokeAgentWithContract = async <Contract extends z.ZodType>({
 
 		const rung = await recordHarnessProcess({
 			driver,
-			invocation: { ...active, cwd, model, effort, permissions, timeoutMs, allowedCommands, environment, foregroundCommandsOnly, onEvent },
+			invocation: { ...active, cwd, model, effort, permissions, timeoutMs, allowedCommands, writableDirs, environment, foregroundCommandsOnly, onEvent },
 			activity,
 			spawn: attempt,
 			reemit: isReemit,

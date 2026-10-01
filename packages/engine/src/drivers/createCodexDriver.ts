@@ -19,11 +19,11 @@ export const createCodexDriver = (): Driver => {
 			// ceiling, so the request is ignored rather than refused. The queue
 			// auto-plan worker's prompt rule and its post-session check of the
 			// planning-progress record cover this harness.
-			const { prompt, systemPrompt, model, effort, permissions, cwd, timeoutMs } = invocation;
+			const { prompt, systemPrompt, model, effort, permissions, writableDirs, cwd, timeoutMs } = invocation;
 
 			const outDir = await mkdtemp(join(tmpdir(), 'lightsout-codex-'));
 			const outFile = join(outDir, 'last-message.txt');
-			const args = buildCodexArgs({ outFile, model, effort, permissions });
+			const args = buildCodexArgs({ outFile, model, effort, permissions, writableDirs });
 
 			const fullPrompt = systemPrompt ? `# Role instructions\n\n${systemPrompt}\n\n# Task\n\n${prompt}` : prompt;
 

@@ -114,6 +114,34 @@ test('createClaudeCodeDriver: a foreground-commands request reaches the spawned 
 	});
 });
 
+test("createClaudeCodeDriver: the invocation's writable directories reach the spawned process as --add-dir flags", async () => {
+	const { driver, cwd, readArgv } = await setupClaude();
+
+	await driver.invoke({
+		prompt: 'TASK',
+		cwd,
+		permissions: Permissions.Write,
+		allowedCommands: ['pnpm'],
+		writableDirs: ['/primary/.lightsout/work-orders/lo-7-search/plans/002-search-basics'],
+	});
+
+	// A driver that dropped the field while destructuring the invocation
+	// spawns without the grant, and the session cannot write the plan folder.
+	expect(await readArgv()).toStrictEqual([
+		'-p',
+		'--output-format',
+		'stream-json',
+		'--verbose',
+		'--exclude-dynamic-system-prompt-sections',
+		'--permission-mode',
+		'acceptEdits',
+		'--add-dir',
+		'/primary/.lightsout/work-orders/lo-7-search/plans/002-search-basics',
+		'--allowedTools',
+		'Bash(pnpm:*)',
+	]);
+});
+
 test('createClaudeCodeDriver: the system prompt reaches the harness as a file, not as argv', async () => {
 	const { driver, cwd, readSystemPromptCopy } = await setupClaude();
 

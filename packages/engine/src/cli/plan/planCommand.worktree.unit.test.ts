@@ -1,4 +1,5 @@
-import { existsSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+import { existsSync, realpathSync } from 'node:fs';
 import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
@@ -7,10 +8,12 @@ import { planCommand } from '#src/cli/plan/planCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import type { WorktreeRecord } from '#src/contracts/worktree/WorktreeRecord.ts';
+import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
+import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 
 // Mocked Imports
 // -------------------------
@@ -224,6 +227,38 @@ const setupStandingTicketTree = async ({ owner, heldBy }: { owner: WorktreeOwner
 	return { context: { flags: parseFlags({ args }), rest: args, cwd: sourceCwd }, sourceCwd, tree, ...captured };
 };
 
+/**
+ * A real primary checkout running `plan workspace`, whose cut is a real linked
+ * worktree beside it — the one shape in which the plan folder could be resolved
+ * inside the tree rather than under the checkout that launched the command.
+ *
+ * Git answers which checkout is primary, so the repo and the tree are real; the
+ * cut itself stays behind the mocked `createWorktree`, which adds the worktree.
+ */
+const setupLinkedPlanningTree = async () => {
+	const captured = captureCommandOutput();
+	const sourceCwd = realpathSync(setupBranchRepo().cwd);
+	const tree = join(`${sourceCwd}-worktrees`, workOrderName);
+
+	seedWorkOrderRecord({ cwd: sourceCwd, name: workOrderName });
+	await writeFile(join(sourceCwd, 'lightsout.config.json'), JSON.stringify({ gates }));
+
+	mockResolveWorktreePath.mockResolvedValue(tree);
+	mockReadBranchWorktree.mockResolvedValue(undefined);
+	mockReadWorktreeRecord.mockResolvedValue(undefined);
+	mockPrepareTicketBranch.mockResolvedValue({});
+	mockReadGitHeadCommit.mockResolvedValue(launchingHead);
+	mockCreateWorktree.mockImplementation(async ({ branch }) => {
+		execSync(`git worktree add -q -b ${branch} "${tree}" main`, { cwd: sourceCwd, stdio: 'ignore' });
+
+		return tree;
+	});
+
+	const args = ['workspace', '--name', name];
+
+	return { context: { flags: parseFlags({ args }), rest: args, cwd: sourceCwd }, sourceCwd, tree, ...captured };
+};
+
 /** The files a plan folder holds, read back by name. */
 const readPlanFolder = async ({ dir }: { dir: string }) => ({
 	notes: await readFile(join(dir, 'brainstorm-notes.md'), 'utf8'),
@@ -239,8 +274,10 @@ describe('planCommand', () => {
 		const original = await readPlanFolder({ dir: sourcePlanDir });
 		// the launching checkout's own config decides the setup a new planning tree runs
 		expect(mockCreateWorktree).toHaveBeenCalledWith(expect.objectContaining({ startPoint: launchingHead, owner: 'plan', setup: setupCommand }));
-		// one announcement naming the tree and its branch, then the path alone
-		expect(logged).toEqual([expect.stringContaining(tree), tree]);
+		// one announcement naming the tree and its branch, the plan folder, then the
+		// path alone; this fixture's checkout is no git repository, so the folder
+		// resolves against the tree the command runs in
+		expect(logged).toEqual([expect.stringContaining(tree), `plan folder: ${await planWorkspaceDir({ cwd: tree, name })}`, tree]);
 		expect(logged[0]).toContain(`branch: ${workOrderName}`);
 		// the tree holds code work only, so nothing was copied into it and the
 		// launching checkout's folder is exactly as it was
@@ -255,7 +292,7 @@ describe('planCommand', () => {
 
 		await expect(planCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(logged).toStrictEqual([tree]);
+		expect(logged).toStrictEqual([`plan folder: ${await planWorkspaceDir({ cwd: tree, name })}`, tree]);
 		expect(mockCreateWorktree).not.toHaveBeenCalled();
 		expect(exitCodes).toStrictEqual([0]);
 	});
@@ -265,7 +302,7 @@ describe('planCommand', () => {
 
 		await expect(planCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(logged).toStrictEqual([sourceCwd]);
+		expect(logged).toStrictEqual([`plan folder: ${await planWorkspaceDir({ cwd: sourceCwd, name })}`, sourceCwd]);
 		expect(mockResolveWorktreePath).not.toHaveBeenCalled();
 		expect(mockCreateWorktree).not.toHaveBeenCalled();
 		expect(exitCodes).toStrictEqual([0]);
@@ -325,8 +362,10 @@ describe('planCommand', () => {
 		// the tree and the branch it stands on are the ticket folder's, never the plan address
 		expect(mockResolveWorktreePath).toHaveBeenCalledWith({ cwd: sourceCwd, branch: 'lo-7-search' });
 		expect(mockCreateWorktree).toHaveBeenCalledWith(expect.objectContaining({ branch: 'lo-7-search', owner: 'plan' }));
-		// one announcement naming the tree and its branch, then the path alone
-		expect(logged).toEqual([expect.stringContaining(tree), tree]);
+		// one announcement naming the tree and its branch, the plan folder, then the
+		// path alone; this fixture's checkout is no git repository, so the folder
+		// resolves against the tree the command runs in
+		expect(logged).toEqual([expect.stringContaining(tree), `plan folder: ${await planWorkspaceDir({ cwd: tree, name: 'lo-7-search/002-ranking' })}`, tree]);
 		expect(logged[0]).toMatch(/branch: lo-7-search$/);
 		expect(existsSync(join(tree, '.lightsout', 'work-orders'))).toBe(false);
 		expect(errors).toStrictEqual([]);
@@ -357,5 +396,19 @@ describe('planCommand', () => {
 		expect(errors).toEqual([expect.stringContaining('--no-worktree')]);
 		expect(logged).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test('prints the plan folder under the launching checkout, never inside the tree it cut', async () => {
+		const { context, sourceCwd, tree, logged, exitCodes } = await setupLinkedPlanningTree();
+
+		await expect(planCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const planFolderLine = logged.at(-2) ?? '';
+		expect({ planFolderLine, insideTree: planFolderLine.includes(tree), last: logged.at(-1), exitCodes }).toStrictEqual({
+			planFolderLine: `plan folder: ${planWorkspaceFolder({ cwd: sourceCwd, name })}`,
+			insideTree: false,
+			last: tree,
+			exitCodes: [0],
+		});
 	});
 });
