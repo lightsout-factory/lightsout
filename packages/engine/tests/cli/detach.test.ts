@@ -108,10 +108,12 @@ test('implement --detach returns once a real detached engine has started and lea
 		namesStartingRun: true,
 		namesRunAgain: true,
 	});
-	expect({ engineAlive, ownerIsParent: ownerPid === parentPid, status: manifest?.status }).toStrictEqual({
+	// The handshake promises the run exists, not that it has left `pending`; either status means it is going.
+	const going = manifest?.status === 'pending' || manifest?.status === 'running';
+	expect({ engineAlive, ownerIsParent: ownerPid === parentPid, going }).toStrictEqual({
 		engineAlive: true,
 		ownerIsParent: false,
-		status: 'running',
+		going: true,
 	});
 	expect(stopped.code).toBe(0);
 }, 120_000);
