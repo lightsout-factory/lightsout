@@ -1,5 +1,5 @@
 ---
-summary: "Which `common/` folder shared code belongs in."
+summary: "Where code that several modules use belongs."
 checked: false
 severity: advisory
 example:

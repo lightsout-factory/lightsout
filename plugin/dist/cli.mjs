@@ -24064,24 +24064,24 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
       return "$" + node.name;
     },
     Document: function Document$1(node) {
-      return join160(node.definitions, "\n\n") + "\n";
+      return join162(node.definitions, "\n\n") + "\n";
     },
     OperationDefinition: function OperationDefinition(node) {
       var op = node.operation;
       var name = node.name;
-      var varDefs = wrap("(", join160(node.variableDefinitions, ", "), ")");
-      var directives = join160(node.directives, " ");
+      var varDefs = wrap("(", join162(node.variableDefinitions, ", "), ")");
+      var directives = join162(node.directives, " ");
       var selectionSet = node.selectionSet;
-      return !name && !directives && !varDefs && op === "query" ? selectionSet : join160([
+      return !name && !directives && !varDefs && op === "query" ? selectionSet : join162([
         op,
-        join160([name, varDefs]),
+        join162([name, varDefs]),
         directives,
         selectionSet
       ], " ");
     },
     VariableDefinition: function VariableDefinition(_ref) {
       var variable = _ref.variable, type = _ref.type, defaultValue = _ref.defaultValue, directives = _ref.directives;
-      return variable + ": " + type + wrap(" = ", defaultValue) + wrap(" ", join160(directives, " "));
+      return variable + ": " + type + wrap(" = ", defaultValue) + wrap(" ", join162(directives, " "));
     },
     SelectionSet: function SelectionSet(_ref2) {
       var selections = _ref2.selections;
@@ -24090,11 +24090,11 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     Field: function Field(_ref3) {
       var alias = _ref3.alias, name = _ref3.name, args = _ref3.arguments, directives = _ref3.directives, selectionSet = _ref3.selectionSet;
       var prefix = wrap("", alias, ": ") + name;
-      var argsLine = prefix + wrap("(", join160(args, ", "), ")");
-      if (argsLine.length > MAX_LINE_LENGTH) argsLine = prefix + wrap("(\n", indent(join160(args, "\n")), "\n)");
-      return join160([
+      var argsLine = prefix + wrap("(", join162(args, ", "), ")");
+      if (argsLine.length > MAX_LINE_LENGTH) argsLine = prefix + wrap("(\n", indent(join162(args, "\n")), "\n)");
+      return join162([
         argsLine,
-        join160(directives, " "),
+        join162(directives, " "),
         selectionSet
       ], " ");
     },
@@ -24104,20 +24104,20 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     FragmentSpread: function FragmentSpread(_ref5) {
       var name = _ref5.name, directives = _ref5.directives;
-      return "..." + name + wrap(" ", join160(directives, " "));
+      return "..." + name + wrap(" ", join162(directives, " "));
     },
     InlineFragment: function InlineFragment(_ref6) {
       var typeCondition = _ref6.typeCondition, directives = _ref6.directives, selectionSet = _ref6.selectionSet;
-      return join160([
+      return join162([
         "...",
         wrap("on ", typeCondition),
-        join160(directives, " "),
+        join162(directives, " "),
         selectionSet
       ], " ");
     },
     FragmentDefinition: function FragmentDefinition(_ref7) {
       var name = _ref7.name, typeCondition = _ref7.typeCondition, variableDefinitions = _ref7.variableDefinitions, directives = _ref7.directives, selectionSet = _ref7.selectionSet;
-      return "fragment ".concat(name).concat(wrap("(", join160(variableDefinitions, ", "), ")"), " ") + "on ".concat(typeCondition, " ").concat(wrap("", join160(directives, " "), " ")) + selectionSet;
+      return "fragment ".concat(name).concat(wrap("(", join162(variableDefinitions, ", "), ")"), " ") + "on ".concat(typeCondition, " ").concat(wrap("", join162(directives, " "), " ")) + selectionSet;
     },
     IntValue: function IntValue(_ref8) {
       return _ref8.value;
@@ -24140,11 +24140,11 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     ListValue: function ListValue(_ref13) {
       var values = _ref13.values;
-      return "[" + join160(values, ", ") + "]";
+      return "[" + join162(values, ", ") + "]";
     },
     ObjectValue: function ObjectValue(_ref14) {
       var fields3 = _ref14.fields;
-      return "{" + join160(fields3, ", ") + "}";
+      return "{" + join162(fields3, ", ") + "}";
     },
     ObjectField: function ObjectField(_ref15) {
       var name = _ref15.name, value = _ref15.value;
@@ -24152,7 +24152,7 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     Directive: function Directive(_ref16) {
       var name = _ref16.name, args = _ref16.arguments;
-      return "@" + name + wrap("(", join160(args, ", "), ")");
+      return "@" + name + wrap("(", join162(args, ", "), ")");
     },
     NamedType: function NamedType(_ref17) {
       return _ref17.name;
@@ -24165,9 +24165,9 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     SchemaDefinition: addDescription(function(_ref20) {
       var directives = _ref20.directives, operationTypes = _ref20.operationTypes;
-      return join160([
+      return join162([
         "schema",
-        join160(directives, " "),
+        join162(directives, " "),
         block(operationTypes)
       ], " ");
     }),
@@ -24177,149 +24177,149 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     ScalarTypeDefinition: addDescription(function(_ref22) {
       var name = _ref22.name, directives = _ref22.directives;
-      return join160([
+      return join162([
         "scalar",
         name,
-        join160(directives, " ")
+        join162(directives, " ")
       ], " ");
     }),
     ObjectTypeDefinition: addDescription(function(_ref23) {
       var name = _ref23.name, interfaces = _ref23.interfaces, directives = _ref23.directives, fields3 = _ref23.fields;
-      return join160([
+      return join162([
         "type",
         name,
-        wrap("implements ", join160(interfaces, " & ")),
-        join160(directives, " "),
+        wrap("implements ", join162(interfaces, " & ")),
+        join162(directives, " "),
         block(fields3)
       ], " ");
     }),
     FieldDefinition: addDescription(function(_ref24) {
       var name = _ref24.name, args = _ref24.arguments, type = _ref24.type, directives = _ref24.directives;
-      return name + (hasMultilineItems(args) ? wrap("(\n", indent(join160(args, "\n")), "\n)") : wrap("(", join160(args, ", "), ")")) + ": " + type + wrap(" ", join160(directives, " "));
+      return name + (hasMultilineItems(args) ? wrap("(\n", indent(join162(args, "\n")), "\n)") : wrap("(", join162(args, ", "), ")")) + ": " + type + wrap(" ", join162(directives, " "));
     }),
     InputValueDefinition: addDescription(function(_ref25) {
       var name = _ref25.name, type = _ref25.type, defaultValue = _ref25.defaultValue, directives = _ref25.directives;
-      return join160([
+      return join162([
         name + ": " + type,
         wrap("= ", defaultValue),
-        join160(directives, " ")
+        join162(directives, " ")
       ], " ");
     }),
     InterfaceTypeDefinition: addDescription(function(_ref26) {
       var name = _ref26.name, interfaces = _ref26.interfaces, directives = _ref26.directives, fields3 = _ref26.fields;
-      return join160([
+      return join162([
         "interface",
         name,
-        wrap("implements ", join160(interfaces, " & ")),
-        join160(directives, " "),
+        wrap("implements ", join162(interfaces, " & ")),
+        join162(directives, " "),
         block(fields3)
       ], " ");
     }),
     UnionTypeDefinition: addDescription(function(_ref27) {
       var name = _ref27.name, directives = _ref27.directives, types = _ref27.types;
-      return join160([
+      return join162([
         "union",
         name,
-        join160(directives, " "),
-        types && types.length !== 0 ? "= " + join160(types, " | ") : ""
+        join162(directives, " "),
+        types && types.length !== 0 ? "= " + join162(types, " | ") : ""
       ], " ");
     }),
     EnumTypeDefinition: addDescription(function(_ref28) {
       var name = _ref28.name, directives = _ref28.directives, values = _ref28.values;
-      return join160([
+      return join162([
         "enum",
         name,
-        join160(directives, " "),
+        join162(directives, " "),
         block(values)
       ], " ");
     }),
     EnumValueDefinition: addDescription(function(_ref29) {
       var name = _ref29.name, directives = _ref29.directives;
-      return join160([name, join160(directives, " ")], " ");
+      return join162([name, join162(directives, " ")], " ");
     }),
     InputObjectTypeDefinition: addDescription(function(_ref30) {
       var name = _ref30.name, directives = _ref30.directives, fields3 = _ref30.fields;
-      return join160([
+      return join162([
         "input",
         name,
-        join160(directives, " "),
+        join162(directives, " "),
         block(fields3)
       ], " ");
     }),
     DirectiveDefinition: addDescription(function(_ref31) {
       var name = _ref31.name, args = _ref31.arguments, repeatable = _ref31.repeatable, locations = _ref31.locations;
-      return "directive @" + name + (hasMultilineItems(args) ? wrap("(\n", indent(join160(args, "\n")), "\n)") : wrap("(", join160(args, ", "), ")")) + (repeatable ? " repeatable" : "") + " on " + join160(locations, " | ");
+      return "directive @" + name + (hasMultilineItems(args) ? wrap("(\n", indent(join162(args, "\n")), "\n)") : wrap("(", join162(args, ", "), ")")) + (repeatable ? " repeatable" : "") + " on " + join162(locations, " | ");
     }),
     SchemaExtension: function SchemaExtension(_ref32) {
       var directives = _ref32.directives, operationTypes = _ref32.operationTypes;
-      return join160([
+      return join162([
         "extend schema",
-        join160(directives, " "),
+        join162(directives, " "),
         block(operationTypes)
       ], " ");
     },
     ScalarTypeExtension: function ScalarTypeExtension(_ref33) {
       var name = _ref33.name, directives = _ref33.directives;
-      return join160([
+      return join162([
         "extend scalar",
         name,
-        join160(directives, " ")
+        join162(directives, " ")
       ], " ");
     },
     ObjectTypeExtension: function ObjectTypeExtension(_ref34) {
       var name = _ref34.name, interfaces = _ref34.interfaces, directives = _ref34.directives, fields3 = _ref34.fields;
-      return join160([
+      return join162([
         "extend type",
         name,
-        wrap("implements ", join160(interfaces, " & ")),
-        join160(directives, " "),
+        wrap("implements ", join162(interfaces, " & ")),
+        join162(directives, " "),
         block(fields3)
       ], " ");
     },
     InterfaceTypeExtension: function InterfaceTypeExtension(_ref35) {
       var name = _ref35.name, interfaces = _ref35.interfaces, directives = _ref35.directives, fields3 = _ref35.fields;
-      return join160([
+      return join162([
         "extend interface",
         name,
-        wrap("implements ", join160(interfaces, " & ")),
-        join160(directives, " "),
+        wrap("implements ", join162(interfaces, " & ")),
+        join162(directives, " "),
         block(fields3)
       ], " ");
     },
     UnionTypeExtension: function UnionTypeExtension(_ref36) {
       var name = _ref36.name, directives = _ref36.directives, types = _ref36.types;
-      return join160([
+      return join162([
         "extend union",
         name,
-        join160(directives, " "),
-        types && types.length !== 0 ? "= " + join160(types, " | ") : ""
+        join162(directives, " "),
+        types && types.length !== 0 ? "= " + join162(types, " | ") : ""
       ], " ");
     },
     EnumTypeExtension: function EnumTypeExtension(_ref37) {
       var name = _ref37.name, directives = _ref37.directives, values = _ref37.values;
-      return join160([
+      return join162([
         "extend enum",
         name,
-        join160(directives, " "),
+        join162(directives, " "),
         block(values)
       ], " ");
     },
     InputObjectTypeExtension: function InputObjectTypeExtension(_ref38) {
       var name = _ref38.name, directives = _ref38.directives, fields3 = _ref38.fields;
-      return join160([
+      return join162([
         "extend input",
         name,
-        join160(directives, " "),
+        join162(directives, " "),
         block(fields3)
       ], " ");
     }
   };
   function addDescription(cb) {
     return function(node) {
-      return join160([node.description, cb(node)], "\n");
+      return join162([node.description, cb(node)], "\n");
     };
   }
-  function join160(maybeArray) {
+  function join162(maybeArray) {
     var _maybeArray$filter$jo;
     var separator2 = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "";
     return (_maybeArray$filter$jo = maybeArray === null || maybeArray === void 0 ? void 0 : maybeArray.filter(function(x) {
@@ -24327,7 +24327,7 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     }).join(separator2)) !== null && _maybeArray$filter$jo !== void 0 ? _maybeArray$filter$jo : "";
   }
   function block(array2) {
-    return wrap("{\n", indent(join160(array2, "\n")), "\n}");
+    return wrap("{\n", indent(join162(array2, "\n")), "\n}");
   }
   function wrap(start, maybeString) {
     var end = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : "";
@@ -124116,7 +124116,7 @@ var checkJestMocks = async ({ cwd, packageDirs }) => {
     id: "jest-mocks",
     status: "warn",
     detail: jestFindings.join("; "),
-    fix: "add clearMocks: true, restoreMocks: true \u2014 then run that package\u2019s FULL test suite: tests relying on import-time or beforeAll mock calls will break and need rework (see test standards, Mock Cleanup)"
+    fix: "add clearMocks: true, restoreMocks: true \u2014 then run that package\u2019s FULL test suite: tests relying on import-time or beforeAll mock calls will break and need rework (see the lightsout/test-manual-mock-cleanup rule)"
   };
 };
 
@@ -163754,7 +163754,7 @@ import { resolve as resolve19 } from "node:path";
 // src/standardsCheck/validateStandardsLibrary.ts
 import { readdir as readdir25 } from "node:fs/promises";
 import { createRequire as createRequire5 } from "node:module";
-import { join as join151 } from "node:path";
+import { join as join153 } from "node:path";
 
 // src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts
 var checkFixtureTree = async ({ cwd, rule, inputKind, run, label: label2, compiler }) => {
@@ -163820,6 +163820,51 @@ var checkRuleExample = async ({ rule }) => {
   return problems;
 };
 
+// src/standardsCheck/internal/common/utils/proseChecks/checkLibraryProse.ts
+import { dirname as dirname30, join as join152 } from "node:path";
+
+// src/standardsCheck/internal/common/utils/proseChecks/findBrokenLinks.ts
+import { existsSync as existsSync5 } from "node:fs";
+import { join as join151 } from "node:path";
+var inlineLink = /\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g;
+var isOnDisk = ({ target }) => !/^[a-z][a-z0-9+.-]*:/i.test(target) && !target.startsWith("#");
+var outsideFences = ({ text }) => {
+  let fence;
+  return text.split("\n").filter((line) => {
+    const marker = /^ {0,3}(`{3,}|~{3,})/.exec(line)?.[1];
+    if (marker === void 0) {
+      return fence === void 0;
+    }
+    if (fence === void 0) {
+      fence = marker;
+    } else if (marker[0] === fence[0] && marker.length >= fence.length) {
+      fence = void 0;
+    }
+    return false;
+  }).join("\n");
+};
+var findBrokenLinks = ({ text, fromFolder }) => [...outsideFences({ text }).matchAll(inlineLink)].map((match) => match[1]).filter((target) => isOnDisk({ target })).filter((target) => !existsSync5(join151(fromFolder, decodeURI(target.split(/[#?]/)[0]))));
+
+// src/standardsCheck/internal/common/utils/proseChecks/checkLibraryProse.ts
+var hasInstructions = ({ prose }) => prose.split("\n").some((line) => line.trim().length > 0 && !/^ {0,3}#{1,6}(\s|$)/.test(line));
+var checkLibraryProse = ({ library }) => {
+  const problems = [];
+  for (const rule of library.rules) {
+    if (!hasInstructions({ prose: rule.prose })) {
+      problems.push(`${rule.id}: rule.md has no prose under its heading \u2014 agents read the prose, so they are never told this rule`);
+    }
+    for (const target of findBrokenLinks({ text: rule.prose, fromFolder: dirname30(rule.fixturesPath) })) {
+      problems.push(`${rule.id}: rule.md links to ${target}, which does not exist`);
+    }
+  }
+  for (const topic of library.documents) {
+    for (const target of findBrokenLinks({ text: topic.intro, fromFolder: join152(library.rootPath, "rules", topic.path) })) {
+      problems.push(`${topic.path}: topic.md links to ${target}, which does not exist`);
+    }
+  }
+  return problems;
+};
+
 // src/standardsCheck/validateStandardsLibrary.ts
 var FixtureSide2 = {
   Fail: "fail",
@@ -163837,7 +163882,7 @@ var getEngineTypescript = () => {
 var missingFixtureSides = async ({ fixturesPath }) => {
   const missing = [];
   for (const side of Object.values(FixtureSide2)) {
-    const entries = await readdir25(join151(fixturesPath, side)).catch(() => void 0);
+    const entries = await readdir25(join153(fixturesPath, side)).catch(() => void 0);
     if (entries === void 0 || entries.length === 0) {
       missing.push(side);
     }
@@ -163868,7 +163913,7 @@ var checkFrameworkOwned = async ({ library, compiler }) => {
       }
       try {
         const found = await checkFixtureTree({
-          cwd: join151(frameworkOwnedFixturesPath, framework),
+          cwd: join153(frameworkOwnedFixturesPath, framework),
           rule,
           inputKind,
           run,
@@ -163935,7 +163980,7 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
     }
     for (const side of Object.values(FixtureSide2)) {
       try {
-        const found = await checkFixtureTree({ cwd: join151(rule.fixturesPath, side), rule, inputKind, run, label: `fixtures/${side}/`, compiler });
+        const found = await checkFixtureTree({ cwd: join153(rule.fixturesPath, side), rule, inputKind, run, label: `fixtures/${side}/`, compiler });
         if (side === FixtureSide2.Fail && found.length === 0) {
           problems.push(`${rule.id}: the fail fixture produced no finding \u2014 the check does not catch what the rule describes`);
         }
@@ -163949,6 +163994,7 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
   }
   const frameworkOwned = await checkFrameworkOwned({ library, compiler });
   problems.push(...frameworkOwned.problems);
+  problems.push(...checkLibraryProse({ library }));
   notes.push(...frameworkOwned.notes);
   problems.push(...findUnresolvedRequirements({ libraries }));
   const packFiles = checkPackFiles({ library, libraries });
@@ -164353,7 +164399,7 @@ var readShipResult = async ({ cwd, branch }) => {
 };
 
 // src/views/internal/common/utils/getRunTitle.ts
-import { basename as basename46, dirname as dirname30 } from "node:path";
+import { basename as basename46, dirname as dirname31 } from "node:path";
 var namedRuleLimit = 3;
 var describeRules = ({ rules }) => {
   const distinct = [...new Set(rules)];
@@ -164364,7 +164410,7 @@ var describeRules = ({ rules }) => {
 var getRunTitle = ({ plan, worklist }) => {
   const name = basename46(plan);
   const stem = name.replace(/\.md$/, "");
-  const folder = basename46(dirname30(plan));
+  const folder = basename46(dirname31(plan));
   const rules = worklist?.kind === PipelineKind.Refactor ? worklist.worklist?.batches.map((batch) => batch.rule) ?? [] : [];
   let title;
   if (worklist?.kind === PipelineKind.Coverage) {
@@ -164477,7 +164523,7 @@ var buildRunListing = ({ manifest, lock, worklist }) => {
 
 // src/views/internal/common/utils/readFrozenWorklist.ts
 import { readFile as readFile67 } from "node:fs/promises";
-import { join as join152 } from "node:path";
+import { join as join154 } from "node:path";
 
 // src/contracts/coverage/CoverageFile.ts
 var CoverageFile = external_exports.object({
@@ -164506,7 +164552,7 @@ var CoverageWorklist = external_exports.object({
 
 // src/views/internal/common/utils/readFrozenWorklist.ts
 var readFrozenWorklist = async ({ cwd, manifest }) => {
-  const raw = await readFile67(join152(await resolveRunDir({ cwd, runId: manifest.runId }), "worklist.json"), "utf8").catch(() => void 0);
+  const raw = await readFile67(join154(await resolveRunDir({ cwd, runId: manifest.runId }), "worklist.json"), "utf8").catch(() => void 0);
   let parsed;
   try {
     parsed = raw === void 0 ? void 0 : JSON.parse(raw);
@@ -164996,11 +165042,11 @@ ${bold(`test-coverage-to-threshold ${formatShortRunId({ runId: manifest.runId })
 
 // src/coverage/initializeCoverageRun.ts
 import { readFile as readFile69, writeFile as writeFile25 } from "node:fs/promises";
-import { join as join154 } from "node:path";
+import { join as join156 } from "node:path";
 
 // src/coverage/runCoverageCheck.ts
 import { readFile as readFile68 } from "node:fs/promises";
-import { join as join153, relative as relative17 } from "node:path";
+import { join as join155, relative as relative17 } from "node:path";
 var CoverageSummaryReport = external_exports.record(external_exports.string(), external_exports.looseObject({ statements: external_exports.looseObject({ pct: external_exports.unknown() }) }));
 var readJsonFile2 = async ({ path }) => {
   try {
@@ -165011,7 +165057,7 @@ var readJsonFile2 = async ({ path }) => {
   }
 };
 var readScopeSummary = async ({ cwd, scope, summaryPath, passed }) => {
-  const parsed = CoverageSummaryReport.safeParse(await readJsonFile2({ path: join153(cwd, summaryPath) }));
+  const parsed = CoverageSummaryReport.safeParse(await readJsonFile2({ path: join155(cwd, summaryPath) }));
   if (!parsed.success) {
     throw new Error(buildMissingSummaryMessage({ summaryPath, scope }));
   }
@@ -165080,7 +165126,7 @@ var initializeCoverageRun = async ({
       const resume = formatResumeCommand({ pipeline, runId: existing.runId });
       throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${resume}`);
     }
-    const frozen = join154(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
+    const frozen = join156(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
     return { manifest: existing, worklist: CoverageWorklist.parse(JSON.parse(await readFile69(frozen, "utf8"))) };
   }
   if (typeof config2.gates["test-coverage"] !== "string" && config2["package-gates"]?.["test-coverage"] === void 0) {
@@ -165098,7 +165144,7 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
   }
   const measured = await runCoverageCheck({ cwd, config: config2 });
   const worklist = { at: (/* @__PURE__ */ new Date()).toISOString(), totals: measured.totals, files: measured.files };
-  const worklistPath = join154(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Coverage, runId }), "worklist.json");
+  const worklistPath = join156(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Coverage, runId }), "worklist.json");
   const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Coverage, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
   await writeFile25(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
 `, "utf8");
@@ -165157,7 +165203,7 @@ var CoverageRun = class {
 };
 
 // src/coverage/batch/internal/checkTestsOnly.ts
-import { dirname as dirname31 } from "node:path";
+import { dirname as dirname32 } from "node:path";
 var isMeasurementOutput = ({ path, coverageDir, packagesDir }) => {
   const owner = packageOf({ file: path, packagesDir });
   const withinPackage = owner === void 0 ? path : path.slice(`${packagesDir}/${owner}/`.length);
@@ -165170,7 +165216,7 @@ var checkTestsOnly = async ({
   reportedFiles,
   attributedFiles
 }) => {
-  const coverageDir = dirname31(config2["coverage-summary-path"] ?? defaultCoverageSummaryPath);
+  const coverageDir = dirname32(config2["coverage-summary-path"] ?? defaultCoverageSummaryPath);
   const packagesDir = config2["packages-dir"] ?? defaultPackagesDir;
   const changedFiles = (await collectBatchChanges({ cwd, config: config2, reportedFiles, attributedFiles })).filter(
     (path) => !isMeasurementOutput({ path, coverageDir, packagesDir })
@@ -165186,7 +165232,7 @@ The tree is left as it stands \u2014 revert these changes by hand before resumin
 
 // src/coverage/batch/invokeCoverageAgent.ts
 import { mkdir as mkdir33, writeFile as writeFile26 } from "node:fs/promises";
-import { join as join155 } from "node:path";
+import { join as join157 } from "node:path";
 var invokeCoverageAgent = async ({
   cwd,
   runId,
@@ -165201,9 +165247,9 @@ var invokeCoverageAgent = async ({
   rationale,
   recordUsage
 }) => {
-  const agentsDir = join155(await resolveRunDir({ cwd, runId }), "agents");
+  const agentsDir = join157(await resolveRunDir({ cwd, runId }), "agents");
   const slug = batchId.replace(/[:/]/g, "_");
-  const streamPath = join155(agentsDir, `stream-${slug}-${invocationCount}.jsonl`);
+  const streamPath = join157(agentsDir, `stream-${slug}-${invocationCount}.jsonl`);
   await mkdir33(agentsDir, { recursive: true });
   const outcome = await invokeAgentWithContract({
     driver,
@@ -165217,7 +165263,7 @@ var invokeCoverageAgent = async ({
     allowedCommands: config2["agent-commands"],
     onEvent: createEventFileSink({ path: streamPath }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile26(join155(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile26(join157(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
   await recordUsage({ step: `${batchId}${label2 ? ` ${label2}` : ""}`, usage: outcome.usage });
@@ -165453,7 +165499,7 @@ var buildCoverageBatch = ({ files, components, batchNumber, batchSize = 5 }) => 
 
 // src/coverage/selectCoverageCandidates.ts
 import { readFile as readFile70 } from "node:fs/promises";
-import { join as join156 } from "node:path";
+import { join as join158 } from "node:path";
 var selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, standardsLibraries, compiler }) => {
   const failingScopes = new Set(measured.totals.filter((total) => !total.passed).map((total) => total.scope));
   const candidates = [];
@@ -165461,7 +165507,7 @@ var selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, standardsL
     if (!failingScopes.has(file2.scope) || setAsidePaths.has(file2.path) || file2.statementsPct >= 100 || isTestFile({ path: file2.path, standardsLibraries }) || !isTestableSourceFile({ path: file2.path })) {
       continue;
     }
-    const content = compiler === void 0 ? void 0 : await readFile70(join156(cwd, file2.path), "utf8").catch(() => void 0);
+    const content = compiler === void 0 ? void 0 : await readFile70(join158(cwd, file2.path), "utf8").catch(() => void 0);
     if (compiler !== void 0 && content !== void 0 && isInertSourceFile({ path: file2.path, content, compiler })) {
       continue;
     }
@@ -165886,9 +165932,9 @@ var getSpokenQuestion = async ({ transcriptPath }) => {
 import { access as access2 } from "node:fs/promises";
 
 // src/voice/internal/common/paths/getVoiceMarkerPath.ts
-import { join as join157 } from "node:path";
+import { join as join159 } from "node:path";
 var getVoiceMarkerPath = ({ cwd }) => {
-  return join157(cwd, ".lightsout", "voice-on");
+  return join159(cwd, ".lightsout", "voice-on");
 };
 
 // src/voice/isVoiceOn.ts
@@ -165901,9 +165947,9 @@ import { spawn as spawn3 } from "node:child_process";
 import { writeFile as writeFile27 } from "node:fs/promises";
 
 // src/voice/internal/common/paths/getVoicePidPath.ts
-import { join as join158 } from "node:path";
+import { join as join160 } from "node:path";
 var getVoicePidPath = ({ cwd }) => {
-  return join158(cwd, ".lightsout", "voice-pid");
+  return join160(cwd, ".lightsout", "voice-pid");
 };
 
 // src/voice/stopSpeech.ts
@@ -166012,10 +166058,10 @@ var voiceOffCommand = async ({ cwd }) => {
 
 // src/voice/createVoiceMarker.ts
 import { mkdir as mkdir34, writeFile as writeFile28 } from "node:fs/promises";
-import { dirname as dirname32 } from "node:path";
+import { dirname as dirname33 } from "node:path";
 var createVoiceMarker = async ({ cwd }) => {
   const markerPath = getVoiceMarkerPath({ cwd });
-  await mkdir34(dirname32(markerPath), { recursive: true });
+  await mkdir34(dirname33(markerPath), { recursive: true });
   await writeFile28(markerPath, "", "utf8");
 };
 
@@ -166686,9 +166732,9 @@ var mergeOneSidedPlans = ({ kept, other, keptFrom, at }) => {
 };
 
 // src/workOrder/divergence/internal/resolvePlanWorkingCheckout.ts
-import { dirname as dirname33 } from "node:path";
+import { dirname as dirname34 } from "node:path";
 var resolvePlanWorkingCheckout = async ({ cwd }) => {
-  return { checkout: dirname33(await resolveSharedStateDir({ cwd })), otherCopies: [] };
+  return { checkout: dirname34(await resolveSharedStateDir({ cwd })), otherCopies: [] };
 };
 
 // src/workOrder/divergence/keepLocalWorkOrderState.ts
@@ -166808,7 +166854,7 @@ var keepLocalWorkOrderState = async ({
 
 // src/workOrder/divergence/keepPublishedWorkOrderState.ts
 import { rename as rename12, rm as rm15 } from "node:fs/promises";
-import { join as join159 } from "node:path";
+import { join as join161 } from "node:path";
 var readPublishedPlanMarker = async ({
   planId,
   target
@@ -166895,9 +166941,9 @@ var takePublishedPlan = async ({
 };
 var writeKeptRecord = async ({ workOrderFolder, record: record3 }) => {
   const content = serializeWorkOrderState({ record: record3 });
-  await writeWorkOrderFolderFile({ path: join159(workOrderFolder, workOrderFileNames.record), content });
+  await writeWorkOrderFolderFile({ path: join161(workOrderFolder, workOrderFileNames.record), content });
   await updateWorkOrderSyncState({ workOrderFolder, recordSha256: sha256({ content }) });
-  await rm15(join159(workOrderFolder, workOrderFileNames.published), { force: true });
+  await rm15(join161(workOrderFolder, workOrderFileNames.published), { force: true });
 };
 var keepPublishedWorkOrderState = async ({
   cwd,

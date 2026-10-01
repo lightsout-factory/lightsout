@@ -1,3 +1,3 @@
 # Architecture Decisions
 
-Universal architectural decisions that apply across the codebase.
+How code is split into modules and shared, kept free of copies and dead code.

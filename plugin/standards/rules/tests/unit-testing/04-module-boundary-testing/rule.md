@@ -1,5 +1,5 @@
 ---
-summary: "coverage added file-by-file when driving the module's public API would pin the same behavior — boundary tests are the default, not the mandate"
+summary: "Testing a module through what it makes public."
 checked: false
 severity: advisory
 requires:
@@ -8,33 +8,16 @@ requires:
 
 ## Module Boundary Testing
 
-**Default to testing a module's public API** — the files code outside the
-module calls, each imported from its own file — and cover internals *through*
-it. A boundary test pins
-behavior rather than internal decomposition, so a module's internals can be
-reorganized without touching a single test, and three code changes inside a
-module cost one test update instead of three.
+Test a module through its public API by default, and cover its internals through it. Import what a test exercises from the file that declares it, never through an index file. A test inside a module may import the module's other files; a test outside it imports only the module's public files, as any other caller would.
 
-**A direct test on any file is allowed** when the file earns one:
+Give a file a direct test of its own when it earns one:
 
-- its cases are combinatorial and driving them all through the boundary is
-  impractical
-- it states a contract meaningful on its own (a parser, a date formatter — a
-  thing callers rely on regardless of which module holds it today)
-- coverage a gate demands is genuinely unreachable through any boundary input
-  (and first ask whether that unreachable branch is dead code)
+- Its cases are combinatorial, and driving them all through the boundary is impractical.
+- It states a contract that stands on its own, such as a parser or a date formatter, which callers rely on whichever module holds it.
+- Coverage a gate demands cannot be reached through any boundary input, and the branch is not dead code.
 
-A direct test needs no ceremony: it does not require making the file public,
-and an existing direct test is not debt to migrate. Write the
-boundary test when both would pin the same behavior; write the direct test when
-the file deserves one.
+A direct test does not require making the file public, and an existing direct test is not debt to migrate. When both would pin the same behaviour, write the boundary test.
 
-**Rules that hold either way:**
+A branch no input reaches, through the boundary or directly, is dead code: flag it for deletion instead of forcing a test onto it.
 
-- Files with no runtime logic — index files, type-only files, pure
-  constants — get no dedicated tests (see the
-  files-that-must-not-have-dedicated-tests rule).
-- If a branch cannot be reached through any input, boundary or direct, it is
-  dead code — flag it for deletion rather than forcing a test onto it.
-- A public export whose only consumers are test files may be a deliberate
-  promotion whose contract the tests pin; deleting it is a human decision.
+A boundary test pins behaviour, not how the module is split inside, so the internals can be reorganised without touching a test. An import through an index file loads every file it re-exports to reach one name.

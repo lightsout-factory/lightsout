@@ -1,40 +1,22 @@
 ---
-summary: "a relative import path in a package that configures aliases"
+summary: "When imports use the package's path aliases."
 checked: true
 severity: advisory
 ---
 
-**Use the package's configured path alias for every import.**
+## Import Path Alias
 
-- When a package defines path aliases — in `package.json` → `imports` or in `tsconfig.json` → `compilerOptions.paths` — NEVER use relative paths (`./`, `../`) — not even for sibling files, `common/` subfolders, or a package entry's re-exports
-- Either declaration counts: a package that declares `imports` has configured aliases just as surely as one that declares `paths`
-- If a package defines **no** path aliases, use relative paths consistently — and consider adding aliases
-- This applies to every file: components, constants, interfaces, types, utils, hooks, etc.
+Use the package's configured path alias for every import. A package has aliases when it declares `imports` in `package.json` or `compilerOptions.paths` in `tsconfig.json`, and then never uses a relative path (`./`, `../`), not even for a sibling file, a `common/` subfolder or a package entry's re-exports.
 
-✅ GOOD: Path alias for everything
-
-A package that declares `imports` in `package.json` — the specifier carries its extension:
+When a package declares no aliases, use relative paths consistently, and consider adding aliases.
 
 ```typescript
-import { ClassName } from '#src/path/to/ClassName.ts';
-import { methodName } from '#src/common/utils/methodName.ts';
-import { features } from '#src/features/home/components/HomeIssueDetails/common/constants/features.ts';
-import { MockIssuePanel } from '#src/features/home/components/HomeIssueDetails/components/MockIssuePanel.tsx';
-```
+// Correct: an imports alias, then a paths alias
+import { features } from '#src/features/home/common/constants/features.ts';
+import { features } from '@/features/home/common/constants/features';
 
-A package that declares `paths` in `tsconfig.json`:
-
-```typescript
-import { ClassName } from '@/path/to/ClassName';
-import { methodName } from '@/common/utils/methodName';
-import { features } from '@/features/home/components/HomeIssueDetails/common/constants/features';
-import { MockIssuePanel } from '@/features/home/components/HomeIssueDetails/components/MockIssuePanel';
-```
-
-❌ BAD: Relative paths in an alias-configured package
-
-```typescript
-import { helper } from './helper';
-import { util } from '../common/utils/util';
+// Incorrect in a package with aliases
 import { features } from './common/constants/features';
 ```
+
+Then every import of a file reads the same, wherever it is written.

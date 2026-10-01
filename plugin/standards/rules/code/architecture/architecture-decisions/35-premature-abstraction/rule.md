@@ -1,9 +1,13 @@
 ---
-summary: "an abstraction built before two or three concrete uses called for it"
+summary: "When to turn similar code into something general."
 checked: false
 severity: advisory
 ---
 
-### Premature Abstraction
+## Premature Abstraction
 
-Wait for 2–3 concrete uses before abstracting. The right abstraction becomes clear with real usage; wrong abstractions are worse than duplication.
+Never generalise code for a use that does not exist yet: no option, parameter or layer for an imagined case. Build it when a second real use needs it.
+
+This covers code that is similar but not yet the same. Code that is already identical is shared from the second copy, as `duplicate-code-block` and `duplicate-function-body` say.
+
+The right abstraction shows itself in real use, and a wrong one is worse than duplication.

@@ -1,10 +1,14 @@
 ---
-summary: "a class that is only static members, or one stateless method"
+summary: "Classes that should be plain functions."
 checked: true
 severity: advisory
 ---
 
-**Banned:**
+## Banned Class Shapes
 
-- **Static-only classes** — a module wearing a costume; it adds `ClassName.` prefixes and binds no state. Use module functions (each exported function in its own file).
-- **One-method stateless classes** — `class ReportGenerator { execute() }` is a function with a hat on. Write the function.
+Never write these classes:
+
+- A class with only static members. It is a module in disguise: it adds a `ClassName.` prefix to every call and binds no state. Write module functions instead.
+- A stateless class with one method, such as `class ReportGenerator { execute() }`. Write the function.
+
+A class that is decorated, is abstract, or implements or extends another type is not one of these shapes. `class-bright-line` and `class-inheritance` judge it.
