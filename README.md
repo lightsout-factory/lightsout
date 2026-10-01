@@ -166,7 +166,7 @@ When drafting, the engine reads the source files the verified facts recorded onc
 
 When a plan starts from a `/brainstorm` hand-off, the decisions already settled there are carried straight into the plan rather than asked again; a settled decision is re-opened only when exploring the code turns up a concrete conflict. One the planner believes is weak is flagged to you once, with the better alternative and what the settled choice costs, and stands until you change it.
 
-The plan's Decision Log is composed by the engine from the saved decision records rather than typed out by the writer, and so is the Global Constraints section listing the project-wide rules those records settled. `lightsout plan sync-decisions --name <name>` regenerates both sections in every file of the plan, and a decision's named phases show in its Choice cell — run it after a decision is recorded, and again as often as you like: a file whose two sections already match the records is left untouched.
+The plan's Decision Log is composed by the engine from the saved decision records rather than typed out by the writer, and so is the Global Constraints section listing the project-wide rules those records settled. `lightsout plan sync-decisions --name <name>` regenerates both sections in every file of the plan, and a decision's named phases show in its Choice cell — run it after a decision is recorded, and again as often as you like: a file whose two sections already match the records is left untouched. `lightsout plan sync-phases --name <name>` does the same for a phased plan's `## Phases` table and `## Phase Declarations` once the phase breakdown changes after drafting: it restates them from the phase files, writes only the overview and nothing at all when it already matches, and refuses — naming each — a phase file and row that do not line up.
 
 Once a ticket-backed plan is approved as ready, run `lightsout plan publish --name <name>`. It attaches only the durable design record — the single or
 phased plan deliverable and whichever of `brainstorm-notes.md`, `decisions.json`,
@@ -280,12 +280,14 @@ builds somewhere else.
 
 Planning establishes that worktree first. `/plan` and `/auto-plan` run
 `lightsout plan workspace --name <name>` before they explore or draft, which cuts
-the tree at the plan's path from your checkout's committed `HEAD` and prints the
-tree's path; every later plan step works from it, so another agent editing your
-checkout cannot move the code a grade is measured against. The tree holds code
-work only: the plan folder itself stays in your main checkout at
-`.lightsout/work-orders/<work-order>/plans/<plan-id>/`, whichever checkout a plan
-command runs from, and is never copied either way. The implementation run then
+the tree at the plan's path from your checkout's committed `HEAD`, then prints
+the plan folder's absolute path on a line labelled `plan folder:` and the
+tree's path alone on the last line; every later plan step works from the tree,
+so another agent editing your checkout cannot move the code a grade is measured
+against. The tree holds code work only: the plan folder itself stays in your
+main checkout at `.lightsout/work-orders/<work-order>/plans/<plan-id>/`,
+whichever checkout a plan command runs from, and is never copied either way, so
+the plan's own files are written at the printed plan folder path. The implementation run then
 continues in that same tree rather than cutting a second one. Pass
 `--no-worktree`, or set `plan.worktree` to false, to plan in the launching
 checkout deliberately.

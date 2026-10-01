@@ -28,6 +28,12 @@ export interface DriverInvocation {
 	 * told to honor lives in the invocation prompt.
 	 */
 	allowedCommands?: string[];
+	/**
+	 * Absolute directories outside `cwd` the session must be able to write (a
+	 * plan folder under the primary checkout), granted by each driver only where
+	 * its permission mapping confines writes to the working directories.
+	 */
+	writableDirs?: string[];
 	/** A focused role's requested agent environment, translated by each driver. Ordinary invocations omit it. */
 	environment?: AgentEnvironment;
 	/** Kill the harness process after this many ms. The driver rejects; the engine decides what a hang means. */

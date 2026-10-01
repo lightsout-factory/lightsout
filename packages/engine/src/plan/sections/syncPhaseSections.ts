@@ -14,7 +14,8 @@ interface Params {
 	phaseFiles: string[];
 }
 
-const composedNote = "Composed by `lightsout plan draft` from this plan's phase files. Do not edit by hand.";
+const composedNote =
+	"Composed by `lightsout plan draft` from this plan's phase files. When the phase breakdown changes, edit this row or block for each changed phase, then run `lightsout plan sync-phases` to restate the rest.";
 
 const renderPhasesSection = ({ declarations }: { declarations: PhaseDeclaration[] }) => {
 	const headerRow = '| # | File | Scope | Creates | Touches |';

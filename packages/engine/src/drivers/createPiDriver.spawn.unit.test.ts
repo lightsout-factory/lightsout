@@ -63,6 +63,20 @@ test('createPiDriver: the invocation model, effort, and omp approval tier reach 
 	expect(argv[argv.indexOf('--approval-mode') + 1]).toBe('write');
 });
 
+test("createPiDriver: an omp invocation's writable directories reach the spawned process as --add-dir= flags", async () => {
+	const { driver, cwd, readArgv } = await setupBinary({ binary: 'omp' });
+
+	await driver.invoke({
+		prompt: 'task',
+		cwd,
+		permissions: Permissions.Write,
+		writableDirs: ['/primary/.lightsout/work-orders/lo-7-search/plans/002-search-basics'],
+	});
+
+	const argv = await readArgv();
+	expect(argv).toContain('--add-dir=/primary/.lightsout/work-orders/lo-7-search/plans/002-search-basics');
+});
+
 test('createPiDriver: bare pi gets the same model and effort but never an approval flag — it has no permission system', async () => {
 	const { driver, cwd, readArgv } = await setupBinary({ binary: 'pi' });
 

@@ -16,6 +16,7 @@ import { planGradeCommand } from '#src/cli/plan/planGradeCommand.ts';
 import { planLintCommand } from '#src/cli/plan/planLintCommand.ts';
 import { planPublishCommand } from '#src/cli/plan/planPublishCommand.ts';
 import { planSyncDecisionsCommand } from '#src/cli/plan/planSyncDecisionsCommand.ts';
+import { planSyncPhasesCommand } from '#src/cli/plan/planSyncPhasesCommand.ts';
 import { planVerifyFactsCommand } from '#src/cli/plan/planVerifyFactsCommand.ts';
 import { readPlanningStandards } from '#src/cli/plan/readPlanningStandards.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
@@ -32,8 +33,9 @@ import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
  */
 const openDispatchCheckout = async ({ cwd, flags, subcommand }: { cwd: string; flags: CommandContext['flags']; subcommand: string | undefined }) => {
 	const name = getStringFlag({ flags, name: 'name' });
+	const checkoutSubcommands = ['workspace', 'draft', 'dedup', 'grade', 'lint', 'publish', 'sync-decisions', 'sync-phases', 'verify-facts'];
 
-	if (name === undefined || !['workspace', 'draft', 'dedup', 'grade', 'lint', 'publish', 'sync-decisions', 'verify-facts'].includes(subcommand ?? '')) {
+	if (name === undefined || !checkoutSubcommands.includes(subcommand ?? '')) {
 		return { cwd, worktree: undefined };
 	}
 
@@ -57,14 +59,12 @@ export const planCommand = async ({ flags, rest, cwd: launchingCwd }: CommandCon
 
 	// `workspace` has no --name refusal of its own, so a nameless one is refused
 	// here, before any tree is established for it.
-	if (subcommand === 'workspace') {
-		await getRequiredFlag({ flags, name: 'name' });
-	}
+	const workspaceName = subcommand === 'workspace' ? await getRequiredFlag({ flags, name: 'name' }) : undefined;
 
 	const { cwd, worktree } = await openDispatchCheckout({ cwd: launchingCwd, flags, subcommand });
 
-	if (subcommand === 'workspace' && worktree !== undefined) {
-		await planWorkspaceCommand({ worktree });
+	if (workspaceName !== undefined && worktree !== undefined) {
+		await planWorkspaceCommand({ worktree, name: workspaceName });
 		return;
 	}
 
@@ -80,6 +80,11 @@ export const planCommand = async ({ flags, rest, cwd: launchingCwd }: CommandCon
 
 	if (subcommand === 'sync-decisions') {
 		await planSyncDecisionsCommand({ flags, rest, cwd });
+		return;
+	}
+
+	if (subcommand === 'sync-phases') {
+		await planSyncPhasesCommand({ flags, rest, cwd });
 		return;
 	}
 

@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { DecisionRow } from '#src/contracts/plan/decisions/DecisionRow.ts';
@@ -174,6 +174,35 @@ const setupStandalonePlan = ({ body, decisions, existing = [] }: { body: string;
 		lint: () => lintPlanStructure({ cwd, planPaths: [planPath], decisions }),
 		read: () => readFileSync(planPath, 'utf8'),
 	};
+};
+
+/**
+ * A phased deliverable the pass has already brought into step — its own first
+ * run is the arrangement, so the overview carries exactly what the engine
+ * composes — backdated so any rewrite on the next run would move its
+ * modification time.
+ */
+const setupInStepDeliverable = async () => {
+	const deliverable = setupPhasedDeliverable({
+		decisions: noDecisions(),
+		overview: overviewBody({ rows: [{ number: 1, file: 'phase1-core.md', created: 9, touched: 9, fileBudget: 9 }] }),
+		phases: { 'phase1-core.md': phaseBody({ create: ['src/one.ts'], modify: ['src/two.ts'], fileBudget: 4 }) },
+		existing: ['src/two.ts'],
+	});
+
+	await repairMechanicalFindings({
+		cwd: deliverable.cwd,
+		name: deliverable.name,
+		planPaths: deliverable.planPaths,
+		decisions: deliverable.decisions,
+		overviewPath: deliverable.overviewPath,
+	});
+
+	const backdated = new Date('2020-01-01T00:00:00.000Z');
+
+	utimesSync(deliverable.overviewPath, backdated, backdated);
+
+	return { ...deliverable, original: deliverable.read({ base: 'overview.md' }), modifiedAt: statSync(deliverable.overviewPath).mtimeMs };
 };
 
 describe('repairMechanicalFindings', () => {
@@ -424,5 +453,30 @@ describe('repairMechanicalFindings', () => {
 		// work each need a choice between shrinking the phase and raising the number —
 		// regenerating anything here would either paper one over or invent an answer
 		expect({ before, after }).toStrictEqual({ before: surviving, after: surviving });
+	});
+
+	test('leaves an overview already in step unwritten', async () => {
+		const deliverable = await setupInStepDeliverable();
+
+		const written = await repairMechanicalFindings({
+			cwd: deliverable.cwd,
+			name: deliverable.name,
+			planPaths: deliverable.planPaths,
+			decisions: deliverable.decisions,
+			overviewPath: deliverable.overviewPath,
+		});
+
+		// the stamp, the decision log, the constraints and the phase sections all
+		// already agree with their records, so not one of them may touch the file:
+		// its bytes and the backdated modification time both survive the pass
+		expect({
+			text: deliverable.read({ base: 'overview.md' }),
+			modifiedAt: statSync(deliverable.overviewPath).mtimeMs,
+			overviewUpdated: written.filter(({ path }) => path === deliverable.overviewPath).some(({ updated }) => updated),
+		}).toStrictEqual({
+			text: deliverable.original,
+			modifiedAt: deliverable.modifiedAt,
+			overviewUpdated: false,
+		});
 	});
 });

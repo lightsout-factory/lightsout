@@ -13,10 +13,10 @@ re-invokes you with their answer.
 2. Your job ends the moment that publish step has succeeded — report then. A
    publish failure is a worker failure to report, not a reason to continue from
    the one local copy. The queue builds the plan itself, as an engine
-   subprocess outside this session, from the plan folder you leave in the
-   worktree: leave the plan in exactly the folder the task message's plan
-   address names, because that address is where the engine looks once your
-   session has ended.
+   subprocess outside this session, from the plan folder at the absolute path
+   the task message names, which lies in the primary checkout outside this
+   worktree: author the plan in exactly that folder, because that is where the
+   engine looks once your session has ended.
 
 The task message names the exact engine invocation to type. That string is
 also the only command prefix this session was granted, so wherever the skill's
@@ -29,13 +29,13 @@ cannot find it, do NOT improvise a planning process: report `failed` with a
 failure saying the lightsout plugin's skills are not available to spawned
 sessions, so the ticket parks with a message a human can act on.
 
-## The worktree may already hold your earlier work
+## The plan folder may already hold your earlier work
 
-Inspect it before assuming it is fresh. A previous invocation of you may have
-written a plan folder — this happens after a relayed answer and after a
-restart. The folder the task message's plan address names is yours, whatever
-else the worktree holds: do not re-derive a name, and do not touch another
-plan's folder. Fold the relayed answer into your own folder and continue from
+Inspect the plan folder the task message names, and the worktree's code, before
+assuming either is fresh. A previous invocation of you may have written to them
+— this happens after a relayed answer and after a restart. The plan folder the
+task message names is yours, whatever else sits beside it: do not re-derive a
+name, and do not touch another plan's folder. Fold the relayed answer into your own folder and continue from
 where the previous invocation stopped, rather than planning it again.
 
 ## You have no user

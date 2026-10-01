@@ -54,3 +54,22 @@ test('buildPiArgs: no granted-commands flag exists on either variant — the bin
 	expect(pi.some((arg) => arg.includes('allow') || arg.includes('config'))).toBe(false);
 	expect(omp.some((arg) => arg.includes('allow') || arg.includes('config'))).toBe(false);
 });
+
+test('buildPiArgs: only omp under write grants writable directories, one --add-dir= argument each', () => {
+	const writableDirs = ['/repo/.lightsout/work-orders/lo-7-search/plans/002-search-basics', '/repo/.lightsout/shared'];
+	const ompWrite = buildPiArgs({ variant: 'omp', permissions: Permissions.Write, writableDirs });
+	const ompFull = buildPiArgs({ variant: 'omp', permissions: Permissions.FullAccess, writableDirs });
+	const piWrite = buildPiArgs({ variant: 'pi', permissions: Permissions.Write, writableDirs });
+
+	const approval = ompWrite.indexOf('--approval-mode');
+
+	// each directory is its own `--add-dir=<dir>` argument, directly after the write tier
+	expect(ompWrite.slice(approval, approval + 4)).toStrictEqual([
+		'--approval-mode',
+		'write',
+		'--add-dir=/repo/.lightsout/work-orders/lo-7-search/plans/002-search-basics',
+		'--add-dir=/repo/.lightsout/shared',
+	]);
+	expect(ompFull.some((arg) => arg.startsWith('--add-dir'))).toBe(false);
+	expect(piWrite).toStrictEqual(['-p', '--mode', 'json', '--no-session']);
+});

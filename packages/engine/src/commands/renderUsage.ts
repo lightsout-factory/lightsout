@@ -33,6 +33,7 @@ const usageOrder = [
 	'plan-verify-facts',
 	'plan-draft',
 	'plan-sync-decisions',
+	'plan-sync-phases',
 	'plan-lint',
 	'plan-dedup',
 	'plan-grade',

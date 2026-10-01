@@ -1,5 +1,6 @@
 import { buildQueueAutoPlanInvocation } from '#src/agents/buildQueueAutoPlanInvocation.ts';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
+import { getDirsOutsideCwd } from '#src/common/utils/getDirsOutsideCwd.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
@@ -58,6 +59,7 @@ const runPlanningSession = async ({
 	// Under `write` permissions a harness only runs granted prefixes, so the
 	// engine grants itself and the prompt is told the same words verbatim.
 	const engineCli = `node ${process.argv[1]}`;
+	const folder = await planWorkspaceDir({ cwd, name: planAddress });
 	const outcome = await invokeAgentWithContract({
 		driver,
 		cwd,
@@ -67,6 +69,7 @@ const runPlanningSession = async ({
 			ticketBody: ticket.description,
 			engineCli,
 			planAddress,
+			planFolder: folder,
 			answeredQuestion,
 		}),
 		contract: WorkReport,
@@ -75,6 +78,7 @@ const runPlanningSession = async ({
 		permissions: config.permissions,
 		timeoutMs: settings.workerTimeoutMs,
 		allowedCommands: [...(config['agent-commands'] ?? []), engineCli],
+		writableDirs: await getDirsOutsideCwd({ cwd, dirs: [folder] }),
 	});
 
 	if (!outcome.ok) {
@@ -91,8 +95,6 @@ const runPlanningSession = async ({
 	if (report.status !== WorkReportStatus.Complete) {
 		return { error: refusal };
 	}
-
-	const folder = await planWorkspaceDir({ cwd, name: planAddress });
 
 	if (!(await pathExists({ path: folder }))) {
 		return { error: `${ticket.identifier}'s auto-plan session reported a finished plan, but no plan folder exists at ${folder} — nothing was built` };

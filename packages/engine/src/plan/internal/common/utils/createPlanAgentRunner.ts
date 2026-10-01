@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { z } from 'zod';
 import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
+import { getDirsOutsideCwd } from '#src/common/utils/getDirsOutsideCwd.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
@@ -28,6 +29,23 @@ interface Params {
 	level?: ActivityLevel;
 }
 
+/**
+ * Keyed by cwd and plan folder. A fan-out builds one runner per plan file, and
+ * every one of them awaits this one lookup, so they resume — and spawn — in the
+ * order they started rather than in whichever order separate lookups finish.
+ */
+const writableDirsByFolder = new Map<string, Promise<string[]>>();
+
+const getWritableDirs = ({ cwd, workspaceDir }: { cwd: string; workspaceDir: string }) => {
+	const key = `${cwd}\0${workspaceDir}`;
+	const known = writableDirsByFolder.get(key);
+	const writableDirs = known ?? getDirsOutsideCwd({ cwd, dirs: [workspaceDir] });
+
+	writableDirsByFolder.set(key, writableDirs);
+
+	return writableDirs;
+};
+
 interface CallParams<Contract extends z.ZodType> {
 	invocation: { systemPrompt: string; prompt: string };
 	contract: Contract;
@@ -48,6 +66,10 @@ interface CallParams<Contract extends z.ZodType> {
  *
  * The step LEVEL, unlike the sink, is opened per call: a level has to end when
  * its call ends, and a runner has no disposal hook to end one on.
+ *
+ * The plan folder lies under the primary checkout, so an agent running in a
+ * planning worktree is granted it as a writable directory, resolved once per
+ * cwd and plan folder since neither path changes over a planning command's life.
  */
 export const createPlanAgentRunner = ({
 	cwd,
@@ -63,6 +85,7 @@ export const createPlanAgentRunner = ({
 	level,
 }: Params): (<Contract extends z.ZodType>(params: CallParams<Contract>) => Promise<AgentOutcome<z.infer<Contract>>>) => {
 	const onEvent = createEventFileSink({ path: join(workspaceDir, `${step}-stream.jsonl`) });
+	const writableDirs = getWritableDirs({ cwd, workspaceDir });
 
 	return async <Contract extends z.ZodType>({ invocation, contract, label, allowedCommands }: CallParams<Contract>) => {
 		const stepLevel = level?.open({ level: ActivityLevelKind.Step, label: label === undefined ? step : `${step}-${label}` });
@@ -77,6 +100,7 @@ export const createPlanAgentRunner = ({
 			timeoutMs,
 			maxRoleAttempts,
 			allowedCommands,
+			writableDirs: await writableDirs,
 			environment,
 			onEvent,
 			onRejectedOutput: async ({ text, attempt }) => {
