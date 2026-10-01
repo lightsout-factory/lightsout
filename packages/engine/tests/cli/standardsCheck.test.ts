@@ -47,7 +47,7 @@ test('cli: standards-check prints each finding, the rule breakdown, and exits 0'
 	// and the tally is a table, closed off by the report path
 	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+—\s+│\s+1\s+│/);
 	// the rule's summary rides under its own row — a rule id alone says nothing
-	expect(stdout).toMatch(/│ two exports that name the same concept with different verbs[^│]*│/);
+	expect(stdout).toMatch(/│ One concept under two names\.\s*│/);
 	expect(stdout).toMatch(/report: \.lightsout\/standards-check\.json\n$/);
 	// the standards check reports; it never fails the caller
 	expect(code).toBe(0);
