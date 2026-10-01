@@ -123560,7 +123560,21 @@ var claudePermissionModes = {
   [Permissions.Write]: "acceptEdits",
   [Permissions.FullAccess]: "bypassPermissions"
 };
-var buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allowedCommands, environment, writableDirs }) => {
+var foregroundCommandsSettings = ({ timeoutMs }) => {
+  const ceiling = timeoutMs === void 0 ? {} : { BASH_DEFAULT_TIMEOUT_MS: String(timeoutMs), BASH_MAX_TIMEOUT_MS: String(timeoutMs) };
+  return JSON.stringify({ env: { CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1", ...ceiling } });
+};
+var buildClaudeCodeArgs = ({
+  systemPromptPath,
+  model,
+  effort,
+  permissions,
+  allowedCommands,
+  environment,
+  foregroundCommandsOnly,
+  timeoutMs,
+  writableDirs
+}) => {
   const args = ["-p", "--output-format", "stream-json", "--verbose", "--exclude-dynamic-system-prompt-sections"];
   if (systemPromptPath) {
     args.push("--append-system-prompt-file", systemPromptPath);
@@ -123587,6 +123601,9 @@ var buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allow
   }
   if (environment?.toolAllowlist) {
     args.push("--tools", environment.tools.join(","));
+  }
+  if (foregroundCommandsOnly) {
+    args.push("--settings", foregroundCommandsSettings({ timeoutMs }));
   }
   if (allowedCommands && allowedCommands.length > 0) {
     args.push("--allowedTools", ...allowedCommands.map((prefix) => `Bash(${prefix}:*)`));
@@ -123686,13 +123703,37 @@ var createClaudeCodeDriver = () => {
   const driver = {
     name: "claude-code",
     invoke: async (invocation) => {
-      const { prompt, systemPrompt, model, effort, permissions, allowedCommands, environment, writableDirs, cwd, timeoutMs, onEvent, onUsage } = invocation;
+      const {
+        prompt,
+        systemPrompt,
+        model,
+        effort,
+        permissions,
+        allowedCommands,
+        environment,
+        foregroundCommandsOnly,
+        writableDirs,
+        cwd,
+        timeoutMs,
+        onEvent,
+        onUsage
+      } = invocation;
       let resultEvent;
       const tallyAssistantUsage = createAssistantUsageTally();
       const systemPromptFile = systemPrompt ? await writeSystemPromptFile({ systemPrompt }) : void 0;
       const { exitCode, stdout, stderr } = await spawnCollect({
         command: "claude",
-        args: buildClaudeCodeArgs({ systemPromptPath: systemPromptFile?.path, model, effort, permissions, allowedCommands, environment, writableDirs }),
+        args: buildClaudeCodeArgs({
+          systemPromptPath: systemPromptFile?.path,
+          model,
+          effort,
+          permissions,
+          allowedCommands,
+          environment,
+          foregroundCommandsOnly,
+          timeoutMs,
+          writableDirs
+        }),
         cwd,
         stdinText: prompt,
         timeoutMs,
@@ -126929,6 +126970,7 @@ var invokeAgentWithContract = async ({
   timeoutMs,
   allowedCommands,
   environment,
+  foregroundCommandsOnly,
   writableDirs,
   maxRoleAttempts = 1,
   onEvent,
@@ -126949,7 +126991,7 @@ var invokeAgentWithContract = async ({
     attempt += 1;
     const rung = await recordHarnessProcess({
       driver,
-      invocation: { ...active, cwd, model, effort, permissions, timeoutMs, allowedCommands, writableDirs, environment, onEvent },
+      invocation: { ...active, cwd, model, effort, permissions, timeoutMs, allowedCommands, writableDirs, environment, foregroundCommandsOnly, onEvent },
       activity,
       spawn: attempt,
       reemit: isReemit
@@ -160024,7 +160066,7 @@ var buildWorkOrderPlans = async ({
 };
 
 // src/agents/prompts/queueAutoPlan.md
-var queueAutoPlan_default = '# Role: Headless Auto-Plan Worker\n\nYou are running unattended in a git worktree that already holds this ticket\'s\nbranch. Nobody is watching your session. The queue that spawned you relays\nanything you cannot decide to the one terminal a human is sitting at, and\nre-invokes you with their answer.\n\n## What to do\n\n1. Invoke the `lightsout:auto-plan` skill on the ticket appended below and\n   follow it exactly as written. It plans the ticket and publishes the approved\n   durable plan to that ticket.\n2. Your job ends the moment that publish step has succeeded \u2014 report then. A\n   publish failure is a worker failure to report, not a reason to continue from\n   the one local copy. The queue builds the plan itself, as an engine\n   subprocess outside this session, from the plan folder at the absolute path\n   the task message names, which lies in the primary checkout outside this\n   worktree: author the plan in exactly that folder, because that is where the\n   engine looks once your session has ended.\n\nThe task message names the exact engine invocation to type. That string is\nalso the only command prefix this session was granted, so wherever the skill\'s\nown text says `lightsout <subcommand>`, run the granted invocation followed by\n`<subcommand>` instead. Anything else will simply be refused.\n\nThe `lightsout:auto-plan` skill ships in the same plugin as the engine that\nspawned you, so a user running the queue has it installed. If your session\ncannot find it, do NOT improvise a planning process: report `failed` with a\nfailure saying the lightsout plugin\'s skills are not available to spawned\nsessions, so the ticket parks with a message a human can act on.\n\n## The plan folder may already hold your earlier work\n\nInspect the plan folder the task message names, and the worktree\'s code, before\nassuming either is fresh. A previous invocation of you may have written to them\n\u2014 this happens after a relayed answer and after a restart. The plan folder the\ntask message names is yours, whatever else sits beside it: do not re-derive a\nname, and do not touch another plan\'s folder. Fold the relayed answer into your own folder and continue from\nwhere the previous invocation stopped, rather than planning it again.\n\n## You have no user\n\nNever ask a question directly \u2014 there is nobody in your session to answer it.\nWhen a question clears the skill\'s escalation bar, stop and report\n`terminated:ambiguity` with the question as the FIRST entry of `failures`. The\nengine relays it to the terminal that started the queue, records the answer on\nthe ticket, and re-invokes you with it. Ask one question at a time.\n\n## Never implement\n\nNever run the engine\'s `implement` subcommand, and never invoke the\n`lightsout:implement` skill. A build takes hours, and a build started inside an\nagent session dies with that session \u2014 which is the very failure this worker\nexists to remove. The queue runs the build itself, outside any session.\n\n## Never ship\n\nNever run `lightsout ship`, and never pass `--ship`. Shipping is the queue\'s\nown step: it rebases each branch onto fresh main and re-runs the gates, one\nbranch at a time. A branch that ships itself races that order.\n\n## The ticket record is the engine\'s\n\nNever add a plan to the ticket, never change the ticket\'s mode, never request or\nwithdraw a ship request, and never exclude a plan. The engine chose the plan you\nare writing and created it on the record before your session started, and the\nqueue decides when the ticket ships. Nothing you do changes either.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. Your\nmessage starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was built, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 omit when clean" }]\n}\n```\n\nReport `complete` only when the plan was written, graded and\npublished to the ticket. Never claim work you did not do \u2014 the engine diffs the\ntree, and a false report is worse than a failed one.\n';
+var queueAutoPlan_default = '# Role: Headless Auto-Plan Worker\n\nYou are running unattended in a git worktree that already holds this ticket\'s\nbranch. Nobody is watching your session. The queue that spawned you relays\nanything you cannot decide to the one terminal a human is sitting at, and\nre-invokes you with their answer.\n\n## What to do\n\n1. Invoke the `lightsout:auto-plan` skill on the ticket appended below and\n   follow it exactly as written. It plans the ticket and publishes the approved\n   durable plan to that ticket.\n2. Your job ends the moment that publish step has succeeded \u2014 report then. A\n   publish failure is a worker failure to report, not a reason to continue from\n   the one local copy. The queue builds the plan itself, as an engine\n   subprocess outside this session, from the plan folder at the absolute path\n   the task message names, which lies in the primary checkout outside this\n   worktree: author the plan in exactly that folder, because that is where the\n   engine looks once your session has ended.\n\nThe task message names the exact engine invocation to type. That string is\nalso the only command prefix this session was granted, so wherever the skill\'s\nown text says `lightsout <subcommand>`, run the granted invocation followed by\n`<subcommand>` instead. Anything else will simply be refused.\n\nThe `lightsout:auto-plan` skill ships in the same plugin as the engine that\nspawned you, so a user running the queue has it installed. If your session\ncannot find it, do NOT improvise a planning process: report `failed` with a\nfailure saying the lightsout plugin\'s skills are not available to spawned\nsessions, so the ticket parks with a message a human can act on.\n\n## Every engine command runs to its exit\n\nThis is a hard rule. Run every engine subcommand in the foreground and wait\nuntil it exits \u2014 before you act on its output, and before your turn ends.\n`plan draft` is the long one: it may run for many minutes, and it is still run\nin the foreground and waited on.\n\nNever background an engine command. Never end the turn while an engine command\nis still running. The harness kills anything still running when your turn ends,\nand the engine checks the plan\'s planning record afterwards and parks a session\nthat left a step running. A command you could not wait on to its exit is a\nworker failure: report `failed` with the step named.\n\n## The plan folder may already hold your earlier work\n\nInspect the plan folder the task message names, and the worktree\'s code, before\nassuming either is fresh. A previous invocation of you may have written to them\n\u2014 this happens after a relayed answer and after a restart. The plan folder the\ntask message names is yours, whatever else sits beside it: do not re-derive a\nname, and do not touch another plan\'s folder. Fold the relayed answer into your own folder and continue from\nwhere the previous invocation stopped, rather than planning it again.\n\n## You have no user\n\nNever ask a question directly \u2014 there is nobody in your session to answer it.\nWhen a question clears the skill\'s escalation bar, stop and report\n`terminated:ambiguity` with the question as the FIRST entry of `failures`. The\nengine relays it to the terminal that started the queue, records the answer on\nthe ticket, and re-invokes you with it. Ask one question at a time.\n\n## Never implement\n\nNever run the engine\'s `implement` subcommand, and never invoke the\n`lightsout:implement` skill. A build takes hours, and a build started inside an\nagent session dies with that session \u2014 which is the very failure this worker\nexists to remove. The queue runs the build itself, outside any session.\n\n## Never ship\n\nNever run `lightsout ship`, and never pass `--ship`. Shipping is the queue\'s\nown step: it rebases each branch onto fresh main and re-runs the gates, one\nbranch at a time. A branch that ships itself races that order.\n\n## The ticket record is the engine\'s\n\nNever add a plan to the ticket, never change the ticket\'s mode, never request or\nwithdraw a ship request, and never exclude a plan. The engine chose the plan you\nare writing and created it on the record before your session started, and the\nqueue decides when the ticket ships. Nothing you do changes either.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. Your\nmessage starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was built, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 omit when clean" }]\n}\n```\n\nReport `complete` only when the plan was written, graded and\npublished to the ticket, and every engine command the session started has\nexited. Never claim work you did not do \u2014 the engine diffs the\ntree, and a false report is worse than a failed one.\n';
 
 // src/agents/buildQueueAutoPlanInvocation.ts
 var buildQueueAutoPlanInvocation = ({
@@ -160045,6 +160087,8 @@ ${ticketBody}`].join("\n\n---\n\n");
 Run every engine subcommand as:
 
 \`${engineCli} <subcommand>\`
+
+Run each subcommand in the foreground and wait for it to exit before acting on its output or ending the turn.
 
 Nothing else is granted to this session.`,
     `# The plan you are planning
@@ -160235,6 +160279,15 @@ var chooseAutoPlanTarget = async (params) => {
 };
 
 // src/queue/workers/internal/runAutoPlanWorker.ts
+var findUnfinishedSteps = async ({ cwd, name, sinceMs }) => {
+  const progress = await readPlanningProgress({ cwd, name });
+  return (progress?.steps ?? []).filter((entry) => entry.status === RunStatus.Running && Date.parse(entry.startedAt) >= sinceMs);
+};
+var describeUnfinishedSteps = ({ ticketRef, unfinished }) => {
+  const steps = unfinished.map(({ step }) => step).join(", ");
+  const live2 = unfinished.filter(({ pid }) => isPidAlive({ pid })).map(({ step, pid }) => ` The ${step} step's process is still running as pid ${pid}.`).join("");
+  return `${ticketRef}'s auto-plan session ended while the engine command for its ${steps} step was still running, so no finished plan exists \u2014 nothing was built.${live2}`;
+};
 var runPlanningSession = async ({
   cwd,
   ticket,
@@ -160247,6 +160300,7 @@ var runPlanningSession = async ({
 }) => {
   const engineCli = `node ${process.argv[1]}`;
   const folder = await planWorkspaceDir({ cwd, name: planAddress });
+  const sessionStartedMs = Date.now();
   const outcome = await invokeAgentWithContract({
     driver,
     cwd,
@@ -160265,8 +160319,13 @@ var runPlanningSession = async ({
     permissions: config2.permissions,
     timeoutMs: settings.workerTimeoutMs,
     allowedCommands: [...config2["agent-commands"] ?? [], engineCli],
-    writableDirs: await getDirsOutsideCwd({ cwd, dirs: [folder] })
+    writableDirs: await getDirsOutsideCwd({ cwd, dirs: [folder] }),
+    foregroundCommandsOnly: true
   });
+  const unfinished = await findUnfinishedSteps({ cwd, name: planAddress, sinceMs: sessionStartedMs });
+  if (unfinished.length > 0) {
+    return { error: describeUnfinishedSteps({ ticketRef: ticket.identifier, unfinished }) };
+  }
   if (!outcome.ok) {
     return { error: outcome.failure };
   }

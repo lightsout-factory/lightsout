@@ -7,7 +7,10 @@ interface Params {
 	name: string;
 }
 
-/** Never throws: the record is a reader's convenience. */
+/**
+ * Never throws. Besides the status readers, the queue auto-plan worker reads it
+ * after a session to find a step the session left running.
+ */
 export const readPlanningProgress = async ({ cwd, name }: Params): Promise<PlanningProgress | undefined> => {
 	const path = await getPlanningProgressPath({ cwd, name });
 

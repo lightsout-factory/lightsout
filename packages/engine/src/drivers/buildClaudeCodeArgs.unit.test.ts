@@ -140,6 +140,37 @@ test('buildClaudeCodeArgs: each control is emitted on its own, and a tool list i
 	]);
 });
 
+test('buildClaudeCodeArgs: a foreground-commands request disables background tasks and lifts both Bash ceilings to the invocation timeout through --settings', () => {
+	const args = buildClaudeCodeArgs({ foregroundCommandsOnly: true, timeoutMs: 14400000 });
+
+	const settings: unknown = JSON.parse(args[args.indexOf('--settings') + 1] ?? '');
+
+	expect(args.filter((arg) => arg === '--settings').length).toBe(1);
+	expect(settings).toStrictEqual({
+		env: { CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: '1', BASH_DEFAULT_TIMEOUT_MS: '14400000', BASH_MAX_TIMEOUT_MS: '14400000' },
+	});
+});
+
+test('buildClaudeCodeArgs: the settings pair precedes the variadic grant flag', () => {
+	const args = buildClaudeCodeArgs({ foregroundCommandsOnly: true, timeoutMs: 14400000, allowedCommands: ['node /tmp/cli.js', 'pnpm'] });
+
+	expect(args.slice(-5)).toStrictEqual(['--settings', expect.any(String), '--allowedTools', 'Bash(node /tmp/cli.js:*)', 'Bash(pnpm:*)']);
+});
+
+test('buildClaudeCodeArgs: an invocation without the request emits no settings, whatever its timeout', () => {
+	const args = buildClaudeCodeArgs({ timeoutMs: 14400000 });
+
+	expect(args).toStrictEqual(['-p', '--output-format', 'stream-json', '--verbose', '--exclude-dynamic-system-prompt-sections']);
+});
+
+test('buildClaudeCodeArgs: a request without a timeout disables background tasks and leaves the Bash ceilings at the harness default', () => {
+	const args = buildClaudeCodeArgs({ foregroundCommandsOnly: true });
+
+	const settings: unknown = JSON.parse(args[args.indexOf('--settings') + 1] ?? '');
+
+	expect(settings).toStrictEqual({ env: { CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: '1' } });
+});
+
 test('buildClaudeCodeArgs: writable directories under write become one --add-dir pair each, ahead of every variadic flag', () => {
 	const environment: AgentEnvironment = {
 		noMcpServers: true,

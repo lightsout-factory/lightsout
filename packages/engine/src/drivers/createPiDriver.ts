@@ -101,6 +101,11 @@ const createPiFamilyDriver = ({ name, variant, command }: PiFamilyParams): Drive
 	const driver: Driver = {
 		name,
 		invoke: async (invocation) => {
+			// foregroundCommandsOnly is deliberately unused: neither pi nor omp
+			// exposes a mechanism to forbid background commands or lift a
+			// per-command ceiling, so the request is ignored rather than refused.
+			// The queue auto-plan worker's prompt rule and its post-session check
+			// of the planning-progress record cover these harnesses.
 			const { prompt, systemPrompt, model, effort, permissions, writableDirs, cwd, timeoutMs, onEvent, onUsage } = invocation;
 
 			let agentEnd: z.infer<typeof AgentEndEvent> | undefined;

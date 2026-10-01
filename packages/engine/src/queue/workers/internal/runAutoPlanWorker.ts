@@ -2,6 +2,7 @@ import { buildQueueAutoPlanInvocation } from '#src/agents/buildQueueAutoPlanInvo
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
 import { getDirsOutsideCwd } from '#src/common/utils/getDirsOutsideCwd.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
@@ -9,11 +10,13 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
 import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
+import { readPlanningProgress } from '#src/plan/progress/readPlanningProgress.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import { buildWorkOrderPlans } from '#src/queue/workers/internal/buildWorkOrderPlans.ts';
 import { chooseAutoPlanTarget } from '#src/queue/workers/internal/chooseAutoPlanTarget.ts';
+import { isPidAlive } from '#src/runState/isPidAlive.ts';
 import { pullWorkOrderState } from '#src/workOrder/pullWorkOrderState.ts';
 
 interface Params {
@@ -35,6 +38,34 @@ interface Params {
 	answeredQuestion?: AnsweredQuestion;
 	onProgress?: (message: string) => void;
 }
+
+/**
+ * Once the session has returned, a step its turn started that is still recorded
+ * running is a command left running past the turn's end, whether its process
+ * has since died or is still alive, so liveness never decides this. Records
+ * started before `sinceMs` belong to an earlier invocation. A missing or
+ * unreadable record yields nothing.
+ */
+const findUnfinishedSteps = async ({ cwd, name, sinceMs }: { cwd: string; name: string; sinceMs: number }) => {
+	const progress = await readPlanningProgress({ cwd, name });
+
+	return (progress?.steps ?? []).filter((entry) => entry.status === RunStatus.Running && Date.parse(entry.startedAt) >= sinceMs);
+};
+
+/**
+ * A live process is named with its pid but never signalled: once the command
+ * has died its recorded pid may belong to an unrelated process, and a parked
+ * ticket waits on a human who then has the pid.
+ */
+const describeUnfinishedSteps = ({ ticketRef, unfinished }: { ticketRef: string; unfinished: { step: string; pid: number }[] }) => {
+	const steps = unfinished.map(({ step }) => step).join(', ');
+	const live = unfinished
+		.filter(({ pid }) => isPidAlive({ pid }))
+		.map(({ step, pid }) => ` The ${step} step's process is still running as pid ${pid}.`)
+		.join('');
+
+	return `${ticketRef}'s auto-plan session ended while the engine command for its ${steps} step was still running, so no finished plan exists — nothing was built.${live}`;
+};
 
 /** @returns the outcome the worker stops on, or undefined once the plan is written and its folder is on disk */
 const runPlanningSession = async ({
@@ -60,6 +91,7 @@ const runPlanningSession = async ({
 	// engine grants itself and the prompt is told the same words verbatim.
 	const engineCli = `node ${process.argv[1]}`;
 	const folder = await planWorkspaceDir({ cwd, name: planAddress });
+	const sessionStartedMs = Date.now();
 	const outcome = await invokeAgentWithContract({
 		driver,
 		cwd,
@@ -79,7 +111,16 @@ const runPlanningSession = async ({
 		timeoutMs: settings.workerTimeoutMs,
 		allowedCommands: [...(config['agent-commands'] ?? []), engineCli],
 		writableDirs: await getDirsOutsideCwd({ cwd, dirs: [folder] }),
+		foregroundCommandsOnly: true,
 	});
+
+	// Ahead of every judgment of the report: a question or a failure reported
+	// over a killed step describes a plan state that no longer exists.
+	const unfinished = await findUnfinishedSteps({ cwd, name: planAddress, sinceMs: sessionStartedMs });
+
+	if (unfinished.length > 0) {
+		return { error: describeUnfinishedSteps({ ticketRef: ticket.identifier, unfinished }) };
+	}
 
 	if (!outcome.ok) {
 		return { error: outcome.failure };
