@@ -8,6 +8,7 @@ import { findMissingRequirements } from '#src/standards/findMissingRequirements.
 import { typescriptInputKinds } from '#src/standardsCheck/internal/common/constants/typescriptInputKinds.ts';
 import { checkFixtureTree } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts';
 import { checkRuleExample } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkRuleExample.ts';
+import { checkLibraryProse } from '#src/standardsCheck/internal/common/utils/proseChecks/checkLibraryProse.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import { findUnresolvedRequirements } from '#src/standardsLibraries/findUnresolvedRequirements.ts';
 import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack.ts';
@@ -228,6 +229,7 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 	const frameworkOwned = await checkFrameworkOwned({ library, compiler });
 
 	problems.push(...frameworkOwned.problems);
+	problems.push(...checkLibraryProse({ library }));
 	notes.push(...frameworkOwned.notes);
 	problems.push(...findUnresolvedRequirements({ libraries }));
 
