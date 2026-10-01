@@ -2,6 +2,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import { isTestSideFile } from '#src/common/sourceFiles/isTestSideFile.ts';
@@ -13,10 +14,6 @@ import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 
 /** The device path git reads as "this side of the diff is empty" — an addition's before, a removal's after. */
 const emptySide = '/dev/null';
-
-// The command runs through a shell and a path is data: single quotes with the
-// embedded-quote escape are what stop a path from becoming shell syntax.
-const quoted = ({ path }: { path: string }) => `'${path.replaceAll("'", `'\\''`)}'`;
 
 const kindOf = ({ live, approved }: { live?: string; approved?: string }) => {
 	if (approved === undefined) {
@@ -40,9 +37,8 @@ const diffOf = async ({ cwd, path, kind, approved, scratch }: { cwd: string; pat
 
 	const left = approved === undefined ? emptySide : relative(cwd, before);
 	const right = kind === TestChangeKind.Removed ? emptySide : path;
-	const shown = await runCommand({ command: `git diff --no-index ${quoted({ path: left })} ${quoted({ path: right })}`, cwd, timeoutMs: gitTimeoutMs }).catch(
-		() => undefined,
-	);
+	const [quotedLeft, quotedRight] = [left, right].map((argument) => quoteShellArgument({ argument }));
+	const shown = await runCommand({ command: `git diff --no-index ${quotedLeft} ${quotedRight}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 
 	return shown !== undefined && shown.stdout.length > 0 ? shown.stdout : `${path}: ${kind} (no textual diff could be produced)`;
 };

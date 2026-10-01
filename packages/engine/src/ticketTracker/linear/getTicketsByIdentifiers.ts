@@ -1,6 +1,7 @@
 import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
 import type { LinearTrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
+import { parseTicketNumber } from '#src/ticketTracker/internal/common/utils/parseTicketNumber.ts';
 import { collectTrackerTickets } from '#src/ticketTracker/linear/internal/common/utils/collectTrackerTickets.ts';
 import { runLinear } from '#src/ticketTracker/linear/internal/runLinear.ts';
 
@@ -12,9 +13,9 @@ interface Params {
 
 const readIssueNumbers = ({ identifiers, ticketPrefix }: { identifiers: string[]; ticketPrefix: string }) =>
 	identifiers.flatMap((identifier) => {
-		const [prefix, number] = identifier.split('-');
+		const number = parseTicketNumber({ identifier, ticketPrefix });
 
-		return prefix?.toLowerCase() === ticketPrefix.toLowerCase() && /^\d+$/u.test(number ?? '') ? [Number(number)] : [];
+		return number === undefined ? [] : [Number(number)];
 	});
 
 /**

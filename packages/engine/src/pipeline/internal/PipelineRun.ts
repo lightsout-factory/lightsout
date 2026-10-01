@@ -5,10 +5,12 @@ import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts'
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
 import { RunState } from '#src/common/services/RunState.ts';
 import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
@@ -107,7 +109,9 @@ export class PipelineRun {
 	}
 
 	parkMessage(): string {
-		return `run parked: harness rate limited or overloaded — resume with \`lightsout resume --run ${this.current().runId}\` when the window resets.`;
+		const { pipeline = PipelineKind.Implement, runId } = this.current();
+
+		return `run parked: harness rate limited or overloaded — resume with \`${formatResumeCommand({ pipeline, runId })}\` when the window resets.`;
 	}
 
 	async setStep({ record, patch }: { record: StepRecord; patch?: Partial<RunManifest> }): Promise<void> {

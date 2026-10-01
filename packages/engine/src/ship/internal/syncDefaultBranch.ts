@@ -1,4 +1,5 @@
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 
 interface Params {
@@ -35,11 +36,17 @@ export const syncDefaultBranch = async ({ cwd, defaultBranch, branch, onProgress
 		return;
 	}
 
-	const steps = [`git checkout ${defaultBranch}`, 'git pull --ff-only', `git branch -d ${branch}`];
+	const steps = [
+		['checkout', defaultBranch],
+		['pull', '--ff-only'],
+		['branch', '-d', branch],
+	];
 
-	for (const command of steps) {
+	for (const args of steps) {
+		const command = ['git', ...args.map((argument) => quoteShellArgument({ argument }))].join(' ');
+		const label = ['git', ...args].join(' ');
 		const result = await runCommand({ command, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 
-		onProgress?.(result?.exitCode === 0 ? `sync: ${command}` : `sync: ${command} did not work — leaving the local tree as it is`);
+		onProgress?.(result?.exitCode === 0 ? `sync: ${label}` : `sync: ${label} did not work — leaving the local tree as it is`);
 	}
 };

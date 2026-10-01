@@ -1,3 +1,4 @@
+import { formatShortRunId } from '@lightsout/shared';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunLock } from '#src/contracts/run/RunLock.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
@@ -23,7 +24,7 @@ export const buildRunListing = ({ manifest, lock, worklist }: Params): RunListin
 
 	return {
 		runId: manifest.runId,
-		shortId: manifest.runId.slice(0, 8),
+		shortId: formatShortRunId({ runId: manifest.runId }),
 		pipeline: manifest.pipeline ?? PipelineKind.Implement,
 		status: manifest.status,
 		title: getRunTitle({ plan: manifest.plan, worklist }),

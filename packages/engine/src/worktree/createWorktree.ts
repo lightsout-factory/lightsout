@@ -1,5 +1,6 @@
 import { stat } from 'node:fs/promises';
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import { runOrDescribeFailure } from '#src/common/processes/runOrDescribeFailure.ts';
 import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
@@ -30,7 +31,8 @@ const exists = async ({ path }: { path: string }) => {
 };
 
 const branchExists = async ({ cwd, branch }: { cwd: string; branch: string }) => {
-	const shown = await runCommand({ command: `git rev-parse --verify --quiet refs/heads/${branch}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
+	const ref = quoteShellArgument({ argument: `refs/heads/${branch}` });
+	const shown = await runCommand({ command: `git rev-parse --verify --quiet ${ref}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
 
 	return shown?.exitCode === 0;
 };
@@ -67,7 +69,8 @@ const cutTree = async ({
 	onProgress?: (message: string) => void;
 }) => {
 	const adopting = await branchExists({ cwd, branch });
-	const add = adopting ? `git worktree add ${worktreePath} ${branch}` : `git worktree add ${worktreePath} -b ${branch} ${startPoint}`;
+	const [path, name, base] = [worktreePath, branch, startPoint].map((argument) => quoteShellArgument({ argument }));
+	const add = adopting ? `git worktree add ${path} ${name}` : `git worktree add ${path} -b ${name} ${base}`;
 	const addFailure = await runOrDescribeFailure({ command: add, cwd });
 
 	if (addFailure !== undefined) {

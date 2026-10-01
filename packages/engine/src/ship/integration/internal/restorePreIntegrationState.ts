@@ -1,6 +1,6 @@
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import type { CommandResult } from '#src/common/types/CommandResult.ts';
 import { hasOpenMerge } from '#src/ship/integration/internal/common/utils/hasOpenMerge.ts';
-import { quoteGitArgument } from '#src/ship/internal/common/utils/quoteGitArgument.ts';
 import { runGit } from '#src/ship/internal/common/utils/runGit.ts';
 
 interface Params {
@@ -44,7 +44,7 @@ export const restorePreIntegrationState = async ({ cwd, baselineCommit, onProgre
 	onProgress?.(`integrate: restoring ${baselineCommit.slice(0, 8)} — nothing verified, so nothing is kept`);
 
 	const aborted = (await hasOpenMerge({ cwd })) ? await runGit({ command: 'git merge --abort', cwd }) : undefined;
-	const reset = await runGit({ command: `git reset --hard ${quoteGitArgument({ argument: baselineCommit })}`, cwd });
+	const reset = await runGit({ command: `git reset --hard ${quoteShellArgument({ argument: baselineCommit })}`, cwd });
 	const cleaned = await runGit({ command: 'git clean -fd', cwd });
 	const remaining = await describeRemainingState({ cwd, baselineCommit });
 

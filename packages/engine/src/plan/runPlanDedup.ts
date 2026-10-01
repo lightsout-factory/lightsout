@@ -12,6 +12,7 @@ import type { Permissions } from '#src/contracts/Permissions.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
+import { planAgentTimeouts } from '#src/plan/common/constants/planAgentTimeouts.ts';
 import { detectPriorArtCandidates } from '#src/plan/detectPriorArtCandidates.ts';
 import { getPlanRunStatus } from '#src/plan/internal/common/activity/getPlanRunStatus.ts';
 import { planAgentConcurrency } from '#src/plan/internal/common/constants/planAgentConcurrency.ts';
@@ -80,7 +81,7 @@ const spawnDedupJudge = async ({
 	pass: Awaited<ReturnType<typeof getPlanDetectionPass>>;
 	group: DedupGroup;
 }): Promise<DedupResult> => {
-	const { cwd, driver, standards, model, effort, permissions, timeoutMs = 30 * 60 * 1000, level } = params;
+	const { cwd, driver, standards, model, effort, permissions, timeoutMs = planAgentTimeouts.dedupMs, level } = params;
 	const invokePlanAgent = createPlanAgentRunner({
 		cwd,
 		driver,

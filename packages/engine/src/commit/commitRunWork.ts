@@ -66,7 +66,7 @@ export const commitRunWork = async ({ run, driver, address, resumed }: Params): 
 	}
 
 	const onProgress = (message: string) => run.progress(message);
-	const resolved = address ?? (await readRunCommitAddress({ cwd: run.cwd, manifest, config: run.config, onProgress }));
+	const resolved = address ?? (await readRunCommitAddress({ cwd: run.cwd, manifest, onProgress }));
 	const committed = await commitWorkOrderWork({
 		cwd: run.cwd,
 		composeMessage: ({ cwd }) =>

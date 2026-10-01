@@ -1,4 +1,5 @@
-import { rename, writeFile } from 'node:fs/promises';
+import { rename } from 'node:fs/promises';
+import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { getRunManifestPath } from '#src/runState/internal/common/paths/getRunManifestPath.ts';
 
@@ -13,7 +14,7 @@ export const writeRunManifest = async ({ cwd, manifest }: Params): Promise<RunMa
 	const manifestPath = await getRunManifestPath({ cwd, runId: manifest.runId });
 	const tmpPath = `${manifestPath}.tmp`;
 
-	await writeFile(tmpPath, `${JSON.stringify(stamped, null, '\t')}\n`, 'utf8');
+	await writeJsonFile({ path: tmpPath, value: stamped });
 	await rename(tmpPath, manifestPath);
 
 	return stamped;

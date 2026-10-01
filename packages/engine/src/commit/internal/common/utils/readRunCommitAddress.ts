@@ -2,7 +2,6 @@ import { basename, extname } from 'node:path';
 import type { CommitAddress } from '#src/commit/internal/common/types/CommitAddress.ts';
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
 import { readRunLabel } from '#src/common/utils/readRunLabel.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
@@ -55,13 +54,6 @@ const readTicketFacts = async ({
 interface Params {
 	cwd: string;
 	manifest: RunManifest;
-	/**
-	 * The run's effective config, kept on the contract though nothing here reads
-	 * it: the pipeline hands every commit step the same four facts, and
-	 * dropping one of them from this reader alone would make the seam read as if
-	 * the subject were decided somewhere else.
-	 */
-	config: LightsoutConfig;
 	onProgress: (message: string) => void;
 }
 

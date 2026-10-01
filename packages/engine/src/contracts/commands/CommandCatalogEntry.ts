@@ -10,7 +10,7 @@ export const CommandCatalogEntry = z.object({
 	id: z.string(),
 	/** The slash form when the plugin ships a skill for it, e.g. '/implement'. */
 	slash: z.string().optional(),
-	/** The CLI form, always: 'lightsout implement'. Absent for a skill-only command. */
+	/** The CLI form, e.g. 'lightsout implement'. Absent for a skill-only command. */
 	cli: z.string().optional(),
 	group: z.enum(CommandGroup),
 	/** One line — matches the skill's frontmatter `description` first sentence where a skill exists. */

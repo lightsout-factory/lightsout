@@ -5,6 +5,7 @@ import { GapCheckReport } from '#src/contracts/plan/grade/GapCheckReport.ts';
 import type { GradedGap } from '#src/contracts/plan/grade/GradedGap.ts';
 import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatus.ts';
 import type { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
+import { planAgentTimeouts } from '#src/plan/common/constants/planAgentTimeouts.ts';
 import { gapCheckLenses } from '#src/plan/internal/common/constants/gapCheckLenses.ts';
 import { checkPlanDocumentation } from '#src/plan/internal/common/grading/checkPlanDocumentation.ts';
 import { drainGapCheckers } from '#src/plan/internal/common/grading/drainGapCheckers.ts';
@@ -108,7 +109,7 @@ export const drainGradeAgents = async ({
 	rateLimited: boolean;
 	documentationComplete: boolean;
 }> => {
-	const timeoutMs = params.timeoutMs ?? 30 * 60 * 1000;
+	const timeoutMs = params.timeoutMs ?? planAgentTimeouts.readerMs;
 	const tasks = selected.flatMap((file) => gapCheckLenses.map((lens) => () => spawnGapChecker({ params, pass, file, lens, timeoutMs, memory })));
 	const [readers, docsCheck] = await Promise.all([
 		drainGapCheckers({ tasks, selected }),

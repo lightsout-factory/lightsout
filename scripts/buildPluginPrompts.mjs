@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { invokedDirectly } from './invokedDirectly.mjs';
+import { messageOf } from './messageOf.mjs';
 
 /**
  * Writes each plugin's slash-command routers from its skills, for the
@@ -83,10 +84,19 @@ Read \`skill://${skillName}\` — the ${pluginName} \`${skillName}\` skill — a
 User input: $ARGUMENTS
 `;
 
+/** A manifest that cannot be read or parsed names itself, rather than surfacing as a bare parser error. */
+const readPluginManifest = ({ manifestPath }) => {
+	try {
+		return JSON.parse(readFileSync(join(repoRoot, manifestPath), 'utf8'));
+	} catch (error) {
+		throw new Error(`${manifestPath} could not be read as JSON: ${messageOf({ error })}`);
+	}
+};
+
 const buildRouters = ({ pluginDir }) => {
 	const skillsDir = join(repoRoot, pluginDir, 'skills');
 	const manifestPath = join(pluginDir, '.claude-plugin', 'plugin.json');
-	const { name: pluginName, 'slash-commands': slashCommands } = JSON.parse(readFileSync(join(repoRoot, manifestPath), 'utf8'));
+	const { name: pluginName, 'slash-commands': slashCommands } = readPluginManifest({ manifestPath });
 	const routers = new Map();
 
 	if (slashCommands !== promptsPath) {
@@ -124,15 +134,19 @@ const onDiskRouterNames = ({ promptsDir }) => {
 		.map((file) => file.slice(0, -3));
 };
 
+/** A router with no file on disk differs from its skill as surely as one whose text does. */
+const differsOnDisk = ({ path, text }) => !existsSync(path) || readFileSync(path, 'utf8') !== text;
+
 /**
  * Exit codes are set rather than forced with `process.exit`: stdout is a pipe
  * for every caller that matters, and exiting right after a log discards it.
  */
 const main = () => {
 	const checking = process.argv.includes('--check');
-	const plugins = pluginDirs.map((pluginDir) => buildRouters({ pluginDir }));
 
 	try {
+		const plugins = pluginDirs.map((pluginDir) => buildRouters({ pluginDir }));
+
 		for (const { promptsDir, pluginName, routers } of plugins) {
 			if (!checking) {
 				mkdirSync(promptsDir, { recursive: true });
@@ -153,7 +167,7 @@ const main = () => {
 			}
 
 			const stale = onDiskRouterNames({ promptsDir });
-			const mismatched = [...routers].some(([name, text]) => readFileSync(join(promptsDir, `${name}.md`), 'utf8') !== text);
+			const mismatched = [...routers].some(([name, text]) => differsOnDisk({ path: join(promptsDir, `${name}.md`), text }));
 			const missing = [...routers.keys()].some((name) => !stale.includes(name));
 
 			if (mismatched || missing || stale.length !== routers.size) {
@@ -171,7 +185,7 @@ const main = () => {
 		}
 	} catch (error) {
 		console.error('');
-		console.error(`  ${error instanceof Error ? error.message : String(error)}`);
+		console.error(`  ${messageOf({ error })}`);
 		console.error('');
 		process.exitCode = 1;
 	}

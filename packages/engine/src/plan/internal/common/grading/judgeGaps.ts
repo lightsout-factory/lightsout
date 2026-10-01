@@ -8,6 +8,7 @@ import type { GradedGap } from '#src/contracts/plan/grade/GradedGap.ts';
 import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatus.ts';
 import type { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import { planAgentTimeouts } from '#src/plan/common/constants/planAgentTimeouts.ts';
 import { planAgentConcurrency } from '#src/plan/internal/common/constants/planAgentConcurrency.ts';
 import { groupGapCandidates } from '#src/plan/internal/common/grading/groupGapCandidates.ts';
 import { matchGapVerdicts } from '#src/plan/internal/common/grading/matchGapVerdicts.ts';
@@ -50,10 +51,7 @@ const batchRecords = ({ memory, batch }: { memory: GradeMemory; batch: GapBatch 
 
 /** Each judge gets its own runner and transcript, because a shared sink interleaves into one unreadable file. */
 const spawnGapJudge = async ({ params, batch, batchIndex }: { params: Params; batch: GapBatch; batchIndex: number }) => {
-	// Shorter than the readers' ceiling: a timed-out judge leaves its findings
-	// `unjudged`, which blocks, so it costs one extra question, while a hung judge
-	// holding a slot stalls the whole fan-out.
-	const { cwd, driver, workspaceDir, overviewText, standards, model, effort, permissions, timeoutMs = 10 * 60 * 1000, level } = params;
+	const { cwd, driver, workspaceDir, overviewText, standards, model, effort, permissions, timeoutMs = planAgentTimeouts.judgeMs, level } = params;
 	const invokePlanAgent = createPlanAgentRunner({
 		cwd,
 		driver,

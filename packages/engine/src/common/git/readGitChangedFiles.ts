@@ -25,8 +25,6 @@ export const readGitChangedFiles = async ({ cwd }: Params): Promise<string[] | u
 
 	// Porcelain paths are repo-root-relative; strip the cwd's prefix so they
 	// line up with the repo-relative paths agents report.
-	const root = prefix;
-
 	return status.stdout
 		.split('\n')
 		.filter(Boolean)
@@ -39,6 +37,6 @@ export const readGitChangedFiles = async ({ cwd }: Params): Promise<string[] | u
 
 			return renameTarget.replace(/^"|"$/g, '');
 		})
-		.map((path) => (root && path.startsWith(root) ? path.slice(root.length) : path))
+		.map((path) => (prefix && path.startsWith(prefix) ? path.slice(prefix.length) : path))
 		.filter((path) => !path.startsWith('.lightsout/'));
 };

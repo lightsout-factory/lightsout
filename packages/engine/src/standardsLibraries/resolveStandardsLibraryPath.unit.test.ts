@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, realpathSync, symlinkSync, writeFileSync } from
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import { messageOf } from '#src/common/utils/messageOf.ts';
 import { resolveStandardsLibraryPath } from '#src/standardsLibraries/resolveStandardsLibraryPath.ts';
 
 interface Entry {
@@ -20,7 +21,7 @@ const outcomeOf = ({ cwd, entry }: { cwd: string; entry: Entry }): { path: strin
 	try {
 		return { path: resolveStandardsLibraryPath({ cwd, name: entry.name, value: entry.value }) };
 	} catch (error) {
-		return { message: error instanceof Error ? error.message : String(error) };
+		return { message: messageOf({ error }) };
 	}
 };
 

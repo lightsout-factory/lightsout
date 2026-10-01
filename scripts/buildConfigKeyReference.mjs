@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderConfigKeyReference } from '../packages/engine/src/views/renderConfigKeyReference.ts';
 import { invokedDirectly } from './invokedDirectly.mjs';
+import { messageOf } from './messageOf.mjs';
 
 /**
  * Writes the top-level key table of `docs/configuration.md` from the engine's
@@ -84,7 +85,7 @@ const main = () => {
 		process.exitCode = 1;
 	} catch (error) {
 		console.error('');
-		console.error(`  ${error instanceof Error ? error.message : String(error)}`);
+		console.error(`  ${messageOf({ error })}`);
 		console.error('');
 		process.exitCode = 1;
 	}

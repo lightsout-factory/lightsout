@@ -1,9 +1,9 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { formatSchemaIssues } from '#src/common/utils/formatSchemaIssues.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { StandardsPackFile } from '#src/contracts/StandardsPackFile.ts';
 import type { LoadedStandardsPackFile } from '#src/standardsLibraries/common/types/LoadedStandardsPackFile.ts';
-import { formatSchemaIssues } from '#src/standardsLibraries/internal/common/utils/formatSchemaIssues.ts';
 
 interface Params {
 	/** Absolute `<library>/packs` folder. */

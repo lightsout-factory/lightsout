@@ -6,8 +6,9 @@ import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { getRequiredFlag } from '#src/cli/internal/common/args/getRequiredFlag.ts';
 import { finishImplementRun } from '#src/cli/internal/common/implementRun/finishImplementRun.ts';
 import { openDirectWorkspace } from '#src/cli/internal/common/implementRun/openDirectWorkspace.ts';
-import { readBodyBuildPlanName } from '#src/cli/internal/common/implementRun/readBodyBuildPlanName.ts';
+import { readBodyBuildTarget } from '#src/cli/internal/common/implementRun/readBodyBuildTarget.ts';
 import { printConfigSource } from '#src/cli/internal/common/render/printConfigSource.ts';
+import type { BodyBuildTarget } from '#src/cli/internal/common/types/BodyBuildTarget.ts';
 import type { RunWorkspace } from '#src/cli/internal/common/types/RunWorkspace.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { resolveCommandShipIntent } from '#src/cli/internal/common/utils/resolveCommandShipIntent.ts';
@@ -20,11 +21,34 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { runDirectWork } from '#src/direct/runDirectWork.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { requireImplementLifecycle } from '#src/ticketLifecycle/requireImplementLifecycle.ts';
+import type { WorkOrderPlanOutcome } from '#src/workOrder/common/types/WorkOrderPlanOutcome.ts';
+import { runWorkOrderBodyBuildLifecycle } from '#src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts';
 import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts';
+
+/** A build the record says nothing about runs under an id nobody minted in advance. */
+const runRecordedBuild = async ({
+	cwd,
+	target,
+	build,
+}: {
+	cwd: string;
+	target: BodyBuildTarget | undefined;
+	build: (runId?: string) => ReturnType<typeof runDirectWork>;
+}): Promise<WorkOrderPlanOutcome> => {
+	if (target === undefined) {
+		return { result: await build() };
+	}
+
+	const run = ({ runId }: { runId: string }) => build(runId);
+
+	return 'planName' in target
+		? runWorkOrderPlanLifecycle({ cwd, name: target.planName, run })
+		: runWorkOrderBodyBuildLifecycle({ cwd, workOrderName: target.workOrderName, run });
+};
 
 const runDirectBuild = async ({
 	cwd,
-	planName,
+	target,
 	ticketBody,
 	ticketRef,
 	driver,
@@ -33,8 +57,8 @@ const runDirectBuild = async ({
 	willShip,
 }: {
 	cwd: string;
-	/** The ticket plan this build implements, when the record says one claims it. */
-	planName: string | undefined;
+	/** What the record says this build implements, when it says anything. */
+	target: BodyBuildTarget | undefined;
 	ticketBody: string;
 	ticketRef: string;
 	driver: Driver;
@@ -44,8 +68,7 @@ const runDirectBuild = async ({
 }) => {
 	const build = (runId?: string) =>
 		runDirectWork({ cwd, ticketBody, ticketRef, runId, driver, driverName, config, willShip, onProgress: createProgressPrinter() });
-	const outcome =
-		planName === undefined ? { result: await build() } : await runWorkOrderPlanLifecycle({ cwd, name: planName, run: ({ runId }) => build(runId) });
+	const outcome = await runRecordedBuild({ cwd, target, build });
 
 	if ('refusal' in outcome) {
 		return { refusal: outcome.refusal };
@@ -87,9 +110,9 @@ const prepareDirectRun = async ({
 		return { error: refused };
 	}
 
-	const planName = await readBodyBuildPlanName({ cwd: workspace.cwd, branch: workspace.branch ?? (await readGitCurrentBranch({ cwd: workspace.cwd })) });
+	const target = await readBodyBuildTarget({ cwd: workspace.cwd, branch: workspace.branch ?? (await readGitCurrentBranch({ cwd: workspace.cwd })) });
 
-	return typeof planName === 'object' ? planName : { ticketRef, config, driver, driverName, planName };
+	return target !== undefined && 'error' in target ? target : { ticketRef, config, driver, driverName, target };
 };
 
 const printDirectRunHeader = ({
@@ -150,13 +173,13 @@ export const implementDirectCommand = async ({ flags, cwd }: CommandContext): Pr
 		return exitCli({ code: 1 });
 	}
 
-	const { ticketRef, config, driver, driverName, planName } = prepared;
+	const { ticketRef, config, driver, driverName, target } = prepared;
 
 	printDirectRunHeader({ workspace, ticketRef, ticketPath, configPath: resolveConfigPath({ cwd }) });
 
 	const built = await runDirectBuild({
 		cwd: workspace.cwd,
-		planName,
+		target,
 		ticketBody,
 		ticketRef,
 		driver,

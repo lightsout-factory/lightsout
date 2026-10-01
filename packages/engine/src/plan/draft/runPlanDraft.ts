@@ -7,6 +7,7 @@ import type { Effort } from '#src/contracts/Effort.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import { planAgentTimeouts } from '#src/plan/common/constants/planAgentTimeouts.ts';
 import { readMergedDecisions } from '#src/plan/decisionLog/readMergedDecisions.ts';
 import { estimatePlanScope } from '#src/plan/draft/estimatePlanScope.ts';
 import { draftFocusedPhasedPlan } from '#src/plan/draft/focused/draftFocusedPhasedPlan.ts';
@@ -55,7 +56,7 @@ export const runPlanDraft = async ({
 	model,
 	effort,
 	permissions,
-	timeoutMs = 30 * 60 * 1000,
+	timeoutMs = planAgentTimeouts.draftMs,
 	level,
 	onProgress,
 }: Params): Promise<RunPlanDraftResult> => {

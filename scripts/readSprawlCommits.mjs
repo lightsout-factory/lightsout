@@ -1,9 +1,8 @@
 import { execFileSync } from 'node:child_process';
 
 /**
- * The sha is abbreviated here rather than by git, whose `%h` length grows with
- * the object count and would rewrite every line of the dataset, which must be
- * byte-identical between rebuilds at the same HEAD.
+ * The full sha, because every git command given one must name exactly one
+ * commit; only the dataset shortens it, for display.
  */
 export const readSprawlCommits = ({ repoRoot }) => {
 	const output = execFileSync('git', ['log', '--reverse', '--format=%H%x09%aI%x09%s', '--', 'packages/**/*.ts', 'packages/**/*.tsx'], {
@@ -19,6 +18,6 @@ export const readSprawlCommits = ({ repoRoot }) => {
 			const [sha, at, ...subject] = line.split('\t');
 
 			// A subject may itself contain a tab.
-			return { sha: sha.slice(0, 7), at, subject: subject.join('\t') };
+			return { sha, at, subject: subject.join('\t') };
 		});
 };

@@ -1,3 +1,4 @@
+import { messageOf } from '#src/common/utils/messageOf.ts';
 import { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
 import type { ShipIntegration } from '#src/ship/common/types/ShipIntegration.ts';
 import type { IntegrationFailure } from '#src/ship/integration/common/types/IntegrationFailure.ts';
@@ -81,7 +82,7 @@ const loadStandards = async ({ cwd, integration }: Pick<Params, 'cwd' | 'integra
 
 		return { standards };
 	} catch (error) {
-		return { error: `the repository's standards could not be loaded: ${error instanceof Error ? error.message : String(error)}` };
+		return { error: `the repository's standards could not be loaded: ${messageOf({ error })}` };
 	}
 };
 

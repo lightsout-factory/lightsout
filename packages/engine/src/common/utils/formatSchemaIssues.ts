@@ -6,6 +6,6 @@ interface Params {
 	subject: string;
 }
 
-/** Every issue on one line, so a pack author fixes a file once rather than reloading per field. */
+/** Every issue on one line, so an author fixes a file once rather than reloading per field. */
 export const formatSchemaIssues = ({ issues, subject }: Params): string =>
 	issues.map((issue) => `${issue.path.join('.') || subject} ${issue.message}`).join('; ');

@@ -1,3 +1,4 @@
+import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { ShipStepFailure } from '#src/ship/common/types/ShipStepFailure.ts';
@@ -14,7 +15,8 @@ interface Params {
  */
 export const pushBranch = async ({ branch, cwd }: Params): Promise<ShipStepFailure | undefined> => {
 	const pushTimeoutMs = 60_000;
-	const pushed = await runCommand({ command: `git push --set-upstream origin ${branch}`, cwd, timeoutMs: pushTimeoutMs }).catch((error) => ({
+	const command = `git push --set-upstream origin ${quoteShellArgument({ argument: branch })}`;
+	const pushed = await runCommand({ command, cwd, timeoutMs: pushTimeoutMs }).catch((error) => ({
 		exitCode: -1,
 		stdout: '',
 		stderr: messageOf({ error }),

@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { messageOf } from '#src/common/utils/messageOf.ts';
 import { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
 import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { gradeMemoryPath } from '#src/plan/common/utils/gradeMemoryPath.ts';
@@ -15,8 +16,8 @@ const readJson = async ({ path }: { path: string }): Promise<{ value: unknown } 
 		const value: unknown = JSON.parse(text);
 
 		return { value };
-	} catch (cause) {
-		return { failure: cause instanceof Error ? cause.message : String(cause) };
+	} catch (error) {
+		return { failure: messageOf({ error }) };
 	}
 };
 
