@@ -28,9 +28,10 @@ shape that happens to be in the conversation already. A name, key or value
 drafted inside an option passes the same test before it is written down.
 
 **Offer as many options as survive, and no more.** There is no target count.
-When one approach survives, present it alone, say in one line why the others
-fell, and ask the user to confirm it; never add a weaker alternative to fill a
-slot. When the approaches that survive differ in nothing the user would see,
+When one approach survives, there is nothing to choose between: never put it in
+the Question format as a lone option, and never add a weaker alternative to fill
+a slot. Say in one line why the others fell, and show it as a
+[Design statement](#design-statement) at the point the skill names. When the approaches that survive differ in nothing the user would see,
 the choice is below [the escalation bar](#the-escalation-bar): make it, and say
 which you chose and why in one line rather than asking.
 
@@ -160,7 +161,8 @@ or talked about, and the 1–3 sentence target counts sentences, not table
 rows.
 
 Every question put to the user uses this labeled four-part shape, in this
-order:
+order. It is for a choice between options; a whole design shown for the user to
+confirm is not one, and uses the [Design statement](#design-statement) instead.
 
 **Context:** what the question is about and why it matters, in everyday
 words. Write for someone who has not read the plan or the code — never
@@ -222,3 +224,38 @@ one-line choices to select from. Every question is written out in that final
 response, in the shape above. A picker's labels cannot carry a Context, an
 Options list, or a drafted table, so what it saves in typing it takes out of the
 user's ability to answer.
+
+## Design statement
+
+The other shape a message to the user takes. A question asks the user to choose
+between options; a design statement shows them a whole design and asks whether
+it is what they meant. Never ask the user to approve a design they have not been
+shown in full — an option's label, or a paragraph summing it up, is not the
+design.
+
+Write it under these bold labels, each its own part, in this order:
+
+**What gets built:** what the user or the product has when this is done, and
+how it behaves — including every name, syntax or message they will see, written
+out in full.
+
+**What changes:** each file or area that changes, and what changes in it.
+
+**What is out:** what this deliberately does not do, including anything a
+reader might expect it to.
+
+**Choices I made:** every design choice answered without the user, each with
+its one-line why. This is where a choice the user would make differently
+becomes visible, so none is left out.
+
+**Why not the alternatives:** each approach that fell, with its one-line
+reason. Omit this part when there were none.
+
+Then close with one plain question — whether this matches what they meant. It
+carries no Options or Recommendation, because there is nothing to pick between.
+
+The Question format's rules on plain language, extra parts and durable delivery
+apply here too. Its length target does not: a part is as long as the design
+needs, written as short bullets rather than paragraphs. When the user changes a
+part, fold the change in and show the statement again with the changed parts
+marked.
