@@ -3028,7 +3028,7 @@
     {
       "set": "code",
       "path": "code/architecture/architecture-decisions",
-      "intro": "# Architecture Decisions\n\nUniversal architectural decisions that apply across the codebase.",
+      "intro": "# Architecture Decisions\n\nHow code is split into modules and shared, kept free of copies and dead code.",
       "ruleIds": [
         "module-file-to-folder",
         "thin-wrapper-functions",
@@ -3044,7 +3044,7 @@
     {
       "set": "code",
       "path": "code/architecture/folder-structure",
-      "intro": "# Folder Structure\n\nShared code lives in `common/` folders. A `common/` folder sits inside the folder whose code shares it, so where it sits shows who uses it: `src/common/` serves all of `src/`, and `src/billing/common/` serves only `src/billing/`.\n\nInside `common/`, every file goes in a folder for its kind of code:\n\n| Folder | Holds |\n| --- | --- |\n| `utils/` | Stateless functions, pure or doing I/O (`formatDate`, `loadConfig`) |\n| `types/` | Types (`CopyResult`) |\n| `constants/` | Constants (`defaultConfig`, `Action`) |\n| `services/` | Classes that hold state (`ApiClient`) |\n\nTwo or more functions about one subject can also share a folder named for that subject, such as `formatting/` or `parsing/`: a domain folder.\n\nA package's own architecture document may set its concrete folder layout on top of these rules.",
+      "intro": "# Folder Structure\n\nShared code lives in `common/` folders. A `common/` folder sits inside the folder whose code shares it: `src/common/` serves all of `src/`, and `src/billing/common/` serves only `src/billing/`.\n\nThe folders for each kind of code in `common/`:\n\n| Folder | Holds |\n| --- | --- |\n| `utils/` | Stateless functions, pure or doing I/O (`formatDate`, `loadConfig`) |\n| `types/` | Types (`CopyResult`) |\n| `constants/` | Constants (`defaultConfig`, `Action`) |\n| `services/` | Classes that hold state (`ApiClient`) |\n\nA domain folder is named for one subject. Inside `common/`, it holds two or more functions about that subject, such as `formatting/` or `parsing/`. Outside `common/`, a domain folder groups related modules under the subject's name and has no main file.",
       "ruleIds": [
         "shared-code-placement",
         "reuse-common-code",
@@ -3197,7 +3197,7 @@
     {
       "set": "code",
       "path": "code/style-guide/structure/import-paths",
-      "intro": "# Import Path Strategy",
+      "intro": "# Import Path Strategy\n\nHow an import names the file it reads from.",
       "ruleIds": [
         "import-path-alias",
         "path-aliases"
@@ -3206,7 +3206,7 @@
     {
       "set": "code",
       "path": "code/style-guide/structure/module-api",
-      "intro": "# Module Boundaries & Exports",
+      "intro": "# Module Boundaries & Exports\n\nWhat a module or package makes public, and how other code reaches it.\n\n- An index file is `index.ts`, or the same name in any other dialect: `index.js`, `index.mjs`, `index.jsx`, `index.tsx`.\n- A package's entry is the index file its manifest publishes to other packages. It sits at the package root or its `src/`, or the manifest names it, as a subpath export such as `\"./contracts\": \"./src/contracts/index.ts\"` does. It is the package's public contract: it lists exactly what other packages may use.\n- A route file a file router loads, such as `src/routes/index.tsx`, is a route, not an index file, and importing it imports that route.",
       "ruleIds": [
         "import-through-index",
         "module-exports",
@@ -3219,7 +3219,7 @@
     {
       "set": "code",
       "path": "code/style-guide/structure/one-export-per-file",
-      "intro": "# One Export Per File",
+      "intro": "# One Export Per File\n\nHow many things one file exports.",
       "ruleIds": [
         "multi-export"
       ]
@@ -3227,7 +3227,7 @@
     {
       "set": "code",
       "path": "code/style-guide/structure/type-placement",
-      "intro": "# Type & Constant Placement\n\nThese placement rules govern **shared** declarations. An exported type or\nconstant with no second consumer is a file-module wherever its consumers live\n— `common/` placement is earned by sharing, never by kind (see the\n[shared code placement rule](../../../architecture/folder-structure/05-shared-code-placement/rule.md)).",
+      "intro": "# Type & Constant Placement\n\nWhich folder inside a `common/` holds a type or a constant.",
       "ruleIds": [
         "types-and-interfaces",
         "constants"
@@ -3412,7 +3412,7 @@
       "name": "lightsout/banned-folder-name",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "a folder named for the kind of code it holds (`helpers/`, `utils/` outside `common/`) instead of the domain it serves",
+      "summary": "Folder names that say nothing about what the folder holds.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3420,7 +3420,7 @@
         "pass": 4,
         "fail": 1
       },
-      "prose": "**Some folder names are junk drawers.** A folder called `helpers/`, `lib/`,\n`core/`, `misc/` or `shared/` says nothing about what lives inside it — it is\nwhere code lands when nobody decided where it belongs, and every agent that\nfollows dumps the next orphan there too. These five are banned at every level,\n`common/` included.\n\n**Kind-buckets have one sanctioned home.** `utils/`, `types/` and `constants/`\nare the mandated skeleton *inside* `common/`; the same names anywhere else mean\nfiles sorted by what they are instead of what they are for. Banned outside\n`common/`.\n\n**Framework vocabulary is not banned.** `components/`, `hooks/`, `services/`,\n`controllers/` and `models/` are how React and NestJS projects are actually\norganised — they name real framework roles, not junk drawers, and they are\nlegal everywhere without declaring a framework. The only privileged folder\nname at any level is `common/`.\n\nThe remedy: name the folder for the domain it serves (`billing/`,\n`formatting/`), or fold its files into the module that owns them.",
+      "prose": "## Banned Folder Name\n\nNever name a folder `helpers/`, `lib/`, `core/`, `misc/` or `shared/` anywhere inside a package's `src/`, `common/` included. Name a folder `utils/`, `types/` or `constants/` only inside `common/`.\n\n- `components/`, `hooks/`, `services/`, `controllers/` and `models/` are allowed everywhere, with no framework to declare.\n- Name the folder for the domain it serves instead, such as `billing/` or `formatting/`, or move its files into the module that owns them.\n\nA name that says nothing about what a folder holds draws code nobody placed, and `common/` is the only folder name with a meaning of its own.",
       "fixtures": [
         {
           "side": "pass",
@@ -3491,7 +3491,7 @@
       "name": "lightsout/barrel-star",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
-      "summary": "an index file re-exporting with `export *` instead of naming what it publishes",
+      "summary": "How a package's entry file lists what it publishes.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3499,7 +3499,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Package Entry Files (`index.ts`)\n\nA package's entry `index.ts` is its **public API contract** — it lists exactly what other packages may use. It is the one index file a package keeps: inside the package, every import names the file that declares what it imports.\n\n1. **Named re-exports** — `export { Foo } from '<path>'` (alias when configured), never `export *`: a star re-export publishes whatever the target happens to export, so the contract stops being a decision and the scanner stops being able to read it\n2. **Export deliberately** — the entry lists what other packages need, and nothing only the package itself uses\n\nLine shape is the formatter's business, not this rule's — how re-exports wrap or merge follows the project's formatter configuration.\n\nThe question is answered for every source dialect: an `index.js`, `index.mjs`, `index.jsx` or `index.tsx` is judged exactly as `index.ts` is.",
+      "prose": "## Barrel Star\n\nIn a package's entry, re-export each name explicitly, `export { Foo } from '<path>'`, never with `export *`. List what other packages need, and nothing only the package itself uses.\n\nHow re-export lines wrap or merge follows the project's formatter, not this rule.\n\nA star publishes whatever its target happens to export, so the contract stops being a decision.",
       "fixtures": [
         {
           "side": "pass",
@@ -3574,7 +3574,7 @@
       "name": "lightsout/case-collision",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "two sibling paths that differ only by casing",
+      "summary": "Names that differ only in upper and lower case.",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -3582,7 +3582,7 @@
         "pass": 4,
         "fail": 4
       },
-      "prose": "**Case collisions are latent breakage.** Two sibling entries whose names differ only by casing — `readme.md` beside `README.md`, or a source file whose stem matches a sibling folder's name in another case, like `Gates.ts` beside `gates/` — resolve to one entry on a case-insensitive filesystem (macOS, Windows) and to two on a case-sensitive one (Linux CI). An import that works on the machine that wrote it silently picks a different target on the machine that checks it. A type checker only objects once both spellings are imported in one build, and a plain-JavaScript repo has no type checker at all — so the tree itself must never carry the ambiguity. Rename one side.\n\nGraduating a component or class into its PascalCase folder is the common way to create one of these (`Markdown/` beside `markdown.d.ts`) — the folder-casing rule says how to resolve it: move or rename the sibling first, never drop the folder's casing.",
+      "prose": "## Case Collision\n\nNever put two siblings in a folder whose names differ only by case, including a file beside a folder: `readme.md` beside `README.md`, or `Gates.ts` beside `gates/`. Rename one of them.\n\nA case-insensitive filesystem such as macOS or Windows sees one entry where Linux CI sees two, so an import can reach a different file on the machine that checks it, and a type checker objects late or, in plain JavaScript, never.",
       "fixtures": [
         {
           "side": "pass",
@@ -3687,7 +3687,7 @@
       "name": "lightsout/circular-dependencies",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
-      "summary": "two modules that import each other",
+      "summary": "Modules that depend on each other.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3695,7 +3695,7 @@
         "pass": 3,
         "fail": 2
       },
-      "prose": "### Circular Dependencies\n\nModule A importing B importing A creates fragile load order and breaks tree-shaking. Fix by extracting the shared piece (usually a type) into a third module both import, or restructure per the placement hierarchy.",
+      "prose": "## Circular Dependencies\n\nNever let two modules import each other. Move the piece they share, usually a type, into a third module both import, or move code as `shared-code-placement` says.\n\nA cycle makes load order fragile and breaks tree-shaking.",
       "fixtures": [
         {
           "side": "pass",
@@ -3895,7 +3895,7 @@
       "name": "lightsout/code-in-index-file",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
-      "summary": "an index file holding code instead of only re-export lines",
+      "summary": "What an index file may contain.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -3903,7 +3903,7 @@
         "pass": 5,
         "fail": 2
       },
-      "prose": "## Index Files Hold No Code\n\nAn `index.ts` is a doorway, never a program. A package's entry is the list other packages build against, so an index file that declares values, wires tables, or runs anything makes that list illegible.\n\n1. **Re-export lines only** — `export { Foo } from '<path>'` and `export type { Bar } from '<path>'`, plus comments\n2. **Executable code gets a named entry file** — conventionally `main.ts` — which imports what it runs from the files that declare it\n3. An entry point is a legitimate thing; it is just never named `index.ts`",
+      "prose": "## Code in Index File\n\nAn index file holds only re-export lines, `export { Foo } from '<path>'` and `export type { Bar } from '<path>'`, and comments. Put executable code in an entry file with its own name, conventionally `main.ts`, which imports what it runs from the files that declare it.\n\nA package's entry is the list other packages build against, and code in it makes that list hard to read.",
       "fixtures": [
         {
           "side": "pass",
@@ -3998,7 +3998,7 @@
       "name": "lightsout/constants",
       "set": "code",
       "documentPath": "code/style-guide/structure/type-placement",
-      "summary": "a shared constant filed under `types/` instead of `constants/`",
+      "summary": "Where constants go.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4006,7 +4006,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Constants → `common/constants/`\n\nConstants are not types — they live in `common/constants/` (`export const …`), never in `types/`. A `const` object with its derived union and lookup map lives in `constants/` under the object's name (see [named-constants.md](../patterns/named-constants.md)).\n\n```typescript\n// common/constants/defaultConfig.ts\nimport type { Config } from '@/path/to/common/types/Config';\n\nexport const defaultConfig: Config = { name: 'default' };\n```\n\nA constant may instead carry its own type beside it under one-export-per-file's exception 5 (`interface Config` + `defaultConfig: Config` in one `constants/` file, named for the value) — use `types/` when the type has any other consumer.",
+      "prose": "## Constants\n\nPut a constant in the `constants/` folder of the lowest `common/` its users share, as `shared-code-placement` says, never in `types/`. A constant only one module uses stays in that module's own `common/constants/`. A `const` object with its derived union and lookup map lives in `constants/` under the object's name, as `bare-string-union` and `derived-lookup-map` say.\n\n```typescript\n// common/constants/defaultConfig.ts\nimport type { Config } from '@/path/to/common/types/Config';\n\nexport const defaultConfig: Config = { name: 'default' };\n```\n\nA constant may instead keep its type in the same `constants/` file, named for the value, under `multi-export`'s exception 5. When the type has any other consumer, it goes in `types/`.\n\nConstants are values, not types, so they get a folder of their own.",
       "fixtures": [
         {
           "side": "pass",
@@ -4028,7 +4028,7 @@
       "name": "lightsout/cross-package-sharing",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "code two packages need duplicated per package instead of moved to the shared one",
+      "summary": "Code that several packages need.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4036,7 +4036,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Cross-Package Sharing (`packages/shared/`)\n\nCode needed by 2+ packages belongs in a shared package — not duplicated per-package.\n\nA pure-contracts/shared package — one where everything is public by design —\nis a `common/`-like space: its `src/` holds **domain folders**, not modules.\nThe companion test decides this per folder: a folder whose every file is\nsomething its users call directly is a domain folder.",
+      "prose": "## Cross-Package Sharing\n\nNever copy code from one package into another. Code that `shared-package-criteria` lets into a shared package goes there instead of a copy in each package.\n\nA shared package where everything is public is like a `common/`: its `src/` holds domain folders, not modules. Decide each folder as `module-out-of-common` does: a folder whose every file is something its users call directly is a domain folder.\n\nCopies in each package drift apart, and a fix then reaches only one of them.",
       "fixtures": [
         {
           "side": "pass",
@@ -4072,7 +4072,7 @@
       "name": "lightsout/dead-export",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
-      "summary": "an export nothing else references",
+      "summary": "Code that nothing uses any more.",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
@@ -4080,7 +4080,7 @@
         "pass": 5,
         "fail": 3
       },
-      "prose": "### Unused Code\n\nDelete unused exports, interfaces, types and functions as soon as they become unused. Keeping them \"in case\" isn't needed: git history still has them. If you're not sure whether something is used, search before deleting.",
+      "prose": "## Dead Export\n\nDelete an export that nothing references, not even a test, as soon as it becomes unused. This covers interfaces, types and functions as well as values.\n\n- Never keep code in case it is needed later: version history still has it.\n- When you are not sure whether something is used, search before you delete it.\n- An export that only tests use is `test-only-export`'s question, not this rule's.\n\nUnused code still has to be read, and kept compiling, by everyone who passes it.",
       "fixtures": [
         {
           "side": "pass",
@@ -4260,7 +4260,7 @@
       "name": "lightsout/duplicate-code-block",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
-      "summary": "the same block of code written out in two or more files",
+      "summary": "The same code written out in more than one place.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {
@@ -4270,7 +4270,7 @@
         "pass": 4,
         "fail": 2
       },
-      "prose": "### Duplicated Patterns & Logic\n\nThe same pattern in 2+ files gets extracted to the lowest common ancestor `common/` (loading/error state handling, validation logic, repeated transformations, generic named constants like a `SortDirection` union belong in `src/common/constants/`).\n\n**The composition remedy is never duplication.** A class that holds a shared collaborator and forwards to it through one-line methods (`update() { return this.runState.update(...) }`) repeats that shape in every class holding the same collaborator — by design: it is what the class-inheritance rule mandates in place of `extends` (see the thin-wrapper rule's carve-out). Both duplication tiers skip it.",
+      "prose": "## Duplicate Code Block\n\nWhen the same code appears in two or more files, such as loading and error handling, validation or a repeated transformation, write it once where `shared-code-placement` says, and import it.\n\nA class that holds a collaborator and passes calls to it through one-line methods, as `class-inheritance` requires and `thin-wrapper-functions` allows, repeats that shape in every class holding the same collaborator. That is never duplication, and this rule does not count it.\n\nCopies drift apart, and a fix then reaches only one of them.",
       "fixtures": [
         {
           "side": "pass",
@@ -4316,7 +4316,7 @@
       "name": "lightsout/duplicate-export-name",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
-      "summary": "the same export name declared in more than one place",
+      "summary": "Exports in different places that share one name.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4324,7 +4324,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "",
+      "prose": "## Duplicate Export Name\n\nBefore you add an export, search the repository for one with the same name. Two exports with one name are usually one thing written twice: keep one, and move it to the `common/` both users share, as `shared-code-placement` says.\n\nTwo may share a name only when they are different things, or the same idea built separately for packages that cannot share code.\n\nThen a search by name finds the one place a concept lives.",
       "fixtures": [
         {
           "side": "pass",
@@ -4360,7 +4360,7 @@
       "name": "lightsout/duplicate-function-body",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
-      "summary": "two functions with the same body under different variable names",
+      "summary": "Functions that are copies of each other under new names.",
       "checked": true,
       "defaultSeverity": "blocking",
       "defaultOptions": {
@@ -4370,7 +4370,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "",
+      "prose": "## Duplicate Function Body\n\nNever write a function whose body is another function's with only the names or the literal values changed. Keep one, and pass the values that differed as arguments.\n\n- This covers every function, method and callback, in the same file or another.\n- Two functions that call different hooks are different: a hook cannot be passed in.\n- A method that only forwards to a collaborator its class holds is not a copy, as `thin-wrapper-functions` says.\n\nRenaming a copy hides it from a search by name, so the two drift apart unseen.",
       "fixtures": [
         {
           "side": "pass",
@@ -4489,7 +4489,7 @@
       "name": "lightsout/file-directly-in-common",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "Files in `common/` go in a folder for their kind of code.",
+      "summary": "Shared files go in a folder for their kind of code.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4781,7 +4781,7 @@
       "name": "lightsout/folder-casing",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "a folder whose casing is none of the three the document allows",
+      "summary": "How folder names are cased.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4789,7 +4789,7 @@
         "pass": 3,
         "fail": 1
       },
-      "prose": "## Folder Naming\n\nFolders match what they hold, in that name's own casing:\n\n- **Category/container folders** — `camelCase` (`utils/`, `types/`, `formatting/`, `apiTokens/`)\n- **A folder graduated from a single named item** — that item's name and casing: class/component folders are `PascalCase` (`HttpClient/`, `IssuePanel/`)\n- **Resolve casing in order:** (1) established convention in the directory, (2) the package's framework doc (NestJS is `kebab-case` throughout; URL-mapped route segments are `kebab-case`), (3) the defaults above.\n\n**When the PascalCase folder would case-collide with an existing sibling** (`Markdown/` beside `markdown.d.ts`), the case-collision rule wins — it is correctness, casing is convention. Rename or move the sibling first: it is almost always a companion that belongs inside the new folder, or a declaration file that should be named for what it declares. Never resolve the collision by dropping the folder to camelCase, which would leave the repo with two casing conventions.",
+      "prose": "## Folder Casing\n\nCase a folder's name like what it holds:\n\n- A folder that groups things is camelCase: `utils/`, `types/`, `formatting/`, `apiTokens/`.\n- A module that became a folder, as `module-file-to-folder` says, takes its item's name and casing, so a class or component folder is PascalCase: `HttpClient/`, `IssuePanel/`.\n\nDecide in this order: the convention the directory already follows, then the rules for the package's framework (NestJS is kebab-case throughout, and URL route segments are kebab-case), then the defaults above.\n\nWhen a new PascalCase folder would differ only by case from a sibling, such as `Markdown/` beside `markdown.d.ts`, `case-collision` wins. Move or rename the sibling first: it is usually a companion that belongs inside the new folder, or a declaration file to name for what it declares. Never drop the folder to camelCase, which would leave the repo with two casing conventions.\n\nThen a folder's casing tells a reader what kind of thing it holds.",
       "fixtures": [
         {
           "side": "pass",
@@ -4825,7 +4825,7 @@
       "name": "lightsout/folder-index-file",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
-      "summary": "an `index.ts` in a folder that is not a package's entry",
+      "summary": "Which folders may have an index file.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -4833,7 +4833,7 @@
         "pass": 4,
         "fail": 2
       },
-      "prose": "## No Folder Index Files\n\nAn `index.ts` is a package's entry — the file its manifest publishes to other packages — and nothing else.\n\n- **Every import already names the declaring file**, so an `index.ts` in a folder lists names that nothing reads through it. It is a second copy of what the folder holds, kept by hand, that drifts the first time someone adds a file and forgets it.\n- **A package's entry stays.** Other packages import it, so it is the package's contract. It sits at the package root or its `src/`, or the manifest names it — a subpath export such as `\"./contracts\": \"./src/contracts/index.ts\"` makes that file an entry too.\n- **A route is not an index file.** A file router's `src/routes/index.tsx` is a route the framework loads.\n\nDelete a folder's `index.ts`, and import each name from the file that declares it.",
+      "prose": "## Folder Index File\n\nOnly a package's entry is an index file. Delete an index file in any other folder, and import each name from the file that declares it.\n\nEvery import already names the declaring file, as `import-through-index` says, so a folder's index lists names nothing reads through it, and it drifts the first time someone adds a file and forgets it.",
       "fixtures": [
         {
           "side": "pass",
@@ -4879,7 +4879,7 @@
       "name": "lightsout/folder-size",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "more files sitting in one flat folder than the cap allows",
+      "summary": "When a folder holds too many files.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {
@@ -4889,7 +4889,7 @@
         "pass": 25,
         "fail": 21
       },
-      "prose": "When a folder starts reading like a directory listing instead of a description of the product, group the related siblings under a parent domain folder. Never sort them into a bucket named for what kind of code they are.\n\nA directory a file-based router owns is not judged here: its population is the number of routes the app has, which is a product fact rather than a folder someone let grow.",
+      "prose": "## Folder Size\n\nWhen a folder holds more than 20 files, not counting tests, group related files under a domain folder named for what they share.\n\nA folder a file router owns is exempt: its file count is the number of routes, a fact about the product.\n\nA long flat folder reads like a listing instead of a description of the product.",
       "fixtures": [
         {
           "side": "pass",
@@ -5229,7 +5229,7 @@
       "name": "lightsout/import-path-alias",
       "set": "code",
       "documentPath": "code/style-guide/structure/import-paths",
-      "summary": "a relative import path in a package that configures aliases",
+      "summary": "When imports use the package's path aliases.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -5237,7 +5237,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "**Use the package's configured path alias for every import.**\n\n- When a package defines path aliases — in `package.json` → `imports` or in `tsconfig.json` → `compilerOptions.paths` — NEVER use relative paths (`./`, `../`) — not even for sibling files, `common/` subfolders, or a package entry's re-exports\n- Either declaration counts: a package that declares `imports` has configured aliases just as surely as one that declares `paths`\n- If a package defines **no** path aliases, use relative paths consistently — and consider adding aliases\n- This applies to every file: components, constants, interfaces, types, utils, hooks, etc.\n\n✅ GOOD: Path alias for everything\n\nA package that declares `imports` in `package.json` — the specifier carries its extension:\n\n```typescript\nimport { ClassName } from '#src/path/to/ClassName.ts';\nimport { methodName } from '#src/common/utils/methodName.ts';\nimport { features } from '#src/features/home/components/HomeIssueDetails/common/constants/features.ts';\nimport { MockIssuePanel } from '#src/features/home/components/HomeIssueDetails/components/MockIssuePanel.tsx';\n```\n\nA package that declares `paths` in `tsconfig.json`:\n\n```typescript\nimport { ClassName } from '@/path/to/ClassName';\nimport { methodName } from '@/common/utils/methodName';\nimport { features } from '@/features/home/components/HomeIssueDetails/common/constants/features';\nimport { MockIssuePanel } from '@/features/home/components/HomeIssueDetails/components/MockIssuePanel';\n```\n\n❌ BAD: Relative paths in an alias-configured package\n\n```typescript\nimport { helper } from './helper';\nimport { util } from '../common/utils/util';\nimport { features } from './common/constants/features';\n```",
+      "prose": "## Import Path Alias\n\nUse the package's configured path alias for every import. A package has aliases when it declares `imports` in `package.json` or `compilerOptions.paths` in `tsconfig.json`, and then never uses a relative path (`./`, `../`), not even for a sibling file, a `common/` subfolder or a package entry's re-exports.\n\nWhen a package declares no aliases, use relative paths consistently, and consider adding aliases.\n\n```typescript\n// Correct: an imports alias, then a paths alias\nimport { features } from '#src/features/home/common/constants/features.ts';\nimport { features } from '@/features/home/common/constants/features';\n\n// Incorrect in a package with aliases\nimport { features } from './common/constants/features';\n```\n\nThen every import of a file reads the same, wherever it is written.",
       "fixtures": [
         {
           "side": "pass",
@@ -5283,7 +5283,7 @@
       "name": "lightsout/import-through-index",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
-      "summary": "an import through an `index.ts` of the importer's own package instead of from the file that declares the name",
+      "summary": "Where an import should point.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -5291,7 +5291,7 @@
         "pass": 5,
         "fail": 4
       },
-      "prose": "## Import From the Declaring File\n\nEvery import names the file that declares what it imports — `@/ingestion/ingestRecords`, never `@/ingestion`.\n\n- **Never through an `index.ts`:** an import through one loads every file it re-exports, and everything those files import, to reach one name. A bundler drops the rest again; a test runner does not, so every test file that imports through an index pays for the whole folder.\n- **Another package's entry is its public API:** an import from another workspace package goes through that package's entry — `@acme/engine`, not a path into its `src/`. Code inside a package never imports its own entry.\n- **An index file may re-export from another**, and an index file's own test imports the file it tests.\n\nA route file the framework loads is not an index file in this sense — `src/routes/index.tsx` is a route, and importing it is importing that route.\n\nWhere a package keeps its folders is the package's own business, so this rule judges only a file that belongs to a package. Where the repo's manifests declare workspace packages, a file outside every one of them — a build script at the repo root, say — is not held to it. A repo whose manifests declare no workspace package is itself one package, and every file in it is judged.",
+      "prose": "## Import Through Index\n\nEvery import names the file that declares what it imports: `@/ingestion/ingestRecords`, never `@/ingestion`. Never import through an index file.\n\n- Import from another workspace package through its entry, such as `@acme/engine`, never a path into its `src/`.\n- Code inside a package never imports its own entry.\n- An index file may re-export from another index file, and an index file's own test imports the file it tests.\n- This rule judges only files that belong to a package. Where the repo's manifests declare workspace packages, a file outside all of them, such as a build script at the repo root, is not held to it. A repo that declares none is one package, and every file in it is judged.\n\nAn import through an index file loads every file it re-exports to reach one name, and a test runner, unlike a bundler, pays for all of them.",
       "fixtures": [
         {
           "side": "pass",
@@ -5431,7 +5431,7 @@
       "name": "lightsout/internal-import-from-outside",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
-      "summary": "a file inside an `internal/` folder imported from outside the folder that holds it",
+      "summary": "Keeping a folder's private files private.",
       "checked": true,
       "defaultSeverity": "off",
       "defaultOptions": {},
@@ -5439,7 +5439,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Private Files Live in `internal/`\n\nA folder's private files sit in its `internal/` folder, and only files inside that folder import them. Everything outside `internal/` is the folder's public API.\n\n```\nsrc/ingestion/\n├─ ingestRecords.ts        # public — anyone may import it\n├─ ingestRecords.unit.test.ts\n└─ internal/\n   ├─ parseRow.ts          # private to src/ingestion/\n   └─ parseRow.unit.test.ts\n```\n\n- **Inside the folder:** `src/ingestion/ingestRecords.ts` imports `./internal/parseRow` — correct. So does any test under `src/ingestion/`.\n- **Outside it:** `src/reporting/buildReport.ts` importing `../ingestion/internal/parseRow` is a finding. Import the public file that uses it, or — if the file is genuinely shared — move it out of `internal/`.\n- **The path is the whole statement.** Privacy is where the file sits, so a reader sees it in the import line itself, with no list in another file to consult.\n- **Nested folders nest the rule.** `src/ingestion/parser/internal/tokenize.ts` is private to `src/ingestion/parser/`.\n- **`internal/` marks privacy, not a new kind of place.** What goes inside it follows the same placement rules as any other folder — shared helpers in a `common/` under it, a graduated concept in its own folder.\n\nA repo opts into this rule by naming it in `standards-rule-settings`; until it does, nothing here applies to it.",
+      "prose": "## Internal Import From Outside\n\nPut a folder's private files in its `internal/` folder, and import them only from files inside that folder. Everything outside `internal/` is the folder's public API.\n\n```\nsrc/ingestion/\n├─ ingestRecords.ts        # public: anyone may import it\n└─ internal/\n   └─ parseRow.ts          # private to src/ingestion/\n```\n\n- Any file inside the folder, tests included, may import from its `internal/`.\n- From outside, import the public file that uses it instead, or move the file out of `internal/` when it is genuinely shared.\n- Nested folders nest the rule: `src/ingestion/parser/internal/tokenize.ts` is private to `src/ingestion/parser/`.\n- An `internal/` folder may sit in any folder, beside what `module-folder-layout` allows.\n- `internal/` marks privacy only. Inside it, place code as anywhere else: shared code in a `common/` as `shared-code-placement` says, and a module that needs files of its own in its own folder as `module-file-to-folder` says.\n\nThen privacy shows in the import line itself, with no list elsewhere to consult.",
       "fixtures": [
         {
           "side": "pass",
@@ -5599,7 +5599,7 @@
       "name": "lightsout/module-exports",
       "set": "code",
       "documentPath": "code/style-guide/structure/module-api",
-      "summary": "an item exported somewhere other than the line it is defined on",
+      "summary": "How an item is exported.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -5607,7 +5607,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Module Exports\n\n- Always named exports, on the line the item is defined — functions, classes, interfaces, and `as const` named constants alike.",
+      "prose": "## Module Exports\n\nAlways use named exports, on the line the item is defined: functions, classes, interfaces and `as const` named constants alike.\n\nThen every import uses the item's own name, and its definition shows that it is public.",
       "fixtures": [
         {
           "side": "pass",
@@ -5691,7 +5691,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Module Folder Layout\n\nEvery module folder has the same layout:\n\n- Its main file, named after the folder: `listIssues/listIssues.ts`.\n- A `common/` folder for the files only this module uses, when it has any.\n- Modules inside it, each a file or folder next to the main file.\n\nNothing else. Every level, `src/` included, holds only modules, a `common/` folder and files: never invent another kind of folder.\n\nThen a reader knows where to look in any module.",
+      "prose": "## Module Folder Layout\n\nEvery module folder has the same layout:\n\n- Its main file, named after the folder: `listIssues/listIssues.ts`.\n- A `common/` folder for the files only this module uses, when it has any.\n- Modules inside it, each a file or folder next to the main file.\n\nNothing else. Outside a module, a folder holds modules, a `common/`, and domain folders that group related modules. Never invent another kind of folder.\n\nThen a reader knows where to look in any module.",
       "fixtures": [
         {
           "side": "pass",
@@ -5727,7 +5727,7 @@
       "name": "lightsout/module-out-of-common",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "When shared code has grown too big for `common/`.",
+      "summary": "When shared code has grown into a module of its own.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -5791,7 +5791,7 @@
       "name": "lightsout/multi-export",
       "set": "code",
       "documentPath": "code/style-guide/structure/one-export-per-file",
-      "summary": "more than one export in a file, outside the closed exception list",
+      "summary": "How many things one file may export.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -5799,7 +5799,7 @@
         "pass": 4,
         "fail": 1
       },
-      "prose": "- Each **exported** function, class, interface, type, or constant has its own file, named after the export (cased per the package's file-naming convention)\n- Non-exported items (private helpers, local types) may co-locate with the export they serve\n\n## The Closed Exception List\n\nThe **only** cases where a file may contain more than one item — every exception has a mechanical criterion:\n\n| # | Exception | Criterion |\n|---|-----------|-----------|\n| 1 | `Params` / `ConstructorParams` interfaces | Stays in the file of its function/class; not exported independently |\n| 2 | Private helpers | Not exported; called only within this file (see [functions.md](../patterns/functions.md#private-helpers-may-co-locate)) |\n| 3 | Discriminated union families | A union type and its member types share one file when the members exist only as constituents of that union |\n| 4 | Named constant + derived lookup map | A lookup map keyed by the union (`Record<MyType, …>`) may live in the `const` object's file (see [named-constants.md](../patterns/named-constants.md#derived-lookup-maps-may-co-locate)) |\n| 5 | A type + the single value typed by it | `interface Config` beside `export const defaultConfig: Config` share one file, filed under the value's name — the default has no consumer the type does not already have |\n\n## Multiple Exported Items — Still Not Negotiable\n\nInvalid rationalizations: \"the interface is only used by this constant\", \"they're closely related\", \"it's just a small helper\" (if it's a helper, make it non-exported — exception 2; if exported, own file).\n\n```typescript\n// ❌ config.ts: export interface Config + export const defaultConfig — split them:\n// common/types/Config.ts        → export interface Config { ... }\n// common/constants/defaultConfig.ts → export const defaultConfig: Config = { ... }\n```\n\n**Exception 3 in practice** — a union family shares one file because the members exist only as constituents:\n\n```typescript\n// common/types/SyncEvent.ts\nexport interface FileAddedEvent {\n\tkind: typeof SyncEventKind.FileAdded; // discriminant references the const object, never a raw literal\n\tpath: string;\n}\n\nexport interface RecordParsedEvent {\n\tkind: typeof SyncEventKind.RecordParsed;\n\trecordId: string;\n}\n\nexport type SyncEvent = FileAddedEvent | RecordParsedEvent;\n```\n\nIf a member type starts being used independently of the union, it moves to its own file.\n\n## One Exported Function Per File — Not Negotiable\n\nEvery **exported** function gets its own file, named after the export (cased per [file-naming.md](../conventions/file-naming.md)). Rationalizations that are NOT valid: \"closely related\", \"both config functions\", \"over-engineered to split\", \"one is just a helper for the other\" — if it's truly a helper, make it **non-exported** and co-locate it; if it's exported, it gets its own file.\n\n```typescript\n// ❌ config.ts exporting loadConfig AND saveConfig — split into loadConfig.ts + saveConfig.ts\n```\n\n## Grouping Values: One Named Object, Never a Bag\n\nWhen several values form one concept — a feature's thresholds, a set of retry\ndefaults — export **one named object**:\n\n```typescript\n// featureThresholds.ts\nexport const featureThresholds = { maxBatchSize: 20, maxRetries: 3 } as const;\n```\n\nThat is one export (no exception needed), the group has a name at every use\nsite, and it greps. What stays banned is the bag: a `constants.ts` with a\ndozen loose exports is unnamed by its file, invisible to search, and grows\nforever.",
+      "prose": "## Multi-Export\n\nGive each exported function, class, interface, type or constant its own file, named after the export. Non-exported items, such as private helpers and local types, may sit in the file of the export they serve.\n\nOnly these cases may put more than one item in a file:\n\n1. A `Params` or `ConstructorParams` interface stays in its function's or class's file, not exported.\n2. A private helper, not exported and called only in this file, as `private-helper-colocation` says.\n3. A union and its member types share one file when the members exist only as parts of that union.\n4. A lookup map keyed by a named constant's union (`Record<MyType, …>`) may sit in the `const` object's file, as `derived-lookup-map` says.\n5. A type and the single value typed by it share one file, named for the value, such as `interface Config` beside `export const defaultConfig: Config`: the value has no consumer the type lacks.\n\n\"Closely related\", \"both config functions\", \"over-engineered to split\", \"just a small helper\" and \"one is a helper for the other\" are not exceptions. Make a helper non-exported and keep it in the file, or give each export its own file: `loadConfig` and `saveConfig` go in `loadConfig.ts` and `saveConfig.ts`.\n\nException 3:\n\n```typescript\n// common/types/SyncEvent.ts\nexport interface FileAddedEvent {\n\tkind: typeof SyncEventKind.FileAdded;\n\tpath: string;\n}\n\nexport interface RecordParsedEvent {\n\tkind: typeof SyncEventKind.RecordParsed;\n\trecordId: string;\n}\n\nexport type SyncEvent = FileAddedEvent | RecordParsedEvent;\n```\n\nWhen a member type starts being used on its own, it moves to its own file.\n\nWhen several values form one concept, such as a feature's thresholds, export one named object: `export const featureThresholds = { maxBatchSize: 20, maxRetries: 3 } as const;`. Never a bag, such as a `constants.ts` of loose exports.\n\nOne export per file gives each item one name at every use, and a search finds it.",
       "fixtures": [
         {
           "side": "pass",
@@ -6121,7 +6121,7 @@
       "name": "lightsout/path-aliases",
       "set": "code",
       "documentPath": "code/style-guide/structure/import-paths",
-      "summary": "an alias written from memory instead of read from the package's own declaration",
+      "summary": "Which path alias to use, and how to write it.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -6129,7 +6129,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Path Aliases\n\nEach package declares its own path aliases, in `package.json` → `imports` or in `tsconfig.json` → `compilerOptions.paths`. Common patterns:\n\n| Alias | Declared in | Example |\n| --- | --- | --- |\n| `#src/*` | `package.json` → `imports` | `import { X } from '#src/common/utils/X.ts'` |\n| `@/*` | `tsconfig.json` → `paths` | `import { X } from '@/common/utils/X'` |\n| `@src/*` | `tsconfig.json` → `paths` | `import { X } from '@src/common/utils/X'` |\n\n**Rule:** Always read the package's own declaration to determine the correct alias. Do not hardcode aliases from memory.\n\n**Gotcha — a package-imports alias resolves its target literally.** `\"#src/*\": \"./src/*\"` substitutes the captured text and stops: Node, TypeScript and esbuild do no extension probing on an `imports` target, so the specifier must carry the file extension it resolves to (`#src/runState/summarizeRun.ts`, `#src/cli/shipCommand.ts`). An extensionless `#src/cli/shipCommand` names a file that does not exist. A tsconfig `paths` alias is probed the ordinary way, so `@/cli` is correct there.",
+      "prose": "## Path Aliases\n\nEach package declares its own path aliases, in `package.json` `imports` or in `tsconfig.json` `compilerOptions.paths`. Read the package's own declaration for the alias; never write one from memory. Common ones:\n\n| Alias | Declared in | Example |\n| --- | --- | --- |\n| `#src/*` | `package.json` `imports` | `import { X } from '#src/common/utils/X.ts'` |\n| `@/*` | `tsconfig.json` `paths` | `import { X } from '@/common/utils/X'` |\n| `@src/*` | `tsconfig.json` `paths` | `import { X } from '@src/common/utils/X'` |\n\nAn `imports` alias resolves literally, so the specifier carries the extension of the file it names: `#src/cli/shipCommand.ts`. An extensionless `#src/cli/shipCommand` names a file that does not exist. A `paths` alias is resolved the usual way, so `@/cli` is right there.\n\nPackages differ, and a remembered alias may be one this package never declared.",
       "fixtures": [
         {
           "side": "pass",
@@ -6151,7 +6151,7 @@
       "name": "lightsout/per-folder-readmes",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "a folder README restating structure these rules already give",
+      "summary": "When a folder gets its own README.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -6159,7 +6159,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Per-Folder READMEs\n\nA folder gets a `README.md` only for a genuine invariant not derivable from these rules (e.g. \"everything here runs in the widget sandbox — no DOM globals\"). Never prose restating the structure.",
+      "prose": "## Per-Folder READMEs\n\nGive a folder a `README.md` only for an invariant these rules don't already give, such as \"everything here runs in the widget sandbox, so no DOM globals\". Never write one that restates the structure.\n\nA README that restates the structure drifts from it.",
       "fixtures": [
         {
           "side": "pass",
@@ -6239,7 +6239,7 @@
       "name": "lightsout/premature-abstraction",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
-      "summary": "an abstraction built before two or three concrete uses called for it",
+      "summary": "When to turn similar code into something general.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -6247,7 +6247,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "### Premature Abstraction\n\nWait for 2–3 concrete uses before abstracting. The right abstraction becomes clear with real usage; wrong abstractions are worse than duplication.",
+      "prose": "## Premature Abstraction\n\nNever generalise code for a use that does not exist yet: no option, parameter or layer for an imagined case. Build it when a second real use needs it.\n\nThis covers code that is similar but not yet the same. Code that is already identical is shared from the second copy, as `duplicate-code-block` and `duplicate-function-body` say.\n\nThe right abstraction shows itself in real use, and a wrong one is worse than duplication.",
       "fixtures": [
         {
           "side": "pass",
@@ -6527,7 +6527,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Reuse Common Code\n\nBefore you write a helper, type, constant or service, look for one in every `common/` folder in the package.\n\n- If one does what you need, import it. Never write a second copy.\n- If it sits in another module's `common/`, move it up as shared-code-placement says, then import it.\n- If one nearly does, extend it rather than write a near copy, as long as its current callers keep working.\n\nTwo copies drift apart, and a fix then reaches only one of them.",
+      "prose": "## Reuse Common Code\n\nBefore you write a helper, type, constant or service, look for one in every `common/` folder in the package.\n\n- If one does what you need, import it. Never write a second copy.\n- If it sits in another module's `common/`, move it up as `shared-code-placement` says, then import it.\n- If one nearly does, extend it rather than write a near copy, as long as its current callers keep working.\n\nTwo copies drift apart, and a fix then reaches only one of them.",
       "fixtures": [
         {
           "side": "pass",
@@ -6642,7 +6642,7 @@
       "name": "lightsout/shared-code-placement",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "Which `common/` folder shared code belongs in.",
+      "summary": "Where code that several modules use belongs.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -6706,7 +6706,7 @@
       "name": "lightsout/shared-package-criteria",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "a framework-dependent or single-consumer item placed in the shared package",
+      "summary": "What belongs in the shared package.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -6714,7 +6714,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "**Use `packages/shared/` when:** 2+ packages need it, it has zero framework dependencies, and it defines a contract both sides agree on (constants, error codes, pure predicates).\n\n**Don't when:** one package needs it (use its `common/`), it imports a framework (wrap the shared primitive locally), or it's an implementation detail (hooks, guards, resolvers).\n\n**Pattern — shared primitive + local wrapper:**\n\n```\npackages/shared/src/permissions/utils/hasPermission.ts        ← pure function\npackages/frontend/src/common/permissions/useHasPermission.ts  ← React hook wrapping it\npackages/api/src/auth/guards/                                 ← NestJS guard using it\n```",
+      "prose": "## Shared Package Criteria\n\nPut code in the shared package only when two or more packages need it, it has no framework dependencies, and it is a contract both sides agree on, such as constants, error codes or pure predicates. Never when:\n\n- One package needs it. Put it in that package's `common/`.\n- It imports a framework. Keep the pure part shared, and wrap it locally.\n- It is an implementation detail, such as a hook, guard or resolver.\n\nFor example, `packages/shared/src/permissions/hasPermission.ts` holds the pure function, and each package that needs a framework form wraps it locally, such as a React hook or a NestJS guard.\n\nThen every package can import everything in the shared package.",
       "fixtures": [
         {
           "side": "pass",
@@ -6750,7 +6750,7 @@
       "name": "lightsout/single-file-domain-folder",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "When a domain folder in `common/` has too few files to be a folder.",
+      "summary": "When a subject folder has too few files to be a folder.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -7694,7 +7694,7 @@
       "name": "lightsout/thin-wrapper-functions",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
-      "summary": "a function that only renames parameters or forwards to another",
+      "summary": "Functions that only pass a call on to another.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -7702,7 +7702,7 @@
         "pass": 4,
         "fail": 2
       },
-      "prose": "## Anti-Patterns to Avoid\n\n### Thin Wrapper Functions\n\nDon't create functions that only rename parameters or forward to another function:\n\n```typescript\n// ❌ adds nothing but indirection\nexport const buildBrowserLabel = ({ browser, browserVersion }) =>\n\tbuildVersionedLabel({ name: browser, version: browserVersion });\n\n// ✅ call the underlying function directly at the call site\n```\n\nA wrapper IS justified when it adds real validation/transformation, meaningfully simplifies a complex API, or handles errors/defaults.\n\n### Delegation to a held collaborator is not a thin wrapper\n\nA class that holds a collaborator instead of extending one — the remedy the\ncomposition-over-inheritance rule requires — reaches it through one-line methods\nthat forward unchanged. Those methods are the seam that rule asks for, not\nindirection to delete:\n\n```typescript\n// ✅ the composition remedy: the sharing is visible at the seam\nexport class RefactorRun {\n\tprivate readonly runState: RunState;\n\n\tupdate({ patch }: { patch: Partial<RunManifest> }): Promise<void> {\n\t\treturn this.runState.update({ patch });\n\t}\n}\n```\n\nDeleting them means publishing the held value so callers can reach through it,\nand a caller that can reach through it can also step around a sibling method that\nadds something — a timer, a counter, a progress line — on the same call. The\nforward is what keeps the class's surface the only way in.\n\nThis carve-out covers a class delegating to something it holds, and nothing else.\nA free function that only forwards to another free function is still a thin\nwrapper.",
+      "prose": "## Thin Wrapper Functions\n\nNever write a function that only renames parameters or passes the call on to another function. Call the underlying function directly.\n\n```typescript\n// Incorrect: adds nothing but a second name\nexport const buildBrowserLabel = ({ browser, browserVersion }) =>\n\tbuildVersionedLabel({ name: browser, version: browserVersion });\n```\n\n- A wrapper is justified when it adds real validation or transformation, meaningfully simplifies a complex API, or handles errors or defaults.\n- A class that holds a collaborator instead of extending it, as `class-inheritance` requires, reaches it through one-line methods that pass each call on unchanged. Those are not thin wrappers: deleting them would publish the held value, and callers could then step around a sibling method that adds a timer, a counter or a progress line to the same call.\n- That exception covers only a class passing calls to something it holds. A free function that only passes the call on to another free function is still a thin wrapper.\n\nA wrapper that adds nothing is one more name to follow before reaching the code that does the work.",
       "fixtures": [
         {
           "side": "pass",
@@ -7748,7 +7748,7 @@
       "name": "lightsout/top-level-domain-nouns",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "a top-level folder naming a technical layer rather than a capability the product has",
+      "summary": "What a package's top-level folders are named after.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -7756,7 +7756,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Top Level Is Domain Nouns\n\n`src/`'s top level names domains (`billing/`, `issues/`, `sync/`) — capabilities the product has. Infrastructure capabilities are domains too: `git/`, `config/`, `runState/` are valid module names. Navigation is by domain first, for humans and agents alike.",
+      "prose": "## Top-Level Domain Nouns\n\nName the top-level folders of `src/` for domains, the capabilities the product has: `billing/`, `issues/`, `sync/`. Infrastructure capabilities are domains too: `git/`, `config/`, `runState/`.\n\nPeople and agents find code by domain first.",
       "fixtures": [
         {
           "side": "pass",
@@ -7792,7 +7792,7 @@
       "name": "lightsout/type-alias-indirection",
       "set": "code",
       "documentPath": "code/architecture/architecture-decisions",
-      "summary": "a file that exists only to alias another type",
+      "summary": "Files that only give another type a new name.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -7800,7 +7800,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "### Type Alias Indirection\n\nDon't create a file just to alias another type (`export type FilterOptions = TableFilterState`) — use the original directly; if the semantic distinction matters, a comment at the usage site beats indirection.",
+      "prose": "## Type Alias Indirection\n\nNever create a file only to give another type a new name, such as `export type FilterOptions = TableFilterState`. Use the original type directly. When the difference in meaning matters, say so in a comment where the type is used.\n\nA comment states the difference without sending every reader through one more file.",
       "fixtures": [
         {
           "side": "pass",
@@ -7875,7 +7875,7 @@
       "name": "lightsout/types-and-interfaces",
       "set": "code",
       "documentPath": "code/style-guide/structure/type-placement",
-      "summary": "a shared type-level declaration living somewhere other than `common/types/`",
+      "summary": "Where shared types go, and which keyword to use.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -7883,7 +7883,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Types and Interfaces → `common/types/`\n\nThe folder groups type-level declarations regardless of keyword. Pick the keyword by fit, not folder:\n\n- `interface` for object shapes (extends and merges cleanly)\n- `type` for what an interface can't express (unions, intersections, mapped types, primitives, tuples, function signatures)\n- Either works for an object shape → stay consistent within a domain. Refactoring between the keywords is an in-place edit; the filename and imports never change.\n\nA discriminated union family lives in `types/` under the union's name.\n\n**The `Params` interface stays with its function, and a type may stay with the single value typed by it (one-export-per-file's exception 5); every other exported type goes in `types/`:**\n\n```typescript\n// copyFile.ts — Params co-located, unexported\ninterface Params {\n\tsourcePath: string;\n\tdestPath: string;\n}\n\nexport const copyFile = ({ sourcePath, destPath }: Params) => { /* ... */ };\n\n// common/types/CopyResult.ts — exported return type gets its own types/ file\nexport interface CopyResult {\n\tsuccess: boolean;\n\tbytesWritten: number;\n}\n```",
+      "prose": "## Types and Interfaces\n\nPlace a type like any other code: in the `types/` folder of the lowest `common/` its users share, as `shared-code-placement` says. A type only one module uses stays in that module's own `common/types/`. The folder holds type-level declarations whatever the keyword.\n\n- Use `interface` for object shapes, and `type` for what an interface can't express: unions, intersections, mapped types, primitives, tuples and function signatures.\n- For an object shape either works, so stay consistent within a domain. Switching keyword is an edit in place: the file name and imports never change.\n- A union family lives in `types/` under the union's name.\n\n```typescript\n// copyFile/copyFile.ts: Params stays here, unexported\ninterface Params {\n\tsourcePath: string;\n\tdestPath: string;\n}\n\nexport const copyFile = ({ sourcePath, destPath }: Params) => { /* ... */ };\n\n// copyFile/common/types/CopyResult.ts: copyFile's exported return type\nexport interface CopyResult {\n\tsuccess: boolean;\n\tbytesWritten: number;\n}\n```\n\nPick the keyword by fit: the folder does not depend on it.",
       "fixtures": [
         {
           "side": "pass",
@@ -7919,7 +7919,7 @@
       "name": "lightsout/ungrouped-domain-utils",
       "set": "code",
       "documentPath": "code/architecture/folder-structure",
-      "summary": "When functions about one subject in `utils/` should get their own folder.",
+      "summary": "When functions about one subject should get their own folder.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},

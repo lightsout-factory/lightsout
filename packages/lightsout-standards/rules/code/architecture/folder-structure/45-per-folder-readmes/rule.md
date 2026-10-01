@@ -1,9 +1,11 @@
 ---
-summary: "a folder README restating structure these rules already give"
+summary: "When a folder gets its own README."
 checked: false
 severity: advisory
 ---
 
 ## Per-Folder READMEs
 
-A folder gets a `README.md` only for a genuine invariant not derivable from these rules (e.g. "everything here runs in the widget sandbox — no DOM globals"). Never prose restating the structure.
+Give a folder a `README.md` only for an invariant these rules don't already give, such as "everything here runs in the widget sandbox, so no DOM globals". Never write one that restates the structure.
+
+A README that restates the structure drifts from it.

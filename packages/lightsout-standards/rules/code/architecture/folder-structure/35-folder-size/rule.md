@@ -1,11 +1,15 @@
 ---
-summary: "more files sitting in one flat folder than the cap allows"
+summary: "When a folder holds too many files."
 checked: true
 severity: advisory
 options:
   cap: 20
 ---
 
-When a folder starts reading like a directory listing instead of a description of the product, group the related siblings under a parent domain folder. Never sort them into a bucket named for what kind of code they are.
+## Folder Size
 
-A directory a file-based router owns is not judged here: its population is the number of routes the app has, which is a product fact rather than a folder someone let grow.
+When a folder holds more than 20 files, not counting tests, group related files under a domain folder named for what they share.
+
+A folder a file router owns is exempt: its file count is the number of routes, a fact about the product.
+
+A long flat folder reads like a listing instead of a description of the product.

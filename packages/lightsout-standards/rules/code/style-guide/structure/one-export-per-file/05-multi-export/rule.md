@@ -1,40 +1,29 @@
 ---
-summary: "more than one export in a file, outside the closed exception list"
+summary: "How many things one file may export."
 checked: true
 severity: advisory
 ---
 
-- Each **exported** function, class, interface, type, or constant has its own file, named after the export (cased per the package's file-naming convention)
-- Non-exported items (private helpers, local types) may co-locate with the export they serve
+## Multi-Export
 
-## The Closed Exception List
+Give each exported function, class, interface, type or constant its own file, named after the export. Non-exported items, such as private helpers and local types, may sit in the file of the export they serve.
 
-The **only** cases where a file may contain more than one item — every exception has a mechanical criterion:
+Only these cases may put more than one item in a file:
 
-| # | Exception | Criterion |
-|---|-----------|-----------|
-| 1 | `Params` / `ConstructorParams` interfaces | Stays in the file of its function/class; not exported independently |
-| 2 | Private helpers | Not exported; called only within this file (see [functions.md](../patterns/functions.md#private-helpers-may-co-locate)) |
-| 3 | Discriminated union families | A union type and its member types share one file when the members exist only as constituents of that union |
-| 4 | Named constant + derived lookup map | A lookup map keyed by the union (`Record<MyType, …>`) may live in the `const` object's file (see [named-constants.md](../patterns/named-constants.md#derived-lookup-maps-may-co-locate)) |
-| 5 | A type + the single value typed by it | `interface Config` beside `export const defaultConfig: Config` share one file, filed under the value's name — the default has no consumer the type does not already have |
+1. A `Params` or `ConstructorParams` interface stays in its function's or class's file, not exported.
+2. A private helper, not exported and called only in this file, as `private-helper-colocation` says.
+3. A union and its member types share one file when the members exist only as parts of that union.
+4. A lookup map keyed by a named constant's union (`Record<MyType, …>`) may sit in the `const` object's file, as `derived-lookup-map` says.
+5. A type and the single value typed by it share one file, named for the value, such as `interface Config` beside `export const defaultConfig: Config`: the value has no consumer the type lacks.
 
-## Multiple Exported Items — Still Not Negotiable
+"Closely related", "both config functions", "over-engineered to split", "just a small helper" and "one is a helper for the other" are not exceptions. Make a helper non-exported and keep it in the file, or give each export its own file: `loadConfig` and `saveConfig` go in `loadConfig.ts` and `saveConfig.ts`.
 
-Invalid rationalizations: "the interface is only used by this constant", "they're closely related", "it's just a small helper" (if it's a helper, make it non-exported — exception 2; if exported, own file).
-
-```typescript
-// ❌ config.ts: export interface Config + export const defaultConfig — split them:
-// common/types/Config.ts        → export interface Config { ... }
-// common/constants/defaultConfig.ts → export const defaultConfig: Config = { ... }
-```
-
-**Exception 3 in practice** — a union family shares one file because the members exist only as constituents:
+Exception 3:
 
 ```typescript
 // common/types/SyncEvent.ts
 export interface FileAddedEvent {
-	kind: typeof SyncEventKind.FileAdded; // discriminant references the const object, never a raw literal
+	kind: typeof SyncEventKind.FileAdded;
 	path: string;
 }
 
@@ -46,28 +35,8 @@ export interface RecordParsedEvent {
 export type SyncEvent = FileAddedEvent | RecordParsedEvent;
 ```
 
-If a member type starts being used independently of the union, it moves to its own file.
+When a member type starts being used on its own, it moves to its own file.
 
-## One Exported Function Per File — Not Negotiable
+When several values form one concept, such as a feature's thresholds, export one named object: `export const featureThresholds = { maxBatchSize: 20, maxRetries: 3 } as const;`. Never a bag, such as a `constants.ts` of loose exports.
 
-Every **exported** function gets its own file, named after the export (cased per [file-naming.md](../conventions/file-naming.md)). Rationalizations that are NOT valid: "closely related", "both config functions", "over-engineered to split", "one is just a helper for the other" — if it's truly a helper, make it **non-exported** and co-locate it; if it's exported, it gets its own file.
-
-```typescript
-// ❌ config.ts exporting loadConfig AND saveConfig — split into loadConfig.ts + saveConfig.ts
-```
-
-## Grouping Values: One Named Object, Never a Bag
-
-When several values form one concept — a feature's thresholds, a set of retry
-defaults — export **one named object**:
-
-```typescript
-// featureThresholds.ts
-export const featureThresholds = { maxBatchSize: 20, maxRetries: 3 } as const;
-```
-
-That is one export (no exception needed), the group has a name at every use
-site, and it greps. What stays banned is the bag: a `constants.ts` with a
-dozen loose exports is unnamed by its file, invisible to search, and grows
-forever.
-
+One export per file gives each item one name at every use, and a search finds it.
