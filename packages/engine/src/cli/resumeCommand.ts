@@ -24,6 +24,9 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { getDriver } from '#src/drivers/getDriver.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
+import { isRecordedProcessAlive } from '#src/runState/isRecordedProcessAlive.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
+import { resolveOwnerProcess } from '#src/runState/owner/resolveOwnerProcess.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
@@ -50,6 +53,15 @@ const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandCon
 		throw error;
 	});
 
+	// A phase resumed alone would have no owner behind it, so it would read
+	// stopped while it ran and nothing could stop it: the sequence is what resumes.
+	if (manifest.parentRunId !== undefined) {
+		console.error(
+			`run ${manifest.runId} is a phase of sequence ${manifest.parentRunId} — resume it with: ${formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.parentRunId })}`,
+		);
+		return exitCli({ code: 1 });
+	}
+
 	const pipeline = manifest.pipeline ?? PipelineKind.Implement;
 	if (!resumedHere.includes(pipeline)) {
 		console.error(`run ${manifest.runId} belongs to the ${pipeline} pipeline — resume it with: ${formatResumeCommand({ pipeline, runId: manifest.runId })}`);
@@ -64,6 +76,30 @@ const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandCon
 	}
 
 	return { manifest, pipeline };
+};
+
+/**
+ * A second process must never take over a run whose owner still lives. Judged
+ * whatever the manifest says, because a passed direct run's first process may
+ * still be committing or shipping outside the lock. A queue worker's record
+ * points at the queue, and stop refuses a worker run, so the queue run is the
+ * one named. A run with no owner record refuses nothing: the run lock guards it.
+ */
+const refuseLiveOwner = async ({ cwd, manifest }: { cwd: string; manifest: RunManifest }) => {
+	const owner = await readRunOwner({ cwd, runId: manifest.runId });
+	const queueRunId = owner !== undefined && 'queueRunId' in owner ? owner.queueRunId : undefined;
+	const recorded = owner === undefined ? undefined : await resolveOwnerProcess({ cwd, owner });
+
+	if (recorded === undefined || !(await isRecordedProcessAlive(recorded))) {
+		return;
+	}
+
+	console.error(
+		queueRunId === undefined
+			? `run ${manifest.runId} is still running under process ${recorded.pid} — stop it first with: lightsout stop --run ${manifest.runId}`
+			: `run ${manifest.runId} is a worker of queue run ${queueRunId}, still running under process ${recorded.pid} — stop the queue first with: lightsout stop --run ${queueRunId}`,
+	);
+	return exitCli({ code: 1 });
 };
 
 const runResumedPipeline = ({
@@ -120,6 +156,9 @@ const prepareResumedRun = async ({ cwd, manifest, loaded, willShip }: { cwd: str
 export const resumeCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const skipRefactor = flags.get('skip-refactor') === true;
 	const { manifest, pipeline } = await readResumableRun({ cwd, flags });
+
+	await refuseLiveOwner({ cwd, manifest });
+
 	// First, so a run whose recorded workspace has gone says so before anything is
 	// mutated, rather than quietly rebuilding in the launching checkout.
 	const located = await resolveRunCwd({ cwd, manifest });

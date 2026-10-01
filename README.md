@@ -357,9 +357,11 @@ lightsout status --queue --run <id>
 lightsout status --queue --wait
 ```
 
-`--watch` refreshes the detailed block until the run stops. A failing verification row shows its gate families, root/package groups, per-family repair counts, whether a supervisor-guided repair ran, the supervisor diagnosis when present, and the final output line. The complete command, exit code, timing, and output-tail history remains in `.lightsout/runs/<run-id>/commands.jsonl`.
+`--watch` repaints, every two minutes, the same screen `--now` prints — for a phased plan, the phase sequence and the phase moving now — and follows the run's family until it stops going. A failing verification row shows its gate families, root/package groups, per-family repair counts, whether a supervisor-guided repair ran, the supervisor diagnosis when present, and the final output line. The complete command, exit code, timing, and output-tail history remains in `.lightsout/runs/<run-id>/commands.jsonl`.
 
-With no `--run`, `--watch` follows the one run that is going — a phased plan's coordinator and the phase it is running count as one run, not two — and waits a minute for a run you have only just started to appear. If several unrelated runs are going at once it names their ids and asks you to pick one with `--run <id>` rather than guessing which you meant. A watch already following a run stays with that run and never crosses to unrelated work.
+With no `--run`, `--watch` follows the one run that is going — a phased plan's coordinator and the phase it is running count as one run, not two — and waits a minute for a run you have only just started to appear. If several unrelated runs are going at once it names their ids and asks you to pick one with `--run <id>` rather than guessing which you meant. A watch already following a run stays with that run's family and never crosses to unrelated work.
+
+A running or pending run with no live process behind it is drawn with its running step stopped (`■`) and a line naming the command that resumes it, and such a run is never counted as the run that is going by `--watch` or `--now`.
 
 `--now` answers the same question once, without following anything: it shows the run that is going, printed once and never repainted. For a phased plan it shows both levels — the phase sequence first, then the phase moving now. It answers immediately rather than waiting for a run to appear, because nobody typing it has just started one. With nothing going it falls back to the newest run of any status, and with several unrelated runs going it names their ids and asks you to pick one with `--run <id>`. `--now` cannot be combined with `--run`, `--watch`, `--planning`, `--shipping` or `--queue`.
 

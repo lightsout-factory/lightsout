@@ -117,4 +117,26 @@ describe('renderProgressBlock', () => {
 			[' ', '·', '  dedup                —'],
 		]);
 	});
+
+	test('a row flagged stopped draws the stopped glyph and outcome in the shared columns', () => {
+		const params = setupBlock({
+			rows: [
+				{ id: 'implement', status: RunStatus.Running, attempts: 1, durationMs: 30_000 },
+				{ id: 'unit-tests', status: RunStatus.Running, attempts: 2, durationMs: 75_000, stopped: true },
+				{ id: 'lint', status: RunStatus.Running, attempts: 1, durationMs: 5_000, stopped: true },
+				passedTwiceRow,
+			],
+		});
+
+		const lines = renderProgressBlock(params);
+
+		expect(lines.slice(1, 7)).toStrictEqual([
+			'─'.repeat(49),
+			' ▶  implement            running           0m 30s',
+			' ■  unit-tests           stopped (x2)      1m 15s',
+			' ■  lint                 stopped           0m 05s',
+			' ✓  verify-facts         passed (x2)       0m 30s',
+			'─'.repeat(49),
+		]);
+	});
 });

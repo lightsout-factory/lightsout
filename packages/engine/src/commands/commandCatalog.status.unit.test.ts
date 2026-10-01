@@ -117,4 +117,17 @@ describe('commandCatalog status entry', () => {
 		expect(wait?.meaning).toEqual(expect.stringMatching(/minute/));
 		expect(wait?.fallback).toEqual(expect.stringMatching(/at once/));
 	});
+
+	test('tells the reader a watch repaints the --now screen and that a stopped run is never the going run', () => {
+		const { byId } = setupCatalog();
+		const status = byId.get('status');
+
+		const watch = status?.flags.find((flag) => flag.name === 'watch');
+		const now = status?.flags.find((flag) => flag.name === 'now');
+
+		expect(watch?.meaning).toEqual(expect.stringMatching(/repaint.*screen --now prints/i));
+		expect(watch?.meaning).toEqual(expect.stringMatching(/no live process.*stopped/));
+		expect(watch?.meaning).toEqual(expect.stringMatching(/never followed/));
+		expect(now?.meaning).toEqual(expect.stringMatching(/no live process.*never counted as the run that is going/));
+	});
 });

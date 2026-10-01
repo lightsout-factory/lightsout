@@ -18,14 +18,14 @@ import { runDirFor } from '#tests/helpers/runDirFor.ts';
 // Everything else — the manifests, the lock, the rendering — is real.
 type WatchTarget = { runId: string; rootRunId: string } | { ambiguous: string[] } | undefined;
 
-const mockResolveWatchTarget = jest.fn<(params: { cwd: string; rootRunId?: string }) => Promise<WatchTarget>>();
-const mockWatchRunProgress = jest.fn<(params: { cwd: string; runId?: string; rootRunId?: string }) => Promise<void>>();
+const mockResolveWatchTarget = jest.fn<(params: { cwd: string }) => Promise<WatchTarget>>();
+const mockWatchRunProgress = jest.fn<(params: { cwd: string; runId: string }) => Promise<void>>();
 
 jest.mock('#src/cli/internal/common/utils/resolveWatchTarget.ts', () => ({
-	resolveWatchTarget: (params: { cwd: string; rootRunId?: string }) => mockResolveWatchTarget(params),
+	resolveWatchTarget: (params: { cwd: string }) => mockResolveWatchTarget(params),
 }));
 jest.mock('#src/cli/internal/common/utils/watchRunProgress.ts', () => ({
-	watchRunProgress: (params: { cwd: string; runId?: string; rootRunId?: string }) => mockWatchRunProgress(params),
+	watchRunProgress: (params: { cwd: string; runId: string }) => mockWatchRunProgress(params),
 }));
 // -------------------------
 
@@ -218,16 +218,16 @@ describe('statusCommand detail view', () => {
 		expect(exitCodes).toStrictEqual([0]);
 	});
 
-	test('a bare --watch waits for a run to be going, then follows whatever is going each frame', async () => {
+	test("a bare --watch waits for a run to be going, then follows that run's family root", async () => {
 		const { context, exitCodes } = setupDetail({ manifests: [manifestOf({ runId: 'run-alpha', status: RunStatus.Running })], args: { watch: true } });
 
 		mockResolveWatchTarget.mockResolvedValue({ runId: 'run-alpha', rootRunId: 'run-alpha' });
 
 		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
 
-		// no runId: follow mode re-resolves its own target inside that run's family,
-		// which is what makes a phased plan watchable
-		expect(mockWatchRunProgress).toHaveBeenCalledWith({ cwd: context.cwd, rootRunId: 'run-alpha' });
+		// the family root: its owner stays live across a phase boundary, which is
+		// what makes a phased plan watchable
+		expect(mockWatchRunProgress).toHaveBeenCalledWith({ cwd: context.cwd, runId: 'run-alpha' });
 		expect(exitCodes).toStrictEqual([0]);
 	});
 

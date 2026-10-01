@@ -205,7 +205,7 @@ describe('runDirectWork', () => {
 		const rowsAtStart: { id: string; status: RunStatus | undefined }[] = [];
 
 		mockRunGates.mockImplementationOnce(async () => {
-			const progress = await getRunProgress({ cwd, manifest: await readRunManifest({ cwd, runId }), lock: undefined });
+			const progress = await getRunProgress({ cwd, manifest: await readRunManifest({ cwd, runId }), live: false });
 
 			rowsAtStart.push(...progress.rows.map(({ id, status }) => ({ id, status })));
 

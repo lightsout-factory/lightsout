@@ -29,7 +29,7 @@ export const statusCatalogEntry: CommandCatalogEntry = {
 		{
 			name: 'watch',
 			meaning:
-				'Repaint the detail block every two minutes until the run stops, so a detached run can be followed. Without --run it follows the one run that is going, and its phase children with it; when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing.',
+				"Repaint, every two minutes, the same screen --now prints — for a phased plan, its phase sequence and the phase moving now — until the run's family stops going, so a detached run can be followed. A run with no live process behind it is drawn stopped and never followed as the going run. Without --run it follows the one run that is going, and its phase children with it; when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing.",
 			fallback: 'The block is printed once.',
 			shape: 'status-run',
 			required: false,
@@ -37,7 +37,7 @@ export const statusCatalogEntry: CommandCatalogEntry = {
 		{
 			name: 'now',
 			meaning:
-				'Show the run that is going, printed once and never repainted — for a phased plan, its phase sequence followed by the phase moving now. It answers at once rather than waiting for a run to appear; with nothing going it falls back to the newest run of any status, and when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing. Cannot be combined with --run, --watch, --planning, --shipping or --queue.',
+				'Show the run that is going, printed once and never repainted — for a phased plan, its phase sequence followed by the phase moving now. It answers at once rather than waiting for a run to appear, and a run with no live process behind it is never counted as the run that is going; with nothing going it falls back to the newest run of any status, and when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing. Cannot be combined with --run, --watch, --planning, --shipping or --queue.',
 			shape: 'status-now',
 			required: true,
 		},

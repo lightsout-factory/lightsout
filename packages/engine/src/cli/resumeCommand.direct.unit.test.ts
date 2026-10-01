@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { resumeCommand } from '#src/cli/resumeCommand.ts';
@@ -7,6 +7,8 @@ import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
+import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { manifestOf, runId, setupResume } from '#tests/helpers/setupResume.ts';
 
@@ -133,6 +135,23 @@ const setupDirectResume = async ({
 	return { workspace, ...seeded };
 };
 
+/**
+ * A passed direct run whose first process still lives: the owner record names
+ * this test process, the way it would while that process is still committing or
+ * shipping outside the lock. Answers the manifest's bytes as seeded, so a case
+ * can prove nothing was written before the refusal.
+ */
+const setupLiveDirectResume = async () => {
+	const seeded = await setupDirectResume({ status: RunStatus.Passed });
+
+	await writeRunOwner({ cwd: seeded.cwd, runId });
+
+	const manifestPath = join(runDirFor({ cwd: seeded.cwd, runId, pipeline: PipelineKind.Direct }), 'manifest.json');
+	const manifestBefore = readFileSync(manifestPath, 'utf8');
+
+	return { ...seeded, manifestPath, manifestBefore };
+};
+
 describe('resumeCommand direct runs', () => {
 	test('a failed direct run is continued here, keeping its run id and its frozen ticket', async () => {
 		const { context, workspace, errors } = await setupDirectResume({ status: RunStatus.Failed });
@@ -235,5 +254,27 @@ describe('resumeCommand direct runs', () => {
 		expect(errors.join('\n')).toContain(frozenTicketPath);
 		expect(mockRunDirectWork).not.toHaveBeenCalled();
 		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test('a passed direct run whose first process still lives is refused', async () => {
+		const { context, errors, exitCodes, manifestPath, manifestBefore } = await setupLiveDirectResume();
+
+		const resumed = resumeCommand(context);
+
+		await expect(resumed).rejects.toThrow(/process\.exit/);
+		const refusal = errors.join('\n');
+		const manifestAfter = readFileSync(manifestPath, 'utf8');
+
+		// a passed run is still refused while its owner lives — the refusal reads
+		// the owner record whatever the manifest status, and writes nothing first
+		expect({
+			exitCodes,
+			errorLines: errors.length,
+			namesRun: refusal.includes(runId),
+			namesPid: refusal.includes(String(process.pid)),
+			pointsAtStop: refusal.includes(`lightsout stop --run ${runId}`),
+			manifestAfter,
+		}).toStrictEqual({ exitCodes: [1], errorLines: 1, namesRun: true, namesPid: true, pointsAtStop: true, manifestAfter: manifestBefore });
+		expect(mockRunDirectWork).not.toHaveBeenCalled();
 	});
 });

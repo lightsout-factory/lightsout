@@ -14,10 +14,9 @@ import { watchRunProgress } from '#src/cli/internal/common/utils/watchRunProgres
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { resolveRunId } from '#src/runState/common/paths/resolveRunId.ts';
-import { isRunLive } from '#src/runState/isRunLive.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
-import { readRunProcessLock } from '#src/runState/lock/readRunProcessLock.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
+import { readRunLiveness } from '#src/runState/readRunLiveness.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 
 // Scripts read this listing, so its format must not change.
@@ -33,11 +32,9 @@ const printRunListing = async ({ cwd }: { cwd: string }) => {
 		const manifest = await readRunManifest({ cwd, runId }).catch(() => undefined);
 
 		if (manifest) {
-			// Taken per run rather than once: the run lock is per-checkout, so an
-			// isolated run's holder is in the workspace it recorded rather than here.
-			const lock = await readRunProcessLock({ cwd, manifest });
+			const { live } = await readRunLiveness({ cwd, manifest });
 			// A `running` manifest with no live process is a crash leftover: resumable, not lost.
-			const zombie = manifest.status === RunStatus.Running && !isRunLive({ manifest, lock });
+			const zombie = manifest.status === RunStatus.Running && !live;
 			const status = zombie ? `${manifest.status} (no live process — crashed? resume with --run ${manifest.runId})` : manifest.status;
 			const phases =
 				manifest.pipeline === PipelineKind.Phases
@@ -169,7 +166,7 @@ export const statusCommand = async ({ cwd, flags }: CommandContext): Promise<voi
 		return exitCli({ code: 1 });
 	}
 
-	await (going === undefined ? printNewestRun({ cwd }) : watchRunProgress({ cwd, rootRunId: going.rootRunId }));
+	await (going === undefined ? printNewestRun({ cwd }) : watchRunProgress({ cwd, runId: going.rootRunId }));
 
 	return exitCli({ code: 0 });
 };

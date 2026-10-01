@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import type { RunLock } from '#src/contracts/run/RunLock.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
@@ -12,9 +12,6 @@ import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 
 const runId = 'run-progress-01';
-
-/** Beyond any OS pid range — the live-process probe reports it dead. */
-const deadPid = 999_999_999;
 
 const manifestOf = (overrides: Partial<RunManifest> = {}): RunManifest => ({
 	runId,
@@ -73,12 +70,10 @@ const cleanupReport = {
  */
 const setupProgress = ({
 	manifest = manifestOf(),
-	lock,
 	narrated = [],
 	shipResult,
 }: {
 	manifest?: RunManifest;
-	lock?: RunLock;
 	narrated?: string[];
 	shipResult?: { branch: string; status: ShipStatus };
 } = {}) => {
@@ -104,12 +99,33 @@ const setupProgress = ({
 		);
 	}
 
-	return { cwd, manifest, lock };
+	return { cwd, manifest };
 };
 
 /** The run's rows as [id, status, attempts] triples — the whole table, minus the clock. */
 const shapeOf = ({ rows }: { rows: { id: string; status: RunStatus | undefined; attempts: number }[] }) =>
 	rows.map((row) => [row.id, row.status, row.attempts]);
+
+/**
+ * Three running runs with no process behind them, each frozen mid-step: an
+ * implement root, a refactor root and a phase child whose coordinator is the
+ * sequence that resumes it.
+ */
+const setupResumable = () => {
+	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-run-progress-'));
+	const running = [stepOf({ id: 'refactor', status: RunStatus.Running, durationMs: 5_000 })];
+	const manifests = [
+		manifestOf({ runId: 'run-implement-01', steps: running }),
+		manifestOf({ runId: 'run-refactor-01', pipeline: PipelineKind.Refactor, steps: running }),
+		manifestOf({ runId: 'run-phase-child-01', parentRunId: 'run-sequence-01', steps: running }),
+	];
+
+	for (const manifest of manifests) {
+		mkdirSync(runDirFor({ cwd, runId: manifest.runId }), { recursive: true });
+	}
+
+	return { cwd, manifests };
+};
 
 describe('getRunProgress', () => {
 	test('every recorded step becomes a row, in the order the manifest records them', async () => {
@@ -124,7 +140,7 @@ describe('getRunProgress', () => {
 			manifest: manifestOf({ steps: [stepOf({ id: 'clean-slate' }), stepOf({ id: 'implement', attempts: 2, verification })] }),
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(shapeOf({ rows: progress.rows })).toStrictEqual([
 			['clean-slate', RunStatus.Passed, 1],
@@ -139,7 +155,7 @@ describe('getRunProgress', () => {
 			manifest: manifestOf({ steps: [stepOf({ id: 'clean-slate' })], stepOrder: ['clean-slate', 'implement', 'format'] }),
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(shapeOf({ rows: progress.rows })).toStrictEqual([
 			['clean-slate', RunStatus.Passed, 1],
@@ -161,7 +177,7 @@ describe('getRunProgress', () => {
 			}),
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(progress.rows.map((row) => [row.id, row.cleanup])).toStrictEqual([
 			['clean-slate', undefined],
@@ -174,23 +190,22 @@ describe('getRunProgress', () => {
 	test('a run whose pipeline declared no order gets no pending rows at all — a guessed row is worse than none', async () => {
 		const { cwd, manifest } = setupProgress({ manifest: manifestOf({ steps: [stepOf({ id: 'batch-01' })] }) });
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(shapeOf({ rows: progress.rows })).toStrictEqual([['batch-01', RunStatus.Passed, 1]]);
 	});
 
 	test('a live run’s running row and its elapsed both carry the time since the manifest was last written', async () => {
 		const updatedAt = new Date(Date.now() - 60_000).toISOString();
-		const { cwd, manifest, lock } = setupProgress({
+		const { cwd, manifest } = setupProgress({
 			manifest: manifestOf({
 				createdAt: new Date(Date.now() - 660_000).toISOString(),
 				updatedAt,
 				steps: [stepOf({ id: 'refactor', status: RunStatus.Running, durationMs: 5_000 })],
 			}),
-			lock: { pid: process.pid, runId, startedAt: updatedAt },
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock });
+		const progress = await getRunProgress({ cwd, manifest, live: true });
 
 		expect(progress.live).toBe(true);
 		// a forty-minute step frozen at its last write tells a reader nothing
@@ -200,21 +215,19 @@ describe('getRunProgress', () => {
 
 	test('a running step that has not been timed yet still ticks from zero rather than reading as no duration at all', async () => {
 		const updatedAt = new Date(Date.now() - 30_000).toISOString();
-		const { cwd, manifest, lock } = setupProgress({
+		const { cwd, manifest } = setupProgress({
 			manifest: manifestOf({ updatedAt, steps: [stepOf({ id: 'clean-slate', status: RunStatus.Running, durationMs: undefined })] }),
-			lock: { pid: process.pid, runId, startedAt: updatedAt },
 		});
 
-		expect((await getRunProgress({ cwd, manifest, lock })).rows[0]?.durationMs ?? 0).toBeGreaterThanOrEqual(29_000);
+		expect((await getRunProgress({ cwd, manifest, live: true })).rows[0]?.durationMs ?? 0).toBeGreaterThanOrEqual(29_000);
 	});
 
 	test('a run with no process behind it shows the persisted duration unchanged — a zombie must not read as work', async () => {
-		const { cwd, manifest, lock } = setupProgress({
+		const { cwd, manifest } = setupProgress({
 			manifest: manifestOf({ steps: [stepOf({ id: 'refactor', status: RunStatus.Running, durationMs: 5_000 })] }),
-			lock: { pid: deadPid, runId, startedAt: '2026-01-01T00:00:00.000Z' },
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(progress.live).toBe(false);
 		expect(progress.rows[0]?.durationMs).toBe(5_000);
@@ -222,16 +235,15 @@ describe('getRunProgress', () => {
 	});
 
 	test('a manifest stamped ahead of this clock adds nothing rather than running a live step backwards', async () => {
-		const { cwd, manifest, lock } = setupProgress({
+		const { cwd, manifest } = setupProgress({
 			manifest: manifestOf({
 				createdAt: new Date(Date.now() - 600_000).toISOString(),
 				updatedAt: new Date(Date.now() + 120_000).toISOString(),
 				steps: [stepOf({ id: 'refactor', status: RunStatus.Running, durationMs: 5_000 })],
 			}),
-			lock: { pid: process.pid, runId, startedAt: '2026-01-01T00:00:00.000Z' },
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock });
+		const progress = await getRunProgress({ cwd, manifest, live: true });
 
 		expect(progress.live).toBe(true);
 		// a skewed clock must not subtract time from a step that has already run
@@ -243,7 +255,7 @@ describe('getRunProgress', () => {
 			manifest: manifestOf({ createdAt: '2026-01-01T00:10:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z', steps: [stepOf()] }),
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(progress.elapsedMs).toBe(0);
 	});
@@ -251,7 +263,7 @@ describe('getRunProgress', () => {
 	test('a run nobody asked to ship gets no ship row and is never awaiting one', async () => {
 		const { cwd, manifest } = setupProgress({ manifest: manifestOf({ status: RunStatus.Passed, steps: [stepOf()] }) });
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(progress.rows.map((row) => row.id)).toStrictEqual(['implement']);
 		expect(progress.awaitingShip).toBe(false);
@@ -262,7 +274,7 @@ describe('getRunProgress', () => {
 			manifest: manifestOf({ status: RunStatus.Passed, willShip: true, branch: 'lo-52-status', steps: [stepOf()] }),
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(shapeOf({ rows: progress.rows })).toStrictEqual([
 			['implement', RunStatus.Passed, 1],
@@ -282,7 +294,7 @@ describe('getRunProgress', () => {
 			shipResult: { branch: 'lo-52-status', status },
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(progress.rows.at(-1)).toStrictEqual({
 			id: 'ship',
@@ -301,7 +313,7 @@ describe('getRunProgress', () => {
 			shipResult: { branch: 'lo-52-status', status: ShipStatus.Shipped },
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(progress.rows.at(-1)).toStrictEqual({
 			id: 'ship',
@@ -319,7 +331,7 @@ describe('getRunProgress', () => {
 	])('a run that ended $label gets no ship row — that ship will never happen', async ({ status }) => {
 		const { cwd, manifest } = setupProgress({ manifest: manifestOf({ status, willShip: true, branch: 'lo-52-status', steps: [stepOf()] }) });
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(progress.rows.map((row) => row.id)).toStrictEqual(['implement']);
 		expect(progress.awaitingShip).toBe(false);
@@ -330,7 +342,7 @@ describe('getRunProgress', () => {
 			manifest: manifestOf({ status: RunStatus.PausedRateLimit, willShip: true, branch: 'lo-52-status', steps: [stepOf()] }),
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(progress.rows.map((row) => row.id)).toStrictEqual(['implement', 'ship']);
 	});
@@ -345,7 +357,7 @@ describe('getRunProgress', () => {
 			narrated: ['step implement', 'step refactor — pass 1/3'],
 		});
 
-		const progress = await getRunProgress({ cwd, manifest, lock: undefined });
+		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(progress).toEqual(
 			expect.objectContaining({ runId, shortId: 'run-prog', title: 'demo', changedFileCount: 2, costUsd: 43.54, now: 'step refactor — pass 1/3' }),
@@ -355,6 +367,18 @@ describe('getRunProgress', () => {
 	test('a run that has narrated nothing has no now line rather than an empty one', async () => {
 		const { cwd, manifest } = setupProgress();
 
-		expect((await getRunProgress({ cwd, manifest, lock: undefined })).now).toBeUndefined();
+		expect((await getRunProgress({ cwd, manifest, live: false })).now).toBeUndefined();
+	});
+
+	test("the progress view names the command that resumes the run, a phase child naming its coordinator's", async () => {
+		const { cwd, manifests } = setupResumable();
+
+		const progresses = await Promise.all(manifests.map((manifest) => getRunProgress({ cwd, manifest, live: false })));
+
+		expect(progresses.map((progress) => [progress.runId, progress.live, progress.rows[0]?.durationMs, progress.resumeCommand])).toStrictEqual([
+			['run-implement-01', false, 5_000, 'lightsout resume --run run-implement-01'],
+			['run-refactor-01', false, 5_000, 'lightsout refactor --run run-refactor-01'],
+			['run-phase-child-01', false, 5_000, 'lightsout resume --run run-sequence-01'],
+		]);
 	});
 });
