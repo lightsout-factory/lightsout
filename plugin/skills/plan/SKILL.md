@@ -347,11 +347,13 @@ test. When it is settled, say so in one line ("Design shape settled during
 Elicitation — skipping approaches", or "Approach settled during brainstorm —
 skipping approaches") and move on — never skip silently. Present the genuinely
 different approaches that survive the shaping rules' `## Recommending a design`,
-in the Question format — as many as survive, with no target count; when only one
-does, present it alone and say in one line why the others fell. Context states
+in the Question format — as many as survive, with no target count. Context states
 the design problem in everyday words, Question asks which to build, Options
 gives each approach with its wins and costs, Recommendation names one by number
-with the one-line why. Record the chosen approach as a decisions row
+with the one-line why. When only one survives, there is no choice to ask about:
+show it as a Design statement, under the shaping rules' `## Design statement`,
+say in one line why the others fell, and confirm it matches what the user meant.
+Record the chosen approach as a decisions row
 (`Source = "Elicitation"`) before drafting.
 
 **4. Draft.** Run:
