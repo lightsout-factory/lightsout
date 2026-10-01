@@ -10,7 +10,10 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { initializeCoverageRun } from '#src/coverage/initializeCoverageRun.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
 const driver: Driver = { name: 'stub', invoke: async () => ({ text: '', exitCode: 0 }) };
@@ -93,6 +96,26 @@ const setupWorktreeResume = async () => {
 	execSync(`git worktree add -q "${worktree}" -b resume-from-here`, { cwd });
 
 	return { config, fresh, worktree };
+};
+
+/**
+ * A measured coverage run whose owner record names a process that is long
+ * gone, beside an implement run's folder that holds no owner record at all.
+ */
+const setupOwnedResume = async () => {
+	const cwd = setupMeasurable();
+	const config = await readConfig({ cwd });
+
+	// seeded before the coverage run exists, so the run lookup finds both folders
+	seedRunFolder({ cwd, runId: 'run-implement', pipeline: 'implement' });
+
+	const fresh = await initializeCoverageRun({ cwd, runId: 'run-1', driver, config });
+
+	writeFileSync(await getRunOwnerPath({ cwd, runId: 'run-1' }), JSON.stringify({ pid: 999999, recordedAt: '2026-01-01T00:00:00.000Z' }));
+
+	const implementRun: RunManifest = { ...manifestWith({ pipeline: PipelineKind.Implement, config }), runId: 'run-implement' };
+
+	return { cwd, config, fresh, implementRun };
 };
 
 describe('initializeCoverageRun', () => {
@@ -190,5 +213,21 @@ describe('initializeCoverageRun', () => {
 		// the run's records live in the primary checkout, so the recorded path
 		// joined onto this worktree names a file that was never written here
 		expect(existsSync(join(worktree, fresh.manifest.plan))).toBe(false);
+	});
+
+	test("replaces a resumed coverage run's owner record and writes nothing for another pipeline's run", async () => {
+		const { cwd, config, fresh, implementRun } = await setupOwnedResume();
+
+		await initializeCoverageRun({ cwd, runId: 'run-1', driver, config, existing: fresh.manifest });
+		const error = await getRejectionError({ promise: initializeCoverageRun({ cwd, runId: 'run-implement', driver, config, existing: implementRun }) });
+
+		const resumedOwner = await readRunOwner({ cwd, runId: 'run-1' });
+		const implementOwner = await readRunOwner({ cwd, runId: 'run-implement' });
+
+		// the resuming process now answers for the coverage run
+		expect(resumedOwner).toEqual(expect.objectContaining({ pid: process.pid }));
+		// the refusal happens before any write, so the implement run gains no owner
+		expect(error.message).toMatch(/belongs to the implement pipeline/);
+		expect(implementOwner).toBe(undefined);
 	});
 });

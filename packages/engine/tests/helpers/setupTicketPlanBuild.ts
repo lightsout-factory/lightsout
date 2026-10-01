@@ -258,6 +258,7 @@ export const setupTicketPlanBuild = ({
 			driver,
 			driverName: 'claude-code',
 			workOrderRunDir: join(runDirFor({ cwd, runId: 'queue-run', pipeline: 'queue' }), 'work-orders', 'LO-7'),
+			queueRunId: 'queue-run',
 		},
 	};
 };

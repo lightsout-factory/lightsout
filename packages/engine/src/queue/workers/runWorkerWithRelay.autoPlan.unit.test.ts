@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
@@ -14,6 +15,8 @@ import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
 import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTicket.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay.ts';
+import { createRun } from '#src/runState/createRun.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 
@@ -213,6 +216,28 @@ const setupAutoPlanTicket = ({
 	};
 };
 
+/**
+ * The auto-plan ticket above run under the queue run `q-1`, with the stubbed
+ * build standing in for the real one the way a build begins: it creates the
+ * plan's run with the queue run id it was handed, then reads that run's owner
+ * record while the build is still going.
+ */
+const setupAutoPlanBuildUnderQueueRun = () => {
+	const { params, folder } = setupAutoPlanTicket();
+	const ownersWhileBuilding: (RunOwner | undefined)[] = [];
+
+	mockBuildTicketPlans.mockImplementation(async (build) => {
+		const { cwd, queueRunId } = build as BuildTicketPlansParams & { queueRunId?: string };
+		const run = await createRun({ cwd, plan: join(folder, 'plan.md'), driver: 'claude-code', queueRunId });
+
+		ownersWhileBuilding.push(await readRunOwner({ cwd, runId: run.runId }));
+
+		return {};
+	});
+
+	return { ownersWhileBuilding, params: { ...params, coordinatorRunId: 'q-1' } };
+};
+
 describe('runWorkerWithRelay', () => {
 	test('runWorkerWithRelay: an auto-plan session is handed the lowest plan of the ticket still being planned', async () => {
 		const { params, worktreePath } = setupAutoPlanTicket();
@@ -287,5 +312,14 @@ describe('runWorkerWithRelay', () => {
 		expect(outcome.open).toBeUndefined();
 		expect(outcome.error).toEqual(expect.stringContaining(`${branch}/003-drain-order`));
 		expect(mockBuildTicketPlans).not.toHaveBeenCalled();
+	});
+
+	test("points an auto-plan worker's build at the coordinator run", async () => {
+		const { ownersWhileBuilding, params } = setupAutoPlanBuildUnderQueueRun();
+
+		const outcome = await runWorkerWithRelay(params);
+
+		// the planned plan's run answers to the queue run, not to this process
+		expect({ outcome, ownersWhileBuilding }).toStrictEqual({ outcome: {}, ownersWhileBuilding: [{ queueRunId: 'q-1' }] });
 	});
 });

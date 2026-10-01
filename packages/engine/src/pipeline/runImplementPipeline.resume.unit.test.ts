@@ -1,10 +1,11 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import { StandardsSnapshot } from '#src/contracts/standardsCheck/StandardsSnapshot.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { report } from '#tests/helpers/report.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
@@ -145,4 +146,84 @@ test('resume: the pre-edit standards baseline survives a park and is not rewritt
 	expect(resumed.ok).toBe(true);
 	// the resume skipped the passed clean-slate, so the pre-edit measurement stands
 	expect(afterResume).toBe(atPark);
+});
+
+test("replaces a resumed root run's owner record with the resuming process", async () => {
+	const dir = setupConsumerRepo();
+	const parkOnWrite: Driver = {
+		name: 'stub',
+		invoke: withTestChangeReview({
+			invoke: async ({ prompt }) => {
+				const role = roleOf(prompt);
+
+				if (role === 'standards-review') {
+					return { text: reviewReport(), exitCode: 0 };
+				}
+
+				if (role === 'write-tests') {
+					return { text: '', exitCode: 1, rateLimited: true };
+				}
+
+				if (role === 'implement') {
+					writeSource({ dir, path: 'src/feature.js', source: 'export const feature = () => 2;\n' });
+
+					return { text: report({ changedFiles: [{ path: 'src/feature.js', summary: 'feature' }] }), exitCode: 0 };
+				}
+
+				return { text: report(), exitCode: 0 };
+			},
+		}),
+	};
+	const config = await readConfig({ cwd: dir });
+	const parked = await runImplementPipeline({ cwd: dir, driver: parkOnWrite, config, planPath: 'plan.md' });
+	const runId = parked.manifest.runId;
+	// a previous process, long gone, last owned the parked run
+	writeFileSync(join(runDirFor({ cwd: dir, runId }), 'owner.json'), JSON.stringify({ pid: 999999, recordedAt: '2026-01-01T00:00:00.000Z' }));
+
+	expect(parked.manifest.status).toBe('paused-rate-limit');
+
+	const resumeDriver: Driver = {
+		name: 'stub',
+		invoke: withTestChangeReview({
+			invoke: async ({ prompt }) => {
+				const role = roleOf(prompt);
+
+				if (role === 'standards-review') {
+					return { text: reviewReport(), exitCode: 0 };
+				}
+
+				return { text: report(), exitCode: 0 };
+			},
+		}),
+	};
+	const existing = await readRunManifest({ cwd: dir, runId });
+	const resumed = await runImplementPipeline({ cwd: dir, driver: resumeDriver, config, existing });
+	const owner = await readRunOwner({ cwd: dir, runId });
+
+	expect(resumed.ok).toBe(true);
+	expect(owner).toEqual(expect.objectContaining({ pid: process.pid }));
+	expect(owner !== undefined && 'queueRunId' in owner).toBe(false);
+});
+
+test('points a fresh queue worker build at the queue run', async () => {
+	const dir = setupConsumerRepo();
+	const driver: Driver = {
+		name: 'stub',
+		invoke: withTestChangeReview({
+			invoke: async ({ prompt }) => {
+				const role = roleOf(prompt);
+
+				if (role === 'standards-review') {
+					return { text: reviewReport(), exitCode: 0 };
+				}
+
+				return { text: report(), exitCode: 0 };
+			},
+		}),
+	};
+	const config = await readConfig({ cwd: dir });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', queueRunId: 'q-1' });
+	const owner = await readRunOwner({ cwd: dir, runId: result.manifest.runId });
+
+	expect(owner).toStrictEqual({ queueRunId: 'q-1' });
 });

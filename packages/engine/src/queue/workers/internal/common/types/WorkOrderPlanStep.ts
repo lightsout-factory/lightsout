@@ -19,5 +19,7 @@ export interface WorkOrderPlanStep {
 	driverName: string;
 	/** The ticket's directory under the coordinator run, where the commit message file is written. */
 	workOrderRunDir: string;
+	/** The queue run whose owner record answers for every run this step creates. */
+	queueRunId: string;
 	onProgress?: (message: string) => void;
 }

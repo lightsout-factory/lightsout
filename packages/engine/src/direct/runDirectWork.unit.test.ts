@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
@@ -12,6 +12,8 @@ import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 import { createRun } from '#src/runState/createRun.ts';
+import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { getRunProgress } from '#src/views/getRunProgress.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
@@ -121,6 +123,45 @@ const setupContinuedDirectRun = async () => {
 		});
 
 	return { cwd, existing, run };
+};
+
+/**
+ * A consumer repo with the harness and the gates stubbed green, building as a
+ * queue worker: the queue run `q-1` is the one whose owner record answers for
+ * the run this build creates.
+ */
+const setupQueueWorkerDirectRun = () => {
+	const cwd = setupConsumerRepo();
+	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+
+	mockInvokeAgentWithContract.mockResolvedValue({ ok: true, report: reportOf() });
+	mockRunGates.mockResolvedValue({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined });
+
+	const run = () =>
+		runDirectWork({
+			cwd,
+			ticketBody: '# Drain the backlog\n\nBuild the thing.',
+			ticketRef: 'LO-70',
+			driver,
+			driverName: 'claude-code',
+			config,
+			queueRunId: 'q-1',
+		});
+
+	return { cwd, run };
+};
+
+/**
+ * A parked direct run whose owner record still names the process that worked
+ * on it before — pid 999999, long gone — ready to be continued by this one.
+ */
+const setupContinuedDirectRunOwnedElsewhere = async () => {
+	const continued = await setupContinuedDirectRun();
+	const ownerPath = await getRunOwnerPath({ cwd: continued.cwd, runId: continued.existing.runId });
+
+	writeFileSync(ownerPath, JSON.stringify({ pid: 999999, recordedAt: '2026-09-29T09:00:00.000Z' }));
+
+	return continued;
 };
 
 describe('runDirectWork', () => {
@@ -469,5 +510,23 @@ describe('runDirectWork', () => {
 			'20260912-pre-minted',
 		]);
 		expect(readFileSync(join(await resolveRunDir({ cwd, runId: '20260912-pre-minted' }), 'ticket.md'), 'utf8')).toBe(`${ticketBody}\n`);
+	});
+
+	test('points a fresh queue worker direct run at the queue run', async () => {
+		const { cwd, run } = setupQueueWorkerDirectRun();
+
+		const result = await run();
+		const owner = await readRunOwner({ cwd, runId: result.manifest.runId });
+
+		expect(owner).toStrictEqual({ queueRunId: 'q-1' });
+	});
+
+	test("replaces a continued direct run's owner record with the resuming process", async () => {
+		const { cwd, existing, run } = await setupContinuedDirectRunOwnedElsewhere();
+
+		await run();
+		const owner = await readRunOwner({ cwd, runId: existing.runId });
+
+		expect(owner).toEqual(expect.objectContaining({ pid: process.pid, recordedAt: expect.any(String) }));
 	});
 });

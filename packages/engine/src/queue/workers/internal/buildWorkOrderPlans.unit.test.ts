@@ -2,10 +2,13 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
 import { buildWorkOrderPlans } from '#src/queue/workers/internal/buildWorkOrderPlans.ts';
+import { createRun } from '#src/runState/createRun.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { planAt, planFile, planOf, setupTicketPlanBuild } from '#tests/helpers/setupTicketPlanBuild.ts';
 
 // Mocked Imports
@@ -67,6 +70,14 @@ interface DirectCall {
 	runId?: string;
 	driverName: string;
 	config: LightsoutConfig;
+}
+
+/** What a build of one plan was handed beyond its plan path — the ids a real build creates its run under. */
+interface PlanBuildCall {
+	cwd: string;
+	planPath: string;
+	runId: string;
+	queueRunId?: string;
 }
 
 /** The stubs the shared fixture arranges, gathered once. */
@@ -132,6 +143,29 @@ const setupPrefixedBranchRefusal = () => {
 	writeFileSync(join(cwd, '.lightsout', 'work-orders', 'lo-7-search', 'state.json'), JSON.stringify(record));
 
 	return { calls, cwd, params: { ...params, record } };
+};
+
+/**
+ * The shared fixture's two ready plans, each built by a stub that creates its
+ * run the way the real implement pipeline does — through `createRun`, under the
+ * id and queue run it was handed — and reads the run's owner record while the
+ * build is still going, before the worker's settle removes it.
+ */
+const setupQueueWorkerBuild = () => {
+	const { cwd, params } = setupTicketPlanBuild({ mocks, plans: [firstImplemented, secondReady, thirdReady] });
+	const stubbedBuild = mockRunImplementPipeline.getMockImplementation() ?? (() => Promise.reject(new Error('the shared fixture arranged no build')));
+	const owners: (RunOwner | undefined)[] = [];
+
+	mockRunImplementPipeline.mockImplementation(async (build) => {
+		const { planPath, runId, queueRunId } = build as PlanBuildCall;
+
+		await createRun({ cwd, runId, plan: planPath, driver: 'claude-code', queueRunId });
+		owners.push(await readRunOwner({ cwd, runId }));
+
+		return stubbedBuild(build);
+	});
+
+	return { owners, params };
 };
 
 describe('buildWorkOrderPlans', () => {
@@ -306,5 +340,15 @@ describe('buildWorkOrderPlans', () => {
 		expect(outcome.error).toEqual(expect.stringContaining('lo-7-search'));
 		expect(outcome.error).toEqual(expect.stringContaining('002-search-basics'));
 		expect(outcome.error).not.toEqual(expect.stringContaining('feature/'));
+	});
+
+	test('threads the queue run id into every plan it builds', async () => {
+		const { owners, params } = setupQueueWorkerBuild();
+
+		await buildWorkOrderPlans({ ...params, allowTicketBodyBuild: false, queueRunId: 'q-1' });
+
+		// each plan's run points at the queue run, whose own owner record answers
+		// for it while the queue is alive
+		expect(owners).toStrictEqual([{ queueRunId: 'q-1' }, { queueRunId: 'q-1' }]);
 	});
 });

@@ -129,6 +129,43 @@ const setupFamily = async ({ seeded, withCorruptRoot = false }: { seeded: Seeded
 	return { cwd, blocks };
 };
 
+/** The phase child id a coordinator's running step names before that child's own manifest is written. */
+const unstartedChildId = 'uuuu5555-unstarted-phase';
+
+/**
+ * A phased coordinator whose first phase is running and already names its
+ * child on the step's `PhaseReport`, while no manifest answers to that child
+ * yet — the window between the coordinator recording the id and the child's
+ * run being created. Answers the coordinator's own block as the real
+ * `loadRunProgressBlock` draws it.
+ */
+const setupUnstartedChild = async () => {
+	jest.spyOn(Date, 'now').mockReturnValue(pinnedNow);
+
+	const cwd = await freshCwd();
+
+	await seedRunDir({
+		cwd,
+		manifest: {
+			runId: coordinator.runId,
+			pipeline: 'phases',
+			plan: 'plans/phased/overview.md',
+			createdAt: coordinator.createdAt,
+			updatedAt: coordinator.updatedAt,
+			status: RunStatus.Running,
+			currentStep: 'phase1.md',
+			steps: [
+				{ id: 'phase1.md', status: RunStatus.Running, attempts: 1, report: { runId: unstartedChildId } },
+				{ id: 'phase2.md', status: RunStatus.Pending, attempts: 0 },
+			],
+		},
+	});
+
+	const { lines: coordinatorBlock } = await loadRunProgressBlock({ cwd, runId: coordinator.runId });
+
+	return { cwd, coordinatorBlock };
+};
+
 describe('loadRunFamilyProgressBlock', () => {
 	test('a run with no phase children answers its own block alone', async () => {
 		const { cwd, blocks } = await setupFamily({ seeded: [solo] });
@@ -166,5 +203,13 @@ describe('loadRunFamilyProgressBlock', () => {
 		const { cwd } = await setupFamily({ seeded: [solo] });
 
 		await expect(loadRunFamilyProgressBlock({ cwd, runId: 'ghost-run-id' })).rejects.toThrow(RunNotFoundError);
+	});
+
+	test('shows the coordinator alone while its named first child has not started', async () => {
+		const { cwd, coordinatorBlock } = await setupUnstartedChild();
+
+		const lines = await loadRunFamilyProgressBlock({ cwd, runId: coordinator.runId });
+
+		expect(lines).toStrictEqual(coordinatorBlock);
 	});
 });
