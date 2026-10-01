@@ -11,6 +11,7 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { resolveNewRunDir } from '#src/runState/common/paths/resolveNewRunDir.ts';
 import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 import { createRun } from '#src/runState/createRun.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 
 interface Params {
 	cwd: string;
@@ -51,7 +52,11 @@ export const initializeCoverageRun = async ({
 		// resume standing in a worktree would open a file that is not there.
 		const frozen = join(await resolveRunDir({ cwd, runId: existing.runId }), 'worklist.json');
 
-		return { manifest: existing, worklist: CoverageWorklist.parse(JSON.parse(await readFile(frozen, 'utf8'))) };
+		const worklist = CoverageWorklist.parse(JSON.parse(await readFile(frozen, 'utf8')));
+
+		await writeRunOwner({ cwd, runId: existing.runId });
+
+		return { manifest: existing, worklist };
 	}
 
 	if (typeof config.gates['test-coverage'] !== 'string' && config['package-gates']?.['test-coverage'] === undefined) {

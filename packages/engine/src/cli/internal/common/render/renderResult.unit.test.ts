@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, jest, test } from '@jest/globals';
-import { printResult } from '#src/cli/internal/common/render/printResult.ts';
+import { renderResult } from '#src/cli/internal/common/render/renderResult.ts';
 import { FrictionArea } from '#src/contracts/friction/FrictionArea.ts';
 import type { FrictionRecord } from '#src/contracts/friction/FrictionRecord.ts';
 import { CleanupEndReason } from '#src/contracts/run/CleanupEndReason.ts';
@@ -14,11 +14,12 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 
-// printResult summarizes a run from the evidence the run left on disk, so the
+// renderResult summarizes a run from the evidence the run left on disk, so the
 // arrangement is a real run directory in a temp repo — the summary is driven
 // through the same reader the CLI uses, never stubbed. isTTY is pinned off so
 // the ANSI paint helpers stay no-ops and the assertions read the plain text a
-// piped consumer sees.
+// piped consumer sees. The console is captured so a case can prove the
+// renderer prints nothing itself.
 const setupResult = ({
 	manifest = {},
 	ok = true,
@@ -94,14 +95,14 @@ const setupResult = ({
 };
 
 /** The labelled summary lines, with the step table's box-drawn rows and the blank spacers dropped. */
-const labelLines = ({ logged }: { logged: string[] }) => logged.filter((line) => line !== '' && !/^[┌├└│]/.test(line));
+const labelLines = ({ lines }: { lines: string[] }) => lines.filter((line) => line !== '' && !/^[┌├└│]/.test(line));
 
-test('printResult: a clean run with no usage, scope, or gate history prints only the always-present lines', async () => {
-	const { result, cwd, logged, errors } = setupResult();
+test('renderResult: a clean run with no usage, scope, or gate history prints only the always-present lines', async () => {
+	const { result, cwd } = setupResult();
 
-	await printResult({ result, cwd });
+	const lines = await renderResult({ result, cwd });
 
-	expect(labelLines({ logged })).toStrictEqual([
+	expect(labelLines({ lines })).toStrictEqual([
 		'run       run-1234 · PASSED',
 		'plan      feature.md',
 		'wall      3s',
@@ -109,11 +110,10 @@ test('printResult: a clean run with no usage, scope, or gate history prints only
 		'gates     0 commands',
 		'evidence  .lightsout/runs/run-1234-abcd/',
 	]);
-	expect(errors).toStrictEqual([]);
 });
 
-test('printResult: a failed run reports active time, usage, gate detail, retries, this run’s friction, scope, and the error on stderr', async () => {
-	const { result, cwd, logged, errors } = setupResult({
+test('renderResult: a failed run reports active time, usage, gate detail, retries, this run’s friction, and scope', async () => {
+	const { result, cwd } = setupResult({
 		ok: false,
 		error: 'gate check failed: pnpm check',
 		manifest: {
@@ -137,9 +137,9 @@ test('printResult: a failed run reports active time, usage, gate detail, retries
 		rejectedReports: 1,
 	});
 
-	await printResult({ result, cwd });
+	const lines = await renderResult({ result, cwd });
 
-	expect(labelLines({ logged })).toStrictEqual([
+	expect(labelLines({ lines })).toStrictEqual([
 		'run       run-1234 · FAILED',
 		'plan      feature.md',
 		'wall      2m 05s',
@@ -153,17 +153,16 @@ test('printResult: a failed run reports active time, usage, gate detail, retries
 		'scope     api · web (front-matter)',
 		'evidence  .lightsout/runs/run-1234-abcd/',
 	]);
-	expect(errors).toStrictEqual(['\ngate check failed: pnpm check']);
 });
 
-test('printResult: an invocation that reported no tokens prints usage with no cache share, and the count reads singular', async () => {
-	const { result, cwd, logged } = setupResult({
+test('renderResult: an invocation that reported no tokens prints usage with no cache share, and the count reads singular', async () => {
+	const { result, cwd } = setupResult({
 		manifest: { usage: { invocations: 1, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0, costUsd: 0 } },
 	});
 
-	await printResult({ result, cwd });
+	const lines = await renderResult({ result, cwd });
 
-	expect(labelLines({ logged })).toStrictEqual([
+	expect(labelLines({ lines })).toStrictEqual([
 		'run       run-1234 · PASSED',
 		'plan      feature.md',
 		'wall      3s',
@@ -175,12 +174,12 @@ test('printResult: an invocation that reported no tokens prints usage with no ca
 	]);
 });
 
-test('printResult: a scope with no recorded source prints bare, and a failure carrying no message writes nothing to stderr', async () => {
-	const { result, cwd, logged, errors } = setupResult({ ok: false, manifest: { status: RunStatus.Failed, packages: ['api'] } });
+test('renderResult: a scope with no recorded source prints bare', async () => {
+	const { result, cwd } = setupResult({ ok: false, manifest: { status: RunStatus.Failed, packages: ['api'] } });
 
-	await printResult({ result, cwd });
+	const lines = await renderResult({ result, cwd });
 
-	expect(labelLines({ logged })).toStrictEqual([
+	expect(labelLines({ lines })).toStrictEqual([
 		'run       run-1234 · FAILED',
 		'plan      feature.md',
 		'wall      3s',
@@ -189,15 +188,49 @@ test('printResult: a scope with no recorded source prints bare, and a failure ca
 		'scope     api',
 		'evidence  .lightsout/runs/run-1234-abcd/',
 	]);
-	expect(errors).toStrictEqual([]);
 });
 
-test('printResult: files that finished the run unreachable surface as a named warning line', async () => {
-	const { result, cwd, logged } = setupResult({ manifest: { unreachableChangedFiles: ['src/orphan.ts', 'src/other.ts'] } });
+test("renderResult: returns the report card as lines, prints nothing, and leaves the run's error out", async () => {
+	const { result, cwd, logged, errors } = setupResult({
+		ok: false,
+		error: 'gate check failed: pnpm check',
+		manifest: {
+			status: RunStatus.Failed,
+			steps: [
+				{ id: 'implement', status: RunStatus.Passed, attempts: 1 },
+				{ id: 'write-tests', status: RunStatus.Failed, attempts: 2 },
+			],
+		},
+	});
 
-	await printResult({ result, cwd });
+	const lines = await renderResult({ result, cwd });
+	const table = lines.filter((line) => /^[┌├└│]/.test(line));
 
-	expect(labelLines({ logged })).toStrictEqual([
+	expect(lines[0]).toBe('');
+	expect(labelLines({ lines })).toStrictEqual([
+		'run       run-1234 · FAILED',
+		'plan      feature.md',
+		'wall      3s',
+		'gates     0s',
+		'gates     0 commands',
+		'evidence  .lightsout/runs/run-1234-abcd/',
+	]);
+	// the step table sits inside the card: ruled top and bottom, one row per step and the total
+	expect(table[0]).toMatch(/^┌/);
+	expect(table.at(-1)).toMatch(/^└/);
+	expect(table.filter((line) => /implement|write-tests|total/.test(line))).toHaveLength(3);
+	// the renderer prints nothing itself, and the error is the caller's to print and save
+	expect(logged).toStrictEqual([]);
+	expect(errors).toStrictEqual([]);
+	expect(lines.filter((line) => line.includes('gate check failed'))).toStrictEqual([]);
+});
+
+test('renderResult: files that finished the run unreachable surface as a named warning line', async () => {
+	const { result, cwd } = setupResult({ manifest: { unreachableChangedFiles: ['src/orphan.ts', 'src/other.ts'] } });
+
+	const lines = await renderResult({ result, cwd });
+
+	expect(labelLines({ lines })).toStrictEqual([
 		'run       run-1234 · PASSED',
 		'plan      feature.md',
 		'wall      3s',
@@ -218,8 +251,8 @@ const finding = ({ siteKey }: { siteKey: string }): StandardsFinding => ({
 	measure: 412,
 });
 
-test('printResult: a run that spent cleanup rounds prints one cleanup line naming the rounds, the reason, what remains and what failed', async () => {
-	const { result, cwd, logged } = setupResult({
+test('renderResult: a run that spent cleanup rounds prints one cleanup line naming the rounds, the reason, what remains and what failed', async () => {
+	const { result, cwd } = setupResult({
 		manifest: {
 			steps: [
 				{ id: 'implement', status: RunStatus.Passed, attempts: 1 },
@@ -242,10 +275,9 @@ test('printResult: a run that spent cleanup rounds prints one cleanup line namin
 		},
 	});
 
-	await printResult({ result, cwd });
-
-	const lines = labelLines({ logged });
-	const cleanupLines = lines.filter((line) => line.startsWith('cleanup'));
+	const lines = await renderResult({ result, cwd });
+	const labels = labelLines({ lines });
+	const cleanupLines = labels.filter((line) => line.startsWith('cleanup'));
 
 	expect(cleanupLines).toHaveLength(1);
 	// The wording is the printer's own; the four facts the line has to carry are
@@ -255,12 +287,12 @@ test('printResult: a run that spent cleanup rounds prints one cleanup line namin
 	expect(cleanupLines[0]).toContain('budget-exhausted');
 	expect(cleanupLines[0]).toMatch(/\b3\b[^0-9]*(remain|standing)/);
 	expect(cleanupLines[0]).toMatch(/\b1\b[^0-9]*fail/);
-	expect(lines).toContain('gates     0 commands');
-	expect(lines).toContain('evidence  .lightsout/runs/run-1234-abcd/');
+	expect(labels).toContain('gates     0 commands');
+	expect(labels).toContain('evidence  .lightsout/runs/run-1234-abcd/');
 });
 
-test('printResult: a run with no cleanup record prints no cleanup line', async () => {
-	const { result, cwd, logged } = setupResult({
+test('renderResult: a run with no cleanup record prints no cleanup line', async () => {
+	const { result, cwd } = setupResult({
 		manifest: {
 			steps: [
 				{ id: 'implement', status: RunStatus.Passed, attempts: 1 },
@@ -269,9 +301,9 @@ test('printResult: a run with no cleanup record prints no cleanup line', async (
 		},
 	});
 
-	await printResult({ result, cwd });
+	const lines = await renderResult({ result, cwd });
 
-	expect(labelLines({ logged })).toStrictEqual([
+	expect(labelLines({ lines })).toStrictEqual([
 		'run       run-1234 · PASSED',
 		'plan      feature.md',
 		'wall      3s',
@@ -282,13 +314,13 @@ test('printResult: a run with no cleanup record prints no cleanup line', async (
 });
 
 /** The commit lines of the result block — what the run says it left behind. */
-const commitLines = ({ logged }: { logged: string[] }) => labelLines({ logged }).filter((line) => line.startsWith('commit'));
+const commitLines = ({ lines }: { lines: string[] }) => labelLines({ lines }).filter((line) => line.startsWith('commit'));
 
 /** One commit a run recorded, addressed the way a plan run addresses its unit of work. */
 const runCommit = ({ sha, subject }: { sha: string; subject: string }): RunCommit => ({ sha, subject, runId: 'run-1234-abcd' });
 
 test('names every commit the run left behind', async () => {
-	const { result, cwd, logged } = setupResult({
+	const { result, cwd } = setupResult({
 		manifest: {
 			changedFiles: ['src/a.ts'],
 			commits: [
@@ -301,39 +333,37 @@ test('names every commit the run left behind', async () => {
 		},
 	});
 
-	await printResult({ result, cwd });
+	const lines = await renderResult({ result, cwd });
+	const commits = commitLines({ lines });
 
-	const lines = commitLines({ logged });
-
-	expect(lines).toHaveLength(1);
+	expect(commits).toHaveLength(1);
 	// both commits are named, each by its own sha and its own subject
-	expect(lines[0]).toContain('c0ffee1');
-	expect(lines[0]).toContain('LO-150 001-planning-observability: Planning observability');
-	expect(lines[0]).toContain('decade9');
-	expect(lines[0]).toContain('LO-150 001-planning-observability/phase2-activity-record: Planning observability');
+	expect(commits[0]).toContain('c0ffee1');
+	expect(commits[0]).toContain('LO-150 001-planning-observability: Planning observability');
+	expect(commits[0]).toContain('decade9');
+	expect(commits[0]).toContain('LO-150 001-planning-observability/phase2-activity-record: Planning observability');
 	// the sha is abbreviated, never spelled out in full
-	expect(lines[0]).not.toContain('c0ffee1234567890c0ffee1234567890c0ffee12');
-	expect(lines[0]).not.toContain('decade9876543210decade9876543210decade98');
+	expect(commits[0]).not.toContain('c0ffee1234567890c0ffee1234567890c0ffee12');
+	expect(commits[0]).not.toContain('decade9876543210decade9876543210decade98');
 });
 
 test('says the work was already in history when the run added no commit', async () => {
-	const { result, cwd, logged } = setupResult({ manifest: { changedFiles: ['src/a.ts'], commits: [] } });
+	const { result, cwd } = setupResult({ manifest: { changedFiles: ['src/a.ts'], commits: [] } });
 
-	await printResult({ result, cwd });
-
-	const lines = commitLines({ logged });
+	const lines = await renderResult({ result, cwd });
+	const commits = commitLines({ lines });
 
 	// the wording is the printer's own; what the line has to carry is that the
 	// work is already committed, so nobody reaches for git status to find out
-	expect(lines).toHaveLength(1);
-	expect(lines[0]).toMatch(/already/i);
-	expect(lines[0]).toMatch(/histor/i);
+	expect(commits).toHaveLength(1);
+	expect(commits[0]).toMatch(/already/i);
+	expect(commits[0]).toMatch(/histor/i);
 });
 
 test('prints no commit line for a run that left nothing', async () => {
-	const { result, cwd, logged } = setupResult({ ok: false, manifest: { status: RunStatus.Failed, changedFiles: [], commits: [] } });
+	const { result, cwd } = setupResult({ ok: false, manifest: { status: RunStatus.Failed, changedFiles: [], commits: [] } });
 
-	await printResult({ result, cwd });
+	const lines = await renderResult({ result, cwd });
 
-	expect(commitLines({ logged })).toStrictEqual([]);
+	expect(commitLines({ lines })).toStrictEqual([]);
 });

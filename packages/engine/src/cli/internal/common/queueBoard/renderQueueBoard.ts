@@ -1,5 +1,4 @@
 import { QueueBoardState } from '#src/cli/internal/common/constants/QueueBoardState.ts';
-import { queueUpdateIntervalMs } from '#src/cli/internal/common/constants/queueUpdateIntervalMs.ts';
 import { formatTicketLink } from '#src/cli/internal/common/queueBoard/formatTicketLink.ts';
 import { toInlineMarkdown } from '#src/cli/internal/common/queueBoard/toInlineMarkdown.ts';
 import type { QueueBoardTicket } from '#src/contracts/queue/QueueBoardTicket.ts';
@@ -26,7 +25,7 @@ const toHeading = ({ state, at }: { state: QueueBoardState; at: Date }) => {
 	let heading = `Queue finished · ${time}`;
 
 	if (state === QueueBoardState.Live) {
-		heading = `Queue update · ${time} · next update ${toClock({ at: new Date(at.getTime() + queueUpdateIntervalMs) })}`;
+		heading = `Queue update · ${time}`;
 	} else if (state === QueueBoardState.Stopped) {
 		heading = `Queue stopped · last update ${time}`;
 	}
@@ -58,8 +57,8 @@ interface Params {
 
 /**
  * An empty lane keeps its column, so a ticket visibly moves across columns from
- * one post to the next. No terminal paint: the lines are markdown the queue
- * skill posts into a conversation.
+ * one post to the next. No terminal paint: the lines are markdown a skill posts
+ * into a conversation.
  */
 export const renderQueueBoard = ({ tickets, state, at }: Params): string[] => {
 	const lanes = Object.values(QueueLane);

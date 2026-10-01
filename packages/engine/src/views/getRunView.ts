@@ -9,8 +9,8 @@ import { GateEvidence } from '#src/contracts/views/GateEvidence.ts';
 import type { RunStepView } from '#src/contracts/views/RunStepView.ts';
 import type { RunView } from '#src/contracts/views/RunView.ts';
 import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
-import { readRunProcessLock } from '#src/runState/lock/readRunProcessLock.ts';
 import { readFriction } from '#src/runState/readFriction.ts';
+import { readRunLiveness } from '#src/runState/readRunLiveness.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { summarizeRun } from '#src/runState/summarizeRun.ts';
 import { buildRunBurnDown } from '#src/views/internal/common/utils/buildRunBurnDown.ts';
@@ -90,7 +90,7 @@ interface Params {
 export const getRunView = async ({ cwd, runId }: Params): Promise<RunView> => {
 	const manifest = await readRunManifest({ cwd, runId });
 	const runDir = await resolveRunDir({ cwd, runId: manifest.runId });
-	const lock = await readRunProcessLock({ cwd, manifest });
+	const { live } = await readRunLiveness({ cwd, manifest });
 	const summary = await summarizeRun({ cwd, manifest });
 	const usage: StepUsage = new Map(
 		summary.steps.map((step) => [step.id, { invocations: step.invocations, outputTokens: step.outputTokens, costUsd: step.costUsd }]),
@@ -107,7 +107,7 @@ export const getRunView = async ({ cwd, runId }: Params): Promise<RunView> => {
 	const worklist = manifest.plan.endsWith('worklist.json') ? await readFrozenWorklist({ cwd, manifest }) : undefined;
 
 	return {
-		listing: await readRunListing({ cwd, manifest, lock, worklist }),
+		listing: await readRunListing({ cwd, manifest, live, worklist }),
 		harness: manifest.harness,
 		overview,
 		currentStep: manifest.currentStep,

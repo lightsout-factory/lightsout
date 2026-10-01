@@ -17,11 +17,12 @@ describe('commandCatalog flags', () => {
 			['brainstorm', ['cwd', 'name']],
 			['plan', ['cwd', 'name', 'no-worktree', 'notes', 'phase', 'scope', 'worktree']],
 			['auto-plan', []],
-			['implement', ['cwd', 'no-ship', 'no-worktree', 'overview', 'packages', 'plan', 'ship', 'skip-refactor', 'start-phase', 'worktree']],
+			['implement', ['cwd', 'detach', 'no-ship', 'no-worktree', 'overview', 'packages', 'plan', 'ship', 'skip-refactor', 'start-phase', 'worktree']],
 			['implement-direct', ['cwd', 'no-ship', 'no-worktree', 'ref', 'ship', 'ticket', 'worktree']],
-			['resume', ['cwd', 'no-ship', 'run', 'ship', 'skip-refactor']],
+			['resume', ['cwd', 'detach', 'no-ship', 'run', 'ship', 'skip-refactor']],
+			['stop', ['cwd', 'run']],
 			['ship', ['cwd']],
-			['queue', ['cwd', 'file-relay']],
+			['queue', ['cwd', 'detach', 'file-relay']],
 			['work-order', ['approve', 'cwd', 'implementation-removed', 'keep', 'name', 'plan', 'plans', 'reason', 'set', 'slug', 'ticket', 'title', 'withdraw']],
 			['ticket-state', ['cwd', 'planning-status', 'ref', 'tracker-status']],
 			['self-check', ['cwd', 'run']],
@@ -43,6 +44,25 @@ describe('commandCatalog flags', () => {
 		const statusFlags = readCommandFlags({ command: 'status' });
 
 		expect([...statusFlags].sort()).toStrictEqual(['cwd', 'now', 'planning', 'queue', 'run', 'shipping', 'wait', 'watch']);
+	});
+
+	test('implement, resume and queue accept an optional --detach, and no other command does', () => {
+		const { byId } = setupCatalog();
+
+		const detachRows = ['implement', 'resume', 'queue'].map((id) => {
+			const rows = (byId.get(id)?.flags ?? []).filter((flag) => flag.name === 'detach');
+
+			return [id, rows.map((flag) => [flag.required, flag.shape, flag.value, flag.meaning.length > 0, (flag.fallback ?? '').length > 0])];
+		});
+		const accepting = commandCatalog.map((entry) => entry.id).filter((id) => readCommandFlags({ command: id }).has('detach'));
+
+		// one shapeless row each, so it renders on every usage line of the command, with a meaning and what happens without it
+		expect(detachRows).toStrictEqual([
+			['implement', [[false, undefined, undefined, true, true]]],
+			['resume', [[false, undefined, undefined, true, true]]],
+			['queue', [[false, undefined, undefined, true, true]]],
+		]);
+		expect(accepting).toStrictEqual(['implement', 'resume', 'queue']);
 	});
 
 	test('repeats a flag name within one entry only across different shapes, so nothing renders twice on one usage line', () => {

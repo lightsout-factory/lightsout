@@ -5,6 +5,7 @@ import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 import { createRun } from '#src/runState/createRun.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
@@ -308,5 +309,36 @@ describe('createRun', () => {
 		// recorded after the write would fail every run at creation
 		expect(read.runId).toBe(manifest.runId);
 		expect(read.plan).toBe('plan.md');
+	});
+
+	test('records this process as the owner of a run with no parent', async () => {
+		const { cwd } = setupRepo();
+
+		const manifest = await createRun({ cwd, plan: 'plan.md', driver: 'stub' });
+		const owner = await readRunOwner({ cwd, runId: manifest.runId });
+
+		// the process form names the engine working on the family root
+		expect(owner).toEqual(expect.objectContaining({ pid: process.pid, recordedAt: expect.any(String) }));
+	});
+
+	test('gives a phase child no owner record', async () => {
+		const { cwd } = setupRepo();
+
+		const manifest = await createRun({ cwd, plan: 'plan.md', driver: 'stub', parentRunId: 'coordinator-run' });
+		const owner = await readRunOwner({ cwd, runId: manifest.runId });
+		const read = await readRunManifest({ cwd, runId: manifest.runId });
+
+		// the coordinator's owner record answers for the whole family
+		expect(owner).toBe(undefined);
+		expect(read.runId).toBe(manifest.runId);
+	});
+
+	test("points a queue worker's run at the queue run that owns it", async () => {
+		const { cwd } = setupRepo();
+
+		const manifest = await createRun({ cwd, plan: 'plan.md', driver: 'stub', queueRunId: 'q-1' });
+		const owner = await readRunOwner({ cwd, runId: manifest.runId });
+
+		expect(owner).toStrictEqual({ queueRunId: 'q-1' });
 	});
 });

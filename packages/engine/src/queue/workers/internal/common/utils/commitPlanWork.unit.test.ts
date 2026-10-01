@@ -97,6 +97,7 @@ const setupLeftoverCommit = ({ staged = false, answer }: { staged?: boolean; ans
 		driver,
 		driverName: driver.name,
 		workOrderRunDir: `${cwd}/.lightsout/runs/run-1/ticket`,
+		queueRunId: 'run-1',
 	};
 
 	return { step, invocations, messages };

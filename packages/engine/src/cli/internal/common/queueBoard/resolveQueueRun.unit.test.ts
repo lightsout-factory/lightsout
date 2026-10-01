@@ -6,6 +6,7 @@ import { resolveQueueRun } from '#src/cli/internal/common/queueBoard/resolveQueu
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { seedRunDir } from '#tests/helpers/seedRunDir.ts';
 
@@ -38,7 +39,36 @@ const setupCheckout = async () => {
 	return { cwd, plant, lock, startQueueLater };
 };
 
+/**
+ * Two main checkouts, neither holding a run lock: in one the only queue run's
+ * owner record names this test process, in the other it names a dead pid.
+ */
+const setupOwnedQueueRuns = async () => {
+	const liveCwd = await freshCwd();
+	const deadCwd = await freshCwd();
+
+	await seedRunDir({ cwd: liveCwd, manifest: { runId: 'queue-owned', pipeline: PipelineKind.Queue, status: RunStatus.Running } });
+	await writeRunOwner({ cwd: liveCwd, runId: 'queue-owned' });
+
+	const deadRunDir = await seedRunDir({ cwd: deadCwd, manifest: { runId: 'queue-orphaned', pipeline: PipelineKind.Queue, status: RunStatus.Running } });
+	await writeFile(join(deadRunDir, 'owner.json'), JSON.stringify({ pid: deadPid, recordedAt: '2026-01-01T00:00:00.000Z' }), 'utf8');
+
+	return { liveCwd, deadCwd };
+};
+
 describe('resolveQueueRun', () => {
+	test('the unnamed queue run is the one a live owner stands behind', async () => {
+		const { liveCwd, deadCwd } = await setupOwnedQueueRuns();
+
+		const ownedListing = await resolveQueueRun({ cwd: liveCwd, graceMs: 0 });
+		const orphanedListing = await resolveQueueRun({ cwd: deadCwd, graceMs: 0 });
+
+		expect({ ownedListing, orphanedListing }).toEqual({
+			ownedListing: expect.objectContaining({ runId: 'queue-owned', pipeline: 'queue', live: true }),
+			orphanedListing: undefined,
+		});
+	});
+
 	test("follows the queue run the main checkout's run lock names while its process is alive", async () => {
 		const { cwd, plant, lock } = await setupCheckout();
 

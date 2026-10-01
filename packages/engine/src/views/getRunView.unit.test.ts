@@ -367,3 +367,56 @@ test('a coordinator that has not yet opened a step for this child leaves the bac
 
 	expect((await getRunView({ cwd, runId: 'run-child' })).parent).toBe(undefined);
 });
+
+test("keeps a named phase child that has not started yet as the step's child", async () => {
+	const cwd = await freshCwd();
+
+	// the coordinator names its child on the running step before the child's own
+	// manifest exists — that window is not yet started, never a page failure
+	await seedRunDir({
+		cwd,
+		manifest: {
+			runId: 'run-coordinator',
+			pipeline: 'phases',
+			plan: 'plans/add-search/overview.md',
+			status: RunStatus.Running,
+			currentStep: 'phase1.md',
+			steps: [{ id: 'phase1.md', status: RunStatus.Running, attempts: 1, report: { runId: 'run-unstarted' } }],
+		},
+	});
+
+	const view = await getRunView({ cwd, runId: 'run-coordinator' });
+
+	expect(view.steps.map((step) => ({ id: step.id, status: step.status, childRunId: step.childRunId }))).toStrictEqual([
+		{ id: 'phase1.md', status: RunStatus.Running, childRunId: 'run-unstarted' },
+	]);
+});
+
+test('a coordinator step keeps naming a child that has not started yet', async () => {
+	const cwd = await freshCwd();
+
+	// phase one's child ran and left a manifest; phase two's child is named on the
+	// running step before its own manifest exists, so the view must not read it
+	await seedRunDir({
+		cwd,
+		manifest: {
+			runId: 'run-sequence',
+			pipeline: 'phases',
+			plan: 'plans/add-search/overview.md',
+			status: RunStatus.Running,
+			currentStep: 'phase2.md',
+			steps: [
+				{ id: 'phase1.md', status: RunStatus.Passed, attempts: 1, report: { runId: 'run-phase-one' } },
+				{ id: 'phase2.md', status: RunStatus.Running, attempts: 1, report: { runId: 'run-phase-two-unstarted' } },
+			],
+		},
+	});
+	await seedRunDir({ cwd, manifest: { runId: 'run-phase-one', plan: 'plans/add-search/phase1.md', parentRunId: 'run-sequence' } });
+
+	const view = await getRunView({ cwd, runId: 'run-sequence' });
+
+	expect(view.steps.map((step) => ({ id: step.id, childRunId: step.childRunId }))).toStrictEqual([
+		{ id: 'phase1.md', childRunId: 'run-phase-one' },
+		{ id: 'phase2.md', childRunId: 'run-phase-two-unstarted' },
+	]);
+});

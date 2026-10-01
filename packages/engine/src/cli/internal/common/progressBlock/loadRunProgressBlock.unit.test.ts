@@ -14,6 +14,9 @@ import { runDirFor } from '#tests/helpers/runDirFor.ts';
 
 const runId = 'run-loaded-01';
 
+/** A pid no process holds, so an owner record naming it names a process that is gone. */
+const deadPid = 999_999_999;
+
 /** The one clock both the loader and the expected view read — a live running row ticks from it. */
 const pinnedNow = Date.parse('2026-01-01T00:12:00.000Z');
 
@@ -59,11 +62,27 @@ const setupLoad = async () => {
 	writeFileSync(join(cwd, '.lightsout', 'lock.json'), JSON.stringify(lock), 'utf8');
 	jest.spyOn(Date, 'now').mockReturnValue(pinnedNow);
 
-	const expectedProgress = await getRunProgress({ cwd, manifest, lock });
+	const expectedProgress = await getRunProgress({ cwd, manifest, live: true });
 	const expectedLines = renderRunProgress({ progress: expectedProgress });
 	const captured = captureCommandOutput();
 
 	return { cwd, expectedProgress, expectedLines, ...captured };
+};
+
+/**
+ * A real repo holding the same running run, but whose owner record names a
+ * process that is gone — the engine working on it died without settling it.
+ */
+const setupStoppedLoad = () => {
+	const manifest = manifestOf();
+	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-load-run-block-'));
+	const runDir = runDirFor({ cwd, runId });
+
+	mkdirSync(runDir, { recursive: true });
+	writeFileSync(join(runDir, 'manifest.json'), JSON.stringify(manifest), 'utf8');
+	writeFileSync(join(runDir, 'owner.json'), JSON.stringify({ pid: deadPid, recordedAt: '2026-01-01T00:00:00.000Z' }), 'utf8');
+
+	return { cwd };
 };
 
 describe('loadRunProgressBlock', () => {
@@ -79,5 +98,16 @@ describe('loadRunProgressBlock', () => {
 		const { cwd } = await setupLoad();
 
 		await expect(loadRunProgressBlock({ cwd, runId: 'ghost' })).rejects.toThrow(RunNotFoundError);
+	});
+
+	test('a block loaded for a run whose owner is gone is drawn stopped', async () => {
+		const { cwd } = setupStoppedLoad();
+
+		const block = await loadRunProgressBlock({ cwd, runId });
+
+		expect({ live: block.progress.live, lines: block.lines }).toEqual({
+			live: false,
+			lines: expect.arrayContaining([expect.stringMatching(/■.*\btest\b.*stopped/)]),
+		});
 	});
 });

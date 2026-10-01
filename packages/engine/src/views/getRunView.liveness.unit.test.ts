@@ -2,6 +2,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { getRunView } from '#src/views/getRunView.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { seedRunDir } from '#tests/helpers/seedRunDir.ts';
@@ -52,6 +53,14 @@ const setupIsolatedRun = async ({ workspaceHolder, launchingHolder, recordWorksp
 	return { cwd };
 };
 
+/** A running isolated run whose owner record names this test process, with no checkout holding a lock. */
+const setupOwnedRun = async () => {
+	const { cwd } = await setupIsolatedRun();
+	await writeRunOwner({ cwd, runId: 'run-isolated' });
+
+	return { cwd };
+};
+
 describe('getRunView', () => {
 	test('an isolated run is live when its own workspace holds the lock, though the checkout the view is read from holds none', async () => {
 		const { cwd } = await setupIsolatedRun({ workspaceHolder: 'run-isolated' });
@@ -84,5 +93,15 @@ describe('getRunView', () => {
 		// a run built in the checkout it was launched from, and one whose tree has
 		// been cleaned up, both still report the holder standing behind them
 		expect(view.listing).toEqual(expect.objectContaining({ live: true, resumable: false }));
+	});
+
+	test('the run detail is live while its owner record names a live process, with no lock held anywhere', async () => {
+		const { cwd } = await setupOwnedRun();
+
+		const view = await getRunView({ cwd, runId: 'run-isolated' });
+
+		// neither the workspace nor the launching checkout holds a lock, so only the
+		// owner record can say a live process stands behind the run
+		expect(view.listing).toEqual(expect.objectContaining({ runId: 'run-isolated', live: true, resumable: false }));
 	});
 });

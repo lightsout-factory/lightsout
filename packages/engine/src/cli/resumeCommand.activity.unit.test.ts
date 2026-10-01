@@ -36,7 +36,7 @@ type DirectParams = {
 	willShip: boolean;
 };
 type GuardParams = { cwd: string; config: LightsoutConfig; env: NodeJS.ProcessEnv; ticketRef?: string; onProgress?: (message: string) => void };
-type ExitAfterImplementParams = {
+type ShipAfterImplementParams = {
 	config: LightsoutConfig;
 	cwd: string;
 	result: PipelineResult;
@@ -69,10 +69,10 @@ jest.mock('#src/ticketLifecycle/requireImplementLifecycle.ts', () => ({
 	requireImplementLifecycle: (params: GuardParams) => mockRequireImplementLifecycle(params),
 }));
 // -------------------------
-const mockExitAfterImplement = jest.fn<(params: ExitAfterImplementParams) => Promise<void>>();
+const mockShipAfterImplement = jest.fn<(params: ShipAfterImplementParams) => Promise<number>>();
 
-jest.mock('#src/cli/internal/common/utils/exitAfterImplement.ts', () => ({
-	exitAfterImplement: (params: ExitAfterImplementParams) => mockExitAfterImplement(params),
+jest.mock('#src/cli/internal/common/utils/shipAfterImplement.ts', () => ({
+	shipAfterImplement: (params: ShipAfterImplementParams) => mockShipAfterImplement(params),
 }));
 // -------------------------
 
@@ -118,7 +118,7 @@ const setupParkedImplementRun = () => {
 	writeRepoFile({ cwd: seeded.cwd, path: planPath, content: '# Record the implementation\n' });
 
 	mockRequireImplementLifecycle.mockResolvedValue(undefined);
-	mockExitAfterImplement.mockResolvedValue(undefined);
+	mockShipAfterImplement.mockResolvedValue(0);
 	mockRunPipelineOrFailFast.mockResolvedValue({
 		ok: true,
 		manifest: manifestOf({ pipeline: PipelineKind.Implement, status: RunStatus.Passed, plan: planPath, branch: workOrderName }),
@@ -145,7 +145,7 @@ const setupParkedPhasedRun = () => {
 	writeRepoFile({ cwd: seeded.cwd, path: overviewPath, content: '# Record the implementation\n' });
 
 	mockRequireImplementLifecycle.mockResolvedValue(undefined);
-	mockExitAfterImplement.mockResolvedValue(undefined);
+	mockShipAfterImplement.mockResolvedValue(0);
 	mockRunPhasesOrFailFast.mockImplementation(async ({ level }) => {
 		const pass = level?.open({ level: ActivityLevelKind.Pass, label: 'phase 2/2: phase2-record.md' });
 
@@ -197,7 +197,7 @@ const setupParkedDirectRun = () => {
 	writeRepoFile({ cwd: seeded.cwd, path: frozenTicketPath, content: '# Record the implementation\n\nBuild the thing.\n' });
 
 	mockRequireImplementLifecycle.mockResolvedValue(undefined);
-	mockExitAfterImplement.mockResolvedValue(undefined);
+	mockShipAfterImplement.mockResolvedValue(0);
 	mockContinueDirectRun.mockResolvedValue({
 		ok: true,
 		manifest: manifestOf({ pipeline: PipelineKind.Direct, status: RunStatus.Passed, plan: frozenTicketPath, branch: workOrderName }),
@@ -212,7 +212,7 @@ describe('resumeCommand activity record', () => {
 
 		await recordPlanCommandRun({ cwd, name, label: 'implement', work: async () => 'parked', statusOf: () => RunStatus.Failed });
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		const report = buildActivityTree({ plan: name, marks: await readActivityMarks({ dir: planDir }) });
 		const [root] = report.roots;
@@ -242,7 +242,7 @@ describe('resumeCommand activity record', () => {
 			};
 		});
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		const report = buildActivityTree({ plan: name, marks: await readActivityMarks({ dir: planDir }) });
 		const [root] = report.roots;
@@ -260,7 +260,7 @@ describe('resumeCommand activity record', () => {
 	test('a resumed phased sequence hangs its phases from the same command run', async () => {
 		const { context, planDir, errors } = setupParkedPhasedRun();
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		const report = buildActivityTree({ plan: name, marks: await readActivityMarks({ dir: planDir }) });
 		const [root] = report.roots;
@@ -279,14 +279,14 @@ describe('resumeCommand activity record', () => {
 	test('a resumed direct run records nothing', async () => {
 		const { context, cwd, errors } = setupParkedDirectRun();
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the direct pipeline is outside this record's scope, and its plan path is a
 		// ticket body — so the name the ticket record answers is deliberately not
 		// recorded under, while the continuation itself runs exactly as it always has
 		expect(await activityRecordsUnder({ dir: cwd })).toStrictEqual([]);
 		expect(mockContinueDirectRun).toHaveBeenCalledWith(expect.objectContaining({ cwd, workspace: cwd, manifest: expect.objectContaining({ runId }) }));
-		expect(mockExitAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ result: expect.objectContaining({ ok: true }) }));
+		expect(mockShipAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ result: expect.objectContaining({ ok: true }) }));
 		expect(errors).toStrictEqual([]);
 	});
 });

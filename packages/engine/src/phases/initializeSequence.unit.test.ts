@@ -9,6 +9,9 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { initializeSequence } from '#src/phases/initializeSequence.ts';
+import { createRun } from '#src/runState/createRun.ts';
+import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { plantSequence } from '#tests/helpers/plantSequence.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
@@ -98,6 +101,28 @@ const setupTicketPlanFolder = ({ recordedPlanName }: { recordedPlanName: string 
 	return { dir, overviewPath: join(...parts, 'overview.md') };
 };
 
+/** Creates the run folder a resumed manifest names: a resume rewrites that run's owner record, so the run must exist on disk. */
+const plantResumedRun = async ({ dir, existing }: { dir: string; existing: RunManifest }) => {
+	await createRun({ cwd: dir, runId: existing.runId, plan: existing.plan, pipeline: PipelineKind.Phases, driver: 'stub', config });
+};
+
+/**
+ * A phases coordinator and a single-plan run, both created on disk, each with
+ * its owner.json overwritten to name pid 999999 — a process that is not this
+ * one, as a run's previous owner would be.
+ */
+const setupOwnedRuns = async () => {
+	const { dir, overviewPath } = setupPlanFolder({ phases: 1 });
+	const { manifest: coordinator } = await initializeSequence({ cwd: dir, driver, config, overviewPath });
+	const implementRun = await createRun({ cwd: dir, plan: join('plans', 'demo', 'phase1.md'), pipeline: PipelineKind.Implement, driver: 'stub', config });
+	const staleOwner = { pid: 999999, recordedAt: '2026-01-01T00:00:00.000Z' };
+
+	writeFileSync(await getRunOwnerPath({ cwd: dir, runId: coordinator.runId }), JSON.stringify(staleOwner));
+	writeFileSync(await getRunOwnerPath({ cwd: dir, runId: implementRun.runId }), JSON.stringify(staleOwner));
+
+	return { dir, coordinator, implementRun, staleOwner };
+};
+
 describe('initializeSequence', () => {
 	test('a fresh sequence gets one pending step per phase, in the overview’s written order', async () => {
 		const { dir, overviewPath } = setupPlanFolder({ phases: 2 });
@@ -147,6 +172,7 @@ describe('initializeSequence', () => {
 		const existing = { ...foreignManifest({ pipeline: 'phases' }), plan: join('plans', 'demo', 'overview.md') };
 
 		const fresh = await initializeSequence({ cwd: dir, driver, config, overviewPath, runId: 'minted-coordinator-id' });
+		await plantResumedRun({ dir, existing });
 
 		const resumed = await initializeSequence({ cwd: dir, driver, config, existing, runId: 'minted-coordinator-id' });
 
@@ -168,6 +194,7 @@ describe('initializeSequence', () => {
 	test('a resume hands back the manifest it was given, untouched', async () => {
 		const { dir } = setupPlanFolder({ phases: 1 });
 		const existing = { ...foreignManifest({ pipeline: 'phases' }), plan: join('plans', 'demo', 'overview.md') };
+		await plantResumedRun({ dir, existing });
 
 		await expect(initializeSequence({ cwd: dir, driver, config, existing })).resolves.toStrictEqual({ manifest: existing });
 	});
@@ -290,5 +317,31 @@ describe('initializeSequence', () => {
 		expect(refused.message).toMatch(/an unfinished run for this plan already exists/);
 		expect(refused.message).toContain('lightsout resume --run mid-flight-sequence');
 		expect(started.manifest.steps).toStrictEqual([{ id: 'phase1.md', status: 'pending', attempts: 0 }]);
+	});
+
+	test("replaces a resumed coordinator's owner record and writes nothing for a run another pipeline owns", async () => {
+		const { dir, coordinator, implementRun, staleOwner } = await setupOwnedRuns();
+
+		await initializeSequence({ cwd: dir, driver, config, existing: coordinator });
+		const refused = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, config, existing: implementRun }) });
+
+		const coordinatorOwner = await readRunOwner({ cwd: dir, runId: coordinator.runId });
+		const implementOwner = await readRunOwner({ cwd: dir, runId: implementRun.runId });
+
+		// the resuming process takes the family over; a run the pipeline check
+		// refuses keeps the owner it had, because the refusal comes first
+		expect(coordinatorOwner).toEqual(expect.objectContaining({ pid: process.pid }));
+		expect(refused.message).toContain('belongs to the implement pipeline');
+		expect(implementOwner).toStrictEqual(staleOwner);
+	});
+
+	test('points a fresh queue worker sequence at the queue run', async () => {
+		const { dir, overviewPath } = setupPlanFolder({ phases: 1 });
+
+		const { manifest } = await initializeSequence({ cwd: dir, driver, config, overviewPath, queueRunId: 'q-1' });
+
+		const owner = await readRunOwner({ cwd: dir, runId: manifest.runId });
+
+		expect(owner).toStrictEqual({ queueRunId: 'q-1' });
 	});
 });

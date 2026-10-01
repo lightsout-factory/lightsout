@@ -8,6 +8,7 @@ import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import { toWorkerOutcome } from '#src/queue/workers/internal/common/utils/toWorkerOutcome.ts';
+import { removeRunOwner } from '#src/runState/owner/removeRunOwner.ts';
 import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts';
 
 interface Params {
@@ -18,6 +19,8 @@ interface Params {
 	config: LightsoutConfig;
 	driver: Driver;
 	onProgress?: (message: string) => void;
+	/** The queue run this build belongs to; the run's owner record points there until the build settles. */
+	queueRunId: string;
 }
 
 /**
@@ -27,24 +30,30 @@ interface Params {
  * It never relays a question: the implement pipelines have no answer channel,
  * so an escalated run parks with its worktree intact instead.
  */
-export const runPlanFolderPipeline = async ({ cwd, name, config, driver, onProgress }: Params): Promise<WorkerOutcome> => {
+export const runPlanFolderPipeline = async ({ cwd, name, config, driver, onProgress, queueRunId }: Params): Promise<WorkerOutcome> => {
 	const folder = await planWorkspaceDir({ cwd, name });
 	const overviewPath = join(folder, 'overview.md');
 	const phased = await pathExists({ path: overviewPath });
 	const outcome = await runWorkOrderPlanLifecycle({
 		cwd,
 		name,
-		run: ({ runId }) =>
-			recordPlanCommandRun({
-				cwd,
-				name,
-				label: 'implement',
-				statusOf: ({ result }) => result.manifest.status,
-				work: ({ level }) =>
-					phased
-						? runPhasesPipeline({ cwd, driver, config, overviewPath, runId, level, onProgress })
-						: runImplementPipeline({ cwd, driver, config, planPath: join(folder, 'plan.md'), runId, level, onProgress }),
-			}),
+		run: async ({ runId }) => {
+			// A settled worker run must stop pointing at the queue, which keeps running.
+			try {
+				return await recordPlanCommandRun({
+					cwd,
+					name,
+					label: 'implement',
+					statusOf: ({ result }) => result.manifest.status,
+					work: ({ level }) =>
+						phased
+							? runPhasesPipeline({ cwd, driver, config, overviewPath, runId, level, onProgress, queueRunId })
+							: runImplementPipeline({ cwd, driver, config, planPath: join(folder, 'plan.md'), runId, level, onProgress, queueRunId }),
+				});
+			} finally {
+				await removeRunOwner({ cwd, runId });
+			}
+		},
 	});
 
 	return toWorkerOutcome({

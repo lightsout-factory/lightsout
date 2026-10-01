@@ -10,6 +10,7 @@ const usageOrder = [
 	'implement-folder',
 	'implement-direct',
 	'resume',
+	'stop',
 	'ship',
 	'queue',
 	'status',

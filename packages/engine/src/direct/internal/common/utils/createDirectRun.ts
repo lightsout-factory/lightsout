@@ -19,9 +19,11 @@ interface Params {
 	config: LightsoutConfig;
 	/** Resolved before the run starts: a passing run will ship this branch. */
 	willShip?: boolean;
+	/** The queue run a worker build belongs to; the run's owner record points there. */
+	queueRunId?: string;
 }
 
-export const createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, config, willShip }: Params): Promise<RunManifest> => {
+export const createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, config, willShip, queueRunId }: Params): Promise<RunManifest> => {
 	// The directory has to be known before the run is created: the manifest's
 	// `plan` field points at a `ticket.md` inside it. A direct run belongs to no
 	// plan, so it is filed under the ticket branch it is built on — and under
@@ -38,6 +40,7 @@ export const createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, drive
 		config,
 		baselineDirtyFiles: await readGitChangedFiles({ cwd }),
 		willShip,
+		queueRunId,
 	});
 
 	// There is no plan file for direct work; the ticket body is the document the

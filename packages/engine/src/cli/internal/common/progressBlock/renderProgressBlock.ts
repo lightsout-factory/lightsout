@@ -5,7 +5,8 @@ import { formatClockDuration } from '#src/cli/internal/common/utils/formatClockD
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunProgressRow } from '#src/views/common/types/RunProgressRow.ts';
 
-type BlockRow = Pick<RunProgressRow, 'id' | 'status' | 'attempts' | 'durationMs'>;
+/** `stopped` marks a running row with no live process behind it — drawn as stopped rather than as work in progress. */
+type BlockRow = Pick<RunProgressRow, 'id' | 'status' | 'attempts' | 'durationMs'> & { stopped?: boolean };
 
 const emDash = '—';
 
@@ -30,15 +31,15 @@ const rowGlyph = ({ status }: { status: RunStatus | undefined }) => (status === 
  * reader, so both draw the same.
  */
 const rowCells = ({ row }: { row: BlockRow }) => {
-	const glyph = rowGlyph({ status: row.status });
-
 	if (row.status === undefined || row.status === RunStatus.Pending) {
-		return { glyph, status: undefined, id: row.id, outcome: emDash, duration: undefined };
+		return { glyph: rowGlyph({ status: row.status }), status: undefined, id: row.id, outcome: emDash, duration: undefined };
 	}
 
-	const outcome = row.attempts > 1 ? `${row.status} (x${row.attempts})` : row.status;
+	const glyph = row.stopped === true ? '■' : rowGlyph({ status: row.status });
+	const shown = row.stopped === true ? 'stopped' : row.status;
+	const outcome = row.attempts > 1 ? `${shown} (x${row.attempts})` : shown;
 
-	return { glyph, status: row.status, id: row.id, outcome, duration: formatClockDuration({ ms: row.durationMs }) };
+	return { glyph, status: shown, id: row.id, outcome, duration: formatClockDuration({ ms: row.durationMs }) };
 };
 
 interface Params {

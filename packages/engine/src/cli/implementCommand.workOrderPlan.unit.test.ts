@@ -59,10 +59,10 @@ jest.mock('#src/worktree/createWorktree.ts', () => ({ createWorktree: (params: {
 jest.mock('#src/worktree/fetchDefaultBranch.ts', () => ({ fetchDefaultBranch: (params: { cwd: string }) => mockFetchDefaultBranch(params) }));
 // -------------------------
 // The report card reads a run directory a scripted pipeline never filled in.
-const mockPrintResult = jest.fn<(params: { result: PipelineResult; cwd: string }) => Promise<void>>();
+const mockRenderResult = jest.fn<(params: { result: PipelineResult; cwd: string }) => Promise<string[]>>();
 
-jest.mock('#src/cli/internal/common/render/printResult.ts', () => ({
-	printResult: (params: { result: PipelineResult; cwd: string }) => mockPrintResult(params),
+jest.mock('#src/cli/internal/common/render/renderResult.ts', () => ({
+	renderResult: (params: { result: PipelineResult; cwd: string }) => mockRenderResult(params),
 }));
 // -------------------------
 
@@ -150,7 +150,7 @@ const seedTicketRepo = ({ record, files }: { record: WorkOrderState; files: Reco
 	}
 
 	mockRequireImplementLifecycle.mockResolvedValue(undefined);
-	mockPrintResult.mockResolvedValue(undefined);
+	mockRenderResult.mockResolvedValue([]);
 	mockFetchDefaultBranch.mockResolvedValue('main');
 	mockCreateWorktree.mockResolvedValue({ error: 'no tree may be cut for a plan the ticket record refuses' });
 

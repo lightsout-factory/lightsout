@@ -7,7 +7,7 @@ export interface RunProgress {
 	shortId: string;
 	title: string;
 	status: RunStatus;
-	/** A live process stands behind this run right now. */
+	/** A live process stands behind this run right now, as the family root's owner record answers — see `readRunLiveness`. */
 	live: boolean;
 	rows: RunProgressRow[];
 	/** Wall time from run start to the manifest's last write, plus the time since that write when the run is live. */
@@ -19,4 +19,6 @@ export interface RunProgress {
 	now: string | undefined;
 	/** This run will ship and no ship result is on disk yet — what tells a watch its story is not over even though the run's own status is terminal. */
 	awaitingShip: boolean;
+	/** The command that continues this run — a phase child's names its coordinator's resume, because the sequence is what resumes. */
+	resumeCommand: string;
 }

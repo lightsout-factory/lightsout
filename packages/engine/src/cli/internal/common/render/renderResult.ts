@@ -1,6 +1,6 @@
 import { basename } from 'node:path';
 import { formatCost, formatDuration, formatShortRunId, formatTokenCount } from '@lightsout/shared';
-import { printStepTable } from '#src/cli/internal/common/render/printStepTable.ts';
+import { renderStepTable } from '#src/cli/internal/common/render/renderStepTable.ts';
 import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { paintStatus } from '#src/cli/internal/common/terminal/paintStatus.ts';
 import { plural } from '#src/cli/internal/common/utils/plural.ts';
@@ -8,10 +8,9 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import type { CleanupSummary } from '#src/runState/common/types/CleanupSummary.ts';
 import type { RunSummary } from '#src/runState/common/types/RunSummary.ts';
-import { isRunPaused } from '#src/runState/isRunPaused.ts';
 import { summarizeRun } from '#src/runState/summarizeRun.ts';
 
-const label = ({ name, value }: { name: string; value: string }) => console.log(`${name.padEnd(10)}${value}`);
+const label = ({ name, value }: { name: string; value: string }) => `${name.padEnd(10)}${value}`;
 
 const describeGates = ({ gates }: { gates: RunSummary['gates'] }) => {
 	const parts = [`${gates.commands} command${plural({ count: gates.commands })}`];
@@ -63,83 +62,92 @@ interface Params {
 	cwd: string;
 }
 
-export const printResult = async ({ result, cwd }: Params): Promise<void> => {
-	const { manifest, ok, error } = result;
-	const summary = await summarizeRun({ cwd, manifest });
-
-	console.log('');
-	label({
-		name: 'run',
-		value: `${formatShortRunId({ runId: manifest.runId })} · ${paintStatus({ status: manifest.status, text: bold(manifest.status.toUpperCase()) })}`,
-	});
-	label({ name: 'plan', value: basename(manifest.plan) });
-	label({ name: 'wall', value: formatDuration({ ms: summary.wallMs }) });
+// The card's head: which run, and what it cost in time and tokens.
+const renderCostLines = ({ manifest, summary }: { manifest: RunManifest; summary: RunSummary }) => {
+	const lines = [
+		label({
+			name: 'run',
+			value: `${formatShortRunId({ runId: manifest.runId })} · ${paintStatus({ status: manifest.status, text: bold(manifest.status.toUpperCase()) })}`,
+		}),
+		label({ name: 'plan', value: basename(manifest.plan) }),
+		label({ name: 'wall', value: formatDuration({ ms: summary.wallMs }) }),
+	];
 
 	if (summary.activeMs > 0) {
-		label({ name: 'active', value: formatDuration({ ms: summary.activeMs }) });
+		lines.push(label({ name: 'active', value: formatDuration({ ms: summary.activeMs }) }));
 	}
 
-	label({ name: 'gates', value: formatDuration({ ms: summary.gateMs }) });
+	lines.push(label({ name: 'gates', value: formatDuration({ ms: summary.gateMs }) }));
 
 	if (summary.usage && summary.usage.invocations > 0) {
 		const { invocations, inputTokens, outputTokens, cacheReadTokens, costUsd } = summary.usage;
 		const share = summary.cacheReadShare === undefined ? '' : ` (${Math.round(summary.cacheReadShare * 100)}%)`;
 
-		label({
-			name: 'tokens',
-			value: `in ${formatTokenCount({ count: inputTokens })} · out ${formatTokenCount({ count: outputTokens })} · cache-read ${formatTokenCount({ count: cacheReadTokens })}${share}`,
-		});
-		label({ name: 'cost', value: `${formatCost({ usd: costUsd })} API-equivalent · ${invocations} invocation${plural({ count: invocations })}` });
+		lines.push(
+			label({
+				name: 'tokens',
+				value: `in ${formatTokenCount({ count: inputTokens })} · out ${formatTokenCount({ count: outputTokens })} · cache-read ${formatTokenCount({ count: cacheReadTokens })}${share}`,
+			}),
+			label({ name: 'cost', value: `${formatCost({ usd: costUsd })} API-equivalent · ${invocations} invocation${plural({ count: invocations })}` }),
+		);
 	}
 
-	console.log('');
-	printStepTable({ steps: summary.steps, activeMs: summary.activeMs });
-	console.log('');
+	return lines;
+};
 
-	label({ name: 'gates', value: describeGates({ gates: summary.gates }) });
+// The card's tail: how the gates, retries and cleanup went, and where the evidence is.
+const renderDetailLines = ({ manifest, summary, ok }: { manifest: RunManifest; summary: RunSummary; ok: boolean }) => {
+	const lines = [label({ name: 'gates', value: describeGates({ gates: summary.gates }) })];
 
 	if (summary.rejectedReports > 0) {
-		label({ name: 'retries', value: `${summary.rejectedReports} rejected report${plural({ count: summary.rejectedReports })} re-emitted` });
+		lines.push(label({ name: 'retries', value: `${summary.rejectedReports} rejected report${plural({ count: summary.rejectedReports })} re-emitted` }));
 	}
 
 	if (summary.cleanup) {
-		label({ name: 'cleanup', value: describeCleanup({ cleanup: summary.cleanup }) });
+		lines.push(label({ name: 'cleanup', value: describeCleanup({ cleanup: summary.cleanup }) }));
 	}
 
 	if (summary.frictionByArea.length > 0) {
 		const total = summary.frictionByArea.reduce((count, entry) => count + entry.count, 0);
 
-		label({ name: 'friction', value: `${total} · ${summary.frictionByArea.map((entry) => `${entry.area} ${entry.count}`).join(' · ')}` });
+		lines.push(label({ name: 'friction', value: `${total} · ${summary.frictionByArea.map((entry) => `${entry.area} ${entry.count}`).join(' · ')}` }));
 	}
 
 	if (manifest.packages.length > 0) {
-		label({ name: 'scope', value: `${manifest.packages.join(' · ')}${manifest.packagesSource ? ` (${manifest.packagesSource})` : ''}` });
+		lines.push(label({ name: 'scope', value: `${manifest.packages.join(' · ')}${manifest.packagesSource ? ` (${manifest.packagesSource})` : ''}` }));
 	}
 
 	const commits = describeCommits({ manifest, ok });
 
 	if (commits !== undefined) {
-		label({ name: 'commit', value: commits });
+		lines.push(label({ name: 'commit', value: commits }));
 	}
 
 	if (manifest.unreachableChangedFiles.length > 0) {
-		label({
-			name: 'warning',
-			value: `unreachable-changed-files: ${manifest.unreachableChangedFiles.join(', ')} — changed, but no public surface reaches them; no tests cover them`,
-		});
+		lines.push(
+			label({
+				name: 'warning',
+				value: `unreachable-changed-files: ${manifest.unreachableChangedFiles.join(', ')} — changed, but no public surface reaches them; no tests cover them`,
+			}),
+		);
 	}
 
-	label({ name: 'evidence', value: `.lightsout/runs/${manifest.runId}/` });
+	lines.push(label({ name: 'evidence', value: `.lightsout/runs/${manifest.runId}/` }));
 
-	if (ok || error === undefined) {
-		return;
-	}
+	return lines;
+};
 
-	// A run parked at a rate-limit wall says how to pick it up again. That is
-	// guidance, not a fault, and stderr reads as a fault.
-	if (isRunPaused({ status: manifest.status })) {
-		console.log(`\n${error}`);
-	} else {
-		console.error(`\n${error}`);
-	}
+/** The run's error is not part of the card: the caller prints it to the stream it belongs on, and saves it with these lines. */
+export const renderResult = async ({ result, cwd }: Params): Promise<string[]> => {
+	const { manifest, ok } = result;
+	const summary = await summarizeRun({ cwd, manifest });
+
+	return [
+		'',
+		...renderCostLines({ manifest, summary }),
+		'',
+		...renderStepTable({ steps: summary.steps, activeMs: summary.activeMs }),
+		'',
+		...renderDetailLines({ manifest, summary, ok }),
+	];
 };

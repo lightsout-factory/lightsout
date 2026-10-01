@@ -104,6 +104,15 @@ test('renderUsage: prints the self-check line, so an agent-run command is listed
 	expect(lines.indexOf(selfCheck)).toBe(ticketState + 1);
 });
 
+test('renderUsage: prints the stop line directly after the resume line', () => {
+	const { lines } = setupRenderUsage();
+
+	const resume = lines.findIndex((line) => line.startsWith('  lightsout resume --run <id>'));
+
+	expect(resume).toBeGreaterThanOrEqual(0);
+	expect(lines[resume + 1]).toBe('  lightsout stop --run <id> [--cwd <path>]');
+});
+
 test('renderUsage: prints the plan sync-decisions line between plan draft and plan sync-phases, ahead of plan lint', () => {
 	const { lines } = setupRenderUsage();
 

@@ -48,12 +48,13 @@
 export const usageFixture = `lightsout — deterministic engine for coding agents
 
 usage:
-  lightsout implement --plan <path> [--overview <path>] [--packages <a,b>] [--cwd <path>] [--skip-refactor] [--worktree] [--no-worktree] [--ship] [--no-ship]
-  lightsout implement --plan <folder> [--start-phase <n>] [--cwd <path>] [--skip-refactor] [--worktree] [--no-worktree] [--ship] [--no-ship]   (folder: overview.md runs all phases, else plan.md)
+  lightsout implement --plan <path> [--overview <path>] [--packages <a,b>] [--cwd <path>] [--skip-refactor] [--worktree] [--no-worktree] [--ship] [--no-ship] [--detach]
+  lightsout implement --plan <folder> [--start-phase <n>] [--cwd <path>] [--skip-refactor] [--worktree] [--no-worktree] [--ship] [--no-ship] [--detach]   (folder: overview.md runs all phases, else plan.md)
   lightsout implement-direct --ticket <path> [--ref <ticket>] [--cwd <path>] [--worktree] [--no-worktree] [--ship] [--no-ship]
-  lightsout resume --run <id> [--cwd <path>] [--skip-refactor] [--ship] [--no-ship]
+  lightsout resume --run <id> [--cwd <path>] [--skip-refactor] [--ship] [--no-ship] [--detach]
+  lightsout stop --run <id> [--cwd <path>]
   lightsout ship [--cwd <path>]
-  lightsout queue [--file-relay [dir]] [--cwd <path>]
+  lightsout queue [--file-relay [dir]] [--cwd <path>] [--detach]
   lightsout status [--cwd <path>]
   lightsout status [--run <id>] [--watch] [--cwd <path>]   (one run in detail; --watch repaints it every two minutes, and without --run it follows the one run that is going)
   lightsout status --now [--cwd <path>]               (the run that is going, printed once; a phased plan shows its phase sequence and the phase moving now)

@@ -1,5 +1,9 @@
+import { randomUUID } from 'node:crypto';
+import { usage } from '#src/cli/common/constants/usage.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
+import { launchDetached } from '#src/cli/internal/common/detach/launchDetached.ts';
+import { readLaunchRunId } from '#src/cli/internal/common/detach/readLaunchRunId.ts';
 import { finishImplementRun } from '#src/cli/internal/common/implementRun/finishImplementRun.ts';
 import { openImplementWorkspace } from '#src/cli/internal/common/implementRun/openImplementWorkspace.ts';
 import { reportWorkOrderPlanOutcome } from '#src/cli/internal/common/implementRun/reportWorkOrderPlanOutcome.ts';
@@ -89,7 +93,27 @@ const runResolvedPipeline = ({
 					}),
 	});
 
-export const implementCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
+/**
+ * The parent reads no config, opens no workspace and touches no tracker: every
+ * refusal is the child's to make, so it lands in the launch log and is relayed.
+ */
+const launchDetachedImplement = async ({ flags, rest, cwd }: CommandContext) => {
+	if (flags.get('detach') !== true) {
+		console.error(usage);
+		return exitCli({ code: 1 });
+	}
+
+	return exitCli({ code: await launchDetached({ cwd, command: 'implement', args: rest, runId: randomUUID() }) });
+};
+
+export const implementCommand = async ({ flags, rest, cwd }: CommandContext): Promise<void> => {
+	// First, so nothing this process spawns inherits an id meant for it alone.
+	const launchedRunId = readLaunchRunId({ env: process.env });
+
+	if (flags.has('detach')) {
+		return launchDetachedImplement({ flags, rest, cwd });
+	}
+
 	const inputs = await resolveImplementInputs({ flags, cwd });
 
 	if ('error' in inputs) {
@@ -132,6 +156,7 @@ export const implementCommand = async ({ flags, cwd }: CommandContext): Promise<
 	const outcome = await runWorkOrderPlanLifecycle({
 		cwd: workspace.cwd,
 		name: planName,
+		runId: launchedRunId,
 		run: ({ runId }) =>
 			runResolvedPipeline({
 				cwd,

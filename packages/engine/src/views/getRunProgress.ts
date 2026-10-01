@@ -1,10 +1,10 @@
 import { formatShortRunId } from '@lightsout/shared';
-import type { RunLock } from '#src/contracts/run/RunLock.ts';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
 import { buildCleanupSummary } from '#src/runState/common/utils/buildCleanupSummary.ts';
-import { isRunLive } from '#src/runState/isRunLive.ts';
 import { readLastProgressMessage } from '#src/runState/progress/readLastProgressMessage.ts';
 import { readShipResult } from '#src/ship/readShipResult.ts';
 import type { RunProgress } from '#src/views/common/types/RunProgress.ts';
@@ -35,8 +35,8 @@ const readShipRow = async ({ cwd, manifest }: { cwd: string; manifest: RunManife
 interface Params {
 	cwd: string;
 	manifest: RunManifest;
-	/** Decides whether a running row ticks. */
-	lock: RunLock | undefined;
+	/** Whether a live process stands behind the run, as `readRunLiveness` answered — decides whether a running row ticks. */
+	live: boolean;
 }
 
 /**
@@ -44,8 +44,7 @@ interface Params {
  * adds the time since the manifest's last write. A run with no process behind it
  * does not tick, because a crashed run that kept ticking would read as work.
  */
-export const getRunProgress = async ({ cwd, manifest, lock }: Params): Promise<RunProgress> => {
-	const live = isRunLive({ manifest, lock });
+export const getRunProgress = async ({ cwd, manifest, live }: Params): Promise<RunProgress> => {
 	const sinceWriteMs = live ? Math.max(0, Date.now() - Date.parse(manifest.updatedAt)) : 0;
 	const rows: RunProgressRow[] = manifest.steps.map((step) => ({
 		id: step.id,
@@ -86,5 +85,9 @@ export const getRunProgress = async ({ cwd, manifest, lock }: Params): Promise<R
 		costUsd: manifest.usage?.costUsd,
 		now: await readLastProgressMessage({ cwd, runId: manifest.runId }),
 		awaitingShip: shipRow !== undefined && shipRow.status === undefined,
+		resumeCommand:
+			manifest.parentRunId === undefined
+				? formatResumeCommand({ pipeline: manifest.pipeline ?? PipelineKind.Implement, runId: manifest.runId })
+				: formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.parentRunId }),
 	};
 };

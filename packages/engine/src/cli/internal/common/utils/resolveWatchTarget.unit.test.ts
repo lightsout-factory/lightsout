@@ -6,6 +6,8 @@ import { resolveWatchTarget } from '#src/cli/internal/common/utils/resolveWatchT
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 
 /** Beyond any OS pid range — the live-process probe reports it dead. */
@@ -70,12 +72,18 @@ const setupRuns = () => {
 	return { cwd, plant, lock, workspace };
 };
 
+/** An owner record naming a process that is gone — the record a crashed engine leaves behind. */
+const plantDeadOwner = async ({ cwd, runId }: { cwd: string; runId: string }) => {
+	writeFileSync(await getRunOwnerPath({ cwd, runId }), JSON.stringify({ pid: deadPid, recordedAt: '2026-01-01T00:00:00.000Z' }), 'utf8');
+};
+
 describe('resolveWatchTarget', () => {
 	test('the sole run that is going is answered at once, without spending any of the grace', async () => {
-		const { cwd, plant } = setupRuns();
+		const { cwd, plant, lock } = setupRuns();
 
 		plant({ runId: 'run-going', status: RunStatus.Running, updatedAt: '2026-01-01T00:00:01.000Z' });
 		plant({ runId: 'run-done', status: RunStatus.Passed, updatedAt: '2026-01-01T00:05:00.000Z' });
+		lock({ runId: 'run-going', pid: process.pid });
 
 		const started = Date.now();
 		const target = await resolveWatchTarget({ cwd, graceMs: 5_000, pollMs: 50 });
@@ -111,22 +119,6 @@ describe('resolveWatchTarget', () => {
 		expect(target).toEqual({ runId: 'run-live', rootRunId: 'run-live' });
 	});
 
-	test('falls back to every going run when none of them is live, so a phased family survives the gap between phases', async () => {
-		const gap = setupRuns();
-		const leftovers = setupRuns();
-
-		gap.plant({ runId: 'run-coordinator', status: RunStatus.Running, updatedAt: '2026-01-01T00:05:00.000Z', pipeline: PipelineKind.Phases });
-		gap.lock({ runId: 'run-coordinator', pid: deadPid });
-		leftovers.plant({ runId: 'run-one', status: RunStatus.Running, updatedAt: '2026-01-01T00:00:01.000Z' });
-		leftovers.plant({ runId: 'run-two', status: RunStatus.Pending, updatedAt: '2026-01-01T00:05:00.000Z' });
-
-		const betweenPhases = await resolveWatchTarget({ cwd: gap.cwd, graceMs: 200, pollMs: 20 });
-		const bothStale = await resolveWatchTarget({ cwd: leftovers.cwd, graceMs: 200, pollMs: 20 });
-
-		expect(betweenPhases).toEqual({ runId: 'run-coordinator', rootRunId: 'run-coordinator' });
-		expect(withSortedIds({ target: bothStale })).toEqual({ ambiguous: ['run-one', 'run-two'] });
-	});
-
 	test('a coordinator and its own phase child are one family, so a phased run is still followed rather than refused', async () => {
 		const { cwd, plant, lock } = setupRuns();
 
@@ -135,21 +127,6 @@ describe('resolveWatchTarget', () => {
 		lock({ runId: 'run-phase-two', pid: process.pid });
 
 		const target = await resolveWatchTarget({ cwd, graceMs: 200, pollMs: 20 });
-
-		expect(target).toEqual({ runId: 'run-phase-two', rootRunId: 'run-coordinator' });
-	});
-
-	test('an attached watch stays in its own family while unrelated work is going', async () => {
-		const { cwd, plant, lock, workspace } = setupRuns();
-		const elsewhere = workspace({ name: 'unrelated' });
-
-		plant({ runId: 'run-coordinator', status: RunStatus.Running, updatedAt: '2026-01-01T00:00:01.000Z', pipeline: PipelineKind.Phases });
-		plant({ runId: 'run-phase-two', status: RunStatus.Running, updatedAt: '2026-01-01T00:05:00.000Z', parentRunId: 'run-coordinator' });
-		plant({ runId: 'run-unrelated', status: RunStatus.Running, updatedAt: '2026-01-01T00:09:00.000Z', workspace: elsewhere });
-		lock({ runId: 'run-phase-two', pid: process.pid });
-		lock({ checkout: elsewhere, runId: 'run-unrelated', pid: process.pid });
-
-		const target = await resolveWatchTarget({ cwd, rootRunId: 'run-coordinator', graceMs: 200, pollMs: 20 });
 
 		expect(target).toEqual({ runId: 'run-phase-two', rootRunId: 'run-coordinator' });
 	});
@@ -173,12 +150,32 @@ describe('resolveWatchTarget', () => {
 	});
 
 	test('a run that appears mid-wait is picked up — the race the implement skill would otherwise lose', async () => {
-		const { cwd, plant } = setupRuns();
+		const { cwd, plant, lock } = setupRuns();
 
-		setTimeout(() => plant({ runId: 'run-late', status: RunStatus.Running, updatedAt: '2026-01-01T00:05:00.000Z' }), 60);
+		setTimeout(() => {
+			plant({ runId: 'run-late', status: RunStatus.Running, updatedAt: '2026-01-01T00:05:00.000Z' });
+			lock({ runId: 'run-late', pid: process.pid });
+		}, 60);
 
 		const target = await resolveWatchTarget({ cwd, graceMs: 5_000, pollMs: 20 });
 
 		expect(target).toEqual({ runId: 'run-late', rootRunId: 'run-late' });
+	});
+
+	test('a run with no live process is never the going run, alone or beside a live one', async () => {
+		const alone = setupRuns();
+		const beside = setupRuns();
+
+		alone.plant({ runId: 'run-stopped', status: RunStatus.Running, updatedAt: '2026-01-01T00:05:00.000Z' });
+		await plantDeadOwner({ cwd: alone.cwd, runId: 'run-stopped' });
+		beside.plant({ runId: 'run-stopped', status: RunStatus.Running, updatedAt: '2026-01-01T00:05:00.000Z' });
+		await plantDeadOwner({ cwd: beside.cwd, runId: 'run-stopped' });
+		beside.plant({ runId: 'run-live', status: RunStatus.Running, updatedAt: '2026-01-01T00:00:01.000Z' });
+		await writeRunOwner({ cwd: beside.cwd, runId: 'run-live' });
+
+		const stoppedAlone = await resolveWatchTarget({ cwd: alone.cwd, graceMs: 200, pollMs: 20 });
+		const besideLive = await resolveWatchTarget({ cwd: beside.cwd, graceMs: 200, pollMs: 20 });
+
+		expect({ stoppedAlone, besideLive }).toStrictEqual({ stoppedAlone: undefined, besideLive: { runId: 'run-live', rootRunId: 'run-live' } });
 	});
 });

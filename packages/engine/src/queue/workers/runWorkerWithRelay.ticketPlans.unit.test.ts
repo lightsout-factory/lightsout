@@ -1,10 +1,11 @@
 import { execSync } from 'node:child_process';
-import { mkdtempSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
@@ -17,7 +18,10 @@ import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTicket.ts';
 import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
+import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
+import { report } from '#tests/helpers/report.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
@@ -181,6 +185,71 @@ const setupWorker = ({
 	};
 };
 
+/**
+ * A plan worker of the queue run `q-1` on a single-plan work order whose plan
+ * 001 is still being planned, so the worker builds the ticket body for real.
+ *
+ * The record is written into a real repo as well as answered by the pull,
+ * because the lifecycle the build goes through reads it there and records the
+ * run's id against plan 001 before the run begins. The driver reads that id,
+ * and the run's owner record, from inside the build's first agent invocation —
+ * the one moment the build is known to be running.
+ */
+const setupTicketBodyBuild = () => {
+	const worktreePath = setupConsumerRepo();
+	const workOrderFolder = join(worktreePath, '.lightsout', 'work-orders', branch);
+	const record: WorkOrderState = {
+		schemaVersion: 1,
+		name: branch,
+		ticketRef: 'LO-7',
+		branch,
+		mode: WorkOrderMode.SinglePlan,
+		plans: [{ id: '001-search-index', title: 'Search index', progress: PlanProgress.Planning, createdAt: '2026-01-01T00:00:00.000Z' }],
+		history: [{ at: '2026-01-01T00:00:00.000Z', kind: WorkOrderEventKind.PlanAdded, detail: 'added the first plan' }],
+	};
+
+	mkdirSync(workOrderFolder, { recursive: true });
+	writeFileSync(join(workOrderFolder, 'state.json'), JSON.stringify(record));
+	mockPullTicketRecord.mockResolvedValue({ record });
+	mockReadGitChangedFiles.mockResolvedValue([]);
+
+	const whileRunning: { runId?: string; owner?: RunOwner } = {};
+	const reading: Driver = {
+		name: 'claude-code',
+		invoke: async () => {
+			if (whileRunning.runId === undefined) {
+				const onDisk = JSON.parse(readFileSync(join(workOrderFolder, 'state.json'), 'utf8')) as WorkOrderState;
+
+				whileRunning.runId = onDisk.plans[0]?.implementation?.runId;
+				whileRunning.owner = whileRunning.runId === undefined ? undefined : await readRunOwner({ cwd: worktreePath, runId: whileRunning.runId });
+			}
+
+			return { text: report(), exitCode: 0 };
+		},
+	};
+	const ask = jest.fn<(params: { question: string; ticket: TicketSummary; coordinatorRunId: string; coordinatorRunDir: string }) => Promise<string>>();
+	const relay: QuestionRelay = { ask, createProgressSink: () => () => undefined, close: () => undefined };
+	const coordinatorRunDir = mkdtempSync(join(tmpdir(), 'lightsout-ticket-body-build-'));
+
+	return {
+		whileRunning,
+		params: {
+			worktreePath,
+			workOrderName: branch,
+			ticket,
+			config,
+			driver: reading,
+			driverName: 'claude-code',
+			settings: queueSettingsFixture(),
+			relay,
+			coordinatorRunId: 'q-1',
+			coordinatorRunDir,
+			workOrderRunDir: join(coordinatorRunDir, 'work-orders', 'LO-7'),
+			env: { LINEAR_API_KEY: 'key-1' },
+		},
+	};
+};
+
 describe('runWorkerWithRelay', () => {
 	test('runWorkerWithRelay: a plan whose implementation has not finished parks the ticket naming both repair paths', async () => {
 		const { ask, params } = setupWorker({ plans: [firstImplemented, secondPlan({ progress: PlanProgress.Implementing, runId: 'run-4' })] });
@@ -278,5 +347,23 @@ describe('runWorkerWithRelay', () => {
 		expect(outcome.error).toEqual(
 			expect.stringContaining('plan 001-search-index on work order lo-7-search was built, but its work could not be committed: git could not stage the work'),
 		);
+	});
+
+	test("points a plan worker's ticket-body build at the coordinator run until it settles", async () => {
+		const { whileRunning, params } = setupTicketBodyBuild();
+
+		await runWorkerWithRelay(params);
+
+		// the run id is the one the lifecycle recorded against plan 001, so a
+		// worker that never built from the ticket body leaves nothing to read
+		const runId = whileRunning.runId ?? 'no-ticket-body-build-ran';
+		const manifest = await readRunManifest({ cwd: params.worktreePath, runId });
+		const settledOwner = await readRunOwner({ cwd: params.worktreePath, runId });
+
+		expect({ pipeline: manifest.pipeline, ownerWhileRunning: whileRunning.owner, ownerOnceSettled: settledOwner }).toStrictEqual({
+			pipeline: 'direct',
+			ownerWhileRunning: { queueRunId: 'q-1' },
+			ownerOnceSettled: undefined,
+		});
 	});
 });

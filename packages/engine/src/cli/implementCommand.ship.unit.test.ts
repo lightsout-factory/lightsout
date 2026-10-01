@@ -1,12 +1,27 @@
 import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { implementCommand } from '#src/cli/implementCommand.ts';
+import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+
+// Mocked Imports
+// -------------------------
+// The harness is the one unowned boundary: every spawn fails as a step failure,
+// so the first agent a phase reaches ends that phase — and with it the sequence.
+const mockStubDriver: Driver = {
+	name: 'stub',
+	invoke: async () => {
+		throw new Error('the stub harness ends the phase');
+	},
+};
+
+jest.mock('#src/drivers/getDriver.ts', () => ({ getDriver: () => mockStubDriver }));
+// -------------------------
 
 /** The plan folder the phased case points `--plan` at. */
 const planFolder = 'plans/demo';
@@ -16,11 +31,11 @@ const planFolder = 'plans/demo';
  * pipeline mints the run, then fails at the plan read, so the manifest the
  * command stamped is on disk and nothing spawned a harness to write over it.
  *
- * `phases` seeds the folder with a two-phase overview and `locked` plants a
- * live run lock, which together stop a phased sequence at its first phase —
- * leaving the coordinator's manifest as the only one written.
+ * `phases` seeds the folder with a two-phase overview. The stub driver fails
+ * the first agent the first phase spawns, so a phased sequence ends at its
+ * first phase — leaving the coordinator's manifest and that phase's own run.
  */
-const setupImplementShip = ({ args, config, phases, locked }: { args: string[]; config?: Record<string, unknown>; phases?: number; locked?: boolean }) => {
+const setupImplementShip = ({ args, config, phases }: { args: string[]; config?: Record<string, unknown>; phases?: number }) => {
 	const captured = captureCommandOutput();
 	const cwd = setupConsumerRepo({ config });
 
@@ -35,11 +50,6 @@ const setupImplementShip = ({ args, config, phases, locked }: { args: string[]; 
 		for (let phase = 1; phase <= phases; phase += 1) {
 			writeFileSync(join(cwd, planFolder, `phase${phase}.md`), `# Feature — Phase ${phase}\n`);
 		}
-	}
-
-	if (locked) {
-		mkdirSync(join(cwd, '.lightsout'), { recursive: true });
-		writeFileSync(join(cwd, '.lightsout', 'lock.json'), JSON.stringify({ pid: process.pid, runId: 'already-running', startedAt: '2026-01-01T00:00:00.000Z' }));
 	}
 
 	// `implement` refuses to start in a checkout holding uncommitted changes,
@@ -89,14 +99,20 @@ describe('implementCommand ship intent', () => {
 		expect(readManifests({ cwd })).toEqual([expect.objectContaining({ willShip })]);
 	});
 
-	test('stamps a phased run’s intent on the coordinator, the one run of the sequence that can do the shipping', async () => {
-		const { context, cwd } = setupImplementShip({ args: ['--plan', planFolder, '--ship'], phases: 2, locked: true });
+	test('stamps a phased run’s intent on the coordinator when a stub driver ends its first phase', async () => {
+		const { context, cwd } = setupImplementShip({ args: ['--plan', planFolder, '--ship'], phases: 2 });
 
 		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
-		// the planted lock stops the first phase's own run before it mints one, so
-		// the coordinator is the only manifest here — a phase child must never
-		// carry a stamp it could not fill
-		expect(readManifests({ cwd })).toEqual([expect.objectContaining({ pipeline: 'phases', willShip: true })]);
+		// the coordinator is the one run of the sequence that can do the shipping;
+		// the first phase's own run must never carry a stamp it could not fill
+		const manifests = readManifests({ cwd });
+		const coordinators = manifests.filter((manifest) => manifest.pipeline === 'phases');
+		const children = manifests.filter((manifest) => manifest.pipeline !== 'phases');
+
+		expect({
+			coordinatorWillShip: coordinators.map((manifest) => manifest.willShip),
+			childrenStampedToShip: children.map((manifest) => manifest.willShip === true),
+		}).toStrictEqual({ coordinatorWillShip: [true], childrenStampedToShip: [false] });
 	});
 });

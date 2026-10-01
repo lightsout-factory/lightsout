@@ -20,7 +20,7 @@ import { manifestOf } from '#tests/helpers/setupResume.ts';
 // and a removal git actually performs — because whether the shipped tree came
 // down, and what survived it, are git's answers rather than a stub's. Only the
 // merge itself is doubled: it is the one step that would leave the machine, and
-// `exitAfterImplement.unit.test.ts` already pins what it does.
+// `shipAfterImplement.unit.test.ts` already pins what it does.
 const mockRunShip = jest.fn<(params: { cwd: string }) => Promise<ShipResult>>();
 
 jest.mock('#src/ship/runShip.ts', () => ({ runShip: (params: { cwd: string }) => mockRunShip(params) }));
@@ -39,10 +39,16 @@ jest.mock('#src/cli/internal/common/utils/runPipelineOrFailFast.ts', () => ({
 // -------------------------
 // The report card reads a run directory no mocked pipeline ever wrote, and its
 // lines would sit between the cleanup's own progress lines.
-const mockPrintResult = jest.fn<(params: { result: PipelineResult; cwd: string }) => Promise<void>>();
+const mockRenderResult = jest.fn<(params: { result: PipelineResult; cwd: string }) => Promise<string[]>>();
 
-jest.mock('#src/cli/internal/common/render/printResult.ts', () => ({
-	printResult: (params: { result: PipelineResult; cwd: string }) => mockPrintResult(params),
+jest.mock('#src/cli/internal/common/render/renderResult.ts', () => ({
+	renderResult: (params: { result: PipelineResult; cwd: string }) => mockRenderResult(params),
+}));
+// -------------------------
+// The report is saved under the run's folder, and the run here is a result no
+// pipeline wrote to disk, so the save is doubled rather than refused.
+jest.mock('#src/runState/finalReport/writeRunFinalReport.ts', () => ({
+	writeRunFinalReport: () => Promise.resolve(),
 }));
 // -------------------------
 
@@ -96,7 +102,7 @@ const setupShippedTicketRun = async () => {
 	writeFileSync(join(cwd, workOrderFolder, 'notes.md'), primaryOnlyNotes);
 
 	mockRequireImplementLifecycle.mockResolvedValue(undefined);
-	mockPrintResult.mockResolvedValue(undefined);
+	mockRenderResult.mockResolvedValue([]);
 	mockRunShip.mockResolvedValue(merged);
 	mockRunPipelineOrFailFast.mockImplementation(({ cwd: workspace, planPath }) => {
 		mkdirSync(join(workspace, laterPlanFolder), { recursive: true });

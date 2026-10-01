@@ -28,13 +28,17 @@ export const setupQueueDrain = ({
 		settings = queueSettingsFixture(),
 		trackerSettings = trackerSettingsFixture(),
 		ship = shipSettingsFixture(),
+		runId,
 	}: {
 		settings?: QueueSettings;
 		trackerSettings?: TrackerSettings;
 		ship?: ShipSettings;
+		/** The queue run id a caller minted; absent lets the drain mint one. */
+		runId?: string;
 	} = {}) =>
 		runQueue({
 			cwd,
+			runId,
 			settings,
 			trackerSettings,
 			shipSettings: ship,

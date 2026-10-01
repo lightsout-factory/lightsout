@@ -6,6 +6,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
+import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
@@ -16,8 +17,11 @@ import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTi
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import { TerminalQuestionRelay } from '#src/queue/relay/TerminalQuestionRelay.ts';
 import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay.ts';
+import { createRun } from '#src/runState/createRun.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import type { WorkOrderPlanOutcome } from '#src/workOrder/common/types/WorkOrderPlanOutcome.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
+import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
 // Mocked Imports
@@ -185,6 +189,36 @@ const runWorker = ({
 		env: {},
 	});
 
+/** What a direct worker's build is handed beyond its answer: the worktree, the run id the lifecycle minted, and the queue run its owner record points at. */
+interface OwnedDirectWorkParams {
+	cwd: string;
+	runId: string;
+	queueRunId?: string;
+	answeredQuestion?: { question: string; answer: string };
+}
+
+/**
+ * A direct worker in a real worktree whose stubbed build stands in for
+ * `runDirectWork` creating its run — handing `createRun` whatever queue run id
+ * the worker passed down — and notes the run's owner record as the build sees it.
+ */
+const setupOwnedDirectRun = () => {
+	const { relay, coordinatorRunDir } = setupRelay();
+	const worktreePath = setupConsumerRepo({ git: false });
+	const seen: { ownerWhileRunning?: RunOwner } = {};
+
+	mockRunDirectWork.mockImplementationOnce(async (params) => {
+		const { cwd, runId, queueRunId } = params as OwnedDirectWorkParams;
+
+		await createRun({ cwd, runId, plan: 'plan.md', driver: 'stub', queueRunId });
+		seen.ownerWhileRunning = await readRunOwner({ cwd, runId });
+
+		return { ok: true, manifest: manifestOf(RunStatus.Passed) };
+	});
+
+	return { relay, coordinatorRunDir, worktreePath, seen };
+};
+
 describe('runWorkerWithRelay', () => {
 	test('a direct worker that finishes needs no question, and the relay is never used', async () => {
 		const { relay, coordinatorRunDir } = setupRelay();
@@ -326,4 +360,32 @@ describe('runWorkerWithRelay', () => {
 			expect(mockRunDirectWork).toHaveBeenCalledTimes(directRuns);
 		},
 	);
+
+	test("points a direct worker's run at the coordinator run until its build settles", async () => {
+		const { relay, coordinatorRunDir, worktreePath, seen } = setupOwnedDirectRun();
+
+		const outcome = await runWorkerWithRelay({
+			worktreePath,
+			workOrderName: 'lo-70-drain',
+			ticket: ticketOf(QueueWorker.Direct),
+			config,
+			driver,
+			driverName: 'claude-code',
+			settings,
+			relay,
+			coordinatorRunId: 'q-1',
+			coordinatorRunDir,
+			workOrderRunDir: join(coordinatorRunDir, 'work-orders', 'LO-70'),
+			env: {},
+		});
+		const ownerAfter = await readRunOwner({ cwd: worktreePath, runId: 'run-body-1' });
+
+		relay.close();
+
+		expect({ outcome, ownerWhileRunning: seen.ownerWhileRunning, ownerAfter }).toStrictEqual({
+			outcome: {},
+			ownerWhileRunning: { queueRunId: 'q-1' },
+			ownerAfter: undefined,
+		});
+	});
 });

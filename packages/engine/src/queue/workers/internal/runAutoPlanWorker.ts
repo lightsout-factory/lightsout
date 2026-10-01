@@ -37,6 +37,8 @@ interface Params {
 	/** The answer to a question this worker asked, folded back in on re-invocation. */
 	answeredQuestion?: AnsweredQuestion;
 	onProgress?: (message: string) => void;
+	/** The queue run its builds' owner records point at. */
+	queueRunId: string;
 }
 
 /**
@@ -166,6 +168,7 @@ export const runAutoPlanWorker = async ({
 	workOrderRunDir,
 	answeredQuestion,
 	onProgress,
+	queueRunId,
 }: Params): Promise<WorkerOutcome> => {
 	const chosen = await chooseAutoPlanTarget({ cwd, workOrderName, ticket, config, env, onProgress });
 
@@ -174,7 +177,20 @@ export const runAutoPlanWorker = async ({
 	}
 
 	const build = ({ record }: { record: WorkOrderState }) =>
-		buildWorkOrderPlans({ cwd, workOrderName, ticket, record, config, env, driver, driverName, workOrderRunDir, allowTicketBodyBuild: false, onProgress });
+		buildWorkOrderPlans({
+			cwd,
+			workOrderName,
+			ticket,
+			record,
+			config,
+			env,
+			driver,
+			driverName,
+			workOrderRunDir,
+			allowTicketBodyBuild: false,
+			onProgress,
+			queueRunId,
+		});
 
 	if (chosen.address === undefined) {
 		const built = await build({ record: chosen.record });

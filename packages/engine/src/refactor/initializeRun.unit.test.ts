@@ -8,6 +8,7 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { initializeRun } from '#src/refactor/initializeRun.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
@@ -61,6 +62,21 @@ const setupParkedRefactorRun = () => {
 	writeFileSync(join(runDir, 'worklist.json'), `${JSON.stringify(frozenWorklist)}\n`, 'utf8');
 
 	return { cwd };
+};
+
+/**
+ * A parked refactor run whose owner record names a process long gone, beside an
+ * implement run that holds no owner record at all — so a resume can be seen to
+ * replace the one and leave the other untouched.
+ */
+const setupOwnedRuns = () => {
+	const { cwd } = setupParkedRefactorRun();
+	const refactorRunDir = seedRunFolder({ cwd, runId: 'run-1', pipeline: 'refactor' });
+
+	writeFileSync(join(refactorRunDir, 'owner.json'), `${JSON.stringify({ pid: 999999, recordedAt: '2026-01-01T00:00:00.000Z' })}\n`, 'utf8');
+	seedRunFolder({ cwd, runId: 'run-2', pipeline: 'implement' });
+
+	return { cwd, implementManifest: { ...manifestWith({ pipeline: 'implement' }), runId: 'run-2' } };
 };
 
 /** The work-list the run froze into its run dir, read back through its contract. */
@@ -135,5 +151,24 @@ describe('initializeRun', () => {
 		// nothing sits under 'modules', so the planted file falls back to its top
 		// segment — the configured folder is what decides, never the default
 		expect(batch?.folder).toBe('packages');
+	});
+
+	test("replaces a resumed refactor run's owner record and writes nothing for another pipeline's run", async () => {
+		const { cwd, implementManifest } = setupOwnedRuns();
+
+		const [resumed, refused] = await Promise.allSettled([
+			initializeRun({ cwd, runId: 'run-3', driver, config, existing: manifestWith({ pipeline: 'refactor' }) }),
+			initializeRun({ cwd, runId: 'run-4', driver, config, existing: implementManifest }),
+		]);
+		const [refactorOwner, implementOwner] = await Promise.all([readRunOwner({ cwd, runId: 'run-1' }), readRunOwner({ cwd, runId: 'run-2' })]);
+
+		// the resuming process now answers for the refactor run; the refused
+		// implement run was never touched, so it still has no owner record
+		expect({ resumed: resumed.status, refused: refused.status, implementOwner }).toStrictEqual({
+			resumed: 'fulfilled',
+			refused: 'rejected',
+			implementOwner: undefined,
+		});
+		expect(refactorOwner).toEqual(expect.objectContaining({ pid: process.pid }));
 	});
 });

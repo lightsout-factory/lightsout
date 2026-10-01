@@ -61,6 +61,3 @@ posts what it wrote.
   phase moving now. With nothing going it falls back to the newest run, and
   when several unrelated runs are going it names their ids rather than
   guessing which one was meant.
-- **The `queue` skill's ten-minute posts are separate.** Those arrive on their
-  own while a queue drains; this skill is for asking by hand, at any moment,
-  on any harness.

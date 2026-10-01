@@ -1,6 +1,6 @@
 import type { RunListing } from '#src/contracts/views/RunListing.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
-import { readRunProcessLock } from '#src/runState/lock/readRunProcessLock.ts';
+import { readRunLiveness } from '#src/runState/readRunLiveness.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { readRunListing } from '#src/views/internal/common/utils/readRunListing.ts';
 
@@ -21,9 +21,9 @@ export const listRuns = async ({ cwd, workOrderName }: Params): Promise<RunListi
 			continue;
 		}
 
-		// Per run rather than once: the run lock is per-checkout, so an isolated
-		// run's holder is in the workspace it recorded rather than here.
-		listings.push(await readRunListing({ cwd, manifest, lock: await readRunProcessLock({ cwd, manifest }) }));
+		const { live } = await readRunLiveness({ cwd, manifest });
+
+		listings.push(await readRunListing({ cwd, manifest, live }));
 	}
 
 	return listings.sort((first, second) => second.updatedAt.localeCompare(first.updatedAt));

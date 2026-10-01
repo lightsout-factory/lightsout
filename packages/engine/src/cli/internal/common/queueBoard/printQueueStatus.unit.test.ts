@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { QueueBoardState } from '#src/cli/internal/common/constants/QueueBoardState.ts';
 import { loadActiveTicketBlock } from '#src/cli/internal/common/queueBoard/loadActiveTicketBlock.ts';
@@ -9,6 +9,7 @@ import { renderTicketDetailBlock } from '#src/cli/internal/common/queueBoard/ren
 import type { QueueBoard } from '#src/contracts/queue/QueueBoard.ts';
 import type { QueueBoardTicket } from '#src/contracts/queue/QueueBoardTicket.ts';
 import { QueueLane } from '#src/contracts/queue/QueueLane.ts';
+import type { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunListing } from '#src/contracts/views/RunListing.ts';
@@ -16,6 +17,7 @@ import { getQueueBoardPath } from '#src/queue/board/getQueueBoardPath.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
+import { seedRunDir } from '#tests/helpers/seedRunDir.ts';
 
 // Mocked Imports
 // -------------------------
@@ -160,6 +162,71 @@ const setupLiveQueue = async () => {
 	return { ...captured, expected: [...board, ...blocks.flat()] };
 };
 
+/** Beyond any OS pid range — the live-process probe reports it dead. */
+const deadPid = 999_999_999;
+
+/**
+ * A running queue run on disk whose owner record names a dead pid while the
+ * checkout's run lock still names that run under this live process, and the
+ * real resolver reading it — so the board's state comes from the one liveness
+ * definition rather than from a listing the case hands over.
+ */
+const setupDeadOwnerQueue = async () => {
+	const captured = await setupQueueStatus({ listing: undefined, boardTickets: [tickets.buildQueue, tickets.building, tickets.waiting] });
+	const { resolveQueueRun: actualResolveQueueRun } = jest.requireActual<typeof import('#src/cli/internal/common/queueBoard/resolveQueueRun.ts')>(
+		'#src/cli/internal/common/queueBoard/resolveQueueRun.ts',
+	);
+
+	mockResolveQueueRun.mockImplementation(actualResolveQueueRun);
+
+	const runDir = await seedRunDir({
+		cwd: captured.cwd,
+		manifest: { runId: coordinatorRunId, pipeline: PipelineKind.Queue, status: RunStatus.Running, updatedAt },
+	});
+
+	writeFileSync(join(runDir, 'owner.json'), JSON.stringify({ pid: deadPid, recordedAt: '2026-09-10T08:00:00.000Z' }), 'utf8');
+	writeFileSync(
+		join(captured.cwd, '.lightsout', 'lock.json'),
+		JSON.stringify({ pid: process.pid, runId: coordinatorRunId, startedAt: '2026-09-10T08:00:00.000Z' }),
+		'utf8',
+	);
+
+	return captured;
+};
+
+/**
+ * What a queue printed when it ended, saved in its run folder. Its heading
+ * names 11:30, a time no board.json in this file holds, so lines re-rendered
+ * from the board record cannot pass for the saved ones.
+ */
+const savedSummary: QueueSummary = {
+	boardLines: ['Queue finished · 11:30', '', headerRow, separatorRow, '| EX-107 | — | — | — | — | — | EX-106 |'],
+	reportLines: ['shipped EX-106 · Settings', 'parked EX-107 · Import fix — retry needed'],
+	exitCode: 2,
+	finishedAt: '2026-09-10T11:30:00.000Z',
+};
+
+/** What printing `savedSummary` shows: its board lines, one blank line, its report lines. */
+const savedOutput = [
+	'Queue finished · 11:30',
+	'',
+	headerRow,
+	separatorRow,
+	'| EX-107 | — | — | — | — | — | EX-106 |',
+	'',
+	'shipped EX-106 · Settings',
+	'parked EX-107 · Import fix — retry needed',
+];
+
+/** A queue run in `listing`'s state whose folder holds `savedSummary`, and the board record only when `boardTickets` is given. */
+const setupSavedSummary = async ({ listing, boardTickets }: { listing: RunListing; boardTickets?: QueueBoardTicket[] }) => {
+	const captured = await setupQueueStatus({ listing, boardTickets });
+
+	writeFileSync(join(dirname(captured.boardPath), 'summary.json'), `${JSON.stringify(savedSummary, null, '\t')}\n`);
+
+	return captured;
+};
+
 describe('printQueueStatus', () => {
 	test('prints the board first, then one block per active ticket in column order', async () => {
 		const { cwd, logged, errors, expected } = await setupLiveQueue();
@@ -174,6 +241,28 @@ describe('printQueueStatus', () => {
 			listing: listingOf({ live: false, resumable: true }),
 			boardTickets: [tickets.buildQueue, tickets.building, tickets.waiting],
 		});
+
+		const code = await printQueueStatus({ cwd, runId: coordinatorRunId });
+
+		expect({ logged, errors, code }).toStrictEqual({
+			logged: [
+				'Queue stopped · last update 10:12',
+				'',
+				headerRow,
+				separatorRow,
+				'| — | EX-108 | EX-101 | EX-102 | — | — | — |',
+				'',
+				'- EX-108 · Migration — Which lane comes first?',
+				'- EX-101 · Notifications',
+				'- EX-102 · API changes',
+			],
+			errors: [],
+			code: 0,
+		});
+	});
+
+	test('heads a queue run stopped when its owner is gone even while the lock names it', async () => {
+		const { cwd, logged, errors } = await setupDeadOwnerQueue();
 
 		const code = await printQueueStatus({ cwd, runId: coordinatorRunId });
 
@@ -213,6 +302,50 @@ describe('printQueueStatus', () => {
 				'- EX-107 · Import fix — retry needed',
 				'- EX-102 · API changes',
 				'- EX-106 · Settings',
+			],
+			errors: [],
+			code: 0,
+		});
+	});
+
+	test('a finished queue run with a saved summary prints the saved board and report instead of re-rendering', async () => {
+		const { cwd, logged, errors } = await setupSavedSummary({
+			listing: listingOf({ status: RunStatus.Passed, live: false }),
+			boardTickets: [tickets.building, tickets.shipped, tickets.parked],
+		});
+
+		const code = await printQueueStatus({ cwd, runId: coordinatorRunId });
+
+		expect({ logged, errors, code }).toStrictEqual({ logged: savedOutput, errors: [], code: 0 });
+	});
+
+	test("a finished queue run's saved summary stands without a board file", async () => {
+		const { cwd, logged, errors } = await setupSavedSummary({ listing: listingOf({ status: RunStatus.Passed, live: false }) });
+
+		const code = await printQueueStatus({ cwd, runId: coordinatorRunId });
+
+		expect({ logged, errors, code }).toStrictEqual({ logged: savedOutput, errors: [], code: 0 });
+	});
+
+	test('a queue run that has not finished never shows a saved summary', async () => {
+		const { cwd, logged, errors } = await setupSavedSummary({
+			listing: listingOf({ live: false, resumable: true }),
+			boardTickets: [tickets.buildQueue, tickets.building, tickets.waiting],
+		});
+
+		const code = await printQueueStatus({ cwd, runId: coordinatorRunId });
+
+		expect({ logged, errors, code }).toStrictEqual({
+			logged: [
+				'Queue stopped · last update 10:12',
+				'',
+				headerRow,
+				separatorRow,
+				'| — | EX-108 | EX-101 | EX-102 | — | — | — |',
+				'',
+				'- EX-108 · Migration — Which lane comes first?',
+				'- EX-101 · Notifications',
+				'- EX-102 · API changes',
 			],
 			errors: [],
 			code: 0,

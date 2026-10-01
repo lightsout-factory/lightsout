@@ -183,6 +183,7 @@ const setupAutoPlanWorker = ({
 			settings: queueSettingsFixture(),
 			env: { LINEAR_API_KEY: 'key-1' },
 			workOrderRunDir: join(cwd, '.lightsout', 'runs', 'run-q', 'work-orders', 'LO-70'),
+			queueRunId: 'run-q',
 			onProgress: (message: string) => progress.push(message),
 		},
 	};
@@ -224,6 +225,7 @@ const setupHeadlessWorktreeSession = () => {
 			settings: queueSettingsFixture(),
 			env: { LINEAR_API_KEY: 'key-1' },
 			workOrderRunDir: join(runDirFor({ cwd: worktree, runId: 'run-q', pipeline: 'queue' }), 'work-orders', 'LO-70'),
+			queueRunId: 'run-q',
 		},
 	};
 };

@@ -18,14 +18,14 @@ import { runDirFor } from '#tests/helpers/runDirFor.ts';
 // Everything else — the manifests, the lock, the rendering — is real.
 type WatchTarget = { runId: string; rootRunId: string } | { ambiguous: string[] } | undefined;
 
-const mockResolveWatchTarget = jest.fn<(params: { cwd: string; rootRunId?: string }) => Promise<WatchTarget>>();
-const mockWatchRunProgress = jest.fn<(params: { cwd: string; runId?: string; rootRunId?: string }) => Promise<void>>();
+const mockResolveWatchTarget = jest.fn<(params: { cwd: string }) => Promise<WatchTarget>>();
+const mockWatchRunProgress = jest.fn<(params: { cwd: string; runId: string }) => Promise<void>>();
 
 jest.mock('#src/cli/internal/common/utils/resolveWatchTarget.ts', () => ({
-	resolveWatchTarget: (params: { cwd: string; rootRunId?: string }) => mockResolveWatchTarget(params),
+	resolveWatchTarget: (params: { cwd: string }) => mockResolveWatchTarget(params),
 }));
 jest.mock('#src/cli/internal/common/utils/watchRunProgress.ts', () => ({
-	watchRunProgress: (params: { cwd: string; runId?: string; rootRunId?: string }) => mockWatchRunProgress(params),
+	watchRunProgress: (params: { cwd: string; runId: string }) => mockWatchRunProgress(params),
 }));
 // -------------------------
 
@@ -128,6 +128,40 @@ const setupCleanupRun = ({ rounds, endReason }: { rounds?: number; endReason?: s
 	});
 };
 
+/** The lines a passed run's command printed when it ended, as report.json holds them — the saved report opens with its own blank line. */
+const savedReportLines = ['', ' run       saved-report-run', ' result    passed', ' SAVED REPORT LAST LINE'];
+
+/** A passed run whose folder holds the final report its command saved when it ended. */
+const setupFinishedRun = ({ watch = false }: { watch?: boolean } = {}) => {
+	const steps: StepRecord[] = [{ id: 'implement', status: RunStatus.Passed, attempts: 1, durationMs: 60_000 }];
+	const detail = setupDetail({
+		manifests: [manifestOf({ runId: 'run-alpha', status: RunStatus.Passed, steps, stepOrder: ['implement'] })],
+		args: watch ? { run: 'run-alpha', watch: true } : { run: 'run-alpha' },
+	});
+	const report = { lines: savedReportLines, exitCode: 0, finishedAt: '2026-01-01T00:11:00.000Z' };
+
+	writeFileSync(join(runDirFor({ cwd: detail.context.cwd, runId: 'run-alpha' }), 'report.json'), JSON.stringify(report), 'utf8');
+
+	return detail;
+};
+
+/** A passed phase child whose coordinator's manifest no longer reads, though the coordinator's folder still holds a saved report. */
+const setupOrphanedPhaseChild = () => {
+	const steps: StepRecord[] = [{ id: 'implement', status: RunStatus.Passed, attempts: 1, durationMs: 60_000 }];
+	const detail = setupDetail({
+		manifests: [manifestOf({ runId: 'run-child', parentRunId: 'run-coordinator', status: RunStatus.Passed, steps, stepOrder: ['implement'] })],
+		args: { run: 'run-child' },
+	});
+	const coordinatorDir = runDirFor({ cwd: detail.context.cwd, runId: 'run-coordinator' });
+	const report = { lines: savedReportLines, exitCode: 0, finishedAt: '2026-01-01T00:11:00.000Z' };
+
+	mkdirSync(coordinatorDir, { recursive: true });
+	writeFileSync(join(coordinatorDir, 'manifest.json'), '{ not json', 'utf8');
+	writeFileSync(join(coordinatorDir, 'report.json'), JSON.stringify(report), 'utf8');
+
+	return detail;
+};
+
 describe('statusCommand detail view', () => {
 	test('bare status still prints the listing and nothing else — the view scripts read is untouched', async () => {
 		const { context, logged, exitCodes } = setupDetail({ manifests: [manifestOf({ runId: 'run-alpha' })] });
@@ -218,16 +252,57 @@ describe('statusCommand detail view', () => {
 		expect(exitCodes).toStrictEqual([0]);
 	});
 
-	test('a bare --watch waits for a run to be going, then follows whatever is going each frame', async () => {
+	test('--run on a finished run prints its saved final report after its block', async () => {
+		const { context, logged, errors, exitCodes } = setupFinishedRun();
+
+		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const blockRow = logged.findIndex((line) => line.startsWith(' ✓  implement'));
+		const reportStart = logged.length - savedReportLines.length;
+
+		expect(logged.slice(reportStart)).toStrictEqual(savedReportLines);
+		expect(blockRow).toBeGreaterThan(-1);
+		expect(blockRow).toBeLessThan(reportStart);
+		expect(errors).toStrictEqual([]);
+		expect(exitCodes).toStrictEqual([0]);
+	});
+
+	test('--run with --watch never prints the saved final report', async () => {
+		const { context, logged, exitCodes } = setupFinishedRun({ watch: true });
+		mockWatchRunProgress.mockImplementation(async () => {
+			console.log(' ✓  implement   (watch frame)');
+		});
+
+		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(mockWatchRunProgress).toHaveBeenCalledWith({ cwd: context.cwd, runId: 'run-alpha' });
+		expect(logged).toStrictEqual([' ✓  implement   (watch frame)']);
+		expect(exitCodes).toStrictEqual([0]);
+	});
+
+	test("--run on a phase child whose coordinator will not read prints the child's block and no saved report", async () => {
+		const { context, logged, errors, exitCodes } = setupOrphanedPhaseChild();
+
+		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// whether the family has finished is the coordinator's to say, so an
+		// unreadable one leaves the report it may have saved unshown
+		expect(logged.some((line) => line.startsWith(' ✓  implement'))).toBe(true);
+		expect(logged).not.toContain(' SAVED REPORT LAST LINE');
+		expect(errors).toStrictEqual([]);
+		expect(exitCodes).toStrictEqual([0]);
+	});
+
+	test("a bare --watch waits for a run to be going, then follows that run's family root", async () => {
 		const { context, exitCodes } = setupDetail({ manifests: [manifestOf({ runId: 'run-alpha', status: RunStatus.Running })], args: { watch: true } });
 
 		mockResolveWatchTarget.mockResolvedValue({ runId: 'run-alpha', rootRunId: 'run-alpha' });
 
 		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
 
-		// no runId: follow mode re-resolves its own target inside that run's family,
-		// which is what makes a phased plan watchable
-		expect(mockWatchRunProgress).toHaveBeenCalledWith({ cwd: context.cwd, rootRunId: 'run-alpha' });
+		// the family root: its owner stays live across a phase boundary, which is
+		// what makes a phased plan watchable
+		expect(mockWatchRunProgress).toHaveBeenCalledWith({ cwd: context.cwd, runId: 'run-alpha' });
 		expect(exitCodes).toStrictEqual([0]);
 	});
 

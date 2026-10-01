@@ -1,67 +1,21 @@
+import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
-import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PhaseReport } from '#src/contracts/run/PhaseReport.ts';
-import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { RunUsage } from '#src/contracts/run/RunUsage.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import { confirmOwnership } from '#src/phases/internal/runPhase/common/utils/confirmOwnership.ts';
+import { persistStep } from '#src/phases/internal/runPhase/common/utils/persistStep.ts';
+import { recordFinishedChild } from '#src/phases/internal/runPhase/recordFinishedChild.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
-import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
-
-const persistStep = ({
-	cwd,
-	manifest,
-	index,
-	record,
-	patch,
-}: {
-	cwd: string;
-	manifest: RunManifest;
-	index: number;
-	record: StepRecord;
-	patch?: Partial<RunManifest>;
-}) => {
-	const steps = manifest.steps.map((step, position) => (position === index ? record : step));
-
-	return writeRunManifest({ cwd, manifest: { ...manifest, ...patch, steps } });
-};
-
-const recordFromChild = ({ step, childResult }: { step: StepRecord; childResult: PipelineResult }) => ({
-	...step,
-	status: childResult.manifest.status,
-	attempts: step.attempts + 1,
-	durationMs: childResult.manifest.steps.reduce((total, childStep) => total + (childStep.durationMs ?? 0), 0),
-	report: { runId: childResult.manifest.runId },
-	error: childResult.error,
-});
-
-const addUsage = ({ total, child }: { total?: RunUsage; child?: RunUsage }) => {
-	if (!child) {
-		return total;
-	}
-
-	if (!total) {
-		return child;
-	}
-
-	return {
-		invocations: total.invocations + child.invocations,
-		inputTokens: total.inputTokens + child.inputTokens,
-		outputTokens: total.outputTokens + child.outputTokens,
-		cacheReadTokens: total.cacheReadTokens + child.cacheReadTokens,
-		cacheCreationTokens: total.cacheCreationTokens + child.cacheCreationTokens,
-		costUsd: total.costUsd + child.costUsd,
-	};
-};
 
 /**
  * The child run a step already names, when there is one — a step that names a
@@ -96,45 +50,35 @@ const runChild = async (params: Parameters<typeof runImplementPipeline>[0]): Pro
 	return result;
 };
 
-const recordFinishedChild = async ({
+/** The child's id stays named on the failed step, so a resume adopts the partly built run. */
+const recordThrownChild = async ({
 	cwd,
 	manifest,
 	index,
 	step,
-	total,
-	childResult,
+	childRunId,
+	failure,
+	queueRunId,
 }: {
 	cwd: string;
 	manifest: RunManifest;
 	index: number;
 	step: StepRecord;
-	total: number;
-	childResult: PipelineResult;
+	childRunId: string;
+	failure: string;
+	queueRunId?: string;
 }) => {
-	const child = childResult.manifest;
+	await confirmOwnership({ cwd, runId: manifest.runId, queueRunId });
+
 	const current = await persistStep({
 		cwd,
 		manifest,
 		index,
-		record: recordFromChild({ step, childResult }),
-		patch: {
-			status: childResult.ok ? RunStatus.Running : child.status,
-			changedFiles: [...new Set([...manifest.changedFiles, ...child.changedFiles])],
-			// Each phase's entry carries its own child run id, and a resumed phase that
-			// skips a passed child returns before this patch, so concatenating cannot double one.
-			commits: [...manifest.commits, ...child.commits],
-			usage: addUsage({ total: manifest.usage, child: child.usage }),
-		},
+		record: { ...step, status: RunStatus.Failed, error: failure, report: { runId: childRunId } },
+		patch: { status: RunStatus.Failed },
 	});
 
-	if (childResult.ok) {
-		return { manifest: current };
-	}
-
-	const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: current.runId });
-	const stopped = `phase ${index + 1}/${total} (${step.id}) ended ${child.status} — resume with: ${resume}`;
-
-	return { manifest: current, result: { ok: false, manifest: current, error: childResult.error ? `${stopped}\n${childResult.error}` : stopped } };
+	return { manifest: current, result: { ok: false, manifest: current, error: failure } };
 };
 
 interface PhaseParams {
@@ -151,12 +95,17 @@ interface PhaseParams {
 	/** The command-run level this phase's own pass level is opened under. Absent wherever no run is being recorded. */
 	level?: ActivityLevel;
 	onProgress?: (message: string) => void;
+	/** The queue run the coordinator's owner record points at, for a queue worker sequence. Read only by the owner fence. */
+	queueRunId?: string;
 }
 
 /**
- * No result means carry on to the next phase.
+ * No result means carry on to the next phase. The child's run id is settled
+ * and recorded on the running step before the child starts, so a reader can
+ * always tell which run of the family is moving.
  *
  * @throws {RunLockError} When the phase cannot take the repo lock — nothing ran, so the sequence stays exactly resumable.
+ * @throws {Error} When the coordinator's owner record no longer names this process — no outcome is recorded.
  */
 export const runPhase = async ({
 	cwd,
@@ -170,6 +119,7 @@ export const runPhase = async ({
 	resumed,
 	level,
 	onProgress,
+	queueRunId,
 }: PhaseParams): Promise<{ manifest: RunManifest; result?: PipelineResult }> => {
 	const label = `phase ${index + 1}/${total}: ${step.id}`;
 
@@ -178,14 +128,18 @@ export const runPhase = async ({
 	const childManifest = await readRecordedChild({ cwd, step });
 
 	if (childManifest?.status === RunStatus.Passed) {
+		await confirmOwnership({ cwd, runId: manifest.runId, queueRunId });
+
 		return { manifest: await persistStep({ cwd, manifest, index, record: { ...step, status: RunStatus.Passed } }) };
 	}
 
-	let current = await persistStep({
+	// A step naming a run that cannot be read re-runs the phase in a new run.
+	const childRunId = childManifest?.runId ?? randomUUID();
+	const current = await persistStep({
 		cwd,
 		manifest,
 		index,
-		record: { ...step, status: RunStatus.Running, error: undefined },
+		record: { ...step, status: RunStatus.Running, error: undefined, report: { runId: childRunId } },
 		patch: { status: RunStatus.Running, currentStep: step.id },
 	});
 
@@ -200,6 +154,7 @@ export const runPhase = async ({
 			cwd,
 			driver,
 			config,
+			runId: childRunId,
 			planPath: join(dirname(current.plan), step.id),
 			overviewPath: current.plan,
 			parentRunId: current.runId,
@@ -213,20 +168,12 @@ export const runPhase = async ({
 		});
 
 		if ('failure' in childResult) {
-			current = await persistStep({
-				cwd,
-				manifest: current,
-				index,
-				record: { ...step, status: RunStatus.Failed, error: childResult.failure },
-				patch: { status: RunStatus.Failed },
-			});
-
-			return { manifest: current, result: { ok: false, manifest: current, error: childResult.failure } };
+			return await recordThrownChild({ cwd, manifest: current, index, step, childRunId, failure: childResult.failure, queueRunId });
 		}
 
 		outcome = childResult.manifest.status;
 
-		return await recordFinishedChild({ cwd, manifest: current, index, step, total, childResult });
+		return await recordFinishedChild({ cwd, manifest: current, index, step, total, childResult, queueRunId });
 	} finally {
 		pass?.close({ outcome });
 	}

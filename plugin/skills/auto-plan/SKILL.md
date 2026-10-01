@@ -1,7 +1,7 @@
 ---
 name: auto-plan
 description: Plan a ticket alone — self-answers every question below a written escalation bar, shows you one proposal, and rolls onward per the auto-plan config block. Use when the user asks to auto-plan a ticket, plan it without the interview, or hand a ticket straight to the factory. Input is a ticket, a feature description, or a rough-notes file path. Output feeds the `implement` skill.
-allowed-tools: Bash, BashOutput, Read, Write, Edit, Grep, Glob, Task, WebSearch, WebFetch
+allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Task, WebSearch, WebFetch
 ---
 
 # lightsout: auto-plan
@@ -543,12 +543,13 @@ has to name. Never file one yourself.
 
 With it true, read `<plugin-root>/skills/implement/SKILL.md` and follow it
 in full, using `<plan-folder>` as the provided plan path, just as if
-the user had invoked `implement` directly. That includes backgrounding the
-implementation, starting `status --watch`, relaying every progress block
-verbatim until the watch exits, and then relaying the engine's final report.
-Running the implementation CLI alone skips the watch and is not the handoff.
-The implement skill owns the launch and status-relay procedure so both entry
-points stay in step.
+the user had invoked `implement` directly. That includes launching the
+implementation with `implement --detach` in the foreground, posting the
+engine's output verbatim, and pointing the user to `/lightsout:status --run
+<id>` for updates and `lightsout stop --run <id>` to stop it. Running the
+implementation CLI without that procedure skips the hand-off to the user and is
+not the handoff. The implement skill owns the launch and hand-off procedure so
+both entry points stay in step.
 
 The engine performs the In Progress write itself at the `implement` edge and
 refuses to start when it fails, so this skill writes nothing further. Whether

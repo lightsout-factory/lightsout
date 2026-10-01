@@ -28,7 +28,7 @@ import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 type PipelineParams = { cwd: string; existing?: RunManifest; runId?: string };
 type DirectWorkParams = { cwd: string; ticketBody: string; ticketRef: string; existing?: RunManifest; runId?: string };
 type GuardParams = { cwd: string; config: LightsoutConfig; env: NodeJS.ProcessEnv; ticketRef?: string; onProgress?: (message: string) => void };
-type ExitAfterImplementParams = {
+type ShipAfterImplementParams = {
 	config: LightsoutConfig;
 	cwd: string;
 	result: PipelineResult;
@@ -53,11 +53,16 @@ jest.mock('#src/ticketLifecycle/requireImplementLifecycle.ts', () => ({
 	requireImplementLifecycle: (params: GuardParams) => mockRequireImplementLifecycle(params),
 }));
 // -------------------------
-const mockExitAfterImplement = jest.fn<(params: ExitAfterImplementParams) => Promise<void>>();
+const mockShipAfterImplement = jest.fn<(params: ShipAfterImplementParams) => Promise<number>>();
 
-jest.mock('#src/cli/internal/common/utils/exitAfterImplement.ts', () => ({
-	exitAfterImplement: (params: ExitAfterImplementParams) => mockExitAfterImplement(params),
+jest.mock('#src/cli/internal/common/utils/shipAfterImplement.ts', () => ({
+	shipAfterImplement: (params: ShipAfterImplementParams) => mockShipAfterImplement(params),
 }));
+// -------------------------
+// The report card and its save read the run's folder through the workspace the
+// run recorded, which here is a checkout apart from the one holding the run.
+jest.mock('#src/cli/internal/common/render/renderResult.ts', () => ({ renderResult: () => Promise.resolve([]) }));
+jest.mock('#src/runState/finalReport/writeRunFinalReport.ts', () => ({ writeRunFinalReport: () => Promise.resolve() }));
 // -------------------------
 
 /** The ticket's branch, which is also its folder's name under the plans directory. */
@@ -181,7 +186,7 @@ const setupTicketResume = ({
 	writeRepoFile({ cwd: seeded.cwd, path: frozenTicketPath, content: '# Support multiple plans\n\nBuild the thing.\n' });
 
 	mockRequireImplementLifecycle.mockResolvedValue(undefined);
-	mockExitAfterImplement.mockResolvedValue(undefined);
+	mockShipAfterImplement.mockResolvedValue(0);
 	mockRunPipelineOrFailFast.mockResolvedValue({
 		ok: true,
 		manifest: manifestOf({ pipeline: PipelineKind.Implement, status: RunStatus.Passed, plan, ticketRef: 'LO-140', branch: workOrderName, workspace }),
@@ -207,7 +212,7 @@ describe('resumeCommand ticket plans', () => {
 			parked: { plan: planPath({ planId: planOne }), status: RunStatus.Failed },
 		});
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// a repair continues the implementation that already began, so the run it
 		// is recorded under and the commit it started from both stand
@@ -234,7 +239,7 @@ describe('resumeCommand ticket plans', () => {
 			isolated: true,
 		});
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the run's plan path is repo-relative and the folder it names is the
 		// primary checkout's, so a tree that resolved it against itself would find
@@ -305,7 +310,7 @@ describe('resumeCommand ticket plans', () => {
 			parked: { plan: frozenTicketPath, status: RunStatus.Failed, pipeline: PipelineKind.Direct },
 		});
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// no plan folder in the run's path and no plan of the record naming this
 		// run: nothing claims the build, so it resumes as it always has
@@ -326,7 +331,7 @@ describe('resumeCommand ticket plans', () => {
 			parked: { plan: frozenTicketPath, status: RunStatus.Failed, pipeline: PipelineKind.Direct },
 		});
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the run's plan path names no plan folder, so the plan it belongs to is
 		// found by the run the record already names against it

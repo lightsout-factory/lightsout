@@ -178,6 +178,7 @@ const setupUnfinishedStep = ({
 			settings: queueSettingsFixture(),
 			env: {},
 			workOrderRunDir: join(cwd, '.lightsout', 'runs', 'run-q', 'work-orders', 'LO-196'),
+			queueRunId: 'run-q',
 		},
 	};
 };

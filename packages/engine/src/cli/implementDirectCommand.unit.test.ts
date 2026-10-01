@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
@@ -8,6 +8,7 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 
@@ -262,6 +263,19 @@ describe('implementDirectCommand', () => {
 		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
 
 		expect(exitCodes).toStrictEqual([2]);
+	});
+
+	test('saves the report it printed in the run folder, with the code it then exits with', async () => {
+		const { context, cwd, logged, exitCodes } = setupImplementDirect({ args: ['--ticket', 'ticket.md'] });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const saved = JSON.parse(readFileSync(join(runDirFor({ cwd, runId: 'run-1234-abcd' }), 'report.json'), 'utf8'));
+
+		// the report is the last thing the command printed, so it is the tail of stdout
+		expect({ exitCode: saved.exitCode, printed: logged.slice(-saved.lines.length) }).toStrictEqual({ exitCode: 0, printed: saved.lines });
+		expect(saved.lines.length).toBeGreaterThan(0);
+		expect(exitCodes).toStrictEqual([0]);
 	});
 
 	// The commit now happens inside the run itself, one per unit of work that

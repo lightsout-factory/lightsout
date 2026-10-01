@@ -10,6 +10,7 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
 import { resolveNewRunDir } from '#src/runState/common/paths/resolveNewRunDir.ts';
 import { runDirectoryIndex } from '#src/runState/internal/common/constants/runDirectoryIndex.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 
 interface Params {
@@ -34,13 +35,15 @@ interface Params {
 	baselineDirtyFiles?: string[];
 	/** Resolved before the run starts: a passing run will ship this branch. Omitted by every pipeline that resolves no ship intent. */
 	willShip?: boolean;
+	/** The queue run this run is a worker of, so its owner record points there rather than at this process. */
+	queueRunId?: string;
 }
 
 /**
  * Plan paths are recorded repo-relative whatever form the caller used: every
  * reader joins the record onto the repo, so an absolute `--plan` written as
  * given would read back as a missing file. Enforced here, where every manifest
- * is born.
+ * is born. It is also where every family root's owner record is born.
  */
 export const createRun = async ({
 	cwd,
@@ -54,6 +57,7 @@ export const createRun = async ({
 	config,
 	baselineDirtyFiles,
 	willShip,
+	queueRunId,
 }: Params): Promise<RunManifest> => {
 	const now = new Date().toISOString();
 	// One string answers both fields, so the name can never claim a plan the
@@ -109,6 +113,14 @@ export const createRun = async ({
 	// the write would fail every run at creation.
 	await mkdir(runDir, { recursive: true });
 	runDirectoryIndex.record({ cwd, runId: manifest.runId, runDir });
+	const written = await writeRunManifest({ cwd, manifest });
 
-	return writeRunManifest({ cwd, manifest });
+	// After the manifest, never before, so a reader that finds the owner record
+	// can count on the manifest. A phase child gets none: its coordinator's
+	// record answers for the whole family.
+	if (parentRunId === undefined) {
+		await writeRunOwner({ cwd, runId: manifest.runId, queueRunId });
+	}
+
+	return written;
 };
