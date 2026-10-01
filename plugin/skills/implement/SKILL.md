@@ -1,7 +1,7 @@
 ---
 name: implement
 description: Run the lightsout deterministic implementation pipeline on a plan file. Use when the user asks to implement a plan via lightsout.
-allowed-tools: Bash, BashOutput, Read
+allowed-tools: Bash, Read
 ---
 
 # lightsout: implement
@@ -19,11 +19,17 @@ it is deterministic code. Do not add workflow steps to this file.
    wherever `<plugin-root>` appears below. Confirm
    `<plugin-root>/dist/cli.mjs` exists; otherwise stop and tell the user to
    reinstall the plugin or run `pnpm bundle` in the lightsout repo.
-2. Run it on the plan path the user provided, **in the background**, so the
-   session is free while the run works:
+2. Launch the run on the plan path the user provided, **in the foreground**,
+   from the project directory, with **both streams captured together**:
 
    ```sh
-   node "<plugin-root>/dist/cli.mjs" implement --plan "<plan-path>"
+   node "<plugin-root>/dist/cli.mjs" implement --detach --plan "<plan-path>" 2>&1
+   ```
+
+   For a resume request, launch `resume --detach --run <id>` the same way:
+
+   ```sh
+   node "<plugin-root>/dist/cli.mjs" resume --detach --run <id> 2>&1
    ```
 
    Pass through what the user gave you, nothing more:
@@ -39,41 +45,35 @@ it is deterministic code. Do not add workflow steps to this file.
      `--no-worktree`; a request to build in an isolated worktree →
      `--worktree`. Neither is the default to add: the engine already
      isolates unless the repository's config says otherwise.
-   - `resume` requests → `node "<plugin-root>/dist/cli.mjs" resume --run <id>`
 
-3. Start a watch on the run, also in the background:
+   The command returns as soon as the run has started, and the run goes on in
+   a process of its own, so nothing is backgrounded and nothing is watched.
+   Worktree setup and tracker writes come before the run has started and can
+   outlast a harness's default command timeout, so run the command with the
+   longest timeout the harness allows (Claude Code: `timeout 600000`). The
+   engine prints `starting run <full id> — engine output: <launch log path>`
+   at once, before it waits.
 
-   ```sh
-   node "<plugin-root>/dist/cli.mjs" status --watch
-   ```
+3. Post everything the command printed into the conversation **verbatim**.
+   Then:
 
-   With no `--run` it follows the run just started — that run is the one run
-   going, and a phased plan's coordinator and its current phase count as one
-   run rather than two. It waits for the run to appear, then paints a fresh
-   block every two minutes until the run stops, and exits on its own.
+   - **Zero exit — the run has started.** Tell the user:
+     - the run id the engine printed;
+     - that the run goes on outside this session;
+     - that `/lightsout:status` shows it while it is the only run going,
+       including its final report once it has ended, and that
+       `/lightsout:status --run <id>` always shows it;
+     - that `lightsout stop --run <id>` stops it.
 
-   If the command instead names several run ids and asks for `--run <id>`,
-   other unrelated runs are going in this repository. Report those ids to the
-   user and stop — do not guess which one to follow.
-
-   Now relay it, in a loop, until that watch command has exited:
-
-   1. Read the watch's new output.
-   2. Every complete block it has produced since the last read goes into the
-      conversation **verbatim** — no commentary, no summary, no reformatting,
-      nothing between one block and the next. The engine owns that rendering;
-      the skill only carries it.
-   3. A read that returns nothing new means the next repaint has not happened
-      yet. Say nothing and read again.
-
-   Do not go on to the final report while the watch is still running: the
-   engine run has not finished, and there is no report yet.
-
-4. Relay the engine's final report to the user verbatim — it is waiting in the
-   backgrounded run from step 2, which has finished by the time the watch
-   exited. If the run parked itself (rate-limit pause or escalation), tell the
-   user the run id and that `resume` will continue it — the same run id also
-   resumes a multi-phase run, picking up at the phase that stopped.
+     `resume --detach --run <id>` continues a run that parked or was stopped;
+     the same run id also resumes a multi-phase run, picking up at the phase
+     that stopped.
+   - **Nonzero exit — the command refused before any run started.** Its output
+     is the refusal: post it verbatim and stop, with no sentence of your own
+     around it, no retry and no workaround.
+   - **The harness cut the call off before it returned.** Post what it printed
+     and tell the user that `/lightsout:status --run <id>`, with the id from
+     the `starting run` line, shows whether the run started.
 
 ## What the engine does to the ticket
 

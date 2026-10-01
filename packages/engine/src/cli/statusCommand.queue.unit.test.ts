@@ -314,7 +314,7 @@ describe('statusCommand --queue', () => {
 
 		expect(mockResolveQueueRun).toHaveBeenCalledWith({ cwd: context.cwd });
 		// the run listing would open with the coordinator run's own row here
-		expect(logged[0]).toMatch(/^Queue update · \d{2}:\d{2} · next update \d{2}:\d{2}$/);
+		expect(logged[0]).toMatch(/^Queue update · \d{2}:\d{2}$/);
 		expect(logged.some((line) => line.includes('EX-101 · Notifications'))).toBe(true);
 		expect(errors).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([0]);

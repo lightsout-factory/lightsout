@@ -32,7 +32,7 @@ const boardUpdatedAt = new Date(2026, 8, 10, 10, 12).toISOString();
 
 const headerRow = '| Parked | Blocked | Build Queue | Building | Ship Queue | Shipping Now | Shipped |';
 const separatorRow = '| --- | --- | --- | --- | --- | --- | --- |';
-const liveHeading = expect.stringMatching(/^Queue update · \d{2}:\d{2} · next update \d{2}:\d{2}$/);
+const liveHeading = expect.stringMatching(/^Queue update · \d{2}:\d{2}$/);
 
 /** A ticket waiting for a build worker: on the board, never active. */
 const waitingTicket: QueueBoardTicket = { identifier: 'EX-101', title: 'Notifications', lane: QueueLane.BuildQueue, enteredAt: '2026-09-10T08:56:00.000Z' };
