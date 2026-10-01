@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
@@ -8,8 +9,11 @@ import { renderQueueBoard } from '#src/cli/internal/common/queueBoard/renderQueu
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { resolveEffectiveConfigAndDriver } from '#src/cli/internal/common/utils/resolveEffectiveConfigAndDriver.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
+import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
 import { toQueueBoardTickets } from '#src/queue/board/toQueueBoardTickets.ts';
+import { writeQueueSummary } from '#src/queue/board/writeQueueSummary.ts';
 import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
 import type { QueueDrainReport } from '#src/queue/common/types/QueueDrainReport.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
@@ -21,6 +25,7 @@ import { runQueue } from '#src/queue/runQueue.ts';
 import { resolveQueueSettings } from '#src/queue/startup/resolveQueueSettings.ts';
 import { isPidAlive } from '#src/runState/isPidAlive.ts';
 import { readRunLock } from '#src/runState/lock/readRunLock.ts';
+import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 import { resolveShipSettings } from '#src/ship/resolveShipSettings.ts';
 import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';
@@ -54,39 +59,71 @@ const resolveQueueStartup = ({ config, env }: { config: LightsoutConfig; env: No
 
 // Drawn from this process's report, not the coordinator run, so it never shows
 // another run's board and still draws when the drain created no run.
-const printFinalBoard = ({ report }: { report: QueueDrainReport }) => {
+const renderFinalBoard = ({ report }: { report: QueueDrainReport }) => {
 	const at = new Date();
 	const tickets = toQueueBoardTickets({ settled: report, at: at.toISOString() });
 
-	for (const line of renderQueueBoard({ tickets, state: QueueBoardState.Finished, at })) {
-		console.log(line);
-	}
-
-	console.log('');
+	return renderQueueBoard({ tickets, state: QueueBoardState.Finished, at });
 };
 
 // A ticket must never vanish from the summary, so the left-behind ones print too.
-const printDrainReport = ({ report }: { report: QueueDrainReport }) => {
+const renderDrainReport = ({ report }: { report: QueueDrainReport }) => {
+	const lines: string[] = [];
+
 	for (const outcome of report.outcomes) {
 		if (outcome.ready) {
-			console.log(`${outcome.ticket.identifier} ${outcome.branch} shipped`);
+			lines.push(`${outcome.ticket.identifier} ${outcome.branch} shipped`);
 
 			if (outcome.reconciliationFailure !== undefined) {
-				console.log(`  ${outcome.reconciliationFailure}`);
+				lines.push(`  ${outcome.reconciliationFailure}`);
 			}
 		} else {
 			// A ticket left open is not a park: its work is finished as far as it
 			// goes, and it is waiting on a human rather than on a re-run.
 			const stop = outcome.open === undefined ? `parked: ${outcome.error ?? 'no reason recorded'}` : `left open: ${outcome.open}`;
 
-			console.log(`${outcome.ticket.identifier} ${outcome.branch} ${stop}`);
-			console.log(`  worktree: ${outcome.worktreePath}`);
+			lines.push(`${outcome.ticket.identifier} ${outcome.branch} ${stop}`, `  worktree: ${outcome.worktreePath}`);
 		}
 	}
 
 	for (const entry of report.leftBehind) {
-		console.log(`${entry.identifier} ${entry.reason}`);
+		lines.push(`${entry.identifier} ${entry.reason}`);
 	}
+
+	return lines;
+};
+
+// A summary that cannot be saved must not change how the drain ended. A drain
+// that found nothing to do created no run folder, so it has nowhere to save one.
+const saveQueueSummary = async ({ cwd, runId, summary }: { cwd: string; runId: string; summary: QueueSummary }) => {
+	try {
+		await writeQueueSummary({ cwd, runId, summary });
+	} catch (error) {
+		if (!(error instanceof RunNotFoundError)) {
+			console.error(`could not save the summary of queue run ${runId}: ${messageOf({ error })}`);
+		}
+	}
+};
+
+// Printed and saved from the same lines, so what status shows later is what the
+// queue printed when it ended.
+const finishDrain = async ({ cwd, runId, report }: { cwd: string; runId: string; report: QueueDrainReport }) => {
+	const boardLines = renderFinalBoard({ report });
+	const reportLines = renderDrainReport({ report });
+
+	for (const line of [...boardLines, '', ...reportLines]) {
+		console.log(line);
+	}
+
+	// Exit 2 only when a re-run has something to pick up. A settled ticket, a
+	// reconciliation failure on a merged branch, and a ticket left open for a
+	// human do not count.
+	const resumable = report.leftBehind.some((entry) => entry.settled !== true) || report.outcomes.some((outcome) => isParkedOutcome({ outcome }));
+	const code = resumable ? pausedExitCode : 0;
+
+	await saveQueueSummary({ cwd, runId, summary: { boardLines, reportLines, exitCode: code, finishedAt: new Date().toISOString() } });
+
+	return code;
 };
 
 // `parseFlags` hands back `true` for a bare `--file-relay`, which means the
@@ -151,9 +188,11 @@ export const queueCommand = async ({ flags, cwd }: CommandContext): Promise<void
 	// `runShip` directly and never reads this.
 	process.env.LIGHTSOUT_NO_SHIP = '1';
 
+	const runId = randomUUID();
 	const relay: QuestionRelay = await buildRelay({ requested, settings, trackerSettings, cwd });
 	const report = await runQueue({
 		cwd,
+		runId,
 		settings,
 		trackerSettings,
 		shipSettings,
@@ -170,13 +209,5 @@ export const queueCommand = async ({ flags, cwd }: CommandContext): Promise<void
 		return exitCli({ code: 1 });
 	}
 
-	printFinalBoard({ report });
-	printDrainReport({ report });
-
-	// Exit 2 only when a re-run has something to pick up. A settled ticket, a
-	// reconciliation failure on a merged branch, and a ticket left open for a
-	// human do not count.
-	const resumable = report.leftBehind.some((entry) => entry.settled !== true) || report.outcomes.some((outcome) => isParkedOutcome({ outcome }));
-
-	return exitCli({ code: resumable ? pausedExitCode : 0 });
+	return exitCli({ code: await finishDrain({ cwd, runId, report }) });
 };

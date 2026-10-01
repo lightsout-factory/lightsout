@@ -39,7 +39,7 @@ type CommitParams = {
 	generated: string[] | undefined;
 	onProgress: (message: string) => void;
 };
-type ExitAfterImplementParams = {
+type ShipAfterImplementParams = {
 	config: LightsoutConfig;
 	cwd: string;
 	result: PipelineResult;
@@ -62,10 +62,10 @@ const mockCommitTicketWork = jest.fn<(params: CommitParams) => Promise<{ committ
 
 jest.mock('#src/commit/commitWorkOrderWork.ts', () => ({ commitWorkOrderWork: (params: CommitParams) => mockCommitTicketWork(params) }));
 // -------------------------
-const mockExitAfterImplement = jest.fn<(params: ExitAfterImplementParams) => Promise<void>>();
+const mockShipAfterImplement = jest.fn<(params: ShipAfterImplementParams) => Promise<number>>();
 
-jest.mock('#src/cli/internal/common/utils/exitAfterImplement.ts', () => ({
-	exitAfterImplement: (params: ExitAfterImplementParams) => mockExitAfterImplement(params),
+jest.mock('#src/cli/internal/common/utils/shipAfterImplement.ts', () => ({
+	shipAfterImplement: (params: ShipAfterImplementParams) => mockShipAfterImplement(params),
 }));
 // -------------------------
 
@@ -154,7 +154,7 @@ const setupImplementDirectWorktree = ({
 	}
 	mockRunDirectWork.mockResolvedValue({ ok: true, manifest: manifestOf(RunStatus.Passed) });
 	mockCommitTicketWork.mockResolvedValue({ committed: true, message: 'LO-70: stub subject\n\nlightsout run stub\n' });
-	mockExitAfterImplement.mockResolvedValue(undefined);
+	mockShipAfterImplement.mockResolvedValue(0);
 
 	return { context: { flags: parseFlags({ args }), rest: [], cwd }, cwd, workspace, ...captured };
 };
@@ -163,7 +163,7 @@ describe('implementDirectCommand worktree isolation', () => {
 	test('guards the workspace rather than the launching checkout', async () => {
 		const { context, workspace, errors } = setupImplementDirectWorktree({ args: ['--ticket', 'ticket.md'], dirtyLaunch: 'export const stray = 1;\n' });
 
-		await implementDirectCommand(context);
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the tree the run must not sweep is the one it commits in, so a dirty
 		// launching checkout stops mattering the moment the run builds elsewhere
@@ -174,13 +174,13 @@ describe('implementDirectCommand worktree isolation', () => {
 	test('builds and ships in the workspace, leaving the commit to the run', async () => {
 		const { context, workspace } = setupImplementDirectWorktree({ args: ['--ticket', 'ticket.md'] });
 
-		await implementDirectCommand(context);
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the run makes its own commit before it is stamped passed, so this edge
 		// hands the workspace to the run and to the ship tail and nothing else
 		expect(mockRunDirectWork).toHaveBeenCalledWith(expect.objectContaining({ cwd: workspace }));
 		expect(mockCommitTicketWork).not.toHaveBeenCalled();
-		expect(mockExitAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ cwd: workspace }));
+		expect(mockShipAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ cwd: workspace }));
 	});
 
 	test('still refuses a dirty launching checkout when the run opts out', async () => {
@@ -218,7 +218,7 @@ describe('implementDirectCommand worktree isolation', () => {
 	test('labels the run from the branch the workspace was put on', async () => {
 		const { context } = setupImplementDirectWorktree({ args: ['--ticket', 'ticket.md'], launchBranch: 'lo-99-elsewhere', workspaceBranch: 'lo-70-drain' });
 
-		await implementDirectCommand(context);
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
 
 		expect(mockRunDirectWork).toHaveBeenCalledWith(expect.objectContaining({ ticketRef: 'lo-70' }));
 	});
@@ -226,7 +226,7 @@ describe('implementDirectCommand worktree isolation', () => {
 	test('names the workspace, its branch and the copied ticket in the startup line', async () => {
 		const { context, cwd, workspace, logged } = setupImplementDirectWorktree({ args: ['--ticket', 'ticket.md'] });
 
-		await implementDirectCommand(context);
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// human copy, so only the facts a reader follows the run by are pinned:
 		// where it builds, on what, and the copy it reads rather than the original

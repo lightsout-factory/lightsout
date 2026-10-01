@@ -1,10 +1,9 @@
-import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { contradictoryShipFlagsMessage } from '#src/cli/internal/common/constants/contradictoryShipFlagsMessage.ts';
 import { unusableTicketPatternMessage } from '#src/cli/internal/common/constants/unusableTicketPatternMessage.ts';
 import { removeShippedRunWorkspace } from '#src/cli/internal/common/implementRun/removeShippedRunWorkspace.ts';
 import { resolveRunCwd } from '#src/cli/internal/common/implementRun/resolveRunCwd.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
-import { exitForRunResult } from '#src/cli/internal/common/utils/exitForRunResult.ts';
+import { getRunResultExitCode } from '#src/cli/internal/common/utils/getRunResultExitCode.ts';
 import { resolveEffectiveConfigAndDriver } from '#src/cli/internal/common/utils/resolveEffectiveConfigAndDriver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
@@ -41,8 +40,10 @@ interface Params {
  * done.
  *
  * The tracker write comes last, because it can fail without undoing anything.
+ *
+ * @returns the code the command exits with; the caller exits with it
  */
-export const exitAfterImplement = async ({ config, cwd, result, shipFlag, noShipFlag, env }: Params): Promise<never> => {
+export const shipAfterImplement = async ({ config, cwd, result, shipFlag, noShipFlag, env }: Params): Promise<number> => {
 	const terms = await readWorkOrderRunTerms({
 		cwd,
 		name: await planNameFromPath({ cwd, planPath: result.manifest.plan }),
@@ -53,7 +54,7 @@ export const exitAfterImplement = async ({ config, cwd, result, shipFlag, noShip
 	if (intent.contradictory) {
 		console.error(contradictoryShipFlagsMessage);
 
-		return exitCli({ code: 1 });
+		return 1;
 	}
 
 	if (!result.ok || !intent.willShip) {
@@ -63,13 +64,13 @@ export const exitAfterImplement = async ({ config, cwd, result, shipFlag, noShip
 			console.log(intent.shipRequestBlocker);
 		}
 
-		return exitForRunResult({ ok: result.ok, manifest: result.manifest });
+		return getRunResultExitCode({ ok: result.ok, manifest: result.manifest });
 	}
 
 	if (intent.settings === undefined) {
 		console.error(unusableTicketPatternMessage);
 
-		return exitCli({ code: 1 });
+		return 1;
 	}
 
 	// A gate, a push or a merge run against the checkout the command was launched
@@ -80,7 +81,7 @@ export const exitAfterImplement = async ({ config, cwd, result, shipFlag, noShip
 	if ('error' in resolved) {
 		console.error(resolved.error);
 
-		return exitCli({ code: 1 });
+		return 1;
 	}
 
 	const workCwd = resolved.workspace;
@@ -97,7 +98,7 @@ export const exitAfterImplement = async ({ config, cwd, result, shipFlag, noShip
 	});
 
 	if (shipped.status === ShipStatus.Blocked) {
-		return exitCli({ code: 1 });
+		return 1;
 	}
 
 	// Only now that the merge is confirmed.
@@ -112,5 +113,5 @@ export const exitAfterImplement = async ({ config, cwd, result, shipFlag, noShip
 		console.error(reconciliationFailure);
 	}
 
-	return exitForRunResult({ ok: result.ok, manifest: result.manifest });
+	return getRunResultExitCode({ ok: result.ok, manifest: result.manifest });
 };

@@ -9,6 +9,7 @@ import { printRunProgress } from '#src/cli/internal/common/render/printRunProgre
 import { printAmbiguousRuns } from '#src/cli/internal/common/runStatus/printAmbiguousRuns.ts';
 import { printGoingRunStatus } from '#src/cli/internal/common/runStatus/printGoingRunStatus.ts';
 import { printNewestRun } from '#src/cli/internal/common/runStatus/printNewestRun.ts';
+import { printRunFinalReport } from '#src/cli/internal/common/runStatus/printRunFinalReport.ts';
 import { resolveTypedRunId } from '#src/cli/internal/common/utils/resolveTypedRunId.ts';
 import { resolveWatchTarget } from '#src/cli/internal/common/utils/resolveWatchTarget.ts';
 import { watchRunProgress } from '#src/cli/internal/common/utils/watchRunProgress.ts';
@@ -139,7 +140,12 @@ export const statusCommand = async ({ cwd, flags }: CommandContext): Promise<voi
 	if (runFlag !== undefined) {
 		const runId = await resolveTypedRunId({ cwd, runId: runFlag });
 
-		await (watch ? watchRunProgress({ cwd, runId }) : printRunProgress({ cwd, runId }));
+		if (watch) {
+			await watchRunProgress({ cwd, runId });
+		} else {
+			await printRunProgress({ cwd, runId });
+			await printRunFinalReport({ cwd, runId });
+		}
 
 		return exitCli({ code: 0 });
 	}

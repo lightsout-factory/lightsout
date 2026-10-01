@@ -27,6 +27,28 @@ const setupRun = ({ owner }: SetupParams = {}) => {
 	return { cwd, runId, runDir };
 };
 
+interface SetupWithReportParams {
+	/** Whether the run's folder already holds a report.json saved by an earlier command. */
+	withReport: boolean;
+}
+
+/** A checkout holding one run's folder, optionally with an earlier attempt's saved final report in it. */
+const setupRunWithReport = ({ withReport }: SetupWithReportParams) => {
+	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-run-owner-report-'));
+	const runId = 'run-owner-report-1';
+	const runDir = runDirFor({ cwd, runId });
+
+	mkdirSync(runDir, { recursive: true });
+
+	if (withReport) {
+		const report = { lines: ['', 'Status: passed'], exitCode: 0, finishedAt: '2026-09-28T10:00:00.000Z' };
+
+		writeFileSync(join(runDir, 'report.json'), JSON.stringify(report), 'utf8');
+	}
+
+	return { cwd, runId, runDir };
+};
+
 describe('writeRunOwner', () => {
 	test("records this process's pid and start time and leaves no temporary file", async () => {
 		const { cwd, runId, runDir } = setupRun();
@@ -58,5 +80,20 @@ describe('writeRunOwner', () => {
 
 		expect(written).toStrictEqual({ queueRunId: 'q-1' });
 		expect(onDisk).toStrictEqual({ queueRunId: 'q-1' });
+	});
+
+	test.each([
+		{ withReport: true, queueRunId: undefined },
+		{ withReport: true, queueRunId: 'q-1' },
+		{ withReport: false, queueRunId: undefined },
+	])("removes the run's saved final report so a new attempt never shows an earlier one", async ({ withReport, queueRunId }) => {
+		const { cwd, runId, runDir } = setupRunWithReport({ withReport });
+
+		const written = await writeRunOwner({ cwd, runId, ...(queueRunId === undefined ? {} : { queueRunId }) });
+
+		const readBack = await readRunOwner({ cwd, runId });
+		const files = readdirSync(runDir);
+
+		expect({ files, readBack }).toEqual({ files: ['owner.json'], readBack: written });
 	});
 });

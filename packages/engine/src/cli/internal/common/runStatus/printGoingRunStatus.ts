@@ -2,6 +2,7 @@ import { usage } from '#src/cli/common/constants/usage.ts';
 import { printAmbiguousRuns } from '#src/cli/internal/common/runStatus/printAmbiguousRuns.ts';
 import { printNewestRun } from '#src/cli/internal/common/runStatus/printNewestRun.ts';
 import { printRunFamilyScreen } from '#src/cli/internal/common/runStatus/printRunFamilyScreen.ts';
+import { printRunFinalReport } from '#src/cli/internal/common/runStatus/printRunFinalReport.ts';
 import { resolveWatchTarget } from '#src/cli/internal/common/utils/resolveWatchTarget.ts';
 
 interface Params {
@@ -27,7 +28,11 @@ export const printGoingRunStatus = async ({ cwd, flags }: Params): Promise<numbe
 		printAmbiguousRuns({ roots: going.ambiguous });
 		code = 1;
 	} else if (going === undefined) {
-		await printNewestRun({ cwd });
+		const newest = await printNewestRun({ cwd });
+
+		if (newest !== undefined) {
+			await printRunFinalReport({ cwd, runId: newest });
+		}
 	} else {
 		// The family HEAD the resolver answered, not its root: the loader climbs,
 		// and climbing is where the guard against an unreadable coordinator lives.

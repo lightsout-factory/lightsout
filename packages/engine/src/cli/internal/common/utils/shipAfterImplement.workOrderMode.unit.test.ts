@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { exitAfterImplement } from '#src/cli/internal/common/utils/exitAfterImplement.ts';
+import { shipAfterImplement } from '#src/cli/internal/common/utils/shipAfterImplement.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
@@ -93,24 +93,24 @@ const setupTicketChain = async ({
 	return { config, cwd, result: { ok: true, manifest }, ...captured };
 };
 
-describe('exitAfterImplement ticket mode', () => {
-	test('a passed multiple-plan run whose ship request is not satisfied prints why and exits 0 without shipping', async () => {
-		const { config, cwd, result, logged, exitCodes } = await setupTicketChain({ afterImplement: true });
+describe('shipAfterImplement ticket mode', () => {
+	test('a passed multiple-plan run whose ship request is not satisfied prints why and answers 0 without shipping', async () => {
+		const { config, cwd, result, logged } = await setupTicketChain({ afterImplement: true });
 
-		await expect(exitAfterImplement({ config, cwd, result, shipFlag: false, noShipFlag: false, env: {} })).rejects.toThrow(/process\.exit/);
+		const code = await shipAfterImplement({ config, cwd, result, shipFlag: false, noShipFlag: false, env: {} });
 
 		// `ship.after-implement` is on, and a multiple-plan ticket ignores it: the
 		// human declares the finish line with a ship request, and until one exists
 		// the run says so rather than merging the branch
 		expect(mockRunShip).not.toHaveBeenCalled();
 		expect(logged.some((line) => line.includes(workOrderName) && line.includes('ship request'))).toBe(true);
-		expect(exitCodes).toStrictEqual([0]);
+		expect(code).toBe(0);
 	});
 
 	test('a passed multiple-plan run that satisfies its ship request chains into ship with the ticket guard', async () => {
-		const { config, cwd, result, exitCodes } = await setupTicketChain({ shipRequest: [firstPlan, secondPlan] });
+		const { config, cwd, result } = await setupTicketChain({ shipRequest: [firstPlan, secondPlan] });
 
-		await expect(exitAfterImplement({ config, cwd, result, shipFlag: false, noShipFlag: false, env: {} })).rejects.toThrow(/process\.exit/);
+		const code = await shipAfterImplement({ config, cwd, result, shipFlag: false, noShipFlag: false, env: {} });
 
 		// nobody typed --ship and the config asks for nothing, yet the request made
 		// before this implementation finished is carried out — and the merge is
@@ -121,22 +121,22 @@ describe('exitAfterImplement ticket mode', () => {
 		expect(handed).toEqual(
 			expect.objectContaining({ workOrderGuard: expect.objectContaining({ authorize: expect.any(Function), recordShipped: expect.any(Function) }) }),
 		);
-		expect(exitCodes).toStrictEqual([0]);
+		expect(code).toBe(0);
 	});
 
 	test("a single-plan ticket's passed run chains only as --ship and after-implement say", async () => {
-		const { config, cwd, result, logged, exitCodes } = await setupTicketChain({
+		const { config, cwd, result, logged } = await setupTicketChain({
 			mode: WorkOrderMode.SinglePlan,
 			plans: [planOf({ id: firstPlan })],
 			planId: firstPlan,
 		});
 
-		await expect(exitAfterImplement({ config, cwd, result, shipFlag: false, noShipFlag: false, env: {} })).rejects.toThrow(/process\.exit/);
+		const code = await shipAfterImplement({ config, cwd, result, shipFlag: false, noShipFlag: false, env: {} });
 
 		// nobody asked, so nothing ships — and a single-plan ticket has no ship
 		// request to report, so the run says nothing about one
 		expect(mockRunShip).not.toHaveBeenCalled();
 		expect(logged.filter((line) => line.includes('ship request'))).toStrictEqual([]);
-		expect(exitCodes).toStrictEqual([0]);
+		expect(code).toBe(0);
 	});
 });

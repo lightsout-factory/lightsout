@@ -30,6 +30,8 @@ import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSet
 
 interface Params {
 	cwd: string;
+	/** The id the queue coordinator run is created under, minted by the caller; a fresh one when absent. */
+	runId?: string;
 	settings: QueueSettings;
 	trackerSettings: TrackerSettings;
 	shipSettings: ShipSettings;
@@ -138,6 +140,7 @@ const drainAndShip = async ({
  */
 export const runQueue = async ({
 	cwd,
+	runId,
 	settings,
 	trackerSettings,
 	shipSettings,
@@ -193,11 +196,11 @@ export const runQueue = async ({
 	}
 
 	return withRunLock({
-		params: { cwd, onProgress },
-		run: ({ runId }) =>
+		params: { cwd, runId, onProgress },
+		run: ({ runId: lockedRunId }) =>
 			drainAndShip({
 				cwd,
-				runId,
+				runId: lockedRunId,
 				settings,
 				trackerSettings,
 				shipSettings,

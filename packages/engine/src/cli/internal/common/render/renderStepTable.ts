@@ -24,7 +24,7 @@ const paintCell = ({ text, padded, status }: { text: string; padded: string; sta
 	return padded;
 };
 
-export const printStepTable = ({ steps, activeMs }: Params): void => {
+export const renderStepTable = ({ steps, activeMs }: Params): string[] => {
 	const headers = ['step', 'tries', 'time', 'agents', 'out', 'cost', 'files'];
 	const rows = steps.map((step) => ({
 		status: step.status,
@@ -48,7 +48,8 @@ export const printStepTable = ({ steps, activeMs }: Params): void => {
 		invocations > 0 ? formatCost({ usd: steps.reduce((total, step) => total + step.costUsd, 0) }) : '—',
 		`${steps.reduce((count, step) => count + (step.changedFiles?.length ?? 0), 0)}`,
 	];
-	const lines = renderTable({
+
+	return renderTable({
 		headers,
 		rows: [
 			...rows.map((row) => ({
@@ -58,8 +59,4 @@ export const printStepTable = ({ steps, activeMs }: Params): void => {
 			{ cells: totalCells, emphasis: bold, paintCell: ({ text, padded }: { text: string; padded: string }) => paintCell({ text, padded }) },
 		],
 	});
-
-	for (const line of lines) {
-		console.log(line);
-	}
 };

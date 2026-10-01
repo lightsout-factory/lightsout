@@ -150,6 +150,36 @@ const setupNothingGoing = async () => {
 	return { cwd, expected: ['', ...(await blockOf({ cwd, runId: newestRunId }))] };
 };
 
+/** The lines a command printed when it ended, as report.json keeps them — opening with the report's own blank line. */
+const savedReportLines = ['', 'Run n0000003 passed', 'Steps: 1 of 1 passed'];
+
+/** Drop a saved final report into a run's folder, as the command that ended the run left it. */
+const writeSavedReport = async ({ cwd, runId, pipeline, lines }: { cwd: string; runId: string; pipeline?: string; lines: string[] }) => {
+	await writeFile(
+		join(runDirFor({ cwd, runId, pipeline }), 'report.json'),
+		JSON.stringify({ lines, exitCode: 0, finishedAt: '2026-09-10T09:20:00.000Z' }),
+		'utf8',
+	);
+};
+
+/** A quiet checkout whose newest run has finished and saved its final report. */
+const setupNothingGoingWithSavedReport = async () => {
+	const { cwd, expected } = await setupNothingGoing();
+
+	await writeSavedReport({ cwd, runId: newestRunId, lines: savedReportLines });
+
+	return { cwd, expected: [...expected, ...savedReportLines] };
+};
+
+/** The going family, its coordinator's folder still holding a report.json an earlier command saved. */
+const setupGoingFamilyWithEarlierReport = async () => {
+	const { cwd, expected } = await setupGoingFamily();
+
+	await writeSavedReport({ cwd, runId: coordinatorRunId, pipeline: PipelineKind.Phases, lines: ['', 'an earlier attempt parked'] });
+
+	return { cwd, expected };
+};
+
 /** Two unrelated families going at once — the answer nothing can choose between. */
 const setupAmbiguous = () => setupRuns({ target: { ambiguous: [coordinatorRunId, unrelatedRunId] } });
 
@@ -302,6 +332,29 @@ describe('statusCommand --now', () => {
 		expect(errors).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([0]);
 		expect(mockWatchRunProgress).not.toHaveBeenCalled();
+	});
+
+	test('--now falling back to a finished newest run prints its saved final report too', async () => {
+		const { cwd, expected } = await setupNothingGoingWithSavedReport();
+
+		const { logged, errors, exitCodes } = await runStatus({ cwd, args: { now: true } });
+
+		// the newest run's block, then the saved lines exactly as saved, nothing added between or after
+		expect(logged).toStrictEqual(expected);
+		expect(errors).toStrictEqual([]);
+		expect(exitCodes).toStrictEqual([0]);
+	});
+
+	test('--now on a going run prints no saved report', async () => {
+		const { cwd, expected } = await setupGoingFamilyWithEarlierReport();
+
+		const { logged, errors, exitCodes } = await runStatus({ cwd, args: { now: true } });
+
+		// the family screen alone: an earlier command's report never counts for a run that is going again
+		expect(logged).toStrictEqual(expected);
+		expect(logged.includes('an earlier attempt parked')).toBe(false);
+		expect(errors).toStrictEqual([]);
+		expect(exitCodes).toStrictEqual([0]);
 	});
 
 	test('--now in a repo with no runs says so and exits 0', async () => {

@@ -1,7 +1,8 @@
-import { rename } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import { readProcessStartTime } from '#src/common/processes/readProcessStartTime.ts';
 import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
 import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
+import { getRunFinalReportPath } from '#src/runState/finalReport/getRunFinalReportPath.ts';
 import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
 
 interface Params {
@@ -17,9 +18,13 @@ let ownStartTime: Promise<string | undefined> | undefined;
 
 /**
  * Replaces the run's owner record with this process, or with the pointer form
- * when handed a queue run id. Atomic (tmp file + rename): other processes read
+ * when handed a queue run id. Written atomically: other processes read
  * the record while a resume replaces it, and a torn read would look like no
  * owner at all.
+ *
+ * Only root runs get an owner, and every new attempt writes one, so the run's
+ * saved final report goes first: a saved report is only ever the one from the
+ * attempt that last ended the run.
  */
 export const writeRunOwner = async ({ cwd, runId, queueRunId }: Params): Promise<RunOwner> => {
 	let owner: RunOwner;
@@ -37,11 +42,9 @@ export const writeRunOwner = async ({ cwd, runId, queueRunId }: Params): Promise
 		owner = { queueRunId };
 	}
 
-	const ownerPath = await getRunOwnerPath({ cwd, runId });
-	const tmpPath = `${ownerPath}.tmp`;
+	await rm(await getRunFinalReportPath({ cwd, runId }), { force: true });
 
-	await writeJsonFile({ path: tmpPath, value: owner });
-	await rename(tmpPath, ownerPath);
+	await writeJsonFile({ path: await getRunOwnerPath({ cwd, runId }), value: owner, atomic: true });
 
 	return owner;
 };

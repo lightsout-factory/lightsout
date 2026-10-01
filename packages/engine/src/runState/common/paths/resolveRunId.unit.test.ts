@@ -42,7 +42,7 @@ describe('resolveRunId', () => {
 	test('expands the shortened run id a report prints into the full one', async () => {
 		const { cwd } = setupRunsDir({ runIds: ['be7bc314-1845-44c0-bb6c-a8c2becb7f92'] });
 
-		// the eight characters printResult shows are what a user copies back
+		// the eight characters renderResult shows are what a user copies back
 		const runId = await resolveRunId({ cwd, runId: 'be7bc314' });
 
 		expect(runId).toBe('be7bc314-1845-44c0-bb6c-a8c2becb7f92');

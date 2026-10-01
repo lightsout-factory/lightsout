@@ -215,6 +215,22 @@ describe('queueCommand', () => {
 		expect(exitCodes).toStrictEqual([1]);
 	});
 
+	test('mints the queue run id itself and hands it to the drain', async () => {
+		const { context } = setupQueueCommand({});
+
+		await expect(queueCommand(context)).rejects.toThrow(/process\.exit/);
+		await expect(queueCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const runIds = mockRunQueue.mock.calls.map(([params]) => params.runId);
+		const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+		expect({ allUuids: runIds.every((runId) => uuid.test(runId ?? '')), count: runIds.length, distinct: new Set(runIds).size }).toStrictEqual({
+			allUuids: true,
+			count: 2,
+			distinct: 2,
+		});
+	});
+
 	test('closes the terminal on the way out, so a finished drain never leaves it half-open', async () => {
 		const { context } = setupQueueCommand({});
 

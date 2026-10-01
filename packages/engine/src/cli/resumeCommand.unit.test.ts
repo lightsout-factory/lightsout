@@ -160,6 +160,37 @@ const setupPhaseChildResume = () => {
 	return { ...seeded, readBoth, manifestsBefore: readBoth() };
 };
 
+/**
+ * An implement run every remaining step of which is already recorded passed, so
+ * the resume re-enters, spawns no harness and reaches a pass. --skip-refactor
+ * drops the refactor trio; the changed file stands for work already in history.
+ * The guard is answered `undefined`, and nothing asks for a ship, so the run's
+ * own report is the last thing the command prints.
+ */
+const setupPassingResume = () => {
+	mockRequireImplementLifecycle.mockResolvedValue(undefined);
+
+	const seeded = setupResume({
+		args: ['--run', runId, '--skip-refactor'],
+		manifest: manifestOf({
+			pipeline: 'implement',
+			plan: 'plan.md',
+			changedFiles: ['src/index.js'],
+			steps: ['clean-slate', 'implement', 'format-implement', 'verify-implement', 'write-tests', 'format-tests', 'verify-tests'].map((id) => ({
+				id,
+				status: RunStatus.Passed,
+				attempts: 1,
+			})),
+		}),
+	});
+
+	/** The run's saved final report as it stands on disk after the command ran. */
+	const readFinalReport = (): { lines: string[]; exitCode: number; finishedAt: string } =>
+		JSON.parse(readFileSync(join(runDirFor({ cwd: seeded.cwd, runId }), 'report.json'), 'utf8'));
+
+	return { ...seeded, readFinalReport };
+};
+
 describe('resumeCommand', () => {
 	test('without --run it prints the usage text on stderr and exits 1 before reading any run', async () => {
 		const { context, logged, errors, exitCodes } = setupResume({ args: ['--skip-refactor'] });
@@ -518,5 +549,20 @@ describe('resumeCommand', () => {
 		expect(manifestsAfter).toStrictEqual(manifestsBefore);
 		expect(logged).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test("a resumed run saves its final report in the run's folder", async () => {
+		const { context, logged, exitCodes, readFinalReport } = setupPassingResume();
+
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const report = readFinalReport();
+
+		// the saved lines are the report card exactly as printed — nothing follows
+		// it on a run that will not ship, so it is the tail of what was logged
+		expect(report.lines).toContain('run       run-resu · PASSED');
+		expect(logged.slice(-report.lines.length)).toStrictEqual(report.lines);
+		expect(report.exitCode).toBe(0);
+		expect(exitCodes).toStrictEqual([0]);
 	});
 });

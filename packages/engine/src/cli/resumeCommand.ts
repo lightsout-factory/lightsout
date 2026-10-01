@@ -4,13 +4,12 @@ import { usage } from '#src/cli/common/constants/usage.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { continueDirectRun } from '#src/cli/internal/common/implementRun/continueDirectRun.ts';
+import { finishImplementRun } from '#src/cli/internal/common/implementRun/finishImplementRun.ts';
 import { readResumeClearance } from '#src/cli/internal/common/implementRun/readResumeClearance.ts';
 import { reportWorkOrderPlanOutcome } from '#src/cli/internal/common/implementRun/reportWorkOrderPlanOutcome.ts';
 import { resolveRunCwd } from '#src/cli/internal/common/implementRun/resolveRunCwd.ts';
-import { printResult } from '#src/cli/internal/common/render/printResult.ts';
 import { printRunHeader } from '#src/cli/internal/common/render/printRunHeader.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
-import { exitAfterImplement } from '#src/cli/internal/common/utils/exitAfterImplement.ts';
 import { resolveCommandHarness } from '#src/cli/internal/common/utils/resolveCommandHarness.ts';
 import { runPhasesOrFailFast } from '#src/cli/internal/common/utils/runPhasesOrFailFast.ts';
 import { runPipelineOrFailFast } from '#src/cli/internal/common/utils/runPipelineOrFailFast.ts';
@@ -216,13 +215,5 @@ export const resumeCommand = async ({ flags, cwd }: CommandContext): Promise<voi
 		return exitCli({ code: 1 });
 	}
 
-	await printResult({ result, cwd });
-	return exitAfterImplement({
-		config: loaded,
-		cwd: workspace,
-		result,
-		shipFlag: flags.get('ship') === true,
-		noShipFlag: flags.get('no-ship') === true,
-		env: process.env,
-	});
+	return finishImplementRun({ config: loaded, cwd: workspace, result, flags });
 };
