@@ -17,6 +17,13 @@ export const resumeCatalogEntry: CommandCatalogEntry = {
 		{ name: 'skip-refactor', meaning: 'Skip the refactor step at the end of the run.', required: false },
 		{ name: 'ship', meaning: 'Ship the branch after the resumed run passes: open or adopt the PR, wait for checks, merge, clean up.', required: false },
 		{ name: 'no-ship', meaning: 'End on the run result even when the config’s `ship.after-implement` asks to chain into ship.', required: false },
+		{
+			name: 'detach',
+			meaning:
+				'Pick the run back up in a background engine process that outlives this terminal or session. The command returns once the run has resumed; the engine’s output goes to the run’s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout).',
+			fallback: 'The run is resumed in the foreground, printing as it goes, and Ctrl-C stops it.',
+			required: false,
+		},
 	],
 	steps: [],
 	records: CommandRecordKind.Runs,

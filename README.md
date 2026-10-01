@@ -335,6 +335,16 @@ ship request a human asked for, and otherwise prints the one sentence saying wha
 it is still waiting for and exits on the run's own result. A single-plan ticket,
 and a branch no work order claims, chain exactly as they always have.
 
+`lightsout implement --detach` runs the build in a background engine process
+that outlives the terminal or chat session that started it. The command prints
+the run id and where the engine's output is kept — a launch log at
+`.lightsout/launches/<id>.log` in the primary checkout — as soon as the engine
+is spawned, then returns once the run has started. A run the engine refuses to
+start is never reported as started: the refusal is relayed from the launch log
+and the command exits with the engine's own code. Without `--detach`, the run
+stays in the foreground, printing as it goes, and Ctrl-C stops it. `--detach`
+needs macOS or Linux.
+
 [![How /implement turns the spec into verified code](assets/implement-workflow-light.svg)](assets/implement-workflow-light.svg)
 
 ```text
@@ -375,7 +385,7 @@ A running or pending run with no live process behind it is drawn with its runnin
 
 Every one of these views is reachable from a session as well as a terminal: the `status` skill forwards whatever you ask for to the same command and posts what it printed.
 
-`lightsout resume --run <id>` picks a parked run back up in the workspace that run recorded, so a run built in its own worktree carries on in that worktree rather than in the checkout you happen to be standing in. Direct runs built from a ticket resume here too, from the ticket frozen beside the run: a run that already passed its gates goes straight to the commit and the ship rather than building the ticket again. If the recorded workspace has been removed, resume says so and stops.
+`lightsout resume --run <id>` picks a parked run back up in the workspace that run recorded, so a run built in its own worktree carries on in that worktree rather than in the checkout you happen to be standing in. Direct runs built from a ticket resume here too, from the ticket frozen beside the run: a run that already passed its gates goes straight to the commit and the ship rather than building the ticket again. If the recorded workspace has been removed, resume says so and stops. `lightsout resume --detach --run <id>` resumes the run in a background engine process instead: it prints the run id and the launch log the engine's output is appended to, returns once the run has resumed, and relays the engine's refusal and exit code when it does not.
 
 ### lightsout stop
 
@@ -583,6 +593,14 @@ The planning-status label is how a human opts a ticket in, and the pair names th
 Each ticket gets a fresh worktree cut from the default branch, the config's `setup` command, and a harness run, with up to `max-parallel` tickets in flight at once — a budget the merge lane shares. The queue moves a ticket to In Progress before its worker touches source and to Done once a merge is confirmed, and it reconciles a ticket whose branch already merged rather than building it again. A ticket blocked by another ticket that is not finished is not picked up: it is left behind with the blocker named. Building and merging run at the same time: a finished branch is merged as soon as a slot is free, rather than waiting for unrelated builds it has nothing to do with. Merges are still taken one at a time, and the shared ship sequence is what brings the tip of the default branch into each branch and re-runs the gates before it goes in — the same preparation every shipping path gets. Every merge re-reads the tracker so the tickets it just unblocked join the run already in flight — a chain of dependent tickets ships in order, in one run. It stops when a re-read finds nothing new.
 
 When a worker hits a question only a human can answer, the queue relays it: to your terminal by default, or — with `--file-relay` — to a mailbox the `queue` skill watches from a Claude Code or Codex session, so you can keep working and answer when asked. A question nobody answers parks its ticket after `question-timeout`; a later run picks parked work back up, worktree and all. A worktree whose ticket a human already closed is never resumed: if its branch merged, the ticket is reconciled to Done, and if it did not, the worktree is reported and left in place because it may hold work nobody has merged. The queue writes down where each branch stands — still being built, finished and waiting to merge, left open, or already merged — so a later run picks the work back up as what it actually is, and never rebuilds a branch that is already finished or merges one twice.
+
+`lightsout queue --detach` drains in a background engine process that outlives
+the terminal or chat session that started it. It implies `--file-relay`, on the
+default mailbox unless a directory is given, because nobody is at a terminal to
+answer. The command prints the queue run's id and the launch log the engine's
+output goes to, and once the queue run has started it also names the engine pid
+and the relay mailbox, then returns. A queue that refuses to start relays its
+refusal and exit code instead.
 
 A ticket that owns several plans has the plans that are ready to implement built one at a time, lowest number first, each committed as its own commit — so a later plan is built on what the plans before it left, and any one plan's implementation can be taken out again by its own commit. A lower plan somebody is still planning holds the plans after it back. A plan whose implementation failed, or whose implementation has not finished, parks the ticket naming that plan, `lightsout resume` to finish it and `lightsout work-order exclude-plan` to take it out of the order — the queue repairs neither itself.
 

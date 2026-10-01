@@ -1,10 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
+import { usage } from '#src/cli/common/constants/usage.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { pausedExitCode } from '#src/cli/internal/common/constants/pausedExitCode.ts';
 import { QueueBoardState } from '#src/cli/internal/common/constants/QueueBoardState.ts';
 import { unusableTicketPatternMessage } from '#src/cli/internal/common/constants/unusableTicketPatternMessage.ts';
+import { launchDetached } from '#src/cli/internal/common/detach/launchDetached.ts';
+import { readLaunchRunId } from '#src/cli/internal/common/detach/readLaunchRunId.ts';
 import { renderQueueBoard } from '#src/cli/internal/common/queueBoard/renderQueueBoard.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { resolveEffectiveConfigAndDriver } from '#src/cli/internal/common/utils/resolveEffectiveConfigAndDriver.ts';
@@ -127,7 +130,11 @@ const finishDrain = async ({ cwd, runId, report }: { cwd: string; runId: string;
 };
 
 // `parseFlags` hands back `true` for a bare `--file-relay`, which means the
-// default mailbox.
+// default mailbox. One resolution for the drain and for a detached launch's
+// parent, so the parent names exactly the directory its child empties and watches.
+const resolveRelayMailbox = ({ requested, cwd }: { requested: string | true | undefined; cwd: string }) =>
+	requested === true || requested === undefined ? resolve(cwd, '.lightsout', 'queue', 'relay') : resolve(cwd, requested);
+
 const buildRelay = async ({
 	requested,
 	settings,
@@ -143,7 +150,7 @@ const buildRelay = async ({
 		return new TerminalQuestionRelay({ settings, trackerSettings, input: process.stdin, output: process.stdout });
 	}
 
-	const directory = requested === true ? resolve(cwd, '.lightsout', 'queue', 'relay') : resolve(cwd, requested);
+	const directory = resolveRelayMailbox({ requested, cwd });
 
 	await emptyRelayMailbox({ directory });
 	// Printed because the default is only useful if the reader can see where it
@@ -153,9 +160,33 @@ const buildRelay = async ({
 	return new FileQuestionRelay({ settings, trackerSettings, directory, output: process.stdout });
 };
 
+/**
+ * A detached queue implies the file relay: nobody is at a terminal to answer.
+ * The parent never empties the mailbox, never runs the live-relay pre-check and
+ * never sets `LIGHTSOUT_NO_SHIP` — all of that is the child's.
+ */
+const launchDetachedQueue = async ({ flags, rest, cwd }: CommandContext) => {
+	if (flags.get('detach') !== true) {
+		console.error(usage);
+		return exitCli({ code: 1 });
+	}
+
+	const args = flags.has('file-relay') ? rest : [...rest, '--file-relay'];
+	const relayMailbox = resolveRelayMailbox({ requested: flags.get('file-relay'), cwd });
+
+	return exitCli({ code: await launchDetached({ cwd, command: 'queue', args, runId: randomUUID(), relayMailbox }) });
+};
+
 // The workers are implement work, so they resolve the config's `implement`
 // harness entry rather than a `queue` key of their own.
-export const queueCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
+export const queueCommand = async ({ flags, rest, cwd }: CommandContext): Promise<void> => {
+	// First, so no worker or harness inherits an id meant for this process alone.
+	const launchedRunId = readLaunchRunId({ env: process.env });
+
+	if (flags.has('detach')) {
+		return launchDetachedQueue({ flags, rest, cwd });
+	}
+
 	const loaded = await readConfig({ cwd });
 	const startup = resolveQueueStartup({ config: loaded, env: process.env });
 
@@ -188,11 +219,14 @@ export const queueCommand = async ({ flags, cwd }: CommandContext): Promise<void
 	// `runShip` directly and never reads this.
 	process.env.LIGHTSOUT_NO_SHIP = '1';
 
-	const runId = randomUUID();
+	const runId = launchedRunId ?? randomUUID();
 	const relay: QuestionRelay = await buildRelay({ requested, settings, trackerSettings, cwd });
 	const report = await runQueue({
 		cwd,
 		runId,
+		// A detached child always records its run, so its parent's handshake and
+		// the saved summary have a run to find even when there is nothing to drain.
+		recordEmptyDrain: launchedRunId !== undefined,
 		settings,
 		trackerSettings,
 		shipSettings,

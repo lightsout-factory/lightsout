@@ -57,6 +57,13 @@ export const implementCatalogEntry: CommandCatalogEntry = {
 		{ name: 'no-worktree', meaning: 'Build in the checkout this was launched from rather than a worktree of its own.', required: false },
 		{ name: 'ship', meaning: 'Ship the branch after the run passes: open or adopt the PR, wait for checks, merge, clean up.', required: false },
 		{ name: 'no-ship', meaning: 'End on the run result even when the config’s `ship.after-implement` asks to chain into ship.', required: false },
+		{
+			name: 'detach',
+			meaning:
+				'Run in a background engine process that outlives this terminal or session. The command returns once the run has started and prints its id; the engine’s output goes to the run’s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout).',
+			fallback: 'The run happens in the foreground, printing as it goes, and Ctrl-C stops it.',
+			required: false,
+		},
 	],
 	steps: implementSteps,
 	records: CommandRecordKind.Runs,
