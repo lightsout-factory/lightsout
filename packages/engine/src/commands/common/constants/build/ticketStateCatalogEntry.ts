@@ -32,5 +32,5 @@ export const ticketStateCatalogEntry: CommandCatalogEntry = {
 	],
 	steps: [],
 	records: CommandRecordKind.Nothing,
-	related: ['auto-plan', 'brainstorm', 'plan', 'implement', 'implement-direct', 'resume', 'ship', 'queue', 'work-order', 'self-check'],
+	related: ['auto-plan', 'brainstorm', 'plan', 'implement', 'implement-direct', 'resume', 'stop', 'ship', 'queue', 'work-order', 'self-check'],
 };

@@ -375,6 +375,34 @@ Every one of these views is reachable from a session as well as a terminal: the 
 
 `lightsout resume --run <id>` picks a parked run back up in the workspace that run recorded, so a run built in its own worktree carries on in that worktree rather than in the checkout you happen to be standing in. Direct runs built from a ticket resume here too, from the ticket frozen beside the run: a run that already passed its gates goes straight to the commit and the ship rather than building the ticket again. If the recorded workspace has been removed, resume says so and stops.
 
+### lightsout stop
+
+Stop the engine process behind a detached or unreachable run, from any terminal
+or session. It takes any run id of the family — a phased plan's coordinator or
+one of its phases — full or shortened, and stops the process recorded for the
+whole family.
+
+The engine is asked to shut down first, which stops its own agents and gates.
+If it is still running after ten seconds it is killed outright: the command
+then prints no resume command, warns that the run's agent process groups may
+remain, tells you to make sure no agent is still working in the run's worktree
+before you resume it, and exits 1. A process whose start time no longer matches
+the one recorded for the run is some other process that reused the pid, so it
+is left alone and reported, with exit 1. A queue worker's run lives inside the
+queue's process, so it is refused, and the message names the queue run to stop
+instead. A run with nothing running behind it is reported as not running, with
+exit 0.
+
+The run's record is never changed, so the run stays resumable, and a clean stop
+prints the command that resumes it. A run started before owner records existed
+is stopped through the run lock when the lock names that run, and only while the
+run is still going. `lightsout stop` needs a POSIX system (macOS or Linux); on
+Windows it refuses with exit 1.
+
+```text
+lightsout stop --run <id>
+```
+
 ### lightsout report
 
 Answer where a plan's hours and money went. `lightsout report` reads the

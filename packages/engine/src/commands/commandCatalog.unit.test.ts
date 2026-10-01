@@ -15,7 +15,7 @@ describe('commandCatalog', () => {
 		const rejected = commandCatalog.filter((entry) => !CommandCatalogEntry.safeParse(entry).success).map((entry) => entry.id);
 
 		expect(rejected).toStrictEqual([]);
-		expect(ids).toHaveLength(22);
+		expect(ids).toHaveLength(23);
 	});
 
 	test('ids are unique — two entries answering to one word would make the route ambiguous', () => {
@@ -47,6 +47,7 @@ describe('commandCatalog', () => {
 				'standards-health',
 				'standards-validate',
 				'status',
+				'stop',
 				'test-coverage-to-threshold',
 				'work-order',
 				'ticket-state',
@@ -186,6 +187,7 @@ describe('commandCatalog', () => {
 			['build', 'implement'],
 			['build', 'implement-direct'],
 			['build', 'resume'],
+			['build', 'stop'],
 			['build', 'ship'],
 			['build', 'queue'],
 			['build', 'work-order'],
@@ -225,6 +227,7 @@ describe('commandCatalog', () => {
 			['implement', 'runs'],
 			['implement-direct', 'runs'],
 			['resume', 'runs'],
+			['stop', 'nothing'],
 			['ship', 'nothing'],
 			['queue', 'runs'],
 			['work-order', 'plans'],
@@ -404,7 +407,7 @@ describe('commandCatalog', () => {
 		expect(stale).toStrictEqual([]);
 		expect(droppedTracker).toStrictEqual([]);
 		expect(naming.map((entry) => entry.id).sort()).toStrictEqual(
-			['auto-plan', 'brainstorm', 'plan', 'implement', 'implement-direct', 'resume', 'ship', 'queue', 'ticket-state', 'self-check'].sort(),
+			['auto-plan', 'brainstorm', 'plan', 'implement', 'implement-direct', 'resume', 'stop', 'ship', 'queue', 'ticket-state', 'self-check'].sort(),
 		);
 	});
 });

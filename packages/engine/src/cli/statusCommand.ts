@@ -9,13 +9,12 @@ import { printRunProgress } from '#src/cli/internal/common/render/printRunProgre
 import { printAmbiguousRuns } from '#src/cli/internal/common/runStatus/printAmbiguousRuns.ts';
 import { printGoingRunStatus } from '#src/cli/internal/common/runStatus/printGoingRunStatus.ts';
 import { printNewestRun } from '#src/cli/internal/common/runStatus/printNewestRun.ts';
+import { resolveTypedRunId } from '#src/cli/internal/common/utils/resolveTypedRunId.ts';
 import { resolveWatchTarget } from '#src/cli/internal/common/utils/resolveWatchTarget.ts';
 import { watchRunProgress } from '#src/cli/internal/common/utils/watchRunProgress.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { resolveRunId } from '#src/runState/common/paths/resolveRunId.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
-import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 import { readRunLiveness } from '#src/runState/readRunLiveness.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 
@@ -82,17 +81,6 @@ const printShippingStatus = async ({ cwd, flags }: { cwd: string; flags: Map<str
 
 	return exitCli({ code: 0 });
 };
-
-// An unknown run id the user typed is a message, never a stack trace.
-const resolveTypedRunId = ({ cwd, runId }: { cwd: string; runId: string }) =>
-	resolveRunId({ cwd, runId }).catch((error: unknown) => {
-		if (error instanceof RunNotFoundError) {
-			console.error(error.message);
-			return exitCli({ code: 1 });
-		}
-
-		throw error;
-	});
 
 const printQueueForm = async ({ cwd, flags }: { cwd: string; flags: Map<string, string | true> }) => {
 	const valued = flags.get('queue') !== true || (flags.has('wait') && flags.get('wait') !== true);

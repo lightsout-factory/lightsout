@@ -23,5 +23,5 @@ export const queueCatalogEntry: CommandCatalogEntry = {
 	],
 	steps: [],
 	records: CommandRecordKind.Runs,
-	related: ['auto-plan', 'brainstorm', 'plan', 'implement', 'implement-direct', 'resume', 'ship', 'work-order', 'ticket-state', 'self-check'],
+	related: ['auto-plan', 'brainstorm', 'plan', 'implement', 'implement-direct', 'resume', 'stop', 'ship', 'work-order', 'ticket-state', 'self-check'],
 };

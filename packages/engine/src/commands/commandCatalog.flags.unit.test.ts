@@ -20,6 +20,7 @@ describe('commandCatalog flags', () => {
 			['implement', ['cwd', 'no-ship', 'no-worktree', 'overview', 'packages', 'plan', 'ship', 'skip-refactor', 'start-phase', 'worktree']],
 			['implement-direct', ['cwd', 'no-ship', 'no-worktree', 'ref', 'ship', 'ticket', 'worktree']],
 			['resume', ['cwd', 'no-ship', 'run', 'ship', 'skip-refactor']],
+			['stop', ['cwd', 'run']],
 			['ship', ['cwd']],
 			['queue', ['cwd', 'file-relay']],
 			['work-order', ['approve', 'cwd', 'implementation-removed', 'keep', 'name', 'plan', 'plans', 'reason', 'set', 'slug', 'ticket', 'title', 'withdraw']],
