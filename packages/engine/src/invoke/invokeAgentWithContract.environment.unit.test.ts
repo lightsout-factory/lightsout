@@ -72,3 +72,50 @@ describe('invokeAgentWithContract: the requested agent environment', () => {
 		]);
 	});
 });
+
+/**
+ * A driver that fails the contract once and then answers it, recording the
+ * foreground-commands request and the prompt of every rung it was handed.
+ */
+const setupForegroundCommandsRelay = () => {
+	const requests: (boolean | undefined)[] = [];
+	const prompts: string[] = [];
+
+	const driver: Driver = {
+		name: 'stub',
+		invoke: async ({ prompt, foregroundCommandsOnly }: DriverInvocation) => {
+			prompts.push(prompt);
+			requests.push(foregroundCommandsOnly);
+
+			return prompts.length === 1 ? { text: objectBearingRejection, exitCode: 0 } : { text: report({ summary: 'answered on the re-emit rung' }), exitCode: 0 };
+		},
+	};
+
+	const isReemit = (prompt: string) => prompt.includes('# Validation error');
+
+	return { driver, requests, prompts, isReemit };
+};
+
+describe('invokeAgentWithContract: the foreground-commands request', () => {
+	test('carries the foreground-commands request onto the re-emit rung', async () => {
+		const { driver, requests, prompts, isReemit } = setupForegroundCommandsRelay();
+
+		const { ok, report: parsed } = outcomeFields(
+			await invokeAgentWithContract({
+				driver,
+				cwd: '.',
+				invocation: roleInvocation,
+				contract: WorkReport,
+				foregroundCommandsOnly: true,
+			}),
+		);
+
+		expect(ok).toBe(true);
+		expect(parsed?.summary).toBe('answered on the re-emit rung');
+		// the role rung, then its cheap re-emit
+		expect(prompts.map(isReemit)).toStrictEqual([false, true]);
+		// a re-emit spawned without the request could leave a command running
+		// past its turn — the retry runs against the same harness as the role
+		expect(requests).toStrictEqual([true, true]);
+	});
+});

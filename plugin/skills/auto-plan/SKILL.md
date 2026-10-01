@@ -171,6 +171,12 @@ is written to the ticket.
 
 ## Steps
 
+Each `lightsout …` command this skill runs runs in the foreground to its exit
+before its output is acted on. Headless under `lightsout queue`, it must also
+have exited before the turn ends, because the harness kills whatever is still
+running then. The one command this skill backgrounds is the interactive
+`implement` hand-off at the end, which never runs under the queue.
+
 **0. Read the config.** Read `lightsout.config.json` at the repo root and take
 its `auto-plan` block. A missing file, a missing block or a missing key all
 mean `false`. State the three resolved values back in one line before doing
@@ -306,6 +312,9 @@ flag made after approval.
 ```sh
 node "<plugin-root>/dist/cli.mjs" plan draft --name <name>
 ```
+
+A draft can take many minutes. It is still run in the foreground and waited on
+to its exit — never backgrounded.
 
 Pass `--scope single|phased` only to override the engine's estimate. On a facts
 error, correct facts.json, re-run verify-facts and re-draft. On remaining
@@ -554,6 +563,8 @@ parking above does not apply. Instead:
 - report `terminated:ambiguity` as the final JSON, with the question as the
   first entry of `failures`, and stop there — nothing is written to the ticket
   from inside the session.
+- never end the turn while an engine command is still running; a command that
+  could not be waited on to its exit is reported as a failure naming the step.
 
 The engine relays the question to the terminal that started the queue, writes
 the answer to the run's decisions file and to the ticket's `## Decisions`

@@ -16,8 +16,9 @@ interface Params {
 
 /**
  * The prompt sends the session to the auto-plan skill and constrains only what
- * the queue owns: which plan is planned, no interactive questions, one report as
- * the final message, and never a ship or an implement, because the queue runs
+ * the queue owns: which plan is planned, no interactive questions, every engine
+ * subcommand run in the foreground to its exit before the turn ends, one report
+ * as the final message, and never a ship or an implement, because the queue runs
  * the build itself. The plan address is stated because the engine chose it and
  * looks under exactly that folder afterwards. `engineCli` appears verbatim
  * because it is also the granted command prefix; an instruction the grant does
@@ -33,7 +34,7 @@ export const buildQueueAutoPlanInvocation = ({
 }: Params): { systemPrompt: string; prompt: string } => {
 	const systemPrompt = [queueAutoPlanPrompt, `# Ticket ${ticketRef}: ${ticketTitle}\n\n${ticketBody}`].join('\n\n---\n\n');
 	const sections = [
-		`# The engine invocation\n\nRun every engine subcommand as:\n\n\`${engineCli} <subcommand>\`\n\nNothing else is granted to this session.`,
+		`# The engine invocation\n\nRun every engine subcommand as:\n\n\`${engineCli} <subcommand>\`\n\nRun each subcommand in the foreground and wait for it to exit before acting on its output or ending the turn.\n\nNothing else is granted to this session.`,
 		`# The plan you are planning\n\nPlan exactly this plan and no other:\n\n\`${planAddress}\`\n\nThat is its address, and \`${planWorkspacePath({ name: planAddress })}\` is the folder in this worktree it names. Pass the address as \`--name\` to every \`plan\` and \`brainstorm\` subcommand, and leave the plan's files in exactly that folder.\n\nThe engine has already added this plan to the ticket's record, so never run \`work-order add-plan\` or any other \`work-order\` subcommand.`,
 	];
 

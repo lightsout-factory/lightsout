@@ -97,6 +97,23 @@ test('createClaudeCodeDriver: a focused environment reaches the spawned process 
 	]);
 });
 
+test('createClaudeCodeDriver: a foreground-commands request reaches the spawned harness as a settings env block', async () => {
+	const { driver, cwd, readArgv } = await setupClaude();
+
+	await driver.invoke({ prompt: 'TASK', cwd, foregroundCommandsOnly: true, timeoutMs: 14400000 });
+
+	// The request and the invocation's own timeout travel together: a driver
+	// that dropped either while destructuring the invocation loses the pair or
+	// the two Bash ceilings.
+	const argv = await readArgv();
+	const settingsIndex = argv.indexOf('--settings');
+	const settings: unknown = settingsIndex === -1 ? undefined : JSON.parse(argv[settingsIndex + 1]);
+
+	expect(settings).toStrictEqual({
+		env: { CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: '1', BASH_DEFAULT_TIMEOUT_MS: '14400000', BASH_MAX_TIMEOUT_MS: '14400000' },
+	});
+});
+
 test('createClaudeCodeDriver: the system prompt reaches the harness as a file, not as argv', async () => {
 	const { driver, cwd, readSystemPromptCopy } = await setupClaude();
 

@@ -29,6 +29,19 @@ cannot find it, do NOT improvise a planning process: report `failed` with a
 failure saying the lightsout plugin's skills are not available to spawned
 sessions, so the ticket parks with a message a human can act on.
 
+## Every engine command runs to its exit
+
+This is a hard rule. Run every engine subcommand in the foreground and wait
+until it exits — before you act on its output, and before your turn ends.
+`plan draft` is the long one: it may run for many minutes, and it is still run
+in the foreground and waited on.
+
+Never background an engine command. Never end the turn while an engine command
+is still running. The harness kills anything still running when your turn ends,
+and the engine checks the plan's planning record afterwards and parks a session
+that left a step running. A command you could not wait on to its exit is a
+worker failure: report `failed` with the step named.
+
 ## The worktree may already hold your earlier work
 
 Inspect it before assuming it is fresh. A previous invocation of you may have
@@ -82,5 +95,6 @@ message starts with `{` and ends with `}`.
 ```
 
 Report `complete` only when the plan was written, graded and
-published to the ticket. Never claim work you did not do — the engine diffs the
+published to the ticket, and every engine command the session started has
+exited. Never claim work you did not do — the engine diffs the
 tree, and a false report is worse than a failed one.

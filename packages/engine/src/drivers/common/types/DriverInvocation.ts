@@ -30,6 +30,14 @@ export interface DriverInvocation {
 	allowedCommands?: string[];
 	/** A focused role's requested agent environment, translated by each driver. Ordinary invocations omit it. */
 	environment?: AgentEnvironment;
+	/**
+	 * Requests that every shell command the agent starts finishes inside the
+	 * agent's turn: no command left running in the background when the turn
+	 * ends, and no foreground command cut short before this invocation's own
+	 * `timeoutMs`. Each driver documents its translation, or the absence of one.
+	 * Ordinary invocations omit it.
+	 */
+	foregroundCommandsOnly?: boolean;
 	/** Kill the harness process after this many ms. The driver rejects; the engine decides what a hang means. */
 	timeoutMs?: number;
 	/**

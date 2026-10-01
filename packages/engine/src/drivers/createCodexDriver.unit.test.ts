@@ -87,6 +87,19 @@ test('createCodexDriver: an invocation carrying none of them spawns a sandboxed 
 	expect(argv.slice(6)).toStrictEqual(['--sandbox', 'workspace-write', '-c', 'approval_policy="never"']);
 });
 
+test('createCodexDriver: a foreground-commands request is ignored rather than refused, leaving the spawned flags unchanged', async () => {
+	const { driver, cwd, readArgv } = await setupCodex();
+
+	const result = await driver.invoke({ prompt: 'TASK', cwd, timeoutMs: 14_400_000, foregroundCommandsOnly: true });
+
+	const argv = await readArgv();
+
+	expect({ result, flags: argv.slice(6) }).toStrictEqual({
+		result: { text: 'FINAL-MESSAGE', exitCode: 0, rateLimited: false },
+		flags: ['--sandbox', 'workspace-write', '-c', 'approval_policy="never"'],
+	});
+});
+
 test('createCodexDriver: codex has no system-prompt channel, so role instructions ride at the top of stdin', async () => {
 	const { driver, cwd, readStdin } = await setupCodex();
 

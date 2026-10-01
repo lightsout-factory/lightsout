@@ -87,6 +87,28 @@ describe('buildQueueAutoPlanInvocation', () => {
 		expect(systemPrompt).not.toContain('the plan was implemented and its run passed');
 	});
 
+	test('forbids ending the turn while an engine command it started is still running', () => {
+		const { systemPrompt } = buildQueueAutoPlanInvocation(base);
+
+		const flattened = systemPrompt.replace(/\s+/g, ' ');
+
+		expect(flattened).toMatch(/[Nn]ever background an engine command/);
+		expect(flattened).toMatch(/[Nn]ever end the turn while [^.]*still running/);
+		expect(flattened).toContain('plan draft');
+	});
+
+	test('tells the session beside the granted command to wait for every subcommand to exit', () => {
+		const { prompt } = buildQueueAutoPlanInvocation(base);
+
+		const headings = prompt.split('\n\n').filter((section) => section.startsWith('# '));
+		const invocationSection = prompt.slice(prompt.indexOf('# The engine invocation'), prompt.indexOf('# The plan you are planning')).replace(/\s+/g, ' ');
+
+		expect(headings[0]).toBe('# The engine invocation');
+		expect(invocationSection).toContain('`node /plugin/dist/cli.mjs <subcommand>`');
+		expect(invocationSection).toMatch(/foreground/i);
+		expect(invocationSection).toMatch(/wait[^.]*exit/i);
+	});
+
 	test('tells a re-invoked session the worktree already holds its own earlier work', () => {
 		const { prompt } = buildQueueAutoPlanInvocation({ ...base, answeredQuestion: { question: 'Which one?', answer: 'the second' } });
 
