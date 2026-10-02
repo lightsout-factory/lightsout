@@ -466,7 +466,8 @@ A work order is in one of two modes, and its record saves which.
 plan may still have phases — and the repository's `ship.after-implement` applies
 exactly as it always has. A single-plan work order holding no plan 001 is
 instead implemented by the queue's build from the ticket body, and ships once
-that build passed. The queue creates the record of a ticket it builds from the
+that build passed; work built on it by hand ships through
+`lightsout ship --hand-built`. The queue creates the record of a ticket it builds from the
 ticket body in single-plan mode, whatever the repository default is.
 
 **Multiple-plan.** Independent brainstorm and plan iterations accumulate on the
@@ -607,6 +608,20 @@ Until a request is satisfied, the ticket and its branch stay open, and a later
 plan that becomes ready to implement is picked up on the same branch. The human
 decides the finish line: an agent files a ship request only when the human asks
 to ship the ticket.
+
+```sh
+lightsout ship --hand-built
+```
+
+`--hand-built` authorizes shipping work built by hand. It applies only to a
+single-plan work order holding no plan 001 whose build from the ticket body has
+not passed. It records who authorized it, by git's `user.name` and `user.email`,
+and when, and the authorization stands until the ticket ships.
+
+It is withdrawn by adding plan 001, by a build from the ticket body starting,
+and by switching to multiple-plan mode. Ship still runs its gates and checks on
+hand-built work. The human decides here too: an agent passes `--hand-built` only
+when the human asks to ship, never on its own.
 
 ## PR
 

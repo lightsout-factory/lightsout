@@ -22764,6 +22764,8 @@ var WorkOrderEventKind = {
   ModeChanged: "mode-changed",
   ShipRequested: "ship-requested",
   ShipRequestWithdrawn: "ship-request-withdrawn",
+  HandBuiltShipAuthorized: "hand-built-ship-authorized",
+  HandBuiltShipAuthorizationWithdrawn: "hand-built-ship-authorization-withdrawn",
   Shipped: "shipped"
 };
 
@@ -22824,6 +22826,8 @@ var WorkOrderStateShape = external_exports.object({
     startedAt: external_exports.string(),
     finishedAt: external_exports.string().optional()
   }).strict().optional(),
+  /** A person's authorization to ship hand-built work on a single-plan work order holding no plan 001. It lasts until the work order ships or it is withdrawn. */
+  handBuiltShipAuthorization: external_exports.object({ by: external_exports.string().min(1), at: external_exports.string() }).strict().optional(),
   /** The human's explicit request to ship, bound to the exact plans it was approved for. */
   shipRequest: external_exports.object({ planIds: external_exports.array(PlanId).min(1), requestedAt: external_exports.string() }).strict().optional(),
   /** What actually shipped. A state file carrying it is history: nothing changes it again. */
@@ -121944,9 +121948,17 @@ var shipCatalogEntry = {
   cli: "lightsout ship",
   group: CommandGroup.Build,
   summary: "Take the current branch from committed work to merged and cleaned up, and write a typed result.",
-  whenToUse: "Run it when the branch is committed and you want it merged: it pushes the branch, opens or adopts the pull request, waits for the checks, merges, deletes the branch and syncs the default branch \u2014 then writes one JSON result a tracker skill can read.",
+  whenToUse: "Run it when the branch is committed and you want it merged: it pushes the branch, opens or adopts the pull request, waits for the checks, merges, deletes the branch and syncs the default branch \u2014 then writes one JSON result a tracker skill can read. Pass --hand-built only when the person asks to ship work they built by hand.",
   invocations: [{ id: "ship" }],
-  flags: [{ name: "cwd", value: "<path>", meaning: "Repository to ship from.", fallback: "The process working directory.", required: false }],
+  flags: [
+    {
+      name: "hand-built",
+      meaning: "Record the person's authorization to ship work built outside the engine on a single-plan work order holding no plan 001, saved on the record with who and when.",
+      fallback: "Such a work order ships only once its build from the ticket body passed.",
+      required: false
+    },
+    { name: "cwd", value: "<path>", meaning: "Repository to ship from.", fallback: "The process working directory.", required: false }
+  ],
   steps: [],
   records: CommandRecordKind.Nothing,
   related: ["auto-plan", "brainstorm", "plan", "implement", "resume", "stop", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
@@ -129665,6 +129677,24 @@ var reconcileShippedTicket = async ({ config: config2, env, ticketRef, onProgres
   return void 0;
 };
 
+// src/common/workspace/resolveWorkOrderNameForBranch.ts
+var resolveWorkOrderNameForBranch = async ({ cwd, branch }) => (await findWorkOrderForBranch({ cwd, branch }))?.name ?? branch;
+
+// src/workOrder/common/constants/WorkOrderShipStateKind.ts
+var WorkOrderShipStateKind = {
+  Shipped: "shipped",
+  ShipRequestMissing: "ship-request-missing",
+  ShipRequested: "ship-requested",
+  PlanOneWaiting: "plan-one-waiting",
+  PlanOneImplemented: "plan-one-implemented",
+  PlanOneExcluded: "plan-one-excluded",
+  TicketBodyUnbuilt: "ticket-body-unbuilt",
+  TicketBodyBuilding: "ticket-body-building",
+  TicketBodyFailed: "ticket-body-failed",
+  TicketBodyPassed: "ticket-body-passed",
+  HandBuiltAuthorized: "hand-built-authorized"
+};
+
 // src/workOrder/internal/common/record/appendWorkOrderEvent.ts
 var appendWorkOrderEvent = ({ record: record3, kind, detail, at }) => ({
   ...record3,
@@ -130173,96 +130203,128 @@ var pullWorkOrderState = async ({
   });
 };
 
-// src/workOrder/readWorkOrderShipEligibility.ts
-var readTicketBodyEligibility = ({ record: record3 }) => {
+// src/workOrder/common/utils/formatRequestShipCommand.ts
+var formatRequestShipCommand = ({ name, planIds }) => `lightsout work-order request-ship --name ${name} --plans ${planIds.join(",")}`;
+
+// src/workOrder/shipping/readWorkOrderShipState.ts
+var readTicketBodyShipState = ({ record: record3 }) => {
   const build = record3.ticketBodyBuild;
-  let eligibility;
-  if (build === void 0) {
-    eligibility = {
-      eligible: false,
-      reason: `work order ${record3.name} is in single-plan mode and holds no plan 001, and no build from the ticket body has passed on it`
-    };
-  } else if (build.progress !== PlanProgress.Implemented) {
-    eligibility = {
-      eligible: false,
-      reason: `the build from the ticket body of work order ${record3.name} under run ${build.runId} has not passed, and a single-plan ticket holding no plan 001 ships once that build passed`
-    };
+  const authorization = record3.handBuiltShipAuthorization;
+  let state;
+  if (build?.progress === PlanProgress.Implemented) {
+    state = { kind: WorkOrderShipStateKind.TicketBodyPassed, runId: build.runId };
+  } else if (authorization !== void 0) {
+    state = { kind: WorkOrderShipStateKind.HandBuiltAuthorized, by: authorization.by, at: authorization.at };
+  } else if (build === void 0) {
+    state = { kind: WorkOrderShipStateKind.TicketBodyUnbuilt };
+  } else if (build.progress === PlanProgress.Failed) {
+    state = { kind: WorkOrderShipStateKind.TicketBodyFailed, runId: build.runId };
   } else {
-    eligibility = { eligible: true };
+    state = { kind: WorkOrderShipStateKind.TicketBodyBuilding, runId: build.runId };
   }
-  return eligibility;
+  return state;
 };
-var readSinglePlanEligibility = ({ record: record3 }) => {
+var readSinglePlanShipState = ({ record: record3 }) => {
   const first = record3.plans.find((plan) => planNumberOf({ id: plan.id }) === 1);
-  let eligibility;
+  let state;
   if (first === void 0) {
-    eligibility = readTicketBodyEligibility({ record: record3 });
+    state = readTicketBodyShipState({ record: record3 });
   } else if (first.exclusion !== void 0) {
-    eligibility = {
-      eligible: false,
-      reason: `plan ${first.id} is excluded from work order ${record3.name} \u2014 ${first.exclusion.reason} \u2014 so a single-plan ticket has no implementation to ship`
-    };
-  } else if (first.progress !== PlanProgress.Implemented) {
-    eligibility = {
-      eligible: false,
-      reason: `the implementation of plan ${first.id} on work order ${record3.name} has not finished, and a single-plan ticket ships once plan 001 is implemented`
-    };
+    state = { kind: WorkOrderShipStateKind.PlanOneExcluded, planId: first.id, reason: first.exclusion.reason };
+  } else if (first.progress === PlanProgress.Implemented) {
+    state = { kind: WorkOrderShipStateKind.PlanOneImplemented, planId: first.id };
   } else {
-    eligibility = { eligible: true };
+    state = { kind: WorkOrderShipStateKind.PlanOneWaiting, planId: first.id };
   }
-  return eligibility;
+  return state;
 };
-var describeRequestDrift = ({ missing, stale }) => {
+var readMultiplePlanShipState = ({ record: record3 }) => {
+  const included = record3.plans.filter((plan) => plan.exclusion === void 0);
+  const includedPlanIds = included.map((plan) => plan.id);
+  const request = record3.shipRequest;
+  let state;
+  if (request === void 0) {
+    state = { kind: WorkOrderShipStateKind.ShipRequestMissing, includedPlanIds };
+  } else {
+    const waiting = included.find((plan) => plan.progress !== PlanProgress.Implemented);
+    state = {
+      kind: WorkOrderShipStateKind.ShipRequested,
+      planIds: request.planIds,
+      includedPlanIds,
+      missingPlanIds: includedPlanIds.filter((id) => !request.planIds.includes(id)),
+      stalePlanIds: request.planIds.filter((id) => !includedPlanIds.includes(id)),
+      ...waiting === void 0 ? {} : { waitingPlanId: waiting.id }
+    };
+  }
+  return state;
+};
+var readWorkOrderShipState = ({ record: record3 }) => {
+  let state;
+  if (record3.shipped !== void 0) {
+    state = { kind: WorkOrderShipStateKind.Shipped, mergeCommit: record3.shipped.mergeCommit };
+  } else if (record3.mode === WorkOrderMode.SinglePlan) {
+    state = readSinglePlanShipState({ record: record3 });
+  } else {
+    state = readMultiplePlanShipState({ record: record3 });
+  }
+  return state;
+};
+
+// src/workOrder/shipping/readWorkOrderShipEligibility.ts
+var handBuiltRemedy = "to ship work built by hand instead, authorize it with `lightsout ship --hand-built`";
+var describeRequestDrift = ({ state }) => {
   const clauses = [
-    ...missing.length === 0 ? [] : [`it does not name ${missing.join(", ")}`],
-    ...stale.length === 0 ? [] : [`it names ${stale.join(", ")}, which the ticket no longer includes`]
+    ...state.missingPlanIds.length === 0 ? [] : [`it does not name ${state.missingPlanIds.join(", ")}`],
+    ...state.stalePlanIds.length === 0 ? [] : [`it names ${state.stalePlanIds.join(", ")}, which the ticket no longer includes`]
   ];
   return clauses.join(", and ");
 };
-var readMultiplePlanEligibility = ({ record: record3 }) => {
-  const included = record3.plans.filter((plan) => plan.exclusion === void 0);
-  const includedIds = included.map((plan) => plan.id);
-  const request = record3.shipRequest;
-  const askAgain = `\`lightsout work-order request-ship --name ${record3.name} --plans ${includedIds.join(",")}\``;
-  let eligibility;
-  if (request === void 0) {
-    eligibility = {
-      eligible: false,
-      reason: `work order ${record3.name} is in multiple-plan mode and carries no ship request, so ask for one with ${askAgain}`
-    };
-  } else {
-    const missing = includedIds.filter((id) => !request.planIds.includes(id));
-    const stale = request.planIds.filter((id) => !includedIds.includes(id));
-    const waiting = included.find((plan) => plan.progress !== PlanProgress.Implemented);
-    if (missing.length > 0 || stale.length > 0) {
-      eligibility = {
-        eligible: false,
-        reason: `the ship request on work order ${record3.name} no longer names the plans it holds \u2014 ${describeRequestDrift({ missing, stale })} \u2014 so request shipping again with ${askAgain}`
-      };
-    } else if (waiting !== void 0) {
-      eligibility = {
-        eligible: false,
-        reason: `the implementation of plan ${waiting.id} on work order ${record3.name} has not finished, and every plan its ship request names is implemented before the ticket ships`
-      };
-    } else {
-      eligibility = { eligible: true };
-    }
+var readShipRequestRefusal = ({ record: record3, state }) => {
+  const askAgain = `\`${formatRequestShipCommand({ name: record3.name, planIds: state.includedPlanIds })}\``;
+  let reason;
+  if (state.missingPlanIds.length > 0 || state.stalePlanIds.length > 0) {
+    reason = `the ship request on work order ${record3.name} no longer names the plans it holds \u2014 ${describeRequestDrift({ state })} \u2014 so request shipping again with ${askAgain}`;
+  } else if (state.waitingPlanId !== void 0) {
+    reason = `the implementation of plan ${state.waitingPlanId} on work order ${record3.name} has not finished, and every plan its ship request names is implemented before the ticket ships`;
   }
-  return eligibility;
+  return reason;
+};
+var readRefusal = ({ record: record3, state }) => {
+  let reason;
+  switch (state.kind) {
+    case WorkOrderShipStateKind.Shipped:
+      reason = `work order ${record3.name} already shipped as ${state.mergeCommit}, so its record no longer authorizes a merge`;
+      break;
+    case WorkOrderShipStateKind.ShipRequestMissing:
+      reason = `work order ${record3.name} is in multiple-plan mode and carries no ship request, so ask for one with \`${formatRequestShipCommand({ name: record3.name, planIds: state.includedPlanIds })}\``;
+      break;
+    case WorkOrderShipStateKind.ShipRequested:
+      reason = readShipRequestRefusal({ record: record3, state });
+      break;
+    case WorkOrderShipStateKind.PlanOneWaiting:
+      reason = `the implementation of plan ${state.planId} on work order ${record3.name} has not finished, and a single-plan ticket ships once plan 001 is implemented`;
+      break;
+    case WorkOrderShipStateKind.PlanOneExcluded:
+      reason = `plan ${state.planId} is excluded from work order ${record3.name} \u2014 ${state.reason} \u2014 so a single-plan ticket has no implementation to ship`;
+      break;
+    case WorkOrderShipStateKind.TicketBodyUnbuilt:
+      reason = `work order ${record3.name} is in single-plan mode and holds no plan 001, and no build from the ticket body has passed on it \u2014 ${handBuiltRemedy}`;
+      break;
+    case WorkOrderShipStateKind.TicketBodyBuilding:
+    case WorkOrderShipStateKind.TicketBodyFailed:
+      reason = `the build from the ticket body of work order ${record3.name} under run ${state.runId} has not passed, and a single-plan ticket holding no plan 001 ships once that build passed \u2014 ${handBuiltRemedy}`;
+      break;
+    case WorkOrderShipStateKind.PlanOneImplemented:
+    case WorkOrderShipStateKind.TicketBodyPassed:
+    case WorkOrderShipStateKind.HandBuiltAuthorized:
+      reason = void 0;
+      break;
+  }
+  return reason;
 };
 var readWorkOrderShipEligibility = ({ record: record3 }) => {
-  let eligibility;
-  if (record3.shipped !== void 0) {
-    eligibility = {
-      eligible: false,
-      reason: `work order ${record3.name} already shipped as ${record3.shipped.mergeCommit}, so its record no longer authorizes a merge`
-    };
-  } else if (record3.mode === WorkOrderMode.SinglePlan) {
-    eligibility = readSinglePlanEligibility({ record: record3 });
-  } else {
-    eligibility = readMultiplePlanEligibility({ record: record3 });
-  }
-  return eligibility;
+  const reason = readRefusal({ record: record3, state: readWorkOrderShipState({ record: record3 }) });
+  return reason === void 0 ? { eligible: true } : { eligible: false, reason };
 };
 
 // src/workOrder/internal/common/constants/publishedButUnrecorded.ts
@@ -130449,11 +130511,25 @@ var updateSyncedWorkOrderState = async ({
 };
 
 // src/workOrder/implementRun/createWorkOrderShipGuard.ts
+var describeShipped = ({ record: record3, planIds, mergeCommit }) => {
+  const state = readWorkOrderShipState({ record: record3 });
+  const shipped = `work order ${record3.name} shipped as ${mergeCommit}`;
+  let detail = shipped;
+  if (state.kind === WorkOrderShipStateKind.TicketBodyPassed) {
+    detail = `${shipped} from the ticket body`;
+  } else if (state.kind === WorkOrderShipStateKind.HandBuiltAuthorized) {
+    detail = `${shipped} as hand-built work authorized by ${state.by}`;
+  } else if (planIds.length > 0) {
+    detail = `${shipped} with ${planIds.join(", ")}`;
+  }
+  return detail;
+};
 var createWorkOrderShipGuard = ({ config: config2, env, onProgress }) => ({
   authorize: async ({ cwd, branch }) => {
-    const pulled = await pullWorkOrderState({ cwd, name: branch, config: config2, env, onProgress });
+    const name = await resolveWorkOrderNameForBranch({ cwd, branch });
+    const pulled = await pullWorkOrderState({ cwd, name, config: config2, env, onProgress });
     if ("error" in pulled) {
-      const local = await readWorkOrderState({ cwd, name: branch });
+      const local = await readWorkOrderState({ cwd, name });
       return "error" in local || local.record !== void 0 ? pulled.error : void 0;
     }
     if (pulled.record === void 0) {
@@ -130463,7 +130539,8 @@ var createWorkOrderShipGuard = ({ config: config2, env, onProgress }) => ({
     return eligibility.eligible ? void 0 : eligibility.reason;
   },
   recordShipped: async ({ cwd, branch, mergeCommit }) => {
-    const read = await readWorkOrderState({ cwd, name: branch });
+    const name = await resolveWorkOrderNameForBranch({ cwd, branch });
+    const read = await readWorkOrderState({ cwd, name });
     if ("error" in read) {
       onProgress?.(`the merge ${mergeCommit} could not be recorded on the ticket: ${read.error}`);
       return;
@@ -130474,20 +130551,19 @@ var createWorkOrderShipGuard = ({ config: config2, env, onProgress }) => ({
     const at = (/* @__PURE__ */ new Date()).toISOString();
     const updated = await updateSyncedWorkOrderState({
       cwd,
-      name: branch,
+      name,
       config: config2,
       env,
       onProgress,
       change: (current) => {
         if (current === void 0) {
-          return { error: `work order ${branch} no longer has a record, so the merge ${mergeCommit} could not be recorded on it` };
+          return { error: `work order ${name} no longer has a record, so the merge ${mergeCommit} could not be recorded on it` };
         }
         const planIds = current.plans.filter((plan) => plan.exclusion === void 0).map((plan) => plan.id);
-        const shippedWith = planIds.length === 0 ? "from the ticket body" : `with ${planIds.join(", ")}`;
         return appendWorkOrderEvent({
           record: { ...current, shipped: { at, planIds, mergeCommit } },
           kind: WorkOrderEventKind.Shipped,
-          detail: `work order ${branch} shipped as ${mergeCommit} ${shippedWith}`,
+          detail: describeShipped({ record: current, planIds, mergeCommit }),
           at
         });
       }
@@ -130863,7 +130939,7 @@ var resolveWorktreesRoot = async ({ cwd }) => {
 };
 
 // src/worktree/resolveWorktreePath.ts
-var resolveWorktreePath = async ({ cwd, branch }) => join58(await resolveWorktreesRoot({ cwd }), (await findWorkOrderForBranch({ cwd, branch }))?.name ?? branch);
+var resolveWorktreePath = async ({ cwd, branch }) => join58(await resolveWorktreesRoot({ cwd }), await resolveWorkOrderNameForBranch({ cwd, branch }));
 
 // src/worktree/createWorktree.ts
 var exists = async ({ path }) => {
@@ -150935,6 +151011,16 @@ var runDirectWork = (params) => withRunLock({ params, run: executeDirectWork });
 
 // src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts
 import { randomUUID as randomUUID10 } from "node:crypto";
+
+// src/workOrder/internal/common/record/recordHandBuiltShipAuthorizationWithdrawal.ts
+var recordHandBuiltShipAuthorizationWithdrawal = ({ record: record3, detail, at }) => record3.handBuiltShipAuthorization === void 0 ? record3 : appendWorkOrderEvent({
+  record: { ...record3, handBuiltShipAuthorization: void 0 },
+  kind: WorkOrderEventKind.HandBuiltShipAuthorizationWithdrawn,
+  detail,
+  at
+});
+
+// src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts
 var recordImplementing2 = ({ cwd, workOrderName, build }) => updateLocalWorkOrderState({
   cwd,
   name: workOrderName,
@@ -150947,7 +151033,11 @@ var recordImplementing2 = ({ cwd, workOrderName, build }) => updateLocalWorkOrde
         error: `work order ${workOrderName} is no longer a single-plan work order holding no plan 001, so it is not built from the ticket body \u2014 build it through its plans instead`
       };
     }
-    return { ...current, ticketBodyBuild: build };
+    return recordHandBuiltShipAuthorizationWithdrawal({
+      record: { ...current, ticketBodyBuild: build },
+      detail: `a build from the ticket body started under run ${build.runId}, so the hand-built authorization no longer stands`,
+      at: build.startedAt
+    });
   }
 });
 var recordOutcome2 = async ({ cwd, workOrderName, build, result }) => {
@@ -160639,14 +160729,20 @@ var addPlanToRecord = ({
     detail: `plan ${allocated.id} was added to work order ${name}`,
     at
   });
+  const requestWithdrawn = recordShipRequestWithdrawal({
+    record: added,
+    detail: `plan ${allocated.id} was added, so the ship request naming ${existing.shipRequest?.planIds.join(", ") ?? ""} no longer covers the ticket's work`,
+    at
+  });
   return {
-    record: recordShipRequestWithdrawal({
-      record: added,
-      detail: `plan ${allocated.id} was added, so the ship request naming ${existing.shipRequest?.planIds.join(", ") ?? ""} no longer covers the ticket's work`,
+    record: recordHandBuiltShipAuthorizationWithdrawal({
+      record: requestWithdrawn,
+      detail: `plan ${allocated.id} was added, so the hand-built authorization by ${existing.handBuiltShipAuthorization?.by ?? ""} no longer covers the ticket's work`,
       at
     }),
     planId: allocated.id,
-    withdrew: existing.shipRequest !== void 0
+    withdrew: existing.shipRequest !== void 0,
+    withdrewHandBuilt: existing.handBuiltShipAuthorization !== void 0
   };
 };
 var addWorkOrderPlan = async ({
@@ -160682,10 +160778,16 @@ var addWorkOrderPlan = async ({
   }
   const address = formatPlanAddress({ workOrderName: name, planId: addition.planId });
   await mkdir31(await planWorkspaceDir({ cwd, name: address }), { recursive: true });
+  const notices = [
+    ...addition.withdrew ? [
+      `the pending ship request was withdrawn because plan ${addition.planId} was added \u2014 ask again with \`lightsout work-order request-ship --name ${name}\` once the ticket's work is settled`
+    ] : [],
+    ...addition.withdrewHandBuilt ? [`the hand-built ship authorization was withdrawn because plan ${addition.planId} was added \u2014 the ticket now ships through that plan`] : []
+  ];
   return {
     address,
     record: updated.record,
-    notice: addition.withdrew ? `the pending ship request was withdrawn because plan ${addition.planId} was added \u2014 ask again with \`lightsout work-order request-ship --name ${name}\` once the ticket's work is settled` : void 0,
+    notice: notices.length === 0 ? void 0 : notices.join("; "),
     publishError: updated.publishError
   };
 };
@@ -163854,13 +163956,141 @@ ${result.coordination}`);
   return exitCli({ code: failed ? 1 : 0 });
 };
 
+// src/common/git/readGitIdentity.ts
+var readGitConfigValue = async ({ cwd, key }) => {
+  const read = await runCommand({ command: `git config ${key}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  const value = read && read.exitCode === 0 ? read.stdout.trim() : "";
+  return value === "" ? void 0 : value;
+};
+var readGitIdentity = async ({ cwd }) => {
+  const name = await readGitConfigValue({ cwd, key: "user.name" });
+  const email3 = await readGitConfigValue({ cwd, key: "user.email" });
+  return { ...name === void 0 ? {} : { name }, ...email3 === void 0 ? {} : { email: email3 } };
+};
+
+// src/workOrder/shipping/authorizeHandBuiltShip.ts
+var recordAuthorization = ({ record: record3, name, branch, identity }) => {
+  if (identity.name === void 0 || identity.email === void 0) {
+    const unset = [...identity.name === void 0 ? ["user.name"] : [], ...identity.email === void 0 ? ["user.email"] : []];
+    const commands2 = unset.map((key) => `\`git config ${key} <value>\``);
+    return {
+      error: `git's ${unset.join(" and ")} ${unset.length === 1 ? "is" : "are"} unset in this checkout, so nobody can be recorded as authorizing hand-built work on work order ${name} \u2014 set ${unset.length === 1 ? "it" : "them"} with ${commands2.join(" and ")}`
+    };
+  }
+  const by = `${identity.name} ${identity.email}`;
+  const at = (/* @__PURE__ */ new Date()).toISOString();
+  return {
+    record: appendWorkOrderEvent({
+      record: { ...record3, handBuiltShipAuthorization: { by, at } },
+      kind: WorkOrderEventKind.HandBuiltShipAuthorized,
+      detail: `${by} authorized shipping the hand-built work on branch ${branch} as work order ${name}`,
+      at
+    })
+  };
+};
+var decideAuthorization = ({ record: record3, name, branch, identity }) => {
+  const state = readWorkOrderShipState({ record: record3 });
+  let decision;
+  if (state.kind === WorkOrderShipStateKind.TicketBodyPassed) {
+    decision = {
+      kept: `the build from the ticket body of work order ${name} under run ${state.runId} already passed, so there is no hand-built work to authorize and nothing was recorded`
+    };
+  } else if (state.kind === WorkOrderShipStateKind.HandBuiltAuthorized) {
+    decision = { kept: `${state.by} already authorized shipping hand-built work on work order ${name} at ${state.at}, so that authorization is kept` };
+  } else if (state.kind === WorkOrderShipStateKind.ShipRequestMissing || state.kind === WorkOrderShipStateKind.ShipRequested) {
+    decision = {
+      error: `work order ${name} is in multiple-plan mode, where it ships on a ship request rather than on hand-built work \u2014 ask for one with \`lightsout work-order request-ship --name ${name} --plans <id,id>\``
+    };
+  } else if (state.kind === WorkOrderShipStateKind.TicketBodyUnbuilt || state.kind === WorkOrderShipStateKind.TicketBodyBuilding || state.kind === WorkOrderShipStateKind.TicketBodyFailed) {
+    decision = recordAuthorization({ record: record3, name, branch, identity });
+  } else {
+    decision = {
+      error: `work order ${name} holds plan 001, and a single-plan work order holding plan 001 ships through that plan alone, so there is no hand-built work to authorize \u2014 ship it through plan 001 instead`
+    };
+  }
+  return decision;
+};
+var authorizeHandBuiltShip = async ({
+  cwd,
+  name,
+  branch,
+  identity,
+  config: config2,
+  env,
+  onProgress
+}) => {
+  let kept;
+  const updated = await updateSyncedWorkOrderState({
+    cwd,
+    name,
+    config: config2,
+    env,
+    onProgress,
+    change: (current) => {
+      if (current === void 0) {
+        return {
+          error: `no work order saves branch ${branch}, so there is no hand-built work to authorize \u2014 plain \`lightsout ship\` ships a branch no work order claims`
+        };
+      }
+      const record3 = requireWorkOrderState({ record: current, name });
+      if ("error" in record3) {
+        return record3;
+      }
+      const decision = decideAuthorization({ record: record3, name, branch, identity });
+      let next;
+      if ("kept" in decision) {
+        kept = decision.kept;
+        next = record3;
+      } else {
+        next = "error" in decision ? decision : decision.record;
+      }
+      return next;
+    }
+  });
+  return "error" in updated ? updated : { record: updated.record, notice: kept, publishError: updated.publishError };
+};
+
 // src/cli/shipCommand.ts
-var shipCommand = async ({ cwd }) => {
+var authorizeHandBuiltWork = async ({ cwd, config: config2 }) => {
+  const branch = await readGitCurrentBranch({ cwd });
+  if (branch === void 0) {
+    return "HEAD names no branch, so no work order is being shipped and there is no hand-built work to authorize \u2014 check out the branch to ship first";
+  }
+  const authorized = await authorizeHandBuiltShip({
+    cwd,
+    name: await resolveWorkOrderNameForBranch({ cwd, branch }),
+    branch,
+    identity: await readGitIdentity({ cwd }),
+    config: config2,
+    env: process.env,
+    onProgress: createProgressPrinter()
+  });
+  let refusal;
+  if ("error" in authorized) {
+    refusal = authorized.error;
+  } else {
+    if (authorized.notice !== void 0) {
+      console.log(authorized.notice);
+    }
+    if (authorized.publishError !== void 0) {
+      console.error(`warning: ${authorized.publishError}`);
+    }
+  }
+  return refusal;
+};
+var shipCommand = async ({ flags, cwd }) => {
   const config2 = await readConfig({ cwd });
   const settings = resolveShipSettings({ config: config2 });
   if (settings === void 0) {
     console.error(unusableTicketPatternMessage);
     return exitCli({ code: 1 });
+  }
+  if (flags.get("hand-built") === true) {
+    const refusal = await authorizeHandBuiltWork({ cwd, config: config2 });
+    if (refusal !== void 0) {
+      console.error(refusal);
+      return exitCli({ code: 1 });
+    }
   }
   const { config: effectiveConfig, driver } = resolveEffectiveConfigAndDriver({ config: config2, command: "implement" });
   const result = await runShip({
@@ -167330,7 +167560,14 @@ var setWorkOrderMode = async ({ cwd, name, mode, approve, config: config2, env, 
       }
       const at = (/* @__PURE__ */ new Date()).toISOString();
       return mode === WorkOrderMode.SinglePlan ? switchToSinglePlan({ record: record3, afterImplement: shipSettings.afterImplement, approve, at }) : appendWorkOrderEvent({
-        record: { ...record3, mode: WorkOrderMode.MultiplePlan },
+        record: {
+          ...recordHandBuiltShipAuthorizationWithdrawal({
+            record: record3,
+            detail: `work order ${name} moved to multiple-plan mode, where it ships on a ship request, so the hand-built authorization no longer stands`,
+            at
+          }),
+          mode: WorkOrderMode.MultiplePlan
+        },
         kind: WorkOrderEventKind.ModeChanged,
         detail: `work order ${name} is now in multiple-plan mode`,
         at
@@ -167537,6 +167774,48 @@ var planProgressWording = {
 };
 var describePlanProgress = ({ progress }) => planProgressWording[progress];
 
+// src/cli/workOrder/internal/common/utils/describeWorkOrderShipState.ts
+var describeShipRequest = ({ name, state }) => state.missingPlanIds.length === 0 && state.stalePlanIds.length === 0 ? `ship request: ${state.planIds.join(", ")} \u2014 the work order ships once every one of them is implemented` : `ship request: ${state.planIds.join(", ")} \u2014 it no longer names the plans the work order holds, so request shipping again with \`${formatRequestShipCommand({ name, planIds: state.includedPlanIds })}\``;
+var describeWorkOrderShipState = ({ name, state }) => {
+  let line;
+  switch (state.kind) {
+    case WorkOrderShipStateKind.Shipped:
+      line = `shipped as ${state.mergeCommit}`;
+      break;
+    case WorkOrderShipStateKind.ShipRequestMissing:
+      line = "no ship request is pending, so this work order stays open";
+      break;
+    case WorkOrderShipStateKind.ShipRequested:
+      line = describeShipRequest({ name, state });
+      break;
+    case WorkOrderShipStateKind.PlanOneWaiting:
+      line = `the work order ships once plan ${state.planId} is implemented`;
+      break;
+    case WorkOrderShipStateKind.PlanOneImplemented:
+      line = `plan ${state.planId} is implemented, so the work order is ready to ship`;
+      break;
+    case WorkOrderShipStateKind.PlanOneExcluded:
+      line = `plan ${state.planId} is excluded \u2014 ${state.reason} \u2014 so the work order has nothing to ship`;
+      break;
+    case WorkOrderShipStateKind.TicketBodyUnbuilt:
+      line = "the work order ships once a build of the ticket passes, or as work built by hand through `lightsout ship --hand-built`";
+      break;
+    case WorkOrderShipStateKind.TicketBodyBuilding:
+      line = `a build of the ticket is recorded as in progress under run ${state.runId}`;
+      break;
+    case WorkOrderShipStateKind.TicketBodyFailed:
+      line = `the build of the ticket under run ${state.runId} failed \u2014 resume it with \`lightsout resume --run ${state.runId}\`, or ship work built by hand through \`lightsout ship --hand-built\``;
+      break;
+    case WorkOrderShipStateKind.TicketBodyPassed:
+      line = `the build of the ticket under run ${state.runId} passed, so the work order is ready to ship`;
+      break;
+    case WorkOrderShipStateKind.HandBuiltAuthorized:
+      line = `${state.by} authorized shipping hand-built work at ${state.at}, so the work order is ready to ship`;
+      break;
+  }
+  return line;
+};
+
 // src/cli/workOrder/internal/workOrderShowCommand.ts
 var renderWorkOrderState = ({ record: record3 }) => [
   // The label leads, because it is what every other subcommand is typed with;
@@ -167548,8 +167827,8 @@ var renderWorkOrderState = ({ record: record3 }) => [
   }),
   // A work order holding no plan 001 ships on its build from the ticket body, so that build is shown like a plan.
   ...record3.ticketBodyBuild === void 0 ? [] : [`  built from the ticket body \u2014 ${describePlanProgress({ progress: record3.ticketBodyBuild.progress })}`],
-  record3.shipRequest === void 0 ? "no ship request is pending, so this work order stays open" : `ship request: ${record3.shipRequest.planIds.join(", ")} \u2014 the work order ships once every one of them is implemented`,
-  ...record3.shipped === void 0 ? [] : [`shipped as ${record3.shipped.mergeCommit}`]
+  // One line from the same reader the ship check decides from, so the two never disagree.
+  describeWorkOrderShipState({ name: record3.name, state: readWorkOrderShipState({ record: record3 }) })
 ];
 var workOrderShowCommand = async ({ flags, cwd }) => {
   const name = await getRequiredFlag({ flags, name: "name" });

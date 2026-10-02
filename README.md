@@ -497,9 +497,16 @@ Take a committed branch from where it stands to merged and cleaned up. `lightsou
 
 A branch whose ticket has a record merges only when that record authorizes it:
 a single-plan ticket once plan 001 is implemented, a multiple-plan ticket once an
-explicit ship request naming its included plans is satisfied. The record is asked
-before anything is pushed and again immediately before the merge, so a plan added
-to the ticket while its checks were running still stops it. A refusal is a blocked
+explicit ship request naming its included plans is satisfied, and a single-plan
+ticket holding no plan 001 once its build from the ticket body passed, or once a
+person ran `lightsout ship --hand-built` to authorize work built by hand. That
+authorization is saved on the record with who gave it (git's `user.name` and
+`user.email`) and when, and lasts until the ticket ships; adding plan 001, a build
+from the ticket body starting, or a switch to multiple-plan mode withdraws it. The
+gates and checks ship already runs apply to hand-built work exactly as to work the
+engine built. The record is found by the branch it saves, and is asked before
+anything is pushed and again immediately before the merge, so a plan added to the
+ticket while its checks were running still stops it. A refusal is a blocked
 result with reason `ticket-not-authorized` and one sentence saying what the ticket
 is waiting for, and nothing reaches the remote. A branch no work order claims
 ships exactly as it always has. How a human files that request is the
@@ -509,6 +516,7 @@ It has no slash command of its own. Its house conventions — the branch pattern
 
 ```text
 lightsout ship
+lightsout ship --hand-built
 ```
 
 ### lightsout ticket-state
@@ -564,8 +572,8 @@ and it must name every plan the ticket still includes; `--withdraw` takes it
 back. `exclude-plan` takes one plan out of the ticket's work for good — a plan
 whose implementation started is only excluded on a branch this repository's own
 gates have just passed on — and `retitle-plan` changes only what a plan is
-called, never its id, its folder or a pending request. `show` reads the record,
-and `sync` settles one that moved on two machines at once.
+called, never its id, its folder or a pending request. `show` reads the record
+and reports what the work order's shipping is waiting for, and `sync` settles one that moved on two machines at once.
 
 Every change is published to the ticket when a `ticket-tracker` block is
 configured, so another machine restores the ticket's settings and its plans;

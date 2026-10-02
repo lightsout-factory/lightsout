@@ -53,7 +53,7 @@ usage:
   lightsout implement-direct --ticket <path> [--ref <ticket>] [--cwd <path>] [--worktree] [--no-worktree] [--ship] [--no-ship]
   lightsout resume --run <id> [--cwd <path>] [--skip-refactor] [--ship] [--no-ship] [--detach]
   lightsout stop --run <id> [--cwd <path>]
-  lightsout ship [--cwd <path>]
+  lightsout ship [--hand-built] [--cwd <path>]
   lightsout queue [--file-relay [dir]] [--cwd <path>] [--detach]
   lightsout status [--cwd <path>]
   lightsout status [--run <id>] [--watch] [--cwd <path>]   (one run in detail; --watch repaints it every two minutes, and without --run it follows the one run that is going)
