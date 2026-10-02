@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { PassThrough } from 'node:stream';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
@@ -87,6 +88,12 @@ const settings = queueSettingsFixture();
 const trackerSettings = trackerSettingsFixture();
 
 const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, generated: ['plugin/dist/'] };
+// The queue's startup config as read, kept apart from the stamped one above so
+// a run that hands the worker the stamped config in its place is caught.
+const loadedConfig: LoadedConfig = {
+	config: { gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false } },
+	path: '/repo/lightsout.config.json',
+};
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
 
 const ticket: RunnableTicket = {
@@ -140,6 +147,7 @@ const setupTicketRun = () => {
 			// the sequence, and the prefixed case has its own arrangement below.
 			workOrder: { ticket: given, name: 'lo-70-drain-the-backlog', branch: 'lo-70-drain-the-backlog' },
 			config,
+			loadedConfig,
 			driver,
 			driverName: 'claude-code',
 			defaultBranch: 'main',
@@ -323,6 +331,23 @@ describe('runQueueWorkOrder', () => {
 		expect(mockCommitTicketWork).toHaveBeenCalledWith(expect.objectContaining({ runDir: workOrderRunDir }));
 	});
 
+	test("runQueueWorkOrder: hands the worker the queue's loaded config", async () => {
+		const { run, relay } = setupTicketRun();
+
+		await run();
+
+		relay.close();
+
+		expect(mockRunWorkerWithRelay).toHaveBeenCalledWith(
+			expect.objectContaining({
+				loadedConfig: {
+					config: { gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false } },
+					path: '/repo/lightsout.config.json',
+				},
+			}),
+		);
+	});
+
 	test("runQueueWorkOrder: the final commit's composer names the coordinator run and falls back to the ticket's identifier and title in a tree git cannot read", async () => {
 		const { run, relay } = setupTicketRun();
 
@@ -364,6 +389,7 @@ describe('runQueueWorkOrder', () => {
 				trackerSettings,
 				workOrder,
 				config,
+				loadedConfig: { config },
 				driver,
 				driverName: 'claude-code',
 				defaultBranch: 'main',

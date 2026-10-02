@@ -311,7 +311,7 @@ test('pipeline persists rejected agent output to the run dir as evidence', async
 	};
 
 	const config = await readConfig({ cwd: dir });
-	const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+	const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 	expect(result.ok).toBe(false);
 

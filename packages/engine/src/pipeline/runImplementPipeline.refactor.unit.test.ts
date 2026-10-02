@@ -119,7 +119,7 @@ test('refactor: a first decline narrates how much still qualifies before buying 
 		onRefactor: () => report({ changedFiles: [] }),
 	});
 
-	await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress });
+	await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', onProgress });
 
 	expect(progress.some((line) => /^refactor round 1: no changes but [1-9]\d* qualifying blocking finding\(s\) remain — another round$/.test(line))).toBe(true);
 });
@@ -138,7 +138,7 @@ test('refactor: a star re-export is cleanup work on its own — severity is the 
 		onRefactor: () => report({ changedFiles: [] }),
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const cleanup = cleanupRecordOf({ steps: result.manifest.steps });
 
 	expectDefined(cleanup);
@@ -160,7 +160,7 @@ test('refactor: the gate narration counts the work-list and the advisories, and 
 		onRefactor: () => report({ changedFiles: [] }),
 	});
 
-	await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress });
+	await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', onProgress });
 
 	// anchored at both ends: the work-list count IS the blocking count, so the
 	// line carries no separate blocking tally
@@ -179,7 +179,7 @@ test("refactor: the agent review's findings join the advisory list the refactore
 		onRefactor: () => report({ changedFiles: [] }),
 	});
 
-	await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	// under the advisory heading, sited and carrying both halves of its text —
 	// judgment handed to a judge, never blocking work
@@ -195,7 +195,7 @@ test('refactor: a review finding cannot hold the run — the reviewer objects ev
 		onRefactor: () => report({ changedFiles: [] }),
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.ok).toBe(true);
 	expect(result.manifest.steps.find((step) => step.id === 'refactor')?.status).toBe('passed');
@@ -210,7 +210,7 @@ test('refactor: a review that could not run is narrated and left behind — the 
 		onRefactor: () => report({ changedFiles: [] }),
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', onProgress });
 	const cleanup = cleanupRecordOf({ steps: result.manifest.steps });
 
 	expectDefined(cleanup);
@@ -227,7 +227,7 @@ test("refactor: the review reads the run's changed source — not the tests the 
 		onRefactor: () => report({ changedFiles: [] }),
 	});
 
-	await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	// the repo's committed src/index.js and the writers' test/subject.test.js are
 	// both absent — scope is this run's changed source and nothing else. Cleanup
@@ -247,7 +247,7 @@ test('refactor: a tree the checks find clean spends no cleanup round at all', as
 		},
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const cleanup = cleanupRecordOf({ steps: result.manifest.steps });
 
 	expectDefined(cleanup);
@@ -265,7 +265,7 @@ test('refactor: the executor may write the test files its findings name, or it i
 		onRefactor: () => report({ changedFiles: [] }),
 	});
 
-	await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	// the scope section is the executor's write permission — a finding on a file
 	// missing from it is a blocking demand the role prompt forbids acting on
@@ -300,7 +300,7 @@ const setupOmittedEditRun = async ({ finalFindings = () => reviewReport() }: { f
 test('a file the cleanup report omitted is still found by content and reviewed', async () => {
 	const { dir, driver, config, reviewScopes } = await setupOmittedEditRun();
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	// the consumer the round rewrote is on the step record even though the
 	// report never named it — bytes, not claims, decide what cleanup changed
@@ -318,7 +318,7 @@ test('an introduced blocking finding on a test file the run wrote is worked and 
 		onRefactor: () => report({ changedFiles: [] }),
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const cleanup = cleanupRecordOf({ steps: result.manifest.steps });
 
 	expectDefined(cleanup);
@@ -339,7 +339,7 @@ test('a rate-limited cleanup round parks the run with its round count recorded',
 		onRefactor: () => report({ changedFiles: [] }),
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const cleanup = cleanupRecordOf({ steps: result.manifest.steps });
 
 	expectDefined(cleanup);
@@ -355,7 +355,7 @@ test('the final review reads the files cleanup changed and buys no round', async
 		finalFindings: ({ ruleIds }) => reviewReport([{ rule: ruleIds[0], files: [{ path: 'src/subject.js' }], detail: 'FINAL-REVIEW-SENTINEL' }]),
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const cleanup = cleanupRecordOf({ steps: result.manifest.steps });
 
 	expectDefined(cleanup);
@@ -374,7 +374,7 @@ test('cleanup that changed nothing reuses its initial review as the final one', 
 		onRefactor: () => report({ changedFiles: [] }),
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const cleanup = cleanupRecordOf({ steps: result.manifest.steps });
 
 	expectDefined(cleanup);

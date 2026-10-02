@@ -85,7 +85,7 @@ describe('runRefactorPipeline batch outcomes', () => {
 			},
 		};
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// the second batch was verified resolved on disk, not re-sent to an agent
@@ -123,7 +123,7 @@ describe('runRefactorPipeline batch outcomes', () => {
 			},
 		};
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// the requeue finished the batch
@@ -162,7 +162,7 @@ describe('runRefactorPipeline batch outcomes', () => {
 			},
 		};
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		// a spent requeue is a decline, never a run failure
 		expect(result.ok).toBe(true);
@@ -186,7 +186,12 @@ describe('runRefactorPipeline batch outcomes', () => {
 			name: 'stub',
 			invoke: async () => ({ text: 'I thought about it and stopped.', exitCode: 1 }),
 		};
-		const result = await runRefactorPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }) });
+		const result = await runRefactorPipeline({
+			cwd: dir,
+			driver,
+			config: await readConfig({ cwd: dir }),
+			loadedConfig: { config: await readConfig({ cwd: dir }) },
+		});
 
 		// unverifiable work is never salvaged
 		expect(result.ok).toBe(false);
@@ -212,7 +217,12 @@ describe('runRefactorPipeline batch outcomes', () => {
 				name: 'stub',
 				invoke: async () => ({ text: report({ status, failures: ['the module boundary is a human call'] }), exitCode: 0 }),
 			};
-			const result = await runRefactorPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }) });
+			const result = await runRefactorPipeline({
+				cwd: dir,
+				driver,
+				config: await readConfig({ cwd: dir }),
+				loadedConfig: { config: await readConfig({ cwd: dir }) },
+			});
 
 			expect(result.ok).toBe(false);
 			expect(result.manifest.status).toBe(expected);
@@ -265,7 +275,7 @@ describe('runRefactorPipeline batch outcomes', () => {
 			},
 		};
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 

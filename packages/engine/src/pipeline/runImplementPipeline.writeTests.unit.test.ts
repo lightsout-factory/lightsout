@@ -59,7 +59,7 @@ const setupParkedWriterRun = async () => {
 test('write-tests: a rate-limited writer parks the run, and the writers that already landed keep their work', async () => {
 	const { dir, driver, config } = await setupParkedWriterRun();
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.ok).toBe(false);
 	expect(result.manifest.status).toBe('paused-rate-limit');

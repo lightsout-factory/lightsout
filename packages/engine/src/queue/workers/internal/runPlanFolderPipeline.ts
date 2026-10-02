@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runPhasesPipeline } from '#src/phases/runPhasesPipeline.ts';
@@ -17,6 +18,8 @@ interface Params {
 	/** The plan's address, `<ticket-branch>/<plan-id>`, or the branch-named folder of a ticket with no record. */
 	name: string;
 	config: LightsoutConfig;
+	/** The queue's startup config as it was read from disk, and its path, recorded on the run this builds. */
+	loadedConfig: LoadedConfig;
 	driver: Driver;
 	onProgress?: (message: string) => void;
 	/** The queue run this build belongs to; the run's owner record points there until the build settles. */
@@ -30,7 +33,7 @@ interface Params {
  * It never relays a question: the implement pipelines have no answer channel,
  * so an escalated run parks with its worktree intact instead.
  */
-export const runPlanFolderPipeline = async ({ cwd, name, config, driver, onProgress, queueRunId }: Params): Promise<WorkerOutcome> => {
+export const runPlanFolderPipeline = async ({ cwd, name, config, loadedConfig, driver, onProgress, queueRunId }: Params): Promise<WorkerOutcome> => {
 	const folder = await planWorkspaceDir({ cwd, name });
 	const overviewPath = join(folder, 'overview.md');
 	const phased = await pathExists({ path: overviewPath });
@@ -47,8 +50,8 @@ export const runPlanFolderPipeline = async ({ cwd, name, config, driver, onProgr
 					statusOf: ({ result }) => result.manifest.status,
 					work: ({ level }) =>
 						phased
-							? runPhasesPipeline({ cwd, driver, config, overviewPath, runId, level, onProgress, queueRunId })
-							: runImplementPipeline({ cwd, driver, config, planPath: join(folder, 'plan.md'), runId, level, onProgress, queueRunId }),
+							? runPhasesPipeline({ cwd, driver, config, loadedConfig, overviewPath, runId, level, onProgress, queueRunId })
+							: runImplementPipeline({ cwd, driver, config, loadedConfig, planPath: join(folder, 'plan.md'), runId, level, onProgress, queueRunId }),
 				});
 			} finally {
 				await removeRunOwner({ cwd, runId });

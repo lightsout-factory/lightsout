@@ -153,6 +153,7 @@ const startDrain = ({ cwd, progress }: { cwd: string; progress: string[] }) => {
 			trackerSettings: trackerSettingsFixture(),
 			shipSettings: shipSettingsFixture(),
 			config,
+			loadedConfig: { config },
 			env,
 			driver,
 			driverName: 'claude-code',

@@ -11,7 +11,7 @@ import { readLaunchRunId } from '#src/cli/internal/common/detach/readLaunchRunId
 import { renderQueueBoard } from '#src/cli/internal/common/queueBoard/renderQueueBoard.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { resolveEffectiveConfigAndDriver } from '#src/cli/internal/common/utils/resolveEffectiveConfigAndDriver.ts';
-import { readConfig } from '#src/common/config/readConfig.ts';
+import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
@@ -187,8 +187,9 @@ export const queueCommand = async ({ flags, rest, cwd }: CommandContext): Promis
 		return launchDetachedQueue({ flags, rest, cwd });
 	}
 
-	const loaded = await readConfig({ cwd });
-	const startup = resolveQueueStartup({ config: loaded, env: process.env });
+	// Read once, so every ticket of this drain records the one config the queue started with.
+	const loadedConfig = await readLoadedConfig({ cwd });
+	const startup = resolveQueueStartup({ config: loadedConfig.config, env: process.env });
 
 	if ('error' in startup) {
 		console.error(startup.error);
@@ -196,7 +197,7 @@ export const queueCommand = async ({ flags, rest, cwd }: CommandContext): Promis
 	}
 
 	const { settings, trackerSettings, shipSettings } = startup;
-	const { config, driver, driverName } = resolveEffectiveConfigAndDriver({ config: loaded, command: 'implement' });
+	const { config, driver, driverName } = resolveEffectiveConfigAndDriver({ config: loadedConfig.config, command: 'implement' });
 	const requested = flags.get('file-relay');
 
 	if (requested !== undefined) {
@@ -231,6 +232,7 @@ export const queueCommand = async ({ flags, rest, cwd }: CommandContext): Promis
 		trackerSettings,
 		shipSettings,
 		config,
+		loadedConfig,
 		env: process.env,
 		driver,
 		driverName,

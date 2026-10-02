@@ -1,3 +1,4 @@
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
@@ -12,6 +13,8 @@ export interface WorkOrderPlanStep {
 	plan: WorkOrderPlan;
 	ticket: TicketSummary;
 	config: LightsoutConfig;
+	/** The queue's startup config as read, which every run this step creates records. */
+	loadedConfig: LoadedConfig;
 	/** The process environment the tracker credentials are read from. */
 	env: NodeJS.ProcessEnv;
 	driver: Driver;

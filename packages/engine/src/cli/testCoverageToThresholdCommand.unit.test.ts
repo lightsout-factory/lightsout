@@ -144,6 +144,24 @@ describe('testCoverageToThresholdCommand', () => {
 		expect(pipelineParams()?.config).toEqual(expect.objectContaining({ harness: 'codex', model: 'gpt-x', effort: 'high' }));
 	});
 
+	test('the loaded config rides into the pipeline beside the stamped one', async () => {
+		const { context, cwd } = setupCommand({
+			config: { harness: 'claude-code', commands: { 'test-coverage-to-threshold': { harness: 'codex' } } },
+		});
+		const { config: fileConfig, configPath } = recordedConfigOf({ cwd });
+
+		await expect(testCoverageToThresholdCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// the run records the file as read, with its global harness, while it runs
+		// on the config this command stamped its own harness on
+		expect(pipelineParams()).toEqual(
+			expect.objectContaining({
+				config: expect.objectContaining({ harness: 'codex' }),
+				loadedConfig: { config: fileConfig, path: configPath },
+			}),
+		);
+	});
+
 	test('a completed run exits 0 and prints the coverage it moved', async () => {
 		const { context, logged, errors, exitCodes } = setupCommand({
 			result: { before: [{ scope: 'root', statementsPct: 61, passed: false }], after: [{ scope: 'root', statementsPct: 96, passed: true }] },

@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
@@ -19,6 +20,8 @@ interface Params {
 	runId: string;
 	driver: Driver;
 	config: LightsoutConfig;
+	/** The config as it was read from disk, and its path, recorded on a fresh run. Ignored when resuming. */
+	loadedConfig: LoadedConfig;
 	path?: string;
 	all?: boolean;
 	/** Accept a dirty tree: the standing dirt is recorded as baseline, never attributed to a batch. */
@@ -36,6 +39,7 @@ export const initializeRun = async ({
 	runId,
 	driver,
 	config,
+	loadedConfig,
 	path,
 	all,
 	allowDirty = false,
@@ -78,7 +82,15 @@ export const initializeRun = async ({
 	const worklistPath = join(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Refactor, runId }), 'worklist.json');
 	// `createRun` records the path repo-relative and creates the folder, so the
 	// write below lands in a directory that exists.
-	const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Refactor, driver: driver.name, config, baselineDirtyFiles: dirty });
+	const manifest = await createRun({
+		cwd,
+		runId,
+		plan: worklistPath,
+		pipeline: PipelineKind.Refactor,
+		driver: driver.name,
+		loadedConfig,
+		baselineDirtyFiles: dirty,
+	});
 
 	await writeJsonFile({ path: worklistPath, value: worklist });
 

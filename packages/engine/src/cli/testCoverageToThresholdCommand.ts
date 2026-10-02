@@ -10,6 +10,15 @@ export const testCoverageToThresholdCommand = ({ flags, cwd }: CommandContext): 
 		cwd,
 		command: 'test-coverage-to-threshold',
 		print: printCoverageResult,
-		run: ({ config, driver, maxBatches, existing }) =>
-			runCoveragePipeline({ cwd, driver, config, maxBatches, allowDirty: flags.get('allow-dirty') === true, existing, onProgress: createProgressPrinter() }),
+		run: ({ config, loadedConfig, driver, maxBatches, existing }) =>
+			runCoveragePipeline({
+				cwd,
+				driver,
+				config,
+				loadedConfig,
+				maxBatches,
+				allowDirty: flags.get('allow-dirty') === true,
+				existing,
+				onProgress: createProgressPrinter(),
+			}),
 	});

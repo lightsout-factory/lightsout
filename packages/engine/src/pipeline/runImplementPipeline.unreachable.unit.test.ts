@@ -97,7 +97,14 @@ test('write-tests: a changed file nothing public reaches earns no writer, is rec
 	const { dir, driver, config, writerPrompts } = await setupOrphanRun();
 
 	const progress: string[] = [];
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress: (message) => progress.push(message) });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config,
+		loadedConfig: { config },
+		planPath: 'plan.md',
+		onProgress: (message) => progress.push(message),
+	});
 
 	expect(result.ok).toBe(true);
 	// the public file earns exactly one writer; the orphan earns none
@@ -132,7 +139,14 @@ test('a refactor pass that imports the orphan from a public file clears the reco
 	});
 
 	const progress: string[] = [];
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress: (message) => progress.push(message) });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config,
+		loadedConfig: { config },
+		planPath: 'plan.md',
+		onProgress: (message) => progress.push(message),
+	});
 
 	expect(result.ok).toBe(true);
 	// write-tests recorded the orphan while it was still unreachable...
@@ -157,7 +171,14 @@ test('a refactor pass that deletes the orphan clears the record too — a file g
 	});
 
 	const progress: string[] = [];
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress: (message) => progress.push(message) });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config,
+		loadedConfig: { config },
+		planPath: 'plan.md',
+		onProgress: (message) => progress.push(message),
+	});
 
 	expect(result.ok).toBe(true);
 	// write-tests recorded the orphan while it was still on disk...
@@ -184,7 +205,7 @@ test('verify-tests failure: the fix re-invocation is rebuilt from the manifest �
 		},
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.ok).toBe(true);
 
@@ -262,7 +283,14 @@ test('a chain of hidden files is unreachable end to end — an importer that is 
 	const { dir, driver, config, writerPrompts } = await setupHiddenChainRun();
 
 	const progress: string[] = [];
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress: (message) => progress.push(message) });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config,
+		loadedConfig: { config },
+		planPath: 'plan.md',
+		onProgress: (message) => progress.push(message),
+	});
 
 	expect(result.ok).toBe(true);
 	// only the public file is a subject

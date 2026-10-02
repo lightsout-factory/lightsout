@@ -114,7 +114,7 @@ const setupSummarizedRun = async () => {
 /** That same run, already finished and committed — the state a resume walks back into. */
 const setupLandedRun = async () => {
 	const { dir, driver, config } = await setupPassingRun();
-	const first = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const first = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 	return { dir, config, first, landed: headSha({ cwd: dir }) };
 };
@@ -220,7 +220,7 @@ describe('runImplementPipeline', () => {
 	test("commits the run's work before stamping it passed", async () => {
 		const { dir, driver, config } = await setupPassingRun();
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		// the manifest's entry is checked against what git itself answers, so a
 		// recorded commit that never happened cannot read as a pass
@@ -249,6 +249,7 @@ describe('runImplementPipeline', () => {
 			cwd: dir,
 			driver: createUncalledDriver({ reason: 'a run whose every step is recorded passed spawns no agent' }),
 			config,
+			loadedConfig: { config },
 			existing,
 			skipRefactor: true,
 		});
@@ -277,6 +278,7 @@ describe('runImplementPipeline', () => {
 			cwd: dir,
 			driver: createUncalledDriver({ reason: 'a resumed run whose steps all passed spawns no agent' }),
 			config,
+			loadedConfig: { config },
 			existing: first.manifest,
 			skipRefactor: true,
 		});
@@ -296,7 +298,15 @@ describe('runImplementPipeline', () => {
 		const inherited = ['src/phaseOne.js', 'src/usePhaseOne.js'];
 		const before = headSha({ cwd: dir });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true, inheritedBaseline: inherited });
+		const result = await runImplementPipeline({
+			cwd: dir,
+			driver,
+			config,
+			loadedConfig: { config },
+			planPath: 'plan.md',
+			skipRefactor: true,
+			inheritedBaseline: inherited,
+		});
 
 		expect({
 			// the list the caller handed down, not a snapshot of the tree at start
@@ -320,7 +330,7 @@ describe('runImplementPipeline', () => {
 	test('leaves a first run unguarded', async () => {
 		const { dir, driver, config } = await setupStrayTreeRun();
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		expect({
 			baseline: result.manifest.baselineDirtyFiles,
@@ -336,7 +346,7 @@ describe('runImplementPipeline', () => {
 	test("commits under the agent's summary and bills the commit-message call to the run", async () => {
 		const { dir, driver, config, readLedger } = await setupSummarizedRun();
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		const ledger = readLedger({ runId: result.manifest.runId });
 

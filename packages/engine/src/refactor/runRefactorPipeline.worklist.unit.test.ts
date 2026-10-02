@@ -188,7 +188,7 @@ describe('runRefactorPipeline work-list', () => {
 	test('a check scope confines the run to that subtree and is frozen with the work-list', async () => {
 		const { dir, driver, prompts, config } = await setupTwoFolderRun();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config, path: 'alpha' });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config }, path: 'alpha' });
 
 		expect(result.ok).toBe(true);
 		// only the in-scope finding counts as work
@@ -225,7 +225,13 @@ describe('runRefactorPipeline work-list', () => {
 				throw new Error('the budget ceiling must be reached before any agent is spawned');
 			},
 		};
-		const result = await runRefactorPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), maxBatches: 0 });
+		const result = await runRefactorPipeline({
+			cwd: dir,
+			driver,
+			config: await readConfig({ cwd: dir }),
+			loadedConfig: { config: await readConfig({ cwd: dir }) },
+			maxBatches: 0,
+		});
 
 		expect(result.manifest.status).toBe('paused-budget');
 
@@ -260,7 +266,13 @@ describe('runRefactorPipeline work-list', () => {
 				throw new Error('the budget ceiling must be reached before any agent is spawned');
 			},
 		};
-		const result = await runRefactorPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), maxBatches: 0 });
+		const result = await runRefactorPipeline({
+			cwd: dir,
+			driver,
+			config: await readConfig({ cwd: dir }),
+			loadedConfig: { config: await readConfig({ cwd: dir }) },
+			maxBatches: 0,
+		});
 
 		expect(result.manifest.status).toBe('paused-budget');
 
@@ -278,7 +290,7 @@ describe('runRefactorPipeline work-list', () => {
 	test('an unconfigured packagesDir still batches per package under packages/', async () => {
 		const { dir, driver, config } = await setupDefaultPackagesRun();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config, maxBatches: 0 });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config }, maxBatches: 0 });
 
 		expect(result.manifest.status).toBe('paused-budget');
 
@@ -296,7 +308,7 @@ describe('runRefactorPipeline work-list', () => {
 	test('a run given no scope and no mode freezes the whole repo, baseline-filtered', async () => {
 		const { dir, driver, config } = await setupParkedRun();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config, maxBatches: 0 });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config }, maxBatches: 0 });
 
 		expect(result.manifest.status).toBe('paused-budget');
 
@@ -310,7 +322,7 @@ describe('runRefactorPipeline work-list', () => {
 	test('building the work-list leaves an existing standards-check report untouched', async () => {
 		const { dir, driver, config } = await setupParkedRun({ report: priorReport });
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config, maxBatches: 0 });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config }, maxBatches: 0 });
 
 		expect(result.manifest.status).toBe('paused-budget');
 		// the work-list's check persists nothing: a refactor run must not clobber
@@ -321,7 +333,7 @@ describe('runRefactorPipeline work-list', () => {
 	test('the burn-down tally adds up every finding of a rule, not one entry per rule', async () => {
 		const { dir, driver, config } = await setupTwoFindingFolder();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// both findings carry the 'multi-export' rule and must accumulate under it
@@ -333,7 +345,7 @@ describe('runRefactorPipeline work-list', () => {
 	test('a baselined finding is not work — the run completes as a verdict, spawning nothing', async () => {
 		const { dir, driver, prompts, config } = await setupBaselinedRun();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		expect(result.manifest.status).toBe('passed');
@@ -346,7 +358,7 @@ describe('runRefactorPipeline work-list', () => {
 	test('burn-down mode takes the baselined finding as work and burns it down', async () => {
 		const { dir, driver, prompts, config } = await setupBaselinedRun();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config, all: true });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config }, all: true });
 
 		expect(result.ok).toBe(true);
 		// the accepted cluster is the work-list in burn-down mode
@@ -378,6 +390,8 @@ describe('runRefactorPipeline work-list', () => {
 			},
 		};
 
-		await expect(runRefactorPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }) })).rejects.toThrow(/requires a git worktree/);
+		await expect(
+			runRefactorPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), loadedConfig: { config: await readConfig({ cwd: dir }) } }),
+		).rejects.toThrow(/requires a git worktree/);
 	});
 });

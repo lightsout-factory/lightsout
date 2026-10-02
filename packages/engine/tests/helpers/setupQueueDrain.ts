@@ -43,6 +43,7 @@ export const setupQueueDrain = ({
 			trackerSettings,
 			shipSettings: ship,
 			config,
+			loadedConfig: { config },
 			env,
 			driver,
 			driverName: 'claude-code',

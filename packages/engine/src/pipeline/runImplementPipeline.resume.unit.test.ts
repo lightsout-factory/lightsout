@@ -21,7 +21,13 @@ import { writeSource } from '#tests/helpers/writeSource.ts';
 test('rate-limited harness parks the run with resume instructions', async () => {
 	const dir = setupConsumerRepo();
 	const driver: Driver = { name: 'stub', invoke: async () => ({ text: '', exitCode: 1, rateLimited: true }) };
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.ok).toBe(false);
 	expect(result.manifest.status).toBe('paused-rate-limit');
@@ -55,7 +61,7 @@ test('resume skips passed steps and continues attempt counts', async () => {
 		}),
 	};
 	const config = await readConfig({ cwd: dir });
-	const parked = await runImplementPipeline({ cwd: dir, driver: parkOnWrite, config, planPath: 'plan.md' });
+	const parked = await runImplementPipeline({ cwd: dir, driver: parkOnWrite, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(parked.manifest.status).toBe('paused-rate-limit');
 
@@ -77,7 +83,7 @@ test('resume skips passed steps and continues attempt counts', async () => {
 		}),
 	};
 	const existing = await readRunManifest({ cwd: dir, runId: parked.manifest.runId });
-	const resumed = await runImplementPipeline({ cwd: dir, driver: resumeDriver, config, existing });
+	const resumed = await runImplementPipeline({ cwd: dir, driver: resumeDriver, config, loadedConfig: { config }, existing });
 
 	expect(resumed.ok).toBe(true);
 	// passed steps are not re-run
@@ -115,7 +121,7 @@ test('resume: the pre-edit standards baseline survives a park and is not rewritt
 		}),
 	};
 	const config = await readConfig({ cwd: dir });
-	const parked = await runImplementPipeline({ cwd: dir, driver: parkOnWrite, config, planPath: 'plan.md' });
+	const parked = await runImplementPipeline({ cwd: dir, driver: parkOnWrite, config, loadedConfig: { config }, planPath: 'plan.md' });
 	// the run folder's own comparison point, beside the manifest
 	const baselinePath = join(runDirFor({ cwd: dir, runId: parked.manifest.runId }), 'standards-baseline.json');
 	const atPark = readFileSync(baselinePath, 'utf8');
@@ -140,7 +146,7 @@ test('resume: the pre-edit standards baseline survives a park and is not rewritt
 		}),
 	};
 	const existing = await readRunManifest({ cwd: dir, runId: parked.manifest.runId });
-	const resumed = await runImplementPipeline({ cwd: dir, driver: resumeDriver, config, existing });
+	const resumed = await runImplementPipeline({ cwd: dir, driver: resumeDriver, config, loadedConfig: { config }, existing });
 	const afterResume = readFileSync(baselinePath, 'utf8');
 
 	expect(resumed.ok).toBe(true);
@@ -175,7 +181,7 @@ test("replaces a resumed root run's owner record with the resuming process", asy
 		}),
 	};
 	const config = await readConfig({ cwd: dir });
-	const parked = await runImplementPipeline({ cwd: dir, driver: parkOnWrite, config, planPath: 'plan.md' });
+	const parked = await runImplementPipeline({ cwd: dir, driver: parkOnWrite, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const runId = parked.manifest.runId;
 	// a previous process, long gone, last owned the parked run
 	writeFileSync(join(runDirFor({ cwd: dir, runId }), 'owner.json'), JSON.stringify({ pid: 999999, recordedAt: '2026-01-01T00:00:00.000Z' }));
@@ -197,7 +203,7 @@ test("replaces a resumed root run's owner record with the resuming process", asy
 		}),
 	};
 	const existing = await readRunManifest({ cwd: dir, runId });
-	const resumed = await runImplementPipeline({ cwd: dir, driver: resumeDriver, config, existing });
+	const resumed = await runImplementPipeline({ cwd: dir, driver: resumeDriver, config, loadedConfig: { config }, existing });
 	const owner = await readRunOwner({ cwd: dir, runId });
 
 	expect(resumed.ok).toBe(true);
@@ -222,7 +228,7 @@ test('points a fresh queue worker build at the queue run', async () => {
 		}),
 	};
 	const config = await readConfig({ cwd: dir });
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', queueRunId: 'q-1' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', queueRunId: 'q-1' });
 	const owner = await readRunOwner({ cwd: dir, runId: result.manifest.runId });
 
 	expect(owner).toStrictEqual({ queueRunId: 'q-1' });

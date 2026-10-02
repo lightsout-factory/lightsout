@@ -63,7 +63,13 @@ test('front-matter scope: scoped clean-slate, name substitution, expansion, root
 			},
 		}),
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 	const allGates = readGateLog({ dir });
 	const postImplementGates = allGates.slice(cleanSlateGates.length);
 
@@ -106,7 +112,13 @@ test('no scope anywhere: hard error before any gate or agent', async () => {
 			throw new Error('no agent should be invoked');
 		},
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.manifest.status).toBe('failed');
 	expect(result.error ?? '').toMatch(/no package scope/);
@@ -136,6 +148,7 @@ test('--packages flag overrides front-matter; source recorded as flag', async ()
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		packages: ['web'],
 	});
@@ -164,7 +177,13 @@ test('scope derived from concrete plan-body paths when nothing is declared', asy
 			},
 		}),
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.ok).toBe(true);
 	expect(result.manifest.packages).toStrictEqual(['api']);
@@ -196,6 +215,7 @@ test('a package path the plan body invents is dropped, and the run says which', 
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progress.push(message),
 	});
@@ -216,6 +236,7 @@ test('a plan body naming only packages that do not exist stops the run, and stil
 		cwd: dir,
 		driver: createUncalledDriver({ reason: 'no agent should be invoked — scope resolution must fail first' }),
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progress.push(message),
 	});
@@ -236,7 +257,13 @@ test('a declared package that does not exist stops the run before any gate, nami
 			throw new Error('no agent should be invoked — scope resolution must fail first');
 		},
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.manifest.status).toBe('failed');
 	expect(result.error ?? '').toMatch(/ghost/);
@@ -278,7 +305,7 @@ const setupParkedMonorepoRun = async () => {
 			},
 		}),
 	};
-	const parked = await runImplementPipeline({ cwd: dir, driver: parkOnWrite, config, planPath: 'plan.md' });
+	const parked = await runImplementPipeline({ cwd: dir, driver: parkOnWrite, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const resumeDriver: Driver = {
 		name: 'stub',
 		invoke: async ({ prompt }) => (roleOf(prompt) === 'standards-review' ? { text: reviewReport(), exitCode: 0 } : { text: report(), exitCode: 0 }),
@@ -297,6 +324,7 @@ test('a resumed manifest with no recorded scope origin still narrates its scope,
 		cwd: dir,
 		driver: resumeDriver,
 		config,
+		loadedConfig: { config },
 		existing: { ...parked.manifest, packagesSource: undefined },
 		onProgress: (message) => progress.push(message),
 	});

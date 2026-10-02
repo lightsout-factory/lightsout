@@ -80,6 +80,7 @@ const setupDirectRun = ({ agentCommands }: { agentCommands?: string[] } = {}) =>
 			driver,
 			driverName: 'claude-code',
 			config,
+			loadedConfig: { config },
 			answeredQuestion,
 			runId,
 			willShip,
@@ -107,7 +108,7 @@ const setupContinuedDirectRun = async () => {
 		pipeline: PipelineKind.Direct,
 		ticketRef: 'LO-70',
 		driver: 'claude-code',
-		config,
+		loadedConfig: { config },
 		baselineDirtyFiles: ['src/half-done.ts'],
 	});
 
@@ -119,6 +120,7 @@ const setupContinuedDirectRun = async () => {
 			driver,
 			driverName: 'claude-code',
 			config,
+			loadedConfig: { config },
 			existing,
 		});
 
@@ -145,6 +147,7 @@ const setupQueueWorkerDirectRun = () => {
 			driver,
 			driverName: 'claude-code',
 			config,
+			loadedConfig: { config },
 			queueRunId: 'q-1',
 		});
 

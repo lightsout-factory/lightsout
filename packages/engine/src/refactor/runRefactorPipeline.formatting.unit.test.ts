@@ -63,7 +63,7 @@ describe('runRefactorPipeline formatting', () => {
 	test('runs the repo’s formatter over what a batch’s agent wrote', async () => {
 		const { dir, driver, config } = await setupRun({ scripts: { format: witnessingFormatter } });
 
-		await runRefactorPipeline({ cwd: dir, driver, config });
+		await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		// The witness exists, so the formatter ran; its contents are the agent's
 		// output, so it ran after the write rather than before it.
@@ -74,7 +74,7 @@ describe('runRefactorPipeline formatting', () => {
 	test('completes a batch when the repo configures no formatter', async () => {
 		const { dir, driver, config } = await setupRun();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		// Nothing to run is not a failure — most repos of the engine's own making
 		// have a formatter, and a repo without one must still refactor.
@@ -86,7 +86,7 @@ describe('runRefactorPipeline formatting', () => {
 		const messages: string[] = [];
 		const { dir, driver, config } = await setupRun({ scripts: { format: 'node -e "process.exit(3)"' } });
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config, onProgress: (message) => messages.push(message) });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config }, onProgress: (message) => messages.push(message) });
 
 		// A formatter that cannot run is a human's configuration problem, not work
 		// an agent can fix — so it is said out loud and the gates still decide.

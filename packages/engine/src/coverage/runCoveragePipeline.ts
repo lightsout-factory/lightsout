@@ -1,5 +1,6 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { runPreflightGate } from '#src/common/utils/runPreflightGate.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
@@ -18,6 +19,8 @@ interface Params {
 	cwd: string;
 	driver: Driver;
 	config: LightsoutConfig;
+	/** The config as it was read from disk, before the command stamped its harness on it, and its path, recorded on a fresh run. */
+	loadedConfig: LoadedConfig;
 	/** Stop (parked, resumable) after this many batches — budget control. */
 	maxBatches?: number;
 	/** Accept a dirty tree: the standing dirt is recorded as baseline, never attributed to a batch. */
@@ -37,12 +40,13 @@ const executeCoverage = async ({
 	runId,
 	driver,
 	config,
+	loadedConfig,
 	maxBatches,
 	allowDirty,
 	existing,
 	onProgress,
 }: Params & { runId: string }): Promise<CoverageResult> => {
-	const { manifest, worklist } = await initializeCoverageRun({ cwd, runId, driver, config, allowDirty, existing });
+	const { manifest, worklist } = await initializeCoverageRun({ cwd, runId, driver, config, loadedConfig, allowDirty, existing });
 	// Rebuilt from persisted batch reports, never process memory, so the state
 	// survives park and resume.
 	const seeded = seedCoverageResumeState({ manifest });

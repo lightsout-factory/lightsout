@@ -43,6 +43,7 @@ test('runPhasesPipeline: a fresh sequence runs every phase in the overview order
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen }),
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		overviewPath,
 		skipRefactor: true,
 		onProgress: (message) => progress.push(message),
@@ -80,6 +81,7 @@ test('runPhasesPipeline: the coordinator persists its own narration, so a watch 
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen: [] }),
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		overviewPath,
 		skipRefactor: true,
 		onProgress: (message) => progress.push(message),
@@ -102,6 +104,7 @@ test('runPhasesPipeline: the ship stamp lands on the coordinator alone, never on
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen: [] }),
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		overviewPath,
 		skipRefactor: true,
 		willShip: true,
@@ -120,6 +123,7 @@ test('runPhasesPipeline: the sequence report carries its phases tokens, cost, an
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen: [], usage: { inputTokens: 100, outputTokens: 20, cacheReadTokens: 7, cacheCreationTokens: 3, costUsd: 0.25 } }),
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		overviewPath,
 		skipRefactor: true,
 	});
@@ -142,6 +146,7 @@ test('runPhasesPipeline: a phase that ends short stops the sequence right there 
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen, failAt: 2 }),
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		overviewPath,
 		skipRefactor: true,
 	});
@@ -164,6 +169,7 @@ test('runPhasesPipeline: --start-phase records the earlier phases as done outsid
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen }),
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		overviewPath,
 		startPhase: 2,
 		skipRefactor: true,
@@ -181,6 +187,7 @@ test("hands a fresh sequence's run id to its coordinator and never to a phase's 
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen: [] }),
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		overviewPath,
 		runId: 'pre-minted-sequence-run',
 		skipRefactor: true,
@@ -200,7 +207,14 @@ test("gathers every phase's commit onto the coordinator manifest", async () => {
 	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
 	const config = await readConfig({ cwd: dir });
 
-	const result = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
+	const result = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const children = await readPhaseChildRuns({ cwd: dir, manifest: result.manifest });
 
 	// one entry per phase, in phase order, each naming the phase's own run — a coordinator that commits nothing itself still reports what the sequence left
@@ -213,7 +227,14 @@ test("leaves a fresh sequence's phases unguarded", async () => {
 	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
 	const config = await readConfig({ cwd: dir });
 
-	const result = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
+	const result = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const [first, second] = await readPhaseChildRuns({ cwd: dir, manifest: result.manifest });
 
 	// nothing is inherited on a first sequence: phase 2 starts from its own snapshot of the tree phase 1's commit left clean
@@ -273,6 +294,7 @@ const narrateSequence = async ({ dir, overviewPath, config }: Awaited<ReturnType
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen: [] }),
 		config,
+		loadedConfig: { config },
 		overviewPath,
 		skipRefactor: true,
 		onProgress: (message) => progress.push(message),
@@ -284,7 +306,14 @@ const narrateSequence = async ({ dir, overviewPath, config }: Awaited<ReturnType
 test('starts each phase from build output that matches the source the previous phase committed', async () => {
 	const { dir, overviewPath, config } = await setupBuildOutputRepo();
 
-	const result = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
+	const result = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 
 	// phase 1 added a source file, so phase 2's clean-slate check passes only on the
 	// output phase 1 rebuilt — the output the branch started from lists one file too few
@@ -295,7 +324,14 @@ test('starts each phase from build output that matches the source the previous p
 test('keeps generated paths out of every phase commit and discards the carried output once the sequence passes', async () => {
 	const { dir, overviewPath, config, builtFrom } = await setupBuildOutputRepo();
 
-	const result = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
+	const result = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const committed = result.manifest.commits.map((commit) =>
 		execSync(`git show --name-only --pretty=format: ${commit.sha}`, { cwd: dir }).toString().split('\n').filter(Boolean),
 	);
@@ -370,6 +406,7 @@ test('runPhasesPipeline: a live run lock refuses a fresh sequence before its coo
 			cwd: dir,
 			driver: createPhaseDriver({ dir, seen }),
 			config: await readConfig({ cwd: dir }),
+			loadedConfig: { config: await readConfig({ cwd: dir }) },
 			overviewPath,
 			skipRefactor: true,
 		}),
@@ -387,7 +424,14 @@ test('runPhasesPipeline: a live run lock refuses a fresh sequence before its coo
 test('runPhasesPipeline: a live run lock refuses a resumed sequence before anything is rewritten', async () => {
 	const { dir, overviewPath } = setupPhasedRepo({ phases: 2 });
 	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }), config, overviewPath, skipRefactor: true });
+	const parked = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const runId = parked.manifest.runId;
 	const before = await readRunManifest({ cwd: dir, runId });
 	const ownerBefore = await readRunOwner({ cwd: dir, runId });
@@ -396,7 +440,7 @@ test('runPhasesPipeline: a live run lock refuses a resumed sequence before anyth
 	plantLiveLock({ dir });
 
 	const error = await getRejectionError({
-		promise: runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen }), config, existing: before, skipRefactor: true }),
+		promise: runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen }), config, loadedConfig: { config }, existing: before, skipRefactor: true }),
 	});
 	const after = await readRunManifest({ cwd: dir, runId });
 	const ownerAfter = await readRunOwner({ cwd: dir, runId });
@@ -415,6 +459,7 @@ test('runPhasesPipeline: the coordinator owns the family and no phase run gets a
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen: [] }),
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		overviewPath,
 		skipRefactor: true,
 	});
@@ -444,7 +489,15 @@ test("runPhasesPipeline: the running step names its child before the child's fir
 		},
 	});
 
-	await runPhasesPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), overviewPath, runId: coordinatorRunId, skipRefactor: true });
+	await runPhasesPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		overviewPath,
+		runId: coordinatorRunId,
+		skipRefactor: true,
+	});
 
 	// a first attempt names its child too, so a reader can tell which run of the family is moving
 	expect(typeof observed.childRunId).toBe('string');
@@ -463,7 +516,15 @@ test('runPhasesPipeline: a coordinator whose owner record names another process 
 	});
 
 	const error = await getRejectionError({
-		promise: runPhasesPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), overviewPath, runId: coordinatorRunId, skipRefactor: true }),
+		promise: runPhasesPipeline({
+			cwd: dir,
+			driver,
+			config: await readConfig({ cwd: dir }),
+			loadedConfig: { config: await readConfig({ cwd: dir }) },
+			overviewPath,
+			runId: coordinatorRunId,
+			skipRefactor: true,
+		}),
 	});
 	const manifest = await readRunManifest({ cwd: dir, runId: coordinatorRunId });
 	const childRunId = await readFirstPhaseRunId({ cwd: dir, coordinatorRunId });
@@ -500,6 +561,7 @@ test.each([
 			cwd: dir,
 			driver,
 			config: await readConfig({ cwd: dir }),
+			loadedConfig: { config: await readConfig({ cwd: dir }) },
 			overviewPath,
 			runId: coordinatorRunId,
 			skipRefactor: true,
@@ -524,6 +586,7 @@ test('runPhasesPipeline: a queue worker sequence passes its owner fence on the p
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen: [] }),
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		overviewPath,
 		skipRefactor: true,
 		queueRunId: 'q-1',
@@ -555,14 +618,21 @@ test('runPhasesPipeline: a phase whose child throws keeps its child for the resu
 		},
 	});
 
-	const failed = await runPhasesPipeline({ cwd: dir, driver, config, overviewPath, runId: coordinatorRunId, skipRefactor: true });
+	const failed = await runPhasesPipeline({ cwd: dir, driver, config, loadedConfig: { config }, overviewPath, runId: coordinatorRunId, skipRefactor: true });
 
 	// the phase run's manifest comes back as it stood when the run was cut short
 	rmSync(saved.manifestPath ?? '', { recursive: true });
 	writeFileSync(saved.manifestPath ?? '', saved.content ?? '');
 
 	const childRunId = (await readFirstPhaseRunId({ cwd: dir, coordinatorRunId })) ?? '';
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, existing: failed.manifest, skipRefactor: true });
+	const resumed = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		loadedConfig: { config },
+		existing: failed.manifest,
+		skipRefactor: true,
+	});
 	const runIds = await listRunIds({ cwd: dir });
 
 	expect(failed.manifest.steps[0]).toEqual(expect.objectContaining({ status: 'failed', report: { runId: childRunId } }));

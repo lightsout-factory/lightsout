@@ -1,5 +1,6 @@
 import { buildQueueAutoPlanInvocation } from '#src/agents/buildQueueAutoPlanInvocation.ts';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { getDirsOutsideCwd } from '#src/common/utils/getDirsOutsideCwd.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
@@ -26,6 +27,8 @@ interface Params {
 	/** The work order's label — the folder the engine chooses a plan inside, and the first segment of the address it hands the session. */
 	workOrderName: string;
 	config: LightsoutConfig;
+	/** The queue's startup config as it was read from disk, and its path, which every run this worker builds records. */
+	loadedConfig: LoadedConfig;
 	driver: Driver;
 	/** Recorded as the harness name on a build from the ticket body. */
 	driverName: string;
@@ -161,6 +164,7 @@ export const runAutoPlanWorker = async ({
 	ticket,
 	workOrderName,
 	config,
+	loadedConfig,
 	driver,
 	driverName,
 	settings,
@@ -183,6 +187,7 @@ export const runAutoPlanWorker = async ({
 			ticket,
 			record,
 			config,
+			loadedConfig,
 			env,
 			driver,
 			driverName,

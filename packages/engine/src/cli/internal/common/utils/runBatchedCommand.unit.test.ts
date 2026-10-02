@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { runBatchedCommand } from '#src/cli/internal/common/utils/runBatchedCommand.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
@@ -116,6 +117,50 @@ const setupResumeShell = ({ recorded, recordsPath = true }: { recorded: Record<s
 	return { command, seen, ...captured };
 };
 
+/** The config a resumed run recorded, deliberately unlike the checkout's file it is resumed from. */
+const recordedConfig: LightsoutConfig = { harness: 'codex', gates: { check: 'recorded-check', test: 'true', 'test-coverage': false } };
+
+/**
+ * A refactor run started fresh, or resumed with `--run` from a seeded manifest
+ * recording `recordedConfig` at `recordedConfigPath`. Either way the checkout's
+ * own file is a valid one whose check gate reads 'checkout-file-check', so a
+ * resume that read the file would hand the run its contents.
+ */
+const setupLoadedConfigShell = ({ resume = false }: { resume?: boolean } = {}) => {
+	const captured = captureCommandOutput();
+	const cwd = setupConsumerRepo({ scripts: { check: 'checkout-file-check' }, config: { 'standards-pack': false } });
+	const seeded: RunManifest = {
+		...manifestOf({ status: RunStatus.Failed }),
+		pipeline: 'refactor',
+		harness: 'codex',
+		config: recordedConfig,
+		configPath: recordedConfigPath,
+	};
+
+	if (resume) {
+		const runDir = runDirFor({ cwd, runId: seeded.runId, pipeline: 'refactor' });
+
+		mkdirSync(runDir, { recursive: true });
+		writeFileSync(join(runDir, 'manifest.json'), JSON.stringify(seeded));
+	}
+
+	const seen: { loadedConfig?: LoadedConfig } = {};
+
+	const command = runBatchedCommand({
+		flags: parseFlags({ args: resume ? ['--run', seeded.runId] : [] }),
+		cwd,
+		command: 'refactor',
+		run: async (start) => {
+			seen.loadedConfig = start.loadedConfig;
+
+			return { ok: true, manifest: manifestOf({ status: RunStatus.Passed }) };
+		},
+		print: () => undefined,
+	});
+
+	return { command, cwd, seen, ...captured };
+};
+
 describe('runBatchedCommand', () => {
 	test('resolves the effective config, announces the run, hands off, prints the result, and exits 0 on ok', async () => {
 		const { command, cwd, seen, printed, logged, exitCodes } = setupShell({ args: ['--max-batches', '2'] });
@@ -226,6 +271,34 @@ describe('runBatchedCommand', () => {
 			banner: 'lightsout: refactor resuming run run-42',
 			configLines: [],
 			gates: { check: 'true', test: 'true', 'test-coverage': false },
+			exitCodes: [0],
+		});
+	});
+
+	test('a fresh run is handed the config as read and its absolute path', async () => {
+		const { command, cwd, seen, exitCodes } = setupLoadedConfigShell();
+
+		await expect(command).rejects.toThrow(/process\.exit/);
+
+		expect({ loadedConfig: seen.loadedConfig, exitCodes }).toStrictEqual({
+			loadedConfig: {
+				config: { gates: { check: 'checkout-file-check', test: 'true', 'test-coverage': false }, 'standards-pack': false },
+				path: join(cwd, 'lightsout.config.json'),
+			},
+			exitCodes: [0],
+		});
+	});
+
+	test('a resumed run is handed the recorded config and its recorded path', async () => {
+		const { command, seen, exitCodes } = setupLoadedConfigShell({ resume: true });
+
+		await expect(command).rejects.toThrow(/process\.exit/);
+
+		expect({ loadedConfig: seen.loadedConfig, exitCodes }).toStrictEqual({
+			loadedConfig: {
+				config: { harness: 'codex', gates: { check: 'recorded-check', test: 'true', 'test-coverage': false } },
+				path: '/elsewhere/launching-checkout/lightsout.config.json',
+			},
 			exitCodes: [0],
 		});
 	});

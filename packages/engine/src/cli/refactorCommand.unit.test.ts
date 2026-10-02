@@ -144,6 +144,18 @@ describe('refactorCommand', () => {
 		expect(pipelineParams()?.config).toEqual(expect.objectContaining({ harness: 'claude-code' }));
 	});
 
+	test('the loaded config rides into the pipeline beside the stamped one', async () => {
+		const { context, cwd } = setupRefactor();
+		const { config, configPath } = recordedConfigOf({ cwd });
+
+		await expect(refactorCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// the file as read, with no harness stamped on it, and the absolute path it came from
+		expect(pipelineParams()).toEqual(
+			expect.objectContaining({ loadedConfig: { config, path: configPath }, config: expect.objectContaining({ harness: 'claude-code' }) }),
+		);
+	});
+
 	test('a completed run exits 0 and prints the burn-down, so a caller reads success from the exit code', async () => {
 		const { context, logged, errors, exitCodes } = setupRefactor({ result: { before: { 'duplicate-code-block': 3 }, after: { 'duplicate-code-block': 0 } } });
 

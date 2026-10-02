@@ -116,6 +116,7 @@ const setupDirectCommit = ({ uncommitted }: { uncommitted?: string } = {}) => {
 			driver,
 			driverName: 'claude-code',
 			config,
+			loadedConfig: { config },
 			onProgress: () => undefined,
 		});
 
@@ -137,7 +138,7 @@ const setupResumedDirectCommit = async ({ status }: { status: RunStatus }) => {
 		pipeline: PipelineKind.Direct,
 		ticketRef: 'LO-70',
 		driver: 'claude-code',
-		config,
+		loadedConfig: { config },
 	});
 	const existing = await writeRunManifest({
 		cwd,
@@ -158,6 +159,7 @@ const setupResumedDirectCommit = async ({ status }: { status: RunStatus }) => {
 			driver,
 			driverName: 'claude-code',
 			config,
+			loadedConfig: { config },
 			existing,
 			onProgress: () => undefined,
 		});

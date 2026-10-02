@@ -69,6 +69,7 @@ test('write-tests fan-out: files that import each other share ONE writer; unrela
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progress.push(message),
 	});
@@ -160,6 +161,7 @@ test('write-tests fan-out: two internals sharing an UNCHANGED public subject gro
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progress.push(message),
 	});
@@ -237,6 +239,7 @@ test('write-tests fan-out: an import component above the writer cap splits into 
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progress.push(message),
 	});

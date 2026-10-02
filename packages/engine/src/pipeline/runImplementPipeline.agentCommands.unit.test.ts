@@ -57,7 +57,7 @@ test('agentCommands: grant section reaches the executor, driver gets allowedComm
 	};
 
 	const config = await readConfig({ cwd: dir });
-	const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+	const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 	expect(result.ok).toBe(true);
 
@@ -98,7 +98,7 @@ test("agentCommands absent: no grant section, and the engine's own self-check th
 
 	const config = await readConfig({ cwd: dir });
 
-	await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+	await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 	// executor was invoked
 	expectDefined(implementInvocation);
@@ -147,7 +147,7 @@ test('grants every working role the self-check prefix, and tells only the execut
 	};
 
 	const config = await readConfig({ cwd: dir });
-	const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+	const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 	expect(result.ok).toBe(true);
 
@@ -211,7 +211,7 @@ test('hands a fix re-invocation the same system prompt its first spawn carried',
 	};
 
 	const config = await readConfig({ cwd: dir });
-	const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+	const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 	expectDefined(implementSystemPrompt);
 	expectDefined(fixSystemPrompt);

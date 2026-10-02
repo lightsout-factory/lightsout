@@ -53,7 +53,7 @@ const setupFormatRun = async ({ format }: { format: string }) => {
 
 test('formatting runs after every code-writing phase and before its verification gates', async () => {
 	const { dir, driver, config } = await setupFormatRun({ format: 'true' });
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.ok).toBe(true);
 
@@ -67,7 +67,7 @@ test('formatting runs after every code-writing phase and before its verification
 
 test('the skip-refactor path formats implementation and tests but declares no refactor formatter', async () => {
 	const { dir, driver, config } = await setupFormatRun({ format: 'true' });
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 	const steps = readCommandLog({ dir, runId: result.manifest.runId }).map((record) => record.step);
 
 	expect(steps.includes('format-implement')).toBe(true);
@@ -77,7 +77,7 @@ test('the skip-refactor path formats implementation and tests but declares no re
 
 test('a red dynamic formatter step fails the run before its following verification command', async () => {
 	const { dir, driver, config } = await setupFormatRun({ format: 'echo FORMATTER-SENTINEL >&2; exit 3' });
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 	expect(result.ok).toBe(false);
 	expect(result.error ?? '').toMatch(/format failed \(exit 3\)/);

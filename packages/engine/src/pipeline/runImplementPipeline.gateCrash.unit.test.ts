@@ -79,7 +79,7 @@ const setupCrashingVerifyRun = async ({ tally }: { tally: string }) => {
 test('verify: a gate that only ever crashes stops the step without buying a fix or a verdict', async () => {
 	const { dir, driver, counts, config } = await setupCrashingVerifyRun({ tally: crashOnlyTally });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const step = result.manifest.steps.find((step) => step.id === 'verify-implement');
 
 	expect(result.error ?? '').toMatch(/a gate crashed instead of failing/);
@@ -94,7 +94,7 @@ test('verify: a gate that only ever crashes stops the step without buying a fix 
 test('verify: an unabsorbed crash reaches the operator through the run friction ledger', async () => {
 	const { dir, driver, config } = await setupCrashingVerifyRun({ tally: crashOnlyTally });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const crashFriction = (await readFriction({ cwd: dir })).filter((entry) => entry.runId === result.manifest.runId && entry.detail.includes(jestCrashCause));
 
 	expect(crashFriction.length).toBeGreaterThan(0);
@@ -104,7 +104,7 @@ test('verify: an unabsorbed crash reaches the operator through the run friction 
 test('verify: a failing test that repeats under a crashing worker still fails the step the ordinary way', async () => {
 	const { dir, driver, counts, config } = await setupCrashingVerifyRun({ tally: crashBesideFailureTally });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const step = result.manifest.steps.find((step) => step.id === 'verify-implement');
 
 	expect(result.error ?? '').toMatch(/verify-implement: still failing after retries\./);

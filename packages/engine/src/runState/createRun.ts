@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { readGitCurrentBranch } from '#src/common/git/readGitCurrentBranch.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { toRepoRelativePath } from '#src/common/utils/toRepoRelativePath.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
@@ -29,8 +29,8 @@ interface Params {
 	parentRunId?: string;
 	/** The driver name the run was started with, persisted as the manifest's `harness` field. */
 	driver: string;
-	/** Resolved config, snapshotted into the manifest as the run's permanent settings record. */
-	config?: LightsoutConfig;
+	/** The config the run started with, as it was read from disk before any command stamped its harness on it, recorded as the manifest's settings, and the path it was read from. Absent only for a caller that has no config at all; every pipeline entry passes one. The path is stored as given, never re-resolved against `cwd`: a run launched from another checkout read its config there. */
+	loadedConfig?: LoadedConfig;
 	/** Git-dirty paths at run start — the subtraction baseline for changed-file attribution. */
 	baselineDirtyFiles?: string[];
 	/** Resolved before the run starts: a passing run will ship this branch. Omitted by every pipeline that resolves no ship intent. */
@@ -54,7 +54,7 @@ export const createRun = async ({
 	overview,
 	parentRunId,
 	driver,
-	config,
+	loadedConfig,
 	baselineDirtyFiles,
 	willShip,
 	queueRunId,
@@ -76,11 +76,12 @@ export const createRun = async ({
 		overview: overview === undefined ? undefined : toRepoRelativePath({ cwd, path: overview }),
 		parentRunId,
 		harness: driver,
-		config,
+		config: loadedConfig?.config,
 		branch,
 		// Absolute, because the reader that wants it stands in another checkout
 		// and has nothing to join a relative path onto.
 		workspace: resolve(cwd),
+		configPath: loadedConfig?.path,
 		willShip,
 		status: RunStatus.Pending,
 		currentStep: null,

@@ -52,7 +52,7 @@ describe('runRefactorPipeline batch gates', () => {
 	test('verifies a batch against the packages it actually touched, with coverage always on', async () => {
 		const { dir, driver, config, batchGates } = await setupMonorepoBatch();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 

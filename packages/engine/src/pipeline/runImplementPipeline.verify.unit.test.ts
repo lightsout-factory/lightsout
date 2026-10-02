@@ -95,7 +95,7 @@ const setupRedVerifyRun = async ({
 test('verify: a rate limit inside a cheap fix retry parks the run before judgment is bought', async () => {
 	const { dir, driver, counts, config } = await setupRedVerifyRun({ fix: () => ({ text: '', exitCode: 1, rateLimited: true }) });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.manifest.status).toBe('paused-rate-limit');
 	expect(result.error?.includes(`lightsout resume --run ${result.manifest.runId}`)).toBeTruthy();
@@ -114,7 +114,7 @@ test('verify: a rate limit inside a cheap fix retry parks the run before judgmen
 test('verify: a rate-limited supervisor parks the run after the cheap retries are spent', async () => {
 	const { dir, driver, counts, config } = await setupRedVerifyRun({ supervisor: () => ({ text: '', exitCode: 1, rateLimited: true }) });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.manifest.status).toBe('paused-rate-limit');
 	expect(result.error?.includes(`lightsout resume --run ${result.manifest.runId}`)).toBeTruthy();
@@ -129,7 +129,7 @@ test('verify: a retry verdict carrying no guidance escalates instead of buying a
 		supervisor: () => ({ text: verdict({ decision: 'retry', diagnosis: 'DIAGNOSIS-SENTINEL' }), exitCode: 0 }),
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.manifest.status).toBe('escalated');
 	// a retry with nothing to say buys no guided attempt
@@ -145,7 +145,7 @@ test('verify: a verdict that never parses buys one re-emit retry, then escalates
 		supervisor: () => ({ text: 'The gate looks wrong to me — I have no JSON for you.', exitCode: 0 }),
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.manifest.status).toBe('escalated');
 	// the contract re-emit is the only extra turn a malformed verdict buys
@@ -172,7 +172,7 @@ test('verify: a rate limit inside the supervisor-guided retry parks the run inst
 		supervisor: () => ({ text: verdict({ decision: 'retry', diagnosis: 'stale artifact', guidance: 'delete BROKEN' }), exitCode: 0 }),
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	// a park a human can resume, never the escalation an exhausted path gives
 	expect(result.manifest.status).toBe('paused-rate-limit');
@@ -192,7 +192,7 @@ test('verify: a fix invocation whose driver dies spends its turn without failing
 		},
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	// a dead fix is neither a run failure of its own nor a reason to cut the
 	// retry budget short — the still-red gate is what ends the step
@@ -210,7 +210,7 @@ test('verify: a fix reporting failed earns no changed-file attribution — only 
 		}),
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.manifest.status).toBe('escalated');
 	// the file a failed fix claimed never becomes the run's truth
@@ -242,7 +242,7 @@ test('verify: an exhausted check family does not consume a newly exposed test fa
 			return { text: report(), exitCode: 0 };
 		},
 	});
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 	const verification = result.manifest.steps.find((step) => step.id === 'verify-implement')?.verification;
 	const repairCommands = readCommandLog(dir, result.manifest.runId).filter((command) => command.step === 'verify-implement');
 	const firstRepairFormat = repairCommands.findIndex((command) => command.kind === 'format');
@@ -275,7 +275,15 @@ test('verify: simultaneous root and package failures share one counter for their
 		...scopedConfig,
 		'package-gates': { check: 'test ! -f BROKEN # {package}', test: 'true # {package}' },
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: configWithPackages, planPath: 'plan.md', packages: ['api'], skipRefactor: true });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: configWithPackages,
+		loadedConfig: { config: configWithPackages },
+		planPath: 'plan.md',
+		packages: ['api'],
+		skipRefactor: true,
+	});
 	const verification = result.manifest.steps.find((step) => step.id === 'verify-implement')?.verification;
 
 	expect(result.ok).toBe(true);
@@ -291,7 +299,7 @@ test('verify: one repair invocation charges every simultaneously red family once
 			return { text: report(), exitCode: 0 };
 		},
 	});
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 	const verification = result.manifest.steps.find((step) => step.id === 'verify-implement')?.verification;
 
 	expect(result.ok).toBe(true);
@@ -314,9 +322,9 @@ test('verify: a rate-limited cheap repair resumes with formatting before gates a
 			return { text: report(), exitCode: 0 };
 		},
 	});
-	const paused = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const paused = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 	const before = readCommandLog(dir, paused.manifest.runId).length;
-	const resumed = await runImplementPipeline({ cwd: dir, driver, config, existing: paused.manifest, skipRefactor: true });
+	const resumed = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, existing: paused.manifest, skipRefactor: true });
 	const appended = readCommandLog(dir, paused.manifest.runId).slice(before);
 	const verification = resumed.manifest.steps.find((step) => step.id === 'verify-implement')?.verification;
 
@@ -336,8 +344,8 @@ test('verify: a guided repair rate limit cannot buy a second guided invocation a
 		},
 		supervisor: () => ({ text: verdict({ decision: 'retry', diagnosis: 'stale artifact', guidance: 'delete BROKEN' }), exitCode: 0 }),
 	});
-	const paused = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
-	const resumed = await runImplementPipeline({ cwd: dir, driver, config, existing: paused.manifest, skipRefactor: true });
+	const paused = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
+	const resumed = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, existing: paused.manifest, skipRefactor: true });
 
 	expect(resumed.manifest.status).toBe('escalated');
 	expect(counts.fix).toBe(maxCheapFixRetries + 1);
@@ -357,7 +365,7 @@ test('verify: repair formatting precedes re-gating and a red formatter becomes c
 			return { text: '', exitCode: 1, rateLimited: true };
 		},
 	});
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 	const commands = readCommandLog(dir, result.manifest.runId);
 	const lastFormat = commands.map((command) => command.kind).lastIndexOf('format');
 	const verification = result.manifest.steps.find((step) => step.id === 'verify-implement')?.verification;
@@ -372,7 +380,7 @@ test('verify: final escalation persists ordered evidence, counters, guidance sta
 	const { dir, driver, prompts, config } = await setupRedVerifyRun({
 		supervisor: () => ({ text: verdict({ decision: 'retry', diagnosis: 'persistent test defect', guidance: 'inspect the assertion' }), exitCode: 0 }),
 	});
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 	const verification = result.manifest.steps.find((step) => step.id === 'verify-implement')?.verification;
 
 	expect(verification?.failedFamilies).toStrictEqual(['test']);

@@ -45,7 +45,7 @@ const setupFinishedRun = async ({ uncommitted }: { uncommitted?: string } = {}) 
 		pipeline: PipelineKind.Direct,
 		ticketRef: 'LO-70',
 		driver: 'claude-code',
-		config,
+		loadedConfig: { config },
 	});
 	const run = new RunState({ cwd, config, manifest });
 

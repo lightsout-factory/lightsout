@@ -100,6 +100,7 @@ test('happy path: git truth, per-file writers, refactor loop, coverage/format wi
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		overviewPath: 'overview.md',
 		onProgress: (message) => progress.push(message),

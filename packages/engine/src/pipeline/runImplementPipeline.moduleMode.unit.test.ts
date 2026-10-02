@@ -115,7 +115,7 @@ describe('runImplementPipeline', () => {
 	test('write-tests: a module-scope-await file is skipped when the repo’s Jest loads it as CommonJS, and the execution gate exempts it too', async () => {
 		const { dir, driver, config, writerPrompts, progress, onProgress } = await setupModuleModeRun({ jestConfig: {} });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', onProgress });
 
 		const skipped = progress.find((line) => line.includes('no unit test could move their coverage'));
 
@@ -135,7 +135,7 @@ describe('runImplementPipeline', () => {
 			jestConfig: { extensionsToTreatAsEsm: ['.ts'] },
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', onProgress });
 
 		// the module-scope await no longer costs the file its writer
 		expect(subjectsOf({ prompts: writerPrompts })).toStrictEqual(['src/add.ts', 'src/boot.ts']);

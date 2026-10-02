@@ -22,7 +22,7 @@ interface Params {
  * escalated run parks with its worktree intact instead.
  */
 export const buildFromTicketBody = async ({ step }: Params): Promise<WorkerOutcome> => {
-	const { cwd, record, plan, ticket, config, driver, driverName, onProgress, queueRunId } = step;
+	const { cwd, record, plan, ticket, config, loadedConfig, driver, driverName, onProgress, queueRunId } = step;
 	// A settled worker run must stop pointing at the queue, which keeps running.
 	const run = async ({ runId }: { runId: string }) => {
 		try {
@@ -34,6 +34,7 @@ export const buildFromTicketBody = async ({ step }: Params): Promise<WorkerOutco
 				driver,
 				driverName,
 				config,
+				loadedConfig,
 				onProgress,
 				queueRunId,
 			});

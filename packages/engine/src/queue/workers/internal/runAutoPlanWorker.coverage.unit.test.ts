@@ -127,6 +127,7 @@ const setupAutoPlanWorker = ({
 			ticket,
 			workOrderName: branch,
 			config,
+			loadedConfig: { config },
 			driver,
 			driverName: 'claude-code',
 			settings: queueSettingsFixture(),

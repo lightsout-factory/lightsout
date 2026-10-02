@@ -271,6 +271,7 @@ test('pipeline writes agents.jsonl per invocation and aggregates usage into the 
 		planPath: 'plan.md',
 		driver,
 		config,
+		loadedConfig: { config },
 		onProgress: (message) => progressLines.push(message),
 	});
 
@@ -329,7 +330,7 @@ test('a driver reporting no usage leaves no ledger and no manifest aggregate', a
 	};
 
 	const config = await readConfig({ cwd: dir });
-	const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+	const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 	expect(result.ok).toBe(true);
 	expect(result.manifest.usage).toBe(undefined);

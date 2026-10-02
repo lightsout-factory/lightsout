@@ -111,6 +111,7 @@ test('write-tests fan-out: every executable-code kind earns a writer; barrels an
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progress.push(message),
 	});
@@ -206,6 +207,7 @@ test('write-tests fan-out: a deleted source file is skipped, never sent to a wri
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progress.push(message),
 	});
@@ -279,6 +281,7 @@ test('write-tests fan-out: an unreadable file that still exists keeps its writer
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progress.push(message),
 	});
@@ -353,6 +356,7 @@ test('write-tests fan-out: a file the repo’s coverage configuration does not c
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progress.push(message),
 	});

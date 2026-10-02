@@ -50,7 +50,13 @@ test('verify failure: cheap retries, then supervisor escalate with diagnosis', a
 			},
 		}),
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.manifest.status).toBe('escalated');
 	expect(result.error ?? '').toMatch(/DIAGNOSIS-SENTINEL/);
@@ -103,7 +109,13 @@ test('supervisor retry-with-guidance heals the run', async () => {
 			},
 		}),
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.ok).toBe(true);
 	expect(result.manifest.steps.find((step) => step.id === 'verify-implement')?.attempts).toBe(4);

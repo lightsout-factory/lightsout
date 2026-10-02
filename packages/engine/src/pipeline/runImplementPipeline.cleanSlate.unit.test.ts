@@ -94,7 +94,7 @@ const baselinePathOf = ({ dir, runId }: { dir: string; runId: string }) => join(
 test('clean-slate: a red baseline gate fails the run before a single agent is spawned', async () => {
 	const { dir, driver, spawned, config } = await setupCleanSlateRun({ scripts: { check: 'echo BASELINE-SENTINEL >&2; exit 1' } });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.ok).toBe(false);
 	expect(result.manifest.status).toBe('failed');
@@ -117,7 +117,7 @@ test('clean-slate: a gate that ran out of time is reported as a gate that did no
 		config: { timeouts: { 'gate-minutes': 0.02 } },
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.ok).toBe(false);
 	expect(result.manifest.status).toBe('failed');
@@ -130,7 +130,7 @@ test('clean-slate: artifacts left behind by a gate command fold into the baselin
 		scripts: { check: `node -e "require('fs').appendFileSync('gate-artifact.log','x')"` },
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 	expect(result.ok).toBe(true);
 	// the artifact folded into the baseline at clean-slate
@@ -145,7 +145,7 @@ test('clean-slate: artifacts left behind by a gate command fold into the baselin
 test('clean-slate: a passing baseline writes the pre-edit standards baseline into the run folder', async () => {
 	const { dir, driver, config } = await setupCleanSlateRun({ scripts: {} });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	const baseline = StandardsSnapshot.safeParse(JSON.parse(readFileSync(baselinePathOf({ dir, runId: result.manifest.runId }), 'utf8')));
 
@@ -160,7 +160,7 @@ test('clean-slate: a passing baseline writes the pre-edit standards baseline int
 test('clean-slate: the baseline is captured even when the run skips refactor', async () => {
 	const { dir, driver, config } = await setupCleanSlateRun({ scripts: {} });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 	const baseline = StandardsSnapshot.safeParse(JSON.parse(readFileSync(baselinePathOf({ dir, runId: result.manifest.runId }), 'utf8')));
 
@@ -173,7 +173,7 @@ test('clean-slate: the baseline is captured even when the run skips refactor', a
 test('clean-slate: a red baseline gate writes no standards baseline', async () => {
 	const { dir, driver, config } = await setupCleanSlateRun({ scripts: { check: 'exit 1' } });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	expect(result.ok).toBe(false);
 	expect(result.manifest.steps.find((step) => step.id === 'clean-slate')?.status).toBe('failed');
@@ -196,6 +196,7 @@ test('clean-slate: a standards pack whose check cannot run leaves no baseline an
 		cwd: dir,
 		driver,
 		config,
+		loadedConfig: { config },
 		planPath: 'plan.md',
 		skipRefactor: true,
 		onProgress: (message) => progress.push(message),
@@ -213,7 +214,7 @@ test('clean-slate: a standards pack whose check cannot run leaves no baseline an
 test('clean-slate: standards explicitly off still writes a baseline with no findings', async () => {
 	const { dir, driver, config } = await setupCleanSlateRun({ scripts: {}, config: { 'standards-pack': false } });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 	const baseline = StandardsSnapshot.safeParse(JSON.parse(readFileSync(baselinePathOf({ dir, runId: result.manifest.runId }), 'utf8')));
 
@@ -236,7 +237,7 @@ test('clean-slate: a finding the repo already accepted as debt still lands in th
 
 	await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }), persist: false, writeBaseline: true });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 	const baseline = StandardsSnapshot.safeParse(JSON.parse(readFileSync(baselinePathOf({ dir, runId: result.manifest.runId }), 'utf8')));
 	const ledgered = (baseline.data?.findings ?? []).filter((finding) => finding.rule === 'lightsout/multi-export');
 
@@ -252,7 +253,7 @@ test('clean-slate: the capture never clobbers the standalone standards report th
 	mkdirSync(join(dir, '.lightsout'), { recursive: true });
 	writeFileSync(standalonePath, 'STANDALONE-REPORT-SENTINEL\n');
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 	expect(result.ok).toBe(true);
 	// the run writes its comparison point into its own folder and nowhere else

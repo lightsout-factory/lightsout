@@ -203,6 +203,7 @@ const setupAutoPlanTicket = ({
 			workOrderName: branch,
 			ticket,
 			config,
+			loadedConfig: { config },
 			driver,
 			driverName: 'claude-code',
 			settings: queueSettingsFixture(),

@@ -71,7 +71,14 @@ const setupRefusedDiscard = async () => {
 /** That same sequence already ended failed on the refused discard, with the discard now answering as git would. */
 const setupFailedDiscardSequence = async () => {
 	const { dir, overviewPath, config } = await setupRefusedDiscard();
-	const failed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
+	const failed = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const failedChildren = await readPhaseChildRuns({ cwd: dir, manifest: failed.manifest });
 
 	mockDiscardGeneratedChanges.mockImplementation(actual.discardGeneratedChanges);
@@ -102,7 +109,14 @@ describe('runPhasesPipeline', () => {
 	test('ends the sequence failed and resumable when the carried build output cannot be discarded', async () => {
 		const { dir, overviewPath, config } = await setupRefusedDiscard();
 
-		const result = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
+		const result = await runPhasesPipeline({
+			cwd: dir,
+			driver: createPhaseDriver({ dir, seen: [] }),
+			config,
+			loadedConfig: { config },
+			overviewPath,
+			skipRefactor: true,
+		});
 		const persisted = await readRunManifest({ cwd: dir, runId: result.manifest.runId });
 
 		// the coordinator was handed the build output the phases carried, and nothing else
@@ -123,7 +137,14 @@ describe('runPhasesPipeline', () => {
 		const { dir, config, failed, failedChildRunIds } = await setupFailedDiscardSequence();
 		const seen: number[] = [];
 
-		const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen }), config, existing: failed.manifest, skipRefactor: true });
+		const resumed = await runPhasesPipeline({
+			cwd: dir,
+			driver: createPhaseDriver({ dir, seen }),
+			config,
+			loadedConfig: { config },
+			existing: failed.manifest,
+			skipRefactor: true,
+		});
 		const resumedChildren = await readPhaseChildRuns({ cwd: dir, manifest: resumed.manifest });
 		const status = execSync('git status --porcelain -uall', { cwd: dir, encoding: 'utf8' });
 
@@ -139,7 +160,15 @@ describe('runPhasesPipeline', () => {
 	test('ends the sequence failed rather than passed when git cannot read the tree the carried output sits in', async () => {
 		const { dir, overviewPath, config, runId } = await setupUnreadableTreeAfterPhases();
 
-		const result = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, runId, skipRefactor: true });
+		const result = await runPhasesPipeline({
+			cwd: dir,
+			driver: createPhaseDriver({ dir, seen: [] }),
+			config,
+			loadedConfig: { config },
+			overviewPath,
+			runId,
+			skipRefactor: true,
+		});
 		const persisted = await readRunManifest({ cwd: dir, runId });
 		const status = execSync('git status --porcelain -uall', { cwd: dir, encoding: 'utf8' });
 

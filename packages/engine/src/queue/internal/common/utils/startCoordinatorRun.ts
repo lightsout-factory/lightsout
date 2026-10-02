@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
@@ -14,7 +14,8 @@ interface Params {
 	runId: string;
 	/** Recorded on the manifest as the harness name. */
 	driverName: string;
-	config: LightsoutConfig;
+	/** The queue's startup config as it was read from disk, and its path, recorded on the coordinator's manifest. */
+	loadedConfig: LoadedConfig;
 }
 
 // The directory is resolved before the run exists, because the manifest's `plan`
@@ -23,11 +24,11 @@ export const startCoordinatorRun = async ({
 	cwd,
 	runId,
 	driverName,
-	config,
+	loadedConfig,
 }: Params): Promise<{ coordinatorRunDir: string; planPath: string; manifest: RunManifest }> => {
 	const coordinatorRunDir = await resolveNewRunDir({ cwd, pipeline: PipelineKind.Queue, runId });
 	const planPath = join(coordinatorRunDir, 'queue.md');
-	const manifest = await createRun({ cwd, runId, plan: planPath, pipeline: PipelineKind.Queue, driver: driverName, config });
+	const manifest = await createRun({ cwd, runId, plan: planPath, pipeline: PipelineKind.Queue, driver: driverName, loadedConfig });
 
 	await writeManifestWithUsage({ cwd, manifest, patch: { status: RunStatus.Running }, usageTotals: seedUsageTotals({ usage: manifest.usage }) });
 

@@ -97,7 +97,7 @@ describe('runImplementPipeline', () => {
 	test('implement: holds the acceptance row to the refactor checkpoint when the refactor steps run', async () => {
 		const { dir, driver, config, progress, onProgress } = await setupRefactorEvidenceRun();
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', onProgress });
 
 		const stepStatus = ({ id }: { id: string }) => result.manifest.steps.find((step) => step.id === id)?.status;
 

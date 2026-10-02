@@ -1,7 +1,8 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { queueCommand } from '#src/cli/queueCommand.ts';
+import { readConfig } from '#src/common/config/readConfig.ts';
 import type { QueueDrainReport } from '#src/queue/common/types/QueueDrainReport.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
@@ -91,6 +92,17 @@ const setupQueueCommand = ({
 	}
 
 	return { context: { flags, rest: [], cwd }, cwd, ...captured };
+};
+
+/** The same stubbed drain, in a repo whose lightsout.config.json also carries these top-level keys. */
+const setupQueueCommandWithConfig = ({ config }: { config: Record<string, unknown> }) => {
+	const setup = setupQueueCommand({});
+	const configPath = join(setup.cwd, 'lightsout.config.json');
+	const written: Record<string, unknown> = JSON.parse(readFileSync(configPath, 'utf8'));
+
+	writeFileSync(configPath, JSON.stringify({ ...written, ...config }));
+
+	return { ...setup, configPath };
 };
 
 /** A lock file naming this pid, which is alive by definition — what a second drain would find mid-run. */
@@ -300,5 +312,42 @@ describe('queueCommand', () => {
 		await expect(queueCommand(context)).rejects.toThrow('another run holds the lock');
 
 		expect(mockRelayClosed).toHaveBeenCalledTimes(1);
+	});
+
+	test('hands the drain the config as read and its absolute path', async () => {
+		const { context, cwd, configPath } = setupQueueCommandWithConfig({ config: { harness: 'codex', commands: { implement: { harness: 'claude-code' } } } });
+		const asRead = await readConfig({ cwd });
+
+		await expect(queueCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const [params] = mockRunQueue.mock.calls[0] ?? [];
+
+		// the run records the file as read, with the global harness, while the drain
+		// itself runs on the implement entry's harness stamped over it
+		expect({
+			loadedConfig: params?.loadedConfig,
+			readHarness: params?.loadedConfig.config.harness,
+			stampedHarness: params?.config.harness,
+		}).toStrictEqual({
+			loadedConfig: { config: asRead, path: configPath },
+			readHarness: 'codex',
+			stampedHarness: 'claude-code',
+		});
+	});
+
+	test('a misspelled config key fails the queue at start before any drain', async () => {
+		const { context, configPath } = setupQueueCommandWithConfig({ config: { 'standards-pak': 'lightsout' } });
+
+		const failure = await queueCommand(context).catch((error: unknown) => error);
+
+		const message = failure instanceof Error ? failure.message : String(failure);
+
+		// the strict read throws out of the command, which the CLI ends with exit 1
+		expect({
+			namesFile: message.includes(configPath),
+			namesKey: message.includes('standards-pak'),
+			drains: mockRunQueue.mock.calls.length,
+			relaysBuilt,
+		}).toStrictEqual({ namesFile: true, namesKey: true, drains: 0, relaysBuilt: [] });
 	});
 });

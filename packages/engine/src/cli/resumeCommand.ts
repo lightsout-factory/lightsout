@@ -1,28 +1,24 @@
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { getStringFlag } from '#src/cli/common/args/getStringFlag.ts';
 import { usage } from '#src/cli/common/constants/usage.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { launchDetached } from '#src/cli/internal/common/detach/launchDetached.ts';
 import { readLaunchRunId } from '#src/cli/internal/common/detach/readLaunchRunId.ts';
-import { continueDirectRun } from '#src/cli/internal/common/implementRun/continueDirectRun.ts';
 import { finishImplementRun } from '#src/cli/internal/common/implementRun/finishImplementRun.ts';
 import { readResumeClearance } from '#src/cli/internal/common/implementRun/readResumeClearance.ts';
 import { reportLiveOwner } from '#src/cli/internal/common/implementRun/reportLiveOwner.ts';
 import { reportWorkOrderPlanOutcome } from '#src/cli/internal/common/implementRun/reportWorkOrderPlanOutcome.ts';
 import { resolveRunCwd } from '#src/cli/internal/common/implementRun/resolveRunCwd.ts';
+import { runResumedPipeline } from '#src/cli/internal/common/implementRun/runResumedPipeline.ts';
 import { printRunHeader } from '#src/cli/internal/common/render/printRunHeader.ts';
-import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { resolveCommandHarness } from '#src/cli/internal/common/utils/resolveCommandHarness.ts';
-import { runPhasesOrFailFast } from '#src/cli/internal/common/utils/runPhasesOrFailFast.ts';
-import { runPipelineOrFailFast } from '#src/cli/internal/common/utils/runPipelineOrFailFast.ts';
 import { readRunConfig } from '#src/common/config/readRunConfig.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { getDriver } from '#src/drivers/getDriver.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
@@ -87,37 +83,6 @@ const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandCon
 	}
 
 	return { manifest, pipeline };
-};
-
-const runResumedPipeline = ({
-	pipeline,
-	cwd,
-	workspace,
-	driver,
-	config,
-	willShip,
-	resumable,
-	skipRefactor,
-	level,
-}: {
-	pipeline: PipelineKind;
-	cwd: string;
-	workspace: string;
-	driver: Driver;
-	config: LightsoutConfig;
-	willShip: boolean;
-	resumable: RunManifest;
-	skipRefactor: boolean;
-	/** The command-run level this continuation's work hangs from, or undefined when nothing is being recorded. */
-	level: ActivityLevel | undefined;
-}) => {
-	if (pipeline === PipelineKind.Direct) {
-		return continueDirectRun({ cwd, workspace, manifest: resumable, config, driver, willShip });
-	}
-
-	const params = { cwd: workspace, driver, config, existing: resumable, skipRefactor, level, onProgress: createProgressPrinter() };
-
-	return pipeline === PipelineKind.Phases ? runPhasesOrFailFast(params) : runPipelineOrFailFast(params);
 };
 
 /**
@@ -201,6 +166,8 @@ export const resumeCommand = async ({ flags, rest, cwd }: CommandContext): Promi
 	}
 
 	const { workspace, loaded } = await locateResumedRun({ cwd, manifest });
+	// From the manifest alone, so a phase the sequence never started is created with the config the sequence recorded.
+	const loadedConfig: LoadedConfig = { config: loaded, path: manifest.configPath };
 	const clearance = await readResumeClearance({ workspace, manifest, loaded, flags });
 
 	if (clearance === undefined) {
@@ -231,6 +198,7 @@ export const resumeCommand = async ({ flags, rest, cwd }: CommandContext): Promi
 						workspace,
 						driver,
 						config,
+						loadedConfig,
 						willShip: shipIntent.willShip,
 						resumable,
 						skipRefactor,

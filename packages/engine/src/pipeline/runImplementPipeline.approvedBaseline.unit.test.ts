@@ -93,7 +93,7 @@ const setupDirtyBaselineRun = async () => {
 test('clean-slate: test-side dirt that predates the run is approved, so no later checkpoint blames an agent for it', async () => {
 	const { dir, driver, reviewPrompts, config } = await setupDirtyBaselineRun();
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 	// the copy itself is gone once the run passes — the record's hash is what
 	// proves which bytes were approved

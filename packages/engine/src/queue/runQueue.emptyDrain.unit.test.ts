@@ -83,6 +83,7 @@ describe('runQueue', () => {
 			trackerSettings: trackerSettingsFixture(),
 			shipSettings: shipSettingsFixture(),
 			config,
+			loadedConfig: { config },
 			env: {},
 			driver,
 			driverName: 'claude-code',

@@ -11,11 +11,12 @@ export const refactorCommand = ({ flags, cwd }: CommandContext): Promise<void> =
 		cwd,
 		command: 'refactor',
 		print: printRefactorResult,
-		run: ({ config, driver, maxBatches, existing }) =>
+		run: ({ config, loadedConfig, driver, maxBatches, existing }) =>
 			runRefactorPipeline({
 				cwd,
 				driver,
 				config,
+				loadedConfig,
 				path: getStringFlag({ flags, name: 'path' }),
 				all: flags.get('all') === true,
 				maxBatches,

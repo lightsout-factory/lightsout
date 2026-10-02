@@ -117,7 +117,15 @@ const setupSupervisorRun = () => {
 test('each agent call opens its own step level and a step that spawns nothing opens none', async () => {
 	const { dir, driver, level, recordDir } = setupFullRun();
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md', skipRefactor: true, level });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+		skipRefactor: true,
+		level,
+	});
 
 	const commandRun = await readCommandRun({ level, recordDir });
 
@@ -143,7 +151,15 @@ test('each agent call opens its own step level and a step that spawns nothing op
 test('the supervisor consult is recorded as its own step level', async () => {
 	const { dir, driver, level, recordDir } = setupSupervisorRun();
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md', skipRefactor: true, level });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+		skipRefactor: true,
+		level,
+	});
 
 	const commandRun = await readCommandRun({ level, recordDir });
 
@@ -166,7 +182,15 @@ test('the supervisor consult is recorded as its own step level', async () => {
 test('the test-change review is recorded as its own step level', async () => {
 	const { dir, driver, level, recordDir } = setupFullRun();
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md', skipRefactor: true, level });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+		skipRefactor: true,
+		level,
+	});
 
 	const commandRun = await readCommandRun({ level, recordDir });
 
@@ -196,6 +220,7 @@ test('a rate-limited agent call closes its step level as paused rather than fail
 		cwd: parkedDir,
 		driver: createRateLimitedDriver(),
 		config: await readConfig({ cwd: parkedDir }),
+		loadedConfig: { config: await readConfig({ cwd: parkedDir }) },
 		planPath: 'plan.md',
 		level: parked.level,
 	});
@@ -203,6 +228,7 @@ test('a rate-limited agent call closes its step level as paused rather than fail
 		cwd: failingDir,
 		driver: createOffContractDriver({ text: 'prose with no report in it' }),
 		config: await readConfig({ cwd: failingDir }),
+		loadedConfig: { config: await readConfig({ cwd: failingDir }) },
 		planPath: 'plan.md',
 		level: failing.level,
 	});

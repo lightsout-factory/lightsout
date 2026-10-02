@@ -13,9 +13,9 @@ import type { RunWorkspace } from '#src/cli/internal/common/types/RunWorkspace.t
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { resolveCommandShipIntent } from '#src/cli/internal/common/utils/resolveCommandShipIntent.ts';
 import { resolveEffectiveConfigAndDriver } from '#src/cli/internal/common/utils/resolveEffectiveConfigAndDriver.ts';
-import { readConfig } from '#src/common/config/readConfig.ts';
-import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
+import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
 import { readGitCurrentBranch } from '#src/common/git/readGitCurrentBranch.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { readRunLabel } from '#src/common/utils/readRunLabel.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { runDirectWork } from '#src/direct/runDirectWork.ts';
@@ -54,6 +54,7 @@ const runDirectBuild = async ({
 	driver,
 	driverName,
 	config,
+	loadedConfig,
 	willShip,
 }: {
 	cwd: string;
@@ -64,10 +65,12 @@ const runDirectBuild = async ({
 	driver: Driver;
 	driverName: string;
 	config: LightsoutConfig;
+	/** The config as it was read from disk, before the command stamped its harness on it, and its path. */
+	loadedConfig: LoadedConfig;
 	willShip: boolean;
 }) => {
 	const build = (runId?: string) =>
-		runDirectWork({ cwd, ticketBody, ticketRef, runId, driver, driverName, config, willShip, onProgress: createProgressPrinter() });
+		runDirectWork({ cwd, ticketBody, ticketRef, runId, driver, driverName, config, loadedConfig, willShip, onProgress: createProgressPrinter() });
 	const outcome = await runRecordedBuild({ cwd, target, build });
 
 	if ('refusal' in outcome) {
@@ -150,7 +153,9 @@ export const implementDirectCommand = async ({ flags, cwd }: CommandContext): Pr
 		return exitCli({ code: 1 });
 	}
 
-	const loaded = await readConfig({ cwd });
+	// From the launching checkout, never the opened workspace: the run follows the config it was launched with.
+	const loadedConfig = await readLoadedConfig({ cwd });
+	const { config: loaded, path: configPath } = loadedConfig;
 	const shipIntent = resolveCommandShipIntent({ config: loaded, flags, env: process.env });
 
 	if (shipIntent === undefined) {
@@ -175,7 +180,7 @@ export const implementDirectCommand = async ({ flags, cwd }: CommandContext): Pr
 
 	const { ticketRef, config, driver, driverName, target } = prepared;
 
-	printDirectRunHeader({ workspace, ticketRef, ticketPath, configPath: resolveConfigPath({ cwd }) });
+	printDirectRunHeader({ workspace, ticketRef, ticketPath, configPath });
 
 	const built = await runDirectBuild({
 		cwd: workspace.cwd,
@@ -185,6 +190,7 @@ export const implementDirectCommand = async ({ flags, cwd }: CommandContext): Pr
 		driver,
 		driverName,
 		config,
+		loadedConfig,
 		willShip: shipIntent.willShip,
 	});
 

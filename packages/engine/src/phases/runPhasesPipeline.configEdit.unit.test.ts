@@ -48,6 +48,7 @@ test('a phase that adds a key the engine rejects to lightsout.config.json does n
 		cwd: dir,
 		driver,
 		config,
+		loadedConfig: { config },
 		overviewPath,
 		onProgress: (message) => progress.push(message),
 	});

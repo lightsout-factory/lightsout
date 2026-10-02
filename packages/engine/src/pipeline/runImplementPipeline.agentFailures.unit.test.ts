@@ -25,7 +25,13 @@ test('terminated:* report escalates instead of failing', async () => {
 			exitCode: 0,
 		}),
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.manifest.status).toBe('escalated');
 	expect(result.error ?? '').toMatch(/terminated:ambiguity/);
@@ -43,7 +49,13 @@ test('malformed agent output is retried once, then fails the step', async () => 
 			return { text: 'not a json report', exitCode: 0 };
 		},
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.manifest.status).toBe('failed');
 	expect(result.error ?? '').toMatch(/did not match contract/);
@@ -92,7 +104,13 @@ test('write-tests aggregates per-file failures; terminated writers escalate', as
 			}),
 		};
 
-		return runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+		return runImplementPipeline({
+			cwd: dir,
+			driver,
+			config: await readConfig({ cwd: dir }),
+			loadedConfig: { config: await readConfig({ cwd: dir }) },
+			planPath: 'plan.md',
+		});
 	};
 
 	const failed = await run({ failingStatus: 'failed' });
@@ -117,7 +135,13 @@ test('a driver exception (timeout, spawn failure) is a recorded failure, never a
 			throw new Error('claude timed out after 3600000ms');
 		},
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 	const persisted = await readRunManifest({ cwd: dir, runId: result.manifest.runId });
 
 	expect(result.ok).toBe(false);
@@ -157,7 +181,7 @@ const setupKilledAgentRun = async () => {
 test('a run halted by a killed agent still reports what that agent burned', async () => {
 	const { dir, driver, config, readLedger } = await setupKilledAgentRun();
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	const persisted = await readRunManifest({ cwd: dir, runId: result.manifest.runId });
 
@@ -186,7 +210,7 @@ test('a run halted by a killed agent still reports what that agent burned', asyn
 test("a killed agent's call is one invocation, not one per spawn", async () => {
 	const { dir, driver, config, readLedger } = await setupKilledAgentRun();
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	const persisted = await readRunManifest({ cwd: dir, runId: result.manifest.runId });
 

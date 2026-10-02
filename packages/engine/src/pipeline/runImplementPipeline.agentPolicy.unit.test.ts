@@ -76,7 +76,7 @@ describe('PipelineRun agent policy', () => {
 	test('defaults every working role to write permissions when config sets none', async () => {
 		const { dir, driver, config, invocations } = await setupPolicyRun();
 
-		const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+		const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// the stub driver was invoked
@@ -88,7 +88,7 @@ describe('PipelineRun agent policy', () => {
 	test('passes a configured full-access level to every working role', async () => {
 		const { dir, driver, config, invocations } = await setupPolicyRun({ config: { permissions: 'full-access' } });
 
-		const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+		const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// the configured level replaces the default: ${JSON.stringify(invocations)}
@@ -98,7 +98,7 @@ describe('PipelineRun agent policy', () => {
 	test('records the resolved effort beside the model on every usage ledger line', async () => {
 		const { dir, driver, config, readLedger } = await setupPolicyRun({ config: { model: 'stub-model', effort: 'xhigh' } });
 
-		const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+		const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 
@@ -111,7 +111,7 @@ describe('PipelineRun agent policy', () => {
 	test('omits effort from ledger lines when config sets none', async () => {
 		const { dir, driver, config, readLedger } = await setupPolicyRun({ config: { model: 'stub-model' } });
 
-		const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+		const result = await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 

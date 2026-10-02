@@ -15,7 +15,13 @@ import { writeSource } from '#tests/helpers/writeSource.ts';
 test('implement that changes nothing fails instead of passing vacuously', async () => {
 	const dir = setupConsumerRepo();
 	const driver: Driver = { name: 'stub', invoke: async () => ({ text: report(), exitCode: 0 }) };
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.ok).toBe(false);
 	expect(result.manifest.status).toBe('failed');
@@ -38,7 +44,13 @@ test('non-git directory degrades to agent-reported files', async () => {
 			},
 		}),
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	// every step still ran and the agent's own report is still what the manifest
 	// records, which is what "degrades" means here
@@ -73,7 +85,13 @@ test('friction lands in friction.jsonl with run/step provenance; decisions keep 
 			},
 		}),
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 	const entries = await readFriction({ cwd: dir });
 	const entry = entries.find((candidate) => candidate.detail === 'FRICTION-SENTINEL');
 
@@ -100,7 +118,13 @@ test('config timeouts reach the driver; defaults are 60m agent / 15m supervisor'
 			},
 		};
 
-		await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+		await runImplementPipeline({
+			cwd: dir,
+			driver,
+			config: await readConfig({ cwd: dir }),
+			loadedConfig: { config: await readConfig({ cwd: dir }) },
+			planPath: 'plan.md',
+		});
 
 		return received;
 	};
@@ -123,6 +147,7 @@ test('missing plan file fails the run before any agent spawns', async () => {
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'ghost.md',
 	});
 
@@ -148,7 +173,13 @@ test('a change with no testable source skips both write-tests and refactor, and 
 			},
 		}),
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.ok).toBe(true);
 	// the doc change is still attributed
@@ -174,6 +205,7 @@ test('missing overview file fails the run before any agent spawns', async () => 
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		overviewPath: 'missing-overview.md',
 	});
@@ -202,6 +234,7 @@ test('--skip-refactor omits the refactor steps; absent format command is skipped
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		skipRefactor: true,
 	});
@@ -224,7 +257,12 @@ test('a run started with no plan path at all fails before any agent spawns', asy
 			throw new Error('no agent should be invoked');
 		},
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }) });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+	});
 
 	expect(result.ok).toBe(false);
 	expect(result.manifest.status).toBe('failed');
@@ -254,6 +292,7 @@ test('creates a fresh run under the run id it is given', async () => {
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		runId: '9f8e7d6c-1111-4222-8333-444455556666',
 	});

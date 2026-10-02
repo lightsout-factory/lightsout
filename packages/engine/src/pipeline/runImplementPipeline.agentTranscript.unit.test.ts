@@ -57,6 +57,7 @@ test('pipeline tees each invocation stream to agents/stream-*.jsonl without narr
 		planPath: 'plan.md',
 		driver,
 		config,
+		loadedConfig: { config },
 		onProgress: (message) => progressLines.push(message),
 	});
 

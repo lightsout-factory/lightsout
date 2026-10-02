@@ -1,4 +1,5 @@
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
@@ -25,6 +26,8 @@ interface Params {
 	settings: QueueSettings;
 	ticket: RunnableTicket;
 	config: LightsoutConfig;
+	/** The queue's startup config as it was read from disk, and its path, which every run this worker creates records. */
+	loadedConfig: LoadedConfig;
 	driver: Driver;
 	driverName: string;
 	relay: QuestionRelay;
@@ -44,6 +47,7 @@ const runDirectWorker = async ({
 	workOrderName,
 	ticket,
 	config,
+	loadedConfig,
 	driver,
 	driverName,
 	answeredQuestion,
@@ -54,6 +58,7 @@ const runDirectWorker = async ({
 	workOrderName: string;
 	ticket: TicketSummary;
 	config: LightsoutConfig;
+	loadedConfig: LoadedConfig;
 	driver: Driver;
 	driverName: string;
 	answeredQuestion?: AnsweredQuestion;
@@ -74,6 +79,7 @@ const runDirectWorker = async ({
 					driver,
 					driverName,
 					config,
+					loadedConfig,
 					answeredQuestion,
 					onProgress,
 					queueRunId,
@@ -99,6 +105,7 @@ const runPlanWorker = async ({
 	ticket,
 	workOrderName,
 	config,
+	loadedConfig,
 	driver,
 	driverName,
 	env,
@@ -110,6 +117,7 @@ const runPlanWorker = async ({
 	ticket: TicketSummary;
 	workOrderName: string;
 	config: LightsoutConfig;
+	loadedConfig: LoadedConfig;
 	driver: Driver;
 	driverName: string;
 	env: NodeJS.ProcessEnv;
@@ -130,6 +138,7 @@ const runPlanWorker = async ({
 			ticket,
 			record: pulled.record,
 			config,
+			loadedConfig,
 			env,
 			driver,
 			driverName,
@@ -142,7 +151,7 @@ const runPlanWorker = async ({
 
 	onProgress?.(`${ticket.identifier} carries no published plan, so it is built from the ticket body`);
 
-	return runDirectWorker({ cwd, workOrderName, ticket, config, driver, driverName, onProgress, queueRunId });
+	return runDirectWorker({ cwd, workOrderName, ticket, config, loadedConfig, driver, driverName, onProgress, queueRunId });
 };
 
 /**
@@ -155,6 +164,7 @@ export const runWorkerWithRelay = async ({
 	workOrderName,
 	ticket,
 	config,
+	loadedConfig,
 	driver,
 	driverName,
 	settings,
@@ -168,29 +178,14 @@ export const runWorkerWithRelay = async ({
 	// Deliberately its own number rather than the gate-fix retry count it happens
 	// to equal: tuning gate retries must never change how often the user is asked.
 	const maxRelayedQuestions = 2;
+	const workerInputs = { cwd: worktreePath, workOrderName, ticket, config, loadedConfig, driver, driverName, onProgress, queueRunId: coordinatorRunId };
 	let answeredQuestion: AnsweredQuestion | undefined;
 
 	for (let turn = 0; ; turn += 1) {
 		const workers: Record<QueueWorker, () => Promise<WorkerOutcome>> = {
-			[QueueWorker.Direct]: () =>
-				runDirectWorker({ cwd: worktreePath, workOrderName, ticket, config, driver, driverName, answeredQuestion, onProgress, queueRunId: coordinatorRunId }),
-			[QueueWorker.Plan]: () =>
-				runPlanWorker({ cwd: worktreePath, ticket, workOrderName, config, driver, driverName, env, workOrderRunDir, onProgress, queueRunId: coordinatorRunId }),
-			[QueueWorker.AutoPlan]: () =>
-				runAutoPlanWorker({
-					cwd: worktreePath,
-					ticket,
-					workOrderName,
-					config,
-					driver,
-					driverName,
-					settings,
-					env,
-					workOrderRunDir,
-					answeredQuestion,
-					onProgress,
-					queueRunId: coordinatorRunId,
-				}),
+			[QueueWorker.Direct]: () => runDirectWorker({ ...workerInputs, answeredQuestion }),
+			[QueueWorker.Plan]: () => runPlanWorker({ ...workerInputs, env, workOrderRunDir }),
+			[QueueWorker.AutoPlan]: () => runAutoPlanWorker({ ...workerInputs, settings, env, workOrderRunDir, answeredQuestion }),
 		};
 		const outcome = await workers[ticket.worker]();
 

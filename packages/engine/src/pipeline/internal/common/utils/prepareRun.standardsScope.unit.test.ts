@@ -46,7 +46,7 @@ const setupScopedRun = async ({ config, packages }: { config: LightsoutConfig; p
 	write({ cwd, path: 'packages/web/package.json', content: JSON.stringify({ name: 'web' }) });
 	write({ cwd, path: 'plan.md', content: '# Plan\n' });
 
-	const manifest = await createRun({ cwd, plan: 'plan.md', pipeline: 'implement', driver: idleDriver.name, config });
+	const manifest = await createRun({ cwd, plan: 'plan.md', pipeline: 'implement', driver: idleDriver.name, loadedConfig: { config } });
 	const run = new PipelineRun({ cwd, config, driver: idleDriver, manifest, onProgress: () => undefined });
 
 	return { cwd, run, config, packages };

@@ -221,7 +221,7 @@ describe('runImplementPipeline', () => {
 	test('verify: an approved correction to a ledger test file reaches the gates as written', async () => {
 		const { dir, driver, prompts, config } = await setupReviewRun({ executorEdit: correctedBody, verdicts: keptVerdict });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		const approvedRecord = result.manifest.approvedTests.find((record) => record.path === ledgerFile);
 
@@ -243,7 +243,7 @@ describe('runImplementPipeline', () => {
 	test('verify: a refused edit to a ledger test file goes red under test-review with no gate run', async () => {
 		const { dir, driver, config } = await setupReviewRun({ executorEdit: correctedBody, verdicts: refusedVerdict });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		const checkpoint = result.manifest.steps.find((step) => step.id === 'verify-implement');
 		const checkpointGates = readCommandLog(dir, result.manifest.runId).filter((entry) => entry.step === 'verify-implement' && entry.kind !== 'format');
@@ -272,7 +272,7 @@ describe('runImplementPipeline', () => {
 			evidence: [{ file: movedFile, name: ledgerTestName }],
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		expect(result.ok).toBe(true);
 		// the move happened for real — the source is gone and the destination
@@ -287,7 +287,14 @@ describe('runImplementPipeline', () => {
 	test('implement: the approved copies are removed when the run passes and kept when it stops', async () => {
 		const passing = await setupReviewRun({ executorEdit: correctedBody, verdicts: keptVerdict });
 
-		const passed = await runImplementPipeline({ cwd: passing.dir, driver: passing.driver, config: passing.config, planPath: 'plan.md', skipRefactor: true });
+		const passed = await runImplementPipeline({
+			cwd: passing.dir,
+			driver: passing.driver,
+			config: passing.config,
+			loadedConfig: { config: passing.config },
+			planPath: 'plan.md',
+			skipRefactor: true,
+		});
 
 		// the copies are the working baseline, not the evidence: a run with every
 		// step green needs no baseline to diff against any more
@@ -300,6 +307,7 @@ describe('runImplementPipeline', () => {
 			cwd: stopping.dir,
 			driver: stopping.driver,
 			config: stopping.config,
+			loadedConfig: { config: stopping.config },
 			planPath: 'plan.md',
 			skipRefactor: true,
 		});

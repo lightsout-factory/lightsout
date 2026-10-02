@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { CoverageWorklist } from '#src/contracts/coverage/CoverageWorklist.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
@@ -18,6 +19,8 @@ interface Params {
 	runId: string;
 	driver: Driver;
 	config: LightsoutConfig;
+	/** The config as it was read from disk, and its path, recorded on a fresh run. Ignored when resuming. */
+	loadedConfig: LoadedConfig;
 	/** Accept a dirty tree: the standing dirt is recorded as baseline, never attributed to a batch. */
 	allowDirty?: boolean;
 	existing?: RunManifest;
@@ -35,6 +38,7 @@ export const initializeCoverageRun = async ({
 	runId,
 	driver,
 	config,
+	loadedConfig,
 	allowDirty = false,
 	existing,
 }: Params): Promise<{ manifest: RunManifest; worklist: CoverageWorklist }> => {
@@ -80,7 +84,15 @@ export const initializeCoverageRun = async ({
 	const worklistPath = join(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Coverage, runId }), 'worklist.json');
 	// `createRun` records the path repo-relative and creates the folder, so the
 	// write below lands in a directory that exists.
-	const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Coverage, driver: driver.name, config, baselineDirtyFiles: dirty });
+	const manifest = await createRun({
+		cwd,
+		runId,
+		plan: worklistPath,
+		pipeline: PipelineKind.Coverage,
+		driver: driver.name,
+		loadedConfig,
+		baselineDirtyFiles: dirty,
+	});
 
 	await writeFile(worklistPath, `${JSON.stringify(worklist, undefined, '\t')}\n`, 'utf8');
 

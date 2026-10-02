@@ -67,7 +67,7 @@ const setupUnusableCwd = async () => {
 test('runPipelineOrFailFast: a live run lock is a clean fail-fast — the message on stderr, exit 1, no stack', async () => {
 	const { cwd, config, errors, exitCodes } = await setupPipelineCall({ lockedByPid: process.pid });
 
-	await expect(runPipelineOrFailFast({ cwd, planPath: 'plan.md', driver: garbageDriver, config })).rejects.toThrow(/process\.exit/);
+	await expect(runPipelineOrFailFast({ cwd, planPath: 'plan.md', driver: garbageDriver, config, loadedConfig: { config } })).rejects.toThrow(/process\.exit/);
 
 	expect(exitCodes).toStrictEqual([1]);
 	expect(errors.length).toBe(1);
@@ -79,7 +79,7 @@ test('runPipelineOrFailFast: a live run lock is a clean fail-fast — the messag
 test('runPipelineOrFailFast: the pipeline result is handed back untouched when the run completes', async () => {
 	const { cwd, config, errors, exitCodes } = await setupPipelineCall();
 
-	const result = await runPipelineOrFailFast({ cwd, planPath: 'plan.md', driver: garbageDriver, config });
+	const result = await runPipelineOrFailFast({ cwd, planPath: 'plan.md', driver: garbageDriver, config, loadedConfig: { config } });
 
 	// a garbage agent report fails the run — a failed run is a returned result,
 	// not a fail-fast
@@ -92,7 +92,9 @@ test('runPipelineOrFailFast: the pipeline result is handed back untouched when t
 test('runPipelineOrFailFast: any other error propagates untouched — no message, no exit', async () => {
 	const { cwd, config, errors, exitCodes } = await setupUnusableCwd();
 
-	const error = await getRejectionError({ promise: runPipelineOrFailFast({ cwd, planPath: 'plan.md', driver: garbageDriver, config }) });
+	const error = await getRejectionError({
+		promise: runPipelineOrFailFast({ cwd, planPath: 'plan.md', driver: garbageDriver, config, loadedConfig: { config } }),
+	});
 
 	// anything that is not a lock conflict propagates untouched
 	expect(error).not.toBeInstanceOf(RunLockError);

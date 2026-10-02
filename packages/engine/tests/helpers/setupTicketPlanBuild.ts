@@ -254,6 +254,7 @@ export const setupTicketPlanBuild = ({
 			ticket,
 			record,
 			config,
+			loadedConfig: { config },
 			env: {} as NodeJS.ProcessEnv,
 			driver,
 			driverName: 'claude-code',
