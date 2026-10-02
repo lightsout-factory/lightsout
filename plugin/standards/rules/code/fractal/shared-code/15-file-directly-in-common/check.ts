@@ -7,7 +7,7 @@ import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
 
 export const check: StandardsCheckModule = {
 	inputKinds: ['file-list'],
-	// An index file sitting directly in `common/` is `folder-index-file`'s to report
+	// An index file sitting directly in `common/` is `index-files`'s to report
 	// and no one else's, so it is excluded here rather than counted twice: one
 	// wrong file is one finding.
 	run: ({ inputs }): RawStandardsFinding[] =>

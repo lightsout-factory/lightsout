@@ -1,0 +1,96 @@
+import type { FileTextInput, RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
+import type ts from 'typescript';
+import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
+import { readManifestDependencies } from '#common/checkInput/readManifestDependencies.ts';
+import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { getFrameworkCarveOuts } from '#common/frameworks/getFrameworkCarveOuts.ts';
+import { getPathCarveOut } from '#common/frameworks/getPathCarveOut.ts';
+import { isFrameworkLoadedFile } from '#common/frameworks/isFrameworkLoadedFile.ts';
+import { readBarrelExports } from '#common/modules/readBarrelExports.ts';
+import { getBaseName } from '#common/paths/getBaseName.ts';
+import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
+
+/** Every index file, wherever it stands: a package's entry holds no code any more than a folder's does. */
+const isIndexFile = ({ path }: { path: string }) => /^index\.tsx?$/.test(getBaseName({ path }));
+
+/** `export *` passes here: the star is the file-text half's finding, so one line never reports twice. */
+const isReExport = ({ statement, compiler }: { statement: ts.Statement; compiler: typeof ts }) =>
+	compiler.isExportDeclaration(statement) && statement.moduleSpecifier !== undefined;
+
+/**
+ * Parsed statements rather than a line scan, because a multi-line
+ * `export type { … } from` block cannot be told from a declaration by its
+ * middle lines.
+ */
+const findCodeInIndexFiles = ({ input }: { input: SyntaxTreeInput | undefined }): RawStandardsFinding[] => {
+	if (input === undefined) {
+		return [];
+	}
+
+	const findings: RawStandardsFinding[] = [];
+	const carveOuts = getFrameworkCarveOuts({ dependencies: input.dependencies });
+
+	for (const [path, tree] of input.trees) {
+		// A file-based router MANDATES an index route file whose content is a route
+		// definition, and a convention-resolved entry file is code by definition;
+		// demanding re-export lines of either asks for a file the framework could
+		// not use.
+		if (isFrameworkLoadedFile({ path, carveOut: getPathCarveOut({ carveOuts, path }) })) {
+			continue;
+		}
+
+		if (isIndexFile({ path })) {
+			const offending = tree.statements.filter((statement) => !isReExport({ statement, compiler: input.compiler }));
+			const [first] = offending;
+
+			if (first !== undefined) {
+				const line = tree.getLineAndCharacterOfPosition(first.getStart(tree)).line + 1;
+
+				findings.push(
+					buildRawFinding({
+						rule: 'index-file-contents',
+						files: [{ path }],
+						detail: `${offending.length} statement(s) other than re-export lines, the first at line ${line}`,
+						guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
+					}),
+				);
+			}
+		}
+	}
+
+	return findings;
+};
+
+/**
+ * `export *` publishes whatever the target happens to export, the opposite of
+ * a contract listing what consumers may use. A package's entry is where that
+ * contract matters most, so every index file is judged, the entry included.
+ */
+const findStarReExports = ({ input }: { input: FileTextInput | undefined }): RawStandardsFinding[] => {
+	const { files, contents } = readFileTexts({ input });
+	const fileSet = new Set(files);
+	const carveOuts = getFrameworkCarveOuts({ dependencies: readManifestDependencies({ contents }) });
+
+	return files
+		.filter((path) => isBarrelFile({ path }) && !isFrameworkLoadedFile({ path, carveOut: getPathCarveOut({ carveOuts, path }) }))
+		.flatMap((barrelPath) => {
+			const stars = readBarrelExports({ barrelPath, contents, files: fileSet }).filter(({ star }) => star);
+
+			return stars.length === 0
+				? []
+				: [
+						buildRawFinding({
+							rule: 'index-file-contents',
+							files: [{ path: barrelPath }],
+							detail: `${stars.map(({ specifier }) => `'${specifier}'`).join(', ')} re-exported with \`export *\``,
+							guidance: 'An index file is a package’s public API — list named re-exports instead.',
+						}),
+					];
+		});
+};
+
+export const check: StandardsCheckModule = {
+	inputKinds: ['file-text', 'syntax-tree'],
+	/** The file text says which index files re-export with a star; the parsed statements say which hold code. */
+	run: ({ inputs }): RawStandardsFinding[] => [...findStarReExports({ input: inputs['file-text'] }), ...findCodeInIndexFiles({ input: inputs['syntax-tree'] })],
+};
