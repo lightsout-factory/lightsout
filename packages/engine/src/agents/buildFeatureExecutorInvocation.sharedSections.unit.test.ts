@@ -29,8 +29,6 @@ const sectionOf = ({ prompt, heading, lastSentence }: { prompt: string; heading:
 const frictionOf = ({ prompt }: { prompt: string }) =>
 	sectionOf({ prompt, heading: '## Friction — help the pipeline improve itself', lastSentence: 'when the run was clean.' });
 
-const olderCodeOf = ({ prompt }: { prompt: string }) => sectionOf({ prompt, heading: '## Standards and older code', lastSentence: 'which case applied.' });
-
 test('buildFeatureExecutorInvocation: the friction section says where a standards rule’s "report it" goes', () => {
 	const { systemPrompt } = buildFeatureExecutorInvocation({ planContent });
 
@@ -43,24 +41,12 @@ test('buildFeatureExecutorInvocation: the friction section says where a standard
 	expect(systemPrompt).toContain('`area: "environment"` when what is missing is configuration or a dependency');
 });
 
-test('buildFeatureExecutorInvocation: says how the standards meet older code, for code as much as for tests', () => {
+test('buildFeatureExecutorInvocation: the friction section stands once, before the report shape, with no marker left behind', () => {
 	const { systemPrompt } = buildFeatureExecutorInvocation({ planContent });
-
-	expect(systemPrompt).toContain('## Standards and older code');
-	// matching an old file never excuses what the engine reports on the new lines
-	expect(systemPrompt).toContain("whatever the\n  engine's checks report on what you added or changed is yours to fix");
-	// meeting an older file is not friction
-	expect(systemPrompt).toContain('Following this order is normal work, not friction');
-});
-
-test('buildFeatureExecutorInvocation: each shared section stands once, before the report shape, with no marker left behind', () => {
-	const { systemPrompt } = buildFeatureExecutorInvocation({ planContent });
-	const positions = ['## Standards and older code', '## Friction — help the pipeline improve itself', '## Report — your entire final message'].map(
-		(heading) => ({
-			first: systemPrompt.indexOf(heading),
-			last: systemPrompt.lastIndexOf(heading),
-		}),
-	);
+	const positions = ['## Friction — help the pipeline improve itself', '## Report — your entire final message'].map((heading) => ({
+		first: systemPrompt.indexOf(heading),
+		last: systemPrompt.lastIndexOf(heading),
+	}));
 
 	expect(positions.every(({ first, last }) => first !== -1 && first === last)).toBeTruthy();
 	expect(positions.map(({ first }) => first)).toStrictEqual([...positions.map(({ first }) => first)].sort((left, right) => left - right));
@@ -76,24 +62,6 @@ test('every role that writes code or tests reads one and the same friction secti
 	expect(new Set(sections).size).toBe(1);
 	// and it is a real section, not six empty slices compared to each other
 	expect(sections[0]).toContain('this array is where you report it');
-});
-
-test('the older-code order reaches every role but the standalone refactor, whose whole job is that cleanup', () => {
-	const { refactorStandalone, ...others } = setupRolePrompts();
-
-	const sections = Object.values(others).map((prompt) => olderCodeOf({ prompt }));
-
-	expect(new Set(sections).size).toBe(1);
-	expect(sections[0]).toContain('leave it as it is');
-	expect(refactorStandalone).not.toContain('## Standards and older code');
-});
-
-test('a feature-scope refactor is told which of the older-code cases an unlisted deviation is', () => {
-	const { refactorFeature } = setupRolePrompts();
-	// the prompt wraps its lines; the sentence is what matters
-	const prose = refactorFeature.replace(/\s+/g, ' ');
-
-	expect(prose).toContain('A deviation you spot in older code that no listed finding names is the third case above: leave it.');
 });
 
 test('no role prompt reaches an agent still carrying a marker', () => {

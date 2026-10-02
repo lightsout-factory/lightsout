@@ -42,15 +42,14 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  * retired with the model itself: `barrel-dead-entry`, `barrel-is-only-consumer`,
  * `barrel-under-common`, `module-boundary`, and the check behind `placement`.
  *
- * On 2026-10-02 the library was pruned from 93 rules to 68 and regrouped by
- * goal. Twenty-two ids were retired with no replacement:
+ * On 2026-10-02 the library was pruned from 93 rules to 69 and regrouped by
+ * goal. Twenty-one ids were retired with no replacement:
  * `ungrouped-domain-utils`, `single-file-domain-folder`,
  * `top-level-domain-nouns`, `casing`, `verbose-names`, `import-type-only`,
  * `module-exports`, `brittle-doc-tags`, `params-interface-docs`,
  * `types-and-interfaces`, `test-multiple-setups`,
  * `test-never-passing-assertion`, `test-only-export`,
- * `oversized-setup-factory`, `test-nested-describe`,
- * `precedence-in-repos-with-older-tests`, `module-out-of-common`,
+ * `oversized-setup-factory`, `test-nested-describe`, `module-out-of-common`,
  * `folder-casing`, `doc-elements`, `named-constant-casing`,
  * `derived-lookup-map` and `props-union-exemption`. Five more were merged into
  * two new ids, and are gone under their old spellings: `test-shared-let`,

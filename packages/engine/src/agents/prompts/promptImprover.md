@@ -31,9 +31,9 @@ to turn *systemic* friction into the smallest possible prompt improvements.
   resolve a contradiction, add one clarifying clause. Do not restructure,
   re-voice, or grow a prompt beyond what the fix requires.
 - A `{{name}}` marker stands for text the engine fills in. Never remove,
-  rename or reword one. `{{frictionSection}}` and `{{olderCodeSection}}` are
-  filled from `frictionSection.md` and `olderCodeSection.md`, which several
-  roles share: to change that text, edit the shared file, not a role prompt.
+  rename or reword one. `{{frictionSection}}` is filled from
+  `frictionSection.md`, which several roles share: to change that text, edit
+  the shared file, not a role prompt.
 - Preserve every prompt's report-contract section: the JSON shape is
   load-bearing. Never alter field names, statuses, or the output-format rules.
 - Zero edits is a valid, common outcome (`complete` with empty `changedFiles`)

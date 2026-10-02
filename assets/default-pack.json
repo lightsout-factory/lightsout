@@ -5,12 +5,12 @@
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
-    "rules": 68,
+    "rules": 69,
     "checked": 37,
-    "judgment": 31,
+    "judgment": 32,
     "topics": 18,
     "packs": 7,
-    "withFixtures": 68
+    "withFixtures": 69
   },
   "packs": [
     {
@@ -159,6 +159,11 @@
           "options": {}
         },
         {
+          "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/single-return",
           "severity": "advisory",
           "options": {}
@@ -200,9 +205,9 @@
         }
       ],
       "totals": {
-        "rules": 15,
+        "rules": 16,
         "checked": 11,
-        "judgment": 4,
+        "judgment": 5,
         "topics": 4
       }
     },
@@ -759,6 +764,11 @@
           "options": {}
         },
         {
+          "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/premature-abstraction",
           "severity": "advisory",
           "options": {}
@@ -887,9 +897,9 @@
         }
       ],
       "totals": {
-        "rules": 68,
+        "rules": 69,
         "checked": 37,
-        "judgment": 31,
+        "judgment": 32,
         "topics": 18
       }
     },
@@ -1111,6 +1121,7 @@
       "path": "tests/code-style",
       "intro": "# Test Style\n\nHow unit tests are arranged, asserted and mocked.\n\n- A setup factory is a function named `setup…` that arranges one test and returns what the test needs.",
       "ruleIds": [
+        "precedence-in-repos-with-older-tests",
         "test-structure-arrange-act-assert-with-setup-factories",
         "no-test-state-in-hooks",
         "test-strict-equal-matcher",
@@ -3273,6 +3284,50 @@
         "focus": {
           "fail": "src/billing/README.md",
           "pass": "src/sandbox/README.md"
+        }
+      }
+    },
+    {
+      "id": "precedence-in-repos-with-older-tests",
+      "name": "lightsout/precedence-in-repos-with-older-tests",
+      "set": "tests",
+      "documentPath": "tests/code-style",
+      "summary": "How these rules apply to a repo's existing tests.",
+      "checked": false,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 2,
+        "fail": 2
+      },
+      "prose": "## Precedence in Repos with Older Tests\n\nThese rules describe the tests you write, not a mandate to rewrite the ones already there. When a repo's tests use an older style, such as `beforeEach` with a shared `let`, or nested `describe` blocks:\n\n- When you extend an existing test file, match its style, and never mix a second style into it. A blocking rule still holds in every test you add or change.\n- When you create a test file, follow these rules, even when the test you mirror uses the older style. Mirror its coverage, not its structure.\n- Never rewrite passing older tests to these rules during a feature task. That is cleanup with its own review.\n\nFollowing this order is normal work, with nothing to report. Report it only when this rule failed you, because the conflict was not about style, or it was unclear which case applied.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/feature/getLabel.ts",
+          "text": "export const getLabel = ({ name }: { name: string }): string => name.trim();\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/feature/getLabel.unit.test.ts",
+          "text": "import { expect, describe, test } from '@jest/globals';\nimport { getLabel } from './getLabel';\n\n// Right: a new test file follows the rules. It covers what the older test it\n// mirrors covers, and takes none of that test's structure.\nconst setupLabel = ({ name = ' Ada ' }: { name?: string } = {}) => {\n\treturn { name };\n};\n\ndescribe('getLabel', () => {\n\ttest('trims the name it is given', () => {\n\t\tconst { name } = setupLabel();\n\n\t\tconst label = getLabel({ name });\n\n\t\texpect(label).toBe('Ada');\n\t});\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/feature/getLabel.ts",
+          "text": "export const getLabel = ({ name }: { name: string }): string => name.trim();\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/feature/getLabel.unit.test.ts",
+          "text": "import { expect, describe, test, beforeEach } from '@jest/globals';\nimport { getLabel } from './getLabel';\n\n// Wrong: a new test file written in the older style of the test it mirrors. A\n// file you create follows the rules, whatever style the mirrored test uses.\nlet name: string;\n\ndescribe('getLabel', () => {\n\tbeforeEach(() => {\n\t\tname = ' Ada ';\n\t});\n\n\ttest('trims the name it is given', () => {\n\t\texpect(getLabel({ name })).toBe('Ada');\n\t});\n});\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/feature/getLabel.unit.test.ts",
+          "pass": "src/feature/getLabel.unit.test.ts"
         }
       }
     },

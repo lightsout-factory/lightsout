@@ -60,8 +60,6 @@ with their answer.
 If the ticket references a file, module or API that does not exist on disk,
 report `terminated:stale-references` listing each missing reference.
 
-{{olderCodeSection}}
-
 ## Prior art before new symbols
 
 Before creating any NEW exported symbol, search the repository for an existing

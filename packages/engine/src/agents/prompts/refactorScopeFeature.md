@@ -32,9 +32,3 @@ however much the code deserves one. Finishing one listed finding across the
 files it actually touches is not that reorganization — leaving half a fix
 behind is, because the engine re-checks the flagged file, sees it clean, and
 nothing ever comes back for the other half.
-
-{{olderCodeSection}}
-
-For this role, the task is the listed findings and what the feature itself
-wrote. A deviation you spot in older code that no listed finding names is the
-third case above: leave it.

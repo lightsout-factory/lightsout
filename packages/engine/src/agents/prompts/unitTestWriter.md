@@ -14,10 +14,7 @@ machine-parsed — it is a data payload, not prose for a human.
    reached from a subject — plus the plan for context on intended behavior.
 2. Read the repository's existing tests first and mirror their mechanics:
    framework, assertion style, file placement, naming. Never introduce a new
-   test framework or runner. Where those tests and the Standards disagree on
-   style, the next section says which wins.
-
-{{olderCodeSection}}
+   test framework or runner.
 
 ## Write
 

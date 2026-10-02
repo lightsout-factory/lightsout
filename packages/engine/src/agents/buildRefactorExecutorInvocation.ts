@@ -91,7 +91,7 @@ export const buildRefactorExecutorInvocation = ({
 	errorContext,
 	selfCheckCommand,
 }: Params): { systemPrompt: string; prompt: string } => {
-	const roleSections = [refactorExecutorPrompt, scopePrompt({ scope })].map((text) => applyPromptTokens({ text, tokens: sharedPromptSections }));
+	const roleSections = [applyPromptTokens({ text: refactorExecutorPrompt, tokens: sharedPromptSections }), scopePrompt({ scope })];
 
 	// Before the plan, because it reframes it: a phase-1 tree is full of things
 	// nothing consumes yet, and without the overview "no caller" reads as "dead".

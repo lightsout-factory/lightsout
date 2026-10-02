@@ -74,8 +74,6 @@ a human.
   standing instructions — anything worth persisting belongs in your report
   (friction included), which the engine records.
 
-{{olderCodeSection}}
-
 ## Prior art before new symbols
 
 Before creating any NEW exported symbol the plan does not explicitly name,
