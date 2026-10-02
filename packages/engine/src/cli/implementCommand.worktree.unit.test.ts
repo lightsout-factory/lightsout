@@ -73,19 +73,25 @@ jest.mock('#src/cli/internal/common/utils/runPhasesOrFailFast.ts', () => ({
 	runPhasesOrFailFast: (params: { cwd: string; overviewPath: string }) => mockRunPhasesOrFailFast(params),
 }));
 // -------------------------
-const mockExitAfterImplement = jest.fn<(params: ShipTailParams) => Promise<void>>();
+const mockShipAfterImplement = jest.fn<(params: ShipTailParams) => Promise<number>>();
 
-jest.mock('#src/cli/internal/common/utils/exitAfterImplement.ts', () => ({
-	exitAfterImplement: (params: ShipTailParams) => mockExitAfterImplement(params),
+jest.mock('#src/cli/internal/common/utils/shipAfterImplement.ts', () => ({
+	shipAfterImplement: (params: ShipTailParams) => mockShipAfterImplement(params),
 }));
 // -------------------------
 // The report card is silenced rather than asserted: it reads a run directory no
 // mocked pipeline ever wrote, and its lines would sit between the startup lines
 // these cases read.
-const mockPrintResult = jest.fn<(params: { result: PipelineResult; cwd: string }) => Promise<void>>();
+const mockRenderResult = jest.fn<(params: { result: PipelineResult; cwd: string }) => Promise<string[]>>();
 
-jest.mock('#src/cli/internal/common/render/printResult.ts', () => ({
-	printResult: (params: { result: PipelineResult; cwd: string }) => mockPrintResult(params),
+jest.mock('#src/cli/internal/common/render/renderResult.ts', () => ({
+	renderResult: (params: { result: PipelineResult; cwd: string }) => mockRenderResult(params),
+}));
+// -------------------------
+// The report is saved under the run's folder, and the run here is a result no
+// pipeline wrote to disk, so the save is doubled rather than refused.
+jest.mock('#src/runState/finalReport/writeRunFinalReport.ts', () => ({
+	writeRunFinalReport: () => Promise.resolve(),
 }));
 // -------------------------
 
@@ -166,8 +172,8 @@ const setupImplementWorktree = ({
 	});
 	mockRunPipelineOrFailFast.mockResolvedValue(passedResult);
 	mockRunPhasesOrFailFast.mockResolvedValue(passedResult);
-	mockPrintResult.mockResolvedValue(undefined);
-	mockExitAfterImplement.mockResolvedValue(undefined);
+	mockRenderResult.mockResolvedValue([]);
+	mockShipAfterImplement.mockResolvedValue(0);
 
 	return { context: { flags: parseFlags({ args }), rest: [], cwd }, cwd, workspace, printedBeforeLifecycle, ...captured };
 };
@@ -176,7 +182,7 @@ describe('implementCommand worktree isolation', () => {
 	test('names the workspace and branch before any source work and runs there', async () => {
 		const { context, workspace, printedBeforeLifecycle } = setupImplementWorktree({ args: ['--plan', planFolder] });
 
-		await implementCommand(context);
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the announcement is what a reader follows the run by, so it has to be on
 		// the screen before the ticket write and before the pipeline — matched
@@ -189,7 +195,7 @@ describe('implementCommand worktree isolation', () => {
 	test('runs the pipeline against the plan folder the launching checkout holds, copying none of it in', async () => {
 		const { context, cwd, workspace } = setupImplementWorktree({ args: ['--plan', planFolder] });
 
-		await implementCommand(context);
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
 		expect(mockRunPipelineOrFailFast).toHaveBeenCalledWith(expect.objectContaining({ cwd: workspace, planPath: join(planFolder, 'plan.md') }));
 		// the folder stayed where it was, so the tree coming down takes no copy of
@@ -215,7 +221,7 @@ describe('implementCommand worktree isolation', () => {
 	test('builds on the branch the work order’s record stores, not on the plan address’s first segment', async () => {
 		const { context, printedBeforeLifecycle } = setupImplementWorktree({ args: ['--plan', planFolder], storedBranch: 'feature/lo-42-add-widgets' });
 
-		await implementCommand(context);
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// Under a prefixed branch template the label and the branch are different
 		// strings, and only the record says which is which: the address names the
@@ -227,12 +233,12 @@ describe('implementCommand worktree isolation', () => {
 	test('builds in the launching checkout when the run opts out', async () => {
 		const { context, cwd } = setupImplementWorktree({ args: ['--plan', planFolder, '--no-worktree'] });
 
-		await implementCommand(context);
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
 		expect(mockCreateWorktree).not.toHaveBeenCalled();
 		expect(mockRequireImplementLifecycle).toHaveBeenCalledWith(expect.objectContaining({ cwd }));
 		expect(mockRunPipelineOrFailFast).toHaveBeenCalledWith(expect.objectContaining({ cwd, planPath: join(planFolder, 'plan.md') }));
-		expect(mockExitAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ cwd }));
+		expect(mockShipAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ cwd }));
 	});
 
 	test('exits on a workspace refusal without starting the run', async () => {
@@ -265,7 +271,7 @@ describe('implementCommand worktree isolation', () => {
 	test('runs every phase of a plan folder in the workspace, not in the launching checkout', async () => {
 		const { context, workspace } = setupImplementWorktree({ args: ['--plan', planFolder], phased: true });
 
-		await implementCommand(context);
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
 		expect(mockRunPhasesOrFailFast).toHaveBeenCalledWith(expect.objectContaining({ cwd: workspace, overviewPath: join(planFolder, 'overview.md') }));
 		expect(mockRunPipelineOrFailFast).not.toHaveBeenCalled();

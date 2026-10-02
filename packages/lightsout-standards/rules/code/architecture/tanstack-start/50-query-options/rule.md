@@ -1,5 +1,5 @@
 ---
-summary: "TanStack Query options declared outside the feature's `queries/` folder"
+summary: "Where query options are declared, and how their type is written."
 checked: false
 severity: advisory
 requires:
@@ -7,14 +7,11 @@ requires:
   - ungrouped-domain-utils
 ---
 
-### Query Options
+## Query Options
 
-Query-options factories live in the feature's `queries/` folder — the
-conventional [domain folder](../../folder-structure/55-ungrouped-domain-utils/rule.md)
-for a feature's query definitions (a grouping, not a module, per
-[a domain folder is not a module](../../folder-structure/15-module-out-of-common/rule.md)).
-This pack's convention — consistency across TanStack repos is worth the noun —
-not a TanStack requirement.
+Declare query-options factories in the feature's `queries/` folder. Consistency across repos is worth the folder name.
+
+Leave a factory's return type in `queries/` to inference, an exception to `explicit-return-type`. The inferred `queryOptions` type carries the key and data types that a written annotation would flatten.
 
 ```typescript
 // features/issues/queries/issuesQueryOptions.ts
@@ -28,6 +25,3 @@ export const issuesQueryOptions = ({ searchParams }: Params) =>
 		queryFn: () => findAllIssuesServerFn({ data: searchParams }),
 	});
 ```
-
-The factory's inferred return type is deliberate — see the return-types note in
-this topic's [background](../topic.md).

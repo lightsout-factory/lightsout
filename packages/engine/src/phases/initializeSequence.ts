@@ -13,6 +13,7 @@ import { readOverviewPhases } from '#src/phases/readOverviewPhases.ts';
 import { resolveRecordedPlanPath } from '#src/plan/common/paths/resolveRecordedPlanPath.ts';
 import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
 import { createRun } from '#src/runState/createRun.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 
 interface Params {
@@ -26,6 +27,8 @@ interface Params {
 	existing?: RunManifest;
 	/** Resolved before the run starts: a passing run will ship this branch. Recorded on the coordinator's manifest so the progress view can show a ship row. Ignored when resuming. */
 	willShip?: boolean;
+	/** The queue run a worker sequence belongs to; the coordinator's owner record points there. */
+	queueRunId?: string;
 }
 
 const getPhaseFiles = async ({ cwd, overview }: { cwd: string; overview: string }) => {
@@ -89,6 +92,7 @@ export const initializeSequence = async ({
 	runId,
 	existing,
 	willShip,
+	queueRunId,
 }: Params): Promise<{ manifest: RunManifest }> => {
 	if (existing) {
 		const pipeline = existing.pipeline ?? PipelineKind.Implement;
@@ -98,6 +102,8 @@ export const initializeSequence = async ({
 
 			throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline — resume it with: ${resume}`);
 		}
+
+		await writeRunOwner({ cwd, runId: existing.runId, queueRunId });
 
 		return { manifest: existing };
 	}
@@ -124,7 +130,7 @@ export const initializeSequence = async ({
 		throw new Error(`an unfinished run for this plan already exists — resume with: ${resume}`);
 	}
 
-	const created = await createRun({ cwd, runId, plan: overview, pipeline: PipelineKind.Phases, driver: driver.name, config, willShip });
+	const created = await createRun({ cwd, runId, plan: overview, pipeline: PipelineKind.Phases, driver: driver.name, config, willShip, queueRunId });
 	// Phases below the starting one are recorded as done OUTSIDE the sequence —
 	// adopted, never re-run, and never counted as this run's work.
 	const steps: StepRecord[] = phases.map((file, index) => ({

@@ -2,6 +2,7 @@ import { formatCost } from '@lightsout/shared';
 import { renderProgressBlock } from '#src/cli/internal/common/progressBlock/renderProgressBlock.ts';
 import { formatClockDuration } from '#src/cli/internal/common/utils/formatClockDuration.ts';
 import { plural } from '#src/cli/internal/common/utils/plural.ts';
+import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunProgress } from '#src/views/common/types/RunProgress.ts';
 import type { RunProgressRow } from '#src/views/common/types/RunProgressRow.ts';
 
@@ -87,10 +88,18 @@ interface Params {
 	progress: RunProgress;
 }
 
+/**
+ * A going run with no live process behind it can no longer move, so its running
+ * row is drawn stopped and one line names the command that picks it back up —
+ * drawing it running would make a crashed run look busy.
+ */
 export const renderRunProgress = ({ progress }: Params): string[] => {
-	const diagnostics = progress.rows.flatMap((row) => [...verificationLines({ row }), ...cleanupLines({ row })]);
+	const stopped = (progress.status === RunStatus.Running || progress.status === RunStatus.Pending) && !progress.live;
+	const rows = stopped ? progress.rows.map((row) => (row.status === RunStatus.Running ? { ...row, stopped: true } : row)) : progress.rows;
+	const stoppedLines = stopped ? [` no live process — resume with ${progress.resumeCommand}`] : [];
+	const diagnostics = [...stoppedLines, ...progress.rows.flatMap((row) => [...verificationLines({ row }), ...cleanupLines({ row })])];
 	const cost = progress.costUsd === undefined ? '' : ` · ${formatCost({ usd: progress.costUsd })}`;
 	const totals = `elapsed ${formatClockDuration({ ms: progress.elapsedMs })} · ${progress.changedFileCount} files${cost}`;
 
-	return renderProgressBlock({ title: progress.title, tag: progress.shortId, rows: progress.rows, diagnostics, totals, now: progress.now });
+	return renderProgressBlock({ title: progress.title, tag: progress.shortId, rows, diagnostics, totals, now: progress.now });
 };

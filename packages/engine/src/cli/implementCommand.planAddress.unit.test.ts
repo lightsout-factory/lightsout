@@ -55,16 +55,22 @@ jest.mock('#src/cli/internal/common/utils/runPipelineOrFailFast.ts', () => ({
 // -------------------------
 // The ship tail and the report card both read a run directory no mocked
 // pipeline ever wrote, and neither is what these cases are about.
-const mockPrintResult = jest.fn<(params: { result: PipelineResult; cwd: string }) => Promise<void>>();
+const mockRenderResult = jest.fn<(params: { result: PipelineResult; cwd: string }) => Promise<string[]>>();
 
-jest.mock('#src/cli/internal/common/render/printResult.ts', () => ({
-	printResult: (params: { result: PipelineResult; cwd: string }) => mockPrintResult(params),
+jest.mock('#src/cli/internal/common/render/renderResult.ts', () => ({
+	renderResult: (params: { result: PipelineResult; cwd: string }) => mockRenderResult(params),
 }));
 // -------------------------
-const mockExitAfterImplement = jest.fn<(params: { cwd: string }) => Promise<void>>();
+const mockShipAfterImplement = jest.fn<(params: { cwd: string }) => Promise<number>>();
 
-jest.mock('#src/cli/internal/common/utils/exitAfterImplement.ts', () => ({
-	exitAfterImplement: (params: { cwd: string }) => mockExitAfterImplement(params),
+jest.mock('#src/cli/internal/common/utils/shipAfterImplement.ts', () => ({
+	shipAfterImplement: (params: { cwd: string }) => mockShipAfterImplement(params),
+}));
+// -------------------------
+// The report is saved under the run's folder, and the run here is a result no
+// pipeline wrote to disk, so the save is doubled rather than refused.
+jest.mock('#src/runState/finalReport/writeRunFinalReport.ts', () => ({
+	writeRunFinalReport: () => Promise.resolve(),
 }));
 // -------------------------
 
@@ -137,8 +143,8 @@ const setupTicketRun = async ({
 	mockCreateWorktree.mockResolvedValue(workspace);
 	mockRequireImplementLifecycle.mockResolvedValue(undefined);
 	mockRunPipelineOrFailFast.mockResolvedValue(passedResult);
-	mockPrintResult.mockResolvedValue(undefined);
-	mockExitAfterImplement.mockResolvedValue(undefined);
+	mockRenderResult.mockResolvedValue([]);
+	mockShipAfterImplement.mockResolvedValue(0);
 
 	const args = ['--plan', join(planFolder, 'plan.md')];
 
@@ -149,7 +155,7 @@ describe('implementCommand plan addresses', () => {
 	test('cuts the tree on the ticket branch and leaves the addressed plan where it is', async () => {
 		const { context, cwd, workspace, logged } = await setupTicketRun();
 
-		await implementCommand(context);
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the branch, and every worktree call that composed it, is the ticket
 		// folder — a tree named for the address would put each plan of one ticket
@@ -166,7 +172,7 @@ describe('implementCommand plan addresses', () => {
 	test('continues a plan address in the ticket tree an implementation run already owns', async () => {
 		const { context, cwd, treePath } = await setupTicketRun({ standing: WorktreeOwner.Implement });
 
-		await implementCommand(context);
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
 		const record = await readWorktreeRecord({ cwd, branch: workOrderName });
 		expect(mockCreateWorktree).not.toHaveBeenCalled();

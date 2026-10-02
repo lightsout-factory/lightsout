@@ -1,23 +1,19 @@
 ---
-summary: "a shared type-level declaration living somewhere other than `common/types/`"
+summary: "Where shared types go, and which keyword to use."
 checked: false
 severity: advisory
 ---
 
-## Types and Interfaces → `common/types/`
+## Types and Interfaces
 
-The folder groups type-level declarations regardless of keyword. Pick the keyword by fit, not folder:
+Place a type like any other code: in the `types/` folder of the lowest `common/` its users share, as `shared-code-placement` says. A type only one module uses stays in that module's own `common/types/`. The folder holds type-level declarations whatever the keyword.
 
-- `interface` for object shapes (extends and merges cleanly)
-- `type` for what an interface can't express (unions, intersections, mapped types, primitives, tuples, function signatures)
-- Either works for an object shape → stay consistent within a domain. Refactoring between the keywords is an in-place edit; the filename and imports never change.
-
-A discriminated union family lives in `types/` under the union's name.
-
-**The `Params` interface stays with its function, and a type may stay with the single value typed by it (one-export-per-file's exception 5); every other exported type goes in `types/`:**
+- Use `interface` for object shapes, and `type` for what an interface can't express: unions, intersections, mapped types, primitives, tuples and function signatures.
+- For an object shape either works, so stay consistent within a domain. Switching keyword is an edit in place: the file name and imports never change.
+- A union family lives in `types/` under the union's name.
 
 ```typescript
-// copyFile.ts — Params co-located, unexported
+// copyFile/copyFile.ts: Params stays here, unexported
 interface Params {
 	sourcePath: string;
 	destPath: string;
@@ -25,9 +21,11 @@ interface Params {
 
 export const copyFile = ({ sourcePath, destPath }: Params) => { /* ... */ };
 
-// common/types/CopyResult.ts — exported return type gets its own types/ file
+// copyFile/common/types/CopyResult.ts: copyFile's exported return type
 export interface CopyResult {
 	success: boolean;
 	bytesWritten: number;
 }
 ```
+
+Pick the keyword by fit: the folder does not depend on it.

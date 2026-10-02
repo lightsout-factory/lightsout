@@ -67,7 +67,7 @@ test('writeRunManifest leaves no temporary file beside the manifest it swapped i
 	expect(existsSync(join(runDir, 'manifest.json'))).toBeTruthy();
 	// the tmp file is renamed over, never left behind
 	expect(existsSync(join(runDir, 'manifest.json.tmp'))).toBeFalsy();
-	expect(readdirSync(runDir)).toStrictEqual(['manifest.json']);
+	expect(readdirSync(runDir).sort()).toStrictEqual(['manifest.json', 'owner.json']);
 });
 
 test('a manifest naming a run no directory answers to is refused rather than written where nothing reads it', async () => {
@@ -80,7 +80,7 @@ test('a manifest naming a run no directory answers to is refused rather than wri
 	// make a run folder in a location nothing will read back
 	expect(existsSync(runDirFor({ cwd, runId: 'never-created' }))).toBeFalsy();
 	// the run that does exist keeps the manifest it had
-	expect(readdirSync(await resolveRunDir({ cwd, runId: created.runId }))).toStrictEqual(['manifest.json']);
+	expect(readdirSync(await resolveRunDir({ cwd, runId: created.runId })).sort()).toStrictEqual(['manifest.json', 'owner.json']);
 });
 
 test('a run id no directory answers to is rejected before any file is opened', async () => {

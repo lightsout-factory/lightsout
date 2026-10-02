@@ -1,7 +1,7 @@
 ---
 name: auto-plan
 description: Plan a ticket alone — self-answers every question below a written escalation bar, shows you one proposal, and rolls onward per the auto-plan config block. Use when the user asks to auto-plan a ticket, plan it without the interview, or hand a ticket straight to the factory. Input is a ticket, a feature description, or a rough-notes file path. Output feeds the `implement` skill.
-allowed-tools: Bash, BashOutput, Read, Write, Edit, Grep, Glob, Task, WebSearch, WebFetch
+allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Task, WebSearch, WebFetch
 ---
 
 # lightsout: auto-plan
@@ -108,12 +108,13 @@ grader labeled it `needs-a-human`.
 
 **Settled means settled — never re-answer it.** Before routing any question
 through the bar, check whether the answer is already on the record. Three
-records count, and all three are the user's:
+records count, and all three are the user's (`<plan-folder>` is the absolute
+path `plan workspace` prints in step 1):
 
 | Where | Holds |
 |---|---|
-| `.lightsout/work-orders/<work-order>/plans/<plan-id>/brainstorm-decisions.json` | what was settled with the user in a brainstorm before this session |
-| `.lightsout/work-orders/<work-order>/plans/<plan-id>/decisions.json` | what was settled earlier in this run |
+| `<plan-folder>/brainstorm-decisions.json` | what was settled with the user in a brainstorm before this session |
+| `<plan-folder>/decisions.json` | what was settled earlier in this run |
 | the drafted plan's `## Decision Log` | a rendering of the rows of both, composed by the engine — read a settled answer here, never write one |
 
 **Record first, refresh, then edit the plan.** The engine composes the
@@ -171,6 +172,12 @@ is written to the ticket.
 
 ## Steps
 
+Each `lightsout …` command this skill runs runs in the foreground to its exit
+before its output is acted on. Headless under `lightsout queue`, it must also
+have exited before the turn ends, because the harness kills whatever is still
+running then. The one command this skill backgrounds is the interactive
+`implement` hand-off at the end, which never runs under the queue.
+
 **0. Read the config.** Read `lightsout.config.json` at the repo root and take
 its `auto-plan` block. A missing file, a missing block or a missing key all
 mean `false`. State the three resolved values back in one line before doing
@@ -197,11 +204,7 @@ the escalation bar — it is an unscheduled checkpoint, or a park under
 
 When the request is a rough-notes file path, read it before anything else; when
 it already lives under the plans directory, take `<name>` from the path segments
-below that directory rather than deriving a new one. Read
-`.lightsout/work-orders/<work-order>/plans/<plan-id>/brainstorm-decisions.json`
-when it exists — its rows are already settled with the user. In a fresh
-worktree it may not be on disk yet: `plan verify-facts` in step 2 fetches the
-brainstorm the ticket carries, so the folder is read again there.
+below that directory rather than deriving a new one.
 
 When the work traces to a ticket, read the ticket and follow the
 ticket-workflow skill at `<plugin-root>/skills/ticket-workflow/SKILL.md`:
@@ -216,22 +219,32 @@ shell command:
 node "<plugin-root>/dist/cli.mjs" plan workspace --name <name>
 ```
 
-Read the absolute path it prints on its last line, and do every later step from
-that directory — reading source, authoring `facts.json`, and every
-`lightsout plan …` call. The plan folder already in this checkout is copied
-into the tree; pass any rough-notes path as an absolute one, since it lives in
+It prints two lines. The one starting `plan folder:` gives the absolute path of
+this plan's folder — `<plan-folder>` from here on. It lies under the primary
+checkout, outside the tree, so it outlives the tree once its work ships. The
+last line is the tree's absolute path, alone. Read source and run every
+`lightsout plan …` call from the tree, but author, read and edit every
+plan-folder file — `facts.json`, `decisions.json`, the brainstorm files, and the
+plan files edited in the grill and converge — at `<plan-folder>`, never at a
+path relative to the tree: a relative path read inside the tree lands in the
+wrong folder. Pass any rough-notes path as an absolute one, since it lives in
 the checkout you started from. A nonzero exit is the end of the run — report the
 sentence it printed and stop, never carry on in the launching checkout. The
 command is safe to re-run: a session already standing in the tree is answered
-the same path. A queue worktree needs no second tree: the command recognises the
+the same paths. A queue worktree needs no second tree: the command recognises the
 queue's ticket worktree and answers that same directory, so there the step is a
 no-op rather than a relocation.
+
+Then read `<plan-folder>/brainstorm-decisions.json` when it exists — its rows
+are already settled with the user. It may not be on disk yet: `plan
+verify-facts` in step 2 fetches the brainstorm the ticket carries, so the folder
+is read again there.
 
 **2. Explore and verify the facts.** Read the files the request touches, follow
 the integration points, and note real signatures; for a feature spanning many
 packages, optionally fan out read-only Explore subagents for breadth — either
 way YOU author the facts, and only from paths you confirmed by reading them.
-Author `.lightsout/work-orders/<work-order>/plans/<plan-id>/facts.json` in the **exact** shape the plan
+Author `<plan-folder>/facts.json` in the **exact** shape the plan
 skill documents (the engine hard-parses it). Then run:
 
 ```sh
@@ -240,9 +253,9 @@ node "<plugin-root>/dist/cli.mjs" plan verify-facts --name <name> [--notes "<pat
 
 **That command also fetches the brainstorm the ticket carries** — both
 `brainstorm-notes.md` and `brainstorm-decisions.json` — into
-`.lightsout/work-orders/<work-order>/plans/<plan-id>/`, before it reads anything. So they have now landed in
-the folder even in a fresh worktree that never saw them, and they must be read
-there before the interview is routed. Step 3's `Settled decisions` check reads
+`<plan-folder>/`, before it reads anything. So they have now landed in the
+folder even when this machine never saw them, and they must be read there
+before the interview is routed. Step 3's `Settled decisions` check reads
 them at that point, not before.
 
 Pass `--notes` when the request came from a rough-notes file. **When the run
@@ -283,7 +296,7 @@ escalation bar instead of asking it.
   the engine makes its own estimate at draft time.
 - **There is no alignment checkpoint to earn.** This skill's licence to
   self-answer is the bar, and the user granted it by invoking the skill.
-- Author `.lightsout/work-orders/<work-order>/plans/<plan-id>/decisions.json` in the **exact** shape the
+- Author `<plan-folder>/decisions.json` in the **exact** shape the
   plan skill documents: `planName`, plus a `decisions` array of
   `source` / `question` / `options` / `choice` / `rationale` / `assumption`,
   and the optional `phases` — a list of the phase-file basenames the decision
@@ -307,13 +320,31 @@ flag made after approval.
 node "<plugin-root>/dist/cli.mjs" plan draft --name <name>
 ```
 
+A draft can take many minutes. It is still run in the foreground and waited on
+to its exit — never backgrounded.
+
 Pass `--scope single|phased` only to override the engine's estimate. On a facts
 error, correct facts.json, re-run verify-facts and re-draft. On remaining
-structural issues on a phased plan, resplit the overview's `## Phases` table and
-its `## Phase Declarations` to spread the creates and the touched files across
-more phases — no phase may pass the created-file ceiling or the touched-file
-ceiling of 70 — then re-run draft. A phase whose whole work is renaming may
-instead be declared rename-only, with the `- **Renames only:** yes` bullet.
+structural issues on a phased plan's breakdown while no phase file exists yet,
+resplit the overview's `## Phases` table and its `## Phase Declarations` to
+spread the creates and the touched files across more phases — no phase may pass
+the created-file ceiling or the touched-file ceiling of 70 — then re-run draft.
+A phase whose whole work is renaming may instead be declared rename-only, with
+the `- **Renames only:** yes` bullet.
+
+Once phase files exist, never re-draft to change the breakdown. Edit the phase
+files at `<plan-folder>` — split, merge, or move work between them — and, for
+each changed phase, its `## Phases` row and `## Phase Declarations` block in the
+overview, then run:
+
+```sh
+node "<plugin-root>/dist/cli.mjs" plan sync-phases --name <name>
+```
+
+It restates every phase's counts, file budget and renames-only flag from the
+phase files and writes only the overview. It refuses — naming each — any phase
+file, row, block or number that does not line up; fix those by hand (add the
+missing row or block, renumber, rename the file) and run it again.
 
 **6. Grill it yourself.** Run the shaping rules' `## The design check` against
 the drafted plan first; an objection you accept is a question like any other
@@ -344,7 +375,7 @@ that a test cannot state for itself.
 node "<plugin-root>/dist/cli.mjs" plan dedup --name <name>
 ```
 
-Read `.lightsout/work-orders/<work-order>/plans/<plan-id>/dedup.json`. Route
+Read `<plan-folder>/dedup.json`. Route
 each finding through the bar, as the plan skill's Dedup Review does. Whether to
 reuse, extend or extract is ordinarily a best-practice call and so below the
 bar: **apply the judge's `recommendation`**, or a better resolution when you can
@@ -366,7 +397,7 @@ there and re-run dedup.
 node "<plugin-root>/dist/cli.mjs" plan grade --name <name>
 ```
 
-Read `.lightsout/work-orders/<work-order>/plans/<plan-id>/grade.json`. `"passed": true` **and**
+Read `<plan-folder>/grade.json`. `"passed": true` **and**
 `"complete": true` → go on. Otherwise take the blocking gaps (`needs-a-human`
 and `unjudged`), route each through the bar, and resolve the below-bar ones by
 appending a `decisions.json` row with `"source": "Converge"` — on a phased plan
@@ -374,7 +405,8 @@ with `"phases"` naming the gap's `phase` file, plus any other phase file the
 answer changes — running the sync command, then editing the plan file the gap's
 `phase` names — then re-grade.
 **Never re-run `plan draft`**: it regenerates the plan files and would clobber
-every edit folded in since.
+every edit folded in since. An edit that changes the phase breakdown is
+followed by `plan sync-phases --name <name>`, never a re-draft.
 
 - **A pass whose `incompleteReason` names blocking structural findings ran no
   semantic reader.** Its `gaps` list is empty because nobody looked. Fix the
@@ -384,7 +416,7 @@ every edit folded in since.
   chooses the scope and runs the full review itself once a focused pass clears,
   so a focused pass is one pass — clearing it buys no extra repair round.
 - A blocking gap carrying a `findingId` is a finding the plan has seen before.
-  Its record is in `.lightsout/work-orders/<work-order>/plans/<plan-id>/grade-memory.json`, which the engine
+  Its record is in `<plan-folder>/grade-memory.json`, which the engine
   owns: never edit it, and never treat a finding's absence from a later pass as
   it being resolved. A record closes only when the plan states the answer and the
   engine's re-verification judge cites where.
@@ -501,7 +533,7 @@ Otherwise, with `implement-on-approval` false, print the handoff line
 and stop:
 
 ```
-Next: run the `implement` skill with .lightsout/work-orders/<work-order>/plans/<plan-id>
+Next: run the `implement` skill with <plan-folder>
 ```
 
 On a multiple-plan work order, add the same line the plan skill's step 8 adds: it
@@ -510,13 +542,14 @@ request-ship`, and the ticket-workflow skill's `### Ship requests` says what it
 has to name. Never file one yourself.
 
 With it true, read `<plugin-root>/skills/implement/SKILL.md` and follow it
-in full, using `.lightsout/work-orders/<work-order>/plans/<plan-id>` as the provided plan path, just as if
-the user had invoked `implement` directly. That includes backgrounding the
-implementation, starting `status --watch`, relaying every progress block
-verbatim until the watch exits, and then relaying the engine's final report.
-Running the implementation CLI alone skips the watch and is not the handoff.
-The implement skill owns the launch and status-relay procedure so both entry
-points stay in step.
+in full, using `<plan-folder>` as the provided plan path, just as if
+the user had invoked `implement` directly. That includes launching the
+implementation with `implement --detach` in the foreground, posting the
+engine's output verbatim, and pointing the user to `/lightsout:status --run
+<id>` for updates and `lightsout stop --run <id>` to stop it. Running the
+implementation CLI without that procedure skips the hand-off to the user and is
+not the handoff. The implement skill owns the launch and hand-off procedure so
+both entry points stay in step.
 
 The engine performs the In Progress write itself at the `implement` edge and
 refuses to start when it fails, so this skill writes nothing further. Whether
@@ -554,6 +587,8 @@ parking above does not apply. Instead:
 - report `terminated:ambiguity` as the final JSON, with the question as the
   first entry of `failures`, and stop there — nothing is written to the ticket
   from inside the session.
+- never end the turn while an engine command is still running; a command that
+  could not be waited on to its exit is reported as a failure naming the step.
 
 The engine relays the question to the terminal that started the queue, writes
 the answer to the run's decisions file and to the ticket's `## Decisions`

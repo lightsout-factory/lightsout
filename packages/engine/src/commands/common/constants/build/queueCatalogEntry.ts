@@ -15,13 +15,20 @@ export const queueCatalogEntry: CommandCatalogEntry = {
 			name: 'file-relay',
 			value: '[dir]',
 			meaning:
-				'Relay questions as files in a mailbox directory instead of asking on this terminal. Defaults to .lightsout/queue/relay under the repo, emptied at startup.',
+				'Relay questions as files in a mailbox directory instead of asking on this terminal. Defaults to .lightsout/queue/relay under the repo, emptied at startup. `--detach` implies it.',
 			fallback: 'Questions are asked on the terminal that started the drain.',
 			required: false,
 		},
 		{ name: 'cwd', value: '<path>', meaning: 'Repository to drain into.', fallback: 'The process working directory.', required: false },
+		{
+			name: 'detach',
+			meaning:
+				'Drain in a background engine process that outlives this terminal or session. Implies `--file-relay`, on the default mailbox unless a directory is given. The command returns once the queue run has started and prints its run id, the engine pid and the mailbox; the engine’s output goes to the run’s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout).',
+			fallback: 'The drain runs in the foreground, asking questions on this terminal unless `--file-relay` is given.',
+			required: false,
+		},
 	],
 	steps: [],
 	records: CommandRecordKind.Runs,
-	related: ['auto-plan', 'brainstorm', 'plan', 'implement', 'implement-direct', 'resume', 'ship', 'work-order', 'ticket-state', 'self-check'],
+	related: ['auto-plan', 'brainstorm', 'plan', 'implement', 'implement-direct', 'resume', 'stop', 'ship', 'work-order', 'ticket-state', 'self-check'],
 };

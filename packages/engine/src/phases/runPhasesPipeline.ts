@@ -9,8 +9,11 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { initializeSequence } from '#src/phases/initializeSequence.ts';
-import { runPhase } from '#src/phases/internal/runPhase.ts';
+import { runPhase } from '#src/phases/internal/runPhase/runPhase.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
+import { describeRunLockHolder } from '#src/runState/lock/describeRunLockHolder.ts';
+import { RunLockError } from '#src/runState/lock/RunLockError.ts';
+import { readLiveRunLock } from '#src/runState/lock/readLiveRunLock.ts';
 import { withRunLock } from '#src/runState/lock/withRunLock.ts';
 import { createProgressSink } from '#src/runState/progress/createProgressSink.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
@@ -23,7 +26,7 @@ interface Params {
 	overviewPath?: string;
 	/** 1-based phase a fresh sequence starts from; earlier phases are recorded as passed outside the sequence. Default 1. */
 	startPhase?: number;
-	/** The id a fresh sequence's COORDINATOR is created under, minted by the caller. Each phase's child run still mints its own under the parent link. */
+	/** The id a fresh sequence's COORDINATOR is created under, minted by the caller. Each phase's child run gets its own id, settled by the coordinator before the child starts. */
 	runId?: string;
 	/** Resume: an existing coordinator manifest — phases already passed are skipped. */
 	existing?: RunManifest;
@@ -33,6 +36,8 @@ interface Params {
 	/** Resolved before the run starts: a passing sequence will ship this branch. Stamped on the COORDINATOR only — a phase's child run must never draw a ship row it can never fill. */
 	willShip?: boolean;
 	onProgress?: (message: string) => void;
+	/** The queue run a worker sequence belongs to; the coordinator's owner record points there. A phase run never gets an owner record. */
+	queueRunId?: string;
 }
 
 /**
@@ -92,12 +97,19 @@ const discardCarriedGenerated = async ({
  * The coordinator holds no repo run lock across phases: each per-phase run
  * takes `.lightsout/lock.json` itself, and a lock held across phases would
  * deadlock the coordinator's own children. It takes the lock only for the
- * discard of carried build output, once every phase has passed.
+ * discard of carried build output, once every phase has passed. A live holder
+ * is still refused before the sequence is initialized, because the
+ * coordinator's manifest and owner record are written before any phase takes
+ * the lock, and a refused start must leave neither behind. Before recording any
+ * phase outcome the coordinator checks its owner record still names it, because
+ * with no lock between phases two resumed processes could otherwise both drive
+ * one sequence.
  *
  * The first phase that ends short of passing stops the whole sequence, because
  * later phases build on earlier ones.
  *
- * @throws {RunLockError} When the repo lock is refused before a phase runs or, after every phase passed, before the carried-output discard — either way the sequence stays exactly resumable.
+ * @throws {RunLockError} When a live run holds the repo lock at the start, a phase cannot take it, or, after every phase passed, the carried-output discard cannot take it — either way the sequence stays exactly resumable.
+ * @throws {Error} When the coordinator's owner record names another process — this one stops without recording the phase.
  */
 export const runPhasesPipeline = async ({
 	cwd,
@@ -111,8 +123,15 @@ export const runPhasesPipeline = async ({
 	level,
 	willShip,
 	onProgress,
+	queueRunId,
 }: Params): Promise<PipelineResult> => {
-	const initialized = await initializeSequence({ cwd, driver, config, overviewPath, startPhase, runId, existing, willShip });
+	const holder = await readLiveRunLock({ cwd });
+
+	if (holder !== undefined) {
+		throw new RunLockError(describeRunLockHolder({ holder }));
+	}
+
+	const initialized = await initializeSequence({ cwd, driver, config, overviewPath, startPhase, runId, existing, willShip, queueRunId });
 
 	let manifest = initialized.manifest;
 
@@ -142,6 +161,7 @@ export const runPhasesPipeline = async ({
 			skipRefactor,
 			level,
 			onProgress: narrate,
+			queueRunId,
 		});
 
 		manifest = phase.manifest;

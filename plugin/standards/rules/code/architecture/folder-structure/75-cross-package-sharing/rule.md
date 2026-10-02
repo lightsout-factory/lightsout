@@ -1,14 +1,13 @@
 ---
-summary: "code two packages need duplicated per package instead of moved to the shared one"
+summary: "Code that several packages need."
 checked: false
 severity: advisory
 ---
 
-## Cross-Package Sharing (`packages/shared/`)
+## Cross-Package Sharing
 
-Code needed by 2+ packages belongs in a shared package — not duplicated per-package.
+Never copy code from one package into another. Code that `shared-package-criteria` lets into a shared package goes there instead of a copy in each package.
 
-A pure-contracts/shared package — one where everything is public by design —
-is a `common/`-like space: its `src/` holds **domain folders**, not modules.
-The companion test decides this per folder: a folder whose every file is
-something its users call directly is a domain folder.
+A shared package where everything is public is like a `common/`: its `src/` holds domain folders, not modules. Decide each folder as `module-out-of-common` does: a folder whose every file is something its users call directly is a domain folder.
+
+Copies in each package drift apart, and a fix then reaches only one of them.

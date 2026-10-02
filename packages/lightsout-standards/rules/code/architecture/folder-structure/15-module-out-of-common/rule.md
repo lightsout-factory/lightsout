@@ -1,5 +1,5 @@
 ---
-summary: "When shared code has grown too big for `common/`."
+summary: "When shared code has grown into a module of its own."
 checked: false
 severity: advisory
 example:

@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { listRuns } from '#src/views/listRuns.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
@@ -221,6 +222,29 @@ test('a recorded workspace that has gone falls back to the checkout the list is 
 	expect(runs.map((run) => ({ id: run.runId, live: run.live, resumable: run.resumable }))).toStrictEqual([
 		{ id: 'run-gone', live: true, resumable: false },
 		{ id: 'run-stale', live: false, resumable: true },
+	]);
+});
+
+test('listing rows take live from the owner record and fall back to the lock only without one', async () => {
+	const cwd = await freshCwd();
+
+	await seedRunDir({ cwd, manifest: { runId: 'run-owned', status: RunStatus.Running, updatedAt: '2026-01-02T00:00:00.000Z' } });
+	const deadOwnerRunDir = await seedRunDir({ cwd, manifest: { runId: 'run-dead-owner', status: RunStatus.Running, updatedAt: '2026-01-01T00:00:00.000Z' } });
+	await writeRunOwner({ cwd, runId: 'run-owned' });
+	await writeFile(join(deadOwnerRunDir, 'owner.json'), JSON.stringify({ pid: 999_999_999, recordedAt: '2026-01-01T00:00:00.000Z' }), 'utf8');
+	await writeFile(
+		join(cwd, '.lightsout', 'lock.json'),
+		JSON.stringify({ pid: process.pid, runId: 'run-dead-owner', startedAt: '2026-01-01T00:00:00.000Z' }),
+		'utf8',
+	);
+
+	const runs = await listRuns({ cwd });
+
+	// the owner record answers on its own with no lock anywhere, and once a root
+	// has recorded one, a live lock naming it can no longer vouch for a dead owner
+	expect(runs.map((run) => ({ id: run.runId, live: run.live, resumable: run.resumable }))).toStrictEqual([
+		{ id: 'run-owned', live: true, resumable: false },
+		{ id: 'run-dead-owner', live: false, resumable: true },
 	]);
 });
 

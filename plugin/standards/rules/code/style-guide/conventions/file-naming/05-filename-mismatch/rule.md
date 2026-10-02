@@ -1,21 +1,21 @@
 ---
-summary: "a filename that does not match the export it holds"
+summary: "How a file's name follows what it exports."
 checked: true
 severity: advisory
 ---
 
-The file name always matches the **exported item's name, including its casing** (see the table below). Resolve the casing in this order:
+## Filename Mismatch
 
-1. **Existing files in the same directory** — match their convention
-2. **The package's framework doc** — e.g., NestJS packages use `kebab-case.{suffix}.ts` (see the [NestJS topic](../../../../architecture/nestjs/topic.md))
-3. **Default** (new/empty directory, no framework rule): match the export name's own casing per the rule above
+A file is named after its export, as `multi-export` says. Choose how that name is cased in this order:
 
-| Convention                          | Applies to                                  | Example                                |
-| ----------------------------------- | ------------------------------------------- | -------------------------------------- |
-| camelCase matching the export name  | functions, value constants                  | `buildVersionedLabel.ts`, `maxRetries.ts` |
-| PascalCase matching the export name | classes, interfaces, types, named constants | `UserProfile.ts`, `Action.ts`          |
-| kebab-case (framework-mandated)     | per framework doc                           | `get-frontend-domain.ts`               |
+1. Match the other files in the same folder.
+2. Follow the package's framework topic, such as `lightsout/code/architecture/nestjs`, whose files are `kebab-case.{suffix}.ts`.
+3. Otherwise, in a new or empty folder with no framework convention, keep the export's own casing: `buildVersionedLabel.ts`, `UserProfile.ts`.
 
-**Framework mandates override the name entirely.** A file router owns every name inside its route directory — `__root.tsx`, `runs.$runId.tsx`, `standards.tsx` — even though each of those files exports one `Route` const. Files under a package's declared router directory (`routes/` for TanStack Router and Remix, `app/` and `pages/` for Next, `app/` for Expo Router) are exempt from this rule for the same reason NestJS's `events.service.ts` is. A framework's convention-resolved entry files are framework-named too — TanStack Start resolves `src/router.tsx` (which exports `getRouter`), `src/server.ts` and `src/client.tsx` by convention, and NestJS resolves `src/main.ts` — so those names are the framework's rather than the export's.
+A framework's naming overrides both the name and its casing:
 
-**Framework mandates override casing entirely** — e.g., NestJS services are `events.service.ts` even though the class itself is PascalCase.
+- A file router owns every name in its route folder, such as `__root.tsx` or `runs.$runId.tsx`, though each of those files exports `Route`. Files under a package's router folder are exempt: `routes/` for TanStack Router and Remix, `app/` and `pages/` for Next, and `app/` for Expo Router.
+- An entry file the framework finds by its name keeps that name: TanStack Start's `src/router.tsx`, `src/server.ts` and `src/client.tsx`, and NestJS's `src/main.ts`.
+- NestJS names a service's file `events.service.ts`, though its class is PascalCase.
+
+A file named like its export is found by searching for the export.

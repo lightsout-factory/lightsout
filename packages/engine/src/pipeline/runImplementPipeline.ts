@@ -20,6 +20,7 @@ import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { buildSteps } from '#src/pipeline/steps/buildSteps/buildSteps.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { withRunLock } from '#src/runState/lock/withRunLock.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 
 // Later steps may have connected a file write-tests skipped to a public surface,
 // so each is re-resolved; anything still orphaned stays under a named warning.
@@ -102,6 +103,8 @@ interface Params {
 	 */
 	keepGenerated?: boolean;
 	onProgress?: (message: string) => void;
+	/** The queue run a worker build belongs to; the run's owner record points there. */
+	queueRunId?: string;
 }
 
 /**
@@ -125,7 +128,13 @@ const executePipeline = async ({
 	willShip,
 	keepGenerated = false,
 	onProgress,
+	queueRunId,
 }: Params & { runId: string }): Promise<PipelineResult> => {
+	// A resumed phase child has no owner record: its coordinator answers for it.
+	if (existing !== undefined && existing.parentRunId === undefined) {
+		await writeRunOwner({ cwd, runId: existing.runId, queueRunId });
+	}
+
 	const run = new PipelineRun({
 		cwd,
 		config,
@@ -145,6 +154,7 @@ const executePipeline = async ({
 				config,
 				baselineDirtyFiles: inheritedBaseline ?? (await readGitChangedFiles({ cwd })),
 				willShip,
+				queueRunId,
 			})),
 	});
 	const prepared = await prepareRun({ run, cwd, config, packages });

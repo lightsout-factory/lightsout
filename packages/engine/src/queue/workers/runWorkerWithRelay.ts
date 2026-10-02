@@ -13,6 +13,7 @@ import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutco
 import { buildWorkOrderPlans } from '#src/queue/workers/internal/buildWorkOrderPlans.ts';
 import { toWorkerOutcome } from '#src/queue/workers/internal/common/utils/toWorkerOutcome.ts';
 import { runAutoPlanWorker } from '#src/queue/workers/internal/runAutoPlanWorker.ts';
+import { removeRunOwner } from '#src/runState/owner/removeRunOwner.ts';
 import { runWorkOrderBodyBuildLifecycle } from '#src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts';
 import { pullWorkOrderState } from '#src/workOrder/pullWorkOrderState.ts';
 
@@ -47,6 +48,7 @@ const runDirectWorker = async ({
 	driverName,
 	answeredQuestion,
 	onProgress,
+	queueRunId,
 }: {
 	cwd: string;
 	workOrderName: string;
@@ -56,22 +58,30 @@ const runDirectWorker = async ({
 	driverName: string;
 	answeredQuestion?: AnsweredQuestion;
 	onProgress?: (message: string) => void;
+	queueRunId: string;
 }): Promise<WorkerOutcome> => {
 	const outcome = await runWorkOrderBodyBuildLifecycle({
 		cwd,
 		workOrderName,
-		run: ({ runId }) =>
-			runDirectWork({
-				cwd,
-				ticketBody: ticket.description,
-				ticketRef: ticket.identifier,
-				runId,
-				driver,
-				driverName,
-				config,
-				answeredQuestion,
-				onProgress,
-			}),
+		run: async ({ runId }) => {
+			// A settled worker run must stop pointing at the queue, which keeps running.
+			try {
+				return await runDirectWork({
+					cwd,
+					ticketBody: ticket.description,
+					ticketRef: ticket.identifier,
+					runId,
+					driver,
+					driverName,
+					config,
+					answeredQuestion,
+					onProgress,
+					queueRunId,
+				});
+			} finally {
+				await removeRunOwner({ cwd, runId });
+			}
+		},
 	});
 
 	return toWorkerOutcome({
@@ -94,6 +104,7 @@ const runPlanWorker = async ({
 	env,
 	workOrderRunDir,
 	onProgress,
+	queueRunId,
 }: {
 	cwd: string;
 	ticket: TicketSummary;
@@ -104,6 +115,7 @@ const runPlanWorker = async ({
 	env: NodeJS.ProcessEnv;
 	workOrderRunDir: string;
 	onProgress?: (message: string) => void;
+	queueRunId: string;
 }): Promise<WorkerOutcome> => {
 	const pulled = await pullWorkOrderState({ cwd, name: workOrderName, config, env, onProgress });
 
@@ -124,12 +136,13 @@ const runPlanWorker = async ({
 			workOrderRunDir,
 			allowTicketBodyBuild: true,
 			onProgress,
+			queueRunId,
 		});
 	}
 
 	onProgress?.(`${ticket.identifier} carries no published plan, so it is built from the ticket body`);
 
-	return runDirectWorker({ cwd, workOrderName, ticket, config, driver, driverName, onProgress });
+	return runDirectWorker({ cwd, workOrderName, ticket, config, driver, driverName, onProgress, queueRunId });
 };
 
 /**
@@ -159,8 +172,10 @@ export const runWorkerWithRelay = async ({
 
 	for (let turn = 0; ; turn += 1) {
 		const workers: Record<QueueWorker, () => Promise<WorkerOutcome>> = {
-			[QueueWorker.Direct]: () => runDirectWorker({ cwd: worktreePath, workOrderName, ticket, config, driver, driverName, answeredQuestion, onProgress }),
-			[QueueWorker.Plan]: () => runPlanWorker({ cwd: worktreePath, ticket, workOrderName, config, driver, driverName, env, workOrderRunDir, onProgress }),
+			[QueueWorker.Direct]: () =>
+				runDirectWorker({ cwd: worktreePath, workOrderName, ticket, config, driver, driverName, answeredQuestion, onProgress, queueRunId: coordinatorRunId }),
+			[QueueWorker.Plan]: () =>
+				runPlanWorker({ cwd: worktreePath, ticket, workOrderName, config, driver, driverName, env, workOrderRunDir, onProgress, queueRunId: coordinatorRunId }),
 			[QueueWorker.AutoPlan]: () =>
 				runAutoPlanWorker({
 					cwd: worktreePath,
@@ -174,6 +189,7 @@ export const runWorkerWithRelay = async ({
 					workOrderRunDir,
 					answeredQuestion,
 					onProgress,
+					queueRunId: coordinatorRunId,
 				}),
 		};
 		const outcome = await workers[ticket.worker]();

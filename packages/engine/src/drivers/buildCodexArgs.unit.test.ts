@@ -52,3 +52,27 @@ test('buildCodexArgs: the model flag and the output file both land where codex e
 	expect(args[args.indexOf('--output-last-message') + 1]).toBe(outFile);
 	expect(args[args.indexOf('--model') + 1]).toBe('gpt-5.2');
 });
+
+test('buildCodexArgs: writable directories ride the workspace-write sandbox only, one --add-dir pair each', () => {
+	const writableDirs = ['/repo/.lightsout/work-orders/lo-7-search/plans/002-search-basics', '/repo/shared'];
+
+	const write = buildCodexArgs({ outFile, permissions: Permissions.Write, writableDirs });
+	const absent = buildCodexArgs({ outFile, writableDirs });
+	const readOnly = buildCodexArgs({ outFile, permissions: Permissions.ReadOnly, writableDirs });
+	const fullAccess = buildCodexArgs({ outFile, permissions: Permissions.FullAccess, writableDirs });
+
+	expect(write.slice(6)).toStrictEqual([
+		'--sandbox',
+		'workspace-write',
+		'--add-dir',
+		'/repo/.lightsout/work-orders/lo-7-search/plans/002-search-basics',
+		'--add-dir',
+		'/repo/shared',
+		'-c',
+		'approval_policy="never"',
+	]);
+	// an absent value keeps the workspace-write default, grant included
+	expect(absent).toStrictEqual(write);
+	expect(readOnly.includes('--add-dir')).toBeFalsy();
+	expect(fullAccess.includes('--add-dir')).toBeFalsy();
+});

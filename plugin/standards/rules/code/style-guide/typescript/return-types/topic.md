@@ -1,1 +1,3 @@
-# Return Types — Explicit on Exports, Inferred Internally
+# Return Types
+
+When a function's return type is written out.

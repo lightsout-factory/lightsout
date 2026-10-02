@@ -7,7 +7,7 @@ const toFolder = ({ path }: { path: string }) => path.split('/').slice(0, 2).joi
 
 interface Props {
 	files: string[];
-	/** Changed, but no public surface reaches them — the warning `printResult` prints too. */
+	/** Changed, but no public surface reaches them — the warning `renderResult` shows too. */
 	unreachable: string[];
 }
 

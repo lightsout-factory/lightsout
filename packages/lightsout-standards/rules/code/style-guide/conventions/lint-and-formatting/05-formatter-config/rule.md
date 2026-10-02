@@ -1,7 +1,9 @@
 ---
-summary: "formatting written against a convention the project's own formatter config does not use"
+summary: "Following the project's own formatting setup."
 checked: false
 severity: advisory
 ---
 
-The language is TypeScript. Follow the project's formatter and linter configuration when present (`biome.json`, `.prettierrc`, `eslint.config.*`); with none configured, keep formatting consistent throughout.
+## Formatter Config
+
+Follow the project's formatter and linter configuration (`biome.json`, `.prettierrc`, `eslint.config.*`). With none configured, keep formatting consistent with the code around it. The other rules in this topic hold even where that configuration does not enforce them.

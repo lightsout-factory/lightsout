@@ -4,6 +4,7 @@ import { runDirectWork } from '#src/direct/runDirectWork.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import type { WorkOrderPlanStep } from '#src/queue/workers/internal/common/types/WorkOrderPlanStep.ts';
 import { toWorkerOutcome } from '#src/queue/workers/internal/common/utils/toWorkerOutcome.ts';
+import { removeRunOwner } from '#src/runState/owner/removeRunOwner.ts';
 import type { WorkOrderPlanOutcome } from '#src/workOrder/common/types/WorkOrderPlanOutcome.ts';
 import { runWorkOrderBodyBuildLifecycle } from '#src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts';
 import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts';
@@ -21,9 +22,25 @@ interface Params {
  * escalated run parks with its worktree intact instead.
  */
 export const buildFromTicketBody = async ({ step }: Params): Promise<WorkerOutcome> => {
-	const { cwd, record, plan, ticket, config, driver, driverName, onProgress } = step;
-	const run = ({ runId }: { runId: string }) =>
-		runDirectWork({ cwd, ticketBody: ticket.description, ticketRef: ticket.identifier, runId, driver, driverName, config, onProgress });
+	const { cwd, record, plan, ticket, config, driver, driverName, onProgress, queueRunId } = step;
+	// A settled worker run must stop pointing at the queue, which keeps running.
+	const run = async ({ runId }: { runId: string }) => {
+		try {
+			return await runDirectWork({
+				cwd,
+				ticketBody: ticket.description,
+				ticketRef: ticket.identifier,
+				runId,
+				driver,
+				driverName,
+				config,
+				onProgress,
+				queueRunId,
+			});
+		} finally {
+			await removeRunOwner({ cwd, runId });
+		}
+	};
 	let outcome: WorkOrderPlanOutcome;
 
 	if (plan === undefined) {

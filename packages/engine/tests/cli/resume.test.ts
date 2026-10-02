@@ -78,7 +78,7 @@ test('cli: resume refuses a run that already passed', async () => {
 test('cli: resume takes the shortened run id a report prints, not just the full one', async () => {
 	const { cwd, runId } = await seedRunFixture({ status: 'passed' });
 
-	// printResult shows eight characters; that is what a user copies back
+	// renderResult shows eight characters; that is what a user copies back
 	const { stdout, stderr, code } = await runCli({ args: ['resume', '--run', runId.slice(0, 8), '--cwd', cwd] });
 
 	// reaching the already-passed refusal for the FULL id proves the short id found the run
@@ -133,7 +133,7 @@ const seedTicketFolderRun = async () => {
 test('cli: resume finds a parked run in its ticket folder from the shortened id', async () => {
 	const { cwd, runId } = await seedTicketFolderRun();
 
-	// printResult shows eight characters; that is what a user copies back
+	// renderResult shows eight characters; that is what a user copies back
 	const { stdout, stderr, code } = await runCli({ args: ['resume', '--run', runId.slice(0, 8), '--cwd', cwd] });
 
 	// the run was found and continued as far as reconstructing its driver

@@ -1,5 +1,5 @@
 ---
-summary: "When functions about one subject in `utils/` should get their own folder."
+summary: "When functions about one subject should get their own folder."
 checked: true
 severity: advisory
 example:

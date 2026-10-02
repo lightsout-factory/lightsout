@@ -14,6 +14,7 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { ShippingProgress } from '#src/contracts/ship/ShippingProgress.ts';
 import { ShippingStepId } from '#src/contracts/ship/ShippingStepId.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { seedRunDir } from '#tests/helpers/seedRunDir.ts';
@@ -214,7 +215,42 @@ const setupShippingWorktree = async ({ shipStartedAt, onDisk = true }: { shipSta
 	return { worktreePath, shippingBlock };
 };
 
+/**
+ * A worktree holding two running builds of the ticket and no run lock: run A,
+ * created first, whose owner record names this test's live process, and a
+ * newer copy of run B whose owner record names a process that is gone — plus
+ * each one's block as `loadRunProgressBlock` draws it once both owners are
+ * recorded.
+ */
+const setupOwnedWorktree = async () => {
+	jest.spyOn(Date, 'now').mockReturnValue(pinnedNow);
+
+	const worktreePath = await freshCwd();
+	const liveOlder = runs.a;
+	const stoppedNewer = { ...runs.b, status: RunStatus.Running };
+	const planName = `${workOrderName}/001-board-links`;
+
+	await mkdir(join(worktreePath, '.lightsout'), { recursive: true });
+	await seedRunDir({ cwd: worktreePath, manifest: { ...manifestOf(liveOlder), planName } });
+	const stoppedRunDir = await seedRunDir({ cwd: worktreePath, manifest: { ...manifestOf(stoppedNewer), planName } });
+	await writeRunOwner({ cwd: worktreePath, runId: liveOlder.runId });
+	await writeFile(join(stoppedRunDir, 'owner.json'), JSON.stringify({ pid: deadPid, recordedAt: stoppedNewer.createdAt }), 'utf8');
+
+	const { lines: liveBlock } = await loadRunProgressBlock({ cwd: worktreePath, runId: liveOlder.runId });
+
+	return { worktreePath, liveBlock };
+};
+
 describe('loadActiveTicketBlock', () => {
+	test('shows the build run a live owner stands behind over a newer stopped one', async () => {
+		const { worktreePath, liveBlock } = await setupOwnedWorktree();
+		const ticket = ticketOf({ lane: QueueLane.Building, enteredAt: buildStartedAt, buildStartedAt, worktreePath, workOrderName });
+
+		const lines = await loadActiveTicketBlock({ ticket });
+
+		expect(lines).toStrictEqual(liveBlock);
+	});
+
 	test("shows the run the worktree's lock names while its process is alive", async () => {
 		const { worktreePath, blocks } = await setupWorktree({ seeded: [runs.a, runs.b], lock: { runId: runs.a.runId, pid: process.pid } });
 		const ticket = ticketOf({ lane: QueueLane.Building, enteredAt: buildStartedAt, buildStartedAt, worktreePath, workOrderName });

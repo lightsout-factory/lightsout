@@ -23,8 +23,10 @@ interface Params {
 	cwd: string;
 	/** Undefined for a plan outside the plans directory. */
 	name: string | undefined;
-	/** Absent for a fresh run, which is handed a newly minted id. */
+	/** Absent for a fresh run, which is handed `runId` or a newly minted id. */
 	resumeRunId?: string;
+	/** A fresh run's pre-minted id, so a detached launch's parent can name the run before it starts. Ignored when resuming. */
+	runId?: string;
 	/** A fresh run must be created under exactly the id it is handed. */
 	run: (params: { runId: string }) => Promise<PipelineResult>;
 }
@@ -159,11 +161,11 @@ const recordOutcome = async ({
  * overwrites the id and keeps the start, and restoring the old progress would
  * have to happen outside the wrappers that call `process.exit` around this.
  */
-export const runWorkOrderPlanLifecycle = async ({ cwd, name, resumeRunId, run }: Params): Promise<WorkOrderPlanOutcome> => {
+export const runWorkOrderPlanLifecycle = async ({ cwd, name, resumeRunId, runId: preMintedRunId, run }: Params): Promise<WorkOrderPlanOutcome> => {
 	const address = name === undefined ? undefined : parsePlanAddress({ name });
 
 	if (name === undefined || address === undefined) {
-		return { result: await run({ runId: resumeRunId ?? randomUUID() }) };
+		return { result: await run({ runId: resumeRunId ?? preMintedRunId ?? randomUUID() }) };
 	}
 
 	const { workOrderName, planId } = address;
@@ -176,7 +178,7 @@ export const runWorkOrderPlanLifecycle = async ({ cwd, name, resumeRunId, run }:
 	const { record } = read;
 
 	if (record === undefined) {
-		return { result: await run({ runId: resumeRunId ?? randomUUID() }) };
+		return { result: await run({ runId: resumeRunId ?? preMintedRunId ?? randomUUID() }) };
 	}
 
 	const blocker = findPlanImplementationBlocker({ record, planId });
@@ -203,7 +205,7 @@ export const runWorkOrderPlanLifecycle = async ({ cwd, name, resumeRunId, run }:
 		};
 	}
 
-	const runId = resumeRunId ?? randomUUID();
+	const runId = resumeRunId ?? preMintedRunId ?? randomUUID();
 	const started = await recordImplementing({ cwd, workOrderName, planId, runId, headCommit });
 
 	if ('error' in started) {

@@ -6,6 +6,7 @@ import { statusCommand } from '#src/cli/statusCommand.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 
@@ -132,6 +133,40 @@ const setupIsolatedRuns = ({ runIds, args = {} }: { runIds: string[]; args?: Rec
 	return { context: { ...context, flags: new Map<string, string | true>(Object.entries(args)) }, ...captured };
 };
 
+/**
+ * Two running runs whose owner records answer for them while no checkout holds
+ * a lock: a single-plan run whose recorded engine is gone, and a phased
+ * sequence between two phases — no step running — whose engine is this process.
+ */
+const setupOwnedListing = async () => {
+	const sequence = manifestOf({
+		runId: 'run-seq',
+		pipeline: 'phases',
+		plan: 'plans/demo/overview.md',
+		status: RunStatus.Running,
+		currentStep: null,
+		steps: [
+			stepOf({ id: 'phase1.md' }),
+			stepOf({ id: 'phase2.md', status: RunStatus.Pending, attempts: 0 }),
+			stepOf({ id: 'phase3.md', status: RunStatus.Pending, attempts: 0 }),
+		],
+	});
+	const crashed = manifestOf({
+		status: RunStatus.Running,
+		currentStep: 'implement',
+		steps: [stepOf({ id: 'implement', status: RunStatus.Running })],
+	});
+	const status = setupStatus({ manifests: [sequence, crashed] });
+
+	writeFileSync(
+		join(runDirFor({ cwd: status.context.cwd, runId: crashed.runId }), 'owner.json'),
+		JSON.stringify({ pid: deadPid, recordedAt: '2026-01-01T00:00:01.000Z' }),
+	);
+	await writeRunOwner({ cwd: status.context.cwd, runId: sequence.runId });
+
+	return status;
+};
+
 /** Three hours, which is how long ago the run below last wrote its manifest. */
 const threeHoursMs = 10_800_000;
 
@@ -235,15 +270,6 @@ describe('statusCommand', () => {
 		expect(logged).toStrictEqual(['run-seq  passed  plan: plans/demo/overview.md  phases: 2/2  updated: 2026-01-01T00:00:03.000Z']);
 	});
 
-	test('a running sequence whose phase holds the repo lock under the child run id reads as healthy, not as a crash', async () => {
-		const { context, logged, exitCodes } = setupStatus({ manifests: [runningSequence()], lock: { pid: process.pid, runId: 'run-child' } });
-
-		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
-
-		expect(logged).toStrictEqual(['run-seq  running  plan: plans/demo/overview.md  phases: 1/3  updated: 2026-01-01T00:00:03.000Z']);
-		expect(exitCodes).toStrictEqual([0]);
-	});
-
 	test('a running sequence holding the lock under its own id reads as healthy — the moment between two phases', async () => {
 		const { context, logged } = setupStatus({ manifests: [runningSequence()], lock: { pid: process.pid, runId: 'run-seq' } });
 
@@ -292,7 +318,7 @@ describe('statusCommand', () => {
 
 		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
 
-		// the child-lock allowance is for phased runs only — nothing else borrows another run's lock
+		// no run borrows another run's lock
 		expect(logged[0] ?? '').toMatch(/^run-single {2}running \(no live process/);
 	});
 
@@ -305,6 +331,19 @@ describe('statusCommand', () => {
 		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
 
 		expect(logged[0] ?? '').toMatch(/^run-seq {2}running \(no live process/);
+	});
+
+	test('the listing reads liveness from the owner record and keeps its line format', async () => {
+		const { context, logged, errors, exitCodes } = await setupOwnedListing();
+
+		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(logged).toStrictEqual([
+			'run-seq  running  plan: plans/demo/overview.md  phases: 1/3  updated: 2026-01-01T00:00:03.000Z',
+			'run-single  running (no live process — crashed? resume with --run run-single)  plan: plans/demo.md  updated: 2026-01-01T00:00:03.000Z',
+		]);
+		expect(errors).toStrictEqual([]);
+		expect(exitCodes).toStrictEqual([0]);
 	});
 
 	test('a run whose manifest cannot be read is skipped, and the rest still list', async () => {
@@ -344,7 +383,7 @@ describe('statusCommand', () => {
 		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
 
 		expect(logged).toContain(' elapsed 0m 00s · 0 files');
-		expect(logged.some((line) => /^ ▶ {2}implement +running +0m 00s/.test(line))).toBe(true);
+		expect(logged.some((line) => /^ ■ {2}implement +stopped +0m 00s/.test(line))).toBe(true);
 		expect(exitCodes).toStrictEqual([0]);
 	});
 
@@ -365,7 +404,7 @@ describe('statusCommand', () => {
 
 		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(mockWatchRunProgress).toHaveBeenCalledWith({ cwd: context.cwd, rootRunId: 'run-solo' });
+		expect(mockWatchRunProgress).toHaveBeenCalledWith({ cwd: context.cwd, runId: 'run-solo' });
 		expect(errors).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([0]);
 	});

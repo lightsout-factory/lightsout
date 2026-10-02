@@ -1,27 +1,21 @@
 ---
-summary: "a server function living outside a `serverFns/` folder, or wrapped in a one-file folder it has not earned"
+summary: "Where server functions live."
 checked: false
 severity: advisory
 requires:
   - ungrouped-domain-utils
 ---
 
-### Server Functions
+## Server Functions
 
-Server functions live in a `serverFns/` folder at feature or app level — the
-conventional [domain folder](../../folder-structure/55-ungrouped-domain-utils/rule.md)
-for a feature's server calls, this pack's convention rather than TanStack's
-requirement. Each server function follows the graduation rule like everything
-else: **a file by default, a folder only when it has private companions**.
+Put server functions in a `serverFns/` folder, in a feature or at app level. A server function becomes a folder only as `module-file-to-folder` says, such as when a GraphQL document is used by it alone:
 
 ```
 serverFns/
-├── countIssuesServerFn.ts        # default: one file, no folder ceremony
-└── findIssues/                   # graduated: it has a private companion
-    ├── FindIssuesDocument.ts     #   the GraphQL document only it uses
+├── countIssuesServerFn.ts        # one file
+└── findIssues/                   # a folder: it has a file of its own
+    ├── FindIssuesDocument.ts
     └── findIssuesServerFn.ts
 ```
 
-A folder holding one server function and nothing else is ceremony the graduation
-rule forbids — the framework mandates nothing about this layout; the trigger
-for a folder is the companion file, never the category.
+Every call to the server is then in one place to find.

@@ -1,7 +1,11 @@
 ---
-summary: "an `any` annotation with no lint-suppression comment licensing it"
+summary: "Avoiding the type that switches type checking off."
 checked: true
 severity: blocking
 ---
 
-**No `any`** — use `unknown` and narrow with type guards when the type is genuinely unknown; use specific types or generics when it isn't. A rare, justified bypass gets the project's lint-suppression comment with an explanation.
+## No Any
+
+Never use `any`. When a type is genuinely unknown, use `unknown` and narrow it with type guards. When it is not, write the specific type or a generic. A rare, justified exception gets the project's lint-suppression comment, with the reason.
+
+`any` switches type checking off for everything it touches.

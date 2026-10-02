@@ -1,10 +1,11 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { statusCommand } from '#src/cli/statusCommand.ts';
 import type { QueueBoard } from '#src/contracts/queue/QueueBoard.ts';
 import type { QueueBoardTicket } from '#src/contracts/queue/QueueBoardTicket.ts';
 import { QueueLane } from '#src/contracts/queue/QueueLane.ts';
+import type { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
@@ -31,7 +32,7 @@ const boardUpdatedAt = new Date(2026, 8, 10, 10, 12).toISOString();
 
 const headerRow = '| Parked | Blocked | Build Queue | Building | Ship Queue | Shipping Now | Shipped |';
 const separatorRow = '| --- | --- | --- | --- | --- | --- | --- |';
-const liveHeading = expect.stringMatching(/^Queue update · \d{2}:\d{2} · next update \d{2}:\d{2}$/);
+const liveHeading = expect.stringMatching(/^Queue update · \d{2}:\d{2}$/);
 
 /** A ticket waiting for a build worker: on the board, never active. */
 const waitingTicket: QueueBoardTicket = { identifier: 'EX-101', title: 'Notifications', lane: QueueLane.BuildQueue, enteredAt: '2026-09-10T08:56:00.000Z' };
@@ -165,6 +166,28 @@ const setupOtherRun = async ({ readable }: { readable: boolean }) => {
 	return { context: contextOf({ cwd, args: { queue: true, run: 'b0b0b0b0' } }), ...captured };
 };
 
+/**
+ * A finished queue run whose folder holds both the board it wrote and the summary it saved when it ended. The saved
+ * board lines differ from anything board.json would render, so output drawn from board.json cannot pass for them.
+ */
+const setupFinishedQueueWithSummary = async () => {
+	const queue = await setupQueueCheckout({
+		args: { queue: true, run: 'a11ce0de' },
+		status: RunStatus.Passed,
+		tickets: [waitingTicket, unboundBuildingTicket],
+	});
+	const summary: QueueSummary = {
+		boardLines: ['Queue finished · 11:40', '', headerRow, separatorRow, '| — | — | — | — | — | — | EX-101 |'],
+		reportLines: ['shipped EX-101 · Notifications', 'parked EX-102 · API changes'],
+		exitCode: 2,
+		finishedAt: '2026-09-10T11:40:00.000Z',
+	};
+
+	await writeFile(join(dirname(queue.boardPath), 'summary.json'), JSON.stringify(summary), 'utf8');
+
+	return { ...queue, summary };
+};
+
 describe('statusCommand', () => {
 	test("a bare --queue shows the live queue run the checkout's run lock names, its board first and each active ticket's block after it", async () => {
 		const { context, expected, logged, errors, exitCodes } = await setupLiveBuildingQueue();
@@ -252,5 +275,15 @@ describe('statusCommand', () => {
 		expect(logged).toStrictEqual([]);
 		expect(errors).toEqual([expect.stringContaining(otherRunId)]);
 		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test('--queue --run naming a finished queue run shows the board and report it saved when it ended', async () => {
+		const { context, summary, logged, errors, exitCodes } = await setupFinishedQueueWithSummary();
+
+		await expect(statusCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(logged).toStrictEqual([...summary.boardLines, '', ...summary.reportLines]);
+		expect(errors).toStrictEqual([]);
+		expect(exitCodes).toStrictEqual([0]);
 	});
 });

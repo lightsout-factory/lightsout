@@ -1,5 +1,5 @@
 ---
-summary: "a folder created for a component that bundles no utilities, types or constants"
+summary: "What a component's file holds, and when it becomes a folder."
 checked: false
 severity: advisory
 requires:
@@ -11,26 +11,6 @@ requires:
 
 ## Component File Structure
 
-The [graduation rule](../../folder-structure/55-ungrouped-domain-utils/rule.md)
-applied to components: a component is a single `.tsx` file until it has private
-companions — utilities, types, or constants of its own — and graduates to a
-folder only then.
+A component is a module: one `.tsx` file until it needs files only it uses, as `module-file-to-folder` says.
 
-```
-components/
-├── StatusBadge.tsx                  ✅ Single file (the default)
-├── InstallPanel/                    ✅ Graduated: it bundles private companions
-│   ├── common/
-│   │   └── utils/
-│   │       └── getInstallStepLabel.ts
-│   └── InstallPanel.tsx
-```
-
-The folder's inside is the ordinary
-[fractal skeleton](../../folder-structure/40-module-folder-layout/rule.md):
-companions live under `common/`, and callers import the component from
-`InstallPanel/InstallPanel.tsx` itself — a folder carries no `index.ts`
-([folder-index-file rule](../../../style-guide/structure/module-api/25-folder-index-file/rule.md)).
-A folder holding only `Component.tsx` bundles nothing and should be the single file —
-the [single-file folder rule](../../folder-structure/60-single-file-domain-folder/rule.md),
-applied to a component.
+Leave a component's return type to inference, an exception to `explicit-return-type`. React's own types are a component's contract, so an annotation such as `JSX.Element` only adds noise.

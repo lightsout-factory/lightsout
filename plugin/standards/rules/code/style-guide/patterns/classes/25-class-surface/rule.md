@@ -1,9 +1,11 @@
 ---
-summary: "a method added to a class for logic that never touches the class's state"
+summary: "What belongs on a class and what belongs in functions."
 checked: false
 severity: advisory
 ---
 
-## Keep the Class Surface Small
+## Class Surface
 
-Prefer extracting logic into functions over adding instance methods: before graduation, non-exported helpers in the class file; after, files under the folder's `common/utils/`. The class surface stays limited to behavior that genuinely needs its state; logic is covered through the class's public API.
+Keep a class's methods to behaviour that needs its state. Put other logic in functions rather than instance methods, placed as `private-helper-colocation` and `module-file-to-folder` say.
+
+Logic that needs no state is easier to read and reuse as a function than as a method.

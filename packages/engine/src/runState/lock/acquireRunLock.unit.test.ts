@@ -2,6 +2,7 @@ import { chmodSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, test } from '@jest/globals';
 import { acquireRunLock } from '#src/runState/lock/acquireRunLock.ts';
+import { describeRunLockHolder } from '#src/runState/lock/describeRunLockHolder.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 import { readRunLock } from '#src/runState/lock/readRunLock.ts';
 import { releaseRunLock } from '#src/runState/lock/releaseRunLock.ts';
@@ -65,6 +66,18 @@ const setupRunLock = ({ heldBy, corrupt = false, unclearable = false, unwritable
 	return { cwd, lockPath };
 };
 
+/** A lock held by this live process with a fixed start, so the refusal sentence can be stated exactly. */
+const setupLiveHolder = () => {
+	const { cwd, lockPath } = setupRunLock();
+	const holder = { pid: process.pid, runId: 'run-a', startedAt: '2026-01-01T00:00:00.000Z' };
+
+	writeFileSync(lockPath, JSON.stringify(holder), 'utf8');
+
+	const expectedMessage = describeRunLockHolder({ holder });
+
+	return { cwd, expectedMessage };
+};
+
 describe('acquireRunLock', () => {
 	test('acquire → lock on disk with our pid; release → gone', async () => {
 		const { cwd, lockPath } = setupRunLock();
@@ -88,6 +101,17 @@ describe('acquireRunLock', () => {
 		await acquireRunLock({ cwd, runId: 'run-a' });
 		await expect(acquireRunLock({ cwd, runId: 'run-b' })).rejects.toThrow(RunLockError);
 		await expect(acquireRunLock({ cwd, runId: 'run-b' })).rejects.toThrow(/run run-a \(pid \d+/);
+	});
+
+	test('refuses a live holder with the shared holder sentence', async () => {
+		const { cwd, expectedMessage } = setupLiveHolder();
+
+		const thrown = await getRejectionError({ promise: acquireRunLock({ cwd, runId: 'run-b' }) });
+
+		expect({ isRunLockError: thrown instanceof RunLockError, message: thrown.message }).toStrictEqual({
+			isRunLockError: true,
+			message: expectedMessage,
+		});
 	});
 
 	test('a lock from a dead pid is stale — stolen and reported', async () => {

@@ -1,25 +1,14 @@
 ---
-summary: "a folder named for the kind of code it holds (`helpers/`, `utils/` outside `common/`) instead of the domain it serves"
+summary: "Folder names that say nothing about what the folder holds."
 checked: true
 severity: advisory
 ---
 
-**Some folder names are junk drawers.** A folder called `helpers/`, `lib/`,
-`core/`, `misc/` or `shared/` says nothing about what lives inside it — it is
-where code lands when nobody decided where it belongs, and every agent that
-follows dumps the next orphan there too. These five are banned at every level,
-`common/` included.
+## Banned Folder Name
 
-**Kind-buckets have one sanctioned home.** `utils/`, `types/` and `constants/`
-are the mandated skeleton *inside* `common/`; the same names anywhere else mean
-files sorted by what they are instead of what they are for. Banned outside
-`common/`.
+Never name a folder `helpers/`, `lib/`, `core/`, `misc/` or `shared/` anywhere inside a package's `src/`, `common/` included. Name a folder `utils/`, `types/` or `constants/` only inside `common/`.
 
-**Framework vocabulary is not banned.** `components/`, `hooks/`, `services/`,
-`controllers/` and `models/` are how React and NestJS projects are actually
-organised — they name real framework roles, not junk drawers, and they are
-legal everywhere without declaring a framework. The only privileged folder
-name at any level is `common/`.
+- `components/`, `hooks/`, `services/`, `controllers/` and `models/` are allowed everywhere, with no framework to declare.
+- Name the folder for the domain it serves instead, such as `billing/` or `formatting/`, or move its files into the module that owns them.
 
-The remedy: name the folder for the domain it serves (`billing/`,
-`formatting/`), or fold its files into the module that owns them.
+A name that says nothing about what a folder holds draws code nobody placed, and `common/` is the only folder name with a meaning of its own.

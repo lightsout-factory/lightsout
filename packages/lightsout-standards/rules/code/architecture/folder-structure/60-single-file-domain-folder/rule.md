@@ -1,5 +1,5 @@
 ---
-summary: "When a domain folder in `common/` has too few files to be a folder."
+summary: "When a subject folder has too few files to be a folder."
 checked: true
 severity: advisory
 example:

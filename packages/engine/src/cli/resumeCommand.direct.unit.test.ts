@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { resumeCommand } from '#src/cli/resumeCommand.ts';
@@ -7,6 +7,8 @@ import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
+import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { manifestOf, runId, setupResume } from '#tests/helpers/setupResume.ts';
 
@@ -38,7 +40,7 @@ type CommitRunWorkParams = {
 	resumed: boolean;
 };
 type GuardParams = { cwd: string; config: LightsoutConfig; env: NodeJS.ProcessEnv; ticketRef?: string; onProgress?: (message: string) => void };
-type ExitAfterImplementParams = {
+type ShipAfterImplementParams = {
 	config: LightsoutConfig;
 	cwd: string;
 	result: PipelineResult;
@@ -63,11 +65,16 @@ jest.mock('#src/ticketLifecycle/requireImplementLifecycle.ts', () => ({
 	requireImplementLifecycle: (params: GuardParams) => mockRequireImplementLifecycle(params),
 }));
 // -------------------------
-const mockExitAfterImplement = jest.fn<(params: ExitAfterImplementParams) => Promise<void>>();
+const mockShipAfterImplement = jest.fn<(params: ShipAfterImplementParams) => Promise<number>>();
 
-jest.mock('#src/cli/internal/common/utils/exitAfterImplement.ts', () => ({
-	exitAfterImplement: (params: ExitAfterImplementParams) => mockExitAfterImplement(params),
+jest.mock('#src/cli/internal/common/utils/shipAfterImplement.ts', () => ({
+	shipAfterImplement: (params: ShipAfterImplementParams) => mockShipAfterImplement(params),
 }));
+// -------------------------
+// The report card and its save read the run's folder through the workspace the
+// run recorded, which here is a checkout apart from the one holding the run.
+jest.mock('#src/cli/internal/common/render/renderResult.ts', () => ({ renderResult: () => Promise.resolve([]) }));
+jest.mock('#src/runState/finalReport/writeRunFinalReport.ts', () => ({ writeRunFinalReport: () => Promise.resolve() }));
 // -------------------------
 
 /** The branch the seeded run was built on, and the one its ownership record is keyed by. */
@@ -128,16 +135,33 @@ const setupDirectResume = async ({
 	mockRequireImplementLifecycle.mockResolvedValue(undefined);
 	mockRunDirectWork.mockResolvedValue({ ok: true, manifest: manifestOf({ pipeline: PipelineKind.Direct, status: RunStatus.Passed, workspace, branch }) });
 	mockCommitTicketWork.mockResolvedValue({ committed: true, message: 'LO-70: stub subject\n\nlightsout run stub\n' });
-	mockExitAfterImplement.mockResolvedValue(undefined);
+	mockShipAfterImplement.mockResolvedValue(0);
 
 	return { workspace, ...seeded };
+};
+
+/**
+ * A passed direct run whose first process still lives: the owner record names
+ * this test process, the way it would while that process is still committing or
+ * shipping outside the lock. Answers the manifest's bytes as seeded, so a case
+ * can prove nothing was written before the refusal.
+ */
+const setupLiveDirectResume = async () => {
+	const seeded = await setupDirectResume({ status: RunStatus.Passed });
+
+	await writeRunOwner({ cwd: seeded.cwd, runId });
+
+	const manifestPath = join(runDirFor({ cwd: seeded.cwd, runId, pipeline: PipelineKind.Direct }), 'manifest.json');
+	const manifestBefore = readFileSync(manifestPath, 'utf8');
+
+	return { ...seeded, manifestPath, manifestBefore };
 };
 
 describe('resumeCommand direct runs', () => {
 	test('a failed direct run is continued here, keeping its run id and its frozen ticket', async () => {
 		const { context, workspace, errors } = await setupDirectResume({ status: RunStatus.Failed });
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the run is continued in the tree it recorded, under its own id, from the
 		// ticket frozen beside it — never sent back to `implement-direct`
@@ -152,26 +176,26 @@ describe('resumeCommand direct runs', () => {
 			recorded: { changedFiles: ['feature.ts'] },
 		});
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the pipeline decides from the run's own step records what is left — a
 		// run whose gates are green goes straight to its commit — so the edge hands
 		// every status back to it and ships on what it answers
 		expect(mockRunDirectWork).toHaveBeenCalledWith(expect.objectContaining({ cwd: workspace, existing: expect.objectContaining({ runId }) }));
-		expect(mockExitAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ cwd: workspace, result: expect.objectContaining({ ok: true }) }));
+		expect(mockShipAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ cwd: workspace, result: expect.objectContaining({ ok: true }) }));
 	});
 
 	test('a direct run that already committed re-ships instead of being refused for an empty commit', async () => {
 		const { context, workspace, errors } = await setupDirectResume({ status: RunStatus.Passed });
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// a clean workspace means the commit already landed and only the ship
 		// failed, which is not the worker having changed nothing — and the edge
 		// itself never stages anything either way
 		expect(mockCommitTicketWork).not.toHaveBeenCalled();
 		expect(errors).toStrictEqual([]);
-		expect(mockExitAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ cwd: workspace, result: expect.objectContaining({ ok: true }) }));
+		expect(mockShipAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ cwd: workspace, result: expect.objectContaining({ ok: true }) }));
 	});
 
 	test('a continued run that fails again leaves its tree uncommitted for the next resume', async () => {
@@ -183,12 +207,12 @@ describe('resumeCommand direct runs', () => {
 			error: 'tsc: 3 errors',
 		});
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the same rule a first run follows: a build that did not pass is never
 		// committed, so the partial work stays in the tree for the next attempt
 		expect(mockCommitTicketWork).not.toHaveBeenCalled();
-		expect(mockExitAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ result: expect.objectContaining({ ok: false }) }));
+		expect(mockShipAfterImplement).toHaveBeenCalledWith(expect.objectContaining({ result: expect.objectContaining({ ok: false }) }));
 		// what the reader is told is why the build stopped, not a commit refusal
 		expect(errors.join('\n')).toContain('tsc: 3 errors');
 	});
@@ -201,7 +225,7 @@ describe('resumeCommand direct runs', () => {
 			withTicketRef: false,
 		});
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the reference prefixes the commit subject the run makes for itself, so a
 		// run whose branch carried no ticket the pattern read is still named after
@@ -215,7 +239,7 @@ describe('resumeCommand direct runs', () => {
 			recorded: { changedFiles: ['feature.ts'] },
 		});
 
-		await resumeCommand(context);
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
 
 		// the run's own pipeline owns the commit now, so the edge hands the run
 		// back to it and stages nothing itself — and the clean tree a run that
@@ -224,7 +248,8 @@ describe('resumeCommand direct runs', () => {
 		expect(mockCommitRunWork).not.toHaveBeenCalled();
 		expect(mockCommitTicketWork).not.toHaveBeenCalled();
 		expect(errors).toStrictEqual([]);
-		expect(exitCodes).toStrictEqual([]);
+		// the only exit is the finish's own, with the code the ship answered — never a refusal
+		expect(exitCodes).toStrictEqual([0]);
 	});
 
 	test('a direct run whose frozen ticket has gone names the path and stops', async () => {
@@ -235,5 +260,27 @@ describe('resumeCommand direct runs', () => {
 		expect(errors.join('\n')).toContain(frozenTicketPath);
 		expect(mockRunDirectWork).not.toHaveBeenCalled();
 		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test('a passed direct run whose first process still lives is refused', async () => {
+		const { context, errors, exitCodes, manifestPath, manifestBefore } = await setupLiveDirectResume();
+
+		const resumed = resumeCommand(context);
+
+		await expect(resumed).rejects.toThrow(/process\.exit/);
+		const refusal = errors.join('\n');
+		const manifestAfter = readFileSync(manifestPath, 'utf8');
+
+		// a passed run is still refused while its owner lives — the refusal reads
+		// the owner record whatever the manifest status, and writes nothing first
+		expect({
+			exitCodes,
+			errorLines: errors.length,
+			namesRun: refusal.includes(runId),
+			namesPid: refusal.includes(String(process.pid)),
+			pointsAtStop: refusal.includes(`lightsout stop --run ${runId}`),
+			manifestAfter,
+		}).toStrictEqual({ exitCodes: [1], errorLines: 1, namesRun: true, namesPid: true, pointsAtStop: true, manifestAfter: manifestBefore });
+		expect(mockRunDirectWork).not.toHaveBeenCalled();
 	});
 });

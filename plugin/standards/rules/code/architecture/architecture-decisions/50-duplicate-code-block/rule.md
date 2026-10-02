@@ -1,5 +1,5 @@
 ---
-summary: "the same block of code written out in two or more files"
+summary: "The same code written out in more than one place."
 checked: true
 severity: advisory
 options:
@@ -9,9 +9,10 @@ requires:
   - thin-wrapper-functions
 ---
 
-### Duplicated Patterns & Logic
+## Duplicate Code Block
 
-The same pattern in 2+ files gets extracted to the lowest common ancestor `common/` (loading/error state handling, validation logic, repeated transformations, generic named constants like a `SortDirection` union belong in `src/common/constants/`).
+When the same code appears in two or more files, such as loading and error handling, validation or a repeated transformation, write it once where `shared-code-placement` says, and import it.
 
-**The composition remedy is never duplication.** A class that holds a shared collaborator and forwards to it through one-line methods (`update() { return this.runState.update(...) }`) repeats that shape in every class holding the same collaborator — by design: it is what the class-inheritance rule mandates in place of `extends` (see the thin-wrapper rule's carve-out). Both duplication tiers skip it.
+A class that holds a collaborator and passes calls to it through one-line methods, as `class-inheritance` requires and `thin-wrapper-functions` allows, repeats that shape in every class holding the same collaborator. That is never duplication, and this rule does not count it.
 
+Copies drift apart, and a fix then reaches only one of them.

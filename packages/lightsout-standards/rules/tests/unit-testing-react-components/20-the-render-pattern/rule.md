@@ -1,5 +1,5 @@
 ---
-summary: "a component test that renders outside the setup factory or destructures queries from render()"
+summary: "Where a component test renders and queries."
 checked: false
 severity: advisory
 ---
@@ -11,7 +11,6 @@ Render inside the `setup()` factory; query and assert in the `test`. For a compo
 ```typescript
 import { expect, describe, test, jest } from '@jest/globals';
 import { render, screen } from '@testing-library/preact';
-import userEvent from '@testing-library/user-event';
 import { NotificationBanner } from './NotificationBanner';
 
 // Mocked Imports
@@ -46,16 +45,6 @@ describe('NotificationBanner', () => {
 		const message = screen.getByText('Action required');
 
 		expect(message).toBeInTheDocument();
-	});
-
-	test('calls the dismiss handler when the dismiss button is clicked', async () => {
-		const { onDismiss } = setupNotificationBanner({ isVisible: true });
-		const user = userEvent.setup();
-
-		const dismissButton = screen.getByRole('button', { name: /dismiss/i });
-		await user.click(dismissButton);
-
-		expect(onDismiss).toHaveBeenCalledTimes(1);
 	});
 });
 ```

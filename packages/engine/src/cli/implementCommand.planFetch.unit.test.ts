@@ -67,9 +67,11 @@ const overviewBody = '# Feature — Overview\n\n## Phases\n\n| # | File | Scope 
 /**
  * A real consumer repo whose plan folder is absent, so the command has to reach
  * the ticket for it. The run lock is planted by default: a restored plan is a
- * plan the pipeline starts on, and the lock is what stops it one step in — which
- * is how "the fetch happened, and the run then used what it fetched" becomes
- * observable without spawning an agent.
+ * plan the pipeline starts on, and the lock is what stops it one step in — a
+ * single plan's run cannot take it, and a phased sequence's coordinator refuses
+ * the live holder before it creates its run — which is how "the fetch happened,
+ * and the run then used what it fetched" becomes observable without spawning an
+ * agent.
  */
 const setupFetch = ({
 	args = ['--plan', planPath],
@@ -202,8 +204,8 @@ describe('implementCommand', () => {
 		expect(readFileSync(join(cwd, planPath, 'overview.md'), 'utf8')).toBe(overviewBody);
 		expect(readFileSync(join(cwd, planPath, 'phase1-setup.md'), 'utf8')).toBe('# Plan: restored phase1-setup.md\n');
 		expect(logged.join('\n')).toContain(`  overview: ${join(planPath, 'overview.md')}`);
-		// the planted lock stops the first phase's own run, which means the phase
-		// loop was entered against the restored overview
+		// the coordinator's pre-check refused the sequence on the planted lock,
+		// which means the phased path was taken against the restored overview
 		expect(errors.join('\n')).toContain('another lightsout run is active in this repo');
 		expect(exitCodes).toStrictEqual([1]);
 	});

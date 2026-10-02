@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
@@ -14,6 +15,8 @@ import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
 import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTicket.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay.ts';
+import { createRun } from '#src/runState/createRun.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 
@@ -35,10 +38,15 @@ import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 // pipelines against a real repository — each covered by its own tests. Stubbing
 // the pair leaves the engine's plan choice and the worker's handling of the
 // record as the only things these cases exercise.
-const mockInvokeAgentWithContract = jest.fn<(params: { invocation: { prompt: string } }) => Promise<AgentOutcome<WorkReport>>>();
+interface InvokeParams {
+	invocation: { prompt: string };
+	writableDirs?: string[];
+}
+
+const mockInvokeAgentWithContract = jest.fn<(params: InvokeParams) => Promise<AgentOutcome<WorkReport>>>();
 
 jest.mock('#src/invoke/invokeAgentWithContract.ts', () => ({
-	invokeAgentWithContract: (params: { invocation: { prompt: string } }) => mockInvokeAgentWithContract(params),
+	invokeAgentWithContract: (params: InvokeParams) => mockInvokeAgentWithContract(params),
 }));
 // -------------------------
 interface BuildTicketPlansParams {
@@ -189,6 +197,7 @@ const setupAutoPlanTicket = ({
 	return {
 		progress,
 		worktreePath,
+		folder,
 		params: {
 			worktreePath,
 			workOrderName: branch,
@@ -205,6 +214,28 @@ const setupAutoPlanTicket = ({
 			onProgress: (message: string) => progress.push(message),
 		},
 	};
+};
+
+/**
+ * The auto-plan ticket above run under the queue run `q-1`, with the stubbed
+ * build standing in for the real one the way a build begins: it creates the
+ * plan's run with the queue run id it was handed, then reads that run's owner
+ * record while the build is still going.
+ */
+const setupAutoPlanBuildUnderQueueRun = () => {
+	const { params, folder } = setupAutoPlanTicket();
+	const ownersWhileBuilding: (RunOwner | undefined)[] = [];
+
+	mockBuildTicketPlans.mockImplementation(async (build) => {
+		const { cwd, queueRunId } = build as BuildTicketPlansParams & { queueRunId?: string };
+		const run = await createRun({ cwd, plan: join(folder, 'plan.md'), driver: 'claude-code', queueRunId });
+
+		ownersWhileBuilding.push(await readRunOwner({ cwd, runId: run.runId }));
+
+		return {};
+	});
+
+	return { ownersWhileBuilding, params: { ...params, coordinatorRunId: 'q-1' } };
 };
 
 describe('runWorkerWithRelay', () => {
@@ -248,6 +279,21 @@ describe('runWorkerWithRelay', () => {
 		expect(mockInvokeAgentWithContract.mock.calls[0]?.[0].invocation.prompt).toContain(`${branch}/001-drain-the-backlog`);
 	});
 
+	test('runWorkerWithRelay: an auto-plan session is told its plan folder by absolute path, and granted no extra directory when the folder lies in its own tree', async () => {
+		const { params, folder } = setupAutoPlanTicket();
+
+		const outcome = await runWorkerWithRelay(params);
+
+		const call = mockInvokeAgentWithContract.mock.calls[0]?.[0];
+		// outside any repository the plan folder resolves under the tree itself, so
+		// the session can already write it and no directory is granted beyond it
+		expect({ outcome, namesAbsoluteFolder: call?.invocation.prompt.includes(folder), writableDirs: call?.writableDirs }).toStrictEqual({
+			outcome: {},
+			namesAbsoluteFolder: true,
+			writableDirs: [],
+		});
+	});
+
 	test('runWorkerWithRelay: an auto-plan ticket whose record pull after the session fails builds nothing', async () => {
 		const diverged = 'the ticket record on LO-70 and the local one both moved: resolve them with lightsout work-order sync --name lo-70-drain';
 		const { params } = setupAutoPlanTicket({ plannedPull: { error: diverged } });
@@ -266,5 +312,14 @@ describe('runWorkerWithRelay', () => {
 		expect(outcome.open).toBeUndefined();
 		expect(outcome.error).toEqual(expect.stringContaining(`${branch}/003-drain-order`));
 		expect(mockBuildTicketPlans).not.toHaveBeenCalled();
+	});
+
+	test("points an auto-plan worker's build at the coordinator run", async () => {
+		const { ownersWhileBuilding, params } = setupAutoPlanBuildUnderQueueRun();
+
+		const outcome = await runWorkerWithRelay(params);
+
+		// the planned plan's run answers to the queue run, not to this process
+		expect({ outcome, ownersWhileBuilding }).toStrictEqual({ outcome: {}, ownersWhileBuilding: [{ queueRunId: 'q-1' }] });
 	});
 });

@@ -1,13 +1,11 @@
 ---
-summary: "an index file holding code instead of only re-export lines"
+summary: "What an index file may contain."
 checked: true
 severity: advisory
 ---
 
-## Index Files Hold No Code
+## Code in Index File
 
-An `index.ts` is a doorway, never a program. A package's entry is the list other packages build against, so an index file that declares values, wires tables, or runs anything makes that list illegible.
+An index file holds only re-export lines, `export { Foo } from '<path>'` and `export type { Bar } from '<path>'`, and comments. Put executable code in an entry file with its own name, conventionally `main.ts`, which imports what it runs from the files that declare it.
 
-1. **Re-export lines only** — `export { Foo } from '<path>'` and `export type { Bar } from '<path>'`, plus comments
-2. **Executable code gets a named entry file** — conventionally `main.ts` — which imports what it runs from the files that declare it
-3. An entry point is a legitimate thing; it is just never named `index.ts`
+A package's entry is the list other packages build against, and code in it makes that list hard to read.

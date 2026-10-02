@@ -62,20 +62,12 @@ const setupBoard = ({
 } = {}): BoardParams => ({ tickets, state, at: new Date(2026, 8, 11, hours, minutes) });
 
 describe('renderQueueBoard', () => {
-	test('heads a live board with the render time and the next update ten minutes later', () => {
-		const params = setupBoard({ hours: 9, minutes: 5 });
+	test('heads a live board with its render time and no next-update clause', () => {
+		const { at, tickets } = setupBoard({ hours: 9, minutes: 5 });
 
-		const lines = renderQueueBoard(params);
+		const headings = [QueueBoardState.Live, QueueBoardState.Stopped, QueueBoardState.Finished].map((state) => renderQueueBoard({ tickets, state, at })[0]);
 
-		expect(lines.slice(0, 2)).toStrictEqual(['Queue update · 09:05 · next update 09:15', '']);
-	});
-
-	test('wraps the next update past midnight', () => {
-		const params = setupBoard({ hours: 23, minutes: 55 });
-
-		const lines = renderQueueBoard(params);
-
-		expect(lines[0]).toBe('Queue update · 23:55 · next update 00:05');
+		expect(headings).toStrictEqual(['Queue update · 09:05', 'Queue stopped · last update 09:05', 'Queue finished · 09:05']);
 	});
 
 	test('heads a stopped board with its last update and a finished board with its finish time', () => {
@@ -134,7 +126,7 @@ describe('renderQueueBoard', () => {
 		const lines = renderQueueBoard(params);
 
 		expect(lines).toStrictEqual([
-			'Queue update · 10:20 · next update 10:30',
+			'Queue update · 10:20',
 			'',
 			headerRow,
 			separatorRow,
@@ -158,7 +150,7 @@ describe('renderQueueBoard', () => {
 
 		const lines = renderQueueBoard(params);
 
-		expect(lines).toStrictEqual(['Queue update · 10:20 · next update 10:30', '', headerRow, separatorRow, '| — | — | — | — | — | — | — |']);
+		expect(lines).toStrictEqual(['Queue update · 10:20', '', headerRow, separatorRow, '| — | — | — | — | — | — | — |']);
 	});
 
 	test("links a cell's identifier to the ticket, and leaves the detail line unlinked", () => {

@@ -139,3 +139,88 @@ test('buildClaudeCodeArgs: each control is emitted on its own, and a tool list i
 		'--disable-slash-commands',
 	]);
 });
+
+test('buildClaudeCodeArgs: a foreground-commands request disables background tasks and lifts both Bash ceilings to the invocation timeout through --settings', () => {
+	const args = buildClaudeCodeArgs({ foregroundCommandsOnly: true, timeoutMs: 14400000 });
+
+	const settings: unknown = JSON.parse(args[args.indexOf('--settings') + 1] ?? '');
+
+	expect(args.filter((arg) => arg === '--settings').length).toBe(1);
+	expect(settings).toStrictEqual({
+		env: { CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: '1', BASH_DEFAULT_TIMEOUT_MS: '14400000', BASH_MAX_TIMEOUT_MS: '14400000' },
+	});
+});
+
+test('buildClaudeCodeArgs: the settings pair precedes the variadic grant flag', () => {
+	const args = buildClaudeCodeArgs({ foregroundCommandsOnly: true, timeoutMs: 14400000, allowedCommands: ['node /tmp/cli.js', 'pnpm'] });
+
+	expect(args.slice(-5)).toStrictEqual(['--settings', expect.any(String), '--allowedTools', 'Bash(node /tmp/cli.js:*)', 'Bash(pnpm:*)']);
+});
+
+test('buildClaudeCodeArgs: an invocation without the request emits no settings, whatever its timeout', () => {
+	const args = buildClaudeCodeArgs({ timeoutMs: 14400000 });
+
+	expect(args).toStrictEqual(['-p', '--output-format', 'stream-json', '--verbose', '--exclude-dynamic-system-prompt-sections']);
+});
+
+test('buildClaudeCodeArgs: a request without a timeout disables background tasks and leaves the Bash ceilings at the harness default', () => {
+	const args = buildClaudeCodeArgs({ foregroundCommandsOnly: true });
+
+	const settings: unknown = JSON.parse(args[args.indexOf('--settings') + 1] ?? '');
+
+	expect(settings).toStrictEqual({ env: { CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: '1' } });
+});
+
+test('buildClaudeCodeArgs: writable directories under write become one --add-dir pair each, ahead of every variadic flag', () => {
+	const environment: AgentEnvironment = {
+		noMcpServers: true,
+		noSkillCatalog: true,
+		toolAllowlist: true,
+		settingsPreserved: true,
+		tools: ['Read', 'Edit'],
+	};
+
+	const args = buildClaudeCodeArgs({
+		permissions: Permissions.Write,
+		allowedCommands: ['pnpm'],
+		environment,
+		writableDirs: ['/repo/.lightsout/work-orders/lo-7/plans/001-a', '/repo/.lightsout/work-orders/lo-7/plans/002-b'],
+	});
+
+	// A single --add-dir followed by both directories would let the variadic
+	// flag swallow whatever argument came after it.
+	expect(args.slice(args.indexOf('--permission-mode'))).toStrictEqual([
+		'--permission-mode',
+		'acceptEdits',
+		'--add-dir',
+		'/repo/.lightsout/work-orders/lo-7/plans/001-a',
+		'--add-dir',
+		'/repo/.lightsout/work-orders/lo-7/plans/002-b',
+		'--strict-mcp-config',
+		'--disable-slash-commands',
+		'--tools',
+		'Read,Edit',
+		'--allowedTools',
+		'Bash(pnpm:*)',
+	]);
+});
+
+test('buildClaudeCodeArgs: writable directories are granted with write or absent permissions and never under read-only or full-access', () => {
+	const writableDirs = ['/repo/.lightsout/work-orders/lo-7/plans/001-a'];
+
+	const grantsFor = (permissions?: Permissions) => {
+		const args = buildClaudeCodeArgs({ permissions, writableDirs });
+
+		return args.filter((arg, index) => arg === '--add-dir' || args[index - 1] === '--add-dir');
+	};
+
+	expect({
+		absent: grantsFor(undefined),
+		readOnly: grantsFor(Permissions.ReadOnly),
+		fullAccess: grantsFor(Permissions.FullAccess),
+	}).toStrictEqual({
+		absent: ['--add-dir', '/repo/.lightsout/work-orders/lo-7/plans/001-a'],
+		readOnly: [],
+		fullAccess: [],
+	});
+});

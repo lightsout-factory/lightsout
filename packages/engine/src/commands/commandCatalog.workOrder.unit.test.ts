@@ -24,7 +24,7 @@ describe('commandCatalog work-order', () => {
 	test('carries the work-order command in the build group with one invocation per subcommand', () => {
 		const { ids, byId } = setupCatalog();
 		const workOrder = byId.get('work-order');
-		const neighbours = ['brainstorm', 'plan', 'auto-plan', 'implement', 'implement-direct', 'resume', 'ship', 'queue', 'ticket-state', 'self-check'];
+		const neighbours = ['brainstorm', 'plan', 'auto-plan', 'implement', 'implement-direct', 'resume', 'stop', 'ship', 'queue', 'ticket-state', 'self-check'];
 
 		const shapes = workOrder?.invocations.map((invocation) => [invocation.id, invocation.positional]);
 		const silentBack = neighbours.filter((id) => byId.get(id)?.related.includes('work-order') !== true);
