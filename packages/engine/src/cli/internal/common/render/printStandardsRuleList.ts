@@ -1,3 +1,4 @@
+import { describeCheckedBy } from '#src/cli/internal/common/render/common/utils/describeCheckedBy.ts';
 import { renderTable } from '#src/cli/internal/common/render/renderTable.ts';
 import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { dim } from '#src/cli/internal/common/terminal/dim.ts';
@@ -35,7 +36,7 @@ export const printStandardsRuleList = ({ rules }: Params): void => {
 				cells: [
 					rule.rule,
 					rule.fromConfig ? `${rule.severity} (config)` : rule.severity,
-					rule.checked ? 'code' : 'judgment',
+					describeCheckedBy({ rule }),
 					rule.doc,
 					describePackageSet({ packages: rule.packages }),
 				],
@@ -49,7 +50,7 @@ export const printStandardsRuleList = ({ rules }: Params): void => {
 	});
 	const atSeverity = (severity: StandardsSeverity) => countRules({ rules, where: (rule) => rule.severity === severity });
 	const checked = countRules({ rules, where: (rule) => rule.checked });
-	const judged = countRules({ rules, where: (rule) => !rule.checked });
+	const judged = countRules({ rules, where: (rule) => rule.reviewed });
 	const totals = {
 		cells: [
 			`${countRules({ rules, where: () => true })} rule(s)`,

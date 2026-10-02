@@ -25,6 +25,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: overrides.checked !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],

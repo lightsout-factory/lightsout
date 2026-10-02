@@ -24,6 +24,7 @@ const setupBundle = () => {
 				documentPath: 'code/fractal/size',
 				summary: 'Keep each function under its line cap.',
 				checked: true,
+				reviewed: false,
 				defaultSeverity: StandardsSeverity.Advisory,
 				defaultOptions: { lines: 50 },
 				fixtureCounts: { pass: 1, fail: 1 },

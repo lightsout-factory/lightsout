@@ -1,3 +1,4 @@
+import { describeCheckedBy } from '#src/cli/internal/common/render/common/utils/describeCheckedBy.ts';
 import { renderTable } from '#src/cli/internal/common/render/renderTable.ts';
 import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { dim } from '#src/cli/internal/common/terminal/dim.ts';
@@ -32,7 +33,7 @@ const ruleRows = ({ rule }: { rule: StandardsHealthRule }) => {
 		{
 			cells: [
 				rule.rule,
-				rule.checked ? 'code' : 'judgment',
+				describeCheckedBy({ rule }),
 				count({ value: rule.attempted }),
 				count({ value: rule.resolved }),
 				count({ value: rule.declined }),

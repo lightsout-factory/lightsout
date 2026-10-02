@@ -16,8 +16,10 @@ export interface LoadedStandardsRule {
 	summary: string;
 	/** rule.md body — the rule's full prose argument. */
 	prose: string;
-	/** True when the folder declares (and ships) a machine check. */
+	/** True when the folder declares (and ships) a machine check: `checked: true` or `checked: partial`. */
 	checked: boolean;
+	/** True when an agent reviews the rule: it has no check, or declares `checked: partial` because its check covers only part of what it says. */
+	reviewed: boolean;
 	/** `off` marks a rule a repo opts into: it runs, and its prose reaches agents, only once the repo's config names it. */
 	defaultSeverity: StandardsSeverity;
 	/** The numbers the rule.md header declares under `options`. */

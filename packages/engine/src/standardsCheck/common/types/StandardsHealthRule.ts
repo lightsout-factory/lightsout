@@ -9,7 +9,10 @@ export interface StandardsHealthRule {
 	rule: string;
 	set: StandardsSet;
 	documentPath: string;
+	/** True when the rule ships a check code runs. */
 	checked: boolean;
+	/** True when an agent reviews the rule: it ships no check, or its check covers only part of it. */
+	reviewed: boolean;
 	/** Blocking sites frozen into refactor worklists that named this rule. */
 	attempted: number;
 	/** Frozen sites a batch report shows gone afterwards. */

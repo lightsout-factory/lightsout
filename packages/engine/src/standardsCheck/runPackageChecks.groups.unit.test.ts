@@ -61,6 +61,7 @@ const sizeRule = ({ sites }: { sites: Site[] }) => {
 		summary: 'a file too big to read',
 		prose: 'the argument for the rule',
 		checked: true,
+		reviewed: false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
 		requires: [],

@@ -33,7 +33,7 @@ export const RuleRow = ({ rule, library, severity }: Props) => {
 					</span>
 				</div>
 				<div className="hidden shrink-0 items-center gap-2 sm:flex">
-					<CheckKindTag kind={toCheckKind({ checked: rule.checked })} isShort />
+					<CheckKindTag kind={toCheckKind({ checked: rule.checked, reviewed: rule.reviewed })} isShort />
 					<span className="inline-flex w-20 items-center gap-1.5 font-medium text-muted-foreground text-xs">
 						<display.Icon aria-hidden="true" className={cn('size-3.5', display.iconClass)} />
 						{display.verb}

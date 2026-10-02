@@ -16,6 +16,7 @@ export const toStandardsPackRuleListing = ({ rule, fixtureCounts }: Params): Sta
 	documentPath: rule.documentPath,
 	summary: rule.summary,
 	checked: rule.checked,
+	reviewed: rule.reviewed,
 	defaultSeverity: rule.defaultSeverity,
 	defaultOptions: rule.defaultOptions,
 	fixtureCounts,

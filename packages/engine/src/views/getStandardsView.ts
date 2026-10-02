@@ -42,6 +42,7 @@ const buildRuleView = ({
 		summary: listing.summary,
 		prose: rule.prose,
 		checked: listing.checked,
+		reviewed: listing.reviewed,
 		severity: listing.severity,
 		fromConfig: listing.fromConfig,
 		options: listing.options,

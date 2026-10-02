@@ -113,6 +113,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked: overrides.run !== undefined,
+	reviewed: overrides.run === undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],

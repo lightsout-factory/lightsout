@@ -14,6 +14,7 @@ const rule = ({ library, id, requires = [] }: { library: string; id: string; req
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires,

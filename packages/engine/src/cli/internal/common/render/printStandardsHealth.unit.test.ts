@@ -7,6 +7,7 @@ const healthRule = (overrides: Partial<StandardsHealthRule> & { rule: string }):
 	set: 'code',
 	documentPath: 'code/architecture/folder-structure',
 	checked: true,
+	reviewed: overrides.checked === false,
 	attempted: 0,
 	resolved: 0,
 	declined: 0,
@@ -20,7 +21,7 @@ const healthRule = (overrides: Partial<StandardsHealthRule> & { rule: string }):
 
 const healthOf = ({ rules }: { rules: StandardsHealthRule[] }): StandardsHealth => ({
 	rules,
-	totals: { rules: rules.length, checked: rules.filter((rule) => rule.checked).length, judgment: rules.filter((rule) => !rule.checked).length },
+	totals: { rules: rules.length, checked: rules.filter((rule) => rule.checked).length, judgment: rules.filter((rule) => rule.reviewed).length },
 });
 
 const setupPrinter = () => {
@@ -142,6 +143,7 @@ describe('printStandardsHealth', () => {
 			set: 'code',
 			documentPath: 'code/fractal/size',
 			checked: true,
+			reviewed: false,
 			attempted: 1,
 			resolved: 1,
 			declined: 0,

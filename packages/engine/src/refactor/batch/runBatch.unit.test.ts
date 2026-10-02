@@ -29,6 +29,7 @@ const singleReturn: LoadedStandardsRule = {
 	summary: 'more than one exit from a function',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],

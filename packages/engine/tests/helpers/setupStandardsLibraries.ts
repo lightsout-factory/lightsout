@@ -49,6 +49,7 @@ const buildRule = ({ library, path, spec }: { library: string; path: string; spe
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: true,
 	defaultSeverity: spec.severity ?? StandardsSeverity.Blocking,
 	defaultOptions: spec.options ?? {},
 	requires: [],

@@ -15,7 +15,10 @@ export const StandardsPackRuleListing = z.object({
 	/** Pack-relative document folder path, e.g. 'code/code-style/functions'. */
 	documentPath: z.string(),
 	summary: z.string(),
+	/** True when the rule ships a check code runs. */
 	checked: z.boolean(),
+	/** True when an agent reviews the rule: it ships no check, or its check covers only part of it. */
+	reviewed: z.boolean(),
 	/** `off` for a rule a repo opts into. */
 	defaultSeverity: z.enum(StandardsSeverity),
 	/** The numbers the rule.md header declares under `options`. */

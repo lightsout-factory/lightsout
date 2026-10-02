@@ -32,7 +32,9 @@ or reviews one, so every rule in every library has the same shape.
   written with the full name. A short id is accepted wherever it is unique.
   - `rule.md` — required: front matter, then the prose.
   - `check.ts` — optional: code that finds breaks. Declare `checked: true` when
-    it exists, and only then.
+    it finds every break the rule names, and `checked: partial` when it finds
+    only some of them and an agent must still read the rule for the rest. A
+    rule declaring either ships a check; a rule declaring neither ships none.
   - `fixtures/fail/` and `fixtures/pass/` — the Incorrect and Correct examples.
 - **Pack:** one JSON file in `packs/`, addressed as
   `<library>/<file name without .json>`. It holds a `description`;
@@ -53,7 +55,7 @@ or reviews one, so every rule in every library has the same shape.
 
 ```yaml
 summary: "One short sentence for people."   # required
-checked: false                              # true only with a check.ts
+checked: false                              # true or partial only with a check.ts; partial keeps the agent review
 severity: advisory                          # blocking | advisory | off (off = a repo opts in)
 options:                                    # numbers the check reads, if any
   cap: 20
@@ -70,7 +72,9 @@ doctor` warns a repository the same way.
 **Who reads what.** An agent reads one topic at a time: the `topic.md`
 background, then the prose of every rule in it, in folder order. It never sees
 the summary or the examples. People see the summary, the prose and the
-examples on the rule's page.
+examples on the rule's page. The reviewing agent reads only the rules without a
+check and the rules whose check is `partial`; a rule checked in full is never
+reviewed.
 
 ## Steps
 
@@ -138,7 +142,8 @@ examples on the rule's page.
    - A topic name when the rule is a set of instructions, such as
      `module-file-to-folder`.
 
-   A rule that gains or loses a code check keeps its name.
+   A rule that gains or loses a code check keeps its name, and so does one whose
+   check goes from `partial` to full.
 3. **Kebab-case, two to five words, no term a reader outside the project would
    have to look up.** Words like `ast` or `census` fail this.
 4. **Use words engineers already know**, not labels a reader must learn:
@@ -208,6 +213,8 @@ rule in a few seconds. For a checked rule they are also its tests —
 pass example.
 
 - **Show the whole rule, not half of it.** One example can show both halves.
+  For a `partial` check, the incorrect example holds at least one break the
+  check finds, since validation runs the check on it.
 - **Follow every other rule in the library**, so the correct side is correct
   everywhere.
 - **Every file a reader might open has a short, accurate comment** saying what

@@ -138,6 +138,7 @@ test('a rule row carries what the rule says, how this repo runs it, and how many
 		summary: 'a source file outside a module',
 		prose: 'Every file belongs to a module.',
 		checked: true,
+		reviewed: false,
 		severity: StandardsSeverity.Blocking,
 		fromConfig: false,
 		options: {},

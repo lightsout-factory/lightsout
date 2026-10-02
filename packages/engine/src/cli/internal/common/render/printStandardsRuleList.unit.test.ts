@@ -9,6 +9,7 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	doc: 'lightsout-defaults: code/style-guide/structure/one-export-per-file',
 	summary: 'more than one export in a file',
 	checked: true,
+	reviewed: overrides.checked === false,
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
 	options: {},
@@ -59,6 +60,17 @@ describe('printStandardsRuleList', () => {
 		// real policy nothing mechanical will ever catch — a ledger that hid it
 		// would read as though every listed rule were enforced
 		expect(cellsOf({ logged })[1]?.[2]).toBe('judgment');
+	});
+
+	test('a rule whose check covers only part of it names both, and counts under both', () => {
+		const { logged } = setupPrinter();
+
+		printStandardsRuleList({ rules: [listing({ rule: 'shared-code', reviewed: true }), listing({ rule: 'multi-export' })] });
+
+		const cells = cellsOf({ logged });
+
+		expect(cells[1]?.[2]).toBe('code and judgment');
+		expect(cells.at(-1)?.[3]).toBe('2 by code, 1 by judgment');
 	});
 
 	test('a row the repo configured is marked, so policy reads apart from default', () => {

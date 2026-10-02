@@ -127,7 +127,7 @@ test('cli: standards-validate loads a pack, runs its check against its fixtures,
 	const { stdout, stderr, code } = await runCli({ args: ['standards-validate', '--library', packPath] });
 
 	// the check ran from a .ts file the engine imported directly — no build step
-	expect(stdout).toContain('demo-standards — 1 checked rule(s) validated, 0 judgment-only rule(s), 0 pack file(s)');
+	expect(stdout).toContain('demo-standards — 1 checked rule(s) validated, 0 agent-reviewed rule(s), 0 pack file(s)');
 	expect(stderr).toBe('');
 	expect(code).toBe(0);
 });
@@ -167,7 +167,7 @@ test("cli: standards-validate loads a check that imports a helper through the li
 
 	const { stdout, stderr, code } = await runCli({ args: ['standards-validate', '--library', libraryPath] });
 
-	expect(stdout).toContain('demo-standards — 1 checked rule(s) validated, 0 judgment-only rule(s), 0 pack file(s)');
+	expect(stdout).toContain('demo-standards — 1 checked rule(s) validated, 0 agent-reviewed rule(s), 0 pack file(s)');
 	expect(stderr).toBe('');
 	expect(code).toBe(0);
 });

@@ -228,6 +228,57 @@ describe('parseRuleFolder', () => {
 		});
 	});
 
+	test('a rule declaring checked: partial loads its check and is still reviewed by an agent', async () => {
+		const { folderPath } = setupCheckedRuleFolder({ checkFiles: { 'check.ts': checkTsSource } });
+
+		writeFileSync(join(folderPath, 'rule.md'), '---\nsummary: a source file outside a module\nchecked: partial\n---\n\nKeep files in modules.\n');
+
+		const { rule, problems } = await parseCollecting({ folderPath });
+
+		// the check covers part of the rule, so code runs it and an agent reads the rest
+		expect({ problems, checked: rule?.checked, reviewed: rule?.reviewed, inputKind: rule?.inputKind }).toStrictEqual({
+			problems: [],
+			checked: true,
+			reviewed: true,
+			inputKind: 'file-list',
+		});
+	});
+
+	test('a rule is reviewed by an agent or checked in full by code, by what it declares', async () => {
+		const unchecked = setupRuleFolder({ frontMatter: 'summary: a source file outside a module' });
+		const checked = setupCheckedRuleFolder({ checkFiles: { 'check.ts': checkTsSource } });
+
+		const [withoutCheck, withCheck] = await parseEach({ folderPaths: [unchecked.folderPath, checked.folderPath] });
+
+		expect({
+			withoutCheck: { checked: withoutCheck?.rule?.checked, reviewed: withoutCheck?.rule?.reviewed },
+			withCheck: { checked: withCheck?.rule?.checked, reviewed: withCheck?.rule?.reviewed },
+		}).toStrictEqual({
+			withoutCheck: { checked: false, reviewed: true },
+			withCheck: { checked: true, reviewed: false },
+		});
+	});
+
+	test('a rule declaring checked: partial with no check file is refused, naming what it declared', async () => {
+		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: a source file outside a module\nchecked: partial' });
+
+		const { rule, problems } = await parseCollecting({ folderPath });
+
+		expect({ rule, problems }).toStrictEqual({
+			rule: undefined,
+			problems: ['code/style/01-internal-import-from-outside: declares checked: partial but ships no check.ts or check.js'],
+		});
+	});
+
+	test('refuses a checked value that is none of true, false and partial, and drops the rule', async () => {
+		const { folderPath } = setupRuleFolder({ frontMatter: 'summary: a source file outside a module\nchecked: mostly' });
+
+		const { rule, problems } = await parseCollecting({ folderPath });
+
+		expect(rule).toBeUndefined();
+		expect(problems).toEqual([expect.stringContaining('checked')]);
+	});
+
 	test('parseRuleFolder demands exactly one of check.ts or check.js', async () => {
 		const both = setupCheckedRuleFolder({ checkFiles: { 'check.ts': checkTsSource, 'check.js': checkJsSource } });
 		const neither = setupCheckedRuleFolder({ checkFiles: {} });

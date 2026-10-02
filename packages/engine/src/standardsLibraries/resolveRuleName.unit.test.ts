@@ -13,6 +13,7 @@ const rule = ({ library, id }: { library: string; id: string }): LoadedStandards
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],

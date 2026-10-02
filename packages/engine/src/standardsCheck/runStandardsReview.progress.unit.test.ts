@@ -21,6 +21,7 @@ const judgmentRule = ({ id }: { id: string }): LoadedStandardsRule => ({
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -89,7 +90,7 @@ describe('runStandardsReview progress', () => {
 		});
 
 		expect(progress[0]).toBe(
-			'The agent review is now running. stub is reading your code against the 2 rules no automated check can judge. This usually takes a few minutes.',
+			'The agent review is now running. stub is reading your code against the 2 rules that take judgment. This usually takes a few minutes.',
 		);
 	});
 
@@ -164,7 +165,7 @@ describe('runStandardsReview progress', () => {
 		// started → still running, with proof of life → finished: each line says
 		// what is happening to the reader right now
 		expect(progress).toStrictEqual([
-			'The agent review is now running. stub is reading your code against the 1 rule no automated check can judge. This usually takes a few minutes.',
+			'The agent review is now running. stub is reading your code against the 1 rule that take judgment. This usually takes a few minutes.',
 			'⏳ agent review still running · 30s · 2 files read so far',
 			'✓ Agent review finished in 30s — nothing to report',
 		]);

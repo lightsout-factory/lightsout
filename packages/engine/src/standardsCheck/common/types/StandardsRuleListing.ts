@@ -6,8 +6,10 @@ export interface StandardsRuleListing {
 	/** '<library name>: <topic folder>' — which library states the rule, and where in it. */
 	doc: string;
 	summary: string;
-	/** True when the rule ships a check code runs; false when it is judgment an agent has to read. */
+	/** True when the rule ships a check code runs. */
 	checked: boolean;
+	/** True when an agent reviews the rule: it ships no check, or its check covers only part of it. */
+	reviewed: boolean;
 	severity: StandardsSeverity;
 	/** True when this repo's config set the severity or the options. */
 	fromConfig: boolean;

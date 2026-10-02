@@ -50,6 +50,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: overrides.checked !== true,
 	defaultSeverity: 'advisory',
 	defaultOptions: {},
 	requires: [],
@@ -177,7 +178,7 @@ describe('standardsValidateCommand', () => {
 		// the pack that was loaded is the one validated — not a second read
 		expect(mockValidateStandardsPack).toHaveBeenCalledWith({ library: pack, libraries: [pack] });
 		// the tally separates what was validated from what nothing could validate
-		expect(logged).toContain('acme — 1 checked rule(s) validated, 1 judgment-only rule(s), 0 pack file(s)');
+		expect(logged).toContain('acme — 1 checked rule(s) validated, 1 agent-reviewed rule(s), 0 pack file(s)');
 		expect(exitCodes).toStrictEqual([0]);
 	});
 
@@ -220,7 +221,7 @@ describe('standardsValidateCommand', () => {
 
 		// a rule nothing could validate is reported, not counted against the pack
 		expect(logged[0]).toBe('ℹ multi-export: fixtures skipped — no typescript resolvable');
-		expect(logged).toContain('acme — 1 checked rule(s) validated, 1 judgment-only rule(s), 0 pack file(s)');
+		expect(logged).toContain('acme — 1 checked rule(s) validated, 1 agent-reviewed rule(s), 0 pack file(s)');
 		expect(exitCodes).toStrictEqual([0]);
 	});
 
@@ -280,7 +281,7 @@ describe('standardsValidateCommand', () => {
 		const finalLine = logged.at(-1);
 
 		expect({ finalLine, exitCodes }).toEqual({
-			finalLine: expect.stringMatching(/2 checked rule.*1 judgment-only rule.*3 pack file/),
+			finalLine: expect.stringMatching(/2 checked rule.*1 agent-reviewed rule.*3 pack file/),
 			exitCodes: [0],
 		});
 	});

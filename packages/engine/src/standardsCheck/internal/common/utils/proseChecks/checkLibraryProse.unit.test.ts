@@ -28,6 +28,7 @@ const setupLibrary = ({ prose, intro = '# Module API' }: { prose: string; intro?
 				summary: 'Code that nothing uses any more.',
 				prose,
 				checked: false,
+				reviewed: true,
 				defaultSeverity: StandardsSeverity.Advisory,
 				defaultOptions: {},
 				requires: [],

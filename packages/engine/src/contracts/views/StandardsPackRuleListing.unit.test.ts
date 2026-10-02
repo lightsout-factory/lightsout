@@ -9,6 +9,7 @@ const setupListings = () => {
 		summary: 'A source file stays under its line cap.',
 		name: 'lightsout/file-size',
 		checked: true,
+		reviewed: false,
 		defaultSeverity: 'blocking',
 		fixtureCounts: { pass: 1, fail: 1 },
 	};
@@ -33,6 +34,7 @@ describe('StandardsPackRuleListing', () => {
 				summary: 'A source file stays under its line cap.',
 				name: 'lightsout/file-size',
 				checked: true,
+				reviewed: false,
 				defaultSeverity: 'blocking',
 				defaultOptions: { file: 250, tsxFile: 300 },
 				fixtureCounts: { pass: 1, fail: 1 },

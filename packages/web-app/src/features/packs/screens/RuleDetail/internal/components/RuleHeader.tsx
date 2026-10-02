@@ -20,7 +20,7 @@ export const RuleHeader = ({ rule }: Props) => {
 				<CodeSpans text={rule.summary} />
 			</p>
 			<div className="flex flex-wrap items-center gap-2">
-				<CheckKindTag kind={toCheckKind({ checked: rule.checked })} />
+				<CheckKindTag kind={toCheckKind({ checked: rule.checked, reviewed: rule.reviewed })} />
 				<span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 font-semibold text-muted-foreground-strong text-xs">
 					<severity.Icon aria-hidden="true" className={cn('size-3.5', severity.iconClass)} />
 					{severity.verb} by default

@@ -35,6 +35,7 @@ const toRuleView = async ({ rule }: { rule: LoadedStandardsRule }) => {
 /** The pack file says what it includes; the resolved pack says what that brings in, at the grades the pack settles on. */
 const toPackListing = ({ packFile, resolved }: { packFile: LoadedStandardsPackFile; resolved: ResolvedStandardsPack }) => {
 	const checked = resolved.rules.filter((entry) => entry.rule.checked).length;
+	const judgment = resolved.rules.filter((entry) => entry.rule.reviewed).length;
 
 	return {
 		name: packFile.name,
@@ -44,7 +45,7 @@ const toPackListing = ({ packFile, resolved }: { packFile: LoadedStandardsPackFi
 		include: packFile.include,
 		topics: resolved.topics.map((topic) => `${topic.library}/${topic.path}`),
 		rules: resolved.rules.map((entry) => ({ name: entry.rule.name, severity: entry.severity, options: entry.options })),
-		totals: { rules: resolved.rules.length, checked, judgment: resolved.rules.length - checked, topics: resolved.topics.length },
+		totals: { rules: resolved.rules.length, checked, judgment, topics: resolved.topics.length },
 	};
 };
 
@@ -113,7 +114,7 @@ export const getStandardsPackBundle = async ({ cwd }: Params): Promise<Standards
 			totals: {
 				rules: rules.length,
 				checked,
-				judgment: rules.length - checked,
+				judgment: rules.filter((rule) => rule.reviewed).length,
 				topics: library.documents.length,
 				packs: packs.length,
 				withFixtures: rules.filter((rule) => rule.fixtureCounts.pass > 0 && rule.fixtureCounts.fail > 0).length,

@@ -39,6 +39,7 @@ const judgmentRules: LoadedStandardsRule[] = ['function-size', 'single-return'].
 	summary: `the ${id} rule`,
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],

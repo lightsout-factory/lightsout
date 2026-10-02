@@ -31,6 +31,7 @@ const setupRule = ({ example, fail, pass }: { example?: RuleExample; fail: strin
 			summary: 'an export nothing else references',
 			prose: '',
 			checked: false,
+			reviewed: true,
 			defaultSeverity: StandardsSeverity.Blocking,
 			defaultOptions: {},
 			requires: [],

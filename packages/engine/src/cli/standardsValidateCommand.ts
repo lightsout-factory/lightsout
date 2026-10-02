@@ -59,7 +59,7 @@ export const standardsValidateCommand = async ({ flags, cwd }: CommandContext): 
 	}
 
 	const checked = library.rules.filter((rule) => rule.checked).length;
-	const judgment = library.rules.length - checked;
+	const reviewed = library.rules.filter((rule) => rule.reviewed).length;
 	const packFiles = library.packs.length;
 
 	console.log('');
@@ -69,6 +69,6 @@ export const standardsValidateCommand = async ({ flags, cwd }: CommandContext): 
 		return exitCli({ code: 1 });
 	}
 
-	console.log(green(`${library.name} — ${checked} checked rule(s) validated, ${judgment} judgment-only rule(s), ${packFiles} pack file(s)`));
+	console.log(green(`${library.name} — ${checked} checked rule(s) validated, ${reviewed} agent-reviewed rule(s), ${packFiles} pack file(s)`));
 	return exitCli({ code: 0 });
 };

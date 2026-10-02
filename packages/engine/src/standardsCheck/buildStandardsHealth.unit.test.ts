@@ -21,6 +21,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: overrides.checked !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -156,6 +157,19 @@ const rowFor = ({ rules, id }: { rules: Awaited<ReturnType<typeof buildStandards
 	rules.find((entry) => entry.rule === `acme/${id}`);
 
 describe('buildStandardsHealth', () => {
+	test('a rule whose check covers only part of it counts both as checked and as judgment', async () => {
+		const cwd = mkdtempSync(join(tmpdir(), 'lightsout-health-partial-'));
+
+		const health = await buildStandardsHealth({
+			cwd,
+			groups: groupsOf({ rules: [rule({ id: 'shared-code', checked: true, reviewed: true }), rule({ id: 'multi-export', checked: true })] }),
+		});
+
+		// code runs both; an agent still reads one — so the two counts pass the rule total
+		expect(health.totals).toStrictEqual({ rules: 2, checked: 2, judgment: 1 });
+		expect(rowFor({ rules: health.rules, id: 'shared-code' })).toEqual(expect.objectContaining({ checked: true, reviewed: true }));
+	});
+
 	test('coverage is counted off the package folders, so it lands with no run history at all', async () => {
 		const cwd = mkdtempSync(join(tmpdir(), 'lightsout-health-empty-'));
 

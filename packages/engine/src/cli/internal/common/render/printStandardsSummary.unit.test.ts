@@ -18,6 +18,7 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	doc: 'lightsout-defaults: code/style-guide/patterns/functions',
 	summary: 'a function longer than the size cap',
 	checked: true,
+	reviewed: overrides.checked === false,
 	severity: StandardsSeverity.Advisory,
 	fromConfig: false,
 	options: {},

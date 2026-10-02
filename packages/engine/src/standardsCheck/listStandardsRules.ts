@@ -35,6 +35,7 @@ export const listStandardsRules = ({ groups }: Params): StandardsRuleListing[] =
 				doc: `${rule.library}: ${rule.documentPath}`,
 				summary: rule.summary,
 				checked: rule.checked,
+				reviewed: rule.reviewed,
 				severity: state.severity,
 				fromConfig: state.fromConfig,
 				options: state.options,

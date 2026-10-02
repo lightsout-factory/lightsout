@@ -15,6 +15,7 @@ const rule = ({ id, requires }: { id: string; requires: string[] }): LoadedStand
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	fixturesPath: `/packages/house/${id}/fixtures`,

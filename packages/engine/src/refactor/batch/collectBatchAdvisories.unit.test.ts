@@ -37,6 +37,7 @@ const judgmentRule: LoadedStandardsRule = {
 	summary: 'three positional arguments on an exported function',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],

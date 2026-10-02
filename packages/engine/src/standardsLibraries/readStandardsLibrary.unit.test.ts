@@ -168,7 +168,7 @@ describe('readStandardsLibrary', () => {
 		expect(error.message.startsWith(`standards pack failed to load (${packPath}):`)).toBeTruthy();
 		expect(error.message).toContain('code/style/patterns/no-prefix: rule folder must be named <NN>-<rule-id>');
 		expect(error.message).toContain('code/style/patterns/01-checked-without-check: declares checked: true but ships no check.ts');
-		expect(error.message).toContain('code/style/patterns/02-stray-check: ships a check.ts but does not declare checked: true');
+		expect(error.message).toContain('code/style/patterns/02-stray-check: ships a check.ts but declares neither checked: true nor checked: partial');
 		expect(error.message).toContain('code/style/patterns/03-no-summary/rule.md: summary');
 		expect(error.message).toContain('duplicate rule id "shared-id"');
 		// 04-empty-fixtures ships none, and loading does not care: whether a check

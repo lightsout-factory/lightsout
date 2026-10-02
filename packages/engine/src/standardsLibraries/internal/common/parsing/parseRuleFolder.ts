@@ -23,7 +23,7 @@ interface Params {
 
 const ruleDeclaration = z.object({
 	summary: z.string().min(1),
-	checked: z.boolean().default(false),
+	checked: z.union([z.boolean(), z.literal('partial')]).default(false),
 	severity: z.enum(StandardsSeverity).default(StandardsSeverity.Advisory),
 	options: z.record(z.string(), z.number()).default({}),
 	example: RuleExample.optional(),
@@ -43,11 +43,21 @@ const getRuleDeclaration = async ({ folderPath, rulePath, found }: { folderPath:
 };
 
 /**
- * A checked rule ships exactly one check file: `check.ts`, or `check.js` for a
- * library published to npm. Returns the absolute path of the one it ships, or
- * nothing when it ships none or both.
+ * A rule declaring `checked: true` or `checked: partial` ships exactly one
+ * check file: `check.ts`, or `check.js` for a library published to npm. Returns
+ * the absolute path of the one it ships, or nothing when it ships none or both.
  */
-const findCheckFile = async ({ folderPath, rulePath, checked, found }: { folderPath: string; rulePath: string; checked?: boolean; found: string[] }) => {
+const findCheckFile = async ({
+	folderPath,
+	rulePath,
+	checked,
+	found,
+}: {
+	folderPath: string;
+	rulePath: string;
+	checked?: boolean | 'partial';
+	found: string[];
+}) => {
 	const shipped: string[] = [];
 
 	for (const fileName of ['check.ts', 'check.js']) {
@@ -62,12 +72,12 @@ const findCheckFile = async ({ folderPath, rulePath, checked, found }: { folderP
 		found.push(`${rulePath}: ships both check.ts and check.js — a rule ships one`);
 	} else if (shipped.length === 1) {
 		checkFileName = shipped[0];
-	} else if (checked === true) {
-		found.push(`${rulePath}: declares checked: true but ships no check.ts or check.js`);
+	} else if (checked === true || checked === 'partial') {
+		found.push(`${rulePath}: declares checked: ${checked} but ships no check.ts or check.js`);
 	}
 
 	if (checked === false && checkFileName !== undefined) {
-		found.push(`${rulePath}: ships a ${checkFileName} but does not declare checked: true`);
+		found.push(`${rulePath}: ships a ${checkFileName} but declares neither checked: true nor checked: partial`);
 	}
 
 	return checkFileName === undefined ? undefined : join(folderPath, checkFileName);
@@ -99,8 +109,8 @@ const loadCheck = async ({ checkPath, rulePath, found }: { checkPath: string; ru
 
 /**
  * Problems are collected rather than thrown so one load reports every fault. A
- * rule with any problem is dropped whole: a partial rule would be a check or
- * prose that silently stopped applying.
+ * rule with any problem is dropped whole: a half-loaded rule would be a check
+ * or prose that silently stopped applying.
  */
 export const parseRuleFolder = async ({ folderPath, set, documentPath, library, problems }: Params): Promise<LoadedStandardsRule | undefined> => {
 	const folderName = basename(folderPath);
@@ -114,7 +124,8 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, library, 
 
 	const { declaration, prose } = await getRuleDeclaration({ folderPath, rulePath, found });
 	const checkPath = await findCheckFile({ folderPath, rulePath, checked: declaration?.checked, found });
-	const check = declaration?.checked === true && checkPath !== undefined ? await loadCheck({ checkPath, rulePath, found }) : undefined;
+	const declaresCheck = declaration !== undefined && declaration.checked !== false;
+	const check = declaresCheck && checkPath !== undefined ? await loadCheck({ checkPath, rulePath, found }) : undefined;
 
 	// Not required here: a shipped pack may omit fixtures. `standards-validate` demands them.
 	const fixturesPath = join(folderPath, 'fixtures');
@@ -132,7 +143,8 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, library, 
 			documentPath,
 			summary: declaration.summary,
 			prose,
-			checked: declaration.checked,
+			checked: declaration.checked !== false,
+			reviewed: declaration.checked !== true,
 			defaultSeverity: declaration.severity,
 			defaultOptions: declaration.options,
 			// As written: readStandardsLibrary resolves the names once every rule of the library is loaded.

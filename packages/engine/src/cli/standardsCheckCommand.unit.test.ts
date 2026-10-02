@@ -105,6 +105,7 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	doc: 'lightsout-defaults: code/style-guide/structure/one-export-per-file',
 	summary: 'more than one export in a file',
 	checked: true,
+	reviewed: overrides.checked === false,
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
 	options: {},

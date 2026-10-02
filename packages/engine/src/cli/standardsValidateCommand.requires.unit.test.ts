@@ -47,6 +47,7 @@ const rule = ({ id, checked, requires }: { id: string; checked: boolean; require
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked,
+	reviewed: !checked,
 	defaultSeverity: 'advisory',
 	defaultOptions: {},
 	fixturesPath: `/repo/libs/house/${id}/fixtures`,
@@ -100,7 +101,7 @@ describe('standardsValidateCommand', () => {
 				'⚠ house/react: house/component-file-structure requires house/folder-index-file, which the pack does not send to agents',
 				'⚠ house/react: house/component-file-structure requires house/module-folder-layout, which the pack does not send to agents',
 			],
-			finalLine: 'house — 1 checked rule(s) validated, 1 judgment-only rule(s), 0 pack file(s)',
+			finalLine: 'house — 1 checked rule(s) validated, 1 agent-reviewed rule(s), 0 pack file(s)',
 			exitCodes: [0],
 		});
 	});

@@ -45,7 +45,7 @@ const collectJudgmentRules = ({ groups }: { groups: StandardsGroup[] }) =>
 	[
 		...collectGroupItems({
 			groups,
-			itemsOf: ({ group }) => group.pack.rules.map(({ rule }) => rule).filter((rule) => !rule.checked && runsRule({ group, name: rule.name })),
+			itemsOf: ({ group }) => group.pack.rules.map(({ rule }) => rule).filter((rule) => rule.reviewed && runsRule({ group, name: rule.name })),
 			keyOf: ({ item }) => item.name,
 		}).values(),
 	].map(({ item, packages }) => ({ rule: item, packages }));
@@ -175,7 +175,7 @@ export const runStandardsReview = async ({
 	const ruleCount = `${rules.length} rule${rules.length === 1 ? '' : 's'}`;
 
 	onProgress?.(
-		`The agent review is now running. ${driver.name} is reading your code against the ${ruleCount} no automated check can judge. This usually takes a few minutes.`,
+		`The agent review is now running. ${driver.name} is reading your code against the ${ruleCount} that take judgment. This usually takes a few minutes.`,
 	);
 
 	const heartbeat = createAgentHeartbeat({ label: 'agent review', onProgress: (message) => onProgress?.(message) });

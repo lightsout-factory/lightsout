@@ -24,7 +24,9 @@ The library root holds:
   framework owns.
 
 A topic is a folder holding a `topic.md` and one folder per rule, each named
-`<NN>-<id>`. `rule.md` is required; `check.ts` and `fixtures/` are optional.
+`<NN>-<id>`. `rule.md` is required; `check.ts` and `fixtures/` are optional. A
+rule with a `check.ts` declares `checked: true`, or `checked: partial` when the
+check finds only some of what the rule names and an agent still reviews the rest.
 
 ## Names
 

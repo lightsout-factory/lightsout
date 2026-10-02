@@ -13,4 +13,10 @@ export const checkKindLabels: Record<CheckKind, { label: string; short: string; 
 		plural: 'agent checks',
 		definition: 'An agent reviews the change against the rule.',
 	},
+	[CheckKind.Both]: {
+		label: 'Deterministic and agent check',
+		short: 'Both',
+		plural: 'checks of both kinds',
+		definition: 'Code decides part of the rule; an agent reviews the rest.',
+	},
 };

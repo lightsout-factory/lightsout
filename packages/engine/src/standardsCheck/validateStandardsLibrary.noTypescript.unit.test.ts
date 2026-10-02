@@ -70,6 +70,7 @@ const setupPack = ({ frameworkOwned = false }: { frameworkOwned?: boolean } = {}
 		summary: 'a rule',
 		prose: 'the argument for the rule',
 		checked: true,
+		reviewed: overrides.checked === false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
 		requires: [],

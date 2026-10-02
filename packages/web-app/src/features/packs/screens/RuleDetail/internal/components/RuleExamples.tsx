@@ -15,6 +15,7 @@ const sides: Array<{ side: FixtureSide; title: string; Icon: LucideIcon; iconCla
 const sources: Record<CheckKind, string> = {
 	[CheckKind.Deterministic]: 'The check flags the incorrect code and passes the correct code.',
 	[CheckKind.Agent]: 'The agent flags code like the incorrect example and accepts code like the correct one.',
+	[CheckKind.Both]: 'The check flags the incorrect code and passes the correct code; the agent judges what the check cannot see.',
 };
 
 const SideFiles = ({ files, example, side, title }: { files: StandardsPackFixture[]; example: RuleExample; side: FixtureSide; title: string }) => {

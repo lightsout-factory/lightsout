@@ -61,6 +61,7 @@ const setupBrokenPacks = () => {
 		summary: 'a rule',
 		prose: 'the argument for the rule',
 		checked: true,
+		reviewed: false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
 		requires: [],

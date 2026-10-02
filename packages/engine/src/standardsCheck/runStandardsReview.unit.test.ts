@@ -16,6 +16,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: overrides.checked !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -174,6 +175,25 @@ describe('runStandardsReview', () => {
 		});
 
 		expect(notes).toStrictEqual(['agent review skipped — harness rate limited or overloaded']);
+	});
+
+	test('a rule whose check covers only part of it is still handed to the reviewer', async () => {
+		const { driver, invocations } = setupDriver({
+			result: { text: reviewText([{ rule: 'acme/shared-code', files: [{ path: 'src/a.ts' }], detail: 'not shared by its importers' }]), exitCode: 0 },
+		});
+
+		const { findings } = await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ rules: [rule({ id: 'shared-code', checked: true, reviewed: true }), rule({ id: 'multi-export', checked: true })] })],
+			packagesDir: 'packages',
+			files: ['src/a.ts'],
+		});
+
+		// the partly checked rule is read, the fully checked one is not
+		expect(invocations[0]?.systemPrompt).toContain('**Rule: `acme/shared-code`**');
+		expect(invocations[0]?.systemPrompt).not.toContain('acme/multi-export');
+		expect(findings.map((finding) => finding.rule)).toStrictEqual(['acme/shared-code']);
 	});
 
 	test('no judgment rules means no agent is spent saying so', async () => {

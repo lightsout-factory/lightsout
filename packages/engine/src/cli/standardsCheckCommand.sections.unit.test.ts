@@ -164,7 +164,7 @@ describe('standardsCheckCommand sections', () => {
 			args: ['--agent-review'],
 			review: {
 				progress: [
-					'The agent review is now running. claude-code is reading your code against the 62 rules no automated check can judge. This usually takes a few minutes.',
+					'The agent review is now running. claude-code is reading your code against the 62 rules that take judgment. This usually takes a few minutes.',
 					'⏳ agent review still running · 30s · 12 files read so far',
 					'✓ Agent review finished in 4m 12s — nothing to report',
 				],
@@ -177,7 +177,7 @@ describe('standardsCheckCommand sections', () => {
 
 		expect(heading).toBeGreaterThan(-1);
 		expect(logged.slice(heading + 1, heading + 4)).toStrictEqual([
-			'  The agent review is now running. claude-code is reading your code against the 62 rules no automated check can judge. This usually takes a few minutes.',
+			'  The agent review is now running. claude-code is reading your code against the 62 rules that take judgment. This usually takes a few minutes.',
 			'  ⏳ agent review still running · 30s · 12 files read so far',
 			'  ✓ Agent review finished in 4m 12s — nothing to report',
 		]);

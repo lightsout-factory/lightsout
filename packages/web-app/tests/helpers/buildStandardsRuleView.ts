@@ -4,6 +4,7 @@ import { StandardsSet, StandardsSeverity } from '@lightsout/engine/contracts';
 interface Params {
 	rule?: string;
 	checked?: boolean;
+	reviewed?: boolean;
 	severity?: StandardsRuleView['severity'];
 	fromConfig?: boolean;
 	options?: Record<string, number>;
@@ -16,6 +17,7 @@ interface Params {
 export const buildStandardsRuleView = ({
 	rule = 'file-size',
 	checked = true,
+	reviewed = !checked,
 	severity = StandardsSeverity.Blocking,
 	fromConfig = false,
 	options = { file: 250 },
@@ -30,6 +32,7 @@ export const buildStandardsRuleView = ({
 	summary: 'a file over the standards line cap',
 	prose,
 	checked,
+	reviewed,
 	severity,
 	fromConfig,
 	options,

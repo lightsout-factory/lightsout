@@ -9,6 +9,7 @@ const buildRuleView = (extra: Record<string, unknown> = {}) => ({
 	summary: 'A source file stays under its line cap.',
 	prose: '# Size, File\n\nA file past the cap is several modules sharing one name.',
 	checked: true,
+	reviewed: extra.checked === false,
 	severity: 'blocking',
 	fromConfig: false,
 	options: { maxLines: 400 },

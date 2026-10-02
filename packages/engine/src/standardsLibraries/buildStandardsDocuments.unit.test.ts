@@ -25,6 +25,7 @@ const buildRule = ({
 	summary: `${id} summary`,
 	prose,
 	checked: false,
+	reviewed: true,
 	defaultSeverity,
 	defaultOptions: {},
 	requires: [],

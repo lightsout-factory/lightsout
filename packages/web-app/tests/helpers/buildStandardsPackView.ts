@@ -16,13 +16,11 @@ const buildTopics = ({ rules }: { rules: StandardsPackRuleListing[] }) =>
 
 /** One pack holding every rule and topic, each rule at its default severity and options. */
 const buildPacks = ({ rules, topics }: { rules: StandardsPackRuleListing[]; topics: StandardsTopicView[] }) => {
-	const checked = rules.filter((rule) => rule.checked).length;
-
 	return [
 		buildStandardsPackListing({
 			topics: topics.map((topic) => `lightsout/${topic.path}`),
 			rules: rules.map((rule) => ({ name: rule.name, severity: rule.defaultSeverity, options: rule.defaultOptions })),
-			totals: { checked, judgment: rules.length - checked },
+			totals: { checked: rules.filter((rule) => rule.checked).length, judgment: rules.filter((rule) => rule.reviewed).length },
 		}),
 	];
 };
@@ -44,8 +42,6 @@ export const buildStandardsPackView = ({
 	packs = buildPacks({ rules, topics }),
 	overrides = {},
 }: Params = {}): StandardsPackView => {
-	const checked = rules.filter((rule) => rule.checked).length;
-
 	return {
 		name: 'lightsout',
 		description: 'The rules lightsout ships.',
@@ -53,8 +49,8 @@ export const buildStandardsPackView = ({
 		built: false,
 		totals: {
 			rules: rules.length,
-			checked,
-			judgment: rules.length - checked,
+			checked: rules.filter((rule) => rule.checked).length,
+			judgment: rules.filter((rule) => rule.reviewed).length,
 			topics: topics.length,
 			packs: packs.length,
 			withFixtures: rules.filter((rule) => rule.fixtureCounts.pass > 0 && rule.fixtureCounts.fail > 0).length,

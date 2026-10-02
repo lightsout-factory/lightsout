@@ -30,6 +30,7 @@ const houseRule = ({ id, requires = [] }: { id: string; requires?: string[] }): 
 	summary: 'a rule',
 	prose: 'the argument for the rule',
 	checked: false,
+	reviewed: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	fixturesPath: writeFixturePair(),

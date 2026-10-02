@@ -12,7 +12,10 @@ export const StandardsRuleView = z.object({
 	summary: z.string(),
 	/** The rule.md body — its full prose argument. */
 	prose: z.string(),
+	/** True when the rule ships a check code runs. */
 	checked: z.boolean(),
+	/** True when an agent reviews the rule: it ships no check, or its check covers only part of it. */
+	reviewed: z.boolean(),
 	severity: z.enum([StandardsSeverity.Blocking, StandardsSeverity.Advisory, StandardsSeverity.Off]),
 	/** True when this repo's config set the severity or the options. */
 	fromConfig: z.boolean(),

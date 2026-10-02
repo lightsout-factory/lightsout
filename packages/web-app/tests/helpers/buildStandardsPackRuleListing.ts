@@ -9,6 +9,7 @@ interface Params {
 	documentPath?: string;
 	summary?: string;
 	checked?: boolean;
+	reviewed?: boolean;
 	defaultSeverity?: typeof StandardsSeverity.Blocking | typeof StandardsSeverity.Advisory;
 	defaultOptions?: Record<string, number>;
 	fixtureCounts?: { pass: number; fail: number };
@@ -22,6 +23,7 @@ export const buildStandardsPackRuleListing = ({
 	documentPath = 'code/agent-corrections/type-safety',
 	summary = 'When an `as` cast is fine, and when to narrow the type instead.',
 	checked = true,
+	reviewed = !checked,
 	defaultSeverity = StandardsSeverity.Blocking,
 	defaultOptions = {},
 	fixtureCounts = { pass: 1, fail: 1 },
@@ -32,6 +34,7 @@ export const buildStandardsPackRuleListing = ({
 	documentPath,
 	summary,
 	checked,
+	reviewed,
 	defaultSeverity,
 	defaultOptions,
 	fixtureCounts,

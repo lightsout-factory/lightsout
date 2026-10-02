@@ -16,6 +16,7 @@ const buildRule = ({ id, title, text, set = StandardsSet.Code }: { id: string; t
 	summary: `${id} summary`,
 	prose: `## ${title}\n\n${text}`,
 	checked: false,
+	reviewed: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],

@@ -14,7 +14,7 @@ import type { StandardsHealth } from '#src/standardsCheck/common/types/Standards
 import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
 import { mapPackRules } from '#src/standardsLibraries/mapPackRules.ts';
 
-type Tally = Omit<StandardsHealthRule, 'rule' | 'set' | 'documentPath' | 'checked'>;
+type Tally = Omit<StandardsHealthRule, 'rule' | 'set' | 'documentPath' | 'checked' | 'reviewed'>;
 
 const emptyTally = (): Tally => ({
 	attempted: 0,
@@ -148,12 +148,14 @@ export const buildStandardsHealth = async ({ cwd, groups }: Params): Promise<Sta
 		set: rule.set,
 		documentPath: rule.documentPath,
 		checked: rule.checked,
+		reviewed: rule.reviewed,
 		...(tallies.get(rule.name) ?? emptyTally()),
 	}));
 
 	rules.sort((first, second) => first.rule.localeCompare(second.rule));
 
-	const checked = rules.filter((rule) => rule.checked).length;
-
-	return { rules, totals: { rules: rules.length, checked, judgment: rules.length - checked } };
+	return {
+		rules,
+		totals: { rules: rules.length, checked: rules.filter((rule) => rule.checked).length, judgment: rules.filter((rule) => rule.reviewed).length },
+	};
 };
