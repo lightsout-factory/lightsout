@@ -1,6 +1,0 @@
-{
-	"description": "The default for a TypeScript package with no detected framework: TypeScript style, structure and unit testing.",
-	"include": {
-		"packs": ["lightsout/typescript", "lightsout/structure", "lightsout/unit-testing"]
-	}
-}

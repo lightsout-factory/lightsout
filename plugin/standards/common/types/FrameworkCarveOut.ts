@@ -17,8 +17,6 @@ export interface FrameworkCarveOut {
 	 * and NestJS wires by decorators rather than by directory.
 	 */
 	exemptFolderNames: string[];
-	/** True when the framework mandates kebab-case folders throughout (NestJS). */
-	kebabCase: boolean;
-	/** Route directory names whose segments are URL-mapped and therefore kebab-case by mandate. */
+	/** Route directory names the framework's file router owns, so every file and folder name under them is the framework's. */
 	routerRoots: string[];
 }
