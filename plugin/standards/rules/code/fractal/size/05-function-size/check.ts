@@ -84,9 +84,13 @@ const buildFileFindings = ({ input, options }: { input: SyntaxTreeInput; options
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'syntax-tree',
+	inputKinds: ['syntax-tree'],
 	// Measured from the tree rather than counted off the text: the table measures
 	// a function from its signature to its closing brace, and only the parse says
 	// where either of those is.
-	run: ({ input, options }): RawStandardsFinding[] => (input.kind === 'syntax-tree' ? buildFileFindings({ input, options }) : []),
+	run: ({ inputs, options }): RawStandardsFinding[] => {
+		const input = inputs['syntax-tree'];
+
+		return input === undefined ? [] : buildFileFindings({ input, options });
+	},
 };

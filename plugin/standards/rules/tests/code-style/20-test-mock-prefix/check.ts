@@ -27,6 +27,6 @@ const mockPrefixFindings = ({ file, text }: { file: string; text: string }) => {
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'test-file',
-	run: ({ input }): RawStandardsFinding[] => readTestFiles({ input }).flatMap(mockPrefixFindings),
+	inputKinds: ['test-file'],
+	run: ({ inputs }): RawStandardsFinding[] => readTestFiles({ input: inputs['test-file'] }).flatMap(mockPrefixFindings),
 };

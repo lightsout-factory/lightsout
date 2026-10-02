@@ -17,14 +17,16 @@ interface Crossing {
 }
 
 export const check: StandardsCheckModule = {
-	inputKind: 'import-graph',
+	inputKinds: ['import-graph'],
 	/**
 	 * Decided from the two paths alone, so there is no list of private files to
 	 * drift. Every file one importer reaches in one folder's `internal/` is ONE
 	 * finding: the fix is a single decision about that import.
 	 */
-	run: ({ input }): RawStandardsFinding[] => {
-		if (input.kind !== 'import-graph') {
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const input = inputs['import-graph'];
+
+		if (input === undefined) {
 			return [];
 		}
 

@@ -49,12 +49,12 @@ const placementFindings = ({ test, files, carveOuts }: { test: string; files: Se
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'file-list',
+	inputKinds: ['file-list'],
 	// Anchored to `src/`: a package's own `tests/` directory is a sanctioned
 	// test-support location whose files name no subject beside them.
-	run: ({ input }): RawStandardsFinding[] => {
-		const { files, tests } = readPathLists({ input });
-		const carveOuts = getFrameworkCarveOuts({ dependencies: input.kind === 'file-list' ? input.dependencies : new Map<string, string[]>() });
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const { files, tests } = readPathLists({ input: inputs['file-list'] });
+		const carveOuts = getFrameworkCarveOuts({ dependencies: inputs['file-list']?.dependencies ?? new Map<string, string[]>() });
 		const fileSet = new Set(files);
 
 		return tests.filter((test) => isUnderSrc({ path: test })).flatMap((test) => placementFindings({ test, files: fileSet, carveOuts }));

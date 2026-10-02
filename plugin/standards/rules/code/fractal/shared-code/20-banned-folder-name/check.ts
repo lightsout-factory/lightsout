@@ -24,10 +24,10 @@ const bannedAnywhere = new Set(['helpers', 'lib', 'core', 'misc', 'shared']);
 const bannedOutsideCommon = new Set(['utils', 'types', 'constants']);
 
 export const check: StandardsCheckModule = {
-	inputKind: 'file-list',
-	run: ({ input }): RawStandardsFinding[] => {
-		const { files } = readPathLists({ input });
-		const carveOuts = getFrameworkCarveOuts({ dependencies: input.kind === 'file-list' ? input.dependencies : new Map<string, string[]>() });
+	inputKinds: ['file-list'],
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const { files } = readPathLists({ input: inputs['file-list'] });
+		const carveOuts = getFrameworkCarveOuts({ dependencies: inputs['file-list']?.dependencies ?? new Map<string, string[]>() });
 		const findings: RawStandardsFinding[] = [];
 
 		for (const directory of [...collectDirectories({ files })].sort()) {

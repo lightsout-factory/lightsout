@@ -32,9 +32,13 @@ const buildFileFindings = ({ input, options }: { input: SyntaxTreeInput; options
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'syntax-tree',
+	inputKinds: ['syntax-tree'],
 	// The line count itself needs no parse, but the rule rides along with the
 	// tree the size and duplication rules already paid for, so the file is read
 	// once for all of them.
-	run: ({ input, options }): RawStandardsFinding[] => (input.kind === 'syntax-tree' ? buildFileFindings({ input, options }) : []),
+	run: ({ inputs, options }): RawStandardsFinding[] => {
+		const input = inputs['syntax-tree'];
+
+		return input === undefined ? [] : buildFileFindings({ input, options });
+	},
 };

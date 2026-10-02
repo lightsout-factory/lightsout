@@ -30,6 +30,6 @@ const strictEqualFindings = ({ file, text }: { file: string; text: string }) => 
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'test-file',
-	run: ({ input }): RawStandardsFinding[] => readTestFiles({ input }).flatMap(strictEqualFindings),
+	inputKinds: ['test-file'],
+	run: ({ inputs }): RawStandardsFinding[] => readTestFiles({ input: inputs['test-file'] }).flatMap(strictEqualFindings),
 };

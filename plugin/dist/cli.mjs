@@ -14459,8 +14459,8 @@ var error17 = () => {
       case "invalid_union":
         return "\u05E7\u05DC\u05D8 \u05DC\u05D0 \u05EA\u05E7\u05D9\u05DF";
       case "invalid_element": {
-        const place = withDefinite(issue2.origin ?? "array");
-        return `\u05E2\u05E8\u05DA \u05DC\u05D0 \u05EA\u05E7\u05D9\u05DF \u05D1${place}`;
+        const place2 = withDefinite(issue2.origin ?? "array");
+        return `\u05E2\u05E8\u05DA \u05DC\u05D0 \u05EA\u05E7\u05D9\u05DF \u05D1${place2}`;
       }
       default:
         return `\u05E7\u05DC\u05D8 \u05DC\u05D0 \u05EA\u05E7\u05D9\u05DF`;
@@ -124499,7 +124499,8 @@ var StandardsInputKind = {
 
 // ../standards-contracts/src/StandardsCheckModule.ts
 var StandardsCheckModule = external_exports.object({
-  inputKind: external_exports.enum(StandardsInputKind),
+  /** Every kind the check reads; the engine builds each and hands all of them to `run`. */
+  inputKinds: external_exports.array(external_exports.enum(StandardsInputKind)).min(1).refine((kinds) => new Set(kinds).size === kinds.length, { message: "each input kind is declared once" }),
   run: external_exports.custom((value) => typeof value === "function")
 });
 
@@ -124691,7 +124692,7 @@ var importCheckModule = async ({ checkPath }) => {
   const parsed = StandardsCheckModule.safeParse(imported.check);
   if (!parsed.success) {
     throw new Error(
-      `${basename(checkPath)} must export \`check\` as { inputKind, run } (${checkPath}): ${formatSchemaIssues({ issues: parsed.error.issues, subject: "check" })}`
+      `${basename(checkPath)} must export \`check\` as { inputKinds, run } (${checkPath}): ${formatSchemaIssues({ issues: parsed.error.issues, subject: "check" })}`
     );
   }
   return parsed.data;
@@ -124786,7 +124787,7 @@ var parseRuleFolder = async ({ folderPath, set: set2, documentPath, library, pro
       // As written: readStandardsLibrary resolves the names once every rule of the library is loaded.
       requires: declaration.requires,
       ...declaration.example === void 0 ? {} : { example: declaration.example },
-      ...check2 === void 0 ? {} : { inputKind: check2.inputKind, run: check2.run },
+      ...check2 === void 0 ? {} : { inputKinds: check2.inputKinds, run: check2.run },
       fixturesPath
     };
   }
@@ -146461,6 +146462,40 @@ var buildCheckInput = async ({
   }
 };
 
+// src/standardsCheck/internal/common/checkInputs/buildCheckInputs.ts
+var place = ({ inputs, input }) => {
+  switch (input.kind) {
+    case StandardsInputKind.FileList:
+      inputs[StandardsInputKind.FileList] = input;
+      break;
+    case StandardsInputKind.FileText:
+      inputs[StandardsInputKind.FileText] = input;
+      break;
+    case StandardsInputKind.SyntaxTree:
+      inputs[StandardsInputKind.SyntaxTree] = input;
+      break;
+    case StandardsInputKind.TypeChecker:
+      inputs[StandardsInputKind.TypeChecker] = input;
+      break;
+    case StandardsInputKind.TestFile:
+      inputs[StandardsInputKind.TestFile] = input;
+      break;
+    case StandardsInputKind.ImportGraph:
+      inputs[StandardsInputKind.ImportGraph] = input;
+      break;
+    case StandardsInputKind.CloneSpans:
+      inputs[StandardsInputKind.CloneSpans] = input;
+      break;
+  }
+};
+var buildCheckInputs = async ({ kinds, inputFor }) => {
+  const inputs = {};
+  for (const kind of kinds) {
+    place({ inputs, input: await inputFor({ kind }) });
+  }
+  return inputs;
+};
+
 // src/standardsCheck/internal/common/constants/typescriptInputKinds.ts
 var typescriptInputKinds = /* @__PURE__ */ new Set([
   StandardsInputKind.SyntaxTree,
@@ -146521,10 +146556,10 @@ var findFoldersWithoutAliasSource = ({ files, contents }) => {
 
 // src/standardsCheck/internal/common/utils/runRuleCheck.ts
 var rawFindings = external_exports.array(RawStandardsFinding);
-var runRuleCheck = async ({ rule, run, input, options }) => {
+var runRuleCheck = async ({ rule, run, inputs, options }) => {
   let returned;
   try {
-    returned = await run({ input, options });
+    returned = await run({ inputs, options });
   } catch (error51) {
     throw new Error(`standards rule "${rule.name}" threw while checking: ${messageOf({ error: error51 })}`);
   }
@@ -146547,11 +146582,11 @@ var selectLiveRules = ({ groups }) => {
   for (const group of groups) {
     for (const { rule } of group.pack.rules) {
       const state = group.states.get(rule.name);
-      if (rule.run === void 0 || rule.inputKind === void 0 || state === void 0 || state.severity === StandardsSeverity.Off) {
+      if (rule.run === void 0 || rule.inputKinds === void 0 || state === void 0 || state.severity === StandardsSeverity.Off) {
         continue;
       }
       const key = canonicalJson({ value: [rule.name, state.options] });
-      const entry = live2.get(key) ?? { id: rule.id, name: rule.name, inputKind: rule.inputKind, run: rule.run, options: state.options, graders: [] };
+      const entry = live2.get(key) ?? { id: rule.id, name: rule.name, inputKinds: rule.inputKinds, run: rule.run, options: state.options, graders: [] };
       entry.graders.push({ group, severity: state.severity });
       live2.set(key, entry);
     }
@@ -146571,33 +146606,31 @@ var runLiveRules = async ({
   progress
 }) => {
   const findings = [];
-  const skipped = /* @__PURE__ */ new Set();
-  for (const kind of Object.values(StandardsInputKind)) {
-    const rules = live2.filter((rule) => rule.inputKind === kind);
-    if (rules.length === 0) {
+  const skipped = [];
+  const shared = /* @__PURE__ */ new Map();
+  const inputFor = async ({ kind, options }) => {
+    if (kind === StandardsInputKind.CloneSpans) {
+      const built2 = await buildInput({ kind, options });
+      progress(`${kind}: built`);
+      return built2;
+    }
+    const built = shared.get(kind) ?? await buildInput({ kind, options });
+    if (!shared.has(kind)) {
+      shared.set(kind, built);
+      progress(`${kind}: built`);
+    }
+    return built;
+  };
+  for (const rule of live2) {
+    if (compiler === void 0 && rule.inputKinds.some((kind) => typescriptInputKinds.has(kind))) {
+      skipped.push(rule.name);
       continue;
     }
-    if (compiler === void 0 && typescriptInputKinds.has(kind)) {
-      for (const rule of rules) {
-        skipped.add(rule.name);
-      }
-      continue;
-    }
-    let shared;
-    for (const rule of rules) {
-      let input;
-      if (kind === StandardsInputKind.CloneSpans) {
-        input = await buildInput({ kind, options: rule.options });
-      } else {
-        shared ??= await buildInput({ kind, options: rule.options });
-        input = shared;
-      }
-      const raw = await runRuleCheck({ rule, run: rule.run, input, options: rule.options });
-      findings.push(...gradeFindings({ rule, raw, groupOfFile }));
-    }
-    progress(`${kind}: done`);
+    const inputs = await buildCheckInputs({ kinds: rule.inputKinds, inputFor: ({ kind }) => inputFor({ kind, options: rule.options }) });
+    const raw = await runRuleCheck({ rule, run: rule.run, inputs, options: rule.options });
+    findings.push(...gradeFindings({ rule, raw, groupOfFile }));
   }
-  return { findings, skipped: [...skipped] };
+  return { findings, skipped: [...new Set(skipped)] };
 };
 var runPackageChecks = async ({
   cwd,
@@ -146624,7 +146657,7 @@ var runPackageChecks = async ({
   if (skipped.length > 0) {
     notes.push(`${skipped.join(", ")} skipped \u2014 no typescript resolvable from the target repo`);
   }
-  const uncovered = live2.some((rule) => rule.inputKind === StandardsInputKind.FileText) ? findFoldersWithoutAliasSource({ files: allFiles, contents: cache }) : [];
+  const uncovered = live2.some((rule) => rule.inputKinds.includes(StandardsInputKind.FileText)) ? findFoldersWithoutAliasSource({ files: allFiles, contents: cache }) : [];
   if (uncovered.length > 0) {
     notes.push(
       `no package.json with imports and no tsconfig above ${uncovered.length} folder(s) \u2014 path aliases are unknown there, so the barrel and import rules stayed silent rather than guess: ${uncovered.slice(0, 5).join(", ")}${uncovered.length > 5 ? ", \u2026" : ""}`
@@ -165426,26 +165459,30 @@ import { createRequire as createRequire5 } from "node:module";
 import { join as join158 } from "node:path";
 
 // src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts
-var checkFixtureTree = async ({ cwd, rule, inputKind, run, label: label2, compiler }) => {
+var checkFixtureTree = async ({ cwd, rule, inputKinds, run, label: label2, compiler }) => {
   const { files } = await listSourceFiles({ cwd });
-  const input = await buildCheckInput({
-    kind: inputKind,
-    cwd,
-    source: files.filter((file2) => !isTestFile({ path: file2 })),
-    tests: files.filter((file2) => isTestFile({ path: file2 })),
-    files,
-    referenceFiles: files,
-    // A fixture tree is a miniature repo of its own; it declares no pack.
-    standardsLibraries: [],
-    packagesDir: defaultPackagesDir,
-    options: rule.defaultOptions,
-    cache: /* @__PURE__ */ new Map(),
-    compiler
+  const cache = /* @__PURE__ */ new Map();
+  const inputs = await buildCheckInputs({
+    kinds: inputKinds,
+    inputFor: ({ kind }) => buildCheckInput({
+      kind,
+      cwd,
+      source: files.filter((file2) => !isTestFile({ path: file2 })),
+      tests: files.filter((file2) => isTestFile({ path: file2 })),
+      files,
+      referenceFiles: files,
+      // A fixture tree is a miniature repo of its own; it declares no pack.
+      standardsLibraries: [],
+      packagesDir: defaultPackagesDir,
+      options: rule.defaultOptions,
+      cache,
+      compiler
+    })
   });
-  if (input.kind === StandardsInputKind.TypeChecker && input.typedFiles.size === 0 && files.length > 0) {
+  if (inputs["type-checker"]?.typedFiles.size === 0 && files.length > 0) {
     throw new Error(`no tsconfig.json in ${label2}, so none of its ${files.length} file(s) could be typed \u2014 a type-checker rule's fixtures need one`);
   }
-  return runRuleCheck({ rule, run, input, options: rule.defaultOptions });
+  return runRuleCheck({ rule, run, inputs, options: rule.defaultOptions });
 };
 
 // src/standardsCheck/internal/common/utils/fixtureChecks/checkRuleExample.ts
@@ -165576,15 +165613,15 @@ var checkFrameworkOwned = async ({ library, compiler }) => {
   const problems = [];
   for (const framework of frameworks) {
     for (const rule of library.rules) {
-      const { run, inputKind } = rule;
-      if (run === void 0 || inputKind === void 0 || compiler === void 0 && typescriptInputKinds.has(inputKind)) {
+      const { run, inputKinds } = rule;
+      if (run === void 0 || inputKinds === void 0 || compiler === void 0 && inputKinds.some((kind) => typescriptInputKinds.has(kind))) {
         continue;
       }
       try {
         const found = await checkFixtureTree({
           cwd: join158(frameworkOwnedFixturesPath, framework),
           rule,
-          inputKind,
+          inputKinds,
           run,
           label: `fixtures/framework-owned/${framework}/`,
           compiler
@@ -165627,29 +165664,30 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
       warnings: []
     };
   }
-  const hasParsingRule = library.rules.some((rule) => rule.inputKind !== void 0 && typescriptInputKinds.has(rule.inputKind));
+  const hasParsingRule = library.rules.some((rule) => rule.inputKinds?.some((kind) => typescriptInputKinds.has(kind)) === true);
   const compiler = hasParsingRule ? getEngineTypescript() : void 0;
   const problems = [];
   const notes = [];
   for (const rule of library.rules) {
-    const { run, inputKind } = rule;
+    const { run, inputKinds } = rule;
     const missing = await missingFixtureSides({ fixturesPath: rule.fixturesPath });
     if (missing.length > 0) {
       problems.push(...missing.map((side) => `${rule.id}: fixtures/${side}/ is missing or empty \u2014 every rule ships a fixture pair`));
       continue;
     }
     problems.push(...await checkRuleExample({ rule }));
-    if (run === void 0 || inputKind === void 0) {
+    if (run === void 0 || inputKinds === void 0) {
       notes.push(`${rule.id}: judgment-only \u2014 fixtures reserved for agent accuracy`);
       continue;
     }
-    if (compiler === void 0 && typescriptInputKinds.has(inputKind)) {
-      notes.push(`${rule.id}: not validated \u2014 its ${inputKind} input needs a typescript this install does not have`);
+    const needingTypescript = inputKinds.filter((kind) => typescriptInputKinds.has(kind));
+    if (compiler === void 0 && needingTypescript.length > 0) {
+      notes.push(`${rule.id}: not validated \u2014 its ${needingTypescript.join(" and ")} input needs a typescript this install does not have`);
       continue;
     }
     for (const side of Object.values(FixtureSide2)) {
       try {
-        const found = await checkFixtureTree({ cwd: join158(rule.fixturesPath, side), rule, inputKind, run, label: `fixtures/${side}/`, compiler });
+        const found = await checkFixtureTree({ cwd: join158(rule.fixturesPath, side), rule, inputKinds, run, label: `fixtures/${side}/`, compiler });
         if (side === FixtureSide2.Fail && found.length === 0) {
           problems.push(`${rule.id}: the fail fixture produced no finding \u2014 the check does not catch what the rule describes`);
         }

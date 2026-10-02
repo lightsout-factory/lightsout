@@ -6,12 +6,12 @@ import { getDirectory } from '#common/paths/getDirectory.ts';
 import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
 
 export const check: StandardsCheckModule = {
-	inputKind: 'file-list',
+	inputKinds: ['file-list'],
 	// An index file sitting directly in `common/` is `folder-index-file`'s to report
 	// and no one else's, so it is excluded here rather than counted twice: one
 	// wrong file is one finding.
-	run: ({ input }): RawStandardsFinding[] =>
-		readPathLists({ input })
+	run: ({ inputs }): RawStandardsFinding[] =>
+		readPathLists({ input: inputs['file-list'] })
 			.files.filter((file) => {
 				const parent = getDirectory({ path: file });
 

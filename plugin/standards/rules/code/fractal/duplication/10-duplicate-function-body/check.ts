@@ -67,12 +67,13 @@ const mergeByFileSet = ({ groups }: { groups: BodySite[][] }) => {
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'syntax-tree',
+	inputKinds: ['syntax-tree'],
 	// Tier 2 of the duplication ladder: two bodies that match once their names
 	// and literals are set aside are the same function written twice under new
 	// names, which comparing the text side by side cannot see.
-	run: ({ input, options }): RawStandardsFinding[] => {
-		const groups = input.kind === 'syntax-tree' ? [...groupByBody({ input, minBodyTokens: options.minBodyTokens }).values()] : [];
+	run: ({ inputs, options }): RawStandardsFinding[] => {
+		const input = inputs['syntax-tree'];
+		const groups = input === undefined ? [] : [...groupByBody({ input, minBodyTokens: options.minBodyTokens }).values()];
 
 		return [...mergeByFileSet({ groups }).values()].map(({ files, described }) =>
 			buildRawFinding({

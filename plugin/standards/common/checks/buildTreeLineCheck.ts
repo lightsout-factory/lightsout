@@ -17,9 +17,11 @@ interface Params {
  * it.
  */
 export const buildTreeLineCheck = ({ rule, findLines, detail, guidance }: Params): StandardsCheckModule => ({
-	inputKind: 'syntax-tree',
-	run: ({ input }): RawStandardsFinding[] => {
-		if (input.kind !== 'syntax-tree') {
+	inputKinds: ['syntax-tree'],
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const input = inputs['syntax-tree'];
+
+		if (input === undefined) {
 			return [];
 		}
 

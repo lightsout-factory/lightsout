@@ -74,9 +74,13 @@ const buildFileFindings = ({ input }: { input: SyntaxTreeInput }) => {
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'syntax-tree',
+	inputKinds: ['syntax-tree'],
 	// A union of literals and a union derived from a `const` object are the same
 	// type by the time anything else can see them; only the declaration says
 	// which one was written.
-	run: ({ input }): RawStandardsFinding[] => (input.kind === 'syntax-tree' ? buildFileFindings({ input }) : []),
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const input = inputs['syntax-tree'];
+
+		return input === undefined ? [] : buildFileFindings({ input });
+	},
 };

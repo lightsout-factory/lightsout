@@ -7,16 +7,16 @@ import { isFrameworkLoadedFile } from '#common/frameworks/isFrameworkLoadedFile.
 import { getDirectory } from '#common/paths/getDirectory.ts';
 
 export const check: StandardsCheckModule = {
-	inputKind: 'file-list',
+	inputKinds: ['file-list'],
 	// Tests are not counted: a test beside its subject is the convention working.
 	// Barrels count, because the question is how long the listing has grown.
 	//
 	// A file the package's framework put there is not counted: a router root's
 	// population is the number of routes the app has, and consolidating it is
 	// not an edit any author is allowed to make.
-	run: ({ input, options }): RawStandardsFinding[] => {
-		const { files, tests } = readPathLists({ input });
-		const carveOuts = getFrameworkCarveOuts({ dependencies: input.kind === 'file-list' ? input.dependencies : new Map<string, string[]>() });
+	run: ({ inputs, options }): RawStandardsFinding[] => {
+		const { files, tests } = readPathLists({ input: inputs['file-list'] });
+		const carveOuts = getFrameworkCarveOuts({ dependencies: inputs['file-list']?.dependencies ?? new Map<string, string[]>() });
 		const testPaths = new Set(tests);
 		const filesPerDirectory = new Map<string, string[]>();
 		const { cap } = options;
