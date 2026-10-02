@@ -3996,10 +3996,10 @@ var require_resolve_block_map = __commonJS({
       let offset = bm.offset;
       let commentEnd = null;
       for (const collItem of bm.items) {
-        const { start, key, sep: sep5, value } = collItem;
+        const { start, key, sep: sep6, value } = collItem;
         const keyProps = resolveProps.resolveProps(start, {
           indicator: "explicit-key-ind",
-          next: key ?? sep5?.[0],
+          next: key ?? sep6?.[0],
           offset,
           onError,
           parentIndent: bm.indent,
@@ -4013,7 +4013,7 @@ var require_resolve_block_map = __commonJS({
             else if ("indent" in key && key.indent !== bm.indent)
               onError(offset, "BAD_INDENT", startColMsg);
           }
-          if (!keyProps.anchor && !keyProps.tag && !sep5) {
+          if (!keyProps.anchor && !keyProps.tag && !sep6) {
             commentEnd = keyProps.end;
             if (keyProps.comment) {
               if (map2.comment)
@@ -4037,7 +4037,7 @@ var require_resolve_block_map = __commonJS({
         ctx.atKey = false;
         if (utilMapIncludes.mapIncludes(ctx, map2.items, keyNode))
           onError(keyStart, "DUPLICATE_KEY", "Map keys must be unique");
-        const valueProps = resolveProps.resolveProps(sep5 ?? [], {
+        const valueProps = resolveProps.resolveProps(sep6 ?? [], {
           indicator: "map-value-ind",
           next: value,
           offset: keyNode.range[2],
@@ -4053,7 +4053,7 @@ var require_resolve_block_map = __commonJS({
             if (ctx.options.strict && keyProps.start < valueProps.found.offset - 1024)
               onError(keyNode.range, "KEY_OVER_1024_CHARS", "The : indicator must be at most 1024 chars after the start of an implicit block mapping key");
           }
-          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep5, null, valueProps, onError);
+          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep6, null, valueProps, onError);
           if (ctx.schema.compat)
             utilFlowIndentCheck.flowIndentCheck(bm.indent, value, onError);
           offset = valueNode.range[2];
@@ -4144,7 +4144,7 @@ var require_resolve_end = __commonJS({
       let comment = "";
       if (end) {
         let hasSpace = false;
-        let sep5 = "";
+        let sep6 = "";
         for (const token of end) {
           const { source, type } = token;
           switch (type) {
@@ -4158,13 +4158,13 @@ var require_resolve_end = __commonJS({
               if (!comment)
                 comment = cb;
               else
-                comment += sep5 + cb;
-              sep5 = "";
+                comment += sep6 + cb;
+              sep6 = "";
               break;
             }
             case "newline":
               if (comment)
-                sep5 += source;
+                sep6 += source;
               hasSpace = true;
               break;
             default:
@@ -4207,18 +4207,18 @@ var require_resolve_flow_collection = __commonJS({
       let offset = fc.offset + fc.start.source.length;
       for (let i = 0; i < fc.items.length; ++i) {
         const collItem = fc.items[i];
-        const { start, key, sep: sep5, value } = collItem;
+        const { start, key, sep: sep6, value } = collItem;
         const props = resolveProps.resolveProps(start, {
           flow: fcName,
           indicator: "explicit-key-ind",
-          next: key ?? sep5?.[0],
+          next: key ?? sep6?.[0],
           offset,
           onError,
           parentIndent: fc.indent,
           startOnNewline: false
         });
         if (!props.found) {
-          if (!props.anchor && !props.tag && !sep5 && !value) {
+          if (!props.anchor && !props.tag && !sep6 && !value) {
             if (i === 0 && props.comma)
               onError(props.comma, "UNEXPECTED_TOKEN", `Unexpected , in ${fcName}`);
             else if (i < fc.items.length - 1)
@@ -4272,8 +4272,8 @@ var require_resolve_flow_collection = __commonJS({
             }
           }
         }
-        if (!isMap && !sep5 && !props.found) {
-          const valueNode = value ? composeNode(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep5, null, props, onError);
+        if (!isMap && !sep6 && !props.found) {
+          const valueNode = value ? composeNode(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep6, null, props, onError);
           coll.items.push(valueNode);
           offset = valueNode.range[2];
           if (isBlock(value))
@@ -4285,7 +4285,7 @@ var require_resolve_flow_collection = __commonJS({
           if (isBlock(key))
             onError(keyNode.range, "BLOCK_IN_FLOW", blockMsg);
           ctx.atKey = false;
-          const valueProps = resolveProps.resolveProps(sep5 ?? [], {
+          const valueProps = resolveProps.resolveProps(sep6 ?? [], {
             flow: fcName,
             indicator: "map-value-ind",
             next: value,
@@ -4296,8 +4296,8 @@ var require_resolve_flow_collection = __commonJS({
           });
           if (valueProps.found) {
             if (!isMap && !props.found && ctx.options.strict) {
-              if (sep5)
-                for (const st of sep5) {
+              if (sep6)
+                for (const st of sep6) {
                   if (st === valueProps.found)
                     break;
                   if (st.type === "newline") {
@@ -4314,7 +4314,7 @@ var require_resolve_flow_collection = __commonJS({
             else
               onError(valueProps.start, "MISSING_CHAR", `Missing , or : between ${fcName} items`);
           }
-          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep5, null, valueProps, onError) : null;
+          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep6, null, valueProps, onError) : null;
           if (valueNode) {
             if (isBlock(value))
               onError(valueNode.range, "BLOCK_IN_FLOW", blockMsg);
@@ -4494,7 +4494,7 @@ var require_resolve_block_scalar = __commonJS({
           chompStart = i + 1;
       }
       let value = "";
-      let sep5 = "";
+      let sep6 = "";
       let prevMoreIndented = false;
       for (let i = 0; i < contentStart; ++i)
         value += lines[i][0].slice(trimIndent) + "\n";
@@ -4511,24 +4511,24 @@ var require_resolve_block_scalar = __commonJS({
           indent = "";
         }
         if (type === Scalar.Scalar.BLOCK_LITERAL) {
-          value += sep5 + indent.slice(trimIndent) + content;
-          sep5 = "\n";
+          value += sep6 + indent.slice(trimIndent) + content;
+          sep6 = "\n";
         } else if (indent.length > trimIndent || content[0] === "	") {
-          if (sep5 === " ")
-            sep5 = "\n";
-          else if (!prevMoreIndented && sep5 === "\n")
-            sep5 = "\n\n";
-          value += sep5 + indent.slice(trimIndent) + content;
-          sep5 = "\n";
+          if (sep6 === " ")
+            sep6 = "\n";
+          else if (!prevMoreIndented && sep6 === "\n")
+            sep6 = "\n\n";
+          value += sep6 + indent.slice(trimIndent) + content;
+          sep6 = "\n";
           prevMoreIndented = true;
         } else if (content === "") {
-          if (sep5 === "\n")
+          if (sep6 === "\n")
             value += "\n";
           else
-            sep5 = "\n";
+            sep6 = "\n";
         } else {
-          value += sep5 + content;
-          sep5 = " ";
+          value += sep6 + content;
+          sep6 = " ";
           prevMoreIndented = false;
         }
       }
@@ -4710,25 +4710,25 @@ var require_resolve_flow_scalar = __commonJS({
       if (!match)
         return source;
       let res = match[1];
-      let sep5 = " ";
+      let sep6 = " ";
       let pos = first.lastIndex;
       line.lastIndex = pos;
       while (match = line.exec(source)) {
         if (match[1] === "") {
-          if (sep5 === "\n")
-            res += sep5;
+          if (sep6 === "\n")
+            res += sep6;
           else
-            sep5 = "\n";
+            sep6 = "\n";
         } else {
-          res += sep5 + match[1];
-          sep5 = " ";
+          res += sep6 + match[1];
+          sep6 = " ";
         }
         pos = line.lastIndex;
       }
       const last = /[ \t]*(.*)/sy;
       last.lastIndex = pos;
       match = last.exec(source);
-      return res + sep5 + (match?.[1] ?? "");
+      return res + sep6 + (match?.[1] ?? "");
     }
     function doubleQuotedValue(source, onError) {
       let res = "";
@@ -5538,14 +5538,14 @@ var require_cst_stringify = __commonJS({
         }
       }
     }
-    function stringifyItem({ start, key, sep: sep5, value }) {
+    function stringifyItem({ start, key, sep: sep6, value }) {
       let res = "";
       for (const st of start)
         res += st.source;
       if (key)
         res += stringifyToken(key);
-      if (sep5)
-        for (const st of sep5)
+      if (sep6)
+        for (const st of sep6)
           res += st.source;
       if (value)
         res += stringifyToken(value);
@@ -6712,18 +6712,18 @@ var require_parser = __commonJS({
         if (this.type === "map-value-ind") {
           const prev = getPrevProps(this.peek(2));
           const start = getFirstKeyStartProps(prev);
-          let sep5;
+          let sep6;
           if (scalar.end) {
-            sep5 = scalar.end;
-            sep5.push(this.sourceToken);
+            sep6 = scalar.end;
+            sep6.push(this.sourceToken);
             delete scalar.end;
           } else
-            sep5 = [this.sourceToken];
+            sep6 = [this.sourceToken];
           const map2 = {
             type: "block-map",
             offset: scalar.offset,
             indent: scalar.indent,
-            items: [{ start, key: scalar, sep: sep5 }]
+            items: [{ start, key: scalar, sep: sep6 }]
           };
           this.onKeyLine = true;
           this.stack[this.stack.length - 1] = map2;
@@ -6876,15 +6876,15 @@ var require_parser = __commonJS({
                 } else if (isFlowToken(it.key) && !includesToken(it.sep, "newline")) {
                   const start2 = getFirstKeyStartProps(it.start);
                   const key = it.key;
-                  const sep5 = it.sep;
-                  sep5.push(this.sourceToken);
+                  const sep6 = it.sep;
+                  sep6.push(this.sourceToken);
                   delete it.key;
                   delete it.sep;
                   this.stack.push({
                     type: "block-map",
                     offset: this.offset,
                     indent: this.indent,
-                    items: [{ start: start2, key, sep: sep5 }]
+                    items: [{ start: start2, key, sep: sep6 }]
                   });
                 } else if (start.length > 0) {
                   it.sep = it.sep.concat(start, this.sourceToken);
@@ -7078,13 +7078,13 @@ var require_parser = __commonJS({
             const prev = getPrevProps(parent);
             const start = getFirstKeyStartProps(prev);
             fixFlowSeqItems(fc);
-            const sep5 = fc.end.splice(1, fc.end.length);
-            sep5.push(this.sourceToken);
+            const sep6 = fc.end.splice(1, fc.end.length);
+            sep6.push(this.sourceToken);
             const map2 = {
               type: "block-map",
               offset: fc.offset,
               indent: fc.indent,
-              items: [{ start, key: fc, sep: sep5 }]
+              items: [{ start, key: fc, sep: sep6 }]
             };
             this.onKeyLine = true;
             this.stack[this.stack.length - 1] = map2;
@@ -22570,7 +22570,7 @@ var killProcessGroup = ({ child, signal }) => {
 
 // src/common/processes/terminateChildGroups.ts
 var settled = ({ child }) => child.exitCode !== null || child.signalCode !== null;
-var exited = ({ child }) => settled({ child }) ? Promise.resolve() : new Promise((resolve20) => child.once("exit", () => resolve20()));
+var exited = ({ child }) => settled({ child }) ? Promise.resolve() : new Promise((resolve21) => child.once("exit", () => resolve21()));
 var terminateChildGroups = async ({ children, graceMs = killGraceMs }) => {
   const targets = [...children];
   for (const child of targets) {
@@ -22582,8 +22582,8 @@ var terminateChildGroups = async ({ children, graceMs = killGraceMs }) => {
   let grace;
   await Promise.race([
     Promise.all(targets.map((child) => exited({ child }))),
-    new Promise((resolve20) => {
-      grace = setTimeout(resolve20, graceMs);
+    new Promise((resolve21) => {
+      grace = setTimeout(resolve21, graceMs);
     })
   ]);
   clearTimeout(grace);
@@ -22640,7 +22640,7 @@ var relayShutdownSignals = ({ child }) => {
 
 // src/common/processes/collectChildOutput.ts
 var collectChildOutput = ({ child, timeout, onStdoutLine, onTimeout }) => {
-  return new Promise((resolve20, reject) => {
+  return new Promise((resolve21, reject) => {
     let stdout = "";
     let stderr = "";
     let lineBuffer = "";
@@ -22684,7 +22684,7 @@ var collectChildOutput = ({ child, timeout, onStdoutLine, onTimeout }) => {
       clearTimeout(timer);
       stopRelay();
       emitLines({ text: "", flush: true });
-      resolve20({ exitCode: code ?? -1, stdout, stderr });
+      resolve21({ exitCode: code ?? -1, stdout, stderr });
     });
   });
 };
@@ -121423,7 +121423,7 @@ var publishBrainstorm = async ({ cwd, name, config: config2, env, onProgress, ti
 
 // src/cli/common/utils/exitCli.ts
 var exitCli = async ({ code }) => {
-  await Promise.all([process.stdout, process.stderr].map((stream) => new Promise((resolve20) => stream.write("", () => resolve20()))));
+  await Promise.all([process.stdout, process.stderr].map((stream) => new Promise((resolve21) => stream.write("", () => resolve21()))));
   return process.exit(code);
 };
 
@@ -122451,7 +122451,7 @@ var statusCatalogEntry = {
     {
       name: "run",
       value: "<id>",
-      meaning: "Show one run in detail \u2014 its steps, their outcomes and durations, what it is doing now. Takes the shortened eight-character id reports print. Once the run has finished, its saved final report \u2014 the lines the command printed when it ended \u2014 follows the block.",
+      meaning: "Show one run in detail \u2014 its steps, their outcomes and durations, what it is doing now \u2014 the same screen --now prints, so a phased plan shows its phase sequence followed by the phase moving now, whichever of its runs is named: the coordinator or any phase. Works however many other runs are going. Takes the shortened eight-character id reports print. Once the run has finished, its saved final report \u2014 the lines the command printed when it ended \u2014 follows the block.",
       fallback: "Every run is listed, one line each.",
       shape: "status-run",
       required: false
@@ -126129,12 +126129,12 @@ var spawnEngine = async ({ command, args, runId, logPath }) => {
     stdio: ["ignore", log.fd, log.fd],
     env: { ...process.env, [launchRunIdVariable]: runId }
   });
-  const exited2 = new Promise((resolve20) => {
-    child.once("exit", (code) => resolve20(code ?? 1));
+  const exited2 = new Promise((resolve21) => {
+    child.once("exit", (code) => resolve21(code ?? 1));
   });
-  const spawnError = await new Promise((resolve20) => {
-    child.once("spawn", () => resolve20(void 0));
-    child.once("error", (error51) => resolve20(error51));
+  const spawnError = await new Promise((resolve21) => {
+    child.once("spawn", () => resolve21(void 0));
+    child.once("error", (error51) => resolve21(error51));
   });
   await log.close();
   child.unref();
@@ -126974,7 +126974,7 @@ var parseForgeJson = ({ stdout }) => {
 var remoteWaitTimings = { pollIntervalMs: 3e4, ceilingMs: 30 * 6e4 };
 
 // src/ship/internal/common/utils/sleep.ts
-var sleep = ({ ms }) => new Promise((resolve20) => setTimeout(resolve20, ms));
+var sleep = ({ ms }) => new Promise((resolve21) => setTimeout(resolve21, ms));
 
 // src/ship/forge/mergePullRequest.ts
 var StateView = external_exports.object({
@@ -127587,7 +127587,7 @@ var readGateLock = ({ lockPath }) => {
 };
 
 // src/gates/gateLock/internal/acquireGateLock.ts
-var sleep2 = ({ ms }) => new Promise((resolve20) => setTimeout(resolve20, ms));
+var sleep2 = ({ ms }) => new Promise((resolve21) => setTimeout(resolve21, ms));
 var codeOf = ({ error: error51 }) => typeof error51 === "object" && error51 !== null && "code" in error51 ? error51.code : void 0;
 var claimLeftover = ({ lockPath, runId }) => {
   const asidePath = `${lockPath}.claim-${process.pid}-${runId}`;
@@ -130024,7 +130024,7 @@ import { randomUUID as randomUUID2 } from "node:crypto";
 import { mkdirSync as mkdirSync2, readFileSync as readFileSync3, renameSync as renameSync3, unlinkSync as unlinkSync2, writeFileSync as writeFileSync3 } from "node:fs";
 import { join as join49 } from "node:path";
 var LockHolder = external_exports.object({ pid: external_exports.number(), token: external_exports.string(), acquiredAt: external_exports.string() });
-var sleep3 = ({ ms }) => new Promise((resolve20) => setTimeout(resolve20, ms));
+var sleep3 = ({ ms }) => new Promise((resolve21) => setTimeout(resolve21, ms));
 var readHolder = ({ lockPath }) => {
   let holder;
   try {
@@ -130790,21 +130790,6 @@ var copyRunInputs = async ({
   return copied;
 };
 
-// src/cli/internal/common/implementRun/describeUncommittableTree.ts
-var describeUncommittableTree = async ({ cwd, isolated }) => {
-  if (isolated) {
-    return void 0;
-  }
-  const dirty = await readGitChangedFiles({ cwd });
-  let refusal;
-  if (dirty === void 0) {
-    refusal = `git could not read the tree at ${cwd} \u2014 the run commits what it builds, so it needs a readable git worktree`;
-  } else if (dirty.length > 0) {
-    refusal = `the run commits everything in the tree at ${cwd}; commit or stash your changes first`;
-  }
-  return refusal;
-};
-
 // src/cli/internal/common/constants/contradictoryWorktreeFlagsMessage.ts
 var contradictoryWorktreeFlagsMessage = "--worktree and --no-worktree contradict each other \u2014 pass at most one";
 
@@ -131203,6 +131188,35 @@ var resolvePlanTarget = async ({ cwd, planPath }) => {
   return { error: `plan folder holds neither overview.md nor plan.md: ${planPath}` };
 };
 
+// src/common/sourceFiles/isGeneratedPath.ts
+var isGeneratedPath = ({ path, generated }) => generated.some((entry) => {
+  const prefix = entry.replace(/\/$/, "");
+  return path === prefix || path.startsWith(`${prefix}/`);
+});
+
+// src/commit/describeUncommittableTree.ts
+var listPaths = ({ paths }) => {
+  const listedPathLimit = 20;
+  const listed = paths.slice(0, listedPathLimit).join(", ");
+  return paths.length > listedPathLimit ? `${listed} and ${paths.length - listedPathLimit} more` : listed;
+};
+var describeUncommittableTree = async ({ cwd, isolated, generated, remedy = "commit or stash them first" }) => {
+  if (isolated) {
+    return void 0;
+  }
+  const changed = await readGitChangedFiles({ cwd });
+  let refusal;
+  if (changed === void 0) {
+    refusal = `git could not read the tree at ${cwd} \u2014 the run commits what it builds, so it needs a readable git worktree`;
+  } else {
+    const dirty = changed.filter((path) => !isGeneratedPath({ path, generated }));
+    if (dirty.length > 0) {
+      refusal = `the run commits everything in the tree at ${cwd}, which holds uncommitted changes: ${listPaths({ paths: dirty })} \u2014 ${remedy}`;
+    }
+  }
+  return refusal;
+};
+
 // src/cli/internal/common/implementRun/openImplementWorkspace.ts
 var openImplementWorkspace = async ({
   cwd,
@@ -131214,7 +131228,7 @@ var openImplementWorkspace = async ({
   if ("error" in workspace) {
     return { error: workspace.error };
   }
-  const uncommittable = await describeUncommittableTree({ cwd: workspace.cwd, isolated: workspace.isolated });
+  const uncommittable = await describeUncommittableTree({ cwd: workspace.cwd, isolated: workspace.isolated, generated: [] });
   if (uncommittable !== void 0) {
     return { error: uncommittable };
   }
@@ -131886,12 +131900,6 @@ var discardGeneratedChanges = async ({ cwd, paths }) => {
   return void 0;
 };
 
-// src/common/sourceFiles/isGeneratedPath.ts
-var isGeneratedPath = ({ path, generated }) => generated.some((entry) => {
-  const prefix = entry.replace(/\/$/, "");
-  return path === prefix || path.startsWith(`${prefix}/`);
-});
-
 // src/common/utils/formatResumeCommand.ts
 var resumeDoor = "lightsout resume --run <id>";
 var resumeCommandByPipeline = {
@@ -132226,6 +132234,37 @@ var recordFinishedChild = async ({
 ${childResult.error}` : stopped } };
 };
 
+// src/worktree/records/isLightsoutWorktree.ts
+var isLightsoutWorktree = async ({ cwd, branch }) => branch !== void 0 && await readWorktreeRecord({ cwd, branch }) !== void 0;
+
+// src/phases/internal/runPhase/refuseDirtyPhaseStart.ts
+var refuseDirtyPhaseStart = async ({
+  cwd,
+  config: config2,
+  manifest,
+  index,
+  step,
+  queueRunId
+}) => {
+  if (step.status !== RunStatus.Pending || step.report !== void 0) {
+    return void 0;
+  }
+  const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.runId });
+  const refusal = await describeUncommittableTree({
+    cwd,
+    isolated: await isLightsoutWorktree({ cwd, branch: manifest.branch }),
+    generated: config2.generated ?? [],
+    remedy: `stash them, then resume with: ${resume}`
+  });
+  let refused;
+  if (refusal !== void 0) {
+    await confirmOwnership({ cwd, runId: manifest.runId, queueRunId });
+    const current = await persistStep({ cwd, manifest, index, record: step, patch: { status: RunStatus.Failed, currentStep: step.id } });
+    refused = { manifest: current, result: { ok: false, manifest: current, error: `phase ${step.id} was not started: ${refusal}` } };
+  }
+  return refused;
+};
+
 // src/commit/commitWorkOrderWork.ts
 import { mkdir as mkdir14, writeFile as writeFile10 } from "node:fs/promises";
 import { join as join64 } from "node:path";
@@ -132395,8 +132434,7 @@ var composeCommitMessage = async ({ cwd, driver, config: config2, address, runId
 
 // src/commit/internal/common/utils/describeUnownedEdits.ts
 var describeUnownedEdits = async ({ cwd, manifest, generated }) => {
-  const record3 = manifest.branch === void 0 ? void 0 : await readWorktreeRecord({ cwd, branch: manifest.branch });
-  if (record3 !== void 0) {
+  if (await isLightsoutWorktree({ cwd, branch: manifest.branch })) {
     return void 0;
   }
   const own = /* @__PURE__ */ new Set([...manifest.changedFiles, ...manifest.baselineDirtyFiles]);
@@ -132790,7 +132828,7 @@ var readImportAliases = async ({ cwd, files }) => {
 
 // src/common/moduleGraph/collectImportEdges.ts
 var collectImportEdges = async ({ cwd, files, compiler }) => {
-  const resolve20 = createSpecifierResolver({ files, importAliases: await readImportAliases({ cwd, files }) });
+  const resolve21 = createSpecifierResolver({ files, importAliases: await readImportAliases({ cwd, files }) });
   const edges = [];
   for (const from of files) {
     const content = await readFile23(join68(cwd, from), "utf8").catch(() => void 0);
@@ -132799,7 +132837,7 @@ var collectImportEdges = async ({ cwd, files, compiler }) => {
     }
     const specifiers = [...new Set(compiler.preProcessFile(content, true, true).importedFiles.map((imported) => imported.fileName))];
     for (const specifier of specifiers) {
-      const to = resolve20({ from, specifier });
+      const to = resolve21({ from, specifier });
       if (to !== void 0 && to !== from) {
         edges.push({ from, to });
       }
@@ -134372,7 +134410,7 @@ var RabinKarp = class _RabinKarp {
     this.cloneValidators = cloneValidators;
   }
   async run(tokenMap, store) {
-    return new Promise((resolve20) => {
+    return new Promise((resolve21) => {
       let mapFrameInStore;
       let clone3 = null;
       const clones = [];
@@ -134404,7 +134442,7 @@ var RabinKarp = class _RabinKarp {
             if (clone3 && this.validate(clone3)) {
               clones.push(clone3);
             }
-            resolve20(clones);
+            resolve21(clones);
           }
         });
       };
@@ -134502,9 +134540,9 @@ var MemoryStore = class {
     this.values[namespace] = this.values[namespace] || {};
   }
   get(key) {
-    return new Promise((resolve20, reject) => {
+    return new Promise((resolve21, reject) => {
       if (key in this.values[this._namespace]) {
-        resolve20(this.values[this._namespace][key]);
+        resolve21(this.values[this._namespace][key]);
       } else {
         reject(new Error("not found"));
       }
@@ -146742,18 +146780,78 @@ ${result.stderr}`;
 // src/pipeline/internal/common/constants/testWriterConcurrency.ts
 var testWriterConcurrency = 10;
 
+// src/pipeline/internal/common/utils/collectChanged.ts
+import { lstat } from "node:fs/promises";
+import { isAbsolute as isAbsolute2, relative as relative11, resolve as resolve14, sep as sep5 } from "node:path";
+
+// src/common/constants/GitChangeKind.ts
+var GitChangeKind = {
+  Added: "added",
+  Modified: "modified",
+  Removed: "removed"
+};
+
+// src/common/git/readGitWorkingChanges.ts
+var kindOf = ({ code }) => {
+  let kind = GitChangeKind.Modified;
+  if (code.includes("D")) {
+    kind = GitChangeKind.Removed;
+  } else if (code === "??" || code.includes("A")) {
+    kind = GitChangeKind.Added;
+  }
+  return kind;
+};
+var readGitWorkingChanges = async ({ cwd }) => {
+  const prefix = await readGitPrefix({ cwd });
+  if (prefix === void 0) {
+    return void 0;
+  }
+  const status = await runCommand({ command: "git status --porcelain=v1 -uall --no-renames -- .", cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  if (status?.exitCode !== 0) {
+    return void 0;
+  }
+  return status.stdout.split("\n").filter(Boolean).map((line) => {
+    const path = line.slice(3).replace(/^"|"$/g, "");
+    return { path: prefix && path.startsWith(prefix) ? path.slice(prefix.length) : path, kind: kindOf({ code: line.slice(0, 2) }) };
+  }).filter((change) => !change.path.startsWith(".lightsout/"));
+};
+
 // src/pipeline/internal/common/utils/consumerRelative.ts
 var consumerRelative = ({ gitPrefix, file: file2 }) => gitPrefix && file2.startsWith(gitPrefix) ? file2.slice(gitPrefix.length) : file2;
 
 // src/pipeline/internal/common/utils/collectChanged.ts
+var toCwdRelative = ({ cwd, file: file2 }) => {
+  const path = relative11(cwd, resolve14(cwd, file2));
+  const outside = path === "" || path === ".." || path.startsWith(`..${sep5}`) || isAbsolute2(path);
+  return outside ? void 0 : path;
+};
+var toRealPath = async ({ cwd, keepSet, file: file2 }) => {
+  const path = toCwdRelative({ cwd, file: file2 });
+  if (path === void 0 || keepSet.has(path)) {
+    return path;
+  }
+  const stats = await lstat(resolve14(cwd, path)).catch(() => void 0);
+  return stats?.isFile() === true || stats?.isSymbolicLink() === true ? path : void 0;
+};
 var collectChanged = async ({ run, gitPrefix, reports }) => {
   const isGeneratedFile = ({ file: file2 }) => (run.config.generated ?? []).some((prefix) => file2.startsWith(prefix));
   const packagesDir = run.config["packages-dir"] ?? defaultPackagesDir;
   const fromGit = (await readGitChangedFiles({ cwd: run.cwd }) ?? []).filter(
     (file2) => !run.current().baselineDirtyFiles.includes(file2) && !isGeneratedFile({ file: file2 })
   );
-  const fromReports = reports.flatMap((report2) => report2.changedFiles.map((file2) => consumerRelative({ gitPrefix, file: file2.path }))).filter((file2) => !isGeneratedFile({ file: file2 }));
-  const changedFiles = [.../* @__PURE__ */ new Set([...run.current().changedFiles, ...fromReports, ...fromGit])];
+  const reported = reports.flatMap((report2) => report2.changedFiles.map((file2) => file2.path)).filter((path) => !isGeneratedFile({ file: consumerRelative({ gitPrefix, file: path }) }));
+  const keepSet = new Set((await readGitWorkingChanges({ cwd: run.cwd }) ?? []).map((change) => change.path));
+  const realPathsOf = ({ files }) => Promise.all(files.map((file2) => toRealPath({ cwd: run.cwd, keepSet, file: file2 })));
+  const carried = await realPathsOf({ files: run.current().changedFiles });
+  const fromReports = await realPathsOf({ files: reported.map((path) => consumerRelative({ gitPrefix, file: path })) });
+  const fromGitReal = await realPathsOf({ files: fromGit });
+  const changedFiles = [...new Set([...carried, ...fromReports, ...fromGitReal].flatMap((file2) => file2 === void 0 ? [] : [file2]))];
+  const dropped = [...new Set(reported.filter((_, index) => fromReports[index] === void 0))];
+  if (dropped.length > 0) {
+    run.progress(
+      `warning unreal-reported-paths: ${run.current().currentStep ?? "a step"} reported ${dropped.length} changed path(s) that are not files in the working tree, so they were left out: ${dropped.map((entry) => JSON.stringify(entry)).join(", ")}`
+    );
+  }
   const fromFiles = changedFiles.flatMap((file2) => {
     const packageDir = packageOf({ file: file2, packagesDir });
     return packageDir ? [packageDir] : [];
@@ -146766,8 +146864,8 @@ var createWarmSpawn = ({ group, spawnWriter, aggregate }) => {
   let settled2 = false;
   let collected = false;
   let release;
-  const gate = new Promise((resolve20) => {
-    release = resolve20;
+  const gate = new Promise((resolve21) => {
+    release = resolve21;
   });
   const warm = group === void 0 ? void 0 : spawnWriter({ group, onFirstEvent: release }).finally(() => {
     settled2 = true;
@@ -147469,7 +147567,7 @@ var applyTestDispositions = async ({
 
 // src/pipeline/approvedTests/internal/collectTestChanges.ts
 import { mkdir as mkdir21, readFile as readFile36, rm as rm10, writeFile as writeFile16 } from "node:fs/promises";
-import { dirname as dirname24, join as join96, relative as relative11 } from "node:path";
+import { dirname as dirname24, join as join96, relative as relative12 } from "node:path";
 
 // src/pipeline/approvedTests/internal/common/constants/TestChangeKind.ts
 var TestChangeKind = {
@@ -147497,7 +147595,7 @@ var readApprovedTest = async ({ run, path }) => {
 
 // src/pipeline/approvedTests/internal/collectTestChanges.ts
 var emptySide = "/dev/null";
-var kindOf = ({ live: live2, approved }) => {
+var kindOf2 = ({ live: live2, approved }) => {
   if (approved === void 0) {
     return TestChangeKind.Added;
   }
@@ -147509,7 +147607,7 @@ var diffOf = async ({ cwd, path, kind, approved, scratch }) => {
     await mkdir21(dirname24(before), { recursive: true });
     await writeFile16(before, approved, "utf8");
   }
-  const left = approved === void 0 ? emptySide : relative11(cwd, before);
+  const left = approved === void 0 ? emptySide : relative12(cwd, before);
   const right = kind === TestChangeKind.Removed ? emptySide : path;
   const [quotedLeft, quotedRight] = [left, right].map((argument) => quoteShellArgument({ argument }));
   const shown = await runCommand({ command: `git diff --no-index ${quotedLeft} ${quotedRight}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
@@ -147533,7 +147631,7 @@ var collectTestChanges = async ({ run }) => {
     if (live2 === approved) {
       continue;
     }
-    const kind = kindOf({ live: live2, approved });
+    const kind = kindOf2({ live: live2, approved });
     changes.push({ path, kind, diff: await diffOf({ cwd: run.cwd, path, kind, approved, scratch }) });
   }
   return changes;
@@ -147715,38 +147813,6 @@ var reviewTestChanges = async ({ run, checkpoint, planContent, overviewContent }
 // src/pipeline/renameCheck/checkRenameOnlyChanges.ts
 import { readFile as readFile37 } from "node:fs/promises";
 import { join as join97 } from "node:path";
-
-// src/common/constants/GitChangeKind.ts
-var GitChangeKind = {
-  Added: "added",
-  Modified: "modified",
-  Removed: "removed"
-};
-
-// src/common/git/readGitWorkingChanges.ts
-var kindOf2 = ({ code }) => {
-  let kind = GitChangeKind.Modified;
-  if (code.includes("D")) {
-    kind = GitChangeKind.Removed;
-  } else if (code === "??" || code.includes("A")) {
-    kind = GitChangeKind.Added;
-  }
-  return kind;
-};
-var readGitWorkingChanges = async ({ cwd }) => {
-  const prefix = await readGitPrefix({ cwd });
-  if (prefix === void 0) {
-    return void 0;
-  }
-  const status = await runCommand({ command: "git status --porcelain=v1 -uall --no-renames -- .", cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
-  if (status?.exitCode !== 0) {
-    return void 0;
-  }
-  return status.stdout.split("\n").filter(Boolean).map((line) => {
-    const path = line.slice(3).replace(/^"|"$/g, "");
-    return { path: prefix && path.startsWith(prefix) ? path.slice(prefix.length) : path, kind: kindOf2({ code: line.slice(0, 2) }) };
-  }).filter((change) => !change.path.startsWith(".lightsout/"));
-};
 
 // src/pipeline/renameCheck/internal/common/utils/applyRenames.ts
 var applyRenames = ({ text, renames }) => renames.reduce((renamed, { from, to }) => renamed.replaceAll(from, to), text);
@@ -149797,7 +149863,6 @@ var executePipeline = async ({
   parentRunId,
   packages,
   existing,
-  inheritedBaseline,
   skipRefactor,
   level,
   willShip,
@@ -149823,7 +149888,7 @@ var executePipeline = async ({
       parentRunId,
       driver: driver.name,
       config: config2,
-      baselineDirtyFiles: inheritedBaseline ?? await readGitChangedFiles({ cwd }),
+      baselineDirtyFiles: await readGitChangedFiles({ cwd }),
       willShip,
       queueRunId
     })
@@ -149844,7 +149909,7 @@ var executePipeline = async ({
   if (stopped) {
     return stopped;
   }
-  return finishRun({ run, resumed: inheritedBaseline !== void 0 || existing !== void 0, keepGenerated });
+  return finishRun({ run, resumed: existing !== void 0, keepGenerated });
 };
 var runImplementPipeline = (params) => withRunLock({ params, run: executePipeline });
 
@@ -149893,7 +149958,6 @@ var runPhase = async ({
   step,
   total,
   skipRefactor,
-  resumed,
   level,
   onProgress,
   queueRunId
@@ -149904,6 +149968,10 @@ var runPhase = async ({
   if (childManifest?.status === RunStatus.Passed) {
     await confirmOwnership({ cwd, runId: manifest.runId, queueRunId });
     return { manifest: await persistStep({ cwd, manifest, index, record: { ...step, status: RunStatus.Passed } }) };
+  }
+  const refused = await refuseDirtyPhaseStart({ cwd, config: config2, manifest, index, step, queueRunId });
+  if (refused !== void 0) {
+    return refused;
   }
   const childRunId = childManifest?.runId ?? randomUUID6();
   const current = await persistStep({
@@ -149925,9 +149993,6 @@ var runPhase = async ({
       overviewPath: current.plan,
       parentRunId: current.runId,
       existing: childManifest,
-      // A phase that never started would otherwise snapshot a tree somebody may
-      // have edited since the sequence began and call every edit in it its own.
-      inheritedBaseline: resumed && childManifest === void 0 ? [...current.changedFiles, ...current.baselineDirtyFiles] : void 0,
       skipRefactor,
       // The coordinator discards the carried build output once the whole sequence passes.
       keepGenerated: true,
@@ -150012,7 +150077,6 @@ var runPhasesPipeline = async ({
       index,
       step,
       total,
-      resumed: existing !== void 0,
       skipRefactor,
       level,
       onProgress: narrate,
@@ -150612,7 +150676,7 @@ var implementCommand = async ({ flags, rest, cwd }) => {
 
 // src/cli/implementDirectCommand.ts
 import { readFile as readFile43 } from "node:fs/promises";
-import { resolve as resolve14 } from "node:path";
+import { resolve as resolve15 } from "node:path";
 
 // src/cli/internal/common/implementRun/openDirectWorkspace.ts
 var openDirectWorkspace = async ({
@@ -150633,7 +150697,7 @@ var openDirectWorkspace = async ({
   if ("error" in workspace) {
     return { error: workspace.error };
   }
-  const uncommittable = await describeUncommittableTree({ cwd: workspace.cwd, isolated: workspace.isolated });
+  const uncommittable = await describeUncommittableTree({ cwd: workspace.cwd, isolated: workspace.isolated, generated: [] });
   if (uncommittable !== void 0) {
     return { error: uncommittable };
   }
@@ -151136,7 +151200,7 @@ var printDirectRunHeader = ({
 };
 var implementDirectCommand = async ({ flags, cwd }) => {
   const namedTicketPath = await getRequiredFlag({ flags, name: "ticket" });
-  const ticketBody = await readFile43(resolve14(cwd, namedTicketPath), "utf8").catch(() => void 0);
+  const ticketBody = await readFile43(resolve15(cwd, namedTicketPath), "utf8").catch(() => void 0);
   if (ticketBody === void 0) {
     console.error(`ticket file not found: ${namedTicketPath}`);
     return exitCli({ code: 1 });
@@ -151717,14 +151781,14 @@ import { join as join108 } from "node:path";
 
 // src/common/utils/getDirsOutsideCwd.ts
 import { realpath as realpath3 } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, relative as relative12, resolve as resolve15 } from "node:path";
-var resolveReal = ({ path }) => realpath3(path).catch(() => resolve15(path));
+import { isAbsolute as isAbsolute3, relative as relative13, resolve as resolve16 } from "node:path";
+var resolveReal = ({ path }) => realpath3(path).catch(() => resolve16(path));
 var getDirsOutsideCwd = async ({ cwd, dirs }) => {
   const realCwd = await resolveReal({ path: cwd });
   const realDirs = await Promise.all(dirs.map((dir) => resolveReal({ path: dir })));
   return dirs.filter((_dir, index) => {
-    const fromCwd = relative12(realCwd, realDirs[index] ?? "");
-    return fromCwd === ".." || fromCwd.startsWith("../") || isAbsolute2(fromCwd);
+    const fromCwd = relative13(realCwd, realDirs[index] ?? "");
+    return fromCwd === ".." || fromCwd.startsWith("../") || isAbsolute3(fromCwd);
   });
 };
 
@@ -152789,9 +152853,9 @@ var planWriterEnvironment = {
 };
 
 // src/plan/internal/common/paths/verifyDraftedFiles.ts
-import { isAbsolute as isAbsolute3, join as join112 } from "node:path";
+import { isAbsolute as isAbsolute4, join as join112 } from "node:path";
 var verifyDraftedFiles = async ({ cwd, filesWritten }) => {
-  const planPaths = filesWritten.map((file2) => isAbsolute3(file2.path) ? file2.path : join112(cwd, file2.path));
+  const planPaths = filesWritten.map((file2) => isAbsolute4(file2.path) ? file2.path : join112(cwd, file2.path));
   if (planPaths.length === 0) {
     return { error: "plan-writer reported drafted but listed no files written" };
   }
@@ -153429,7 +153493,7 @@ var repairMechanicalFindings = async ({ cwd, name, planPaths, decisions, overvie
 
 // src/plan/internal/common/paths/readRepoPathIndex.ts
 import { readdir as readdir21 } from "node:fs/promises";
-import { join as join114, relative as relative13 } from "node:path";
+import { join as join114, relative as relative14 } from "node:path";
 var prunedDirs = /* @__PURE__ */ new Set(["node_modules", ".git"]);
 var readEntries = ({ dir }) => readdir21(dir, { withFileTypes: true }).catch(() => void 0);
 var walkFiles = async ({ cwd, dir, entries }) => {
@@ -153440,7 +153504,7 @@ var walkFiles = async ({ cwd, dir, entries }) => {
     }
     const path = join114(dir, entry.name);
     if (!entry.isDirectory()) {
-      files.push(relative13(cwd, path));
+      files.push(relative14(cwd, path));
       continue;
     }
     const nested = await readEntries({ dir: path });
@@ -155091,16 +155155,16 @@ var collectSourceEvidence = async ({ cwd, name, facts, config: config2 }) => {
   const stored = new Map((previous?.entries ?? []).map((entry) => [entry.path, entry]));
   const compiler = resolveConsumerTypescript({ cwd, packagesDir: config2?.["packages-dir"] ?? defaultPackagesDir });
   const entries = [];
-  for (const [relative18, roles] of wantedPaths({ facts })) {
-    const content = await readFile55(join124(cwd, relative18), "utf8").catch(() => void 0);
+  for (const [relative19, roles] of wantedPaths({ facts })) {
+    const content = await readFile55(join124(cwd, relative19), "utf8").catch(() => void 0);
     if (content === void 0) {
-      entries.push({ path: relative18, sha256: "", kind: SourceEvidenceKind.Missing, bytes: 0, text: "", roles, definitions: [] });
+      entries.push({ path: relative19, sha256: "", kind: SourceEvidenceKind.Missing, bytes: 0, text: "", roles, definitions: [] });
       continue;
     }
     const hash3 = sha256({ content });
-    const reusable = stored.get(relative18);
+    const reusable = stored.get(relative19);
     entries.push(
-      reusable !== void 0 && reusable.sha256 === hash3 ? { ...reusable, roles } : collectEntry({ path: relative18, content, hash: hash3, roles, compiler })
+      reusable !== void 0 && reusable.sha256 === hash3 ? { ...reusable, roles } : collectEntry({ path: relative19, content, hash: hash3, roles, compiler })
     );
   }
   const index = SourceEvidenceIndex.parse({
@@ -155736,7 +155800,7 @@ var collapseSide = ({ gap, gaps }) => {
 var collapseGroupedGaps = ({ gaps }) => gaps.flatMap((gap) => (gap.findingId ?? "") === "" ? [gap] : collapseSide({ gap, gaps }));
 
 // src/plan/internal/common/grading/drainGradeAgents.ts
-import { basename as basename31, relative as relative15 } from "node:path";
+import { basename as basename31, relative as relative16 } from "node:path";
 
 // src/agents/prompts/planGapCheck.md
 var planGapCheck_default = '# Role: Check Plan Gaps\n\nYou check a plan for **adequacy**: whether its content is complete and decided\nenough for a fresh-context agent to implement via `lightsout implement` without\nguessing. This is the semantic half of plan quality. You work autonomously and\nyour final message is machine-parsed \u2014 one JSON report, not prose.\n\n**Boundary:** you own **adequacy** \u2014 is the present content enough to build, or\nmust a human decide something. The plan\'s **structure** (paths exist, scripts\nexist, no placeholders, required sections, naming, file-count scope) is already\nverified deterministically in code. Do **not** re-flag structural defects \u2014 only\ndecision-level gaps.\n\n## You are one of three\n\nThree checkers run against this same plan at the same time, each given a\ndifferent brief. Your own brief follows these instructions and **narrows which\nof the gap areas below you report**. Everything all three of us find is kept and\nrecorded as a union \u2014 nothing is voted on and nothing is dropped for being found\nonce. Each finding is then handed to its own judge, which decides who has to\nsettle it, and only the findings that need a human decide the plan\'s grade.\n\nNone of that changes your job: report what you find. The weighing is somebody\nelse\'s.\n\nSo do not compensate for the others. A real gap that belongs to another lens is\nnot lost by your leaving it alone; it is being looked for right now by a checker\nwhose whole job it is. Reporting outside your brief adds a duplicate, not\ncoverage.\n\n## Input\n\nThe task message provides the plan text to check. When present, the overview\nplan (context shared across phases \u2014 read it for design decisions and\ndependencies, but do not grade it standalone) and supplemental code standards\nthe implementing agent will also load are appended to these role instructions\nrather than arriving in the task message.\n\n## What counts as a gap\n\nA gap is something that would make the agent **guess** or that needs a human to\n**decide between valid alternatives**. Flag a check only when the agent could not\nderive the answer from the plan, the overview, the codebase, or the standards.\n\n- **underspecified-surface** \u2014 services/modules described as intent ("create a\n  service") without defined methods/signatures the agent can implement.\n- **unwired-dependency** \u2014 cross-module dependencies where the plan does not make\n  exports match imports, so the agent must invent the contract.\n- **insufficient-detail** \u2014 a file to create/modify lacks enough detail to build\n  it without guessing its behavior.\n- **omitted-decision** \u2014 points where multiple valid approaches exist and the\n  plan picks none (behavior, edge cases, error handling, what to return).\n- **ambiguous-boundary** \u2014 scope boundaries present but so vague the agent cannot\n  tell what is in vs out.\n- **standards-conflict** \u2014 instructions that contradict the supplied standards.\n- **phase-seam-mismatch** \u2014 a value one phase defines and a later phase consumes\n  under a different shape, where both phases state the shape.\n\n## Rules\n\n- `NONE` is a real result. A well-elicited, structurally clean plan should\n  return no gaps. Do not manufacture gaps.\n- Only flag gaps that force the agent to **guess** or need a **human decision**.\n  Details derivable from the codebase, overview, or standards are not gaps.\n- Do not re-flag structural defects (paths, scripts, placeholders, naming,\n  sections, scope) \u2014 those are checked in code.\n- Each gap states what must be decided and the valid options if you can surface\n  them.\n\n## Findings already settled for this plan file\n\nA list of settled findings may be appended to these instructions. Each entry is a\nquestion an earlier pass raised against this very file and someone settled \u2014 a\nhuman answered it into the plan, or a judge showed the implementing agent can\ndecide it or that the plan already answers it.\n\nIt is there so the same question is not asked twice, and it is **context, not\ncoverage**:\n\n- Read every part of this plan file exactly as you would if the list were empty.\n  A settled record never narrows your lens and never excuses skipping a section.\n- Report one of its entries again only when you have **new evidence** the settled\n  answer does not already cover \u2014 the plan changed under it, or the answer turns\n  out not to hold. Say what that evidence is in the gap text.\n- A question the list settles, that the plan still settles, is not a gap.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`. An empty `gaps` array is the clean result.\n\n```\n{\n	"gaps": [\n		{\n			"area": "underspecified-surface|unwired-dependency|insufficient-detail|omitted-decision|ambiguous-boundary|standards-conflict|phase-seam-mismatch",\n			"gap": "<what is missing or ambiguous>",\n			"decision": "<the decision a human must make>",\n			"options": ["<valid alternative>", "..."]\n		}\n	]\n}\n```\n';
@@ -155929,7 +155993,7 @@ var drainGapCheckers = async ({
 };
 
 // src/plan/internal/common/grading/judgeGaps.ts
-import { relative as relative14 } from "node:path";
+import { relative as relative15 } from "node:path";
 
 // src/agents/prompts/planGapJudge.md
 var planGapJudge_default = '# Role: Judge a Plan Gap Batch\n\nYou are handed **several observations** readers raised against a plan, and you\nanswer **one** question about each: who has to settle it. Before that, you\ndecide which of them describe the same underlying defect. You work autonomously\nand your final message is machine-parsed \u2014 one JSON object, not prose.\n\n## What you are given\n\nThe task message provides the text of every plan file the observations span \u2014\none `## Plan file:` section each \u2014 and the observations themselves, each under\nan engine-assigned identifier (`### o1`, `### o4`, \u2026) with its plan file, area,\nlens, finding, decision and offered options. When present, the overview plan\n(shared context for a phased plan \u2014 read it, do not judge it standalone) and\nsupplemental code standards are appended to these role instructions rather than\narriving in the task message.\n\nYou may read the repository. You make no edits.\n\n## The plan\'s other phases\n\nWhen the task message names the plan\'s folder, the plan is phased and its other\nphase files are on disk beside the ones you were given. An observation about\nsomething a neighbouring phase produces or consumes cannot be settled from one\nside alone, and a judge that guesses at the neighbour is the rubber stamp this\nbrief exists to prevent \u2014 so when the neighbour is not one of the plan files you\nwere given, open it and look.\n\nAn observation contained entirely in the files you were given needs none of\nthis. Do not read the whole plan out of thoroughness.\n\n## First: which observations are one defect\n\nThe engine put these observations together because their wording overlaps. That\nis a hint, never proof. Two or more observations are the **same defect** only\nwhen you can state:\n\n- a **common violated requirement or contradiction** every one of them is an\n  instance of, and\n- **one corrective decision** that settles every one of them.\n\nShared wording, a shared symbol or an overlapping file is not enough on its own.\nObservations of one contradiction seen from two phases usually ARE one defect;\ntwo different questions that happen to name the same file usually are NOT.\n\nWhen you are not sure, keep them apart. Being unsure is a normal answer, not a\nfailure: an observation you rule on its own is judged exactly as it would be\nalone.\n\n## The one question\n\nFor each defect \u2014 a confirmed group, or a single observation \u2014 who settles it: a\nhuman, the implementing agent, or nobody, because it is already answered.\n\n## The bar\n\nCould a fresh-context agent implementing this plan derive the answer from the\nplan, the overview, the codebase and the standards \u2014 and be right?\n\nThis is the same bar the reader briefs state, which is why you read the\nrepository rather than the plan text alone. "The plan does not say it" is not\nenough; the question is whether the agent would still get it right.\n\n## The three outcomes, and the evidence each demands\n\n- **`needs-a-human`** \u2014 the agent cannot work it out. Two defensible answers\n  exist and the plan picks neither, or the choice turns on intent nothing in the\n  repository carries. Supply **`humanDecision`**: the decision the human has to\n  make.\n- **`agent-can-decide`** \u2014 the agent can settle it correctly on its own, from\n  the plan, the codebase or the standards. Supply **`agentDecision`** (what it\n  would decide) and **`safeBecause`** (why that choice is safe to make\n  unattended).\n- **`already-answered`** \u2014 the reader missed an answer that is already there.\n  Supply **`answers`**: one entry for **every** plan file the ruling\'s\n  observations span, each naming that file in `phase` and giving, in `answerAt`,\n  either the exact line of **that file** that states the answer \u2014 copied\n  verbatim from its `## Plan file:` section \u2014 or the path of a file on disk.\n  Every file a ruling spans is one of the `## Plan file:` sections you were\n  given, so you are never asked to cite a file you cannot read. One citation\n  waving away a contradiction observed in two files is refused: an answer in one\n  file is no evidence about the other.\n\n## Your rulings\n\nYou return a **list** of rulings.\n\n- A ruling names the identifiers it covers in **`covers`**. Naming two or more is\n  your claim that they are one defect, and it must state that defect in\n  **`sharedDefect`** \u2014 the common requirement or contradiction, in one sentence.\n  Naming one is an ordinary single ruling.\n- **Every identifier you were given must appear in exactly one ruling.** An\n  observation no ruling covers, one covered by two rulings, and any identifier\n  you were not given all leave the affected observations unjudged \u2014 which blocks\n  the plan.\n- A ruling over a group settles the whole group with one outcome. There is no\n  vote: if the members need different outcomes, they are not one defect.\n\n## Findings already on record\n\nThe task message may list the records the plan\'s memory already holds for the\nplan files you were given, each with an id and the state it is in. When it\ndoes, decide **first**, for each ruling, whether it is the **same question** as\none of them.\n\n- If it is, put that record\'s id in the ruling\'s **`matchesFinding`**. If it is\n  not, leave the field unset.\n- Never name an id that is not on the list. One the plan does not hold points\n  nowhere, and the engine treats that whole ruling as no answer at all \u2014 which\n  blocks the plan.\n- Matching is **orthogonal to your ruling**: a matched ruling still gets a full\n  verdict with the evidence its outcome demands.\n- A match you rule `needs-a-human` **reopens** a record someone already closed.\n  Rule that way only on evidence the earlier clearance was wrong, or that the\n  assumptions it rested on have changed. A reader re-wording a settled question\n  is not such evidence.\n\n## Rules\n\n- Judge only the observations you were given. Do not read the plan for new\n  gaps, and do not re-check its structure \u2014 that is verified deterministically\n  in code.\n- The evidence your outcome demands is mandatory. A ruling without it is\n  discarded and every observation it covers is treated as unjudged, which blocks\n  the plan.\n- Cite what you actually read. A citation the engine cannot find in the plan\n  file it names, or a path that is not on disk, is discarded and blocks.\n- When you cannot tell, `needs-a-human` is the safe answer. Asking costs one\n  question; waving something through costs an unattended run that stalls.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`. Include only the evidence fields each outcome demands.\n\n```\n{\n	"verdicts": [\n		{\n			"covers": ["<every identifier this ruling settles>"],\n			"sharedDefect": "<two or more covered: the one defect they all are>",\n			"outcome": "needs-a-human|agent-can-decide|already-answered",\n			"humanDecision": "<needs-a-human only>",\n			"agentDecision": "<agent-can-decide only>",\n			"safeBecause": "<agent-can-decide only>",\n			"answers": [{ "phase": "<a plan file the ruling spans>", "answerAt": "<already-answered only: that file\'s exact line, or a path on disk>" }],\n			"matchesFinding": "<the id of the record this ruling repeats, when one is on the list>"\n		}\n	]\n}\n```\n';
@@ -156085,8 +156149,8 @@ var citationPathToken = ({ citation }) => {
 };
 
 // src/plan/internal/common/paths/citedPathExists.ts
-import { isAbsolute as isAbsolute4, join as join129 } from "node:path";
-var citedPathExists = async ({ cwd, token }) => pathExists({ path: isAbsolute4(token) ? token : join129(cwd, token) });
+import { isAbsolute as isAbsolute5, join as join129 } from "node:path";
+var citedPathExists = async ({ cwd, token }) => pathExists({ path: isAbsolute5(token) ? token : join129(cwd, token) });
 
 // src/plan/internal/common/memory/confirmCitation.ts
 var minimumCitationLength = 24;
@@ -156267,7 +156331,7 @@ var spawnGapJudge = async ({ params, batch, batchIndex }) => {
       standards,
       // Only a phased plan has siblings to point at, and the judge opens one
       // itself when an observation is about a seam its batch does not span.
-      planDir: overviewText === void 0 ? void 0 : relative14(cwd, workspaceDir),
+      planDir: overviewText === void 0 ? void 0 : relative15(cwd, workspaceDir),
       records: batchRecords({ memory: params.memory, batch }),
       observations: batch.observations.map(({ id, gap }) => ({ id, observation: gap }))
     }),
@@ -156322,7 +156386,7 @@ var spawnGapChecker = async ({
       standards,
       // Only a phased plan has siblings to point at, and the wiring checker
       // opens one itself when a consumed name's shape is declared elsewhere.
-      planDir: pass.overviewText === void 0 ? void 0 : relative15(cwd, pass.workspaceDir),
+      planDir: pass.overviewText === void 0 ? void 0 : relative16(cwd, pass.workspaceDir),
       lens,
       settled: phaseFindingRecords({ memory, phase: basename31(file2.path), statuses: settledStatuses })
     }),
@@ -157007,7 +157071,7 @@ var recordPassCoverage = ({
 };
 
 // src/plan/internal/common/memory/verifyOpenFindings.ts
-import { basename as basename37, relative as relative16 } from "node:path";
+import { basename as basename37, relative as relative17 } from "node:path";
 
 // src/agents/prompts/planFindingRecheck.md
 var planFindingRecheck_default = '# Role: Re-check a Settled Plan Question\n\nYou are handed **one** question a human was previously asked to settle, and the\ncurrent text of the plan it was raised against. You answer **one** question\nabout it: does the plan now state the answer? You work autonomously and your\nfinal message is machine-parsed \u2014 one JSON object, not prose.\n\n## What you are given\n\nThe task message provides the current plan text and the single record on file \u2014\nits id, the area it was raised under, what the reader found missing, the\ndecision it demanded, the options offered, and what the original judge said a\nhuman had to decide. When present, the overview plan (shared context for a\nphased plan \u2014 read it, do not judge it standalone) and supplemental code\nstandards are appended to these role instructions rather than arriving in the\ntask message.\n\nYou may read the repository. You make no edits.\n\n## The plan\'s other phases\n\nWhen the task message names the plan\'s folder, the plan is phased and its other\nphase files are on disk beside the text you were given. A question raised\nagainst one phase can be answered in another \u2014 a repair often moves a decision\ninto the overview\'s Decision Log or into the phase that owns the seam. Open a\nsibling when the answer plausibly moved there.\n\n## A record that spans several plan files\n\nA judge may have confirmed that readers in several plan files described one\ndefect, and the record then holds each of their observations. When the task\nmessage says this spawn asks about one plan file of such a record, answer **only\nfor that file**, in the words of that file\'s own observation. The record closes\nonly once every one of its files is confirmed separately, so an answer stated in\na different file is no evidence about this one \u2014 cite the plan text you were\ngiven, never a line from a sibling.\n\n## The two answers\n\n- **`already-answered`** \u2014 the plan now genuinely settles this question. A\n  reader of the plan would not have to guess, invent, or decide anything the\n  record asked about.\n- **`needs-a-human`** \u2014 it does not. Restate the outstanding decision in\n  `humanDecision`, in the terms a human can answer.\n\nYou never rule `agent-can-decide`. Downgrading a human\'s question to an\nassumption the implementing agent may make is not re-verification; it is\nanswering a different question from the one on file. If the plan does not state\nthe answer, the answer is `needs-a-human`.\n\n## The citation rule\n\n`answerAt` is your evidence, and the engine checks it before it closes anything.\n\n- Paste the **exact plan line** that states the answer \u2014 a Decision Log row, a\n  sentence from a file entry, a rule from a Scope Boundaries bullet. Copy it\n  verbatim from the text you were given.\n- Never paraphrase it, never give a heading on its own, and never describe where\n  to look ("see the Decision Log"). The engine looks for your quote in the plan\n  text; a quote it cannot find refuses the closure and the record stays open and\n  blocking.\n- A file path is the one non-quote citation allowed, and it must be a file that\n  is really on disk.\n\nA record you cannot close honestly is a record that should stay open. An\ninvented citation does not close it \u2014 it costs the run a pass and leaves the\nquestion exactly where it was.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`.\n\n```\n{\n	"outcome": "already-answered|needs-a-human",\n	"answerAt": "<already-answered: the exact plan line that states the answer, or a file path on disk>",\n	"humanDecision": "<needs-a-human: the decision still outstanding>"\n}\n```\n';
@@ -157139,7 +157203,7 @@ var spawnRecheck = async ({ params, pair }) => {
       standards,
       // Only a phased plan has siblings to point at, and a record raised
       // against one phase may now be answered in another.
-      planDir: overviewText === void 0 ? void 0 : relative16(cwd, workspaceDir),
+      planDir: overviewText === void 0 ? void 0 : relative17(cwd, workspaceDir),
       record: pair.record,
       observation: pair.observation,
       locations: pair.locations
@@ -158241,7 +158305,7 @@ var ensureBrainstormFiles = async ({ cwd, name, write = console.log }) => {
 
 // src/plan/runPlanVerifyFacts.ts
 import { copyFile, mkdir as mkdir27, writeFile as writeFile21 } from "node:fs/promises";
-import { join as join135, resolve as resolve16 } from "node:path";
+import { join as join135, resolve as resolve17 } from "node:path";
 
 // src/contracts/plan/facts/AuthoredFacts.ts
 var AuthoredFacts = external_exports.object({
@@ -158299,7 +158363,7 @@ var snapshotNotes = async ({
   notesFile,
   progress
 }) => {
-  const source = resolve16(cwd, notesFile);
+  const source = resolve17(cwd, notesFile);
   const destination = join135(workspaceDir, "brainstorm-notes.md");
   const alreadyFrozen = await pathExists({ path: destination });
   if (alreadyFrozen) {
@@ -158478,7 +158542,7 @@ var planCommand = async ({ flags, rest, cwd: launchingCwd }) => {
 
 // src/cli/queueCommand.ts
 import { randomUUID as randomUUID11 } from "node:crypto";
-import { resolve as resolve17 } from "node:path";
+import { resolve as resolve18 } from "node:path";
 
 // src/cli/internal/common/constants/QueueBoardState.ts
 var QueueBoardState = {
@@ -159096,8 +159160,8 @@ var FileQuestionRelay = class {
           throw new Error(`no answer arrived within ${this.settings.questionTimeoutMs}ms for: ${question}`);
         }
         await Promise.race([
-          new Promise((resolve20) => {
-            timer = setTimeout(resolve20, pollMs);
+          new Promise((resolve21) => {
+            timer = setTimeout(resolve21, pollMs);
           }),
           abandoned
         ]);
@@ -161710,7 +161774,7 @@ var finishDrain2 = async ({ cwd, runId, report: report2 }) => {
   await saveQueueSummary({ cwd, runId, summary: { boardLines, reportLines, exitCode: code, finishedAt: (/* @__PURE__ */ new Date()).toISOString() } });
   return code;
 };
-var resolveRelayMailbox = ({ requested, cwd }) => requested === true || requested === void 0 ? resolve17(cwd, ".lightsout", "queue", "relay") : resolve17(cwd, requested);
+var resolveRelayMailbox = ({ requested, cwd }) => requested === true || requested === void 0 ? resolve18(cwd, ".lightsout", "queue", "relay") : resolve18(cwd, requested);
 var buildRelay = async ({
   requested,
   settings,
@@ -162688,10 +162752,10 @@ var createFixInvoker = ({ tools, files, workFindings, advisories, standards, tes
 
 // src/refactor/batch/polishBatchOutput.ts
 var polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards, testStandards, onProgress }) => {
-  const resolve20 = () => tools.finish({ outcome: BatchOutcome.Resolved, remainingSiteKeys: [] });
+  const resolve21 = () => tools.finish({ outcome: BatchOutcome.Resolved, remainingSiteKeys: [] });
   const introduced = await tools.reviewOutput({ baseline });
   if (introduced.length === 0) {
-    return resolve20();
+    return resolve21();
   }
   const files = [...new Set(introduced.flatMap((finding3) => finding3.files.map((file2) => file2.path)))];
   onProgress(`${batch.id}: the review of what this batch wrote raised ${introduced.length} new advisory(s) \u2014 spending one polish pass`);
@@ -162715,7 +162779,7 @@ var polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards
   }
   const revived = await tools.remainingSiteKeys({ frozen: workFindings });
   if (revived.length === 0) {
-    return resolve20();
+    return resolve21();
   }
   onProgress(`${batch.id}: the polish pass brought back ${revived.length} site(s) this batch had cleared \u2014 recorded as declined`);
   return tools.finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: revived });
@@ -163529,8 +163593,8 @@ var reportCommand = async ({ cwd, flags }) => {
 
 // src/cli/internal/common/implementRun/continueDirectRun.ts
 import { readFile as readFile65 } from "node:fs/promises";
-import { resolve as resolve18 } from "node:path";
-var readFrozenTicket = ({ cwd, manifest }) => readFile65(resolve18(cwd, manifest.plan), "utf8").catch(() => void 0);
+import { resolve as resolve19 } from "node:path";
+var readFrozenTicket = ({ cwd, manifest }) => readFile65(resolve19(cwd, manifest.plan), "utf8").catch(() => void 0);
 var continueDirectRun = async ({ cwd, workspace, manifest, config: config2, driver, willShip }) => {
   const ticketBody = await readFrozenTicket({ cwd, manifest });
   if (ticketBody === void 0) {
@@ -164575,7 +164639,7 @@ var standardsHealthCommand = async ({ cwd }) => {
 };
 
 // src/cli/standardsValidateCommand.ts
-import { resolve as resolve19 } from "node:path";
+import { resolve as resolve20 } from "node:path";
 
 // src/standardsCheck/validateStandardsLibrary.ts
 import { readdir as readdir25 } from "node:fs/promises";
@@ -164830,7 +164894,7 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
 
 // src/cli/standardsValidateCommand.ts
 var readLibraries = async ({ requested, cwd }) => {
-  const library = await readStandardsLibrary({ packPath: requested === void 0 ? resolveDefaultStandardsLibrary() : resolve19(cwd, requested) });
+  const library = await readStandardsLibrary({ packPath: requested === void 0 ? resolveDefaultStandardsLibrary() : resolve20(cwd, requested) });
   const config2 = await readOptionalConfig({ cwd });
   let libraries;
   if (library.name === builtInStandardsLibraryName) {
@@ -165653,6 +165717,12 @@ var printQueueStatus = async ({ cwd, runId, wait }) => {
   return code;
 };
 
+// src/cli/internal/common/runStatus/printAmbiguousRuns.ts
+var printAmbiguousRuns = ({ roots }) => {
+  console.error(`several runs are going: ${roots.join(", ")}`);
+  console.error("pick one with --run <id>");
+};
+
 // src/cli/internal/common/render/printProgressFrame.ts
 var printProgressFrame = ({ progress, lines }) => {
   console.log("");
@@ -165660,15 +165730,6 @@ var printProgressFrame = ({ progress, lines }) => {
     console.log(line);
   }
   return progress;
-};
-
-// src/cli/internal/common/render/printRunProgress.ts
-var printRunProgress = async ({ cwd, runId }) => printProgressFrame(await loadRunProgressBlock({ cwd, runId }));
-
-// src/cli/internal/common/runStatus/printAmbiguousRuns.ts
-var printAmbiguousRuns = ({ roots }) => {
-  console.error(`several runs are going: ${roots.join(", ")}`);
-  console.error("pick one with --run <id>");
 };
 
 // src/cli/internal/common/runStatus/printRunFamilyScreen.ts
@@ -165911,7 +165972,7 @@ var statusCommand = async ({ cwd, flags }) => {
     if (watch) {
       await watchRunProgress({ cwd, runId });
     } else {
-      await printRunProgress({ cwd, runId });
+      await printRunFamilyScreen({ cwd, runId });
       await printRunFinalReport({ cwd, runId });
     }
     return exitCli({ code: 0 });
@@ -166150,7 +166211,7 @@ import { join as join160 } from "node:path";
 
 // src/coverage/runCoverageCheck.ts
 import { readFile as readFile69 } from "node:fs/promises";
-import { join as join159, relative as relative17 } from "node:path";
+import { join as join159, relative as relative18 } from "node:path";
 var CoverageSummaryReport = external_exports.record(external_exports.string(), external_exports.looseObject({ statements: external_exports.looseObject({ pct: external_exports.unknown() }) }));
 var readJsonFile2 = async ({ path }) => {
   try {
@@ -166176,7 +166237,7 @@ var readScopeSummary = async ({ cwd, scope, summaryPath, passed }) => {
       statementsPct = pct;
       continue;
     }
-    files.push({ path: relative17(cwd, key), scope, statementsPct: pct });
+    files.push({ path: relative18(cwd, key), scope, statementsPct: pct });
   }
   return { files, total: { scope, statementsPct, passed } };
 };
