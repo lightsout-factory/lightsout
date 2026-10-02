@@ -56,4 +56,21 @@ describe('configKeyDescriptions', () => {
 		expect(description).toMatch(/`## File Budget`/);
 		expect(description).toMatch(/renames? ?-?only/i);
 	});
+
+	test('names the move-folders-and-files exemption beside the rename-only one in the executor-file-limit sentence', () => {
+		// a sentence naming rename-only as the single exemption tells an author a
+		// large relocation cannot fit in one phase, which the move-folders-and-files
+		// mode now allows
+		const description = configKeyDescriptions['executor-file-limit'];
+
+		const named = {
+			ceiling: new RegExp(`\\b${touchedFileCeiling}\\b`).test(description),
+			touched: /touched/i.test(description),
+			fileBudget: /`## File Budget`/.test(description),
+			renameOnly: /renames? ?-?only/i.test(description),
+			moveFoldersAndFiles: /move-folders-and-files/i.test(description),
+		};
+
+		expect(named).toStrictEqual({ ceiling: true, touched: true, fileBudget: true, renameOnly: true, moveFoldersAndFiles: true });
+	});
 });

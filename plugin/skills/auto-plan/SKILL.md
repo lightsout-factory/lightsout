@@ -313,7 +313,9 @@ structural issues on a phased plan, resplit the overview's `## Phases` table and
 its `## Phase Declarations` to spread the creates and the touched files across
 more phases — no phase may pass the created-file ceiling or the touched-file
 ceiling of 70 — then re-run draft. A phase whose whole work is renaming may
-instead be declared rename-only, with the `- **Renames only:** yes` bullet.
+instead be declared rename-only, with the `- **Renames only:** yes` bullet. A
+phase whose whole work is moving folders and files may instead be declared
+move-folders-and-files, with the `- **Moves folders and files only:** yes` bullet.
 
 **6. Grill it yourself.** Run the shaping rules' `## The design check` against
 the drafted plan first; an objection you accept is a question like any other

@@ -377,7 +377,12 @@ resplit the phases — edit the overview's `## Phases` table and its
 `## Phase Declarations` to spread the created and touched files across more
 phases — and re-run `plan draft`. A phase whose whole work is renaming may
 instead be declared rename-only: a `## Renames` section in its phase file and
-the `- **Renames only:** yes` bullet in its overview declaration.
+the `- **Renames only:** yes` bullet in its overview declaration. A phase whose
+whole work is moving folders and files may instead be declared
+move-folders-and-files: a `## Build Mode` section reading
+`move-folders-and-files` in its phase file and the
+`- **Moves folders and files only:** yes` bullet in its overview declaration. A
+large folder move beside other work is resplit into a phase of its own for this.
 
 **5. Grill** — push past conscious knowledge against the *drafted* plan
 (interactive):
