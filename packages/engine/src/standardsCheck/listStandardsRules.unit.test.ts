@@ -57,27 +57,34 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  * `no-test-state-in-hooks`; `test-in-tests-folder` and
  * `test-not-beside-subject` became `test-beside-subject`. From that date the
  * list holds every checked rule, not only the ones that predate the pack format.
+ *
+ * Later the same day, once a check could read several inputs and a rule could
+ * be checked in part, ten rules merged into five, each with one check, and
+ * are gone under their old spellings: `import-through-index` and
+ * `folder-index-file` became `index-files`; `barrel-star` and
+ * `code-in-index-file` became `index-file-contents`; `bare-string-union` and
+ * `discriminant-const-object` became `named-string-values`;
+ * `banned-class-shapes` and the unchecked `class-bright-line` became
+ * `prefer-functions`; `type-alias-indirection` and the unchecked
+ * `thin-wrapper-functions` became `no-thin-wrappers`.
  */
 const durableRuleIds = [
-	'type-alias-indirection',
-	'banned-class-shapes',
+	'no-thin-wrappers',
+	'prefer-functions',
 	'type-assertion',
 	'no-any',
 	'class-inheritance',
 	'explicit-return-type',
 	'single-use-scalar',
-	'bare-string-union',
-	'discriminant-const-object',
+	'named-string-values',
 	'dead-export',
 	'duplicate-function-body',
 	'duplicate-code-block',
 	'duplicate-export-name',
 	'synonym-export-name',
 	'import-path-alias',
-	'import-through-index',
-	'folder-index-file',
-	'barrel-star',
-	'code-in-index-file',
+	'index-files',
+	'index-file-contents',
 	'internal-import-from-outside',
 	'circular-dependencies',
 	'multi-export',

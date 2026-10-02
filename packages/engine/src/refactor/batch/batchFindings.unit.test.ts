@@ -6,10 +6,9 @@ import { batchFindings } from '#src/refactor/batch/batchFindings.ts';
 const mechanicalFirstOrder = [
 	'lightsout/banned-folder-name',
 	'lightsout/file-directly-in-common',
-	'lightsout/folder-index-file',
+	'lightsout/index-files',
 	'lightsout/test-beside-subject',
 	'lightsout/test-support-in-src',
-	'lightsout/import-through-index',
 	'lightsout/internal-import-from-outside',
 	'lightsout/multi-export',
 	'lightsout/filename-mismatch',
@@ -19,7 +18,7 @@ const mechanicalFirstOrder = [
 	'lightsout/no-test-state-in-hooks',
 	'lightsout/test-manual-mock-cleanup',
 	'lightsout/test-strict-equal-matcher',
-	'lightsout/barrel-star',
+	'lightsout/index-file-contents',
 	'lightsout/dead-export',
 	'lightsout/file-size',
 	'lightsout/function-size',
@@ -42,8 +41,8 @@ test('batchFindings: groups by rule × area, mechanical-first order', () => {
 	const batches = batchFindings({
 		blocking: [
 			finding({ rule: 'lightsout/duplicate-code-block', path: 'packages/api/src/a.ts', siteKey: 'duplicate-code-block:1' }),
-			finding({ rule: 'lightsout/import-through-index', path: 'packages/api/src/b.ts', siteKey: 'boundary:b' }),
-			finding({ rule: 'lightsout/import-through-index', path: 'packages/web/src/c.ts', siteKey: 'boundary:c' }),
+			finding({ rule: 'lightsout/index-files', path: 'packages/api/src/b.ts', siteKey: 'boundary:b' }),
+			finding({ rule: 'lightsout/index-files', path: 'packages/web/src/c.ts', siteKey: 'boundary:c' }),
 			finding({ rule: 'lightsout/multi-export', path: 'src/d.ts', siteKey: 'multi-export:d' }),
 			finding({ rule: 'lightsout/multi-export', path: 'loose.ts', siteKey: 'multi-export:loose' }),
 		],
@@ -54,16 +53,16 @@ test('batchFindings: groups by rule × area, mechanical-first order', () => {
 	// boundary before multi-export before duplicate-code-block; package dirs, top segments, and
 	// (root) as areas
 	expect(batches.map((batch) => `${batch.rule} ${batch.folder}`)).toStrictEqual([
-		'lightsout/import-through-index packages/api',
-		'lightsout/import-through-index packages/web',
+		'lightsout/index-files packages/api',
+		'lightsout/index-files packages/web',
 		'lightsout/multi-export (root)',
 		'lightsout/multi-export src',
 		'lightsout/duplicate-code-block packages/api',
 	]);
 	// the ids an agent is handed: a running number in that same order
 	expect(batches.map((batch) => batch.id)).toStrictEqual([
-		'batch-01:lightsout/import-through-index:packages/api',
-		'batch-02:lightsout/import-through-index:packages/web',
+		'batch-01:lightsout/index-files:packages/api',
+		'batch-02:lightsout/index-files:packages/web',
 		'batch-03:lightsout/multi-export:(root)',
 		'batch-04:lightsout/multi-export:src',
 		'batch-05:lightsout/duplicate-code-block:packages/api',
@@ -96,7 +95,7 @@ test('batchFindings: a rule outside the priority list sorts after every listed o
 			// standards package added without a priority entry looks like here.
 			finding({ rule: 'invented-rule', path: 'src/stale.ts', siteKey: 'invented:stale' }),
 			finding({ rule: 'lightsout/duplicate-code-block', path: 'src/a.ts', siteKey: 'duplicate-code-block:a' }),
-			finding({ rule: 'lightsout/import-through-index', path: 'src/b.ts', siteKey: 'boundary:b' }),
+			finding({ rule: 'lightsout/index-files', path: 'src/b.ts', siteKey: 'boundary:b' }),
 		],
 		advisories: [],
 		packagesDir: 'packages',
@@ -104,7 +103,7 @@ test('batchFindings: a rule outside the priority list sorts after every listed o
 
 	// an unlisted rule degrades to "after the known ones" — never to an error,
 	// and never ahead of the mechanical work
-	expect(batches.map((batch) => batch.rule)).toStrictEqual(['lightsout/import-through-index', 'lightsout/duplicate-code-block', 'invented-rule']);
+	expect(batches.map((batch) => batch.rule)).toStrictEqual(['lightsout/index-files', 'lightsout/duplicate-code-block', 'invented-rule']);
 });
 
 test('batchFindings: rules outside the priority list tie-break alphabetically, and their ids reach the batch id', () => {

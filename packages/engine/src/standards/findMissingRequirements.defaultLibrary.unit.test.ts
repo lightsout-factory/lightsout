@@ -6,17 +6,16 @@ import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPa
 
 /** The requires lists the lightsout rules declare, stated here as the contract their rule.md headers must meet. */
 const listedRequires: Record<string, string[]> = {
-	'lightsout/component-file-structure': ['lightsout/folder-index-file', 'lightsout/module-folder-layout'],
+	'lightsout/component-file-structure': ['lightsout/index-files', 'lightsout/module-folder-layout'],
 	'lightsout/feature-structure': [
 		'lightsout/component-file-structure',
-		'lightsout/folder-index-file',
+		'lightsout/index-files',
 		'lightsout/query-options',
 		'lightsout/server-functions',
 		'lightsout/shared-code-placement',
 	],
 	'lightsout/file-naming-for-server-functions': ['lightsout/filename-mismatch'],
 	'lightsout/query-options': ['lightsout/module-folder-layout'],
-	'lightsout/discriminant-const-object': ['lightsout/bare-string-union'],
 	'lightsout/module-boundary-testing': ['lightsout/files-that-must-not-have-dedicated-tests'],
 	'lightsout/test-file-size': ['lightsout/module-boundary-testing'],
 	'lightsout/reuse-common-code': ['lightsout/shared-code-placement'],
@@ -62,13 +61,13 @@ describe('findMissingRequirements on the shipped lightsout library', () => {
 			'lightsout/nestjs': [],
 			// the react pack alone holds none of the fractal rules its rule points at
 			'lightsout/react': [
-				{ rule: 'lightsout/component-file-structure', required: 'lightsout/folder-index-file' },
+				{ rule: 'lightsout/component-file-structure', required: 'lightsout/index-files' },
 				{ rule: 'lightsout/component-file-structure', required: 'lightsout/module-folder-layout' },
 			],
 			// the tanstack-start pack alone holds neither the fractal rules nor the react rule its rules point at
 			'lightsout/tanstack-start': [
 				{ rule: 'lightsout/feature-structure', required: 'lightsout/component-file-structure' },
-				{ rule: 'lightsout/feature-structure', required: 'lightsout/folder-index-file' },
+				{ rule: 'lightsout/feature-structure', required: 'lightsout/index-files' },
 				{ rule: 'lightsout/feature-structure', required: 'lightsout/shared-code-placement' },
 				{ rule: 'lightsout/file-naming-for-server-functions', required: 'lightsout/filename-mismatch' },
 				{ rule: 'lightsout/query-options', required: 'lightsout/module-folder-layout' },

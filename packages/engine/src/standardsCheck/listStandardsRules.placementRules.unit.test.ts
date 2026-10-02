@@ -19,7 +19,7 @@ const standardsPackConfig: LightsoutConfig = { gates: { check: 'true', test: 'tr
 const listDefaults = async () => listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config: standardsPackConfig }) });
 
 /** The five file-placement rules code checks — listed rather than derived, because an id no longer says which kind it is. */
-const durablePathRules = ['banned-folder-name', 'file-directly-in-common', 'folder-index-file', 'test-beside-subject', 'test-support-in-src'];
+const durablePathRules = ['banned-folder-name', 'file-directly-in-common', 'index-files', 'test-beside-subject', 'test-support-in-src'];
 
 /** The shipped library's rules are listed by full name, the name a finding and a baseline key carry. */
 const builtInNameOf = ({ id }: { id: string }) => `lightsout/${id}`;
@@ -41,12 +41,12 @@ describe('listStandardsRules file-placement rules', () => {
 		);
 
 		// the main suite proves a document is there, not that it is the right one:
-		// the folder-index-file rule comes from imports, the two test-location
+		// the index-files rule comes from imports, the two test-location
 		// rules from the tests tree's fractal topic, and the rest from shared-code
 		expect(docs).toStrictEqual({
 			'lightsout/banned-folder-name': 'code/fractal/shared-code',
 			'lightsout/file-directly-in-common': 'code/fractal/shared-code',
-			'lightsout/folder-index-file': 'code/fractal/imports',
+			'lightsout/index-files': 'code/fractal/imports',
 			'lightsout/test-beside-subject': 'tests/fractal',
 			'lightsout/test-support-in-src': 'tests/fractal',
 		});
@@ -64,7 +64,7 @@ describe('listStandardsRules file-placement rules', () => {
 		expect(severities).toStrictEqual({
 			'lightsout/banned-folder-name': StandardsSeverity.Advisory,
 			'lightsout/file-directly-in-common': StandardsSeverity.Advisory,
-			'lightsout/folder-index-file': StandardsSeverity.Advisory,
+			'lightsout/index-files': StandardsSeverity.Advisory,
 			'lightsout/test-beside-subject': StandardsSeverity.Advisory,
 			'lightsout/test-support-in-src': StandardsSeverity.Advisory,
 		});

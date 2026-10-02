@@ -486,19 +486,17 @@ A repository that wants the strict profile promotes those rules itself — an ex
 ```jsonc
 {
   "standards-rule-settings": {
-    "banned-class-shapes": "blocking",
+    "prefer-functions": "blocking",
     "banned-folder-name": "blocking",
-    "bare-string-union": "blocking",
-    "barrel-star": "blocking",
+    "named-string-values": "blocking",
+    "index-file-contents": "blocking",
     "class-inheritance": "blocking",
-    "code-in-index-file": "blocking",
     "file-directly-in-common": "blocking",
     "file-size": "blocking",
-    "folder-index-file": "blocking",
+    "index-files": "blocking",
     "folder-size": "blocking",
     "function-size": "blocking",
     "import-path-alias": "blocking",
-    "import-through-index": "blocking",
     "internal-import-from-outside": "blocking",
     "multi-export": "blocking",
     "single-use-scalar": "blocking",

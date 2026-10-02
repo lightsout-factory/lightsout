@@ -60,7 +60,7 @@ test('write-tests fan-out: every executable-code kind earns a writer; barrels an
 				...reachabilityRulesOff['standards-rule-settings'],
 				// the fixture's `Kind` union is deliberately bare: it is here as a
 				// type-only export the writer selection has to skip, not as code to fix
-				'bare-string-union': 'off',
+				'named-string-values': 'off',
 			},
 		},
 	});
@@ -153,7 +153,7 @@ test('write-tests fan-out: a deleted source file is skipped, never sent to a wri
 				...reachabilityRulesOff['standards-rule-settings'],
 				// the fixture's `Kind` union is deliberately bare: it is here as a
 				// type-only export the writer selection has to skip, not as code to fix
-				'bare-string-union': 'off',
+				'named-string-values': 'off',
 			},
 		},
 	});
@@ -235,7 +235,7 @@ test('write-tests fan-out: an unreadable file that still exists keeps its writer
 				...reachabilityRulesOff['standards-rule-settings'],
 				// the fixture's `Kind` union is deliberately bare: it is here as a
 				// type-only export the writer selection has to skip, not as code to fix
-				'bare-string-union': 'off',
+				'named-string-values': 'off',
 			},
 		},
 	});

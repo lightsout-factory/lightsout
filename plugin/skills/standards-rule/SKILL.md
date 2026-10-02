@@ -62,7 +62,7 @@ options:                                    # numbers the check reads, if any
 example:
   kind: snippet                             # or repo, with focus
 requires:                                   # rules this rule depends on: a short id in this library, the full name for another
-  - folder-index-file
+  - index-files
 ```
 
 A `requires` name that matches no rule fails loading. `standards-validate`

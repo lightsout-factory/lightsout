@@ -83,7 +83,7 @@ const setupMonorepo = () => {
 
 /** The requiring and required rules the lightsout/react pack leaves out, as full names. */
 const reactMissingRequirements = [
-	{ rule: 'lightsout/component-file-structure', required: 'lightsout/folder-index-file' },
+	{ rule: 'lightsout/component-file-structure', required: 'lightsout/index-files' },
 	{ rule: 'lightsout/component-file-structure', required: 'lightsout/module-folder-layout' },
 ];
 

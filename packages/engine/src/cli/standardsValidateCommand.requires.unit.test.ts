@@ -62,8 +62,8 @@ const setupWarningsOnly = ({ warnings }: { warnings: string[] }) => {
 		rootPath: '/repo/libs/house',
 		documents: [],
 		rules: [
-			rule({ id: 'component-file-structure', checked: false, requires: ['house/folder-index-file'] }),
-			rule({ id: 'folder-index-file', checked: true, requires: [] }),
+			rule({ id: 'component-file-structure', checked: false, requires: ['house/index-files'] }),
+			rule({ id: 'index-files', checked: true, requires: [] }),
 		],
 		packs: [],
 	};
@@ -89,7 +89,7 @@ describe('standardsValidateCommand', () => {
 	test('prints each missing-requirement warning and still exits 0', async () => {
 		const { context, logged, exitCodes } = setupWarningsOnly({
 			warnings: [
-				'house/react: house/component-file-structure requires house/folder-index-file, which the pack does not send to agents',
+				'house/react: house/component-file-structure requires house/index-files, which the pack does not send to agents',
 				'house/react: house/component-file-structure requires house/module-folder-layout, which the pack does not send to agents',
 			],
 		});
@@ -98,7 +98,7 @@ describe('standardsValidateCommand', () => {
 
 		expect({ warningLines: logged.slice(0, 2), finalLine: logged.at(-1), exitCodes }).toStrictEqual({
 			warningLines: [
-				'⚠ house/react: house/component-file-structure requires house/folder-index-file, which the pack does not send to agents',
+				'⚠ house/react: house/component-file-structure requires house/index-files, which the pack does not send to agents',
 				'⚠ house/react: house/component-file-structure requires house/module-folder-layout, which the pack does not send to agents',
 			],
 			finalLine: 'house — 1 checked rule(s) validated, 1 agent-reviewed rule(s), 0 pack file(s)',
@@ -108,9 +108,9 @@ describe('standardsValidateCommand', () => {
 
 	test('prints warnings after the notes and before the problems, and a problem still exits 1', async () => {
 		const { context, logged, exitCodes } = setupEveryFinding({
-			note: 'house/folder-index-file: judgment-only — fixtures reserved for agent accuracy',
-			warning: 'house/react: house/component-file-structure requires house/folder-index-file, which the pack does not send to agents',
-			problem: 'house/folder-index-file: the fail fixture produced no finding — the check does not catch what the rule describes',
+			note: 'house/index-files: judgment-only — fixtures reserved for agent accuracy',
+			warning: 'house/react: house/component-file-structure requires house/index-files, which the pack does not send to agents',
+			problem: 'house/index-files: the fail fixture produced no finding — the check does not catch what the rule describes',
 		});
 
 		await expect(standardsValidateCommand(context)).rejects.toThrow(/process\.exit/);
@@ -118,9 +118,9 @@ describe('standardsValidateCommand', () => {
 		// the warning is not counted: the summary names one problem, the one the validator returned
 		expect({ logged, exitCodes }).toStrictEqual({
 			logged: [
-				'ℹ house/folder-index-file: judgment-only — fixtures reserved for agent accuracy',
-				'⚠ house/react: house/component-file-structure requires house/folder-index-file, which the pack does not send to agents',
-				'✗ house/folder-index-file: the fail fixture produced no finding — the check does not catch what the rule describes',
+				'ℹ house/index-files: judgment-only — fixtures reserved for agent accuracy',
+				'⚠ house/react: house/component-file-structure requires house/index-files, which the pack does not send to agents',
+				'✗ house/index-files: the fail fixture produced no finding — the check does not catch what the rule describes',
 				'',
 				'house — 1 problem(s) across 1 checked rule(s) and 0 pack file(s)',
 			],

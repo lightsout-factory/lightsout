@@ -14,7 +14,7 @@ const bansTheBannedTypedFile: StandardsCheckFunction = ({ inputs }) =>
 	[...(inputs[StandardsInputKind.TypeChecker]?.typedFiles.keys() ?? [])]
 		.filter((path) => path.endsWith('banned.ts'))
 		.map((path) => ({
-			siteKey: `discriminant-const-object:${path}`,
+			siteKey: `named-string-values:${path}`,
 			files: [{ path }],
 			detail: 'a file the rule bans',
 		}));
@@ -154,7 +154,7 @@ describe('validateStandardsLibrary input kinds', () => {
 		const { fixturesPath } = setupTypedFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 
 		const { problems, notes } = await validate({
-			rules: [rule({ id: 'discriminant-const-object', fixturesPath, inputKinds: [StandardsInputKind.TypeChecker], run: bansTheBannedTypedFile })],
+			rules: [rule({ id: 'named-string-values', fixturesPath, inputKinds: [StandardsInputKind.TypeChecker], run: bansTheBannedTypedFile })],
 		});
 
 		expect(problems).toStrictEqual([]);
@@ -165,14 +165,14 @@ describe('validateStandardsLibrary input kinds', () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 
 		const { problems } = await validate({
-			rules: [rule({ id: 'discriminant-const-object', fixturesPath, inputKinds: [StandardsInputKind.TypeChecker], run: bansTheBannedTypedFile })],
+			rules: [rule({ id: 'named-string-values', fixturesPath, inputKinds: [StandardsInputKind.TypeChecker], run: bansTheBannedTypedFile })],
 		});
 
 		// a side the engine could type nothing in hands the check nothing, and the
 		// silence that follows would otherwise send the author to the check
 		expect(problems).toStrictEqual([
-			"discriminant-const-object: the fail fixture could not be checked — no tsconfig.json in fixtures/fail/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one",
-			"discriminant-const-object: the pass fixture could not be checked — no tsconfig.json in fixtures/pass/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one",
+			"named-string-values: the fail fixture could not be checked — no tsconfig.json in fixtures/fail/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one",
+			"named-string-values: the pass fixture could not be checked — no tsconfig.json in fixtures/pass/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one",
 		]);
 	});
 

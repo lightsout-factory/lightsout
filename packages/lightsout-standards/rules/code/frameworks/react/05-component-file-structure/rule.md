@@ -3,7 +3,7 @@ summary: "What a component's file holds, and when it becomes a folder."
 checked: false
 severity: advisory
 requires:
-  - folder-index-file
+  - index-files
   - module-folder-layout
 ---
 

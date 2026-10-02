@@ -154,7 +154,7 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 	expect(stdout).toMatch(/│ lightsout\/test-manual-mock-cleanup\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: tests\/code-style\s+│/);
 	// and so do the file-placement rules, across the three docs they come from
 	expect(stdout).toMatch(/│ lightsout\/banned-folder-name\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/fractal\/shared-code\s+│/);
-	expect(stdout).toMatch(/│ lightsout\/folder-index-file\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/fractal\/imports\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/index-files\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/fractal\/imports\s+│/);
 	expect(stdout).toMatch(/│ lightsout\/test-beside-subject\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: tests\/fractal\s+│/);
 	// --list answers a question about configuration — it never checks the tree
 	expect(stdout.includes('report: .lightsout/standards-check.json')).toBeFalsy();

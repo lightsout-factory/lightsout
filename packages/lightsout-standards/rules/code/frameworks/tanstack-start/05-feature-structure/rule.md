@@ -4,7 +4,7 @@ checked: false
 severity: advisory
 requires:
   - component-file-structure
-  - folder-index-file
+  - index-files
   - query-options
   - server-functions
   - shared-code-placement

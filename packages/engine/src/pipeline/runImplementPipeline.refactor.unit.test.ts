@@ -6,6 +6,7 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
 import { cleanupRecordOf } from '#tests/helpers/cleanupRecordOf.ts';
 import { expectDefined } from '#tests/helpers/expectDefined.ts';
+import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 import { report } from '#tests/helpers/report.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';
@@ -132,19 +133,22 @@ test('refactor: a star re-export is cleanup work on its own — severity is the 
 		// through before, and which the gate must now block on unaided.
 		source: 'export const subject = () => 1;\n',
 		extraSources: {
-			'src/widget/widget.ts': 'export const widget = () => 1;\n',
+			'src/widget/widget.ts': 'export const widget = (): number => 1;\n',
 			'src/index.ts': "export * from './widget/widget';\n",
 		},
 		onRefactor: () => report({ changedFiles: [] }),
 	});
+
+	// the index-file rule reads the parsed tree as well as the text, so the repo needs a typescript to borrow
+	linkTypescript({ dir });
 
 	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const cleanup = cleanupRecordOf({ steps: result.manifest.steps });
 
 	expectDefined(cleanup);
 	// it earned the round alone — no other finding was blocking
-	expect(refactorPrompts[0] ?? '').toMatch(/Blocking —[\s\S]*- \[lightsout\/barrel-star\] src\/index\.ts/);
-	expect(cleanup.remaining.map((finding) => finding.siteKey)).toStrictEqual(['lightsout/barrel-star:src/index.ts']);
+	expect(refactorPrompts[0] ?? '').toMatch(/Blocking —[\s\S]*- \[lightsout\/index-file-contents\] src\/index\.ts/);
+	expect(cleanup.remaining.map((finding) => finding.siteKey)).toStrictEqual(['lightsout/index-file-contents:src/index.ts']);
 	// and left standing it is recorded, never a stop
 	expect(result.manifest.steps.find((step) => step.id === 'refactor')?.status).toBe('passed');
 	expect(result.ok).toBe(true);

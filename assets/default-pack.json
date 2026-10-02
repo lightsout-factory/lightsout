@@ -1,16 +1,16 @@
 {
   "name": "lightsout",
-  "description": "The built-in TypeScript standards: rules that keep a repo the same shape at every level, correct what models get wrong by default and settle code style, 39 of them enforced by code.",
+  "description": "The built-in TypeScript standards: rules that keep a repo the same shape at every level, correct what models get wrong by default and settle code style, 36 of them enforced by code.",
   "homepage": "https://github.com/lightsout-factory/lightsout/tree/main/packages/lightsout-standards",
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
-    "rules": 69,
-    "checked": 39,
+    "rules": 64,
+    "checked": 36,
     "judgment": 31,
     "topics": 18,
     "packs": 7,
-    "withFixtures": 69
+    "withFixtures": 64
   },
   "packs": [
     {
@@ -40,16 +40,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/banned-class-shapes",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/class-bright-line",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/jest-spyon-vs-jest-mock",
           "severity": "advisory",
           "options": {}
@@ -65,22 +55,22 @@
           "options": {}
         },
         {
+          "name": "lightsout/no-thin-wrappers",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/per-folder-readmes",
           "severity": "advisory",
           "options": {}
         },
         {
+          "name": "lightsout/prefer-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/premature-abstraction",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/thin-wrapper-functions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/type-alias-indirection",
           "severity": "advisory",
           "options": {}
         },
@@ -96,7 +86,7 @@
         }
       ],
       "totals": {
-        "rules": 12,
+        "rules": 10,
         "checked": 4,
         "judgment": 8,
         "topics": 4
@@ -124,11 +114,6 @@
       ],
       "rules": [
         {
-          "name": "lightsout/bare-string-union",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/class-inheritance",
           "severity": "advisory",
           "options": {}
@@ -139,13 +124,13 @@
           "options": {}
         },
         {
-          "name": "lightsout/discriminant-const-object",
-          "severity": "advisory",
+          "name": "lightsout/explicit-return-type",
+          "severity": "blocking",
           "options": {}
         },
         {
-          "name": "lightsout/explicit-return-type",
-          "severity": "blocking",
+          "name": "lightsout/named-string-values",
+          "severity": "advisory",
           "options": {}
         },
         {
@@ -205,8 +190,8 @@
         }
       ],
       "totals": {
-        "rules": 16,
-        "checked": 11,
+        "rules": 15,
+        "checked": 10,
         "judgment": 5,
         "topics": 4
       }
@@ -242,22 +227,12 @@
           "options": {}
         },
         {
-          "name": "lightsout/barrel-star",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/case-collision",
           "severity": "blocking",
           "options": {}
         },
         {
           "name": "lightsout/circular-dependencies",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/code-in-index-file",
           "severity": "advisory",
           "options": {}
         },
@@ -309,11 +284,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/folder-index-file",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/folder-size",
           "severity": "advisory",
           "options": {
@@ -335,7 +305,12 @@
           "options": {}
         },
         {
-          "name": "lightsout/import-through-index",
+          "name": "lightsout/index-file-contents",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/index-files",
           "severity": "advisory",
           "options": {}
         },
@@ -413,8 +388,8 @@
         }
       ],
       "totals": {
-        "rules": 32,
-        "checked": 24,
+        "rules": 30,
+        "checked": 22,
         "judgment": 9,
         "topics": 6
       }
@@ -541,22 +516,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/banned-class-shapes",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/banned-folder-name",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/bare-string-union",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/barrel-star",
           "severity": "advisory",
           "options": {}
         },
@@ -571,22 +531,12 @@
           "options": {}
         },
         {
-          "name": "lightsout/class-bright-line",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/class-inheritance",
           "severity": "advisory",
           "options": {}
         },
         {
           "name": "lightsout/class-syntax",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/code-in-index-file",
           "severity": "advisory",
           "options": {}
         },
@@ -598,11 +548,6 @@
         {
           "name": "lightsout/dead-export",
           "severity": "blocking",
-          "options": {}
-        },
-        {
-          "name": "lightsout/discriminant-const-object",
-          "severity": "advisory",
           "options": {}
         },
         {
@@ -663,11 +608,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/folder-index-file",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/folder-size",
           "severity": "advisory",
           "options": {
@@ -694,7 +634,12 @@
           "options": {}
         },
         {
-          "name": "lightsout/import-through-index",
+          "name": "lightsout/index-file-contents",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/index-files",
           "severity": "advisory",
           "options": {}
         },
@@ -734,6 +679,11 @@
           "options": {}
         },
         {
+          "name": "lightsout/named-string-values",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/naming-for-reuse",
           "severity": "advisory",
           "options": {}
@@ -754,6 +704,11 @@
           "options": {}
         },
         {
+          "name": "lightsout/no-thin-wrappers",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/object-args",
           "severity": "advisory",
           "options": {}
@@ -765,6 +720,11 @@
         },
         {
           "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/prefer-functions",
           "severity": "advisory",
           "options": {}
         },
@@ -876,16 +836,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/thin-wrapper-functions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/type-alias-indirection",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/type-assertion",
           "severity": "blocking",
           "options": {}
@@ -897,8 +847,8 @@
         }
       ],
       "totals": {
-        "rules": 69,
-        "checked": 39,
+        "rules": 64,
+        "checked": 36,
         "judgment": 31,
         "topics": 18
       }
@@ -974,11 +924,9 @@
       "path": "code/agent-corrections/design",
       "intro": "# Design\n\nWhen a function, a type, an abstraction or a class earns its place.",
       "ruleIds": [
-        "thin-wrapper-functions",
-        "type-alias-indirection",
+        "no-thin-wrappers",
         "premature-abstraction",
-        "class-bright-line",
-        "banned-class-shapes"
+        "prefer-functions"
       ]
     },
     {
@@ -1015,8 +963,7 @@
       "path": "code/code-style/named-constants",
       "intro": "# Named Constants\n\nA set of named string values, written as a `const` object with a union type derived from it. A named constant is that object. A value constant is any other constant.",
       "ruleIds": [
-        "bare-string-union",
-        "discriminant-const-object"
+        "named-string-values"
       ]
     },
     {
@@ -1038,10 +985,8 @@
       "intro": "# Imports\n\nHow an import names the file it reads from, and what a package makes public.\n\n- An index file is `index.ts`, or the same name in any other dialect: `index.js`, `index.mjs`, `index.jsx`, `index.tsx`.\n- A package's entry is the index file its manifest publishes to other packages. It sits at the package root or its `src/`, or the manifest names it, as a subpath export such as `\"./contracts\": \"./src/contracts/index.ts\"` does. It is the package's public contract: it lists exactly what other packages may use.\n- A route file a file router loads, such as `src/routes/index.tsx`, is a route, not an index file, and importing it imports that route.",
       "ruleIds": [
         "import-path-alias",
-        "import-through-index",
-        "folder-index-file",
-        "barrel-star",
-        "code-in-index-file",
+        "index-files",
+        "index-file-contents",
         "circular-dependencies",
         "internal-import-from-outside"
       ]
@@ -1187,51 +1132,6 @@
       }
     },
     {
-      "id": "banned-class-shapes",
-      "name": "lightsout/banned-class-shapes",
-      "set": "code",
-      "documentPath": "code/agent-corrections/design",
-      "summary": "Classes that should be plain functions.",
-      "checked": true,
-      "reviewed": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## Banned Class Shapes\n\nNever write these classes:\n\n- A class with only static members. It is a module in disguise: it adds a `ClassName.` prefix to every call and binds no state. Write module functions instead.\n- A stateless class with one method, such as `class ReportGenerator { execute() }`. Write the function.\n\nA class that is decorated, is abstract, or implements or extends another type is not one of these shapes. `class-bright-line` judges it.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/http/HttpClient.ts",
-          "text": "interface ConstructorParams {\n\tbaseUrl: string;\n\tretries?: number;\n}\n\n// Criteria (a) and (b) together: injected configuration every method reads, and\n// a retry budget that changes as calls are made.\nexport class HttpClient {\n\tprivate readonly baseUrl: string;\n\n\tprivate remaining: number;\n\n\tconstructor({ baseUrl, retries = 3 }: ConstructorParams) {\n\t\tthis.baseUrl = baseUrl;\n\t\tthis.remaining = retries;\n\t}\n\n\tget({ path }: { path: string }): string {\n\t\tthis.remaining -= 1;\n\n\t\treturn `GET ${this.baseUrl}${path}`;\n\t}\n\n\tpost({ path }: { path: string }): string {\n\t\tthis.remaining -= 1;\n\n\t\treturn `POST ${this.baseUrl}${path}`;\n\t}\n\n\tgetRemainingRetries(): number {\n\t\treturn this.remaining;\n\t}\n}\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/reporting/formatReportRows.ts",
-          "text": "interface Params {\n\trows: Array<{ label: string; amount: number }>;\n}\n\n// The one-method class rewritten as what it always was.\nexport const formatReportRows = ({ rows }: Params): string => rows.map((row) => `${row.label}: ${row.amount}`).join('\\n');\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/config/ConfigPaths.ts",
-          "text": "// A module wearing a costume: the class binds no state and exists only to put\n// a `ConfigPaths.` prefix in front of three values.\nexport class ConfigPaths {\n\tstatic readonly root = '.lightsout';\n\n\tstatic readonly config = '.lightsout/config.json';\n\n\tstatic forRun({ id }: { id: string }): string {\n\t\treturn `.lightsout/runs/${id}`;\n\t}\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/reporting/ReportGenerator.ts",
-          "text": "interface Row {\n\tlabel: string;\n\tamount: number;\n}\n\n// A function with a hat on: one method, nothing held between calls, and every\n// caller writing `new ReportGenerator().execute(...)` to reach it.\nexport class ReportGenerator {\n\texecute({ rows }: { rows: Row[] }): string {\n\t\treturn rows.map((row) => `${row.label}: ${row.amount}`).join('\\n');\n\t}\n}\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/config/ConfigPaths.ts",
-          "pass": "src/http/HttpClient.ts"
-        }
-      }
-    },
-    {
       "id": "banned-folder-name",
       "name": "lightsout/banned-folder-name",
       "set": "code",
@@ -1278,82 +1178,6 @@
         "focus": {
           "fail": "src/billing/helpers/formatAmount.ts",
           "pass": "src/billing/common/types/Invoice.ts"
-        }
-      }
-    },
-    {
-      "id": "bare-string-union",
-      "name": "lightsout/bare-string-union",
-      "set": "code",
-      "documentPath": "code/code-style/named-constants",
-      "summary": "How a set of named string values is declared.",
-      "checked": true,
-      "reviewed": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Bare String Union\n\nDeclare a set of named string values as a `const` object, and derive the union type from it, so the object is the single source of truth. Consumers reference the object's members, such as `Action.Add`, never raw string literals.\n\n```typescript\n// common/constants/Action.ts\nexport const Action = {\n\tAdd: 'add',\n\tRemove: 'remove',\n\tList: 'list',\n\tUpdate: 'update',\n} as const;\n\nexport type Action = (typeof Action)[keyof typeof Action];\n```\n\n```typescript\ndoThing(Action.Add);\n```\n\nName the object in PascalCase, because it shares its name with its type. Every other constant is camelCase: a single value such as `maxRetries`, or an object that groups related values such as `featureThresholds`.\n\nA lookup map keyed by the union, `Record<Action, string>`, has an entry for every member and may share the object's file, because a change to one always changes the other. A constant that only uses the union, such as a default value or a subset of members, gets its own file.\n\nWith a bare union, every call site types the raw string again, so the values are defined everywhere.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/common/constants/Action.ts",
-          "text": "export const Action = {\n\tAdd: 'add',\n\tRemove: 'remove',\n\tList: 'list',\n\tUpdate: 'update',\n} as const;\n\nexport type Action = (typeof Action)[keyof typeof Action];\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/types/Action.ts",
-          "text": "// No object behind it, so every caller writes `doThing('add')` and the source\n// of truth becomes \"everywhere\".\nexport type Action = 'add' | 'remove' | 'list' | 'update';\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
-      "id": "barrel-star",
-      "name": "lightsout/barrel-star",
-      "set": "code",
-      "documentPath": "code/fractal/imports",
-      "summary": "How a package's entry file lists what it publishes.",
-      "checked": true,
-      "reviewed": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## Barrel Star\n\nIn a package's entry, re-export each name explicitly, `export { Foo } from '<path>'`, never with `export *`. List what other packages need, and nothing only the package itself uses.\n\nHow re-export lines wrap or merge follows the project's formatter, not this rule.\n\nA star publishes whatever its target happens to export, so the contract stops being a decision.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/feature/renderGreeting.ts",
-          "text": "export const renderGreeting = (): string => 'hello';\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/index.ts",
-          "text": "export { renderGreeting } from './feature/renderGreeting';\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/feature/renderGreeting.ts",
-          "text": "export const renderGreeting = (): string => 'hello';\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/index.ts",
-          "text": "export * from './feature/renderGreeting';\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/feature/renderGreeting.ts",
-          "pass": "src/feature/renderGreeting.ts"
         }
       }
     },
@@ -1473,37 +1297,6 @@
       }
     },
     {
-      "id": "class-bright-line",
-      "name": "lightsout/class-bright-line",
-      "set": "code",
-      "documentPath": "code/agent-corrections/design",
-      "summary": "When to write a class instead of functions.",
-      "checked": false,
-      "reviewed": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Class Bright Line\n\nDefault to functions. Write a class if, and only if, at least one of these holds:\n\n- **(a)** Mutable state persists across method calls: a `RateLimiter` counting its remaining tokens, a cache, a connection pool.\n- **(b)** Three or more operations share injected config or dependencies: an `HttpClient` whose base URL, retries and credentials are injected once and used by every method.\n- **(c)** Several implementations share one interface: `FileSource` and `S3Source` behind a `RecordSource` contract.\n- **(d)** The framework requires it: NestJS services, resolvers and guards, because its dependency injection needs classes.\n\nWhen none holds, write functions in a module. To check, ask whether \"how many of these exist right now?\" is a meaningful question: two `HttpClient`s pointed at different APIs, yes, so a class; two `formatDate`s, no, so a function.\n\nKeep a class's methods to behaviour that needs its state. Put other logic in functions rather than instance methods: logic that needs no state is easier to read and reuse as a function.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/rate/RateLimiter.ts",
-          "text": "interface ConstructorParams {\n\ttokens: number;\n}\n\n// Criterion (a): the remaining tokens persist across calls, so \"how many rate\n// limiters exist right now?\" is a question with a meaningful answer.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ tokens }: ConstructorParams) {\n\t\tthis.remaining = tokens;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n\n\trefill({ tokens }: { tokens: number }): void {\n\t\tthis.remaining = tokens;\n\t}\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/pricing/PriceFormatter.ts",
-          "text": "interface ConstructorParams {\n\tlocale: string;\n}\n\n// None of the four criteria hold: nothing persists between calls, one operation\n// uses the injected value, there is no second implementation and no framework\n// asked for a class. \"How many PriceFormatters exist?\" is not a question.\nexport class PriceFormatter {\n\tprivate readonly locale: string;\n\n\tconstructor({ locale }: ConstructorParams) {\n\t\tthis.locale = locale;\n\t}\n\n\tformat({ amount }: { amount: number }): string {\n\t\treturn amount.toLocaleString(this.locale);\n\t}\n}\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
       "id": "class-inheritance",
       "name": "lightsout/class-inheritance",
       "set": "code",
@@ -1572,66 +1365,6 @@
       ],
       "example": {
         "kind": "snippet"
-      }
-    },
-    {
-      "id": "code-in-index-file",
-      "name": "lightsout/code-in-index-file",
-      "set": "code",
-      "documentPath": "code/fractal/imports",
-      "summary": "What an index file may contain.",
-      "checked": true,
-      "reviewed": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 5,
-        "fail": 2
-      },
-      "prose": "## Code in Index File\n\nAn index file holds only re-export lines, `export { Foo } from '<path>'` and `export type { Bar } from '<path>'`, and comments. Put executable code in an entry file with its own name, conventionally `main.ts`, which imports what it runs from the files that declare it.\n\nA package's entry is the list other packages build against, and code in it makes that list hard to read.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "package.json",
-          "text": "{\n\t\"name\": \"code-in-index-file-pass-fixture\",\n\t\"private\": true,\n\t\"dependencies\": {\n\t\t\"@tanstack/react-router\": \"1.168.3\",\n\t\t\"@tanstack/react-start\": \"1.167.5\"\n\t}\n}\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/feature/renderGreeting.ts",
-          "text": "export const renderGreeting = (): string => 'hello';\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/index.ts",
-          "text": "export { renderGreeting } from './feature/renderGreeting';\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/main.ts",
-          "text": "import { renderGreeting } from './feature/renderGreeting';\n\nconsole.log(renderGreeting());\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/index.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/')({ component: () => <h1>Runs</h1> });\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/feature/renderGreeting.ts",
-          "text": "export const renderGreeting = (): string => 'hello';\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/index.ts",
-          "text": "import { renderGreeting } from './feature/renderGreeting';\n\nconsole.log(renderGreeting());\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/feature/renderGreeting.ts",
-          "pass": "package.json"
-        }
       }
     },
     {
@@ -1741,71 +1474,6 @@
         "focus": {
           "fail": "src/feature/buildGreeting.ts",
           "pass": "src/index.ts"
-        }
-      }
-    },
-    {
-      "id": "discriminant-const-object",
-      "name": "lightsout/discriminant-const-object",
-      "set": "code",
-      "documentPath": "code/code-style/named-constants",
-      "summary": "How the field that tells union members apart is typed and checked.",
-      "checked": true,
-      "reviewed": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 4,
-        "fail": 4
-      },
-      "prose": "## Discriminant Const Object\n\nType the discriminant field of a union family with the `const` object's member, not a raw literal: `kind: typeof SyncEventKind.FileAdded`, not `kind: 'file-added'`. Narrow with the member too, in `===` comparisons and `switch` cases.\n\n```typescript\nexport interface FileAddedEvent {\n\tkind: typeof SyncEventKind.FileAdded;\n\tpath: string;\n}\n\nif (event.kind === SyncEventKind.FileAdded) { /* ... */ }\n```\n\nA narrowing site is at fault only when there is a member to use instead:\n\n- A union with no `const` object, such as `type Mode = 'fast' | 'slow'`, has no member. Declaring one is `bare-string-union`'s job.\n- When the file cannot import the constant, because its package does not depend on the one declaring it or a build deliberately isolates its folder, the literal stands.\n- `typeof value === 'string'` is not a discriminant.\n\nA UI component's discriminated `Props` union may use raw string literals as discriminants, such as `status: 'notInstalled' | 'connected'`, because the caller writes the literal once, as a JSX attribute. When the same values also appear in domain logic, use the `const` object everywhere, props included.\n\nTypeScript narrows on the member just as it does on the literal, and consumers no longer type the literal again at every narrowing site.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/common/constants/SyncEventKind.ts",
-          "text": "export const SyncEventKind = {\n\tFileAdded: 'file-added',\n\tRecordParsed: 'record-parsed',\n} as const;\n\nexport type SyncEventKind = (typeof SyncEventKind)[keyof typeof SyncEventKind];\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/types/SyncEvent.ts",
-          "text": "import type { SyncEventKind } from '../constants/SyncEventKind';\n\nexport interface FileAddedEvent {\n\tkind: typeof SyncEventKind.FileAdded;\n\tpath: string;\n}\n\nexport interface RecordParsedEvent {\n\tkind: typeof SyncEventKind.RecordParsed;\n\trecordId: string;\n}\n\nexport type SyncEvent = FileAddedEvent | RecordParsedEvent;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/sync/routeSyncEvent.ts",
-          "text": "import { SyncEventKind } from '../common/constants/SyncEventKind';\nimport type { SyncEvent } from '../common/types/SyncEvent';\n\n// Both ways of narrowing reference the const object, so the family's strings\n// live in exactly one file.\nexport const routeSyncEvent = ({ event }: { event: SyncEvent }): string => {\n\tif (event.kind === SyncEventKind.FileAdded) {\n\t\treturn event.path;\n\t}\n\n\tswitch (event.kind) {\n\t\tcase SyncEventKind.RecordParsed: {\n\t\t\treturn event.recordId;\n\t\t}\n\t\tdefault: {\n\t\t\treturn '';\n\t\t}\n\t}\n};\n"
-        },
-        {
-          "side": "pass",
-          "path": "tsconfig.json",
-          "text": "{\n\t\"compilerOptions\": {\n\t\t\"target\": \"ES2022\",\n\t\t\"module\": \"ESNext\",\n\t\t\"moduleResolution\": \"Bundler\",\n\t\t\"strict\": true,\n\t\t\"noEmit\": true\n\t},\n\t\"include\": [\"src\"]\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/constants/SyncEventKind.ts",
-          "text": "export const SyncEventKind = {\n\tFileAdded: 'file-added',\n\tRecordParsed: 'record-parsed',\n} as const;\n\nexport type SyncEventKind = (typeof SyncEventKind)[keyof typeof SyncEventKind];\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/types/SyncEvent.ts",
-          "text": "// The literal leaks: every narrowing site retypes 'file-added'.\nexport interface FileAddedEvent {\n\tkind: 'file-added';\n\tpath: string;\n}\n\nexport interface RecordParsedEvent {\n\tkind: 'record-parsed';\n\trecordId: string;\n}\n\nexport type SyncEvent = FileAddedEvent | RecordParsedEvent;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/sync/routeSyncEvent.ts",
-          "text": "import { SyncEventKind } from '../common/constants/SyncEventKind';\nimport type { SyncEvent } from '../common/types/SyncEvent';\n\nexport const routeSyncEvent = ({ event }: { event: SyncEvent }): string => {\n\t// one site references the object...\n\tif (event.kind === SyncEventKind.FileAdded) {\n\t\treturn event.path;\n\t}\n\n\t// ...and the one below retypes the literal, which is how a rename of the\n\t// family's strings gets missed\n\tswitch (event.kind) {\n\t\tcase 'record-parsed': {\n\t\t\treturn event.recordId;\n\t\t}\n\t\tdefault: {\n\t\t\treturn '';\n\t\t}\n\t}\n};\n"
-        },
-        {
-          "side": "fail",
-          "path": "tsconfig.json",
-          "text": "{\n\t\"compilerOptions\": {\n\t\t\"target\": \"ES2022\",\n\t\t\"module\": \"ESNext\",\n\t\t\"moduleResolution\": \"Bundler\",\n\t\t\"strict\": true,\n\t\t\"noEmit\": true\n\t},\n\t\"include\": [\"src\"]\n}\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/common/constants/SyncEventKind.ts",
-          "pass": "src/common/constants/SyncEventKind.ts"
         }
       }
     },
@@ -2297,61 +1965,6 @@
       }
     },
     {
-      "id": "folder-index-file",
-      "name": "lightsout/folder-index-file",
-      "set": "code",
-      "documentPath": "code/fractal/imports",
-      "summary": "Which folders may have an index file.",
-      "checked": true,
-      "reviewed": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 4,
-        "fail": 2
-      },
-      "prose": "## Folder Index File\n\nOnly a package's entry is an index file. Delete an index file in any other folder, and import each name from the file that declares it.\n\nEvery import already names the declaring file, as `import-through-index` says, so a folder's index lists names nothing reads through it, and it drifts the first time someone adds a file and forgets it.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "package.json",
-          "text": "{\n\t\"name\": \"folder-index-file-pass-fixture\",\n\t\"private\": true,\n\t\"exports\": { \".\": \"./src/index.ts\" },\n\t\"dependencies\": {\n\t\t\"@tanstack/react-router\": \"1.168.3\",\n\t\t\"@tanstack/react-start\": \"1.167.5\"\n\t}\n}\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/index.ts",
-          "text": "export { ingestRecords } from './ingestion/ingestRecords';\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/ingestion/ingestRecords.ts",
-          "text": "export const ingestRecords = (): number => 1;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/index.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nconst RunsIndex = () => <section>runs</section>;\n\nexport const Route = createFileRoute('/')({ component: RunsIndex });\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/ingestion/index.ts",
-          "text": "export { ingestRecords } from './ingestRecords';\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/ingestion/ingestRecords.ts",
-          "text": "export const ingestRecords = (): number => 1;\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/ingestion/index.ts",
-          "pass": "package.json"
-        }
-      }
-    },
-    {
       "id": "folder-size",
       "name": "lightsout/folder-size",
       "set": "code",
@@ -2730,25 +2343,90 @@
       }
     },
     {
-      "id": "import-through-index",
-      "name": "lightsout/import-through-index",
+      "id": "index-file-contents",
+      "name": "lightsout/index-file-contents",
       "set": "code",
       "documentPath": "code/fractal/imports",
-      "summary": "Where an import should point.",
+      "summary": "What an index file may hold.",
       "checked": true,
       "reviewed": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
         "pass": 5,
-        "fail": 4
+        "fail": 2
       },
-      "prose": "## Import Through Index\n\nEvery import names the file that declares what it imports: `@/ingestion/ingestRecords`, never `@/ingestion`. Never import through an index file.\n\n- Import from another workspace package through its entry, such as `@acme/engine`, never a path into its `src/`.\n- Code inside a package never imports its own entry.\n- An index file may re-export from another index file, and an index file's own test imports the file it tests.\n- This rule judges only files that belong to a package. Where the repo's manifests declare workspace packages, a file outside all of them, such as a build script at the repo root, is not held to it. A repo that declares none is one package, and every file in it is judged.\n\nAn import through an index file loads every file it re-exports to reach one name, and a test runner, unlike a bundler, pays for all of them.",
+      "prose": "## Index File Contents\n\nAn index file holds only re-export lines, `export { Foo } from '<path>'` and `export type { Bar } from '<path>'`, and comments.\n\n- Re-export each name explicitly, never with `export *`. List what other packages need, and nothing only the package itself uses.\n- How re-export lines wrap or merge follows the project's formatter, not this rule.\n- Put executable code in an entry file with its own name, conventionally `main.ts`, which imports what it runs from the files that declare it.\n\nA package's entry is the list other packages build against. Code in it makes that list hard to read, and a star publishes whatever its target happens to export, so the contract stops being a decision.",
       "fixtures": [
         {
           "side": "pass",
           "path": "package.json",
-          "text": "{\n\t\"name\": \"import-through-index-pass-fixture\",\n\t\"private\": true,\n\t\"dependencies\": {\n\t\t\"@tanstack/react-router\": \"1.168.3\",\n\t\t\"@tanstack/react-start\": \"1.167.5\"\n\t}\n}\n"
+          "text": "{\n\t\"name\": \"index-file-contents-pass-fixture\",\n\t\"private\": true,\n\t\"dependencies\": {\n\t\t\"@tanstack/react-router\": \"1.168.3\",\n\t\t\"@tanstack/react-start\": \"1.167.5\"\n\t}\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/feature/renderGreeting.ts",
+          "text": "export const renderGreeting = (): string => 'hello';\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/index.ts",
+          "text": "export { renderGreeting } from './feature/renderGreeting';\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/main.ts",
+          "text": "import { renderGreeting } from './feature/renderGreeting';\n\nconsole.log(renderGreeting());\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/routes/index.tsx",
+          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/')({ component: () => <h1>Runs</h1> });\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/feature/renderGreeting.ts",
+          "text": "export const renderGreeting = (): string => 'hello';\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/index.ts",
+          "text": "// Incorrect: a star publishes whatever renderGreeting.ts happens to export, and\n// the call is code in the package's entry.\nexport * from './feature/renderGreeting';\n\nconsole.log('entry loaded');\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/index.ts",
+          "pass": "src/index.ts"
+        }
+      }
+    },
+    {
+      "id": "index-files",
+      "name": "lightsout/index-files",
+      "set": "code",
+      "documentPath": "code/fractal/imports",
+      "summary": "Which folders have an index file, and where an import points.",
+      "checked": true,
+      "reviewed": false,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 6,
+        "fail": 4
+      },
+      "prose": "## Index Files\n\nOnly a package's entry is an index file, and nothing imports through one. Every import names the file that declares what it imports: `@/ingestion/ingestRecords`, never `@/ingestion`.\n\n- Delete an index file in any other folder, and import each name from the file that declares it.\n- Import from another workspace package through its entry, such as `@acme/engine`, never a path into its `src/`.\n- Code inside a package never imports its own entry.\n- An index file may re-export from another index file, and an index file's own test imports the file it tests.\n- This rule judges only files that belong to a package. Where the repo's manifests declare workspace packages, a file outside all of them, such as a build script at the repo root, is not held to it. A repo that declares none is one package, and every file in it is judged.\n\nAn import through an index file loads every file it re-exports to reach one name, and a test runner, unlike a bundler, pays for all of them. A folder's index lists names nothing reads through it, and it drifts the first time someone adds a file and forgets it.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "package.json",
+          "text": "{\n\t\"name\": \"index-files-pass-fixture\",\n\t\"exports\": { \".\": \"./src/index.ts\" },\n\t\"private\": true,\n\t\"dependencies\": {\n\t\t\"@tanstack/react-router\": \"1.168.3\",\n\t\t\"@tanstack/react-start\": \"1.167.5\"\n\t}\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/index.ts",
+          "text": "export { ingestRecords } from './ingestion/ingestRecords';\n"
         },
         {
           "side": "pass",
@@ -2794,8 +2472,8 @@
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/ingestion/common/utils/normalizeRecord.ts",
-          "pass": "package.json"
+          "fail": "src/reporting/buildReport.ts",
+          "pass": "src/reporting/buildReport.ts"
         }
       }
     },
@@ -3122,6 +2800,81 @@
       }
     },
     {
+      "id": "named-string-values",
+      "name": "lightsout/named-string-values",
+      "set": "code",
+      "documentPath": "code/code-style/named-constants",
+      "summary": "How a set of named string values is declared, and how the field that tells union members apart is typed and checked.",
+      "checked": true,
+      "reviewed": false,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 5,
+        "fail": 5
+      },
+      "prose": "## Named String Values\n\nDeclare a set of named string values as a `const` object, and derive the union type from it, so the object is the single source of truth. Consumers reference the object's members, such as `Action.Add`, never raw string literals.\n\n```typescript\n// common/constants/Action.ts\nexport const Action = {\n\tAdd: 'add',\n\tRemove: 'remove',\n\tList: 'list',\n\tUpdate: 'update',\n} as const;\n\nexport type Action = (typeof Action)[keyof typeof Action];\n```\n\n```typescript\ndoThing(Action.Add);\n```\n\nName the object in PascalCase, because it shares its name with its type. Every other constant is camelCase: a single value such as `maxRetries`, or an object that groups related values such as `featureThresholds`.\n\nA lookup map keyed by the union, `Record<Action, string>`, has an entry for every member and may share the object's file, because a change to one always changes the other. A constant that only uses the union, such as a default value or a subset of members, gets its own file.\n\nType the discriminant field of a union family with the `const` object's member, not a raw literal: `kind: typeof SyncEventKind.FileAdded`, not `kind: 'file-added'`. Narrow with the member too, in `===` comparisons and `switch` cases.\n\n```typescript\nexport interface FileAddedEvent {\n\tkind: typeof SyncEventKind.FileAdded;\n\tpath: string;\n}\n\nif (event.kind === SyncEventKind.FileAdded) { /* ... */ }\n```\n\nA narrowing site is at fault only when there is a member to use instead:\n\n- A union with no `const` object, such as `type Mode = 'fast' | 'slow'`, has no member yet. Declare the object first, as above.\n- When the file cannot import the constant, because its package does not depend on the one declaring it or a build deliberately isolates its folder, the literal stands.\n- `typeof value === 'string'` is not a discriminant.\n\nA UI component's discriminated `Props` union may use raw string literals as discriminants, such as `status: 'notInstalled' | 'connected'`, because the caller writes the literal once, as a JSX attribute. When the same values also appear in domain logic, use the `const` object everywhere, props included.\n\nWith a bare union, every call site types the raw string again, so the values are defined everywhere. TypeScript narrows on the member just as it does on the literal, and consumers no longer type the literal again at every narrowing site.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/common/constants/Action.ts",
+          "text": "export const Action = {\n\tAdd: 'add',\n\tRemove: 'remove',\n\tList: 'list',\n\tUpdate: 'update',\n} as const;\n\nexport type Action = (typeof Action)[keyof typeof Action];\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/common/constants/SyncEventKind.ts",
+          "text": "export const SyncEventKind = {\n\tFileAdded: 'file-added',\n\tRecordParsed: 'record-parsed',\n} as const;\n\nexport type SyncEventKind = (typeof SyncEventKind)[keyof typeof SyncEventKind];\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/common/types/SyncEvent.ts",
+          "text": "import type { SyncEventKind } from '../constants/SyncEventKind';\n\nexport interface FileAddedEvent {\n\tkind: typeof SyncEventKind.FileAdded;\n\tpath: string;\n}\n\nexport interface RecordParsedEvent {\n\tkind: typeof SyncEventKind.RecordParsed;\n\trecordId: string;\n}\n\nexport type SyncEvent = FileAddedEvent | RecordParsedEvent;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/sync/routeSyncEvent.ts",
+          "text": "import { SyncEventKind } from '../common/constants/SyncEventKind';\nimport type { SyncEvent } from '../common/types/SyncEvent';\n\n// Both ways of narrowing reference the const object, so the family's strings\n// live in exactly one file.\nexport const routeSyncEvent = ({ event }: { event: SyncEvent }): string => {\n\tif (event.kind === SyncEventKind.FileAdded) {\n\t\treturn event.path;\n\t}\n\n\tswitch (event.kind) {\n\t\tcase SyncEventKind.RecordParsed: {\n\t\t\treturn event.recordId;\n\t\t}\n\t\tdefault: {\n\t\t\treturn '';\n\t\t}\n\t}\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "tsconfig.json",
+          "text": "{\n\t\"compilerOptions\": {\n\t\t\"target\": \"ES2022\",\n\t\t\"module\": \"ESNext\",\n\t\t\"moduleResolution\": \"Bundler\",\n\t\t\"strict\": true,\n\t\t\"noEmit\": true\n\t},\n\t\"include\": [\"src\"]\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/constants/SyncEventKind.ts",
+          "text": "export const SyncEventKind = {\n\tFileAdded: 'file-added',\n\tRecordParsed: 'record-parsed',\n} as const;\n\nexport type SyncEventKind = (typeof SyncEventKind)[keyof typeof SyncEventKind];\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/types/Action.ts",
+          "text": "// No object behind it, so every caller writes `doThing('add')` and the source\n// of truth becomes \"everywhere\".\nexport type Action = 'add' | 'remove' | 'list' | 'update';\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/types/SyncEvent.ts",
+          "text": "// The literal leaks: every narrowing site retypes 'file-added'.\nexport interface FileAddedEvent {\n\tkind: 'file-added';\n\tpath: string;\n}\n\nexport interface RecordParsedEvent {\n\tkind: 'record-parsed';\n\trecordId: string;\n}\n\nexport type SyncEvent = FileAddedEvent | RecordParsedEvent;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/sync/routeSyncEvent.ts",
+          "text": "import { SyncEventKind } from '../common/constants/SyncEventKind';\nimport type { SyncEvent } from '../common/types/SyncEvent';\n\nexport const routeSyncEvent = ({ event }: { event: SyncEvent }): string => {\n\t// one site references the object...\n\tif (event.kind === SyncEventKind.FileAdded) {\n\t\treturn event.path;\n\t}\n\n\t// ...and the one below retypes the literal, which is how a rename of the\n\t// family's strings gets missed\n\tswitch (event.kind) {\n\t\tcase 'record-parsed': {\n\t\t\treturn event.recordId;\n\t\t}\n\t\tdefault: {\n\t\t\treturn '';\n\t\t}\n\t}\n};\n"
+        },
+        {
+          "side": "fail",
+          "path": "tsconfig.json",
+          "text": "{\n\t\"compilerOptions\": {\n\t\t\"target\": \"ES2022\",\n\t\t\"module\": \"ESNext\",\n\t\t\"moduleResolution\": \"Bundler\",\n\t\t\"strict\": true,\n\t\t\"noEmit\": true\n\t},\n\t\"include\": [\"src\"]\n}\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/common/types/SyncEvent.ts",
+          "pass": "src/common/types/SyncEvent.ts"
+        }
+      }
+    },
+    {
       "id": "naming-for-reuse",
       "name": "lightsout/naming-for-reuse",
       "set": "code",
@@ -3255,6 +3008,81 @@
       }
     },
     {
+      "id": "no-thin-wrappers",
+      "name": "lightsout/no-thin-wrappers",
+      "set": "code",
+      "documentPath": "code/agent-corrections/design",
+      "summary": "Functions and files that add nothing but a second name.",
+      "checked": true,
+      "reviewed": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 6,
+        "fail": 4
+      },
+      "prose": "## No Thin Wrappers\n\nNever write a function that only renames parameters or passes the call on to another function. Call the underlying function directly.\n\n```typescript\n// Incorrect: adds nothing but a second name\nexport const buildBrowserLabel = ({ browser, browserVersion }) =>\n\tbuildVersionedLabel({ name: browser, version: browserVersion });\n```\n\n- A wrapper is justified when it adds real validation or transformation, meaningfully simplifies a complex API, or handles errors or defaults.\n- A class that holds a collaborator instead of extending it reaches it through one-line methods that pass each call on unchanged. Those are not thin wrappers: deleting them would publish the held value, and callers could then step around a sibling method that adds a timer, a counter or a progress line to the same call.\n- That exception covers only a class passing calls to something it holds. A free function that only passes the call on to another free function is still a thin wrapper.\n\nNever create a file only to give another type a new name, such as `export type FilterOptions = TableFilterState`. Use the original type directly. When the difference in meaning matters, say so in a comment where the type is used.\n\nA wrapper that adds nothing is one more name to follow before reaching the code that does the work, and a comment states a difference in meaning without sending every reader through one more file.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/browsers/getBrowserBadge.ts",
+          "text": "import { buildVersionedLabel } from '../common/utils/buildVersionedLabel';\n\ninterface Params {\n\tbrowser: string;\n\tbrowserVersion: string;\n}\n\n// The call site does the renaming, so there is no second function to keep in\n// step with the first.\nexport const getBrowserBadge = ({ browser, browserVersion }: Params): string =>\n\t`<span>${buildVersionedLabel({ name: browser, version: browserVersion })}</span>`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/common/services/SessionState.ts",
+          "text": "/** What every kind of run owns, held by each run rather than inherited. */\nexport class SessionState {\n\tprivate readonly id: string;\n\tprivate readonly notes: string[] = [];\n\n\tconstructor({ id }: { id: string }) {\n\t\tthis.id = id;\n\t}\n\n\tnote({ message }: { message: string }): void {\n\t\tthis.notes.push(`${this.id}: ${message}`);\n\t}\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/common/types/TableFilterState.ts",
+          "text": "export interface TableFilterState {\n\tquery: string;\n\tpage: number;\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/common/utils/buildVersionedLabel.ts",
+          "text": "interface Params {\n\tname: string;\n\tversion: string;\n}\n\nexport const buildVersionedLabel = ({ name, version }: Params): string => `${name} ${version}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/getIssueQuery.ts",
+          "text": "import type { TableFilterState } from '../common/types/TableFilterState';\n\n// The original type used directly. Where the distinction matters, a comment at\n// the usage site says so — cheaper than a file that only renames it.\nexport const getIssueQuery = ({ filters }: { filters: TableFilterState }): string => `?q=${filters.query}&page=${filters.page}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/runs/SessionRun.ts",
+          "text": "import { SessionState } from '../common/services/SessionState';\n\n/**\n * A run that HOLDS its shared state rather than extending it — the remedy the\n * composition-over-inheritance rule requires. The one-line methods below are the\n * seam that rule asks for: they keep this class's surface the only way in, so a\n * caller cannot reach past `recordStep`, which adds this run's timer.\n */\nexport class SessionRun {\n\tprivate readonly state: SessionState;\n\tprivate readonly startedAt = Date.now();\n\n\tconstructor({ id }: { id: string }) {\n\t\tthis.state = new SessionState({ id });\n\t}\n\n\t// forwards unchanged — delegation, not a thin wrapper\n\tnote({ message }: { message: string }): void {\n\t\tthis.state.note({ message });\n\t}\n\n\t// the sibling that adds something, and the reason `state` stays private\n\trecordStep({ name }: { name: string }): void {\n\t\tthis.state.note({ message: `${name} at ${Date.now() - this.startedAt}ms` });\n\t}\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/types/FilterOptions.ts",
+          "text": "import type { TableFilterState } from './TableFilterState';\n\n// A whole file to give one type a second name. A reader now has to follow the\n// alias to learn nothing new.\nexport type FilterOptions = TableFilterState;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/types/TableFilterState.ts",
+          "text": "export interface TableFilterState {\n\tquery: string;\n\tpage: number;\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/utils/buildBrowserLabel.ts",
+          "text": "import { buildVersionedLabel } from './buildVersionedLabel';\n\ninterface Params {\n\tbrowser: string;\n\tbrowserVersion: string;\n}\n\n// Adds nothing but indirection: no validation, no defaults, no error handling —\n// only two parameters renamed on their way through.\nexport const buildBrowserLabel = ({ browser, browserVersion }: Params): string =>\n\tbuildVersionedLabel({ name: browser, version: browserVersion });\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/common/utils/buildVersionedLabel.ts",
+          "text": "interface Params {\n\tname: string;\n\tversion: string;\n}\n\nexport const buildVersionedLabel = ({ name, version }: Params): string => `${name} ${version}`;\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/common/utils/buildBrowserLabel.ts",
+          "pass": "src/browsers/getBrowserBadge.ts"
+        }
+      }
+    },
+    {
       "id": "object-args",
       "name": "lightsout/object-args",
       "set": "code",
@@ -3372,6 +3200,61 @@
         "focus": {
           "fail": "src/feature/getLabel.unit.test.ts",
           "pass": "src/feature/getLabel.unit.test.ts"
+        }
+      }
+    },
+    {
+      "id": "prefer-functions",
+      "name": "lightsout/prefer-functions",
+      "set": "code",
+      "documentPath": "code/agent-corrections/design",
+      "summary": "When to write a class instead of functions.",
+      "checked": true,
+      "reviewed": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 3,
+        "fail": 3
+      },
+      "prose": "## Prefer Functions\n\nDefault to functions. Write a class if, and only if, at least one of these holds:\n\n- **(a)** Mutable state persists across method calls: a `RateLimiter` counting its remaining tokens, a cache, a connection pool.\n- **(b)** Three or more operations share injected config or dependencies: an `HttpClient` whose base URL, retries and credentials are injected once and used by every method.\n- **(c)** Several implementations share one interface: `FileSource` and `S3Source` behind a `RecordSource` contract.\n- **(d)** The framework requires it: NestJS services, resolvers and guards, because its dependency injection needs classes.\n\nWhen none holds, write functions in a module. To check, ask whether \"how many of these exist right now?\" is a meaningful question: two `HttpClient`s pointed at different APIs, yes, so a class; two `formatDate`s, no, so a function.\n\nTwo shapes never pass that test:\n\n- A class with only static members. It is a module in disguise: it adds a `ClassName.` prefix to every call and binds no state. Write module functions instead.\n- A stateless class with one method, such as `class ReportGenerator { execute() }`. Write the function.\n\nA class that is decorated, is abstract, or implements or extends another type is not one of these shapes; the four criteria above judge it.\n\nKeep a class's methods to behaviour that needs its state. Put other logic in functions rather than instance methods: logic that needs no state is easier to read and reuse as a function.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/http/HttpClient.ts",
+          "text": "interface ConstructorParams {\n\tbaseUrl: string;\n\tretries?: number;\n}\n\n// Criteria (a) and (b) together: injected configuration every method reads, and\n// a retry budget that changes as calls are made.\nexport class HttpClient {\n\tprivate readonly baseUrl: string;\n\n\tprivate remaining: number;\n\n\tconstructor({ baseUrl, retries = 3 }: ConstructorParams) {\n\t\tthis.baseUrl = baseUrl;\n\t\tthis.remaining = retries;\n\t}\n\n\tget({ path }: { path: string }): string {\n\t\tthis.remaining -= 1;\n\n\t\treturn `GET ${this.baseUrl}${path}`;\n\t}\n\n\tpost({ path }: { path: string }): string {\n\t\tthis.remaining -= 1;\n\n\t\treturn `POST ${this.baseUrl}${path}`;\n\t}\n\n\tgetRemainingRetries(): number {\n\t\treturn this.remaining;\n\t}\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/rate/RateLimiter.ts",
+          "text": "interface ConstructorParams {\n\ttokens: number;\n}\n\n// Criterion (a): the remaining tokens persist across calls, so \"how many rate\n// limiters exist right now?\" is a question with a meaningful answer.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ tokens }: ConstructorParams) {\n\t\tthis.remaining = tokens;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n\n\trefill({ tokens }: { tokens: number }): void {\n\t\tthis.remaining = tokens;\n\t}\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/reporting/formatReportRows.ts",
+          "text": "interface Params {\n\trows: Array<{ label: string; amount: number }>;\n}\n\n// The one-method class rewritten as what it always was.\nexport const formatReportRows = ({ rows }: Params): string => rows.map((row) => `${row.label}: ${row.amount}`).join('\\n');\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/config/ConfigPaths.ts",
+          "text": "// A module wearing a costume: the class binds no state and exists only to put\n// a `ConfigPaths.` prefix in front of three values.\nexport class ConfigPaths {\n\tstatic readonly root = '.lightsout';\n\n\tstatic readonly config = '.lightsout/config.json';\n\n\tstatic forRun({ id }: { id: string }): string {\n\t\treturn `.lightsout/runs/${id}`;\n\t}\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/pricing/PriceFormatter.ts",
+          "text": "interface ConstructorParams {\n\tlocale: string;\n}\n\n// None of the four criteria hold: nothing persists between calls, one operation\n// uses the injected value, there is no second implementation and no framework\n// asked for a class. \"How many PriceFormatters exist?\" is not a question.\nexport class PriceFormatter {\n\tprivate readonly locale: string;\n\n\tconstructor({ locale }: ConstructorParams) {\n\t\tthis.locale = locale;\n\t}\n\n\tformat({ amount }: { amount: number }): string {\n\t\treturn amount.toLocaleString(this.locale);\n\t}\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/reporting/ReportGenerator.ts",
+          "text": "interface Row {\n\tlabel: string;\n\tamount: number;\n}\n\n// A function with a hat on: one method, nothing held between calls, and every\n// caller writing `new ReportGenerator().execute(...)` to reach it.\nexport class ReportGenerator {\n\texecute({ rows }: { rows: Row[] }): string {\n\t\treturn rows.map((row) => `${row.label}: ${row.amount}`).join('\\n');\n\t}\n}\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/pricing/PriceFormatter.ts",
+          "pass": "src/rate/RateLimiter.ts"
         }
       }
     },
@@ -4221,106 +4104,6 @@
       ],
       "example": {
         "kind": "snippet"
-      }
-    },
-    {
-      "id": "thin-wrapper-functions",
-      "name": "lightsout/thin-wrapper-functions",
-      "set": "code",
-      "documentPath": "code/agent-corrections/design",
-      "summary": "Functions that only pass a call on to another.",
-      "checked": false,
-      "reviewed": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 4,
-        "fail": 2
-      },
-      "prose": "## Thin Wrapper Functions\n\nNever write a function that only renames parameters or passes the call on to another function. Call the underlying function directly.\n\n```typescript\n// Incorrect: adds nothing but a second name\nexport const buildBrowserLabel = ({ browser, browserVersion }) =>\n\tbuildVersionedLabel({ name: browser, version: browserVersion });\n```\n\n- A wrapper is justified when it adds real validation or transformation, meaningfully simplifies a complex API, or handles errors or defaults.\n- A class that holds a collaborator instead of extending it reaches it through one-line methods that pass each call on unchanged. Those are not thin wrappers: deleting them would publish the held value, and callers could then step around a sibling method that adds a timer, a counter or a progress line to the same call.\n- That exception covers only a class passing calls to something it holds. A free function that only passes the call on to another free function is still a thin wrapper.\n\nA wrapper that adds nothing is one more name to follow before reaching the code that does the work.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/browsers/getBrowserBadge.ts",
-          "text": "import { buildVersionedLabel } from '../common/utils/buildVersionedLabel';\n\ninterface Params {\n\tbrowser: string;\n\tbrowserVersion: string;\n}\n\n// The call site does the renaming, so there is no second function to keep in\n// step with the first.\nexport const getBrowserBadge = ({ browser, browserVersion }: Params): string =>\n\t`<span>${buildVersionedLabel({ name: browser, version: browserVersion })}</span>`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/services/SessionState.ts",
-          "text": "/** What every kind of run owns, held by each run rather than inherited. */\nexport class SessionState {\n\tprivate readonly id: string;\n\tprivate readonly notes: string[] = [];\n\n\tconstructor({ id }: { id: string }) {\n\t\tthis.id = id;\n\t}\n\n\tnote({ message }: { message: string }): void {\n\t\tthis.notes.push(`${this.id}: ${message}`);\n\t}\n}\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/utils/buildVersionedLabel.ts",
-          "text": "interface Params {\n\tname: string;\n\tversion: string;\n}\n\nexport const buildVersionedLabel = ({ name, version }: Params): string => `${name} ${version}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/runs/SessionRun.ts",
-          "text": "import { SessionState } from '../common/services/SessionState';\n\n/**\n * A run that HOLDS its shared state rather than extending it — the remedy the\n * composition-over-inheritance rule requires. The one-line methods below are the\n * seam that rule asks for: they keep this class's surface the only way in, so a\n * caller cannot reach past `recordStep`, which adds this run's timer.\n */\nexport class SessionRun {\n\tprivate readonly state: SessionState;\n\tprivate readonly startedAt = Date.now();\n\n\tconstructor({ id }: { id: string }) {\n\t\tthis.state = new SessionState({ id });\n\t}\n\n\t// forwards unchanged — delegation, not a thin wrapper\n\tnote({ message }: { message: string }): void {\n\t\tthis.state.note({ message });\n\t}\n\n\t// the sibling that adds something, and the reason `state` stays private\n\trecordStep({ name }: { name: string }): void {\n\t\tthis.state.note({ message: `${name} at ${Date.now() - this.startedAt}ms` });\n\t}\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/utils/buildBrowserLabel.ts",
-          "text": "import { buildVersionedLabel } from './buildVersionedLabel';\n\ninterface Params {\n\tbrowser: string;\n\tbrowserVersion: string;\n}\n\n// Adds nothing but indirection: no validation, no defaults, no error handling —\n// only two parameters renamed on their way through.\nexport const buildBrowserLabel = ({ browser, browserVersion }: Params): string =>\n\tbuildVersionedLabel({ name: browser, version: browserVersion });\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/utils/buildVersionedLabel.ts",
-          "text": "interface Params {\n\tname: string;\n\tversion: string;\n}\n\nexport const buildVersionedLabel = ({ name, version }: Params): string => `${name} ${version}`;\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/common/utils/buildBrowserLabel.ts",
-          "pass": "src/browsers/getBrowserBadge.ts"
-        }
-      }
-    },
-    {
-      "id": "type-alias-indirection",
-      "name": "lightsout/type-alias-indirection",
-      "set": "code",
-      "documentPath": "code/agent-corrections/design",
-      "summary": "Files that only give another type a new name.",
-      "checked": true,
-      "reviewed": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## Type Alias Indirection\n\nNever create a file only to give another type a new name, such as `export type FilterOptions = TableFilterState`. Use the original type directly. When the difference in meaning matters, say so in a comment where the type is used.\n\nA comment states the difference without sending every reader through one more file.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/common/types/TableFilterState.ts",
-          "text": "export interface TableFilterState {\n\tquery: string;\n\tpage: number;\n}\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/getIssueQuery.ts",
-          "text": "import type { TableFilterState } from '../common/types/TableFilterState';\n\n// The original type used directly. Where the distinction matters, a comment at\n// the usage site says so — cheaper than a file that only renames it.\nexport const getIssueQuery = ({ filters }: { filters: TableFilterState }): string => `?q=${filters.query}&page=${filters.page}`;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/types/FilterOptions.ts",
-          "text": "import type { TableFilterState } from './TableFilterState';\n\n// A whole file to give one type a second name. A reader now has to follow the\n// alias to learn nothing new.\nexport type FilterOptions = TableFilterState;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/types/TableFilterState.ts",
-          "text": "export interface TableFilterState {\n\tquery: string;\n\tpage: number;\n}\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/common/types/FilterOptions.ts",
-          "pass": "src/common/types/TableFilterState.ts"
-        }
       }
     },
     {

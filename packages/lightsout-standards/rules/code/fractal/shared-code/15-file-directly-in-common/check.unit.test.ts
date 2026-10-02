@@ -47,7 +47,7 @@ describe('file-directly-in-common check', () => {
 		{ barrel: 'index.cjs' },
 		{ barrel: 'index.mts' },
 		{ barrel: 'index.cts' },
-	])('leaves $barrel directly in common/ to the folder-index-file rule, so one wrong file is one finding', async ({ barrel }) => {
+	])('leaves $barrel directly in common/ to the index-files rule, so one wrong file is one finding', async ({ barrel }) => {
 		const input = setupFileListInput({ files: [`src/billing/common/${barrel}`] });
 
 		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
