@@ -5,7 +5,7 @@ import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { runCli } from '#tests/helpers/runCli.ts';
 import { seedRunFixture } from '#tests/helpers/seedRunFixture.ts';
 
-// A parked implement run plus a config naming a DIFFERENT harness. resume
+// A parked implement run whose recorded config names a DIFFERENT harness. resume
 // reconstructs its driver from the manifest's recorded harness, never from the
 // config — and getDriver rejects an unknown name before any pipeline work, so
 // the rule is observable here without spawning a harness binary.
@@ -14,13 +14,10 @@ const seedResumeFixture = async ({ manifestHarness, configHarness }: { manifestH
 	const runId = 'resume-harness-fixture';
 	const runDir = join(cwd, '.lightsout', 'implement', 'runs', runId);
 	const now = new Date().toISOString();
+	const configPath = join(cwd, 'lightsout.config.json');
 
 	await mkdir(runDir, { recursive: true });
-	await writeFile(
-		join(cwd, 'lightsout.config.json'),
-		JSON.stringify({ harness: configHarness, gates: { check: 'true', test: 'true', 'test-coverage': false } }),
-		'utf8',
-	);
+	await writeFile(configPath, JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false } }), 'utf8');
 	await writeFile(
 		join(runDir, 'manifest.json'),
 		JSON.stringify({
@@ -29,6 +26,8 @@ const seedResumeFixture = async ({ manifestHarness, configHarness }: { manifestH
 			updatedAt: now,
 			plan: 'plans/demo.md',
 			harness: manifestHarness,
+			config: { harness: configHarness, gates: { check: 'true', test: 'true', 'test-coverage': false } },
+			configPath,
 			status: 'failed',
 			currentStep: null,
 			steps: [],
@@ -108,9 +107,11 @@ const seedTicketFolderRun = async () => {
 	const runId = 'ticketrun-parked-0001';
 	const runDir = join(cwd, '.lightsout', 'work-orders', workOrderName, 'runs', runId);
 	const now = new Date().toISOString();
+	const config = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const configPath = join(cwd, 'lightsout.config.json');
 
 	await mkdir(runDir, { recursive: true });
-	await writeFile(join(cwd, 'lightsout.config.json'), JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false } }), 'utf8');
+	await writeFile(configPath, JSON.stringify(config), 'utf8');
 	await writeFile(
 		join(runDir, 'manifest.json'),
 		JSON.stringify({
@@ -119,6 +120,8 @@ const seedTicketFolderRun = async () => {
 			updatedAt: now,
 			plan: 'plans/demo.md',
 			harness: 'retired-harness',
+			config,
+			configPath,
 			status: 'failed',
 			currentStep: null,
 			steps: [],
@@ -142,4 +145,47 @@ test('cli: resume finds a parked run in its ticket folder from the shortened id'
 	expect(stderr).not.toMatch(/no run matching/);
 	expect(stdout).toBe('');
 	expect(code).toBe(1);
+});
+
+// A parked run whose manifest records no config, in a checkout whose config file
+// is valid. The manifest names a harness no driver answers to, so a resume that
+// fell back to the file would stop at the driver error instead of the refusal.
+const seedConfiglessRun = async () => {
+	const cwd = await freshCwd();
+	const runId = 'resume-configless-fixture';
+	const runDir = join(cwd, '.lightsout', 'implement', 'runs', runId);
+	const now = new Date().toISOString();
+
+	await mkdir(runDir, { recursive: true });
+	await writeFile(join(cwd, 'lightsout.config.json'), JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false } }), 'utf8');
+	await writeFile(
+		join(runDir, 'manifest.json'),
+		JSON.stringify({
+			runId,
+			createdAt: now,
+			updatedAt: now,
+			plan: 'plans/demo.md',
+			harness: 'retired-harness',
+			status: 'failed',
+			currentStep: null,
+			steps: [],
+			changedFiles: [],
+		}),
+		'utf8',
+	);
+
+	return { cwd, runId };
+};
+
+test('cli: resume refuses a run that recorded no config even when the checkout has a valid config file', async () => {
+	const { cwd, runId } = await seedConfiglessRun();
+
+	const { stdout, stderr, code } = await runCli({ args: ['resume', '--run', runId, '--cwd', cwd] });
+
+	expect({ stdout, namesRun: stderr.includes(runId), reachedDriver: /unknown driver/.test(stderr), code }).toStrictEqual({
+		stdout: '',
+		namesRun: true,
+		reachedDriver: false,
+		code: 1,
+	});
 });

@@ -16,8 +16,7 @@ import { createProgressPrinter } from '#src/cli/internal/common/utils/createProg
 import { resolveCommandHarness } from '#src/cli/internal/common/utils/resolveCommandHarness.ts';
 import { runPhasesOrFailFast } from '#src/cli/internal/common/utils/runPhasesOrFailFast.ts';
 import { runPipelineOrFailFast } from '#src/cli/internal/common/utils/runPipelineOrFailFast.ts';
-import { readConfig } from '#src/common/config/readConfig.ts';
-import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
+import { readRunConfig } from '#src/common/config/readRunConfig.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
@@ -122,6 +121,31 @@ const runResumedPipeline = ({
 };
 
 /**
+ * Where the run builds and the config it started with, never the launching
+ * checkout's file. Both refuse before the tracker write and the ship restamp, so
+ * a run whose recorded workspace has gone says so rather than quietly rebuilding
+ * in the launching checkout, and a resume nothing will let happen mutates nothing
+ * on the way to saying so.
+ */
+const locateResumedRun = async ({ cwd, manifest }: { cwd: string; manifest: RunManifest }) => {
+	const located = await resolveRunCwd({ cwd, manifest });
+
+	if ('error' in located) {
+		console.error(located.error);
+		return exitCli({ code: 1 });
+	}
+
+	const recorded = readRunConfig({ manifest });
+
+	if ('error' in recorded) {
+		console.error(recorded.error);
+		return exitCli({ code: 1 });
+	}
+
+	return { workspace: located.workspace, loaded: recorded.config };
+};
+
+/**
  * The ship intent is restamped because it is resolved fresh for every invocation,
  * and the progress view draws a ship row from it.
  *
@@ -176,19 +200,7 @@ export const resumeCommand = async ({ flags, rest, cwd }: CommandContext): Promi
 		return exitCli({ code: 1 });
 	}
 
-	// First, so a run whose recorded workspace has gone says so before anything is
-	// mutated, rather than quietly rebuilding in the launching checkout.
-	const located = await resolveRunCwd({ cwd, manifest });
-
-	if ('error' in located) {
-		console.error(located.error);
-		return exitCli({ code: 1 });
-	}
-
-	const workspace = located.workspace;
-	const loaded = await readConfig({ cwd });
-	// Before the tracker write and before the ship restamp, so a resume nothing
-	// will let happen mutates nothing on the way to saying so.
+	const { workspace, loaded } = await locateResumedRun({ cwd, manifest });
 	const clearance = await readResumeClearance({ workspace, manifest, loaded, flags });
 
 	if (clearance === undefined) {
@@ -199,7 +211,7 @@ export const resumeCommand = async ({ flags, rest, cwd }: CommandContext): Promi
 	const { resumable, config, driver } = await prepareResumedRun({ cwd, manifest, loaded, willShip: shipIntent.willShip });
 
 	console.log(`lightsout: resuming run ${manifest.runId} (was: ${manifest.status}, plan: ${manifest.plan})`);
-	await printRunHeader({ config, driver, cwd, configPath: resolveConfigPath({ cwd }) });
+	await printRunHeader({ config, driver, cwd, configPath: manifest.configPath });
 
 	// A direct run records no command run: its plan path is a frozen ticket body.
 	const outcome = await runWorkOrderPlanLifecycle({

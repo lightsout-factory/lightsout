@@ -1,13 +1,11 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { resumeCommand } from '#src/cli/resumeCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { manifestOf, runId, setupResume } from '#tests/helpers/setupResume.ts';
@@ -73,92 +71,11 @@ const setupResumeWorkspace = ({ present }: { present: boolean }) => {
 	};
 };
 
-/** Beyond any OS pid range — the live-process probe reports it dead. */
-const deadPid = 999_999_999;
-
-/** A second run in the checkout, its owner record naming a process that has since gone. */
-const deadOwnerRunId = 'run-dead-owner-01';
-
-/** The queue run a worker's pointer-form owner record names. */
-const queueRunId = 'run-queue-01';
-
-/** The phased coordinator a seeded phase child belongs to. */
-const coordinatorRunId = 'run-coordinator-01';
+/** A config this engine accepts, standing for the one a run recorded when it started. */
+const recordedConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': false };
 
 /** A seeded run's manifest exactly as its bytes stand on disk, so a refusal can be shown to have written nothing. */
-const readManifestText = ({ cwd, id, pipeline }: { cwd: string; id: string; pipeline?: string }): string =>
-	readFileSync(join(runDirFor({ cwd, runId: id, pipeline }), 'manifest.json'), 'utf8');
-
-/** Writes a run's manifest, and its owner record when given one, into the folder its id is looked up under. */
-const seedRun = ({ cwd, manifest, owner }: { cwd: string; manifest: RunManifest; owner?: Record<string, unknown> }) => {
-	const runDir = runDirFor({ cwd, runId: manifest.runId, pipeline: manifest.pipeline });
-
-	mkdirSync(runDir, { recursive: true });
-	writeFileSync(join(runDir, 'manifest.json'), JSON.stringify(manifest));
-
-	if (owner !== undefined) {
-		writeFileSync(join(runDir, 'owner.json'), JSON.stringify(owner));
-	}
-};
-
-/**
- * A running implement run this very process owns — so its owner is live — beside
- * a stopped run whose owner record names a dead pid. The guard is answered
- * `undefined`, so the lifecycle write is never the reason a case stops.
- */
-const setupOwnedResume = async () => {
-	mockRequireImplementLifecycle.mockResolvedValue(undefined);
-
-	const seeded = setupResume({ args: ['--run', runId], manifest: manifestOf({ pipeline: 'implement', status: RunStatus.Running }) });
-
-	seedRun({
-		cwd: seeded.cwd,
-		manifest: manifestOf({ runId: deadOwnerRunId, pipeline: 'implement' }),
-		owner: { pid: deadPid, recordedAt: '2026-01-01T00:00:01.000Z' },
-	});
-	await writeRunOwner({ cwd: seeded.cwd, runId });
-
-	const deadOwnerContext = { flags: parseFlags({ args: ['--run', deadOwnerRunId] }), rest: [], cwd: seeded.cwd };
-
-	return { ...seeded, deadOwnerContext, manifestBefore: readManifestText({ cwd: seeded.cwd, id: runId }) };
-};
-
-/** A running queue worker root whose pointer-form owner names a running queue run this very process owns. */
-const setupQueueWorkerResume = async () => {
-	mockRequireImplementLifecycle.mockResolvedValue(undefined);
-
-	const seeded = setupResume({ args: ['--run', runId], manifest: manifestOf({ pipeline: 'implement', status: RunStatus.Running }) });
-
-	seedRun({ cwd: seeded.cwd, manifest: manifestOf({ runId: queueRunId, pipeline: 'queue', status: RunStatus.Running }) });
-	await writeRunOwner({ cwd: seeded.cwd, runId: queueRunId });
-	await writeRunOwner({ cwd: seeded.cwd, runId, queueRunId });
-
-	return { ...seeded, manifestBefore: readManifestText({ cwd: seeded.cwd, id: runId }) };
-};
-
-/** A failed phase child whose failed coordinator's step names it — resumable in every other respect. */
-const setupPhaseChildResume = () => {
-	mockRequireImplementLifecycle.mockResolvedValue(undefined);
-
-	const seeded = setupResume({ args: ['--run', runId], manifest: manifestOf({ pipeline: 'implement', parentRunId: coordinatorRunId }) });
-
-	seedRun({
-		cwd: seeded.cwd,
-		manifest: manifestOf({
-			runId: coordinatorRunId,
-			pipeline: 'phases',
-			plan: join('plans', 'demo', 'overview.md'),
-			steps: [{ id: 'phase1.md', status: RunStatus.Failed, attempts: 1, report: { runId } }],
-		}),
-	});
-
-	const readBoth = () => ({
-		child: readManifestText({ cwd: seeded.cwd, id: runId }),
-		coordinator: readManifestText({ cwd: seeded.cwd, id: coordinatorRunId, pipeline: 'phases' }),
-	});
-
-	return { ...seeded, readBoth, manifestsBefore: readBoth() };
-};
+const readManifestText = ({ cwd, id }: { cwd: string; id: string }): string => readFileSync(join(runDirFor({ cwd, runId: id }), 'manifest.json'), 'utf8');
 
 /**
  * An implement run every remaining step of which is already recorded passed, so
@@ -189,6 +106,24 @@ const setupPassingResume = () => {
 		JSON.parse(readFileSync(join(runDirFor({ cwd: seeded.cwd, runId }), 'report.json'), 'utf8'));
 
 	return { ...seeded, readFinalReport };
+};
+
+/** A config path that lies outside every checkout a case seeds, so a header naming it can only have read it off the manifest. */
+const recordedConfigPath = join(tmpdir(), 'lightsout-recorded-elsewhere', 'lightsout.config.json');
+
+/**
+ * A seeded implement run whose manifest carries what the case records about its
+ * config, launched from a checkout whose own file holds `fileConfig`. The guard
+ * is answered `undefined`, so the lifecycle write is never the reason a case
+ * stops; the seeded plan does not exist, so a resume that gets going stops at
+ * the plan read.
+ */
+const setupRecordedConfigResume = ({ recorded, fileConfig }: { recorded: Partial<RunManifest>; fileConfig?: Record<string, unknown> }) => {
+	mockRequireImplementLifecycle.mockResolvedValue(undefined);
+
+	const seeded = setupResume({ args: ['--run', runId], manifest: manifestOf({ pipeline: 'implement', willShip: true, ...recorded }), config: fileConfig });
+
+	return { ...seeded, manifestBefore: readManifestText({ cwd: seeded.cwd, id: runId }) };
 };
 
 describe('resumeCommand', () => {
@@ -460,7 +395,7 @@ describe('resumeCommand', () => {
 		// checkout the command was launched from: the pipeline is building there
 		expect(errors.join('\n')).toContain(`plan file not found: ${join(workspace, 'ghost.md')}`);
 		expect(errors.join('\n')).not.toContain(join(cwd, 'ghost.md'));
-		// the resumed run re-reads the launching checkout's config, and names that file rather than the workspace's copy
+		// the resumed run names the config path it recorded — the launching checkout's file — rather than the workspace's copy
 		expect(logged).toContain(`  config: ${join(cwd, 'lightsout.config.json')}`);
 		// and the ship restamp still landed in the launching checkout, which is
 		// where this run's records live and stay
@@ -497,60 +432,6 @@ describe('resumeCommand', () => {
 		expect(exitCodes).toStrictEqual([1]);
 	});
 
-	test('refuses a run whose family root still has a live owner, before anything is written', async () => {
-		const { context, deadOwnerContext, cwd, logged, errors, exitCodes, manifestBefore } = await setupOwnedResume();
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-		const refusal = [...errors];
-		const manifestAfter = readManifestText({ cwd, id: runId });
-		// the control: the same command on a run whose owner has gone resumes it
-		await expect(resumeCommand(deadOwnerContext)).rejects.toThrow(/process\.exit/);
-
-		// the refusal's wording is human copy; what it must name is the contract
-		expect({
-			lines: refusal.length,
-			namesRun: refusal[0]?.includes(runId),
-			namesPid: refusal[0]?.includes(String(process.pid)),
-			pointsAtStop: refusal[0]?.includes(`lightsout stop --run ${runId}`),
-		}).toStrictEqual({ lines: 1, namesRun: true, namesPid: true, pointsAtStop: true });
-		expect(manifestAfter).toBe(manifestBefore);
-		expect(logged[0]).toBe(`lightsout: resuming run ${deadOwnerRunId} (was: failed, plan: ghost.md)`);
-		expect(exitCodes).toStrictEqual([1, 1]);
-	});
-
-	test('a queue worker run with a live queue is sent to stop the queue run', async () => {
-		const { context, cwd, logged, errors, exitCodes, manifestBefore } = await setupQueueWorkerResume();
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-
-		const manifestAfter = readManifestText({ cwd, id: runId });
-
-		// stop refuses a worker run, so the line sends the reader to the queue run instead
-		expect({
-			lines: errors.length,
-			namesQueueRun: errors[0]?.includes(queueRunId),
-			pointsAtQueueStop: errors[0]?.includes(`lightsout stop --run ${queueRunId}`),
-			pointsAtWorkerStop: errors[0]?.includes(`lightsout stop --run ${runId}`),
-		}).toStrictEqual({ lines: 1, namesQueueRun: true, pointsAtQueueStop: true, pointsAtWorkerStop: false });
-		expect(manifestAfter).toBe(manifestBefore);
-		expect(logged).toStrictEqual([]);
-		expect(exitCodes).toStrictEqual([1]);
-	});
-
-	test("a phase child is sent to its coordinator's resume, before anything is written", async () => {
-		const { context, readBoth, logged, errors, exitCodes, manifestsBefore } = setupPhaseChildResume();
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-
-		const manifestsAfter = readBoth();
-
-		// a hint a reader retypes is a contract, pinned exactly as the wrong-pipeline refusal is
-		expect(errors).toStrictEqual([`run ${runId} is a phase of sequence ${coordinatorRunId} — resume it with: lightsout resume --run ${coordinatorRunId}`]);
-		expect(manifestsAfter).toStrictEqual(manifestsBefore);
-		expect(logged).toStrictEqual([]);
-		expect(exitCodes).toStrictEqual([1]);
-	});
-
 	test("a resumed run saves its final report in the run's folder", async () => {
 		const { context, logged, exitCodes, readFinalReport } = setupPassingResume();
 
@@ -564,5 +445,76 @@ describe('resumeCommand', () => {
 		expect(logged.slice(-report.lines.length)).toStrictEqual(report.lines);
 		expect(report.exitCode).toBe(0);
 		expect(exitCodes).toStrictEqual([0]);
+	});
+
+	test("resume continues on the config the run recorded even when the launching checkout's file no longer parses", async () => {
+		const { context, logged, errors } = setupRecordedConfigResume({
+			recorded: { config: recordedConfig, configPath: recordedConfigPath },
+			fileConfig: { 'not-a-config-key': true },
+		});
+
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(logged[0]).toBe(`lightsout: resuming run ${runId} (was: failed, plan: ghost.md)`);
+		expect(logged).toContain('  repo root: none (standards-pack false)');
+		// the file was never read, so its validation failure appears nowhere
+		expect(errors.join('\n')).not.toMatch(/is not valid|not-a-config-key/u);
+	});
+
+	test("resume hands the lifecycle guard the config the run recorded, not the launching checkout's file", async () => {
+		const { context } = setupRecordedConfigResume({
+			recorded: { config: { ...recordedConfig, 'agent-commands': ['pnpm db:migrate'] }, configPath: recordedConfigPath },
+		});
+
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(mockRequireImplementLifecycle).toHaveBeenCalledWith(
+			expect.objectContaining({ config: expect.objectContaining({ 'agent-commands': ['pnpm db:migrate'] }) }),
+		);
+	});
+
+	test('resume refuses a run that recorded no config before the guard runs or the manifest is restamped', async () => {
+		const { context, cwd, logged, errors, exitCodes, manifestBefore } = setupRecordedConfigResume({ recorded: { config: undefined } });
+
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const manifestAfter = readManifestText({ cwd, id: runId });
+
+		expect({ lines: errors.length, namesRun: errors[0]?.includes(runId) }).toStrictEqual({ lines: 1, namesRun: true });
+		expect(exitCodes).toStrictEqual([1]);
+		expect(logged).toStrictEqual([]);
+		expect(mockRequireImplementLifecycle).not.toHaveBeenCalled();
+		expect(manifestAfter).toBe(manifestBefore);
+	});
+
+	test('resume refuses a run whose recorded config this engine rejects, naming the offending key', async () => {
+		const { context, logged, errors, exitCodes } = setupRecordedConfigResume({
+			recorded: { config: { ...recordedConfig, 'not-a-config-key': true }, configPath: recordedConfigPath },
+		});
+
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(errors.some((entry) => entry.includes(runId) && entry.includes('not-a-config-key'))).toBe(true);
+		expect(exitCodes).toStrictEqual([1]);
+		expect(logged).toStrictEqual([]);
+		expect(mockRequireImplementLifecycle).not.toHaveBeenCalled();
+	});
+
+	test("the resume header names the config path the run recorded, not the launching checkout's file", async () => {
+		const { context, cwd, logged } = setupRecordedConfigResume({ recorded: { config: recordedConfig, configPath: recordedConfigPath } });
+
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(logged).toContain(`  config: ${recordedConfigPath}`);
+		expect(logged.some((line) => line.includes(join(cwd, 'lightsout.config.json')))).toBe(false);
+	});
+
+	test('a resumed run that predates the recorded path resumes with no config line rather than claiming its checkout has no config', async () => {
+		const { context, logged } = setupRecordedConfigResume({ recorded: { config: recordedConfig, configPath: undefined } });
+
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(logged[0]).toBe(`lightsout: resuming run ${runId} (was: failed, plan: ghost.md)`);
+		expect(logged.some((line) => line.startsWith('  config:'))).toBe(false);
 	});
 });

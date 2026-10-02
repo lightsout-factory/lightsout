@@ -5,6 +5,7 @@ import { printConfigSource } from '#src/cli/internal/common/render/printConfigSo
 import { exitForRunResult } from '#src/cli/internal/common/utils/exitForRunResult.ts';
 import { resolveCommandHarness } from '#src/cli/internal/common/utils/resolveCommandHarness.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
+import { readRunConfig } from '#src/common/config/readRunConfig.ts';
 import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
@@ -37,6 +38,10 @@ interface Params<Result extends BatchedRunResult> {
 	print: (params: { result: Result }) => void;
 }
 
+/** A fresh run reads the checkout's file; a resumed one continues on the config it recorded, and never reads the file. */
+const loadConfig = async ({ cwd, existing }: { cwd: string; existing: RunManifest | undefined }): Promise<{ config: LightsoutConfig } | { error: string }> =>
+	existing === undefined ? { config: await readConfig({ cwd }) } : readRunConfig({ manifest: existing });
+
 /**
  * These runs mutate the repo, so a missing config — meaning no gates — is a
  * hard error here, never the optional-config fallback `plan` and `improve` get.
@@ -44,10 +49,6 @@ interface Params<Result extends BatchedRunResult> {
 export const runBatchedCommand = async <Result extends BatchedRunResult>({ flags, cwd, command, run, print }: Params<Result>): Promise<void> => {
 	const resumeRunId = getStringFlag({ flags, name: 'run' });
 	const maxBatchesFlag = getStringFlag({ flags, name: 'max-batches' });
-	const loaded = await readConfig({ cwd });
-	const { driverName, model, effort } = resolveCommandHarness({ config: loaded, command });
-	const driver = getDriver({ name: driverName });
-	const config = { ...loaded, harness: driverName, model, effort };
 	const maxBatches = maxBatchesFlag === undefined ? undefined : Number.parseInt(maxBatchesFlag, 10);
 
 	if (maxBatches !== undefined && (!Number.isFinite(maxBatches) || maxBatches < 1)) {
@@ -66,8 +67,26 @@ export const runBatchedCommand = async <Result extends BatchedRunResult>({ flags
 		return exitCli({ code: 1 });
 	}
 
+	const loaded = await loadConfig({ cwd, existing });
+
+	if ('error' in loaded) {
+		console.error(loaded.error);
+		return exitCli({ code: 1 });
+	}
+
+	const { driverName, model, effort } = resolveCommandHarness({ config: loaded.config, command });
+	const driver = getDriver({ name: driverName });
+	const config = { ...loaded.config, harness: driverName, model, effort };
+
 	console.log(`lightsout: ${command} ${existing ? `resuming run ${existing.runId}` : 'starting run'}`);
-	printConfigSource({ configPath: resolveConfigPath({ cwd }) });
+
+	// A resumed run that predates the recorded path has none to name, and printConfigSource
+	// would read its absence as a checkout with no config file.
+	if (existing === undefined) {
+		printConfigSource({ configPath: resolveConfigPath({ cwd }) });
+	} else if (existing.configPath !== undefined) {
+		printConfigSource({ configPath: existing.configPath });
+	}
 
 	let result: Result;
 

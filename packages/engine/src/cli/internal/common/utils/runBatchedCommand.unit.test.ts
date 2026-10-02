@@ -1,3 +1,4 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
@@ -7,6 +8,7 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
 const manifestOf = ({ status }: { status: RunStatus }): RunManifest => ({
@@ -73,6 +75,47 @@ const setupShell = ({
 	return { command, cwd, seen, printed, ...captured };
 };
 
+/** Where the resumed run says its config came from — deliberately not the checkout the command runs in. */
+const recordedConfigPath = '/elsewhere/launching-checkout/lightsout.config.json';
+
+/**
+ * A `--run` resume of a seeded refactor run. The checkout's own config file
+ * carries a key this engine rejects, so any read of it fails the command — only
+ * the config the run recorded on its manifest can get the run handed anything.
+ */
+const setupResumeShell = ({ recorded, recordsPath = true }: { recorded: Record<string, unknown> | undefined; recordsPath?: boolean }) => {
+	const captured = captureCommandOutput();
+	const cwd = setupConsumerRepo({ config: { 'not-a-setting': true } });
+	const seeded: RunManifest = {
+		...manifestOf({ status: RunStatus.Failed }),
+		pipeline: 'refactor',
+		harness: 'codex',
+		config: recorded,
+		configPath: recorded === undefined || !recordsPath ? undefined : recordedConfigPath,
+	};
+	const runDir = runDirFor({ cwd, runId: seeded.runId, pipeline: 'refactor' });
+
+	mkdirSync(runDir, { recursive: true });
+	writeFileSync(join(runDir, 'manifest.json'), JSON.stringify(seeded));
+
+	const seen: { config?: LightsoutConfig; existingRunId?: string } = {};
+
+	const command = runBatchedCommand({
+		flags: parseFlags({ args: ['--run', seeded.runId] }),
+		cwd,
+		command: 'refactor',
+		run: async (start) => {
+			seen.config = start.config;
+			seen.existingRunId = start.existing?.runId;
+
+			return { ok: true, manifest: manifestOf({ status: RunStatus.Passed }) };
+		},
+		print: () => undefined,
+	});
+
+	return { command, seen, ...captured };
+};
+
 describe('runBatchedCommand', () => {
 	test('resolves the effective config, announces the run, hands off, prints the result, and exits 0 on ok', async () => {
 		const { command, cwd, seen, printed, logged, exitCodes } = setupShell({ args: ['--max-batches', '2'] });
@@ -129,5 +172,61 @@ describe('runBatchedCommand', () => {
 
 		expect(errors.join('\n')).toContain('run 9f2 is already running in this repo (pid 4242)');
 		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test("a --run resume hands the run its recorded config with this command's harness applied, never the checkout's file", async () => {
+		const { command, seen, logged, exitCodes } = setupResumeShell({
+			recorded: { harness: 'codex', gates: { check: 'true', test: 'true', 'test-coverage': false } },
+		});
+
+		await expect(command).rejects.toThrow(/process\.exit/);
+
+		expect({
+			harness: seen.config?.harness,
+			gates: seen.config?.gates,
+			existingRunId: seen.existingRunId,
+			configLine: logged.includes(`  config: ${recordedConfigPath}`),
+			exitCodes,
+		}).toStrictEqual({
+			harness: 'codex',
+			gates: { check: 'true', test: 'true', 'test-coverage': false },
+			existingRunId: 'run-42',
+			configLine: true,
+			exitCodes: [0],
+		});
+	});
+
+	test('a --run resume whose manifest records no config is refused before the run is handed anything', async () => {
+		const { command, seen, logged, errors, exitCodes } = setupResumeShell({ recorded: undefined });
+
+		await expect(command).rejects.toThrow(/process\.exit/);
+
+		expect({
+			namesRun: errors.some((entry) => entry.includes('run-42')),
+			handedConfig: seen.config,
+			resumingBanner: logged.some((line) => line.includes('resuming run')),
+			exitCodes,
+		}).toStrictEqual({ namesRun: true, handedConfig: undefined, resumingBanner: false, exitCodes: [1] });
+	});
+
+	test('a --run resume of a run that predates the recorded path prints no config line rather than claiming the checkout has none', async () => {
+		const { command, seen, logged, exitCodes } = setupResumeShell({
+			recorded: { gates: { check: 'true', test: 'true', 'test-coverage': false } },
+			recordsPath: false,
+		});
+
+		await expect(command).rejects.toThrow(/process\.exit/);
+
+		expect({
+			banner: logged[0],
+			configLines: logged.filter((line) => line.startsWith('  config:')),
+			gates: seen.config?.gates,
+			exitCodes,
+		}).toStrictEqual({
+			banner: 'lightsout: refactor resuming run run-42',
+			configLines: [],
+			gates: { check: 'true', test: 'true', 'test-coverage': false },
+			exitCodes: [0],
+		});
 	});
 });

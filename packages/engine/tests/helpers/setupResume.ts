@@ -1,6 +1,7 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
+import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
@@ -50,6 +51,17 @@ export interface SeededEvidence {
 	rejectedReports?: string[];
 }
 
+/**
+ * A resume continues on the config its run recorded, so a seeded run records the
+ * consumer repo's own file unless the case set either key itself — a key passed
+ * as `undefined` is left absent, the way a run that recorded nothing looks.
+ */
+const recordConfigOf = ({ manifest, configPath }: { manifest: RunManifest; configPath: string }): RunManifest => ({
+	...('config' in manifest ? {} : { config: JSON.parse(readFileSync(configPath, 'utf8')) }),
+	...('configPath' in manifest ? {} : { configPath }),
+	...manifest,
+});
+
 export const setupResume = ({
 	args = [],
 	manifest,
@@ -81,7 +93,7 @@ export const setupResume = ({
 
 	if (manifest && parkedDir) {
 		mkdirSync(parkedDir, { recursive: true });
-		writeFileSync(join(parkedDir, 'manifest.json'), JSON.stringify(manifest));
+		writeFileSync(join(parkedDir, 'manifest.json'), JSON.stringify(recordConfigOf({ manifest, configPath: resolveConfigPath({ cwd }) })));
 	}
 
 	if (parkedDir && ledger) {

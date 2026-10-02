@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
@@ -56,6 +56,13 @@ const manifestOf = (overrides: Partial<RunManifest> = {}): RunManifest => ({
 	...overrides,
 });
 
+/** A parked run records the consumer repo's own config and its path, as a run does when it starts — a resume continues on that record. */
+const recordedConfigOf = ({ cwd }: { cwd: string }): Pick<RunManifest, 'config' | 'configPath'> => {
+	const configPath = join(cwd, 'lightsout.config.json');
+
+	return { config: JSON.parse(readFileSync(configPath, 'utf8')), configPath };
+};
+
 const setupCommand = ({
 	args = [],
 	result,
@@ -76,7 +83,7 @@ const setupCommand = ({
 		mkdirSync(runDirFor({ cwd, runId: parkedRunId }), { recursive: true });
 		writeFileSync(
 			join(runDirFor({ cwd, runId: parkedRunId }), 'manifest.json'),
-			JSON.stringify(manifestOf({ runId: parkedRunId, pipeline: 'coverage', status: RunStatus.PausedRateLimit })),
+			JSON.stringify(manifestOf({ runId: parkedRunId, pipeline: 'coverage', status: RunStatus.PausedRateLimit, ...recordedConfigOf({ cwd }) })),
 		);
 	}
 
@@ -164,7 +171,7 @@ describe('testCoverageToThresholdCommand', () => {
 
 		expect(pipelineParams()?.existing).toEqual(expect.objectContaining({ runId: 'run-parked-01' }));
 		expect(logged[0]).toBe('lightsout: test-coverage-to-threshold resuming run run-parked-01');
-		// a resumed run re-reads the config, and names the file it re-read
+		// a resumed run continues on the config it recorded, and names the file that config was read from
 		expect(logged[1]).toBe(`  config: ${join(cwd, 'lightsout.config.json')}`);
 	});
 

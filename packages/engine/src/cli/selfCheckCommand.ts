@@ -5,7 +5,7 @@ import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { green } from '#src/cli/internal/common/terminal/green.ts';
 import { red } from '#src/cli/internal/common/terminal/red.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
-import { readConfig } from '#src/common/config/readConfig.ts';
+import { readRunConfig } from '#src/common/config/readRunConfig.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { SelfCheckReason } from '#src/gates/common/constants/SelfCheckReason.ts';
@@ -101,7 +101,16 @@ export const selfCheckCommand = async ({ flags, cwd }: CommandContext): Promise<
 	}
 
 	const { manifest } = found;
-	const config = await readConfig({ cwd });
+	// The config the run recorded, never the worktree's file, which the agent may have edited.
+	const recorded = readRunConfig({ manifest });
+
+	if ('error' in recorded) {
+		console.error(`self-check: ${recorded.error}`);
+
+		return exitCli({ code: 1 });
+	}
+
+	const { config } = recorded;
 	const step = manifest.currentStep;
 	const resolved = step === null ? undefined : selfCheckOfStep({ pipeline: manifest.pipeline, step });
 
