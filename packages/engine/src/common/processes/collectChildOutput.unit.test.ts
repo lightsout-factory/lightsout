@@ -191,3 +191,32 @@ test('collectChildOutput: a child that settles before its deadline, or never spa
 	expect(neverSpawned.status === 'rejected' ? String(neverSpawned.reason) : neverSpawned.status).toMatch(/ENOENT/);
 	expect(timeouts).toStrictEqual([]);
 });
+
+test('collectChildOutput: a multi-byte character split across chunks is decoded whole', async () => {
+	const lines: string[] = [];
+	// `€` is the three bytes E2 82 AC: the first write ends after its first byte,
+	// and the pause keeps the pipe from joining the two writes into one chunk
+	const child = spawn(
+		process.execPath,
+		['-e', 'process.stdout.write(Buffer.from([0x61, 0xe2])); setTimeout(() => process.stdout.write(Buffer.from([0x82, 0xac, 0x0a])), 100);'],
+		{ stdio: ['ignore', 'pipe', 'pipe'], detached: true },
+	);
+
+	const result = await collectChildOutput({ child, onStdoutLine: (line) => lines.push(line) });
+
+	// decoding each chunk alone turns either half into U+FFFD
+	expect({ stdout: result.stdout, lines }).toStrictEqual({ stdout: 'a€\n', lines: ['a€'] });
+});
+
+test('collectChildOutput: a multi-byte character split across stderr chunks is decoded whole', async () => {
+	// the same split `€` as on stdout, written to stderr, which is decoded by its own stream
+	const child = spawn(
+		process.execPath,
+		['-e', 'process.stderr.write(Buffer.from([0x62, 0xe2, 0x82])); setTimeout(() => process.stderr.write(Buffer.from([0xac, 0x0a])), 100);'],
+		{ stdio: ['ignore', 'pipe', 'pipe'], detached: true },
+	);
+
+	const result = await collectChildOutput({ child });
+
+	expect(result).toStrictEqual({ exitCode: 0, stdout: '', stderr: 'b€\n' });
+});

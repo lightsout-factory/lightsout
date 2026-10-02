@@ -1,13 +1,12 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { GitChangeKind } from '#src/common/constants/GitChangeKind.ts';
-import { readGitCommittedFile } from '#src/common/git/readGitCommittedFile.ts';
-import { readGitWorkingChanges } from '#src/common/git/readGitWorkingChanges.ts';
-import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
 import type { RenameRule } from '#src/contracts/plan/renames/RenameRule.ts';
+import { pairCheckpointChanges } from '#src/pipeline/internal/common/checkpointChanges/pairCheckpointChanges.ts';
+import { readCheckpointChanges } from '#src/pipeline/internal/common/checkpointChanges/readCheckpointChanges.ts';
+import { readComparisonSides } from '#src/pipeline/internal/common/checkpointChanges/readComparisonSides.ts';
+import { countTokens } from '#src/pipeline/internal/common/tokens/countTokens.ts';
+import { describeTokenSurplus } from '#src/pipeline/internal/common/tokens/describeTokenSurplus.ts';
+import type { CheckpointComparison } from '#src/pipeline/internal/common/types/CheckpointComparison.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import { applyRenames } from '#src/pipeline/renameCheck/internal/common/utils/applyRenames.ts';
-import { countTokens } from '#src/pipeline/renameCheck/internal/common/utils/countTokens.ts';
 
 interface Params {
 	run: PipelineRun;
@@ -17,74 +16,14 @@ interface Params {
 	renames: RenameRule[];
 }
 
-interface Comparison {
-	startPath: string;
-	currentPath: string;
-}
-
-// Capped so one rewritten file cannot bury the others in the refusal message.
-const describeSurplus = ({ more, less }: { more: Map<string, number>; less: Map<string, number> }) => {
-	const listedTokenLimit = 20;
-	const surplus = [...more].flatMap(([token, count]) => (count > (less.get(token) ?? 0) ? [`\`${token}\` ×${count - (less.get(token) ?? 0)}`] : []));
-	const listed = surplus.slice(0, listedTokenLimit).join(', ');
-
-	return surplus.length > listedTokenLimit ? `${listed} and ${surplus.length - listedTokenLimit} more` : listed;
-};
-
-// A rename moves a file and never creates or deletes one, so anything left
-// unpaired is a change no rename explains.
-const pairChanges = ({ removed, added, modified, renames }: { removed: string[]; added: string[]; modified: string[]; renames: RenameRule[] }) => {
-	const unclaimed = new Set(added);
-	const comparisons: Comparison[] = modified.map((path) => ({ startPath: path, currentPath: path }));
-	const refusals: string[] = [];
-
-	for (const path of removed) {
-		const destination = applyRenames({ text: path, renames });
-
-		if (destination === path) {
-			refusals.push(`- ${path}: removed, and no declared rename applies to its path`);
-		} else if (unclaimed.delete(destination)) {
-			comparisons.push({ startPath: path, currentPath: destination });
-		} else {
-			refusals.push(`- ${path}: removed, but nothing was added at its renamed path ${destination}`);
-		}
-	}
-
-	for (const path of unclaimed) {
-		refusals.push(`- ${path}: added, but no removed file renames to it`);
-	}
-
-	return { comparisons, refusals };
-};
-
-const compareContent = async ({ run, comparison, renames }: { run: PipelineRun; comparison: Comparison; renames: RenameRule[] }) => {
-	const { startPath, currentPath } = comparison;
-	// `git show HEAD:<path>` resolves from the repository root; the `./` prefix
-	// makes git resolve it against the working directory, so a nested consumer
-	// does not read every file as untracked.
-	const start = (await readGitCommittedFile({ cwd: run.cwd, path: `./${startPath}` })) ?? '';
-	const current = (await readFile(join(run.cwd, currentPath), 'utf8').catch(() => undefined)) ?? '';
+const compareContent = async ({ run, comparison, renames }: { run: PipelineRun; comparison: CheckpointComparison; renames: RenameRule[] }) => {
+	const { start, current, label } = await readComparisonSides({ run, comparison });
 	const before = countTokens({ text: applyRenames({ text: start, renames }) });
 	const after = countTokens({ text: applyRenames({ text: current, renames }) });
-	const addedTokens = describeSurplus({ more: after, less: before });
-	const removedTokens = describeSurplus({ more: before, less: after });
-	const label = startPath === currentPath ? currentPath : `${currentPath} (moved from ${startPath})`;
+	const addedTokens = describeTokenSurplus({ more: after, less: before });
+	const removedTokens = describeTokenSurplus({ more: before, less: after });
 
 	return addedTokens === '' && removedTokens === '' ? undefined : `- ${label}: added ${addedTokens || 'nothing'}; removed ${removedTokens || 'nothing'}`;
-};
-
-// A path git reports removed that `HEAD` never held was created and deleted
-// within the run, so it is no change at all.
-const removedSinceHead = async ({ run, paths }: { run: PipelineRun; paths: string[] }) => {
-	const tracked: string[] = [];
-
-	for (const path of paths) {
-		if ((await readGitCommittedFile({ cwd: run.cwd, path: `./${path}` })) !== undefined) {
-			tracked.push(path);
-		}
-	}
-
-	return tracked;
 };
 
 /**
@@ -95,25 +34,25 @@ const removedSinceHead = async ({ run, paths }: { run: PipelineRun; paths: strin
  * It fails closed: when git cannot report the working changes, nothing is proven.
  */
 export const checkRenameOnlyChanges = async ({ run, checkpoint, renames }: Params): Promise<{ error?: string }> => {
-	const changes = await readGitWorkingChanges({ cwd: run.cwd });
+	const changes = await readCheckpointChanges({ run });
 
 	if (changes === undefined) {
 		return { error: `${checkpoint}: the rename check could not read the working changes from git, so nothing is proven; no gate ran.` };
 	}
 
-	const baselineDirty = new Set(run.current().baselineDirtyFiles);
-	const generated = run.config.generated ?? [];
-	const inScope = changes.filter(({ path }) => !baselineDirty.has(path) && !isGeneratedPath({ path, generated }));
-	const pathsOf = ({ kind }: { kind: GitChangeKind }) => inScope.filter((change) => change.kind === kind).map((change) => change.path);
-	const removed = await removedSinceHead({ run, paths: pathsOf({ kind: GitChangeKind.Removed }) });
-	const added = pathsOf({ kind: GitChangeKind.Added });
-	const modified = pathsOf({ kind: GitChangeKind.Modified });
+	const { removed, added, modified } = changes;
 
 	run.progress(
 		`${checkpoint}: rename check — comparing ${removed.length + added.length + modified.length} changed file(s) against the phase's starting commit`,
 	);
 
-	const { comparisons, refusals } = pairChanges({ removed, added, modified, renames });
+	const { comparisons, refusals } = pairCheckpointChanges({
+		removed,
+		added,
+		modified,
+		destinationOf: ({ path }) => applyRenames({ text: path, renames }),
+		wording: { uncovered: 'no declared rename applies to its path', destination: 'renamed path', unclaimed: 'no removed file renames to it' },
+	});
 
 	for (const comparison of comparisons) {
 		const refusal = await compareContent({ run, comparison, renames });

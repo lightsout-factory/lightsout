@@ -1,5 +1,7 @@
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
 import { isTestSideFile } from '#src/common/sourceFiles/isTestSideFile.ts';
+import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import type { PipelineStep } from '#src/pipeline/internal/PipelineStep.ts';
 import { cleanSlateStep } from '#src/pipeline/internal/steps/cleanSlateStep.ts';
@@ -9,6 +11,7 @@ import { buildImplementSteps } from '#src/pipeline/steps/buildSteps/internal/com
 import { buildLedgerLintSteps } from '#src/pipeline/steps/buildSteps/internal/common/utils/buildLedgerLintSteps.ts';
 import { buildRefactorSteps } from '#src/pipeline/steps/buildSteps/internal/common/utils/buildRefactorSteps.ts';
 import { buildTestSteps } from '#src/pipeline/steps/buildSteps/internal/common/utils/buildTestSteps.ts';
+import { getLedgerMovePaths } from '#src/pipeline/steps/buildSteps/internal/common/utils/getLedgerMovePaths.ts';
 import { parsePlan } from '#src/plan/parsePlan.ts';
 
 interface Params {
@@ -21,9 +24,39 @@ interface Params {
 	skipRefactor?: boolean;
 }
 
+const planBuildModeOf = ({
+	buildMode,
+	renames,
+	movePaths,
+	folderMoves,
+}: Pick<ReturnType<typeof parsePlan>, 'buildMode' | 'renames' | 'movePaths' | 'folderMoves'>) => {
+	let planBuildMode: PlanBuildMode = { buildMode: BuildMode.Standard };
+
+	if (buildMode === BuildMode.RenamesOnly) {
+		planBuildMode = { buildMode: BuildMode.RenamesOnly, renames };
+	} else if (buildMode === BuildMode.MoveFoldersAndFiles) {
+		planBuildMode = { buildMode: BuildMode.MoveFoldersAndFiles, fileMoves: movePaths, folderMoves };
+	}
+
+	return planBuildMode;
+};
+
+const ledgerSkipReason = ({ buildMode, ledgerRows }: { buildMode: BuildMode; ledgerRows: number }) => {
+	let reason = ledgerRows === 0 ? 'the plan carries no acceptance-test ledger' : undefined;
+
+	if (buildMode === BuildMode.RenamesOnly) {
+		reason = 'the plan is rename-only, and a rename states no acceptance criterion a ledger test could prove';
+	} else if (buildMode === BuildMode.MoveFoldersAndFiles) {
+		reason = 'the plan is move-folders-and-files, and a move states no acceptance criterion a ledger test could prove';
+	}
+
+	return reason;
+};
+
 /**
- * A rename-only plan (one with a `## Renames` section) runs no refactor steps: refactor edits
- * are not renames, so the rename check would refuse them.
+ * A mechanical plan, rename-only (a `## Renames` section) or move-folders-and-files (a
+ * `## Build Mode` section), runs no refactor steps: refactor edits are neither renames nor
+ * path updates, so the mode's code check would refuse them.
  */
 export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, testStandards, skipRefactor }: Params): PipelineStep[] => {
 	// The plan's own file budget wins: one repo-wide setting cannot fit a phase that renames an
@@ -35,28 +68,23 @@ export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, stand
 	const ledgerGates = [...new Set(plan.ledger.map((row) => row.gate))];
 	// A move destination the ledger writer writes carries every case its source
 	// held, and a file the plan deletes is nowhere to put a named test.
-	const movePaths = plan.movePaths.filter((move) => isTestSideFile({ path: move.to }));
+	const movePaths = getLedgerMovePaths({ movePaths: plan.movePaths, folderMoves: plan.folderMoves, testFiles: plan.ledger.map((row) => row.testFile) });
 	const deletePaths = plan.deletePaths.filter((path) => isTestSideFile({ path }));
-	const renameOnly = plan.renames.length > 0;
+	const planBuildMode = planBuildModeOf(plan);
+	const mechanical = planBuildMode.buildMode !== BuildMode.Standard;
 	// Built once and given to the implement step's own spawn AND to every fix
 	// re-invocation of it: the two differ only in the user prompt, and a section
 	// on one but not the other would split the role's cached system prompt in two.
 	const selfCheckCommand = buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command;
-	const featureFix = buildFeatureFix({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, renames: plan.renames, selfCheckCommand });
-	const leaveOutRefactor = skipRefactor === true || renameOnly;
+	const featureFix = buildFeatureFix({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand });
+	const leaveOutRefactor = skipRefactor === true || mechanical;
 
 	return [
 		...buildLedgerLintSteps({ run, malformedLines: plan.malformedLedgerLines }),
 		{ id: 'clean-slate', run: cleanSlateStep({ run, ledgerGates }) },
 		{
 			id: 'write-ledger-tests',
-			skip: () => {
-				if (renameOnly) {
-					return 'the plan is rename-only, and a rename states no acceptance criterion a ledger test could prove';
-				}
-
-				return plan.ledger.length === 0 ? 'the plan carries no acceptance-test ledger' : undefined;
-			},
+			skip: () => ledgerSkipReason({ buildMode: planBuildMode.buildMode, ledgerRows: plan.ledger.length }),
 			run: writeLedgerTestsStep({ run, gitPrefix, planContent, overviewContent, rows: plan.ledger, testStandards, movePaths, deletePaths }),
 		},
 		...buildImplementSteps({
@@ -67,7 +95,7 @@ export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, stand
 			standards,
 			fileLimit,
 			acceptanceTests,
-			renames: plan.renames,
+			planBuildMode,
 			selfCheckCommand,
 			buildFix: featureFix,
 		}),
@@ -79,7 +107,7 @@ export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, stand
 			testStandards,
 			acceptanceTests,
 			final: leaveOutRefactor,
-			renames: plan.renames,
+			planBuildMode,
 			featureFix,
 		}),
 		...buildRefactorSteps({
@@ -90,7 +118,7 @@ export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, stand
 			standards,
 			skipRefactor: leaveOutRefactor,
 			acceptanceTests,
-			renames: plan.renames,
+			planBuildMode,
 		}),
 	];
 };

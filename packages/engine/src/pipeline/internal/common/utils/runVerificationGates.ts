@@ -48,6 +48,12 @@ interface Params {
 	rows: AcceptanceRow[];
 	/** True only at the run's last verification, where an acceptance test no gate proved is a failure rather than a skip. */
 	final?: boolean;
+	/**
+	 * Whether a passed coverage gate is followed by the per-file check that every
+	 * changed source file was executed. Default `true`; `false` only for a
+	 * move-folders-and-files checkpoint, whose phase writes no tests.
+	 */
+	changedFilesExecuted?: boolean;
 }
 
 /**
@@ -58,7 +64,7 @@ interface Params {
  * make; it follows whether the coverage gate actually ran and passed, not the
  * `coverage` argument, because an override may add or drop that gate.
  */
-export const runVerificationGates = async ({ run, coverage, checkpoint, rows, final }: Params): Promise<VerificationResult> => {
+export const runVerificationGates = async ({ run, coverage, checkpoint, rows, final, changedFilesExecuted }: Params): Promise<VerificationResult> => {
 	const packagesDir = run.config['packages-dir'] ?? defaultPackagesDir;
 	const hasRootChanges = run.current().changedFiles.some((file) => packageOf({ file, packagesDir }) === undefined);
 	const collector = collectGateObservations();
@@ -110,7 +116,7 @@ export const runVerificationGates = async ({ run, coverage, checkpoint, rows, fi
 
 		if (acceptanceError !== undefined) {
 			verdict = { error: acceptanceError, failedFamilies: ['acceptance-tests'], crashes: [], timeouts: [], coordination: undefined, failures: [] };
-		} else if (coverageRan) {
+		} else if (coverageRan && changedFilesExecuted !== false) {
 			const executedError = await changedFilesExecutedError({ run, packagesDir });
 
 			verdict =

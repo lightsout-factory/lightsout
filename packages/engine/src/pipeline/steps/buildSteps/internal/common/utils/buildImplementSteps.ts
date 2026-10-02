@@ -1,5 +1,5 @@
 import { buildFeatureExecutorInvocation } from '#src/agents/buildFeatureExecutorInvocation.ts';
-import type { RenameRule } from '#src/contracts/plan/renames/RenameRule.ts';
+import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import type { PipelineStep } from '#src/pipeline/internal/PipelineStep.ts';
@@ -17,8 +17,8 @@ interface Params {
 	fileLimit: number | undefined;
 	/** Read at every call rather than captured once, so a re-invocation names the ledger rows as they now stand. */
 	acceptanceTests: () => AcceptanceTestRecord[];
-	/** The plan's declared renames; empty for every plan that is not rename-only. */
-	renames: RenameRule[];
+	/** The phase's build mode and the renames or moves it declares. */
+	planBuildMode: PlanBuildMode;
 	/** The same command the fix re-invocation carries, so the role's cached system prompt stays one. */
 	selfCheckCommand: string;
 	buildFix: FixBuilder;
@@ -32,7 +32,7 @@ export const buildImplementSteps = ({
 	standards,
 	fileLimit,
 	acceptanceTests,
-	renames,
+	planBuildMode,
 	selfCheckCommand,
 	buildFix,
 }: Params): PipelineStep[] => [
@@ -52,7 +52,7 @@ export const buildImplementSteps = ({
 					fileLimit,
 					acceptanceTests: acceptanceTests(),
 					selfCheckCommand,
-					renames,
+					planBuildMode,
 				}),
 		}),
 	},
@@ -66,7 +66,7 @@ export const buildImplementSteps = ({
 			overviewContent,
 			id: 'verify-implement',
 			acceptanceTests,
-			renames,
+			planBuildMode,
 			buildFix,
 		}),
 	},

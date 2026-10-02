@@ -1,4 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
@@ -151,7 +152,7 @@ describe('verifyStep', () => {
 			planContent: '# Plan',
 			id: 'verify-implement',
 			acceptanceTests: () => [],
-			renames: [],
+			planBuildMode: { buildMode: BuildMode.Standard },
 			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
@@ -173,7 +174,7 @@ describe('verifyStep', () => {
 			planContent: '# Plan',
 			id: 'verify-implement',
 			acceptanceTests: () => [],
-			renames: [],
+			planBuildMode: { buildMode: BuildMode.Standard },
 			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
@@ -195,7 +196,7 @@ describe('verifyStep', () => {
 			planContent: '# Plan',
 			id: 'verify-implement',
 			acceptanceTests: () => [],
-			renames: [],
+			planBuildMode: { buildMode: BuildMode.Standard },
 			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
@@ -222,7 +223,7 @@ describe('verifyStep', () => {
 			planContent: '# Plan',
 			id: 'verify-implement',
 			acceptanceTests: () => [],
-			renames: [],
+			planBuildMode: { buildMode: BuildMode.Standard },
 			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
@@ -252,7 +253,7 @@ describe('verifyStep', () => {
 			planContent: '# Plan',
 			id: 'verify-implement',
 			acceptanceTests: () => [],
-			renames: [],
+			planBuildMode: { buildMode: BuildMode.Standard },
 			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
@@ -281,7 +282,7 @@ describe('verifyStep', () => {
 			planContent: '# Plan',
 			id: 'verify-implement',
 			acceptanceTests: () => [],
-			renames: [],
+			planBuildMode: { buildMode: BuildMode.Standard },
 			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
@@ -304,7 +305,7 @@ describe('verifyStep', () => {
 			planContent: '# Plan',
 			id: 'verify-implement',
 			acceptanceTests: () => [],
-			renames: [],
+			planBuildMode: { buildMode: BuildMode.Standard },
 			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 

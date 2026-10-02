@@ -1,9 +1,11 @@
-import type { RenameRule } from '#src/contracts/plan/renames/RenameRule.ts';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
+import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import { reviewTestChanges } from '#src/pipeline/approvedTests/reviewTestChanges.ts';
 import type { VerificationResult } from '#src/pipeline/internal/common/types/VerificationResult.ts';
 import { runVerificationGates } from '#src/pipeline/internal/common/utils/runVerificationGates.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
+import { checkMoveOnlyChanges } from '#src/pipeline/moveCheck/checkMoveOnlyChanges.ts';
 import { checkRenameOnlyChanges } from '#src/pipeline/renameCheck/checkRenameOnlyChanges.ts';
 import { approveRunnerSnapshots } from '#src/pipeline/steps/verify/internal/approveRunnerSnapshots.ts';
 
@@ -16,8 +18,8 @@ interface Params {
 	overviewContent?: string;
 	/** The live acceptance-test mapping, read afresh at every call. */
 	acceptanceTests: () => AcceptanceTestRecord[];
-	/** The plan's declared renames; non-empty only for a rename-only plan. */
-	renames: RenameRule[];
+	/** The phase's build mode, which decides what judges the checkpoint's changes before the gates. */
+	planBuildMode: PlanBuildMode;
 }
 
 const judgeChanges = async ({
@@ -25,27 +27,34 @@ const judgeChanges = async ({
 	id,
 	planContent,
 	overviewContent,
-	renames,
+	planBuildMode,
 }: {
 	run: PipelineRun;
 	id: string;
 	planContent: string;
 	overviewContent?: string;
-	renames: RenameRule[];
+	planBuildMode: PlanBuildMode;
 }) => {
 	let error: string | undefined;
 	let family: string;
 	let rateLimited = false;
 
-	if (renames.length > 0) {
-		({ error } = await checkRenameOnlyChanges({ run, checkpoint: id, renames }));
-		family = 'rename-check';
-	} else {
-		const review = await reviewTestChanges({ run, checkpoint: id, planContent, overviewContent });
+	switch (planBuildMode.buildMode) {
+		case BuildMode.RenamesOnly:
+			({ error } = await checkRenameOnlyChanges({ run, checkpoint: id, renames: planBuildMode.renames }));
+			family = 'rename-check';
+			break;
+		case BuildMode.MoveFoldersAndFiles:
+			({ error } = await checkMoveOnlyChanges({ run, checkpoint: id, fileMoves: planBuildMode.fileMoves, folderMoves: planBuildMode.folderMoves }));
+			family = 'move-check';
+			break;
+		default: {
+			const review = await reviewTestChanges({ run, checkpoint: id, planContent, overviewContent });
 
-		error = review.error;
-		family = 'test-review';
-		rateLimited = review.rateLimited === true;
+			error = review.error;
+			family = 'test-review';
+			rateLimited = review.rateLimited === true;
+		}
 	}
 
 	return { error, family, rateLimited };
@@ -65,9 +74,9 @@ export const reviewAndVerify = async ({
 	planContent,
 	overviewContent,
 	acceptanceTests,
-	renames,
+	planBuildMode,
 }: Params): Promise<{ rateLimited: true } | VerificationResult> => {
-	const judgment = await judgeChanges({ run, id, planContent, overviewContent, renames });
+	const judgment = await judgeChanges({ run, id, planContent, overviewContent, planBuildMode });
 
 	if (judgment.rateLimited) {
 		return { rateLimited: true };
@@ -84,7 +93,16 @@ export const reviewAndVerify = async ({
 		};
 	}
 
-	const result = await runVerificationGates({ run, coverage, checkpoint: id, rows: acceptanceTests(), final });
+	// A move-folders-and-files phase writes no tests, and its move check would
+	// refuse any written, so it cannot answer for every changed file being executed.
+	const result = await runVerificationGates({
+		run,
+		coverage,
+		checkpoint: id,
+		rows: acceptanceTests(),
+		final,
+		changedFilesExecuted: planBuildMode.buildMode !== BuildMode.MoveFoldersAndFiles,
+	});
 
 	// Whatever the verdict: jest writes a brand-new snapshot itself during the
 	// gate run, and the runner's own output must not arrive at the next

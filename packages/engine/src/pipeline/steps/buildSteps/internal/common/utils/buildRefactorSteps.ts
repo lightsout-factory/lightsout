@@ -1,7 +1,7 @@
 import { buildRefactorExecutorInvocation } from '#src/agents/buildRefactorExecutorInvocation.ts';
 import { RefactorScope } from '#src/common/constants/RefactorScope.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
-import type { RenameRule } from '#src/contracts/plan/renames/RenameRule.ts';
+import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import { standardsScopeFiles } from '#src/pipeline/internal/common/utils/standardsScopeFiles.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
@@ -19,7 +19,7 @@ interface Params {
 	skipRefactor?: boolean;
 	/** Read at every call rather than captured once, so a re-invocation names the ledger rows as they now stand. */
 	acceptanceTests: () => AcceptanceTestRecord[];
-	renames: RenameRule[];
+	planBuildMode: PlanBuildMode;
 }
 
 /**
@@ -34,7 +34,7 @@ export const buildRefactorSteps = ({
 	standards,
 	skipRefactor,
 	acceptanceTests,
-	renames,
+	planBuildMode,
 }: Params): PipelineStep[] =>
 	skipRefactor
 		? []
@@ -59,7 +59,7 @@ export const buildRefactorSteps = ({
 						// verification — and the last one is where every acceptance test
 						// must be proven against the finished tree.
 						final: true,
-						renames,
+						planBuildMode,
 						buildFix: ({ errorContext }) =>
 							buildRefactorExecutorInvocation({
 								scope: RefactorScope.Feature,
