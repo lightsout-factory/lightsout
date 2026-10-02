@@ -136,6 +136,37 @@ describe('parsePlan', () => {
 		});
 	});
 
+	test('a folder move heading is read into folderMoves, never into movePaths', () => {
+		const content = [
+			'# Plan',
+			'',
+			'## Files to Move',
+			'',
+			'### `src/old/` → `src/new/`',
+			'',
+			'### `src/a.ts` → `src/b.ts`',
+			'',
+			'### `src/c.ts` → `src/d/`',
+			'',
+		].join('\n');
+		const plan = parse({ content });
+		const fileOnly = parse({ content: '# Plan\n\n## Files to Move\n\n### `src/a.ts` → `src/b.ts`\n' });
+
+		// a folder pair is held apart from file moves with its trailing `/` dropped,
+		// and a mixed file-and-folder heading is neither kind of move
+		expect({
+			folderMoves: plan.folderMoves,
+			movePaths: plan.movePaths,
+			malformedMoveLines: plan.malformedMoveLines,
+			fileOnlyFolderMoves: fileOnly.folderMoves,
+		}).toStrictEqual({
+			folderMoves: [{ from: 'src/old', to: 'src/new' }],
+			movePaths: [{ from: 'src/a.ts', to: 'src/b.ts' }],
+			malformedMoveLines: [9],
+			fileOnlyFolderMoves: [],
+		});
+	});
+
 	test('the file budget is the first integer in its section, and absent when the section is', () => {
 		expect(parse({ content: '# Plan\n\n## File Budget\n\n120\n' }).fileBudget).toBe(120);
 		// a plan declaring nothing takes the configured default

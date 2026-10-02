@@ -1,8 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
+import { MoveDirection } from '#src/common/constants/MoveDirection.ts';
 import { holdsTestTitle } from '#src/common/sourceFiles/holdsTestTitle.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
+import { mapPathThroughMoves } from '#src/common/utils/mapPathThroughMoves.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
@@ -48,13 +50,6 @@ const statesTest = async ({ cwd, testFile, testName }: { cwd: string; testFile: 
 
 	return content !== undefined && holdsTestTitle({ content, testName });
 };
-
-/**
- * A row may name a move's destination, which does not exist at plan time. The
- * source is read instead, or an old test could verify a new criterion just by
- * moving its file.
- */
-const resolveReadPath = ({ plan, testFile }: { plan: ParsedPlan; testFile: string }) => plan.movePaths.find((move) => move.to === testFile)?.from ?? testFile;
 
 const isTestGate = ({ gate }: { gate: string }) => gate === 'test' || gate.startsWith('test-');
 
@@ -163,7 +158,10 @@ const checkRows = async ({ plan, cwd, phase, gateKeys }: { plan: ParsedPlan; cwd
 
 		seen.add(key);
 
-		const readPath = resolveReadPath({ plan, testFile: row.testFile });
+		// A row may name a move's destination, which does not exist at plan time. The
+		// source is read instead, or an old test could verify a new criterion just by
+		// moving its file — under a folder move's destination too.
+		const readPath = mapPathThroughMoves({ path: row.testFile, fileMoves: plan.movePaths, folderMoves: plan.folderMoves, direction: MoveDirection.Back });
 
 		if (await statesTest({ cwd, testFile: readPath, testName: row.testName })) {
 			findings.push(

@@ -144,9 +144,10 @@ const numberDefects = ({
 const nameDefects = ({ declaration, phase, overviewBase }: { declaration: PhaseDeclaration; phase: PhaseFile; overviewBase: string }) => {
 	const defects: Defect[] = [];
 	const { spans, exports } = namesIn({ phase });
-	const written = new Set([...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to)]);
+	const written = new Set([...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to), ...phase.plan.folderMoves.map((move) => move.to)]);
 
-	for (const path of declaration.creates.filter((candidate) => !written.has(candidate))) {
+	// A folder move's destination may be declared with or without its trailing `/`.
+	for (const path of declaration.creates.filter((candidate) => !written.has(candidate.replace(/\/$/, '')))) {
 		defects.push({
 			phase: overviewBase,
 			issue: `${declaration.file} is declared to create '${path}', which it lists under neither Files to Create nor Files to Move`,

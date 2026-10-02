@@ -67,7 +67,7 @@ export const repairMechanicalFindings = async ({ cwd, name, planPaths, decisions
 
 	if (overviewPath !== undefined) {
 		const phasePaths = planPaths.filter((path) => path !== overviewPath);
-		const stamped = await stampPhaseCounts({ overviewPath, phasePaths });
+		const stamped = await stampPhaseCounts({ cwd, overviewPath, phasePaths });
 
 		files.push(
 			await syncPhaseSections({

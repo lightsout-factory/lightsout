@@ -12,6 +12,7 @@ import { repairMechanicalFindings } from '#src/plan/draft/repairMechanicalFindin
 import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure.ts';
 import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
 import { parsePlan } from '#src/plan/parsePlan.ts';
+import { commitAll } from '#tests/helpers/commitAll.ts';
 import { overviewBody, phaseBody } from '#tests/helpers/phasePlan.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
@@ -182,6 +183,24 @@ const setupStandalonePlan = ({ body, decisions, existing = [] }: { body: string;
 		lint: () => lintPlanStructure({ cwd, planPaths: [planPath], decisions }),
 		read: () => readFileSync(planPath, 'utf8'),
 	};
+};
+
+/**
+ * A phased deliverable whose one phase moves a folder git tracks three files
+ * under, committed so the expander lists them, with the overview still holding
+ * the overview agent's estimate of nine of each.
+ */
+const setupFolderMovingDeliverable = () => {
+	const deliverable = setupPhasedDeliverable({
+		decisions: noDecisions(),
+		overview: overviewBody({ rows: [{ number: 1, file: 'phase1-relocate.md', created: 9, touched: 9 }] }),
+		phases: { 'phase1-relocate.md': phaseBody({ move: [{ from: 'src/old/', to: 'src/new/' }] }) },
+		existing: ['src/old/a.ts', 'src/old/b.ts', 'src/old/deep/c.ts'],
+	});
+
+	commitAll({ cwd: deliverable.cwd, message: 'track the folder the phase moves' });
+
+	return deliverable;
 };
 
 describe('repairMechanicalFindings', () => {
@@ -493,5 +512,34 @@ describe('repairMechanicalFindings', () => {
 		// work each need a choice between shrinking the phase and raising the number —
 		// regenerating anything here would either paper one over or invent an answer
 		expect({ before, after }).toStrictEqual({ before: surviving, after: surviving });
+	});
+
+	test('repairMechanicalFindings: the stamped counts of a folder-moving phase agree with the lint, leaving no count finding', async () => {
+		const deliverable = setupFolderMovingDeliverable();
+		const before = engineOwnedReported({ findings: await deliverable.lint() }).phaseCounts;
+
+		await repairMechanicalFindings({
+			cwd: deliverable.cwd,
+			name: deliverable.name,
+			planPaths: deliverable.planPaths,
+			decisions: deliverable.decisions,
+			overviewPath: deliverable.overviewPath,
+		});
+
+		const after = engineOwnedReported({ findings: await deliverable.lint() }).phaseCounts;
+		const declarations = parsePhaseDeclarations({ plan: parsePlan({ content: deliverable.read({ base: 'overview.md' }), base: 'overview.md' }) });
+
+		// the stamp and the lint both count through the expander, so each of the three
+		// carried files is touched on both sides: six touched, none created — a stamp
+		// that counted the unexpanded heading would leave the lint disagreeing
+		expect({
+			before,
+			after,
+			declared: declarations.map(({ file, createdCount, touchedCount }) => ({ file, createdCount, touchedCount })),
+		}).toStrictEqual({
+			before: true,
+			after: false,
+			declared: [{ file: 'phase1-relocate.md', createdCount: 0, touchedCount: 6 }],
+		});
 	});
 });

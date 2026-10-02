@@ -93,7 +93,7 @@ const composeEngineSections = async ({
 	await syncPlanDecisions({ cwd, name, planPaths: phasePaths, decisions });
 	await syncGlobalConstraints({ planPaths: [overviewPath, ...phasePaths], decisions });
 
-	const stamped = await stampPhaseCounts({ overviewPath, phasePaths });
+	const stamped = await stampPhaseCounts({ cwd, overviewPath, phasePaths });
 
 	await syncPhaseSections({ overviewPath, declarations: stamped, phaseFiles: phasePaths.map((path) => basename(path)) });
 };

@@ -88,12 +88,14 @@ const commandsFromVerification = ({ sectionLines }: { sectionLines: string[] | u
 };
 
 /**
- * A heading naming fewer than two paths is recorded by line number, so the lint
- * reports it rather than losing a file the plan meant to move. Scanned over the
- * whole file because that line number is the finding's location.
+ * A heading naming fewer than two paths, or a file and a folder, is recorded by
+ * line number, so the lint reports it rather than losing a file the plan meant
+ * to move. Scanned over the whole file because that line number is the
+ * finding's location.
  */
 const movesFromPlan = ({ lines }: { lines: string[] }) => {
 	const moves: { from: string; to: string }[] = [];
+	const folderMoves: { from: string; to: string }[] = [];
 	const malformedLines: number[] = [];
 	let inMoveSection = false;
 
@@ -112,14 +114,16 @@ const movesFromPlan = ({ lines }: { lines: string[] }) => {
 
 		const pair = pathPairFromLine({ line });
 
-		if (pair) {
-			moves.push(pair);
-		} else {
+		if (pair === undefined) {
 			malformedLines.push(index + 1);
+		} else if (pair.folder) {
+			folderMoves.push({ from: pair.from, to: pair.to });
+		} else {
+			moves.push(pair);
 		}
 	}
 
-	return { moves, malformedLines };
+	return { moves, folderMoves, malformedLines };
 };
 
 /**
@@ -200,7 +204,7 @@ export const parsePlan = ({ content, base }: Params): ParsedPlan => {
 			? PlanFileKind.Overview
 			: PlanFileKind.Implementable;
 	const isSubheading = (line: string) => /^###\s+/.test(line);
-	const { moves, malformedLines } = movesFromPlan({ lines });
+	const { moves, folderMoves, malformedLines } = movesFromPlan({ lines });
 
 	return {
 		base,
@@ -212,6 +216,7 @@ export const parsePlan = ({ content, base }: Params): ParsedPlan => {
 		earlierPhaseModifyPaths: pathsFromLines({ sectionLines: sections.get('Files to Modify from Earlier Phases'), lineMatches: isSubheading }),
 		deletePaths: pathsFromLines({ sectionLines: sections.get('Files to Delete'), lineMatches: isSubheading }),
 		movePaths: moves,
+		folderMoves,
 		malformedMoveLines: malformedLines,
 		generatedRegionRanges,
 		decisionLogRange: generatedRegionRanges.get(generatedPlanRegions.decisionLog),

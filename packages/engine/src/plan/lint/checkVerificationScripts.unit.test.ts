@@ -29,6 +29,7 @@ const planWith = ({
 	earlierPhaseModifyPaths,
 	deletePaths,
 	movePaths,
+	folderMoves: [],
 	malformedMoveLines: [],
 	generatedRegionRanges: new Map(),
 	sectionRanges: new Map(),

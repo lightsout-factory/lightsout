@@ -169,6 +169,35 @@ describe('checkPhaseDeclarations', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
+	test('a folder move destination may be declared as a create, with or without its trailing slash', () => {
+		const phases = phaseFilesFor({
+			specs: [
+				{ base: 'phase1-slashed.md', spec: { move: [{ from: 'src/old/', to: 'src/new/' }] } },
+				{ base: 'phase2-bare.md', spec: { move: [{ from: 'src/old/', to: 'src/new/' }] } },
+				{ base: 'phase3-stray.md', spec: { move: [{ from: 'src/old/', to: 'src/new/' }] } },
+			],
+		});
+		const declarations = [
+			declarationFor({ number: 1, file: 'phase1-slashed.md', creates: ['src/new/'] }),
+			declarationFor({ number: 2, file: 'phase2-bare.md', creates: ['src/new'] }),
+			declarationFor({ number: 3, file: 'phase3-stray.md', creates: ['src/absent/'] }),
+		];
+
+		const findings = check({ declarations, phases });
+
+		// both spellings of the folder destination are honest; a folder no move
+		// lands at is still a create the phase lists nowhere
+		expect(findings).toEqual([
+			expect.objectContaining({
+				check: StructuralCheck.DeclarationConsistent,
+				severity: FindingSeverity.Blocking,
+				phase: 'overview.md',
+				location: 'overview.md → phase3-stray.md',
+				issue: expect.stringMatching(/phase3-stray\.md is declared to create 'src\/absent\/?', which it lists under neither Files to Create nor Files to Move/),
+			}),
+		]);
+	});
+
 	test('a declared export that appears nowhere in the phase file is reported', () => {
 		const phases = phaseFilesFor({ specs: [{ base: 'phase1-core.md' }] });
 		const declarations = [declarationFor({ file: 'phase1-core.md', exports: ['buildCore'] })];

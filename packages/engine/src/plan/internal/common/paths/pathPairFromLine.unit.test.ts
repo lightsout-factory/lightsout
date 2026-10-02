@@ -39,4 +39,19 @@ describe('pathPairFromLine', () => {
 
 		expect(pair).toStrictEqual({ from: 'src/old.ts', to: 'src/new.ts' });
 	});
+
+	test('a heading naming two folders yields both with the trailing slash stripped and the folder flag set', () => {
+		const pair = pathPairFromLine({ line: '### `src/old/` → `src/new/`' });
+
+		expect(pair).toStrictEqual({ from: 'src/old', to: 'src/new', folder: true });
+	});
+
+	test('a heading naming one file and one folder yields nothing, so the caller reports it as malformed', () => {
+		const lines = ['### `src/old.ts` → `src/new/`', '### `src/old/` → `src/new.ts`'];
+
+		const pairs = lines.map((line) => pathPairFromLine({ line }));
+
+		// a half-folder move has no meaning, in either order
+		expect(pairs).toStrictEqual([undefined, undefined]);
+	});
 });

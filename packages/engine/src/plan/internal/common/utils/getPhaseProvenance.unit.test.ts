@@ -21,6 +21,7 @@ const planWith = ({ base, create = [], remove = [], move = [] }: PhaseSpec): Pha
 	earlierPhaseModifyPaths: [],
 	deletePaths: remove,
 	movePaths: move,
+	folderMoves: [],
 	malformedMoveLines: [],
 	generatedRegionRanges: new Map(),
 	sectionRanges: new Map(),

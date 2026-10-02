@@ -13,6 +13,8 @@ import type { PhaseSizeCounts } from '#src/plan/internal/common/types/PhaseSizeC
 import { getPhaseProvenance } from '#src/plan/internal/common/utils/getPhaseProvenance.ts';
 import { getPlanNamedPaths } from '#src/plan/internal/common/utils/getPlanNamedPaths.ts';
 import { getPlanTouchedPaths } from '#src/plan/internal/common/utils/getPlanTouchedPaths.ts';
+import { readPhaseFiles } from '#src/plan/internal/common/utils/readPhaseFiles.ts';
+import { expandFolderMoves } from '#src/plan/internal/expandFolderMoves/expandFolderMoves.ts';
 import { checkAcceptanceLedger } from '#src/plan/lint/checkAcceptanceLedger.ts';
 import { checkDecisionLog } from '#src/plan/lint/checkDecisionLog.ts';
 import { checkGlobalConstraints } from '#src/plan/lint/checkGlobalConstraints.ts';
@@ -24,7 +26,6 @@ import { checkVerificationScripts } from '#src/plan/lint/checkVerificationScript
 import { checkBuildMode } from '#src/plan/lint/internal/checkBuildMode.ts';
 import { checkRenames } from '#src/plan/lint/internal/checkRenames.ts';
 import { isPhasedDeliverable } from '#src/plan/lint/internal/common/utils/isPhasedDeliverable.ts';
-import { readPhaseFiles } from '#src/plan/lint/internal/common/utils/readPhaseFiles.ts';
 import { lintPlanCrossPhase } from '#src/plan/lint/lintPlanCrossPhase.ts';
 import { scanPlaceholders } from '#src/plan/lint/scanPlaceholders.ts';
 import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
@@ -78,9 +79,9 @@ const checkMoves = ({ phase }: { phase: PhaseFile }) =>
 		check: StructuralCheck.MoveWellFormed,
 		severity: FindingSeverity.Blocking,
 		phase: phase.base,
-		issue: 'a Files to Move heading does not name two paths',
+		issue: 'a Files to Move heading does not name two file paths or two folder paths',
 		location: `${phase.base}:${line}`,
-		fix: 'write the heading as an old path and a new path, each in backticks',
+		fix: 'write the heading as an old path and a new path, each in backticks: two file paths, or two folder paths each ending in `/`',
 	}));
 
 /**
@@ -126,6 +127,12 @@ const checkPackages = ({ phase, packagesDir }: { phase: PhaseFile; packagesDir: 
 		}));
 
 /**
+ * Folder moves are expanded first, so every count and path check sees the files
+ * they carry; the overlap check runs on the unexpanded plan inside the expander,
+ * and the overview is never expanded. Provenance reads every move as written
+ * (`provenancePhases`), so a later phase is never blamed for an earlier
+ * phase's defective move.
+ *
  * Provenance is resolved before the per-file checks run, so each knows which
  * paths a strictly earlier phase supplies. The cross-phase pass may then drop a
  * `path-exists` finding, because delete-then-recreate is legitimate work the
@@ -140,9 +147,14 @@ export const lintPlanStructure = async ({ cwd, planPaths, decisions, config }: P
 	const configCommands = new Set(Object.values(config?.gates ?? {}).filter((value): value is string => typeof value === 'string'));
 	const { phases, findings } = await readPhaseFiles({ planPaths });
 	const overview = phases.find((file) => file.plan.variant === PlanFileKind.Overview);
-	const implementable = phases.filter((file) => file.plan.variant !== PlanFileKind.Overview).sort((one, other) => one.number - other.number);
+	const sorted = phases.filter((file) => file.plan.variant !== PlanFileKind.Overview).sort((one, other) => one.number - other.number);
+	const expansion = await expandFolderMoves({ cwd, phases: sorted });
+	const implementable = expansion.phases;
 	const phased = isPhasedDeliverable({ hasOverview: overview !== undefined, implementableCount: implementable.length });
-	const provenance = getPhaseProvenance({ phases: implementable });
+	const provenance = getPhaseProvenance({ phases: expansion.provenancePhases });
+
+	findings.push(...expansion.findings);
+
 	const declaredByPhase = getDeclaredScripts({ overview, phases: implementable });
 	// Read once per lint run, or a phased plan would walk the repo once per file.
 	const repoIndex = await readRepoPathIndex({ cwd });

@@ -16,9 +16,20 @@ const providedBy = ({ phase, exports }: { phase: PhaseFile; exports: string[] })
 		...getComparableTokens({ lines: phase.plan.sections.get('What Next Plan Expects') ?? [] }).keys(),
 	]);
 
+/** Whether `phase` names a path under one of `other`'s folder moves, source or destination, aligned on the slash. */
+const namesPathUnderFolderMove = ({ phase, other }: { phase: PhaseFile; other: PhaseFile }) => {
+	const folders = other.plan.folderMoves.flatMap((move) => [move.from, move.to]);
+
+	return getPlanNamedPaths({ plan: phase.plan }).some((path) => folders.some((folder) => path.startsWith(`${folder}/`)));
+};
+
 /**
  * A phase supplies EVERY path it names under a file heading, not only the ones
  * it creates: two edits to one file are coupled whichever phase owns it.
+ *
+ * A phase naming a path under another phase's folder move is coupled to it too,
+ * though they share no basename: a file a folder move carries is named nowhere
+ * in the moving phase.
  *
  * Undirected because a changed shared contract affects the producer and the
  * consumer alike.
@@ -48,7 +59,9 @@ export const getPhaseConnections = ({ phases, declarations }: Params): { connect
 
 	for (const left of phases) {
 		for (const right of phases) {
-			const linked = left.base !== right.base && [...(consumes.get(left.base) ?? [])].some((token) => provides.get(right.base)?.has(token));
+			const linked =
+				left.base !== right.base &&
+				([...(consumes.get(left.base) ?? [])].some((token) => provides.get(right.base)?.has(token)) || namesPathUnderFolderMove({ phase: left, other: right }));
 
 			if (linked) {
 				connections.get(left.base)?.add(right.base);
