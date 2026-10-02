@@ -5,10 +5,10 @@ import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { loadPlanningProgressBlock } from '#src/cli/internal/common/progressBlock/loadPlanningProgressBlock.ts';
 import { loadShippingProgressBlock } from '#src/cli/internal/common/progressBlock/loadShippingProgressBlock.ts';
 import { printQueueStatus } from '#src/cli/internal/common/queueBoard/printQueueStatus.ts';
-import { printRunProgress } from '#src/cli/internal/common/render/printRunProgress.ts';
 import { printAmbiguousRuns } from '#src/cli/internal/common/runStatus/printAmbiguousRuns.ts';
 import { printGoingRunStatus } from '#src/cli/internal/common/runStatus/printGoingRunStatus.ts';
 import { printNewestRun } from '#src/cli/internal/common/runStatus/printNewestRun.ts';
+import { printRunFamilyScreen } from '#src/cli/internal/common/runStatus/printRunFamilyScreen.ts';
 import { printRunFinalReport } from '#src/cli/internal/common/runStatus/printRunFinalReport.ts';
 import { resolveTypedRunId } from '#src/cli/internal/common/utils/resolveTypedRunId.ts';
 import { resolveWatchTarget } from '#src/cli/internal/common/utils/resolveWatchTarget.ts';
@@ -143,7 +143,9 @@ export const statusCommand = async ({ cwd, flags }: CommandContext): Promise<voi
 		if (watch) {
 			await watchRunProgress({ cwd, runId });
 		} else {
-			await printRunProgress({ cwd, runId });
+			// The family screen, so naming a coordinator or any of its phases shows
+			// the phase sequence and the steps of the phase moving now alike.
+			await printRunFamilyScreen({ cwd, runId });
 			await printRunFinalReport({ cwd, runId });
 		}
 

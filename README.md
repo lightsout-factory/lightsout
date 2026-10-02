@@ -369,6 +369,8 @@ lightsout status --queue --wait
 
 `--watch` repaints, every two minutes, the same screen `--now` prints — for a phased plan, the phase sequence and the phase moving now — and follows the run's family until it stops going. A failing verification row shows its gate families, root/package groups, per-family repair counts, whether a supervisor-guided repair ran, the supervisor diagnosis when present, and the final output line. The complete command, exit code, timing, and output-tail history remains in `.lightsout/runs/<run-id>/commands.jsonl`.
 
+`--run <id>` prints the same screen `--now` does, however many other runs are going: for a phased plan, the phase sequence first, then the steps of the phase moving now — and naming any phase's own run id shows exactly what naming the coordinator's does.
+
 Once a run has finished, `--run <id>` prints its saved final report after its block: the lines the `implement`, `implement-direct` or `resume` command printed when it ended, so a run's outcome stays readable after nobody is watching the command that drove it. A run that is going again shows no saved report until the command now driving it ends.
 
 With no `--run`, `--watch` follows the one run that is going — a phased plan's coordinator and the phase it is running count as one run, not two — and waits a minute for a run you have only just started to appear. If several unrelated runs are going at once it names their ids and asks you to pick one with `--run <id>` rather than guessing which you meant. A watch already following a run stays with that run's family and never crosses to unrelated work.

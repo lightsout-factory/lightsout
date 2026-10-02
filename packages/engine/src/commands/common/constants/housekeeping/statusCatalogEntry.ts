@@ -22,7 +22,7 @@ export const statusCatalogEntry: CommandCatalogEntry = {
 			name: 'run',
 			value: '<id>',
 			meaning:
-				'Show one run in detail — its steps, their outcomes and durations, what it is doing now. Takes the shortened eight-character id reports print. Once the run has finished, its saved final report — the lines the command printed when it ended — follows the block.',
+				'Show one run in detail — its steps, their outcomes and durations, what it is doing now — the same screen --now prints, so a phased plan shows its phase sequence followed by the phase moving now, whichever of its runs is named: the coordinator or any phase. Works however many other runs are going. Takes the shortened eight-character id reports print. Once the run has finished, its saved final report — the lines the command printed when it ended — follows the block.',
 			fallback: 'Every run is listed, one line each.',
 			shape: 'status-run',
 			required: false,
