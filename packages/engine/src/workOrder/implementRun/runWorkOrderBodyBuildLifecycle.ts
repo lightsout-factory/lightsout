@@ -4,6 +4,7 @@ import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import type { WorkOrderPlanOutcome } from '#src/workOrder/common/types/WorkOrderPlanOutcome.ts';
+import { recordHandBuiltShipAuthorizationWithdrawal } from '#src/workOrder/internal/common/record/recordHandBuiltShipAuthorizationWithdrawal.ts';
 import { isPlanlessWorkOrder } from '#src/workOrder/isPlanlessWorkOrder.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
@@ -20,7 +21,10 @@ type TicketBodyBuild = NonNullable<WorkOrderState['ticketBodyBuild']>;
 
 /**
  * Re-asks inside the lock whether the record is still plan-less: one that gained
- * plan 001 since the first read must not get a build no ship rule would read.
+ * plan 001 since the first read must not get a build no ship rule would read. A
+ * hand-built authorization is withdrawn in the same locked change, before the run
+ * starts, so on this machine no moment exists where a build is running and an
+ * authorization still stands.
  */
 const recordImplementing = ({ cwd, workOrderName, build }: { cwd: string; workOrderName: string; build: TicketBodyBuild }) =>
 	updateLocalWorkOrderState({
@@ -37,7 +41,11 @@ const recordImplementing = ({ cwd, workOrderName, build }: { cwd: string; workOr
 				};
 			}
 
-			return { ...current, ticketBodyBuild: build };
+			return recordHandBuiltShipAuthorizationWithdrawal({
+				record: { ...current, ticketBodyBuild: build },
+				detail: `a build from the ticket body started under run ${build.runId}, so the hand-built authorization no longer stands`,
+				at: build.startedAt,
+			});
 		},
 	});
 

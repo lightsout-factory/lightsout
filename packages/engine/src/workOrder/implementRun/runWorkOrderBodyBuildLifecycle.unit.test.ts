@@ -89,6 +89,22 @@ const setupBodyBuild = async ({
 	return { cwd, recordPath, seenRunIds, recordsAtRunStart, run, readRecord, bytesBefore: readBytes(), readBytes };
 };
 
+/** A plan-less record the store wrote, carrying a person's authorization to ship hand-built work, and a run ending at the status asked for. */
+const setupAuthorizedBodyBuild = async ({ status }: { status: RunStatus }) => {
+	const setup = await setupBodyBuild({ status });
+
+	await updateLocalWorkOrderState({
+		cwd: setup.cwd,
+		name: workOrderName,
+		change: (current) =>
+			current === undefined
+				? { error: 'the record setupBodyBuild wrote is missing' }
+				: { ...current, handBuiltShipAuthorization: { by: 'Dana Smith dana@example.com', at: '2026-03-01T00:00:00.000Z' } },
+	});
+
+	return setup;
+};
+
 describe('runWorkOrderBodyBuildLifecycle', () => {
 	test('records the build from the ticket body implementing under the run id it hands the run before the run starts', async () => {
 		const { cwd, seenRunIds, recordsAtRunStart, run } = await setupBodyBuild();
@@ -199,4 +215,40 @@ describe('runWorkOrderBodyBuildLifecycle', () => {
 			expect(seenRunIds).toHaveLength(expectedRunCount);
 		},
 	);
+
+	test.each([{ status: RunStatus.Passed }, { status: RunStatus.Failed }])(
+		'withdraws a hand-built authorization before the build from the ticket body runs, and it stays withdrawn whether the build passes or fails',
+		async ({ status }) => {
+			const { cwd, seenRunIds, recordsAtRunStart, run, readRecord } = await setupAuthorizedBodyBuild({ status });
+
+			await runWorkOrderBodyBuildLifecycle({ cwd, workOrderName, run });
+			const atRunStart = recordsAtRunStart[0];
+			const after = readRecord();
+
+			expect({
+				authorizedAtRunStart: atRunStart === undefined || Object.hasOwn(atRunStart, 'handBuiltShipAuthorization'),
+				withdrawalsAtRunStart: atRunStart?.history.filter((event) => event.kind === 'hand-built-ship-authorization-withdrawn'),
+				authorizedAfter: Object.hasOwn(after, 'handBuiltShipAuthorization'),
+			}).toEqual({
+				authorizedAtRunStart: false,
+				withdrawalsAtRunStart: [
+					{
+						at: atRunStart?.ticketBodyBuild?.startedAt,
+						kind: 'hand-built-ship-authorization-withdrawn',
+						detail: expect.stringContaining(seenRunIds[0] ?? 'the run id'),
+					},
+				],
+				authorizedAfter: false,
+			});
+		},
+	);
+
+	test('appends no withdrawal event when the record carries no hand-built authorization', async () => {
+		const { cwd, run, readRecord } = await setupBodyBuild();
+
+		await runWorkOrderBodyBuildLifecycle({ cwd, workOrderName, run });
+		const record = readRecord();
+
+		expect(record.history.filter((event) => event.kind === 'hand-built-ship-authorization-withdrawn')).toStrictEqual([]);
+	});
 });

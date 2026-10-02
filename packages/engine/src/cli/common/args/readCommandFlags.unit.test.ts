@@ -8,7 +8,7 @@ test('readCommandFlags: reads a command flags from the usage text, unioned acros
 });
 
 test('readCommandFlags: allows --cwd everywhere, since the dispatcher reads it before it knows the command', () => {
-	expect(readCommandFlags({ command: 'ship' })).toStrictEqual(new Set(['cwd']));
+	expect(readCommandFlags({ command: 'ship' })).toStrictEqual(new Set(['cwd', 'hand-built']));
 	expect(readCommandFlags({ command: 'friction' })).toStrictEqual(new Set(['cwd']));
 });
 

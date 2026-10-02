@@ -28,6 +28,11 @@ const WorkOrderStateShape = z
 			})
 			.strict()
 			.optional(),
+		/** A person's authorization to ship hand-built work on a single-plan work order holding no plan 001. It lasts until the work order ships or it is withdrawn. */
+		handBuiltShipAuthorization: z
+			.object({ by: z.string().min(1), at: z.string() })
+			.strict()
+			.optional(),
 		/** The human's explicit request to ship, bound to the exact plans it was approved for. */
 		shipRequest: z
 			.object({ planIds: z.array(PlanId).min(1), requestedAt: z.string() })
