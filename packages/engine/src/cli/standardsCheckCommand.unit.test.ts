@@ -21,6 +21,7 @@ import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
 interface RunStandardsCheckParams {
 	cwd: string;
+	config?: LightsoutConfig;
 	path?: string;
 	all?: boolean;
 	writeBaseline?: boolean;
@@ -189,6 +190,18 @@ describe('standardsCheckCommand', () => {
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
 		expect(checkParams()).toEqual(expect.objectContaining({ cwd, path: 'src/cli', all: true, writeBaseline: true }));
+	});
+
+	test.each([
+		{ config: { 'packages-dir': 'apps' }, expected: expect.objectContaining({ 'packages-dir': 'apps' }) },
+		{ config: undefined, expected: undefined },
+	])('hands the code checks the config the standards ledger read, and none when the repo has none', async ({ config, expected }) => {
+		const { context } = setupCheck({ config });
+
+		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// the one read is the ledger's — the check is handed that config, never left to read the file itself
+		expect(checkParams()?.config).toEqual(expected);
 	});
 
 	test('with no flags it checks the whole repo, reports only what is new, and writes no baseline', async () => {

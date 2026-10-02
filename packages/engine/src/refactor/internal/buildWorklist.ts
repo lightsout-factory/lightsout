@@ -19,7 +19,7 @@ interface Params {
  * run, so it is never recomputed mid-run.
  */
 export const buildWorklist = async ({ cwd, config, path, all = false }: Params): Promise<RefactorWorklist> => {
-	const { findings } = await runStandardsCheck({ cwd, path, all, persist: false });
+	const { findings } = await runStandardsCheck({ cwd, config, path, all, persist: false });
 
 	return {
 		at: new Date().toISOString(),

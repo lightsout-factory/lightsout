@@ -26,7 +26,7 @@ export const standardsWorkList = async ({
 	inherited: StandardsFinding[];
 	uncertain: StandardsFinding[];
 }> => {
-	const { findings } = await runStandardsCheck({ cwd: run.cwd, persist: false, all: true });
+	const { findings } = await runStandardsCheck({ cwd: run.cwd, config: run.config, persist: false, all: true });
 	const scoped = selectStandardsFindings({ findings, changedFiles: standardsScopeFiles({ run }) });
 	const attributed = attributeStandardsFindings({ live: [...scoped.workList, ...scoped.advisories], baseline });
 	const qualifying = [...attributed.introduced, ...attributed.worsened];

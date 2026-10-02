@@ -154,7 +154,7 @@ test('happy path: git truth, per-file writers, refactor loop, coverage/format wi
 	expect(commands.some((entry) => entry.kind === 'format')).toBeTruthy();
 
 	// config snapshot recorded in the manifest
-	expect(result.manifest.config?.gates.check).toBe('true');
+	expect(result.manifest.config).toMatchObject({ gates: { check: 'true' } });
 	// step-start progress emitted
 	expect(progress.some((line) => line.startsWith('step clean-slate — attempt 1'))).toBeTruthy();
 	// gate results streamed

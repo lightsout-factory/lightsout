@@ -15,7 +15,13 @@ interface Params {
 }
 
 export const closeRefactorRun = async ({ run, worklist }: Params): Promise<RefactorResult> => {
-	const finalCheck = await runStandardsCheck({ cwd: run.cwd, path: worklist.path === '.' ? undefined : worklist.path, all: worklist.all, persist: false });
+	const finalCheck = await runStandardsCheck({
+		cwd: run.cwd,
+		config: run.config,
+		path: worklist.path === '.' ? undefined : worklist.path,
+		all: worklist.all,
+		persist: false,
+	});
 	// Finding severity only, mirroring the worklist filter — the burn-down
 	// compares work against work, never advisories.
 	const after = countByRule({ findings: finalCheck.findings.filter((finding) => finding.severity === StandardsSeverity.Blocking) });

@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import { readConfig } from '#src/common/config/readConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import type { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
@@ -130,7 +131,9 @@ describe('initializeRun', () => {
 	test("batches a package's finding under the packages folder lightsout supplies when the config names none", async () => {
 		const cwd = setupPackageRepo();
 
-		const { worklist } = await initializeRun({ cwd, runId: 'run-1', driver, config });
+		// the run checks with the config it is handed, so it is handed the repo's
+		// own, whose strict profile makes the planted defect blocking work
+		const { worklist } = await initializeRun({ cwd, runId: 'run-1', driver, config: await readConfig({ cwd }) });
 
 		const batch = worklist.batches.find((entry) => entry.rule === 'lightsout/multi-export');
 
@@ -144,7 +147,7 @@ describe('initializeRun', () => {
 	test('reads the packages folder the config names, so a repo whose packages live elsewhere is batched by it', async () => {
 		const cwd = setupPackageRepo();
 
-		const { worklist } = await initializeRun({ cwd, runId: 'run-1', driver, config: { ...config, 'packages-dir': 'modules' } });
+		const { worklist } = await initializeRun({ cwd, runId: 'run-1', driver, config: { ...(await readConfig({ cwd })), 'packages-dir': 'modules' } });
 
 		const batch = worklist.batches.find((entry) => entry.rule === 'lightsout/multi-export');
 

@@ -24,7 +24,7 @@ const captureStandardsBaseline = async ({ run }: { run: PipelineRun }) => {
 	run.progress('capturing the pre-edit standards baseline over the whole repository — this is the last moment the tree is the state the run started from');
 
 	try {
-		const { findings, notes } = await runStandardsCheck({ cwd: run.cwd, persist: false, all: true });
+		const { findings, notes } = await runStandardsCheck({ cwd: run.cwd, config: run.config, persist: false, all: true });
 
 		await writeRunStandardsBaseline({
 			cwd: run.cwd,

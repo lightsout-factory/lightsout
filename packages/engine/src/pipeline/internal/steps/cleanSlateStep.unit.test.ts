@@ -44,6 +44,7 @@ jest.mock('#src/pipeline/approvedTests/approveTestFiles.ts', () => ({
 // -------------------------
 interface StandardsCheckParams {
 	cwd: string;
+	config: LightsoutConfig | undefined;
 	path?: string;
 	all?: boolean;
 	writeBaseline?: boolean;
@@ -210,6 +211,29 @@ describe('cleanSlateStep', () => {
 			outcome: undefined,
 			approvedPaths: [['src/widget.unit.test.ts']],
 			baselineDirtyFiles: ['dist/widget.unit.test.js', 'src/widget.unit.test.ts'],
+		});
+	});
+
+	test("captures the pre-edit standards baseline with the run's own config", async () => {
+		const { run } = setupPassingCleanSlateRun({ generated: [], dirtyFiles: [] });
+
+		await cleanSlateStep({ run, ledgerGates: [] })();
+
+		// The package's jest config does not clear mocks between tests, so the
+		// baseline check this run made is the latest call. The config must be the
+		// run's own object, never one read again from the tree under the run.
+		const params = mockRunStandardsCheck.mock.calls.at(-1)?.[0];
+
+		expect({
+			cwd: params?.cwd,
+			sameConfig: params?.config === run.config,
+			persist: params?.persist,
+			all: params?.all,
+		}).toStrictEqual({
+			cwd: '/tmp/lightsout-clean-slate',
+			sameConfig: true,
+			persist: false,
+			all: true,
 		});
 	});
 });

@@ -53,7 +53,7 @@ export const createBatchTools = ({
 	recordUsage,
 }: Params): BatchTools => {
 	const { rationale, reportedFiles, advisoryOutcomes, reportOf, changedFiles, finish } = createBatchRecorder({ cwd, config, attributedFiles });
-	const { checkLive, remainingSiteKeys } = createSiteChecker({ cwd, checkPath, checkAll });
+	const { checkLive, remainingSiteKeys } = createSiteChecker({ cwd, config, checkPath, checkAll });
 	let invocationCount = 0;
 
 	const invoke = ({ label, invocation }: { label: string; invocation: { systemPrompt: string; prompt: string } }) => {

@@ -79,7 +79,8 @@ const setupBatch = async ({ answer, groups = [] }: { answer: (params: { pass: nu
 	writeSource({ dir, path: 'src/two.ts', source: 'export const alphaTwo = 1;\nexport const betaTwo = 2;\n' });
 	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm fixture', { cwd: dir });
 
-	const { findings } = await runStandardsCheck({ cwd: dir, persist: false });
+	const config = await readConfig({ cwd: dir });
+	const { findings } = await runStandardsCheck({ cwd: dir, config, persist: false });
 	const batch: RefactorBatch = {
 		id: 'batch-01:lightsout/multi-export:src',
 		rule: 'lightsout/multi-export',
@@ -89,7 +90,6 @@ const setupBatch = async ({ answer, groups = [] }: { answer: (params: { pass: nu
 	};
 	const executorPrompts: string[] = [];
 	const reviewSystemPrompts: string[] = [];
-	const config = await readConfig({ cwd: dir });
 	const driver: Driver = {
 		name: 'stub',
 		invoke: async ({ prompt, systemPrompt }) => {
@@ -147,7 +147,8 @@ const setupRedGateBatch = async ({ ruling, healOnGuidance = false }: { ruling: R
 	writeSource({ dir, path: 'src/one.ts', source: 'export const alphaOne = 1;\nexport const betaOne = 2;\n' });
 	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm fixture', { cwd: dir });
 
-	const { findings } = await runStandardsCheck({ cwd: dir, persist: false });
+	const config = await readConfig({ cwd: dir });
+	const { findings } = await runStandardsCheck({ cwd: dir, config, persist: false });
 	const batch: RefactorBatch = {
 		id: 'batch-01:lightsout/multi-export:src',
 		rule: 'lightsout/multi-export',
@@ -158,7 +159,6 @@ const setupRedGateBatch = async ({ ruling, healOnGuidance = false }: { ruling: R
 	// Every agent the batch spends, in the order it spent them — which is what
 	// says whether a budget was kept and whether an ending was bought.
 	const spent: string[] = [];
-	const config = await readConfig({ cwd: dir });
 	const driver: Driver = {
 		name: 'stub',
 		invoke: async ({ prompt }) => {
@@ -235,7 +235,8 @@ const setupAppsBatch = async () => {
 	writeSource({ dir, path: 'src/two.ts', source: 'export const alphaTwo = 1;\nexport const betaTwo = 2;\n' });
 	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm fixture', { cwd: dir });
 
-	const { findings } = await runStandardsCheck({ cwd: dir, persist: false });
+	const config = await readConfig({ cwd: dir });
+	const { findings } = await runStandardsCheck({ cwd: dir, config, persist: false });
 	const batch: RefactorBatch = {
 		id: 'batch-01:lightsout/multi-export:src',
 		rule: 'lightsout/multi-export',
@@ -244,7 +245,6 @@ const setupAppsBatch = async () => {
 		advisories: [],
 	};
 	const webGroups: StandardsGroup[] = judgmentGroups.map((group) => ({ ...group, packages: ['web'] }));
-	const config = await readConfig({ cwd: dir });
 	const driver: Driver = {
 		name: 'stub',
 		invoke: async ({ prompt }) => {

@@ -1,7 +1,9 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
+import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { StandardsSnapshot } from '#src/contracts/standardsCheck/StandardsSnapshot.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
@@ -59,6 +61,31 @@ const setupCleanSlateRun = async ({
 	};
 
 	return { dir, driver, spawned, config: await readConfig({ cwd: dir }) };
+};
+
+/**
+ * A standards library outside the repo whose one pack, `acme/house`, loads
+ * cleanly and brings in one rule whose check throws whenever it runs.
+ */
+const writeThrowingPack = () => {
+	const packPath = mkdtempSync(join(tmpdir(), 'lightsout-broken-standards-'));
+	const files = {
+		'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
+		'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
+		'rules/code/house/05-house-broken/rule.md': '---\nsummary: a rule whose check throws\nchecked: true\nseverity: blocking\n---\n\nEvery file is checked.\n',
+		'rules/code/house/05-house-broken/check.ts':
+			"export const check = {\n\tinputKind: 'file-list',\n\trun: () => {\n\t\tthrow new Error('CHECK-SENTINEL');\n\t},\n};\n",
+		'rules/code/house/05-house-broken/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
+		'rules/code/house/05-house-broken/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
+		'packs/house.json': JSON.stringify({ description: 'the house pack', include: { topics: ['acme/code/house'] } }),
+	};
+
+	for (const [path, content] of Object.entries(files)) {
+		mkdirSync(dirname(join(packPath, path)), { recursive: true });
+		writeFileSync(join(packPath, path), content);
+	}
+
+	return packPath;
 };
 
 /** Where one run keeps the deterministic findings from before its first agent edit. */
@@ -155,19 +182,20 @@ test('clean-slate: a red baseline gate writes no standards baseline', async () =
 	expect(existsSync(baselinePathOf({ dir, runId: result.manifest.runId }))).toBe(false);
 });
 
-test('clean-slate: a standards pack that cannot load leaves no baseline and does not fail the run', async () => {
-	// The capture reads the repo's config off disk itself, so a config file
-	// naming a pack no library holds is what makes it throw. The run is
-	// handed standards switched off instead, because every earlier step
-	// resolves the pack in the config it was given and would stop the run
-	// before clean-slate ever ran.
-	const { dir, driver, config } = await setupCleanSlateRun({ scripts: {}, config: { 'standards-pack': 'lightsout/ghost' } });
+test('clean-slate: a standards pack whose check cannot run leaves no baseline and does not fail the run', async () => {
+	// The capture checks with the run's own config, so that config has to name a
+	// pack every earlier step can load — they only resolve its prose — whose one
+	// check then throws the moment the capture runs it.
+	const { dir, driver, config } = await setupCleanSlateRun({
+		scripts: {},
+		config: { 'standards-libraries': { acme: writeThrowingPack() }, 'standards-pack': 'acme/house' },
+	});
 	const progress: string[] = [];
 
 	const result = await runImplementPipeline({
 		cwd: dir,
 		driver,
-		config: { ...config, 'standards-pack': false },
+		config,
 		planPath: 'plan.md',
 		skipRefactor: true,
 		onProgress: (message) => progress.push(message),
@@ -179,7 +207,7 @@ test('clean-slate: a standards pack that cannot load leaves no baseline and does
 	expect(existsSync(baselinePathOf({ dir, runId: result.manifest.runId }))).toBe(false);
 	// and the reader is told what failed, not left to wonder why cleanup has no
 	// comparison point
-	expect(progress.join('\n')).toMatch(/pack lightsout\/ghost: names no pack/);
+	expect(progress.join('\n')).toMatch(/standards rule "acme\/house-broken" threw while checking: CHECK-SENTINEL/);
 });
 
 test('clean-slate: standards explicitly off still writes a baseline with no findings', async () => {
@@ -206,7 +234,7 @@ test('clean-slate: a finding the repo already accepted as debt still lands in th
 		sources: { 'src/index.js': 'export const one = 1;\n', 'src/messy.js': 'export const first = () => 1;\nexport const second = () => 2;\n' },
 	});
 
-	await runStandardsCheck({ cwd: dir, persist: false, writeBaseline: true });
+	await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }), persist: false, writeBaseline: true });
 
 	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
 	const baseline = StandardsSnapshot.safeParse(JSON.parse(readFileSync(baselinePathOf({ dir, runId: result.manifest.runId }), 'utf8')));

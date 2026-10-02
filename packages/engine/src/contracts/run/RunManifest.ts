@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import { ApprovedTestRecord } from '#src/contracts/run/ApprovedTestRecord.ts';
 import { PackagesSource } from '#src/contracts/run/PackagesSource.ts';
@@ -28,8 +27,14 @@ export const RunManifest = z.object({
 	parentRunId: z.string().optional(),
 	/** A resumed run must reuse it. */
 	harness: z.string(),
-	/** A record of what the run started with; resume executes with the current config file. */
-	config: LightsoutConfig.optional(),
+	/**
+	 * The config the run is held to. Kept as plain data so a manifest stays
+	 * readable when the engine's config schema changes; it is validated strictly
+	 * only where a run uses it.
+	 */
+	config: z.record(z.string(), z.unknown()).optional(),
+	/** Absolute, because its reader stands in another checkout: the file the recorded config was read from. Absent on a run that has no recorded path. */
+	configPath: z.string().optional(),
 	status: z.enum(RunStatus),
 	currentStep: z.string().nullable(),
 	steps: z.array(StepRecord),

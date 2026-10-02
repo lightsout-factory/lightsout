@@ -41,6 +41,7 @@ jest.mock('#src/pipeline/approvedTests/approveTestFiles.ts', () => ({
 // -------------------------
 interface StandardsCheckParams {
 	cwd: string;
+	config: LightsoutConfig | undefined;
 	path?: string;
 	all?: boolean;
 	writeBaseline?: boolean;
