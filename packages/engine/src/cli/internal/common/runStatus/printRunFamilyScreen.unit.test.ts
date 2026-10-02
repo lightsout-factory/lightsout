@@ -1,5 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { loadRunFamilyProgressBlock } from '#src/cli/internal/common/progressBlock/loadRunFamilyProgressBlock.ts';
+import { loadRunProgressBlock } from '#src/cli/internal/common/progressBlock/loadRunProgressBlock.ts';
 import { printRunFamilyScreen } from '#src/cli/internal/common/runStatus/printRunFamilyScreen.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
@@ -13,6 +14,7 @@ const pinnedNow = Date.parse('2026-09-10T10:30:00.000Z');
 const coordinatorId = 'cccc0000-coordinator';
 const firstPhaseId = 'pppp1111-phase-one';
 const secondPhaseId = 'qqqq2222-phase-two';
+const loneRunId = 'llll3333-lone-run';
 
 /**
  * A finished phased family on disk — a coordinator naming both of its phase
@@ -68,6 +70,31 @@ const setupFamilyScreen = async () => {
 	return { cwd, family, logged };
 };
 
+/** One run outside any family, and its own block as `loadRunProgressBlock` draws it before stdout is captured. */
+const setupLoneRun = async () => {
+	jest.spyOn(Date, 'now').mockReturnValue(pinnedNow);
+
+	const cwd = await freshCwd();
+
+	await seedRunDir({
+		cwd,
+		manifest: {
+			runId: loneRunId,
+			createdAt: '2026-09-10T10:00:00.000Z',
+			updatedAt: '2026-09-10T10:10:00.000Z',
+			status: RunStatus.Failed,
+			currentStep: null,
+			steps: [{ id: 'implement', status: RunStatus.Failed, attempts: 2, durationMs: 160_000 }],
+			stepOrder: ['implement', 'format'],
+		},
+	});
+
+	const block = await loadRunProgressBlock({ cwd, runId: loneRunId });
+	const { logged } = captureCommandOutput();
+
+	return { cwd, block, logged };
+};
+
 describe('printRunFamilyScreen', () => {
 	test("prints a blank line and the family screen, and returns the root's progress", async () => {
 		const { cwd, family, logged } = await setupFamilyScreen();
@@ -80,5 +107,15 @@ describe('printRunFamilyScreen', () => {
 			rootRunId: coordinatorId,
 		});
 		await expect(printRunFamilyScreen({ cwd, runId: 'ghost-run-id' })).rejects.toThrow(RunNotFoundError);
+	});
+
+	test('a run outside any family is appended as its own block alone, with nothing that clears the screen', async () => {
+		const { cwd, block, logged } = await setupLoneRun();
+
+		const progress = await printRunFamilyScreen({ cwd, runId: loneRunId });
+
+		expect({ logged, progress }).toStrictEqual({ logged: ['', ...block.lines], progress: block.progress });
+		// a frame relayed into a chat transcript must leave the frames before it readable
+		expect(logged.some((line) => line.includes(String.fromCharCode(27)))).toBe(false);
 	});
 });

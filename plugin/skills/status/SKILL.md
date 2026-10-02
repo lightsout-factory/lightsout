@@ -61,3 +61,6 @@ posts what it wrote.
   phase moving now. With nothing going it falls back to the newest run, and
   when several unrelated runs are going it names their ids rather than
   guessing which one was meant.
+- **`--run <id>` shows the same screen for one named run**, however many
+  others are going. For a phased plan, naming the coordinator or any of its
+  phases shows the phase sequence and then the phase moving now.

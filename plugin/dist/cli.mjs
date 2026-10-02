@@ -122451,7 +122451,7 @@ var statusCatalogEntry = {
     {
       name: "run",
       value: "<id>",
-      meaning: "Show one run in detail \u2014 its steps, their outcomes and durations, what it is doing now. Takes the shortened eight-character id reports print. Once the run has finished, its saved final report \u2014 the lines the command printed when it ended \u2014 follows the block.",
+      meaning: "Show one run in detail \u2014 its steps, their outcomes and durations, what it is doing now \u2014 the same screen --now prints, so a phased plan shows its phase sequence followed by the phase moving now, whichever of its runs is named: the coordinator or any phase. Works however many other runs are going. Takes the shortened eight-character id reports print. Once the run has finished, its saved final report \u2014 the lines the command printed when it ended \u2014 follows the block.",
       fallback: "Every run is listed, one line each.",
       shape: "status-run",
       required: false
@@ -165653,6 +165653,12 @@ var printQueueStatus = async ({ cwd, runId, wait }) => {
   return code;
 };
 
+// src/cli/internal/common/runStatus/printAmbiguousRuns.ts
+var printAmbiguousRuns = ({ roots }) => {
+  console.error(`several runs are going: ${roots.join(", ")}`);
+  console.error("pick one with --run <id>");
+};
+
 // src/cli/internal/common/render/printProgressFrame.ts
 var printProgressFrame = ({ progress, lines }) => {
   console.log("");
@@ -165660,15 +165666,6 @@ var printProgressFrame = ({ progress, lines }) => {
     console.log(line);
   }
   return progress;
-};
-
-// src/cli/internal/common/render/printRunProgress.ts
-var printRunProgress = async ({ cwd, runId }) => printProgressFrame(await loadRunProgressBlock({ cwd, runId }));
-
-// src/cli/internal/common/runStatus/printAmbiguousRuns.ts
-var printAmbiguousRuns = ({ roots }) => {
-  console.error(`several runs are going: ${roots.join(", ")}`);
-  console.error("pick one with --run <id>");
 };
 
 // src/cli/internal/common/runStatus/printRunFamilyScreen.ts
@@ -165911,7 +165908,7 @@ var statusCommand = async ({ cwd, flags }) => {
     if (watch) {
       await watchRunProgress({ cwd, runId });
     } else {
-      await printRunProgress({ cwd, runId });
+      await printRunFamilyScreen({ cwd, runId });
       await printRunFinalReport({ cwd, runId });
     }
     return exitCli({ code: 0 });

@@ -9,8 +9,8 @@ interface Params {
 }
 
 /**
- * The one screen `status --now` and every watch frame print, so a watch shows
- * exactly what `--now` would. Answers the family root's progress from the same
+ * The one screen `status --now`, `status --run` and every watch frame print, so
+ * a watch shows exactly what a one-shot status would. Answers the family root's progress from the same
  * read it painted, so a watch decides whether to go on from what it showed.
  *
  * @throws {RunNotFoundError} When no run on disk answers to the given id.
