@@ -11,7 +11,7 @@ import { getDirectory } from '#common/paths/getDirectory.ts';
 import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
 
 export const check: StandardsCheckModule = {
-	inputKind: 'file-text',
+	inputKinds: ['file-text'],
 	/**
 	 * Every import names the file that declares it, so an index file inside a
 	 * package lists names nothing reads through it. A package's entry is the
@@ -20,8 +20,8 @@ export const check: StandardsCheckModule = {
 	 * File text rather than a path list, because which files a package publishes
 	 * is written in its manifest, and only this input carries it.
 	 */
-	run: ({ input }): RawStandardsFinding[] => {
-		const { files, contents } = readFileTexts({ input });
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const { files, contents } = readFileTexts({ input: inputs['file-text'] });
 		const carveOuts = getFrameworkCarveOuts({ dependencies: readManifestDependencies({ contents }) });
 		const entries = readPackageEntries({ contents });
 

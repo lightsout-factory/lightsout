@@ -49,9 +49,13 @@ const buildFileFindings = ({ input }: { input: SyntaxTreeInput }) => {
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'syntax-tree',
+	inputKinds: ['syntax-tree'],
 	// Barrels in this codebase hold multi-line re-export statements, so the
 	// verdict needs parsed statements — a line scan cannot tell the middle of an
 	// `export type { … } from` block from a declaration.
-	run: ({ input }): RawStandardsFinding[] => (input.kind === 'syntax-tree' ? buildFileFindings({ input }) : []),
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const input = inputs['syntax-tree'];
+
+		return input === undefined ? [] : buildFileFindings({ input });
+	},
 };

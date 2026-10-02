@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import type { StandardsCheckInput } from '@lightsout/standards-contracts';
+import type { FileListInput } from '@lightsout/standards-contracts';
 import { StandardsInputKind } from '@lightsout/standards-contracts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { RuleExampleKind } from '#src/contracts/views/RuleExampleKind.ts';
@@ -34,19 +34,19 @@ const checkedRuleMarkdown = '---\nsummary: a source file outside a module\ncheck
 /** A valid check written as a TypeScript author writes one: one finding per file it is handed. */
 const checkTsSource =
 	'export const check = {\n' +
-	"\tinputKind: 'file-list',\n" +
-	'\trun: ({ input }) => input.files.map((path) => ({ siteKey: `loose-file:${path}`, files: [{ path }], detail: `${path} sits outside a module` })),\n' +
+	"\tinputKinds: ['file-list'],\n" +
+	'\trun: ({ inputs }) => inputs["file-list"].files.map((path) => ({ siteKey: `loose-file:${path}`, files: [{ path }], detail: `${path} sits outside a module` })),\n' +
 	'};\n';
 
 /** The same check compiled to plain JavaScript, as a library published to npm ships it. */
 const checkJsSource =
 	'exports.check = {\n' +
-	"\tinputKind: 'file-list',\n" +
-	'\trun: ({ input }) => input.files.map((path) => ({ siteKey: `loose-file:${path}`, files: [{ path }], detail: `${path} sits outside a module (js)` })),\n' +
+	"\tinputKinds: ['file-list'],\n" +
+	'\trun: ({ inputs }) => inputs["file-list"].files.map((path) => ({ siteKey: `loose-file:${path}`, files: [{ path }], detail: `${path} sits outside a module (js)` })),\n' +
 	'};\n';
 
 /** The engine-built input a file-list check reads — only `files` is what the checks above look at. */
-const fileListInput = ({ files }: { files: string[] }): StandardsCheckInput => ({
+const fileListInput = ({ files }: { files: string[] }): FileListInput => ({
 	kind: StandardsInputKind.FileList,
 	cwd: '/repo',
 	source: files,
@@ -219,11 +219,11 @@ describe('parseRuleFolder', () => {
 		const { folderPath } = setupCheckedRuleFolder({ checkFiles: { 'check.js': checkJsSource } });
 
 		const { rule, problems } = await parseCollecting({ folderPath });
-		const findings = await rule?.run?.({ input: fileListInput({ files: ['src/alpha.ts'] }), options: {} });
+		const findings = await rule?.run?.({ inputs: { 'file-list': fileListInput({ files: ['src/alpha.ts'] }) }, options: {} });
 
-		expect({ problems, inputKind: rule?.inputKind, findings }).toStrictEqual({
+		expect({ problems, inputKinds: rule?.inputKinds, findings }).toStrictEqual({
 			problems: [],
-			inputKind: 'file-list',
+			inputKinds: ['file-list'],
 			findings: [{ siteKey: 'loose-file:src/alpha.ts', files: [{ path: 'src/alpha.ts' }], detail: 'src/alpha.ts sits outside a module (js)' }],
 		});
 	});
@@ -236,11 +236,11 @@ describe('parseRuleFolder', () => {
 		const { rule, problems } = await parseCollecting({ folderPath });
 
 		// the check covers part of the rule, so code runs it and an agent reads the rest
-		expect({ problems, checked: rule?.checked, reviewed: rule?.reviewed, inputKind: rule?.inputKind }).toStrictEqual({
+		expect({ problems, checked: rule?.checked, reviewed: rule?.reviewed, inputKinds: rule?.inputKinds }).toStrictEqual({
 			problems: [],
 			checked: true,
 			reviewed: true,
-			inputKind: 'file-list',
+			inputKinds: ['file-list'],
 		});
 	});
 
@@ -306,14 +306,14 @@ describe('parseRuleFolder', () => {
 			installedRule: installed?.rule,
 			installedProblems: installed?.problems,
 			linkedProblems: linked?.problems,
-			linkedInputKind: linked?.rule?.inputKind,
+			linkedInputKinds: linked?.rule?.inputKinds,
 		}).toEqual({
 			installedRule: undefined,
 			installedProblems: [
 				expect.stringMatching(/^(?=.*code\/style\/01-loose-file)(?=.*check\.ts)(?=.*node_modules)(?=.*check\.js)(?!.*imported from node_modules)/),
 			],
 			linkedProblems: [],
-			linkedInputKind: 'file-list',
+			linkedInputKinds: ['file-list'],
 		});
 	});
 

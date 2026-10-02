@@ -26,8 +26,8 @@ export interface LoadedStandardsRule {
 	defaultOptions: Record<string, number>;
 	/** Full names of the rules this rule's text depends on — the rule.md `requires` list, resolved when the library is read. */
 	requires: string[];
-	/** Present iff checked. */
-	inputKind?: StandardsInputKind;
+	/** Every input kind the check declared; present iff checked. */
+	inputKinds?: StandardsInputKind[];
 	/** The validated check, present iff checked. */
 	run?: StandardsCheckFunction;
 	/** How rule.md says its examples are shaped; absent when it declares none, and a page reads the shape off the files. */

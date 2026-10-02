@@ -1,10 +1,10 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupOtherKindInput, setupSyntaxTreeInput } from '@lightsout/standards-testkit';
+import { setupSyntaxTreeInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 describe('type-alias-indirection check', () => {
 	test('asks for parsed trees, since a rename and a derivation differ by two characters', () => {
-		expect(check.inputKind).toBe('syntax-tree');
+		expect(check.inputKinds).toStrictEqual(['syntax-tree']);
 	});
 
 	test('reports a file whose only export renames another type', async () => {
@@ -14,7 +14,7 @@ describe('type-alias-indirection check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -34,7 +34,7 @@ describe('type-alias-indirection check', () => {
 			sources: [['src/common/types/Config.ts', 'export type Config = ReturnType<typeof buildConfig>;\n']],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -49,7 +49,7 @@ describe('type-alias-indirection check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -57,13 +57,13 @@ describe('type-alias-indirection check', () => {
 	test('a generic alias is a shape of its own, whatever it wraps', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/common/types/Boxed.ts', 'export type Boxed<T> = Container<T>;\n']] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('answers nothing for an input kind it did not ask for', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

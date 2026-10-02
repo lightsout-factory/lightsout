@@ -1,10 +1,10 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupFileTextInput, setupOtherKindInput } from '@lightsout/standards-testkit';
+import { setupFileTextInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 describe('barrel-star check', () => {
 	test('asks for file text, since the verdict is in the barrel’s own re-export lines', () => {
-		expect(check.inputKind).toBe('file-text');
+		expect(check.inputKinds).toStrictEqual(['file-text']);
 	});
 
 	test('reports a module barrel that re-exports with `export *`', async () => {
@@ -15,7 +15,7 @@ describe('barrel-star check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -36,7 +36,7 @@ describe('barrel-star check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -56,7 +56,7 @@ describe('barrel-star check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -69,7 +69,7 @@ describe('barrel-star check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['barrel-star:src/index.ts']);
 	});
@@ -83,7 +83,7 @@ describe('barrel-star check', () => {
 			files: ['src/routes/index.tsx'],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -96,7 +96,7 @@ describe('barrel-star check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -118,7 +118,7 @@ describe('barrel-star check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -144,13 +144,13 @@ describe('barrel-star check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

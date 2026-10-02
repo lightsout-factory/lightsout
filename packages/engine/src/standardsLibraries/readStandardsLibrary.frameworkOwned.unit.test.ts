@@ -40,8 +40,8 @@ const ruleFiles = ({ path, markdown }: { path: string; markdown: string }) => ({
  */
 const _checkSource =
 	'export const check = {\n' +
-	"\tinputKind: 'file-list',\n" +
-	'\trun: ({ input }) => input.files.map((path) => ({ siteKey: `loose-file:${path}`, files: [{ path }], detail: `${path} sits outside a module` })),\n' +
+	"\tinputKinds: ['file-list'],\n" +
+	'\trun: ({ inputs }) => inputs["file-list"].files.map((path) => ({ siteKey: `loose-file:${path}`, files: [{ path }], detail: `${path} sits outside a module` })),\n' +
 	'};\n';
 
 /** The engine-built input a file-list check reads — only `files` is what the check above looks at. */

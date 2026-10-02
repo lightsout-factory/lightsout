@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupImportGraphInput, setupOtherKindInput } from '@lightsout/standards-testkit';
+import { setupImportGraphInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 /** Each `[from, to]` pair is one import. Every file is in scope unless `scope` narrows the run. */
@@ -21,7 +21,7 @@ describe('circular-dependencies check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -42,7 +42,7 @@ describe('circular-dependencies check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -65,7 +65,7 @@ describe('circular-dependencies check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -88,7 +88,7 @@ describe('circular-dependencies check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey).sort()).toStrictEqual(['circular-dependencies:src/a.ts|src/b.ts', 'circular-dependencies:src/y.ts|src/z.ts']);
 	});
@@ -102,8 +102,8 @@ describe('circular-dependencies check', () => {
 			['src/d.ts', 'src/b.ts'],
 		];
 
-		const forward = await check.run({ input: setupImports({ imports }), options: {} });
-		const backward = await check.run({ input: setupImports({ imports: [...imports].reverse() }), options: {} });
+		const forward = await check.run({ inputs: { 'import-graph': setupImports({ imports }) }, options: {} });
+		const backward = await check.run({ inputs: { 'import-graph': setupImports({ imports: [...imports].reverse() }) }, options: {} });
 
 		expect(backward).toStrictEqual(forward);
 		expect(forward.map(({ siteKey }) => siteKey)).toStrictEqual(['circular-dependencies:src/a.ts|src/b.ts|src/c.ts']);
@@ -118,7 +118,7 @@ describe('circular-dependencies check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['circular-dependencies:src/a.ts|src/b.ts']);
 	});
@@ -132,7 +132,7 @@ describe('circular-dependencies check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -147,7 +147,7 @@ describe('circular-dependencies check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -161,7 +161,7 @@ describe('circular-dependencies check', () => {
 			standardsLibraries: ['standards'],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['circular-dependencies:standards/rules/tests/a/check.ts|standards/rules/tests/b/check.ts']);
 	});
@@ -174,7 +174,7 @@ describe('circular-dependencies check', () => {
 			['src/z.ts', 'src/y.ts'],
 		];
 
-		const findings = await check.run({ input: setupImports({ imports, scope: ['src/b.ts'] }), options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': setupImports({ imports, scope: ['src/b.ts'] }) }, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['circular-dependencies:src/a.ts|src/b.ts']);
 	});
@@ -183,13 +183,16 @@ describe('circular-dependencies check', () => {
 		const depth = 50_000;
 		const imports = Array.from({ length: depth }, (_, index): [string, string] => [`src/step${index}.ts`, `src/step${index + 1}.ts`]);
 
-		const findings = await check.run({ input: setupImports({ imports: [...imports, [`src/step${depth}.ts`, `src/step${depth - 1}.ts`]] }), options: {} });
+		const findings = await check.run({
+			inputs: { 'import-graph': setupImports({ imports: [...imports, [`src/step${depth}.ts`, `src/step${depth - 1}.ts`]] }) },
+			options: {},
+		});
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([`circular-dependencies:src/step${depth - 1}.ts|src/step${depth}.ts`]);
 	});
 
-	test('answers nothing for an input of another kind', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('answers nothing when its input is missing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

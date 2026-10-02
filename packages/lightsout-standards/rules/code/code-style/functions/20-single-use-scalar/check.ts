@@ -102,8 +102,12 @@ const buildFileFindings = ({ input }: { input: SyntaxTreeInput }) => {
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'syntax-tree',
+	inputKinds: ['syntax-tree'],
 	// Both halves of the question need the tree: whether the initializer is a bare
 	// scalar rather than a map, and how many places actually read the name.
-	run: ({ input }): RawStandardsFinding[] => (input.kind === 'syntax-tree' ? buildFileFindings({ input }) : []),
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const input = inputs['syntax-tree'];
+
+		return input === undefined ? [] : buildFileFindings({ input });
+	},
 };

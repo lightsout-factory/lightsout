@@ -28,12 +28,12 @@ const groupByPair = ({ spans }: { spans: CloneSpan[] }) => {
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'clone-spans',
+	inputKinds: ['clone-spans'],
 	// Every span shared by the same pair of files is ONE finding: the identity is
 	// the paths, so a second copy between two files already flagged is more
 	// evidence for that finding rather than another one to accept or resolve.
-	run: ({ input }): RawStandardsFinding[] => {
-		const spans = input.kind === 'clone-spans' ? input.spans : [];
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const spans = inputs['clone-spans']?.spans ?? [];
 
 		return [...groupByPair({ spans }).values()].map(({ files, spans: count, longest }) =>
 			buildRawFinding({

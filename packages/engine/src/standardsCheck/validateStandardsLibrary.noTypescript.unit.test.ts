@@ -27,8 +27,8 @@ jest.mock('node:module', () => {
 // -------------------------
 
 /** A check that objects to any file named `banned.ts` — small enough to reason about, real enough to fail. */
-const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.FileList ? input.files : [])
+const bansTheBannedFile: StandardsCheckFunction = ({ inputs }) =>
+	(inputs[StandardsInputKind.FileList]?.files ?? [])
 		.filter((file) => file.endsWith('banned.ts'))
 		.map((path) => ({
 			siteKey: `no-banned-file:${path}`,
@@ -86,7 +86,10 @@ const setupPack = ({ frameworkOwned = false }: { frameworkOwned?: boolean } = {}
 		frameworkOwnedFixturesPath,
 		documents: [],
 		packs: [],
-		rules: [rule({ id: 'dead-export', inputKind: StandardsInputKind.SyntaxTree }), rule({ id: 'no-banned-file', inputKind: StandardsInputKind.FileList })],
+		rules: [
+			rule({ id: 'dead-export', inputKinds: [StandardsInputKind.SyntaxTree] }),
+			rule({ id: 'no-banned-file', inputKinds: [StandardsInputKind.FileList] }),
+		],
 	};
 
 	return { pack };

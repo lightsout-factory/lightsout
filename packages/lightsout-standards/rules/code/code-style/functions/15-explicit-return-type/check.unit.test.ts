@@ -1,10 +1,10 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupOtherKindInput, setupSyntaxTreeInput } from '@lightsout/standards-testkit';
+import { setupSyntaxTreeInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 describe('explicit-return-type check', () => {
 	test('asks for parsed trees, since the missing annotation is a fact of the declaration', () => {
-		expect(check.inputKind).toBe('syntax-tree');
+		expect(check.inputKinds).toStrictEqual(['syntax-tree']);
 	});
 
 	test('reports an exported arrow that declares no return type', async () => {
@@ -12,7 +12,7 @@ describe('explicit-return-type check', () => {
 			sources: [['src/users/getUserDisplayName.ts', "export const getUserDisplayName = ({ user }: Params) => user?.name ?? 'Unknown';\n"]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -31,7 +31,7 @@ describe('explicit-return-type check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -53,7 +53,7 @@ describe('explicit-return-type check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("exported 'getUserDisplayName' declares no return type");
 	});
@@ -64,7 +64,7 @@ describe('explicit-return-type check', () => {
 	])('leaves $shape that states its return type', async ({ text }) => {
 		const input = setupSyntaxTreeInput({ sources: [['src/users/getUserDisplayName.ts', `${text}\n`]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -75,7 +75,7 @@ describe('explicit-return-type check', () => {
 	])('leaves $shape whose type parameters are the contract', async ({ text }) => {
 		const input = setupSyntaxTreeInput({ sources: [['src/issues/pickFirstMatch.ts', `${text}\n`]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -85,7 +85,7 @@ describe('explicit-return-type check', () => {
 			sources: [['src/users/getUserDisplayName.ts', 'export const getUserDisplayName: DisplayNameReader = ({ user }) => user.name;\n']],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -93,7 +93,7 @@ describe('explicit-return-type check', () => {
 	test('leaves every export of a `.tsx` file, where framework components live', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/ui/Badge.tsx', 'export const Badge = ({ label }: { label: string }) => label;\n']] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -110,7 +110,7 @@ describe('explicit-return-type check', () => {
 	])('leaves $shape the file keeps to itself, since inference is precise for an internal', async ({ text }) => {
 		const input = setupSyntaxTreeInput({ sources: [['src/users/getName.ts', `${text}\n`]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -131,7 +131,7 @@ describe('explicit-return-type check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -143,7 +143,7 @@ describe('explicit-return-type check', () => {
 	])('leaves an export that is $shape', async ({ text }) => {
 		const input = setupSyntaxTreeInput({ sources: [['src/users/settings.ts', `${text}\n`]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -153,7 +153,7 @@ describe('explicit-return-type check', () => {
 			sources: [['src/users/index.ts', ['export default function ({ user }: Params) {', '\treturn user.name;', '}'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -161,7 +161,7 @@ describe('explicit-return-type check', () => {
 	test('leaves an exported function destructured into a pattern rather than bound to one name', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/users/handlers.ts', 'export const { getUserDisplayName } = () => 1;\n']] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -169,7 +169,7 @@ describe('explicit-return-type check', () => {
 	test('leaves a statement that cannot carry an export keyword at all', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/users/register.ts', "console.log('registered');\n"]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -190,7 +190,7 @@ describe('explicit-return-type check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -207,7 +207,7 @@ describe('explicit-return-type check', () => {
 			sources: [['src/users/readers.ts', 'export const getFirstName = ({ user }: Params) => user.first,\n\tgetLastName = ({ user }: Params) => user.last;\n']],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("exported 'getFirstName' declares no return type; exported 'getLastName' declares no return type");
 	});
@@ -220,7 +220,7 @@ describe('explicit-return-type check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -237,7 +237,7 @@ describe('explicit-return-type check', () => {
 			sources: [['src/runs/queries/runsQueryOptions.ts', "export const runsQueryOptions = () => queryOptions({ queryKey: ['runs'], queryFn: listRuns });\n"]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -247,7 +247,7 @@ describe('explicit-return-type check', () => {
 			sources: [['src/runs/utils/buildRunsKey.ts', "export const buildRunsKey = () => ['runs'];\n"]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.files).toStrictEqual([{ path: 'src/runs/utils/buildRunsKey.ts' }]);
 	});
@@ -255,7 +255,7 @@ describe('explicit-return-type check', () => {
 	test('reports a file merely NAMED queries.ts, since the exemption is a folder the factories live in', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/runs/queries.ts', "export const queries = () => ['runs'];\n"]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.files).toStrictEqual([{ path: 'src/runs/queries.ts' }]);
 	});
@@ -265,13 +265,13 @@ describe('explicit-return-type check', () => {
 			sources: [['src/runs/queries/common/buildRunsOptions.ts', "export const buildRunsOptions = () => queryOptions({ queryKey: ['runs'] });\n"]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

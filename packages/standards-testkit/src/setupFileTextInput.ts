@@ -1,4 +1,4 @@
-import type { FileTextInput, StandardsCheckInput } from '@lightsout/standards-contracts';
+import type { FileTextInput } from '@lightsout/standards-contracts';
 import { StandardsInputKind } from '@lightsout/standards-contracts';
 
 interface Params extends Partial<Omit<FileTextInput, 'kind' | 'contents'>> {
@@ -10,7 +10,7 @@ interface Params extends Partial<Omit<FileTextInput, 'kind' | 'contents'>> {
  * absent from `contents` — what a rule about unreadable files needs — is
  * expressed by passing `files` explicitly.
  */
-export const setupFileTextInput = ({ contents = [], ...overrides }: Params = {}): StandardsCheckInput => {
+export const setupFileTextInput = ({ contents = [], ...overrides }: Params = {}): FileTextInput => {
 	const paths = contents.map(([path]) => path);
 
 	return {

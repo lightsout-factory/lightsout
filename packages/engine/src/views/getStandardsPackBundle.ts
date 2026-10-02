@@ -16,7 +16,7 @@ import { toStandardsPackRuleListing } from '#src/views/internal/common/utils/toS
 const fixtureSideOrder = [FixtureSide.Pass, FixtureSide.Fail];
 
 const toRuleView = async ({ rule }: { rule: LoadedStandardsRule }) => {
-	// `run` and `inputKind` are deliberately dropped: a function cannot cross the
+	// `run` and `inputKinds` are deliberately dropped: a function cannot cross the
 	// wire, and no page shows a check's source code.
 	const fixtures = await readPackFixtures({ fixturesPath: rule.fixturesPath });
 	const fixtureCounts = {

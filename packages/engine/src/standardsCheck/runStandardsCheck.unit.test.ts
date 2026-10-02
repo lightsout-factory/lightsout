@@ -205,9 +205,9 @@ test('runStandardsCheck reports stage progress and leaves the evidence file alon
 
 	// the opening progress line counts the scope: ${messages[0]}
 	expect(messages[0]?.includes('1 source file(s)')).toBeTruthy();
-	// progress is reported per input kind, through the last one that had rules
+	// progress is reported per input kind, as each one is built for the rules
 	// to run:\n${messages.join('\n')}
-	expect(messages).toContain('file-text: done');
+	expect(messages).toContain('file-text: built');
 	// the check still reports its findings
 	expect(findings.length > 0).toBeTruthy();
 	// persist: false never clobbers the standalone report
@@ -268,8 +268,8 @@ const writeOwnPack = () => {
 				'---\nsummary: a source file outside a module\nchecked: true\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
 			'rules/code/house/05-house-no-loose-files/check.ts':
 				'export const check = {\n' +
-				"\tinputKind: 'file-list',\n" +
-				'\trun: ({ input }) => input.files.map((path) => ({ siteKey: `house-no-loose-files:${path}`, files: [{ path }], detail: `${path} sits outside a module` })),\n' +
+				"\tinputKinds: ['file-list'],\n" +
+				'\trun: ({ inputs }) => inputs["file-list"].files.map((path) => ({ siteKey: `house-no-loose-files:${path}`, files: [{ path }], detail: `${path} sits outside a module` })),\n' +
 				'};\n',
 			'rules/code/house/05-house-no-loose-files/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
 			'rules/code/house/05-house-no-loose-files/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',

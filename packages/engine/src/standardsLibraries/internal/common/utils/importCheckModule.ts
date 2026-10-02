@@ -22,7 +22,7 @@ export const importCheckModule = async ({ checkPath }: Params): Promise<Standard
 
 	if (!parsed.success) {
 		throw new Error(
-			`${basename(checkPath)} must export \`check\` as { inputKind, run } (${checkPath}): ${formatSchemaIssues({ issues: parsed.error.issues, subject: 'check' })}`,
+			`${basename(checkPath)} must export \`check\` as { inputKinds, run } (${checkPath}): ${formatSchemaIssues({ issues: parsed.error.issues, subject: 'check' })}`,
 		);
 	}
 

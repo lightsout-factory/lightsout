@@ -1,4 +1,4 @@
-import type { ImportGraphInput, StandardsCheckInput } from '@lightsout/standards-contracts';
+import type { ImportGraphInput } from '@lightsout/standards-contracts';
 import { StandardsInputKind } from '@lightsout/standards-contracts';
 
 interface Params extends Partial<Omit<ImportGraphInput, 'kind' | 'dependencies'>> {
@@ -7,7 +7,7 @@ interface Params extends Partial<Omit<ImportGraphInput, 'kind' | 'dependencies'>
 }
 
 /** Both ends of every edge become known files. */
-export const setupImportGraphInput = ({ edges = [], dependencies = [], ...overrides }: Params = {}): StandardsCheckInput => {
+export const setupImportGraphInput = ({ edges = [], dependencies = [], ...overrides }: Params = {}): ImportGraphInput => {
 	const paths = [...new Set(edges.flatMap(({ from, to }) => [from, to]))];
 
 	return {

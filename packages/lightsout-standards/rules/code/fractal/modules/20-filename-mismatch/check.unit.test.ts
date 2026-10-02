@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupFileTextInput, setupOtherKindInput } from '@lightsout/standards-testkit';
+import { setupFileTextInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 /** A repo as the engine hands it to a file-text rule, with the test files held out of the scope it judges. */
@@ -14,13 +14,13 @@ const setupUnreadableFileInput = ({ path }: { path: string }) => {
 
 describe('filename-mismatch check', () => {
 	test('asks for file text, since the export it compares against is inside the file', () => {
-		expect(check.inputKind).toBe('file-text');
+		expect(check.inputKinds).toStrictEqual(['file-text']);
 	});
 
 	test('reports a file whose only export is called something else', async () => {
 		const input = setupRepo({ contents: [['src/billing/chargeLabel.ts', 'export const getChargeLabel = (): number => 1;']] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -35,7 +35,7 @@ describe('filename-mismatch check', () => {
 	test('accepts a file named after its export', async () => {
 		const input = setupRepo({ contents: [['src/billing/getChargeLabel.ts', 'export const getChargeLabel = (): number => 1;']] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -48,7 +48,7 @@ describe('filename-mismatch check', () => {
 	])('accepts $shape, whose casing the framework dictates', async ({ path, declaration }) => {
 		const input = setupRepo({ contents: [[path, declaration]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -58,7 +58,7 @@ describe('filename-mismatch check', () => {
 			contents: [['src/config/config.ts', ['export interface Config {', '\tname: string;', '}', '', 'export const defaultConfig = { name: 1 };'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -66,7 +66,7 @@ describe('filename-mismatch check', () => {
 	test('stays silent on a file whose text the engine could not read', async () => {
 		const input = setupUnreadableFileInput({ path: 'src/billing/chargeLabel.ts' });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -74,7 +74,7 @@ describe('filename-mismatch check', () => {
 	test('stays silent on a file that exports no declaration of its own', async () => {
 		const input = setupRepo({ contents: [['src/billing/chargeLabel.ts', "export { getChargeLabel } from '@/billing/getChargeLabel';"]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -82,7 +82,7 @@ describe('filename-mismatch check', () => {
 	test('ignores a barrel, which declares nothing of its own', async () => {
 		const input = setupRepo({ contents: [['src/billing/index.ts', 'export const getChargeLabel = (): number => 1;']] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -93,7 +93,7 @@ describe('filename-mismatch check', () => {
 			tests: ['src/billing/getChargeLabel.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -106,7 +106,7 @@ describe('filename-mismatch check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -119,7 +119,7 @@ describe('filename-mismatch check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -139,7 +139,7 @@ describe('filename-mismatch check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings[0]?.files).toStrictEqual([{ path: 'packages/engine/src/routes/chargeLabel.ts' }]);
 	});
@@ -152,7 +152,7 @@ describe('filename-mismatch check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -165,7 +165,7 @@ describe('filename-mismatch check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -178,7 +178,7 @@ describe('filename-mismatch check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -201,7 +201,7 @@ describe('filename-mismatch check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -214,7 +214,7 @@ describe('filename-mismatch check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -227,7 +227,7 @@ describe('filename-mismatch check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -239,8 +239,8 @@ describe('filename-mismatch check', () => {
 		]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

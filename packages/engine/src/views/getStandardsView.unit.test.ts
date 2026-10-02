@@ -32,7 +32,7 @@ const writeStandardsPack = async () => {
 			'rules/code/house/05-house-loose-file/rule.md':
 				'---\nsummary: a source file outside a module\nchecked: true\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
 			'rules/code/house/05-house-loose-file/check.ts':
-				"export const check = {\n\tinputKind: 'file-list',\n\trun: ({ input }) => input.files.map((path) => ({ siteKey: `house-loose-file:${path}`, files: [{ path }], detail: 'loose' })),\n};\n",
+				"export const check = {\n\tinputKinds: ['file-list'],\n\trun: ({ inputs }) => input.files.map((path) => ({ siteKey: `house-loose-file:${path}`, files: [{ path }], detail: 'loose' })),\n};\n",
 			'rules/code/house/05-house-loose-file/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
 			'rules/code/house/05-house-loose-file/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
 			'rules/code/house/10-house-name-things-well/rule.md':

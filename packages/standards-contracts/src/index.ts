@@ -11,6 +11,7 @@ export type {
 	TestFileInput,
 	TypeCheckerInput,
 } from '#src/StandardsCheckInput.ts';
+export type { StandardsCheckInputs } from '#src/StandardsCheckInputs.ts';
 export { StandardsCheckModule } from '#src/StandardsCheckModule.ts';
 export { StandardsInputKind } from '#src/StandardsInputKind.ts';
 export { StandardsLibraryRoot } from '#src/StandardsLibraryRoot.ts';

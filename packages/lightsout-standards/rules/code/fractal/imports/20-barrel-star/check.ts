@@ -9,12 +9,12 @@ import { readBarrelExports } from '#common/modules/readBarrelExports.ts';
 import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
 
 export const check: StandardsCheckModule = {
-	inputKind: 'file-text',
+	inputKinds: ['file-text'],
 	// `export *` publishes whatever the target happens to export, the opposite of
 	// a contract listing what consumers may use. A package's entry is where that
 	// contract matters most, so every index file is judged, the entry included.
-	run: ({ input }): RawStandardsFinding[] => {
-		const { files, contents } = readFileTexts({ input });
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const { files, contents } = readFileTexts({ input: inputs['file-text'] });
 		const fileSet = new Set(files);
 		const carveOuts = getFrameworkCarveOuts({ dependencies: readManifestDependencies({ contents }) });
 

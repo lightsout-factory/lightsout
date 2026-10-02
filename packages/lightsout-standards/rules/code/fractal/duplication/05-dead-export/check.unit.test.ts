@@ -1,11 +1,11 @@
 import { describe, expect, test } from '@jest/globals';
-import type { StandardsCheckInput } from '@lightsout/standards-contracts';
+import type { FileTextInput } from '@lightsout/standards-contracts';
 import { StandardsInputKind } from '@lightsout/standards-contracts';
-import { setupOtherKindInput } from '@lightsout/standards-testkit';
+
 import { check } from './check.ts';
 
 /** A repo as the engine hands it to a file-text rule: every path in scope, with its text. */
-const setupFileTextInput = ({ contents }: { contents: Array<[string, string]> }): StandardsCheckInput => {
+const setupFileTextInput = ({ contents, standardsLibraries = [] }: { contents: Array<[string, string]>; standardsLibraries?: string[] }): FileTextInput => {
 	const files = contents.map(([path]) => path);
 
 	return {
@@ -16,13 +16,13 @@ const setupFileTextInput = ({ contents }: { contents: Array<[string, string]> })
 		files,
 		referenceFiles: [],
 		contents: new Map(contents),
-		standardsLibraries: [],
+		standardsLibraries,
 	};
 };
 
 describe('dead-export check', () => {
 	test('asks for file text, since the verdict counts mentions across the repo', () => {
-		expect(check.inputKind).toBe('file-text');
+		expect(check.inputKinds).toStrictEqual(['file-text']);
 	});
 
 	test('reports an export no module or test mentions, a folder barrel listing it aside', async () => {
@@ -35,7 +35,7 @@ describe('dead-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -57,13 +57,57 @@ describe('dead-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('every dead export of one file lands in a single finding that names each', async () => {
+		const input = setupFileTextInput({ contents: [['src/feature/tokens.ts', 'export const alphaToken = 1;\nexport const betaToken = 2;']] });
+
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
+
+		expect(findings.map((finding) => finding.detail)).toStrictEqual(["'alphaToken', 'betaToken' are referenced nowhere else"]);
+	});
+
+	test('inside a declared library, a rule under tests/ declares an export the check judges', async () => {
+		const input = setupFileTextInput({
+			contents: [['standards/rules/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
+			standardsLibraries: ['standards'],
+		});
+
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
+
+		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['dead-export:standards/rules/tests/code-style/10-rule/check.ts']);
+	});
+
+	test('the same path with no library declared above it is test code, whose own helpers are nobody’s public API', async () => {
+		const input = setupFileTextInput({ contents: [['standards/rules/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']] });
+
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
+
+		expect(findings).toStrictEqual([]);
+	});
+
+	test('derives the framework carve-outs from the manifests in scope, so a route file consuming a screen is its consumer', async () => {
+		const input = setupFileTextInput({
+			contents: [
+				['package.json', '{ "dependencies": { "@tanstack/react-start": "1.0.0" } }'],
+				['src/routes/index.tsx', "import { RunsIndex } from '../features/app/screens/RunsIndex';\n\nexport const Route = { component: RunsIndex };"],
+				['src/features/app/screens/RunsIndex/index.ts', "export { RunsIndex } from './RunsIndex';"],
+				['src/features/app/screens/RunsIndex/RunsIndex.tsx', 'export const RunsIndex = (): null => null;'],
+			],
+		});
+
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
+
+		// with no carve-out derived, that route file reads as a barrel and the
+		// screen it renders as used by nobody
+		expect(findings).toStrictEqual([]);
+	});
+
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

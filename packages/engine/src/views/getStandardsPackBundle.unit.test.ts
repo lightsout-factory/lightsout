@@ -32,8 +32,8 @@ const setupThisRepo = () => ({ cwd: join(__dirname, '..', '..', '..', '..') });
  */
 const zebraCheckSource =
 	'export const check = {\n' +
-	"\tinputKind: 'file-list',\n" +
-	'\trun: ({ input }) => input.files.map((path) => ({ siteKey: `zebra-check:${path}`, files: [{ path }], detail: `${path} is striped` })),\n' +
+	"\tinputKinds: ['file-list'],\n" +
+	'\trun: ({ inputs }) => inputs["file-list"].files.map((path) => ({ siteKey: `zebra-check:${path}`, files: [{ path }], detail: `${path} is striped` })),\n' +
 	'};\n';
 
 /**

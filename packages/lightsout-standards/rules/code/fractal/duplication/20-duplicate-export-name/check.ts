@@ -25,13 +25,13 @@ const groupByName = ({ files, tests }: { files: string[]; tests: string[] }) => 
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'file-list',
+	inputKinds: ['file-list'],
 	// Tier 0 of the duplication ladder: one export per file makes a filename an
 	// export name, so name-level comparison is nearly free and runs before any
 	// file is opened. Advisory, because same-name siblings can be legitimate —
 	// per-package analogs of one concept.
-	run: ({ input }): RawStandardsFinding[] => {
-		const { files, tests } = readPathLists({ input });
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const { files, tests } = readPathLists({ input: inputs['file-list'] });
 
 		return [...groupByName({ files, tests })]
 			.filter(([, paths]) => paths.length > 1)

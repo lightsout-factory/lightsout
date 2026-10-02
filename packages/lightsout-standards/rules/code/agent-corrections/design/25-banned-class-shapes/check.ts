@@ -46,16 +46,19 @@ const getBannedShape = ({ node, compiler }: { node: ts.ClassDeclaration; compile
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'syntax-tree',
+	inputKinds: ['syntax-tree'],
 	// Both banned shapes are facts of the declaration itself — what its members
 	// are and which of them bind state — so the tree answers the whole question.
-	run: ({ input }): RawStandardsFinding[] =>
-		input.kind === 'syntax-tree'
-			? buildClassFindings({
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const input = inputs['syntax-tree'];
+
+		return input === undefined
+			? []
+			: buildClassFindings({
 					input,
 					rule: 'banned-class-shapes',
 					guidance: 'Write module functions instead — one exported function per file — and delete the class.',
 					getViolation: getBannedShape,
-				})
-			: [],
+				});
+	},
 };

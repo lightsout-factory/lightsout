@@ -39,14 +39,14 @@ const groupByNameKey = ({ files, tests }: { files: string[]; tests: string[] }) 
 const isFrameworkPair = ({ names }: { names: string[] }) => new Set(names.map((name) => collapseCasing({ name }))).size < 2;
 
 export const check: StandardsCheckModule = {
-	inputKind: 'file-list',
+	inputKinds: ['file-list'],
 	// Tier 0 of the duplication ladder, alongside the duplicate-name rule: one
 	// export per file makes a filename an export name, so the whole comparison
 	// runs before any file is opened. Advisory, because the vocabulary's own
 	// carve-out — a domain that standardized on `fetchData` keeps its verb —
 	// makes some of these deliberate.
-	run: ({ input }): RawStandardsFinding[] => {
-		const { files, tests } = readPathLists({ input });
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const { files, tests } = readPathLists({ input: inputs['file-list'] });
 
 		return [...groupByNameKey({ files, tests }).values()]
 			.filter((group) => group.size > 1 && !isFrameworkPair({ names: [...group.keys()] }))

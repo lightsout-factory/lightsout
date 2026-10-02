@@ -131,7 +131,7 @@ describe('readStandardsLibrary', () => {
 		const { pack } = await setupDefaultPack();
 
 		const checked = pack.rules.filter((rule) => rule.checked);
-		const runnable = checked.filter((rule) => typeof rule.run === 'function' && rule.inputKind !== undefined);
+		const runnable = checked.filter((rule) => typeof rule.run === 'function' && rule.inputKinds !== undefined);
 
 		// the honesty rule at load time is what makes this hold — this pins that it holds for the shipped pack
 		expect(checked.length).toBeGreaterThan(0);
@@ -173,7 +173,7 @@ describe('readStandardsLibrary', () => {
 		);
 		const importsThroughAlias = checks.some(({ specifiers }) => specifiers.some((specifier) => specifier.startsWith('#common/')));
 		const checked = pack.rules.filter((rule) => rule.checked);
-		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKind === undefined).map((rule) => rule.name);
+		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKinds === undefined).map((rule) => rule.name);
 
 		// an empty check list would make "every check" hold vacuously
 		expect({ checkFiles: checks.length > 0, checkedRules: checked.length > 0 }).toStrictEqual({
@@ -192,7 +192,7 @@ describe('readStandardsLibrary', () => {
 		const { pack, rootFolders, rulesFolders } = await setupLibraryLayout();
 
 		const checked = pack.rules.filter((rule) => rule.checked);
-		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKind === undefined).map((rule) => rule.name);
+		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKinds === undefined).map((rule) => rule.name);
 
 		// an empty checked-rule list would make "every checked rule" hold vacuously
 		expect(checked.length).toBeGreaterThan(0);

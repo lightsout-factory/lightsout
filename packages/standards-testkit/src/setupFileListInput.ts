@@ -1,4 +1,4 @@
-import type { FileListInput, StandardsCheckInput } from '@lightsout/standards-contracts';
+import type { FileListInput } from '@lightsout/standards-contracts';
 import { StandardsInputKind } from '@lightsout/standards-contracts';
 
 interface Params extends Partial<Omit<FileListInput, 'kind' | 'dependencies'>> {
@@ -11,7 +11,7 @@ interface Params extends Partial<Omit<FileListInput, 'kind' | 'dependencies'>> {
  *
  * @param dependencies - declared dependency names per package directory, as pairs — `'.'` is the repo root
  */
-export const setupFileListInput = ({ files, source, tests = [], dependencies = [], ...overrides }: Params = {}): StandardsCheckInput => ({
+export const setupFileListInput = ({ files, source, tests = [], dependencies = [], ...overrides }: Params = {}): FileListInput => ({
 	kind: StandardsInputKind.FileList,
 	cwd: '/repo',
 	source: source ?? files ?? [],

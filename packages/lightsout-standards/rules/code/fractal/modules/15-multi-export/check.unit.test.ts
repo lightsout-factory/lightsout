@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
-import type { StandardsCheckInput } from '@lightsout/standards-contracts';
+import type { FileTextInput } from '@lightsout/standards-contracts';
 import { StandardsInputKind } from '@lightsout/standards-contracts';
-import { setupOtherKindInput } from '@lightsout/standards-testkit';
+
 import { check } from './check.ts';
 
 /**
@@ -9,7 +9,7 @@ import { check } from './check.ts';
  * its text. `listedWithoutText` names paths the run found but never read, so a
  * file can appear in scope with no contents entry behind it.
  */
-const setupFileTextInput = ({ contents, listedWithoutText = [] }: { contents: Array<[string, string]>; listedWithoutText?: string[] }): StandardsCheckInput => {
+const setupFileTextInput = ({ contents, listedWithoutText = [] }: { contents: Array<[string, string]>; listedWithoutText?: string[] }): FileTextInput => {
 	const files = [...contents.map(([path]) => path), ...listedWithoutText];
 
 	return {
@@ -26,7 +26,7 @@ const setupFileTextInput = ({ contents, listedWithoutText = [] }: { contents: Ar
 
 describe('multi-export check', () => {
 	test('asks for file text, since the verdict is in each file’s own declaration lines', () => {
-		expect(check.inputKind).toBe('file-text');
+		expect(check.inputKinds).toStrictEqual(['file-text']);
 	});
 
 	test('reports a file holding two unrelated exports, naming both', async () => {
@@ -34,7 +34,7 @@ describe('multi-export check', () => {
 			contents: [['src/common/types/Config.ts', ['export interface Config {', '\tname: string;', '}', '', 'export const maxRetries = 3;'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -55,7 +55,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -78,7 +78,7 @@ describe('multi-export check', () => {
 			contents: [['src/sync/fetchBatch.ts', ['export async function fetchBatch(): Promise<void> {}', 'export const batchSize = 10;'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -95,7 +95,7 @@ describe('multi-export check', () => {
 			contents: [['src/common/types/Config.ts', ['export interface Config {', '\tname: string;', '}'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -105,7 +105,7 @@ describe('multi-export check', () => {
 			contents: [['src/sync/runSync.ts', ['const step = 1;', 'const total = 2;'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -116,7 +116,7 @@ describe('multi-export check', () => {
 			listedWithoutText: ['src/common/types/Config.ts'],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -141,7 +141,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -163,7 +163,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -192,7 +192,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -216,7 +216,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -240,7 +240,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -261,7 +261,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -282,7 +282,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -312,7 +312,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -334,7 +334,7 @@ describe('multi-export check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -347,7 +347,7 @@ describe('multi-export check', () => {
 			contents: [[path, ['export const baseRate = 1;', 'export const taxRate = 2;'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -357,13 +357,13 @@ describe('multi-export check', () => {
 			contents: [['src/billing/index.ts', ['export const baseRate = 1;', 'export const taxRate = 2;'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

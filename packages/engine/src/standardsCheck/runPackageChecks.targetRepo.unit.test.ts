@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { type FileListInput, type StandardsCheckFunction, type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
+import { type FileListInput, type StandardsCheckFunction, type StandardsCheckInputs, StandardsInputKind } from '@lightsout/standards-contracts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
@@ -68,20 +68,26 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 });
 
 /** A check for the rule `id` that reports one finding and records what it was handed. */
-const recordingRun = ({ id, calls }: { id: string; calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> }): StandardsCheckFunction => {
-	return ({ input, options }) => {
-		calls.push({ input, options });
+const recordingRun = ({
+	id,
+	calls,
+}: {
+	id: string;
+	calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }>;
+}): StandardsCheckFunction => {
+	return ({ inputs, options }) => {
+		calls.push({ inputs, options });
 
-		return [{ siteKey: `${id}:${input.kind}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
+		return [{ siteKey: `${id}:${Object.keys(inputs).join(',')}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
 	};
 };
 
 /** The first input a check was handed, narrowed to the kind whose path lists the test reads. */
-const fileListInput = ({ calls }: { calls: Array<{ input: StandardsCheckInput }> }): FileListInput => {
-	const input = calls[0]?.input;
+const fileListInput = ({ calls }: { calls: Array<{ inputs: StandardsCheckInputs }> }): FileListInput => {
+	const input = calls[0]?.inputs[StandardsInputKind.FileList];
 
-	if (input?.kind !== StandardsInputKind.FileList) {
-		throw new Error(`expected a file-list input, got ${String(input?.kind)}`);
+	if (input === undefined) {
+		throw new Error(`expected a file-list input, got ${Object.keys(calls[0]?.inputs ?? {}).join(',') || 'none'}`);
 	}
 
 	return input;
@@ -110,14 +116,14 @@ const runChecks = ({ rules, cwd, packagesDir }: { rules: LoadedStandardsRule[]; 
 describe('runPackageChecks target repo', () => {
 	test('skips the compiler-backed rules with one note naming them when no typescript resolves', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 
 		const { findings, notes } = await runChecks({
 			cwd,
 			rules: [
-				rule({ id: 'dead-export', inputKind: StandardsInputKind.SyntaxTree, run: recordingRun({ id: 'dead-export', calls }) }),
-				rule({ id: 'module-boundary', inputKind: StandardsInputKind.ImportGraph, run: recordingRun({ id: 'module-boundary', calls }) }),
-				rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'multi-export', calls }) }),
+				rule({ id: 'dead-export', inputKinds: [StandardsInputKind.SyntaxTree], run: recordingRun({ id: 'dead-export', calls }) }),
+				rule({ id: 'module-boundary', inputKinds: [StandardsInputKind.ImportGraph], run: recordingRun({ id: 'module-boundary', calls }) }),
+				rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'multi-export', calls }) }),
 			],
 		});
 
@@ -128,11 +134,11 @@ describe('runPackageChecks target repo', () => {
 
 	test('runs the compiler-backed rules when the repo has a typescript to borrow', async () => {
 		const { cwd } = setupRepo({ typescript: true });
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 
 		const { findings, notes } = await runChecks({
 			cwd,
-			rules: [rule({ id: 'dead-export', inputKind: StandardsInputKind.SyntaxTree, run: recordingRun({ id: 'dead-export', calls }) })],
+			rules: [rule({ id: 'dead-export', inputKinds: [StandardsInputKind.SyntaxTree], run: recordingRun({ id: 'dead-export', calls }) })],
 		});
 
 		expect(notes).toStrictEqual([]);
@@ -141,11 +147,11 @@ describe('runPackageChecks target repo', () => {
 
 	test('reads each workspace manifest from the packages dir the repo configured', async () => {
 		const { cwd } = setupWorkspaceRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 
 		await runChecks({
 			cwd,
-			rules: [rule({ id: 'dependency-drift', inputKind: StandardsInputKind.FileList, run: recordingRun({ id: 'dependency-drift', calls }) })],
+			rules: [rule({ id: 'dependency-drift', inputKinds: [StandardsInputKind.FileList], run: recordingRun({ id: 'dependency-drift', calls }) })],
 			packagesDir: 'apps',
 		});
 
@@ -156,11 +162,11 @@ describe('runPackageChecks target repo', () => {
 
 	test('borrows a workspace package typescript from the configured packages dir', async () => {
 		const { cwd } = setupWorkspaceRepo({ typescript: true });
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 
 		const { findings, notes } = await runChecks({
 			cwd,
-			rules: [rule({ id: 'dead-export', inputKind: StandardsInputKind.SyntaxTree, run: recordingRun({ id: 'dead-export', calls }) })],
+			rules: [rule({ id: 'dead-export', inputKinds: [StandardsInputKind.SyntaxTree], run: recordingRun({ id: 'dead-export', calls }) })],
 			packagesDir: 'apps',
 		});
 

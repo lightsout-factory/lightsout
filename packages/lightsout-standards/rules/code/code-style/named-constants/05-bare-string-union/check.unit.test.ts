@@ -1,16 +1,16 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupOtherKindInput, setupSyntaxTreeInput } from '@lightsout/standards-testkit';
+import { setupSyntaxTreeInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 describe('bare-string-union check', () => {
 	test('asks for parsed trees, since only the declaration says which shape was written', () => {
-		expect(check.inputKind).toBe('syntax-tree');
+		expect(check.inputKinds).toStrictEqual(['syntax-tree']);
 	});
 
 	test('reports an exported union of string literals with no object behind it', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/common/types/Action.ts', "export type Action = 'add' | 'remove' | 'list' | 'update';\n"]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -41,7 +41,7 @@ describe('bare-string-union check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -56,7 +56,7 @@ describe('bare-string-union check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -68,7 +68,7 @@ describe('bare-string-union check', () => {
 	])('leaves $shape', async ({ text }) => {
 		const input = setupSyntaxTreeInput({ sources: [['src/common/types/Action.ts', `${text}\n`]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -78,7 +78,7 @@ describe('bare-string-union check', () => {
 			sources: [['src/common/types/Action.ts', "type Action = 'add' | 'remove';\n\nexport const isAdd = (action: Action): boolean => action === 'add';\n"]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -88,7 +88,7 @@ describe('bare-string-union check', () => {
 			sources: [['src/common/types/Action.ts', ["let Action = { Add: 'add' };", '', "export type Action = 'add' | 'remove';"].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.siteKey).toBe('bare-string-union:src/common/types/Action.ts');
 	});
@@ -103,7 +103,7 @@ describe('bare-string-union check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("type 'Action' is a bare string union");
 	});
@@ -113,7 +113,7 @@ describe('bare-string-union check', () => {
 			sources: [['src/common/types/Action.ts', ["export type Action = 'add' | 'remove';", '', "export type Scope = 'file' | 'folder';"].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -136,7 +136,7 @@ describe('bare-string-union check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -148,8 +148,8 @@ describe('bare-string-union check', () => {
 		]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

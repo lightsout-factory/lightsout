@@ -49,11 +49,11 @@ const collectCollisions = ({ files }: { files: string[] }) => {
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'file-list',
+	inputKinds: ['file-list'],
 	// The verdict is in the paths alone: two casings under one lowercased name
 	// mean case-insensitive and case-sensitive filesystems see different trees.
-	run: ({ input }): RawStandardsFinding[] => {
-		const { files } = readPathLists({ input });
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const { files } = readPathLists({ input: inputs['file-list'] });
 		const findings: RawStandardsFinding[] = [];
 
 		for (const [parent, keys] of [...collectCollisions({ files })].sort(([first], [second]) => (first < second ? -1 : 1))) {

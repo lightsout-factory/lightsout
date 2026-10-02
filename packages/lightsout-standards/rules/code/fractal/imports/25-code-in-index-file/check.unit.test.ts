@@ -1,10 +1,10 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupOtherKindInput, setupSyntaxTreeInput } from '@lightsout/standards-testkit';
+import { setupSyntaxTreeInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 describe('code-in-index-file check', () => {
 	test('asks for parsed trees, since a multi-line re-export block defeats any line scan', () => {
-		expect(check.inputKind).toBe('syntax-tree');
+		expect(check.inputKinds).toStrictEqual(['syntax-tree']);
 	});
 
 	test('reports an index file that grew into a program, counting its statements and naming the first line', async () => {
@@ -17,7 +17,7 @@ describe('code-in-index-file check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -45,7 +45,7 @@ describe('code-in-index-file check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -53,7 +53,7 @@ describe('code-in-index-file check', () => {
 	test('leaves `export *` to barrel-star — how a barrel re-exports is that rule’s objection', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/feature/index.ts', "export * from './renderGreeting';"]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -63,7 +63,7 @@ describe('code-in-index-file check', () => {
 			sources: [['src/reporting/index.ts', ["import { buildReport } from './buildReport';", '', 'export { buildReport };'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -80,7 +80,7 @@ describe('code-in-index-file check', () => {
 			sources: [['src/features/Dashboard/index.tsx', 'export const Dashboard = () => <section />;']],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -95,7 +95,7 @@ describe('code-in-index-file check', () => {
 	test('reports a src root index holding code — the doorway rule has no root exemption', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/index.ts', "console.log('boot');"]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -110,7 +110,7 @@ describe('code-in-index-file check', () => {
 	test('reports an index under common/ holding code like any other', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/billing/common/utils/index.ts', "console.log('boot');"]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['code-in-index-file:src/billing/common/utils/index.ts']);
 	});
@@ -120,7 +120,7 @@ describe('code-in-index-file check', () => {
 			sources: [['src/main.ts', ["import { runDoctor } from './doctor';", '', 'await runDoctor();'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -136,7 +136,7 @@ describe('code-in-index-file check', () => {
 			dependencies: [['packages/web-app', ['@tanstack/react-router']]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -147,7 +147,7 @@ describe('code-in-index-file check', () => {
 			dependencies: [['packages/web-app', ['@tanstack/react-router']]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -165,7 +165,7 @@ describe('code-in-index-file check', () => {
 			dependencies: [['packages/api', ['zod']]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -177,8 +177,8 @@ describe('code-in-index-file check', () => {
 		]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

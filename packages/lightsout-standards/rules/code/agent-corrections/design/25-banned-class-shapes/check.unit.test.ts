@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { setupOtherKindInput, setupSyntaxTreeInput } from '@lightsout/standards-testkit';
+import { setupSyntaxTreeInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 describe('banned-class-shapes check', () => {
 	test('asks for parsed trees, since both shapes are facts of the declaration', () => {
-		expect(check.inputKind).toBe('syntax-tree');
+		expect(check.inputKinds).toStrictEqual(['syntax-tree']);
 	});
 
 	test('reports a class that is one stateless method', async () => {
@@ -19,7 +19,7 @@ describe('banned-class-shapes check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -49,7 +49,7 @@ describe('banned-class-shapes check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -71,7 +71,7 @@ describe('banned-class-shapes check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("class 'ConfigPaths' declares only static members");
 	});
@@ -82,7 +82,7 @@ describe('banned-class-shapes check', () => {
 	])('counts $shape among the static members that make a class static-only', async ({ member }) => {
 		const input = setupSyntaxTreeInput({ sources: [['src/theme/Palette.ts', ['export class Palette {', `\t${member}`, '}'].join('\n')]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("class 'Palette' declares only static members");
 	});
@@ -92,7 +92,7 @@ describe('banned-class-shapes check', () => {
 			sources: [['src/reporting/index.ts', ['export default class {', '\texecute(): string {', "\t\treturn '';", '\t}', '}'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("class '(anonymous)' is one stateless method");
 	});
@@ -105,7 +105,7 @@ describe('banned-class-shapes check', () => {
 	])('leaves a one-method class that binds state through $state', async ({ member }) => {
 		const input = setupSyntaxTreeInput({ sources: [['src/cart/Cart.ts', ['export class Cart {', `\t${member}`, '}'].join('\n')]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -115,7 +115,7 @@ describe('banned-class-shapes check', () => {
 			sources: [['src/registry/Registry.ts', ['export class Registry {', '\tstatic items: string[] = [];', '', '\tconstructor() {}', '}'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -133,7 +133,7 @@ describe('banned-class-shapes check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -144,7 +144,7 @@ describe('banned-class-shapes check', () => {
 	])('leaves a class $owner marks as framework-owned', async ({ source }) => {
 		const input = setupSyntaxTreeInput({ sources: [['src/mail/MailerService.ts', source.join('\n')]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -152,7 +152,7 @@ describe('banned-class-shapes check', () => {
 	test('leaves a class with no members at all', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/errors/ParseError.ts', 'export class ParseError {}\n']] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -177,7 +177,7 @@ describe('banned-class-shapes check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("class 'ReportGenerator' is one stateless method");
 	});
@@ -202,7 +202,7 @@ describe('banned-class-shapes check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -222,7 +222,7 @@ describe('banned-class-shapes check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -234,8 +234,8 @@ describe('banned-class-shapes check', () => {
 		]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -246,7 +246,7 @@ describe('banned-class-shapes check', () => {
 			sources: paths.map((path): [string, string] => [path, readFileSync(join(__dirname, 'fixtures', 'fail', path), 'utf8')]),
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings.map((finding) => finding.siteKey).sort()).toStrictEqual([
 			'banned-class-shapes:src/config/ConfigPaths.ts',

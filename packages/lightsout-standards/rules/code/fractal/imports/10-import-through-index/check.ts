@@ -11,7 +11,7 @@ const getOwningPackage = ({ path, packageDirectories }: { path: string; packageD
 	packageDirectories.filter((directory) => directory === '.' || path.startsWith(`${directory}/`)).sort((first, second) => second.length - first.length)[0];
 
 export const check: StandardsCheckModule = {
-	inputKind: 'import-graph',
+	inputKinds: ['import-graph'],
 	/**
 	 * Every index file one importer names is one finding, since the fix is a
 	 * single edit to its imports. An index file may still re-export from another,
@@ -22,8 +22,10 @@ export const check: StandardsCheckModule = {
 	 * its folders is its own business; a repo declaring no workspace package is
 	 * itself the package.
 	 */
-	run: ({ input }): RawStandardsFinding[] => {
-		if (input.kind !== 'import-graph') {
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const input = inputs['import-graph'];
+
+		if (input === undefined) {
 			return [];
 		}
 

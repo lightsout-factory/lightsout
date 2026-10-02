@@ -23,9 +23,9 @@ const checkSource = `interface RawFinding {
 const isBanned = (path: string): boolean => path.endsWith('banned.ts');
 
 export const check = {
-	inputKind: 'file-list' as const,
-	run: ({ input }: { input: { files: string[] } }): RawFinding[] =>
-		input.files.filter(isBanned).map((path) => ({ siteKey: \`no-banned-file:\${path}\`, files: [{ path }], detail: 'a file the rule bans' })),
+	inputKinds: ['file-list' as const],
+	run: ({ inputs }: { inputs: { 'file-list'?: { files: string[] } } }): RawFinding[] =>
+		(inputs['file-list']?.files ?? []).filter(isBanned).map((path) => ({ siteKey: \`no-banned-file:\${path}\`, files: [{ path }], detail: 'a file the rule bans' })),
 };
 `;
 
@@ -100,9 +100,9 @@ interface RawFinding {
 }
 
 export const check = {
-	inputKind: 'file-list' as const,
-	run: ({ input }: { input: { files: string[] } }): RawFinding[] =>
-		input.files.filter(isBanned).map((path) => ({ siteKey: \`no-banned-file:\${path}\`, files: [{ path }], detail: 'a file the rule bans' })),
+	inputKinds: ['file-list' as const],
+	run: ({ inputs }: { inputs: { 'file-list'?: { files: string[] } } }): RawFinding[] =>
+		(inputs['file-list']?.files ?? []).filter(isBanned).map((path) => ({ siteKey: \`no-banned-file:\${path}\`, files: [{ path }], detail: 'a file the rule bans' })),
 };
 `;
 	const files: Record<string, string> = {

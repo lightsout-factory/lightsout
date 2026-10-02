@@ -84,7 +84,7 @@ describe('readStandardsLibrary', () => {
 		expect(boundaries?.defaultSeverity).toBe('advisory');
 		expect(boundaries?.defaultOptions).toStrictEqual({});
 		// no check declared, so no check loaded
-		expect(boundaries?.inputKind).toBe(undefined);
+		expect(boundaries?.inputKinds).toBe(undefined);
 		expect(boundaries?.run).toBe(undefined);
 	});
 
@@ -153,7 +153,7 @@ describe('readStandardsLibrary', () => {
 				...ruleFiles({ path: 'rules/code/style/patterns/no-prefix', markdown: '---\nsummary: unordered\n---\n\nProse.\n' }),
 				...ruleFiles({ path: 'rules/code/style/patterns/01-checked-without-check', markdown: '---\nsummary: claims a check\nchecked: true\n---\n\nProse.\n' }),
 				...ruleFiles({ path: 'rules/code/style/patterns/02-stray-check', markdown: '---\nsummary: ships an undeclared check\n---\n\nProse.\n' }),
-				'rules/code/style/patterns/02-stray-check/check.ts': 'export const check = { inputKind: "file-list", run: () => [] };\n',
+				'rules/code/style/patterns/02-stray-check/check.ts': 'export const check = { inputKinds: ["file-list"], run: () => [] };\n',
 				...ruleFiles({ path: 'rules/code/style/patterns/03-no-summary', markdown: '---\nchecked: false\n---\n\nProse.\n' }),
 				'rules/code/style/patterns/04-empty-fixtures/rule.md': '---\nsummary: ships no fixtures\n---\n\nProse.\n',
 				...ruleFiles({ path: 'rules/code/style/patterns/05-shared-id', markdown: '---\nsummary: first claimant\n---\n\nProse.\n' }),

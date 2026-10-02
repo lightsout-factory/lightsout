@@ -145,9 +145,11 @@ const formatLineList = ({ lines }: { lines: number[] }) => `at ${lines.length > 
 // discriminant depends on the DECLARED type of what it is compared against,
 // which lives in another file.
 export const check: StandardsCheckModule = {
-	inputKind: 'type-checker',
-	run: ({ input }): RawStandardsFinding[] => {
-		if (input.kind !== 'type-checker') {
+	inputKinds: ['type-checker'],
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const input = inputs['type-checker'];
+
+		if (input === undefined) {
 			return [];
 		}
 

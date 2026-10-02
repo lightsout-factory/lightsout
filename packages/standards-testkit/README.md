@@ -4,23 +4,24 @@ Builds the input a standards check receives, in memory, so a rule's own unit
 tests can prove it catches what it claims.
 
 ```ts
-import { setupSyntaxTreeInput, setupOtherKindInput } from '@lightsout/standards-testkit';
+import { setupSyntaxTreeInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 test('flags a file over the line cap', () => {
-	const input = setupSyntaxTreeInput({ sources: [['src/big.ts', tooManyLines]] });
+	const inputs = { 'syntax-tree': setupSyntaxTreeInput({ sources: [['src/big.ts', tooManyLines]] }) };
 
-	expect(check.run({ input, options: { file: 250 } })).toHaveLength(1);
+	expect(check.run({ inputs, options: { file: 250 } })).toHaveLength(1);
 });
 
-test('ignores an input of a kind it did not ask for', () => {
-	expect(check.run({ input: setupOtherKindInput(), options: {} })).toStrictEqual([]);
+test('answers nothing when its input is missing', () => {
+	expect(check.run({ inputs: {}, options: {} })).toStrictEqual([]);
 });
 ```
 
-One factory per input kind, plus `setupOtherKindInput` for the guard every check
-opens with. Each takes what you actually have — the files and their text — works
-out the rest, and lets you override any field.
+One factory per input kind. Each takes what you actually have — the files and
+their text — works out the rest, and lets you override any field. A check
+receives its inputs keyed by kind, so a test hands it one entry per kind the
+check declared.
 
 ## What this is not
 

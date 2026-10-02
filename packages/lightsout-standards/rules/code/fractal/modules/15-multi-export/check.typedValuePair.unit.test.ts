@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import type { StandardsCheckInput } from '@lightsout/standards-contracts';
+import type { FileTextInput } from '@lightsout/standards-contracts';
 import { StandardsInputKind } from '@lightsout/standards-contracts';
 import { check } from './check.ts';
 
@@ -8,7 +8,7 @@ import { check } from './check.ts';
  * its text. `listedWithoutText` names paths the run found but never read, so a
  * file can appear in scope with no contents entry behind it.
  */
-const setupFileTextInput = ({ contents, listedWithoutText = [] }: { contents: Array<[string, string]>; listedWithoutText?: string[] }): StandardsCheckInput => {
+const setupFileTextInput = ({ contents, listedWithoutText = [] }: { contents: Array<[string, string]>; listedWithoutText?: string[] }): FileTextInput => {
 	const files = [...contents.map(([path]) => path), ...listedWithoutText];
 
 	return {
@@ -34,7 +34,7 @@ describe('multi-export check — the typed-value pair (exception 5)', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -44,7 +44,7 @@ describe('multi-export check — the typed-value pair (exception 5)', () => {
 			contents: [['src/common/types/Theme.ts', ['export interface Theme {', '\tname: string;', '}', '', "export const defaultName = 'dark';"].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toHaveLength(1);
 	});
@@ -66,7 +66,7 @@ describe('multi-export check — the typed-value pair (exception 5)', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toHaveLength(1);
 	});

@@ -1,18 +1,15 @@
-import type { StandardsCheckInput } from '@lightsout/standards-contracts';
+import type { FileListInput } from '@lightsout/standards-contracts';
 
 interface Params {
-	/** Whatever the engine built for this run — the path-carrying kinds are file-list and file-text. */
-	input: StandardsCheckInput;
+	/** The file-list input the engine built for this run, when the rule declared that kind. */
+	input: FileListInput | undefined;
 }
 
 /**
- * Each location rule receives the whole input union, so the narrowing is
- * written once here rather than as a cast per rule. An input carrying no path
- * lists yields empty ones: a rule that declared a path-carrying kind is never
- * handed another, so refusing loudly would describe a situation that cannot
- * arise.
+ * A missing input yields empty lists: a rule that declared the kind is always
+ * handed it, so refusing loudly would describe a situation that cannot arise.
  */
 export const readPathLists = ({ input }: Params): { files: string[]; tests: string[]; standardsLibraries: string[] } =>
-	input.kind === 'file-list' || input.kind === 'file-text'
-		? { files: input.files, tests: input.tests, standardsLibraries: input.standardsLibraries }
-		: { files: [], tests: [], standardsLibraries: [] };
+	input === undefined
+		? { files: [], tests: [], standardsLibraries: [] }
+		: { files: input.files, tests: input.tests, standardsLibraries: input.standardsLibraries };

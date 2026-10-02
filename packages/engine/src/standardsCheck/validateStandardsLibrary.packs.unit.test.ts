@@ -10,8 +10,8 @@ import type { LoadedStandardsPackFile } from '#src/standardsLibraries/common/typ
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 /** A check that objects to any file named `banned.ts` — its fail fixture below holds none, so the rule reports a problem of its own. */
-const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.FileList ? input.files : [])
+const bansTheBannedFile: StandardsCheckFunction = ({ inputs }) =>
+	(inputs[StandardsInputKind.FileList]?.files ?? [])
 		.filter((file) => file.endsWith('banned.ts'))
 		.map((path) => ({
 			siteKey: `blind-rule:${path}`,
@@ -65,7 +65,7 @@ const setupBrokenPacks = () => {
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
 		requires: [],
-		inputKind: StandardsInputKind.FileList,
+		inputKinds: [StandardsInputKind.FileList],
 		run: bansTheBannedFile,
 		fixturesPath,
 	};

@@ -1,10 +1,10 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupOtherKindInput, setupSyntaxTreeInput } from '@lightsout/standards-testkit';
+import { setupSyntaxTreeInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 describe('class-inheritance check', () => {
 	test('asks for parsed trees, since the heritage clause is a fact of the declaration', () => {
-		expect(check.inputKind).toBe('syntax-tree');
+		expect(check.inputKinds).toStrictEqual(['syntax-tree']);
 	});
 
 	test('reports a class that extends a base class', async () => {
@@ -23,7 +23,7 @@ describe('class-inheritance check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -41,7 +41,7 @@ describe('class-inheritance check', () => {
 			sources: [['src/charts/Chart.ts', ['export class Chart extends React.Component {', '\trender(): null {', '\t\treturn null;', '\t}', '}'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("class 'Chart' extends 'Component'");
 	});
@@ -51,7 +51,7 @@ describe('class-inheritance check', () => {
 			sources: [['src/runs/RefactorRun.ts', ['export class RefactorRun extends RunState<string> {', '\tstep = 0;', '}'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("class 'RefactorRun' extends 'RunState'");
 	});
@@ -61,7 +61,7 @@ describe('class-inheritance check', () => {
 			sources: [['src/runs/AuditedRun.ts', ['export class AuditedRun extends withAudit(RunState) {', '\tstep = 0;', '}'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("class 'AuditedRun' extends 'withAudit(RunState)'");
 	});
@@ -71,7 +71,7 @@ describe('class-inheritance check', () => {
 			sources: [['src/runs/index.ts', ['export default class extends RunState {', '\tstep = 0;', '}'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("class '(anonymous)' extends 'RunState'");
 	});
@@ -82,7 +82,7 @@ describe('class-inheritance check', () => {
 	])('leaves a class extending $base alone, which is $licence', async ({ base }) => {
 		const input = setupSyntaxTreeInput({ sources: [['src/runs/StaleRunLockError.ts', `export class StaleRunLockError extends ${base} {}\n`]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -97,7 +97,7 @@ describe('class-inheritance check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -105,7 +105,7 @@ describe('class-inheritance check', () => {
 	test('reports a class declared with no modifiers at all, where the decorator carve-out has nothing to look through', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/runs/runs.ts', ['class RefactorRun extends RunState {', '\tstep = 0;', '}'].join('\n')]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("class 'RefactorRun' extends 'RunState'");
 	});
@@ -120,7 +120,7 @@ describe('class-inheritance check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -130,7 +130,7 @@ describe('class-inheritance check', () => {
 			sources: [['src/runs/RunState.ts', ['export class RunState {', '\tprivate steps: string[] = [];', '}'].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -145,7 +145,7 @@ describe('class-inheritance check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings[0]?.detail).toBe("class 'RefactorRun' extends 'RunState'; class 'CoverageRun' extends 'RunState'");
 	});
@@ -158,7 +158,7 @@ describe('class-inheritance check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -171,8 +171,8 @@ describe('class-inheritance check', () => {
 		]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

@@ -14,10 +14,10 @@ import { isUnderSrc } from '#common/paths/isUnderSrc.ts';
 const testSupportDirectories = new Set(['fixtures', 'mocks', 'testUtils', 'test-utils']);
 
 export const check: StandardsCheckModule = {
-	inputKind: 'file-list',
+	inputKinds: ['file-list'],
 	// One finding per folder rather than per file: the folder is what moves.
-	run: ({ input }): RawStandardsFinding[] =>
-		[...collectDirectories({ files: readPathLists({ input }).files })]
+	run: ({ inputs }): RawStandardsFinding[] =>
+		[...collectDirectories({ files: readPathLists({ input: inputs['file-list'] }).files })]
 			.filter((directory) => testSupportDirectories.has(getBaseName({ path: directory })) && isUnderSrc({ path: directory }))
 			.sort()
 			.map((directory) =>

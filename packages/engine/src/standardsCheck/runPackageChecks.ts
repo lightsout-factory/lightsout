@@ -9,6 +9,7 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { buildCheckInput } from '#src/standardsCheck/internal/common/checkInputs/buildCheckInput.ts';
+import { buildCheckInputs } from '#src/standardsCheck/internal/common/checkInputs/buildCheckInputs.ts';
 import { typescriptInputKinds } from '#src/standardsCheck/internal/common/constants/typescriptInputKinds.ts';
 import { findFileStandardsGroup } from '#src/standardsCheck/internal/common/utils/findFileStandardsGroup.ts';
 import { findFoldersWithoutAliasSource } from '#src/standardsCheck/internal/common/utils/findFoldersWithoutAliasSource.ts';
@@ -24,7 +25,7 @@ interface LiveRule {
 	id: string;
 	/** The full `<library>/<rule-id>` name every finding carries. */
 	name: string;
-	inputKind: StandardsInputKind;
+	inputKinds: StandardsInputKind[];
 	run: StandardsCheckFunction;
 	options: Record<string, number>;
 	/** Each group running the rule at these options, with the severity it grades at. */
@@ -39,12 +40,12 @@ const selectLiveRules = ({ groups }: { groups: StandardsGroup[] }) => {
 		for (const { rule } of group.pack.rules) {
 			const state = group.states.get(rule.name);
 
-			if (rule.run === undefined || rule.inputKind === undefined || state === undefined || state.severity === StandardsSeverity.Off) {
+			if (rule.run === undefined || rule.inputKinds === undefined || state === undefined || state.severity === StandardsSeverity.Off) {
 				continue;
 			}
 
 			const key = canonicalJson({ value: [rule.name, state.options] });
-			const entry = live.get(key) ?? { id: rule.id, name: rule.name, inputKind: rule.inputKind, run: rule.run, options: state.options, graders: [] };
+			const entry = live.get(key) ?? { id: rule.id, name: rule.name, inputKinds: rule.inputKinds, run: rule.run, options: state.options, graders: [] };
 
 			entry.graders.push({ group, severity: state.severity });
 			live.set(key, entry);
@@ -67,7 +68,12 @@ const gradeFindings = ({ rule, raw, groupOfFile }: { rule: LiveRule; raw: RawSta
 		return grader === undefined ? [] : [{ ...finding, rule: rule.name, severity: grader.severity }];
 	});
 
-/** A kind needing TypeScript when none resolves does not fail the run: its rules are named as skipped and the rest still report. */
+/**
+ * Every kind but clone-spans is options-blind, so one build serves every rule
+ * that asked for it; a clone-spans input is built per rule, on that rule's
+ * options. A rule asking for a kind that needs TypeScript when none resolves
+ * does not fail the run: it is named as skipped and the rest still report.
+ */
 const runLiveRules = async ({
 	live,
 	buildInput,
@@ -82,46 +88,40 @@ const runLiveRules = async ({
 	progress: (message: string) => void;
 }) => {
 	const findings: StandardsFinding[] = [];
-	const skipped = new Set<string>();
+	const skipped: string[] = [];
+	const shared = new Map<StandardsInputKind, StandardsCheckInput>();
+	const inputFor = async ({ kind, options }: { kind: StandardsInputKind; options: Record<string, number> }) => {
+		if (kind === StandardsInputKind.CloneSpans) {
+			const built = await buildInput({ kind, options });
 
-	for (const kind of Object.values(StandardsInputKind)) {
-		const rules = live.filter((rule) => rule.inputKind === kind);
+			progress(`${kind}: built`);
 
-		if (rules.length === 0) {
+			return built;
+		}
+
+		const built = shared.get(kind) ?? (await buildInput({ kind, options }));
+
+		if (!shared.has(kind)) {
+			shared.set(kind, built);
+			progress(`${kind}: built`);
+		}
+
+		return built;
+	};
+
+	for (const rule of live) {
+		if (compiler === undefined && rule.inputKinds.some((kind) => typescriptInputKinds.has(kind))) {
+			skipped.push(rule.name);
 			continue;
 		}
 
-		if (compiler === undefined && typescriptInputKinds.has(kind)) {
-			for (const rule of rules) {
-				skipped.add(rule.name);
-			}
+		const inputs = await buildCheckInputs({ kinds: rule.inputKinds, inputFor: ({ kind }) => inputFor({ kind, options: rule.options }) });
+		const raw = await runRuleCheck({ rule, run: rule.run, inputs, options: rule.options });
 
-			continue;
-		}
-
-		let shared: StandardsCheckInput | undefined;
-
-		for (const rule of rules) {
-			let input: StandardsCheckInput;
-
-			if (kind === StandardsInputKind.CloneSpans) {
-				input = await buildInput({ kind, options: rule.options });
-			} else {
-				// Every kind but clone-spans is options-blind, so one build serves
-				// every rule that asked for it.
-				shared ??= await buildInput({ kind, options: rule.options });
-				input = shared;
-			}
-
-			const raw = await runRuleCheck({ rule, run: rule.run, input, options: rule.options });
-
-			findings.push(...gradeFindings({ rule, raw, groupOfFile }));
-		}
-
-		progress(`${kind}: done`);
+		findings.push(...gradeFindings({ rule, raw, groupOfFile }));
 	}
 
-	return { findings, skipped: [...skipped] };
+	return { findings, skipped: [...new Set(skipped)] };
 };
 
 interface Params {
@@ -140,7 +140,8 @@ interface Params {
 /**
  * Each input is built once and shared, except clone-spans: its detector is
  * driven by the `minTokens` in the asking rule's own options, and two rules with different
- * thresholds are two different detections.
+ * thresholds are two different detections. A check declaring several kinds is
+ * handed all of them in one call.
  *
  * A rule's full name and severity are stamped here rather than inside the
  * check, so a check cannot name them wrong; its site keys arrive already
@@ -186,7 +187,7 @@ export const runPackageChecks = async ({
 	// Gated on the rules rather than on whether the cache holds an alias
 	// declaration: a repo that declares aliases nowhere is precisely the case
 	// worth reporting.
-	const uncovered = live.some((rule) => rule.inputKind === StandardsInputKind.FileText)
+	const uncovered = live.some((rule) => rule.inputKinds.includes(StandardsInputKind.FileText))
 		? findFoldersWithoutAliasSource({ files: allFiles, contents: cache })
 		: [];
 

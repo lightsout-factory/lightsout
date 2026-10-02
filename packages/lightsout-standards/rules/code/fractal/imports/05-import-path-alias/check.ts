@@ -27,7 +27,7 @@ const getSpecifiers = ({ text }: { text: string }) => {
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'file-text',
+	inputKinds: ['file-text'],
 	/**
 	 * Judged against the aliases of the package holding the file: in a monorepo
 	 * that is the only place they are declared, since a shared base config cannot
@@ -38,8 +38,8 @@ export const check: StandardsCheckModule = {
 	 * never saw. Only specifiers that resolve to a file in scope count, which
 	 * silences asset imports.
 	 */
-	run: ({ input }): RawStandardsFinding[] => {
-		const { files, contents } = readFileTexts({ input });
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const { files, contents } = readFileTexts({ input: inputs['file-text'] });
 		const fileSet = new Set(files);
 
 		return files

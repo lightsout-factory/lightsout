@@ -1,5 +1,5 @@
 import { dirname, resolve } from 'node:path';
-import type { StandardsCheckInput, TypeCheckerInput } from '@lightsout/standards-contracts';
+import type { TypeCheckerInput } from '@lightsout/standards-contracts';
 import { StandardsInputKind } from '@lightsout/standards-contracts';
 import ts from 'typescript';
 
@@ -36,7 +36,7 @@ const setupHost = ({ trees }: { trees: Map<string, ts.SourceFile> }): ts.Compile
 };
 
 /** @param sources - each file and its text, as pairs; paths are repo-relative and rooted under `/repo` */
-export const setupTypeCheckerInput = ({ sources = [], dependencies = [], ...overrides }: Params = {}): StandardsCheckInput => {
+export const setupTypeCheckerInput = ({ sources = [], dependencies = [], ...overrides }: Params = {}): TypeCheckerInput => {
 	// Parsed once so the program's tree and the check's tree are the same
 	// object: a checker only answers about nodes from its own program.
 	const parsed = sources.map(([path, text]) => ({ path, sourceFile: ts.createSourceFile(resolve(root, path), text, ts.ScriptTarget.Latest, true) }));

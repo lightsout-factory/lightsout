@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupOtherKindInput, setupTestFileInput } from '@lightsout/standards-testkit';
+import { setupTestFileInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 const path = 'src/feature/getLabel.unit.test.ts';
@@ -28,13 +28,13 @@ const factoryLocalSource = [
 
 describe('test-mock-prefix check', () => {
 	test('asks for test files, the one input kind that carries test text alone', () => {
-		expect(check.inputKind).toBe('test-file');
+		expect(check.inputKinds).toStrictEqual(['test-file']);
 	});
 
 	test('reports a module-scope spy declared without the mock prefix', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildMockSource({ declaration: 'const getProfile = jest.fn<() => string>();' })]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -49,7 +49,7 @@ describe('test-mock-prefix check', () => {
 	test('leaves a prefixed declaration alone', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildMockSource({ declaration: 'const mockGetProfile = jest.fn<() => string>();' })]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -57,7 +57,7 @@ describe('test-mock-prefix check', () => {
 	test('leaves a spy built inside a factory alone — nothing hoists above a local', async () => {
 		const input = setupTestFileInput({ contents: [[path, factoryLocalSource]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -65,7 +65,7 @@ describe('test-mock-prefix check', () => {
 	test('names every unprefixed declaration of one file in a single finding', async () => {
 		const input = setupTestFileInput({ contents: [[path, twoUnprefixedSource]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -80,8 +80,8 @@ describe('test-mock-prefix check', () => {
 		]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

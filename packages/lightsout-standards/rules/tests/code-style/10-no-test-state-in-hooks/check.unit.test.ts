@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupOtherKindInput, setupTestFileInput } from '@lightsout/standards-testkit';
+import { setupTestFileInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 const path = 'src/feature/getLabel.unit.test.ts';
@@ -78,13 +78,13 @@ const everyBreakSource = [
 
 describe('no-test-state-in-hooks check', () => {
 	test('asks for test files, the one input kind that carries test text alone', () => {
-		expect(check.inputKind).toBe('test-file');
+		expect(check.inputKinds).toStrictEqual(['test-file']);
 	});
 
 	test('reports a module-scope let that a beforeEach reassigns', async () => {
 		const input = setupTestFileInput({ contents: [[path, sharedLetSource]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -99,7 +99,7 @@ describe('no-test-state-in-hooks check', () => {
 	test('names every shared let of one file in a single finding, each with its own line', async () => {
 		const input = setupTestFileInput({ contents: [[path, twoSharedLetsSource]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -119,7 +119,7 @@ describe('no-test-state-in-hooks check', () => {
 		async ({ source }) => {
 			const input = setupTestFileInput({ contents: [[path, source]] });
 
-			const findings = await check.run({ input, options: {} });
+			const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 			expect(findings).toStrictEqual([]);
 		},
@@ -128,7 +128,7 @@ describe('no-test-state-in-hooks check', () => {
 	test('reports a beforeEach that asserts, naming the line it opens on', async () => {
 		const input = setupTestFileInput({ contents: [[path, buildHookSource({ hook: 'beforeEach', statement: assertion })]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -143,7 +143,7 @@ describe('no-test-state-in-hooks check', () => {
 	test('names every asserting beforeEach of one file in a single finding', async () => {
 		const input = setupTestFileInput({ contents: [[path, twoAssertingHooksSource]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -163,7 +163,7 @@ describe('no-test-state-in-hooks check', () => {
 		async ({ setter }) => {
 			const input = setupTestFileInput({ contents: [[path, buildHookSource({ hook: 'beforeEach', statement: `mockGetProfile.${setter}('p.png');` })]] });
 
-			const findings = await check.run({ input, options: {} });
+			const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 			expect(findings).toStrictEqual([
 				{
@@ -180,7 +180,7 @@ describe('no-test-state-in-hooks check', () => {
 		const source = buildHookSource({ hook: 'beforeEach', statement: "mockGetProfile.mockReturnValueOnce('p.png');" });
 		const input = setupTestFileInput({ contents: [[path, source]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -195,7 +195,7 @@ describe('no-test-state-in-hooks check', () => {
 	])('leaves `$statement` in a $hook alone — the rule names beforeEach and nothing else', async ({ hook, statement }) => {
 		const input = setupTestFileInput({ contents: [[path, buildHookSource({ hook, statement })]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -203,7 +203,7 @@ describe('no-test-state-in-hooks check', () => {
 	test('gathers every break of one file into a single finding, listing a hook that breaks the rule twice once', async () => {
 		const input = setupTestFileInput({ contents: [[path, everyBreakSource]] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		// one finding per file, since a finding's identity is its path
 		expect(findings).toStrictEqual([
@@ -227,7 +227,7 @@ describe('no-test-state-in-hooks check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
 			'no-test-state-in-hooks:src/a/getA.unit.test.ts',
@@ -235,8 +235,8 @@ describe('no-test-state-in-hooks check', () => {
 		]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

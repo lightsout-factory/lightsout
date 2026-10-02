@@ -11,7 +11,7 @@ const check = buildFileExportCheck({
 
 describe('buildFileExportCheck', () => {
 	test('asks for file text, and reports one finding per violating file in the rule’s own words', async () => {
-		expect(check.inputKind).toBe('file-text');
+		expect(check.inputKinds).toStrictEqual(['file-text']);
 
 		const input = setupFileTextInput({
 			contents: [
@@ -20,7 +20,7 @@ describe('buildFileExportCheck', () => {
 			],
 		});
 
-		expect(await check.run({ input, options: {} })).toStrictEqual([
+		expect(await check.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([
 			{ siteKey: 'demo-exports:src/pair.ts', files: [{ path: 'src/pair.ts' }], detail: '2 exports', guidance: 'the remedy line' },
 		]);
 	});
@@ -39,7 +39,7 @@ describe('buildFileExportCheck', () => {
 			],
 		});
 
-		expect(await exempting.run({ input, options: {} })).toStrictEqual([
+		expect(await exempting.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([
 			{ siteKey: 'demo-exports:src/pair.ts', files: [{ path: 'src/pair.ts' }], detail: '2 exports', guidance: 'the remedy line' },
 		]);
 	});
@@ -50,7 +50,7 @@ describe('buildFileExportCheck', () => {
 			standardsLibraries: ['standards'],
 		});
 
-		expect(await check.run({ input, options: {} })).toStrictEqual([
+		expect(await check.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([
 			{
 				siteKey: 'demo-exports:standards/tests/code-style/10-rule/check.ts',
 				files: [{ path: 'standards/tests/code-style/10-rule/check.ts' }],
@@ -65,7 +65,7 @@ describe('buildFileExportCheck', () => {
 			contents: [['standards/tests/code-style/10-rule/check.ts', 'export const one = 1;\nexport const two = 2;\n']],
 		});
 
-		expect(await check.run({ input, options: {} })).toStrictEqual([]);
+		expect(await check.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([]);
 	});
 
 	test('a barrel and a test file are exempt — one declares nothing of its own, the other belongs to the test standards', async () => {
@@ -76,6 +76,6 @@ describe('buildFileExportCheck', () => {
 			],
 		});
 
-		expect(await check.run({ input, options: {} })).toStrictEqual([]);
+		expect(await check.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([]);
 	});
 });

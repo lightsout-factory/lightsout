@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupOtherKindInput, setupTestFileInput } from '@lightsout/standards-testkit';
+import { setupTestFileInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 /** A test file spanning exactly `lines` lines, each of them a trivial test case. */
@@ -7,13 +7,13 @@ const buildTestSource = ({ lines }: { lines: number }) => Array.from({ length: l
 
 describe('test-file-size check', () => {
 	test('asks for test files, the one input kind that carries test text alone', () => {
-		expect(check.inputKind).toBe('test-file');
+		expect(check.inputKinds).toStrictEqual(['test-file']);
 	});
 
 	test('reports a test file past the cap, stating the count and the cap it broke', async () => {
 		const input = setupTestFileInput({ contents: [['src/doctor/runDoctor.unit.test.ts', buildTestSource({ lines: 6 })]] });
 
-		const findings = await check.run({ input, options: { testFile: 5 } });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: { testFile: 5 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -30,7 +30,7 @@ describe('test-file-size check', () => {
 	test('leaves a test file at the cap alone — the cap is a ceiling, not a target to stay clear of', async () => {
 		const input = setupTestFileInput({ contents: [['src/feature/renderGreeting.unit.test.ts', buildTestSource({ lines: 5 })]] });
 
-		const findings = await check.run({ input, options: { testFile: 5 } });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: { testFile: 5 } });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -43,7 +43,7 @@ describe('test-file-size check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: { testFile: 3 } });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: { testFile: 3 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -66,7 +66,7 @@ describe('test-file-size check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: { testFile: 5 } });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: { testFile: 5 } });
 
 		expect(findings.map((finding) => finding.files[0]?.path)).toStrictEqual(['src/a/runA.unit.test.ts', 'src/c/runC.unit.test.ts']);
 	});
@@ -79,7 +79,7 @@ describe('test-file-size check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: { testFile: 4 } });
+		const findings = await check.run({ inputs: { 'test-file': input }, options: { testFile: 4 } });
 
 		expect(findings).toStrictEqual([
 			{
@@ -93,8 +93,8 @@ describe('test-file-size check', () => {
 		]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: { testFile: 5 } });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: { testFile: 5 } });
 
 		expect(findings).toStrictEqual([]);
 	});

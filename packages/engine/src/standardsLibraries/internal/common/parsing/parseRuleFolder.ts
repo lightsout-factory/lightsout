@@ -150,7 +150,7 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, library, 
 			// As written: readStandardsLibrary resolves the names once every rule of the library is loaded.
 			requires: declaration.requires,
 			...(declaration.example === undefined ? {} : { example: declaration.example }),
-			...(check === undefined ? {} : { inputKind: check.inputKind, run: check.run }),
+			...(check === undefined ? {} : { inputKinds: check.inputKinds, run: check.run }),
 			fixturesPath,
 		};
 	}

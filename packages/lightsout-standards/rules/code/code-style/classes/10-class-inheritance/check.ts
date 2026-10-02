@@ -44,15 +44,18 @@ const getBannedExtension = ({ node, compiler }: { node: ts.ClassDeclaration; com
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'syntax-tree',
-	run: ({ input }): RawStandardsFinding[] =>
-		input.kind === 'syntax-tree'
-			? buildClassFindings({
+	inputKinds: ['syntax-tree'],
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const input = inputs['syntax-tree'];
+
+		return input === undefined
+			? []
+			: buildClassFindings({
 					input,
 					rule: 'class-inheritance',
 					guidance:
 						'Share by composition: hold the common part as a value and delegate to it, or state the contract as an interface. `extends Error` is the one licensed base; a framework-mandated base is the judgment carve-out.',
 					getViolation: getBannedExtension,
-				})
-			: [],
+				});
+	},
 };

@@ -11,8 +11,8 @@ import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/L
 /** A check for the rule `id` that objects to any file named `banned.ts` — small enough to reason about, real enough to fail. */
 const bansTheBannedFile =
 	({ id }: { id: string }): StandardsCheckFunction =>
-	({ input }) =>
-		(input.kind === StandardsInputKind.FileList ? input.files : [])
+	({ inputs }) =>
+		(inputs[StandardsInputKind.FileList]?.files ?? [])
 			.filter((file) => file.endsWith('banned.ts'))
 			.map((path) => ({
 				siteKey: `${id}:${path}`,
@@ -96,7 +96,7 @@ describe('validateStandardsLibrary', () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 
 		const { problems, notes } = await validate({
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile({ id: 'no-banned-file' }) })],
 		});
 
 		expect(problems).toStrictEqual([]);
@@ -107,7 +107,7 @@ describe('validateStandardsLibrary', () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['also-allowed.ts'] });
 
 		const { problems } = await validate({
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile({ id: 'no-banned-file' }) })],
 		});
 
 		expect(problems).toStrictEqual(['no-banned-file: the fail fixture produced no finding — the check does not catch what the rule describes']);
@@ -117,7 +117,7 @@ describe('validateStandardsLibrary', () => {
 		const { fixturesPath } = setupFixtures({ pass: ['banned.ts'], fail: ['banned.ts'] });
 
 		const { problems } = await validate({
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile({ id: 'no-banned-file' }) })],
 		});
 
 		expect(problems).toStrictEqual(['no-banned-file: the pass fixture produced 1 finding(s) — the check flags code the rule allows']);
@@ -129,7 +129,7 @@ describe('validateStandardsLibrary', () => {
 		const { problems, notes } = await validate({
 			built: true,
 			rules: [
-				rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) }),
+				rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile({ id: 'no-banned-file' }) }),
 				rule({ id: 'premature-abstraction', fixturesPath }),
 			],
 		});
@@ -146,7 +146,7 @@ describe('validateStandardsLibrary', () => {
 		const { fixturesPath } = setupWithoutFixtures();
 
 		const { problems } = await validate({
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile({ id: 'no-banned-file' }) })],
 		});
 
 		expect(problems).toStrictEqual([
@@ -159,7 +159,7 @@ describe('validateStandardsLibrary', () => {
 		const { fixturesPath } = setupEmptyFailFixture();
 
 		const { problems, notes } = await validate({
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'no-banned-file' }) })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile({ id: 'no-banned-file' }) })],
 		});
 
 		// only the empty side is named — the populated one is a pair member already
@@ -206,7 +206,7 @@ describe('validateStandardsLibrary', () => {
 			throw new Error('cannot parse that');
 		};
 
-		const { problems } = await validate({ rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: throwingRun })] });
+		const { problems } = await validate({ rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: throwingRun })] });
 
 		expect(problems).toStrictEqual([
 			'no-banned-file: the fail fixture could not be checked — standards rule "acme/no-banned-file" threw while checking: cannot parse that',
@@ -219,8 +219,8 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems } = await validate({
 			rules: [
-				rule({ id: 'base-rule', fixturesPath: catching, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'base-rule' }) }),
-				rule({ id: 'react-rule', fixturesPath: blind, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile({ id: 'react-rule' }) }),
+				rule({ id: 'base-rule', fixturesPath: catching, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile({ id: 'base-rule' }) }),
+				rule({ id: 'react-rule', fixturesPath: blind, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile({ id: 'react-rule' }) }),
 			],
 		});
 
@@ -230,15 +230,15 @@ describe('validateStandardsLibrary', () => {
 
 	test('a check whose site key does not start with its rule id is a problem naming the full rule name and the key', async () => {
 		const { fixturesPath } = setupFixtures({ pass: ['a.ts'], fail: ['a.ts'] });
-		const writesAWrongPrefix: StandardsCheckFunction = ({ input }) =>
-			(input.kind === StandardsInputKind.FileList ? input.files : []).map(() => ({
+		const writesAWrongPrefix: StandardsCheckFunction = ({ inputs }) =>
+			(inputs[StandardsInputKind.FileList]?.files ?? []).map(() => ({
 				siteKey: 'wrong:src/a.ts',
 				files: [{ path: 'src/a.ts' }],
 				detail: 'a finding filed under another rule',
 			}));
 
 		const { problems } = await validate({
-			rules: [rule({ id: 'size', name: 'acme/size', library: 'acme', fixturesPath, inputKind: StandardsInputKind.FileList, run: writesAWrongPrefix })],
+			rules: [rule({ id: 'size', name: 'acme/size', library: 'acme', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: writesAWrongPrefix })],
 		});
 
 		// both sides trip the prefix check; the wording is the author's to change,

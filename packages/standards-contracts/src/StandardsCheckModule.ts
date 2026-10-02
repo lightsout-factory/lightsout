@@ -5,7 +5,11 @@ import { StandardsInputKind } from '#src/StandardsInputKind.ts';
 // Validated at load time so a mistyped input kind or missing function fails where
 // the package is named, not later inside a run.
 export const StandardsCheckModule = z.object({
-	inputKind: z.enum(StandardsInputKind),
+	/** Every kind the check reads; the engine builds each and hands all of them to `run`. */
+	inputKinds: z
+		.array(z.enum(StandardsInputKind))
+		.min(1)
+		.refine((kinds) => new Set(kinds).size === kinds.length, { message: 'each input kind is declared once' }),
 	run: z.custom<StandardsCheckFunction>((value) => typeof value === 'function'),
 });
 

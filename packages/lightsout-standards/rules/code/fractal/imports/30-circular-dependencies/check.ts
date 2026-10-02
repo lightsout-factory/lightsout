@@ -114,7 +114,7 @@ const findShortestCycle = ({ group, importsBySource }: { group: string[]; import
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'import-graph',
+	inputKinds: ['import-graph'],
 	/**
 	 * Files that all reach each other through imports are one group, and a group
 	 * is one finding: its shortest cycle, every file named in import order.
@@ -128,8 +128,10 @@ export const check: StandardsCheckModule = {
 	 * Cycles are found across the whole repo and reported when one of their files
 	 * is in scope, so a finding has the same identity in a full run and a narrow one.
 	 */
-	run: ({ input }): RawStandardsFinding[] => {
-		if (input.kind !== 'import-graph') {
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const input = inputs['import-graph'];
+
+		if (input === undefined) {
 			return [];
 		}
 

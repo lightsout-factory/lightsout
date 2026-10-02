@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
-import type { StandardsCheckInput } from '@lightsout/standards-contracts';
+import type { FileTextInput } from '@lightsout/standards-contracts';
 import { StandardsInputKind } from '@lightsout/standards-contracts';
-import { setupOtherKindInput } from '@lightsout/standards-testkit';
+
 import { check } from './check.ts';
 
 /**
@@ -15,7 +15,7 @@ const setupFileTextInput = ({
 }: {
 	contents: Array<[string, string]>;
 	tsconfig?: string | null;
-}): StandardsCheckInput => {
+}): FileTextInput => {
 	const files = contents.map(([path]) => path);
 	const entries: Array<[string, string]> = tsconfig === null ? contents : [...contents, ['tsconfig.json', tsconfig]];
 
@@ -33,7 +33,7 @@ const setupFileTextInput = ({
 
 describe('import-path-alias check', () => {
 	test('asks for file text, since the verdict reads both the tsconfig and each file’s import lines', () => {
-		expect(check.inputKind).toBe('file-text');
+		expect(check.inputKinds).toStrictEqual(['file-text']);
 	});
 
 	test('reports a relative import in a repo whose tsconfig configures aliases', async () => {
@@ -44,7 +44,7 @@ describe('import-path-alias check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -69,7 +69,7 @@ describe('import-path-alias check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -90,7 +90,7 @@ describe('import-path-alias check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -111,7 +111,7 @@ describe('import-path-alias check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -126,7 +126,7 @@ describe('import-path-alias check', () => {
 			tsconfig: null,
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -151,7 +151,7 @@ describe('import-path-alias check', () => {
 			tsconfig,
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -161,7 +161,7 @@ describe('import-path-alias check', () => {
 			contents: [['src/app/main.ts', ["import './styles.css';", "import logo from './logo.svg';"].join('\n')]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -174,13 +174,13 @@ describe('import-path-alias check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

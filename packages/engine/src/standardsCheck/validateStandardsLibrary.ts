@@ -101,12 +101,12 @@ const checkFrameworkOwned = async ({ library, compiler }: { library: LoadedStand
 
 	for (const framework of frameworks) {
 		for (const rule of library.rules) {
-			const { run, inputKind } = rule;
+			const { run, inputKinds } = rule;
 
 			// Skipped without a word: the per-rule loop already noted a judgment-only
 			// rule and a kind this install cannot parse, and saying it again per
 			// framework would bury the list it belongs in.
-			if (run === undefined || inputKind === undefined || (compiler === undefined && typescriptInputKinds.has(inputKind))) {
+			if (run === undefined || inputKinds === undefined || (compiler === undefined && inputKinds.some((kind) => typescriptInputKinds.has(kind)))) {
 				continue;
 			}
 
@@ -114,7 +114,7 @@ const checkFrameworkOwned = async ({ library, compiler }: { library: LoadedStand
 				const found = await checkFixtureTree({
 					cwd: join(frameworkOwnedFixturesPath, framework),
 					rule,
-					inputKind,
+					inputKinds,
 					run,
 					label: `fixtures/framework-owned/${framework}/`,
 					compiler,
@@ -182,13 +182,13 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 
 	// Resolving TypeScript means loading a multi-megabyte module; a library whose
 	// rules never ask for a parsed tree should not pay for it.
-	const hasParsingRule = library.rules.some((rule) => rule.inputKind !== undefined && typescriptInputKinds.has(rule.inputKind));
+	const hasParsingRule = library.rules.some((rule) => rule.inputKinds?.some((kind) => typescriptInputKinds.has(kind)) === true);
 	const compiler = hasParsingRule ? getEngineTypescript() : undefined;
 	const problems: string[] = [];
 	const notes: string[] = [];
 
 	for (const rule of library.rules) {
-		const { run, inputKind } = rule;
+		const { run, inputKinds } = rule;
 		const missing = await missingFixtureSides({ fixturesPath: rule.fixturesPath });
 
 		if (missing.length > 0) {
@@ -200,19 +200,21 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 
 		problems.push(...(await checkRuleExample({ rule })));
 
-		if (run === undefined || inputKind === undefined) {
+		if (run === undefined || inputKinds === undefined) {
 			notes.push(`${rule.id}: judgment-only — fixtures reserved for agent accuracy`);
 			continue;
 		}
 
-		if (compiler === undefined && typescriptInputKinds.has(inputKind)) {
-			notes.push(`${rule.id}: not validated — its ${inputKind} input needs a typescript this install does not have`);
+		const needingTypescript = inputKinds.filter((kind) => typescriptInputKinds.has(kind));
+
+		if (compiler === undefined && needingTypescript.length > 0) {
+			notes.push(`${rule.id}: not validated — its ${needingTypescript.join(' and ')} input needs a typescript this install does not have`);
 			continue;
 		}
 
 		for (const side of Object.values(FixtureSide)) {
 			try {
-				const found = await checkFixtureTree({ cwd: join(rule.fixturesPath, side), rule, inputKind, run, label: `fixtures/${side}/`, compiler });
+				const found = await checkFixtureTree({ cwd: join(rule.fixturesPath, side), rule, inputKinds, run, label: `fixtures/${side}/`, compiler });
 
 				if (side === FixtureSide.Fail && found.length === 0) {
 					problems.push(`${rule.id}: the fail fixture produced no finding — the check does not catch what the rule describes`);

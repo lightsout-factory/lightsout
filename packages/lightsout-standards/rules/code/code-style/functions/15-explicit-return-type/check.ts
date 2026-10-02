@@ -83,9 +83,13 @@ const buildFileFindings = ({ input }: { input: SyntaxTreeInput }) => {
 };
 
 export const check: StandardsCheckModule = {
-	inputKind: 'syntax-tree',
+	inputKinds: ['syntax-tree'],
 	// The annotation's absence is a fact of the declaration, and the two
 	// exceptions that survive here — generics and an already-typed variable —
 	// are facts of the same node.
-	run: ({ input }): RawStandardsFinding[] => (input.kind === 'syntax-tree' ? buildFileFindings({ input }) : []),
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const input = inputs['syntax-tree'];
+
+		return input === undefined ? [] : buildFileFindings({ input });
+	},
 };

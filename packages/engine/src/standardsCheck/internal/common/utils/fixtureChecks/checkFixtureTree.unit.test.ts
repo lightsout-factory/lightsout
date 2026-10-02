@@ -10,8 +10,8 @@ import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/L
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 
 /** A check that objects to any file named `banned.ts` — small enough to reason about, real enough to fail. */
-const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.FileList ? input.files : [])
+const bansTheBannedFile: StandardsCheckFunction = ({ inputs }) =>
+	(inputs[StandardsInputKind.FileList]?.files ?? [])
 		.filter((file) => file.endsWith('banned.ts'))
 		.map((path) => ({
 			siteKey: `no-banned-file:${path}`,
@@ -20,20 +20,23 @@ const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
 		}));
 
 /** A check that reports the split it was handed rather than judging anything — the only way to assert what reached it. */
-const reportsWhatItWasHanded: StandardsCheckFunction = ({ input }) =>
-	input.kind === StandardsInputKind.FileList
-		? [
+const reportsWhatItWasHanded: StandardsCheckFunction = ({ inputs }) => {
+	const input = inputs[StandardsInputKind.FileList];
+
+	return input === undefined
+		? []
+		: [
 				{
 					siteKey: 'no-banned-file:handed',
 					files: [],
 					detail: `source=${input.source.join('|')} tests=${input.tests.join('|')} packs=${input.standardsLibraries.length}`,
 				},
-			]
-		: [];
+			];
+};
 
 /** The same ban, asked of the files the engine could type rather than of the path list. */
-const bansTheBannedTypedFile: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.TypeChecker ? [...input.typedFiles.keys()] : [])
+const bansTheBannedTypedFile: StandardsCheckFunction = ({ inputs }) =>
+	[...(inputs[StandardsInputKind.TypeChecker]?.typedFiles.keys() ?? [])]
 		.filter((path) => path.endsWith('banned.ts'))
 		.map((path) => ({
 			siteKey: `no-banned-file:${path}`,
@@ -42,9 +45,9 @@ const bansTheBannedTypedFile: StandardsCheckFunction = ({ input }) =>
 		}));
 
 /** A check that flags `src/` when it holds more source files than the `cap` option allows — the only way to see which options reached it. */
-const capsTheSourceFolder: StandardsCheckFunction = ({ input, options }) => {
+const capsTheSourceFolder: StandardsCheckFunction = ({ inputs, options }) => {
 	const { cap } = options;
-	const count = input.kind === StandardsInputKind.FileList ? input.source.length : 0;
+	const count = inputs[StandardsInputKind.FileList]?.source.length ?? 0;
 
 	return count > cap ? [{ siteKey: 'no-banned-file:src', files: [{ path: 'src' }], detail: `${count} files over a cap of ${cap}` }] : [];
 };
@@ -82,7 +85,7 @@ describe('checkFixtureTree', () => {
 	test('hands back what the check flagged in the tree it was pointed at', async () => {
 		const { cwd } = setupTree({ files: ['allowed.ts', 'banned.ts'] });
 
-		const found = await checkFixtureTree({ cwd, rule, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile, label: 'fixtures/pass/' });
+		const found = await checkFixtureTree({ cwd, rule, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile, label: 'fixtures/pass/' });
 
 		expect(found).toStrictEqual([{ siteKey: 'acme/no-banned-file:src/banned.ts', files: [{ path: 'src/banned.ts' }], detail: 'a file the rule bans' }]);
 	});
@@ -94,7 +97,7 @@ describe('checkFixtureTree', () => {
 			promise: checkFixtureTree({
 				cwd,
 				rule,
-				inputKind: StandardsInputKind.TypeChecker,
+				inputKinds: [StandardsInputKind.TypeChecker],
 				run: bansTheBannedTypedFile,
 				label: 'fixtures/framework-owned/nestjs/',
 				compiler: ts,
@@ -114,7 +117,7 @@ describe('checkFixtureTree', () => {
 		const found = await checkFixtureTree({
 			cwd,
 			rule,
-			inputKind: StandardsInputKind.TypeChecker,
+			inputKinds: [StandardsInputKind.TypeChecker],
 			run: bansTheBannedTypedFile,
 			label: 'fixtures/pass/',
 			compiler: ts,
@@ -126,7 +129,7 @@ describe('checkFixtureTree', () => {
 	test('splits test files out of source and declares no pack — the tree is a miniature repo of its own', async () => {
 		const { cwd } = setupTree({ files: ['allowed.ts', 'allowed.unit.test.ts'] });
 
-		const found = await checkFixtureTree({ cwd, rule, inputKind: StandardsInputKind.FileList, run: reportsWhatItWasHanded, label: 'fixtures/pass/' });
+		const found = await checkFixtureTree({ cwd, rule, inputKinds: [StandardsInputKind.FileList], run: reportsWhatItWasHanded, label: 'fixtures/pass/' });
 
 		expect(found).toStrictEqual([{ siteKey: 'acme/no-banned-file:handed', files: [], detail: 'source=src/allowed.ts tests=src/allowed.unit.test.ts packs=0' }]);
 	});
@@ -138,7 +141,13 @@ describe('checkFixtureTree', () => {
 		const { cwd } = setupTree({ files: ['first.ts', 'second.ts'] });
 		const cappedRule: LoadedStandardsRule = { ...rule, defaultOptions: { cap } };
 
-		const found = await checkFixtureTree({ cwd, rule: cappedRule, inputKind: StandardsInputKind.FileList, run: capsTheSourceFolder, label: 'fixtures/pass/' });
+		const found = await checkFixtureTree({
+			cwd,
+			rule: cappedRule,
+			inputKinds: [StandardsInputKind.FileList],
+			run: capsTheSourceFolder,
+			label: 'fixtures/pass/',
+		});
 
 		expect(found).toStrictEqual(expected);
 	});

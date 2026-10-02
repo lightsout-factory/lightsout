@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupFileListInput, setupOtherKindInput } from '@lightsout/standards-testkit';
+import { setupFileListInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 const separatedGuidance = 'A unit test sits beside the file it tests — move it next to its subject rather than into a separate directory.';
@@ -8,13 +8,13 @@ const orphanedGuidance =
 
 describe('test-beside-subject check', () => {
 	test('asks for the file list alone, since where a test sits and what it names are read from its path', () => {
-		expect(check.inputKind).toBe('file-list');
+		expect(check.inputKinds).toStrictEqual(['file-list']);
 	});
 
 	test('reports a unit test filed away from its subject, naming the folder it was filed into', async () => {
 		const input = setupFileListInput({ source: ['src/feature/getLabel.ts'], tests: ['src/feature/tests/getLabel.unit.test.ts'] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 		// one finding, for the folder: the missing subject beside it is the same mistake, not a second one
 		expect(findings).toStrictEqual([
@@ -35,7 +35,7 @@ describe('test-beside-subject check', () => {
 				tests: [`src/feature/${directory}/getLabel.unit.test.ts`],
 			});
 
-			const findings = await check.run({ input, options: {} });
+			const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 			// a subject sits beside the test here, so only the folder name can be what is reported
 			expect(findings.map(({ detail }) => detail)).toStrictEqual([`a unit test in src/feature/${directory}`]);
@@ -45,7 +45,7 @@ describe('test-beside-subject check', () => {
 	test('objects to a refused folder anywhere above the test, not only the one directly holding it', async () => {
 		const input = setupFileListInput({ source: ['src/feature/getLabel.ts'], tests: ['src/tests/feature/nested/getLabel.unit.test.ts'] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(['a unit test in src/tests/feature/nested']);
 	});
@@ -53,7 +53,7 @@ describe('test-beside-subject check', () => {
 	test('reports a test whose first name segment names no source file beside it', async () => {
 		const input = setupFileListInput({ source: ['src/feature/getLabel.ts'], tests: ['src/feature/labelling.unit.test.ts'] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -68,7 +68,7 @@ describe('test-beside-subject check', () => {
 	test('leaves a test sitting beside the file it names alone', async () => {
 		const input = setupFileListInput({ source: ['src/feature/getLabel.ts'], tests: ['src/feature/getLabel.unit.test.ts'] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -79,7 +79,7 @@ describe('test-beside-subject check', () => {
 			tests: ['src/pipeline/runPipeline.monorepo.unit.test.ts', 'src/pipeline/runPipeline.nested.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -89,7 +89,7 @@ describe('test-beside-subject check', () => {
 		async ({ extension }) => {
 			const input = setupFileListInput({ source: [`src/feature/getLabel.${extension}`], tests: ['src/feature/getLabel.unit.test.ts'] });
 
-			const findings = await check.run({ input, options: {} });
+			const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 			expect(findings).toStrictEqual([]);
 		},
@@ -98,7 +98,7 @@ describe('test-beside-subject check', () => {
 	test('a file of that name in another folder does not count — the subject is looked for in the test’s own folder', async () => {
 		const input = setupFileListInput({ source: ['src/other/getLabel.ts'], tests: ['src/feature/getLabel.unit.test.ts'] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(["no source file named 'getLabel' in src/feature"]);
 	});
@@ -114,7 +114,7 @@ describe('test-beside-subject check', () => {
 			],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -125,7 +125,7 @@ describe('test-beside-subject check', () => {
 			tests: ['src/a/tests/getA.unit.test.ts', 'src/b/getB.unit.test.ts', 'src/b/rendering.unit.test.ts', 'src/b/__tests__/getB.other.unit.test.ts'],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
 			'test-beside-subject:src/a/tests/getA.unit.test.ts',
@@ -141,7 +141,7 @@ describe('test-beside-subject check', () => {
 			dependencies: [['.', ['@tanstack/react-router']]],
 		});
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -149,13 +149,13 @@ describe('test-beside-subject check', () => {
 	test('reports the same pair in a package declaring no router, so the carve-out is what changed the verdict rather than the names', async () => {
 		const input = setupFileListInput({ source: ['src/routes/runs.$runId.tsx'], tests: ['src/routes/runs.$runId.unit.test.tsx'] });
 
-		const findings = await check.run({ input, options: {} });
+		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(["no source file named 'runs' in src/routes"]);
 	});
 
-	test('reports nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await check.run({ input: setupOtherKindInput(), options: {} });
+	test('reports nothing when its input is missing rather than refusing', async () => {
+		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});

@@ -28,7 +28,7 @@ So write:
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 ```
 
-and give `inputKind` a plain string literal, which the `StandardsCheckModule`
+and give `inputKinds` plain string literals, which the `StandardsCheckModule`
 annotation narrows for you. Biome's `useImportType` rule produces the safe form
 and is what stands between this design and a broken install.
 
