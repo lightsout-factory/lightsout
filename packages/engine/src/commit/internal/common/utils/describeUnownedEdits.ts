@@ -1,7 +1,7 @@
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import { readWorktreeRecord } from '#src/worktree/records/readWorktreeRecord.ts';
+import { isLightsoutWorktree } from '#src/worktree/records/isLightsoutWorktree.ts';
 
 interface Params {
 	cwd: string;
@@ -19,9 +19,7 @@ interface Params {
  * takes build output back out of the tree.
  */
 export const describeUnownedEdits = async ({ cwd, manifest, generated }: Params): Promise<string | undefined> => {
-	const record = manifest.branch === undefined ? undefined : await readWorktreeRecord({ cwd, branch: manifest.branch });
-
-	if (record !== undefined) {
+	if (await isLightsoutWorktree({ cwd, branch: manifest.branch })) {
 		return undefined;
 	}
 

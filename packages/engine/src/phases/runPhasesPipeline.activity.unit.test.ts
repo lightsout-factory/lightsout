@@ -1,3 +1,4 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { buildActivityTree } from '#src/activity/buildActivityTree.ts';
@@ -19,9 +20,13 @@ import { setupPhasedRepo } from '#tests/helpers/setupPhasedRepo.ts';
 // no coordinator level of its own, and nothing at all for a phase a resume
 // finds already passed.
 
-/** The plan folder a phased fixture's record is written into, and an already-open command-run level for the sequence to hang its phases from. */
+/**
+ * The plan folder a phased fixture's record is written into, and an already-open command-run level for the sequence to hang its phases from.
+ *
+ * The folder sits under `.lightsout/`, as a real plan workspace sits under the shared state directory, so the record the sequence writes is never an uncommitted change the clean-tree check before each phase would refuse.
+ */
 const openCommandRun = ({ dir, label }: { dir: string; label: string }) => {
-	const workspaceDir = join(dir, 'plans', 'demo');
+	const workspaceDir = join(dir, '.lightsout', 'plans', 'demo');
 	const plan = createActivityRecorder({ dir: workspaceDir, level: ActivityLevelKind.Plan, label: 'demo' });
 
 	return { workspaceDir, level: plan.open({ level: ActivityLevelKind.CommandRun, label }) };
@@ -49,6 +54,30 @@ const setupFailingPhasedActivity = async () => {
 		overviewPath,
 		config: await readConfig({ cwd: dir }),
 		driver: createPhaseDriver({ dir, seen: [], failAt: 2 }),
+		...openCommandRun({ dir, label: 'implement' }),
+	};
+};
+
+/**
+ * A fresh two-phase sequence whose checkout gains an uncommitted notes/stray.md
+ * the moment phase 2's label is narrated — after phase 1 committed, before
+ * phase 2 starts — so the clean-tree check refuses phase 2.
+ */
+const setupStrayEditPhasedActivity = async () => {
+	const { dir, overviewPath } = setupPhasedRepo({ phases: 2 });
+	const onProgress = (message: string) => {
+		if (message === 'phase 2/2: phase2.md') {
+			mkdirSync(join(dir, 'notes'), { recursive: true });
+			writeFileSync(join(dir, 'notes', 'stray.md'), 'a person edits the checkout mid-build\n');
+		}
+	};
+
+	return {
+		dir,
+		overviewPath,
+		onProgress,
+		config: await readConfig({ cwd: dir }),
+		driver: createPhaseDriver({ dir, seen: [] }),
 		...openCommandRun({ dir, label: 'implement' }),
 	};
 };
@@ -160,5 +189,26 @@ describe('runPhasesPipeline', () => {
 			{ level: ActivityLevelKind.Pass, label: 'phase 1/2: phase1.md', outcome: 'passed' },
 			{ level: ActivityLevelKind.Pass, label: 'phase 2/2: phase2.md', outcome: 'failed' },
 		]);
+	});
+
+	test('a phase refused for an uncommitted checkout opens no pass level', async () => {
+		const stray = await setupStrayEditPhasedActivity();
+
+		const result = await runPhasesPipeline({
+			cwd: stray.dir,
+			driver: stray.driver,
+			config: stray.config,
+			overviewPath: stray.overviewPath,
+			skipRefactor: true,
+			level: stray.level,
+			onProgress: stray.onProgress,
+		});
+		const commandRun = await readCommandRun(stray);
+
+		expect(result.ok).toBe(false);
+		expectDefined(commandRun);
+		// the refusal comes before phase 2 opens its level, so only phase 1 drew
+		// a row — a second row would claim a phase ran that never started
+		expect(phaseRows({ commandRun })).toStrictEqual([{ level: ActivityLevelKind.Pass, label: 'phase 1/2: phase1.md', outcome: 'passed' }]);
 	});
 });

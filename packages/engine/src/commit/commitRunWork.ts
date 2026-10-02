@@ -29,7 +29,7 @@ interface Params {
 	driver: Driver;
 	/** The address a pipeline that builds no plan supplies for itself — the direct run's. Omitted by a plan run, whose address is read from the plan the manifest names. */
 	address?: CommitAddress;
-	/** Whether this run continues work that was parked — it adopted an existing manifest, or its caller knows the sequence it belongs to was resumed. Only such a run's tree is compared for edits the run does not own. */
+	/** Whether this run continues work that was parked — true only for a run that adopted an existing manifest. Only such a run's tree is compared for edits the run does not own; a phase starting for the first time is covered instead by the coordinator's clean-tree check before it starts. */
 	resumed: boolean;
 	/** Forwarded to `commitWorkOrderWork`: leave generated changes uncommitted on disk instead of discarding them. Set only by a phase of a sequence. Default false. */
 	keepGenerated?: boolean;

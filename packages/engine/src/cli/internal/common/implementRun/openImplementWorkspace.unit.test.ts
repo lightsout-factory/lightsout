@@ -64,8 +64,9 @@ const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-co
  *
  * `isolated` is the whole variable of these rows: a tree lightsout cut for the
  * run, against the checkout a person chose themselves with `--no-worktree`.
+ * `generated` is merged into the fixture config when a case names one.
  */
-const setupImplementWorkspace = ({ isolated = false, dirty = [] }: { isolated?: boolean; dirty?: string[] } = {}) => {
+const setupImplementWorkspace = ({ isolated = false, dirty = [], generated }: { isolated?: boolean; dirty?: string[]; generated?: string[] } = {}) => {
 	const workspace: RunWorkspace = isolated
 		? { cwd: worktreePath, branch, isolated: true, created: true }
 		: { cwd: launchedFrom, isolated: false, created: false };
@@ -76,7 +77,9 @@ const setupImplementWorkspace = ({ isolated = false, dirty = [] }: { isolated?: 
 	mockResolvePlanTarget.mockResolvedValue({ planPath });
 	jest.spyOn(console, 'log').mockImplementation(() => undefined);
 
-	return { params: { cwd: launchedFrom, config, flags: new Map<string, string | true>(), planPath }, workspace };
+	const runConfig: LightsoutConfig = generated === undefined ? config : { ...config, generated };
+
+	return { params: { cwd: launchedFrom, config: runConfig, flags: new Map<string, string | true>(), planPath }, workspace };
 };
 
 describe('openImplementWorkspace', () => {
@@ -90,6 +93,34 @@ describe('openImplementWorkspace', () => {
 			judged: mockReadGitChangedFiles.mock.calls[0]?.[0],
 			copies: mockCopyRunInputs.mock.calls.length,
 		}).toStrictEqual({ refused: true, judged: { cwd: launchedFrom }, copies: 0 });
+	});
+
+	test("names the uncommitted files in a person's checkout", async () => {
+		const { params } = setupImplementWorkspace({ dirty: ['src/thing.ts', 'notes/todo.md'] });
+
+		const opened = await openImplementWorkspace(params);
+
+		// The paths are machine-facing — a person stashes exactly these — while
+		// the advice around them is wording, pinned loosely.
+		expect({ opened, copies: mockCopyRunInputs.mock.calls.length }).toEqual({
+			opened: {
+				error: expect.stringMatching(/^(?=[\s\S]*src\/thing\.ts)(?=[\s\S]*notes\/todo\.md)(?=[\s\S]*commit or stash)/i),
+			},
+			copies: 0,
+		});
+	});
+
+	test("still refuses a person's checkout whose only changes are generated output", async () => {
+		const { params } = setupImplementWorkspace({ dirty: ['dist/out.js'], generated: ['dist/'] });
+
+		const opened = await openImplementWorkspace(params);
+
+		// A fresh run's commit discards changed generated paths, so a person's
+		// uncommitted build output must stop the run rather than be deleted by it.
+		expect({ opened, copies: mockCopyRunInputs.mock.calls.length }).toEqual({
+			opened: { error: expect.stringContaining('dist/out.js') },
+			copies: 0,
+		});
 	});
 
 	test('proceeds in an isolated workspace that is not clean', async () => {
