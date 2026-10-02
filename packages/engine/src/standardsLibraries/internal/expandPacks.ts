@@ -4,14 +4,24 @@ import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/type
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import type { LoadedStandardsTopic } from '#src/standardsLibraries/common/types/LoadedStandardsTopic.ts';
 import type { PackExpansion } from '#src/standardsLibraries/internal/common/types/PackExpansion.ts';
+import { applyPackCondition } from '#src/standardsLibraries/internal/common/utils/applyPackCondition.ts';
+import { findPackFile } from '#src/standardsLibraries/internal/common/utils/findPackFile.ts';
+import { splitPackAddress } from '#src/standardsLibraries/internal/common/utils/splitPackAddress.ts';
 import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
 
 interface Params {
-	/** `<library>/<file-stem>`. */
-	address: string;
+	/** Pack addresses, `<library>/<file-stem>`, merged in listed order as a pack's own `include.packs` are. */
+	addresses: string[];
 	/** Every library the repo registered. */
 	libraries: LoadedStandardsLibrary[];
-	/** The addresses being expanded above this one, outermost first; empty for the pack asked for. */
+	/** The dependencies the package declares, which decide each conditional pack; undefined = every conditional pack applies. */
+	dependencies: ReadonlySet<string> | undefined;
+}
+
+interface OnePackParams extends Omit<Params, 'addresses'> {
+	/** `<library>/<file-stem>`. */
+	address: string;
+	/** The addresses being expanded above this one, outermost first; empty for a pack asked for by name. */
 	chain: string[];
 }
 
@@ -22,41 +32,6 @@ interface EntryParams {
 	/** The libraries the pack can see. */
 	libraries: LoadedStandardsLibrary[];
 }
-
-const splitAddress = ({ address }: { address: string }) => {
-	const slash = address.indexOf('/');
-
-	return slash === -1 ? undefined : { libraryName: address.slice(0, slash), path: address.slice(slash + 1) };
-};
-
-/** Every problem names the pack being expanded — or, for an included pack, the pack including it and the entry. */
-const findPackFile = ({ address, libraries, chain }: { address: string; libraries: LoadedStandardsLibrary[]; chain: string[] }) => {
-	const includedBy = chain.at(-1);
-	const fail = ({ reason }: { reason: string }) =>
-		new Error(includedBy === undefined ? `pack ${address}: ${reason}` : `pack ${includedBy}: include.packs entry "${address}" ${reason}`);
-	const cycleStart = chain.indexOf(address);
-
-	if (cycleStart !== -1) {
-		throw fail({ reason: `closes an include cycle: ${[...chain.slice(cycleStart), address].join(' → ')}` });
-	}
-
-	const parts = splitAddress({ address });
-	const library = libraries.find((candidate) => candidate.name === parts?.libraryName);
-
-	if (parts === undefined || library === undefined) {
-		throw fail({
-			reason: parts === undefined ? 'is not an address of the form <library>/<name>' : `names library "${parts.libraryName}", which is not registered`,
-		});
-	}
-
-	const packFile = library.packs.find((candidate) => candidate.name === parts.path);
-
-	if (packFile === undefined) {
-		throw fail({ reason: 'names no pack' });
-	}
-
-	return { library, packFile };
-};
 
 /**
  * A short rule name resolves among the pack's own library and the libraries its
@@ -82,7 +57,7 @@ const findVisibleLibraries = ({
 	];
 
 	for (const { list, entry } of entries) {
-		const libraryName = splitAddress({ address: entry })?.libraryName;
+		const libraryName = splitPackAddress({ address: entry })?.libraryName;
 		const named = libraries.find((candidate) => candidate.name === libraryName);
 
 		if (libraryName === undefined) {
@@ -141,10 +116,18 @@ const mergeExpansion = ({ into, from }: { into: PackExpansion; from: PackExpansi
 	for (const [name, setting] of from.settings) {
 		mergeSetting({ settings: into.settings, name, setting });
 	}
+
+	for (const conditionalPack of from.conditionalPacks) {
+		into.conditionalPacks.add(conditionalPack);
+	}
+
+	for (const [name, rule] of from.inactiveRules) {
+		into.inactiveRules.set(name, rule);
+	}
 };
 
 const addWholeTopic = ({ address, entry, expansion, libraries }: EntryParams) => {
-	const parts = splitAddress({ address: entry });
+	const parts = splitPackAddress({ address: entry });
 	const library = libraries.find((candidate) => candidate.name === parts?.libraryName);
 	const topic = library?.documents.find((candidate) => candidate.path === parts?.path);
 
@@ -191,32 +174,37 @@ const applyRuleSettings = ({ address, expansion, ruleSettings, libraries }: Omit
 			throw new Error(`pack ${address}: rule-settings entry "${key}" — ${resolved.problem}`);
 		}
 
-		if (!expansion.rules.has(resolved.rule.name)) {
-			throw new Error(`pack ${address}: rule-settings entry "${key}" names ${resolved.rule.name}, which the pack does not include`);
+		const { name } = resolved.rule;
+
+		if (!expansion.rules.has(name) && !expansion.inactiveRules.has(name)) {
+			throw new Error(`pack ${address}: rule-settings entry "${key}" names ${name}, which the pack does not include`);
 		}
 
-		const setting = typeof value === 'string' ? { severity: value, options: {} } : { severity: value.severity, options: value.options ?? {} };
+		// A rule only a conditional pack that did not apply would bring takes no setting for this package.
+		if (expansion.rules.has(name)) {
+			const setting = typeof value === 'string' ? { severity: value, options: {} } : { severity: value.severity, options: value.options ?? {} };
 
-		mergeSetting({ settings: expansion.settings, name: resolved.rule.name, setting });
+			mergeSetting({ settings: expansion.settings, name, setting });
+		}
 	}
 };
 
-/**
- * Expands one pack into its explicit layer, never its final grades: included
- * packs merge in listed order, so the last listed wins only where it wrote a
- * value; topics and single rules add rules and carry no settings; the pack's
- * own `rule-settings` apply last. A pack reached twice by two branches is no
- * cycle — only one reached again inside itself is.
- *
- * @throws {Error} When the pack, or any include or rule-settings entry reachable from it, cannot be resolved, or packs include each other in a cycle.
- */
-export const expandPack = ({ address, libraries, chain }: Params): PackExpansion => {
+const emptyExpansion = (): PackExpansion => ({
+	topics: new Map(),
+	rules: new Map(),
+	settings: new Map(),
+	conditionalPacks: new Set(),
+	inactiveRules: new Map(),
+});
+
+/** A conditional pack is expanded like any other, then kept or emptied by `applyPackCondition`. */
+const expandPack = ({ address, libraries, chain, dependencies }: OnePackParams): PackExpansion => {
 	const { library, packFile } = findPackFile({ address, libraries, chain });
 	const visible = findVisibleLibraries({ address, library, include: packFile.include, libraries });
-	const expansion: PackExpansion = { topics: new Map(), rules: new Map(), settings: new Map() };
+	const expansion = emptyExpansion();
 
 	for (const entry of packFile.include.packs) {
-		mergeExpansion({ into: expansion, from: expandPack({ address: entry, libraries, chain: [...chain, address] }) });
+		mergeExpansion({ into: expansion, from: expandPack({ address: entry, libraries, chain: [...chain, address], dependencies }) });
 	}
 
 	for (const entry of packFile.include.topics) {
@@ -228,6 +216,25 @@ export const expandPack = ({ address, libraries, chain }: Params): PackExpansion
 	}
 
 	applyRuleSettings({ address, expansion, ruleSettings: packFile.ruleSettings, libraries: visible });
+
+	return applyPackCondition({ address, packFile, expansion, dependencies });
+};
+
+/**
+ * Expands packs into their explicit layer, never their final grades: packs
+ * merge in listed order, so the last listed wins only where it wrote a value;
+ * topics and single rules add rules and carry no settings; a pack's own
+ * `rule-settings` apply after everything it includes. A pack reached twice by
+ * two branches is no cycle — only one reached again inside itself is.
+ *
+ * @throws {Error} When a pack, or any include or rule-settings entry reachable from one, cannot be resolved, or packs include each other in a cycle.
+ */
+export const expandPacks = ({ addresses, libraries, dependencies }: Params): PackExpansion => {
+	const expansion = emptyExpansion();
+
+	for (const address of addresses) {
+		mergeExpansion({ into: expansion, from: expandPack({ address, libraries, chain: [], dependencies }) });
+	}
 
 	return expansion;
 };

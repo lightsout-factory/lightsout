@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { reviewStandards } from '#src/cli/reviewStandards.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
@@ -50,15 +49,14 @@ const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-cov
 /** A resolved group as the resolver hands one back — only the fields a caller carrying it through can see. */
 const resolvedGroup = (): StandardsGroup => ({
 	packages: [''],
-	pack: { name: 'acme/house', topics: [], rules: [] },
-	source: StandardsPackSource.Named,
+	pack: { name: 'acme/house', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
 	states: new Map(),
 });
 
 /**
- * A repo the review reads its own answers off: source files, and a manifest
- * the pack is detected from. Groups given here stand in for the resolver's
- * answer; without them the real resolver reads the repo's own config.
+ * A repo the review reads its own answers off: source files and a plain
+ * manifest. Groups given here stand in for the resolver's answer; without them
+ * the real resolver reads the config the review is handed.
  */
 const setupRepo = ({ groups, sources = ['src/index.ts'] }: { groups?: StandardsGroup[]; sources?: string[] } = {}) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-review-'));
@@ -143,7 +141,7 @@ describe('reviewStandards', () => {
 
 		expect(reviewParams()?.driver.name).toBe('codex');
 		// the configured pack is taken as given — the same answer the machine half gets
-		expect(reviewParams()?.groups.map(({ pack, source }) => ({ pack: pack.name, source }))).toStrictEqual([{ pack: 'lightsout/react-app', source: 'named' }]);
+		expect(reviewParams()?.groups.map(({ pack }) => pack.name)).toStrictEqual(['lightsout/react-app']);
 		expect(reviewParams()?.timeoutMs).toBe(5 * 60_000);
 		// and the scope is the subtree the caller named
 		expect(reviewParams()?.files).toStrictEqual(['src/index.ts']);

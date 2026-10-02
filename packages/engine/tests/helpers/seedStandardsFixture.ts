@@ -1,20 +1,21 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { runCli } from '#tests/helpers/runCli.ts';
 import { seedConfiguredCwd } from '#tests/helpers/seedConfiguredCwd.ts';
 
 interface Params {
 	/** Accept the planted findings as debt first, so the suppression and --all paths are reachable. */
 	baseline?: boolean;
-	/** Extra top-level config fields — a lightsout.config.json is written only when this is given. */
+	/** Extra top-level config fields, merged beside the gates and the `lightsout/node` pack the fixture names. */
 	config?: Record<string, unknown>;
 }
 
 /**
- * A repo with a planted tier-0 synonym pair split across two folders, and no
- * node_modules — so the compiler-gated tiers degrade to a note, which is the
- * other rendering path `standards-check` owns.
+ * A repo on the `lightsout/node` pack with a planted tier-0 synonym pair split
+ * across two folders, and no node_modules — so the compiler-gated tiers degrade
+ * to a note, which is the other rendering path `standards-check` owns.
+ * Standards are opt-in, so the config names the pack: without it nothing here
+ * would be checked at all.
  *
  * Both halves of the pair are consumed by an entry point that exports nothing,
  * so the only thing wrong with this repo is the synonym: an unconsumed export
@@ -22,7 +23,7 @@ interface Params {
  * fixture never meant to plant.
  */
 export const seedStandardsFixture = async ({ baseline = false, config }: Params = {}): Promise<{ cwd: string }> => {
-	const cwd = config ? await seedConfiguredCwd({ config }) : await freshCwd();
+	const cwd = await seedConfiguredCwd({ config: { 'standards-pack': 'lightsout/node', ...config } });
 
 	await mkdir(join(cwd, 'src', 'a'), { recursive: true });
 	await mkdir(join(cwd, 'src', 'b'), { recursive: true });

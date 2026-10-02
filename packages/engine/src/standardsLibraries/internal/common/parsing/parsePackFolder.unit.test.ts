@@ -58,6 +58,7 @@ describe('parsePackFolder', () => {
 					description: 'Alpha pack.',
 					include: { packs: [], topics: [], rules: [] },
 					ruleSettings: {},
+					appliesWhen: undefined,
 				},
 				{
 					name: 'zeta',
@@ -65,9 +66,53 @@ describe('parsePackFolder', () => {
 					description: 'Zeta pack.',
 					include: { packs: ['lightsout/node'], topics: [], rules: [] },
 					ruleSettings: { size: 'blocking', 'function-length': { options: { cap: 40 } } },
+					appliesWhen: undefined,
 				},
 			],
 			problems: [],
+		});
+	});
+
+	test("parsePackFolder reads a pack file's applies-when as the dependencies the pack is conditional on", async () => {
+		const { folderPath } = setupPackFolder({
+			files: {
+				'react.json': JSON.stringify({ description: 'React pack.', 'applies-when': { dependencies: ['react', 'preact'] } }),
+			},
+		});
+		const problems: string[] = [];
+
+		const packs = await parsePackFolder({ folderPath, problems });
+
+		expect({ packs, problems }).toStrictEqual({
+			packs: [
+				{
+					name: 'react',
+					filePath: 'packs/react.json',
+					description: 'React pack.',
+					include: { packs: [], topics: [], rules: [] },
+					ruleSettings: {},
+					appliesWhen: { dependencies: ['react', 'preact'] },
+				},
+			],
+			problems: [],
+		});
+	});
+
+	test('parsePackFolder reports an applies-when with no dependency or an unknown key, each by path, and keeps the valid sibling', async () => {
+		const { folderPath } = setupPackFolder({
+			files: {
+				'empty.json': JSON.stringify({ description: 'Conditional on nothing.', 'applies-when': { dependencies: [] } }),
+				'unknown.json': JSON.stringify({ description: 'Has an unknown condition.', 'applies-when': { dependencies: ['react'], files: ['vite.config.ts'] } }),
+				'valid.json': JSON.stringify({ description: 'Valid pack.', 'applies-when': { dependencies: ['react'] } }),
+			},
+		});
+		const problems: string[] = [];
+
+		const packs = await parsePackFolder({ folderPath, problems });
+
+		expect({ names: packs.map((pack) => pack.name), problems: [...problems].sort() }).toEqual({
+			names: ['valid'],
+			problems: [expect.stringMatching(/^packs\/empty\.json: .*applies-when/), expect.stringMatching(/^packs\/unknown\.json: .*applies-when/)],
 		});
 	});
 

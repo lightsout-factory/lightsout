@@ -26,6 +26,8 @@ interface PackSpec {
 	topics?: string[];
 	rules?: string[];
 	ruleSettings?: StandardsRuleSettings;
+	/** Makes the pack conditional on the package declaring one of these dependencies; unconditional when omitted. */
+	appliesWhen?: { dependencies: string[] };
 }
 
 interface LibrarySpec {
@@ -61,12 +63,13 @@ const buildTopic = ({ library, spec }: { library: string; spec: TopicSpec }): Lo
 	ruleIds: (spec.rules ?? []).map((rule) => rule.id),
 });
 
-const buildPack = ({ name, packs = [], topics = [], rules = [], ruleSettings = {} }: PackSpec): LoadedStandardsPackFile => ({
+const buildPack = ({ name, packs = [], topics = [], rules = [], ruleSettings = {}, appliesWhen }: PackSpec): LoadedStandardsPackFile => ({
 	name,
 	filePath: `packs/${name}.json`,
 	description: `the ${name} pack`,
 	include: { packs, topics, rules },
 	ruleSettings,
+	appliesWhen,
 });
 
 const buildLibrary = ({ name, topics = [], packs = [] }: LibrarySpec): LoadedStandardsLibrary => ({

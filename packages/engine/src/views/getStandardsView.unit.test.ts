@@ -95,14 +95,14 @@ test('a repo that has never run a check still describes what it enforces', async
 	expect(view.totals).toStrictEqual({ rules: 2, checked: 1, judgment: 1, blocking: 0, advisory: 0, orphans: 0 });
 });
 
-test('a repo with no config at all is described by the standards that ship with the engine', async () => {
+test('a repo with no config at all is held to no standards', async () => {
 	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-view-bare-'));
+
 	const view = await getStandardsView({ cwd });
 
-	// the bundled pack travels with the engine, so a repo that has configured
-	// nothing still gets an honest account of what it is held to
-	expect(view.totals.rules > 0).toBe(true);
-	expect(view.rules.every((rule) => rule.doc.startsWith('lightsout: '))).toBe(true);
+	// standards are opt-in: a repo that has configured nothing names no pack, so no rule is listed
+	expect(view.rules).toStrictEqual([]);
+	expect(view.totals).toStrictEqual({ rules: 0, checked: 0, judgment: 0, blocking: 0, advisory: 0, orphans: 0 });
 	expect(view.at).toBe(undefined);
 });
 
@@ -174,7 +174,7 @@ test('a finding whose rule no pack loads is counted as an orphan, and lands on n
 });
 
 test('findings are counted per full rule name and a short-named finding is an orphan', async () => {
-	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-view-full-names-'));
+	const cwd = await seedStandardsRepo({ pack: 'lightsout/node' });
 
 	await writeStandardsSnapshot({
 		cwd,

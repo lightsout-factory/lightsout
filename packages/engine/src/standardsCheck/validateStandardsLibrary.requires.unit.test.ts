@@ -36,12 +36,13 @@ const houseRule = ({ id, requires = [] }: { id: string; requires?: string[] }): 
 	requires,
 });
 
-const packFile = ({ name, rules }: { name: string; rules: string[] }): LoadedStandardsPackFile => ({
+const packFile = ({ name, rules, appliesWhen }: { name: string; rules: string[]; appliesWhen?: { dependencies: string[] } }): LoadedStandardsPackFile => ({
 	name,
 	filePath: `packs/${name}.json`,
 	description: `the ${name} pack`,
 	include: { packs: [], topics: [], rules },
 	ruleSettings: {},
+	appliesWhen,
 });
 
 const houseLibrary = ({ rules, packs = [] }: { rules: LoadedStandardsRule[]; packs?: LoadedStandardsPackFile[] }): LoadedStandardsLibrary => ({
@@ -58,6 +59,16 @@ const setupPackDroppingARequirement = () => {
 	const house = houseLibrary({
 		rules: [houseRule({ id: 'a', requires: ['house/b'] }), houseRule({ id: 'b' })],
 		packs: [packFile({ name: 'keeps', rules: ['a', 'b'] }), packFile({ name: 'drops', rules: ['a'] })],
+	});
+
+	return { house };
+};
+
+/** house/a requires house/b; the one pack, `drops`, holds only a and applies only to a package declaring react. */
+const setupConditionalPackDroppingARequirement = () => {
+	const house = houseLibrary({
+		rules: [houseRule({ id: 'a', requires: ['house/b'] }), houseRule({ id: 'b' })],
+		packs: [packFile({ name: 'drops', rules: ['a'], appliesWhen: { dependencies: ['react'] } })],
 	});
 
 	return { house };
@@ -103,6 +114,22 @@ describe('validateStandardsLibrary', () => {
 				namesRequired: warning.includes('house/b'),
 			})),
 		}).toStrictEqual({ problems: [], warnings: [{ namesDrops: true, namesKeeps: false, namesRule: true, namesRequired: true }] });
+	});
+
+	test('judges a conditional pack whole, so its missing requirement is warned with no package to apply it to', async () => {
+		const { house } = setupConditionalPackDroppingARequirement();
+
+		const { problems, warnings } = await validateStandardsLibrary({ library: house, libraries: [house] });
+
+		// a pack emptied by its condition would hold no rule and so warn of nothing
+		expect({
+			problems,
+			warnings: warnings.map((warning) => ({
+				namesDrops: warning.includes('drops'),
+				namesRule: warning.includes('house/a'),
+				namesRequired: warning.includes('house/b'),
+			})),
+		}).toStrictEqual({ problems: [], warnings: [{ namesDrops: true, namesRule: true, namesRequired: true }] });
 	});
 
 	test('gives a pack file that fails to resolve its problem and no requirement warnings', async () => {

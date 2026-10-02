@@ -29,9 +29,9 @@ const ruleFiles = ({ path, summary }: { path: string; summary: string }) => ({
 /**
  * A small built-in `lightsout` library holding the three pack addresses these
  * tests reach: `node` (one base topic, rule `tabs`), `react-app` (node plus one
- * react topic, rule `hooks-first`) and `tanstack-start-app` (react-app plus one
- * tanstack topic, rule `loaders`), so which pack a group got shows in its rules
- * as well as its name.
+ * react topic, rule `hooks-first`) and `react` (the react topic alone, applying
+ * only to a package that declares react), so which pack a group got shows in
+ * its rules as well as its name.
  */
 const builtInLibraryFiles = {
 	'lightsout-standards.json': '{ "name": "lightsout", "formatVersion": 2 }\n',
@@ -39,16 +39,15 @@ const builtInLibraryFiles = {
 	...ruleFiles({ path: 'rules/code/base/01-tabs', summary: 'indent with tabs' }),
 	'rules/code/react/topic.md': '# React\n\nHow components are written.\n',
 	...ruleFiles({ path: 'rules/code/react/01-hooks-first', summary: 'hooks come before handlers' }),
-	'rules/code/tanstack/topic.md': '# TanStack Start\n\nHow routes load data.\n',
-	...ruleFiles({ path: 'rules/code/tanstack/01-loaders', summary: 'routes load data in loaders' }),
 	'packs/node.json': JSON.stringify({ description: 'The node pack.', include: { topics: ['lightsout/code/base'] } }),
 	'packs/react-app.json': JSON.stringify({
 		description: 'The react-app pack.',
 		include: { packs: ['lightsout/node'], topics: ['lightsout/code/react'] },
 	}),
-	'packs/tanstack-start-app.json': JSON.stringify({
-		description: 'The tanstack-start-app pack.',
-		include: { packs: ['lightsout/react-app'], topics: ['lightsout/code/tanstack'] },
+	'packs/react.json': JSON.stringify({
+		description: 'The react pack.',
+		include: { topics: ['lightsout/code/react'] },
+		'applies-when': { dependencies: ['react'] },
 	}),
 };
 
@@ -93,9 +92,12 @@ const summarizeGroups = ({ groups }: { groups: StandardsGroup[] }) =>
 	groups.map((group) => ({
 		packages: group.packages,
 		pack: group.pack.name,
-		source: group.source,
+		conditionalPacks: group.pack.conditionalPacks,
 		rules: group.pack.rules.map(({ rule }) => rule.name).sort(),
 	}));
+
+/** The packs every test's package entry or repo pack lists when it wants the conditional react pack beside node. */
+const nodeWithReact = ['lightsout/node', 'lightsout/react'];
 
 /** The repo pack is node for the root and engine; web-app is named onto react-app. */
 const splitConfig: LightsoutConfig = {
@@ -111,36 +113,50 @@ describe('resolveStandardsGroups', () => {
 		const groups = await resolveStandardsGroups({ cwd, config: splitConfig });
 
 		expect(summarizeGroups({ groups })).toStrictEqual([
-			{ packages: ['', 'engine'], pack: 'lightsout/node', source: 'named', rules: ['lightsout/tabs'] },
-			{ packages: ['web-app'], pack: 'lightsout/react-app', source: 'named', rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
+			{ packages: ['', 'engine'], pack: 'lightsout/node', conditionalPacks: [], rules: ['lightsout/tabs'] },
+			{ packages: ['web-app'], pack: 'lightsout/react-app', conditionalPacks: [], rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
 		]);
 	});
 
-	test("detects each unnamed package's pack from its own package.json and joins packages that detect the same pack", async () => {
-		const { cwd } = setupRepo({ workspacePackages: { engine: {}, 'web-app': { '@tanstack/react-start': '^1.0.0' } } });
+	test('splits packages naming the same packs into two groups when a conditional pack applies to only one of them', async () => {
+		const { cwd } = setupRepo({ workspacePackages: { engine: {}, 'web-app': { react: '^19.0.0' } } });
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': nodeWithReact };
 
-		const groups = await resolveStandardsGroups({ cwd, config: baseConfig });
+		const groups = await resolveStandardsGroups({ cwd, config });
 
-		// the root manifest declares no framework, so tanstack-start-app can only come from web-app's own manifest
+		// the root manifest declares no react, so lightsout/react can only have applied from web-app's own manifest
 		expect(summarizeGroups({ groups })).toStrictEqual([
-			{ packages: ['', 'engine'], pack: 'lightsout/node', source: 'detected', rules: ['lightsout/tabs'] },
+			{ packages: ['', 'engine'], pack: 'lightsout/node + lightsout/react', conditionalPacks: [], rules: ['lightsout/tabs'] },
 			{
 				packages: ['web-app'],
-				pack: 'lightsout/tanstack-start-app',
-				source: 'detected',
-				rules: ['lightsout/hooks-first', 'lightsout/loaders', 'lightsout/tabs'],
+				pack: 'lightsout/node + lightsout/react',
+				conditionalPacks: ['lightsout/react'],
+				rules: ['lightsout/hooks-first', 'lightsout/tabs'],
 			},
 		]);
 	});
 
-	test('with standards-pack false, returns groups only for packages package-standards-packs names', async () => {
+	test('accepts a standards-rule-settings entry for a rule only a conditional pack that applied to no package holds', async () => {
 		const { cwd } = setupRepo();
-		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': false, 'package-standards-packs': { 'web-app': 'lightsout/react-app' } };
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': nodeWithReact, 'standards-rule-settings': { 'hooks-first': 'advisory' } };
 
 		const groups = await resolveStandardsGroups({ cwd, config });
 
+		// no package declares react, so hooks-first runs nowhere and the setting changes no state
+		expect(groups.map((group) => [...group.states.keys()])).toStrictEqual([['lightsout/tabs']]);
+	});
+
+	test.each<{ repoPack: string; config: LightsoutConfig }>([
+		{ repoPack: 'false', config: { ...baseConfig, 'standards-pack': false } },
+		{ repoPack: 'unset', config: baseConfig },
+	])('with standards-pack $repoPack, returns groups only for packages package-standards-packs names', async ({ config }) => {
+		const { cwd } = setupRepo();
+		const packageConfig: LightsoutConfig = { ...config, 'package-standards-packs': { 'web-app': 'lightsout/react-app' } };
+
+		const groups = await resolveStandardsGroups({ cwd, config: packageConfig });
+
 		expect(summarizeGroups({ groups })).toStrictEqual([
-			{ packages: ['web-app'], pack: 'lightsout/react-app', source: 'named', rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
+			{ packages: ['web-app'], pack: 'lightsout/react-app', conditionalPacks: [], rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
 		]);
 	});
 
@@ -229,15 +245,29 @@ describe('resolveStandardsGroups', () => {
 		]);
 	});
 
-	test('keeps a named and a detected use of the same pack in separate groups so each reports its own source', async () => {
+	test("puts a package named onto the repo's own pack in the root's group", async () => {
 		const { cwd } = setupRepo({ workspacePackages: { engine: {} } });
-		const config: LightsoutConfig = { ...baseConfig, 'package-standards-packs': { engine: 'lightsout/node' } };
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/node', 'package-standards-packs': { engine: 'lightsout/node' } };
 
 		const groups = await resolveStandardsGroups({ cwd, config });
 
-		expect(summarizeGroups({ groups })).toStrictEqual([
-			{ packages: [''], pack: 'lightsout/node', source: 'detected', rules: ['lightsout/tabs'] },
-			{ packages: ['engine'], pack: 'lightsout/node', source: 'named', rules: ['lightsout/tabs'] },
+		expect(summarizeGroups({ groups })).toStrictEqual([{ packages: ['', 'engine'], pack: 'lightsout/node', conditionalPacks: [], rules: ['lightsout/tabs'] }]);
+	});
+
+	test('orders groups that leave the root out by pack name, then by the conditional packs that applied', async () => {
+		const { cwd } = setupRepo({ workspacePackages: { 'a-web': { react: '^19.0.0' }, 'b-api': {}, 'c-lib': {} } });
+		const config: LightsoutConfig = {
+			...baseConfig,
+			'package-standards-packs': { 'a-web': nodeWithReact, 'b-api': nodeWithReact, 'c-lib': 'lightsout/node' },
+		};
+
+		const groups = await resolveStandardsGroups({ cwd, config });
+
+		// the packages resolve in the order a-web, b-api, c-lib, so only the sort can put c-lib first and a-web last
+		expect(summarizeGroups({ groups }).map(({ packages, pack, conditionalPacks }) => ({ packages, pack, conditionalPacks }))).toStrictEqual([
+			{ packages: ['c-lib'], pack: 'lightsout/node', conditionalPacks: [] },
+			{ packages: ['b-api'], pack: 'lightsout/node + lightsout/react', conditionalPacks: [] },
+			{ packages: ['a-web'], pack: 'lightsout/node + lightsout/react', conditionalPacks: ['lightsout/react'] },
 		]);
 	});
 });

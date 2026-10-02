@@ -40,11 +40,14 @@ or reviews one, so every rule in every library has the same shape.
   `rule-settings`, which gives a rule in the pack a severity, or a `severity`
   and `options` (`off` removes the rule). A pack changes which rules apply and
   how they are graded, never a rule's text or check. When two included packs
-  disagree about a rule, the last one listed wins.
-- **How a repository picks standards:** `standards-pack` names the pack for the
-  repository, `package-standards-packs` names one for each package that
-  differs, and `standards-rule-settings` is the final layer over both. With no
-  pack named, lightsout detects one of its own packs.
+  disagree about a rule, the last one listed wins. A pack may declare
+  `applies-when` with a list of `dependencies`: it then reaches only the
+  packages whose own `package.json` declares one of them, which is how a
+  framework's rules stay out of packages that do not use it.
+- **How a repository picks standards:** `standards-pack` names the pack, or a
+  list of packs, for the repository, `package-standards-packs` names them for
+  each package that differs, and `standards-rule-settings` is the final layer
+  over both. Standards are opt-in: with no pack named, a repository has none.
 
 `rule.md` front matter:
 

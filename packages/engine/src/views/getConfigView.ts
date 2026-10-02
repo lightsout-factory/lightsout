@@ -57,7 +57,7 @@ export const getConfigView = async ({ cwd }: Params): Promise<ConfigView> => {
 			packages: group.packages,
 			appliesTo: describePackageSet({ packages: group.packages }),
 			pack: group.pack.name,
-			source: group.source,
+			conditionalPacks: group.pack.conditionalPacks,
 		})),
 		ruleStates: listings.flatMap((listing) => {
 			const rule = packRules.get(listing.rule);

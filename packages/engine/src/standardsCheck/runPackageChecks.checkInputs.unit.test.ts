@@ -11,7 +11,6 @@ import {
 	type SyntaxTreeInput,
 	type TypeCheckerInput,
 } from '@lightsout/standards-contracts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
@@ -48,8 +47,7 @@ const loadOneRule = ({ inputKind }: { inputKind: StandardsInputKind }) => {
 	]);
 	const group: StandardsGroup = {
 		packages: [''],
-		pack: { name: 'acme/house', topics: [], rules: [{ rule, severity: StandardsSeverity.Advisory, options: {} }] },
-		source: StandardsPackSource.Named,
+		pack: { name: 'acme/house', topics: [], rules: [{ rule, severity: StandardsSeverity.Advisory, options: {} }], conditionalPacks: [], inactiveRules: [] },
 		states,
 	};
 

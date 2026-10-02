@@ -87,6 +87,7 @@ const packFile = ({ name }: { name: string }): LoadedStandardsPackFile => ({
 	description: 'a pack',
 	include: { packs: [], topics: [], rules: [] },
 	ruleSettings: {},
+	appliesWhen: undefined,
 });
 
 const library = ({

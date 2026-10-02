@@ -1,19 +1,22 @@
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 
 /**
  * The repo the listing is read for — the shipped library answers regardless,
- * since it travels with the engine, and with no config the repo gets the pack
- * its root manifest detects. The workspace root rather than the working
+ * since it travels with the engine. The workspace root rather than the working
  * directory, as the main suite reads it.
  */
 const cwd = join(__dirname, '..', '..', '..', '..');
 
-/** The listing a repo with no config of its own gets: the groups it resolves to, listed. */
-const listDefaults = async () => listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config: undefined }) });
+/** Standards are opt-in, so the config names the shipped node pack — and sets no rule, so every row is the pack's default. */
+const nodePackConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/node' };
+
+/** The listing a repo on the node pack gets with no rule settings of its own: the groups it resolves to, listed. */
+const listDefaults = async () => listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config: nodePackConfig }) });
 
 /** The eight file-placement rules code checks — listed rather than derived, because an id no longer says which kind it is. */
 const durablePathRules = [

@@ -12,6 +12,7 @@ const setupPackFiles = () => {
 			'duplicate-code-block': 'off',
 			'file-size': { severity: 'advisory', options: { file: 200, tsxFile: 260 } },
 		},
+		'applies-when': { dependencies: ['react', 'preact'] },
 	};
 	const fullPack = { description: 'House TypeScript style on top of the lightsout node pack.', ...packWithoutDescription };
 	const packWithUnknownKey = { ...fullPack, rules: ['file-size'] };
@@ -30,5 +31,18 @@ describe('StandardsPackFile', () => {
 			{ success: false, data: undefined },
 			{ success: false, data: undefined },
 		]);
+	});
+
+	test.each([
+		{ problem: 'an empty dependencies list', appliesWhen: { dependencies: [] } },
+		{ problem: 'an empty dependency name', appliesWhen: { dependencies: [''] } },
+		{ problem: 'no dependencies list', appliesWhen: {} },
+		{ problem: 'an unknown key', appliesWhen: { dependencies: ['react'], files: ['vite.config.ts'] } },
+	])('StandardsPackFile rejects an applies-when with $problem', ({ appliesWhen }) => {
+		const { fullPack } = setupPackFiles();
+
+		const outcome = StandardsPackFile.safeParse({ ...fullPack, 'applies-when': appliesWhen });
+
+		expect(outcome.success).toBe(false);
 	});
 });

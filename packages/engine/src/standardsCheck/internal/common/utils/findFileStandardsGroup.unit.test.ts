@@ -1,12 +1,10 @@
 import { describe, expect, test } from '@jest/globals';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { findFileStandardsGroup } from '#src/standardsCheck/internal/common/utils/findFileStandardsGroup.ts';
 
 const buildGroup = ({ packages, pack }: { packages: string[]; pack: string }): StandardsGroup => ({
 	packages,
-	pack: { name: pack, topics: [], rules: [] },
-	source: StandardsPackSource.Named,
+	pack: { name: pack, topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
 	states: new Map(),
 });
 

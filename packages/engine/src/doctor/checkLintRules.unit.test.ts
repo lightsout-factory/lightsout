@@ -5,7 +5,11 @@ import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { checkLintRules } from '#src/doctor/checkLintRules.ts';
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+/** A config that names no standards key at all, so no package gets standards. */
+const unsetConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+
+/** Standards are opt-in, so the config every check below runs under names a pack. */
+const config: LightsoutConfig = { ...unsetConfig, 'standards-pack': 'lightsout/node' };
 
 /** A package directory holding the given lint config files. */
 const setupPackage = ({ files = {} }: { files?: Record<string, string> } = {}) => {
@@ -26,13 +30,13 @@ describe('checkLintRules', () => {
 		expect(await checkLintRules({ config: { ...config, 'standards-pack': false }, packageDirs })).toBe(undefined);
 	});
 
-	test('checkLintRules: standards-pack false skips the check', async () => {
+	test('checkLintRules: an unset standards-pack skips the check, and a named one runs it', async () => {
 		const { packageDirs } = setupPackage({ files: { 'biome.json': '{}' } });
 
-		const skipped = await checkLintRules({ config: { ...config, 'standards-pack': false }, packageDirs });
+		const skipped = await checkLintRules({ config: unsetConfig, packageDirs });
 		const ran = await checkLintRules({ config, packageDirs });
 
-		// only standards-pack false turns the check off; naming no standards key selects a detected pack
+		// standards are opt-in: naming no standards key selects no pack, so there is nothing for a linter to enforce
 		expect({ skipped, ranId: ran?.id, ranStatus: ran?.status }).toStrictEqual({ skipped: undefined, ranId: 'lint-rules', ranStatus: 'note' });
 	});
 

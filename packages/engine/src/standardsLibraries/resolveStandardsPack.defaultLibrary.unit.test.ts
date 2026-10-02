@@ -63,7 +63,7 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 	test('lightsout/node is typescript, structure and unit-testing at rule defaults', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
-		const pack = resolveStandardsPack({ address: 'lightsout/node', libraries });
+		const pack = resolveStandardsPack({ addresses: ['lightsout/node'], libraries, dependencies: undefined });
 
 		const expected = expectPackOf({ library, topicPaths: nodeTopics });
 		// an empty rule list would make "exactly these rules" hold vacuously
@@ -74,7 +74,7 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 	test('lightsout/react-app is node plus react', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
-		const pack = resolveStandardsPack({ address: 'lightsout/react-app', libraries });
+		const pack = resolveStandardsPack({ addresses: ['lightsout/react-app'], libraries, dependencies: undefined });
 
 		expect(summarizePack({ pack })).toStrictEqual(expectPackOf({ library, topicPaths: [...nodeTopics, ...reactTopics] }));
 	});
@@ -82,7 +82,7 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 	test('lightsout/tanstack-start-app is react-app plus tanstack-start', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
-		const pack = resolveStandardsPack({ address: 'lightsout/tanstack-start-app', libraries });
+		const pack = resolveStandardsPack({ addresses: ['lightsout/tanstack-start-app'], libraries, dependencies: undefined });
 
 		const everyTopicButNestjs = library.documents.map((topic) => topic.path).filter((path) => path !== 'code/architecture/nestjs');
 		expect(summarizePack({ pack })).toStrictEqual(expectPackOf({ library, topicPaths: everyTopicButNestjs }));
@@ -93,17 +93,17 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 	test('lightsout/nestjs-app is node plus nestjs', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
-		const pack = resolveStandardsPack({ address: 'lightsout/nestjs-app', libraries });
+		const pack = resolveStandardsPack({ addresses: ['lightsout/nestjs-app'], libraries, dependencies: undefined });
 
 		const summary = summarizePack({ pack });
 		expect(summary).toStrictEqual(expectPackOf({ library, topicPaths: [...nodeTopics, ...nestjsTopics] }));
 		expect(summary.topics.filter((path) => [...reactTopics, ...tanstackStartTopics].includes(path))).toStrictEqual([]);
 	});
 
-	test('the lightsout library ships ten packs and its six topic packs cover each topic once', async () => {
+	test('the lightsout library ships eleven packs and its six topic packs cover each topic once', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
-		const resolved = library.packs.map((packFile) => resolveStandardsPack({ address: `lightsout/${packFile.name}`, libraries }));
+		const resolved = library.packs.map((packFile) => resolveStandardsPack({ addresses: [`lightsout/${packFile.name}`], libraries, dependencies: undefined }));
 
 		const topicPackNames = [
 			'lightsout/nestjs',
@@ -122,13 +122,26 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 			resolved: resolved.map((pack) => pack.name).sort(),
 			topicsAcrossTopicPacks,
 		}).toStrictEqual({
-			packFiles: ['nestjs', 'nestjs-app', 'node', 'react', 'react-app', 'structure', 'tanstack-start', 'tanstack-start-app', 'typescript', 'unit-testing'],
+			packFiles: [
+				'nestjs',
+				'nestjs-app',
+				'node',
+				'react',
+				'react-app',
+				'standards',
+				'structure',
+				'tanstack-start',
+				'tanstack-start-app',
+				'typescript',
+				'unit-testing',
+			],
 			resolved: [
 				'lightsout/nestjs',
 				'lightsout/nestjs-app',
 				'lightsout/node',
 				'lightsout/react',
 				'lightsout/react-app',
+				'lightsout/standards',
 				'lightsout/structure',
 				'lightsout/tanstack-start',
 				'lightsout/tanstack-start-app',

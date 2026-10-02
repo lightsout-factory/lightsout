@@ -21,6 +21,8 @@ interface PackSpec {
 	/** File stem in the acme library — the pack's address is `acme/<name>`. */
 	name: string;
 	rules: PackRuleSpec[];
+	/** Ids of acme rules only a conditional pack that did not apply would have brought; none when omitted. */
+	inactive?: string[];
 }
 
 /**
@@ -43,7 +45,7 @@ const findRule = ({ rules, name }: { rules: LoadedStandardsRule[]; name: string 
 
 /** Resolved packs built straight from their grades, over rules loaded from in-memory libraries. */
 const setupPacks = ({ packs }: { packs: PackSpec[] }): { packs: ResolvedStandardsPack[] } => {
-	const specs = packs.flatMap((pack) => pack.rules);
+	const specs = packs.flatMap((pack) => [...pack.rules, ...(pack.inactive ?? []).map((id) => ({ id, library: 'acme' }))]);
 	const libraryNames = [...new Set(specs.map((spec) => spec.library ?? 'acme'))];
 	const { libraries } = setupStandardsLibraries({
 		libraries: libraryNames.map((name) => ({
@@ -71,6 +73,8 @@ const setupPacks = ({ packs }: { packs: PackSpec[] }): { packs: ResolvedStandard
 				severity: spec.severity,
 				options: spec.options ?? {},
 			})),
+			conditionalPacks: [],
+			inactiveRules: (pack.inactive ?? []).map((id) => findRule({ rules, name: `acme/${id}` })),
 		})),
 	};
 };
@@ -222,6 +226,17 @@ describe('resolveRuleStates', () => {
 			expect.stringMatching(containsAll('standards-rule-settings', 'no-such-rule')),
 			expect.stringMatching(containsAll('standards-rule-settings', 'shared', 'acme/shared', 'beta/shared')),
 		]);
+	});
+
+	test('resolveRuleStates: an entry naming a rule only an unapplied conditional pack holds is accepted and changes nothing', () => {
+		const { packs } = setupPacks({
+			packs: [{ name: 'house', rules: [{ id: 'size', severity: StandardsSeverity.Blocking, options: { a: 1 } }], inactive: ['hooks-first'] }],
+		});
+
+		const states = resolveRuleStates({ packs, ruleSettings: { 'hooks-first': 'advisory' } });
+
+		// hooks-first gets no state, and size keeps the pack's grade with nothing from config
+		expect(states).toStrictEqual([new Map([['acme/size', { severity: 'blocking', options: { a: 1 }, fromConfig: false, reachesAgents: true }]])]);
 	});
 
 	test('resolveRuleStates: an entry applies only to the packs that hold the rule', () => {

@@ -60,8 +60,8 @@ const setupDeclaredPack = async () => {
 
 /**
  * A repo whose root manifest declares no framework dependency, with a config
- * carrying `standards` on top of the gates — so detection, when it runs, can
- * only pick the node pack.
+ * carrying `standards` on top of the gates — so the only standards it gets are
+ * the ones those keys name.
  */
 const setupFrameworkFreeRepo = async ({ standards = {} }: { standards?: Record<string, unknown> } = {}) => {
 	const cwd = await seedConfiguredCwd({ config: standards });
@@ -102,7 +102,7 @@ describe('getConfigView', () => {
 		const view = await getConfigView({ cwd: repoRoot });
 
 		expect(findField({ sections: view.sections, key: 'package-gates' })?.fromConfig).toBe(true);
-		expect(findField({ sections: view.sections, key: 'standards-pack' })?.value).toBeNull();
+		expect(findField({ sections: view.sections, key: 'package-standards-packs' })?.value).toBeNull();
 	});
 
 	test("carries the schema's own sentence for every row, so the page and the contract cannot disagree", async () => {
@@ -146,7 +146,9 @@ describe('getConfigView', () => {
 	});
 
 	test('each rule state carries the options it runs with in this repo', async () => {
-		const cwd = await seedConfiguredCwd({ config: { 'standards-rule-settings': { 'folder-size': { options: { cap: 15 } } } } });
+		const cwd = await seedConfiguredCwd({
+			config: { 'standards-pack': 'lightsout/node', 'standards-rule-settings': { 'folder-size': { options: { cap: 15 } } } },
+		});
 
 		const view = await getConfigView({ cwd });
 
@@ -244,7 +246,7 @@ describe('getConfigView', () => {
 
 		// the config named no rule at all — both can only have come from the pack's two topics
 		expect({ standardsGroups: view.standardsGroups, rules: view.ruleStates.map((state) => state.rule) }).toStrictEqual({
-			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'house/house', source: 'named' }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'house/house', conditionalPacks: [] }],
 			rules: ['house/house-rule', 'house/react-rule'],
 		});
 	});
@@ -282,8 +284,8 @@ describe('getConfigView', () => {
 		await expect(getConfigView({ cwd })).rejects.toThrow(/gates\.test/);
 	});
 
-	test("getConfigView: the view names the detected pack group and each rule's library", async () => {
-		const { cwd } = await setupFrameworkFreeRepo();
+	test("getConfigView: the view names the configured pack group and each rule's library", async () => {
+		const { cwd } = await setupFrameworkFreeRepo({ standards: { 'standards-pack': 'lightsout/node' } });
 
 		const view = await getConfigView({ cwd });
 
@@ -294,7 +296,7 @@ describe('getConfigView', () => {
 			hasRuleStates: view.ruleStates.length > 0,
 			libraries: [...new Set(view.ruleStates.map((state) => state.library))],
 		}).toStrictEqual({
-			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: 'detected' }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', conditionalPacks: [] }],
 			carriesPacks: false,
 			carriesChannels: false,
 			hasRuleStates: true,
@@ -302,8 +304,11 @@ describe('getConfigView', () => {
 		});
 	});
 
-	test('getConfigView: standards-pack false shows no group and no rule', async () => {
-		const { cwd } = await setupFrameworkFreeRepo({ standards: { 'standards-pack': false } });
+	test.each([
+		{ standardsPack: 'false', standards: { 'standards-pack': false } },
+		{ standardsPack: 'unset', standards: {} },
+	])('getConfigView: standards-pack $standardsPack shows no group and no rule', async ({ standards }) => {
+		const { cwd } = await setupFrameworkFreeRepo({ standards });
 
 		const view = await getConfigView({ cwd });
 
@@ -311,7 +316,7 @@ describe('getConfigView', () => {
 	});
 
 	test('lists rule states and packs with no channel', async () => {
-		const { cwd } = await setupFrameworkFreeRepo();
+		const { cwd } = await setupFrameworkFreeRepo({ standards: { 'standards-pack': 'lightsout/node' } });
 
 		const view = await getConfigView({ cwd });
 

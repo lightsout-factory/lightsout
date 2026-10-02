@@ -21,7 +21,7 @@ const parsePackFile = async ({ folderPath, name, problems }: { folderPath: strin
 		const parsed = StandardsPackFile.safeParse(JSON.parse(await readFile(join(folderPath, fileName), 'utf8')));
 
 		if (parsed.success) {
-			const { description, include, 'rule-settings': ruleSettings } = parsed.data;
+			const { description, include, 'rule-settings': ruleSettings, 'applies-when': appliesWhen } = parsed.data;
 
 			pack = {
 				name,
@@ -29,6 +29,7 @@ const parsePackFile = async ({ folderPath, name, problems }: { folderPath: strin
 				description,
 				include: { packs: include?.packs ?? [], topics: include?.topics ?? [], rules: include?.rules ?? [] },
 				ruleSettings: ruleSettings ?? {},
+				appliesWhen,
 			};
 		} else {
 			problems.push(`${filePath}: ${formatSchemaIssues({ issues: parsed.error.issues, subject: 'pack file' })}`);

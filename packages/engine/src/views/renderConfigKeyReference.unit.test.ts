@@ -65,11 +65,11 @@ describe('renderConfigKeyReference', () => {
 		expect(settingsRow).not.toContain('keyed by rule id');
 	});
 
-	test('the standards-pack row is optional and names the address form, the four detected lightsout packs and false for none', () => {
+	test('the standards-pack row is optional and names the address form, a list, opt-in with false for none, and conditional packs', () => {
 		const packRow = findRow({ key: 'standards-pack' });
 
 		expect(packRow).toMatch(
-			/^\| `standards-pack` \| no \| .*`<library>\/<pack>`.*root `package\.json`.*`lightsout\/tanstack-start-app`.*`lightsout\/nestjs-app`.*`lightsout\/react-app`.*`lightsout\/node`.*`false`/,
+			/^\| `standards-pack` \| no \| .*`<library>\/<pack>`.*a list of them.*opt-in.*unset and `false` both mean no standards.*`applies-when`/,
 		);
 	});
 

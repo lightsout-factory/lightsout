@@ -1,5 +1,4 @@
 import { describe, expect, test } from '@jest/globals';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
@@ -32,8 +31,13 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 /** A group covering `packages` whose pack holds `rules`; each rule in `off` is set off by the repo's rule settings. */
 const groupOf = ({ packages, rules, off = [] }: { packages: string[]; rules: LoadedStandardsRule[]; off?: LoadedStandardsRule[] }): StandardsGroup => ({
 	packages,
-	pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
-	source: StandardsPackSource.Named,
+	pack: {
+		name: 'acme/house',
+		topics: [],
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+		conditionalPacks: [],
+		inactiveRules: [],
+	},
 	states: new Map<string, ResolvedRuleState>(
 		rules.map((entry) => [
 			entry.name,

@@ -95,6 +95,7 @@ const setupMixedRed = async () => {
 				test: 'node -e "process.exit(0)" {package}',
 				'test-coverage': packageGateCommand({ pkg: '@acme/web', flag: coverageFlag }),
 			},
+			'standards-pack': 'lightsout/node',
 			'standards-rule-settings': strictProfile,
 		}),
 	);

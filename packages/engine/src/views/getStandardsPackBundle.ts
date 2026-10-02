@@ -95,7 +95,10 @@ export const getStandardsPackBundle = async ({ cwd }: Params): Promise<Standards
 	// Resolved against this library alone: the built-in library's packs name no
 	// other, so a pack that does fails here rather than being dropped.
 	const packs = library.packs.map((packFile) =>
-		toPackListing({ packFile, resolved: resolveStandardsPack({ address: `${library.name}/${packFile.name}`, libraries: [library] }) }),
+		toPackListing({
+			packFile,
+			resolved: resolveStandardsPack({ addresses: [`${library.name}/${packFile.name}`], libraries: [library], dependencies: undefined }),
+		}),
 	);
 	const checked = rules.filter((rule) => rule.checked).length;
 

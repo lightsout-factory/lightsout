@@ -5,7 +5,6 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsHealthCommand } from '#src/cli/standardsHealthCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
@@ -42,8 +41,7 @@ jest.mock('#src/standards/resolveStandardsGroups.ts', () => ({
 
 const resolvedGroup: StandardsGroup = {
 	packages: [''],
-	pack: { name: 'acme/house', topics: [], rules: [] },
-	source: StandardsPackSource.Named,
+	pack: { name: 'acme/house', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
 	states: new Map(),
 };
 

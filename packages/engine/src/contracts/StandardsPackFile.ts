@@ -26,6 +26,18 @@ export const StandardsPackFile = z
 			.optional(),
 		/** Severity and options for rules already in the pack, applied after every include. */
 		'rule-settings': StandardsRuleSettings.optional(),
+		/**
+		 * Makes the pack conditional: it brings its rules to a package only when
+		 * that package's `package.json` declares one of these dependencies. A pack
+		 * without it applies everywhere.
+		 */
+		'applies-when': z
+			.object({
+				/** npm package names; declaring any one of them is enough. */
+				dependencies: z.array(z.string().min(1)).min(1),
+			})
+			.strict()
+			.optional(),
 	})
 	.strict();
 

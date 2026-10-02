@@ -3,7 +3,6 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
@@ -13,12 +12,13 @@ import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/L
 import type { ResolvedPackRule } from '#src/standardsLibraries/common/types/ResolvedPackRule.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 
-const baseConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false as const } };
+/** Standards are opt-in, so the config a case starts from names the shipped node pack; a case on another pack, or none, overrides it. */
+const baseConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false as const }, 'standards-pack': 'lightsout/node' };
 
 /**
  * The repo the listing is read for — the shipped library answers regardless,
- * since it travels with the engine, and the repo's root manifest names no
- * framework, so the pack it gets is lightsout/node.
+ * since it travels with the engine, and the pack it gets is the one the config
+ * names, lightsout/node.
  *
  * The workspace root rather than the working directory: this suite runs from
  * inside the engine package, and one case below looks up a document inside the
@@ -146,8 +146,8 @@ const setupRepo = ({ libraries = [] }: { libraries?: LibrarySpec[] } = {}) => {
 	return { cwd: repoCwd };
 };
 
-/** The listing a repo gets: the groups its config resolves to, listed. */
-const listFor = async ({ cwd, config }: { cwd: string; config?: LightsoutConfig }) =>
+/** The listing a repo gets: the groups its config resolves to, listed. The config names lightsout/node and nothing else unless the case passes its own. */
+const listFor = async ({ cwd, config = LightsoutConfig.parse(baseConfig) }: { cwd: string; config?: LightsoutConfig }) =>
 	listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config }) });
 
 /** A loaded rule held in memory — the group listing reads rules the pack already resolved, never a folder. */
@@ -187,7 +187,9 @@ const setupGroup = () => {
 		['team/aardvark-rule', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
 		['acme/zebra-rule', { severity: StandardsSeverity.Blocking, options: { maxLines: 60 }, fromConfig: true, reachesAgents: true }],
 	]);
-	const groups: StandardsGroup[] = [{ packages: [''], pack: { name: 'acme/house', topics: [], rules: packRules }, source: StandardsPackSource.Named, states }];
+	const groups: StandardsGroup[] = [
+		{ packages: [''], pack: { name: 'acme/house', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states },
+	];
 
 	return { groups };
 };
@@ -215,8 +217,8 @@ const setupSplitGroups = () => {
 		['acme/beta-rule', { severity: StandardsSeverity.Advisory, options: { maxLines: 40 }, fromConfig: false, reachesAgents: true }],
 	]);
 	const groups: StandardsGroup[] = [
-		{ packages: ['', 'engine'], pack: { name: 'acme/node', topics: [], rules: packRules }, source: StandardsPackSource.Detected, states: rootStates },
-		{ packages: ['web-app'], pack: { name: 'acme/react-app', topics: [], rules: packRules }, source: StandardsPackSource.Named, states: webAppStates },
+		{ packages: ['', 'engine'], pack: { name: 'acme/node', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states: rootStates },
+		{ packages: ['web-app'], pack: { name: 'acme/react-app', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states: webAppStates },
 	];
 
 	return { groups };
@@ -306,8 +308,8 @@ describe('listStandardsRules', () => {
 	});
 
 	test('the default pack blocks exactly the rules that are wrong on their own terms', async () => {
-		// a repo with no config of its own, so the listing is the pack's defaults
-		// rather than this repository's promotions
+		// a repo whose config names the pack and sets no rule, so the listing is the
+		// pack's defaults rather than this repository's promotions
 		const rules = await listFor({ cwd: setupRepo().cwd });
 		const blocking = rules
 			.filter((rule) => rule.severity === StandardsSeverity.Blocking)
@@ -337,7 +339,7 @@ describe('listStandardsRules', () => {
 		]);
 	});
 
-	test('a repo that says nothing sees the defaults, unmarked', async () => {
+	test('a repo that names the pack and sets no rule sees the defaults, unmarked', async () => {
 		const rules = await listFor({ cwd, config: LightsoutConfig.parse(baseConfig) });
 		const duplicateBlock = rules.find((rule) => rule.rule === 'lightsout/duplicate-code-block');
 

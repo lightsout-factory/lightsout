@@ -1,5 +1,4 @@
 import type { ConfigView } from '@lightsout/engine';
-import { StandardsPackSource } from '@lightsout/engine/contracts';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { FileCog } from 'lucide-react';
@@ -11,17 +10,16 @@ import { configQueryOptions } from '#src/features/config/queries/configQueryOpti
 import { ConfigFieldRow } from '#src/features/config/screens/ConfigPage/internal/components/ConfigFieldRow.tsx';
 import { RuleLedger } from '#src/features/config/screens/ConfigPage/internal/components/RuleLedger.tsx';
 
-const sourceBadges: Record<StandardsPackSource, { label: string; variant: BadgeVariant }> = {
-	[StandardsPackSource.Named]: { label: 'named', variant: BadgeVariant.Brand },
-	[StandardsPackSource.Detected]: { label: 'detected', variant: BadgeVariant.Neutral },
-};
-
 const PackRow = ({ group }: { group: ConfigView['standardsGroups'][number] }) => (
 	<div className="flex flex-wrap items-center gap-2 border-border border-b py-3 first:pt-0 last:border-0 last:pb-0">
 		<Link to="/standards-packs" className="font-medium text-sm hover:underline hover:underline-offset-2">
 			{group.pack}
 		</Link>
-		<Badge variant={sourceBadges[group.source].variant}>{sourceBadges[group.source].label}</Badge>
+		{group.conditionalPacks.map((conditionalPack) => (
+			<Badge key={conditionalPack} variant={BadgeVariant.Neutral}>
+				with {conditionalPack}
+			</Badge>
+		))}
 		<p className="w-full text-muted-foreground text-xs">Applies to {group.appliesTo}.</p>
 	</div>
 );
@@ -45,10 +43,13 @@ export const ConfigPage = () => {
 					</div>
 				</SettingsCard>
 			))}
-			<SettingsCard title="Standards pack in use" description="The packs a run works against here, how each was chosen and which packages it covers.">
+			<SettingsCard
+				title="Standards pack in use"
+				description="The packs a run works against here, the conditional packs each package’s dependencies brought in, and which packages each covers."
+			>
 				{view.standardsGroups.length === 0 ? (
 					<p className="text-muted-foreground text-sm">
-						No standards load here — `standards-pack` is set to false and `package-standards-packs` names no package.
+						No standards load here — `standards-pack` is unset or false, and `package-standards-packs` names no package.
 					</p>
 				) : (
 					<div className="flex flex-col">

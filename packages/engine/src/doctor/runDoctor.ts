@@ -14,6 +14,7 @@ import { checkLintRules } from '#src/doctor/checkLintRules.ts';
 import { checkRuleRequirements } from '#src/doctor/checkRuleRequirements.ts';
 import { checkScriptBinaries } from '#src/doctor/checkScriptBinaries.ts';
 import { checkSourceWalk } from '#src/doctor/checkSourceWalk.ts';
+import { checkStandardsPack } from '#src/doctor/checkStandardsPack.ts';
 import { checkUserEvent } from '#src/doctor/checkUserEvent.ts';
 import type { DoctorCheck } from '#src/doctor/internal/common/types/DoctorCheck.ts';
 import { resolvePackageDirs } from '#src/doctor/internal/resolvePackageDirs.ts';
@@ -89,6 +90,7 @@ export const runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }: 
 	pushOptional({ checks, check: await checkJestMocks({ cwd, packageDirs }) });
 	pushOptional({ checks, check: await checkJestReporter({ cwd, packageDirs }) });
 	pushOptional({ checks, check: await checkUserEvent({ packageDirs }) });
+	pushOptional({ checks, check: checkStandardsPack({ config }) });
 	pushOptional({ checks, check: await checkLintRules({ config, packageDirs }) });
 	pushOptional({ checks, check: await checkRuleRequirements({ cwd, config }) });
 

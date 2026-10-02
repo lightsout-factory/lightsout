@@ -14,7 +14,7 @@ const summarizePack = ({ pack }: { pack: ResolvedStandardsPack }) => ({
 });
 
 const resolveSummary = ({ address, libraries }: { address: string; libraries: LoadedStandardsLibrary[] }) =>
-	summarizePack({ pack: resolveStandardsPack({ address, libraries }) });
+	summarizePack({ pack: resolveStandardsPack({ addresses: [address], libraries, dependencies: undefined }) });
 
 /** The summary of the resolved pack, or the message it threw — so one act can cover a pack that resolves and one that does not. */
 const attemptSummary = ({ address, libraries }: { address: string; libraries: LoadedStandardsLibrary[] }) => {
@@ -141,7 +141,7 @@ describe('resolveStandardsPack', () => {
 			],
 		});
 
-		expect(() => resolveStandardsPack({ address: 'acme/lean', libraries })).toThrow(containsAll('acme/lean', 'naming'));
+		expect(() => resolveStandardsPack({ addresses: ['acme/lean'], libraries, dependencies: undefined })).toThrow(containsAll('acme/lean', 'naming'));
 	});
 
 	test('resolveStandardsPack brings in a whole topic with its rules at their defaults', () => {
@@ -312,7 +312,7 @@ describe('resolveStandardsPack', () => {
 			libraries: [{ name: 'acme', packs: [{ name: 'lean', packs: ['ghost/base'] }] }],
 		});
 
-		expect(() => resolveStandardsPack({ address: 'acme/lean', libraries })).toThrow(containsAll('ghost', 'acme/lean'));
+		expect(() => resolveStandardsPack({ addresses: ['acme/lean'], libraries, dependencies: undefined })).toThrow(containsAll('ghost', 'acme/lean'));
 	});
 
 	test('resolveStandardsPack refuses an include cycle and accepts a diamond', () => {

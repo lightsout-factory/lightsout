@@ -49,7 +49,10 @@ describe('findMissingRequirements on the shipped lightsout library', () => {
 		const addresses = ['lightsout/node', 'lightsout/react-app', 'lightsout/tanstack-start-app', 'lightsout/nestjs-app', 'lightsout/react'];
 
 		const missingByPack = Object.fromEntries(
-			addresses.map((address) => [address, findMissingRequirements({ rules: resolveStandardsPack({ address, libraries }).rules })]),
+			addresses.map((address) => [
+				address,
+				findMissingRequirements({ rules: resolveStandardsPack({ addresses: [address], libraries, dependencies: undefined }).rules }),
+			]),
 		);
 
 		expect(missingByPack).toStrictEqual({

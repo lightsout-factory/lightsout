@@ -54,13 +54,13 @@ If your workspace packages do not live in `packages/`, set `packages-dir`:
 
 ## Standards per package
 
-**Each package gets one standards pack, chosen in this order.** The package's entry in `package-standards-packs` wins. Otherwise the package uses `standards-pack`. When `standards-pack` is unset, lightsout detects one of its own packs from the dependencies in the package's own `package.json`. Files outside the packages directory form the repository root, which always uses `standards-pack`, or detection from the root `package.json`:
+**Each package gets its standards in this order.** The package's entry in `package-standards-packs` wins. Otherwise the package uses `standards-pack`. When neither names it, the package has no standards. Files outside the packages directory form the repository root, which always uses `standards-pack`. A conditional pack, one that declares `applies-when`, is judged against each package's own `package.json`, so one `standards-pack` can bring the React rules to a web package and leave them out of a server package:
 
 ```json
 {
+  "standards-pack": "lightsout/standards",
   "package-standards-packs": {
-    "web-app": "lightsout/tanstack-start-app",
-    "api": "lightsout/nestjs-app"
+    "docs-site": "house/docs"
   }
 }
 ```

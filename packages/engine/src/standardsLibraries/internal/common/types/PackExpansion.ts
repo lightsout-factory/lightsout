@@ -13,4 +13,8 @@ export interface PackExpansion {
 	 * rule.md default, which must not override an earlier pack's explicit value.
 	 */
 	settings: Map<string, { severity?: StandardsSeverity; options: Record<string, number> }>;
+	/** Addresses of the conditional packs that applied, in first-appearance order. */
+	conditionalPacks: Set<string>;
+	/** Keyed by full rule name: what conditional packs that did not apply would have brought. May repeat a rule in `rules`. */
+	inactiveRules: Map<string, LoadedStandardsRule>;
 }

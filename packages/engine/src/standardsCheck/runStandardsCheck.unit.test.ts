@@ -20,13 +20,17 @@ const bigBody = `
 	return total * 100;
 `;
 
-/** A consumer repo with one planted defect per rule. */
+/** Standards are opt-in, so a repo checked against the bundled rules names the node pack. */
+const nodePackConfig = JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/node' });
+
+/** A consumer repo on the node pack with one planted defect per rule. */
 const setupCheckRepo = () => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-test-'));
 
 	mkdirSync(join(dir, 'src/a/utils'), { recursive: true });
 	mkdirSync(join(dir, 'src/b'), { recursive: true });
 	mkdirSync(join(dir, 'node_modules'), { recursive: true });
+	writeFileSync(join(dir, 'lightsout.config.json'), nodePackConfig);
 	// The AST tier borrows the consumer's TypeScript — hand the fixture ours.
 	symlinkSync(join(process.cwd(), 'node_modules/typescript'), join(dir, 'node_modules/typescript'), 'dir');
 
@@ -176,11 +180,12 @@ test('baseline ratchet: --baseline accepts debt explicitly; later runs report on
 	expect(everything.findings.length > third.findings.length).toBeTruthy();
 });
 
-/** The smallest repo that still yields one known, stable finding site. */
+/** The smallest repo on the node pack that still yields one known, stable finding site. */
 const setupLedgerRepo = ({ ledger }: { ledger?: string } = {}) => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-ledger-'));
 
 	mkdirSync(join(dir, 'src/a'), { recursive: true });
+	writeFileSync(join(dir, 'lightsout.config.json'), nodePackConfig);
 	writeFileSync(join(dir, 'src/a/config.ts'), 'export const readConfig = () => 1;\nexport const saveConfig = () => 2;\n');
 
 	if (ledger !== undefined) {
@@ -377,11 +382,11 @@ test('checks with the config it is handed even when the lightsout.config.json on
 	expect(findings.map((finding) => finding.siteKey).sort()).toStrictEqual(['acme/house-no-loose-files:src/alpha.ts', 'acme/house-no-loose-files:src/beta.ts']);
 });
 
-test('handed no config, never falls back to the pack the lightsout.config.json on disk names', async () => {
+test('handed no config, checks nothing and never falls back to the pack the lightsout.config.json on disk names', async () => {
 	const dir = setupOwnPackRepo();
 
 	const { findings } = await runStandardsCheck({ cwd: dir, config: undefined, persist: false });
 
-	// the file on disk names acme/house, but only the handed config counts
-	expect(findings.filter((finding) => finding.rule.startsWith('acme/house'))).toStrictEqual([]);
+	// the file on disk names acme/house, but only the handed config counts — and no config selects no standards
+	expect(findings).toStrictEqual([]);
 });

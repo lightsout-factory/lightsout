@@ -9,6 +9,9 @@ import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 
 const baseConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
+/** Standards are opt-in, so a test that wants the root and every package on one pack names it. */
+const nodeConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/node' };
+
 /** Writes each repo-relative file under `root`, making the folders it sits under. */
 const writeFiles = ({ root, files }: { root: string; files: Record<string, string> }) => {
 	for (const [path, content] of Object.entries(files)) {
@@ -119,30 +122,39 @@ const summarizeGroups = ({ groups }: { groups: StandardsGroup[] }) =>
 	groups.map((group) => ({
 		packages: group.packages,
 		pack: group.pack.name,
-		source: group.source,
+		conditionalPacks: group.pack.conditionalPacks,
 		rules: group.pack.rules.map(({ rule }) => rule.name).sort(),
 	}));
 
 describe('resolveStandardsGroups', () => {
-	test("resolveStandardsGroups: with no standards-pack the root manifest picks the root group's pack and each package's own manifest picks its pack", async () => {
+	test('resolveStandardsGroups: with no standards-pack and no package entry, no package gets standards, whatever its manifest declares', async () => {
 		const { cwd } = setupRepo({ rootDependencies: { react: '^19.0.0' }, workspacePackages: ['web', 'api'] });
 
 		const groups = await resolveStandardsGroups({ cwd, config: baseConfig });
 
-		// the packages' manifests declare no framework, so the root's react never reaches them
+		// standards are opt-in: react in the root manifest selects nothing
+		expect(groups).toStrictEqual([]);
+	});
+
+	test('resolveStandardsGroups: the named pack covers the root and every workspace package, whatever the root manifest declares', async () => {
+		const { cwd } = setupRepo({ rootDependencies: { react: '^19.0.0' }, workspacePackages: ['web', 'api'] });
+
+		const groups = await resolveStandardsGroups({ cwd, config: nodeConfig });
+
 		expect(summarizeGroups({ groups })).toStrictEqual([
-			{ packages: [''], pack: 'lightsout/react-app', source: 'detected', rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
-			{ packages: ['api', 'web'], pack: 'lightsout/node', source: 'detected', rules: ['lightsout/tabs'] },
+			{ packages: ['', 'api', 'web'], pack: 'lightsout/node', conditionalPacks: [], rules: ['lightsout/tabs'] },
 		]);
 	});
 
-	test('resolveStandardsGroups: a named pack wins over what detection would pick', async () => {
-		const { cwd } = setupRepo({ rootDependencies: { react: '^19.0.0' } });
-		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/node' };
+	test('resolveStandardsGroups: a list of packs resolves as one pack named after every address, holding what each brings', async () => {
+		const { cwd } = setupRepo();
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': ['lightsout/node', 'lightsout/react-app'] };
 
 		const groups = await resolveStandardsGroups({ cwd, config });
 
-		expect(summarizeGroups({ groups })).toStrictEqual([{ packages: [''], pack: 'lightsout/node', source: 'named', rules: ['lightsout/tabs'] }]);
+		expect(summarizeGroups({ groups })).toStrictEqual([
+			{ packages: [''], pack: 'lightsout/node + lightsout/react-app', conditionalPacks: [], rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
+		]);
 	});
 
 	test('resolveStandardsGroups: standards-pack false returns no group without loading any library', async () => {
@@ -155,12 +167,31 @@ describe('resolveStandardsGroups', () => {
 		expect(groups).toStrictEqual([]);
 	});
 
+	test('resolveStandardsGroups: rule settings with no standards-pack are refused, naming the key that turns standards on', async () => {
+		const { cwd } = setupRepo();
+		const config: LightsoutConfig = { ...baseConfig, 'standards-rule-settings': { tabs: 'advisory' } };
+
+		const error = await getRejectionError({ promise: resolveStandardsGroups({ cwd, config }) });
+
+		// settings that would apply to nothing are a repo that meant to have standards, not a quiet no-op
+		expect(error.message).toEqual(expect.stringMatching(/standards-rule-settings is set but standards-pack is not.*"standards-pack": "lightsout\/standards"/));
+	});
+
+	test('resolveStandardsGroups: standards-pack false keeps its rule settings unread, so turning standards off never needs them deleted', async () => {
+		const { cwd } = setupRepo();
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': false, 'standards-rule-settings': { tabs: 'advisory' } };
+
+		const groups = await resolveStandardsGroups({ cwd, config });
+
+		expect(groups).toStrictEqual([]);
+	});
+
 	test('resolveStandardsGroups: the group covers the scoped packages plus the repo root', async () => {
 		const { workspaceCwd, flatCwd } = setupScopeRepos();
 
 		const [scoped, flat] = await Promise.all([
-			resolveStandardsGroups({ cwd: workspaceCwd, config: baseConfig, packages: ['engine'] }),
-			resolveStandardsGroups({ cwd: flatCwd, config: baseConfig }),
+			resolveStandardsGroups({ cwd: workspaceCwd, config: nodeConfig, packages: ['engine'] }),
+			resolveStandardsGroups({ cwd: flatCwd, config: nodeConfig }),
 		]);
 
 		expect({ scoped: scoped.map((group) => group.packages), flat: flat.map((group) => group.packages) }).toStrictEqual({
@@ -171,8 +202,8 @@ describe('resolveStandardsGroups', () => {
 
 	test('resolveStandardsGroups: repo rule settings are applied as the last layer and an unknown name fails', async () => {
 		const { cwd } = setupRepo();
-		const config: LightsoutConfig = { ...baseConfig, 'standards-rule-settings': { tabs: 'advisory' } };
-		const unknown: LightsoutConfig = { ...baseConfig, 'standards-rule-settings': { 'no-such-rule': 'advisory' } };
+		const config: LightsoutConfig = { ...nodeConfig, 'standards-rule-settings': { tabs: 'advisory' } };
+		const unknown: LightsoutConfig = { ...nodeConfig, 'standards-rule-settings': { 'no-such-rule': 'advisory' } };
 
 		const [groups, error] = await Promise.all([
 			resolveStandardsGroups({ cwd, config }),
@@ -184,23 +215,31 @@ describe('resolveStandardsGroups', () => {
 		expect(error.message).toContain('no-such-rule');
 	});
 
-	test('a repo with no config gets the detected pack over the default packages folder, and packages-dir moves that folder', async () => {
+	test('a repo with no config gets no standards', async () => {
+		const { defaultCwd } = setupPackagesDirRepos();
+
+		const groups = await resolveStandardsGroups({ cwd: defaultCwd, config: undefined });
+
+		expect(groups).toStrictEqual([]);
+	});
+
+	test('workspace packages are read from the default packages folder, and packages-dir moves that folder', async () => {
 		const { defaultCwd, appsCwd } = setupPackagesDirRepos();
 
-		const [unconfigured, apps] = await Promise.all([
-			resolveStandardsGroups({ cwd: defaultCwd, config: undefined }),
-			resolveStandardsGroups({ cwd: appsCwd, config: { ...baseConfig, 'packages-dir': 'apps' } }),
+		const [defaults, apps] = await Promise.all([
+			resolveStandardsGroups({ cwd: defaultCwd, config: nodeConfig }),
+			resolveStandardsGroups({ cwd: appsCwd, config: { ...nodeConfig, 'packages-dir': 'apps' } }),
 		]);
 
-		expect({ unconfigured: summarizeGroups({ groups: unconfigured }), apps: apps.map((group) => group.packages) }).toStrictEqual({
-			unconfigured: [{ packages: ['', 'engine'], pack: 'lightsout/node', source: 'detected', rules: ['lightsout/tabs'] }],
+		expect({ defaults: summarizeGroups({ groups: defaults }), apps: apps.map((group) => group.packages) }).toStrictEqual({
+			defaults: [{ packages: ['', 'engine'], pack: 'lightsout/node', conditionalPacks: [], rules: ['lightsout/tabs'] }],
 			apps: [['', 'site']],
 		});
 	});
 
 	test('two rule settings naming one rule, by short and by full name, fail and name both', async () => {
 		const { cwd } = setupRepo();
-		const config: LightsoutConfig = { ...baseConfig, 'standards-rule-settings': { tabs: 'advisory', 'lightsout/tabs': 'off' } };
+		const config: LightsoutConfig = { ...nodeConfig, 'standards-rule-settings': { tabs: 'advisory', 'lightsout/tabs': 'off' } };
 
 		const error = await getRejectionError({ promise: resolveStandardsGroups({ cwd, config }) });
 

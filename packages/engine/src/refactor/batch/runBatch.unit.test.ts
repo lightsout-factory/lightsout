@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runBatch } from '#src/refactor/batch/runBatch.ts';
@@ -44,8 +43,13 @@ const singleReturn: LoadedStandardsRule = {
 const judgmentGroups: StandardsGroup[] = [
 	{
 		packages: [''],
-		pack: { name: 'acme/house', topics: [], rules: [{ rule: singleReturn, severity: singleReturn.defaultSeverity, options: singleReturn.defaultOptions }] },
-		source: StandardsPackSource.Named,
+		pack: {
+			name: 'acme/house',
+			topics: [],
+			rules: [{ rule: singleReturn, severity: singleReturn.defaultSeverity, options: singleReturn.defaultOptions }],
+			conditionalPacks: [],
+			inactiveRules: [],
+		},
 		states: new Map<string, ResolvedRuleState>([
 			[singleReturn.name, { severity: singleReturn.defaultSeverity, options: singleReturn.defaultOptions, fromConfig: false, reachesAgents: true }],
 		]),

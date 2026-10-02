@@ -6,7 +6,6 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, test } from '@jest/globals';
 import { ConfigNotFoundError } from '@lightsout/engine';
-import { StandardsPackSource } from '@lightsout/engine/contracts';
 import type { LightsoutReader } from '#src/lightsout/common/types/LightsoutReader.ts';
 import { getReader } from '#src/lightsout/getReader.ts';
 
@@ -219,7 +218,7 @@ describe('getReader config', () => {
 		const view = await reader.getConfig();
 
 		expect({ standardsGroups: view.standardsGroups, carriesChannels: Object.hasOwn(view, 'channels') }).toStrictEqual({
-			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', source: StandardsPackSource.Named }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', conditionalPacks: [] }],
 			carriesChannels: false,
 		});
 	});

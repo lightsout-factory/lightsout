@@ -60,21 +60,19 @@ const codeOnlyPackageFiles = ({ at, name }: { at: string; name: string }) => ({
 });
 
 describe('resolveStandards', () => {
-	test('resolveStandards: the prose comes from the selected pack, detected or named', async () => {
+	test('resolveStandards: the prose comes from the pack the config names', async () => {
 		const { cwd } = setupRepo({ files: { 'package.json': JSON.stringify({ name: 'app', dependencies: { react: '^19.0.0' } }) } });
-		const namedConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/node' };
+		const reactAppConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/react-app' };
+		const nodeConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/node' };
 
-		const detected = await resolveStandards({ cwd, config: baseConfig });
-		const named = await resolveStandards({ cwd, config: namedConfig });
+		const reactApp = await resolveStandards({ cwd, config: reactAppConfig });
+		const node = await resolveStandards({ cwd, config: nodeConfig });
 
-		// react in the root manifest selects lightsout/react-app, which carries the react architecture topic
-		expect(detected.standards ?? '').toContain('<!-- lightsout: code/architecture/react -->');
-		expect({ pack: detected.groups[0]?.pack.name, source: detected.groups[0]?.source }).toStrictEqual({
-			pack: 'lightsout/react-app',
-			source: 'detected',
-		});
-		// the named node pack wins over detection and leaves the react topic out
-		expect(named.standards ?? '').not.toContain('code/architecture/react');
+		// lightsout/react-app carries the react architecture topic
+		expect(reactApp.standards ?? '').toContain('<!-- lightsout: code/architecture/react -->');
+		expect(reactApp.groups.map((group) => group.pack.name)).toStrictEqual(['lightsout/react-app']);
+		// nothing is detected: the root manifest declares react, and the named node pack still leaves the react topic out
+		expect(node.standards ?? '').not.toContain('code/architecture/react');
 	});
 
 	test('resolveStandards: standards-pack false yields no prose and no group', async () => {
@@ -90,15 +88,28 @@ describe('resolveStandards', () => {
 		});
 	});
 
-	test('loads the package the plugin ships when the consumer specifies nothing', async () => {
+	test('loads the package the plugin ships when the consumer names one of its packs', async () => {
 		const { cwd } = setupRepo();
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/node' };
 
-		const resolved = await resolveStandards({ cwd, config: baseConfig });
+		const resolved = await resolveStandards({ cwd, config });
 
 		expect(resolved.standards).toContain('<!-- lightsout: code/');
 		expect(resolved.testStandards).toContain('<!-- lightsout: tests/');
-		// unspecified is a real request for the defaults: the pack detection picks for a repo with no manifest
-		expect(resolved.groups.map((group) => ({ pack: group.pack.name, source: group.source }))).toStrictEqual([{ pack: 'lightsout/node', source: 'detected' }]);
+		expect(resolved.groups.map((group) => group.pack.name)).toStrictEqual(['lightsout/node']);
+	});
+
+	test('loads nothing when the consumer names no standards pack, whatever its manifest declares', async () => {
+		const { cwd } = setupRepo({ files: { 'package.json': JSON.stringify({ name: 'app', dependencies: { react: '^19.0.0' } }) } });
+
+		const resolved = await resolveStandards({ cwd, config: baseConfig });
+
+		// standards are opt-in: react in the manifest selects nothing
+		expect({ standards: resolved.standards, testStandards: resolved.testStandards, groups: resolved.groups }).toStrictEqual({
+			standards: undefined,
+			testStandards: undefined,
+			groups: [],
+		});
 	});
 
 	test('loads nothing when standards packs are explicitly disabled', async () => {

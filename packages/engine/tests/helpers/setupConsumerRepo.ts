@@ -48,9 +48,11 @@ const defaultSources = { 'src/index.js': 'export const one = 1;\n' };
  * export. Something has to be the end of that chain, which is why the entry
  * point exports nothing itself.
  *
- * It runs the strict profile (`strictProfile`): the layout rules the pack
- * ships advisory are blocking here, so a planted layout defect is work the
- * pipeline must do. A test's own `standards-rule-settings` merge over it.
+ * Standards are opt-in, so the config names `lightsout/node` and runs the
+ * strict profile (`strictProfile`) over it: the layout rules the pack ships
+ * advisory are blocking here, so a planted layout defect is work the pipeline
+ * must do. A test's own `standards-rule-settings` merge over it. A test that
+ * writes its own `standards-pack` — a pack, a list or `false` — gets neither.
  */
 export const setupConsumerRepo = ({ git = true, plan = '# Plan: add feature\n', scripts, config, sources }: Params = {}) => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-test-'));
@@ -71,6 +73,7 @@ export const setupConsumerRepo = ({ git = true, plan = '# Plan: add feature\n', 
 			...('standards-pack' in (config ?? {})
 				? {}
 				: {
+						'standards-pack': 'lightsout/node',
 						'standards-rule-settings': {
 							...strictProfile,
 							...(typeof config?.['standards-rule-settings'] === 'object' ? config['standards-rule-settings'] : {}),

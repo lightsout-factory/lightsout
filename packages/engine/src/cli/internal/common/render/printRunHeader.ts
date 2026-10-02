@@ -20,15 +20,21 @@ interface Params {
 	configPath: string | undefined;
 }
 
-/** The root's pack, then one indented line for each package whose pack address or source differs from the root's. */
-const standardsLinesOf = ({ groups }: { groups: StandardsGroup[] }) => {
+/** The pack a group's config names, then the conditional packs its packages' dependencies brought in. */
+const describePack = ({ group }: { group: StandardsGroup }) =>
+	group.pack.conditionalPacks.length === 0 ? group.pack.name : `${group.pack.name} (with ${group.pack.conditionalPacks.join(', ')})`;
+
+/** The root's standards, then one indented line for each package whose standards differ from the root's. */
+const standardsLinesOf = ({ groups, config }: { groups: StandardsGroup[]; config: LightsoutConfig }) => {
 	const root = groups.find((group) => group.packages.includes(''));
 	const packageLines = groups
-		.filter((group) => group !== root && (root === undefined || group.pack.name !== root.pack.name || group.source !== root.source))
-		.flatMap((group) => group.packages.filter((name) => name !== '').map((name) => ({ name, description: `${group.pack.name} (${group.source})` })))
+		.filter((group) => group !== root)
+		.flatMap((group) => group.packages.filter((name) => name !== '').map((name) => ({ name, description: describePack({ group }) })))
 		.sort((first, second) => first.name.localeCompare(second.name))
 		.map(({ name, description }) => `    ${name}: ${description}`);
-	const rootLine = root === undefined ? '  repo root: none (standards-pack false)' : `  repo root: ${root.pack.name} (${root.source})`;
+	// An unset key and an explicit `false` both mean none, and the line says which the config holds.
+	const noneReason = config['standards-pack'] === false ? 'standards-pack false' : 'no standards-pack';
+	const rootLine = root === undefined ? `  repo root: none (${noneReason})` : `  repo root: ${describePack({ group: root })}`;
 
 	return [rootLine, ...packageLines];
 };
@@ -38,7 +44,7 @@ const describeStandards = async ({ config, cwd }: { config: LightsoutConfig; cwd
 	let lines: string[];
 
 	try {
-		lines = standardsLinesOf({ groups: await resolveStandardsGroups({ cwd, config }) });
+		lines = standardsLinesOf({ groups: await resolveStandardsGroups({ cwd, config }), config });
 	} catch (error) {
 		lines = [`  standards: will not load — ${messageOf({ error })}`];
 	}

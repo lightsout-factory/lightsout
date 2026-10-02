@@ -22,6 +22,9 @@ const standardsPackAddress = z.string().refine((value) => /^[^/]+\/[^/]+$/.test(
 	message: 'a standards pack is named <library>/<pack> — exactly one slash, the library before it and the pack after it',
 });
 
+/** One pack, or several applied in listed order, the last listed winning where two grade one rule differently. */
+const standardsPackSelection = z.union([standardsPackAddress, z.array(standardsPackAddress).min(1)]);
+
 /**
  * The only coupling point between the engine and a consumer. Every block naming
  * an outside service is opt-in, so the engine runs with no tracker, forge
@@ -123,21 +126,21 @@ export const LightsoutConfig = z
 		 */
 		'gate-overrides': GateOverrides.optional(),
 		/**
-		 * The standards pack for the repo root and every package
-		 * `package-standards-packs` does not name, as `<library>/<pack>`. Unset =
-		 * detected, for the root from the root `package.json` and for each package
-		 * from its own; `false` = no standards for the root and every unnamed package.
+		 * The standards for the repo root and every package
+		 * `package-standards-packs` does not name: one pack address,
+		 * `<library>/<pack>`, or a list of them. Standards are opt-in, so unset
+		 * and `false` both mean no standards for the root and every unnamed package.
 		 */
-		'standards-pack': z.union([standardsPackAddress, z.literal(false)]).optional(),
+		'standards-pack': z.union([standardsPackSelection, z.literal(false)]).optional(),
 		/**
-		 * A pack of its own for each package that differs from `standards-pack`.
+		 * Standards of its own for each package that differs from `standards-pack`.
 		 * Keys are package folder names under `packages-dir`, as `--packages` uses
-		 * them; values are pack addresses (`<library>/<pack>`). `false` is not
-		 * accepted here: only `standards-pack` takes it. Parsing never reads the
-		 * disk, so a key naming no workspace package is refused when the groups
-		 * resolve, by `resolveStandardsGroups`.
+		 * them; values are one pack address (`<library>/<pack>`) or a list of them.
+		 * `false` is not accepted here: only `standards-pack` takes it. Parsing
+		 * never reads the disk, so a key naming no workspace package is refused when
+		 * the groups resolve, by `resolveStandardsGroups`.
 		 */
-		'package-standards-packs': z.record(z.string().min(1), standardsPackAddress).optional(),
+		'package-standards-packs': z.record(z.string().min(1), standardsPackSelection).optional(),
 		/**
 		 * Standards libraries registered beside the built-in one. Each key is a
 		 * library name; each value is a repo-relative folder (starting `./` or

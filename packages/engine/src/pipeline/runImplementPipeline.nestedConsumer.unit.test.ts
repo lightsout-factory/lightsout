@@ -23,7 +23,10 @@ test('nested consumer: agent-reported repo-root-relative paths normalize to cons
 	mkdirSync(join(dir, 'src'), { recursive: true });
 	writeSource({ dir, path: 'src/index.js', source: 'export const one = 1;\n' });
 	writeFileSync(join(dir, 'plan.md'), '# Plan: add feature\n');
-	writeFileSync(join(dir, 'lightsout.config.json'), JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false } }));
+	writeFileSync(
+		join(dir, 'lightsout.config.json'),
+		JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/node' }),
+	);
 	execSync('git init -q && git config user.name t && git config user.email t@t && git add -A && git -c user.name=t -c user.email=t@t commit -qm init', {
 		cwd: root,
 	});

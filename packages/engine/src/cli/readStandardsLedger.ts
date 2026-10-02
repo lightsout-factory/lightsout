@@ -8,7 +8,7 @@ interface Params {
 	cwd: string;
 }
 
-// A missing config is tolerated: every rule then runs at its default.
+// A missing config is tolerated: standards are opt-in, so a repo with none lists no rules.
 export const readStandardsLedger = async ({ cwd }: Params): Promise<{ config?: LightsoutConfig; rules: StandardsRuleListing[] }> => {
 	const config = await readOptionalConfig({ cwd });
 	const groups = await resolveStandardsGroups({ cwd, config });

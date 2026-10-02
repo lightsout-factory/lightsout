@@ -1,6 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { ConfigView } from '@lightsout/engine';
-import { StandardsPackSource } from '@lightsout/engine/contracts';
 import { screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { QueryKey } from '#src/common/constants/QueryKey.ts';
@@ -27,11 +26,11 @@ const setupConfigPage = ({ overrides = {} }: { overrides?: Partial<ConfigView> }
 };
 
 // Split from the page's own suite by concern: the card naming the standards
-// pack each group of packages uses, and how that pack was chosen.
+// packs each group of packages uses, and the conditional packs that applied.
 describe('ConfigPage packs card', () => {
 	test('points the pack in use at the Standards Packs page, which is where what it says lives', () => {
 		setupConfigPage({
-			overrides: { standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', source: StandardsPackSource.Named }] },
+			overrides: { standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', conditionalPacks: [] }] },
 		});
 
 		const link = screen.getByRole('link', { name: 'acme/house' });
@@ -39,33 +38,26 @@ describe('ConfigPage packs card', () => {
 		expect(link).toHaveAttribute('href', '/standards-packs');
 	});
 
-	test('marks the pack lightsout detected when the config names none', () => {
+	test('names each conditional pack the packages’ dependencies brought in', () => {
 		setupConfigPage({
 			overrides: {
-				standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: StandardsPackSource.Detected }],
+				standardsGroups: [
+					{
+						packages: ['web-app'],
+						appliesTo: 'web-app',
+						pack: 'lightsout/standards',
+						conditionalPacks: ['lightsout/react', 'lightsout/tanstack-start'],
+					},
+				],
 			},
 		});
 
 		const card = screen.getByRole('heading', { level: 3, name: 'Standards pack in use' }).closest('section');
+		const badges = within(card as HTMLElement)
+			.getAllByText(/^with /)
+			.map((badge) => badge.textContent);
 
-		expect(within(card as HTMLElement).getByText('detected')).toBeInTheDocument();
-	});
-
-	test('speaks a named pack and a detected one in different tones, so a reader tells a choice from a guess at a glance', () => {
-		setupConfigPage({
-			overrides: {
-				standardsGroups: [
-					{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', source: StandardsPackSource.Named },
-					{ packages: ['api'], appliesTo: 'api', pack: 'lightsout/node', source: StandardsPackSource.Detected },
-				],
-				ruleStates: [],
-			},
-		});
-
-		const tones = [screen.getByText('named'), screen.getByText('detected')].map((badge) => badge.className);
-
-		expect(tones[0]).toContain('bg-[image:var(--brand-gradient)]');
-		expect(tones[1]).toContain('text-muted-foreground-strong');
+		expect(badges).toStrictEqual(['with lightsout/react', 'with lightsout/tanstack-start']);
 	});
 
 	test('says plainly that no standards load here, rather than showing an empty card', () => {
@@ -81,23 +73,23 @@ describe('ConfigPage standards card', () => {
 	test.each([
 		{
 			standardsGroups: [
-				{ packages: ['', 'api'], appliesTo: 'repo root (outside packages), api', pack: 'lightsout/node', source: StandardsPackSource.Detected },
+				{ packages: ['', 'api'], appliesTo: 'repo root (outside packages), api', pack: 'lightsout/standards', conditionalPacks: ['lightsout/nestjs'] },
 			],
-			expected: { href: '/standards-packs', badge: 'detected', coversRepoRoot: true, coversApi: true, announcesNone: false },
+			expected: { href: '/standards-packs', badge: 'with lightsout/nestjs', coversRepoRoot: true, coversApi: true, announcesNone: false },
 		},
 		{
-			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: StandardsPackSource.Named }],
-			expected: { href: '/standards-packs', badge: 'named', coversRepoRoot: true, coversApi: false, announcesNone: false },
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/standards', conditionalPacks: [] }],
+			expected: { href: '/standards-packs', badge: null, coversRepoRoot: true, coversApi: false, announcesNone: false },
 		},
 		{
 			standardsGroups: [],
 			expected: { href: null, badge: null, coversRepoRoot: false, coversApi: false, announcesNone: true },
 		},
-	])('ConfigPage: the standards card shows the pack in use, how it was chosen and what it covers', ({ standardsGroups, expected }) => {
+	])('ConfigPage: the standards card shows the pack in use, the conditional packs that applied and what it covers', ({ standardsGroups, expected }) => {
 		setupConfigPage({ overrides: { standardsGroups, ruleStates: [] } });
 
-		const link = screen.queryByRole('link', { name: 'lightsout/node' });
-		const badge = screen.queryByText(/^(named|detected)$/);
+		const link = screen.queryByRole('link', { name: 'lightsout/standards' });
+		const badge = screen.queryByText(/^with /);
 		const pageText = document.body.textContent ?? '';
 
 		expect({
@@ -105,20 +97,20 @@ describe('ConfigPage standards card', () => {
 			badge: badge?.textContent ?? null,
 			coversRepoRoot: /repo root/i.test(pageText),
 			coversApi: /\bapi\b/.test(pageText),
-			announcesNone: /standards-pack\b[^.]*false/.test(pageText),
+			announcesNone: /No standards load here/.test(pageText),
 		}).toStrictEqual(expected);
 	});
 
 	test.each([
 		{
 			standardsGroups: [
-				{ packages: ['', 'engine'], appliesTo: 'repo root (outside packages), engine', pack: 'lightsout/node', source: StandardsPackSource.Named },
-				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/tanstack-start-app', source: StandardsPackSource.Detected },
+				{ packages: ['', 'engine'], appliesTo: 'repo root (outside packages), engine', pack: 'lightsout/standards', conditionalPacks: [] },
+				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/standards', conditionalPacks: ['lightsout/react'] },
 			],
 			expected: {
 				rows: [
-					{ pack: 'lightsout/node', badge: 'named', namesItsPackages: true, namesRepoRoot: true },
-					{ pack: 'lightsout/tanstack-start-app', badge: 'detected', namesItsPackages: true, namesRepoRoot: false },
+					{ pack: 'lightsout/standards', badges: [], namesItsPackages: true, namesRepoRoot: true },
+					{ pack: 'lightsout/standards', badges: ['with lightsout/react'], namesItsPackages: true, namesRepoRoot: false },
 				],
 				showsEmptyState: false,
 			},
@@ -127,7 +119,7 @@ describe('ConfigPage standards card', () => {
 			standardsGroups: [],
 			expected: { rows: [], showsEmptyState: true },
 		},
-	])('draws one row per standards group, naming its pack, whether it was named or detected, and the packages it covers', ({ standardsGroups, expected }) => {
+	])('draws one row per standards group, naming its pack, its conditional packs and the packages it covers', ({ standardsGroups, expected }) => {
 		setupConfigPage({ overrides: { standardsGroups, ruleStates: [] } });
 
 		const card = screen.getByRole('heading', { level: 3, name: 'Standards pack in use' }).closest('section') as HTMLElement;
@@ -139,7 +131,9 @@ describe('ConfigPage standards card', () => {
 
 				return {
 					pack: link.textContent,
-					badge: within(row).getByText(/^(named|detected)$/).textContent,
+					badges: within(row)
+						.queryAllByText(/^with /)
+						.map((badge) => badge.textContent),
 					namesItsPackages: rowText.includes(standardsGroups[index].appliesTo),
 					namesRepoRoot: /repo root/.test(rowText),
 				};

@@ -9,7 +9,7 @@
     "checked": 52,
     "judgment": 41,
     "topics": 22,
-    "packs": 10,
+    "packs": 11,
     "withFixtures": 93
   },
   "packs": [
@@ -1536,6 +1536,537 @@
         "checked": 52,
         "judgment": 36,
         "topics": 20
+      }
+    },
+    {
+      "name": "standards",
+      "address": "lightsout/standards",
+      "description": "Every bundled standard: TypeScript style, structure and unit testing for every package, plus the React, TanStack Start and NestJS rules in each package that uses that framework.",
+      "include": {
+        "packs": [
+          "lightsout/typescript",
+          "lightsout/structure",
+          "lightsout/unit-testing",
+          "lightsout/react",
+          "lightsout/tanstack-start",
+          "lightsout/nestjs"
+        ],
+        "topics": [],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/code/architecture/architecture-decisions",
+        "lightsout/code/architecture/folder-structure",
+        "lightsout/code/architecture/nestjs",
+        "lightsout/code/architecture/react",
+        "lightsout/code/architecture/tanstack-start",
+        "lightsout/code/documentation/ts-docs",
+        "lightsout/code/style-guide/conventions/casing",
+        "lightsout/code/style-guide/conventions/file-naming",
+        "lightsout/code/style-guide/conventions/lint-and-formatting",
+        "lightsout/code/style-guide/conventions/naming",
+        "lightsout/code/style-guide/conventions/variable-declaration",
+        "lightsout/code/style-guide/patterns/classes",
+        "lightsout/code/style-guide/patterns/functions",
+        "lightsout/code/style-guide/patterns/named-constants",
+        "lightsout/code/style-guide/structure/import-paths",
+        "lightsout/code/style-guide/structure/module-api",
+        "lightsout/code/style-guide/structure/one-export-per-file",
+        "lightsout/code/style-guide/structure/type-placement",
+        "lightsout/code/style-guide/typescript/return-types",
+        "lightsout/code/style-guide/typescript/type-assertions",
+        "lightsout/tests/unit-testing",
+        "lightsout/tests/unit-testing-react-components"
+      ],
+      "rules": [
+        {
+          "name": "lightsout/assertions-pin-contracts",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-class-shapes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-folder-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/bare-string-union",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/barrel-star",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/brittle-doc-tags",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/case-collision",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/circular-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-bright-line",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-inheritance",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-syntax",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/code-in-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/component-file-structure",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/dead-export",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/derived-lookup-map",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/discriminant-const-object",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/doc-elements",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-code-block",
+          "severity": "advisory",
+          "options": {
+            "minTokens": 50
+          }
+        },
+        {
+          "name": "lightsout/duplicate-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-function-body",
+          "severity": "blocking",
+          "options": {
+            "minBodyTokens": 40
+          }
+        },
+        {
+          "name": "lightsout/explicit-return-type",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/feature-structure",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-directly-in-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-naming-for-server-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-size",
+          "severity": "advisory",
+          "options": {
+            "file": 250,
+            "tsxFile": 300
+          }
+        },
+        {
+          "name": "lightsout/filename-mismatch",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/files-that-must-not-have-dedicated-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-index-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-size",
+          "severity": "advisory",
+          "options": {
+            "cap": 20
+          }
+        },
+        {
+          "name": "lightsout/framework-basics",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/function-size",
+          "severity": "advisory",
+          "options": {
+            "function": 80,
+            "hook": 160,
+            "component": 200
+          }
+        },
+        {
+          "name": "lightsout/import-path-alias",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-through-index",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/import-type-only",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/internal-import-from-outside",
+          "severity": "off",
+          "options": {}
+        },
+        {
+          "name": "lightsout/jest-spyon-vs-jest-mock",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/mocking-component-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-boundary-testing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-exports",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-file-to-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-folder-layout",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-out-of-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/multi-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-constant-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-for-reuse",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-any",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-history-in-comments",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/object-args",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/oversized-setup-factory",
+          "severity": "advisory",
+          "options": {
+            "maxParams": 6
+          }
+        },
+        {
+          "name": "lightsout/params-interface-docs",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/per-folder-readmes",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/premature-abstraction",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/private-helper-colocation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/props-union-exemption",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/query-options",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/reuse-common-code",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/server-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-code-placement",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-package-criteria",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-file-domain-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-return",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-use-scalar",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/synonym-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/tanstack-hooks",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-assert-in-hook",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-file-size",
+          "severity": "advisory",
+          "options": {
+            "testFile": 400
+          }
+        },
+        {
+          "name": "lightsout/test-in-tests-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-manual-mock-cleanup",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-prefix",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-return-in-hook",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-wrapper-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-multiple-setups",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-nested-describe",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-never-passing-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-not-beside-subject",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-only-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-shared-let",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-strict-equal-matcher",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-support-in-src",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/the-render-pattern",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/thin-wrapper-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/top-level-domain-nouns",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-alias-indirection",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/types-and-interfaces",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/ungrouped-domain-utils",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/verbose-names",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/when-to-document",
+          "severity": "advisory",
+          "options": {}
+        }
+      ],
+      "totals": {
+        "rules": 93,
+        "checked": 52,
+        "judgment": 41,
+        "topics": 22
       }
     },
     {

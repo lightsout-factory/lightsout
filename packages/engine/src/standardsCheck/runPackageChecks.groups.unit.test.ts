@@ -3,7 +3,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type RawStandardsFinding, type StandardsCheckFunction, type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
@@ -80,8 +79,9 @@ const groupOf = ({ packages, rule, state }: { packages: string[]; rule: LoadedSt
 		name: `acme/${packages.join('-') || 'root'}`,
 		topics: [],
 		rules: state === undefined ? [] : [{ rule, severity: state.severity, options: state.options }],
+		conditionalPacks: [],
+		inactiveRules: [],
 	},
-	source: StandardsPackSource.Named,
 	states: state === undefined ? new Map() : new Map([[rule.name, state]]),
 });
 

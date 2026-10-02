@@ -2,7 +2,6 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
@@ -49,8 +48,13 @@ const judgmentRules: LoadedStandardsRule[] = ['function-size', 'single-return'].
 const groups: StandardsGroup[] = [
 	{
 		packages: [''],
-		pack: { name: 'acme/house', topics: [], rules: judgmentRules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })) },
-		source: StandardsPackSource.Named,
+		pack: {
+			name: 'acme/house',
+			topics: [],
+			rules: judgmentRules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })),
+			conditionalPacks: [],
+			inactiveRules: [],
+		},
 		states: new Map<string, ResolvedRuleState>(
 			judgmentRules.map((rule) => [rule.name, { severity: rule.defaultSeverity, options: rule.defaultOptions, fromConfig: false, reachesAgents: true }]),
 		),

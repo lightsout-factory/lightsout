@@ -37,6 +37,7 @@ const packFile = ({ name, packs = [], topics = [] }: { name: string; packs?: str
 	description: `the ${name} pack`,
 	include: { packs, topics, rules: [] },
 	ruleSettings: {},
+	appliesWhen: undefined,
 });
 
 const library = ({ name, packs, rules = [] }: { name: string; packs: LoadedStandardsPackFile[]; rules?: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({

@@ -234,13 +234,13 @@ describe('standardsCheckCommand', () => {
 	test('--list prints the resolved ledger and answers without running a single check', async () => {
 		// the table's full shape is printStandardsRuleList's own test's to pin —
 		// what the command owns is that the resolved rules reach it, and that
-		// listing is a read, never a run. The bare directory is also the no-config
-		// case: every rule still answers, at its default.
-		const { context, logged, exitCodes } = setupRuleList({ cwd: mkdtempSync(join(tmpdir(), 'lightsout-test-')) });
+		// listing is a read, never a run. The repo's config names lightsout/node,
+		// so that is the one group the ledger is built from.
+		const { context, logged, exitCodes } = setupRuleList({ cwd: setupConsumerRepo({ git: false }) });
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(listParams()?.groups.map(({ pack, source }) => ({ pack: pack.name, source }))).toStrictEqual([{ pack: 'lightsout/node', source: 'detected' }]);
+		expect(listParams()?.groups.map(({ pack }) => pack.name)).toStrictEqual(['lightsout/node']);
 		expect(cellsOf({ logged })).toContainEqual([
 			'multi-export',
 			'blocking',

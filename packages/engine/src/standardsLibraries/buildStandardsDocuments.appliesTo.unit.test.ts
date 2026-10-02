@@ -1,6 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
 import { StandardsSet } from '@lightsout/standards-contracts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { buildStandardsDocuments } from '#src/standardsLibraries/buildStandardsDocuments.ts';
@@ -79,17 +78,7 @@ const reactAppPack: PackContents = {
  * One group covering `packages` with `pack`. Every rule runs at advisory and reaches agents, except the full
  * names in `off`, which the pack's `rule-settings` turns off: they neither run nor reach agents.
  */
-const buildGroup = ({
-	packages,
-	pack,
-	source,
-	off = [],
-}: {
-	packages: string[];
-	pack: PackContents;
-	source: StandardsPackSource;
-	off?: string[];
-}): StandardsGroup => {
+const buildGroup = ({ packages, pack, off = [] }: { packages: string[]; pack: PackContents; off?: string[] }): StandardsGroup => {
 	const severityOf = (rule: LoadedStandardsRule) => (off.includes(rule.name) ? StandardsSeverity.Off : StandardsSeverity.Advisory);
 
 	return {
@@ -98,31 +87,26 @@ const buildGroup = ({
 			name: pack.name,
 			topics: pack.topics,
 			rules: pack.rules.map((rule) => ({ rule, severity: severityOf(rule), options: {} })),
+			conditionalPacks: [],
+			inactiveRules: [],
 		},
-		source,
 		states: new Map(
 			pack.rules.map((rule) => [rule.name, { severity: severityOf(rule), options: {}, fromConfig: false, reachesAgents: !off.includes(rule.name) }]),
 		),
 	};
 };
 
-/** lightsout/node for every package, once as one group and once split into a detected and a named group. */
+/** lightsout/node for every package, once as one group and once split into two groups. */
 const setupSinglePack = () => {
-	const oneGroup = [buildGroup({ packages: ['', 'engine', 'web-app'], pack: nodePack, source: StandardsPackSource.Detected })];
-	const twoGroups = [
-		buildGroup({ packages: ['', 'engine'], pack: nodePack, source: StandardsPackSource.Detected }),
-		buildGroup({ packages: ['web-app'], pack: nodePack, source: StandardsPackSource.Named }),
-	];
+	const oneGroup = [buildGroup({ packages: ['', 'engine', 'web-app'], pack: nodePack })];
+	const twoGroups = [buildGroup({ packages: ['', 'engine'], pack: nodePack }), buildGroup({ packages: ['web-app'], pack: nodePack })];
 
 	return { oneGroup, twoGroups };
 };
 
 /** The root and engine on lightsout/node; web-app on lightsout/react-app, whose rule-settings turn `webAppOff` off. */
 const setupSplitPacks = ({ webAppOff = [] }: { webAppOff?: string[] } = {}) => {
-	const groups = [
-		buildGroup({ packages: ['', 'engine'], pack: nodePack, source: StandardsPackSource.Detected }),
-		buildGroup({ packages: ['web-app'], pack: reactAppPack, source: StandardsPackSource.Named, off: webAppOff }),
-	];
+	const groups = [buildGroup({ packages: ['', 'engine'], pack: nodePack }), buildGroup({ packages: ['web-app'], pack: reactAppPack, off: webAppOff })];
 
 	return { groups };
 };
@@ -144,9 +128,8 @@ const setupFencedProse = () => {
 		buildGroup({
 			packages: ['', 'engine'],
 			pack: { name: 'lightsout/tests-only', topics: [topics.unitTesting], rules: [rules.mockPrefix] },
-			source: StandardsPackSource.Named,
 		}),
-		buildGroup({ packages: ['web-app'], pack: { name: 'lightsout/docs', topics: [docsTopic], rules: [docLayout] }, source: StandardsPackSource.Named }),
+		buildGroup({ packages: ['web-app'], pack: { name: 'lightsout/docs', topics: [docsTopic], rules: [docLayout] } }),
 	];
 
 	return { groups };
@@ -160,8 +143,8 @@ const setupEqualSets = () => {
 	const webTopic = buildTopic({ path: 'code/a-web', title: 'Web', ruleIds: [] });
 	const engineTopic = buildTopic({ path: 'code/z-engine', title: 'Engine', ruleIds: [] });
 	const groups = [
-		buildGroup({ packages: ['web-app'], pack: { name: 'lightsout/web', topics: [webTopic], rules: [] }, source: StandardsPackSource.Named }),
-		buildGroup({ packages: ['engine'], pack: { name: 'lightsout/engine', topics: [engineTopic], rules: [] }, source: StandardsPackSource.Named }),
+		buildGroup({ packages: ['web-app'], pack: { name: 'lightsout/web', topics: [webTopic], rules: [] } }),
+		buildGroup({ packages: ['engine'], pack: { name: 'lightsout/engine', topics: [engineTopic], rules: [] } }),
 	];
 
 	return { groups };

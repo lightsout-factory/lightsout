@@ -1,5 +1,4 @@
 import { describe, expect, test } from '@jest/globals';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
@@ -95,8 +94,9 @@ const groupOfLibrary = ({ library, settled = {} }: { library: LoadedStandardsLib
 		name: `${library.name}/house`,
 		topics: library.documents,
 		rules: library.rules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })),
+		conditionalPacks: [],
+		inactiveRules: [],
 	},
-	source: StandardsPackSource.Named,
 	states: new Map<string, ResolvedRuleState>(
 		library.rules.map((rule) => [
 			rule.name,
@@ -139,8 +139,9 @@ const setupGroup = ({
 		name: 'lightsout/node',
 		topics,
 		rules: rules.map(({ rule, severity = StandardsSeverity.Advisory, packSeverity = severity }) => ({ rule, severity: packSeverity, options: {} })),
+		conditionalPacks: [],
+		inactiveRules: [],
 	},
-	source: StandardsPackSource.Detected,
 	states: new Map(
 		rules.map(({ rule, severity = StandardsSeverity.Advisory, reachesAgents = true }) => [
 			rule.name,

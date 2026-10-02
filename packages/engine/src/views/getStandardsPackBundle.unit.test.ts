@@ -40,13 +40,14 @@ const zebraCheckSource =
  * A temp library `house`, pointed at by LIGHTSOUT_DEFAULT_STANDARDS, with two
  * topics and two pack files: `base` brings in `code/alpha`, and `app` includes
  * `base` plus `tests/beta` and grades `zebra-check` blocking with `cap` raised.
+ * `baseAppliesWhen` makes `base` conditional on those dependencies.
  *
  * Every file is written in reverse name order — packs, topics, rule folders
  * and fixture files — and the rule ids run against their folder order, so any
  * order the bundle reports is one it decided, not one the disk handed back.
  * The environment is replaced outright; restoreMocks puts the real one back.
  */
-const setupLibraryRepo = async ({ appPacks = ['house/base'] }: { appPacks?: string[] } = {}) => {
+const setupLibraryRepo = async ({ appPacks = ['house/base'], baseAppliesWhen }: { appPacks?: string[]; baseAppliesWhen?: string[] } = {}) => {
 	const libraryPath = await mkdtemp(join(tmpdir(), 'lightsout-pack-bundle-library-'));
 	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-pack-bundle-repo-'));
 
@@ -54,7 +55,11 @@ const setupLibraryRepo = async ({ appPacks = ['house/base'] }: { appPacks?: stri
 		dir: libraryPath,
 		files: {
 			'lightsout-standards.json': JSON.stringify({ name: 'house', formatVersion: 2 }),
-			'packs/base.json': JSON.stringify({ description: 'The base pack.', include: { topics: ['house/code/alpha'] } }),
+			'packs/base.json': JSON.stringify({
+				description: 'The base pack.',
+				include: { topics: ['house/code/alpha'] },
+				...(baseAppliesWhen === undefined ? {} : { 'applies-when': { dependencies: baseAppliesWhen } }),
+			}),
 			'packs/app.json': JSON.stringify({
 				description: 'The app pack.',
 				include: { packs: appPacks, topics: ['house/tests/beta'] },
@@ -183,6 +188,19 @@ describe('getStandardsPackBundle', () => {
 		]);
 	});
 
+	test('lists a conditional pack, and a pack including it, with everything the conditional pack brings when it applies', async () => {
+		const { cwd } = await setupLibraryRepo({ baseAppliesWhen: ['react'] });
+
+		const bundle = await getStandardsPackBundle({ cwd });
+		const rulesByPack = Object.fromEntries(bundle.packs.map((pack) => [pack.name, pack.rules.map((rule) => rule.name)]));
+
+		// a pack page shows the whole pack: no package's dependencies are consulted, so the condition empties nothing
+		expect(rulesByPack).toStrictEqual({
+			app: ['house/apple-note', 'house/mango-note', 'house/zebra-check'],
+			base: ['house/apple-note', 'house/zebra-check'],
+		});
+	});
+
 	test("records a pack's own severity and options on its rule entries without changing the rule's defaults", async () => {
 		const { cwd } = await setupLibraryRepo();
 
@@ -284,7 +302,7 @@ describe('getStandardsPackBundle', () => {
 		expect(error.message).toMatch(/house\/app[\s\S]*acme/);
 	});
 
-	test('bundles the authored lightsout library with its ten packs', async () => {
+	test('bundles the authored lightsout library with its eleven packs', async () => {
 		const { cwd } = setupThisRepo();
 
 		const bundle = await getStandardsPackBundle({ cwd });
@@ -301,7 +319,19 @@ describe('getStandardsPackBundle', () => {
 		}).toStrictEqual({
 			name: 'lightsout',
 			built: false,
-			packs: ['nestjs', 'nestjs-app', 'node', 'react', 'react-app', 'structure', 'tanstack-start', 'tanstack-start-app', 'typescript', 'unit-testing'],
+			packs: [
+				'nestjs',
+				'nestjs-app',
+				'node',
+				'react',
+				'react-app',
+				'standards',
+				'structure',
+				'tanstack-start',
+				'tanstack-start-app',
+				'typescript',
+				'unit-testing',
+			],
 			holdsReact: true,
 			holdsTanstackStart: true,
 		});

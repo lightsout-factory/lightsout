@@ -11,7 +11,7 @@ import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
  * A one-rule library the built-in override points at, so a listing read back
  * off it proves the CLI child loaded this folder rather than plugin/standards/.
  * It is named lightsout, as the built-in library must be, and holds the node
- * pack that detection picks for a repo with no package.json.
+ * pack the fixture's config names.
  * restoreMocks puts the variable back after the test.
  */
 const setupEnvStandards = async () => {

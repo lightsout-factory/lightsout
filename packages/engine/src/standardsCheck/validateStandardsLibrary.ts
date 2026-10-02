@@ -146,7 +146,8 @@ const checkPackFiles = ({ library, libraries }: { library: LoadedStandardsLibrar
 		const address = `${library.name}/${packFile.name}`;
 
 		try {
-			const pack = resolveStandardsPack({ address, libraries });
+			// Every conditional pack applies, so a pack is judged whole, whichever package it would reach.
+			const pack = resolveStandardsPack({ addresses: [address], libraries, dependencies: undefined });
 
 			for (const { rule, required } of findMissingRequirements({ rules: pack.rules })) {
 				warnings.push(`${pack.name}: ${rule} requires ${required}, which the pack does not send to agents`);

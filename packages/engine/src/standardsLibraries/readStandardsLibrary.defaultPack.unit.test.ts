@@ -2,7 +2,6 @@ import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { StandardsSet } from '@lightsout/standards-contracts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
@@ -31,12 +30,11 @@ const setupDefaultPack = async () => {
 
 /** The one group a repo whose manifest names no framework gets: the shipped library's node pack, every rule at the pack's own grade. */
 const nodeGroupOf = ({ pack }: { pack: LoadedStandardsLibrary }): StandardsGroup => {
-	const resolved = resolveStandardsPack({ address: 'lightsout/node', libraries: [pack] });
+	const resolved = resolveStandardsPack({ addresses: ['lightsout/node'], libraries: [pack], dependencies: undefined });
 
 	return {
 		packages: [''],
 		pack: resolved,
-		source: StandardsPackSource.Detected,
 		states: new Map<string, ResolvedRuleState>(
 			resolved.rules.map(({ rule, severity, options }) => [
 				rule.name,

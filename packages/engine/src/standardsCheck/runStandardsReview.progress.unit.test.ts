@@ -1,5 +1,4 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverResult } from '#src/drivers/common/types/DriverResult.ts';
@@ -34,8 +33,13 @@ const groupOf = ({ ruleIds }: { ruleIds: string[] }): StandardsGroup => {
 
 	return {
 		packages: [''],
-		pack: { name: 'acme/house', topics: [], rules: rules.map((rule) => ({ rule, severity: StandardsSeverity.Advisory, options: {} })) },
-		source: StandardsPackSource.Named,
+		pack: {
+			name: 'acme/house',
+			topics: [],
+			rules: rules.map((rule) => ({ rule, severity: StandardsSeverity.Advisory, options: {} })),
+			conditionalPacks: [],
+			inactiveRules: [],
+		},
 		states: new Map<string, ResolvedRuleState>(
 			rules.map((rule) => [rule.name, { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }]),
 		),

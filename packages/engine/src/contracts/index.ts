@@ -156,7 +156,6 @@ export { ShippingStepId } from '#src/contracts/ship/ShippingStepId.ts';
 export { ShipResult } from '#src/contracts/ship/ShipResult.ts';
 export { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
 export { builtInStandardsLibraryName } from '#src/contracts/standards/builtInStandardsLibraryName.ts';
-export { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 export { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutcome.ts';
 export { AdvisoryResponse } from '#src/contracts/standardsCheck/AdvisoryResponse.ts';
 export { ReviewFindingRecord } from '#src/contracts/standardsCheck/ReviewFindingRecord.ts';

@@ -2,11 +2,11 @@ import { join } from 'node:path';
 import { selectsNoStandards } from '#src/common/config/selectsNoStandards.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { listWorkspacePackages } from '#src/common/workspace/listWorkspacePackages.ts';
+import { readDependencyNames } from '#src/common/workspace/readDependencyNames.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
-import { detectStandardsPack } from '#src/standards/detectStandardsPack.ts';
 import { resolveRuleStates } from '#src/standards/internal/resolveRuleStates.ts';
+import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { ResolvedStandardsPack } from '#src/standardsLibraries/common/types/ResolvedStandardsPack.ts';
 import { resolveStandardsLibraries } from '#src/standardsLibraries/resolveStandardsLibraries.ts';
 import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack.ts';
@@ -22,8 +22,16 @@ interface Params {
 interface PackChoice {
 	/** '' is the repo root group. */
 	name: string;
-	address: string;
-	source: StandardsPackSource;
+	/** The pack addresses the config names for the package, in listed order. */
+	addresses: string[];
+	/** Absolute path of the package's own `package.json`, whose dependencies decide each conditional pack. */
+	manifestPath: string;
+}
+
+interface PackagePack {
+	/** '' is the repo root group. */
+	name: string;
+	pack: ResolvedStandardsPack;
 }
 
 const byName = (first: string, second: string) => first.localeCompare(second);
@@ -33,7 +41,7 @@ const refuseUnknownPackages = ({
 	workspace,
 	packagesDir,
 }: {
-	packagePacks: Record<string, string>;
+	packagePacks: Record<string, string | string[]>;
 	workspace: string[];
 	packagesDir: string;
 }) => {
@@ -48,30 +56,42 @@ const refuseUnknownPackages = ({
 	}
 };
 
-/** A package's own entry, then the repo pack, then detection from its own manifest; `standards-pack: false` leaves an unnamed package with none. */
-const choosePack = async ({ name, manifestPath, config }: { name: string; manifestPath: string; config: LightsoutConfig | undefined }) => {
-	const own = name === '' ? undefined : config?.['package-standards-packs']?.[name];
-	const repo = config?.['standards-pack'];
-	let choice: PackChoice | undefined;
-
-	if (own !== undefined) {
-		choice = { name, address: own, source: StandardsPackSource.Named };
-	} else if (typeof repo === 'string') {
-		choice = { name, address: repo, source: StandardsPackSource.Named };
-	} else if (repo === undefined) {
-		choice = { name, address: await detectStandardsPack({ manifestPath }), source: StandardsPackSource.Detected };
+/**
+ * Settings with no pack to apply to are refused rather than dropped: a repo
+ * that tuned rules meant to have standards. An explicit `false` is a choice,
+ * and its settings simply wait for the pack to come back.
+ */
+const refuseSettingsWithoutPack = ({ config }: { config: LightsoutConfig | undefined }) => {
+	if (config?.['standards-pack'] === undefined && Object.keys(config?.['standards-rule-settings'] ?? {}).length > 0) {
+		throw new Error(
+			'standards-rule-settings is set but standards-pack is not, so its settings apply to nothing — standards are opt-in: add "standards-pack": "lightsout/standards" to turn on the bundled standards, or "standards-pack": false to run with none',
+		);
 	}
-
-	return choice;
 };
 
-/** Packages sharing an address and a source share a group; the root's group first, then by address. */
-const formGroups = ({ choices }: { choices: PackChoice[] }) => {
-	const byKey = new Map<string, { address: string; source: StandardsPackSource; packages: string[] }>();
+/** A package's own entry, then the repo's `standards-pack`. Standards are opt-in: a package neither names gets none. */
+const choosePack = ({ name, manifestPath, config }: { name: string; manifestPath: string; config: LightsoutConfig | undefined }) => {
+	const own = name === '' ? undefined : config?.['package-standards-packs']?.[name];
+	const repo = config?.['standards-pack'];
+	const selection = own ?? (repo === false ? undefined : repo);
 
-	for (const { name, address, source } of choices) {
-		const key = `${address}\u0000${source}`;
-		const entry = byKey.get(key) ?? { address, source, packages: [] };
+	return selection === undefined ? undefined : { name, addresses: [selection].flat(), manifestPath };
+};
+
+/** A conditional pack is judged against the package's own manifest, so two packages naming one pack can resolve differently. */
+const resolvePackagePack = async ({ choice, libraries }: { choice: PackChoice; libraries: LoadedStandardsLibrary[] }) => {
+	const dependencies = new Set((await readDependencyNames({ manifestPath: choice.manifestPath })) ?? []);
+
+	return { name: choice.name, pack: resolveStandardsPack({ addresses: choice.addresses, libraries, dependencies }) };
+};
+
+/** Packages whose packs and applied conditional packs match share a group; the root's group first, then by pack name. */
+const formGroups = ({ packagePacks }: { packagePacks: PackagePack[] }) => {
+	const byKey = new Map<string, { pack: ResolvedStandardsPack; packages: string[] }>();
+
+	for (const { name, pack } of packagePacks) {
+		const key = [pack.name, ...pack.conditionalPacks].join('\u0000');
+		const entry = byKey.get(key) ?? { pack, packages: [] };
 
 		entry.packages.push(name);
 		byKey.set(key, entry);
@@ -82,8 +102,8 @@ const formGroups = ({ choices }: { choices: PackChoice[] }) => {
 		.sort(
 			(first, second) =>
 				Number(second.packages.includes('')) - Number(first.packages.includes('')) ||
-				byName(first.address, second.address) ||
-				byName(first.source, second.source),
+				byName(first.pack.name, second.pack.name) ||
+				byName(first.pack.conditionalPacks.join(), second.pack.conditionalPacks.join()),
 		);
 };
 
@@ -105,35 +125,29 @@ const keepScope = ({ groups, packages }: { groups: StandardsGroup[]; packages: s
  * scope, and the repo's `standards-rule-settings` are applied last over all of
  * them, so a scoped call accepts exactly the config an unscoped one does.
  *
- * @throws {Error} When a library or a pack cannot be loaded, a `package-standards-packs` key names no workspace package, or a `standards-rule-settings` entry names no rule in any selected pack.
+ * @throws {Error} When a library or a pack cannot be loaded, a `package-standards-packs` key names no workspace package, a `standards-rule-settings` entry names no rule in any selected pack, or `standards-rule-settings` is set while nothing names a pack.
  */
 export const resolveStandardsGroups = async ({ cwd, config, packages }: Params): Promise<StandardsGroup[]> => {
 	if (selectsNoStandards({ config })) {
+		refuseSettingsWithoutPack({ config });
+
 		return [];
 	}
 
-	const packagePacks = config?.['package-standards-packs'] ?? {};
 	const packagesDir = config?.['packages-dir'] ?? defaultPackagesDir;
 	const workspace = (await listWorkspacePackages({ cwd, packagesDir })).sort(byName);
 
-	refuseUnknownPackages({ packagePacks, workspace, packagesDir });
+	refuseUnknownPackages({ packagePacks: config?.['package-standards-packs'] ?? {}, workspace, packagesDir });
 
-	const choices = await Promise.all([
+	const choices = [
 		choosePack({ name: '', manifestPath: join(cwd, 'package.json'), config }),
 		...workspace.map((name) => choosePack({ name, manifestPath: join(cwd, packagesDir, name, 'package.json'), config })),
-	]);
-	const formed = formGroups({ choices: choices.filter((choice): choice is PackChoice => choice !== undefined) });
+	].filter((choice): choice is PackChoice => choice !== undefined);
 	const libraries = await resolveStandardsLibraries({ cwd, config });
-	const packs = new Map<string, ResolvedStandardsPack>();
-	const resolved = formed.map((entry) => {
-		const pack = packs.get(entry.address) ?? resolveStandardsPack({ address: entry.address, libraries });
-
-		packs.set(entry.address, pack);
-
-		return { ...entry, pack };
-	});
-	const statesPerPack = resolveRuleStates({ packs: resolved.map(({ pack }) => pack), ruleSettings: config?.['standards-rule-settings'] });
-	const groups = resolved.map(({ packages: covered, pack, source }, index) => ({ packages: covered, pack, source, states: statesPerPack[index] }));
+	const packagePacks = await Promise.all(choices.map((choice) => resolvePackagePack({ choice, libraries })));
+	const formed = formGroups({ packagePacks });
+	const statesPerPack = resolveRuleStates({ packs: formed.map(({ pack }) => pack), ruleSettings: config?.['standards-rule-settings'] });
+	const groups = formed.map(({ packages: covered, pack }, index) => ({ packages: covered, pack, states: statesPerPack[index] }));
 
 	return keepScope({ groups, packages });
 };
