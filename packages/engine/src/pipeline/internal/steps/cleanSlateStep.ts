@@ -1,4 +1,5 @@
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
 import { isTestSideFile } from '#src/common/sourceFiles/isTestSideFile.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
@@ -100,8 +101,13 @@ export const cleanSlateStep = ({ run, ledgerGates }: Params): PipelineStep['run'
 		// and so the one place outside the ledger step and the review where an
 		// approval happens: dirt that predates the first agent turn is approved
 		// here, or the first checkpoint with a bundle would put it in front of the
-		// reviewer as somebody's edit to a test.
-		const approvedTests = await approveTestFiles({ run, paths: baselineDirtyFiles.filter((path) => isTestSideFile({ path })) });
+		// reviewer as somebody's edit to a test. Build output an earlier phase left
+		// on disk stays in the baseline but is never an agent's test edit.
+		const generated = run.config.generated ?? [];
+		const approvedTests = await approveTestFiles({
+			run,
+			paths: baselineDirtyFiles.filter((path) => isTestSideFile({ path }) && !isGeneratedPath({ path, generated })),
+		});
 
 		await captureStandardsBaseline({ run });
 

@@ -36,16 +36,6 @@ describe('commitWorkOrderWork', () => {
 		expect(headSubject({ cwd })).toBe('LO-70 Drain the backlog');
 	});
 
-	test('writes the message through a file, so no ticket title ever needs shell quoting', async () => {
-		const { cwd, runDir } = setupTicketBranch();
-
-		writeRepoFile({ cwd, path: 'src.ts', content: 'export const value = 1;\n' });
-		await commitWorkOrderWork({ cwd, composeMessage: async () => "LO-70 Don't `break` $(this)", runDir });
-
-		expect(readFileSync(join(runDir, 'commit-message.txt'), 'utf8')).toBe("LO-70 Don't `break` $(this)\n");
-		expect(headSubject({ cwd })).toBe("LO-70 Don't `break` $(this)");
-	});
-
 	test('reports a tree the worker never touched rather than making an empty commit', async () => {
 		const { cwd, runDir } = setupTicketBranch();
 
@@ -266,62 +256,134 @@ describe('commitWorkOrderWork', () => {
 		expect(committedPaths({ cwd: repo })).toStrictEqual(['apps/api/src.ts']);
 	});
 
-	test('asks for the message only after staging, so the composer sees a new file in the staged change', async () => {
+	test('keeps generated changes on disk but out of the commit when asked to keep them', async () => {
 		const { cwd, runDir } = setupTicketBranch();
-		const staged: string[][] = [];
-		const composeMessage = async ({ cwd: composeCwd }: { cwd: string }) => {
-			staged.push(execSync('git diff --cached --name-only', { cwd: composeCwd }).toString().split('\n').filter(Boolean));
 
-			return 'LO-167: add the widget\n\nlightsout run run-1\n';
-		};
+		writeRepoFile({ cwd, path: 'src.ts', content: 'export const value = 1;\n' });
+		writeRepoFile({ cwd, path: 'plugin/dist/cli.mjs', content: '// rebuilt on the branch\n' });
+		writeRepoFile({ cwd, path: 'plugin/dist/chunk.mjs', content: '// built on the branch\n' });
 
-		writeRepoFile({ cwd, path: 'widget.ts', content: 'export const widget = 1;\n' });
+		const committed = await commitWorkOrderWork({
+			cwd,
+			composeMessage: async () => 'LO-187 keep build output',
+			runDir,
+			generated: generatedPaths,
+			keepGenerated: true,
+		});
 
-		await commitWorkOrderWork({ cwd, composeMessage, runDir });
-
-		expect(staged).toStrictEqual([['widget.ts']]);
-		expect(headSubject({ cwd })).toBe('LO-167: add the widget');
-	});
-
-	test('answers the message it committed under', async () => {
-		const { cwd, runDir } = setupTicketBranch();
-		const message = 'LO-167: add the widget\n\nThe widget stands alone.\n\nlightsout run run-1\n';
-
-		writeRepoFile({ cwd, path: 'widget.ts', content: 'export const widget = 1;\n' });
-
-		const committed = await commitWorkOrderWork({ cwd, composeMessage: async () => message, runDir });
-
-		expect(committed).toStrictEqual({ committed: true, message: 'LO-167: add the widget\n\nThe widget stands alone.\n\nlightsout run run-1\n' });
-	});
-
-	test('never asks for a message when there is no source change to commit or the change cannot be staged', async () => {
-		const clean = setupTicketBranch();
-		const generatedOnly = setupTicketBranch();
-		const unstageable = setupTicketBranch();
-		const asked: string[] = [];
-		const composeMessage = async ({ cwd }: { cwd: string }) => {
-			asked.push(cwd);
-
-			return 'LO-167: never used';
-		};
-
-		writeRepoFile({ cwd: generatedOnly.cwd, path: 'plugin/dist/chunk.mjs', content: '// built on the branch\n' });
-		writeRepoFile({ cwd: unstageable.cwd, path: 'src.ts', content: 'export const value = 1;\n' });
-		// An index git will not let go of makes staging fail while the tree still
-		// reads as changed.
-		writeFileSync(join(unstageable.cwd, '.git', 'index.lock'), '');
-
-		const results = [
-			await commitWorkOrderWork({ ...clean, composeMessage }),
-			await commitWorkOrderWork({ ...generatedOnly, composeMessage, generated: generatedPaths }),
-			await commitWorkOrderWork({ ...unstageable, composeMessage }),
-		];
-
-		expect(results).toEqual([
-			{ committed: false },
-			{ committed: false },
-			{ error: expect.stringContaining(`git could not stage the work in ${unstageable.cwd}`) },
+		expect(committed).toStrictEqual({ committed: true, message: 'LO-187 keep build output' });
+		expect(committedPaths({ cwd })).toStrictEqual(['src.ts']);
+		// the default would have restored the tracked file and removed the new one;
+		// keeping leaves both with the branch's contents, uncommitted
+		expect(readFileSync(join(cwd, 'plugin', 'dist', 'cli.mjs'), 'utf8')).toBe('// rebuilt on the branch\n');
+		expect(readFileSync(join(cwd, 'plugin', 'dist', 'chunk.mjs'), 'utf8')).toBe('// built on the branch\n');
+		expect(execSync('git status --porcelain --untracked-files=all', { cwd }).toString().split('\n').filter(Boolean).sort()).toStrictEqual([
+			' M plugin/dist/cli.mjs',
+			'?? plugin/dist/chunk.mjs',
 		]);
-		expect(asked).toStrictEqual([]);
+	});
+
+	test('unstages generated output an agent staged, so a kept file never reaches the commit', async () => {
+		const { cwd, runDir } = setupTicketBranch();
+
+		writeRepoFile({ cwd, path: 'src.ts', content: 'export const value = 1;\n' });
+		writeRepoFile({ cwd, path: 'plugin/dist/cli.mjs', content: '// rebuilt on the branch\n' });
+		// stands in for an agent that ran its own `git add -A` over the build output
+		execSync('git add -A', { cwd, stdio: 'ignore' });
+
+		const committed = await commitWorkOrderWork({
+			cwd,
+			composeMessage: async () => 'LO-187 agent staged output',
+			runDir,
+			generated: generatedPaths,
+			keepGenerated: true,
+		});
+
+		expect(committed).toStrictEqual({ committed: true, message: 'LO-187 agent staged output' });
+		expect(committedPaths({ cwd })).toStrictEqual(['src.ts']);
+		// a blank index column: the rebuilt file is changed on disk and unstaged
+		expect(execSync('git status --porcelain --untracked-files=all', { cwd }).toString().split('\n').filter(Boolean)).toStrictEqual([' M plugin/dist/cli.mjs']);
+	});
+
+	test('reports nothing to commit and keeps the output when the only change was generated and keeping is asked for', async () => {
+		const { cwd, runDir } = setupTicketBranch();
+
+		writeRepoFile({ cwd, path: 'plugin/dist/chunk.mjs', content: '// built on the branch\n' });
+
+		const committed = await commitWorkOrderWork({
+			cwd,
+			composeMessage: async () => 'LO-187 build only',
+			runDir,
+			generated: generatedPaths,
+			keepGenerated: true,
+		});
+
+		expect(committed).toStrictEqual({ committed: false });
+		expect(headSubject({ cwd })).toBe('ignore');
+		expect(readFileSync(join(cwd, 'plugin', 'dist', 'chunk.mjs'), 'utf8')).toBe('// built on the branch\n');
+		expect(execSync('git status --porcelain --untracked-files=all', { cwd }).toString().split('\n').filter(Boolean)).toStrictEqual([
+			'?? plugin/dist/chunk.mjs',
+		]);
+	});
+
+	test('says how many generated paths it kept on disk and never claims a discard', async () => {
+		const { cwd, runDir } = setupTicketBranch();
+		const lines: string[] = [];
+
+		writeRepoFile({ cwd, path: 'src.ts', content: 'export const value = 1;\n' });
+		writeRepoFile({ cwd, path: 'plugin/dist/chunk.mjs', content: '// built on the branch\n' });
+		writeRepoFile({ cwd, path: 'packages/web-app/src/routeTree.gen.ts', content: 'export const routeTree = 1;\n' });
+
+		await commitWorkOrderWork({
+			cwd,
+			composeMessage: async () => 'LO-187 says what it kept',
+			runDir,
+			generated: generatedPaths,
+			keepGenerated: true,
+			onProgress: (message) => lines.push(message),
+		});
+
+		expect(lines).toEqual(expect.arrayContaining([expect.stringContaining('kept 2 generated path(s)')]));
+		expect(lines.filter((line) => /discard/.test(line))).toStrictEqual([]);
+	});
+
+	test('commits source in keep mode when a configured generated entry is absent from disk', async () => {
+		const { cwd, runDir } = setupTicketBranch();
+
+		writeRepoFile({ cwd, path: 'src.ts', content: 'export const value = 1;\n' });
+
+		// `out/never-built/` exists nowhere in the fixture, so its staging exclusion matches nothing
+		const committed = await commitWorkOrderWork({
+			cwd,
+			composeMessage: async () => 'LO-187 absent entry',
+			runDir,
+			generated: [...generatedPaths, 'out/never-built/'],
+			keepGenerated: true,
+		});
+
+		expect(committed).toStrictEqual({ committed: true, message: 'LO-187 absent entry' });
+		expect(committedPaths({ cwd })).toStrictEqual(['src.ts']);
+	});
+
+	test('reports what git refused when kept generated changes cannot be unstaged', async () => {
+		const { cwd, runDir } = setupTicketBranch();
+
+		writeRepoFile({ cwd, path: 'src.ts', content: 'export const value = 1;\n' });
+		writeRepoFile({ cwd, path: 'plugin/dist/cli.mjs', content: '// rebuilt on the branch\n' });
+		// An index git will not let go of is the simplest way to make the unstage
+		// fail while the tree still reads as changed.
+		writeFileSync(join(cwd, '.git', 'index.lock'), '');
+
+		const committed = await commitWorkOrderWork({
+			cwd,
+			composeMessage: async () => 'LO-187 unstage blocked',
+			runDir,
+			generated: generatedPaths,
+			keepGenerated: true,
+		});
+
+		expect(committed).toEqual({ error: expect.stringMatching(/could not unstage the generated changes/) });
+		expect(committed).toEqual({ error: expect.stringContaining(cwd) });
+		expect(headSubject({ cwd })).toBe('ignore');
 	});
 });

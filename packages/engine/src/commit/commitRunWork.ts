@@ -31,6 +31,8 @@ interface Params {
 	address?: CommitAddress;
 	/** Whether this run continues work that was parked — it adopted an existing manifest, or its caller knows the sequence it belongs to was resumed. Only such a run's tree is compared for edits the run does not own. */
 	resumed: boolean;
+	/** Forwarded to `commitWorkOrderWork`: leave generated changes uncommitted on disk instead of discarding them. Set only by a phase of a sequence. Default false. */
+	keepGenerated?: boolean;
 }
 
 /**
@@ -42,7 +44,7 @@ interface Params {
  *
  * @returns undefined when the work is in history, or the one sentence saying why it is not
  */
-export const commitRunWork = async ({ run, driver, address, resumed }: Params): Promise<string | undefined> => {
+export const commitRunWork = async ({ run, driver, address, resumed, keepGenerated = false }: Params): Promise<string | undefined> => {
 	const manifest = run.current();
 	const generated = run.config.generated ?? [];
 	const changed = manifest.changedFiles.filter((path) => !isGeneratedPath({ path, generated }));
@@ -81,6 +83,7 @@ export const commitRunWork = async ({ run, driver, address, resumed }: Params): 
 			}),
 		runDir,
 		generated,
+		keepGenerated,
 		onProgress,
 	});
 
