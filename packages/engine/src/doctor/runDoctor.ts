@@ -4,6 +4,7 @@ import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { checkConfiguredPaths } from '#src/doctor/checkConfiguredPaths.ts';
 import { checkCoverageSummary } from '#src/doctor/checkCoverageSummary.ts';
+import { checkGenerateCommand } from '#src/doctor/checkGenerateCommand.ts';
 import { checkGitignore } from '#src/doctor/checkGitignore.ts';
 import { checkHarness } from '#src/doctor/checkHarness.ts';
 import { checkHarnessUsage } from '#src/doctor/checkHarnessUsage.ts';
@@ -94,6 +95,8 @@ export const runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }: 
 	for (const audit of configuredPathAudits({ config })) {
 		pushOptional({ checks, check: await checkConfiguredPaths({ cwd, ...audit }) });
 	}
+
+	pushOptional({ checks, check: checkGenerateCommand({ config }) });
 
 	pushOptional({ checks, check: await checkCoverageSummary({ config, packageDirs }) });
 	checks.push(await checkScriptBinaries({ cwd, config }));

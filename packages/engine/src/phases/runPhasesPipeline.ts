@@ -1,11 +1,17 @@
 import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
+import { discardGeneratedChanges } from '#src/commit/discardGeneratedChanges.ts';
+import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { initializeSequence } from '#src/phases/initializeSequence.ts';
 import { runPhase } from '#src/phases/internal/runPhase.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
+import { withRunLock } from '#src/runState/lock/withRunLock.ts';
 import { createProgressSink } from '#src/runState/progress/createProgressSink.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 
@@ -30,14 +36,68 @@ interface Params {
 }
 
 /**
- * The coordinator takes no repo run lock of its own: each per-phase run takes
- * `.lightsout/lock.json` itself, and a lock held across phases would deadlock
- * the coordinator's own children.
+ * Every phase's commit leaves its build output on disk for the next phase, so
+ * a passed sequence discards it once, leaving the tree as a single-phase build
+ * does. Taken under the repo run lock because it writes the tree, and only
+ * after every child has released that lock.
+ *
+ * @returns the sentence saying why the carried output is still on disk, or undefined once it is gone
+ * @throws {RunLockError} When another run holds the repo lock.
+ */
+const discardCarriedGenerated = async ({
+	cwd,
+	config,
+	runId,
+	narrate,
+}: {
+	cwd: string;
+	config: LightsoutConfig;
+	runId: string;
+	narrate: (message: string) => void;
+}) => {
+	const generated = config.generated ?? [];
+
+	if (generated.length === 0) {
+		return undefined;
+	}
+
+	return withRunLock({
+		params: { cwd, runId, onProgress: narrate },
+		run: async () => {
+			const changed = await readGitChangedFiles({ cwd });
+
+			// Never read as "nothing changed": the output may still be on disk.
+			if (changed === undefined) {
+				return `git could not read the tree at ${cwd}, so the carried generated changes were not discarded`;
+			}
+
+			const paths = changed.filter((path) => isGeneratedPath({ path, generated }));
+
+			if (paths.length === 0) {
+				return undefined;
+			}
+
+			const failure = await discardGeneratedChanges({ cwd, paths });
+
+			if (failure === undefined) {
+				narrate(`discarded ${paths.length} carried generated path(s) — the pre-ship step commits build output`);
+			}
+
+			return failure === undefined ? undefined : `git could not discard the carried generated changes in ${cwd}: ${failure}`;
+		},
+	});
+};
+
+/**
+ * The coordinator holds no repo run lock across phases: each per-phase run
+ * takes `.lightsout/lock.json` itself, and a lock held across phases would
+ * deadlock the coordinator's own children. It takes the lock only for the
+ * discard of carried build output, once every phase has passed.
  *
  * The first phase that ends short of passing stops the whole sequence, because
  * later phases build on earlier ones.
  *
- * @throws {RunLockError} When a phase cannot take the repo lock — nothing ran, so the sequence stays exactly resumable.
+ * @throws {RunLockError} When the repo lock is refused before a phase runs or, after every phase passed, before the carried-output discard — either way the sequence stays exactly resumable.
  */
 export const runPhasesPipeline = async ({
 	cwd,
@@ -89,6 +149,16 @@ export const runPhasesPipeline = async ({
 		if (phase.result) {
 			return phase.result;
 		}
+	}
+
+	const discardFailure = await discardCarriedGenerated({ cwd, config, runId: manifest.runId, narrate });
+
+	if (discardFailure !== undefined) {
+		manifest = await writeRunManifest({ cwd, manifest: { ...manifest, status: RunStatus.Failed, currentStep: null } });
+
+		const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.runId });
+
+		return { ok: false, manifest, error: `every phase passed, but ${discardFailure} — resume with: ${resume}` };
 	}
 
 	manifest = await writeRunManifest({ cwd, manifest: { ...manifest, status: RunStatus.Passed, currentStep: null } });

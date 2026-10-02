@@ -208,6 +208,8 @@ export const runPhase = async ({
 			// have edited since the sequence began and call every edit in it its own.
 			inheritedBaseline: resumed && childManifest === undefined ? [...current.changedFiles, ...current.baselineDirtyFiles] : undefined,
 			skipRefactor,
+			// The coordinator discards the carried build output once the whole sequence passes.
+			keepGenerated: true,
 			level: pass,
 			onProgress,
 		});
