@@ -5,8 +5,8 @@ import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderRunTerms } from '#src/workOrder/common/types/WorkOrderRunTerms.ts';
 import { findPlanImplementationBlocker } from '#src/workOrder/findPlanImplementationBlocker.ts';
 import { isWholePlanRun } from '#src/workOrder/internal/common/utils/isWholePlanRun.ts';
-import { readWorkOrderShipEligibility } from '#src/workOrder/readWorkOrderShipEligibility.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
+import { readWorkOrderShipEligibility } from '#src/workOrder/shipping/readWorkOrderShipEligibility.ts';
 
 interface Params {
 	/** Any checkout of the repository; the record is read from its primary checkout. */

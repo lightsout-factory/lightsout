@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { findWorkOrderForBranch } from '#src/common/workspace/findWorkOrderForBranch.ts';
+import { resolveWorkOrderNameForBranch } from '#src/common/workspace/resolveWorkOrderNameForBranch.ts';
 import { resolveWorktreesRoot } from '#src/worktree/resolveWorktreesRoot.ts';
 
 interface Params {
@@ -14,4 +14,4 @@ interface Params {
  * many branches should resolve the root once with `resolveWorktreesRoot`, since this spawns git per call.
  */
 export const resolveWorktreePath = async ({ cwd, branch }: Params): Promise<string> =>
-	join(await resolveWorktreesRoot({ cwd }), (await findWorkOrderForBranch({ cwd, branch }))?.name ?? branch);
+	join(await resolveWorktreesRoot({ cwd }), await resolveWorkOrderNameForBranch({ cwd, branch }));

@@ -1,11 +1,10 @@
 import { execSync } from 'node:child_process';
-import { chmodSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, expect, test } from '@jest/globals';
+import { expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import { PhaseReport } from '#src/contracts/run/PhaseReport.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runPhasesPipeline } from '#src/phases/runPhasesPipeline.ts';
@@ -15,11 +14,11 @@ import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
-import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 import { createPhaseDriver } from '#tests/helpers/createPhaseDriver.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { readPhaseChildRuns } from '#tests/helpers/readPhaseChildRuns.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
+import { setupCommittablePhasedRepo } from '#tests/helpers/setupCommittablePhasedRepo.ts';
 import { setupPhasedRepo } from '#tests/helpers/setupPhasedRepo.ts';
 
 /** Field-wise sum of what the per-phase runs actually recorded — the number the sequence report must show. */
@@ -35,32 +34,6 @@ const totalUsage = ({ children }: { children: RunManifest[] }) =>
 		}),
 		{ invocations: 0, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0, costUsd: 0 },
 	);
-
-/** A phased repo whose own commits can succeed: a repo-level identity, because a CI runner has no global one, and run state kept out of `git add -A`. */
-const setupCommittablePhasedRepo = ({ phases }: { phases: number }) => {
-	const phased = setupPhasedRepo({ phases });
-
-	writeFileSync(join(phased.dir, '.gitignore'), '.lightsout/\n');
-	execSync('git config user.name t && git config user.email t@t && git add -A && git commit -qm ignore', { cwd: phased.dir, stdio: 'ignore' });
-
-	return phased;
-};
-
-/** Permission bits do not apply to root, so the fs failure they provoke is unreachable there. */
-const skipAsRoot = process.getuid?.() === 0;
-// Jest has no per-call `{ skip }` option, so the choice is made at the call site.
-const testUnlessRoot = skipAsRoot ? test.skip : test;
-
-// A directory made read-only mid-test must be writable again, or the temp tree
-// cannot be removed. Recorded at file scope so one hook restores it.
-let lockedStateDir: string | undefined;
-
-afterEach(() => {
-	if (lockedStateDir) {
-		chmodSync(lockedStateDir, 0o755);
-		lockedStateDir = undefined;
-	}
-});
 
 test('runPhasesPipeline: a fresh sequence runs every phase in the overview order and ends passed', async () => {
 	const { dir, overviewPath } = setupPhasedRepo({ phases: 2 });
@@ -202,110 +175,6 @@ test('runPhasesPipeline: --start-phase records the earlier phases as done outsid
 	expect(result.manifest.steps[0]).toStrictEqual({ id: 'phase1.md', status: 'passed', attempts: 0 });
 });
 
-test('runPhasesPipeline: resume skips the passed phases and continues the interrupted phase in its own run', async () => {
-	const { dir, overviewPath } = setupPhasedRepo({ phases: 2 });
-	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({
-		cwd: dir,
-		driver: createPhaseDriver({ dir, seen: [], parkAt: 2 }),
-		config,
-		overviewPath,
-		skipRefactor: true,
-	});
-
-	expect(parked.manifest.status).toBe('paused-rate-limit');
-
-	const parkedChild = PhaseReport.parse(parked.manifest.steps[1]?.report).runId;
-	const seen: number[] = [];
-	const resumed = await runPhasesPipeline({
-		cwd: dir,
-		driver: createPhaseDriver({ dir, seen }),
-		config,
-		existing: await readRunManifest({ cwd: dir, runId: parked.manifest.runId }),
-		skipRefactor: true,
-	});
-
-	expect(resumed.ok).toBe(true);
-	// the passed phase is not re-bought; the interrupted one continues
-	expect(seen).toStrictEqual([2]);
-	expect(resumed.manifest.status).toBe('passed');
-	expect(resumed.manifest.runId).toBe(parked.manifest.runId);
-	// the interrupted phase resumed its own run rather than starting a second one
-	expect(PhaseReport.parse(resumed.manifest.steps[1]?.report).runId).toBe(parkedChild);
-	expect(resumed.manifest.steps[1]?.attempts).toBe(2);
-});
-
-test('runPhasesPipeline: a phase whose own run already passed is adopted on resume, never bought twice', async () => {
-	const { dir, overviewPath } = setupPhasedRepo({ phases: 1 });
-	const config = await readConfig({ cwd: dir });
-	const passed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
-	// a crash between the phase finishing and the coordinator recording it: the
-	// step still says running, but the run it names is done
-	const crashed = await writeRunManifest({
-		cwd: dir,
-		manifest: {
-			...passed.manifest,
-			status: RunStatus.Running,
-			currentStep: 'phase1.md',
-			steps: passed.manifest.steps.map((step) => ({ ...step, status: RunStatus.Running })),
-		},
-	});
-	const seen: number[] = [];
-
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen }), config, existing: crashed, skipRefactor: true });
-
-	expect(resumed.ok).toBe(true);
-	// no agent ran, and the phase's own run id is still the record
-	expect(seen).toStrictEqual([]);
-	expect(resumed.manifest.status).toBe('passed');
-	expect(resumed.manifest.steps[0]?.status).toBe('passed');
-	expect(PhaseReport.parse(resumed.manifest.steps[0]?.report).runId).toBe(PhaseReport.parse(passed.manifest.steps[0]?.report).runId);
-});
-
-test('runPhasesPipeline: a step naming a run that is gone re-runs the phase in a new run', async () => {
-	const { dir, overviewPath } = setupPhasedRepo({ phases: 1 });
-	const config = await readConfig({ cwd: dir });
-	const passed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
-	const orphaned = await writeRunManifest({
-		cwd: dir,
-		manifest: {
-			...passed.manifest,
-			status: RunStatus.Failed,
-			steps: passed.manifest.steps.map((step) => ({ ...step, status: RunStatus.Running, report: { runId: 'deleted-child-run' } })),
-		},
-	});
-	const seen: number[] = [];
-
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen }), config, existing: orphaned, skipRefactor: true });
-
-	expect(resumed.ok).toBe(true);
-	// an unreadable child settles nothing, so the phase is implemented again
-	expect(seen).toStrictEqual([1]);
-	expect(resumed.manifest.steps[0]?.status).toBe('passed');
-	expect(PhaseReport.parse(resumed.manifest.steps[0]?.report).runId).not.toBe('deleted-child-run');
-});
-
-testUnlessRoot('runPhasesPipeline: a phase that throws for a reason other than the lock is recorded as that phase failing', async () => {
-	const { dir, overviewPath } = setupPhasedRepo({ phases: 1 });
-	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }), config, overviewPath, skipRefactor: true });
-	const stateDir = join(dir, '.lightsout');
-
-	// the run state directory turns read-only between the park and the resume,
-	// so the phase's own run cannot even write its lock file
-	chmodSync(stateDir, 0o555);
-	lockedStateDir = stateDir;
-
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, existing: parked.manifest, skipRefactor: true });
-
-	expect(resumed.ok).toBe(false);
-	expect(resumed.manifest.status).toBe('failed');
-	expect(resumed.manifest.steps[0]?.status).toBe('failed');
-	// the reason is recorded against the phase, not swallowed
-	expect(resumed.manifest.steps[0]?.error ?? '').toMatch(/EACCES/);
-	expect(resumed.error ?? '').toMatch(/EACCES/);
-});
-
 test("hands a fresh sequence's run id to its coordinator and never to a phase's run", async () => {
 	const { dir, overviewPath } = setupPhasedRepo({ phases: 2 });
 	const result = await runPhasesPipeline({
@@ -340,35 +209,6 @@ test("gathers every phase's commit onto the coordinator manifest", async () => {
 	expect(result.manifest.commits.every((commit) => /^[0-9a-f]{7,}$/.test(commit.sha))).toBe(true);
 });
 
-test("hands an unstarted phase of a resumed sequence the sequence's own baseline", async () => {
-	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
-	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }), config, overviewPath, skipRefactor: true });
-
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, existing: parked.manifest, skipRefactor: true });
-	const [first, second] = await readPhaseChildRuns({ cwd: dir, manifest: resumed.manifest });
-
-	// phase 2 never started, so it mints its own run — and what it counts as its own is the
-	// sequence's set, taken before the sequence began, not a snapshot of a tree somebody sat in
-	expect(second?.baselineDirtyFiles.includes('src/phase1.js')).toBe(true);
-	expect((first?.changedFiles ?? []).every((path) => second?.baselineDirtyFiles.includes(path))).toBe(true);
-});
-
-test("leaves a started phase's own recorded baseline alone", async () => {
-	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
-	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [], parkAt: 2 }), config, overviewPath, skipRefactor: true });
-	const [, started] = await readPhaseChildRuns({ cwd: dir, manifest: parked.manifest });
-
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, existing: parked.manifest, skipRefactor: true });
-	const [, second] = await readPhaseChildRuns({ cwd: dir, manifest: resumed.manifest });
-
-	// phase 2 already had a run of its own, so it keeps the set that run recorded
-	expect(second?.runId).toBe(started?.runId);
-	expect(second?.baselineDirtyFiles).toStrictEqual(started?.baselineDirtyFiles);
-	expect(second?.baselineDirtyFiles.includes('src/phase1.js')).toBe(false);
-});
-
 test("leaves a fresh sequence's phases unguarded", async () => {
 	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
 	const config = await readConfig({ cwd: dir });
@@ -379,6 +219,111 @@ test("leaves a fresh sequence's phases unguarded", async () => {
 	// nothing is inherited on a first sequence: phase 2 starts from its own snapshot of the tree phase 1's commit left clean
 	expect(first?.changedFiles.includes('src/phase1.js')).toBe(true);
 	expect((first?.changedFiles ?? []).some((path) => second?.baselineDirtyFiles.includes(path))).toBe(false);
+});
+
+/** `src/`'s file listing, as a node expression — the one input the fixture's build output is built from. */
+const srcListing = "require('fs').readdirSync('src').sort().join(',')";
+
+/**
+ * A two-phase repo listing `dist/` under `generated` with no `gates.generate`.
+ *
+ * By default `dist/listing.txt` is committed built from `src/`'s listing, so the
+ * source file each phase's stub adds leaves it stale until a gate rebuilds it:
+ * `build` rebuilds it from the working source and `check` fails whenever it
+ * disagrees. Clean-slate runs the check alone and every verify checkpoint
+ * rebuilds then checks, so stale output can fail only at a later phase's
+ * clean-slate. `rebuilds: false` keeps the default gates, which never touch
+ * `dist/`; `generated: false` lists no generated paths at all.
+ */
+const setupBuildOutputRepo = async ({ generated = true, rebuilds = true }: { generated?: boolean; rebuilds?: boolean } = {}) => {
+	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
+	const configPath = join(dir, 'lightsout.config.json');
+	const written: { gates: Record<string, unknown> } = JSON.parse(readFileSync(configPath, 'utf8'));
+	const builtFrom = readdirSync(join(dir, 'src')).sort().join(',');
+	const rebuilding = {
+		gates: {
+			...written.gates,
+			build: `node -e "require('fs').mkdirSync('dist',{recursive:true});require('fs').writeFileSync('dist/listing.txt',${srcListing})"`,
+			check: `node -e "process.exit(require('fs').readFileSync('dist/listing.txt','utf8')===${srcListing}?0:1)"`,
+		},
+		'gate-overrides': {
+			'clean-slate': ['check'],
+			'verify-implement': ['build', 'check'],
+			'verify-tests': ['build', 'check'],
+			'verify-refactor': ['build', 'check'],
+		},
+	};
+
+	writeFileSync(configPath, JSON.stringify({ ...written, ...(generated ? { generated: ['dist/'] } : {}), ...(rebuilds ? rebuilding : {}) }));
+
+	if (rebuilds) {
+		mkdirSync(join(dir, 'dist'), { recursive: true });
+		writeFileSync(join(dir, 'dist', 'listing.txt'), builtFrom);
+	}
+
+	execSync('git add -A && git commit -q --allow-empty -m "build output"', { cwd: dir, stdio: 'ignore' });
+
+	return { dir, overviewPath, builtFrom, config: await readConfig({ cwd: dir }) };
+};
+
+/** Runs the arranged sequence to its end and keeps the carried-output discard lines it narrated. */
+const narrateSequence = async ({ dir, overviewPath, config }: Awaited<ReturnType<typeof setupBuildOutputRepo>>) => {
+	const progress: string[] = [];
+	const result = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		overviewPath,
+		skipRefactor: true,
+		onProgress: (message) => progress.push(message),
+	});
+
+	return { ok: result.ok, discards: progress.filter((line) => /carried generated path/.test(line)) };
+};
+
+test('starts each phase from build output that matches the source the previous phase committed', async () => {
+	const { dir, overviewPath, config } = await setupBuildOutputRepo();
+
+	const result = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
+
+	// phase 1 added a source file, so phase 2's clean-slate check passes only on the
+	// output phase 1 rebuilt — the output the branch started from lists one file too few
+	expect({ ok: result.ok, error: result.error }).toStrictEqual({ ok: true, error: undefined });
+	expect(result.manifest.steps.map((step) => step.status)).toStrictEqual(['passed', 'passed']);
+});
+
+test('keeps generated paths out of every phase commit and discards the carried output once the sequence passes', async () => {
+	const { dir, overviewPath, config, builtFrom } = await setupBuildOutputRepo();
+
+	const result = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
+	const committed = result.manifest.commits.map((commit) =>
+		execSync(`git show --name-only --pretty=format: ${commit.sha}`, { cwd: dir }).toString().split('\n').filter(Boolean),
+	);
+
+	expect(result.ok).toBe(true);
+	// each phase still committed its source, and no commit carries build output
+	expect(committed.map((paths) => paths.some((path) => path.startsWith('src/')))).toStrictEqual([true, true]);
+	expect(committed.flat().filter((path) => path.startsWith('dist/'))).toStrictEqual([]);
+	// the passed sequence leaves the tree as a single-phase build does: clean, with
+	// the build output the branch started from
+	expect(execSync('git status --porcelain', { cwd: dir }).toString()).toBe('');
+	expect(readFileSync(join(dir, 'dist', 'listing.txt'), 'utf8')).toBe(builtFrom);
+});
+
+test('narrates the carried-output discard only when there was carried output to discard', async () => {
+	const repos = await Promise.all([
+		setupBuildOutputRepo({ rebuilds: false }),
+		setupBuildOutputRepo({ generated: false, rebuilds: false }),
+		setupBuildOutputRepo(),
+	]);
+
+	const [unchanged, unlisted, carried] = await Promise.all(repos.map((repo) => narrateSequence(repo)));
+
+	// a discard that found nothing to discard says nothing
+	expect(unchanged).toStrictEqual({ ok: true, discards: [] });
+	expect(unlisted).toStrictEqual({ ok: true, discards: [] });
+	// only dist/listing.txt was carried
+	expect(carried).toEqual({ ok: true, discards: [expect.stringMatching(/discarded 1 carried generated path/)] });
 });
 
 /** A lock on the checkout held by this live test process, as a run that is still going leaves it. */

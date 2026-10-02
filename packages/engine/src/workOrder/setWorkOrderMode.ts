@@ -10,6 +10,7 @@ import type { WorkOrderStateChange } from '#src/workOrder/common/types/WorkOrder
 import { appendWorkOrderEvent } from '#src/workOrder/internal/common/record/appendWorkOrderEvent.ts';
 import { changeExistingWorkOrderState } from '#src/workOrder/internal/common/record/changeExistingWorkOrderState.ts';
 import { isPlanImplementationStarted } from '#src/workOrder/internal/common/record/isPlanImplementationStarted.ts';
+import { recordHandBuiltShipAuthorizationWithdrawal } from '#src/workOrder/internal/common/record/recordHandBuiltShipAuthorizationWithdrawal.ts';
 import { recordShipRequestWithdrawal } from '#src/workOrder/internal/common/record/recordShipRequestWithdrawal.ts';
 
 interface Params {
@@ -157,7 +158,14 @@ export const setWorkOrderMode = async ({ cwd, name, mode, approve, config, env, 
 			return mode === WorkOrderMode.SinglePlan
 				? switchToSinglePlan({ record, afterImplement: shipSettings.afterImplement, approve, at })
 				: appendWorkOrderEvent({
-						record: { ...record, mode: WorkOrderMode.MultiplePlan },
+						record: {
+							...recordHandBuiltShipAuthorizationWithdrawal({
+								record,
+								detail: `work order ${name} moved to multiple-plan mode, where it ships on a ship request, so the hand-built authorization no longer stands`,
+								at,
+							}),
+							mode: WorkOrderMode.MultiplePlan,
+						},
 						kind: WorkOrderEventKind.ModeChanged,
 						detail: `work order ${name} is now in multiple-plan mode`,
 						at,

@@ -21,7 +21,7 @@ describe('commandCatalog flags', () => {
 			['implement-direct', ['cwd', 'no-ship', 'no-worktree', 'ref', 'ship', 'ticket', 'worktree']],
 			['resume', ['cwd', 'detach', 'no-ship', 'run', 'ship', 'skip-refactor']],
 			['stop', ['cwd', 'run']],
-			['ship', ['cwd']],
+			['ship', ['cwd', 'hand-built']],
 			['queue', ['cwd', 'detach', 'file-relay']],
 			['work-order', ['approve', 'cwd', 'implementation-removed', 'keep', 'name', 'plan', 'plans', 'reason', 'set', 'slug', 'ticket', 'title', 'withdraw']],
 			['ticket-state', ['cwd', 'planning-status', 'ref', 'tracker-status']],
@@ -63,6 +63,19 @@ describe('commandCatalog flags', () => {
 			['queue', [[false, undefined, undefined, true, true]]],
 		]);
 		expect(accepting).toStrictEqual(['implement', 'resume', 'queue']);
+	});
+
+	test('ship accepts an optional --hand-built that takes no value and says what happens without it', () => {
+		const { byId } = setupCatalog();
+
+		const handBuiltRows = (byId.get('ship')?.flags ?? []).filter((flag) => flag.name === 'hand-built');
+		const shipFlags = readCommandFlags({ command: 'ship' });
+
+		// one shapeless row, so it renders on ship's usage line, with a meaning and what happens without it
+		expect(handBuiltRows.map((flag) => [flag.required, flag.shape, flag.value, flag.meaning.length > 0, (flag.fallback ?? '').length > 0])).toStrictEqual([
+			[false, undefined, undefined, true, true],
+		]);
+		expect(shipFlags.has('hand-built')).toBe(true);
 	});
 
 	test('repeats a flag name within one entry only across different shapes, so nothing renders twice on one usage line', () => {

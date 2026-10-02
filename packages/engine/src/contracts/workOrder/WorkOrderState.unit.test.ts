@@ -310,4 +310,22 @@ describe('WorkOrderState', () => {
 		expect(undeclaredKey.success).toBe(false);
 		expect(missingRunId.success).toBe(false);
 	});
+
+	test('accepts a record carrying a hand-built ship authorization and returns it unchanged, and refuses one with an empty by or an undeclared key', () => {
+		const { state } = setupPlanlessWorkOrderState();
+		const authorization = { by: 'Dana Reyes dana@example.com', at: '2026-09-22T09:00:00.000Z' };
+		const authorizedRecord = { ...state, handBuiltShipAuthorization: authorization };
+
+		const authorized = WorkOrderState.safeParse(authorizedRecord);
+		const emptyBy = WorkOrderState.safeParse({ ...state, handBuiltShipAuthorization: { ...authorization, by: '' } });
+		const undeclaredKey = WorkOrderState.safeParse({
+			...state,
+			handBuiltShipAuthorization: { ...authorization, headCommit: '9c4e2f7a1b3d5e6f8091a2b3c4d5e6f708192a3b' },
+		});
+
+		expect(authorized.success).toBe(true);
+		expect(authorized.data).toStrictEqual(authorizedRecord);
+		expect(emptyBy.success).toBe(false);
+		expect(undeclaredKey.success).toBe(false);
+	});
 });

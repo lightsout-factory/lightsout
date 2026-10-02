@@ -3,10 +3,12 @@ import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { getRequiredFlag } from '#src/cli/internal/common/args/getRequiredFlag.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { describePlanProgress } from '#src/cli/workOrder/internal/common/utils/describePlanProgress.ts';
+import { describeWorkOrderShipState } from '#src/cli/workOrder/internal/common/utils/describeWorkOrderShipState.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import { describeMissingWorkOrder } from '#src/common/utils/describeMissingWorkOrder.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { pullWorkOrderState } from '#src/workOrder/pullWorkOrderState.ts';
+import { readWorkOrderShipState } from '#src/workOrder/shipping/readWorkOrderShipState.ts';
 
 const renderWorkOrderState = ({ record }: { record: WorkOrderState }) => [
 	// The label leads, because it is what every other subcommand is typed with;
@@ -19,10 +21,8 @@ const renderWorkOrderState = ({ record }: { record: WorkOrderState }) => [
 	}),
 	// A work order holding no plan 001 ships on its build from the ticket body, so that build is shown like a plan.
 	...(record.ticketBodyBuild === undefined ? [] : [`  built from the ticket body — ${describePlanProgress({ progress: record.ticketBodyBuild.progress })}`]),
-	record.shipRequest === undefined
-		? 'no ship request is pending, so this work order stays open'
-		: `ship request: ${record.shipRequest.planIds.join(', ')} — the work order ships once every one of them is implemented`,
-	...(record.shipped === undefined ? [] : [`shipped as ${record.shipped.mergeCommit}`]),
+	// One line from the same reader the ship check decides from, so the two never disagree.
+	describeWorkOrderShipState({ name: record.name, state: readWorkOrderShipState({ record }) }),
 ];
 
 /**
