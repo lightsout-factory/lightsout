@@ -82,6 +82,10 @@ export const LightsoutConfig = z
 		 * Also where a repo names build output the walk cannot guess:
 		 * `listSourceFiles` skips only `dist`, `build`, `coverage` and `out`, and
 		 * only outside a `src` folder.
+		 *
+		 * A phase of a sequence leaves generated changes on disk for the next
+		 * phase, and the sequence discards them once it passes, so a repo whose
+		 * checks read these paths should configure `gates.generate`.
 		 */
 		generated: z.array(z.string()).optional(),
 		/**

@@ -32,6 +32,10 @@ export const ConfigGates = z
 		/**
 		 * Opt-in codegen, run once BEFORE every gate set (not inside check:
 		 * gates verify, generate mutates). Red exit fails the gate set.
+		 *
+		 * A repo whose checks read `generated` paths should set it, because build
+		 * output carried between phases is only as current as the last gate that
+		 * rebuilt it.
 		 */
 		generate: z.string().optional(),
 		/** Opt-in build gate, run last in every verify. Omit when nothing compiles. */

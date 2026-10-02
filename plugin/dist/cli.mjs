@@ -122830,6 +122830,10 @@ var ConfigGates = external_exports.object({
   /**
    * Opt-in codegen, run once BEFORE every gate set (not inside check:
    * gates verify, generate mutates). Red exit fails the gate set.
+   *
+   * A repo whose checks read `generated` paths should set it, because build
+   * output carried between phases is only as current as the last gate that
+   * rebuilt it.
    */
   generate: external_exports.string().optional(),
   /** Opt-in build gate, run last in every verify. Omit when nothing compiles. */
@@ -123213,6 +123217,10 @@ var LightsoutConfig = external_exports.object({
    * Also where a repo names build output the walk cannot guess:
    * `listSourceFiles` skips only `dist`, `build`, `coverage` and `out`, and
    * only outside a `src` folder.
+   *
+   * A phase of a sequence leaves generated changes on disk for the next
+   * phase, and the sequence discards them once it passes, so a repo whose
+   * checks read these paths should configure `gates.generate`.
    */
   generated: external_exports.array(external_exports.string()).optional(),
   /**
@@ -123530,6 +123538,20 @@ var checkCoverageSummary = async ({ config: config2, packageDirs }) => {
     status: "warn",
     detail: `not found: ${absent.join(", ")}`,
     fix: `configure a json-summary coverage reporter (jest: coverageReporters ['json-summary']) writing ${summaryPath}, run the coverage script once, or set coverage-summary-path`
+  };
+};
+
+// src/doctor/checkGenerateCommand.ts
+var checkGenerateCommand = ({ config: config2 }) => {
+  const generated = config2.generated ?? [];
+  if (generated.length === 0 || config2.gates.generate !== void 0) {
+    return void 0;
+  }
+  return {
+    id: "generate-command",
+    status: "warn",
+    detail: `\`generated\` lists ${generated.length} path(s) but no \`gates.generate\` command is set. A phased plan carries build output from one phase to the next only as current as the last gate that rebuilt it, and every other check reads what is on disk.`,
+    fix: "set `gates.generate` to the command that rebuilds those paths, so every set of gates starts from current output."
   };
 };
 
@@ -125535,6 +125557,7 @@ var runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }) => {
   for (const audit of configuredPathAudits({ config: config2 })) {
     pushOptional({ checks, check: await checkConfiguredPaths({ cwd, ...audit }) });
   }
+  pushOptional({ checks, check: checkGenerateCommand({ config: config2 }) });
   pushOptional({ checks, check: await checkCoverageSummary({ config: config2, packageDirs }) });
   checks.push(await checkScriptBinaries({ cwd, config: config2 }));
   return checks.sort((a, b) => severityRank[a.status] - severityRank[b.status]);
@@ -131755,9 +131778,43 @@ var resolveCommandShipIntent = ({ config: config2, flags, env, shipRequest }) =>
   return intent;
 };
 
-// src/phases/initializeSequence.ts
-import { access, readFile as readFile20 } from "node:fs/promises";
-import { dirname as dirname15, join as join63 } from "node:path";
+// src/commit/internal/common/utils/toLiteralPathspecs.ts
+var toLiteralPathspecs = ({ paths, exclude = false }) => {
+  const magic = exclude ? ":(exclude,literal)" : ":(literal)";
+  return paths.map((path) => quoteShellArgument({ argument: `${magic}${path}` })).join(" ");
+};
+
+// src/commit/discardGeneratedChanges.ts
+var discardGeneratedChanges = async ({ cwd, paths }) => {
+  const pathspecs = toLiteralPathspecs({ paths });
+  const resetFailure = await runOrDescribeFailure({ command: `git reset -q -- ${pathspecs}`, cwd });
+  if (resetFailure !== void 0) {
+    return resetFailure;
+  }
+  const listed = await runCommand({ command: `git ls-files -z -- ${pathspecs}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  if (listed?.exitCode !== 0) {
+    return "git could not tell which generated paths are tracked";
+  }
+  const tracked = listed.stdout.split("\0").filter(Boolean);
+  const untracked = paths.filter((path) => !tracked.includes(path));
+  const commands2 = [
+    ...tracked.length > 0 ? [`git checkout -- ${toLiteralPathspecs({ paths: tracked })}`] : [],
+    ...untracked.length > 0 ? [`git clean -fdq -- ${toLiteralPathspecs({ paths: untracked })}`] : []
+  ];
+  for (const command of commands2) {
+    const failure = await runOrDescribeFailure({ command, cwd });
+    if (failure !== void 0) {
+      return failure;
+    }
+  }
+  return void 0;
+};
+
+// src/common/sourceFiles/isGeneratedPath.ts
+var isGeneratedPath = ({ path, generated }) => generated.some((entry) => {
+  const prefix = entry.replace(/\/$/, "");
+  return path === prefix || path.startsWith(`${prefix}/`);
+});
 
 // src/common/utils/formatResumeCommand.ts
 var resumeDoor = "lightsout resume --run <id>";
@@ -131770,6 +131827,10 @@ var resumeCommandByPipeline = {
   [PipelineKind.Direct]: resumeDoor
 };
 var formatResumeCommand = ({ pipeline, runId }) => resumeCommandByPipeline[pipeline].replaceAll("<id>", runId);
+
+// src/phases/initializeSequence.ts
+import { access, readFile as readFile20 } from "node:fs/promises";
+import { dirname as dirname15, join as join63 } from "node:path";
 
 // src/common/utils/toRepoRelativePath.ts
 import { relative as relative6, resolve as resolve7 } from "node:path";
@@ -132092,44 +132153,17 @@ ${childResult.error}` : stopped } };
 // src/commit/commitWorkOrderWork.ts
 import { mkdir as mkdir14, writeFile as writeFile10 } from "node:fs/promises";
 import { join as join64 } from "node:path";
-
-// src/common/sourceFiles/isGeneratedPath.ts
-var isGeneratedPath = ({ path, generated }) => generated.some((entry) => {
-  const prefix = entry.replace(/\/$/, "");
-  return path === prefix || path.startsWith(`${prefix}/`);
-});
-
-// src/commit/commitWorkOrderWork.ts
-var toPathspecs = ({ paths }) => paths.map((path) => quoteShellArgument({ argument: `:(literal)${path}` })).join(" ");
-var discardGeneratedChanges = async ({ cwd, paths }) => {
-  const pathspecs = toPathspecs({ paths });
-  const resetFailure = await runOrDescribeFailure({ command: `git reset -q -- ${pathspecs}`, cwd });
-  if (resetFailure !== void 0) {
-    return resetFailure;
-  }
-  const listed = await runCommand({ command: `git ls-files -z -- ${pathspecs}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
-  if (listed?.exitCode !== 0) {
-    return "git could not tell which generated paths are tracked";
-  }
-  const tracked = listed.stdout.split("\0").filter(Boolean);
-  const untracked = paths.filter((path) => !tracked.includes(path));
-  const commands2 = [
-    ...tracked.length > 0 ? [`git checkout -- ${toPathspecs({ paths: tracked })}`] : [],
-    ...untracked.length > 0 ? [`git clean -fdq -- ${toPathspecs({ paths: untracked })}`] : []
-  ];
-  for (const command of commands2) {
-    const failure = await runOrDescribeFailure({ command, cwd });
-    if (failure !== void 0) {
-      return failure;
-    }
-  }
-  return void 0;
+var setAsideGeneratedChanges = async ({ cwd, paths, keepGenerated }) => {
+  const failure = keepGenerated ? await runOrDescribeFailure({ command: `git reset -q -- ${toLiteralPathspecs({ paths })}`, cwd }) : await discardGeneratedChanges({ cwd, paths });
+  const progress = keepGenerated ? `kept ${paths.length} generated path(s) on disk, uncommitted \u2014 the pre-ship step commits build output` : `discarded ${paths.length} generated path(s) \u2014 the pre-ship step commits build output`;
+  return failure === void 0 ? { progress } : { error: `git could not ${keepGenerated ? "unstage" : "discard"} the generated changes in ${cwd}: ${failure}` };
 };
 var commitWorkOrderWork = async ({
   cwd,
   composeMessage,
   runDir,
   generated = [],
+  keepGenerated = false,
   onProgress
 }) => {
   const changed = await readGitChangedFiles({ cwd });
@@ -132139,16 +132173,17 @@ var commitWorkOrderWork = async ({
   const generatedPaths = changed.filter((path) => isGeneratedPath({ path, generated }));
   const sourcePaths = changed.filter((path) => !isGeneratedPath({ path, generated }));
   if (generatedPaths.length > 0) {
-    const discardFailure = await discardGeneratedChanges({ cwd, paths: generatedPaths });
-    if (discardFailure !== void 0) {
-      return { error: `git could not discard the generated changes in ${cwd}: ${discardFailure}` };
+    const setAside = await setAsideGeneratedChanges({ cwd, paths: generatedPaths, keepGenerated });
+    if (setAside.error !== void 0) {
+      return { error: setAside.error };
     }
-    onProgress?.(`discarded ${generatedPaths.length} generated path(s) \u2014 the pre-ship step commits build output`);
+    onProgress?.(setAside.progress);
   }
   if (sourcePaths.length === 0) {
     return { committed: false };
   }
-  const stageFailure = await runOrDescribeFailure({ command: "git add -A -- .", cwd });
+  const exclusions = keepGenerated && generated.length > 0 ? ` ${toLiteralPathspecs({ paths: generated, exclude: true })}` : "";
+  const stageFailure = await runOrDescribeFailure({ command: `git add -A -- .${exclusions}`, cwd });
   if (stageFailure !== void 0) {
     return { error: `git could not stage the work in ${cwd}: ${stageFailure}` };
   }
@@ -132347,7 +132382,7 @@ var readRunCommitAddress = async ({ cwd, manifest, onProgress }) => {
 };
 
 // src/commit/commitRunWork.ts
-var commitRunWork = async ({ run, driver, address, resumed }) => {
+var commitRunWork = async ({ run, driver, address, resumed, keepGenerated = false }) => {
   const manifest = run.current();
   const generated = run.config.generated ?? [];
   const changed = manifest.changedFiles.filter((path) => !isGeneratedPath({ path, generated }));
@@ -132376,6 +132411,7 @@ var commitRunWork = async ({ run, driver, address, resumed }) => {
     }),
     runDir,
     generated,
+    keepGenerated,
     onProgress
   });
   if ("error" in committed) {
@@ -146497,7 +146533,11 @@ ${error51}` });
     }
     const gateArtifacts = await readGitChangedFiles({ cwd: run.cwd });
     const baselineDirtyFiles = [.../* @__PURE__ */ new Set([...run.current().baselineDirtyFiles, ...gateArtifacts ?? []])];
-    const approvedTests = await approveTestFiles({ run, paths: baselineDirtyFiles.filter((path) => isTestSideFile({ path })) });
+    const generated = run.config.generated ?? [];
+    const approvedTests = await approveTestFiles({
+      run,
+      paths: baselineDirtyFiles.filter((path) => isTestSideFile({ path }) && !isGeneratedPath({ path, generated }))
+    });
     await captureStandardsBaseline({ run });
     await run.setStep({ record: { ...record3, status: RunStatus.Passed }, patch: { baselineDirtyFiles, approvedTests } });
     run.progress("step clean-slate passed");
@@ -149657,9 +149697,9 @@ var recheckUnreachable = async ({ run }) => {
     );
   }
 };
-var finishRun = async ({ run, resumed }) => {
+var finishRun = async ({ run, resumed, keepGenerated }) => {
   await recheckUnreachable({ run });
-  const uncommitted = await commitRunWork({ run, driver: run.driver, resumed });
+  const uncommitted = await commitRunWork({ run, driver: run.driver, resumed, keepGenerated });
   let result;
   if (uncommitted === void 0) {
     await removeApprovedTests({ run });
@@ -149685,6 +149725,7 @@ var executePipeline = async ({
   skipRefactor,
   level,
   willShip,
+  keepGenerated = false,
   onProgress,
   queueRunId
 }) => {
@@ -149727,7 +149768,7 @@ var executePipeline = async ({
   if (stopped) {
     return stopped;
   }
-  return finishRun({ run, resumed: inheritedBaseline !== void 0 || existing !== void 0 });
+  return finishRun({ run, resumed: inheritedBaseline !== void 0 || existing !== void 0, keepGenerated });
 };
 var runImplementPipeline = (params) => withRunLock({ params, run: executePipeline });
 
@@ -149812,6 +149853,8 @@ var runPhase = async ({
       // have edited since the sequence began and call every edit in it its own.
       inheritedBaseline: resumed && childManifest === void 0 ? [...current.changedFiles, ...current.baselineDirtyFiles] : void 0,
       skipRefactor,
+      // The coordinator discards the carried build output once the whole sequence passes.
+      keepGenerated: true,
       level: pass,
       onProgress
     });
@@ -149826,6 +149869,35 @@ var runPhase = async ({
 };
 
 // src/phases/runPhasesPipeline.ts
+var discardCarriedGenerated = async ({
+  cwd,
+  config: config2,
+  runId,
+  narrate
+}) => {
+  const generated = config2.generated ?? [];
+  if (generated.length === 0) {
+    return void 0;
+  }
+  return withRunLock({
+    params: { cwd, runId, onProgress: narrate },
+    run: async () => {
+      const changed = await readGitChangedFiles({ cwd });
+      if (changed === void 0) {
+        return `git could not read the tree at ${cwd}, so the carried generated changes were not discarded`;
+      }
+      const paths = changed.filter((path) => isGeneratedPath({ path, generated }));
+      if (paths.length === 0) {
+        return void 0;
+      }
+      const failure = await discardGeneratedChanges({ cwd, paths });
+      if (failure === void 0) {
+        narrate(`discarded ${paths.length} carried generated path(s) \u2014 the pre-ship step commits build output`);
+      }
+      return failure === void 0 ? void 0 : `git could not discard the carried generated changes in ${cwd}: ${failure}`;
+    }
+  });
+};
 var runPhasesPipeline = async ({
   cwd,
   driver,
@@ -149874,6 +149946,12 @@ var runPhasesPipeline = async ({
     if (phase.result) {
       return phase.result;
     }
+  }
+  const discardFailure = await discardCarriedGenerated({ cwd, config: config2, runId: manifest.runId, narrate });
+  if (discardFailure !== void 0) {
+    manifest = await writeRunManifest({ cwd, manifest: { ...manifest, status: RunStatus.Failed, currentStep: null } });
+    const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.runId });
+    return { ok: false, manifest, error: `every phase passed, but ${discardFailure} \u2014 resume with: ${resume}` };
   }
   manifest = await writeRunManifest({ cwd, manifest: { ...manifest, status: RunStatus.Passed, currentStep: null } });
   return { ok: true, manifest };

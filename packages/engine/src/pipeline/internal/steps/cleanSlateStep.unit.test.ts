@@ -1,9 +1,12 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { AcceptanceRow } from '#src/common/types/AcceptanceRow.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { ApprovedTestRecord } from '#src/contracts/run/ApprovedTestRecord.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
+import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
+import type { StandardsSnapshot } from '#src/contracts/standardsCheck/StandardsSnapshot.ts';
 import type { VerificationResult } from '#src/pipeline/internal/common/types/VerificationResult.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import { cleanSlateStep } from '#src/pipeline/internal/steps/cleanSlateStep.ts';
@@ -25,6 +28,39 @@ const mockRunVerificationGates = jest.fn<(params: GateParams) => Promise<Verific
 
 jest.mock('#src/pipeline/internal/common/utils/runVerificationGates.ts', () => ({
 	runVerificationGates: (params: GateParams) => mockRunVerificationGates(params),
+}));
+// -------------------------
+const mockReadGitChangedFiles = jest.fn<(params: { cwd: string }) => Promise<string[] | undefined>>();
+
+jest.mock('#src/common/git/readGitChangedFiles.ts', () => ({
+	readGitChangedFiles: (params: { cwd: string }) => mockReadGitChangedFiles(params),
+}));
+// -------------------------
+const mockApproveTestFiles = jest.fn<(params: { run: PipelineRun; paths: string[] }) => Promise<ApprovedTestRecord[]>>();
+
+jest.mock('#src/pipeline/approvedTests/approveTestFiles.ts', () => ({
+	approveTestFiles: (params: { run: PipelineRun; paths: string[] }) => mockApproveTestFiles(params),
+}));
+// -------------------------
+interface StandardsCheckParams {
+	cwd: string;
+	path?: string;
+	all?: boolean;
+	writeBaseline?: boolean;
+	persist?: boolean;
+	onProgress?: (message: string) => void;
+}
+
+const mockRunStandardsCheck = jest.fn<(params: StandardsCheckParams) => Promise<{ findings: StandardsFinding[]; notes: string[] }>>();
+
+jest.mock('#src/standardsCheck/runStandardsCheck.ts', () => ({
+	runStandardsCheck: (params: StandardsCheckParams) => mockRunStandardsCheck(params),
+}));
+// -------------------------
+const mockWriteRunStandardsBaseline = jest.fn<(params: { cwd: string; runId: string; snapshot: StandardsSnapshot }) => Promise<void>>();
+
+jest.mock('#src/runState/standardsBaseline/writeRunStandardsBaseline.ts', () => ({
+	writeRunStandardsBaseline: (params: { cwd: string; runId: string; snapshot: StandardsSnapshot }) => mockWriteRunStandardsBaseline(params),
 }));
 // -------------------------
 
@@ -68,6 +104,58 @@ const setupCleanSlateRun = ({ result }: { result: VerificationResult }) => {
 	return { run: run as unknown as PipelineRun, progress, steps: () => manifest.steps, stopped: () => stopped };
 };
 
+/**
+ * A PipelineRun stub for a clean-slate that reaches its passed stamp: green
+ * gates, a dirty tree as git reports it, and the patch the step writes captured
+ * so the baseline and the approvals can be read back.
+ */
+const setupPassingCleanSlateRun = ({ generated, dirtyFiles }: { generated: string[]; dirtyFiles: string[] }) => {
+	mockRunVerificationGates.mockResolvedValue({
+		error: undefined,
+		failedFamilies: [],
+		crashes: [],
+		timeouts: [],
+		coordination: undefined,
+		failures: [],
+		gates: [],
+	});
+	mockReadGitChangedFiles.mockResolvedValue(dirtyFiles);
+	// The package's jest config does not clear mocks between tests, so the
+	// approvals this test reads back start from none.
+	mockApproveTestFiles.mockReset();
+	mockApproveTestFiles.mockImplementation(async ({ paths }) => paths.map((path) => ({ path, sha256: 'a'.repeat(64), removed: false })));
+	mockRunStandardsCheck.mockResolvedValue({ findings: [], notes: [] });
+	mockWriteRunStandardsBaseline.mockResolvedValue(undefined);
+
+	const manifest = {
+		runId: 'run-1',
+		steps: [],
+		changedFiles: [],
+		packages: [],
+		baselineDirtyFiles: dirtyFiles,
+		approvedTests: [],
+		currentStep: null,
+	} as unknown as RunManifest;
+	const patches: Partial<RunManifest>[] = [];
+
+	const run = {
+		cwd: '/tmp/lightsout-clean-slate',
+		config: { generated } as unknown as LightsoutConfig,
+		current: () => manifest,
+		progress: () => undefined,
+		nextRecord: ({ id }: { id: string }) => ({ id, status: RunStatus.Running, attempts: 1 }),
+		setStep: async ({ record, patch }: { record: StepRecord; patch?: Partial<RunManifest> }) => {
+			manifest.steps = [record];
+
+			if (patch) {
+				patches.push(patch);
+			}
+		},
+	};
+
+	return { run: run as unknown as PipelineRun, patches };
+};
+
 describe('cleanSlateStep', () => {
 	test('cleanSlateStep: a coordination failure stops escalated instead of calling the codebase not green', async () => {
 		const coordination = 'gates never started: run run-7 in /tmp/worktrees/lo-118 has held the machine for 31m, and this run waited its full 30m for it';
@@ -101,5 +189,27 @@ describe('cleanSlateStep', () => {
 		expect(outcome?.error).not.toMatch(/not green before implementation/i);
 		expect(outcome?.error).toEqual(expect.stringContaining(timeout));
 		expect(steps()[0]).toEqual(expect.objectContaining({ id: 'clean-slate', status: RunStatus.Failed }));
+	});
+
+	test('cleanSlateStep: carried build output is kept in the baseline but never approved as a test edit', async () => {
+		const { run, patches } = setupPassingCleanSlateRun({
+			generated: ['dist/'],
+			dirtyFiles: ['dist/widget.unit.test.js', 'src/widget.unit.test.ts'],
+		});
+
+		const outcome = await cleanSlateStep({ run, ledgerGates: [] })();
+
+		// A test file under a generated entry is build output a previous phase
+		// left on disk, never an agent's test edit: it stays in the baseline so
+		// it is not attributed to the run, but it gets no approved copy.
+		expect({
+			outcome,
+			approvedPaths: mockApproveTestFiles.mock.calls.map(([params]) => params.paths),
+			baselineDirtyFiles: patches.at(-1)?.baselineDirtyFiles,
+		}).toStrictEqual({
+			outcome: undefined,
+			approvedPaths: [['src/widget.unit.test.ts']],
+			baselineDirtyFiles: ['dist/widget.unit.test.js', 'src/widget.unit.test.ts'],
+		});
 	});
 });

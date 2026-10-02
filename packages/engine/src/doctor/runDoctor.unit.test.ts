@@ -227,6 +227,25 @@ test('a repo that measures coverage and generates code gets both of those checks
 	expect(checks.get('coverage-summary')?.detail ?? '').toContain('root: coverage/coverage-summary.json');
 });
 
+test('doctor warns about generated paths with no generate command and is silent for a repo with none', async () => {
+	const generatingDir = setupConsumerRepo({ git: false, config: { generated: ['dist/', 'src/generated/'] } });
+	const healthyDir = setupConsumerRepo({ git: false });
+
+	const [generatingReport, healthyReport] = await Promise.all([
+		runDoctor({ cwd: generatingDir, probeHarness: passingProbe }),
+		runDoctor({ cwd: healthyDir, probeHarness: passingProbe }),
+	]);
+	const generating = byId(generatingReport);
+	const healthy = byId(healthyReport);
+
+	// generated paths with nothing configured to rebuild them is advice, never a failure
+	expect(generating.get('generate-command')?.status).toBe('warn');
+	expect(generating.get('generate-command')?.detail ?? '').toContain('gates.generate');
+	expect(generating.get('generate-command')?.fix ?? '').toContain('gates.generate');
+	// a repo listing no generated paths has nothing for the check to say — no line, not an empty pass
+	expect(healthy.get('generate-command')).toBe(undefined);
+});
+
 test('a repo that opted out of standards entirely gets no lint-rules line at all', async () => {
 	const dir = setupConsumerRepo({ git: false, config: { 'standards-pack': false } });
 
