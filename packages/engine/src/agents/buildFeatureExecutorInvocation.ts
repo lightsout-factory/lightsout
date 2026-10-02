@@ -1,11 +1,13 @@
 import { acceptanceTestsSection } from '#src/agents/internal/common/utils/acceptanceTestsSection.ts';
 import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
 import { changedFilesSection } from '#src/agents/internal/common/utils/changedFilesSection.ts';
+import { moveOnlySection } from '#src/agents/internal/common/utils/moveOnlySection.ts';
 import { renameOnlySection } from '#src/agents/internal/common/utils/renameOnlySection.ts';
 import { selfCheckSection } from '#src/agents/internal/common/utils/selfCheckSection.ts';
 import featureExecutorPrompt from '#src/agents/prompts/featureExecutor.md';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { defaultExecutorFileLimit } from '#src/common/constants/defaultExecutorFileLimit.ts';
-import type { RenameRule } from '#src/contracts/plan/renames/RenameRule.ts';
+import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 
 interface Params {
@@ -27,9 +29,21 @@ interface Params {
 	acceptanceTests?: Pick<AcceptanceTestRecord, 'testFile' | 'testName'>[];
 	/** The engine's own self-check, exactly as this spawn may run it. Absent = this spawn gets no self-check and is told nothing about one. */
 	selfCheckCommand?: string;
-	/** The plan's declared renames; absent or empty for every plan that is not rename-only. */
-	renames?: RenameRule[];
+	/** The phase's build mode and the renames or moves it declares; absent means Standard. */
+	planBuildMode?: PlanBuildMode;
 }
+
+const modeSection = ({ planBuildMode }: { planBuildMode?: PlanBuildMode }) => {
+	let section: string | undefined;
+
+	if (planBuildMode?.buildMode === BuildMode.RenamesOnly) {
+		section = renameOnlySection({ renames: planBuildMode.renames });
+	} else if (planBuildMode?.buildMode === BuildMode.MoveFoldersAndFiles) {
+		section = moveOnlySection({ fileMoves: planBuildMode.fileMoves, folderMoves: planBuildMode.folderMoves });
+	}
+
+	return section;
+};
 
 /**
  * The engine owns context assembly, so the same inputs always produce the same
@@ -46,7 +60,7 @@ export const buildFeatureExecutorInvocation = ({
 	fileLimit,
 	acceptanceTests,
 	selfCheckCommand,
-	renames,
+	planBuildMode,
 }: Params): { systemPrompt: string; prompt: string } => {
 	const roleSections = [applyPromptTokens({ text: featureExecutorPrompt, tokens: { fileLimit: fileLimit ?? defaultExecutorFileLimit } })];
 
@@ -58,12 +72,12 @@ export const buildFeatureExecutorInvocation = ({
 
 	roleSections.push(`# Plan\n\n${planContent}`);
 
-	// Rides the system prompt: the renames are stable across the run, so the
-	// first spawn and every fix must carry this section byte-identically.
-	const renameOnly = renameOnlySection({ renames });
+	// Rides the system prompt: the renames or moves are stable across the run,
+	// so the first spawn and every fix must carry this section byte-identically.
+	const mode = modeSection({ planBuildMode });
 
-	if (renameOnly) {
-		roleSections.push(renameOnly);
+	if (mode) {
+		roleSections.push(mode);
 	}
 
 	if (standards) {

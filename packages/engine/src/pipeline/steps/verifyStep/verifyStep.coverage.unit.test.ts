@@ -1,4 +1,5 @@
 import { expect, jest, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { AcceptanceRow } from '#src/common/types/AcceptanceRow.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
@@ -116,7 +117,14 @@ const setupFormattingReentry = () => {
 test('verifyStep: a rate-limited reviewer parks the run on the re-entry that owes a formatter pass', async () => {
 	const { run, manifest, buildFix, roleInvocations, stopped } = setupFormattingReentry();
 
-	const parked = await verifyStep({ run, planContent: '# Plan', id: checkpoint, acceptanceTests: () => [], renames: [], buildFix })();
+	const parked = await verifyStep({
+		run,
+		planContent: '# Plan',
+		id: checkpoint,
+		acceptanceTests: () => [],
+		planBuildMode: { buildMode: BuildMode.Standard },
+		buildFix,
+	})();
 
 	// The formatter settles the tree first, so the reviewer reads the bytes the
 	// gates would see. When that reviewer is throttled it said nothing about the
@@ -138,7 +146,15 @@ test('verifyStep: the reviewer is told which checkpoint it is judging, and is ha
 	// harness throttled, so the checkpoint runs its whole sequence
 	mockReviewTestChanges.mockResolvedValue({});
 
-	await verifyStep({ run, planContent: '# Plan', overviewContent: '# Overview', id: checkpoint, acceptanceTests: () => [], renames: [], buildFix })();
+	await verifyStep({
+		run,
+		planContent: '# Plan',
+		overviewContent: '# Overview',
+		id: checkpoint,
+		acceptanceTests: () => [],
+		planBuildMode: { buildMode: BuildMode.Standard },
+		buildFix,
+	})();
 
 	// The reviewer rules on whether a change to a test is one the plan's own work
 	// makes necessary, so the plan is the whole standard it judges against — and

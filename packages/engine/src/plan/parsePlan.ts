@@ -1,3 +1,5 @@
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
+import type { RenameRule } from '#src/contracts/plan/renames/RenameRule.ts';
 import { generatedPlanRegions } from '#src/plan/internal/common/constants/generatedPlanRegions.ts';
 import { PlanFileKind } from '#src/plan/internal/common/constants/PlanFileKind.ts';
 import { parseAcceptanceLedger } from '#src/plan/internal/common/parsing/parseAcceptanceLedger.ts';
@@ -86,12 +88,14 @@ const commandsFromVerification = ({ sectionLines }: { sectionLines: string[] | u
 };
 
 /**
- * A heading naming fewer than two paths is recorded by line number, so the lint
- * reports it rather than losing a file the plan meant to move. Scanned over the
- * whole file because that line number is the finding's location.
+ * A heading naming fewer than two paths, or a file and a folder, is recorded by
+ * line number, so the lint reports it rather than losing a file the plan meant
+ * to move. Scanned over the whole file because that line number is the
+ * finding's location.
  */
 const movesFromPlan = ({ lines }: { lines: string[] }) => {
 	const moves: { from: string; to: string }[] = [];
+	const folderMoves: { from: string; to: string }[] = [];
 	const malformedLines: number[] = [];
 	let inMoveSection = false;
 
@@ -110,14 +114,16 @@ const movesFromPlan = ({ lines }: { lines: string[] }) => {
 
 		const pair = pathPairFromLine({ line });
 
-		if (pair) {
-			moves.push(pair);
-		} else {
+		if (pair === undefined) {
 			malformedLines.push(index + 1);
+		} else if (pair.folder) {
+			folderMoves.push({ from: pair.from, to: pair.to });
+		} else {
+			moves.push(pair);
 		}
 	}
 
-	return { moves, malformedLines };
+	return { moves, folderMoves, malformedLines };
 };
 
 /**
@@ -150,6 +156,27 @@ const fileBudgetFrom = ({ sectionLines }: { sectionLines: string[] | undefined }
 	return undefined;
 };
 
+/**
+ * A `## Build Mode` section outranks a `## Renames` one, and only the exact
+ * literal names the mode: anything else in that section is left for the lint
+ * to report rather than guessed at here.
+ */
+const buildModeFrom = ({ sectionLines, renames }: { sectionLines: string[] | undefined; renames: RenameRule[] }) => {
+	const declared = (sectionLines ?? [])
+		.find((line) => line.trim() !== '')
+		?.trim()
+		.replace(/^`(.*)`$/, '$1');
+	let buildMode: BuildMode = BuildMode.Standard;
+
+	if (declared === BuildMode.MoveFoldersAndFiles) {
+		buildMode = BuildMode.MoveFoldersAndFiles;
+	} else if (renames.length > 0) {
+		buildMode = BuildMode.RenamesOnly;
+	}
+
+	return buildMode;
+};
+
 interface Params {
 	content: string;
 	/** The plan file's basename — `overview.md` is one of the overview-variant signals. */
@@ -177,7 +204,7 @@ export const parsePlan = ({ content, base }: Params): ParsedPlan => {
 			? PlanFileKind.Overview
 			: PlanFileKind.Implementable;
 	const isSubheading = (line: string) => /^###\s+/.test(line);
-	const { moves, malformedLines } = movesFromPlan({ lines });
+	const { moves, folderMoves, malformedLines } = movesFromPlan({ lines });
 
 	return {
 		base,
@@ -189,11 +216,13 @@ export const parsePlan = ({ content, base }: Params): ParsedPlan => {
 		earlierPhaseModifyPaths: pathsFromLines({ sectionLines: sections.get('Files to Modify from Earlier Phases'), lineMatches: isSubheading }),
 		deletePaths: pathsFromLines({ sectionLines: sections.get('Files to Delete'), lineMatches: isSubheading }),
 		movePaths: moves,
+		folderMoves,
 		malformedMoveLines: malformedLines,
 		generatedRegionRanges,
 		decisionLogRange: generatedRegionRanges.get(generatedPlanRegions.decisionLog),
 		sectionRanges: new Map([...parsed].map(([heading, section]) => [heading, rangeOf({ section })])),
 		fileBudget: fileBudgetFrom({ sectionLines: sections.get('File Budget') }),
+		buildMode: buildModeFrom({ sectionLines: sections.get('Build Mode'), renames: renamed.renames }),
 		renames: renamed.renames,
 		malformedRenameLines: renamed.malformedLines,
 		mirrorPaths: pathsFromLines({ sectionLines: sections.get('Patterns to Mirror'), lineMatches: (line) => /^\s*-\s+/.test(line) }),

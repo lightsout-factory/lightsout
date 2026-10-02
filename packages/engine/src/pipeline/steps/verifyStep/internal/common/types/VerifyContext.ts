@@ -1,4 +1,4 @@
-import type { RenameRule } from '#src/contracts/plan/renames/RenameRule.ts';
+import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import type { FixBuilder } from '#src/pipeline/internal/steps/common/types/FixBuilder.ts';
@@ -15,7 +15,7 @@ export interface VerifyContext {
 	acceptanceTests: () => AcceptanceTestRecord[];
 	/** True only at the run's last verification, where an acceptance test no gate proved is a failure rather than a skip. */
 	final?: boolean;
-	/** Non-empty turns the checkpoint's test-change review into the rename check. */
-	renames: RenameRule[];
+	/** A mechanical mode turns the checkpoint's test-change review into that mode's code check. */
+	planBuildMode: PlanBuildMode;
 	buildFix: FixBuilder;
 }

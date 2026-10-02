@@ -16,10 +16,11 @@ interface Params {
 
 /**
  * The census is the repo the plan leaves behind: minus the paths the plan
- * creates, and minus the paths it empties (a deleted file, or the source side
- * of a move). Without that subtraction a plan that moves a symbol collides with
- * itself, and no resolution can clear it because the file is still on disk. A
- * move's destination is not added back: it is planned like any other new file.
+ * creates, and minus the paths it empties (a deleted file, the source side of a
+ * file move, or every file under a folder move's source). Without that
+ * subtraction a plan that moves a symbol collides with itself, and no
+ * resolution can clear it because the file is still on disk. A move's
+ * destination is not added back: it is planned like any other new file.
  *
  * The plan is read through `parsePlan`, the parser the structural lint uses, so
  * the two never disagree about which section says what.
@@ -28,6 +29,7 @@ export const detectPriorArtCandidates = async ({ cwd, planPaths, config }: Param
 	const planned: Array<{ plannedSymbol: string; plannedPath: string; phase: string }> = [];
 	const plannedPaths = new Set<string>();
 	const emptiedPaths = new Set<string>();
+	const emptiedFolders = new Set<string>();
 
 	for (const planPath of planPaths) {
 		const planText = await readFile(planPath, 'utf8').catch(() => undefined);
@@ -43,6 +45,10 @@ export const detectPriorArtCandidates = async ({ cwd, planPaths, config }: Param
 		// whole plan, whichever phase planned the symbol that collided with it.
 		for (const path of [...plan.deletePaths, ...plan.movePaths.map((move) => move.from)]) {
 			emptiedPaths.add(path);
+		}
+
+		for (const move of plan.folderMoves) {
+			emptiedFolders.add(move.from);
 		}
 
 		for (const createPath of plan.createPaths) {
@@ -62,7 +68,7 @@ export const detectPriorArtCandidates = async ({ cwd, planPaths, config }: Param
 		return [];
 	}
 
-	const census = await buildExportCensus({ cwd, config, exclude: [...plannedPaths, ...emptiedPaths] });
+	const census = await buildExportCensus({ cwd, config, exclude: [...plannedPaths, ...emptiedPaths], excludeFolders: [...emptiedFolders] });
 	// One lookup per distinct symbol name, keyed by that name: two phases can plan
 	// the same basename, and both have to be reported.
 	const collisions = new Map(

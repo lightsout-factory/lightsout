@@ -102,6 +102,18 @@ Stated so nobody adds a step for it here — the engine already does it:
   commit only by the declared renames, and refuses the checkpoint otherwise.
   Every gate still runs, coverage included. Nothing in this skill turns this
   on; the plan's own `## Renames` section does.
+- When the plan or phase only moves folders and files, its file carries a
+  `## Build Mode` section reading `move-folders-and-files`. Such a phase is
+  built without test writing, without the cleanup pass and without the
+  reviewing agent. Instead, before the gates run, the engine checks in code
+  that every removed file was added at its declared destination, that no
+  declared move left a file at its old path, and that every changed file
+  differs from the phase's starting commit only by the paths the moves change —
+  a file that is not text may only move unchanged — and refuses the checkpoint
+  otherwise. Every gate still runs, coverage included, though the per-file
+  check that each changed file is executed by a test is lifted, since the phase
+  writes no tests. Nothing in this skill turns this on; the plan's own
+  `## Build Mode` section does.
 - Before any source work, the engine resolves the workspace itself: it picks
   the branch, creates the worktree, copies the plan or ticket inputs into it,
   and runs `worktree.setup`. Nothing in this skill creates, chooses or cleans

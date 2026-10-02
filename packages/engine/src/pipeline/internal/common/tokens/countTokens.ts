@@ -6,7 +6,7 @@ interface Params {
  * A trailing comma is not counted: the formatter adds and removes those when it
  * re-wraps a line.
  *
- * Language-blind on purpose: a rename-only phase changes Markdown, JSON and
+ * Language-blind on purpose: a mechanical phase changes Markdown, JSON and
  * snapshots as well as TypeScript.
  */
 export const countTokens = ({ text }: Params): Map<string, number> => {

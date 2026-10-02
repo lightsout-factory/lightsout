@@ -2,6 +2,7 @@ import { mkdtempSync, readFileSync, statSync, utimesSync, writeFileSync } from '
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
 import { parsePlan } from '#src/plan/parsePlan.ts';
 import { syncPhaseSectionsFromFiles } from '#src/plan/sections/syncPhaseSectionsFromFiles.ts';
@@ -11,7 +12,7 @@ import { type DeclarationSpec, overviewBody, type PhaseSpec, phaseBody } from '#
 // The one rebuild of a phased overview's `## Phases` table and `## Phase
 // Declarations` from its phase files, shared by the draft path, the repair path
 // and `plan sync-phases`: the real counts are stamped first, each phase file's
-// own budget and renames-only flag are taken, and both sections are rendered
+// own budget and build mode are taken, and both sections are rendered
 // from that one record. Only the overview is ever written, and only when it
 // changes.
 
@@ -54,6 +55,7 @@ const setupPhasedPlan = ({ rows, phases }: { rows: DeclarationSpec[]; phases: Re
 	backdate();
 
 	return {
+		cwd: workspaceDir,
 		overviewPath,
 		phasePaths,
 		backdate,
@@ -76,7 +78,7 @@ describe('syncPhaseSectionsFromFiles', () => {
 			},
 		});
 
-		const written = await syncPhaseSectionsFromFiles({ overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
+		const written = await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
 
 		const after = plan.readOverview();
 		// the estimate said nine of each; the files say two created and three
@@ -120,7 +122,7 @@ describe('syncPhaseSectionsFromFiles', () => {
 		});
 	});
 
-	test("takes each phase file's own file budget and renames-only flag into its declaration block", async () => {
+	test("takes each phase file's own file budget and build mode into its declaration block", async () => {
 		const plan = setupPhasedPlan({
 			rows: [
 				{ number: 1, file: 'phase1-core.md', created: 1, touched: 1 },
@@ -132,24 +134,24 @@ describe('syncPhaseSectionsFromFiles', () => {
 			},
 		});
 
-		const written = await syncPhaseSectionsFromFiles({ overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
+		const written = await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
 
 		const after = plan.readOverview();
 		// the phase file is what the implementing agent is handed, so its budget
-		// and renames-only flag win over a block that carried neither; a phase
-		// file declaring neither leaves its block without either bullet
+		// and build mode win over a block that carried neither; a phase file
+		// declaring neither leaves its block without either bullet
 		expect({
 			updated: written.updated,
 			hasBudgetBullet: after.includes('- **File budget:** 14'),
 			hasRenamesOnlyBullet: after.includes('- **Renames only:** yes'),
-			declared: declaredBy({ text: after }).map(({ file, fileBudget, renamesOnly }) => ({ file, fileBudget, renamesOnly })),
+			declared: declaredBy({ text: after }).map(({ file, fileBudget, buildMode }) => ({ file, fileBudget, buildMode })),
 		}).toStrictEqual({
 			updated: true,
 			hasBudgetBullet: true,
 			hasRenamesOnlyBullet: true,
 			declared: [
-				{ file: 'phase1-core.md', fileBudget: undefined, renamesOnly: undefined },
-				{ file: 'phase2-rename.md', fileBudget: 14, renamesOnly: true },
+				{ file: 'phase1-core.md', fileBudget: undefined, buildMode: undefined },
+				{ file: 'phase2-rename.md', fileBudget: 14, buildMode: BuildMode.RenamesOnly },
 			],
 		});
 	});
@@ -168,12 +170,12 @@ describe('syncPhaseSectionsFromFiles', () => {
 		const phasesAsAuthored = plan.readPhases();
 		// the first sync is the arrangement: it is what brings the overview into
 		// step, and backdating afterwards means a second write would show up
-		await syncPhaseSectionsFromFiles({ overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
+		await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
 		plan.backdate();
 		const synced = plan.readOverview();
 		const modifiedAt = plan.modifiedAt();
 
-		const written = await syncPhaseSectionsFromFiles({ overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
+		const written = await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
 
 		// the phase files are compared against how they were authored, before the
 		// first sync, so neither call may have touched one

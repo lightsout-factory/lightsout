@@ -22667,13 +22667,14 @@ var collectChildOutput = ({ child, timeout, onStdoutLine, onTimeout }) => {
     };
     const timer = timeout ? setTimeout(expire, timeout.ms) : void 0;
     const stopRelay = relayShutdownSignals({ child });
-    child.stdout?.on("data", (chunk) => {
-      const text = chunk.toString();
+    child.stdout?.setEncoding("utf8");
+    child.stderr?.setEncoding("utf8");
+    child.stdout?.on("data", (text) => {
       stdout += text;
       emitLines({ text });
     });
-    child.stderr?.on("data", (chunk) => {
-      stderr += chunk.toString();
+    child.stderr?.on("data", (text) => {
+      stderr += text;
     });
     child.on("error", (error51) => {
       clearTimeout(timer);
@@ -24068,24 +24069,24 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
       return "$" + node.name;
     },
     Document: function Document$1(node) {
-      return join166(node.definitions, "\n\n") + "\n";
+      return join167(node.definitions, "\n\n") + "\n";
     },
     OperationDefinition: function OperationDefinition(node) {
       var op = node.operation;
       var name = node.name;
-      var varDefs = wrap("(", join166(node.variableDefinitions, ", "), ")");
-      var directives = join166(node.directives, " ");
+      var varDefs = wrap("(", join167(node.variableDefinitions, ", "), ")");
+      var directives = join167(node.directives, " ");
       var selectionSet = node.selectionSet;
-      return !name && !directives && !varDefs && op === "query" ? selectionSet : join166([
+      return !name && !directives && !varDefs && op === "query" ? selectionSet : join167([
         op,
-        join166([name, varDefs]),
+        join167([name, varDefs]),
         directives,
         selectionSet
       ], " ");
     },
     VariableDefinition: function VariableDefinition(_ref) {
       var variable = _ref.variable, type = _ref.type, defaultValue = _ref.defaultValue, directives = _ref.directives;
-      return variable + ": " + type + wrap(" = ", defaultValue) + wrap(" ", join166(directives, " "));
+      return variable + ": " + type + wrap(" = ", defaultValue) + wrap(" ", join167(directives, " "));
     },
     SelectionSet: function SelectionSet(_ref2) {
       var selections = _ref2.selections;
@@ -24094,11 +24095,11 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     Field: function Field(_ref3) {
       var alias = _ref3.alias, name = _ref3.name, args = _ref3.arguments, directives = _ref3.directives, selectionSet = _ref3.selectionSet;
       var prefix = wrap("", alias, ": ") + name;
-      var argsLine = prefix + wrap("(", join166(args, ", "), ")");
-      if (argsLine.length > MAX_LINE_LENGTH) argsLine = prefix + wrap("(\n", indent(join166(args, "\n")), "\n)");
-      return join166([
+      var argsLine = prefix + wrap("(", join167(args, ", "), ")");
+      if (argsLine.length > MAX_LINE_LENGTH) argsLine = prefix + wrap("(\n", indent(join167(args, "\n")), "\n)");
+      return join167([
         argsLine,
-        join166(directives, " "),
+        join167(directives, " "),
         selectionSet
       ], " ");
     },
@@ -24108,20 +24109,20 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     FragmentSpread: function FragmentSpread(_ref5) {
       var name = _ref5.name, directives = _ref5.directives;
-      return "..." + name + wrap(" ", join166(directives, " "));
+      return "..." + name + wrap(" ", join167(directives, " "));
     },
     InlineFragment: function InlineFragment(_ref6) {
       var typeCondition = _ref6.typeCondition, directives = _ref6.directives, selectionSet = _ref6.selectionSet;
-      return join166([
+      return join167([
         "...",
         wrap("on ", typeCondition),
-        join166(directives, " "),
+        join167(directives, " "),
         selectionSet
       ], " ");
     },
     FragmentDefinition: function FragmentDefinition(_ref7) {
       var name = _ref7.name, typeCondition = _ref7.typeCondition, variableDefinitions = _ref7.variableDefinitions, directives = _ref7.directives, selectionSet = _ref7.selectionSet;
-      return "fragment ".concat(name).concat(wrap("(", join166(variableDefinitions, ", "), ")"), " ") + "on ".concat(typeCondition, " ").concat(wrap("", join166(directives, " "), " ")) + selectionSet;
+      return "fragment ".concat(name).concat(wrap("(", join167(variableDefinitions, ", "), ")"), " ") + "on ".concat(typeCondition, " ").concat(wrap("", join167(directives, " "), " ")) + selectionSet;
     },
     IntValue: function IntValue(_ref8) {
       return _ref8.value;
@@ -24144,11 +24145,11 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     ListValue: function ListValue(_ref13) {
       var values = _ref13.values;
-      return "[" + join166(values, ", ") + "]";
+      return "[" + join167(values, ", ") + "]";
     },
     ObjectValue: function ObjectValue(_ref14) {
       var fields3 = _ref14.fields;
-      return "{" + join166(fields3, ", ") + "}";
+      return "{" + join167(fields3, ", ") + "}";
     },
     ObjectField: function ObjectField(_ref15) {
       var name = _ref15.name, value = _ref15.value;
@@ -24156,7 +24157,7 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     Directive: function Directive(_ref16) {
       var name = _ref16.name, args = _ref16.arguments;
-      return "@" + name + wrap("(", join166(args, ", "), ")");
+      return "@" + name + wrap("(", join167(args, ", "), ")");
     },
     NamedType: function NamedType(_ref17) {
       return _ref17.name;
@@ -24169,9 +24170,9 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     SchemaDefinition: addDescription(function(_ref20) {
       var directives = _ref20.directives, operationTypes = _ref20.operationTypes;
-      return join166([
+      return join167([
         "schema",
-        join166(directives, " "),
+        join167(directives, " "),
         block(operationTypes)
       ], " ");
     }),
@@ -24181,149 +24182,149 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     ScalarTypeDefinition: addDescription(function(_ref22) {
       var name = _ref22.name, directives = _ref22.directives;
-      return join166([
+      return join167([
         "scalar",
         name,
-        join166(directives, " ")
+        join167(directives, " ")
       ], " ");
     }),
     ObjectTypeDefinition: addDescription(function(_ref23) {
       var name = _ref23.name, interfaces = _ref23.interfaces, directives = _ref23.directives, fields3 = _ref23.fields;
-      return join166([
+      return join167([
         "type",
         name,
-        wrap("implements ", join166(interfaces, " & ")),
-        join166(directives, " "),
+        wrap("implements ", join167(interfaces, " & ")),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     }),
     FieldDefinition: addDescription(function(_ref24) {
       var name = _ref24.name, args = _ref24.arguments, type = _ref24.type, directives = _ref24.directives;
-      return name + (hasMultilineItems(args) ? wrap("(\n", indent(join166(args, "\n")), "\n)") : wrap("(", join166(args, ", "), ")")) + ": " + type + wrap(" ", join166(directives, " "));
+      return name + (hasMultilineItems(args) ? wrap("(\n", indent(join167(args, "\n")), "\n)") : wrap("(", join167(args, ", "), ")")) + ": " + type + wrap(" ", join167(directives, " "));
     }),
     InputValueDefinition: addDescription(function(_ref25) {
       var name = _ref25.name, type = _ref25.type, defaultValue = _ref25.defaultValue, directives = _ref25.directives;
-      return join166([
+      return join167([
         name + ": " + type,
         wrap("= ", defaultValue),
-        join166(directives, " ")
+        join167(directives, " ")
       ], " ");
     }),
     InterfaceTypeDefinition: addDescription(function(_ref26) {
       var name = _ref26.name, interfaces = _ref26.interfaces, directives = _ref26.directives, fields3 = _ref26.fields;
-      return join166([
+      return join167([
         "interface",
         name,
-        wrap("implements ", join166(interfaces, " & ")),
-        join166(directives, " "),
+        wrap("implements ", join167(interfaces, " & ")),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     }),
     UnionTypeDefinition: addDescription(function(_ref27) {
       var name = _ref27.name, directives = _ref27.directives, types = _ref27.types;
-      return join166([
+      return join167([
         "union",
         name,
-        join166(directives, " "),
-        types && types.length !== 0 ? "= " + join166(types, " | ") : ""
+        join167(directives, " "),
+        types && types.length !== 0 ? "= " + join167(types, " | ") : ""
       ], " ");
     }),
     EnumTypeDefinition: addDescription(function(_ref28) {
       var name = _ref28.name, directives = _ref28.directives, values = _ref28.values;
-      return join166([
+      return join167([
         "enum",
         name,
-        join166(directives, " "),
+        join167(directives, " "),
         block(values)
       ], " ");
     }),
     EnumValueDefinition: addDescription(function(_ref29) {
       var name = _ref29.name, directives = _ref29.directives;
-      return join166([name, join166(directives, " ")], " ");
+      return join167([name, join167(directives, " ")], " ");
     }),
     InputObjectTypeDefinition: addDescription(function(_ref30) {
       var name = _ref30.name, directives = _ref30.directives, fields3 = _ref30.fields;
-      return join166([
+      return join167([
         "input",
         name,
-        join166(directives, " "),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     }),
     DirectiveDefinition: addDescription(function(_ref31) {
       var name = _ref31.name, args = _ref31.arguments, repeatable = _ref31.repeatable, locations = _ref31.locations;
-      return "directive @" + name + (hasMultilineItems(args) ? wrap("(\n", indent(join166(args, "\n")), "\n)") : wrap("(", join166(args, ", "), ")")) + (repeatable ? " repeatable" : "") + " on " + join166(locations, " | ");
+      return "directive @" + name + (hasMultilineItems(args) ? wrap("(\n", indent(join167(args, "\n")), "\n)") : wrap("(", join167(args, ", "), ")")) + (repeatable ? " repeatable" : "") + " on " + join167(locations, " | ");
     }),
     SchemaExtension: function SchemaExtension(_ref32) {
       var directives = _ref32.directives, operationTypes = _ref32.operationTypes;
-      return join166([
+      return join167([
         "extend schema",
-        join166(directives, " "),
+        join167(directives, " "),
         block(operationTypes)
       ], " ");
     },
     ScalarTypeExtension: function ScalarTypeExtension(_ref33) {
       var name = _ref33.name, directives = _ref33.directives;
-      return join166([
+      return join167([
         "extend scalar",
         name,
-        join166(directives, " ")
+        join167(directives, " ")
       ], " ");
     },
     ObjectTypeExtension: function ObjectTypeExtension(_ref34) {
       var name = _ref34.name, interfaces = _ref34.interfaces, directives = _ref34.directives, fields3 = _ref34.fields;
-      return join166([
+      return join167([
         "extend type",
         name,
-        wrap("implements ", join166(interfaces, " & ")),
-        join166(directives, " "),
+        wrap("implements ", join167(interfaces, " & ")),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     },
     InterfaceTypeExtension: function InterfaceTypeExtension(_ref35) {
       var name = _ref35.name, interfaces = _ref35.interfaces, directives = _ref35.directives, fields3 = _ref35.fields;
-      return join166([
+      return join167([
         "extend interface",
         name,
-        wrap("implements ", join166(interfaces, " & ")),
-        join166(directives, " "),
+        wrap("implements ", join167(interfaces, " & ")),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     },
     UnionTypeExtension: function UnionTypeExtension(_ref36) {
       var name = _ref36.name, directives = _ref36.directives, types = _ref36.types;
-      return join166([
+      return join167([
         "extend union",
         name,
-        join166(directives, " "),
-        types && types.length !== 0 ? "= " + join166(types, " | ") : ""
+        join167(directives, " "),
+        types && types.length !== 0 ? "= " + join167(types, " | ") : ""
       ], " ");
     },
     EnumTypeExtension: function EnumTypeExtension(_ref37) {
       var name = _ref37.name, directives = _ref37.directives, values = _ref37.values;
-      return join166([
+      return join167([
         "extend enum",
         name,
-        join166(directives, " "),
+        join167(directives, " "),
         block(values)
       ], " ");
     },
     InputObjectTypeExtension: function InputObjectTypeExtension(_ref38) {
       var name = _ref38.name, directives = _ref38.directives, fields3 = _ref38.fields;
-      return join166([
+      return join167([
         "extend input",
         name,
-        join166(directives, " "),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     }
   };
   function addDescription(cb) {
     return function(node) {
-      return join166([node.description, cb(node)], "\n");
+      return join167([node.description, cb(node)], "\n");
     };
   }
-  function join166(maybeArray) {
+  function join167(maybeArray) {
     var _maybeArray$filter$jo;
     var separator2 = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "";
     return (_maybeArray$filter$jo = maybeArray === null || maybeArray === void 0 ? void 0 : maybeArray.filter(function(x) {
@@ -24331,7 +24332,7 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     }).join(separator2)) !== null && _maybeArray$filter$jo !== void 0 ? _maybeArray$filter$jo : "";
   }
   function block(array2) {
-    return wrap("{\n", indent(join166(array2, "\n")), "\n}");
+    return wrap("{\n", indent(join167(array2, "\n")), "\n}");
   }
   function wrap(start, maybeString) {
     var end = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : "";
@@ -126109,8 +126110,8 @@ var waitForStart = async ({
   return { started, exitCode };
 };
 var relayChildOutput = async ({ logPath, offset }) => {
-  const written = await readFile17(logPath);
-  process.stderr.write(written.subarray(offset));
+  const written2 = await readFile17(logPath);
+  process.stderr.write(written2.subarray(offset));
 };
 var printStart = ({ runId, pid, relayMailbox }) => {
   console.log(`run ${runId} has started`);
@@ -128864,7 +128865,7 @@ var findPullRequest = async ({ branch, cwd, state }) => {
 
 // src/ship/internal/renderPullRequestBody.ts
 var renderPullRequestBody = ({ template, tokens }) => {
-  return template.replace(/\{([a-zA-Z0-9_-]+)\}/g, (written, name) => tokens[name] ?? written);
+  return template.replace(/\{([a-zA-Z0-9_-]+)\}/g, (written2, name) => tokens[name] ?? written2);
 };
 
 // src/ship/internal/openPullRequest.ts
@@ -130810,18 +130811,18 @@ var listWorkOrders = async ({ cwd }) => {
   const folder = await workOrdersDir({ cwd });
   const entries = await readdir13(folder, { withFileTypes: true }).catch(() => []);
   const found = [];
-  const unreadable2 = [];
+  const unreadable3 = [];
   for (const entry of entries.filter((candidate) => candidate.isDirectory())) {
     const read = await readWorkOrderStateFile({ statePath: join55(folder, entry.name, workOrderFileNames.record), name: entry.name });
     if ("error" in read || read.record === void 0) {
-      unreadable2.push(entry.name);
+      unreadable3.push(entry.name);
     } else {
       found.push({ name: entry.name, record: read.record });
     }
   }
   return {
     found: found.sort((first, second) => first.name.localeCompare(second.name)),
-    unreadable: unreadable2.sort((first, second) => first.localeCompare(second))
+    unreadable: unreadable3.sort((first, second) => first.localeCompare(second))
   };
 };
 
@@ -131609,9 +131610,9 @@ var restorePlanWorkspace = async ({ cwd, name, identifier, settings, titlePrefix
   if (refusal !== void 0) {
     return { restored: [], error: refusal.error };
   }
-  const written = await writeRestoredGeneration({ dir: await planWorkspaceDir({ cwd, name }), files: read.files });
-  if (written !== void 0) {
-    return { restored: [], error: written.error };
+  const written2 = await writeRestoredGeneration({ dir: await planWorkspaceDir({ cwd, name }), files: read.files });
+  if (written2 !== void 0) {
+    return { restored: [], error: written2.error };
   }
   const restored = read.files.map(({ title }) => title).sort();
   return { restored, markerSha256: sha256({ content: manifestRead.text }) };
@@ -132051,11 +132052,11 @@ var createRun = async ({
   });
   await mkdir13(runDir, { recursive: true });
   runDirectoryIndex.record({ cwd, runId: manifest.runId, runDir });
-  const written = await writeRunManifest({ cwd, manifest });
+  const written2 = await writeRunManifest({ cwd, manifest });
   if (parentRunId === void 0) {
     await writeRunOwner({ cwd, runId: manifest.runId, queueRunId });
   }
-  return written;
+  return written2;
 };
 
 // src/phases/initializeSequence.ts
@@ -132318,7 +132319,7 @@ var commitWorkOrderWork = async ({
 var commitMessage_default = '# Role: Commit Message Writer\n\nYou write the one-line summary, and when it is needed a short body, of one git\ncommit. The commit is read in the history far more often than the ticket that\nasked for the change, so the summary has to say what the change does to a\nreader who has never seen that ticket.\n\n## Inputs\n\nYour task message contains:\n\n- the ticket reference the engine puts in front of your summary;\n- the reason the work was done \u2014 a plan\'s title, a ticket\'s body, or a\n  ticket\'s title;\n- the list of staged files, with how many lines each one gained and lost;\n- the staged diff itself. A large diff can be cut at the engine\'s limit, and a\n  note directly after it says so.\n\nThat is the whole of your input: you are given no tools, and there is nothing\nto investigate.\n\n## Decide\n\n- The summary says what the staged change DOES \u2014 imperative, and lowercase\n  first, in the style of `print which configuration file a run read`.\n- The summary is one line of at most 64 characters.\n- Never restate the ticket reference: the engine adds it in front of your\n  summary.\n- Describe the diff. Never copy the words of the reason or of the ticket \u2014 they\n  say why the work was asked for, not what the change does.\n- The body is optional plain prose of at most 1200 characters. Write one only\n  when the change needs more than the summary to be understood. No headings, no\n  bullet trailers, and no `lightsout` lines \u2014 the engine writes those itself.\n- When the diff was cut, the file list is the complete record of what changed:\n  describe the change from both, and never claim the change is smaller than the\n  file list shows.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"summary": "print which configuration file a run read",\n	"body": "The run\'s first progress line now names the file its settings came from, so a run that read an unexpected file says so before it spends anything."\n}\n```\n';
 
 // src/agents/buildCommitMessageInvocation.ts
-var buildCommitMessageInvocation = ({ reference, context, stat: stat15, diff, truncated }) => {
+var buildCommitMessageInvocation = ({ reference, context, stat: stat16, diff, truncated }) => {
   const sections = [
     `# Ticket
 
@@ -132328,7 +132329,7 @@ ${reference}`,
 ${context}`,
     `# Files changed
 
-${stat15}`,
+${stat16}`,
     `# Staged change
 
 ${diff}`,
@@ -132353,15 +132354,15 @@ var buildRunCommitMessage = ({ subject, body, unit, runId }) => {
 // src/common/git/readGitStagedChange.ts
 var readGitStagedChange = async ({ cwd, maxDiffLength }) => {
   const diffCommand = "git -c core.quotePath=false diff --cached --no-color --no-ext-diff";
-  const [stat15, diff] = await Promise.all([
+  const [stat16, diff] = await Promise.all([
     runCommand({ command: `${diffCommand} --stat=1000 -- .`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0),
     runCommand({ command: `${diffCommand} -- .`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0)
   ]);
-  if (stat15?.exitCode !== 0 || diff?.exitCode !== 0) {
+  if (stat16?.exitCode !== 0 || diff?.exitCode !== 0) {
     return void 0;
   }
   const truncated = diff.stdout.length > maxDiffLength;
-  return { stat: stat15.stdout, diff: truncated ? diff.stdout.slice(0, maxDiffLength) : diff.stdout, truncated };
+  return { stat: stat16.stdout, diff: truncated ? diff.stdout.slice(0, maxDiffLength) : diff.stdout, truncated };
 };
 
 // src/contracts/work/CommitMessage.ts
@@ -133276,6 +133277,13 @@ ${text}`, "utf8");
   }
 };
 
+// src/common/constants/BuildMode.ts
+var BuildMode = {
+  Standard: "standard",
+  RenamesOnly: "renames-only",
+  MoveFoldersAndFiles: "move-folders-and-files"
+};
+
 // src/common/sourceFiles/isSnapshotFile.ts
 var snapshotFileName = /\.snap$/;
 var isSnapshotFile = ({ path }) => {
@@ -133355,8 +133363,8 @@ var checkTestResultsCapability = async ({ cwd, gates, results, onProgress }) => 
       continue;
     }
     for (const green2 of greens) {
-      const written = green2.testResultsDir === void 0 ? [] : await readTestResults({ cwd, dir: join73(cwd, green2.testResultsDir) });
-      if (written.length === 0) {
+      const written2 = green2.testResultsDir === void 0 ? [] : await readTestResults({ cwd, dir: join73(cwd, green2.testResultsDir) });
+      if (written2.length === 0) {
         silent.push(`- gate \`${gate}\` in group \`${green2.group}\` ran green and wrote no per-test results`);
       }
     }
@@ -134069,7 +134077,7 @@ var changedFilesExecutedError = ({ run, packagesDir }) => {
     changedFiles: sourceFiles({ run }).filter((file2) => !manifest.unreachableChangedFiles.includes(file2))
   });
 };
-var runVerificationGates = async ({ run, coverage, checkpoint, rows, final }) => {
+var runVerificationGates = async ({ run, coverage, checkpoint, rows, final, changedFilesExecuted }) => {
   const packagesDir = run.config["packages-dir"] ?? defaultPackagesDir;
   const hasRootChanges = run.current().changedFiles.some((file2) => packageOf({ file: file2, packagesDir }) === void 0);
   const collector = collectGateObservations();
@@ -134103,7 +134111,7 @@ var runVerificationGates = async ({ run, coverage, checkpoint, rows, final }) =>
     });
     if (acceptanceError !== void 0) {
       verdict = { error: acceptanceError, failedFamilies: ["acceptance-tests"], crashes: [], timeouts: [], coordination: void 0, failures: [] };
-    } else if (coverageRan) {
+    } else if (coverageRan && changedFilesExecuted !== false) {
       const executedError = await changedFilesExecutedError({ run, packagesDir });
       verdict = executedError === void 0 ? { error: void 0, failedFamilies: [], crashes: [], timeouts: [], coordination: void 0, failures: [] } : { error: executedError, failedFamilies: ["changed-files-executed"], crashes: [], timeouts: [], coordination: void 0, failures: [] };
     }
@@ -134187,8 +134195,8 @@ var writeGateBlockedLabel = async ({ settings, identifier }) => {
   if (ticket === void 0) {
     return `the '${gateBlockedLabel}' label could not be written: the tracker knows no ticket ${identifier}`;
   }
-  const written = await setTicketLabel3({ settings, ticketId: ticket.id, label: gateBlockedLabel, present: true });
-  return written === void 0 ? void 0 : `the '${gateBlockedLabel}' label could not be written to ${identifier}: ${written.error}`;
+  const written2 = await setTicketLabel3({ settings, ticketId: ticket.id, label: gateBlockedLabel, present: true });
+  return written2 === void 0 ? void 0 : `the '${gateBlockedLabel}' label could not be written to ${identifier}: ${written2.error}`;
 };
 
 // src/gates/gateHolds/internal/common/utils/writeGateHold.ts
@@ -134314,7 +134322,7 @@ var applyStandardsBaseline = async ({
   }
   const baseline = baselineRaw === void 0 ? void 0 : StandardsBaseline.safeParse(baselineJson);
   if (writeBaseline) {
-    const siteKeys = [...new Set(findings.map((finding3) => finding3.siteKey))];
+    const siteKeys = [...new Set(findings.map((finding6) => finding6.siteKey))];
     await writeFile14(baselinePath, `${JSON.stringify({ at: (/* @__PURE__ */ new Date()).toISOString(), path: path ?? ".", siteKeys }, void 0, "	")}
 `, "utf8");
     notes.push(
@@ -134323,7 +134331,7 @@ var applyStandardsBaseline = async ({
     return { reported: findings, notes };
   }
   if (baseline === void 0) {
-    if (findings.some((finding3) => finding3.severity === StandardsSeverity.Blocking)) {
+    if (findings.some((finding6) => finding6.severity === StandardsSeverity.Blocking)) {
       notes.push(`no baseline \u2014 \`lightsout standards-check --baseline\` accepts these findings as existing debt so future runs report only what's new`);
     }
     return { reported: findings, notes };
@@ -134333,8 +134341,8 @@ var applyStandardsBaseline = async ({
     return { reported: findings, notes };
   }
   const accepted = new Set(baseline.data.siteKeys);
-  const fresh = findings.filter((finding3) => !accepted.has(finding3.siteKey));
-  const currentSiteKeys = new Set(findings.map((finding3) => finding3.siteKey));
+  const fresh = findings.filter((finding6) => !accepted.has(finding6.siteKey));
+  const currentSiteKeys = new Set(findings.map((finding6) => finding6.siteKey));
   const resolved = baseline.data.siteKeys.filter((siteKey) => !currentSiteKeys.has(siteKey)).length;
   if (!all && findings.length > fresh.length) {
     notes.push(`${findings.length - fresh.length} baselined finding(s) suppressed (--all to include)`);
@@ -134347,7 +134355,7 @@ var applyStandardsBaseline = async ({
 
 // src/standardsCheck/buildDominantPathNote.ts
 var findDominantPath = ({ findings }) => {
-  const paths = findings.map((finding3) => finding3.files[0]?.path).filter((path) => path !== void 0);
+  const paths = findings.map((finding6) => finding6.files[0]?.path).filter((path) => path !== void 0);
   if (paths.length < 20) {
     return void 0;
   }
@@ -146451,11 +146459,11 @@ var runRuleCheck = async ({ rule, run, input, options }) => {
     throw new Error(`standards rule "${rule.name}" returned something that is not a list of findings: ${issues}`);
   }
   const prefix = `${rule.id}:`;
-  const misfiled = parsed.data.find((finding3) => !finding3.siteKey.startsWith(prefix));
+  const misfiled = parsed.data.find((finding6) => !finding6.siteKey.startsWith(prefix));
   if (misfiled !== void 0) {
     throw new Error(`standards rule "${rule.name}" wrote the site key "${misfiled.siteKey}", which does not start with its rule id "${prefix}"`);
   }
-  return parsed.data.map((finding3) => ({ ...finding3, siteKey: `${rule.name}:${finding3.siteKey.slice(prefix.length)}` }));
+  return parsed.data.map((finding6) => ({ ...finding6, siteKey: `${rule.name}:${finding6.siteKey.slice(prefix.length)}` }));
 };
 
 // src/standardsCheck/runPackageChecks.ts
@@ -146475,10 +146483,10 @@ var selectLiveRules = ({ groups }) => {
   }
   return [...live2.values()];
 };
-var gradeFindings = ({ rule, raw, groupOfFile }) => raw.flatMap((finding3) => {
-  const group = groupOfFile(finding3.files[0]?.path);
+var gradeFindings = ({ rule, raw, groupOfFile }) => raw.flatMap((finding6) => {
+  const group = groupOfFile(finding6.files[0]?.path);
   const grader = rule.graders.find((candidate) => candidate.group === group);
-  return grader === void 0 ? [] : [{ ...finding3, rule: rule.name, severity: grader.severity }];
+  return grader === void 0 ? [] : [{ ...finding6, rule: rule.name, severity: grader.severity }];
 });
 var runLiveRules = async ({
   live: live2,
@@ -147142,17 +147150,17 @@ var settleWrittenTests = async ({ context, assignments }) => {
   return { reports, errors, parked };
 };
 var writeLedgerTests = async ({ context, assignments }) => {
-  const written = await runLedgerWriters({ context, assignments });
-  const settled2 = written.parked || written.failures.length > 0 ? void 0 : await settleWrittenTests({ context, assignments });
-  const reports = [...written.reports, ...settled2?.reports ?? []];
+  const written2 = await runLedgerWriters({ context, assignments });
+  const settled2 = written2.parked || written2.failures.length > 0 ? void 0 : await settleWrittenTests({ context, assignments });
+  const reports = [...written2.reports, ...settled2?.reports ?? []];
   let failure;
-  if (written.parked || settled2?.parked) {
+  if (written2.parked || settled2?.parked) {
     failure = { status: RunStatus.PausedRateLimit, error: context.run.parkMessage() };
-  } else if (written.failures.length > 0) {
+  } else if (written2.failures.length > 0) {
     failure = {
-      status: written.terminated ? RunStatus.Escalated : RunStatus.Failed,
-      error: `${stepId}: ${written.failures.length} of ${assignments.length} writer(s) did not complete:
-${written.failures.join("\n")}`
+      status: written2.terminated ? RunStatus.Escalated : RunStatus.Failed,
+      error: `${stepId}: ${written2.failures.length} of ${assignments.length} writer(s) did not complete:
+${written2.failures.join("\n")}`
     };
   } else if (settled2 && settled2.errors.length > 0) {
     failure = {
@@ -147245,6 +147253,25 @@ Files already created or modified earlier in this run:
 
 ${changedFiles.map((file2) => `- ${file2}`).join("\n")}`;
 
+// src/agents/internal/common/utils/moveOnlySection.ts
+var moveOnlySection = ({ fileMoves = [], folderMoves = [] }) => listSection({
+  heading: "Move-folders-and-files phase",
+  intro: "This phase only moves folders and files. These are its moves:",
+  items: [...folderMoves.map(({ from, to }) => `- \`${from}/\` \u2192 \`${to}/\``), ...fileMoves.map(({ from, to }) => `- \`${from}\` \u2192 \`${to}\``)],
+  rules: [
+    "- Move each listed folder and file: its old path must be gone, and its files must arrive at the new path.",
+    "- Move every file in full. A file left at a listed old path, or left behind in a listed folder, is refused by name.",
+    "- A file that is not text, such as an image or another binary, may only be moved unchanged.",
+    "- Update the paths that point at moved files, wherever they are written in the repository, and change nothing else.",
+    "- Update a path where it is written: change the path text itself and keep every other character of the line as it was. A relative depth spelled as separate arguments, such as `path.join(__dirname, '..', 'x')`, cannot be updated in this mode; that change belongs in a standard phase.",
+    "- Write no tests.",
+    "- The standing brief's stop rule on the number of source files does not apply to this phase.",
+    "- In `changedFiles`, report the files you edited, plus one entry per moved folder rather than every file the folder carried.",
+    "- Before any gate runs, the engine pairs every removed file with an added file at its declared destination and refuses any file a declared move left at its old path. It also refuses any changed file that differs from the phase's starting commit in anything but the paths that point at moved files.",
+    "- That move check runs in place of the agent test-change review the standing brief describes: no agent reviews this phase's edits."
+  ]
+});
+
 // src/agents/internal/common/utils/renameOnlySection.ts
 var renameOnlySection = ({ renames = [] }) => listSection({
   heading: "Rename-only phase",
@@ -147290,6 +147317,15 @@ var featureExecutor_default = '# Role: Feature Executor\n\nYou are a principal s
 var defaultExecutorFileLimit = 50;
 
 // src/agents/buildFeatureExecutorInvocation.ts
+var modeSection = ({ planBuildMode }) => {
+  let section;
+  if (planBuildMode?.buildMode === BuildMode.RenamesOnly) {
+    section = renameOnlySection({ renames: planBuildMode.renames });
+  } else if (planBuildMode?.buildMode === BuildMode.MoveFoldersAndFiles) {
+    section = moveOnlySection({ fileMoves: planBuildMode.fileMoves, folderMoves: planBuildMode.folderMoves });
+  }
+  return section;
+};
 var buildFeatureExecutorInvocation = ({
   planContent,
   overviewContent,
@@ -147300,7 +147336,7 @@ var buildFeatureExecutorInvocation = ({
   fileLimit,
   acceptanceTests,
   selfCheckCommand: selfCheckCommand2,
-  renames
+  planBuildMode
 }) => {
   const roleSections = [applyPromptTokens({ text: featureExecutor_default, tokens: { fileLimit: fileLimit ?? defaultExecutorFileLimit } })];
   if (overviewContent) {
@@ -147315,9 +147351,9 @@ ${overviewContent}`
   roleSections.push(`# Plan
 
 ${planContent}`);
-  const renameOnly = renameOnlySection({ renames });
-  if (renameOnly) {
-    roleSections.push(renameOnly);
+  const mode = modeSection({ planBuildMode });
+  if (mode) {
+    roleSections.push(mode);
   }
   if (standards) {
     roleSections.push(`# Standards
@@ -147365,7 +147401,7 @@ ${errorContext}`
 };
 
 // src/pipeline/steps/buildSteps/internal/common/utils/buildFeatureFix.ts
-var buildFeatureFix = ({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, renames, selfCheckCommand: selfCheckCommand2 }) => ({ errorContext }) => buildFeatureExecutorInvocation({
+var buildFeatureFix = ({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand: selfCheckCommand2 }) => ({ errorContext }) => buildFeatureExecutorInvocation({
   planContent,
   overviewContent,
   standards,
@@ -147375,7 +147411,7 @@ var buildFeatureFix = ({ run, planContent, overviewContent, standards, fileLimit
   fileLimit,
   acceptanceTests: acceptanceTests(),
   selfCheckCommand: selfCheckCommand2,
-  renames
+  planBuildMode
 });
 
 // src/pipeline/internal/steps/formatStep.ts
@@ -147810,14 +147846,134 @@ var reviewTestChanges = async ({ run, checkpoint, planContent, overviewContent }
   return {};
 };
 
-// src/pipeline/renameCheck/checkRenameOnlyChanges.ts
+// src/common/constants/MoveDirection.ts
+var MoveDirection = {
+  Forward: "forward",
+  Back: "back"
+};
+
+// src/common/git/readGitHeadBlobIds.ts
+var readGitHeadBlobIds = async ({ cwd }) => {
+  const listing = await runCommand({ command: "git ls-tree -r -z HEAD", cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  let blobIds;
+  if (listing?.exitCode === 0) {
+    blobIds = /* @__PURE__ */ new Map();
+    for (const record3 of listing.stdout.split("\0").filter(Boolean)) {
+      const tab = record3.indexOf("	");
+      const [, type, id] = record3.slice(0, tab).split(" ");
+      if (type === "blob" && id !== void 0) {
+        blobIds.set(record3.slice(tab + 1), id);
+      }
+    }
+  }
+  return blobIds;
+};
+
+// src/common/git/readGitWorkingBlobIds.ts
+var readGitWorkingBlobIds = async ({ cwd, paths }) => {
+  const chunkSize = 200;
+  let blobIds = /* @__PURE__ */ new Map();
+  for (let start = 0; start < paths.length && blobIds !== void 0; start += chunkSize) {
+    const chunk = paths.slice(start, start + chunkSize);
+    const quoted = chunk.map((path) => quoteShellArgument({ argument: path })).join(" ");
+    const hashed = await runCommand({ command: `git hash-object -- ${quoted}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+    const ids = hashed?.exitCode === 0 ? hashed.stdout.split("\n").filter(Boolean) : [];
+    if (ids.length === chunk.length) {
+      for (const [index, path] of chunk.entries()) {
+        blobIds.set(path, ids[index] ?? "");
+      }
+    } else {
+      blobIds = void 0;
+    }
+  }
+  return blobIds;
+};
+
+// src/common/utils/findCoveringMove.ts
+var endsOf = ({ move, direction }) => direction === MoveDirection.Forward ? { source: move.from, target: move.to } : { source: move.to, target: move.from };
+var findCoveringMove = ({ path, fileMoves, folderMoves, direction }) => {
+  const fileMatch = fileMoves.map((move) => endsOf({ move, direction })).find(({ source }) => source === path);
+  const folderMatch = folderMoves.map((move) => endsOf({ move, direction })).filter(({ source }) => path.startsWith(`${source}/`)).sort((left, right) => right.source.length - left.source.length)[0];
+  let covering;
+  if (fileMatch !== void 0) {
+    covering = { ...fileMatch, isFolder: false };
+  } else if (folderMatch !== void 0) {
+    covering = { ...folderMatch, isFolder: true };
+  }
+  return covering;
+};
+
+// src/common/utils/mapPathThroughMoves.ts
+var mapPathThroughMoves = ({ path, fileMoves, folderMoves, direction }) => {
+  const covering = findCoveringMove({ path, fileMoves, folderMoves, direction });
+  return covering === void 0 ? path : `${covering.target}${path.slice(covering.source.length)}`;
+};
+
+// src/pipeline/internal/common/checkpointChanges/pairCheckpointChanges.ts
+var pairCheckpointChanges = ({
+  removed,
+  added,
+  modified,
+  destinationOf,
+  wording
+}) => {
+  const unclaimed = new Set(added);
+  const comparisons = modified.map((path) => ({ startPath: path, currentPath: path }));
+  const refusals = [];
+  for (const path of removed) {
+    const destination = destinationOf({ path });
+    if (destination === path) {
+      refusals.push(`- ${path}: removed, and ${wording.uncovered}`);
+    } else if (unclaimed.delete(destination)) {
+      comparisons.push({ startPath: path, currentPath: destination });
+    } else {
+      refusals.push(`- ${path}: removed, but nothing was added at its ${wording.destination} ${destination}`);
+    }
+  }
+  for (const path of unclaimed) {
+    refusals.push(`- ${path}: added, but ${wording.unclaimed}`);
+  }
+  return { comparisons, refusals };
+};
+
+// src/pipeline/internal/common/checkpointChanges/readCheckpointChanges.ts
+var removedSinceHead = async ({ run, paths }) => {
+  const tracked = [];
+  for (const path of paths) {
+    if (await readGitCommittedFile({ cwd: run.cwd, path: `./${path}` }) !== void 0) {
+      tracked.push(path);
+    }
+  }
+  return tracked;
+};
+var readCheckpointChanges = async ({ run }) => {
+  const changes = await readGitWorkingChanges({ cwd: run.cwd });
+  if (changes === void 0) {
+    return void 0;
+  }
+  const baselineDirty = new Set(run.current().baselineDirtyFiles);
+  const generated = run.config.generated ?? [];
+  const inScope = changes.filter(({ path }) => !baselineDirty.has(path) && !isGeneratedPath({ path, generated }));
+  const pathsOf = ({ kind }) => inScope.filter((change) => change.kind === kind).map((change) => change.path);
+  return {
+    removed: await removedSinceHead({ run, paths: pathsOf({ kind: GitChangeKind.Removed }) }),
+    added: pathsOf({ kind: GitChangeKind.Added }),
+    modified: pathsOf({ kind: GitChangeKind.Modified })
+  };
+};
+
+// src/pipeline/internal/common/checkpointChanges/readComparisonSides.ts
 import { readFile as readFile37 } from "node:fs/promises";
 import { join as join97 } from "node:path";
+var readComparisonSides = async ({ run, comparison }) => {
+  const { startPath, currentPath } = comparison;
+  const start = await readGitCommittedFile({ cwd: run.cwd, path: `./${startPath}` }) ?? "";
+  const current = await readFile37(join97(run.cwd, currentPath), "utf8").catch(() => void 0) ?? "";
+  const label2 = startPath === currentPath ? currentPath : `${currentPath} (moved from ${startPath})`;
+  return { start, current, label: label2 };
+};
 
-// src/pipeline/renameCheck/internal/common/utils/applyRenames.ts
-var applyRenames = ({ text, renames }) => renames.reduce((renamed, { from, to }) => renamed.replaceAll(from, to), text);
-
-// src/pipeline/renameCheck/internal/common/utils/countTokens.ts
+// src/pipeline/internal/common/tokens/countTokens.ts
 var countTokens = ({ text }) => {
   const tokens = text.match(/[\p{L}\p{N}_$]+|[^\s\p{L}\p{N}_$]/gu) ?? [];
   const counts = /* @__PURE__ */ new Map();
@@ -147830,70 +147986,154 @@ var countTokens = ({ text }) => {
   return counts;
 };
 
-// src/pipeline/renameCheck/checkRenameOnlyChanges.ts
-var describeSurplus = ({ more, less }) => {
+// src/pipeline/internal/common/tokens/describeTokenSurplus.ts
+var describeTokenSurplus = ({ more, less }) => {
   const listedTokenLimit = 20;
   const surplus = [...more].flatMap(([token, count2]) => count2 > (less.get(token) ?? 0) ? [`\`${token}\` \xD7${count2 - (less.get(token) ?? 0)}`] : []);
   const listed = surplus.slice(0, listedTokenLimit).join(", ");
   return surplus.length > listedTokenLimit ? `${listed} and ${surplus.length - listedTokenLimit} more` : listed;
 };
-var pairChanges = ({ removed, added, modified, renames }) => {
-  const unclaimed = new Set(added);
-  const comparisons = modified.map((path) => ({ startPath: path, currentPath: path }));
-  const refusals = [];
-  for (const path of removed) {
-    const destination = applyRenames({ text: path, renames });
-    if (destination === path) {
-      refusals.push(`- ${path}: removed, and no declared rename applies to its path`);
-    } else if (unclaimed.delete(destination)) {
-      comparisons.push({ startPath: path, currentPath: destination });
-    } else {
-      refusals.push(`- ${path}: removed, but nothing was added at its renamed path ${destination}`);
+
+// src/pipeline/moveCheck/internal/common/utils/countPathTokens.ts
+var countPathTokens = ({ text, standalonePaths }) => {
+  const pathRuns = [];
+  const rest = text.replace(/[\p{L}\p{N}_$@#~./-]+/gu, (run) => {
+    const isPathRun = run.includes("/") && /[\p{L}\p{N}]/u.test(run) || standalonePaths.has(run);
+    if (isPathRun) {
+      pathRuns.push(run);
+    }
+    return isPathRun ? " " : run;
+  });
+  return { inside: countTokens({ text: pathRuns.join("\n") }), outside: countTokens({ text: rest }) };
+};
+
+// src/pipeline/moveCheck/checkMoveOnlyChanges.ts
+var leaveOutCarriedAlong = ({ run, moves, removed, added }) => {
+  const baselineDirty = new Set(run.current().baselineDirtyFiles);
+  const generated = run.config.generated ?? [];
+  const mapped = ({ path, direction }) => mapPathThroughMoves({ path, ...moves, direction });
+  return {
+    removed: removed.filter((path) => !isGeneratedPath({ path: mapped({ path, direction: MoveDirection.Forward }), generated })),
+    added: added.filter((path) => {
+      const source = mapped({ path, direction: MoveDirection.Back });
+      return !baselineDirty.has(source) && !isGeneratedPath({ path: source, generated });
+    })
+  };
+};
+var coveringMoveLabel = ({ path, moves }) => {
+  const move = findCoveringMove({ path, ...moves, direction: MoveDirection.Forward });
+  const slash = move?.isFolder === true ? "/" : "";
+  return move === void 0 ? void 0 : `${move.source}${slash} \u2192 ${move.target}${slash}`;
+};
+var refuseLeftBehind = ({ run, moves, headBlobIds, removed }) => {
+  const baselineDirty = new Set(run.current().baselineDirtyFiles);
+  const generated = run.config.generated ?? [];
+  const removedPaths = new Set(removed);
+  return [...headBlobIds.keys()].flatMap((path) => {
+    const move = coveringMoveLabel({ path, moves });
+    const leftBehind = move !== void 0 && !removedPaths.has(path) && !baselineDirty.has(path) && !isGeneratedPath({ path, generated });
+    return leftBehind ? [`- ${path}: left at its old path by the declared move ${move}`] : [];
+  });
+};
+var buildContentBound = ({ moves }) => {
+  const paths = [...moves.fileMoves, ...moves.folderMoves].flatMap(({ from, to }) => [from, to]);
+  const allowedTokens = /* @__PURE__ */ new Set(["/", ".", "-", ...paths.flatMap((path) => [...countTokens({ text: path }).keys()])]);
+  const standalonePaths = new Set(paths.flatMap((path) => [path, path.split("/").at(-1) ?? path]));
+  return { allowedTokens, standalonePaths };
+};
+var withoutAllowed = ({ counts, allowedTokens }) => new Map([...counts].filter(([token]) => !allowedTokens.has(token)));
+var compareContent = async ({ run, comparison, bound }) => {
+  const { start, current, label: label2 } = await readComparisonSides({ run, comparison });
+  let refusal;
+  if (start.includes("\uFFFD") || current.includes("\uFFFD")) {
+    refusal = `- ${label2}: its content is not UTF-8 text, and a file that is not text may only be moved unchanged`;
+  } else {
+    const before = countPathTokens({ text: start, standalonePaths: bound.standalonePaths });
+    const after = countPathTokens({ text: current, standalonePaths: bound.standalonePaths });
+    const insideBefore = withoutAllowed({ counts: before.inside, allowedTokens: bound.allowedTokens });
+    const insideAfter = withoutAllowed({ counts: after.inside, allowedTokens: bound.allowedTokens });
+    const describeSurpluses = ({ more, less }) => more.map((counts, index) => describeTokenSurplus({ more: counts, less: less[index] ?? /* @__PURE__ */ new Map() })).filter(Boolean).join(", ");
+    const addedTokens = describeSurpluses({ more: [after.outside, insideAfter], less: [before.outside, insideBefore] });
+    const removedTokens = describeSurpluses({ more: [before.outside, insideBefore], less: [after.outside, insideAfter] });
+    if (addedTokens !== "" || removedTokens !== "") {
+      refusal = `- ${label2}: added ${addedTokens || "nothing"}; removed ${removedTokens || "nothing"}`;
     }
   }
-  for (const path of unclaimed) {
-    refusals.push(`- ${path}: added, but no removed file renames to it`);
-  }
-  return { comparisons, refusals };
+  return refusal;
 };
-var compareContent = async ({ run, comparison, renames }) => {
-  const { startPath, currentPath } = comparison;
-  const start = await readGitCommittedFile({ cwd: run.cwd, path: `./${startPath}` }) ?? "";
-  const current = await readFile37(join97(run.cwd, currentPath), "utf8").catch(() => void 0) ?? "";
+var unreadable2 = ({ checkpoint, what }) => ({
+  error: `${checkpoint}: the move check could not read ${what} from git, so nothing is proven; no gate ran.`
+});
+var checkMoveOnlyChanges = async ({ run, checkpoint, fileMoves, folderMoves }) => {
+  const moves = { fileMoves, folderMoves };
+  const changes = await readCheckpointChanges({ run });
+  if (changes === void 0) {
+    return unreadable2({ checkpoint, what: "the working changes" });
+  }
+  const headBlobIds = await readGitHeadBlobIds({ cwd: run.cwd });
+  if (headBlobIds === void 0) {
+    return unreadable2({ checkpoint, what: "the phase's starting commit" });
+  }
+  const { removed, added } = leaveOutCarriedAlong({ run, moves, removed: changes.removed, added: changes.added });
+  run.progress(
+    `${checkpoint}: move check \u2014 comparing ${removed.length + added.length + changes.modified.length} changed file(s) against the phase's starting commit`
+  );
+  const { comparisons, refusals } = pairCheckpointChanges({
+    removed,
+    added,
+    modified: changes.modified,
+    destinationOf: ({ path }) => mapPathThroughMoves({ path, ...moves, direction: MoveDirection.Forward }),
+    wording: { uncovered: "no declared move covers its path", destination: "moved path", unclaimed: "no removed file moves to it" }
+  });
+  refusals.push(...refuseLeftBehind({ run, moves, headBlobIds, removed: changes.removed }));
+  const workingBlobIds = await readGitWorkingBlobIds({ cwd: run.cwd, paths: comparisons.map(({ currentPath }) => currentPath) });
+  if (workingBlobIds === void 0) {
+    return unreadable2({ checkpoint, what: "the changed files" });
+  }
+  const bound = buildContentBound({ moves });
+  const changed = comparisons.filter(({ startPath, currentPath }) => headBlobIds.get(startPath) !== workingBlobIds.get(currentPath));
+  for (const comparison of changed) {
+    const refusal = await compareContent({ run, comparison, bound });
+    if (refusal !== void 0) {
+      refusals.push(refusal);
+    }
+  }
+  if (refusals.length === 0) {
+    run.progress(`${checkpoint}: move check \u2014 every changed file holds only the declared moves`);
+  }
+  return refusals.length === 0 ? {} : { error: [`${checkpoint}: the move check refused this checkpoint's changes; no gate ran.`, ...refusals].join("\n") };
+};
+
+// src/pipeline/renameCheck/internal/common/utils/applyRenames.ts
+var applyRenames = ({ text, renames }) => renames.reduce((renamed, { from, to }) => renamed.replaceAll(from, to), text);
+
+// src/pipeline/renameCheck/checkRenameOnlyChanges.ts
+var compareContent2 = async ({ run, comparison, renames }) => {
+  const { start, current, label: label2 } = await readComparisonSides({ run, comparison });
   const before = countTokens({ text: applyRenames({ text: start, renames }) });
   const after = countTokens({ text: applyRenames({ text: current, renames }) });
-  const addedTokens = describeSurplus({ more: after, less: before });
-  const removedTokens = describeSurplus({ more: before, less: after });
-  const label2 = startPath === currentPath ? currentPath : `${currentPath} (moved from ${startPath})`;
+  const addedTokens = describeTokenSurplus({ more: after, less: before });
+  const removedTokens = describeTokenSurplus({ more: before, less: after });
   return addedTokens === "" && removedTokens === "" ? void 0 : `- ${label2}: added ${addedTokens || "nothing"}; removed ${removedTokens || "nothing"}`;
 };
-var removedSinceHead = async ({ run, paths }) => {
-  const tracked = [];
-  for (const path of paths) {
-    if (await readGitCommittedFile({ cwd: run.cwd, path: `./${path}` }) !== void 0) {
-      tracked.push(path);
-    }
-  }
-  return tracked;
-};
 var checkRenameOnlyChanges = async ({ run, checkpoint, renames }) => {
-  const changes = await readGitWorkingChanges({ cwd: run.cwd });
+  const changes = await readCheckpointChanges({ run });
   if (changes === void 0) {
     return { error: `${checkpoint}: the rename check could not read the working changes from git, so nothing is proven; no gate ran.` };
   }
-  const baselineDirty = new Set(run.current().baselineDirtyFiles);
-  const generated = run.config.generated ?? [];
-  const inScope = changes.filter(({ path }) => !baselineDirty.has(path) && !isGeneratedPath({ path, generated }));
-  const pathsOf = ({ kind }) => inScope.filter((change) => change.kind === kind).map((change) => change.path);
-  const removed = await removedSinceHead({ run, paths: pathsOf({ kind: GitChangeKind.Removed }) });
-  const added = pathsOf({ kind: GitChangeKind.Added });
-  const modified = pathsOf({ kind: GitChangeKind.Modified });
+  const { removed, added, modified } = changes;
   run.progress(
     `${checkpoint}: rename check \u2014 comparing ${removed.length + added.length + modified.length} changed file(s) against the phase's starting commit`
   );
-  const { comparisons, refusals } = pairChanges({ removed, added, modified, renames });
+  const { comparisons, refusals } = pairCheckpointChanges({
+    removed,
+    added,
+    modified,
+    destinationOf: ({ path }) => applyRenames({ text: path, renames }),
+    wording: { uncovered: "no declared rename applies to its path", destination: "renamed path", unclaimed: "no removed file renames to it" }
+  });
   for (const comparison of comparisons) {
-    const refusal = await compareContent({ run, comparison, renames });
+    const refusal = await compareContent2({ run, comparison, renames });
     if (refusal !== void 0) {
       refusals.push(refusal);
     }
@@ -147909,18 +148149,18 @@ var approveRunnerSnapshots = async ({ run }) => {
   const manifest = run.current();
   const seen = [...await readGitChangedFiles({ cwd: run.cwd }) ?? [], ...manifest.changedFiles];
   const snapshots = [...new Set(seen)].filter((path) => isSnapshotFile({ path }) && !manifest.approvedTests.some((record3) => record3.path === path));
-  const written = [];
+  const written2 = [];
   for (const path of snapshots) {
     if (await readApprovedTest({ run, path }) === void 0) {
-      written.push(path);
+      written2.push(path);
     }
   }
-  if (written.length === 0) {
+  if (written2.length === 0) {
     return 0;
   }
-  await run.update({ patch: { approvedTests: await approveTestFiles({ run, paths: written }) } });
-  run.progress(`${manifest.currentStep ?? "verify"}: ${written.length} snapshot file(s) the gate run wrote were approved as the runner's own output`);
-  return written.length;
+  await run.update({ patch: { approvedTests: await approveTestFiles({ run, paths: written2 }) } });
+  run.progress(`${manifest.currentStep ?? "verify"}: ${written2.length} snapshot file(s) the gate run wrote were approved as the runner's own output`);
+  return written2.length;
 };
 
 // src/pipeline/steps/verify/reviewAndVerify.ts
@@ -147929,19 +148169,26 @@ var judgeChanges = async ({
   id,
   planContent,
   overviewContent,
-  renames
+  planBuildMode
 }) => {
   let error51;
   let family;
   let rateLimited = false;
-  if (renames.length > 0) {
-    ({ error: error51 } = await checkRenameOnlyChanges({ run, checkpoint: id, renames }));
-    family = "rename-check";
-  } else {
-    const review = await reviewTestChanges({ run, checkpoint: id, planContent, overviewContent });
-    error51 = review.error;
-    family = "test-review";
-    rateLimited = review.rateLimited === true;
+  switch (planBuildMode.buildMode) {
+    case BuildMode.RenamesOnly:
+      ({ error: error51 } = await checkRenameOnlyChanges({ run, checkpoint: id, renames: planBuildMode.renames }));
+      family = "rename-check";
+      break;
+    case BuildMode.MoveFoldersAndFiles:
+      ({ error: error51 } = await checkMoveOnlyChanges({ run, checkpoint: id, fileMoves: planBuildMode.fileMoves, folderMoves: planBuildMode.folderMoves }));
+      family = "move-check";
+      break;
+    default: {
+      const review = await reviewTestChanges({ run, checkpoint: id, planContent, overviewContent });
+      error51 = review.error;
+      family = "test-review";
+      rateLimited = review.rateLimited === true;
+    }
   }
   return { error: error51, family, rateLimited };
 };
@@ -147953,9 +148200,9 @@ var reviewAndVerify = async ({
   planContent,
   overviewContent,
   acceptanceTests,
-  renames
+  planBuildMode
 }) => {
-  const judgment = await judgeChanges({ run, id, planContent, overviewContent, renames });
+  const judgment = await judgeChanges({ run, id, planContent, overviewContent, planBuildMode });
   if (judgment.rateLimited) {
     return { rateLimited: true };
   }
@@ -147969,7 +148216,14 @@ var reviewAndVerify = async ({
       failures: []
     };
   }
-  const result = await runVerificationGates({ run, coverage, checkpoint: id, rows: acceptanceTests(), final });
+  const result = await runVerificationGates({
+    run,
+    coverage,
+    checkpoint: id,
+    rows: acceptanceTests(),
+    final,
+    changedFilesExecuted: planBuildMode.buildMode !== BuildMode.MoveFoldersAndFiles
+  });
   await approveRunnerSnapshots({ run });
   return result;
 };
@@ -147985,7 +148239,7 @@ var verificationOf = ({ record: record3 }) => record3.verification ?? {
 
 // src/pipeline/steps/verifyStep/internal/common/utils/formatAndVerify.ts
 var formatAndVerify = async ({ context, record: record3 }) => {
-  const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames } = context;
+  const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode } = context;
   const failures = [];
   const error51 = await runFormatter({
     cwd: run.cwd,
@@ -147999,7 +148253,7 @@ var formatAndVerify = async ({ context, record: record3 }) => {
   if (error51 !== void 0) {
     return { record: next, result: { error: error51, failedFamilies: ["format"], crashes: [], timeouts: [], coordination: void 0, failures, gates: [] } };
   }
-  const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames });
+  const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode });
   if ("rateLimited" in result) {
     return { parked: await run.stop({ record: next, status: RunStatus.PausedRateLimit, error: run.parkMessage() }) };
   }
@@ -148192,8 +148446,8 @@ ${ruling.guidance}`,
 
 // src/pipeline/steps/verifyStep/verifyStep.ts
 var enterVerification = async ({ context, record: record3 }) => {
-  const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames } = context;
-  const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames });
+  const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode } = context;
+  const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode });
   if ("rateLimited" in result) {
     return { parked: await run.stop({ record: record3, status: RunStatus.PausedRateLimit, error: run.parkMessage() }) };
   }
@@ -148253,10 +148507,10 @@ var verifyStep = ({
   coverage,
   acceptanceTests,
   final,
-  renames,
+  planBuildMode,
   buildFix
 }) => {
-  const context = { run, gitPrefix, planContent, overviewContent, id, coverage, acceptanceTests, final, renames, buildFix };
+  const context = { run, gitPrefix, planContent, overviewContent, id, coverage, acceptanceTests, final, planBuildMode, buildFix };
   return () => runVerificationStep({ context });
 };
 
@@ -148269,7 +148523,7 @@ var buildImplementSteps = ({
   standards,
   fileLimit,
   acceptanceTests,
-  renames,
+  planBuildMode,
   selfCheckCommand: selfCheckCommand2,
   buildFix
 }) => [
@@ -148288,7 +148542,7 @@ var buildImplementSteps = ({
         fileLimit,
         acceptanceTests: acceptanceTests(),
         selfCheckCommand: selfCheckCommand2,
-        renames
+        planBuildMode
       })
     })
   },
@@ -148302,7 +148556,7 @@ var buildImplementSteps = ({
       overviewContent,
       id: "verify-implement",
       acceptanceTests,
-      renames,
+      planBuildMode,
       buildFix
     })
   }
@@ -148341,7 +148595,7 @@ var RefactorScope = {
 var formatFindingSite = ({ file: file2 }) => `${file2.path}${file2.startLine ? `:${file2.startLine}${file2.endLine && file2.endLine !== file2.startLine ? `-${file2.endLine}` : ""}` : ""}`;
 
 // src/common/findings/formatFindingText.ts
-var formatFindingText = ({ finding: finding3 }) => finding3.guidance ? `${finding3.detail} \u2014 ${finding3.guidance}` : finding3.detail;
+var formatFindingText = ({ finding: finding6 }) => finding6.guidance ? `${finding6.detail} \u2014 ${finding6.guidance}` : finding6.detail;
 
 // src/agents/buildRefactorExecutorInvocation.ts
 var advisoryOutcomesSection = [
@@ -148353,11 +148607,11 @@ var advisoryOutcomesSection = [
 ].join("\n\n");
 var scopePrompt = ({ scope }) => scope === RefactorScope.Standalone ? refactorScopeStandalone_default : refactorScopeFeature_default;
 var worklistHeading = ({ scope }) => scope === RefactorScope.Standalone ? "# Files the findings name" : "# Changed files to review";
-var findingLine = (finding3) => {
-  const where = finding3.files.map((file2) => formatFindingSite({ file: file2 })).join(" \u2194 ");
-  return `- [${finding3.rule}] ${where} \u2014 ${formatFindingText({ finding: finding3 })}`;
+var findingLine = (finding6) => {
+  const where = finding6.files.map((file2) => formatFindingSite({ file: file2 })).join(" \u2194 ");
+  return `- [${finding6.rule}] ${where} \u2014 ${formatFindingText({ finding: finding6 })}`;
 };
-var advisoryLine = (finding3) => `${findingLine(finding3)} (siteKey: \`${finding3.siteKey}\`)`;
+var advisoryLine = (finding6) => `${findingLine(finding6)} (siteKey: \`${finding6.siteKey}\`)`;
 var buildRefactorExecutorInvocation = ({
   scope,
   planContent,
@@ -148456,9 +148710,9 @@ var buildCleanupRecord = ({ context, state }) => ({
 
 // src/pipeline/steps/refactorStep/internal/common/utils/describePersistingFindings.ts
 var describePersistingFindings = ({ findings, report: report2, roundsUsed }) => {
-  const findingLines = findings.map((finding3) => {
-    const where = finding3.files.map((file2) => formatFindingSite({ file: file2 })).join(", ");
-    return `- ${finding3.siteKey} \u2014 ${formatFindingText({ finding: finding3 })}
+  const findingLines = findings.map((finding6) => {
+    const where = finding6.files.map((file2) => formatFindingSite({ file: file2 })).join(", ");
+    return `- ${finding6.siteKey} \u2014 ${formatFindingText({ finding: finding6 })}
   at ${where}`;
   });
   const rationale = (report2?.friction ?? []).map((entry) => `- [${entry.area}] ${entry.detail}`);
@@ -148757,7 +149011,7 @@ var runExecutorPass = async ({
 // src/pipeline/steps/refactorStep/internal/common/utils/runCleanupRound.ts
 var sameEdits = ({ before, after }) => before.length === after.length && [...before].sort().join("\n") === [...after].sort().join("\n");
 var foldDecline = ({ context, state, findings, round }) => {
-  const declined = findings.map((finding3) => finding3.siteKey).sort().join("\n");
+  const declined = findings.map((finding6) => finding6.siteKey).sort().join("\n");
   if (declined === state.lastDeclined) {
     state.endReason = CleanupEndReason.DeclinedTwice;
     context.run.progress(`refactor round ${round}: the cleanup agent declined the same work list twice \u2014 no further round is bought`);
@@ -148802,17 +149056,17 @@ var attributeStandardsFindings = ({ live: live2, baseline }) => {
   if (baseline === void 0) {
     return { ...attributed, uncertain: [...live2] };
   }
-  const before = new Map(baseline.map((finding3) => [finding3.siteKey, finding3]));
-  for (const finding3 of live2) {
-    const previous = before.get(finding3.siteKey);
+  const before = new Map(baseline.map((finding6) => [finding6.siteKey, finding6]));
+  for (const finding6 of live2) {
+    const previous = before.get(finding6.siteKey);
     if (previous === void 0) {
-      attributed.introduced.push(finding3);
-    } else if (finding3.measure === void 0 || previous.measure === void 0) {
-      attributed.uncertain.push(finding3);
-    } else if (finding3.measure > previous.measure) {
-      attributed.worsened.push(finding3);
+      attributed.introduced.push(finding6);
+    } else if (finding6.measure === void 0 || previous.measure === void 0) {
+      attributed.uncertain.push(finding6);
+    } else if (finding6.measure > previous.measure) {
+      attributed.worsened.push(finding6);
     } else {
-      attributed.inherited.push(finding3);
+      attributed.inherited.push(finding6);
     }
   }
   return attributed;
@@ -148822,10 +149076,10 @@ var attributeStandardsFindings = ({ live: live2, baseline }) => {
 var selectStandardsFindings = ({ findings, changedFiles }) => {
   const changed = new Set(changedFiles);
   const isChanged = (path) => changed.has(path) || changedFiles.some((file2) => file2.startsWith(`${path}/`));
-  const touchesChanged = (finding3) => finding3.files.some((file2) => isChanged(file2.path));
+  const touchesChanged = (finding6) => finding6.files.some((file2) => isChanged(file2.path));
   return {
-    workList: findings.filter((finding3) => finding3.severity === StandardsSeverity.Blocking && touchesChanged(finding3)),
-    advisories: findings.filter((finding3) => finding3.severity === StandardsSeverity.Advisory && touchesChanged(finding3))
+    workList: findings.filter((finding6) => finding6.severity === StandardsSeverity.Blocking && touchesChanged(finding6)),
+    advisories: findings.filter((finding6) => finding6.severity === StandardsSeverity.Advisory && touchesChanged(finding6))
   };
 };
 
@@ -148839,8 +149093,8 @@ var standardsWorkList = async ({
   const attributed = attributeStandardsFindings({ live: [...scoped.workList, ...scoped.advisories], baseline });
   const qualifying = [...attributed.introduced, ...attributed.worsened];
   return {
-    workList: qualifying.filter((finding3) => finding3.severity === StandardsSeverity.Blocking),
-    advisories: qualifying.filter((finding3) => finding3.severity === StandardsSeverity.Advisory),
+    workList: qualifying.filter((finding6) => finding6.severity === StandardsSeverity.Blocking),
+    advisories: qualifying.filter((finding6) => finding6.severity === StandardsSeverity.Advisory),
     inherited: attributed.inherited,
     uncertain: attributed.uncertain
   };
@@ -148951,7 +149205,7 @@ var buildRefactorSteps = ({
   standards,
   skipRefactor,
   acceptanceTests,
-  renames
+  planBuildMode
 }) => skipRefactor ? [] : [
   {
     id: "refactor",
@@ -148973,7 +149227,7 @@ var buildRefactorSteps = ({
       // verification — and the last one is where every acceptance test
       // must be proven against the finished tree.
       final: true,
-      renames,
+      planBuildMode,
       buildFix: ({ errorContext }) => buildRefactorExecutorInvocation({
         scope: RefactorScope.Feature,
         planContent,
@@ -149369,14 +149623,17 @@ var buildTestSteps = ({
   testStandards,
   acceptanceTests,
   final,
-  renames,
+  planBuildMode,
   featureFix
 }) => [
   {
     id: "write-tests",
     skip: () => {
-      if (renames.length > 0) {
+      if (planBuildMode.buildMode === BuildMode.RenamesOnly) {
         return "the plan is rename-only, and a rename-only phase writes no tests";
+      }
+      if (planBuildMode.buildMode === BuildMode.MoveFoldersAndFiles) {
+        return "the plan is move-folders-and-files, and a move-folders-and-files phase writes no tests";
       }
       return sourceFiles({ run }).length === 0 ? "no eligible source files" : void 0;
     },
@@ -149394,8 +149651,8 @@ var buildTestSteps = ({
       coverage: true,
       acceptanceTests,
       final,
-      renames,
-      buildFix: renames.length > 0 ? featureFix : ({ errorContext }) => buildUnitTestWriterInvocation({
+      planBuildMode,
+      buildFix: planBuildMode.buildMode !== BuildMode.Standard ? featureFix : ({ errorContext }) => buildUnitTestWriterInvocation({
         planContent,
         subjects: run.current().testSubjects,
         mustExecute: sourceFiles({ run }).filter(
@@ -149408,6 +149665,18 @@ var buildTestSteps = ({
     })
   }
 ];
+
+// src/pipeline/steps/buildSteps/internal/common/utils/getLedgerMovePaths.ts
+var getLedgerMovePaths = ({ movePaths, folderMoves, testFiles }) => {
+  const pairs = [...movePaths];
+  for (const testFile of new Set(testFiles)) {
+    const source = mapPathThroughMoves({ path: testFile, fileMoves: [], folderMoves, direction: MoveDirection.Back });
+    if (source !== testFile && !pairs.some(({ to }) => to === testFile)) {
+      pairs.push({ from: source, to: testFile });
+    }
+  }
+  return pairs.filter(({ to }) => isTestSideFile({ path: to }));
+};
 
 // src/plan/internal/common/constants/generatedPlanRegions.ts
 var generatedPlanRegions = {
@@ -149524,18 +149793,26 @@ var pathFromLine = ({ line }) => {
 };
 
 // src/plan/internal/common/paths/pathPairFromLine.ts
+var isFolderToken = ({ token }) => token.endsWith("/") && !token.startsWith("/") && token.slice(0, -1).split("/").every((segment) => segment !== "" && segment !== "." && segment !== "..");
 var pathPairFromLine = ({ line }) => {
   const paths = [];
   for (const match of line.matchAll(/`([^`]+)`/g)) {
     const token = match[1].trim().split(/\s+/)[0];
     if (isPathToken({ token })) {
-      paths.push(token);
+      paths.push({ path: token, folder: false });
+    } else if (isFolderToken({ token })) {
+      paths.push({ path: token.slice(0, -1), folder: true });
     }
     if (paths.length === 2) {
       break;
     }
   }
-  return paths.length === 2 ? { from: paths[0], to: paths[1] } : void 0;
+  const [from, to] = paths;
+  let pair;
+  if (from !== void 0 && to !== void 0 && from.folder === to.folder) {
+    pair = from.folder ? { from: from.path, to: to.path, folder: true } : { from: from.path, to: to.path };
+  }
+  return pair;
 };
 
 // src/plan/internal/planCreatePaths.ts
@@ -149612,6 +149889,7 @@ var commandsFromVerification = ({ sectionLines }) => {
 };
 var movesFromPlan = ({ lines }) => {
   const moves = [];
+  const folderMoves = [];
   const malformedLines = [];
   let inMoveSection = false;
   for (const [index, line] of lines.entries()) {
@@ -149624,13 +149902,15 @@ var movesFromPlan = ({ lines }) => {
       continue;
     }
     const pair = pathPairFromLine({ line });
-    if (pair) {
-      moves.push(pair);
-    } else {
+    if (pair === void 0) {
       malformedLines.push(index + 1);
+    } else if (pair.folder) {
+      folderMoves.push({ from: pair.from, to: pair.to });
+    } else {
+      moves.push(pair);
     }
   }
-  return { moves, malformedLines };
+  return { moves, folderMoves, malformedLines };
 };
 var generatedRangesFrom = ({ parsed }) => {
   const ranges = /* @__PURE__ */ new Map();
@@ -149651,6 +149931,16 @@ var fileBudgetFrom = ({ sectionLines }) => {
   }
   return void 0;
 };
+var buildModeFrom = ({ sectionLines, renames }) => {
+  const declared = (sectionLines ?? []).find((line) => line.trim() !== "")?.trim().replace(/^`(.*)`$/, "$1");
+  let buildMode = BuildMode.Standard;
+  if (declared === BuildMode.MoveFoldersAndFiles) {
+    buildMode = BuildMode.MoveFoldersAndFiles;
+  } else if (renames.length > 0) {
+    buildMode = BuildMode.RenamesOnly;
+  }
+  return buildMode;
+};
 var parsePlan = ({ content, base }) => {
   const lines = content.split("\n");
   const parsed = parseSections({ lines });
@@ -149665,7 +149955,7 @@ var parsePlan = ({ content, base }) => {
   const title = lines.find((line) => /^#\s+/.test(line))?.replace(/^#\s+/, "").trim() ?? "";
   const variant = base === "overview.md" || sections.has("Phases") && sections.has("Cross-Phase Dependencies") || /—\s*Overview\s*$/.test(title) ? PlanFileKind.Overview : PlanFileKind.Implementable;
   const isSubheading = (line) => /^###\s+/.test(line);
-  const { moves, malformedLines } = movesFromPlan({ lines });
+  const { moves, folderMoves, malformedLines } = movesFromPlan({ lines });
   return {
     base,
     title,
@@ -149676,11 +149966,13 @@ var parsePlan = ({ content, base }) => {
     earlierPhaseModifyPaths: pathsFromLines({ sectionLines: sections.get("Files to Modify from Earlier Phases"), lineMatches: isSubheading }),
     deletePaths: pathsFromLines({ sectionLines: sections.get("Files to Delete"), lineMatches: isSubheading }),
     movePaths: moves,
+    folderMoves,
     malformedMoveLines: malformedLines,
     generatedRegionRanges,
     decisionLogRange: generatedRegionRanges.get(generatedPlanRegions.decisionLog),
     sectionRanges: new Map([...parsed].map(([heading, section]) => [heading, rangeOf({ section })])),
     fileBudget: fileBudgetFrom({ sectionLines: sections.get("File Budget") }),
+    buildMode: buildModeFrom({ sectionLines: sections.get("Build Mode"), renames: renamed.renames }),
     renames: renamed.renames,
     malformedRenameLines: renamed.malformedLines,
     mirrorPaths: pathsFromLines({ sectionLines: sections.get("Patterns to Mirror"), lineMatches: (line) => /^\s*-\s+/.test(line) }),
@@ -149694,28 +149986,47 @@ var parsePlan = ({ content, base }) => {
 };
 
 // src/pipeline/steps/buildSteps/buildSteps.ts
+var planBuildModeOf = ({
+  buildMode,
+  renames,
+  movePaths,
+  folderMoves
+}) => {
+  let planBuildMode = { buildMode: BuildMode.Standard };
+  if (buildMode === BuildMode.RenamesOnly) {
+    planBuildMode = { buildMode: BuildMode.RenamesOnly, renames };
+  } else if (buildMode === BuildMode.MoveFoldersAndFiles) {
+    planBuildMode = { buildMode: BuildMode.MoveFoldersAndFiles, fileMoves: movePaths, folderMoves };
+  }
+  return planBuildMode;
+};
+var ledgerSkipReason = ({ buildMode, ledgerRows }) => {
+  let reason = ledgerRows === 0 ? "the plan carries no acceptance-test ledger" : void 0;
+  if (buildMode === BuildMode.RenamesOnly) {
+    reason = "the plan is rename-only, and a rename states no acceptance criterion a ledger test could prove";
+  } else if (buildMode === BuildMode.MoveFoldersAndFiles) {
+    reason = "the plan is move-folders-and-files, and a move states no acceptance criterion a ledger test could prove";
+  }
+  return reason;
+};
 var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, testStandards, skipRefactor }) => {
   const plan = parsePlan({ content: planContent, base: "plan.md" });
   const fileLimit = plan.fileBudget ?? run.config["executor-file-limit"];
   const acceptanceTests = () => run.current().acceptanceTests;
   const ledgerGates = [...new Set(plan.ledger.map((row) => row.gate))];
-  const movePaths = plan.movePaths.filter((move) => isTestSideFile({ path: move.to }));
+  const movePaths = getLedgerMovePaths({ movePaths: plan.movePaths, folderMoves: plan.folderMoves, testFiles: plan.ledger.map((row) => row.testFile) });
   const deletePaths = plan.deletePaths.filter((path) => isTestSideFile({ path }));
-  const renameOnly = plan.renames.length > 0;
+  const planBuildMode = planBuildModeOf(plan);
+  const mechanical = planBuildMode.buildMode !== BuildMode.Standard;
   const selfCheckCommand2 = buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command;
-  const featureFix = buildFeatureFix({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, renames: plan.renames, selfCheckCommand: selfCheckCommand2 });
-  const leaveOutRefactor = skipRefactor === true || renameOnly;
+  const featureFix = buildFeatureFix({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand: selfCheckCommand2 });
+  const leaveOutRefactor = skipRefactor === true || mechanical;
   return [
     ...buildLedgerLintSteps({ run, malformedLines: plan.malformedLedgerLines }),
     { id: "clean-slate", run: cleanSlateStep({ run, ledgerGates }) },
     {
       id: "write-ledger-tests",
-      skip: () => {
-        if (renameOnly) {
-          return "the plan is rename-only, and a rename states no acceptance criterion a ledger test could prove";
-        }
-        return plan.ledger.length === 0 ? "the plan carries no acceptance-test ledger" : void 0;
-      },
+      skip: () => ledgerSkipReason({ buildMode: planBuildMode.buildMode, ledgerRows: plan.ledger.length }),
       run: writeLedgerTestsStep({ run, gitPrefix, planContent, overviewContent, rows: plan.ledger, testStandards, movePaths, deletePaths })
     },
     ...buildImplementSteps({
@@ -149726,7 +150037,7 @@ var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, tes
       standards,
       fileLimit,
       acceptanceTests,
-      renames: plan.renames,
+      planBuildMode,
       selfCheckCommand: selfCheckCommand2,
       buildFix: featureFix
     }),
@@ -149738,7 +150049,7 @@ var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, tes
       testStandards,
       acceptanceTests,
       final: leaveOutRefactor,
-      renames: plan.renames,
+      planBuildMode,
       featureFix
     }),
     ...buildRefactorSteps({
@@ -149749,7 +150060,7 @@ var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, tes
       standards,
       skipRefactor: leaveOutRefactor,
       acceptanceTests,
-      renames: plan.renames
+      planBuildMode
     })
   ];
 };
@@ -151691,13 +152002,14 @@ var getNameKey = ({ name }) => {
 };
 
 // src/plan/evidence/buildExportCensus.ts
-var buildExportCensus = async ({ cwd, config: config2, exclude = [] }) => {
+var buildExportCensus = async ({ cwd, config: config2, exclude = [], excludeFolders = [] }) => {
   const excluded = new Set(exclude);
+  const isExcluded = (file2) => excluded.has(file2) || excludeFolders.some((folder) => file2 === folder || file2.startsWith(`${folder}/`));
   const { files, standardsLibraries } = await listSourceFiles({ cwd, exclude: excludedSourcePaths({ config: config2 }) });
   const buckets = /* @__PURE__ */ new Map();
   for (const file2 of files) {
     const name = getExportName({ path: file2 });
-    if (isTestFile({ path: file2, standardsLibraries }) || name === "index" || excluded.has(file2)) {
+    if (isTestFile({ path: file2, standardsLibraries }) || name === "index" || isExcluded(file2)) {
       continue;
     }
     const key = getNameKey({ name });
@@ -151730,6 +152042,7 @@ var detectPriorArtCandidates = async ({ cwd, planPaths, config: config2 }) => {
   const planned = [];
   const plannedPaths = /* @__PURE__ */ new Set();
   const emptiedPaths = /* @__PURE__ */ new Set();
+  const emptiedFolders = /* @__PURE__ */ new Set();
   for (const planPath of planPaths) {
     const planText = await readFile44(planPath, "utf8").catch(() => void 0);
     if (planText === void 0) {
@@ -151739,6 +152052,9 @@ var detectPriorArtCandidates = async ({ cwd, planPaths, config: config2 }) => {
     const plan = parsePlan({ content: planText, base });
     for (const path of [...plan.deletePaths, ...plan.movePaths.map((move) => move.from)]) {
       emptiedPaths.add(path);
+    }
+    for (const move of plan.folderMoves) {
+      emptiedFolders.add(move.from);
     }
     for (const createPath of plan.createPaths) {
       plannedPaths.add(createPath);
@@ -151752,7 +152068,7 @@ var detectPriorArtCandidates = async ({ cwd, planPaths, config: config2 }) => {
   if (planned.length === 0) {
     return [];
   }
-  const census = await buildExportCensus({ cwd, config: config2, exclude: [...plannedPaths, ...emptiedPaths] });
+  const census = await buildExportCensus({ cwd, config: config2, exclude: [...plannedPaths, ...emptiedPaths], excludeFolders: [...emptiedFolders] });
   const collisions = new Map(
     detectExportCollisions({ census, symbols: planned.map(({ plannedSymbol }) => plannedSymbol) }).map((collision) => [
       collision.symbol,
@@ -152043,7 +152359,8 @@ var StructuralCheck = {
   DecisionLogCurrent: "decision-log-current",
   GlobalConstraintsCurrent: "global-constraints-current",
   HandoffDeclared: "handoff-declared",
-  RenamesWellFormed: "renames-well-formed"
+  RenamesWellFormed: "renames-well-formed",
+  BuildModeWellFormed: "build-mode-well-formed"
 };
 
 // src/plan/decisionLog/decisionLogReference.ts
@@ -152312,11 +152629,11 @@ ${yellow("incomplete scan")} \u2014 ${dedup.incompleteReason ?? "the pass did no
     `
 ${bold(`plan dedup ${name}`)} \u2014 ${count2 > 0 ? yellow(`${count2} duplication(s) to review`) : green("no duplication found")} (reviewed ${dedup.reviewedAt})`
   );
-  for (const finding3 of dedup.findings) {
+  for (const finding6 of dedup.findings) {
     console.log(
-      `${yellow("\u29C9")} ${finding3.phase} \xB7 ${finding3.plannedSymbol} [${finding3.recommendation}] collides with ${finding3.collidesWith.map((collision) => collision.path).join(", ")}`
+      `${yellow("\u29C9")} ${finding6.phase} \xB7 ${finding6.plannedSymbol} [${finding6.recommendation}] collides with ${finding6.collidesWith.map((collision) => collision.path).join(", ")}`
     );
-    console.log(dim(`   ${finding3.rationale}`));
+    console.log(dim(`   ${finding6.rationale}`));
   }
   console.log(`
 dedup: ${dedupPath}`);
@@ -152324,10 +152641,10 @@ dedup: ${dedupPath}`);
 };
 
 // src/cli/internal/common/render/printStructuralFinding.ts
-var printStructuralFinding = ({ finding: finding3, write = console.log }) => {
-  const marker = finding3.severity === FindingSeverity.Advisory ? dim("note") : yellow("\u26A0");
-  write(`${marker} ${finding3.phase} [${finding3.check}] ${finding3.location} \u2014 ${finding3.issue}`);
-  write(dim(`   fix: ${finding3.fix}`));
+var printStructuralFinding = ({ finding: finding6, write = console.log }) => {
+  const marker = finding6.severity === FindingSeverity.Advisory ? dim("note") : yellow("\u26A0");
+  write(`${marker} ${finding6.phase} [${finding6.check}] ${finding6.location} \u2014 ${finding6.issue}`);
+  write(dim(`   fix: ${finding6.fix}`));
 };
 
 // src/cli/plan/internal/common/utils/exitOnPlanFailure.ts
@@ -152350,11 +152667,11 @@ var PlanVariant = {
 };
 
 // src/plan/common/utils/getBlockingFindings.ts
-var getBlockingFindings = ({ findings }) => findings.filter((finding3) => finding3.severity === FindingSeverity.Blocking);
+var getBlockingFindings = ({ findings }) => findings.filter((finding6) => finding6.severity === FindingSeverity.Blocking);
 
 // src/plan/draft/runPlanDraft.ts
 import { mkdir as mkdir25 } from "node:fs/promises";
-import { join as join125 } from "node:path";
+import { join as join126 } from "node:path";
 
 // src/plan/draft/estimatePlanScope.ts
 var estimatePlanScope = ({ facts, executorFileLimit }) => {
@@ -152667,7 +152984,15 @@ var declarationBlock = ({ label: label2, declaration }) => `### ${label2}
 \`\`\`json
 ${JSON.stringify(declaration, void 0, "	")}
 \`\`\``;
-var renamesBullet = ({ declaration }) => declaration.renamesOnly === true ? "This phase is **rename-only**. Its file carries a `## Renames` section, one `-` bullet per rename with the old and new text each in a backtick span; lists nothing under Files to Create; states no Acceptance Tests rows; and carries a `## File Budget` covering every file the rename spans." : "This phase is not rename-only: its file carries no `## Renames` section.";
+var buildModeBullet = ({ declaration }) => {
+  let bullet2 = "This phase is a standard phase, with no mechanical build mode: its file carries no `## Renames` and no `## Build Mode` section.";
+  if (declaration.buildMode === BuildMode.RenamesOnly) {
+    bullet2 = "This phase is **rename-only**. Its file carries a `## Renames` section, one `-` bullet per rename with the old and new text each in a backtick span; lists nothing under Files to Create; states no Acceptance Tests rows; and carries a `## File Budget` covering every file the rename spans.";
+  } else if (declaration.buildMode === BuildMode.MoveFoldersAndFiles) {
+    bullet2 = "This phase is **move-folders-and-files**. Its file carries a `## Build Mode` section whose body is `move-folders-and-files`; lists its moves under `## Files to Move` and nothing under Files to Create, Files to Modify, Files to Modify from Earlier Phases or Files to Delete; carries no `## Renames` section and no Acceptance Tests rows; and needs no `## File Budget`, being exempt from the file budget and the touched-file ceiling.";
+  }
+  return bullet2;
+};
 var phaseSection = ({ path, overviewText, declaration, previousDeclaration, touchedFileCeiling: touchedFileCeiling2 }) => `## Phase authoring
 
 Author \`${path}\` and nothing else. The phase breakdown is already settled \u2014 do not re-decide it, do not renumber, and do not write any other phase's file. Every other phase is being authored right now by another agent, so no sibling phase file exists for you to read: the declarations below are the whole of what you may rely on. Report only this file in \`filesWritten\`.
@@ -152679,21 +153004,21 @@ ${previousDeclaration === void 0 ? "### The previous phase\n\nThis is phase 1 \u
 ### Writing against the declaration
 
 - The declared \`creates\`, \`exports\` and \`scripts\` are a **floor, not a ceiling**. Your file MUST create every declared path, export every declared name and add every declared script \u2014 and is free to create whatever else the phase needs. The declaration lists only what crosses a phase boundary, so an internal file no other phase touches is never in it.
-- The declared \`createdCount\` and \`touchedCount\` are the overview agent's **estimate** and are not a target. Write what the work requires; the engine stamps the real counts into the overview afterwards. The only hard limits are the created-file ceiling, the touched-file ceiling of ${touchedFileCeiling2} source files (which no \`## File Budget\` raises, and which a rename-only phase is exempt from), and this phase's own \`## File Budget\`.
+- The declared \`createdCount\` and \`touchedCount\` are the overview agent's **estimate** and are not a target. Write what the work requires; the engine stamps the real counts into the overview afterwards. The only hard limits are the created-file ceiling, the touched-file ceiling of ${touchedFileCeiling2} source files (which no \`## File Budget\` raises, and which a rename-only or move-folders-and-files phase is exempt from), and this phase's own \`## File Budget\`.
 - \`## What Next Plan Expects\` states this phase's own declared \`creates\`, \`exports\` and \`scripts\`, each in a backticked span, and nothing else. Write \`None.\` when every bullet of your declaration is \`none\`, and \`None \u2014 final phase.\` when your row is the last in the overview's \`## Phases\` table.
 - \`## Prerequisites\` states the previous phase's declared \`creates\`, \`exports\` and \`scripts\`, each in a backticked span. Phase 1 states the pre-feature codebase state instead.
 - \`## File Budget\` is written when the declaration carries a \`fileBudget\`, repeating that integer. If your phase's real work needs a HIGHER budget than the declaration states, write **the number you need** \u2014 never the declared one \u2014 and omit the section entirely if you need none. The mismatch is reported and resolved against the overview later; understating your budget to avoid a finding is the one thing that would actually break the run.
-- ${renamesBullet({ declaration })}
+- ${buildModeBullet({ declaration })}
 
 ### The settled overview
 
 ${overviewText}`;
 
 // src/agents/prompts/focusedPlanContractTemplate.md
-var focusedPlanContractTemplate_default = "# Plan Template\n\nTemplates for plans consumed by `lightsout implement` and graded by the\ndeterministic structural lint (`plan grade`, structure) and the gap-check agent\n(`plan grade`, decisions). Three variants: **Single Plan** (standalone feature),\n**Overview Plan** (multi-phase context), and **Phase Plan** (one implementation\nscope under an overview).\n\nThis repository writes plans as CONTRACTS: an implementable plan states its\ntestable behaviour in `## Acceptance Tests` rows, and its file entries state the\nsurface \u2014 signatures, wiring, constraints \u2014 that no test can carry.\n\n## Rules (all variants)\n\nThese mirror the structural-lint and gap-check rubrics \u2014 a plan violating them\nwill not reach A:\n\n- **No placeholders.** No `???`, `TBD`, `TODO`, or unresolved `{tokens}`. Every\n  open question must be resolved before the plan is written.\n- **Every referenced path verified.** Files listed under Files to Modify and\n  Patterns to Mirror must exist on disk at write time. Files to Create must not.\n- **Backticks around a path assert it exists.** Every backticked span that\n  names a file \u2014 anywhere in the plan, not only under the file headings \u2014 is\n  checked against the working tree and blocks if it is not there. A path\n  written to illustrate a shape rather than to name a real file goes in plain\n  prose, without backticks. Search patterns are exempt: a span holding `*` is\n  read as a glob, never as a claim.\n- **Earlier-phase files have their own heading.** In a phased plan, a file an\n  EARLIER PHASE creates is changed under `## Files to Modify from Earlier\n  Phases` \u2014 never `## Files to Modify` (whose paths exist on disk today) and\n  never `## Files to Create` (whose paths no phase has claimed). Deletes and\n  moves have their own headings too; every path under all five is checked and\n  counted.\n- **Hand-offs chain by name.** Each phase's `## What Next Plan Expects` and the\n  next phase's `## Prerequisites` must name the same files and exports, in\n  backticked spans \u2014 a file path or a bare symbol name. A name one phase hands\n  forward and the next never claims is a structural defect.\n- **Signatures, not vibes.** Services and modules define their methods and\n  signatures \u2014 never \"create a service for X\" without saying what it exposes.\n- **Explicit dependency graph.** Module definitions include imports/exports;\n  cross-module wiring is stated (exports match imports).\n- **Real script names.** Verification commands reference scripts that exist in\n  the target `package.json` (or the configured `scripts` overrides).\n- **Within the created-file ceiling.** Each plan (or each phase) CREATES at most\n  {{createdFileCeiling}} source files. This is a hard ceiling: a phase over it is split, and no\n  declaration raises it. A created file has to be specified \u2014 its signatures, its\n  exports, its behaviour stated by its rows \u2014 which is what makes creating that\n  many of them a full phase.\n- **Touched files counted and declared.** Each plan (or each phase) also states\n  how many source files it touches in total (created, modified, modified from an\n  earlier phase, deleted, and both sides of every move). Above {{fileLimit}} the plan is\n  still legal, but it must carry a `## File Budget` covering its real count,\n  because {{fileLimit}} is where the implementing agent stops. A plan or phase that\n  touches more than {{touchedFileCeiling}} source files is refused and must be split:\n  neither the config nor a `## File Budget` raises that ceiling. The one exemption\n  is a rename-only plan or phase \u2014 its `## Renames` section, plus the\n  `**Renames only:** yes` bullet on the overview. A phase that creates three files\n  and renames an import across two hundred is legitimate work only as a rename-only\n  phase, with the rename gathered into a phase of its own; a phase that authors\n  that many from scratch is not.\n- **What counts as a source file.** Every path the plan names except test files,\n  `index` barrels, and `.d.ts` declaration files. A hand-authored type-only\n  module \u2014 a `.ts` file exporting one interface \u2014 DOES count: it still has to be\n  specified and written.\n- **Prior art recorded.** Every newly-created exported symbol is justified in a\n  `## Prior Art` section: the searches run against existing exports that prove it\n  is new, or the existing symbol it mirrors/extends.\n- **Global constraints are engine-composed.** Every variant carries a\n  `## Global Constraints` section, and the engine composes its content from the\n  same decision records the writer was handed. Write no bullet under that\n  heading, and leave one a file already carries exactly as found \u2014 anything\n  written there is replaced.\n- **Acceptance tests named, not narrated.** Every IMPLEMENTABLE variant \u2014 a\n  Single Plan, and each Phase Plan \u2014 carries a `## Acceptance Tests` table with\n  one row per acceptance criterion: the criterion, the test file that states it\n  in a backticked span, the exact test name, and the gate that runs it. A file\n  whose behaviour no test can state is listed under `## Prose Files` with the\n  reason instead. Every created or modified source file is reached by a row or\n  named in that list. An Overview Plan carries neither section: the overview\n  creates nothing, so a row written there would belong to no executor.\n- **Behaviour lives in the ledger.** A file entry states the file's exported\n  signatures, the imports it needs and the names it exports, the integration\n  points it wires into, the file it mirrors, and the architectural constraints\n  binding it \u2014 and then says that its behaviour is stated in the\n  `## Acceptance Tests` rows. Narrating the same expectation in prose beside a\n  row that already states it is the duplication this shape exists to remove.\n  Prose no test can express \u2014 a constraint, an ordering requirement, the reason\n  a path was rejected \u2014 still belongs in the entry.\n- **A criterion is a testable sentence.** Each `## Acceptance Tests` row's\n  criterion names the inputs, the condition that makes the case distinct, the\n  expected result, and the failure case the test pins. A criterion naming only a\n  subject is intent, not a criterion.\n- **Rename-only phases.** A plan or phase whose whole work is renaming symbols\n  or paths may be declared rename-only with a `## Renames` section, one `-`\n  bullet per rename naming the old and the new text, each in backticks. Gather\n  renames into their own phase where you can, covering every file the rename\n  spans. A rename-only file creates nothing, and it is built without test\n  writing: the engine checks in code that every changed file differs from the\n  phase's start only by the declared renames. Each rename is a literal,\n  case-sensitive substitution of every occurrence, applied in the order listed,\n  to file paths and file contents alike \u2014 and no rename's new text may contain\n  any rename's old text, own or another's.\n{{documentationRule}}\n\n---\n\n## Single Plan\n\n```markdown\n# <Feature Name>\n\n## Context\n\n<1\u20132 paragraphs: what this feature does, why it is needed, and the relevant\ncurrent state of the codebase.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Prerequisites\n\n- <required state before implementation begins, or \"None\">\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <why this package is touched>\n\n<!-- Single-package repos: state \"Single-package repository.\" packagesDir is the\nrepo's package directory convention (default `packages`). -->\n\n## Files to Create\n\n### `<packagesDir>/<name>/src/path/to/file.ts`\n\n<Purpose in one line. Then the surface: exported functions/classes with full\nsignatures, the imports it needs, what it exports, the integration points it\nwires into, the file it mirrors, and the architectural constraints binding it.\nClose by saying its behaviour is stated in the `## Acceptance Tests` rows \u2014 do\nnot restate there what a row already holds.>\n\n## Files to Modify\n\n### `<packagesDir>/<name>/src/path/to/existing.ts`\n\n<What changes and where: which function/section, what is added/removed/changed,\nthe resulting signature, and how it integrates with the created files. The\nexpectation it must then satisfy is a row, not a paragraph.>\n\n## Files to Modify from Earlier Phases\n\n<Optional \u2014 omit the heading entirely when this plan has no such work. Every\npath here must be one an EARLIER PHASE creates, and must not exist on disk yet;\na file that is already there belongs under Files to Modify.>\n\n### `<packagesDir>/<name>/src/path/to/from-phase-one.ts`\n\n<Which phase creates it, and what changes here.>\n\n## Files to Delete\n\n<Optional \u2014 omit the heading entirely when this plan deletes nothing.>\n\n### `<packagesDir>/<name>/src/path/to/going.ts`\n\n<Why it goes, and what takes over its callers.>\n\n## Files to Move\n\n<Optional \u2014 omit the heading entirely when this plan moves nothing. Each\nsubheading names exactly two paths in backticks, old then new.>\n\n### `<packagesDir>/<name>/src/old/path.ts` \u2192 `<packagesDir>/<name>/src/new/path.ts`\n\n<What moves and why.>\n\n## File Budget\n\n<Optional \u2014 omit this section unless the plan touches more than {{fileLimit}}\nsource files. A single integer on its own line: the total source files this plan\ntouches. It must cover the real count, and it does NOT raise the created-file\nceiling, which is fixed at {{createdFileCeiling}}.>\n<Nor does it raise the touched-file ceiling, which is fixed at\n{{touchedFileCeiling}} for every plan that is not rename-only.>\n\n## Renames\n\n<Optional \u2014 omit the heading entirely unless this plan is rename-only. One\nbullet per rename, the old text then the new, each in backticks, in the order\nthey are applied. A rename-only plan lists nothing under Files to Create.>\n\n- `<oldName>` \u2192 `<newName>`\n\n## Patterns to Mirror\n\n- `<packagesDir>/<name>/src/path/to/analogous.ts` \u2014 <what to take from it:\n  structure, naming, error handling, etc.>\n\n## Prior Art\n\nOne line per newly-created exported symbol, recording the dedup search that\njustifies its newness:\n\n- `<symbol>` \u2014 searched <terms>, found none (new)\n- `<symbol>` \u2014 mirrors `<existing export>` (extends, does not duplicate)\n\n## Scope Boundaries\n\n**Do:**\n- <in-scope item>\n\n**Do NOT:**\n- <explicitly out-of-scope item \u2014 adjacent work the agent might be tempted to do>\n\n## Verification\n\n- `<resolved check command>` \u2014 types clean\n- `<resolved test-unit command>` \u2014 tests pass\n\n## Acceptance Tests\n\n<!-- One row per acceptance criterion. The test file goes in backticks and may\nalready exist; the test name is the exact string the test writer will use; the\ngate is a key from the repository's gates, and a blank cell means `test`. Each\ncriterion names the inputs, the condition that makes the case distinct, the\nexpected result, and the failure case it pins. A rename-only file keeps this\nheading and states no rows, since a rename adds no behaviour a new test could\nstate. -->\n\n| Criterion | Test file | Test name | Gate |\n|-----------|-----------|-----------|------|\n| <one-line acceptance criterion> | `<packagesDir>/<name>/src/path/to/file.unit.test.ts` | <exact test name> | test |\n\n## Prose Files\n\n<!-- One bullet per file whose behaviour no test can state, each also listed\nunder one of the file headings above. A bullet with no reason is a blocking\nfinding. -->\n\n- `<path>` \u2014 <why no test states this file's behaviour>\n\n## What Next Plan Expects\n\n<For a standalone plan: \"None \u2014 standalone plan.\" Otherwise: the exact state a\nfollow-up plan can rely on \u2014 files that exist, exports available, behavior\nguaranteed.>\n```\n\n---\n\n## Overview Plan\n\nThe overview carries context shared by all phases. It is **not implemented\ndirectly** \u2014 it is passed alongside each phase to `lightsout implement` and to\n`plan grade` as context.\n\n```markdown\n# <Feature Name> \u2014 Overview\n\n## Context\n\n<What this feature does, why, and the relevant current state.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced. The\noverview holds the plan's complete history; each phase file points at it.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Architecture\n\n<How the pieces fit together across phases: data flow, module boundaries,\nshared types. A diagram or short prose map.>\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <role in this feature>\n\n## Phases\n\nThis table and `## Phase Declarations` below are two views of ONE phase record.\nState each phase once here \u2014 its number, its `phase<N>-<slug>.md` filename, a\none-line scope, and its two counts \u2014 and state its cross-boundary names once\nbelow. The engine normalises the number-and-filename pairing across both views\nbefore the lint runs, so checking one copy against the other by hand is not your\nwork.\n\nCreates and Touches are integer counts of source files \u2014 the same set the\ncreated-file ceiling and the touched-file budget are measured on (test files,\n`index` barrels and `.d.ts` declarations excluded; a hand-authored type-only\nmodule counts). Each must equal the count the phase file itself lists.\n\n| # | File | Scope | Creates | Touches |\n|---|------|-------|---------|---------|\n| 1 | `phase1-<slug>.md` | <one-line scope> | <n> | <n> |\n| 2 | `phase2-<slug>.md` | <one-line scope> | <n> | <n> |\n\n## Phase Declarations\n\nOne block per phase \u2014 the same phase record the table above lists, carrying what\nthe table cannot. List ONLY what crosses a phase boundary: the files a later\nphase builds against, the exported names later phases import, and the package\nscripts this phase adds. The phase file already holds its complete file\nlist \u2014 repeating it here creates two lists that drift the moment either is\nedited. Write `none` for a bullet with nothing to declare. The engine keeps each\nblock's number and filename agreeing with its table row, so write the\ncross-boundary bullets once and leave the pairing to it.\n\n### Phase 1 \u2014 `phase1-<slug>.md`\n\n- **Creates:** `<packagesDir>/<name>/src/path/to/file.ts`\n- **Exports:** `<symbol>`\n- **Scripts:** none\n\n### Phase 2 \u2014 `phase2-<slug>.md`\n\n- **Creates:** none\n- **Exports:** none\n- **Scripts:** none\n- **File budget:** <n>\n- **Renames only:** yes\n\n<!-- **File budget:** is optional: include it only when that phase file carries a\n`## File Budget`, and repeat the same integer. It must cover that phase's Touches\ncount, and it never raises the created-file ceiling, which is fixed at\n{{createdFileCeiling}}. It never raises the touched-file ceiling of\n{{touchedFileCeiling}} either; only a phase declared `**Renames only:** yes` is\nexempt from that one. **Renames only:** is optional too: write it, reading\n`yes`, only for a phase whose file carries a `## Renames` section. -->\n\n## Cross-Phase Dependencies\n\n- Phase 2 depends on Phase 1's <export/file/behavior>.\n```\n\n---\n\n## Phase Plan\n\nIdentical to the Single Plan with these adjustments:\n\n- Title: `# <Feature Name> \u2014 Phase <N>: <Phase Name>`\n- **Prerequisites** states the prior phase's end state: \"Phase <N-1> complete:\n  <files/exports that now exist>.\" Phase 1 states the pre-feature codebase state.\n- **Decision Log** is composed by the engine with\n  `lightsout plan sync-decisions`, exactly as in the Single Plan: write neither\n  the heading's content nor a row. A phase file's section points at the\n  overview's complete history rather than repeating it.\n- **Global Constraints** is composed by the engine in every phase, exactly as in\n  the Single Plan: the heading is required and its content is not yours to\n  write.\n- **Prior Art** is still mandatory \u2014 one line per newly-created exported symbol.\n- **Files to Modify from Earlier Phases** is where a file an earlier phase\n  creates is changed \u2014 never Files to Modify (whose paths must exist on disk\n  today) and never Files to Create (whose paths no phase has claimed yet).\n- **Files to Delete**, **Files to Move** and **File Budget** carry the same\n  meaning as in the Single Plan, per phase.\n- **What Next Plan Expects** is mandatory and chains: it must list exactly what\n  the next phase's Prerequisites will claim. The final phase states \"None \u2014\n  final phase.\"\n- **Acceptance Tests** and **Prose Files** are required in every phase and never\n  on the overview: the overview creates nothing, so a row written there would\n  belong to no executor.\n";
+var focusedPlanContractTemplate_default = "# Plan Template\n\nTemplates for plans consumed by `lightsout implement` and graded by the\ndeterministic structural lint (`plan grade`, structure) and the gap-check agent\n(`plan grade`, decisions). Three variants: **Single Plan** (standalone feature),\n**Overview Plan** (multi-phase context), and **Phase Plan** (one implementation\nscope under an overview).\n\nThis repository writes plans as CONTRACTS: an implementable plan states its\ntestable behaviour in `## Acceptance Tests` rows, and its file entries state the\nsurface \u2014 signatures, wiring, constraints \u2014 that no test can carry.\n\n## Rules (all variants)\n\nThese mirror the structural-lint and gap-check rubrics \u2014 a plan violating them\nwill not reach A:\n\n- **No placeholders.** No `???`, `TBD`, `TODO`, or unresolved `{tokens}`. Every\n  open question must be resolved before the plan is written.\n- **Every referenced path verified.** Files listed under Files to Modify and\n  Patterns to Mirror must exist on disk at write time. Files to Create must not.\n- **Backticks around a path assert it exists.** Every backticked span that\n  names a file \u2014 anywhere in the plan, not only under the file headings \u2014 is\n  checked against the working tree and blocks if it is not there. A path\n  written to illustrate a shape rather than to name a real file goes in plain\n  prose, without backticks. Search patterns are exempt: a span holding `*` is\n  read as a glob, never as a claim.\n- **Earlier-phase files have their own heading.** In a phased plan, a file an\n  EARLIER PHASE creates is changed under `## Files to Modify from Earlier\n  Phases` \u2014 never `## Files to Modify` (whose paths exist on disk today) and\n  never `## Files to Create` (whose paths no phase has claimed). A file an\n  earlier phase's folder move carried is named the same way, by its new path\n  under `## Files to Modify from Earlier Phases`. Deletes and\n  moves have their own headings too; every path under all five is checked and\n  counted.\n- **Hand-offs chain by name.** Each phase's `## What Next Plan Expects` and the\n  next phase's `## Prerequisites` must name the same files and exports, in\n  backticked spans \u2014 a file path or a bare symbol name. A name one phase hands\n  forward and the next never claims is a structural defect.\n- **Signatures, not vibes.** Services and modules define their methods and\n  signatures \u2014 never \"create a service for X\" without saying what it exposes.\n- **Explicit dependency graph.** Module definitions include imports/exports;\n  cross-module wiring is stated (exports match imports).\n- **Real script names.** Verification commands reference scripts that exist in\n  the target `package.json` (or the configured `scripts` overrides).\n- **Within the created-file ceiling.** Each plan (or each phase) CREATES at most\n  {{createdFileCeiling}} source files. This is a hard ceiling: a phase over it is split, and no\n  declaration raises it. A created file has to be specified \u2014 its signatures, its\n  exports, its behaviour stated by its rows \u2014 which is what makes creating that\n  many of them a full phase.\n- **Touched files counted and declared.** Each plan (or each phase) also states\n  how many source files it touches in total (created, modified, modified from an\n  earlier phase, deleted, and both sides of every move). A folder move counts\n  every file it carries, on both sides. Above {{fileLimit}} the plan is\n  still legal, but it must carry a `## File Budget` covering its real count,\n  because {{fileLimit}} is where the implementing agent stops. A plan or phase that\n  touches more than {{touchedFileCeiling}} source files is refused and must be split:\n  neither the config nor a `## File Budget` raises that ceiling. There are two\n  exemptions. One is a rename-only plan or phase \u2014 its `## Renames` section, plus the\n  `**Renames only:** yes` bullet on the overview. The other is a\n  move-folders-and-files plan or phase \u2014 its `## Build Mode` section reading\n  `move-folders-and-files`, plus the `**Moves folders and files only:** yes`\n  bullet on the overview. A phase that creates three files\n  and renames an import across two hundred is legitimate work only as a rename-only\n  phase, with the rename gathered into a phase of its own; a phase that authors\n  that many from scratch is not. Likewise, a phase that relocates a folder of\n  three hundred files is legitimate work only as a move-folders-and-files phase,\n  with the move gathered into a phase of its own.\n- **What counts as a source file.** Every path the plan names except test files,\n  `index` barrels, and `.d.ts` declaration files. A hand-authored type-only\n  module \u2014 a `.ts` file exporting one interface \u2014 DOES count: it still has to be\n  specified and written.\n- **Prior art recorded.** Every newly-created exported symbol is justified in a\n  `## Prior Art` section: the searches run against existing exports that prove it\n  is new, or the existing symbol it mirrors/extends.\n- **Global constraints are engine-composed.** Every variant carries a\n  `## Global Constraints` section, and the engine composes its content from the\n  same decision records the writer was handed. Write no bullet under that\n  heading, and leave one a file already carries exactly as found \u2014 anything\n  written there is replaced.\n- **Acceptance tests named, not narrated.** Every IMPLEMENTABLE variant \u2014 a\n  Single Plan, and each Phase Plan \u2014 carries a `## Acceptance Tests` table with\n  one row per acceptance criterion: the criterion, the test file that states it\n  in a backticked span, the exact test name, and the gate that runs it. A file\n  whose behaviour no test can state is listed under `## Prose Files` with the\n  reason instead. Every created or modified source file is reached by a row or\n  named in that list. An Overview Plan carries neither section: the overview\n  creates nothing, so a row written there would belong to no executor.\n- **Behaviour lives in the ledger.** A file entry states the file's exported\n  signatures, the imports it needs and the names it exports, the integration\n  points it wires into, the file it mirrors, and the architectural constraints\n  binding it \u2014 and then says that its behaviour is stated in the\n  `## Acceptance Tests` rows. Narrating the same expectation in prose beside a\n  row that already states it is the duplication this shape exists to remove.\n  Prose no test can express \u2014 a constraint, an ordering requirement, the reason\n  a path was rejected \u2014 still belongs in the entry.\n- **A criterion is a testable sentence.** Each `## Acceptance Tests` row's\n  criterion names the inputs, the condition that makes the case distinct, the\n  expected result, and the failure case the test pins. A criterion naming only a\n  subject is intent, not a criterion.\n- **Rename-only phases.** A plan or phase whose whole work is renaming symbols\n  or paths may be declared rename-only with a `## Renames` section, one `-`\n  bullet per rename naming the old and the new text, each in backticks. Gather\n  renames into their own phase where you can, covering every file the rename\n  spans. A rename-only file creates nothing, and it is built without test\n  writing: the engine checks in code that every changed file differs from the\n  phase's start only by the declared renames. Each rename is a literal,\n  case-sensitive substitution of every occurrence, applied in the order listed,\n  to file paths and file contents alike \u2014 and no rename's new text may contain\n  any rename's old text, own or another's.\n- **Move-folders-and-files phases.** A plan or phase whose whole work is moving\n  folders and files may be declared move-folders-and-files with a `## Build Mode`\n  section whose body is the single line `move-folders-and-files`. Its\n  `## Files to Move` headings name file moves and folder moves: a folder move\n  names two folders, each ending in `/`, never one file and one folder. It lists\n  nothing under Files to Create, Files to Modify or Files to Delete, carries no\n  `## Renames`, and states no Acceptance Tests rows. It needs no `## File Budget`\n  and is exempt from the touched-file ceiling. A move and feature work are two\n  phases. A destination folder must not already exist, and the moves in one\n  phase must not overlap, chain or swap. It is built without test writing,\n  without the reviewing agent and without refactor: the engine instead checks in\n  code that every removed file pairs with an added file at its declared\n  destination, that no declared move left a file at its old path, and that every\n  changed file differs from the phase's start only in the paths that point at\n  moved files, every other character staying as it was. A file that is not text,\n  such as a binary, may only move unchanged.\n{{documentationRule}}\n\n---\n\n## Single Plan\n\n```markdown\n# <Feature Name>\n\n## Context\n\n<1\u20132 paragraphs: what this feature does, why it is needed, and the relevant\ncurrent state of the codebase.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Prerequisites\n\n- <required state before implementation begins, or \"None\">\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <why this package is touched>\n\n<!-- Single-package repos: state \"Single-package repository.\" packagesDir is the\nrepo's package directory convention (default `packages`). -->\n\n## Files to Create\n\n### `<packagesDir>/<name>/src/path/to/file.ts`\n\n<Purpose in one line. Then the surface: exported functions/classes with full\nsignatures, the imports it needs, what it exports, the integration points it\nwires into, the file it mirrors, and the architectural constraints binding it.\nClose by saying its behaviour is stated in the `## Acceptance Tests` rows \u2014 do\nnot restate there what a row already holds.>\n\n## Files to Modify\n\n### `<packagesDir>/<name>/src/path/to/existing.ts`\n\n<What changes and where: which function/section, what is added/removed/changed,\nthe resulting signature, and how it integrates with the created files. The\nexpectation it must then satisfy is a row, not a paragraph.>\n\n## Files to Modify from Earlier Phases\n\n<Optional \u2014 omit the heading entirely when this plan has no such work. Every\npath here must be one an EARLIER PHASE creates, and must not exist on disk yet;\na file that is already there belongs under Files to Modify.>\n\n### `<packagesDir>/<name>/src/path/to/from-phase-one.ts`\n\n<Which phase creates it, and what changes here.>\n\n## Files to Delete\n\n<Optional \u2014 omit the heading entirely when this plan deletes nothing.>\n\n### `<packagesDir>/<name>/src/path/to/going.ts`\n\n<Why it goes, and what takes over its callers.>\n\n## Files to Move\n\n<Optional \u2014 omit the heading entirely when this plan moves nothing. Each\nsubheading names two files or two folders in backticks, old then new, a folder\nwritten with a trailing `/`.>\n\n### `<packagesDir>/<name>/src/old/path.ts` \u2192 `<packagesDir>/<name>/src/new/path.ts`\n\n<What moves and why.>\n\n### `<packagesDir>/<name>/src/old/folder/` \u2192 `<packagesDir>/<name>/src/new/folder/`\n\n<What moves and why.>\n\n## File Budget\n\n<Optional \u2014 omit this section unless the plan touches more than {{fileLimit}}\nsource files. A single integer on its own line: the total source files this plan\ntouches. It must cover the real count, and it does NOT raise the created-file\nceiling, which is fixed at {{createdFileCeiling}}.>\n<Nor does it raise the touched-file ceiling, which is fixed at\n{{touchedFileCeiling}} for every plan that is neither rename-only nor\nmove-folders-and-files.>\n\n## Renames\n\n<Optional \u2014 omit the heading entirely unless this plan is rename-only. One\nbullet per rename, the old text then the new, each in backticks, in the order\nthey are applied. A rename-only plan lists nothing under Files to Create.>\n\n- `<oldName>` \u2192 `<newName>`\n\n## Build Mode\n\n<Optional \u2014 omit the heading entirely unless this plan is\nmove-folders-and-files. Its body is the one line below. A plan carrying it\ncarries no `## Renames`.>\n\nmove-folders-and-files\n\n## Patterns to Mirror\n\n- `<packagesDir>/<name>/src/path/to/analogous.ts` \u2014 <what to take from it:\n  structure, naming, error handling, etc.>\n\n## Prior Art\n\nOne line per newly-created exported symbol, recording the dedup search that\njustifies its newness:\n\n- `<symbol>` \u2014 searched <terms>, found none (new)\n- `<symbol>` \u2014 mirrors `<existing export>` (extends, does not duplicate)\n\n## Scope Boundaries\n\n**Do:**\n- <in-scope item>\n\n**Do NOT:**\n- <explicitly out-of-scope item \u2014 adjacent work the agent might be tempted to do>\n\n## Verification\n\n- `<resolved check command>` \u2014 types clean\n- `<resolved test-unit command>` \u2014 tests pass\n\n## Acceptance Tests\n\n<!-- One row per acceptance criterion. The test file goes in backticks and may\nalready exist; the test name is the exact string the test writer will use; the\ngate is a key from the repository's gates, and a blank cell means `test`. Each\ncriterion names the inputs, the condition that makes the case distinct, the\nexpected result, and the failure case it pins. A rename-only file keeps this\nheading and states no rows, since a rename adds no behaviour a new test could\nstate. A move-folders-and-files file keeps this heading and states no rows\neither, since a move adds no behaviour a new test could state. -->\n\n| Criterion | Test file | Test name | Gate |\n|-----------|-----------|-----------|------|\n| <one-line acceptance criterion> | `<packagesDir>/<name>/src/path/to/file.unit.test.ts` | <exact test name> | test |\n\n## Prose Files\n\n<!-- One bullet per file whose behaviour no test can state, each also listed\nunder one of the file headings above. A bullet with no reason is a blocking\nfinding. -->\n\n- `<path>` \u2014 <why no test states this file's behaviour>\n\n## What Next Plan Expects\n\n<For a standalone plan: \"None \u2014 standalone plan.\" Otherwise: the exact state a\nfollow-up plan can rely on \u2014 files that exist, exports available, behavior\nguaranteed.>\n```\n\n---\n\n## Overview Plan\n\nThe overview carries context shared by all phases. It is **not implemented\ndirectly** \u2014 it is passed alongside each phase to `lightsout implement` and to\n`plan grade` as context.\n\n```markdown\n# <Feature Name> \u2014 Overview\n\n## Context\n\n<What this feature does, why, and the relevant current state.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced. The\noverview holds the plan's complete history; each phase file points at it.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Architecture\n\n<How the pieces fit together across phases: data flow, module boundaries,\nshared types. A diagram or short prose map.>\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <role in this feature>\n\n## Phases\n\nThis table and `## Phase Declarations` below are two views of ONE phase record.\nState each phase once here \u2014 its number, its `phase<N>-<slug>.md` filename, a\none-line scope, and its two counts \u2014 and state its cross-boundary names once\nbelow. The engine normalises the number-and-filename pairing across both views\nbefore the lint runs, so checking one copy against the other by hand is not your\nwork.\n\nCreates and Touches are integer counts of source files \u2014 the same set the\ncreated-file ceiling and the touched-file budget are measured on (test files,\n`index` barrels and `.d.ts` declarations excluded; a hand-authored type-only\nmodule counts). Each must equal the count the phase file itself lists.\n\n| # | File | Scope | Creates | Touches |\n|---|------|-------|---------|---------|\n| 1 | `phase1-<slug>.md` | <one-line scope> | <n> | <n> |\n| 2 | `phase2-<slug>.md` | <one-line scope> | <n> | <n> |\n\n## Phase Declarations\n\nOne block per phase \u2014 the same phase record the table above lists, carrying what\nthe table cannot. List ONLY what crosses a phase boundary: the files a later\nphase builds against, the exported names later phases import, and the package\nscripts this phase adds. The phase file already holds its complete file\nlist \u2014 repeating it here creates two lists that drift the moment either is\nedited. Write `none` for a bullet with nothing to declare. The engine keeps each\nblock's number and filename agreeing with its table row, so write the\ncross-boundary bullets once and leave the pairing to it.\n\n### Phase 1 \u2014 `phase1-<slug>.md`\n\n- **Creates:** `<packagesDir>/<name>/src/path/to/file.ts`\n- **Exports:** `<symbol>`\n- **Scripts:** none\n\n### Phase 2 \u2014 `phase2-<slug>.md`\n\n- **Creates:** none\n- **Exports:** none\n- **Scripts:** none\n- **File budget:** <n>\n- **Renames only:** yes\n\n<!-- **File budget:** is optional: include it only when that phase file carries a\n`## File Budget`, and repeat the same integer. It must cover that phase's Touches\ncount, and it never raises the created-file ceiling, which is fixed at\n{{createdFileCeiling}}. It never raises the touched-file ceiling of\n{{touchedFileCeiling}} either; only a phase declared `**Renames only:** yes` or\n`**Moves folders and files only:** yes` is exempt from that one. **Renames only:**\nis optional too: write it, reading `yes`, only for a phase whose file carries a\n`## Renames` section. **Moves folders and files only:** is optional as well:\nwrite it, reading `yes`, only for a phase whose file carries a `## Build Mode`\nsection reading `move-folders-and-files`, never beside **Renames only:** in one\nblock, and with no **File budget:**. Such a phase's **Creates:** may name the\ndestination folder exactly as its `## Files to Move` heading writes it, rather\nthan every file the folder carries. -->\n\n## Cross-Phase Dependencies\n\n- Phase 2 depends on Phase 1's <export/file/behavior>.\n```\n\n---\n\n## Phase Plan\n\nIdentical to the Single Plan with these adjustments:\n\n- Title: `# <Feature Name> \u2014 Phase <N>: <Phase Name>`\n- **Prerequisites** states the prior phase's end state: \"Phase <N-1> complete:\n  <files/exports that now exist>.\" Phase 1 states the pre-feature codebase state.\n- **Decision Log** is composed by the engine with\n  `lightsout plan sync-decisions`, exactly as in the Single Plan: write neither\n  the heading's content nor a row. A phase file's section points at the\n  overview's complete history rather than repeating it.\n- **Global Constraints** is composed by the engine in every phase, exactly as in\n  the Single Plan: the heading is required and its content is not yours to\n  write.\n- **Prior Art** is still mandatory \u2014 one line per newly-created exported symbol.\n- **Files to Modify from Earlier Phases** is where a file an earlier phase\n  creates is changed \u2014 never Files to Modify (whose paths must exist on disk\n  today) and never Files to Create (whose paths no phase has claimed yet).\n- **Files to Delete**, **Files to Move** and **File Budget** carry the same\n  meaning as in the Single Plan, per phase.\n- **What Next Plan Expects** is mandatory and chains: it must list exactly what\n  the next phase's Prerequisites will claim. The final phase states \"None \u2014\n  final phase.\"\n- **Acceptance Tests** and **Prose Files** are required in every phase and never\n  on the overview: the overview creates nothing, so a row written there would\n  belong to no executor.\n";
 
 // src/agents/prompts/focusedPlanTemplate.md
-var focusedPlanTemplate_default = "# Plan Template\n\nTemplates for plans consumed by `lightsout implement` and graded by the\ndeterministic structural lint (`plan grade`, structure) and the gap-check agent\n(`plan grade`, decisions). Three variants: **Single Plan** (standalone feature),\n**Overview Plan** (multi-phase context), and **Phase Plan** (one implementation\nscope under an overview).\n\n## Rules (all variants)\n\nThese mirror the structural-lint and gap-check rubrics \u2014 a plan violating them\nwill not reach A:\n\n- **No placeholders.** No `???`, `TBD`, `TODO`, or unresolved `{tokens}`. Every\n  open question must be resolved before the plan is written.\n- **Every referenced path verified.** Files listed under Files to Modify and\n  Patterns to Mirror must exist on disk at write time. Files to Create must not.\n- **Backticks around a path assert it exists.** Every backticked span that\n  names a file \u2014 anywhere in the plan, not only under the file headings \u2014 is\n  checked against the working tree and blocks if it is not there. A path\n  written to illustrate a shape rather than to name a real file goes in plain\n  prose, without backticks. Search patterns are exempt: a span holding `*` is\n  read as a glob, never as a claim.\n- **Earlier-phase files have their own heading.** In a phased plan, a file an\n  EARLIER PHASE creates is changed under `## Files to Modify from Earlier\n  Phases` \u2014 never `## Files to Modify` (whose paths exist on disk today) and\n  never `## Files to Create` (whose paths no phase has claimed). Deletes and\n  moves have their own headings too; every path under all five is checked and\n  counted.\n- **Hand-offs chain by name.** Each phase's `## What Next Plan Expects` and the\n  next phase's `## Prerequisites` must name the same files and exports, in\n  backticked spans \u2014 a file path or a bare symbol name. A name one phase hands\n  forward and the next never claims is a structural defect.\n- **Signatures, not vibes.** Services and modules define their methods and\n  signatures \u2014 never \"create a service for X\" without saying what it exposes.\n- **Explicit dependency graph.** Module definitions include imports/exports;\n  cross-module wiring is stated (exports match imports).\n- **Real script names.** Verification commands reference scripts that exist in\n  the target `package.json` (or the configured `scripts` overrides).\n- **Within the created-file ceiling.** Each plan (or each phase) CREATES at most\n  {{createdFileCeiling}} source files. This is a hard ceiling: a phase over it is split, and no\n  declaration raises it. A created file has to be specified \u2014 its signatures, its\n  exports, its behaviour written out \u2014 which is what makes creating that many of\n  them a full phase.\n- **Touched files counted and declared.** Each plan (or each phase) also states\n  how many source files it touches in total (created, modified, modified from an\n  earlier phase, deleted, and both sides of every move). Above {{fileLimit}} the plan is\n  still legal, but it must carry a `## File Budget` covering its real count,\n  because {{fileLimit}} is where the implementing agent stops. A plan or phase that\n  touches more than {{touchedFileCeiling}} source files is refused and must be split:\n  neither the config nor a `## File Budget` raises that ceiling. The one exemption\n  is a rename-only plan or phase \u2014 its `## Renames` section, plus the\n  `**Renames only:** yes` bullet on the overview. A phase that creates three files\n  and renames an import across two hundred is legitimate work only as a rename-only\n  phase, with the rename gathered into a phase of its own; a phase that authors\n  that many from scratch is not.\n- **What counts as a source file.** Every path the plan names except test files,\n  `index` barrels, and `.d.ts` declaration files. A hand-authored type-only\n  module \u2014 a `.ts` file exporting one interface \u2014 DOES count: it still has to be\n  specified and written.\n- **Prior art recorded.** Every newly-created exported symbol is justified in a\n  `## Prior Art` section: the searches run against existing exports that prove it\n  is new, or the existing symbol it mirrors/extends.\n- **Global constraints are engine-composed.** Every variant carries a\n  `## Global Constraints` section, and the engine composes its content from the\n  same decision records the writer was handed. Write no bullet under that\n  heading, and leave one a file already carries exactly as found \u2014 anything\n  written there is replaced.\n- **Rename-only phases.** A plan or phase whose whole work is renaming symbols\n  or paths may be declared rename-only with a `## Renames` section, one `-`\n  bullet per rename naming the old and the new text, each in backticks. Gather\n  renames into their own phase where you can, covering every file the rename\n  spans. A rename-only file creates nothing, and it is built without test\n  writing: the engine checks in code that every changed file differs from the\n  phase's start only by the declared renames. Each rename is a literal,\n  case-sensitive substitution of every occurrence, applied in the order listed,\n  to file paths and file contents alike \u2014 and no rename's new text may contain\n  any rename's old text, own or another's.\n{{documentationRule}}\n\n---\n\n## Single Plan\n\n```markdown\n# <Feature Name>\n\n## Context\n\n<1\u20132 paragraphs: what this feature does, why it is needed, and the relevant\ncurrent state of the codebase.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Prerequisites\n\n- <required state before implementation begins, or \"None\">\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <why this package is touched>\n\n<!-- Single-package repos: state \"Single-package repository.\" packagesDir is the\nrepo's package directory convention (default `packages`). -->\n\n## Files to Create\n\n### `<packagesDir>/<name>/src/path/to/file.ts`\n\n<Purpose. Key contents: exported functions/classes with full signatures,\nmethods, imports it needs, what it exports. Enough detail that a fresh-context\nagent writes the right code without guessing.>\n\n## Files to Modify\n\n### `<packagesDir>/<name>/src/path/to/existing.ts`\n\n<What changes and where: which function/section, what is added/removed/changed,\nand how it integrates with the created files.>\n\n## Files to Modify from Earlier Phases\n\n<Optional \u2014 omit the heading entirely when this plan has no such work. Every\npath here must be one an EARLIER PHASE creates, and must not exist on disk yet;\na file that is already there belongs under Files to Modify.>\n\n### `<packagesDir>/<name>/src/path/to/from-phase-one.ts`\n\n<Which phase creates it, and what changes here.>\n\n## Files to Delete\n\n<Optional \u2014 omit the heading entirely when this plan deletes nothing.>\n\n### `<packagesDir>/<name>/src/path/to/going.ts`\n\n<Why it goes, and what takes over its callers.>\n\n## Files to Move\n\n<Optional \u2014 omit the heading entirely when this plan moves nothing. Each\nsubheading names exactly two paths in backticks, old then new.>\n\n### `<packagesDir>/<name>/src/old/path.ts` \u2192 `<packagesDir>/<name>/src/new/path.ts`\n\n<What moves and why.>\n\n## File Budget\n\n<Optional \u2014 omit this section unless the plan touches more than {{fileLimit}}\nsource files. A single integer on its own line: the total source files this plan\ntouches. It must cover the real count, and it does NOT raise the created-file\nceiling, which is fixed at {{createdFileCeiling}}.>\n<Nor does it raise the touched-file ceiling, which is fixed at\n{{touchedFileCeiling}} for every plan that is not rename-only.>\n\n## Renames\n\n<Optional \u2014 omit the heading entirely unless this plan is rename-only. One\nbullet per rename, the old text then the new, each in backticks, in the order\nthey are applied. A rename-only plan lists nothing under Files to Create.>\n\n- `<oldName>` \u2192 `<newName>`\n\n## Patterns to Mirror\n\n- `<packagesDir>/<name>/src/path/to/analogous.ts` \u2014 <what to take from it:\n  structure, naming, error handling, etc.>\n\n## Prior Art\n\nOne line per newly-created exported symbol, recording the dedup search that\njustifies its newness:\n\n- `<symbol>` \u2014 searched <terms>, found none (new)\n- `<symbol>` \u2014 mirrors `<existing export>` (extends, does not duplicate)\n\n## Scope Boundaries\n\n**Do:**\n- <in-scope item>\n\n**Do NOT:**\n- <explicitly out-of-scope item \u2014 adjacent work the agent might be tempted to do>\n\n## Verification\n\n- `<resolved check command>` \u2014 types clean\n- `<resolved test-unit command>` \u2014 tests pass\n\n## What Next Plan Expects\n\n<For a standalone plan: \"None \u2014 standalone plan.\" Otherwise: the exact state a\nfollow-up plan can rely on \u2014 files that exist, exports available, behavior\nguaranteed.>\n```\n\n---\n\n## Overview Plan\n\nThe overview carries context shared by all phases. It is **not implemented\ndirectly** \u2014 it is passed alongside each phase to `lightsout implement` and to\n`plan grade` as context.\n\n```markdown\n# <Feature Name> \u2014 Overview\n\n## Context\n\n<What this feature does, why, and the relevant current state.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced. The\noverview holds the plan's complete history; each phase file points at it.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Architecture\n\n<How the pieces fit together across phases: data flow, module boundaries,\nshared types. A diagram or short prose map.>\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <role in this feature>\n\n## Phases\n\nThis table and `## Phase Declarations` below are two views of ONE phase record.\nState each phase once here \u2014 its number, its `phase<N>-<slug>.md` filename, a\none-line scope, and its two counts \u2014 and state its cross-boundary names once\nbelow. The engine normalises the number-and-filename pairing across both views\nbefore the lint runs, so checking one copy against the other by hand is not your\nwork.\n\nCreates and Touches are integer counts of source files \u2014 the same set the\ncreated-file ceiling and the touched-file budget are measured on (test files,\n`index` barrels and `.d.ts` declarations excluded; a hand-authored type-only\nmodule counts). Each must equal the count the phase file itself lists.\n\n| # | File | Scope | Creates | Touches |\n|---|------|-------|---------|---------|\n| 1 | `phase1-<slug>.md` | <one-line scope> | <n> | <n> |\n| 2 | `phase2-<slug>.md` | <one-line scope> | <n> | <n> |\n\n## Phase Declarations\n\nOne block per phase \u2014 the same phase record the table above lists, carrying what\nthe table cannot. List ONLY what crosses a phase boundary: the files a later\nphase builds against, the exported names later phases import, and the package\nscripts this phase adds. The phase file already holds its complete file\nlist \u2014 repeating it here creates two lists that drift the moment either is\nedited. Write `none` for a bullet with nothing to declare. The engine keeps each\nblock's number and filename agreeing with its table row, so write the\ncross-boundary bullets once and leave the pairing to it.\n\n### Phase 1 \u2014 `phase1-<slug>.md`\n\n- **Creates:** `<packagesDir>/<name>/src/path/to/file.ts`\n- **Exports:** `<symbol>`\n- **Scripts:** none\n\n### Phase 2 \u2014 `phase2-<slug>.md`\n\n- **Creates:** none\n- **Exports:** none\n- **Scripts:** none\n- **File budget:** <n>\n- **Renames only:** yes\n\n<!-- **File budget:** is optional: include it only when that phase file carries a\n`## File Budget`, and repeat the same integer. It must cover that phase's Touches\ncount, and it never raises the created-file ceiling, which is fixed at\n{{createdFileCeiling}}. It never raises the touched-file ceiling of\n{{touchedFileCeiling}} either; only a phase declared `**Renames only:** yes` is\nexempt from that one. **Renames only:** is optional too: write it, reading\n`yes`, only for a phase whose file carries a `## Renames` section. -->\n\n## Cross-Phase Dependencies\n\n- Phase 2 depends on Phase 1's <export/file/behavior>.\n```\n\n---\n\n## Phase Plan\n\nIdentical to the Single Plan with these adjustments:\n\n- Title: `# <Feature Name> \u2014 Phase <N>: <Phase Name>`\n- **Prerequisites** states the prior phase's end state: \"Phase <N-1> complete:\n  <files/exports that now exist>.\" Phase 1 states the pre-feature codebase state.\n- **Decision Log** is composed by the engine with\n  `lightsout plan sync-decisions`, exactly as in the Single Plan: write neither\n  the heading's content nor a row. A phase file's section points at the\n  overview's complete history rather than repeating it.\n- **Global Constraints** is composed by the engine in every phase, exactly as in\n  the Single Plan: the heading is required and its content is not yours to\n  write.\n- **Prior Art** is still mandatory \u2014 one line per newly-created exported symbol.\n- **Files to Modify from Earlier Phases** is where a file an earlier phase\n  creates is changed \u2014 never Files to Modify (whose paths must exist on disk\n  today) and never Files to Create (whose paths no phase has claimed yet).\n- **Files to Delete**, **Files to Move** and **File Budget** carry the same\n  meaning as in the Single Plan, per phase.\n- **What Next Plan Expects** is mandatory and chains: it must list exactly what\n  the next phase's Prerequisites will claim. The final phase states \"None \u2014\n  final phase.\"\n";
+var focusedPlanTemplate_default = "# Plan Template\n\nTemplates for plans consumed by `lightsout implement` and graded by the\ndeterministic structural lint (`plan grade`, structure) and the gap-check agent\n(`plan grade`, decisions). Three variants: **Single Plan** (standalone feature),\n**Overview Plan** (multi-phase context), and **Phase Plan** (one implementation\nscope under an overview).\n\n## Rules (all variants)\n\nThese mirror the structural-lint and gap-check rubrics \u2014 a plan violating them\nwill not reach A:\n\n- **No placeholders.** No `???`, `TBD`, `TODO`, or unresolved `{tokens}`. Every\n  open question must be resolved before the plan is written.\n- **Every referenced path verified.** Files listed under Files to Modify and\n  Patterns to Mirror must exist on disk at write time. Files to Create must not.\n- **Backticks around a path assert it exists.** Every backticked span that\n  names a file \u2014 anywhere in the plan, not only under the file headings \u2014 is\n  checked against the working tree and blocks if it is not there. A path\n  written to illustrate a shape rather than to name a real file goes in plain\n  prose, without backticks. Search patterns are exempt: a span holding `*` is\n  read as a glob, never as a claim.\n- **Earlier-phase files have their own heading.** In a phased plan, a file an\n  EARLIER PHASE creates is changed under `## Files to Modify from Earlier\n  Phases` \u2014 never `## Files to Modify` (whose paths exist on disk today) and\n  never `## Files to Create` (whose paths no phase has claimed). A file an\n  earlier phase's folder move carried is named the same way, by its new path\n  under `## Files to Modify from Earlier Phases`. Deletes and\n  moves have their own headings too; every path under all five is checked and\n  counted.\n- **Hand-offs chain by name.** Each phase's `## What Next Plan Expects` and the\n  next phase's `## Prerequisites` must name the same files and exports, in\n  backticked spans \u2014 a file path or a bare symbol name. A name one phase hands\n  forward and the next never claims is a structural defect.\n- **Signatures, not vibes.** Services and modules define their methods and\n  signatures \u2014 never \"create a service for X\" without saying what it exposes.\n- **Explicit dependency graph.** Module definitions include imports/exports;\n  cross-module wiring is stated (exports match imports).\n- **Real script names.** Verification commands reference scripts that exist in\n  the target `package.json` (or the configured `scripts` overrides).\n- **Within the created-file ceiling.** Each plan (or each phase) CREATES at most\n  {{createdFileCeiling}} source files. This is a hard ceiling: a phase over it is split, and no\n  declaration raises it. A created file has to be specified \u2014 its signatures, its\n  exports, its behaviour written out \u2014 which is what makes creating that many of\n  them a full phase.\n- **Touched files counted and declared.** Each plan (or each phase) also states\n  how many source files it touches in total (created, modified, modified from an\n  earlier phase, deleted, and both sides of every move). A folder move counts\n  every file it carries, on both sides. Above {{fileLimit}} the plan is\n  still legal, but it must carry a `## File Budget` covering its real count,\n  because {{fileLimit}} is where the implementing agent stops. A plan or phase that\n  touches more than {{touchedFileCeiling}} source files is refused and must be split:\n  neither the config nor a `## File Budget` raises that ceiling. There are two\n  exemptions. One is a rename-only plan or phase \u2014 its `## Renames` section, plus the\n  `**Renames only:** yes` bullet on the overview. The other is a\n  move-folders-and-files plan or phase \u2014 its `## Build Mode` section reading\n  `move-folders-and-files`, plus the `**Moves folders and files only:** yes`\n  bullet on the overview. A phase that creates three files\n  and renames an import across two hundred is legitimate work only as a rename-only\n  phase, with the rename gathered into a phase of its own; a phase that authors\n  that many from scratch is not. Likewise, a phase that relocates a folder of\n  three hundred files is legitimate work only as a move-folders-and-files phase,\n  with the move gathered into a phase of its own.\n- **What counts as a source file.** Every path the plan names except test files,\n  `index` barrels, and `.d.ts` declaration files. A hand-authored type-only\n  module \u2014 a `.ts` file exporting one interface \u2014 DOES count: it still has to be\n  specified and written.\n- **Prior art recorded.** Every newly-created exported symbol is justified in a\n  `## Prior Art` section: the searches run against existing exports that prove it\n  is new, or the existing symbol it mirrors/extends.\n- **Global constraints are engine-composed.** Every variant carries a\n  `## Global Constraints` section, and the engine composes its content from the\n  same decision records the writer was handed. Write no bullet under that\n  heading, and leave one a file already carries exactly as found \u2014 anything\n  written there is replaced.\n- **Rename-only phases.** A plan or phase whose whole work is renaming symbols\n  or paths may be declared rename-only with a `## Renames` section, one `-`\n  bullet per rename naming the old and the new text, each in backticks. Gather\n  renames into their own phase where you can, covering every file the rename\n  spans. A rename-only file creates nothing, and it is built without test\n  writing: the engine checks in code that every changed file differs from the\n  phase's start only by the declared renames. Each rename is a literal,\n  case-sensitive substitution of every occurrence, applied in the order listed,\n  to file paths and file contents alike \u2014 and no rename's new text may contain\n  any rename's old text, own or another's.\n- **Move-folders-and-files phases.** A plan or phase whose whole work is moving\n  folders and files may be declared move-folders-and-files with a `## Build Mode`\n  section whose body is the single line `move-folders-and-files`. Its\n  `## Files to Move` headings name file moves and folder moves: a folder move\n  names two folders, each ending in `/`, never one file and one folder. It lists\n  nothing under Files to Create, Files to Modify or Files to Delete, carries no\n  `## Renames`, and states no Acceptance Tests rows. It needs no `## File Budget`\n  and is exempt from the touched-file ceiling. A move and feature work are two\n  phases. A destination folder must not already exist, and the moves in one\n  phase must not overlap, chain or swap. It is built without test writing,\n  without the reviewing agent and without refactor: the engine instead checks in\n  code that every removed file pairs with an added file at its declared\n  destination, that no declared move left a file at its old path, and that every\n  changed file differs from the phase's start only in the paths that point at\n  moved files, every other character staying as it was. A file that is not text,\n  such as a binary, may only move unchanged.\n{{documentationRule}}\n\n---\n\n## Single Plan\n\n```markdown\n# <Feature Name>\n\n## Context\n\n<1\u20132 paragraphs: what this feature does, why it is needed, and the relevant\ncurrent state of the codebase.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Prerequisites\n\n- <required state before implementation begins, or \"None\">\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <why this package is touched>\n\n<!-- Single-package repos: state \"Single-package repository.\" packagesDir is the\nrepo's package directory convention (default `packages`). -->\n\n## Files to Create\n\n### `<packagesDir>/<name>/src/path/to/file.ts`\n\n<Purpose. Key contents: exported functions/classes with full signatures,\nmethods, imports it needs, what it exports. Enough detail that a fresh-context\nagent writes the right code without guessing.>\n\n## Files to Modify\n\n### `<packagesDir>/<name>/src/path/to/existing.ts`\n\n<What changes and where: which function/section, what is added/removed/changed,\nand how it integrates with the created files.>\n\n## Files to Modify from Earlier Phases\n\n<Optional \u2014 omit the heading entirely when this plan has no such work. Every\npath here must be one an EARLIER PHASE creates, and must not exist on disk yet;\na file that is already there belongs under Files to Modify.>\n\n### `<packagesDir>/<name>/src/path/to/from-phase-one.ts`\n\n<Which phase creates it, and what changes here.>\n\n## Files to Delete\n\n<Optional \u2014 omit the heading entirely when this plan deletes nothing.>\n\n### `<packagesDir>/<name>/src/path/to/going.ts`\n\n<Why it goes, and what takes over its callers.>\n\n## Files to Move\n\n<Optional \u2014 omit the heading entirely when this plan moves nothing. Each\nsubheading names two files or two folders in backticks, old then new, a folder\nwritten with a trailing `/`.>\n\n### `<packagesDir>/<name>/src/old/path.ts` \u2192 `<packagesDir>/<name>/src/new/path.ts`\n\n<What moves and why.>\n\n### `<packagesDir>/<name>/src/old/folder/` \u2192 `<packagesDir>/<name>/src/new/folder/`\n\n<What moves and why.>\n\n## File Budget\n\n<Optional \u2014 omit this section unless the plan touches more than {{fileLimit}}\nsource files. A single integer on its own line: the total source files this plan\ntouches. It must cover the real count, and it does NOT raise the created-file\nceiling, which is fixed at {{createdFileCeiling}}.>\n<Nor does it raise the touched-file ceiling, which is fixed at\n{{touchedFileCeiling}} for every plan that is neither rename-only nor\nmove-folders-and-files.>\n\n## Renames\n\n<Optional \u2014 omit the heading entirely unless this plan is rename-only. One\nbullet per rename, the old text then the new, each in backticks, in the order\nthey are applied. A rename-only plan lists nothing under Files to Create.>\n\n- `<oldName>` \u2192 `<newName>`\n\n## Build Mode\n\n<Optional \u2014 omit the heading entirely unless this plan is\nmove-folders-and-files. Its body is the one line below. A plan carrying it\ncarries no `## Renames`.>\n\nmove-folders-and-files\n\n## Patterns to Mirror\n\n- `<packagesDir>/<name>/src/path/to/analogous.ts` \u2014 <what to take from it:\n  structure, naming, error handling, etc.>\n\n## Prior Art\n\nOne line per newly-created exported symbol, recording the dedup search that\njustifies its newness:\n\n- `<symbol>` \u2014 searched <terms>, found none (new)\n- `<symbol>` \u2014 mirrors `<existing export>` (extends, does not duplicate)\n\n## Scope Boundaries\n\n**Do:**\n- <in-scope item>\n\n**Do NOT:**\n- <explicitly out-of-scope item \u2014 adjacent work the agent might be tempted to do>\n\n## Verification\n\n- `<resolved check command>` \u2014 types clean\n- `<resolved test-unit command>` \u2014 tests pass\n\n## What Next Plan Expects\n\n<For a standalone plan: \"None \u2014 standalone plan.\" Otherwise: the exact state a\nfollow-up plan can rely on \u2014 files that exist, exports available, behavior\nguaranteed.>\n```\n\n---\n\n## Overview Plan\n\nThe overview carries context shared by all phases. It is **not implemented\ndirectly** \u2014 it is passed alongside each phase to `lightsout implement` and to\n`plan grade` as context.\n\n```markdown\n# <Feature Name> \u2014 Overview\n\n## Context\n\n<What this feature does, why, and the relevant current state.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced. The\noverview holds the plan's complete history; each phase file points at it.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Architecture\n\n<How the pieces fit together across phases: data flow, module boundaries,\nshared types. A diagram or short prose map.>\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <role in this feature>\n\n## Phases\n\nThis table and `## Phase Declarations` below are two views of ONE phase record.\nState each phase once here \u2014 its number, its `phase<N>-<slug>.md` filename, a\none-line scope, and its two counts \u2014 and state its cross-boundary names once\nbelow. The engine normalises the number-and-filename pairing across both views\nbefore the lint runs, so checking one copy against the other by hand is not your\nwork.\n\nCreates and Touches are integer counts of source files \u2014 the same set the\ncreated-file ceiling and the touched-file budget are measured on (test files,\n`index` barrels and `.d.ts` declarations excluded; a hand-authored type-only\nmodule counts). Each must equal the count the phase file itself lists.\n\n| # | File | Scope | Creates | Touches |\n|---|------|-------|---------|---------|\n| 1 | `phase1-<slug>.md` | <one-line scope> | <n> | <n> |\n| 2 | `phase2-<slug>.md` | <one-line scope> | <n> | <n> |\n\n## Phase Declarations\n\nOne block per phase \u2014 the same phase record the table above lists, carrying what\nthe table cannot. List ONLY what crosses a phase boundary: the files a later\nphase builds against, the exported names later phases import, and the package\nscripts this phase adds. The phase file already holds its complete file\nlist \u2014 repeating it here creates two lists that drift the moment either is\nedited. Write `none` for a bullet with nothing to declare. The engine keeps each\nblock's number and filename agreeing with its table row, so write the\ncross-boundary bullets once and leave the pairing to it.\n\n### Phase 1 \u2014 `phase1-<slug>.md`\n\n- **Creates:** `<packagesDir>/<name>/src/path/to/file.ts`\n- **Exports:** `<symbol>`\n- **Scripts:** none\n\n### Phase 2 \u2014 `phase2-<slug>.md`\n\n- **Creates:** none\n- **Exports:** none\n- **Scripts:** none\n- **File budget:** <n>\n- **Renames only:** yes\n\n<!-- **File budget:** is optional: include it only when that phase file carries a\n`## File Budget`, and repeat the same integer. It must cover that phase's Touches\ncount, and it never raises the created-file ceiling, which is fixed at\n{{createdFileCeiling}}. It never raises the touched-file ceiling of\n{{touchedFileCeiling}} either; only a phase declared `**Renames only:** yes` or\n`**Moves folders and files only:** yes` is exempt from that one. **Renames only:**\nis optional too: write it, reading `yes`, only for a phase whose file carries a\n`## Renames` section. **Moves folders and files only:** is optional as well:\nwrite it, reading `yes`, only for a phase whose file carries a `## Build Mode`\nsection reading `move-folders-and-files`, never beside **Renames only:** in one\nblock, and with no **File budget:**. Such a phase's **Creates:** may name the\ndestination folder exactly as its `## Files to Move` heading writes it, rather\nthan every file the folder carries. -->\n\n## Cross-Phase Dependencies\n\n- Phase 2 depends on Phase 1's <export/file/behavior>.\n```\n\n---\n\n## Phase Plan\n\nIdentical to the Single Plan with these adjustments:\n\n- Title: `# <Feature Name> \u2014 Phase <N>: <Phase Name>`\n- **Prerequisites** states the prior phase's end state: \"Phase <N-1> complete:\n  <files/exports that now exist>.\" Phase 1 states the pre-feature codebase state.\n- **Decision Log** is composed by the engine with\n  `lightsout plan sync-decisions`, exactly as in the Single Plan: write neither\n  the heading's content nor a row. A phase file's section points at the\n  overview's complete history rather than repeating it.\n- **Global Constraints** is composed by the engine in every phase, exactly as in\n  the Single Plan: the heading is required and its content is not yours to\n  write.\n- **Prior Art** is still mandatory \u2014 one line per newly-created exported symbol.\n- **Files to Modify from Earlier Phases** is where a file an earlier phase\n  creates is changed \u2014 never Files to Modify (whose paths must exist on disk\n  today) and never Files to Create (whose paths no phase has claimed yet).\n- **Files to Delete**, **Files to Move** and **File Budget** carry the same\n  meaning as in the Single Plan, per phase.\n- **What Next Plan Expects** is mandatory and chains: it must list exactly what\n  the next phase's Prerequisites will claim. The final phase states \"None \u2014\n  final phase.\"\n";
 
 // src/agents/prompts/focusedPlanWriter.md
 var focusedPlanWriter_default = '# Role: Plan Writer\n\nYou draft implementation plan file(s) that a fresh-context agent can implement\nwithout guessing. You work autonomously from the task message; you write the\nplan file(s) to disk and your final message is machine-parsed \u2014 one JSON report,\nnot prose for a human.\n\nYou deliberately receive **only** a decisions record, a verified facts list, and\nthe evidence the engine collected for you \u2014 no planning conversation. If you\ncannot draft the plan from those inputs alone, the inputs are incomplete: report\nwhat is missing and terminate. Do not fill gaps with guesses \u2014 a gap you paper\nover becomes a failure in the implementing agent.\n\n## Input\n\nThe task message provides:\n\n- **Feature request** \u2014 what is being built.\n- **Output files** \u2014 where to write each plan file (absolute paths) and which\n  template variant (`single`, `overview`, or `phase`) applies to each.\n- **Collected source evidence** \u2014 the real contents of the files your assignment\n  touches, read off disk by the engine from the paths the verified facts\n  recorded. Each block is tied to the exact file contents it was taken from, so\n  what it shows is what was there. What it does not show is not a claim that the\n  file holds nothing else: a block may carry selected definitions rather than a\n  whole file, and it says so when it does. Absent entirely means this spawn was\n  given no evidence, not that the files are empty.\n- **Prior art census** \u2014 the existing exported names that match, by name, the\n  symbols your assignment says you will create. It is a mechanical name\n  comparison over the repository\'s exports, not a finding: a match is a question\n  to answer, and no match is no proof that differently named functionality is\n  absent. Absent entirely means no census was run for this spawn.\n- **Decisions record** \u2014 the design decisions (JSON), with chosen answers and\n  rationale. Each row carries a `source` naming where the decision came from;\n  `Brainstorm` rows were settled in a separate design conversation before\n  planning began \u2014 the engine merges them in, and they are as binding as the\n  plan\'s own.\n- **Verified facts** \u2014 codebase facts already verified on disk (JSON): affected\n  packages, files to modify, patterns to mirror, integration points, scripts,\n  naming conventions. You receive these whole, never trimmed to your assignment:\n  they carry the architectural map, and which part of a map matters to one phase\n  is a judgment, not a filter.\n- **Code standards** (optional) \u2014 supplemental conventions the plan\'s file\n  placements, naming, signatures, and patterns should conform to. Absence is\n  fine; this is not a hard gate.\n\nThe plan template is inlined in your system prompt below. Follow the variant\nthat each output file names.\n\n## Workflow\n\n### 1. Validate inputs\n\nConfirm the message carries a feature request, output path(s) with variants, a\ndecisions record, and a facts list. If any is missing, report the error result\nbelow and terminate \u2014 write no files.\n\n### 2. Work from the collected evidence\n\nThe collected source evidence is your starting point, not a summary to re-derive.\nThe engine read those files once for this whole draft; re-reading a file the\nevidence already covers is the exact cost this role exists to remove, and on a\nphased plan it is paid once per phase. So:\n\n- Take every exported name, signature and integration point you reference from\n  the evidence. Never transcribe a signature the evidence does not show \u2014 not\n  from the facts list, not from memory, not from a name that looks familiar.\n- You keep your file read and search tools, and you use them for what the\n  evidence does not answer: a file no block covers, a caller the blocks do not\n  reach, the rest of a file whose block carried only selected definitions.\n- Verify each file you plan to create does **not** already exist. That check is\n  cheap and the evidence cannot stand in for it, because a path nobody recorded\n  has no block.\n- Where what the evidence shows and what the facts state cannot be reconciled,\n  and reading the source does not settle it, report the discrepancies and\n  terminate. An unresolved discrepancy stops the draft; it never becomes a guess.\n- A referenced path that is not on disk, or a script that does not exist, is the\n  same stop: report and terminate.\n\n### 3. Prior art (from the census)\n\nDo not search the repository once per symbol you intend to create \u2014 the engine\nalready ran that comparison and handed you the result.\n\n- For each planned symbol the census answers, state the reuse decision the result\n  implies: mirror the existing export, extend it, or say why it cannot serve and\n  a new symbol is warranted. A real collision is worth one targeted read of the\n  colliding export before you decide.\n- A census match is a name match. It is not proof of duplication, and no match is\n  not proof that functionality under a different name is absent. That judgment is\n  yours, and it is why you still think about reuse at all.\n- A planned symbol the census does not cover \u2014 typically one in a file no\n  declaration names \u2014 gets **one** targeted search, not a search per symbol.\n- Record the outcome in the plan\'s `## Prior Art` section, one line per new\n  symbol: what was searched or compared, what it found, and the existing symbol\n  it mirrors where there is one.\n\n### 4. Write the plan\n\nWrite each output file following its template variant exactly. While writing:\n\n- Resolve every detail from the decisions record, the facts, and the collected\n  evidence. No `???`, `TBD`, `TODO`, or unresolved `{tokens}` \u2014 if a detail\n  cannot be resolved from your inputs, that is a step 1/2 failure: report and\n  terminate.\n- Define methods and signatures for every service/module the plan creates.\n- Make the dependency graph explicit: imports/exports per created file,\n  cross-module wiring stated (exports match imports).\n- Make scope boundaries concrete \u2014 name the adjacent work the implementing agent\n  must NOT do.\n- State human-facing copy \u2014 an error message, a progress line, a warning \u2014 as\n  what it has to tell the reader, never as the sentence to reproduce. Quoting\n  the wording reads as an instruction to pin it exactly, which the standards\n  forbid for copy, so every agent downstream stops to re-decide the same\n  conflict. Name the parts that carry meaning \u2014 a path, a command, an\n  identifier \u2014 and leave the connecting prose to the implementer.\n- For multi-phase plans, chain the contract: each phase\'s "What Next Plan\n  Expects" must list exactly what the next phase\'s Prerequisites claim.\n- **Leave every engine-composed section alone.** The engine composes these from\n  the same records you were handed, and replaces whatever stands where they go:\n  - `## Decision Log` \u2014 write no heading content and no row.\n  - `## Global Constraints` \u2014 write no bullet. The engine reads the decisions\n    record for it.\n  - On an overview, the pairing of each `## Phases` row\'s number and filename\n    with its `### Phase <N> \u2014 ` declaration heading. You state each phase\'s\n    scope, its estimated counts and its cross-boundary declarations once; the\n    engine makes the two views agree.\n\n  For each of them: write no content, and where a file you are editing already\n  carries the section, leave it exactly as you found it.\n- Keep each plan (or phase) within 40 source files to create/modify.\n- When the task message carries an `## Acceptance-test ledger` section, write the\n  contract shape: every created file\'s full exported signatures and the file it\n  mirrors, one `## Acceptance Tests` row per acceptance criterion, every file\n  with no testable behaviour listed under `## Prose Files` with its reason, and\n  no narration of inner implementation. A behaviour expectation is a ledger row,\n  not a paragraph.\n\n### 5. Self-review\n\nIf the task message includes a `## Self-lint` section, run its commands first\n(Bash), in the order it lists them: where it carries a sync command, that one\ncomposes every engine-owned section \u2014 the Decision Log, the Global Constraints,\nand the phase row and declaration pairing \u2014 and runs before the lint, so the\nlint never reports a section you are forbidden to write. Fix every finding the\nlint prints in the plan file(s) and re-run until it exits 0; if a re-run prints\nthe identical findings twice, stop looping and continue. If a command itself\ncannot be executed, skip it \u2014 the engine syncs and lints your output either way.\n\nThen check each written file against the grading criteria: every referenced\nexisting path verified; every created file listed with signatures and\nimports/exports; no placeholders; scope boundaries explicit; prerequisites\nstated; verification commands resolvable; "What Next Plan Expects" present; no\ncontent authored for any engine-composed section; a `## Prior Art` line for\nevery new symbol. If a "Code standards" section was provided, confirm the plan\'s\nplacements and naming conform to it. If an acceptance-test ledger was asked for,\nconfirm every row names a test file and a test name, and that every created\nsource file is either reached by a row or listed under `## Prose Files` with a\nreason.\n\n## Phased plans \u2014 hard naming rule\n\nA phased plan is drafted in two stages, and the task message tells you which\nstage you are in.\n\n- **Overview only** (a `## Overview only` section is present) \u2014 author\n  `overview.md` and nothing else. Its `## Phases` table and its\n  `## Phase Declarations` blocks are what the phase writers are given, so a\n  phase you do not declare is never authored at all.\n- **Phase authoring** (a `## Phase authoring` section is present) \u2014 author\n  exactly one `phase<N>-<slug>.md`, against the settled overview and the\n  declaration row you are handed. Satisfy that declaration exactly: create every\n  path it names, export every name it names, add every script it names. Do NOT\n  re-decide the breakdown, renumber anything, or write another phase\'s file.\n  Every sibling phase is being authored concurrently, so none of them is on disk\n  for you to read \u2014 the declarations you are given are the whole of what you may\n  rely on.\n\nThe file names are **required**, not stylistic \u2014 `plan grade` finds the files\n**by name**: `overview.md` is read as context, and each `phase<N>-<slug>.md` is\ngraded. That directory also holds the plan\'s working files (notes, facts,\ndecisions, records), so anything not matching those names is ignored. The engine\ndictates the exact output path in both modes; report **every** written path in\n`filesWritten`.\n\nA phase spawn is given no `## Self-lint` section, and that is deliberate rather\nthan an oversight: its sibling phases are not on disk yet, so a lint run there\nwould report provenance and hand-off findings that are artefacts of when it\nlooked, not defects. The engine lints and converges the finished set afterwards.\n\n## Report \u2014 your entire final message is one JSON object\n\nWrite the plan file(s) to disk at the given paths **first**, then emit exactly\none JSON `PlanDraftReport` object as your entire final message. Output ONLY the\nJSON \u2014 no fences, no surrounding text. Your message starts with `{` and ends\nwith `}`.\n\n```\n{\n	"status": "drafted",\n	"filesWritten": [\n		{ "path": "<absolute path written>", "variant": "single|overview|phase", "scope": "<phase slug, or \'single\'>" }\n	],\n	"decisionsApplied": <number>,\n	"assumptions": ["<any input you had to treat as an assumption>"],\n	"discrepancies": []\n}\n```\n\nIf inputs were invalid or facts failed verification, write **no** files and\nreport the error result \u2014 `status` is `"error"` and `discrepancies` lists what\nis wrong:\n\n```\n{\n	"status": "error",\n	"filesWritten": [],\n	"decisionsApplied": 0,\n	"assumptions": [],\n	"discrepancies": ["facts reference src/x.ts \u2014 does not exist on disk", "..."]\n}\n```\n\n## Operational rules\n\n- Do not ask clarifying questions \u2014 proceed immediately; unresolvable inputs are\n  reported via the error result, not asked about.\n- Write **only** the plan files at the provided output paths. Do not create or\n  modify source files, tests, or anything else.\n- Do not implement any part of the feature. Do not create commits or branches.\n- You run in a focused environment: no external tool servers are connected, no\n  skill or slash-command catalogue is loaded, and you have no delegation or\n  workflow tooling. Do not attempt to hand work to another agent or to invoke a\n  skill \u2014 there is none to invoke, and trying wastes the spawn. Your\n  capabilities are reading files, searching the repository, and the check\n  commands the task message permits.\n- Respect all instructions in the project\'s CLAUDE.md files.\n';
@@ -153091,10 +153416,10 @@ var authorFocusedPlanFiles = async ({
 var renderDraftEvidenceBrief = ({ evidence }) => renderEvidenceBrief({ index: evidence, paths: evidence.entries.map((entry) => entry.path) });
 
 // src/plan/draft/internal/common/utils/getAdvisoryFindings.ts
-var getAdvisoryFindings = ({ findings }) => findings.filter((finding3) => finding3.severity === FindingSeverity.Advisory);
+var getAdvisoryFindings = ({ findings }) => findings.filter((finding6) => finding6.severity === FindingSeverity.Advisory);
 
 // src/plan/draft/repairPlanStructure.ts
-import { join as join120 } from "node:path";
+import { join as join121 } from "node:path";
 
 // src/agents/prompts/planRepair.md
 var planRepair_default = '# Role: Plan Repairer\n\nYou fix an existing drafted plan in place. You do NOT re-author it. You work\nautonomously from the task message; you Edit the listed plan file(s) and your\nfinal message is machine-parsed \u2014 one JSON report, not prose for a human.\n\n## Input\n\nThe task message provides:\n\n- **Plan files to repair** \u2014 the absolute path(s) of the drafted plan file(s)\n  to Read and Edit in place.\n- **Structural findings to resolve** \u2014 the typed structural defects the\n  deterministic lint flagged, each with its exact `fix` string.\n- **Reference files** (Read on demand) \u2014 absolute paths of the plan\'s own\n  decisions (`decisions.json`, the design decisions), the brainstorm decisions\n  (`brainstorm-decisions.json` \u2014 present only when the work came from a\n  `/brainstorm` hand-off, holding decisions settled before planning began),\n  and the verified facts (`facts.json`, codebase facts already verified on\n  disk). The two decision files together are the decisions record: a fix that\n  rebuilds a section derived from decisions (Global Constraints above all) must\n  draw on the rows in both \u2014 and where two of them answer one question,\n  the last row sharing a `question` is the live one. When a finding\'s fix\n  requires content \u2014 a placeholder to fill, a missing section to write \u2014 the\n  content MUST come from Reading these files, never from a guess. Findings\n  whose `fix` string is complete need no Read at all.\n\n## Workflow\n\n1. Read each listed plan file.\n2. For each finding, apply the smallest edit that resolves it \u2014 apply the\n   finding\'s `fix` string literally where it is concrete; where the fix\n   requires content (a placeholder to fill, a missing section to write),\n   resolve it by Reading the reference files.\n3. Hard rule: **minimal edits resolving only the flagged findings \u2014 do not\n   restructure, re-order, re-word, or touch any content the findings do not\n   name.** The `## Decision Log` is outside every edit you may make: the engine\n   composes it, and a finding that names it is reported rather than fixed.\n4. If a finding cannot be resolved from the inputs, stop and report status\n   `error` with the reason per finding in `discrepancies` \u2014 never paper over\n   it.\n\n## Report \u2014 your entire final message is one JSON object\n\nEmit exactly one JSON `PlanFixReport` object as your entire final message.\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts\nwith `{` and ends with `}`.\n\n```\n{\n	"status": "fixed",\n	"filesEdited": ["<absolute path edited>"],\n	"discrepancies": []\n}\n```\n\nIf a finding cannot be resolved from the inputs, report the error result \u2014\n`status` is `"error"` and `discrepancies` states why, per finding:\n\n```\n{\n	"status": "error",\n	"filesEdited": [],\n	"discrepancies": ["<finding> \u2014 cannot be resolved because <reason>", "..."]\n}\n```\n\n## Operational rules\n\n- Edit **only** the listed plan files; never source files, tests, or anything\n  else.\n- The `## Decision Log` section is composed by the engine from the saved\n  decision records. Never edit, re-order or re-word it by hand \u2014 not even to\n  resolve a finding that names it. Report such a finding in `discrepancies`\n  instead; the engine composes the section again itself.\n- Do not implement any part of the feature. Do not create commits or branches.\n- Do not ask clarifying questions \u2014 proceed immediately; unresolvable findings\n  are reported via the error result, not asked about.\n- Respect all instructions in the project\'s CLAUDE.md files.\n';
@@ -153117,8 +153442,8 @@ var buildPlanRepairInvocation = ({
   factsPath,
   docs
 }) => {
-  const findingLines = findings.map((finding3) => `- [${finding3.check}] ${finding3.location} \u2014 ${finding3.issue}
-  fix: ${finding3.fix}`);
+  const findingLines = findings.map((finding6) => `- [${finding6.check}] ${finding6.location} \u2014 ${finding6.issue}
+  fix: ${finding6.fix}`);
   const referenceLines = [
     `- Decisions record: ${decisionsPath}`,
     ...brainstormDecisionsPath ? [`- Brainstorm decisions (settled during brainstorm, before planning began): ${brainstormDecisionsPath}`] : [],
@@ -153158,17 +153483,17 @@ var PlanFixReport = external_exports.object({
 });
 
 // src/plan/draft/internal/common/utils/getFindingSetKey.ts
-var getFindingSetKey = ({ findings }) => getBlockingFindings({ findings }).map((finding3) => [finding3.check, finding3.issue].join("|")).sort().join("\n");
+var getFindingSetKey = ({ findings }) => getBlockingFindings({ findings }).map((finding6) => [finding6.check, finding6.issue].join("|")).sort().join("\n");
 
 // src/plan/internal/common/constants/maxPlanRepairAttempts.ts
 var maxPlanRepairAttempts = 3;
 
 // src/plan/draft/internal/common/utils/convergeFindings.ts
 var convergeFindings = async ({ name, verb, findingNoun, check: check2, unreadableError, runAttempt, progress }) => {
-  const unreadable2 = { status: PlanRunStatus.Failed, error: unreadableError };
+  const unreadable3 = { status: PlanRunStatus.Failed, error: unreadableError };
   let findings = await check2();
   if (findings === void 0) {
-    return unreadable2;
+    return unreadable3;
   }
   for (let attempt = 1; attempt <= maxPlanRepairAttempts && getBlockingFindings({ findings }).length > 0; attempt += 1) {
     const blocking = getBlockingFindings({ findings });
@@ -153186,7 +153511,7 @@ var convergeFindings = async ({ name, verb, findingNoun, check: check2, unreadab
     }
     findings = await check2();
     if (findings === void 0) {
-      return unreadable2;
+      return unreadable3;
     }
     if (declined) {
       break;
@@ -153200,12 +153525,12 @@ var convergeFindings = async ({ name, verb, findingNoun, check: check2, unreadab
 };
 
 // src/plan/sections/syncPhaseSectionsFromFiles.ts
-import { readFile as readFile49 } from "node:fs/promises";
-import { basename as basename20 } from "node:path";
+import { readFile as readFile50 } from "node:fs/promises";
+import { basename as basename21 } from "node:path";
 
 // src/plan/draft/stampPhaseCounts.ts
-import { readFile as readFile48 } from "node:fs/promises";
-import { basename as basename19 } from "node:path";
+import { readFile as readFile49 } from "node:fs/promises";
+import { basename as basename20 } from "node:path";
 
 // src/plan/internal/common/paths/isPlanSourceFile.ts
 var isPlanSourceFile = ({ path }) => !isTestFile({ path }) && !/(^|\/)index\.[jt]sx?$/.test(path) && !/\.d\.ts$/.test(path);
@@ -153232,6 +153557,237 @@ var getPlanTouchedPaths = ({ plan }) => {
   const created = plan.createPaths.filter((path) => isPlanSourceFile({ path }));
   const touched = getPlanNamedPaths({ plan }).filter((path) => isPlanSourceFile({ path }));
   return { created: [...new Set(created)], touched: [...new Set(touched)] };
+};
+
+// src/plan/internal/common/utils/readPhaseFiles.ts
+import { readFile as readFile48 } from "node:fs/promises";
+import { basename as basename19 } from "node:path";
+var phaseNumber = ({ base }) => base === "overview.md" ? 0 : Number(/^phase(\d+)-/.exec(base)?.[1] ?? 1);
+var readPhaseFiles = async ({ planPaths }) => {
+  const phases = [];
+  const findings = [];
+  for (const planPath of planPaths) {
+    const content = await readFile48(planPath, "utf8").catch(() => void 0);
+    const base = basename19(planPath);
+    if (content === void 0) {
+      findings.push({
+        check: StructuralCheck.SectionsPresent,
+        severity: FindingSeverity.Blocking,
+        phase: base,
+        issue: "plan file could not be read",
+        location: planPath,
+        fix: "ensure the draft wrote the plan file at this path"
+      });
+      continue;
+    }
+    phases.push({ path: planPath, base, number: phaseNumber({ base }), plan: parsePlan({ content, base }) });
+  }
+  return { phases, findings };
+};
+
+// src/plan/internal/expandFolderMoves/expandFolderMoves.ts
+import { readdir as readdir21, stat as stat14 } from "node:fs/promises";
+import { join as join114, relative as relative14 } from "node:path";
+
+// src/common/git/readGitTrackedFiles.ts
+var readGitTrackedFiles = async ({ cwd, folders }) => {
+  const pathspecs = folders.map((folder) => quoteShellArgument({ argument: folder })).join(" ");
+  const listing = await runCommand({ command: `git --literal-pathspecs ls-files -z -- ${pathspecs}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  return listing?.exitCode === 0 ? listing.stdout.split("\0").filter(Boolean) : void 0;
+};
+
+// src/plan/internal/common/utils/getPhaseProvenance.ts
+var getPhaseProvenance = ({ phases }) => {
+  const providedBefore = /* @__PURE__ */ new Map();
+  const removedBefore = /* @__PURE__ */ new Map();
+  const createdBy = /* @__PURE__ */ new Map();
+  const removedBy = /* @__PURE__ */ new Map();
+  const provided = /* @__PURE__ */ new Set();
+  const removed = /* @__PURE__ */ new Set();
+  for (const phase of phases) {
+    providedBefore.set(phase.base, new Set(provided));
+    removedBefore.set(phase.base, new Set(removed));
+    for (const path of [...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to)]) {
+      provided.add(path);
+      removed.delete(path);
+      createdBy.set(path, phase.base);
+    }
+    for (const path of [...phase.plan.deletePaths, ...phase.plan.movePaths.map((move) => move.from)]) {
+      removed.add(path);
+      provided.delete(path);
+      removedBy.set(path, phase.base);
+    }
+  }
+  return { providedBefore, removedBefore, createdBy, removedBy };
+};
+
+// src/plan/internal/expandFolderMoves/checkMoveOverlaps.ts
+var overlaps = ({ left, right, folders }) => left === right || folders.left && right.startsWith(`${left}/`) || folders.right && left.startsWith(`${right}/`);
+var defectOf = ({ first, second }) => {
+  const folders = { left: first.folder, right: second.folder };
+  const reversed = { left: second.folder, right: first.folder };
+  let defect;
+  if (overlaps({ left: first.move.from, right: second.move.from, folders })) {
+    defect = "both move from the same place";
+  } else if (overlaps({ left: first.move.to, right: second.move.to, folders })) {
+    defect = "both land in the same place";
+  } else if (overlaps({ left: first.move.to, right: second.move.from, folders }) || overlaps({ left: second.move.to, right: first.move.from, folders: reversed })) {
+    defect = "one moves what the other lands or leaves, so the two chain or swap";
+  }
+  return defect;
+};
+var written = ({ move, folder }) => {
+  const slash = folder ? "/" : "";
+  return `\`${move.from}${slash}\` \u2192 \`${move.to}${slash}\``;
+};
+var finding = ({ phase, first, second, defect }) => ({
+  check: StructuralCheck.MoveWellFormed,
+  severity: FindingSeverity.Blocking,
+  phase,
+  issue: `the moves ${written(first)} and ${written(second)} overlap: ${defect}, so which one wins cannot be told from the plan`,
+  location: `${phase} \u2192 Files to Move`,
+  fix: "merge the two into one move, or split one of them into a later phase"
+});
+var checkMoveOverlaps = ({ plan, phase }) => {
+  const moves = [...plan.movePaths.map((move) => ({ move, folder: false })), ...plan.folderMoves.map((move) => ({ move, folder: true }))];
+  const findings = [];
+  const flagged = /* @__PURE__ */ new Set();
+  for (const [index, first] of moves.entries()) {
+    for (const second of moves.slice(index + 1)) {
+      const defect = defectOf({ first, second });
+      if (defect !== void 0) {
+        findings.push(finding({ phase, first, second, defect }));
+        flagged.add(first);
+        flagged.add(second);
+      }
+    }
+  }
+  return { findings, flagged: moves.filter((entry) => flagged.has(entry)).map(({ move }) => ({ from: move.from, to: move.to })) };
+};
+
+// src/plan/internal/expandFolderMoves/expandFolderMoves.ts
+var isSameMove = ({ left, right }) => left.from === right.from && left.to === right.to;
+var isUnder = ({ path, folder }) => path.startsWith(`${folder}/`);
+var withMovePaths = ({ phase, movePaths }) => ({ ...phase, plan: { ...phase.plan, movePaths } });
+var withoutFlagged = ({ phase, flagged }) => {
+  const kept = phase.plan.movePaths.filter((move) => !flagged.some((entry) => isSameMove({ left: entry, right: move })));
+  return kept.length === phase.plan.movePaths.length ? phase : withMovePaths({ phase, movePaths: kept });
+};
+var holdsUntrackedFiles = async ({ cwd, folder, tracked }) => {
+  const root = join114(cwd, folder);
+  const found = await stat14(root).catch(() => void 0);
+  let holds = found?.isFile() === true;
+  if (found?.isDirectory() === true) {
+    const entries = await readdir21(root, { recursive: true, withFileTypes: true });
+    holds = entries.some((entry) => !entry.isDirectory() && !tracked.has(relative14(cwd, join114(entry.parentPath, entry.name))));
+  }
+  return holds;
+};
+var finding2 = ({ phase, move, issue: issue2, fix }) => ({
+  check: StructuralCheck.MoveWellFormed,
+  severity: FindingSeverity.Blocking,
+  phase,
+  issue: `the folder move \`${move.from}/\` \u2192 \`${move.to}/\` ${issue2}`,
+  location: `${phase} \u2192 ${move.from}/`,
+  fix
+});
+var folderDefect = async ({
+  cwd,
+  phase,
+  move,
+  filesUnder,
+  tracked
+}) => {
+  let defect;
+  if (move.to === move.from || isUnder({ path: move.to, folder: move.from })) {
+    defect = finding2({
+      phase,
+      move,
+      issue: "lands inside its own source folder",
+      fix: "choose a destination outside the source folder"
+    });
+  } else if (filesUnder(move.to).length > 0 || await holdsUntrackedFiles({ cwd, folder: move.to, tracked })) {
+    defect = finding2({
+      phase,
+      move,
+      issue: "lands on a destination that already exists, so git would nest the folder inside it rather than move it",
+      fix: "choose a destination folder that does not exist yet"
+    });
+  } else if (filesUnder(move.from).length === 0) {
+    defect = finding2({
+      phase,
+      move,
+      issue: "carries no files: git tracks none under its source and no earlier phase adds any there",
+      fix: "correct the source folder"
+    });
+  }
+  return defect;
+};
+var expandPhase = async ({
+  cwd,
+  phase,
+  earlier,
+  trackedFiles,
+  flagged
+}) => {
+  const provenance = getPhaseProvenance({ phases: [...earlier, phase] });
+  const provided = provenance.providedBefore.get(phase.base) ?? /* @__PURE__ */ new Set();
+  const removed = provenance.removedBefore.get(phase.base) ?? /* @__PURE__ */ new Set();
+  const tracked = new Set(trackedFiles);
+  const filesUnder = (folder) => [.../* @__PURE__ */ new Set([...trackedFiles.filter((path) => !removed.has(path)), ...provided])].filter((path) => isUnder({ path, folder })).sort();
+  const checkedCarried = [];
+  const provenanceCarried = [];
+  const findings = [];
+  for (const move of phase.plan.folderMoves) {
+    const carried = filesUnder(move.from).map((path) => ({
+      from: path,
+      to: mapPathThroughMoves({ path, fileMoves: [], folderMoves: [move], direction: MoveDirection.Forward })
+    }));
+    const isFlagged = flagged.some((entry) => isSameMove({ left: entry, right: move }));
+    const defect = isFlagged ? void 0 : await folderDefect({ cwd, phase: phase.base, move, filesUnder, tracked });
+    provenanceCarried.push(...carried);
+    if (defect !== void 0) {
+      findings.push(defect);
+    } else if (!isFlagged) {
+      checkedCarried.push(...carried);
+    }
+  }
+  const kept = withoutFlagged({ phase, flagged });
+  return {
+    checked: withMovePaths({ phase: kept, movePaths: [...kept.plan.movePaths, ...checkedCarried] }),
+    provenance: withMovePaths({ phase, movePaths: [...phase.plan.movePaths, ...provenanceCarried] }),
+    findings
+  };
+};
+var expandFolderMoves = async ({
+  cwd,
+  phases
+}) => {
+  const overlaps2 = phases.map((phase) => checkMoveOverlaps({ plan: phase.plan, phase: phase.base }));
+  const folders = [...new Set(phases.flatMap((phase) => phase.plan.folderMoves.flatMap((move) => [move.from, move.to])))];
+  const trackedFiles = folders.length === 0 ? [] : await readGitTrackedFiles({ cwd, folders });
+  if (trackedFiles === void 0) {
+    throw new Error(
+      `git could not list the files it tracks in ${cwd}: folder moves are expanded from the files git tracks, so the plan check must run inside the repository's git working tree`
+    );
+  }
+  const checkedPhases = [];
+  const provenancePhases = [];
+  const findings = [];
+  for (const [index, phase] of phases.entries()) {
+    const { findings: overlapFindings, flagged } = overlaps2[index] ?? { findings: [], flagged: [] };
+    const expanded = phase.plan.folderMoves.length === 0 ? { checked: withoutFlagged({ phase, flagged }), provenance: phase, findings: [] } : await expandPhase({ cwd, phase, earlier: provenancePhases, trackedFiles, flagged });
+    checkedPhases.push(expanded.checked);
+    provenancePhases.push(expanded.provenance);
+    findings.push(...overlapFindings, ...expanded.findings);
+  }
+  return { phases: checkedPhases, provenancePhases, findings };
+};
+
+// src/plan/common/constants/buildModeBulletLabels.ts
+var buildModeBulletLabels = {
+  [BuildMode.RenamesOnly]: "Renames only",
+  [BuildMode.MoveFoldersAndFiles]: "Moves folders and files only"
 };
 
 // src/plan/internal/common/constants/planSentinelTokens.ts
@@ -153278,9 +153834,19 @@ var fileBudgetFrom2 = ({ lines }) => {
   const value = bulletLine({ lines, label: "File budget" })?.replace(/^\s*-\s+\*\*[^*]+\*\*/, "");
   return integerFrom({ cell: /(\d+)/.exec(value ?? "")?.[1] });
 };
-var renamesOnlyFrom = ({ lines }) => {
-  const value = bulletLine({ lines, label: "Renames only" })?.replace(/^\s*-\s+\*\*[^*]+\*\*/, "");
-  return value?.trim().toLowerCase() === "yes" ? true : void 0;
+var saysYes = ({ lines, label: label2 }) => bulletLine({ lines, label: label2 })?.replace(/^\s*-\s+\*\*[^*]+\*\*/, "").trim().toLowerCase() === "yes";
+var buildModeFrom2 = ({ lines }) => {
+  const renamesOnly = saysYes({ lines, label: buildModeBulletLabels[BuildMode.RenamesOnly] });
+  const movesOnly = saysYes({ lines, label: buildModeBulletLabels[BuildMode.MoveFoldersAndFiles] });
+  let declared = {};
+  if (renamesOnly && movesOnly) {
+    declared = { buildModeConflict: true };
+  } else if (renamesOnly) {
+    declared = { buildMode: BuildMode.RenamesOnly };
+  } else if (movesOnly) {
+    declared = { buildMode: BuildMode.MoveFoldersAndFiles };
+  }
+  return declared;
 };
 var blocksFrom = ({ sectionLines, firstLine }) => {
   const lines = sectionLines ?? [];
@@ -153302,7 +153868,7 @@ var blocksFrom = ({ sectionLines, firstLine }) => {
       exports: bulletValues({ lines: blockLines, label: "Exports" }),
       scripts: bulletValues({ lines: blockLines, label: "Scripts" }),
       fileBudget: fileBudgetFrom2({ lines: blockLines }),
-      renamesOnly: renamesOnlyFrom({ lines: blockLines }),
+      ...buildModeFrom2({ lines: blockLines }),
       blockRange: { start, end: (blocks[index + 1]?.start ?? sectionEnd + 1) - 1 }
     });
   }
@@ -153324,11 +153890,12 @@ var parsePhaseDeclarations = ({ plan }) => {
       exports: block?.exports ?? [],
       scripts: block?.scripts ?? [],
       fileBudget: block?.fileBudget,
-      ...block?.renamesOnly === true ? { renamesOnly: true } : {},
+      ...block?.buildMode === void 0 ? {} : { buildMode: block.buildMode },
+      ...block?.buildModeConflict === true ? { buildModeConflict: true } : {},
       ...block === void 0 ? {} : { blockRange: block.blockRange }
     };
   });
-  const orphans = blocks.filter(({ file: file2 }) => !claimed.has(file2)).map(({ file: file2, creates, exports, scripts, fileBudget, renamesOnly, blockRange }) => ({
+  const orphans = blocks.filter(({ file: file2 }) => !claimed.has(file2)).map(({ file: file2, creates, exports, scripts, fileBudget, buildMode, buildModeConflict, blockRange }) => ({
     number: 0,
     file: file2,
     scope: "",
@@ -153336,19 +153903,21 @@ var parsePhaseDeclarations = ({ plan }) => {
     exports,
     scripts,
     fileBudget,
-    ...renamesOnly === true ? { renamesOnly: true } : {},
+    ...buildMode === void 0 ? {} : { buildMode },
+    ...buildModeConflict === true ? { buildModeConflict } : {},
     blockRange
   }));
   return [...declared, ...orphans];
 };
 
 // src/plan/draft/stampPhaseCounts.ts
-var getCounts = async ({ phasePaths }) => {
+var getCounts = async ({ cwd, phasePaths }) => {
+  const { phases } = await readPhaseFiles({ planPaths: phasePaths });
+  const expansion = await expandFolderMoves({ cwd, phases: phases.sort((one, other) => one.number - other.number) });
   const counts = /* @__PURE__ */ new Map();
-  for (const phasePath of phasePaths) {
-    const base = basename19(phasePath);
-    const { created, touched } = getPlanTouchedPaths({ plan: parsePlan({ content: await readFile48(phasePath, "utf8"), base }) });
-    counts.set(base, { created: created.length, touched: touched.length });
+  for (const phase of expansion.phases) {
+    const { created, touched } = getPlanTouchedPaths({ plan: phase.plan });
+    counts.set(phase.base, { created: created.length, touched: touched.length });
   }
   return counts;
 };
@@ -153373,10 +153942,10 @@ var rewriteRows = ({ lines, counts }) => {
     return `${indent}|${cells.join("|")}|`;
   });
 };
-var stampPhaseCounts = async ({ overviewPath, phasePaths }) => {
-  const counts = await getCounts({ phasePaths });
-  const overviewBase2 = basename19(overviewPath);
-  const original = await readFile48(overviewPath, "utf8");
+var stampPhaseCounts = async ({ cwd, overviewPath, phasePaths }) => {
+  const counts = await getCounts({ cwd, phasePaths });
+  const overviewBase2 = basename20(overviewPath);
+  const original = await readFile49(overviewPath, "utf8");
   const lines = rewriteRows({ lines: original.split("\n"), counts });
   await writePlanFileIfChanged({ path: overviewPath, original, lines });
   return parsePhaseDeclarations({ plan: parsePlan({ content: lines.join("\n"), base: overviewBase2 }) });
@@ -153391,7 +153960,7 @@ var renderPhaseDeclaration = ({ declaration }) => {
     bullet({ label: "Exports", values: declaration.exports }),
     bullet({ label: "Scripts", values: declaration.scripts }),
     ...declaration.fileBudget === void 0 ? [] : [`- **File budget:** ${declaration.fileBudget}`],
-    ...declaration.renamesOnly === true ? ["- **Renames only:** yes"] : []
+    ...declaration.buildMode === void 0 ? [] : [`- **${buildModeBulletLabels[declaration.buildMode]}:** yes`]
   ];
   return `### Phase ${declaration.number} \u2014 \`${declaration.file}\`
 
@@ -153456,28 +154025,28 @@ var syncPhaseSections = async ({ overviewPath, declarations, phaseFiles }) => {
 var withOwnDeclarations = async ({ declarations, phasePaths }) => {
   const owned = /* @__PURE__ */ new Map();
   for (const phasePath of phasePaths) {
-    const base = basename20(phasePath);
-    const plan = parsePlan({ content: await readFile49(phasePath, "utf8"), base });
-    owned.set(base, { fileBudget: plan.fileBudget, renamesOnly: plan.renames.length > 0 });
+    const base = basename21(phasePath);
+    const plan = parsePlan({ content: await readFile50(phasePath, "utf8"), base });
+    owned.set(base, { fileBudget: plan.fileBudget, buildMode: plan.buildMode });
   }
   return declarations.map((declaration) => {
     const own = owned.get(declaration.file);
     if (own === void 0) {
       return declaration;
     }
-    const { renamesOnly: _renamesOnly, ...rest } = declaration;
-    return { ...rest, fileBudget: own.fileBudget, ...own.renamesOnly ? { renamesOnly: true } : {} };
+    const { buildMode: _buildMode, buildModeConflict: _buildModeConflict, ...rest } = declaration;
+    return { ...rest, fileBudget: own.fileBudget, ...own.buildMode === BuildMode.Standard ? {} : { buildMode: own.buildMode } };
   });
 };
-var syncPhaseSectionsFromFiles = async ({ overviewPath, phasePaths }) => {
-  const before = await readFile49(overviewPath, "utf8");
-  const stamped = await stampPhaseCounts({ overviewPath, phasePaths });
+var syncPhaseSectionsFromFiles = async ({ cwd, overviewPath, phasePaths }) => {
+  const before = await readFile50(overviewPath, "utf8");
+  const stamped = await stampPhaseCounts({ cwd, overviewPath, phasePaths });
   await syncPhaseSections({
     overviewPath,
     declarations: await withOwnDeclarations({ declarations: stamped, phasePaths }),
-    phaseFiles: phasePaths.map((path) => basename20(path))
+    phaseFiles: phasePaths.map((path) => basename21(path))
   });
-  return { path: overviewPath, updated: await readFile49(overviewPath, "utf8") !== before };
+  return { path: overviewPath, updated: await readFile50(overviewPath, "utf8") !== before };
 };
 
 // src/plan/draft/repairMechanicalFindings.ts
@@ -153486,25 +154055,25 @@ var repairMechanicalFindings = async ({ cwd, name, planPaths, decisions, overvie
   const files = [..."files" in synced ? synced.files : [], ...await syncGlobalConstraints({ planPaths, decisions })];
   if (overviewPath !== void 0) {
     const phasePaths = planPaths.filter((path) => path !== overviewPath);
-    files.push(await syncPhaseSectionsFromFiles({ overviewPath, phasePaths }));
+    files.push(await syncPhaseSectionsFromFiles({ cwd, overviewPath, phasePaths }));
   }
   return files;
 };
 
 // src/plan/internal/common/paths/readRepoPathIndex.ts
-import { readdir as readdir21 } from "node:fs/promises";
-import { join as join114, relative as relative14 } from "node:path";
+import { readdir as readdir22 } from "node:fs/promises";
+import { join as join115, relative as relative15 } from "node:path";
 var prunedDirs = /* @__PURE__ */ new Set(["node_modules", ".git"]);
-var readEntries = ({ dir }) => readdir21(dir, { withFileTypes: true }).catch(() => void 0);
+var readEntries = ({ dir }) => readdir22(dir, { withFileTypes: true }).catch(() => void 0);
 var walkFiles = async ({ cwd, dir, entries }) => {
   const files = [];
   for (const entry of entries) {
     if (prunedDirs.has(entry.name)) {
       continue;
     }
-    const path = join114(dir, entry.name);
+    const path = join115(dir, entry.name);
     if (!entry.isDirectory()) {
-      files.push(relative14(cwd, path));
+      files.push(relative15(cwd, path));
       continue;
     }
     const nested = await readEntries({ dir: path });
@@ -153523,34 +154092,9 @@ var readRepoPathIndex = async ({ cwd }) => {
   return { topLevelDirs, files: files ?? [] };
 };
 
-// src/plan/internal/common/utils/getPhaseProvenance.ts
-var getPhaseProvenance = ({ phases }) => {
-  const providedBefore = /* @__PURE__ */ new Map();
-  const removedBefore = /* @__PURE__ */ new Map();
-  const createdBy = /* @__PURE__ */ new Map();
-  const removedBy = /* @__PURE__ */ new Map();
-  const provided = /* @__PURE__ */ new Set();
-  const removed = /* @__PURE__ */ new Set();
-  for (const phase of phases) {
-    providedBefore.set(phase.base, new Set(provided));
-    removedBefore.set(phase.base, new Set(removed));
-    for (const path of [...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to)]) {
-      provided.add(path);
-      removed.delete(path);
-      createdBy.set(path, phase.base);
-    }
-    for (const path of [...phase.plan.deletePaths, ...phase.plan.movePaths.map((move) => move.from)]) {
-      removed.add(path);
-      provided.delete(path);
-      removedBy.set(path, phase.base);
-    }
-  }
-  return { providedBefore, removedBefore, createdBy, removedBy };
-};
-
 // src/plan/lint/checkAcceptanceLedger.ts
-import { readFile as readFile50 } from "node:fs/promises";
-import { join as join115 } from "node:path";
+import { readFile as readFile51 } from "node:fs/promises";
+import { join as join116 } from "node:path";
 
 // src/plan/lint/internal/checkLedgerCoverage.ts
 var checkLedgerCoverage = ({ plan, phase, coverable }) => {
@@ -153581,10 +154125,10 @@ var checkLedgerCoverage = ({ plan, phase, coverable }) => {
 // src/plan/lint/internal/checkMovedAwayLedgerFiles.ts
 var checkMovedAwayLedgerFiles = ({ plan, phase }) => {
   const findings = [];
-  const movedAway = new Set(plan.movePaths.map((move) => move.from));
+  const isMovedAway = (testFile) => mapPathThroughMoves({ path: testFile, fileMoves: plan.movePaths, folderMoves: plan.folderMoves, direction: MoveDirection.Forward }) !== testFile;
   const reported = /* @__PURE__ */ new Set();
   for (const row of plan.ledger) {
-    if (movedAway.has(row.testFile) && !reported.has(row.testFile)) {
+    if (isMovedAway(row.testFile) && !reported.has(row.testFile)) {
       reported.add(row.testFile);
       findings.push({
         check: StructuralCheck.LedgerWellFormed,
@@ -153601,19 +154145,18 @@ var checkMovedAwayLedgerFiles = ({ plan, phase }) => {
 
 // src/plan/lint/checkAcceptanceLedger.ts
 var getCoverablePaths = ({ plan }) => {
-  if (plan.renames.length > 0) {
+  if (plan.buildMode !== BuildMode.Standard) {
     return [];
   }
   const excused = new Set(plan.proseFiles.map((file2) => file2.path));
   return [...new Set(getPlanWrittenPaths({ plan }))].filter((path) => isPlanSourceFile({ path }) && !excused.has(path));
 };
 var statesTest = async ({ cwd, testFile, testName }) => {
-  const content = await readFile50(join115(cwd, testFile), "utf8").catch(() => void 0);
+  const content = await readFile51(join116(cwd, testFile), "utf8").catch(() => void 0);
   return content !== void 0 && holdsTestTitle({ content, testName });
 };
-var resolveReadPath = ({ plan, testFile }) => plan.movePaths.find((move) => move.to === testFile)?.from ?? testFile;
 var isTestGate = ({ gate }) => gate === "test" || gate.startsWith("test-");
-var finding = ({ phase, issue: issue2, location, fix }) => ({
+var finding3 = ({ phase, issue: issue2, location, fix }) => ({
   check: StructuralCheck.LedgerWellFormed,
   severity: FindingSeverity.Blocking,
   phase,
@@ -153625,7 +154168,7 @@ var checkShape = ({ plan, phase, required: required2, coverable }) => {
   const findings = [];
   if (!plan.sections.has("Acceptance Tests") && required2 && coverable.length > 0) {
     findings.push(
-      finding({
+      finding3({
         phase,
         issue: "no `## Acceptance Tests` section, and this plan writes source files no prose-files entry excuses",
         location: `${phase} \u2192 Acceptance Tests`,
@@ -153635,7 +154178,7 @@ var checkShape = ({ plan, phase, required: required2, coverable }) => {
   }
   for (const line of plan.malformedLedgerLines) {
     findings.push(
-      finding({
+      finding3({
         phase,
         issue: "an Acceptance Tests row does not carry a criterion, a backticked test file and a test name",
         location: `${phase}:${line}`,
@@ -153645,7 +154188,7 @@ var checkShape = ({ plan, phase, required: required2, coverable }) => {
   }
   for (const line of plan.malformedProseLines) {
     findings.push(
-      finding({
+      finding3({
         phase,
         issue: "a Prose Files bullet names a path but states no reason",
         location: `${phase}:${line}`,
@@ -153662,7 +154205,7 @@ var checkRows = async ({ plan, cwd, phase, gateKeys }) => {
     const location = `${phase}:${row.line}`;
     if (!isTestFile({ path: row.testFile })) {
       findings.push(
-        finding({
+        finding3({
           phase,
           issue: `ledger row names '${row.testFile}', which is not a test file`,
           location,
@@ -153672,7 +154215,7 @@ var checkRows = async ({ plan, cwd, phase, gateKeys }) => {
     }
     if (gateKeys.size > 0 && !gateKeys.has(row.gate)) {
       findings.push(
-        finding({
+        finding3({
           phase,
           issue: `ledger row names gate '${row.gate}', which no configured gate runs`,
           location,
@@ -153681,7 +154224,7 @@ var checkRows = async ({ plan, cwd, phase, gateKeys }) => {
       );
     } else if (!isTestGate({ gate: row.gate })) {
       findings.push(
-        finding({
+        finding3({
           phase,
           issue: `ledger row names gate '${row.gate}', which runs no tests \u2014 no execution of it can carry a test result, so the row could never be proven`,
           location,
@@ -153692,7 +154235,7 @@ var checkRows = async ({ plan, cwd, phase, gateKeys }) => {
     const key = `${row.testFile}|${row.testName}`;
     if (seen.has(key)) {
       findings.push(
-        finding({
+        finding3({
           phase,
           issue: `two ledger rows name the same test: '${row.testName}' in ${row.testFile}`,
           location,
@@ -153701,10 +154244,10 @@ var checkRows = async ({ plan, cwd, phase, gateKeys }) => {
       );
     }
     seen.add(key);
-    const readPath = resolveReadPath({ plan, testFile: row.testFile });
+    const readPath = mapPathThroughMoves({ path: row.testFile, fileMoves: plan.movePaths, folderMoves: plan.folderMoves, direction: MoveDirection.Back });
     if (await statesTest({ cwd, testFile: readPath, testName: row.testName })) {
       findings.push(
-        finding({
+        finding3({
           phase,
           issue: readPath === row.testFile ? `'${row.testName}' is already a test in ${row.testFile}` : `'${row.testName}' is already a test in ${readPath}, which this plan moves to ${row.testFile}`,
           location,
@@ -153726,7 +154269,7 @@ var checkAcceptanceLedger = async ({ plan, cwd, phase, required: required2, gate
 };
 
 // src/plan/internal/common/naming/getComparableTokens.ts
-import { basename as basename21 } from "node:path";
+import { basename as basename22 } from "node:path";
 var isIdentifierSpan = ({ span }) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(span);
 var getComparableTokens = ({ lines }) => {
   const tokens = /* @__PURE__ */ new Map();
@@ -153736,7 +154279,7 @@ var getComparableTokens = ({ lines }) => {
         continue;
       }
       if (isPathToken({ token: span })) {
-        tokens.set(basename21(span), span);
+        tokens.set(basename22(span), span);
       } else if (isIdentifierSpan({ span })) {
         tokens.set(span, span);
       }
@@ -153769,12 +154312,12 @@ var checkHandoffDeclared = ({ plan, phase }) => {
 };
 
 // src/plan/lint/checkPlanPaths.ts
-import { basename as basename22, join as join116 } from "node:path";
-var locate = ({ planPath, path }) => `${basename22(planPath)} \u2192 ${path}`;
+import { basename as basename23, join as join117 } from "node:path";
+var locate = ({ planPath, path }) => `${basename23(planPath)} \u2192 ${path}`;
 var checkSuppliedPaths = async ({ plan, cwd, planPath, phase, provided }) => {
   const findings = [];
   for (const path of [...plan.modifyPaths, ...plan.mirrorPaths]) {
-    if (provided.has(path) || await pathExists({ path: join116(cwd, path) })) {
+    if (provided.has(path) || await pathExists({ path: join117(cwd, path) })) {
       continue;
     }
     findings.push({
@@ -153796,7 +154339,7 @@ var checkNewPaths = async ({ plan, cwd, planPath, phase, provided }) => {
   ];
   for (const { paths, label: label2 } of groups) {
     for (const path of paths) {
-      const exists3 = await pathExists({ path: join116(cwd, path) });
+      const exists3 = await pathExists({ path: join117(cwd, path) });
       if (!exists3 && !provided.has(path)) {
         continue;
       }
@@ -153815,7 +154358,7 @@ var checkNewPaths = async ({ plan, cwd, planPath, phase, provided }) => {
 var checkRemovedPaths = async ({ plan, cwd, planPath, phase, phased }) => {
   const findings = [];
   for (const path of plan.earlierPhaseModifyPaths) {
-    if (await pathExists({ path: join116(cwd, path) })) {
+    if (await pathExists({ path: join117(cwd, path) })) {
       findings.push({
         check: StructuralCheck.PathExists,
         severity: FindingSeverity.Blocking,
@@ -153827,7 +154370,7 @@ var checkRemovedPaths = async ({ plan, cwd, planPath, phase, phased }) => {
     }
   }
   for (const path of phased ? [] : [...plan.deletePaths, ...plan.movePaths.map((move) => move.from)]) {
-    if (!await pathExists({ path: join116(cwd, path) })) {
+    if (!await pathExists({ path: join117(cwd, path) })) {
       findings.push({
         check: StructuralCheck.PathExists,
         severity: FindingSeverity.Blocking,
@@ -153861,17 +154404,17 @@ var checkPlanSizes = ({ phase, fileLimit, counts }) => {
       fix: `split the phase so it creates no more than ${createdFileCeiling} files`
     });
   }
-  if (touched > touchedFileCeiling && phase.plan.renames.length === 0) {
+  if (touched > touchedFileCeiling && phase.plan.buildMode === BuildMode.Standard) {
     findings.push({
       check: StructuralCheck.TouchedFilesWithinCeiling,
       severity: FindingSeverity.Blocking,
       phase: phase.base,
       issue: `plan touches ${touched} source files, over the ${touchedFileCeiling}-file ceiling`,
       location: phase.base,
-      fix: `split the phase so it touches no more than ${touchedFileCeiling} files \u2014 or, if its whole work is renaming, declare it rename-only with a '## Renames' section`
+      fix: `split the phase so it touches no more than ${touchedFileCeiling} files \u2014 or declare it rename-only with a '## Renames' section if its whole work is renaming, or move-folders-and-files with a '## Build Mode' section reading \`move-folders-and-files\` if its whole work is moving folders and files`
     });
   }
-  if (touched > budget) {
+  if (touched > budget && phase.plan.buildMode !== BuildMode.MoveFoldersAndFiles) {
     const source = phase.plan.fileBudget === void 0 ? "the configured executor-file-limit" : "this plan's own ## File Budget";
     findings.push({
       check: StructuralCheck.ScopeWithinGuardrail,
@@ -153886,7 +154429,7 @@ var checkPlanSizes = ({ phase, fileLimit, counts }) => {
 };
 
 // src/plan/lint/checkProsePaths.ts
-import { basename as basename23, join as join117 } from "node:path";
+import { basename as basename24, join as join118 } from "node:path";
 
 // src/plan/lint/internal/common/utils/isLineInRange.ts
 var isLineInRange = ({ line, range }) => range !== void 0 && line >= range.start && line <= range.end;
@@ -153923,7 +154466,7 @@ var getAccountedPaths = ({ plan, planned }) => [
   .../* @__PURE__ */ new Set([...getPlanNamedPaths({ plan, includeMirrors: true }), ...planned])
 ];
 var isCandidateOnDisk = async ({ candidate, cwd, index }) => {
-  const anchored = index.topLevelDirs.has(candidate.split("/")[0]) && await pathExists({ path: join117(cwd, candidate) });
+  const anchored = index.topLevelDirs.has(candidate.split("/")[0]) && await pathExists({ path: join118(cwd, candidate) });
   return anchored || index.files.some((path) => isTailOf({ candidate, path }));
 };
 var checkProsePaths = async ({ plan, cwd, planPath, phase, planned, index }) => {
@@ -153942,7 +154485,7 @@ var checkProsePaths = async ({ plan, cwd, planPath, phase, planned, index }) => 
         severity: FindingSeverity.Blocking,
         phase,
         issue: `path named in prose does not exist: ${candidate}`,
-        location: `${basename23(planPath)}:${line}`,
+        location: `${basename24(planPath)}:${line}`,
         fix: "correct the path, or drop the backticks if the span is not naming a real file"
       });
     }
@@ -153951,8 +154494,8 @@ var checkProsePaths = async ({ plan, cwd, planPath, phase, planned, index }) => 
 };
 
 // src/plan/lint/checkVerificationScripts.ts
-import { readFile as readFile51 } from "node:fs/promises";
-import { basename as basename24, join as join118 } from "node:path";
+import { readFile as readFile52 } from "node:fs/promises";
+import { basename as basename25, join as join119 } from "node:path";
 
 // src/plan/internal/common/utils/getManifestScriptKeys.ts
 var Manifest3 = external_exports.object({ scripts: external_exports.record(external_exports.string(), external_exports.unknown()).optional() });
@@ -153994,10 +154537,10 @@ var getPackageDirs = ({ plan, packagesDir }) => {
   return packageDirs;
 };
 var getAvailableScripts = async ({ cwd, packagesDir, packageDirs }) => {
-  const manifestPaths = [join118(cwd, "package.json"), ...[...packageDirs].map((dir) => join118(cwd, packagesDir, dir, "package.json"))];
+  const manifestPaths = [join119(cwd, "package.json"), ...[...packageDirs].map((dir) => join119(cwd, packagesDir, dir, "package.json"))];
   const availableScripts = /* @__PURE__ */ new Set();
   for (const manifestPath of manifestPaths) {
-    const raw = await readFile51(manifestPath, "utf8").catch(() => void 0);
+    const raw = await readFile52(manifestPath, "utf8").catch(() => void 0);
     if (!raw) {
       continue;
     }
@@ -154032,7 +154575,7 @@ var checkVerificationScripts = async ({
         severity: FindingSeverity.Blocking,
         phase,
         issue: `verification command '${command}' references package script '${scriptName}' which is not in any target package.json`,
-        location: `${basename24(planPath)} \u2192 Verification`,
+        location: `${basename25(planPath)} \u2192 Verification`,
         fix: `use a script that exists, or add '${scriptName}' to the package.json`
       });
     }
@@ -154040,8 +154583,61 @@ var checkVerificationScripts = async ({
   return findings;
 };
 
+// src/plan/lint/internal/checkBuildMode.ts
+var finding4 = ({ phase, issue: issue2, fix }) => ({
+  check: StructuralCheck.BuildModeWellFormed,
+  severity: FindingSeverity.Blocking,
+  phase,
+  issue: issue2,
+  location: `${phase} \u2192 Build Mode`,
+  fix
+});
+var unknownModeDefects = ({ plan, phase }) => plan.sections.has("Build Mode") && plan.buildMode !== BuildMode.MoveFoldersAndFiles ? [
+  finding4({
+    phase,
+    issue: "the '## Build Mode' section names no known build mode",
+    fix: "make the section's first line read `move-folders-and-files`, or drop the section"
+  })
+] : [];
+var separatePhase = "or move that work into a separate standard phase, since a move and feature work are two phases";
+var moveOnlyDefects = ({ plan, phase }) => {
+  const modified = [...plan.modifyPaths, ...plan.earlierPhaseModifyPaths];
+  const listed = [
+    {
+      count: plan.createPaths.length,
+      issue: `a move-folders-and-files file lists files to create (${plan.createPaths.join(", ")}), but a move creates no file of its own`,
+      fix: `drop the Files to Create entries, ${separatePhase}`
+    },
+    {
+      count: modified.length,
+      issue: `a move-folders-and-files file lists files to modify (${modified.join(", ")}), but a move's own path updates are never listed`,
+      fix: `drop the Files to Modify and Files to Modify from Earlier Phases entries, ${separatePhase}`
+    },
+    {
+      count: plan.deletePaths.length,
+      issue: `a move-folders-and-files file lists files to delete (${plan.deletePaths.join(", ")}), but a move deletes no file`,
+      fix: `drop the Files to Delete entries, ${separatePhase}`
+    },
+    {
+      count: plan.renames.length,
+      issue: `a move-folders-and-files file lists ${plan.renames.length} rename(s), but a phase has exactly one build mode`,
+      fix: "drop the '## Renames' section, or move the renames into a separate rename-only phase"
+    },
+    {
+      count: plan.ledger.length,
+      issue: `a move-folders-and-files file states ${plan.ledger.length} acceptance-test row(s), but a move adds no behaviour a new test could state and the build writes no tests for it`,
+      fix: `keep the Acceptance Tests heading with no rows, ${separatePhase}`
+    }
+  ];
+  return listed.filter(({ count: count2 }) => count2 > 0).map(({ issue: issue2, fix }) => finding4({ phase, issue: issue2, fix }));
+};
+var checkBuildMode = ({ plan, phase }) => [
+  ...unknownModeDefects({ plan, phase }),
+  ...plan.buildMode === BuildMode.MoveFoldersAndFiles ? moveOnlyDefects({ plan, phase }) : []
+];
+
 // src/plan/lint/internal/checkRenames.ts
-var finding2 = ({ phase, issue: issue2, location, fix }) => ({
+var finding5 = ({ phase, issue: issue2, location, fix }) => ({
   check: StructuralCheck.RenamesWellFormed,
   severity: FindingSeverity.Blocking,
   phase,
@@ -154053,7 +154649,7 @@ var renameDefects = ({ plan, phase }) => plan.renames.flatMap((rename14) => {
   const location = `${phase}:${rename14.line}`;
   if (rename14.from === rename14.to) {
     return [
-      finding2({
+      finding5({
         phase,
         issue: `the rename of '${rename14.from}' renames it to itself`,
         location,
@@ -154063,7 +154659,7 @@ var renameDefects = ({ plan, phase }) => plan.renames.flatMap((rename14) => {
   }
   const contained = plan.renames.filter((other) => rename14.to.includes(other.from)).map((other) => `'${other.from}'`);
   return contained.length === 0 ? [] : [
-    finding2({
+    finding5({
       phase,
       issue: `the new text '${rename14.to}' contains the old text ${contained.join(", ")}, so applying the renames a second time would change the result \u2014 and the build's rename check applies them to both sides of every change`,
       location,
@@ -154076,7 +154672,7 @@ var renameOnlyDefects = ({ plan, phase }) => {
   const findings = [];
   if (plan.createPaths.length > 0) {
     findings.push(
-      finding2({
+      finding5({
         phase,
         issue: `a rename-only file lists files to create (${plan.createPaths.join(", ")}), but a rename moves a file rather than creating one`,
         location,
@@ -154086,7 +154682,7 @@ var renameOnlyDefects = ({ plan, phase }) => {
   }
   if (plan.ledger.length > 0) {
     findings.push(
-      finding2({
+      finding5({
         phase,
         issue: `a rename-only file states ${plan.ledger.length} acceptance-test row(s), but a rename adds no behaviour a new test could state and the build writes no tests for it`,
         location,
@@ -154098,7 +154694,7 @@ var renameOnlyDefects = ({ plan, phase }) => {
 };
 var checkRenames = ({ plan, phase }) => [
   ...plan.malformedRenameLines.map(
-    (line) => finding2({
+    (line) => finding5({
       phase,
       issue: "a Renames bullet does not name exactly two texts",
       location: `${phase}:${line}`,
@@ -154106,37 +154702,11 @@ var checkRenames = ({ plan, phase }) => [
     })
   ),
   ...renameDefects({ plan, phase }),
-  ...plan.renames.length > 0 ? renameOnlyDefects({ plan, phase }) : []
+  ...plan.buildMode === BuildMode.RenamesOnly ? renameOnlyDefects({ plan, phase }) : []
 ];
 
-// src/plan/lint/internal/common/utils/readPhaseFiles.ts
-import { readFile as readFile52 } from "node:fs/promises";
-import { basename as basename25 } from "node:path";
-var phaseNumber = ({ base }) => base === "overview.md" ? 0 : Number(/^phase(\d+)-/.exec(base)?.[1] ?? 1);
-var readPhaseFiles = async ({ planPaths }) => {
-  const phases = [];
-  const findings = [];
-  for (const planPath of planPaths) {
-    const content = await readFile52(planPath, "utf8").catch(() => void 0);
-    const base = basename25(planPath);
-    if (content === void 0) {
-      findings.push({
-        check: StructuralCheck.SectionsPresent,
-        severity: FindingSeverity.Blocking,
-        phase: base,
-        issue: "plan file could not be read",
-        location: planPath,
-        fix: "ensure the draft wrote the plan file at this path"
-      });
-      continue;
-    }
-    phases.push({ path: planPath, base, number: phaseNumber({ base }), plan: parsePlan({ content, base }) });
-  }
-  return { phases, findings };
-};
-
 // src/plan/lint/checkFileProvenance.ts
-import { join as join119 } from "node:path";
+import { join as join120 } from "node:path";
 var stamp = ({ phase, defects }) => defects.map(({ path, issue: issue2, fix }) => ({
   check: StructuralCheck.FileProvenance,
   severity: FindingSeverity.Blocking,
@@ -154183,7 +154753,7 @@ var missingRemovalDefects = async ({
 }) => {
   const defects = [];
   for (const path of [...phase.plan.deletePaths, ...phase.plan.movePaths.map((move) => move.from)]) {
-    if (providedBefore.has(path) || removedBefore.has(path) || await pathExists({ path: join119(cwd, path) })) {
+    if (providedBefore.has(path) || removedBefore.has(path) || await pathExists({ path: join120(cwd, path) })) {
       continue;
     }
     defects.push({
@@ -154261,6 +154831,13 @@ var getDeclarationDefects = ({ declarations, locations }) => {
       issue: `phase ${declaration.number} is declared in '${declaration.file}', whose name does not read phase${declaration.number}-<slug>.md`,
       location: locations.phaseRow(declaration.file),
       fix: "rename the file or the row so the number and the filename agree"
+    });
+  }
+  for (const declaration of declarations.filter((candidate) => candidate.buildModeConflict === true)) {
+    defects.push({
+      issue: `the declaration block for '${declaration.file}' reads yes on both the '${buildModeBulletLabels[BuildMode.RenamesOnly]}' and the '${buildModeBulletLabels[BuildMode.MoveFoldersAndFiles]}' bullets, but a phase has exactly one build mode`,
+      location: locations.declarationsSection,
+      fix: `keep only the bullet that matches the phase file \u2014 '${buildModeBulletLabels[BuildMode.RenamesOnly]}' for a phase with a '## Renames' section, '${buildModeBulletLabels[BuildMode.MoveFoldersAndFiles]}' for a phase with a '## Build Mode' section \u2014 and delete the other`
     });
   }
   return defects;
@@ -154346,7 +154923,7 @@ var numberDefects = ({
       fix: "the two copies must agree \u2014 the door check reads the overview, the implementing agent is handed the phase file"
     });
   }
-  if (declaration.fileBudget !== void 0 && declaration.touchedCount !== void 0 && declaration.fileBudget < declaration.touchedCount) {
+  if (declaration.buildMode !== BuildMode.MoveFoldersAndFiles && declaration.fileBudget !== void 0 && declaration.touchedCount !== void 0 && declaration.fileBudget < declaration.touchedCount) {
     defects.push({
       phase: overviewBase2,
       issue: `the file budget declared for ${declaration.file} (${declaration.fileBudget}) is below its own touched count (${declaration.touchedCount})`,
@@ -154359,8 +154936,8 @@ var numberDefects = ({
 var nameDefects = ({ declaration, phase, overviewBase: overviewBase2 }) => {
   const defects = [];
   const { spans, exports } = namesIn({ phase });
-  const written = /* @__PURE__ */ new Set([...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to)]);
-  for (const path of declaration.creates.filter((candidate) => !written.has(candidate))) {
+  const written2 = /* @__PURE__ */ new Set([...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to), ...phase.plan.folderMoves.map((move) => move.to)]);
+  for (const path of declaration.creates.filter((candidate) => !written2.has(candidate.replace(/\/$/, "")))) {
     defects.push({
       phase: overviewBase2,
       issue: `${declaration.file} is declared to create '${path}', which it lists under neither Files to Create nor Files to Move`,
@@ -154386,15 +154963,16 @@ var nameDefects = ({ declaration, phase, overviewBase: overviewBase2 }) => {
   }
   return defects;
 };
-var renamesDefects = ({ declaration, phase, overviewBase: overviewBase2 }) => {
-  const declared = declaration.renamesOnly === true;
-  const own = phase.plan.renames.length > 0;
-  return declared === own ? [] : [
+var modeBulletAdvice = ({ buildMode }) => buildMode === BuildMode.Standard ? "no mode bullet" : `only the '${buildModeBulletLabels[buildMode]}: yes' bullet`;
+var buildModeDefects = ({ declaration, phase, overviewBase: overviewBase2 }) => {
+  const declared = declaration.buildMode ?? BuildMode.Standard;
+  const own = phase.plan.buildMode;
+  return declaration.buildModeConflict === true || declared === own ? [] : [
     {
       phase: overviewBase2,
-      issue: declared ? `${declaration.file} is declared rename-only, but its own file carries no '## Renames' section` : `${declaration.file} carries a '## Renames' section, but its declaration has no 'Renames only' bullet`,
+      issue: `${declaration.file} is declared with build mode '${declared}', but its own file's build mode is '${own}'`,
       location: `${overviewBase2} \u2192 Phase Declarations`,
-      fix: "the two copies must agree \u2014 write the Renames only bullet exactly when the phase file declares its renames, since the implementing agent is handed the phase file"
+      fix: `the two copies must agree, since the implementing agent is handed the phase file \u2014 give ${declaration.file}'s declaration block ${modeBulletAdvice({ buildMode: own })}; the mechanical repair applies this`
     }
   ];
 };
@@ -154406,7 +154984,7 @@ var checkPhaseDeclarations = ({ declarations, phases, overviewBase: overviewBase
       defects.push(
         ...numberDefects({ declaration, phase, overviewBase: overviewBase2, counts }),
         ...nameDefects({ declaration, phase, overviewBase: overviewBase2 }),
-        ...renamesDefects({ declaration, phase, overviewBase: overviewBase2 })
+        ...buildModeDefects({ declaration, phase, overviewBase: overviewBase2 })
       );
     }
   }
@@ -154522,9 +155100,9 @@ var checkMoves = ({ phase }) => phase.plan.malformedMoveLines.map((line) => ({
   check: StructuralCheck.MoveWellFormed,
   severity: FindingSeverity.Blocking,
   phase: phase.base,
-  issue: "a Files to Move heading does not name two paths",
+  issue: "a Files to Move heading does not name two file paths or two folder paths",
   location: `${phase.base}:${line}`,
-  fix: "write the heading as an old path and a new path, each in backticks"
+  fix: "write the heading as an old path and a new path, each in backticks: two file paths, or two folder paths each ending in `/`"
 }));
 var getDeclaredScripts = ({ overview, phases }) => {
   const byPhase = /* @__PURE__ */ new Map();
@@ -154542,7 +155120,7 @@ var getDeclaredScripts = ({ overview, phases }) => {
   byPhase.set(overview.base, new Set(declarations.flatMap((declaration) => declaration.scripts)));
   return byPhase;
 };
-var isCleared = ({ finding: finding3, clearedCreates }) => finding3.check === StructuralCheck.PathExists && clearedCreates.has(`${finding3.phase}|${finding3.location.split(" \u2192 ").at(-1)}`);
+var isCleared = ({ finding: finding6, clearedCreates }) => finding6.check === StructuralCheck.PathExists && clearedCreates.has(`${finding6.phase}|${finding6.location.split(" \u2192 ").at(-1)}`);
 var checkPackages = ({ phase, packagesDir }) => getPlanNamedPaths({ plan: phase.plan }).filter((path) => path.startsWith(`${packagesDir}/`) && !path.slice(packagesDir.length + 1).includes("/")).map((path) => ({
   check: StructuralCheck.PackagesIdentifiable,
   severity: FindingSeverity.Blocking,
@@ -154560,9 +155138,12 @@ var lintPlanStructure = async ({ cwd, planPaths, decisions, config: config2 }) =
   const configCommands = new Set(Object.values(config2?.gates ?? {}).filter((value) => typeof value === "string"));
   const { phases, findings } = await readPhaseFiles({ planPaths });
   const overview = phases.find((file2) => file2.plan.variant === PlanFileKind.Overview);
-  const implementable = phases.filter((file2) => file2.plan.variant !== PlanFileKind.Overview).sort((one, other) => one.number - other.number);
+  const sorted = phases.filter((file2) => file2.plan.variant !== PlanFileKind.Overview).sort((one, other) => one.number - other.number);
+  const expansion = await expandFolderMoves({ cwd, phases: sorted });
+  const implementable = expansion.phases;
   const phased = isPhasedDeliverable({ hasOverview: overview !== void 0, implementableCount: implementable.length });
-  const provenance = getPhaseProvenance({ phases: implementable });
+  const provenance = getPhaseProvenance({ phases: expansion.provenancePhases });
+  findings.push(...expansion.findings);
   const declaredByPhase = getDeclaredScripts({ overview, phases: implementable });
   const repoIndex = await readRepoPathIndex({ cwd });
   const syncCommand = buildPlanSyncDecisionsCommand({ cwd, name: decisions.planName }).command;
@@ -154582,7 +155163,8 @@ var lintPlanStructure = async ({ cwd, planPaths, decisions, config: config2 }) =
       ...await checkVerificationScripts({ ...shared, packagesDir, configCommands, declaredScripts }),
       ...phase.plan.variant === PlanFileKind.Implementable ? [
         ...await checkAcceptanceLedger({ plan: phase.plan, cwd, phase: phase.base, required: contract, gateKeys }),
-        ...checkRenames({ plan: phase.plan, phase: phase.base })
+        ...checkRenames({ plan: phase.plan, phase: phase.base }),
+        ...checkBuildMode({ plan: phase.plan, phase: phase.base })
       ] : [],
       ...checkDecisionLog({ plan: phase.plan, phase: phase.base, decisions, phased, syncCommand }),
       ...checkGlobalConstraints({ plan: phase.plan, phase: phase.base, decisions, syncCommand }),
@@ -154594,7 +155176,7 @@ var lintPlanStructure = async ({ cwd, planPaths, decisions, config: config2 }) =
     );
   }
   const crossPhase = await lintPlanCrossPhase({ cwd, overview, phases: implementable, provenance, counts });
-  return [...findings.filter((finding3) => !isCleared({ finding: finding3, clearedCreates: crossPhase.clearedCreates })), ...crossPhase.findings];
+  return [...findings.filter((finding6) => !isCleared({ finding: finding6, clearedCreates: crossPhase.clearedCreates })), ...crossPhase.findings];
 };
 
 // src/plan/draft/repairPlanStructure.ts
@@ -154606,9 +155188,9 @@ var runRepairAttempt = async ({ params, findings, attempt }) => {
     invocation: buildPlanRepairInvocation({
       findings,
       planPaths,
-      decisionsPath: join120(workspaceDir, "decisions.json"),
+      decisionsPath: join121(workspaceDir, "decisions.json"),
       brainstormDecisionsPath,
-      factsPath: join120(workspaceDir, "facts.json"),
+      factsPath: join121(workspaceDir, "facts.json"),
       docs: config2?.docs
     }),
     contract: PlanFixReport
@@ -154690,10 +155272,10 @@ var stopForPhaseFailure = ({ phases, draftStop }) => {
 
 // src/plan/draft/repairPhaseBreakdown.ts
 import { readFile as readFile53 } from "node:fs/promises";
-import { basename as basename26, join as join121 } from "node:path";
+import { basename as basename26, join as join122 } from "node:path";
 
 // src/agents/prompts/planReshape.md
-var planReshape_default = '# Role: Plan Reshaper\n\nYou re-split a phased plan\'s phase breakdown in place. You work autonomously\nfrom the task message; you Edit the overview file and your final message is\nmachine-parsed \u2014 one JSON report, not prose for a human.\n\nThis is the one plan-editing role that is allowed to restructure. The plan\nrepairer applies the smallest edit that resolves a finding and never re-orders\nanything; you are here because the breakdown itself does not fit, and making it\nfit means moving work between phases.\n\n## Input\n\nThe task message provides:\n\n- **Overview file to reshape** \u2014 the absolute path of the overview to Read and\n  Edit in place. It is the only file you may touch; the phase files do not exist\n  yet.\n- **Created-file ceiling** \u2014 the hard per-phase limit every phase must come in\n  under. No declaration raises it.\n- **Touched-file ceiling** \u2014 the hard per-phase limit on touched source files.\n  No `## File Budget` raises it; only a phase declared `- **Renames only:** yes`\n  is exempt from it.\n- **Breakdown findings to resolve** \u2014 the typed findings saying which declared\n  phases are too large or malformed, each with its exact `fix` string.\n- **Reference files** (Read on demand) \u2014 absolute paths of the plan\'s own\n  decisions (`decisions.json`), the brainstorm decisions\n  (`brainstorm-decisions.json` \u2014 present only when the work came from a\n  `/brainstorm` hand-off), and the verified facts (`facts.json`). Read them when\n  a re-split needs to know what the work actually is; a purely arithmetic\n  correction needs no Read at all.\n\n## Workflow\n\n1. Read the overview file.\n2. Re-split the phase breakdown so every finding is resolved: move work between\n   phases, add a phase, renumber, and rewrite the `## Phases` table and the\n   `## Phase Declarations` blocks to match.\n3. Split at a seam the overview\'s `## Architecture` section already implies \u2014 a\n   module boundary, a contract, a layer \u2014 rather than at whatever line balances\n   the counts. A breakdown split on arithmetic alone produces phases that hand\n   half a concept to each other.\n4. Hold every one of these:\n   - every phase\'s declared `Creates` count is at or under the ceiling named in\n     the findings;\n   - every phase\'s declared `Touches` count is at or under the touched-file\n     ceiling, unless its block reads `- **Renames only:** yes`. Add that bullet\n     only to a phase whose whole work is renaming \u2014 never as a way around the\n     ceiling;\n   - phase numbers run 1..n in table order, with no gaps and no duplicates;\n   - every row\'s filename reads `phase<N>-<slug>.md`, agreeing with its number;\n   - every `## Phases` row has a `### Phase <N> \u2014 ` block and vice versa;\n   - both count columns hold an integer;\n   - every declared create, export and script that was there before is still\n     declared afterwards, in whichever phase now owns it. A re-split moves work;\n     it never drops it.\n5. Touch no other section of the overview. Context, Decision Log, Global\n   Constraints, Architecture, Affected Packages and Cross-Phase Dependencies stay\n   exactly as written \u2014 except where a cross-phase dependency names a phase you\n   renumbered, which you update to keep it true.\n6. If a finding cannot be resolved from the inputs, stop and report status\n   `error` with the reason per finding in `discrepancies` \u2014 never paper over it.\n\n## Report \u2014 your entire final message is one JSON object\n\nEmit exactly one JSON `PlanFixReport` object as your entire final message.\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts\nwith `{` and ends with `}`.\n\n```\n{\n	"status": "fixed",\n	"filesEdited": ["<absolute path edited>"],\n	"discrepancies": []\n}\n```\n\nIf a finding cannot be resolved from the inputs, report the error result \u2014\n`status` is `"error"` and `discrepancies` states why, per finding:\n\n```\n{\n	"status": "error",\n	"filesEdited": [],\n	"discrepancies": ["<finding> \u2014 cannot be resolved because <reason>", "..."]\n}\n```\n\n## Operational rules\n\n- Edit **only** the listed overview file; never a phase file, a source file, a\n  test, or anything else.\n- Do not write the phase files. Separate agents author them from the breakdown\n  you settle here.\n- Do not implement any part of the feature. Do not create commits or branches.\n- Do not ask clarifying questions \u2014 proceed immediately; unresolvable findings\n  are reported via the error result, not asked about.\n- Respect all instructions in the project\'s CLAUDE.md files.\n';
+var planReshape_default = '# Role: Plan Reshaper\n\nYou re-split a phased plan\'s phase breakdown in place. You work autonomously\nfrom the task message; you Edit the overview file and your final message is\nmachine-parsed \u2014 one JSON report, not prose for a human.\n\nThis is the one plan-editing role that is allowed to restructure. The plan\nrepairer applies the smallest edit that resolves a finding and never re-orders\nanything; you are here because the breakdown itself does not fit, and making it\nfit means moving work between phases.\n\n## Input\n\nThe task message provides:\n\n- **Overview file to reshape** \u2014 the absolute path of the overview to Read and\n  Edit in place. It is the only file you may touch; the phase files do not exist\n  yet.\n- **Created-file ceiling** \u2014 the hard per-phase limit every phase must come in\n  under. No declaration raises it.\n- **Touched-file ceiling** \u2014 the hard per-phase limit on touched source files.\n  No `## File Budget` raises it; only a phase declared `- **Renames only:** yes`\n  or `- **Moves folders and files only:** yes` is exempt from it.\n- **Breakdown findings to resolve** \u2014 the typed findings saying which declared\n  phases are too large or malformed, each with its exact `fix` string.\n- **Reference files** (Read on demand) \u2014 absolute paths of the plan\'s own\n  decisions (`decisions.json`), the brainstorm decisions\n  (`brainstorm-decisions.json` \u2014 present only when the work came from a\n  `/brainstorm` hand-off), and the verified facts (`facts.json`). Read them when\n  a re-split needs to know what the work actually is; a purely arithmetic\n  correction needs no Read at all.\n\n## Workflow\n\n1. Read the overview file.\n2. Re-split the phase breakdown so every finding is resolved: move work between\n   phases, add a phase, renumber, and rewrite the `## Phases` table and the\n   `## Phase Declarations` blocks to match.\n3. Split at a seam the overview\'s `## Architecture` section already implies \u2014 a\n   module boundary, a contract, a layer \u2014 rather than at whatever line balances\n   the counts. A breakdown split on arithmetic alone produces phases that hand\n   half a concept to each other.\n4. Hold every one of these:\n   - every phase\'s declared `Creates` count is at or under the ceiling named in\n     the findings;\n   - every phase\'s declared `Touches` count is at or under the touched-file\n     ceiling, unless its block reads `- **Renames only:** yes` or\n     `- **Moves folders and files only:** yes`. Add the first bullet only to a\n     phase whose whole work is renaming, and the second only to a phase whose\n     whole work is moving folders and files \u2014 never either as a way around the\n     ceiling, and never both in one block. When a breakdown is over the ceiling\n     because one phase moves a large folder beside other work, the re-split\n     gathers the move into a phase of its own declared\n     `- **Moves folders and files only:** yes`;\n   - phase numbers run 1..n in table order, with no gaps and no duplicates;\n   - every row\'s filename reads `phase<N>-<slug>.md`, agreeing with its number;\n   - every `## Phases` row has a `### Phase <N> \u2014 ` block and vice versa;\n   - both count columns hold an integer;\n   - every declared create, export and script that was there before is still\n     declared afterwards, in whichever phase now owns it. A re-split moves work;\n     it never drops it.\n5. Touch no other section of the overview. Context, Decision Log, Global\n   Constraints, Architecture, Affected Packages and Cross-Phase Dependencies stay\n   exactly as written \u2014 except where a cross-phase dependency names a phase you\n   renumbered, which you update to keep it true.\n6. If a finding cannot be resolved from the inputs, stop and report status\n   `error` with the reason per finding in `discrepancies` \u2014 never paper over it.\n\n## Report \u2014 your entire final message is one JSON object\n\nEmit exactly one JSON `PlanFixReport` object as your entire final message.\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts\nwith `{` and ends with `}`.\n\n```\n{\n	"status": "fixed",\n	"filesEdited": ["<absolute path edited>"],\n	"discrepancies": []\n}\n```\n\nIf a finding cannot be resolved from the inputs, report the error result \u2014\n`status` is `"error"` and `discrepancies` states why, per finding:\n\n```\n{\n	"status": "error",\n	"filesEdited": [],\n	"discrepancies": ["<finding> \u2014 cannot be resolved because <reason>", "..."]\n}\n```\n\n## Operational rules\n\n- Edit **only** the listed overview file; never a phase file, a source file, a\n  test, or anything else.\n- Do not write the phase files. Separate agents author them from the breakdown\n  you settle here.\n- Do not implement any part of the feature. Do not create commits or branches.\n- Do not ask clarifying questions \u2014 proceed immediately; unresolvable findings\n  are reported via the error result, not asked about.\n- Respect all instructions in the project\'s CLAUDE.md files.\n';
 
 // src/agents/buildPlanReshapeInvocation.ts
 var buildPlanReshapeInvocation = ({
@@ -154705,8 +155287,8 @@ var buildPlanReshapeInvocation = ({
   brainstormDecisionsPath,
   factsPath
 }) => {
-  const findingLines = findings.map((finding3) => `- [${finding3.check}] ${finding3.location} \u2014 ${finding3.issue}
-  fix: ${finding3.fix}`);
+  const findingLines = findings.map((finding6) => `- [${finding6.check}] ${finding6.location} \u2014 ${finding6.issue}
+  fix: ${finding6.fix}`);
   const referenceLines = [
     `- Decisions record: ${decisionsPath}`,
     ...brainstormDecisionsPath ? [`- Brainstorm decisions (settled during brainstorm, before planning began): ${brainstormDecisionsPath}`] : [],
@@ -154722,7 +155304,7 @@ var buildPlanReshapeInvocation = ({
 No phase may declare more than ${createdFileCeiling2} created source files. This is fixed and no declaration raises it.`,
     `## Touched-file ceiling
 
-No phase may declare more than ${touchedFileCeiling2} touched source files, and a \`## File Budget\` never raises that. The only exemption is a phase whose declaration block carries \`- **Renames only:** yes\`, and that bullet is only for a phase whose whole work is renaming.`,
+No phase may declare more than ${touchedFileCeiling2} touched source files, and a \`## File Budget\` never raises that. There are two exemptions: a phase whose declaration block carries \`- **Renames only:** yes\`, a bullet only for a phase whose whole work is renaming, and a phase whose declaration block carries \`- **Moves folders and files only:** yes\`, a bullet only for a phase whose whole work is moving folders and files.`,
     `## Breakdown findings to resolve
 
 ${findingLines.join("\n")}`,
@@ -154782,7 +155364,7 @@ var shapeDefects = ({ declarations }) => getDeclarationDefects({
 var sizeDefects = ({ declarations, executorFileLimit }) => {
   const defects = [];
   for (const declaration of declarations) {
-    const { file: file2, createdCount, touchedCount, fileBudget, renamesOnly } = declaration;
+    const { file: file2, createdCount, touchedCount, fileBudget, buildMode } = declaration;
     const budget = fileBudget ?? executorFileLimit;
     for (const { label: label2 } of [
       { label: "Creates", count: createdCount },
@@ -154805,16 +155387,16 @@ var sizeDefects = ({ declarations, executorFileLimit }) => {
         fix: `split this phase into two in the '## Phases' table and '## Phase Declarations'`
       });
     }
-    if (touchedCount !== void 0 && touchedCount > touchedFileCeiling && renamesOnly !== true) {
+    if (touchedCount !== void 0 && touchedCount > touchedFileCeiling && buildMode === void 0) {
       defects.push({
         check: StructuralCheck.TouchedFilesWithinCeiling,
         severity: FindingSeverity.Blocking,
         issue: `${file2} is declared to touch ${touchedCount} source files, over the ${touchedFileCeiling}-file ceiling`,
         location: `Phases \u2192 ${file2}`,
-        fix: `split this phase in the '## Phases' table and '## Phase Declarations' so each touches no more than ${touchedFileCeiling} files \u2014 or, if its whole work is renaming, declare it with the '- **Renames only:** yes' bullet instead`
+        fix: `split this phase in the '## Phases' table and '## Phase Declarations' so each touches no more than ${touchedFileCeiling} files \u2014 or declare it with the '- **${buildModeBulletLabels[BuildMode.RenamesOnly]}:** yes' bullet if its whole work is renaming, or the '- **${buildModeBulletLabels[BuildMode.MoveFoldersAndFiles]}:** yes' bullet if its whole work is moving folders and files`
       });
     }
-    if (touchedCount !== void 0 && touchedCount > budget) {
+    if (touchedCount !== void 0 && touchedCount > budget && buildMode !== BuildMode.MoveFoldersAndFiles) {
       const source = fileBudget === void 0 ? "the configured executor-file-limit" : `${file2}'s own declared file budget`;
       defects.push({
         check: StructuralCheck.ScopeWithinGuardrail,
@@ -154862,9 +155444,9 @@ var runReshapeAttempt = async ({ params, findings, attempt }) => {
       planPaths: [overviewPath],
       createdFileCeiling,
       touchedFileCeiling,
-      decisionsPath: join121(workspaceDir, "decisions.json"),
+      decisionsPath: join122(workspaceDir, "decisions.json"),
       brainstormDecisionsPath,
-      factsPath: join121(workspaceDir, "facts.json")
+      factsPath: join122(workspaceDir, "facts.json")
     }),
     contract: PlanFixReport
   });
@@ -154885,10 +155467,10 @@ var repairPhaseBreakdown = async (params) => {
 };
 
 // src/plan/internal/common/paths/planDraftOutputs.ts
-import { join as join122 } from "node:path";
+import { join as join123 } from "node:path";
 var planDraftOutputs = async ({ cwd, name, variant }) => {
   const dir = await planWorkspaceDir({ cwd, name });
-  return variant === PlanVariant.Single ? [{ path: join122(dir, "plan.md"), variant: PlanVariant.Single }] : [{ path: join122(dir, "overview.md"), variant: PlanVariant.Overview }];
+  return variant === PlanVariant.Single ? [{ path: join123(dir, "plan.md"), variant: PlanVariant.Single }] : [{ path: join123(dir, "overview.md"), variant: PlanVariant.Overview }];
 };
 
 // src/plan/draft/focused/draftFocusedPhasedPlan.ts
@@ -154924,7 +155506,7 @@ var composeEngineSections = async ({
 }) => {
   await syncPlanDecisions({ cwd, name, planPaths: phasePaths, decisions });
   await syncGlobalConstraints({ planPaths: [overviewPath, ...phasePaths], decisions });
-  await syncPhaseSectionsFromFiles({ overviewPath, phasePaths });
+  await syncPhaseSectionsFromFiles({ cwd, overviewPath, phasePaths });
 };
 var draftFocusedPhasedPlan = async ({ context, step }) => {
   const { cwd, driver, name, workspaceDir, facts, decisions, brainstormDecisionsPath, config: config2, executorFileLimit, evidence } = context;
@@ -155023,7 +155605,7 @@ var draftFocusedSinglePlan = async ({ context }) => {
     advisories
   });
   const overCeiling = converged.blocking.find(
-    (finding3) => finding3.check === StructuralCheck.CreatedFilesWithinCeiling || finding3.check === StructuralCheck.TouchedFilesWithinCeiling
+    (finding6) => finding6.check === StructuralCheck.CreatedFilesWithinCeiling || finding6.check === StructuralCheck.TouchedFilesWithinCeiling
   );
   if (overCeiling) {
     progress(`plan draft ${name}: ${overCeiling.issue} \u2014 deleting ${outputs[0].path} and re-drafting phased`);
@@ -155035,7 +155617,7 @@ var draftFocusedSinglePlan = async ({ context }) => {
 
 // src/plan/evidence/collectSourceEvidence.ts
 import { readFile as readFile55 } from "node:fs/promises";
-import { join as join124 } from "node:path";
+import { join as join125 } from "node:path";
 
 // src/contracts/plan/evidence/SourceEvidenceEntry.ts
 var SourceEvidenceEntry = external_exports.object({
@@ -155110,8 +155692,8 @@ var extractSourceEvidence = ({ path, content, compiler }) => {
 };
 
 // src/plan/evidence/sourceEvidencePath.ts
-import { join as join123 } from "node:path";
-var sourceEvidencePath = async ({ cwd, name }) => join123(await planWorkspaceDir({ cwd, name }), "source-evidence.json");
+import { join as join124 } from "node:path";
+var sourceEvidencePath = async ({ cwd, name }) => join124(await planWorkspaceDir({ cwd, name }), "source-evidence.json");
 
 // src/plan/evidence/collectSourceEvidence.ts
 var atPath2 = ({ at }) => at.replace(/:\d+(?::\d+)?$/, "");
@@ -155155,16 +155737,16 @@ var collectSourceEvidence = async ({ cwd, name, facts, config: config2 }) => {
   const stored = new Map((previous?.entries ?? []).map((entry) => [entry.path, entry]));
   const compiler = resolveConsumerTypescript({ cwd, packagesDir: config2?.["packages-dir"] ?? defaultPackagesDir });
   const entries = [];
-  for (const [relative19, roles] of wantedPaths({ facts })) {
-    const content = await readFile55(join124(cwd, relative19), "utf8").catch(() => void 0);
+  for (const [relative20, roles] of wantedPaths({ facts })) {
+    const content = await readFile55(join125(cwd, relative20), "utf8").catch(() => void 0);
     if (content === void 0) {
-      entries.push({ path: relative19, sha256: "", kind: SourceEvidenceKind.Missing, bytes: 0, text: "", roles, definitions: [] });
+      entries.push({ path: relative20, sha256: "", kind: SourceEvidenceKind.Missing, bytes: 0, text: "", roles, definitions: [] });
       continue;
     }
     const hash3 = sha256({ content });
-    const reusable = stored.get(relative19);
+    const reusable = stored.get(relative20);
     entries.push(
-      reusable !== void 0 && reusable.sha256 === hash3 ? { ...reusable, roles } : collectEntry({ path: relative19, content, hash: hash3, roles, compiler })
+      reusable !== void 0 && reusable.sha256 === hash3 ? { ...reusable, roles } : collectEntry({ path: relative20, content, hash: hash3, roles, compiler })
     );
   }
   const index = SourceEvidenceIndex.parse({
@@ -155272,7 +155854,7 @@ var runPlanDraft = async ({
     workspaceDir,
     facts,
     decisions: merged,
-    brainstormDecisionsPath: brainstorm ? join125(workspaceDir, "brainstorm-decisions.json") : void 0,
+    brainstormDecisionsPath: brainstorm ? join126(workspaceDir, "brainstorm-decisions.json") : void 0,
     evidence: await collectSourceEvidence({ cwd, name, facts, config: config2 }),
     config: config2,
     executorFileLimit,
@@ -155289,8 +155871,8 @@ var runPlanDraft = async ({
 
 // src/cli/plan/planDraftCommand.ts
 var printPlanAdvisories = ({ advisories }) => {
-  for (const finding3 of advisories) {
-    printStructuralFinding({ finding: finding3 });
+  for (const finding6 of advisories) {
+    printStructuralFinding({ finding: finding6 });
   }
 };
 var planDraftCommand = async ({ cwd, driver, name, standards, config: config2, flags }) => {
@@ -155324,8 +155906,8 @@ ${red("facts error")} \u2014 the plan-writer found the facts/decisions do not ma
     const blocking = getBlockingFindings({ findings: result.findings });
     console.error(`
 ${red(`${blocking.length} structural issue(s)`)} remain after re-drafting \u2014 resolve, then re-draft:`);
-    for (const finding3 of blocking) {
-      printStructuralFinding({ finding: finding3, write: console.error });
+    for (const finding6 of blocking) {
+      printStructuralFinding({ finding: finding6, write: console.error });
     }
     printPlanAdvisories({ advisories: result.advisories });
     return exitCli({ code: 1 });
@@ -155381,15 +155963,15 @@ var printGradedGap = ({ gap, write = console.log }) => {
 var getBlockingGaps = ({ gaps }) => gaps.filter((gap) => isBlockingGap({ gap }));
 
 // src/plan/common/utils/gradeMemoryPath.ts
-import { join as join126 } from "node:path";
-var gradeMemoryPath = async ({ cwd, name }) => join126(await planWorkspaceDir({ cwd, name }), gradeMemoryFileName);
+import { join as join127 } from "node:path";
+var gradeMemoryPath = async ({ cwd, name }) => join127(await planWorkspaceDir({ cwd, name }), gradeMemoryFileName);
 
 // src/plan/gradeHistoryPath.ts
-import { join as join127 } from "node:path";
-var gradeHistoryPath = async ({ cwd, name }) => join127(await planWorkspaceDir({ cwd, name }), "grade-history.jsonl");
+import { join as join128 } from "node:path";
+var gradeHistoryPath = async ({ cwd, name }) => join128(await planWorkspaceDir({ cwd, name }), "grade-history.jsonl");
 
 // src/plan/runPlanGrade.ts
-import { basename as basename42, join as join132 } from "node:path";
+import { basename as basename42, join as join133 } from "node:path";
 
 // src/contracts/plan/memory/GradeScope.ts
 var GradeScope = {
@@ -155695,7 +156277,7 @@ var createGradeReport = ({
 
 // src/plan/internal/common/grading/notePriorArtCollisions.ts
 import { readFile as readFile56 } from "node:fs/promises";
-import { join as join128 } from "node:path";
+import { join as join129 } from "node:path";
 
 // src/contracts/dedup/DedupFinding.ts
 var DedupFinding = DedupVerdict.omit({ isDuplicate: true }).extend({
@@ -155729,7 +156311,7 @@ var DedupReport = external_exports.object({
 // src/plan/internal/common/grading/notePriorArtCollisions.ts
 var collisionKey = ({ plannedSymbol, plannedPath, phase }) => `${phase} ${plannedPath} ${plannedSymbol}`;
 var readSettledCollisions = async ({ workspaceDir }) => {
-  const text = await readFile56(join128(workspaceDir, "dedup.json"), "utf8").catch(() => void 0);
+  const text = await readFile56(join129(workspaceDir, "dedup.json"), "utf8").catch(() => void 0);
   if (text === void 0) {
     return /* @__PURE__ */ new Set();
   }
@@ -155766,7 +156348,7 @@ var readReusableGrade = async ({ gradePath, sha256: sha2562 }) => {
 };
 
 // src/plan/internal/common/grading/runGradePass.ts
-import { basename as basename38, join as join130 } from "node:path";
+import { basename as basename38, join as join131 } from "node:path";
 
 // src/plan/internal/common/memory/collapseText.ts
 var collapseText = ({ text }) => text.replace(/\s+/g, " ").trim().toLowerCase();
@@ -155800,7 +156382,7 @@ var collapseSide = ({ gap, gaps }) => {
 var collapseGroupedGaps = ({ gaps }) => gaps.flatMap((gap) => (gap.findingId ?? "") === "" ? [gap] : collapseSide({ gap, gaps }));
 
 // src/plan/internal/common/grading/drainGradeAgents.ts
-import { basename as basename31, relative as relative16 } from "node:path";
+import { basename as basename31, relative as relative17 } from "node:path";
 
 // src/agents/prompts/planGapCheck.md
 var planGapCheck_default = '# Role: Check Plan Gaps\n\nYou check a plan for **adequacy**: whether its content is complete and decided\nenough for a fresh-context agent to implement via `lightsout implement` without\nguessing. This is the semantic half of plan quality. You work autonomously and\nyour final message is machine-parsed \u2014 one JSON report, not prose.\n\n**Boundary:** you own **adequacy** \u2014 is the present content enough to build, or\nmust a human decide something. The plan\'s **structure** (paths exist, scripts\nexist, no placeholders, required sections, naming, file-count scope) is already\nverified deterministically in code. Do **not** re-flag structural defects \u2014 only\ndecision-level gaps.\n\n## You are one of three\n\nThree checkers run against this same plan at the same time, each given a\ndifferent brief. Your own brief follows these instructions and **narrows which\nof the gap areas below you report**. Everything all three of us find is kept and\nrecorded as a union \u2014 nothing is voted on and nothing is dropped for being found\nonce. Each finding is then handed to its own judge, which decides who has to\nsettle it, and only the findings that need a human decide the plan\'s grade.\n\nNone of that changes your job: report what you find. The weighing is somebody\nelse\'s.\n\nSo do not compensate for the others. A real gap that belongs to another lens is\nnot lost by your leaving it alone; it is being looked for right now by a checker\nwhose whole job it is. Reporting outside your brief adds a duplicate, not\ncoverage.\n\n## Input\n\nThe task message provides the plan text to check. When present, the overview\nplan (context shared across phases \u2014 read it for design decisions and\ndependencies, but do not grade it standalone) and supplemental code standards\nthe implementing agent will also load are appended to these role instructions\nrather than arriving in the task message.\n\n## What counts as a gap\n\nA gap is something that would make the agent **guess** or that needs a human to\n**decide between valid alternatives**. Flag a check only when the agent could not\nderive the answer from the plan, the overview, the codebase, or the standards.\n\n- **underspecified-surface** \u2014 services/modules described as intent ("create a\n  service") without defined methods/signatures the agent can implement.\n- **unwired-dependency** \u2014 cross-module dependencies where the plan does not make\n  exports match imports, so the agent must invent the contract.\n- **insufficient-detail** \u2014 a file to create/modify lacks enough detail to build\n  it without guessing its behavior.\n- **omitted-decision** \u2014 points where multiple valid approaches exist and the\n  plan picks none (behavior, edge cases, error handling, what to return).\n- **ambiguous-boundary** \u2014 scope boundaries present but so vague the agent cannot\n  tell what is in vs out.\n- **standards-conflict** \u2014 instructions that contradict the supplied standards.\n- **phase-seam-mismatch** \u2014 a value one phase defines and a later phase consumes\n  under a different shape, where both phases state the shape.\n\n## Rules\n\n- `NONE` is a real result. A well-elicited, structurally clean plan should\n  return no gaps. Do not manufacture gaps.\n- Only flag gaps that force the agent to **guess** or need a **human decision**.\n  Details derivable from the codebase, overview, or standards are not gaps.\n- Do not re-flag structural defects (paths, scripts, placeholders, naming,\n  sections, scope) \u2014 those are checked in code.\n- Each gap states what must be decided and the valid options if you can surface\n  them.\n\n## Findings already settled for this plan file\n\nA list of settled findings may be appended to these instructions. Each entry is a\nquestion an earlier pass raised against this very file and someone settled \u2014 a\nhuman answered it into the plan, or a judge showed the implementing agent can\ndecide it or that the plan already answers it.\n\nIt is there so the same question is not asked twice, and it is **context, not\ncoverage**:\n\n- Read every part of this plan file exactly as you would if the list were empty.\n  A settled record never narrows your lens and never excuses skipping a section.\n- Report one of its entries again only when you have **new evidence** the settled\n  answer does not already cover \u2014 the plan changed under it, or the answer turns\n  out not to hold. Say what that evidence is in the gap text.\n- A question the list settles, that the plan still settles, is not a gap.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`. An empty `gaps` array is the clean result.\n\n```\n{\n	"gaps": [\n		{\n			"area": "underspecified-surface|unwired-dependency|insufficient-detail|omitted-decision|ambiguous-boundary|standards-conflict|phase-seam-mismatch",\n			"gap": "<what is missing or ambiguous>",\n			"decision": "<the decision a human must make>",\n			"options": ["<valid alternative>", "..."]\n		}\n	]\n}\n```\n';
@@ -155993,7 +156575,7 @@ var drainGapCheckers = async ({
 };
 
 // src/plan/internal/common/grading/judgeGaps.ts
-import { relative as relative15 } from "node:path";
+import { relative as relative16 } from "node:path";
 
 // src/agents/prompts/planGapJudge.md
 var planGapJudge_default = '# Role: Judge a Plan Gap Batch\n\nYou are handed **several observations** readers raised against a plan, and you\nanswer **one** question about each: who has to settle it. Before that, you\ndecide which of them describe the same underlying defect. You work autonomously\nand your final message is machine-parsed \u2014 one JSON object, not prose.\n\n## What you are given\n\nThe task message provides the text of every plan file the observations span \u2014\none `## Plan file:` section each \u2014 and the observations themselves, each under\nan engine-assigned identifier (`### o1`, `### o4`, \u2026) with its plan file, area,\nlens, finding, decision and offered options. When present, the overview plan\n(shared context for a phased plan \u2014 read it, do not judge it standalone) and\nsupplemental code standards are appended to these role instructions rather than\narriving in the task message.\n\nYou may read the repository. You make no edits.\n\n## The plan\'s other phases\n\nWhen the task message names the plan\'s folder, the plan is phased and its other\nphase files are on disk beside the ones you were given. An observation about\nsomething a neighbouring phase produces or consumes cannot be settled from one\nside alone, and a judge that guesses at the neighbour is the rubber stamp this\nbrief exists to prevent \u2014 so when the neighbour is not one of the plan files you\nwere given, open it and look.\n\nAn observation contained entirely in the files you were given needs none of\nthis. Do not read the whole plan out of thoroughness.\n\n## First: which observations are one defect\n\nThe engine put these observations together because their wording overlaps. That\nis a hint, never proof. Two or more observations are the **same defect** only\nwhen you can state:\n\n- a **common violated requirement or contradiction** every one of them is an\n  instance of, and\n- **one corrective decision** that settles every one of them.\n\nShared wording, a shared symbol or an overlapping file is not enough on its own.\nObservations of one contradiction seen from two phases usually ARE one defect;\ntwo different questions that happen to name the same file usually are NOT.\n\nWhen you are not sure, keep them apart. Being unsure is a normal answer, not a\nfailure: an observation you rule on its own is judged exactly as it would be\nalone.\n\n## The one question\n\nFor each defect \u2014 a confirmed group, or a single observation \u2014 who settles it: a\nhuman, the implementing agent, or nobody, because it is already answered.\n\n## The bar\n\nCould a fresh-context agent implementing this plan derive the answer from the\nplan, the overview, the codebase and the standards \u2014 and be right?\n\nThis is the same bar the reader briefs state, which is why you read the\nrepository rather than the plan text alone. "The plan does not say it" is not\nenough; the question is whether the agent would still get it right.\n\n## The three outcomes, and the evidence each demands\n\n- **`needs-a-human`** \u2014 the agent cannot work it out. Two defensible answers\n  exist and the plan picks neither, or the choice turns on intent nothing in the\n  repository carries. Supply **`humanDecision`**: the decision the human has to\n  make.\n- **`agent-can-decide`** \u2014 the agent can settle it correctly on its own, from\n  the plan, the codebase or the standards. Supply **`agentDecision`** (what it\n  would decide) and **`safeBecause`** (why that choice is safe to make\n  unattended).\n- **`already-answered`** \u2014 the reader missed an answer that is already there.\n  Supply **`answers`**: one entry for **every** plan file the ruling\'s\n  observations span, each naming that file in `phase` and giving, in `answerAt`,\n  either the exact line of **that file** that states the answer \u2014 copied\n  verbatim from its `## Plan file:` section \u2014 or the path of a file on disk.\n  Every file a ruling spans is one of the `## Plan file:` sections you were\n  given, so you are never asked to cite a file you cannot read. One citation\n  waving away a contradiction observed in two files is refused: an answer in one\n  file is no evidence about the other.\n\n## Your rulings\n\nYou return a **list** of rulings.\n\n- A ruling names the identifiers it covers in **`covers`**. Naming two or more is\n  your claim that they are one defect, and it must state that defect in\n  **`sharedDefect`** \u2014 the common requirement or contradiction, in one sentence.\n  Naming one is an ordinary single ruling.\n- **Every identifier you were given must appear in exactly one ruling.** An\n  observation no ruling covers, one covered by two rulings, and any identifier\n  you were not given all leave the affected observations unjudged \u2014 which blocks\n  the plan.\n- A ruling over a group settles the whole group with one outcome. There is no\n  vote: if the members need different outcomes, they are not one defect.\n\n## Findings already on record\n\nThe task message may list the records the plan\'s memory already holds for the\nplan files you were given, each with an id and the state it is in. When it\ndoes, decide **first**, for each ruling, whether it is the **same question** as\none of them.\n\n- If it is, put that record\'s id in the ruling\'s **`matchesFinding`**. If it is\n  not, leave the field unset.\n- Never name an id that is not on the list. One the plan does not hold points\n  nowhere, and the engine treats that whole ruling as no answer at all \u2014 which\n  blocks the plan.\n- Matching is **orthogonal to your ruling**: a matched ruling still gets a full\n  verdict with the evidence its outcome demands.\n- A match you rule `needs-a-human` **reopens** a record someone already closed.\n  Rule that way only on evidence the earlier clearance was wrong, or that the\n  assumptions it rested on have changed. A reader re-wording a settled question\n  is not such evidence.\n\n## Rules\n\n- Judge only the observations you were given. Do not read the plan for new\n  gaps, and do not re-check its structure \u2014 that is verified deterministically\n  in code.\n- The evidence your outcome demands is mandatory. A ruling without it is\n  discarded and every observation it covers is treated as unjudged, which blocks\n  the plan.\n- Cite what you actually read. A citation the engine cannot find in the plan\n  file it names, or a path that is not on disk, is discarded and blocks.\n- When you cannot tell, `needs-a-human` is the safe answer. Asking costs one\n  question; waving something through costs an unattended run that stalls.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`. Include only the evidence fields each outcome demands.\n\n```\n{\n	"verdicts": [\n		{\n			"covers": ["<every identifier this ruling settles>"],\n			"sharedDefect": "<two or more covered: the one defect they all are>",\n			"outcome": "needs-a-human|agent-can-decide|already-answered",\n			"humanDecision": "<needs-a-human only>",\n			"agentDecision": "<agent-can-decide only>",\n			"safeBecause": "<agent-can-decide only>",\n			"answers": [{ "phase": "<a plan file the ruling spans>", "answerAt": "<already-answered only: that file\'s exact line, or a path on disk>" }],\n			"matchesFinding": "<the id of the record this ruling repeats, when one is on the list>"\n		}\n	]\n}\n```\n';
@@ -156149,8 +156731,8 @@ var citationPathToken = ({ citation }) => {
 };
 
 // src/plan/internal/common/paths/citedPathExists.ts
-import { isAbsolute as isAbsolute5, join as join129 } from "node:path";
-var citedPathExists = async ({ cwd, token }) => pathExists({ path: isAbsolute5(token) ? token : join129(cwd, token) });
+import { isAbsolute as isAbsolute5, join as join130 } from "node:path";
+var citedPathExists = async ({ cwd, token }) => pathExists({ path: isAbsolute5(token) ? token : join130(cwd, token) });
 
 // src/plan/internal/common/memory/confirmCitation.ts
 var minimumCitationLength = 24;
@@ -156331,7 +156913,7 @@ var spawnGapJudge = async ({ params, batch, batchIndex }) => {
       standards,
       // Only a phased plan has siblings to point at, and the judge opens one
       // itself when an observation is about a seam its batch does not span.
-      planDir: overviewText === void 0 ? void 0 : relative15(cwd, workspaceDir),
+      planDir: overviewText === void 0 ? void 0 : relative16(cwd, workspaceDir),
       records: batchRecords({ memory: params.memory, batch }),
       observations: batch.observations.map(({ id, gap }) => ({ id, observation: gap }))
     }),
@@ -156386,7 +156968,7 @@ var spawnGapChecker = async ({
       standards,
       // Only a phased plan has siblings to point at, and the wiring checker
       // opens one itself when a consumed name's shape is declared elsewhere.
-      planDir: pass.overviewText === void 0 ? void 0 : relative16(cwd, pass.workspaceDir),
+      planDir: pass.overviewText === void 0 ? void 0 : relative17(cwd, pass.workspaceDir),
       lens,
       settled: phaseFindingRecords({ memory, phase: basename31(file2.path), statuses: settledStatuses })
     }),
@@ -156758,6 +157340,10 @@ var providedBy = ({ phase, exports }) => /* @__PURE__ */ new Set([
   ...exports,
   ...getComparableTokens({ lines: phase.plan.sections.get("What Next Plan Expects") ?? [] }).keys()
 ]);
+var namesPathUnderFolderMove = ({ phase, other }) => {
+  const folders = other.plan.folderMoves.flatMap((move) => [move.from, move.to]);
+  return getPlanNamedPaths({ plan: phase.plan }).some((path) => folders.some((folder) => path.startsWith(`${folder}/`)));
+};
 var getPhaseConnections = ({ phases, declarations }) => {
   const paired = phases.map((phase) => ({ phase, declaration: declarations.find((entry) => entry.file === phase.base) }));
   const undeclared = paired.filter((entry) => entry.declaration === void 0);
@@ -156775,7 +157361,7 @@ var getPhaseConnections = ({ phases, declarations }) => {
   const connections = new Map(phases.map((phase) => [phase.base, /* @__PURE__ */ new Set()]));
   for (const left of phases) {
     for (const right of phases) {
-      const linked = left.base !== right.base && [...consumes.get(left.base) ?? []].some((token) => provides.get(right.base)?.has(token));
+      const linked = left.base !== right.base && ([...consumes.get(left.base) ?? []].some((token) => provides.get(right.base)?.has(token)) || namesPathUnderFolderMove({ phase: left, other: right }));
       if (linked) {
         connections.get(left.base)?.add(right.base);
         connections.get(right.base)?.add(left.base);
@@ -157035,9 +157621,9 @@ var recordReadCoverage = ({
     return { readers: standing, docs };
   }
   const fresh = freshEntries({ read, light, designHashes, connections, at });
-  const written = new Set(fresh.map((entry) => keyOf(entry)));
+  const written2 = new Set(fresh.map((entry) => keyOf(entry)));
   return {
-    readers: [...standing.filter((entry) => !written.has(keyOf(entry))), ...fresh],
+    readers: [...standing.filter((entry) => !written2.has(keyOf(entry))), ...fresh],
     docs: documentationChecked ? documentationEntry({ designHashes, at }) : docs
   };
 };
@@ -157071,7 +157657,7 @@ var recordPassCoverage = ({
 };
 
 // src/plan/internal/common/memory/verifyOpenFindings.ts
-import { basename as basename37, relative as relative17 } from "node:path";
+import { basename as basename37, relative as relative18 } from "node:path";
 
 // src/agents/prompts/planFindingRecheck.md
 var planFindingRecheck_default = '# Role: Re-check a Settled Plan Question\n\nYou are handed **one** question a human was previously asked to settle, and the\ncurrent text of the plan it was raised against. You answer **one** question\nabout it: does the plan now state the answer? You work autonomously and your\nfinal message is machine-parsed \u2014 one JSON object, not prose.\n\n## What you are given\n\nThe task message provides the current plan text and the single record on file \u2014\nits id, the area it was raised under, what the reader found missing, the\ndecision it demanded, the options offered, and what the original judge said a\nhuman had to decide. When present, the overview plan (shared context for a\nphased plan \u2014 read it, do not judge it standalone) and supplemental code\nstandards are appended to these role instructions rather than arriving in the\ntask message.\n\nYou may read the repository. You make no edits.\n\n## The plan\'s other phases\n\nWhen the task message names the plan\'s folder, the plan is phased and its other\nphase files are on disk beside the text you were given. A question raised\nagainst one phase can be answered in another \u2014 a repair often moves a decision\ninto the overview\'s Decision Log or into the phase that owns the seam. Open a\nsibling when the answer plausibly moved there.\n\n## A record that spans several plan files\n\nA judge may have confirmed that readers in several plan files described one\ndefect, and the record then holds each of their observations. When the task\nmessage says this spawn asks about one plan file of such a record, answer **only\nfor that file**, in the words of that file\'s own observation. The record closes\nonly once every one of its files is confirmed separately, so an answer stated in\na different file is no evidence about this one \u2014 cite the plan text you were\ngiven, never a line from a sibling.\n\n## The two answers\n\n- **`already-answered`** \u2014 the plan now genuinely settles this question. A\n  reader of the plan would not have to guess, invent, or decide anything the\n  record asked about.\n- **`needs-a-human`** \u2014 it does not. Restate the outstanding decision in\n  `humanDecision`, in the terms a human can answer.\n\nYou never rule `agent-can-decide`. Downgrading a human\'s question to an\nassumption the implementing agent may make is not re-verification; it is\nanswering a different question from the one on file. If the plan does not state\nthe answer, the answer is `needs-a-human`.\n\n## The citation rule\n\n`answerAt` is your evidence, and the engine checks it before it closes anything.\n\n- Paste the **exact plan line** that states the answer \u2014 a Decision Log row, a\n  sentence from a file entry, a rule from a Scope Boundaries bullet. Copy it\n  verbatim from the text you were given.\n- Never paraphrase it, never give a heading on its own, and never describe where\n  to look ("see the Decision Log"). The engine looks for your quote in the plan\n  text; a quote it cannot find refuses the closure and the record stays open and\n  blocking.\n- A file path is the one non-quote citation allowed, and it must be a file that\n  is really on disk.\n\nA record you cannot close honestly is a record that should stay open. An\ninvented citation does not close it \u2014 it costs the run a pass and leaves the\nquestion exactly where it was.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`.\n\n```\n{\n	"outcome": "already-answered|needs-a-human",\n	"answerAt": "<already-answered: the exact plan line that states the answer, or a file path on disk>",\n	"humanDecision": "<needs-a-human: the decision still outstanding>"\n}\n```\n';
@@ -157203,7 +157789,7 @@ var spawnRecheck = async ({ params, pair }) => {
       standards,
       // Only a phased plan has siblings to point at, and a record raised
       // against one phase may now be answered in another.
-      planDir: overviewText === void 0 ? void 0 : relative17(cwd, workspaceDir),
+      planDir: overviewText === void 0 ? void 0 : relative18(cwd, workspaceDir),
       record: pair.record,
       observation: pair.observation,
       locations: pair.locations
@@ -157344,7 +157930,7 @@ var persistPass = async ({
   report: report2,
   memory
 }) => {
-  await writeJsonFile({ path: join130(workspaceDir, gradeFileName), value: report2 });
+  await writeJsonFile({ path: join131(workspaceDir, gradeFileName), value: report2 });
   await appendGradeHistory({ cwd, name, report: report2 });
   await writeGradeMemory({ cwd, name, memory });
 };
@@ -157493,7 +158079,7 @@ var decideGradeScope = ({ files, overviewText, memory, inputs, narrowed }) => {
 
 // src/plan/internal/common/scope/getGradeInputs.ts
 import { readFile as readFile58 } from "node:fs/promises";
-import { basename as basename40, join as join131 } from "node:path";
+import { basename as basename40, join as join132 } from "node:path";
 
 // src/agents/common/constants/planGradePromptTexts.ts
 var planGradePromptTexts = [
@@ -157562,7 +158148,7 @@ var planRelevantConfig = ({ config: config2 }) => ({
   "packages-dir": config2?.["packages-dir"],
   "executor-file-limit": config2?.["executor-file-limit"]
 });
-var hashChangedFiles = async ({ cwd, changed }) => Promise.all([...changed].sort().map(async (path) => ({ path, sha256: await hashFile({ path: join131(cwd, path) }) })));
+var hashChangedFiles = async ({ cwd, changed }) => Promise.all([...changed].sort().map(async (path) => ({ path, sha256: await hashFile({ path: join132(cwd, path) }) })));
 var toDecisionEntry = ({ row }) => {
   const phases = row.question.startsWith("Global constraint:") ? void 0 : row.phases;
   return {
@@ -157696,7 +158282,7 @@ var runPlanGrade = async (params) => {
   if ("error" in selection) {
     return { status: PlanRunStatus.Failed, workspaceDir, error: selection.error };
   }
-  const gradePath = join132(workspaceDir, gradeFileName);
+  const gradePath = join133(workspaceDir, gradeFileName);
   const structural = await lintPlanStructure({ cwd, planPaths, decisions: pass.decisions, config: config2 });
   const stamp3 = await readGradeStamp({ cwd });
   const blockingStructural = getBlockingFindings({ findings: structural });
@@ -157804,8 +158390,8 @@ ${bold(`plan grade ${name}`)} \u2014 ${grade.passed ? green(grade.grade) : red(g
   console.log(`  checked: ${grade.phasesChecked.length} phase file(s) \xD7 ${grade.lenses.length} lens(es)${checked}`);
   printCoverage({ grade });
   printWeights({ weights: grade.weights });
-  for (const finding3 of grade.structural) {
-    printStructuralFinding({ finding: finding3 });
+  for (const finding6 of grade.structural) {
+    printStructuralFinding({ finding: finding6 });
   }
   printGaps({ gaps: blocking });
   console.log(`
@@ -157846,8 +158432,8 @@ ${result.error}`);
   const note = advisory === 0 ? "" : `, ${advisory} advisory finding(s)`;
   console.log(`
 ${bold(`plan lint ${name}`)} \u2014 ${headline}${note} (${planPaths.length} file(s))`);
-  for (const finding3 of findings) {
-    printStructuralFinding({ finding: finding3 });
+  for (const finding6 of findings) {
+    printStructuralFinding({ finding: finding6 });
   }
   return exitCli({ code: blocking.length > 0 ? 1 : 0 });
 };
@@ -158000,7 +158586,7 @@ var findPlanPublishRefusal = async ({ cwd, address, planId, name, record: record
 
 // src/workOrder/internal/common/utils/publishBrainstormWhenNotesChanged.ts
 import { readFile as readFile61 } from "node:fs/promises";
-import { join as join133 } from "node:path";
+import { join as join134 } from "node:path";
 var readCommittedNotesHash = async ({
   planId,
   target
@@ -158036,7 +158622,7 @@ var publishBrainstormWhenNotesChanged = async ({
   env,
   onProgress
 }) => {
-  const notesPath = join133(await planWorkspaceDir({ cwd, name: address }), brainstormNotesFileName);
+  const notesPath = join134(await planWorkspaceDir({ cwd, name: address }), brainstormNotesFileName);
   if (!await pathExists({ path: notesPath })) {
     return { published: [] };
   }
@@ -158246,7 +158832,7 @@ var syncPlanPhases = async ({ cwd, name }) => {
       ].join("\n")
     };
   }
-  const file2 = await syncPhaseSectionsFromFiles({ overviewPath: deliverable.overviewPath, phasePaths: deliverable.files.map((phase) => phase.path) });
+  const file2 = await syncPhaseSectionsFromFiles({ cwd, overviewPath: deliverable.overviewPath, phasePaths: deliverable.files.map((phase) => phase.path) });
   return { status: PlanRunStatus.Complete, file: file2 };
 };
 
@@ -158305,7 +158891,7 @@ var ensureBrainstormFiles = async ({ cwd, name, write = console.log }) => {
 
 // src/plan/runPlanVerifyFacts.ts
 import { copyFile, mkdir as mkdir27, writeFile as writeFile21 } from "node:fs/promises";
-import { join as join135, resolve as resolve17 } from "node:path";
+import { join as join136, resolve as resolve17 } from "node:path";
 
 // src/contracts/plan/facts/AuthoredFacts.ts
 var AuthoredFacts = external_exports.object({
@@ -158315,12 +158901,12 @@ var AuthoredFacts = external_exports.object({
 
 // src/plan/verifyFacts.ts
 import { readFile as readFile62 } from "node:fs/promises";
-import { join as join134 } from "node:path";
+import { join as join135 } from "node:path";
 var verifyFacts = async ({ cwd, facts }) => {
   const paths = facts.areas.flatMap((area) => [...area.filesToModify.map((file2) => file2.path), ...area.patternsToMirror.map((pattern) => pattern.path)]);
   const missingPaths = [];
   for (const path of paths) {
-    const exists3 = await pathExists({ path: join134(cwd, path) });
+    const exists3 = await pathExists({ path: join135(cwd, path) });
     if (!exists3) {
       missingPaths.push(path);
     }
@@ -158331,7 +158917,7 @@ var verifyFacts = async ({ cwd, facts }) => {
     if (area.scripts.length === 0) {
       continue;
     }
-    const manifestPaths = [join134(cwd, "package.json"), ...area.affectedPackages.map((pkg) => join134(cwd, pkg, "package.json"))];
+    const manifestPaths = [join135(cwd, "package.json"), ...area.affectedPackages.map((pkg) => join135(cwd, pkg, "package.json"))];
     const available = /* @__PURE__ */ new Set();
     for (const manifestPath of manifestPaths) {
       const raw = await readFile62(manifestPath, "utf8").catch(() => void 0);
@@ -158364,7 +158950,7 @@ var snapshotNotes = async ({
   progress
 }) => {
   const source = resolve17(cwd, notesFile);
-  const destination = join135(workspaceDir, "brainstorm-notes.md");
+  const destination = join136(workspaceDir, "brainstorm-notes.md");
   const alreadyFrozen = await pathExists({ path: destination });
   if (alreadyFrozen) {
     progress("plan verify-facts \xB7 brainstorm-notes.md already frozen \u2014 snapshot skipped");
@@ -158382,7 +158968,7 @@ var snapshotNotes = async ({
 var runPlanVerifyFacts = async ({ cwd, name, notesFile, onProgress }) => {
   const progress = onProgress ?? (() => void 0);
   const workspaceDir = await planWorkspaceDir({ cwd, name });
-  const factsPath = join135(workspaceDir, "facts.json");
+  const factsPath = join136(workspaceDir, "facts.json");
   if (notesFile !== void 0) {
     const snapshot = await snapshotNotes({ cwd, workspaceDir, notesFile, progress });
     if (snapshot.error !== void 0) {
@@ -158618,7 +159204,7 @@ var renderQueueBoard = ({ tickets, state, at }) => {
 };
 
 // src/queue/board/toQueueBoardTickets.ts
-import { join as join136 } from "node:path";
+import { join as join137 } from "node:path";
 var describeWork = ({ ticket, name, branch, worktreePath }) => ({
   identifier: ticket.identifier,
   title: ticket.title,
@@ -158628,7 +159214,7 @@ var describeWork = ({ ticket, name, branch, worktreePath }) => ({
   branch,
   worktreePath
 });
-var describeUnbuilt = ({ workOrder, live: live2 }) => describeWork({ ticket: workOrder.ticket, name: workOrder.name, branch: workOrder.branch, worktreePath: join136(live2.worktreesRoot, workOrder.name) });
+var describeUnbuilt = ({ workOrder, live: live2 }) => describeWork({ ticket: workOrder.ticket, name: workOrder.name, branch: workOrder.branch, worktreePath: join137(live2.worktreesRoot, workOrder.name) });
 var placeLeftBehind = ({ entry, lane, reason }) => ({
   identifier: entry.identifier,
   title: entry.title,
@@ -158691,9 +159277,9 @@ var toQueueBoardTickets = ({ settled: settled2, live: live2, at }) => {
 };
 
 // src/queue/board/getQueueSummaryPath.ts
-import { join as join137 } from "node:path";
+import { join as join138 } from "node:path";
 var getQueueSummaryPath = async ({ cwd, runId }) => {
-  return join137(await resolveRunDir({ cwd, runId }), "summary.json");
+  return join138(await resolveRunDir({ cwd, runId }), "summary.json");
 };
 
 // src/queue/board/writeQueueSummary.ts
@@ -158705,17 +159291,17 @@ var writeQueueSummary = async ({ cwd, runId, summary }) => {
 var isParkedOutcome = ({ outcome }) => !outcome.ready && outcome.open === void 0;
 
 // src/queue/relay/emptyRelayMailbox.ts
-import { mkdir as mkdir28, readdir as readdir22, rm as rm12 } from "node:fs/promises";
-import { join as join138 } from "node:path";
+import { mkdir as mkdir28, readdir as readdir23, rm as rm12 } from "node:fs/promises";
+import { join as join139 } from "node:path";
 var emptyRelayMailbox = async ({ directory }) => {
   await mkdir28(directory, { recursive: true });
-  const entries = await readdir22(directory);
-  await Promise.all(entries.map((entry) => rm12(join138(directory, entry), { force: true, recursive: true })));
+  const entries = await readdir23(directory);
+  await Promise.all(entries.map((entry) => rm12(join139(directory, entry), { force: true, recursive: true })));
 };
 
 // src/queue/relay/FileQuestionRelay.ts
 import { readFile as readFile63, rename as rename10, rm as rm13 } from "node:fs/promises";
-import { join as join140 } from "node:path";
+import { join as join141 } from "node:path";
 
 // src/contracts/queue/RelayAnswer.ts
 var RelayAnswer = external_exports.object({
@@ -158734,7 +159320,7 @@ var RelayQuestion = external_exports.object({
 });
 
 // src/queue/relay/internal/recordRelayedAnswer.ts
-import { join as join139 } from "node:path";
+import { join as join140 } from "node:path";
 
 // src/ticketTracker/internal/common/utils/addLineUnderHeading.ts
 var readHeadingLevel = ({ line }) => {
@@ -159025,7 +159611,7 @@ var recordRelayedAnswer = async ({
   onProgress
 }) => {
   await appendJsonlRecords({
-    path: join139(coordinatorRunDir, "decisions.jsonl"),
+    path: join140(coordinatorRunDir, "decisions.jsonl"),
     schema: QueueQuestionRecord,
     entries: [{ question, answer, ticket: ticket.identifier }],
     runId: coordinatorRunId,
@@ -159092,8 +159678,8 @@ var FileQuestionRelay = class {
     }
     this.sequence += 1;
     const stem = `${ticket.identifier.toLowerCase()}-${this.sequence}`;
-    const questionPath = join140(this.directory, `${stem}.question.json`);
-    const answerPath = join140(this.directory, `${stem}.answer.json`);
+    const questionPath = join141(this.directory, `${stem}.question.json`);
+    const answerPath = join141(this.directory, `${stem}.answer.json`);
     await this.putQuestion({ stem, questionPath, question, ticket });
     const answer = await this.waitForAnswer({ questionPath, answerPath, question });
     await removeExchange({ questionPath, answerPath });
@@ -159126,7 +159712,7 @@ var FileQuestionRelay = class {
   /** The question file, written under a temporary name and renamed in — a watcher globbing `*.question.json` must never read half of one. */
   async putQuestion({ stem, questionPath, question, ticket }) {
     const entry = RelayQuestion.parse({ ticket: ticket.identifier, title: ticket.title, question, askedAt: (/* @__PURE__ */ new Date()).toISOString() });
-    const temporaryPath = join140(this.directory, `${stem}.tmp`);
+    const temporaryPath = join141(this.directory, `${stem}.tmp`);
     await writeJsonFile({ path: temporaryPath, value: entry });
     await rename10(temporaryPath, questionPath);
     this.createProgressSink({ ticket })(`waiting for an answer in ${questionPath}`);
@@ -159310,9 +159896,9 @@ import { mkdir as mkdir29, rename as rename11 } from "node:fs/promises";
 import { dirname as dirname29 } from "node:path";
 
 // src/queue/board/getQueueBoardPath.ts
-import { join as join141 } from "node:path";
+import { join as join142 } from "node:path";
 var getQueueBoardPath = async ({ cwd, runId }) => {
-  return join141(await resolveRunDir({ cwd, runId }), "board.json");
+  return join142(await resolveRunDir({ cwd, runId }), "board.json");
 };
 
 // src/queue/board/QueueBoardRecorder.ts
@@ -159396,7 +159982,7 @@ var createMainCheckoutSerializer = () => {
 };
 
 // src/queue/internal/common/utils/startCoordinatorRun.ts
-import { join as join142 } from "node:path";
+import { join as join143 } from "node:path";
 var startCoordinatorRun = async ({
   cwd,
   runId,
@@ -159404,7 +159990,7 @@ var startCoordinatorRun = async ({
   config: config2
 }) => {
   const coordinatorRunDir = await resolveNewRunDir({ cwd, pipeline: PipelineKind.Queue, runId });
-  const planPath = join142(coordinatorRunDir, "queue.md");
+  const planPath = join143(coordinatorRunDir, "queue.md");
   const manifest = await createRun({ cwd, runId, plan: planPath, pipeline: PipelineKind.Queue, driver: driverName, config: config2 });
   await writeManifestWithUsage({ cwd, manifest, patch: { status: RunStatus.Running }, usageTotals: seedUsageTotals({ usage: manifest.usage }) });
   return { coordinatorRunDir, planPath, manifest };
@@ -159458,10 +160044,10 @@ var BranchState = external_exports.object({
 });
 
 // src/queue/branchState/internal/common/utils/getBranchStatePath.ts
-import { join as join143 } from "node:path";
+import { join as join144 } from "node:path";
 var getBranchStatePath = async ({ cwd, branch }) => {
   const folder = await resolveBranchRecordDir({ cwd, branch });
-  return folder === void 0 ? void 0 : join143(folder, "branch-state.json");
+  return folder === void 0 ? void 0 : join144(folder, "branch-state.json");
 };
 
 // src/queue/branchState/readBranchState.ts
@@ -159761,12 +160347,12 @@ var createWorkOrder = async ({
   if (refusal !== void 0) {
     return { error: refusal };
   }
-  const written = await updateLocalWorkOrderState({
+  const written2 = await updateLocalWorkOrderState({
     cwd,
     name: composed.name,
     change: (current) => current === void 0 ? buildWorkOrderState({ name: composed.name, branch, ticketRef: naming.ticketRef, mode, config: config2 }) : { error: takenRefusal({ name: composed.name }) }
   });
-  return "error" in written ? written : { name: composed.name, branch, record: written.record };
+  return "error" in written2 ? written2 : { name: composed.name, branch, record: written2.record };
 };
 
 // src/queue/nameWaveWorkOrders.ts
@@ -159893,11 +160479,11 @@ var startBuilds = ({ context, state, flight }) => {
 
 // src/queue/drainLanes/internal/common/utils/writeQueuePlan.ts
 import { writeFile as writeFile22 } from "node:fs/promises";
-import { join as join144 } from "node:path";
+import { join as join145 } from "node:path";
 var writeQueuePlan = async ({ path, cwd, queued }) => {
   const root = await resolveWorktreesRoot({ cwd });
   const lines = queued.map(
-    (workOrder) => `- ${workOrder.ticket.identifier} \xB7 ${workOrder.ticket.worker} \xB7 ${workOrder.branch} \xB7 ${join144(root, workOrder.name)}`
+    (workOrder) => `- ${workOrder.ticket.identifier} \xB7 ${workOrder.ticket.worker} \xB7 ${workOrder.branch} \xB7 ${join145(root, workOrder.name)}`
   );
   await writeFile22(path, `# queue drain
 
@@ -160365,7 +160951,7 @@ var drainQueue = async ({
 };
 
 // src/queue/internal/runQueueWorkOrder.ts
-import { join as join146 } from "node:path";
+import { join as join147 } from "node:path";
 
 // src/common/git/readGitCommitsAhead.ts
 var readGitCommitsAhead = async ({ cwd, defaultBranch }) => {
@@ -160552,10 +161138,10 @@ var settleLeftoverWork = async ({ step, leftover }) => {
 };
 
 // src/queue/workers/internal/runPlanFolderPipeline.ts
-import { join as join145 } from "node:path";
+import { join as join146 } from "node:path";
 var runPlanFolderPipeline = async ({ cwd, name, config: config2, driver, onProgress, queueRunId }) => {
   const folder = await planWorkspaceDir({ cwd, name });
-  const overviewPath = join145(folder, "overview.md");
+  const overviewPath = join146(folder, "overview.md");
   const phased = await pathExists({ path: overviewPath });
   const outcome = await runWorkOrderPlanLifecycle({
     cwd,
@@ -160567,7 +161153,7 @@ var runPlanFolderPipeline = async ({ cwd, name, config: config2, driver, onProgr
           name,
           label: "implement",
           statusOf: ({ result }) => result.manifest.status,
-          work: ({ level }) => phased ? runPhasesPipeline({ cwd, driver, config: config2, overviewPath, runId, level, onProgress, queueRunId }) : runImplementPipeline({ cwd, driver, config: config2, planPath: join145(folder, "plan.md"), runId, level, onProgress, queueRunId })
+          work: ({ level }) => phased ? runPhasesPipeline({ cwd, driver, config: config2, overviewPath, runId, level, onProgress, queueRunId }) : runImplementPipeline({ cwd, driver, config: config2, planPath: join146(folder, "plan.md"), runId, level, onProgress, queueRunId })
         });
       } finally {
         await removeRunOwner({ cwd, runId });
@@ -161186,7 +161772,7 @@ var runQueueWorkOrder = async ({
   onProgress
 }) => {
   const { ticket, name, branch } = workOrder;
-  const workOrderRunDir = join146(coordinatorRunDir, "work-orders", ticket.identifier);
+  const workOrderRunDir = join147(coordinatorRunDir, "work-orders", ticket.identifier);
   const created = await createTicketWorktree({ cwd, branch, defaultBranch, setup: settings.setup, serializeWorktreeAdd, onProgress });
   if (typeof created !== "string") {
     return { ticket, name, branch, worktreePath: await resolveWorktreePath({ cwd, branch }), ready: false, error: created.error };
@@ -161259,14 +161845,14 @@ var settleParkedLabels = async ({ settings, trackerSettings, outcomes, onProgres
   }
   await Promise.all(
     outcomes.map(async (outcome) => {
-      const written = await setTicketLabel3({
+      const written2 = await setTicketLabel3({
         settings: trackerSettings,
         ticketId: outcome.ticket.id,
         label: settings.parkedLabel,
         present: isParkedOutcome({ outcome })
       });
-      if (written !== void 0) {
-        onProgress?.(`${outcome.ticket.identifier} \xB7 the '${settings.parkedLabel}' label could not be written: ${written.error}`);
+      if (written2 !== void 0) {
+        onProgress?.(`${outcome.ticket.identifier} \xB7 the '${settings.parkedLabel}' label could not be written: ${written2.error}`);
       }
     })
   );
@@ -161377,7 +161963,7 @@ var checkQueueStartup = async ({ cwd, settings, trackerSettings, shipSettings })
 
 // src/queue/worktrees/scanParkedWorktrees.ts
 import { realpath as realpath4 } from "node:fs/promises";
-import { join as join147 } from "node:path";
+import { join as join148 } from "node:path";
 
 // src/queue/worktrees/internal/common/constants/ParkedTreeBucket.ts
 var ParkedTreeBucket = {
@@ -161450,7 +162036,7 @@ var settleUnmergedTree = async ({
 var toQueuePath = ({ path, root, realRoot }) => {
   for (const prefix of [root, realRoot]) {
     if (path.startsWith(`${prefix}/`)) {
-      return join147(root, path.slice(prefix.length + 1));
+      return join148(root, path.slice(prefix.length + 1));
     }
   }
   return void 0;
@@ -161956,7 +162542,7 @@ ${error51 instanceof RunLockError ? error51.message : messageOf({ error: error51
 
 // src/refactor/initializeRun.ts
 import { readFile as readFile64 } from "node:fs/promises";
-import { join as join148 } from "node:path";
+import { join as join149 } from "node:path";
 
 // src/contracts/refactor/RefactorBatch.ts
 var RefactorBatch = external_exports.object({
@@ -162030,16 +162616,16 @@ var batchFindings = ({ blocking, advisories, packagesDir }) => {
     }
     return segments.length > 1 && segments[0] ? segments[0] : "(root)";
   };
-  const folderOf = ({ finding: finding3 }) => {
-    const areas = new Set(finding3.files.map((file2) => areaOf({ path: file2.path })));
+  const folderOf = ({ finding: finding6 }) => {
+    const areas = new Set(finding6.files.map((file2) => areaOf({ path: file2.path })));
     return areas.size > 1 ? "(cross)" : [...areas][0] ?? "(root)";
   };
   const groups = /* @__PURE__ */ new Map();
-  for (const finding3 of blocking) {
-    const folder = folderOf({ finding: finding3 });
-    const key = `${finding3.rule}\0${folder}`;
-    const group = groups.get(key) ?? { rule: finding3.rule, folder, findings: [] };
-    group.findings.push(finding3);
+  for (const finding6 of blocking) {
+    const folder = folderOf({ finding: finding6 });
+    const key = `${finding6.rule}\0${folder}`;
+    const group = groups.get(key) ?? { rule: finding6.rule, folder, findings: [] };
+    group.findings.push(finding6);
     groups.set(key, group);
   }
   const crossLast = ({ folder }) => folder === "(cross)" ? 1 : 0;
@@ -162051,7 +162637,7 @@ var batchFindings = ({ blocking, advisories, packagesDir }) => {
     const sorted = [...group.findings].sort((a, b) => a.siteKey.localeCompare(b.siteKey));
     for (let start = 0; start < sorted.length; start += maxBatchFindings) {
       const chunk = sorted.slice(start, start + maxBatchFindings);
-      const chunkFiles = new Set(chunk.flatMap((finding3) => finding3.files.map((file2) => file2.path)));
+      const chunkFiles = new Set(chunk.flatMap((finding6) => finding6.files.map((file2) => file2.path)));
       const number4 = String(batches.length + 1).padStart(2, "0");
       batches.push({
         id: `batch-${number4}:${group.rule}:${group.folder}`,
@@ -162073,10 +162659,10 @@ var buildWorklist = async ({ cwd, config: config2, path, all = false }) => {
     path: path ?? ".",
     all,
     batches: batchFindings({
-      blocking: findings.filter((finding3) => finding3.severity === StandardsSeverity.Blocking),
+      blocking: findings.filter((finding6) => finding6.severity === StandardsSeverity.Blocking),
       // Every advisory, not just the size ones: a rule whose advisories never
       // reach the agent can never be judged, only reported to a human.
-      advisories: findings.filter((finding3) => finding3.severity === StandardsSeverity.Advisory),
+      advisories: findings.filter((finding6) => finding6.severity === StandardsSeverity.Advisory),
       packagesDir: config2["packages-dir"] ?? defaultPackagesDir
     })
   };
@@ -162099,7 +162685,7 @@ var initializeRun = async ({
       const resume = formatResumeCommand({ pipeline, runId: existing.runId });
       throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${resume}`);
     }
-    const frozen = join148(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
+    const frozen = join149(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
     const worklist2 = RefactorWorklist.parse(JSON.parse(await readFile64(frozen, "utf8")));
     await writeRunOwner({ cwd, runId: existing.runId });
     return { manifest: existing, worklist: worklist2 };
@@ -162115,7 +162701,7 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
     );
   }
   const worklist = await buildWorklist({ cwd, config: config2, path, all });
-  const worklistPath = join148(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Refactor, runId }), "worklist.json");
+  const worklistPath = join149(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Refactor, runId }), "worklist.json");
   const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Refactor, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
   await writeJsonFile({ path: worklistPath, value: worklist });
   return { manifest, worklist };
@@ -162125,23 +162711,23 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
 var describeIntroducedFindings = ({ findings }) => [
   `refactor introduced ${findings.length} blocking finding(s) it never set out to fix:`,
   ...findings.map(
-    (finding3) => `- ${finding3.siteKey} \u2014 ${formatFindingText({ finding: finding3 })}
-  at ${finding3.files.map((file2) => formatFindingSite({ file: file2 })).join(", ")}`
+    (finding6) => `- ${finding6.siteKey} \u2014 ${formatFindingText({ finding: finding6 })}
+  at ${finding6.files.map((file2) => formatFindingSite({ file: file2 })).join(", ")}`
   ),
   "The run\u2019s changes are in the working tree \u2014 review them, fix these, and re-run."
 ].join("\n");
 
 // src/refactor/findIntroducedFindings.ts
 var findIntroducedFindings = ({ frozen, live: live2, severity }) => {
-  const frozenSiteKeys = new Set(frozen.map((finding3) => finding3.siteKey));
-  return live2.filter((finding3) => finding3.severity === severity && !frozenSiteKeys.has(finding3.siteKey));
+  const frozenSiteKeys = new Set(frozen.map((finding6) => finding6.siteKey));
+  return live2.filter((finding6) => finding6.severity === severity && !frozenSiteKeys.has(finding6.siteKey));
 };
 
 // src/refactor/internal/countByRule.ts
 var countByRule = ({ findings }) => {
   const counts = {};
-  for (const finding3 of findings) {
-    counts[finding3.rule] = (counts[finding3.rule] ?? 0) + 1;
+  for (const finding6 of findings) {
+    counts[finding6.rule] = (counts[finding6.rule] ?? 0) + 1;
   }
   return counts;
 };
@@ -162149,7 +162735,7 @@ var countByRule = ({ findings }) => {
 // src/refactor/internal/closeRefactorRun.ts
 var closeRefactorRun = async ({ run, worklist }) => {
   const finalCheck = await runStandardsCheck({ cwd: run.cwd, path: worklist.path === "." ? void 0 : worklist.path, all: worklist.all, persist: false });
-  const after = countByRule({ findings: finalCheck.findings.filter((finding3) => finding3.severity === StandardsSeverity.Blocking) });
+  const after = countByRule({ findings: finalCheck.findings.filter((finding6) => finding6.severity === StandardsSeverity.Blocking) });
   const introduced = findIntroducedFindings({
     frozen: worklist.batches.flatMap((batch) => batch.blocking),
     live: finalCheck.findings,
@@ -162234,9 +162820,9 @@ var ReviewFindingRecord = StandardsFinding.extend({
 });
 
 // src/runState/internal/common/paths/getReviewFindingsPath.ts
-import { join as join149 } from "node:path";
+import { join as join150 } from "node:path";
 var getReviewFindingsPath = async ({ cwd }) => {
-  return join149(await resolveSharedStateDir({ cwd }), "review-findings.jsonl");
+  return join150(await resolveSharedStateDir({ cwd }), "review-findings.jsonl");
 };
 
 // src/runState/appendReviewFindings.ts
@@ -162287,8 +162873,8 @@ var collectBatchAdvisories = async ({
   timeoutMs,
   onProgress
 }) => {
-  const batchFiles = new Set(batch.blocking.flatMap((finding3) => finding3.files.map((file2) => file2.path)));
-  const machine = findings.filter((finding3) => finding3.severity === StandardsSeverity.Advisory && finding3.files.some((file2) => batchFiles.has(file2.path)));
+  const batchFiles = new Set(batch.blocking.flatMap((finding6) => finding6.files.map((file2) => file2.path)));
+  const machine = findings.filter((finding6) => finding6.severity === StandardsSeverity.Advisory && finding6.files.some((file2) => batchFiles.has(file2.path)));
   const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: [...batchFiles], packagesDir, agentReview, timeoutMs, onProgress });
   return [...machine, ...reviewed];
 };
@@ -162358,8 +162944,8 @@ var createBatchRecorder = ({ cwd, config: config2, attributedFiles }) => {
 
 // src/refactor/batch/matchRemainingFindings.ts
 var matchRemainingFindings = ({ frozen, live: live2 }) => {
-  const liveSiteKeys = new Set(live2.map((finding3) => finding3.siteKey));
-  return frozen.filter((finding3) => liveSiteKeys.has(finding3.siteKey)).map((finding3) => finding3.siteKey);
+  const liveSiteKeys = new Set(live2.map((finding6) => finding6.siteKey));
+  return frozen.filter((finding6) => liveSiteKeys.has(finding6.siteKey)).map((finding6) => finding6.siteKey);
 };
 
 // src/refactor/batch/internal/createSiteChecker.ts
@@ -162374,7 +162960,7 @@ var createSiteChecker = ({ cwd, checkPath, checkAll }) => {
 
 // src/refactor/batch/internal/invokeBatchAgent.ts
 import { mkdir as mkdir32, writeFile as writeFile23 } from "node:fs/promises";
-import { join as join150 } from "node:path";
+import { join as join151 } from "node:path";
 var invokeBatchAgent = async ({
   cwd,
   runId,
@@ -162391,9 +162977,9 @@ var invokeBatchAgent = async ({
   onProgress,
   recordUsage
 }) => {
-  const agentsDir = join150(await resolveRunDir({ cwd, runId }), "agents");
+  const agentsDir = join151(await resolveRunDir({ cwd, runId }), "agents");
   const slug = batch.id.replace(/[:/]/g, "_");
-  const streamPath = join150(agentsDir, `stream-${slug}-${invocationCount}.jsonl`);
+  const streamPath = join151(agentsDir, `stream-${slug}-${invocationCount}.jsonl`);
   await mkdir32(agentsDir, { recursive: true });
   const outcome = await invokeAgentWithContract({
     driver,
@@ -162407,7 +162993,7 @@ var invokeBatchAgent = async ({
     allowedCommands: config2["agent-commands"],
     onEvent: createEventFileSink({ path: streamPath }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile23(join150(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile23(join151(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
   const formatError2 = await runFormatter({ cwd, runId, config: config2, step: batch.id });
@@ -162441,7 +163027,7 @@ var SettleKind = {
 
 // src/refactor/batch/internal/superviseBatch.ts
 import { mkdir as mkdir33, writeFile as writeFile24 } from "node:fs/promises";
-import { join as join151 } from "node:path";
+import { join as join152 } from "node:path";
 var consultBatchSupervisor = async ({
   cwd,
   runId,
@@ -162452,7 +163038,7 @@ var consultBatchSupervisor = async ({
   gateError,
   attempts
 }) => {
-  const agentsDir = join151(await resolveRunDir({ cwd, runId }), "agents");
+  const agentsDir = join152(await resolveRunDir({ cwd, runId }), "agents");
   const slug = batchId.replace(/[:/]/g, "_");
   await mkdir33(agentsDir, { recursive: true });
   return consultSupervisor({
@@ -162463,9 +163049,9 @@ var consultBatchSupervisor = async ({
     stepId: batchId,
     errorOutput: gateError,
     attempts,
-    onEvent: createEventFileSink({ path: join151(agentsDir, `stream-${slug}-supervisor.jsonl`) }),
+    onEvent: createEventFileSink({ path: join152(agentsDir, `stream-${slug}-supervisor.jsonl`) }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile24(join151(agentsDir, `rejected-${slug}-supervisor-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile24(join152(agentsDir, `rejected-${slug}-supervisor-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
 };
@@ -162757,7 +163343,7 @@ var polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards
   if (introduced.length === 0) {
     return resolve21();
   }
-  const files = [...new Set(introduced.flatMap((finding3) => finding3.files.map((file2) => file2.path)))];
+  const files = [...new Set(introduced.flatMap((finding6) => finding6.files.map((file2) => file2.path)))];
   onProgress(`${batch.id}: the review of what this batch wrote raised ${introduced.length} new advisory(s) \u2014 spending one polish pass`);
   await tools.invoke({
     label: "polish",
@@ -162787,7 +163373,7 @@ var polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards
 
 // src/refactor/batch/internal/runBatchPass.ts
 var runBatchPass = async ({ tools, batch, pass, workFindings, advisories, standards, testStandards, onProgress }) => {
-  const files = [...new Set(workFindings.flatMap((finding3) => finding3.files.map((file2) => file2.path)))];
+  const files = [...new Set(workFindings.flatMap((finding6) => finding6.files.map((file2) => file2.path)))];
   const attempt = await tools.invoke({
     label: pass === 1 ? "" : "requeue",
     invocation: buildRefactorExecutorInvocation({
@@ -162826,7 +163412,7 @@ var runBatchPass = async ({ tools, batch, pass, workFindings, advisories, standa
         outcome = { stop: await tools.finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: remaining }) };
       } else {
         onProgress(`${batch.id}: ${remaining.length} site(s) persist after a changing pass`);
-        outcome = { workFindings: workFindings.filter((finding3) => remaining.includes(finding3.siteKey)) };
+        outcome = { workFindings: workFindings.filter((finding6) => remaining.includes(finding6.siteKey)) };
       }
     }
   }
@@ -162841,7 +163427,7 @@ var readStandingWork = ({ batch, findings, onProgress }) => {
       `${batch.id}: ${batch.blocking.length - standing.size} of ${batch.blocking.length} site(s) already resolved by earlier work \u2014 working the ${standing.size} still standing`
     );
   }
-  return findings.filter((finding3) => standing.has(finding3.siteKey));
+  return findings.filter((finding6) => standing.has(finding6.siteKey));
 };
 
 // src/refactor/batch/runBatch.ts
@@ -162908,7 +163494,7 @@ var runBatch = async ({
       workFindings = passed.workFindings;
     }
   }
-  return stop ?? await tools.finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: workFindings.map((finding3) => finding3.siteKey) });
+  return stop ?? await tools.finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: workFindings.map((finding6) => finding6.siteKey) });
 };
 
 // src/common/constants/maxConsecutiveDeclines.ts
@@ -163372,10 +163958,10 @@ var printActivityReport = ({ target, workOrderFolder, plans, pricing }) => {
 };
 
 // src/cli/internal/common/activityReport/resolveReportTargets.ts
-import { readdir as readdir23 } from "node:fs/promises";
+import { readdir as readdir24 } from "node:fs/promises";
 var resolveReportTargets = async ({ cwd, name }) => {
   const folder = await planWorkspaceDir({ cwd, name });
-  const children = await readdir23(folder, { withFileTypes: true }).catch(() => void 0);
+  const children = await readdir24(folder, { withFileTypes: true }).catch(() => void 0);
   if (children === void 0) {
     return { error: `no plan folder named '${name}' under ${folder}` };
   }
@@ -164225,34 +164811,34 @@ var printFindingGroups = ({ findings }) => {
   const locationColumnCap = 52;
   const detailIndent = "      ";
   const groups = /* @__PURE__ */ new Map();
-  for (const finding3 of findings) {
-    const key = `${finding3.severity}:${finding3.rule}`;
-    const group = groups.get(key) ?? { rule: finding3.rule, severity: finding3.severity, findings: [] };
-    group.findings.push(finding3);
+  for (const finding6 of findings) {
+    const key = `${finding6.severity}:${finding6.rule}`;
+    const group = groups.get(key) ?? { rule: finding6.rule, severity: finding6.severity, findings: [] };
+    group.findings.push(finding6);
     groups.set(key, group);
   }
   for (const { rule, severity, findings: group } of groups.values()) {
     console.log("");
     console.log(headingOf2({ rule, severity, count: group.length }));
-    const singleWidths = group.flatMap((finding3) => finding3.files.length === 1 ? finding3.files.map((file2) => formatFindingSite({ file: file2 }).length) : []);
+    const singleWidths = group.flatMap((finding6) => finding6.files.length === 1 ? finding6.files.map((file2) => formatFindingSite({ file: file2 }).length) : []);
     const column = Math.min(Math.max(0, ...singleWidths), locationColumnCap);
     const byGuidance = /* @__PURE__ */ new Map();
-    for (const finding3 of group) {
-      byGuidance.set(finding3.guidance ?? "", [...byGuidance.get(finding3.guidance ?? "") ?? [], finding3]);
+    for (const finding6 of group) {
+      byGuidance.set(finding6.guidance ?? "", [...byGuidance.get(finding6.guidance ?? "") ?? [], finding6]);
     }
     for (const [guidance, partition] of byGuidance) {
       console.log("");
-      for (const finding3 of partition) {
-        const locations = finding3.files.map((file2) => formatFindingSite({ file: file2 }));
+      for (const finding6 of partition) {
+        const locations = finding6.files.map((file2) => formatFindingSite({ file: file2 }));
         const inline = locations.length === 1 ? locations[0] : void 0;
         if (inline !== void 0 && inline.length <= column) {
-          console.log(`${rowIndent}${inline.padEnd(column + 2)}${dim(finding3.detail)}`);
+          console.log(`${rowIndent}${inline.padEnd(column + 2)}${dim(finding6.detail)}`);
           continue;
         }
         for (const location of locations) {
           console.log(`${rowIndent}${location}`);
         }
-        for (const line of wrapText({ text: finding3.detail, width, indent: detailIndent })) {
+        for (const line of wrapText({ text: finding6.detail, width, indent: detailIndent })) {
           console.log(dim(line));
         }
       }
@@ -164308,7 +164894,7 @@ var printStandardsRuleList = ({ rules }) => {
 };
 
 // src/cli/internal/common/render/printStandardsSummary.ts
-var countOf = ({ findings, rule, severity }) => findings.filter((finding3) => finding3.rule === rule && finding3.severity === severity).length;
+var countOf = ({ findings, rule, severity }) => findings.filter((finding6) => finding6.rule === rule && finding6.severity === severity).length;
 var cell = ({ count: count2 }) => count2 === 0 ? "\u2014" : `${count2}`;
 var printStandardsSummary = ({ findings, rules, reportPath }) => {
   console.log("");
@@ -164320,7 +164906,7 @@ var printStandardsSummary = ({ findings, rules, reportPath }) => {
     return;
   }
   const summaryOf = ({ rule }) => rules.find((listing) => listing.rule === rule)?.summary ?? "";
-  const reported = [...new Set(findings.map((finding3) => finding3.rule))];
+  const reported = [...new Set(findings.map((finding6) => finding6.rule))];
   const rows = reported.flatMap((rule) => [
     {
       cells: [
@@ -164338,8 +164924,8 @@ var printStandardsSummary = ({ findings, rules, reportPath }) => {
   const totals = {
     cells: [
       "total",
-      cell({ count: findings.filter((finding3) => finding3.severity === StandardsSeverity.Blocking).length }),
-      cell({ count: findings.filter((finding3) => finding3.severity === StandardsSeverity.Advisory).length })
+      cell({ count: findings.filter((finding6) => finding6.severity === StandardsSeverity.Blocking).length }),
+      cell({ count: findings.filter((finding6) => finding6.severity === StandardsSeverity.Advisory).length })
     ],
     emphasis: bold
   };
@@ -164533,7 +165119,7 @@ var printStandardsHealth = ({ health }) => {
 
 // src/standardsCheck/buildStandardsHealth.ts
 import { readFile as readFile66 } from "node:fs/promises";
-import { join as join152 } from "node:path";
+import { join as join153 } from "node:path";
 var emptyTally = () => ({
   attempted: 0,
   resolved: 0,
@@ -164558,24 +165144,24 @@ var readRefactorRun = async ({ cwd, runId }) => {
   if ((manifest.pipeline ?? "implement") !== "refactor") {
     return void 0;
   }
-  const worklist = RefactorWorklist.parse(JSON.parse(await readFile66(join152(await resolveRunDir({ cwd, runId }), "worklist.json"), "utf8")));
+  const worklist = RefactorWorklist.parse(JSON.parse(await readFile66(join153(await resolveRunDir({ cwd, runId }), "worklist.json"), "utf8")));
   return { worklist, steps: manifest.steps };
 };
 var countBatchSites = ({ tallies, blocking, report: report2 }) => {
   const remaining = report2 ? new Set(report2.remainingSiteKeys) : void 0;
   const leftStanding = /* @__PURE__ */ new Set();
-  for (const finding3 of blocking) {
-    const tally = tallyFor({ tallies, rule: finding3.rule });
+  for (const finding6 of blocking) {
+    const tally = tallyFor({ tallies, rule: finding6.rule });
     tally.attempted += 1;
     if (remaining === void 0) {
       tally.untracked += 1;
       continue;
     }
-    if (!remaining.has(finding3.siteKey)) {
+    if (!remaining.has(finding6.siteKey)) {
       tally.resolved += 1;
       continue;
     }
-    leftStanding.add(finding3.rule);
+    leftStanding.add(finding6.rule);
     if (report2?.outcome === BatchOutcome.Declined) {
       tally.declined += 1;
     } else {
@@ -164642,9 +165228,9 @@ var standardsHealthCommand = async ({ cwd }) => {
 import { resolve as resolve20 } from "node:path";
 
 // src/standardsCheck/validateStandardsLibrary.ts
-import { readdir as readdir25 } from "node:fs/promises";
+import { readdir as readdir26 } from "node:fs/promises";
 import { createRequire as createRequire5 } from "node:module";
-import { join as join157 } from "node:path";
+import { join as join158 } from "node:path";
 
 // src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts
 var checkFixtureTree = async ({ cwd, rule, inputKind, run, label: label2, compiler }) => {
@@ -164670,7 +165256,7 @@ var checkFixtureTree = async ({ cwd, rule, inputKind, run, label: label2, compil
 };
 
 // src/standardsCheck/internal/common/utils/fixtureChecks/checkRuleExample.ts
-import { join as join154 } from "node:path";
+import { join as join155 } from "node:path";
 
 // src/contracts/views/FixtureSide.ts
 var FixtureSide = {
@@ -164679,14 +165265,14 @@ var FixtureSide = {
 };
 
 // src/standardsLibraries/common/utils/listFixtureFiles.ts
-import { readdir as readdir24 } from "node:fs/promises";
-import { join as join153 } from "node:path";
+import { readdir as readdir25 } from "node:fs/promises";
+import { join as join154 } from "node:path";
 var listFixtureFiles = async ({ root }) => {
-  const entries = await readdir24(root, { withFileTypes: true }).catch(() => []);
+  const entries = await readdir25(root, { withFileTypes: true }).catch(() => []);
   const paths = [];
   for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
     if (entry.isDirectory()) {
-      paths.push(...(await listFixtureFiles({ root: join153(root, entry.name) })).map((path) => `${entry.name}/${path}`));
+      paths.push(...(await listFixtureFiles({ root: join154(root, entry.name) })).map((path) => `${entry.name}/${path}`));
     } else {
       paths.push(entry.name);
     }
@@ -164699,7 +165285,7 @@ var checkRuleExample = async ({ rule }) => {
   const { example } = rule;
   const problems = [];
   for (const side of Object.values(FixtureSide)) {
-    const files = example === void 0 ? [] : await listFixtureFiles({ root: join154(rule.fixturesPath, side) });
+    const files = example === void 0 ? [] : await listFixtureFiles({ root: join155(rule.fixturesPath, side) });
     if (example?.kind === RuleExampleKind.Snippet && files.length !== 1) {
       problems.push(`${rule.id}: declares a snippet example, but fixtures/${side}/ holds ${files.length} files \u2014 a snippet is one file a side`);
     }
@@ -164711,11 +165297,11 @@ var checkRuleExample = async ({ rule }) => {
 };
 
 // src/standardsCheck/internal/common/utils/proseChecks/checkLibraryProse.ts
-import { dirname as dirname31, join as join156 } from "node:path";
+import { dirname as dirname31, join as join157 } from "node:path";
 
 // src/standardsCheck/internal/common/utils/proseChecks/findBrokenLinks.ts
 import { existsSync as existsSync5 } from "node:fs";
-import { join as join155 } from "node:path";
+import { join as join156 } from "node:path";
 var inlineLink = /\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g;
 var isOnDisk = ({ target }) => !/^[a-z][a-z0-9+.-]*:/i.test(target) && !target.startsWith("#");
 var outsideFences = ({ text }) => {
@@ -164733,7 +165319,7 @@ var outsideFences = ({ text }) => {
     return false;
   }).join("\n");
 };
-var findBrokenLinks = ({ text, fromFolder }) => [...outsideFences({ text }).matchAll(inlineLink)].map((match) => match[1]).filter((target) => isOnDisk({ target })).filter((target) => !existsSync5(join155(fromFolder, decodeURI(target.split(/[#?]/)[0]))));
+var findBrokenLinks = ({ text, fromFolder }) => [...outsideFences({ text }).matchAll(inlineLink)].map((match) => match[1]).filter((target) => isOnDisk({ target })).filter((target) => !existsSync5(join156(fromFolder, decodeURI(target.split(/[#?]/)[0]))));
 
 // src/standardsCheck/internal/common/utils/proseChecks/checkLibraryProse.ts
 var hasInstructions = ({ prose }) => prose.split("\n").some((line) => line.trim().length > 0 && !/^ {0,3}#{1,6}(\s|$)/.test(line));
@@ -164748,7 +165334,7 @@ var checkLibraryProse = ({ library }) => {
     }
   }
   for (const topic of library.documents) {
-    for (const target of findBrokenLinks({ text: topic.intro, fromFolder: join156(library.rootPath, "rules", topic.path) })) {
+    for (const target of findBrokenLinks({ text: topic.intro, fromFolder: join157(library.rootPath, "rules", topic.path) })) {
       problems.push(`${topic.path}: topic.md links to ${target}, which does not exist`);
     }
   }
@@ -164772,7 +165358,7 @@ var getEngineTypescript = () => {
 var missingFixtureSides = async ({ fixturesPath }) => {
   const missing = [];
   for (const side of Object.values(FixtureSide2)) {
-    const entries = await readdir25(join157(fixturesPath, side)).catch(() => void 0);
+    const entries = await readdir26(join158(fixturesPath, side)).catch(() => void 0);
     if (entries === void 0 || entries.length === 0) {
       missing.push(side);
     }
@@ -164780,7 +165366,7 @@ var missingFixtureSides = async ({ fixturesPath }) => {
   return missing;
 };
 var namePaths = ({ found }) => {
-  const paths = [...new Set(found.flatMap((finding3) => finding3.files.slice(0, 1).map((file2) => file2.path)))];
+  const paths = [...new Set(found.flatMap((finding6) => finding6.files.slice(0, 1).map((file2) => file2.path)))];
   return paths.length > 3 ? `${paths.slice(0, 3).join(", ")}, \u2026` : paths.join(", ");
 };
 var checkFrameworkOwned = async ({ library, compiler }) => {
@@ -164789,7 +165375,7 @@ var checkFrameworkOwned = async ({ library, compiler }) => {
   if (frameworkOwnedFixturesPath === void 0) {
     return heldNothing;
   }
-  const entries = await readdir25(frameworkOwnedFixturesPath, { withFileTypes: true }).catch(() => []);
+  const entries = await readdir26(frameworkOwnedFixturesPath, { withFileTypes: true }).catch(() => []);
   const frameworks = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
   if (frameworks.length === 0) {
     return heldNothing;
@@ -164803,7 +165389,7 @@ var checkFrameworkOwned = async ({ library, compiler }) => {
       }
       try {
         const found = await checkFixtureTree({
-          cwd: join157(frameworkOwnedFixturesPath, framework),
+          cwd: join158(frameworkOwnedFixturesPath, framework),
           rule,
           inputKind,
           run,
@@ -164870,7 +165456,7 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
     }
     for (const side of Object.values(FixtureSide2)) {
       try {
-        const found = await checkFixtureTree({ cwd: join157(rule.fixturesPath, side), rule, inputKind, run, label: `fixtures/${side}/`, compiler });
+        const found = await checkFixtureTree({ cwd: join158(rule.fixturesPath, side), rule, inputKind, run, label: `fixtures/${side}/`, compiler });
         if (side === FixtureSide2.Fail && found.length === 0) {
           problems.push(`${rule.id}: the fail fixture produced no finding \u2014 the check does not catch what the rule describes`);
         }
@@ -165246,10 +165832,10 @@ var isRunLive = ({ manifest, root, ownerAlive, liveLockRunId }) => {
 };
 
 // src/runState/lock/readRunProcessLock.ts
-import { stat as stat14 } from "node:fs/promises";
+import { stat as stat15 } from "node:fs/promises";
 var readRunProcessLock = async ({ cwd, manifest }) => {
   const { workspace } = manifest;
-  const recorded = workspace === void 0 ? void 0 : await stat14(workspace).then(
+  const recorded = workspace === void 0 ? void 0 : await stat15(workspace).then(
     (entry) => entry.isDirectory() ? workspace : void 0,
     () => void 0
   );
@@ -165448,7 +166034,7 @@ var buildRunListing = ({ manifest, live: live2, worklist }) => {
 
 // src/views/internal/common/utils/readFrozenWorklist.ts
 import { readFile as readFile68 } from "node:fs/promises";
-import { join as join158 } from "node:path";
+import { join as join159 } from "node:path";
 
 // src/contracts/coverage/CoverageFile.ts
 var CoverageFile = external_exports.object({
@@ -165477,7 +166063,7 @@ var CoverageWorklist = external_exports.object({
 
 // src/views/internal/common/utils/readFrozenWorklist.ts
 var readFrozenWorklist = async ({ cwd, manifest }) => {
-  const raw = await readFile68(join158(await resolveRunDir({ cwd, runId: manifest.runId }), "worklist.json"), "utf8").catch(() => void 0);
+  const raw = await readFile68(join159(await resolveRunDir({ cwd, runId: manifest.runId }), "worklist.json"), "utf8").catch(() => void 0);
   let parsed;
   try {
     parsed = raw === void 0 ? void 0 : JSON.parse(raw);
@@ -166207,11 +166793,11 @@ ${bold(`test-coverage-to-threshold ${formatShortRunId({ runId: manifest.runId })
 
 // src/coverage/initializeCoverageRun.ts
 import { readFile as readFile70, writeFile as writeFile25 } from "node:fs/promises";
-import { join as join160 } from "node:path";
+import { join as join161 } from "node:path";
 
 // src/coverage/runCoverageCheck.ts
 import { readFile as readFile69 } from "node:fs/promises";
-import { join as join159, relative as relative18 } from "node:path";
+import { join as join160, relative as relative19 } from "node:path";
 var CoverageSummaryReport = external_exports.record(external_exports.string(), external_exports.looseObject({ statements: external_exports.looseObject({ pct: external_exports.unknown() }) }));
 var readJsonFile2 = async ({ path }) => {
   try {
@@ -166222,7 +166808,7 @@ var readJsonFile2 = async ({ path }) => {
   }
 };
 var readScopeSummary = async ({ cwd, scope, summaryPath, passed }) => {
-  const parsed = CoverageSummaryReport.safeParse(await readJsonFile2({ path: join159(cwd, summaryPath) }));
+  const parsed = CoverageSummaryReport.safeParse(await readJsonFile2({ path: join160(cwd, summaryPath) }));
   if (!parsed.success) {
     throw new Error(buildMissingSummaryMessage({ summaryPath, scope }));
   }
@@ -166237,7 +166823,7 @@ var readScopeSummary = async ({ cwd, scope, summaryPath, passed }) => {
       statementsPct = pct;
       continue;
     }
-    files.push({ path: relative18(cwd, key), scope, statementsPct: pct });
+    files.push({ path: relative19(cwd, key), scope, statementsPct: pct });
   }
   return { files, total: { scope, statementsPct, passed } };
 };
@@ -166291,7 +166877,7 @@ var initializeCoverageRun = async ({
       const resume = formatResumeCommand({ pipeline, runId: existing.runId });
       throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${resume}`);
     }
-    const frozen = join160(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
+    const frozen = join161(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
     const worklist2 = CoverageWorklist.parse(JSON.parse(await readFile70(frozen, "utf8")));
     await writeRunOwner({ cwd, runId: existing.runId });
     return { manifest: existing, worklist: worklist2 };
@@ -166311,7 +166897,7 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
   }
   const measured = await runCoverageCheck({ cwd, config: config2 });
   const worklist = { at: (/* @__PURE__ */ new Date()).toISOString(), totals: measured.totals, files: measured.files };
-  const worklistPath = join160(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Coverage, runId }), "worklist.json");
+  const worklistPath = join161(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Coverage, runId }), "worklist.json");
   const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Coverage, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
   await writeFile25(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
 `, "utf8");
@@ -166399,7 +166985,7 @@ The tree is left as it stands \u2014 revert these changes by hand before resumin
 
 // src/coverage/batch/invokeCoverageAgent.ts
 import { mkdir as mkdir34, writeFile as writeFile26 } from "node:fs/promises";
-import { join as join161 } from "node:path";
+import { join as join162 } from "node:path";
 var invokeCoverageAgent = async ({
   cwd,
   runId,
@@ -166414,9 +167000,9 @@ var invokeCoverageAgent = async ({
   rationale,
   recordUsage
 }) => {
-  const agentsDir = join161(await resolveRunDir({ cwd, runId }), "agents");
+  const agentsDir = join162(await resolveRunDir({ cwd, runId }), "agents");
   const slug = batchId.replace(/[:/]/g, "_");
-  const streamPath = join161(agentsDir, `stream-${slug}-${invocationCount}.jsonl`);
+  const streamPath = join162(agentsDir, `stream-${slug}-${invocationCount}.jsonl`);
   await mkdir34(agentsDir, { recursive: true });
   const outcome = await invokeAgentWithContract({
     driver,
@@ -166430,7 +167016,7 @@ var invokeCoverageAgent = async ({
     allowedCommands: config2["agent-commands"],
     onEvent: createEventFileSink({ path: streamPath }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile26(join161(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile26(join162(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
   await recordUsage({ step: `${batchId}${label2 ? ` ${label2}` : ""}`, usage: outcome.usage });
@@ -166666,7 +167252,7 @@ var buildCoverageBatch = ({ files, components, batchNumber, batchSize = 5 }) => 
 
 // src/coverage/selectCoverageCandidates.ts
 import { readFile as readFile71 } from "node:fs/promises";
-import { join as join162 } from "node:path";
+import { join as join163 } from "node:path";
 var selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, standardsLibraries, compiler }) => {
   const failingScopes = new Set(measured.totals.filter((total) => !total.passed).map((total) => total.scope));
   const candidates = [];
@@ -166674,7 +167260,7 @@ var selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, standardsL
     if (!failingScopes.has(file2.scope) || setAsidePaths.has(file2.path) || file2.statementsPct >= 100 || isTestFile({ path: file2.path, standardsLibraries }) || !isTestableSourceFile({ path: file2.path })) {
       continue;
     }
-    const content = compiler === void 0 ? void 0 : await readFile71(join162(cwd, file2.path), "utf8").catch(() => void 0);
+    const content = compiler === void 0 ? void 0 : await readFile71(join163(cwd, file2.path), "utf8").catch(() => void 0);
     if (compiler !== void 0 && content !== void 0 && isInertSourceFile({ path: file2.path, content, compiler })) {
       continue;
     }
@@ -166967,11 +167553,11 @@ var ticketStateCommand = async ({ flags, cwd }) => {
     console.error(`${ref} could not be written: ${failure.error}`);
     return exitCli({ code: 1 });
   }
-  const written = [
+  const written2 = [
     planningStatus === void 0 ? void 0 : `planning status '${lifecycle.planningStatusLabels[planningStatus]}'`,
     trackerStatus === void 0 ? void 0 : `tracker status '${lifecycle.statusNames[trackerStatus]}'`
   ].filter((part) => part !== void 0);
-  console.log(`${ref}: ${written.join(" and ")}`);
+  console.log(`${ref}: ${written2.join(" and ")}`);
   return exitCli({ code: 0 });
 };
 
@@ -167099,9 +167685,9 @@ var getSpokenQuestion = async ({ transcriptPath }) => {
 import { access as access3 } from "node:fs/promises";
 
 // src/voice/internal/common/paths/getVoiceMarkerPath.ts
-import { join as join163 } from "node:path";
+import { join as join164 } from "node:path";
 var getVoiceMarkerPath = ({ cwd }) => {
-  return join163(cwd, ".lightsout", "voice-on");
+  return join164(cwd, ".lightsout", "voice-on");
 };
 
 // src/voice/isVoiceOn.ts
@@ -167114,9 +167700,9 @@ import { spawn as spawn4 } from "node:child_process";
 import { writeFile as writeFile27 } from "node:fs/promises";
 
 // src/voice/internal/common/paths/getVoicePidPath.ts
-import { join as join164 } from "node:path";
+import { join as join165 } from "node:path";
 var getVoicePidPath = ({ cwd }) => {
-  return join164(cwd, ".lightsout", "voice-pid");
+  return join165(cwd, ".lightsout", "voice-pid");
 };
 
 // src/voice/stopSpeech.ts
@@ -167500,14 +168086,14 @@ var excludeWorkOrderPlan = async (params) => {
   if ("error" in verification) {
     return verification;
   }
-  const written = await recordExclusion({ params, verifiedCommit: verification.commit });
-  if ("error" in written) {
-    return written;
+  const written2 = await recordExclusion({ params, verifiedCommit: verification.commit });
+  if ("error" in written2) {
+    return written2;
   }
   return {
-    record: written.record,
-    notice: written.withdrew ? `the pending ship request was withdrawn because plan ${target.id} is no longer part of work order ${name}'s work \u2014 ask again with \`lightsout work-order request-ship --name ${name}\`` : void 0,
-    publishError: written.publishError
+    record: written2.record,
+    notice: written2.withdrew ? `the pending ship request was withdrawn because plan ${target.id} is no longer part of work order ${name}'s work \u2014 ask again with \`lightsout work-order request-ship --name ${name}\`` : void 0,
+    publishError: written2.publishError
   };
 };
 
@@ -168070,7 +168656,7 @@ var keepLocalWorkOrderState = async ({
 
 // src/workOrder/divergence/keepPublishedWorkOrderState.ts
 import { rename as rename13, rm as rm17 } from "node:fs/promises";
-import { join as join165 } from "node:path";
+import { join as join166 } from "node:path";
 var readPublishedPlanMarker = async ({
   planId,
   target
@@ -168157,9 +168743,9 @@ var takePublishedPlan = async ({
 };
 var writeKeptRecord = async ({ workOrderFolder, record: record3 }) => {
   const content = serializeWorkOrderState({ record: record3 });
-  await writeWorkOrderFolderFile({ path: join165(workOrderFolder, workOrderFileNames.record), content });
+  await writeWorkOrderFolderFile({ path: join166(workOrderFolder, workOrderFileNames.record), content });
   await updateWorkOrderSyncState({ workOrderFolder, recordSha256: sha256({ content }) });
-  await rm17(join165(workOrderFolder, workOrderFileNames.published), { force: true });
+  await rm17(join166(workOrderFolder, workOrderFileNames.published), { force: true });
 };
 var keepPublishedWorkOrderState = async ({
   cwd,
@@ -168185,7 +168771,7 @@ var keepPublishedWorkOrderState = async ({
     return merged;
   }
   const workOrderFolder = await workOrderFolderDir({ cwd, name });
-  const written = await withWorkOrderStateLock({
+  const written2 = await withWorkOrderStateLock({
     workOrderFolder,
     run: async () => {
       try {
@@ -168196,8 +168782,8 @@ var keepPublishedWorkOrderState = async ({
       }
     }
   });
-  if (written !== void 0) {
-    return written;
+  if (written2 !== void 0) {
+    return written2;
   }
   const syncState = await readWorkOrderSyncState({ workOrderFolder });
   for (const planId of findDivergentPlanIds({ record: merged, syncState })) {

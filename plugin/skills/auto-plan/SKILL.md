@@ -330,7 +330,9 @@ resplit the overview's `## Phases` table and its `## Phase Declarations` to
 spread the creates and the touched files across more phases — no phase may pass
 the created-file ceiling or the touched-file ceiling of 70 — then re-run draft.
 A phase whose whole work is renaming may instead be declared rename-only, with
-the `- **Renames only:** yes` bullet.
+the `- **Renames only:** yes` bullet. A phase whose whole work is moving folders
+and files may instead be declared move-folders-and-files, with the
+`- **Moves folders and files only:** yes` bullet.
 
 Once phase files exist, never re-draft to change the breakdown. Edit the phase
 files at `<plan-folder>` — split, merge, or move work between them — and, for
@@ -341,10 +343,10 @@ overview, then run:
 node "<plugin-root>/dist/cli.mjs" plan sync-phases --name <name>
 ```
 
-It restates every phase's counts, file budget and renames-only flag from the
-phase files and writes only the overview. It refuses — naming each — any phase
-file, row, block or number that does not line up; fix those by hand (add the
-missing row or block, renumber, rename the file) and run it again.
+It restates every phase's counts, file budget and build mode from the phase
+files and writes only the overview. It refuses — naming each — any phase file,
+row, block or number that does not line up; fix those by hand (add the missing
+row or block, renumber, rename the file) and run it again.
 
 **6. Grill it yourself.** Run the shaping rules' `## The design check` against
 the drafted plan first; an objection you accept is a question like any other

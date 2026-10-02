@@ -1,4 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import { getPlanTouchedPaths } from '#src/plan/internal/common/utils/getPlanTouchedPaths.ts';
 
@@ -22,6 +23,7 @@ const setupPlan = ({ create = [], modify = [], earlierModify = [], remove = [], 
 		earlierPhaseModifyPaths: earlierModify,
 		deletePaths: remove,
 		movePaths: move,
+		folderMoves: [],
 		malformedMoveLines: [],
 		generatedRegionRanges: new Map(),
 		sectionRanges: new Map(),
@@ -31,6 +33,7 @@ const setupPlan = ({ create = [], modify = [], earlierModify = [], remove = [], 
 		malformedLedgerLines: [],
 		proseFiles: [],
 		malformedProseLines: [],
+		buildMode: BuildMode.Standard,
 		renames: [],
 		malformedRenameLines: [],
 		lines: [],

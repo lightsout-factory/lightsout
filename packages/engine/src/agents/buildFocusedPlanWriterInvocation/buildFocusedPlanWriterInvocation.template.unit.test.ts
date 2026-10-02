@@ -215,3 +215,103 @@ test('the focused contract template states the touched-file ceiling from limits'
 		leavesTheTokenName: false,
 	});
 });
+
+/** The template's shared rules list, one entry per `- **` bullet, each starting at its bold title. */
+const rulesBulletsOf = (template: string): string[] => {
+	const [rules = ''] = template.split('\n\n---\n\n');
+
+	return rules.split('\n- **').slice(1);
+};
+
+/** The first skeleton section under `heading`, cut at the next `## ` heading. */
+const skeletonSectionOf = (template: string, heading: string): string => template.split(`\n${heading}\n`)[1]?.split('\n## ')[0] ?? '';
+
+/** The heading of the skeleton section that directly follows the first `heading` section. */
+const headingAfter = (template: string, heading: string): string => {
+	const rest = template.split(`\n${heading}\n`)[1] ?? '';
+	const next = rest.indexOf('\n## ');
+
+	return next === -1 ? '' : (rest.slice(next + 1).split('\n')[0] ?? '');
+};
+
+/** The overview's Phase Declarations note: the HTML comment that states the created-file ceiling is never raised. */
+const declarationsNoteOf = (template: string): string => {
+	const anchor = template.indexOf('never raises the created-file ceiling');
+
+	return anchor === -1 ? '' : template.slice(template.lastIndexOf('<!--', anchor), template.indexOf('-->', anchor));
+};
+
+/** Which rename-only and move-folders-and-files passages one focused template carries. */
+const buildModePassagesOf = (template: string) => {
+	const bullets = rulesBulletsOf(template);
+	const touchedRule = bullets.find((bullet) => bullet.startsWith('Touched files counted')) ?? '';
+	const renameIndex = bullets.findIndex((bullet) => bullet.startsWith('Rename-only phases.'));
+	const moveBullet = bullets[renameIndex + 1] ?? '';
+	const earlierPhaseRule = bullets.find((bullet) => bullet.startsWith('Earlier-phase files have their own heading')) ?? '';
+	const filesToMove = skeletonSectionOf(template, '## Files to Move');
+	const fileBudget = skeletonSectionOf(template, '## File Budget');
+	const buildModeSection = skeletonSectionOf(template, '## Build Mode');
+	const declarationsNote = declarationsNoteOf(template);
+
+	return {
+		// the touched-files rule keeps the rename-only exemption and names the second one beside it
+		touchedRuleNamesTheRenamesExemption: touchedRule.includes('## Renames') && touchedRule.includes('**Renames only:** yes'),
+		touchedRuleNamesTheMoveExemption: touchedRule.includes('## Build Mode') && touchedRule.includes('move-folders-and-files'),
+		touchedRuleCountsAFolderMove: /folder move/i.test(touchedRule),
+		// a file a folder move carried is named by its new path under the earlier-phase heading
+		earlierPhaseRuleNamesAFolderMove: /folder move/i.test(earlierPhaseRule),
+		// the rename-only bullet stays, and the move-folders-and-files bullet follows it directly
+		keepsTheRenameOnlyBullet: renameIndex !== -1,
+		moveBulletFollowsTheRenameOnlyBullet: moveBullet.startsWith('Move-folders-and-files phases.'),
+		moveBulletNamesTheBuildModeSection: moveBullet.includes('## Build Mode') && moveBullet.includes('move-folders-and-files'),
+		// the Files to Move skeleton shows a folder heading beside the file one
+		filesToMoveCarriesAFolderHeading: /^### `[^`]*\/` → `[^`]*\/`$/m.test(filesToMove),
+		filesToMoveKeepsAFileHeading: /^### `[^`]*[^/`]` → `[^`]*[^/`]`$/m.test(filesToMove),
+		// the File Budget note exempts both mechanical modes from the touched ceiling
+		fileBudgetNamesBothModes: /rename-only/i.test(fileBudget) && fileBudget.includes('move-folders-and-files'),
+		// a Build Mode skeleton section sits directly after Renames and names the mode
+		carriesABuildModeSection: buildModeSection.includes('move-folders-and-files'),
+		buildModeFollowsRenames: headingAfter(template, '## Renames') === '## Build Mode',
+		// the declarations note names both overview bullets
+		declarationsNoteNamesRenamesOnly: declarationsNote.includes('**Renames only:** yes'),
+		declarationsNoteNamesMovesOnly: declarationsNote.includes('**Moves folders and files only:** yes'),
+		// and no size token reaches the writer
+		leavesAStandingToken: template.includes('{{'),
+	};
+};
+
+test('both focused templates describe folder moves and the move-folders-and-files mode beside the rename-only rules', () => {
+	const contractTemplate = planTemplateOf(setupFocusedInvocation({ contract: true }));
+	const narrativeTemplate = planTemplateOf(setupFocusedInvocation());
+
+	const acceptanceComment = skeletonSectionOf(contractTemplate, '## Acceptance Tests');
+
+	const expectedPassages = {
+		touchedRuleNamesTheRenamesExemption: true,
+		touchedRuleNamesTheMoveExemption: true,
+		touchedRuleCountsAFolderMove: true,
+		earlierPhaseRuleNamesAFolderMove: true,
+		keepsTheRenameOnlyBullet: true,
+		moveBulletFollowsTheRenameOnlyBullet: true,
+		moveBulletNamesTheBuildModeSection: true,
+		filesToMoveCarriesAFolderHeading: true,
+		filesToMoveKeepsAFileHeading: true,
+		fileBudgetNamesBothModes: true,
+		carriesABuildModeSection: true,
+		buildModeFollowsRenames: true,
+		declarationsNoteNamesRenamesOnly: true,
+		declarationsNoteNamesMovesOnly: true,
+		leavesAStandingToken: false,
+	};
+
+	expect({
+		contract: buildModePassagesOf(contractTemplate),
+		narrative: buildModePassagesOf(narrativeTemplate),
+		// the contract skeleton's ledger comment asks no rows of either mechanical mode
+		contractAcceptanceCommentNamesBothModes: /rename-only/i.test(acceptanceComment) && acceptanceComment.includes('move-folders-and-files'),
+	}).toEqual({
+		contract: expectedPassages,
+		narrative: expectedPassages,
+		contractAcceptanceCommentNamesBothModes: true,
+	});
+});

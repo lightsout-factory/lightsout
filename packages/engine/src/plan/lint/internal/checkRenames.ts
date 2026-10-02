@@ -1,3 +1,4 @@
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
@@ -93,5 +94,5 @@ export const checkRenames = ({ plan, phase }: Params): StructuralFinding[] => [
 		}),
 	),
 	...renameDefects({ plan, phase }),
-	...(plan.renames.length > 0 ? renameOnlyDefects({ plan, phase }) : []),
+	...(plan.buildMode === BuildMode.RenamesOnly ? renameOnlyDefects({ plan, phase }) : []),
 ];

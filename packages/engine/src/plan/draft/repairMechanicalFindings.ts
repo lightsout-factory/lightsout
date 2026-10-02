@@ -27,7 +27,7 @@ export const repairMechanicalFindings = async ({ cwd, name, planPaths, decisions
 	if (overviewPath !== undefined) {
 		const phasePaths = planPaths.filter((path) => path !== overviewPath);
 
-		files.push(await syncPhaseSectionsFromFiles({ overviewPath, phasePaths }));
+		files.push(await syncPhaseSectionsFromFiles({ cwd, overviewPath, phasePaths }));
 	}
 
 	return files;

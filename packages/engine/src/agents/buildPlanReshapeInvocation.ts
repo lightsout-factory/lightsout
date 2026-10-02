@@ -42,7 +42,7 @@ export const buildPlanReshapeInvocation = ({
 		`# Reshape input`,
 		`## Overview file to reshape (Edit in place)\n\n- ${planPaths.join('\n- ')}`,
 		`## Created-file ceiling\n\nNo phase may declare more than ${createdFileCeiling} created source files. This is fixed and no declaration raises it.`,
-		`## Touched-file ceiling\n\nNo phase may declare more than ${touchedFileCeiling} touched source files, and a \`## File Budget\` never raises that. The only exemption is a phase whose declaration block carries \`- **Renames only:** yes\`, and that bullet is only for a phase whose whole work is renaming.`,
+		`## Touched-file ceiling\n\nNo phase may declare more than ${touchedFileCeiling} touched source files, and a \`## File Budget\` never raises that. There are two exemptions: a phase whose declaration block carries \`- **Renames only:** yes\`, a bullet only for a phase whose whole work is renaming, and a phase whose declaration block carries \`- **Moves folders and files only:** yes\`, a bullet only for a phase whose whole work is moving folders and files.`,
 		`## Breakdown findings to resolve\n\n${findingLines.join('\n')}`,
 		`## Reference files (Read on demand)\n\n${referenceLines.join('\n')}`,
 		'Remember: re-split the phase breakdown, touch nothing else, then your entire final message must be exactly one JSON PlanFixReport object — nothing else.',

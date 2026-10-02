@@ -1,6 +1,8 @@
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
+import { buildModeBulletLabels } from '#src/plan/common/constants/buildModeBulletLabels.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 import type { PhaseDefect } from '#src/plan/common/types/PhaseDefect.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
@@ -80,7 +82,13 @@ const numberDefects = ({
 		});
 	}
 
-	if (declaration.fileBudget !== undefined && declaration.touchedCount !== undefined && declaration.fileBudget < declaration.touchedCount) {
+	// a move-folders-and-files phase is exempt from the file budget, so a budget under its touched count refuses nothing
+	if (
+		declaration.buildMode !== BuildMode.MoveFoldersAndFiles &&
+		declaration.fileBudget !== undefined &&
+		declaration.touchedCount !== undefined &&
+		declaration.fileBudget < declaration.touchedCount
+	) {
 		defects.push({
 			phase: overviewBase,
 			issue: `the file budget declared for ${declaration.file} (${declaration.fileBudget}) is below its own touched count (${declaration.touchedCount})`,
@@ -95,9 +103,10 @@ const numberDefects = ({
 const nameDefects = ({ declaration, phase, overviewBase }: { declaration: PhaseDeclaration; phase: PhaseFile; overviewBase: string }) => {
 	const defects: PhaseDefect[] = [];
 	const { spans, exports } = namesIn({ phase });
-	const written = new Set([...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to)]);
+	const written = new Set([...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to), ...phase.plan.folderMoves.map((move) => move.to)]);
 
-	for (const path of declaration.creates.filter((candidate) => !written.has(candidate))) {
+	// A folder move's destination may be declared with or without its trailing `/`.
+	for (const path of declaration.creates.filter((candidate) => !written.has(candidate.replace(/\/$/, '')))) {
 		defects.push({
 			phase: overviewBase,
 			issue: `${declaration.file} is declared to create '${path}', which it lists under neither Files to Create nor Files to Move`,
@@ -127,20 +136,22 @@ const nameDefects = ({ declaration, phase, overviewBase }: { declaration: PhaseD
 	return defects;
 };
 
-const renamesDefects = ({ declaration, phase, overviewBase }: { declaration: PhaseDeclaration; phase: PhaseFile; overviewBase: string }) => {
-	const declared = declaration.renamesOnly === true;
-	const own = phase.plan.renames.length > 0;
+const modeBulletAdvice = ({ buildMode }: { buildMode: BuildMode }) =>
+	buildMode === BuildMode.Standard ? 'no mode bullet' : `only the '${buildModeBulletLabels[buildMode]}: yes' bullet`;
 
-	return declared === own
+/** A block reading yes on both mode bullets is skipped here: `getDeclarationDefects` already reports it. */
+const buildModeDefects = ({ declaration, phase, overviewBase }: { declaration: PhaseDeclaration; phase: PhaseFile; overviewBase: string }) => {
+	const declared = declaration.buildMode ?? BuildMode.Standard;
+	const own = phase.plan.buildMode;
+
+	return declaration.buildModeConflict === true || declared === own
 		? []
 		: [
 				{
 					phase: overviewBase,
-					issue: declared
-						? `${declaration.file} is declared rename-only, but its own file carries no '## Renames' section`
-						: `${declaration.file} carries a '## Renames' section, but its declaration has no 'Renames only' bullet`,
+					issue: `${declaration.file} is declared with build mode '${declared}', but its own file's build mode is '${own}'`,
 					location: `${overviewBase} → Phase Declarations`,
-					fix: 'the two copies must agree — write the Renames only bullet exactly when the phase file declares its renames, since the implementing agent is handed the phase file',
+					fix: `the two copies must agree, since the implementing agent is handed the phase file — give ${declaration.file}'s declaration block ${modeBulletAdvice({ buildMode: own })}; the mechanical repair applies this`,
 				},
 			];
 };
@@ -159,7 +170,7 @@ export const checkPhaseDeclarations = ({ declarations, phases, overviewBase, cou
 			defects.push(
 				...numberDefects({ declaration, phase, overviewBase, counts }),
 				...nameDefects({ declaration, phase, overviewBase }),
-				...renamesDefects({ declaration, phase, overviewBase }),
+				...buildModeDefects({ declaration, phase, overviewBase }),
 			);
 		}
 	}

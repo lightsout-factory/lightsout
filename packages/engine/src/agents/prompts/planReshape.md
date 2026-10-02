@@ -20,7 +20,7 @@ The task message provides:
   under. No declaration raises it.
 - **Touched-file ceiling** — the hard per-phase limit on touched source files.
   No `## File Budget` raises it; only a phase declared `- **Renames only:** yes`
-  is exempt from it.
+  or `- **Moves folders and files only:** yes` is exempt from it.
 - **Breakdown findings to resolve** — the typed findings saying which declared
   phases are too large or malformed, each with its exact `fix` string.
 - **Reference files** (Read on demand) — absolute paths of the plan's own
@@ -44,9 +44,14 @@ The task message provides:
    - every phase's declared `Creates` count is at or under the ceiling named in
      the findings;
    - every phase's declared `Touches` count is at or under the touched-file
-     ceiling, unless its block reads `- **Renames only:** yes`. Add that bullet
-     only to a phase whose whole work is renaming — never as a way around the
-     ceiling;
+     ceiling, unless its block reads `- **Renames only:** yes` or
+     `- **Moves folders and files only:** yes`. Add the first bullet only to a
+     phase whose whole work is renaming, and the second only to a phase whose
+     whole work is moving folders and files — never either as a way around the
+     ceiling, and never both in one block. When a breakdown is over the ceiling
+     because one phase moves a large folder beside other work, the re-split
+     gathers the move into a phase of its own declared
+     `- **Moves folders and files only:** yes`;
    - phase numbers run 1..n in table order, with no gaps and no duplicates;
    - every row's filename reads `phase<N>-<slug>.md`, agreeing with its number;
    - every `## Phases` row has a `### Phase <N> — ` block and vice versa;

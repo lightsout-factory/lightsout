@@ -1,4 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
@@ -97,7 +98,7 @@ describe('verifyStep', () => {
 			coverage: true,
 			acceptanceTests: () => rows,
 			final: true,
-			renames: [],
+			planBuildMode: { buildMode: BuildMode.Standard },
 			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 

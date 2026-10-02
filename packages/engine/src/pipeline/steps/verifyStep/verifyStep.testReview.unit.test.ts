@@ -1,4 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { AcceptanceRow } from '#src/common/types/AcceptanceRow.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
@@ -38,12 +39,28 @@ jest.mock('#src/pipeline/approvedTests/readApprovedTest.ts', () => ({ readApprov
 jest.mock('#src/pipeline/approvedTests/removeApprovedTests.ts', () => ({ removeApprovedTests: async () => {} }));
 jest.mock('#src/pipeline/approvedTests/reviewTestChanges.ts', () => ({ reviewTestChanges: (params: ReviewParams) => mockReviewTestChanges(params) }));
 // -------------------------
+// The move check has its own tests against a real repository. Here it is only
+// the judgment a move-folders-and-files checkpoint asks in place of the review.
+interface MoveCheckParams {
+	run: PipelineRun;
+	checkpoint: string;
+	fileMoves: { from: string; to: string }[];
+	folderMoves: { from: string; to: string }[];
+}
+
+const mockCheckMoveOnlyChanges = jest.fn<(params: MoveCheckParams) => Promise<{ error?: string }>>();
+
+jest.mock('#src/pipeline/moveCheck/checkMoveOnlyChanges.ts', () => ({
+	checkMoveOnlyChanges: (params: MoveCheckParams) => mockCheckMoveOnlyChanges(params),
+}));
+// -------------------------
 interface GateParams {
 	run: PipelineRun;
 	coverage?: boolean;
 	checkpoint: string;
 	rows: AcceptanceRow[];
 	final?: boolean;
+	changedFilesExecuted?: boolean;
 }
 
 const mockRunVerificationGates = jest.fn<(params: GateParams) => Promise<VerificationResult>>();
@@ -92,6 +109,8 @@ const redGates: VerificationResult = {
 interface SetupParams {
 	/** What the reviewer answers, one entry per checkpoint entry; the last is repeated once the list is spent. */
 	reviews?: ReviewOutcome[];
+	/** What the move check answers, one entry per checkpoint entry; the last is repeated once the list is spent. */
+	moveChecks?: { error?: string }[];
 	/** What the gates answer, one entry per gate run; the last is repeated once the list is spent. */
 	gates?: VerificationResult[];
 	/** Seed the checkpoint so it re-enters through the formatter, the way a repair attempt does. */
@@ -108,10 +127,18 @@ interface SetupParams {
  * with the error it was handed, and the driver throws — so an agent these
  * tests say is never spawned is loud rather than silent if it is.
  */
-const setupTestReviewRun = ({ reviews = [{}], gates = [greenGates], needsFormatting = false, acceptanceTests = [], onFixRole }: SetupParams = {}) => {
+const setupTestReviewRun = ({
+	reviews = [{}],
+	moveChecks = [{}],
+	gates = [greenGates],
+	needsFormatting = false,
+	acceptanceTests = [],
+	onFixRole,
+}: SetupParams = {}) => {
 	calls.length = 0;
 
 	let reviewCall = 0;
+	let moveCheckCall = 0;
 	let gateCall = 0;
 
 	mockRunFormatter.mockImplementation(async () => {
@@ -124,6 +151,14 @@ const setupTestReviewRun = ({ reviews = [{}], gates = [greenGates], needsFormatt
 
 		const outcome = reviews[Math.min(reviewCall, reviews.length - 1)] ?? {};
 		reviewCall += 1;
+
+		return outcome;
+	});
+	mockCheckMoveOnlyChanges.mockImplementation(async () => {
+		calls.push('move-check');
+
+		const outcome = moveChecks[Math.min(moveCheckCall, moveChecks.length - 1)] ?? {};
+		moveCheckCall += 1;
 
 		return outcome;
 	});
@@ -197,7 +232,7 @@ describe('verifyStep', () => {
 			id: checkpoint,
 			acceptanceTests: () => [],
 			final: false,
-			renames: [],
+			planBuildMode: { buildMode: BuildMode.Standard },
 			buildFix,
 		})();
 
@@ -216,7 +251,14 @@ describe('verifyStep', () => {
 		].join('\n');
 		const { run, buildFix, manifest } = setupTestReviewRun({ reviews: [{ error: refusal }] });
 
-		const escalation = await verifyStep({ run, planContent: '# Plan', id: checkpoint, acceptanceTests: () => [], renames: [], buildFix })();
+		const escalation = await verifyStep({
+			run,
+			planContent: '# Plan',
+			id: checkpoint,
+			acceptanceTests: () => [],
+			planBuildMode: { buildMode: BuildMode.Standard },
+			buildFix,
+		})();
 
 		// A refusal has to stop the checkpoint before the gates, not alongside
 		// them: the gates are exactly what a weakened test would have talked
@@ -231,7 +273,14 @@ describe('verifyStep', () => {
 			'the test-change review refused this checkpoint’s changes; no gate ran.\n- packages/engine/src/gates/runGates.unit.test.ts: the mock neuters the subject';
 		const { run, buildFix, roleInvocations, fixErrorContexts } = setupTestReviewRun({ reviews: [{ error: refusal }] });
 
-		await verifyStep({ run, planContent: '# Plan', id: checkpoint, acceptanceTests: () => [], renames: [], buildFix })();
+		await verifyStep({
+			run,
+			planContent: '# Plan',
+			id: checkpoint,
+			acceptanceTests: () => [],
+			planBuildMode: { buildMode: BuildMode.Standard },
+			buildFix,
+		})();
 
 		// Two mechanical turns of the checkpoint's own fix role and no more: the
 		// review rides the repair budget the checkpoint already has, rather than
@@ -244,7 +293,14 @@ describe('verifyStep', () => {
 	test('verifyStep: a rate-limited reviewer parks the run', async () => {
 		const { run, buildFix, roleInvocations, stopped } = setupTestReviewRun({ reviews: [{ rateLimited: true }] });
 
-		const parked = await verifyStep({ run, planContent: '# Plan', id: checkpoint, acceptanceTests: () => [], renames: [], buildFix })();
+		const parked = await verifyStep({
+			run,
+			planContent: '# Plan',
+			id: checkpoint,
+			acceptanceTests: () => [],
+			planBuildMode: { buildMode: BuildMode.Standard },
+			buildFix,
+		})();
 
 		// A reviewer the harness throttled said nothing about the tests. There is
 		// no verdict to repair and no failure to escalate, so the run pauses and a
@@ -273,11 +329,55 @@ describe('verifyStep', () => {
 			},
 		});
 
-		await verifyStep({ run, planContent: '# Plan', id: checkpoint, acceptanceTests: () => manifest.acceptanceTests, renames: [], buildFix })();
+		await verifyStep({
+			run,
+			planContent: '# Plan',
+			id: checkpoint,
+			acceptanceTests: () => manifest.acceptanceTests,
+			planBuildMode: { buildMode: BuildMode.Standard },
+			buildFix,
+		})();
 
 		// The second verification has to prove the name the mapping carries NOW.
 		// A list read once when the steps were built would hand the same stale row
 		// to both gate runs, and the renamed test would be reported missing.
 		expect(mockRunVerificationGates.mock.calls.map(([params]) => params.rows)).toStrictEqual([[before], [renamed]]);
+	});
+
+	test('verifyStep: a move-folders-and-files checkpoint is judged by the move check at its first entry and at the formatter re-entry its repair takes', async () => {
+		const fileMoves = [{ from: 'src/count.js', to: 'src/total.js' }];
+		const folderMoves = [{ from: 'src/feature', to: 'src/widget' }];
+		const refusal = 'move check refused this checkpoint and no gate ran:\n- src/widget/feature.js added `2` ×1, removed `1` ×1';
+		const { run, buildFix, manifest, fixErrorContexts } = setupTestReviewRun({ moveChecks: [{ error: refusal }, {}] });
+
+		const escalation = await verifyStep({
+			run,
+			planContent: '# Plan',
+			id: checkpoint,
+			acceptanceTests: () => [],
+			planBuildMode: { buildMode: BuildMode.MoveFoldersAndFiles, fileMoves, folderMoves },
+			buildFix,
+		})();
+
+		// The mode reaches both ways into the judgment: the first entry and the
+		// re-entry through the formatter after the fix turn each ask the move
+		// check with the declared moves, the review is never asked, the refusal
+		// spends one repair under its own family, and the gates run with the
+		// per-file executed check lifted.
+		expect({
+			calls,
+			moveCheckCalls: mockCheckMoveOnlyChanges.mock.calls,
+			changedFilesExecuted: mockRunVerificationGates.mock.calls.map(([params]) => params.changedFilesExecuted),
+			repairAttempts: manifest.steps[0]?.verification?.repairAttempts,
+			fixErrorContexts,
+			escalation,
+		}).toStrictEqual({
+			calls: ['move-check', 'formatter', 'move-check', 'gates'],
+			moveCheckCalls: [[{ run, checkpoint, fileMoves, folderMoves }], [{ run, checkpoint, fileMoves, folderMoves }]],
+			changedFilesExecuted: [false],
+			repairAttempts: { 'move-check': 1 },
+			fixErrorContexts: [refusal],
+			escalation: undefined,
+		});
 	});
 });
