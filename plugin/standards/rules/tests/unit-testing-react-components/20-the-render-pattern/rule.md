@@ -8,6 +8,8 @@ severity: advisory
 
 Render inside the `setup()` factory; query and assert in the `test`. For a component, `render()` *is* the act, but by convention it lives in the arrange factory — the one accepted exception to "the act lives in the `test`". Query from `screen` — never destructure queries from `render()`.
 
+In a test of an interaction, the query that finds the element to act on groups with the act, the `userEvent` or `fireEvent` call, not with arrange.
+
 ```typescript
 import { expect, describe, test, jest } from '@jest/globals';
 import { render, screen } from '@testing-library/preact';

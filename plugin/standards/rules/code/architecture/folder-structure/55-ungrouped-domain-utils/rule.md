@@ -16,5 +16,6 @@ When two or more functions in a `common/utils/` folder share a subject, move the
 - Name the folder for the subject, never for the kind of function: never `getters/` or `predicates/`. Two `is*` functions stay in `utils/`.
 - A single function about a subject stays in `utils/`.
 - Classes that hold state stay in `services/`, never in a domain folder.
+- Functions that return JSX are grouped the same way: returning JSX does not change what a function is about.
 
 Then all the code about one subject is in one place.
