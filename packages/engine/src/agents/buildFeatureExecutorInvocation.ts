@@ -1,3 +1,4 @@
+import { sharedPromptSections } from '#src/agents/internal/common/constants/sharedPromptSections.ts';
 import { acceptanceTestsSection } from '#src/agents/internal/common/utils/acceptanceTestsSection.ts';
 import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
 import { changedFilesSection } from '#src/agents/internal/common/utils/changedFilesSection.ts';
@@ -62,7 +63,9 @@ export const buildFeatureExecutorInvocation = ({
 	selfCheckCommand,
 	planBuildMode,
 }: Params): { systemPrompt: string; prompt: string } => {
-	const roleSections = [applyPromptTokens({ text: featureExecutorPrompt, tokens: { fileLimit: fileLimit ?? defaultExecutorFileLimit } })];
+	const roleSections = [
+		applyPromptTokens({ text: featureExecutorPrompt, tokens: { ...sharedPromptSections, fileLimit: fileLimit ?? defaultExecutorFileLimit } }),
+	];
 
 	if (overviewContent) {
 		roleSections.push(

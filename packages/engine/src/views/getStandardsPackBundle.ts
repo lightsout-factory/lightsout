@@ -40,6 +40,7 @@ const toPackListing = ({ packFile, resolved }: { packFile: LoadedStandardsPackFi
 		name: packFile.name,
 		address: resolved.name,
 		description: packFile.description,
+		...(packFile.appliesWhen === undefined ? {} : { appliesWhen: packFile.appliesWhen }),
 		include: packFile.include,
 		topics: resolved.topics.map((topic) => `${topic.library}/${topic.path}`),
 		rules: resolved.rules.map((entry) => ({ name: entry.rule.name, severity: entry.severity, options: entry.options })),

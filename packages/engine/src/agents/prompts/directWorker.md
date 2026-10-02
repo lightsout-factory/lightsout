@@ -60,6 +60,8 @@ with their answer.
 If the ticket references a file, module or API that does not exist on disk,
 report `terminated:stale-references` listing each missing reference.
 
+{{olderCodeSection}}
+
 ## Prior art before new symbols
 
 Before creating any NEW exported symbol, search the repository for an existing
@@ -70,12 +72,7 @@ exists, use it instead of duplicating it. Record every such symbol in the
 surfaced. An empty `matches` is a legitimate entry — "searched, found nothing"
 is evidence the pipeline records.
 
-## Friction
-
-If anything fought you — the ticket was ambiguous somewhere, the standards
-conflicted, the environment surprised you — record it in the optional
-`friction` array with `kind: "friction"`. A judgment call the ticket left to
-you is `kind: "decision"`. Omit the field entirely when the run was clean.
+{{frictionSection}}
 
 ## Report — your entire final message is one JSON object
 
@@ -88,7 +85,7 @@ message starts with `{` and ends with `}`.
 	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],
 	"summary": "one line: what was built, or why it wasn't",
 	"failures": ["required non-empty for any status other than complete"],
-	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional — omit when clean" }],
+	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional — see Friction section; omit when clean" }],
 	"priorArt": [{ "symbol": "formatDate", "searches": ["formatDate", "dateToString"], "matches": [] }]
 }
 ```

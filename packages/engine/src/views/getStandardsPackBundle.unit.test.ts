@@ -201,6 +201,19 @@ describe('getStandardsPackBundle', () => {
 		});
 	});
 
+	test('says which dependencies a conditional pack waits for, and nothing on a pack that applies everywhere', async () => {
+		const { cwd } = await setupLibraryRepo({ baseAppliesWhen: ['react', 'preact'] });
+
+		const bundle = await getStandardsPackBundle({ cwd });
+		const conditions = bundle.packs.map((pack) => ({ name: pack.name, conditional: 'appliesWhen' in pack, appliesWhen: pack.appliesWhen }));
+
+		// `app` includes the conditional pack but is not conditional itself
+		expect(conditions).toStrictEqual([
+			{ name: 'app', conditional: false, appliesWhen: undefined },
+			{ name: 'base', conditional: true, appliesWhen: { dependencies: ['react', 'preact'] } },
+		]);
+	});
+
 	test("records a pack's own severity and options on its rule entries without changing the rule's defaults", async () => {
 		const { cwd } = await setupLibraryRepo();
 

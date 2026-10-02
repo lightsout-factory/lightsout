@@ -1,3 +1,5 @@
+import { sharedPromptSections } from '#src/agents/internal/common/constants/sharedPromptSections.ts';
+import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
 import unitTestWriterPrompt from '#src/agents/prompts/unitTestWriter.md';
 import type { LedgerRow } from '#src/contracts/plan/ledger/LedgerRow.ts';
 
@@ -35,7 +37,7 @@ export const buildLedgerTestWriterInvocation = ({
 	deletePaths = [],
 	errorContext,
 }: Params): { systemPrompt: string; prompt: string } => {
-	const roleSections = [unitTestWriterPrompt];
+	const roleSections = [applyPromptTokens({ text: unitTestWriterPrompt, tokens: sharedPromptSections })];
 
 	if (overviewContent) {
 		roleSections.push(

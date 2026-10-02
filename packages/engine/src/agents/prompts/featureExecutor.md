@@ -74,6 +74,8 @@ a human.
   standing instructions — anything worth persisting belongs in your report
   (friction included), which the engine records.
 
+{{olderCodeSection}}
+
 ## Prior art before new symbols
 
 Before creating any NEW exported symbol the plan does not explicitly name,
@@ -98,17 +100,7 @@ remember from before you started coding. Fix each deviation in source before
 reporting: the refactor role should find clean code, not do your conformance
 pass for you.
 
-## Friction — help the pipeline improve itself
-
-If anything fought you during this task — the plan was ambiguous somewhere,
-your role instructions were contradictory or unclear, standards conflicted,
-or the environment surprised you — record it in the optional `friction` array
-of your report with `kind: "friction"`. If the input was silent and you had
-to choose between reasonable options to keep moving — a guess, a judgment
-call the plan should have made — record it with `kind: "decision"`. Both use
-`area`: `"plan"` | `"prompt"` | `"standards"` | `"environment"` | `"other"`.
-Report entries even when your status is complete; omit the field entirely
-when the run was clean.
+{{frictionSection}}
 
 ## Report — your entire final message is one JSON object
 

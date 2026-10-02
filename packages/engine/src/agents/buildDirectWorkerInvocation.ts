@@ -1,3 +1,5 @@
+import { sharedPromptSections } from '#src/agents/internal/common/constants/sharedPromptSections.ts';
+import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
 import { changedFilesSection } from '#src/agents/internal/common/utils/changedFilesSection.ts';
 import { selfCheckSection } from '#src/agents/internal/common/utils/selfCheckSection.ts';
 import directWorkerPrompt from '#src/agents/prompts/directWorker.md';
@@ -36,7 +38,7 @@ export const buildDirectWorkerInvocation = ({
 	answeredQuestion,
 	selfCheckCommand,
 }: Params): { systemPrompt: string; prompt: string } => {
-	const roleSections = [directWorkerPrompt, `# Ticket ${ticketRef}\n\n${ticketBody}`];
+	const roleSections = [applyPromptTokens({ text: directWorkerPrompt, tokens: sharedPromptSections }), `# Ticket ${ticketRef}\n\n${ticketBody}`];
 
 	if (standards) {
 		roleSections.push(`# Standards\n\nThese rules are binding for every line you write:\n\n${standards}`);

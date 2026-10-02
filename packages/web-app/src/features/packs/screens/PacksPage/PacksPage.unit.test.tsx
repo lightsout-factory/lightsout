@@ -105,7 +105,7 @@ describe('PacksPage', () => {
 		]).toStrictEqual(['Includes lightsout/fractal', true, true]);
 	});
 
-	test('leaves out the description and included packs of a pack that has neither', () => {
+	test('leaves out the description, included packs and condition of a pack that has none of them', () => {
 		setupPacksPage({
 			pack: buildStandardsPackView({ packs: [buildStandardsPackListing({ name: 'standards', overrides: { description: undefined } })] }),
 		});
@@ -115,7 +115,20 @@ describe('PacksPage', () => {
 		expect({
 			description: within(card).queryByText('Every bundled standard at once.'),
 			includes: within(card).queryByText(/^Includes/),
-		}).toStrictEqual({ description: null, includes: null });
+			condition: within(card).queryByText(/^Applies only/),
+		}).toStrictEqual({ description: null, includes: null, condition: null });
+	});
+
+	test('says on a conditional pack’s card which packages it reaches', () => {
+		setupPacksPage({
+			pack: buildStandardsPackView({
+				packs: [buildStandardsPackListing({ name: 'react', appliesWhen: { dependencies: ['react', 'preact', 'react-dom'] } })],
+			}),
+		});
+
+		const card = screen.getByRole('link', { name: /lightsout\/react/ });
+
+		expect(within(card).getByText(/^Applies only/).textContent).toBe('Applies only to packages that depend on react, preact or react-dom.');
 	});
 
 	test('describes the library under its name when it has a description', () => {

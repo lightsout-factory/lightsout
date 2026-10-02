@@ -1,3 +1,5 @@
+import { sharedPromptSections } from '#src/agents/internal/common/constants/sharedPromptSections.ts';
+import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
 import { selfCheckSection } from '#src/agents/internal/common/utils/selfCheckSection.ts';
 import refactorExecutorPrompt from '#src/agents/prompts/refactorExecutor.md';
 import refactorScopeFeaturePrompt from '#src/agents/prompts/refactorScopeFeature.md';
@@ -89,7 +91,7 @@ export const buildRefactorExecutorInvocation = ({
 	errorContext,
 	selfCheckCommand,
 }: Params): { systemPrompt: string; prompt: string } => {
-	const roleSections = [refactorExecutorPrompt, scopePrompt({ scope })];
+	const roleSections = [refactorExecutorPrompt, scopePrompt({ scope })].map((text) => applyPromptTokens({ text, tokens: sharedPromptSections }));
 
 	// Before the plan, because it reframes it: a phase-1 tree is full of things
 	// nothing consumes yet, and without the overview "no caller" reads as "dead".

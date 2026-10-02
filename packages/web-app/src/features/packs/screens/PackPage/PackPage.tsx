@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router';
 import { CheckKind } from '#src/common/constants/CheckKind.ts';
 import { checkKindLabels } from '#src/common/constants/checkKindLabels.ts';
 import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
+import { PackCondition } from '#src/features/packs/components/PackCondition.tsx';
 import { PackPageFrame } from '#src/features/packs/components/PackPageFrame.tsx';
 import { groupRulesByTopic } from '#src/features/packs/internal/common/utils/groupRulesByTopic.ts';
 import { readDocumentTitle } from '#src/features/packs/internal/common/utils/readDocumentTitle.ts';
@@ -43,6 +44,7 @@ const PackHeader = ({ library, pack }: { library: string; pack: StandardsPackLis
 			<div className="flex flex-col gap-2">
 				<h1 className="font-extrabold font-mono text-4xl text-drop-navy tracking-tight">{pack.address}</h1>
 				{pack.description === undefined ? null : <p className="text-muted-foreground">{pack.description}</p>}
+				{pack.appliesWhen === undefined ? null : <PackCondition dependencies={pack.appliesWhen.dependencies} className="text-sm" />}
 				{pack.include.packs.length === 0 ? null : (
 					<div className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm">
 						<span>Includes</span>

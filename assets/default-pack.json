@@ -418,6 +418,11 @@
       "name": "nestjs",
       "address": "lightsout/nestjs",
       "description": "Stops the other rules from fighting what NestJS mandates, in each package that uses NestJS.",
+      "appliesWhen": {
+        "dependencies": [
+          "@nestjs/core"
+        ]
+      },
       "include": {
         "packs": [],
         "topics": [
@@ -440,6 +445,13 @@
       "name": "react",
       "address": "lightsout/react",
       "description": "Keeps React components, hooks and their tests to one shape, in each package that uses React.",
+      "appliesWhen": {
+        "dependencies": [
+          "react",
+          "preact",
+          "react-dom"
+        ]
+      },
       "include": {
         "packs": [],
         "topics": [
@@ -885,6 +897,12 @@
       "name": "tanstack-start",
       "address": "lightsout/tanstack-start",
       "description": "Gives a TanStack Start app one place for each feature, server function, query and hook, in each package that uses TanStack Start.",
+      "appliesWhen": {
+        "dependencies": [
+          "@tanstack/react-start",
+          "@tanstack/start"
+        ]
+      },
       "include": {
         "packs": [],
         "topics": [

@@ -193,6 +193,14 @@ with.
 - **Cover both directions where they exist:** when to split something, and when
   to merge it back.
 - **One rule, one job:** leave out anything another rule already covers.
+- **A decision that belongs to the repo owner:** say what the agent must not
+  do, what to do instead, and "report it". Never explain how to report. The
+  engine tells every agent that reporting means a friction entry in its own
+  report.
+- **Describe what to write, not how to treat older code.** The engine already
+  tells every agent: match an existing file's style, follow the rules in a new
+  file, and leave working older code alone. A rule that restates this is a
+  second copy.
 - **Every link resolves** to a file that exists.
 
 ## Examples

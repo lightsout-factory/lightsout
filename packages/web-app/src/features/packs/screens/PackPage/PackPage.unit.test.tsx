@@ -65,8 +65,8 @@ const rules = [
 /**
  * Pack `app` holds one rule from each of two topics, raises `filename-mismatch`
  * above its advisory default, and brings in the react topic with its one rule
- * removed — a topic left empty. Pack `base` holds only the size topic, and pack
- * `tests` only the tests topic.
+ * removed — a topic left empty. Pack `base` holds only the size topic and is the
+ * one conditional pack, and pack `tests` holds only the tests topic.
  */
 const packs = [
 	buildStandardsPackListing({
@@ -82,6 +82,7 @@ const packs = [
 	}),
 	buildStandardsPackListing({
 		name: 'base',
+		appliesWhen: { dependencies: ['react', 'preact'] },
 		include: { packs: [], topics: ['lightsout/code/fractal/size'], rules: [] },
 		topics: ['lightsout/code/fractal/size'],
 		rules: [
@@ -150,6 +151,22 @@ describe('PackPage', () => {
 		const description = screen.queryByText('The rules an app package runs.');
 
 		expect({ heading: heading.textContent, hasDescription: description !== null }).toStrictEqual({ heading: 'lightsout/app', hasDescription: true });
+	});
+
+	test('says which packages a conditional pack reaches', () => {
+		setupPackPage({ pack: 'base' });
+
+		const condition = screen.getByText(/^Applies only/);
+
+		expect(condition.textContent).toBe('Applies only to packages that depend on react or preact.');
+	});
+
+	test('says nothing about reach on a pack that applies to every package, even one including a conditional pack', () => {
+		setupPackPage();
+
+		const condition = screen.queryByText(/^Applies only/);
+
+		expect(condition).toBeNull();
 	});
 
 	test('counts the pack’s own rules, and how many are deterministic checks and how many agent checks', () => {

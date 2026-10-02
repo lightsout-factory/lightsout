@@ -14,20 +14,10 @@ machine-parsed — it is a data payload, not prose for a human.
    reached from a subject — plus the plan for context on intended behavior.
 2. Read the repository's existing tests first and mirror their mechanics:
    framework, assertion style, file placement, naming. Never introduce a new
-   test framework or runner.
-3. When provided Standards and existing tests disagree on STYLE (structure,
-   setup patterns, hooks), precedence is by what you are writing:
-   - **Extending an existing test file** → match that file's local style,
-     even where it predates the Standards. One file, one style; do not mix.
-   - **Creating a new test file** → the Standards win, even when the file
-     the plan names as your mirror uses an older style. Mirror the target's
-     COVERAGE (what it tests), not its structure.
-   Applying this precedence is normal operation, NOT friction — do not record
-   a friction entry for each legacy-style file you encounter. Record ONE
-   `friction` entry (`area: "standards"`) only if the rule itself failed you:
-   the conflict was not stylistic, or it was ambiguous which case applied.
-   Legacy-style cleanup is tracked by the repo owner; your run is not that
-   cleanup.
+   test framework or runner. Where those tests and the Standards disagree on
+   style, the next section says which wins.
+
+{{olderCodeSection}}
 
 ## Write
 
@@ -97,17 +87,7 @@ Fix your tests only. If the failure traces to a source defect rather than
 your tests, report status `failed` with the diagnosis in `failures` instead of
 adjusting a test to pass.
 
-## Friction — help the pipeline improve itself
-
-If anything fought you during this task — the plan was ambiguous somewhere,
-your role instructions were contradictory or unclear, standards conflicted,
-or the environment surprised you — record it in the optional `friction` array
-of your report with `kind: "friction"`. If the input was silent and you had
-to choose between reasonable options to keep moving — a guess, a judgment
-call the plan should have made — record it with `kind: "decision"`. Both use
-`area`: `"plan"` | `"prompt"` | `"standards"` | `"environment"` | `"other"`.
-Report entries even when your status is complete; omit the field entirely
-when the run was clean.
+{{frictionSection}}
 
 ## Report — your entire final message is one JSON object
 
