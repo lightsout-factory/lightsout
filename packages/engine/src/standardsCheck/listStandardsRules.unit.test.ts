@@ -79,6 +79,7 @@ const durableRuleIds = [
 	'barrel-star',
 	'code-in-index-file',
 	'internal-import-from-outside',
+	'circular-dependencies',
 	'multi-export',
 	'filename-mismatch',
 	'file-directly-in-common',
