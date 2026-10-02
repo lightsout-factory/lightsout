@@ -7,6 +7,7 @@ const base = {
 	ticketBody: 'Build the thing.',
 	engineCli: 'node /plugin/dist/cli.mjs',
 	planAddress: 'lo-7-search/002-search-basics',
+	planFolder: '/repo/.lightsout/work-orders/lo-7-search/plans/002-search-basics',
 };
 
 describe('buildQueueAutoPlanInvocation', () => {
@@ -87,12 +88,53 @@ describe('buildQueueAutoPlanInvocation', () => {
 		expect(systemPrompt).not.toContain('the plan was implemented and its run passed');
 	});
 
+	test('forbids ending the turn while an engine command it started is still running', () => {
+		const { systemPrompt } = buildQueueAutoPlanInvocation(base);
+
+		const flattened = systemPrompt.replace(/\s+/g, ' ');
+
+		expect(flattened).toMatch(/[Nn]ever background an engine command/);
+		expect(flattened).toMatch(/[Nn]ever end the turn while [^.]*still running/);
+		expect(flattened).toContain('plan draft');
+	});
+
+	test('tells the session beside the granted command to wait for every subcommand to exit', () => {
+		const { prompt } = buildQueueAutoPlanInvocation(base);
+
+		const headings = prompt.split('\n\n').filter((section) => section.startsWith('# '));
+		const invocationSection = prompt.slice(prompt.indexOf('# The engine invocation'), prompt.indexOf('# The plan you are planning')).replace(/\s+/g, ' ');
+
+		expect(headings[0]).toBe('# The engine invocation');
+		expect(invocationSection).toContain('`node /plugin/dist/cli.mjs <subcommand>`');
+		expect(invocationSection).toMatch(/foreground/i);
+		expect(invocationSection).toMatch(/wait[^.]*exit/i);
+	});
+
 	test('tells a re-invoked session the worktree already holds its own earlier work', () => {
 		const { prompt } = buildQueueAutoPlanInvocation({ ...base, answeredQuestion: { question: 'Which one?', answer: 'the second' } });
 
 		expect(prompt).toContain('Which one?');
 		expect(prompt).toContain('the second');
 		expect(prompt).toContain('continue from there');
+	});
+
+	test('names the absolute plan folder it is handed and never places it in the worktree', () => {
+		const planFolder = '/Users/dev/repo/.lightsout/work-orders/lo-7-search/plans/002-search-basics';
+
+		const { prompt } = buildQueueAutoPlanInvocation({ ...base, planFolder, answeredQuestion: { question: 'Which one?', answer: 'the second' } });
+
+		expect(prompt).toContain(planFolder);
+		expect(prompt).not.toMatch(/in\s+this\s+worktree/i);
+	});
+
+	test('the system prompt points the session at the named plan folder rather than the worktree', () => {
+		const planFolder = '/Users/dev/repo/.lightsout/work-orders/lo-7-search/plans/002-search-basics';
+
+		const { systemPrompt } = buildQueueAutoPlanInvocation({ ...base, planFolder });
+
+		expect(systemPrompt).toMatch(/plan\s+folder\s+the\s+task\s+message\s+names/);
+		expect(systemPrompt).not.toMatch(/plan\s+folder\s+you\s+leave\s+in\s+the\s+worktree/);
+		expect(systemPrompt).not.toContain('The worktree may already hold your earlier work');
 	});
 
 	test('leaves the answered-question section out entirely on a first invocation', () => {

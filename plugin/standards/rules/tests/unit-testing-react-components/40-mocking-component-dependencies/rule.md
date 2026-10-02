@@ -1,12 +1,12 @@
 ---
-summary: "a mocked hook, store or child component that hides coverage instead of a boundary"
+summary: "What a component test mocks."
 checked: false
 severity: advisory
 ---
 
 ## Mocking Component Dependencies
 
-**Hooks** mock like utility functions — and the wrapper must forward parameters with matching types when the hook takes any (see [Mock Typing Rules](./unit-testing.md#mock-typing-rules)):
+**Hooks** mock like any other function (`test-mock-untyped`, `test-mock-wrapper-untyped`):
 
 ```typescript
 const mockUseProjects = jest.fn<(params: { workspaceId: number }) => { data: Project[] }>();

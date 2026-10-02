@@ -193,6 +193,32 @@ describe('draftFocusedPhasedPlan', () => {
 		}).toStrictEqual({ repairs: 0, row: true, heading: true, strayHeading: false, overviewConstraint: true, phaseConstraint: true });
 	});
 
+	test("takes the phase file's own file budget into its declaration before the closing lint", async () => {
+		// The overview block declares no budget; the phase file declares 12. The
+		// composed declaration must carry it before the lint reads the overview.
+		const draft = setupFocusedPhasedDraft({
+			name: 'own-budget',
+			respond: ({ role, path }) => {
+				if (role === 'overview') {
+					return overviewBody({ rows: [phaseRow()] });
+				}
+
+				return role === 'phase' ? phaseWithBudget() : unchangedFixReport({ path });
+			},
+		});
+
+		const result = await draftFocusedPhasedPlan({ context: draft.context, step: 'draft' });
+
+		expectStatus(result, 'complete');
+
+		const overview = readFileSync(join(draft.planDir, 'overview.md'), 'utf8');
+
+		expect({
+			repairs: draft.calls.filter(({ role }) => role === 'repair').length,
+			budget: overview.includes('- **File budget:** 12'),
+		}).toStrictEqual({ repairs: 0, budget: true });
+	});
+
 	test('gives the repair agent only the findings the engine could not fix', async () => {
 		// Two defects in one round: the declared file budget disagreeing with the
 		// phase file's own (a record settles it) and a placeholder (nothing does).

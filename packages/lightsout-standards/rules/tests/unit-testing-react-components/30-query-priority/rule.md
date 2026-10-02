@@ -1,5 +1,5 @@
 ---
-summary: "a query reaching for a test id where a role, label or text would find the element"
+summary: "How a component test finds an element."
 checked: false
 severity: advisory
 ---

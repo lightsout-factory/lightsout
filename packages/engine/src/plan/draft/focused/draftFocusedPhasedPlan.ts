@@ -14,14 +14,13 @@ import { createDraftStop } from '#src/plan/draft/internal/common/utils/createDra
 import { getAdvisoryFindings } from '#src/plan/draft/internal/common/utils/getAdvisoryFindings.ts';
 import { stopForPhaseFailure } from '#src/plan/draft/internal/common/utils/stopForPhaseFailure.ts';
 import { repairPhaseBreakdown } from '#src/plan/draft/repairPhaseBreakdown.ts';
-import { stampPhaseCounts } from '#src/plan/draft/stampPhaseCounts.ts';
 import { planDraftOutputs } from '#src/plan/internal/common/paths/planDraftOutputs.ts';
 import type { DraftContext } from '#src/plan/internal/common/types/DraftContext.ts';
 import type { RunPlanDraftResult } from '#src/plan/internal/common/types/RunPlanDraftResult.ts';
 import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
 import { parsePlan } from '#src/plan/parsePlan.ts';
 import { syncGlobalConstraints } from '#src/plan/sections/syncGlobalConstraints.ts';
-import { syncPhaseSections } from '#src/plan/sections/syncPhaseSections.ts';
+import { syncPhaseSectionsFromFiles } from '#src/plan/sections/syncPhaseSectionsFromFiles.ts';
 
 interface Params {
 	context: DraftContext;
@@ -73,9 +72,9 @@ const readCheckedBreakdown = async ({
 };
 
 /**
- * `syncPhaseSections` renders from the record the stamp returns, so running it
- * ahead of the stamp would write the overview agent's estimated counts straight
- * back over the real ones.
+ * `syncPhaseSectionsFromFiles` stamps the real counts before it renders, so it
+ * runs after the phase files exist: rendering ahead of the stamp would write the
+ * overview agent's estimated counts straight back over the real ones.
  */
 const composeEngineSections = async ({
 	cwd,
@@ -93,9 +92,7 @@ const composeEngineSections = async ({
 	await syncPlanDecisions({ cwd, name, planPaths: phasePaths, decisions });
 	await syncGlobalConstraints({ planPaths: [overviewPath, ...phasePaths], decisions });
 
-	const stamped = await stampPhaseCounts({ cwd, overviewPath, phasePaths });
-
-	await syncPhaseSections({ overviewPath, declarations: stamped, phaseFiles: phasePaths.map((path) => basename(path)) });
+	await syncPhaseSectionsFromFiles({ cwd, overviewPath, phasePaths });
 };
 
 /**

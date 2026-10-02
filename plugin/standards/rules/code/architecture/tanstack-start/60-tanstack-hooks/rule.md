@@ -1,17 +1,16 @@
 ---
-summary: "a query-wrapping hook outside the feature's `hooks/` folder"
+summary: "Where a feature's hooks live, and why a query hook infers its return type."
 checked: false
 severity: advisory
 requires:
   - file-naming-conventions
 ---
 
-### Hooks
+## TanStack Hooks
 
-Custom hooks that wrap queries or manage state live in the feature's `hooks/`
-folder — the same convention the
-[React topic's naming rule](../../react/30-file-naming-conventions/rule.md)
-derives (`useX` export → `camelCase.ts`), applied to TanStack query wrappers:
+Put a custom hook that wraps a query or manages state in the feature's `hooks/` folder.
+
+Leave a hook that wraps a TanStack query to infer its return type, an exception to `explicit-return-type`. That type is a deep generic instantiation, which can be impractical to write out or can even break the compiler.
 
 ```typescript
 // features/issues/hooks/useIssues.ts
@@ -23,7 +22,3 @@ export const useIssues = ({ searchParams }: Params) => {
 	return useSuspenseQuery(issuesQueryOptions({ searchParams }));
 };
 ```
-
-The hook's inferred return type is deliberate — TanStack's generics are the
-contract; see the return-types note in this topic's
-[background](../topic.md).

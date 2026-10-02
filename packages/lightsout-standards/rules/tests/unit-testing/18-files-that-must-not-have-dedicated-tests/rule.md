@@ -1,32 +1,18 @@
 ---
-summary: "a dedicated test file on a source file that holds no runtime logic"
+summary: "Files that need no tests of their own."
 checked: false
 severity: advisory
 ---
 
 ## Files That Must NOT Have Dedicated Tests
 
-Do **not** create test files for source files with no runtime logic — they are covered when consumed:
+Never create a test file for a source file with no runtime logic. The tests of the code that uses it cover it:
 
-- **Pure constants** — only literal values, no computation or side effects
-- **Enums with no computed members** / string-union types
-- **Type-only files** — only `type`/`interface` declarations
-- **Index files** (`index.ts`) — a list of re-exports; code imports the files it lists, never the index file
+- constants holding only literal values, with no computation or side effects
+- enums with no computed members, and string-union types
+- files holding only `type` and `interface` declarations
+- index files, which only re-export
 
-A file qualifies for testing only when it contains **executable logic**. If a constant file *does* contain logic (e.g., env-var fallback), test the logic paths — not the static value.
+A file earns a test only when it holds executable logic. When a constants file does hold logic, such as an environment-variable fallback, test the logic, not the static value.
 
-### Exception — a package's published entry
-
-The `index.ts` a package names in its `exports` map is the one index file that is
-**not** covered when consumed, because nothing inside the repo consumes it. It is
-the contract with the outside world: a name dropped from it in a rename or a
-merge breaks every downstream build while every other test in the suite keeps
-passing.
-
-A dedicated test on that file may pin only what no other test can reach:
-
-- the exact set of exported names
-- that each one arrived as a value rather than erasing to `undefined`
-
-It must not re-prove what the exported things do — that belongs to each one's own
-test file.
+The one exception is a package's entry. Nothing in the repo uses it, so no other test covers it, and a name dropped from it in a rename or a merge breaks every downstream build while every test still passes. Its test pins only what no other test can reach: the exact set of exported names, and that each arrives as a value rather than `undefined`. It never re-proves what the exported things do; their own tests do that.

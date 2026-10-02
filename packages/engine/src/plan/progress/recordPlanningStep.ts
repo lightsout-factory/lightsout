@@ -50,6 +50,11 @@ interface Params<Result> {
  * The finish is awaited so the record lands before the caller reaches
  * `exitCli`. There is no lock: plan subcommands on one plan folder run one at a
  * time, and a lock would add a failure path for a record only a reader uses.
+ *
+ * A process killed before its `finally` runs leaves the step recorded
+ * `running`, and the queue auto-plan worker's post-session check relies on
+ * exactly that: a signal handler must never record a finish for a step whose
+ * work did not complete.
  */
 export const recordPlanningStep = async <Result>({ cwd, name, step, work, statusOf }: Params<Result>): Promise<Result> => {
 	const started = await recordEntry({

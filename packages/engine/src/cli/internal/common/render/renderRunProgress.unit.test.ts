@@ -62,6 +62,7 @@ const sampleProgress = (overrides: Partial<RunProgress> = {}): RunProgress => ({
 	costUsd: 43.54,
 	now: 'step refactor — pass 1/3',
 	awaitingShip: false,
+	resumeCommand: 'lightsout resume --run e643832a-0000-4000-8000-000000000000',
 	...overrides,
 });
 
@@ -326,6 +327,65 @@ describe('renderRunProgress', () => {
 		expect(line.length).toBeGreaterThan((plainLines[2] ?? '').length);
 		expect(rules).toHaveLength(2);
 		expect(rules.every((rule) => rule.length === line.length)).toBe(true);
+	});
+
+	test('a running run with no live process draws its running row stopped and says how to resume it', () => {
+		const resumeCommand = 'lightsout resume --run e643832a-0000-4000-8000-000000000000';
+		const verification = {
+			failedFamilies: ['test'],
+			repairAttempts: { test: 1 },
+			failures: [{ kind: 'test', group: 'root', command: 'pnpm test', exitCode: 1, outputTail: 'red' }],
+			needsFormatting: false,
+			guidedRepairAttempted: false,
+		};
+		const rows = [
+			rowOf({ id: 'implement', durationMs: 1_951_000 }),
+			rowOf({ id: 'verify-implement', status: RunStatus.Running, durationMs: 754_000, verification }),
+			rowOf({ id: 'write-tests', status: undefined, attempts: 0, durationMs: undefined }),
+		];
+		const stopped = sampleProgress({ live: false, resumeCommand, rows });
+		const live = sampleProgress({ live: true, resumeCommand, rows });
+
+		const stoppedLines = renderRunProgress({ progress: stopped }).map((text) => plain({ text }));
+		const liveLines = renderRunProgress({ progress: live }).map((text) => plain({ text }));
+
+		const resumeIndex = stoppedLines.findIndex((text) => text.includes(resumeCommand));
+		const verificationIndex = stoppedLines.findIndex((text) => text.startsWith(' verification'));
+
+		expect(stoppedLines).toContain(' ■  verify-implement     stopped          12m 34s');
+		expect(stoppedLines.some((text) => text.includes('▶'))).toBe(false);
+		expect(stoppedLines.filter((text) => text.includes(resumeCommand))).toHaveLength(1);
+		expect(resumeIndex).toBeGreaterThan(stoppedLines.indexOf(' ·  write-tests          —'));
+		expect(resumeIndex).toBeLessThan(verificationIndex);
+		expect(liveLines).toContain(' ▶  verify-implement     running          12m 34s');
+		expect(liveLines.some((text) => text.includes('■') || text.includes(resumeCommand))).toBe(false);
+	});
+
+	test('only a running or pending run with no live process is drawn stopped', () => {
+		const resumeCommand = 'lightsout resume --run e643832a-0000-4000-8000-000000000000';
+		const pendingRows = [
+			rowOf({ id: 'phase1.md', status: RunStatus.Pending, attempts: 0, durationMs: undefined }),
+			rowOf({ id: 'phase2.md', status: RunStatus.Pending, attempts: 0, durationMs: undefined }),
+		];
+		const passedRows = [rowOf({ id: 'implement', durationMs: 1_951_000 }), rowOf({ id: 'format', durationMs: 4_000 })];
+		const pending = sampleProgress({ status: RunStatus.Pending, live: false, resumeCommand, rows: pendingRows });
+		const passed = sampleProgress({ status: RunStatus.Passed, live: false, resumeCommand, rows: passedRows });
+		const todaysPassedBlock = renderProgressBlock({
+			title: 'phase 8 · plans',
+			tag: 'e643832a',
+			rows: passedRows,
+			diagnostics: [],
+			totals: 'elapsed 70m 03s · 79 files · $43.54',
+			now: 'step refactor — pass 1/3',
+		});
+
+		const pendingLines = renderRunProgress({ progress: pending }).map((text) => plain({ text }));
+		const passedLines = renderRunProgress({ progress: passed });
+
+		expect(pendingLines.filter((text) => text.includes(resumeCommand))).toHaveLength(1);
+		expect(pendingLines.some((text) => text.includes('■'))).toBe(false);
+		expect(pendingLines).toContain(' ·  phase1.md            —');
+		expect(passedLines).toStrictEqual(todaysPassedBlock);
 	});
 
 	test("draws its block through renderProgressBlock with the run's title, short id, totals and now text", () => {

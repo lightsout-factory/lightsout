@@ -1,9 +1,9 @@
 ---
-summary: "an async unit arranged or asserted without the resolved/rejected forms the document names"
+summary: "Testing asynchronous code."
 checked: false
 severity: advisory
 ---
 
-### Async
+## Async
 
-Configure with `mockResolvedValue` / `mockRejectedValue` in the setup factory; `await` the act in the test; assert rejections with `await expect(...).rejects.toThrow(...)` — the one place the act sits inside the assertion.
+Give an async mock its result with `mockResolvedValue` or `mockRejectedValue` in the setup factory (`test-mock-return-in-hook`), `await` the act in the test, and assert a rejection with `await expect(act).rejects.toThrow(...)`.

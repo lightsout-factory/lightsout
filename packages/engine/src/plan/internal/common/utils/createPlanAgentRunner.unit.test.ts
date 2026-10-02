@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
@@ -196,6 +196,51 @@ describe('createPlanAgentRunner', () => {
 		await invokePlanAgent({ invocation: { systemPrompt: '', prompt: '' }, contract: Contract, allowedCommands: ['node cli plan lint'] });
 
 		expect(granted).toStrictEqual([['node cli plan lint']]);
+	});
+
+	test('hands the driver the plan folder as a writable directory when it lies outside the cwd', async () => {
+		// Real spellings, so a realpath on either side cannot make the two differ.
+		const cwd = realpathSync(setupWorkspace());
+		const workspaceDir = realpathSync(setupWorkspace());
+		const granted: (string[] | undefined)[] = [];
+		const driver: Driver = {
+			name: 'stub',
+			invoke: async (invocation) => {
+				granted.push(invocation.writableDirs);
+
+				return { text: JSON.stringify({ ok: true }), exitCode: 0 };
+			},
+		};
+		const invokePlanAgent = createPlanAgentRunner({ cwd, driver, workspaceDir, step: 'draft' });
+
+		await invokePlanAgent({ invocation: { systemPrompt: '', prompt: '' }, contract: Contract });
+
+		// a planning worktree's session may write the plan folder under the
+		// primary checkout, and nothing else beyond its own tree
+		expect(granted).toStrictEqual([[workspaceDir]]);
+	});
+
+	test('grants no writable directory when the plan folder lies inside the cwd', async () => {
+		const cwd = realpathSync(setupWorkspace());
+		const workspaceDir = join(cwd, '.lightsout', 'work-orders', 'lo-7-search', 'plans', '002-search-basics');
+
+		mkdirSync(workspaceDir, { recursive: true });
+
+		const granted: (string[] | undefined)[] = [];
+		const driver: Driver = {
+			name: 'stub',
+			invoke: async (invocation) => {
+				granted.push(invocation.writableDirs);
+
+				return { text: JSON.stringify({ ok: true }), exitCode: 0 };
+			},
+		};
+		const invokePlanAgent = createPlanAgentRunner({ cwd, driver, workspaceDir, step: 'draft' });
+
+		await invokePlanAgent({ invocation: { systemPrompt: '', prompt: '' }, contract: Contract });
+
+		// the session can already write its own tree, so it is granted nothing more
+		expect(granted).toStrictEqual([[]]);
 	});
 
 	test('relays a requested environment and adds none when it is absent', async () => {

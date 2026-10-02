@@ -10,6 +10,7 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunListing } from '#src/contracts/views/RunListing.ts';
 import { getQueueBoardPath } from '#src/queue/board/getQueueBoardPath.ts';
 import { readQueueBoard } from '#src/queue/board/readQueueBoard.ts';
+import { readQueueSummary } from '#src/queue/board/readQueueSummary.ts';
 
 const toBoardState = ({ listing }: { listing: RunListing }) => {
 	const going = listing.status === RunStatus.Running || listing.status === RunStatus.Pending;
@@ -26,6 +27,19 @@ const isActive = ({ ticket }: { ticket: QueueBoardTicket }) =>
 	ticket.lane === QueueLane.Building || ticket.lane === QueueLane.ShippingNow || (ticket.lane === QueueLane.Blocked && ticket.question !== undefined);
 
 const printBoard = async ({ cwd, listing }: { cwd: string; listing: RunListing }) => {
+	const state = toBoardState({ listing });
+	// Read before the board: a finished queue's summary stands on its own, and a
+	// drain may end before any board was written.
+	const summary = state === QueueBoardState.Finished ? await readQueueSummary({ cwd, runId: listing.runId }) : undefined;
+
+	if (summary !== undefined) {
+		for (const line of [...summary.boardLines, '', ...summary.reportLines]) {
+			console.log(line);
+		}
+
+		return;
+	}
+
 	const board = await readQueueBoard({ cwd, runId: listing.runId });
 
 	if (board === undefined) {
@@ -33,7 +47,6 @@ const printBoard = async ({ cwd, listing }: { cwd: string; listing: RunListing }
 		return;
 	}
 
-	const state = toBoardState({ listing });
 	// A live board is drawn now; a stopped or finished one shows when it was last written.
 	const at = state === QueueBoardState.Live ? new Date() : new Date(board.updatedAt);
 	const active =

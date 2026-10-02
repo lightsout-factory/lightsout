@@ -59,6 +59,14 @@ describe('getConfigView', () => {
 		expect(findField({ sections: view.sections, key: 'vendored' })?.description).toEqual(expect.not.stringContaining('pre-ship'));
 	});
 
+	test('states on the generated row that a phased plan carries the output between phases, and that checks reading it want gates.generate', async () => {
+		const { cwd } = await setupGeneratedConfig({ generated: generatedPaths });
+
+		const view = await getConfigView({ cwd });
+
+		expect(findField({ sections: view.sections, key: 'generated' })?.description).toMatch(/phased plan.*leaves those changes on disk.*`gates\.generate`/);
+	});
+
 	test('puts generated and vendored together in the Generated area, in the order the page reads them', async () => {
 		const { cwd } = await setupGeneratedConfig({ generated: generatedPaths, vendored: vendoredPaths });
 

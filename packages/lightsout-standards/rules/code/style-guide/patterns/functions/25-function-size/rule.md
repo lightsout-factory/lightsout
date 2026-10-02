@@ -1,5 +1,5 @@
 ---
-summary: "a function, hook or component over its line cap"
+summary: "How long a function may grow."
 checked: true
 severity: advisory
 options:
@@ -8,29 +8,12 @@ options:
   component: 200
 ---
 
-## Function Size Limits
+## Function Size
 
-| Lines | Assessment |
-| ----- | ------------------------------------ |
-| <=50  | Fine |
-| 50-80 | Review — look for extractable logic |
-| 80+   | Needs splitting |
+Split a function longer than 80 lines. A hook, a function whose name starts with `use`, may run to 160 lines, and a component, a capitalised function in a `.tsx` file, may run to 200. Lines run from the signature to the closing brace, and a callback with no name counts toward the function that holds it.
 
-**The one exemption, in one sentence:** a function is exempt when every
-statement is a call to a named step (or the assignment of its result) and the
-control flow is linear — any inline loop, branch, or transformation
-disqualifies it. A 150-line `start()` calling 8 step functions is fine; a
-150-line function with an inline loop is not. Such a function has no logic to
-extract, and splitting it would only scatter the sequence over more files than
-the reader has to hold.
+A function is exempt when every statement calls a named step, or assigns that call's result, and the flow is linear. One inline loop, branch or transformation ends the exemption: a 150-line `start()` that calls eight steps is fine, but one with an inline loop is not. It has nothing to extract, and splitting it would scatter the sequence.
 
-Reach for the exemption last, not first. It is the verdict a function earns
-once the logic is out of it, not a reason to leave the logic in — and a
-function that is genuinely just sequencing calls will be short enough that the
-cap never asks. Extract the work into named pieces, then look again: what
-remains is either under the cap or visibly a sequence, and either way the
-question has answered itself.
+Reach for the exemption last. Extract the work into named pieces first, then look again: what remains is short, or plainly a sequence.
 
-Extraction moves cost rather than removing it. Each piece pulled out is a new
-name to read and, if it leaves the file, a new file in the folder. Split
-because the piece deserves a name, not to buy back lines.
+Each piece you extract is a new name to read, and perhaps a new file. Extract a piece because it deserves a name, not to win back lines.

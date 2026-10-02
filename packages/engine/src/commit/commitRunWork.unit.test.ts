@@ -1,4 +1,6 @@
 import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { commitRunWork } from '#src/commit/commitRunWork.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
@@ -11,6 +13,7 @@ import { generatedPaths } from '#tests/helpers/generatedPaths.ts';
 import { headSubject } from '#tests/helpers/headSubject.ts';
 import { recordingDriver } from '#tests/helpers/recordingDriver.ts';
 import { configOf, createCommitRun, headCommitOf, manifestOf, plainSubject, planFolder, runId, setupCommitRun } from '#tests/helpers/setupCommitRun.ts';
+import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 // Mocked Imports
 // -------------------------
@@ -67,6 +70,28 @@ const setupAlreadyCommitted = async () => {
 
 	return { ...commit, driver, invocations };
 };
+
+/**
+ * A run that changed one source file and rebuilt one tracked generated file —
+ * what a phase leaves behind when its gates rebuilt the branch's build output.
+ * The generated file is committed first, so discarding it means restoring the
+ * branch's copy rather than deleting it.
+ */
+const setupRebuiltOutput = async () => {
+	const commit = await setup({ dirty: { 'src/thing.ts': 'export const thing = 1;\n' }, changedFiles: ['src/thing.ts'], generated: generatedPaths });
+
+	writeRepoFile({ cwd: commit.cwd, path: 'plugin/dist/cli.mjs', content: '// built on the branch\n' });
+	execSync('git add -- plugin/dist/cli.mjs && git commit -qm build', { cwd: commit.cwd, stdio: 'ignore' });
+	writeRepoFile({ cwd: commit.cwd, path: 'plugin/dist/cli.mjs', content: '// rebuilt by this phase\n' });
+
+	const builtOutput = () => readFileSync(join(commit.cwd, 'plugin', 'dist', 'cli.mjs'), 'utf8');
+	const tree = () => execSync('git status --porcelain', { cwd: commit.cwd }).toString();
+
+	return { ...commit, builtOutput, tree };
+};
+
+/** Two identical rebuilt-output runs, so keeping and the default discard can be compared over the same tree. */
+const setupRebuiltOutputPair = async () => ({ kept: await setupRebuiltOutput(), discarded: await setupRebuiltOutput() });
 
 describe('commitRunWork', () => {
 	test("commits the run's work and records the commit on the manifest", async () => {
@@ -187,6 +212,28 @@ describe('commitRunWork', () => {
 		expect(uncommitted).toEqual(expect.stringContaining('notes/stray.md'));
 	});
 
+	test('compares the tree of a resumed run whose branch no worktree record claims', async () => {
+		const { cwd, run, manifestNow, driver } = await setup({
+			dirty: { 'src/thing.ts': 'export const thing = 1;\n', 'notes/stray.md': '# somebody else was here\n' },
+			changedFiles: ['src/thing.ts'],
+			// The work order stores the branch, but no worktree record is filed with
+			// it, so the checkout is one a person chose and the comparison runs.
+			record: 'valid',
+		});
+
+		const uncommitted = await commitRunWork({ run, driver, resumed: true });
+
+		const staged = execSync('git diff --cached --name-only', { cwd }).toString();
+
+		expect({ uncommitted, branch: manifestNow().branch, staged, commits: manifestNow().commits, subject: headSubject({ cwd }) }).toEqual({
+			uncommitted: expect.stringContaining('notes/stray.md'),
+			branch: 'lo-152-commit',
+			staged: '',
+			commits: [],
+			subject: 'ignore',
+		});
+	});
+
 	test("narrates the commit through the run's progress sink", async () => {
 		const { run, progress, driver } = await setup({ dirty: { 'src/thing.ts': 'export const thing = 1;\n' }, changedFiles: ['src/thing.ts'] });
 
@@ -264,5 +311,42 @@ describe('commitRunWork', () => {
 		// recorded rather than trusted to the throw: the composer turns a throwing
 		// harness into a fallback subject, so a call made anyway would be silent
 		expect({ uncommitted, invocations }).toStrictEqual({ uncommitted: undefined, invocations: [] });
+	});
+
+	test("forwards keepGenerated so a phase's commit leaves its build output on disk", async () => {
+		const { kept, discarded } = await setupRebuiltOutputPair();
+
+		const keptUncommitted = await commitRunWork({ run: kept.run, driver: kept.driver, resumed: false, keepGenerated: true });
+		const discardedUncommitted = await commitRunWork({ run: discarded.run, driver: discarded.driver, resumed: false });
+
+		expect({
+			kept: {
+				uncommitted: keptUncommitted,
+				carried: committedPaths({ cwd: kept.cwd }),
+				commits: kept.manifestNow().commits,
+				output: kept.builtOutput(),
+				tree: kept.tree(),
+			},
+			discarded: {
+				uncommitted: discardedUncommitted,
+				carried: committedPaths({ cwd: discarded.cwd }),
+				output: discarded.builtOutput(),
+				tree: discarded.tree(),
+			},
+		}).toStrictEqual({
+			kept: {
+				uncommitted: undefined,
+				carried: ['src/thing.ts'],
+				commits: [{ sha: headCommitOf({ cwd: kept.cwd }), subject: plainSubject, runId }],
+				output: '// rebuilt by this phase\n',
+				tree: ' M plugin/dist/cli.mjs\n',
+			},
+			discarded: {
+				uncommitted: undefined,
+				carried: ['src/thing.ts'],
+				output: '// built on the branch\n',
+				tree: '',
+			},
+		});
 	});
 });

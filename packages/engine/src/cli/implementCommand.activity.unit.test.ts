@@ -62,16 +62,22 @@ jest.mock('#src/cli/internal/common/utils/runPipelineOrFailFast.ts', () => ({
 // -------------------------
 // The report card and the ship tail both read a run directory no mocked
 // pipeline ever wrote, and neither is what these cases are about.
-const mockPrintResult = jest.fn<(params: { result: PipelineResult; cwd: string }) => Promise<void>>();
+const mockRenderResult = jest.fn<(params: { result: PipelineResult; cwd: string }) => Promise<string[]>>();
 
-jest.mock('#src/cli/internal/common/render/printResult.ts', () => ({
-	printResult: (params: { result: PipelineResult; cwd: string }) => mockPrintResult(params),
+jest.mock('#src/cli/internal/common/render/renderResult.ts', () => ({
+	renderResult: (params: { result: PipelineResult; cwd: string }) => mockRenderResult(params),
 }));
 // -------------------------
-const mockExitAfterImplement = jest.fn<(params: { cwd: string; result: PipelineResult }) => Promise<void>>();
+const mockShipAfterImplement = jest.fn<(params: { cwd: string; result: PipelineResult }) => Promise<number>>();
 
-jest.mock('#src/cli/internal/common/utils/exitAfterImplement.ts', () => ({
-	exitAfterImplement: (params: { cwd: string; result: PipelineResult }) => mockExitAfterImplement(params),
+jest.mock('#src/cli/internal/common/utils/shipAfterImplement.ts', () => ({
+	shipAfterImplement: (params: { cwd: string; result: PipelineResult }) => mockShipAfterImplement(params),
+}));
+// -------------------------
+// The report is saved under the run's folder, and the run here is a result no
+// pipeline wrote to disk, so the save is doubled rather than refused.
+jest.mock('#src/runState/finalReport/writeRunFinalReport.ts', () => ({
+	writeRunFinalReport: () => Promise.resolve(),
 }));
 // -------------------------
 
@@ -123,8 +129,8 @@ const setupImplementRecord = ({ args }: { args: string[] }) => {
 	mockCreateWorktree.mockResolvedValue(workspace);
 	mockRequireImplementLifecycle.mockResolvedValue(undefined);
 	mockRunPipelineOrFailFast.mockResolvedValue(passedResult);
-	mockPrintResult.mockResolvedValue(undefined);
-	mockExitAfterImplement.mockResolvedValue(undefined);
+	mockRenderResult.mockResolvedValue([]);
+	mockShipAfterImplement.mockResolvedValue(0);
 
 	return {
 		context: { flags: parseFlags({ args }), rest: [], cwd },
@@ -146,7 +152,7 @@ describe('implementCommand activity record', () => {
 	test('an implement run records a command run labelled implement under the plan level', async () => {
 		const { context, planDir } = setupImplementRecord({ args: ['--plan', join(planFolder, 'plan.md')] });
 
-		await implementCommand(context);
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
 		const report = await recordedTree({ planDir });
 
@@ -188,7 +194,7 @@ describe('implementCommand activity record', () => {
 	test('a run built in a worktree records under the primary checkout', async () => {
 		const { context, cwd, workspace, planDir } = setupImplementRecord({ args: ['--plan', join(planFolder, 'plan.md')] });
 
-		await implementCommand(context);
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
 		const report = await recordedTree({ planDir });
 

@@ -308,7 +308,18 @@ describe('createWorkOrderShipGuard', () => {
 	});
 
 	test('records a ticket that shipped with no plans as shipped from the ticket body', async () => {
-		const { guard, cwd, branch, recordPath } = await setupGuard({ record: recordOf({ mode: WorkOrderMode.SinglePlan, plans: [] }) });
+		// Only a passed build from the ticket body makes "from the ticket body" true of a plan-less ship.
+		const { guard, cwd, branch, recordPath } = await setupGuard({
+			record: {
+				...recordOf({ mode: WorkOrderMode.SinglePlan, plans: [] }),
+				ticketBodyBuild: {
+					runId: 'run-body-passed',
+					progress: PlanProgress.Implemented,
+					startedAt: '2026-01-04T00:00:00.000Z',
+					finishedAt: '2026-01-04T01:00:00.000Z',
+				},
+			},
+		});
 
 		await guard.recordShipped({ cwd, branch, mergeCommit });
 

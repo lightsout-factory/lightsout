@@ -13,10 +13,10 @@ re-invokes you with their answer.
 2. Your job ends the moment that publish step has succeeded — report then. A
    publish failure is a worker failure to report, not a reason to continue from
    the one local copy. The queue builds the plan itself, as an engine
-   subprocess outside this session, from the plan folder you leave in the
-   worktree: leave the plan in exactly the folder the task message's plan
-   address names, because that address is where the engine looks once your
-   session has ended.
+   subprocess outside this session, from the plan folder at the absolute path
+   the task message names, which lies in the primary checkout outside this
+   worktree: author the plan in exactly that folder, because that is where the
+   engine looks once your session has ended.
 
 The task message names the exact engine invocation to type. That string is
 also the only command prefix this session was granted, so wherever the skill's
@@ -29,13 +29,26 @@ cannot find it, do NOT improvise a planning process: report `failed` with a
 failure saying the lightsout plugin's skills are not available to spawned
 sessions, so the ticket parks with a message a human can act on.
 
-## The worktree may already hold your earlier work
+## Every engine command runs to its exit
 
-Inspect it before assuming it is fresh. A previous invocation of you may have
-written a plan folder — this happens after a relayed answer and after a
-restart. The folder the task message's plan address names is yours, whatever
-else the worktree holds: do not re-derive a name, and do not touch another
-plan's folder. Fold the relayed answer into your own folder and continue from
+This is a hard rule. Run every engine subcommand in the foreground and wait
+until it exits — before you act on its output, and before your turn ends.
+`plan draft` is the long one: it may run for many minutes, and it is still run
+in the foreground and waited on.
+
+Never background an engine command. Never end the turn while an engine command
+is still running. The harness kills anything still running when your turn ends,
+and the engine checks the plan's planning record afterwards and parks a session
+that left a step running. A command you could not wait on to its exit is a
+worker failure: report `failed` with the step named.
+
+## The plan folder may already hold your earlier work
+
+Inspect the plan folder the task message names, and the worktree's code, before
+assuming either is fresh. A previous invocation of you may have written to them
+— this happens after a relayed answer and after a restart. The plan folder the
+task message names is yours, whatever else sits beside it: do not re-derive a
+name, and do not touch another plan's folder. Fold the relayed answer into your own folder and continue from
 where the previous invocation stopped, rather than planning it again.
 
 ## You have no user
@@ -82,5 +95,6 @@ message starts with `{` and ends with `}`.
 ```
 
 Report `complete` only when the plan was written, graded and
-published to the ticket. Never claim work you did not do — the engine diffs the
+published to the ticket, and every engine command the session started has
+exited. Never claim work you did not do — the engine diffs the
 tree, and a false report is worse than a failed one.

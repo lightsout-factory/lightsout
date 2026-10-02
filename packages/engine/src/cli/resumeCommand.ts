@@ -3,14 +3,16 @@ import { getStringFlag } from '#src/cli/common/args/getStringFlag.ts';
 import { usage } from '#src/cli/common/constants/usage.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
+import { launchDetached } from '#src/cli/internal/common/detach/launchDetached.ts';
+import { readLaunchRunId } from '#src/cli/internal/common/detach/readLaunchRunId.ts';
 import { continueDirectRun } from '#src/cli/internal/common/implementRun/continueDirectRun.ts';
+import { finishImplementRun } from '#src/cli/internal/common/implementRun/finishImplementRun.ts';
 import { readResumeClearance } from '#src/cli/internal/common/implementRun/readResumeClearance.ts';
+import { reportLiveOwner } from '#src/cli/internal/common/implementRun/reportLiveOwner.ts';
 import { reportWorkOrderPlanOutcome } from '#src/cli/internal/common/implementRun/reportWorkOrderPlanOutcome.ts';
 import { resolveRunCwd } from '#src/cli/internal/common/implementRun/resolveRunCwd.ts';
-import { printResult } from '#src/cli/internal/common/render/printResult.ts';
 import { printRunHeader } from '#src/cli/internal/common/render/printRunHeader.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
-import { exitAfterImplement } from '#src/cli/internal/common/utils/exitAfterImplement.ts';
 import { resolveCommandHarness } from '#src/cli/internal/common/utils/resolveCommandHarness.ts';
 import { runPhasesOrFailFast } from '#src/cli/internal/common/utils/runPhasesOrFailFast.ts';
 import { runPipelineOrFailFast } from '#src/cli/internal/common/utils/runPipelineOrFailFast.ts';
@@ -32,7 +34,8 @@ import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOr
 /** The pipelines this door continues; every other one resumes through its own command. */
 const resumedHere: PipelineKind[] = [PipelineKind.Implement, PipelineKind.Phases, PipelineKind.Direct];
 
-const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandContext['flags'] }) => {
+/** The run `--run` names, full or shortened; an unknown id the user typed is a message, never a stack trace. */
+const readNamedRun = async ({ cwd, flags }: { cwd: string; flags: CommandContext['flags'] }) => {
 	const runId = getStringFlag({ flags, name: 'run' });
 
 	if (!runId) {
@@ -40,8 +43,7 @@ const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandCon
 		return exitCli({ code: 1 });
 	}
 
-	// An unknown run id the user typed is a message, never a stack trace.
-	const manifest = await readRunManifest({ cwd, runId }).catch((error: unknown) => {
+	return readRunManifest({ cwd, runId }).catch((error: unknown) => {
 		if (error instanceof RunNotFoundError) {
 			console.error(error.message);
 			return exitCli({ code: 1 });
@@ -49,6 +51,28 @@ const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandCon
 
 		throw error;
 	});
+};
+
+/**
+ * A phase resumed alone would have no owner behind it, so it would read stopped
+ * while it ran and nothing could stop it: the sequence is what resumes.
+ * `resumeFlags` carries on the flags the refused command was typed with.
+ */
+const refusePhaseChild = async ({ manifest, resumeFlags }: { manifest: RunManifest; resumeFlags: string }) => {
+	if (manifest.parentRunId === undefined) {
+		return;
+	}
+
+	console.error(
+		`run ${manifest.runId} is a phase of sequence ${manifest.parentRunId} — resume it with: ${formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.parentRunId })}${resumeFlags}`,
+	);
+	return exitCli({ code: 1 });
+};
+
+const readResumableRun = async ({ cwd, flags }: { cwd: string; flags: CommandContext['flags'] }) => {
+	const manifest = await readNamedRun({ cwd, flags });
+
+	await refusePhaseChild({ manifest, resumeFlags: '' });
 
 	const pipeline = manifest.pipeline ?? PipelineKind.Implement;
 	if (!resumedHere.includes(pipeline)) {
@@ -117,9 +141,41 @@ const prepareResumedRun = async ({ cwd, manifest, loaded, willShip }: { cwd: str
 	return { resumable, config, driver: getDriver({ name: manifest.harness }) };
 };
 
-export const resumeCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
+/**
+ * The parent resolves the typed id to the full one and refuses only what no
+ * handshake could confirm: a phase child never gets an owner record, so its
+ * start could never be seen. Every other refusal is the child's, and lands in
+ * the launch log.
+ */
+const launchDetachedResume = async ({ flags, rest, cwd }: CommandContext) => {
+	if (flags.get('detach') !== true) {
+		console.error(usage);
+		return exitCli({ code: 1 });
+	}
+
+	const manifest = await readNamedRun({ cwd, flags });
+
+	await refusePhaseChild({ manifest, resumeFlags: ' --detach' });
+
+	return exitCli({ code: await launchDetached({ cwd, command: 'resume', args: rest, runId: manifest.runId }) });
+};
+
+export const resumeCommand = async ({ flags, rest, cwd }: CommandContext): Promise<void> => {
+	// First, so nothing this process spawns inherits it. A resumed run's id is its
+	// own --run id, so the value itself is not needed.
+	readLaunchRunId({ env: process.env });
+
+	if (flags.has('detach')) {
+		return launchDetachedResume({ flags, rest, cwd });
+	}
+
 	const skipRefactor = flags.get('skip-refactor') === true;
 	const { manifest, pipeline } = await readResumableRun({ cwd, flags });
+
+	if (await reportLiveOwner({ cwd, manifest })) {
+		return exitCli({ code: 1 });
+	}
+
 	// First, so a run whose recorded workspace has gone says so before anything is
 	// mutated, rather than quietly rebuilding in the launching checkout.
 	const located = await resolveRunCwd({ cwd, manifest });
@@ -177,13 +233,5 @@ export const resumeCommand = async ({ flags, cwd }: CommandContext): Promise<voi
 		return exitCli({ code: 1 });
 	}
 
-	await printResult({ result, cwd });
-	return exitAfterImplement({
-		config: loaded,
-		cwd: workspace,
-		result,
-		shipFlag: flags.get('ship') === true,
-		noShipFlag: flags.get('no-ship') === true,
-		env: process.env,
-	});
+	return finishImplementRun({ config: loaded, cwd: workspace, result, flags });
 };

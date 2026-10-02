@@ -1,6 +1,8 @@
 /**
  * The history is append-only so a withdrawal stays readable: a withdrawn ship
- * request leaves both `ShipRequested` and `ShipRequestWithdrawn`.
+ * request leaves both `ShipRequested` and `ShipRequestWithdrawn`, and a withdrawn
+ * hand-built authorization both `HandBuiltShipAuthorized` and
+ * `HandBuiltShipAuthorizationWithdrawn`.
  */
 export const WorkOrderEventKind = {
 	PlanAdded: 'plan-added',
@@ -9,6 +11,8 @@ export const WorkOrderEventKind = {
 	ModeChanged: 'mode-changed',
 	ShipRequested: 'ship-requested',
 	ShipRequestWithdrawn: 'ship-request-withdrawn',
+	HandBuiltShipAuthorized: 'hand-built-ship-authorized',
+	HandBuiltShipAuthorizationWithdrawn: 'hand-built-ship-authorization-withdrawn',
 	Shipped: 'shipped',
 } as const;
 

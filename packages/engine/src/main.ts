@@ -22,6 +22,7 @@ import { standardsCheckCommand } from '#src/cli/standardsCheckCommand.ts';
 import { standardsHealthCommand } from '#src/cli/standardsHealthCommand.ts';
 import { standardsValidateCommand } from '#src/cli/standardsValidateCommand.ts';
 import { statusCommand } from '#src/cli/statusCommand.ts';
+import { stopCommand } from '#src/cli/stopCommand.ts';
 import { testCoverageToThresholdCommand } from '#src/cli/testCoverageToThresholdCommand.ts';
 import { ticketStateCommand } from '#src/cli/ticketStateCommand.ts';
 import { voiceCommand } from '#src/cli/voice/voiceCommand.ts';
@@ -32,6 +33,7 @@ const commands: Record<string, (context: CommandContext) => Promise<void>> = {
 	'implement-direct': implementDirectCommand,
 	queue: queueCommand,
 	resume: resumeCommand,
+	stop: stopCommand,
 	ship: shipCommand,
 	'self-check': selfCheckCommand,
 	'ticket-state': ticketStateCommand,

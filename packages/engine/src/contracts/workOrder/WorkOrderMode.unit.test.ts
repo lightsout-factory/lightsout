@@ -19,6 +19,8 @@ describe('WorkOrderMode', () => {
 			ModeChanged: 'mode-changed',
 			ShipRequested: 'ship-requested',
 			ShipRequestWithdrawn: 'ship-request-withdrawn',
+			HandBuiltShipAuthorized: 'hand-built-ship-authorized',
+			HandBuiltShipAuthorizationWithdrawn: 'hand-built-ship-authorization-withdrawn',
 			Shipped: 'shipped',
 		});
 		expect(eventKindValues).toStrictEqual([
@@ -28,6 +30,8 @@ describe('WorkOrderMode', () => {
 			'mode-changed',
 			'ship-requested',
 			'ship-request-withdrawn',
+			'hand-built-ship-authorized',
+			'hand-built-ship-authorization-withdrawn',
 			'shipped',
 		]);
 	});

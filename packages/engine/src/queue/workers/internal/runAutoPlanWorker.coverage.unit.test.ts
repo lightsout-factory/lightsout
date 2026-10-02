@@ -132,6 +132,7 @@ const setupAutoPlanWorker = ({
 			settings: queueSettingsFixture(),
 			env: {},
 			workOrderRunDir: join(cwd, '.lightsout', 'runs', 'run-q', 'work-orders', 'LO-70'),
+			queueRunId: 'run-q',
 		},
 	};
 };

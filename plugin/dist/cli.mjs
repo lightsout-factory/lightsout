@@ -3996,10 +3996,10 @@ var require_resolve_block_map = __commonJS({
       let offset = bm.offset;
       let commentEnd = null;
       for (const collItem of bm.items) {
-        const { start, key, sep: sep5, value } = collItem;
+        const { start, key, sep: sep6, value } = collItem;
         const keyProps = resolveProps.resolveProps(start, {
           indicator: "explicit-key-ind",
-          next: key ?? sep5?.[0],
+          next: key ?? sep6?.[0],
           offset,
           onError,
           parentIndent: bm.indent,
@@ -4013,7 +4013,7 @@ var require_resolve_block_map = __commonJS({
             else if ("indent" in key && key.indent !== bm.indent)
               onError(offset, "BAD_INDENT", startColMsg);
           }
-          if (!keyProps.anchor && !keyProps.tag && !sep5) {
+          if (!keyProps.anchor && !keyProps.tag && !sep6) {
             commentEnd = keyProps.end;
             if (keyProps.comment) {
               if (map2.comment)
@@ -4037,7 +4037,7 @@ var require_resolve_block_map = __commonJS({
         ctx.atKey = false;
         if (utilMapIncludes.mapIncludes(ctx, map2.items, keyNode))
           onError(keyStart, "DUPLICATE_KEY", "Map keys must be unique");
-        const valueProps = resolveProps.resolveProps(sep5 ?? [], {
+        const valueProps = resolveProps.resolveProps(sep6 ?? [], {
           indicator: "map-value-ind",
           next: value,
           offset: keyNode.range[2],
@@ -4053,7 +4053,7 @@ var require_resolve_block_map = __commonJS({
             if (ctx.options.strict && keyProps.start < valueProps.found.offset - 1024)
               onError(keyNode.range, "KEY_OVER_1024_CHARS", "The : indicator must be at most 1024 chars after the start of an implicit block mapping key");
           }
-          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep5, null, valueProps, onError);
+          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep6, null, valueProps, onError);
           if (ctx.schema.compat)
             utilFlowIndentCheck.flowIndentCheck(bm.indent, value, onError);
           offset = valueNode.range[2];
@@ -4144,7 +4144,7 @@ var require_resolve_end = __commonJS({
       let comment = "";
       if (end) {
         let hasSpace = false;
-        let sep5 = "";
+        let sep6 = "";
         for (const token of end) {
           const { source, type } = token;
           switch (type) {
@@ -4158,13 +4158,13 @@ var require_resolve_end = __commonJS({
               if (!comment)
                 comment = cb;
               else
-                comment += sep5 + cb;
-              sep5 = "";
+                comment += sep6 + cb;
+              sep6 = "";
               break;
             }
             case "newline":
               if (comment)
-                sep5 += source;
+                sep6 += source;
               hasSpace = true;
               break;
             default:
@@ -4207,18 +4207,18 @@ var require_resolve_flow_collection = __commonJS({
       let offset = fc.offset + fc.start.source.length;
       for (let i = 0; i < fc.items.length; ++i) {
         const collItem = fc.items[i];
-        const { start, key, sep: sep5, value } = collItem;
+        const { start, key, sep: sep6, value } = collItem;
         const props = resolveProps.resolveProps(start, {
           flow: fcName,
           indicator: "explicit-key-ind",
-          next: key ?? sep5?.[0],
+          next: key ?? sep6?.[0],
           offset,
           onError,
           parentIndent: fc.indent,
           startOnNewline: false
         });
         if (!props.found) {
-          if (!props.anchor && !props.tag && !sep5 && !value) {
+          if (!props.anchor && !props.tag && !sep6 && !value) {
             if (i === 0 && props.comma)
               onError(props.comma, "UNEXPECTED_TOKEN", `Unexpected , in ${fcName}`);
             else if (i < fc.items.length - 1)
@@ -4272,8 +4272,8 @@ var require_resolve_flow_collection = __commonJS({
             }
           }
         }
-        if (!isMap && !sep5 && !props.found) {
-          const valueNode = value ? composeNode(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep5, null, props, onError);
+        if (!isMap && !sep6 && !props.found) {
+          const valueNode = value ? composeNode(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep6, null, props, onError);
           coll.items.push(valueNode);
           offset = valueNode.range[2];
           if (isBlock(value))
@@ -4285,7 +4285,7 @@ var require_resolve_flow_collection = __commonJS({
           if (isBlock(key))
             onError(keyNode.range, "BLOCK_IN_FLOW", blockMsg);
           ctx.atKey = false;
-          const valueProps = resolveProps.resolveProps(sep5 ?? [], {
+          const valueProps = resolveProps.resolveProps(sep6 ?? [], {
             flow: fcName,
             indicator: "map-value-ind",
             next: value,
@@ -4296,8 +4296,8 @@ var require_resolve_flow_collection = __commonJS({
           });
           if (valueProps.found) {
             if (!isMap && !props.found && ctx.options.strict) {
-              if (sep5)
-                for (const st of sep5) {
+              if (sep6)
+                for (const st of sep6) {
                   if (st === valueProps.found)
                     break;
                   if (st.type === "newline") {
@@ -4314,7 +4314,7 @@ var require_resolve_flow_collection = __commonJS({
             else
               onError(valueProps.start, "MISSING_CHAR", `Missing , or : between ${fcName} items`);
           }
-          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep5, null, valueProps, onError) : null;
+          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep6, null, valueProps, onError) : null;
           if (valueNode) {
             if (isBlock(value))
               onError(valueNode.range, "BLOCK_IN_FLOW", blockMsg);
@@ -4494,7 +4494,7 @@ var require_resolve_block_scalar = __commonJS({
           chompStart = i + 1;
       }
       let value = "";
-      let sep5 = "";
+      let sep6 = "";
       let prevMoreIndented = false;
       for (let i = 0; i < contentStart; ++i)
         value += lines[i][0].slice(trimIndent) + "\n";
@@ -4511,24 +4511,24 @@ var require_resolve_block_scalar = __commonJS({
           indent = "";
         }
         if (type === Scalar.Scalar.BLOCK_LITERAL) {
-          value += sep5 + indent.slice(trimIndent) + content;
-          sep5 = "\n";
+          value += sep6 + indent.slice(trimIndent) + content;
+          sep6 = "\n";
         } else if (indent.length > trimIndent || content[0] === "	") {
-          if (sep5 === " ")
-            sep5 = "\n";
-          else if (!prevMoreIndented && sep5 === "\n")
-            sep5 = "\n\n";
-          value += sep5 + indent.slice(trimIndent) + content;
-          sep5 = "\n";
+          if (sep6 === " ")
+            sep6 = "\n";
+          else if (!prevMoreIndented && sep6 === "\n")
+            sep6 = "\n\n";
+          value += sep6 + indent.slice(trimIndent) + content;
+          sep6 = "\n";
           prevMoreIndented = true;
         } else if (content === "") {
-          if (sep5 === "\n")
+          if (sep6 === "\n")
             value += "\n";
           else
-            sep5 = "\n";
+            sep6 = "\n";
         } else {
-          value += sep5 + content;
-          sep5 = " ";
+          value += sep6 + content;
+          sep6 = " ";
           prevMoreIndented = false;
         }
       }
@@ -4710,25 +4710,25 @@ var require_resolve_flow_scalar = __commonJS({
       if (!match)
         return source;
       let res = match[1];
-      let sep5 = " ";
+      let sep6 = " ";
       let pos = first.lastIndex;
       line.lastIndex = pos;
       while (match = line.exec(source)) {
         if (match[1] === "") {
-          if (sep5 === "\n")
-            res += sep5;
+          if (sep6 === "\n")
+            res += sep6;
           else
-            sep5 = "\n";
+            sep6 = "\n";
         } else {
-          res += sep5 + match[1];
-          sep5 = " ";
+          res += sep6 + match[1];
+          sep6 = " ";
         }
         pos = line.lastIndex;
       }
       const last = /[ \t]*(.*)/sy;
       last.lastIndex = pos;
       match = last.exec(source);
-      return res + sep5 + (match?.[1] ?? "");
+      return res + sep6 + (match?.[1] ?? "");
     }
     function doubleQuotedValue(source, onError) {
       let res = "";
@@ -5538,14 +5538,14 @@ var require_cst_stringify = __commonJS({
         }
       }
     }
-    function stringifyItem({ start, key, sep: sep5, value }) {
+    function stringifyItem({ start, key, sep: sep6, value }) {
       let res = "";
       for (const st of start)
         res += st.source;
       if (key)
         res += stringifyToken(key);
-      if (sep5)
-        for (const st of sep5)
+      if (sep6)
+        for (const st of sep6)
           res += st.source;
       if (value)
         res += stringifyToken(value);
@@ -6712,18 +6712,18 @@ var require_parser = __commonJS({
         if (this.type === "map-value-ind") {
           const prev = getPrevProps(this.peek(2));
           const start = getFirstKeyStartProps(prev);
-          let sep5;
+          let sep6;
           if (scalar.end) {
-            sep5 = scalar.end;
-            sep5.push(this.sourceToken);
+            sep6 = scalar.end;
+            sep6.push(this.sourceToken);
             delete scalar.end;
           } else
-            sep5 = [this.sourceToken];
+            sep6 = [this.sourceToken];
           const map2 = {
             type: "block-map",
             offset: scalar.offset,
             indent: scalar.indent,
-            items: [{ start, key: scalar, sep: sep5 }]
+            items: [{ start, key: scalar, sep: sep6 }]
           };
           this.onKeyLine = true;
           this.stack[this.stack.length - 1] = map2;
@@ -6876,15 +6876,15 @@ var require_parser = __commonJS({
                 } else if (isFlowToken(it.key) && !includesToken(it.sep, "newline")) {
                   const start2 = getFirstKeyStartProps(it.start);
                   const key = it.key;
-                  const sep5 = it.sep;
-                  sep5.push(this.sourceToken);
+                  const sep6 = it.sep;
+                  sep6.push(this.sourceToken);
                   delete it.key;
                   delete it.sep;
                   this.stack.push({
                     type: "block-map",
                     offset: this.offset,
                     indent: this.indent,
-                    items: [{ start: start2, key, sep: sep5 }]
+                    items: [{ start: start2, key, sep: sep6 }]
                   });
                 } else if (start.length > 0) {
                   it.sep = it.sep.concat(start, this.sourceToken);
@@ -7078,13 +7078,13 @@ var require_parser = __commonJS({
             const prev = getPrevProps(parent);
             const start = getFirstKeyStartProps(prev);
             fixFlowSeqItems(fc);
-            const sep5 = fc.end.splice(1, fc.end.length);
-            sep5.push(this.sourceToken);
+            const sep6 = fc.end.splice(1, fc.end.length);
+            sep6.push(this.sourceToken);
             const map2 = {
               type: "block-map",
               offset: fc.offset,
               indent: fc.indent,
-              items: [{ start, key: fc, sep: sep5 }]
+              items: [{ start, key: fc, sep: sep6 }]
             };
             this.onKeyLine = true;
             this.stack[this.stack.length - 1] = map2;
@@ -22570,7 +22570,7 @@ var killProcessGroup = ({ child, signal }) => {
 
 // src/common/processes/terminateChildGroups.ts
 var settled = ({ child }) => child.exitCode !== null || child.signalCode !== null;
-var exited = ({ child }) => settled({ child }) ? Promise.resolve() : new Promise((resolve19) => child.once("exit", () => resolve19()));
+var exited = ({ child }) => settled({ child }) ? Promise.resolve() : new Promise((resolve21) => child.once("exit", () => resolve21()));
 var terminateChildGroups = async ({ children, graceMs = killGraceMs }) => {
   const targets = [...children];
   for (const child of targets) {
@@ -22582,8 +22582,8 @@ var terminateChildGroups = async ({ children, graceMs = killGraceMs }) => {
   let grace;
   await Promise.race([
     Promise.all(targets.map((child) => exited({ child }))),
-    new Promise((resolve19) => {
-      grace = setTimeout(resolve19, graceMs);
+    new Promise((resolve21) => {
+      grace = setTimeout(resolve21, graceMs);
     })
   ]);
   clearTimeout(grace);
@@ -22640,7 +22640,7 @@ var relayShutdownSignals = ({ child }) => {
 
 // src/common/processes/collectChildOutput.ts
 var collectChildOutput = ({ child, timeout, onStdoutLine, onTimeout }) => {
-  return new Promise((resolve19, reject) => {
+  return new Promise((resolve21, reject) => {
     let stdout = "";
     let stderr = "";
     let lineBuffer = "";
@@ -22667,13 +22667,14 @@ var collectChildOutput = ({ child, timeout, onStdoutLine, onTimeout }) => {
     };
     const timer = timeout ? setTimeout(expire, timeout.ms) : void 0;
     const stopRelay = relayShutdownSignals({ child });
-    child.stdout?.on("data", (chunk) => {
-      const text = chunk.toString();
+    child.stdout?.setEncoding("utf8");
+    child.stderr?.setEncoding("utf8");
+    child.stdout?.on("data", (text) => {
       stdout += text;
       emitLines({ text });
     });
-    child.stderr?.on("data", (chunk) => {
-      stderr += chunk.toString();
+    child.stderr?.on("data", (text) => {
+      stderr += text;
     });
     child.on("error", (error51) => {
       clearTimeout(timer);
@@ -22684,7 +22685,7 @@ var collectChildOutput = ({ child, timeout, onStdoutLine, onTimeout }) => {
       clearTimeout(timer);
       stopRelay();
       emitLines({ text: "", flush: true });
-      resolve19({ exitCode: code ?? -1, stdout, stderr });
+      resolve21({ exitCode: code ?? -1, stdout, stderr });
     });
   });
 };
@@ -22764,6 +22765,8 @@ var WorkOrderEventKind = {
   ModeChanged: "mode-changed",
   ShipRequested: "ship-requested",
   ShipRequestWithdrawn: "ship-request-withdrawn",
+  HandBuiltShipAuthorized: "hand-built-ship-authorized",
+  HandBuiltShipAuthorizationWithdrawn: "hand-built-ship-authorization-withdrawn",
   Shipped: "shipped"
 };
 
@@ -22824,6 +22827,8 @@ var WorkOrderStateShape = external_exports.object({
     startedAt: external_exports.string(),
     finishedAt: external_exports.string().optional()
   }).strict().optional(),
+  /** A person's authorization to ship hand-built work on a single-plan work order holding no plan 001. It lasts until the work order ships or it is withdrawn. */
+  handBuiltShipAuthorization: external_exports.object({ by: external_exports.string().min(1), at: external_exports.string() }).strict().optional(),
   /** The human's explicit request to ship, bound to the exact plans it was approved for. */
   shipRequest: external_exports.object({ planIds: external_exports.array(PlanId).min(1), requestedAt: external_exports.string() }).strict().optional(),
   /** What actually shipped. A state file carrying it is history: nothing changes it again. */
@@ -24064,24 +24069,24 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
       return "$" + node.name;
     },
     Document: function Document$1(node) {
-      return join160(node.definitions, "\n\n") + "\n";
+      return join167(node.definitions, "\n\n") + "\n";
     },
     OperationDefinition: function OperationDefinition(node) {
       var op = node.operation;
       var name = node.name;
-      var varDefs = wrap("(", join160(node.variableDefinitions, ", "), ")");
-      var directives = join160(node.directives, " ");
+      var varDefs = wrap("(", join167(node.variableDefinitions, ", "), ")");
+      var directives = join167(node.directives, " ");
       var selectionSet = node.selectionSet;
-      return !name && !directives && !varDefs && op === "query" ? selectionSet : join160([
+      return !name && !directives && !varDefs && op === "query" ? selectionSet : join167([
         op,
-        join160([name, varDefs]),
+        join167([name, varDefs]),
         directives,
         selectionSet
       ], " ");
     },
     VariableDefinition: function VariableDefinition(_ref) {
       var variable = _ref.variable, type = _ref.type, defaultValue = _ref.defaultValue, directives = _ref.directives;
-      return variable + ": " + type + wrap(" = ", defaultValue) + wrap(" ", join160(directives, " "));
+      return variable + ": " + type + wrap(" = ", defaultValue) + wrap(" ", join167(directives, " "));
     },
     SelectionSet: function SelectionSet(_ref2) {
       var selections = _ref2.selections;
@@ -24090,11 +24095,11 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     Field: function Field(_ref3) {
       var alias = _ref3.alias, name = _ref3.name, args = _ref3.arguments, directives = _ref3.directives, selectionSet = _ref3.selectionSet;
       var prefix = wrap("", alias, ": ") + name;
-      var argsLine = prefix + wrap("(", join160(args, ", "), ")");
-      if (argsLine.length > MAX_LINE_LENGTH) argsLine = prefix + wrap("(\n", indent(join160(args, "\n")), "\n)");
-      return join160([
+      var argsLine = prefix + wrap("(", join167(args, ", "), ")");
+      if (argsLine.length > MAX_LINE_LENGTH) argsLine = prefix + wrap("(\n", indent(join167(args, "\n")), "\n)");
+      return join167([
         argsLine,
-        join160(directives, " "),
+        join167(directives, " "),
         selectionSet
       ], " ");
     },
@@ -24104,20 +24109,20 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     FragmentSpread: function FragmentSpread(_ref5) {
       var name = _ref5.name, directives = _ref5.directives;
-      return "..." + name + wrap(" ", join160(directives, " "));
+      return "..." + name + wrap(" ", join167(directives, " "));
     },
     InlineFragment: function InlineFragment(_ref6) {
       var typeCondition = _ref6.typeCondition, directives = _ref6.directives, selectionSet = _ref6.selectionSet;
-      return join160([
+      return join167([
         "...",
         wrap("on ", typeCondition),
-        join160(directives, " "),
+        join167(directives, " "),
         selectionSet
       ], " ");
     },
     FragmentDefinition: function FragmentDefinition(_ref7) {
       var name = _ref7.name, typeCondition = _ref7.typeCondition, variableDefinitions = _ref7.variableDefinitions, directives = _ref7.directives, selectionSet = _ref7.selectionSet;
-      return "fragment ".concat(name).concat(wrap("(", join160(variableDefinitions, ", "), ")"), " ") + "on ".concat(typeCondition, " ").concat(wrap("", join160(directives, " "), " ")) + selectionSet;
+      return "fragment ".concat(name).concat(wrap("(", join167(variableDefinitions, ", "), ")"), " ") + "on ".concat(typeCondition, " ").concat(wrap("", join167(directives, " "), " ")) + selectionSet;
     },
     IntValue: function IntValue(_ref8) {
       return _ref8.value;
@@ -24140,11 +24145,11 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     ListValue: function ListValue(_ref13) {
       var values = _ref13.values;
-      return "[" + join160(values, ", ") + "]";
+      return "[" + join167(values, ", ") + "]";
     },
     ObjectValue: function ObjectValue(_ref14) {
       var fields3 = _ref14.fields;
-      return "{" + join160(fields3, ", ") + "}";
+      return "{" + join167(fields3, ", ") + "}";
     },
     ObjectField: function ObjectField(_ref15) {
       var name = _ref15.name, value = _ref15.value;
@@ -24152,7 +24157,7 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     Directive: function Directive(_ref16) {
       var name = _ref16.name, args = _ref16.arguments;
-      return "@" + name + wrap("(", join160(args, ", "), ")");
+      return "@" + name + wrap("(", join167(args, ", "), ")");
     },
     NamedType: function NamedType(_ref17) {
       return _ref17.name;
@@ -24165,9 +24170,9 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     SchemaDefinition: addDescription(function(_ref20) {
       var directives = _ref20.directives, operationTypes = _ref20.operationTypes;
-      return join160([
+      return join167([
         "schema",
-        join160(directives, " "),
+        join167(directives, " "),
         block(operationTypes)
       ], " ");
     }),
@@ -24177,149 +24182,149 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     },
     ScalarTypeDefinition: addDescription(function(_ref22) {
       var name = _ref22.name, directives = _ref22.directives;
-      return join160([
+      return join167([
         "scalar",
         name,
-        join160(directives, " ")
+        join167(directives, " ")
       ], " ");
     }),
     ObjectTypeDefinition: addDescription(function(_ref23) {
       var name = _ref23.name, interfaces = _ref23.interfaces, directives = _ref23.directives, fields3 = _ref23.fields;
-      return join160([
+      return join167([
         "type",
         name,
-        wrap("implements ", join160(interfaces, " & ")),
-        join160(directives, " "),
+        wrap("implements ", join167(interfaces, " & ")),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     }),
     FieldDefinition: addDescription(function(_ref24) {
       var name = _ref24.name, args = _ref24.arguments, type = _ref24.type, directives = _ref24.directives;
-      return name + (hasMultilineItems(args) ? wrap("(\n", indent(join160(args, "\n")), "\n)") : wrap("(", join160(args, ", "), ")")) + ": " + type + wrap(" ", join160(directives, " "));
+      return name + (hasMultilineItems(args) ? wrap("(\n", indent(join167(args, "\n")), "\n)") : wrap("(", join167(args, ", "), ")")) + ": " + type + wrap(" ", join167(directives, " "));
     }),
     InputValueDefinition: addDescription(function(_ref25) {
       var name = _ref25.name, type = _ref25.type, defaultValue = _ref25.defaultValue, directives = _ref25.directives;
-      return join160([
+      return join167([
         name + ": " + type,
         wrap("= ", defaultValue),
-        join160(directives, " ")
+        join167(directives, " ")
       ], " ");
     }),
     InterfaceTypeDefinition: addDescription(function(_ref26) {
       var name = _ref26.name, interfaces = _ref26.interfaces, directives = _ref26.directives, fields3 = _ref26.fields;
-      return join160([
+      return join167([
         "interface",
         name,
-        wrap("implements ", join160(interfaces, " & ")),
-        join160(directives, " "),
+        wrap("implements ", join167(interfaces, " & ")),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     }),
     UnionTypeDefinition: addDescription(function(_ref27) {
       var name = _ref27.name, directives = _ref27.directives, types = _ref27.types;
-      return join160([
+      return join167([
         "union",
         name,
-        join160(directives, " "),
-        types && types.length !== 0 ? "= " + join160(types, " | ") : ""
+        join167(directives, " "),
+        types && types.length !== 0 ? "= " + join167(types, " | ") : ""
       ], " ");
     }),
     EnumTypeDefinition: addDescription(function(_ref28) {
       var name = _ref28.name, directives = _ref28.directives, values = _ref28.values;
-      return join160([
+      return join167([
         "enum",
         name,
-        join160(directives, " "),
+        join167(directives, " "),
         block(values)
       ], " ");
     }),
     EnumValueDefinition: addDescription(function(_ref29) {
       var name = _ref29.name, directives = _ref29.directives;
-      return join160([name, join160(directives, " ")], " ");
+      return join167([name, join167(directives, " ")], " ");
     }),
     InputObjectTypeDefinition: addDescription(function(_ref30) {
       var name = _ref30.name, directives = _ref30.directives, fields3 = _ref30.fields;
-      return join160([
+      return join167([
         "input",
         name,
-        join160(directives, " "),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     }),
     DirectiveDefinition: addDescription(function(_ref31) {
       var name = _ref31.name, args = _ref31.arguments, repeatable = _ref31.repeatable, locations = _ref31.locations;
-      return "directive @" + name + (hasMultilineItems(args) ? wrap("(\n", indent(join160(args, "\n")), "\n)") : wrap("(", join160(args, ", "), ")")) + (repeatable ? " repeatable" : "") + " on " + join160(locations, " | ");
+      return "directive @" + name + (hasMultilineItems(args) ? wrap("(\n", indent(join167(args, "\n")), "\n)") : wrap("(", join167(args, ", "), ")")) + (repeatable ? " repeatable" : "") + " on " + join167(locations, " | ");
     }),
     SchemaExtension: function SchemaExtension(_ref32) {
       var directives = _ref32.directives, operationTypes = _ref32.operationTypes;
-      return join160([
+      return join167([
         "extend schema",
-        join160(directives, " "),
+        join167(directives, " "),
         block(operationTypes)
       ], " ");
     },
     ScalarTypeExtension: function ScalarTypeExtension(_ref33) {
       var name = _ref33.name, directives = _ref33.directives;
-      return join160([
+      return join167([
         "extend scalar",
         name,
-        join160(directives, " ")
+        join167(directives, " ")
       ], " ");
     },
     ObjectTypeExtension: function ObjectTypeExtension(_ref34) {
       var name = _ref34.name, interfaces = _ref34.interfaces, directives = _ref34.directives, fields3 = _ref34.fields;
-      return join160([
+      return join167([
         "extend type",
         name,
-        wrap("implements ", join160(interfaces, " & ")),
-        join160(directives, " "),
+        wrap("implements ", join167(interfaces, " & ")),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     },
     InterfaceTypeExtension: function InterfaceTypeExtension(_ref35) {
       var name = _ref35.name, interfaces = _ref35.interfaces, directives = _ref35.directives, fields3 = _ref35.fields;
-      return join160([
+      return join167([
         "extend interface",
         name,
-        wrap("implements ", join160(interfaces, " & ")),
-        join160(directives, " "),
+        wrap("implements ", join167(interfaces, " & ")),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     },
     UnionTypeExtension: function UnionTypeExtension(_ref36) {
       var name = _ref36.name, directives = _ref36.directives, types = _ref36.types;
-      return join160([
+      return join167([
         "extend union",
         name,
-        join160(directives, " "),
-        types && types.length !== 0 ? "= " + join160(types, " | ") : ""
+        join167(directives, " "),
+        types && types.length !== 0 ? "= " + join167(types, " | ") : ""
       ], " ");
     },
     EnumTypeExtension: function EnumTypeExtension(_ref37) {
       var name = _ref37.name, directives = _ref37.directives, values = _ref37.values;
-      return join160([
+      return join167([
         "extend enum",
         name,
-        join160(directives, " "),
+        join167(directives, " "),
         block(values)
       ], " ");
     },
     InputObjectTypeExtension: function InputObjectTypeExtension(_ref38) {
       var name = _ref38.name, directives = _ref38.directives, fields3 = _ref38.fields;
-      return join160([
+      return join167([
         "extend input",
         name,
-        join160(directives, " "),
+        join167(directives, " "),
         block(fields3)
       ], " ");
     }
   };
   function addDescription(cb) {
     return function(node) {
-      return join160([node.description, cb(node)], "\n");
+      return join167([node.description, cb(node)], "\n");
     };
   }
-  function join160(maybeArray) {
+  function join167(maybeArray) {
     var _maybeArray$filter$jo;
     var separator2 = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "";
     return (_maybeArray$filter$jo = maybeArray === null || maybeArray === void 0 ? void 0 : maybeArray.filter(function(x) {
@@ -24327,7 +24332,7 @@ var require_printer = /* @__PURE__ */ __commonJSMin((exports) => {
     }).join(separator2)) !== null && _maybeArray$filter$jo !== void 0 ? _maybeArray$filter$jo : "";
   }
   function block(array2) {
-    return wrap("{\n", indent(join160(array2, "\n")), "\n}");
+    return wrap("{\n", indent(join167(array2, "\n")), "\n}");
   }
   function wrap(start, maybeString) {
     var end = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : "";
@@ -121419,7 +121424,7 @@ var publishBrainstorm = async ({ cwd, name, config: config2, env, onProgress, ti
 
 // src/cli/common/utils/exitCli.ts
 var exitCli = async ({ code }) => {
-  await Promise.all([process.stdout, process.stderr].map((stream) => new Promise((resolve19) => stream.write("", () => resolve19()))));
+  await Promise.all([process.stdout, process.stderr].map((stream) => new Promise((resolve21) => stream.write("", () => resolve21()))));
   return process.exit(code);
 };
 
@@ -121456,7 +121461,7 @@ var autoPlanCatalogEntry = {
   flags: [],
   steps: [],
   records: CommandRecordKind.Plans,
-  related: ["brainstorm", "plan", "implement", "resume", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
+  related: ["brainstorm", "plan", "implement", "resume", "stop", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
 };
 
 // src/commands/common/constants/build/brainstormCatalogEntry.ts
@@ -121479,7 +121484,7 @@ var brainstormCatalogEntry = {
   ],
   steps: [],
   records: CommandRecordKind.Plans,
-  related: ["auto-plan", "plan", "implement", "resume", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
+  related: ["auto-plan", "plan", "implement", "resume", "stop", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
 };
 
 // src/contracts/commands/CommandActor.ts
@@ -121641,11 +121646,17 @@ var implementCatalogEntry = {
     },
     { name: "no-worktree", meaning: "Build in the checkout this was launched from rather than a worktree of its own.", required: false },
     { name: "ship", meaning: "Ship the branch after the run passes: open or adopt the PR, wait for checks, merge, clean up.", required: false },
-    { name: "no-ship", meaning: "End on the run result even when the config\u2019s `ship.after-implement` asks to chain into ship.", required: false }
+    { name: "no-ship", meaning: "End on the run result even when the config\u2019s `ship.after-implement` asks to chain into ship.", required: false },
+    {
+      name: "detach",
+      meaning: "Run in a background engine process that outlives this terminal or session. The command returns once the run has started and prints its id; the engine\u2019s output goes to the run\u2019s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout).",
+      fallback: "The run happens in the foreground, printing as it goes, and Ctrl-C stops it.",
+      required: false
+    }
   ],
   steps: implementSteps,
   records: CommandRecordKind.Runs,
-  related: ["auto-plan", "brainstorm", "plan", "resume", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"],
+  related: ["auto-plan", "brainstorm", "plan", "resume", "stop", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"],
   graphic: {
     title: "How /implement turns the spec into verified code",
     subtitle: "Ten steps, deterministic gates throughout, and a complete record saved to disk.",
@@ -121684,7 +121695,7 @@ var implementDirectCatalogEntry = {
   ],
   steps: [],
   records: CommandRecordKind.Runs,
-  related: ["auto-plan", "brainstorm", "plan", "implement", "queue", "resume", "ship", "work-order", "ticket-state", "self-check"]
+  related: ["auto-plan", "brainstorm", "plan", "implement", "queue", "resume", "stop", "ship", "work-order", "ticket-state", "self-check"]
 };
 
 // src/commands/common/constants/build/planSteps.ts
@@ -121797,6 +121808,7 @@ var planCatalogEntry = {
     { id: "plan-verify-facts", positional: "verify-facts" },
     { id: "plan-draft", positional: "draft" },
     { id: "plan-sync-decisions", positional: "sync-decisions" },
+    { id: "plan-sync-phases", positional: "sync-phases" },
     { id: "plan-lint", positional: "lint" },
     { id: "plan-dedup", positional: "dedup" },
     { id: "plan-grade", positional: "grade", note: "--phase grades only those phases, and always marks the result incomplete" },
@@ -121850,7 +121862,7 @@ var planCatalogEntry = {
   ],
   steps: planSteps,
   records: CommandRecordKind.Plans,
-  related: ["auto-plan", "brainstorm", "implement", "resume", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"],
+  related: ["auto-plan", "brainstorm", "implement", "resume", "stop", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"],
   graphic: {
     title: "How /plan turns a request into an implementation-ready spec",
     subtitle: "Final spec and every decision recorded before any code is written.",
@@ -121871,15 +121883,21 @@ var queueCatalogEntry = {
     {
       name: "file-relay",
       value: "[dir]",
-      meaning: "Relay questions as files in a mailbox directory instead of asking on this terminal. Defaults to .lightsout/queue/relay under the repo, emptied at startup.",
+      meaning: "Relay questions as files in a mailbox directory instead of asking on this terminal. Defaults to .lightsout/queue/relay under the repo, emptied at startup. `--detach` implies it.",
       fallback: "Questions are asked on the terminal that started the drain.",
       required: false
     },
-    { name: "cwd", value: "<path>", meaning: "Repository to drain into.", fallback: "The process working directory.", required: false }
+    { name: "cwd", value: "<path>", meaning: "Repository to drain into.", fallback: "The process working directory.", required: false },
+    {
+      name: "detach",
+      meaning: "Drain in a background engine process that outlives this terminal or session. Implies `--file-relay`, on the default mailbox unless a directory is given. The command returns once the queue run has started and prints its run id, the engine pid and the mailbox; the engine\u2019s output goes to the run\u2019s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout).",
+      fallback: "The drain runs in the foreground, asking questions on this terminal unless `--file-relay` is given.",
+      required: false
+    }
   ],
   steps: [],
   records: CommandRecordKind.Runs,
-  related: ["auto-plan", "brainstorm", "plan", "implement", "implement-direct", "resume", "ship", "work-order", "ticket-state", "self-check"]
+  related: ["auto-plan", "brainstorm", "plan", "implement", "implement-direct", "resume", "stop", "ship", "work-order", "ticket-state", "self-check"]
 };
 
 // src/commands/common/constants/build/resumeCatalogEntry.ts
@@ -121895,11 +121913,17 @@ var resumeCatalogEntry = {
     { name: "cwd", value: "<path>", meaning: "Repository the run belongs to.", fallback: "The process working directory.", required: false },
     { name: "skip-refactor", meaning: "Skip the refactor step at the end of the run.", required: false },
     { name: "ship", meaning: "Ship the branch after the resumed run passes: open or adopt the PR, wait for checks, merge, clean up.", required: false },
-    { name: "no-ship", meaning: "End on the run result even when the config\u2019s `ship.after-implement` asks to chain into ship.", required: false }
+    { name: "no-ship", meaning: "End on the run result even when the config\u2019s `ship.after-implement` asks to chain into ship.", required: false },
+    {
+      name: "detach",
+      meaning: "Pick the run back up in a background engine process that outlives this terminal or session. The command returns once the run has resumed; the engine\u2019s output goes to the run\u2019s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout).",
+      fallback: "The run is resumed in the foreground, printing as it goes, and Ctrl-C stops it.",
+      required: false
+    }
   ],
   steps: [],
   records: CommandRecordKind.Runs,
-  related: ["auto-plan", "brainstorm", "plan", "implement", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
+  related: ["auto-plan", "brainstorm", "plan", "implement", "stop", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
 };
 
 // src/commands/common/constants/build/selfCheckCatalogEntry.ts
@@ -121916,7 +121940,7 @@ var selfCheckCatalogEntry = {
   ],
   steps: [],
   records: CommandRecordKind.Nothing,
-  related: ["auto-plan", "brainstorm", "plan", "implement", "implement-direct", "resume", "ship", "queue", "work-order", "ticket-state"]
+  related: ["auto-plan", "brainstorm", "plan", "implement", "implement-direct", "resume", "stop", "ship", "queue", "work-order", "ticket-state"]
 };
 
 // src/commands/common/constants/build/shipCatalogEntry.ts
@@ -121925,12 +121949,37 @@ var shipCatalogEntry = {
   cli: "lightsout ship",
   group: CommandGroup.Build,
   summary: "Take the current branch from committed work to merged and cleaned up, and write a typed result.",
-  whenToUse: "Run it when the branch is committed and you want it merged: it pushes the branch, opens or adopts the pull request, waits for the checks, merges, deletes the branch and syncs the default branch \u2014 then writes one JSON result a tracker skill can read.",
+  whenToUse: "Run it when the branch is committed and you want it merged: it pushes the branch, opens or adopts the pull request, waits for the checks, merges, deletes the branch and syncs the default branch \u2014 then writes one JSON result a tracker skill can read. Pass --hand-built only when the person asks to ship work they built by hand.",
   invocations: [{ id: "ship" }],
-  flags: [{ name: "cwd", value: "<path>", meaning: "Repository to ship from.", fallback: "The process working directory.", required: false }],
+  flags: [
+    {
+      name: "hand-built",
+      meaning: "Record the person's authorization to ship work built outside the engine on a single-plan work order holding no plan 001, saved on the record with who and when.",
+      fallback: "Such a work order ships only once its build from the ticket body passed.",
+      required: false
+    },
+    { name: "cwd", value: "<path>", meaning: "Repository to ship from.", fallback: "The process working directory.", required: false }
+  ],
   steps: [],
   records: CommandRecordKind.Nothing,
-  related: ["auto-plan", "brainstorm", "plan", "implement", "resume", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
+  related: ["auto-plan", "brainstorm", "plan", "implement", "resume", "stop", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
+};
+
+// src/commands/common/constants/build/stopCatalogEntry.ts
+var stopCatalogEntry = {
+  id: "stop",
+  cli: "lightsout stop",
+  group: CommandGroup.Build,
+  summary: "Stop the engine process behind a run, from any terminal or session, and leave the run resumable.",
+  whenToUse: "Use it on a detached run, or any run whose launching terminal you cannot reach. Any run id of its family works, the short id a report printed included. The engine is asked to shut down first, which stops its own agents and gates; if it is still running after ten seconds it is killed outright, its agents may remain, and you must make sure no agent is still working in the run\u2019s worktree before you resume it. A queue worker\u2019s run lives inside the queue\u2019s process, so it is stopped by stopping its queue. Stopping a run that has nothing running behind it is not an error. After a clean stop, resume the run with the command the stop prints. It needs macOS or Linux, and refuses on Windows.",
+  invocations: [{ id: "stop" }],
+  flags: [
+    { name: "run", value: "<id>", meaning: "The run to stop: any run of its family, short id included.", required: true },
+    { name: "cwd", value: "<path>", meaning: "Repository the run belongs to.", fallback: "The process working directory.", required: false }
+  ],
+  steps: [],
+  records: CommandRecordKind.Nothing,
+  related: ["auto-plan", "brainstorm", "plan", "implement", "implement-direct", "resume", "ship", "queue", "work-order", "ticket-state", "self-check"]
 };
 
 // src/commands/common/constants/build/ticketStateCatalogEntry.ts
@@ -121961,7 +122010,7 @@ var ticketStateCatalogEntry = {
   ],
   steps: [],
   records: CommandRecordKind.Nothing,
-  related: ["auto-plan", "brainstorm", "plan", "implement", "implement-direct", "resume", "ship", "queue", "work-order", "self-check"]
+  related: ["auto-plan", "brainstorm", "plan", "implement", "implement-direct", "resume", "stop", "ship", "queue", "work-order", "self-check"]
 };
 
 // src/commands/common/constants/build/workOrderCatalogEntry.ts
@@ -122101,7 +122150,7 @@ var workOrderCatalogEntry = {
   ],
   steps: [],
   records: CommandRecordKind.Plans,
-  related: ["auto-plan", "brainstorm", "plan", "implement", "implement-direct", "resume", "ship", "queue", "ticket-state", "self-check"]
+  related: ["auto-plan", "brainstorm", "plan", "implement", "implement-direct", "resume", "stop", "ship", "queue", "ticket-state", "self-check"]
 };
 
 // src/commands/common/constants/burnDown/refactorSteps.ts
@@ -122403,21 +122452,21 @@ var statusCatalogEntry = {
     {
       name: "run",
       value: "<id>",
-      meaning: "Show one run in detail \u2014 its steps, their outcomes and durations, what it is doing now. Takes the shortened eight-character id reports print.",
+      meaning: "Show one run in detail \u2014 its steps, their outcomes and durations, what it is doing now \u2014 the same screen --now prints, so a phased plan shows its phase sequence followed by the phase moving now, whichever of its runs is named: the coordinator or any phase. Works however many other runs are going. Takes the shortened eight-character id reports print. Once the run has finished, its saved final report \u2014 the lines the command printed when it ended \u2014 follows the block.",
       fallback: "Every run is listed, one line each.",
       shape: "status-run",
       required: false
     },
     {
       name: "watch",
-      meaning: "Repaint the detail block every two minutes until the run stops, so a detached run can be followed. Without --run it follows the one run that is going, and its phase children with it; when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing.",
+      meaning: "Repaint, every two minutes, the same screen --now prints \u2014 for a phased plan, its phase sequence and the phase moving now \u2014 until the run's family stops going, so a detached run can be followed. A run with no live process behind it is drawn stopped and never followed as the going run. Without --run it follows the one run that is going, and its phase children with it; when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing.",
       fallback: "The block is printed once.",
       shape: "status-run",
       required: false
     },
     {
       name: "now",
-      meaning: "Show the run that is going, printed once and never repainted \u2014 for a phased plan, its phase sequence followed by the phase moving now. It answers at once rather than waiting for a run to appear; with nothing going it falls back to the newest run of any status, and when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing. Cannot be combined with --run, --watch, --planning, --shipping or --queue.",
+      meaning: "Show the run that is going, printed once and never repainted \u2014 for a phased plan, its phase sequence followed by the phase moving now. It answers at once rather than waiting for a run to appear, and a run with no live process behind it is never counted as the run that is going; with nothing going it falls back to the newest run of any status, followed by that run\u2019s saved final report when it has one, and when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing. Cannot be combined with --run, --watch, --planning, --shipping or --queue.",
       shape: "status-now",
       required: true
     },
@@ -122444,7 +122493,7 @@ var statusCatalogEntry = {
     {
       name: "run",
       value: "<id>",
-      meaning: "The queue run to show \u2014 a past or crashed one included. Takes the shortened eight-character id reports print.",
+      meaning: "The queue run to show \u2014 a past or crashed one included. Takes the shortened eight-character id reports print. A finished queue run shows the board and per-ticket report the queue printed when it ended.",
       fallback: "The live queue run this checkout's run lock names.",
       shape: "status-queue",
       required: false
@@ -122548,6 +122597,7 @@ var commandCatalog = [
   implementCatalogEntry,
   implementDirectCatalogEntry,
   resumeCatalogEntry,
+  stopCatalogEntry,
   shipCatalogEntry,
   queueCatalogEntry,
   workOrderCatalogEntry,
@@ -122575,6 +122625,7 @@ var usageOrder = [
   "implement-folder",
   "implement-direct",
   "resume",
+  "stop",
   "ship",
   "queue",
   "status",
@@ -122598,6 +122649,7 @@ var usageOrder = [
   "plan-verify-facts",
   "plan-draft",
   "plan-sync-decisions",
+  "plan-sync-phases",
   "plan-lint",
   "plan-dedup",
   "plan-grade",
@@ -122791,6 +122843,10 @@ var ConfigGates = external_exports.object({
   /**
    * Opt-in codegen, run once BEFORE every gate set (not inside check:
    * gates verify, generate mutates). Red exit fails the gate set.
+   *
+   * A repo whose checks read `generated` paths should set it, because build
+   * output carried between phases is only as current as the last gate that
+   * rebuilt it.
    */
   generate: external_exports.string().optional(),
   /** Opt-in build gate, run last in every verify. Omit when nothing compiles. */
@@ -123174,6 +123230,10 @@ var LightsoutConfig = external_exports.object({
    * Also where a repo names build output the walk cannot guess:
    * `listSourceFiles` skips only `dist`, `build`, `coverage` and `out`, and
    * only outside a `src` folder.
+   *
+   * A phase of a sequence leaves generated changes on disk for the next
+   * phase, and the sequence discards them once it passes, so a repo whose
+   * checks read these paths should configure `gates.generate`.
    */
   generated: external_exports.array(external_exports.string()).optional(),
   /**
@@ -123494,6 +123554,20 @@ var checkCoverageSummary = async ({ config: config2, packageDirs }) => {
   };
 };
 
+// src/doctor/checkGenerateCommand.ts
+var checkGenerateCommand = ({ config: config2 }) => {
+  const generated = config2.generated ?? [];
+  if (generated.length === 0 || config2.gates.generate !== void 0) {
+    return void 0;
+  }
+  return {
+    id: "generate-command",
+    status: "warn",
+    detail: `\`generated\` lists ${generated.length} path(s) but no \`gates.generate\` command is set. A phased plan carries build output from one phase to the next only as current as the last gate that rebuilt it, and every other check reads what is on disk.`,
+    fix: "set `gates.generate` to the command that rebuilds those paths, so every set of gates starts from current output."
+  };
+};
+
 // src/doctor/internal/common/constants/probeTimeoutMs.ts
 var probeTimeoutMs = 15e3;
 
@@ -123558,7 +123632,21 @@ var claudePermissionModes = {
   [Permissions.Write]: "acceptEdits",
   [Permissions.FullAccess]: "bypassPermissions"
 };
-var buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allowedCommands, environment }) => {
+var foregroundCommandsSettings = ({ timeoutMs }) => {
+  const ceiling = timeoutMs === void 0 ? {} : { BASH_DEFAULT_TIMEOUT_MS: String(timeoutMs), BASH_MAX_TIMEOUT_MS: String(timeoutMs) };
+  return JSON.stringify({ env: { CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1", ...ceiling } });
+};
+var buildClaudeCodeArgs = ({
+  systemPromptPath,
+  model,
+  effort,
+  permissions,
+  allowedCommands,
+  environment,
+  foregroundCommandsOnly,
+  timeoutMs,
+  writableDirs
+}) => {
   const args = ["-p", "--output-format", "stream-json", "--verbose", "--exclude-dynamic-system-prompt-sections"];
   if (systemPromptPath) {
     args.push("--append-system-prompt-file", systemPromptPath);
@@ -123572,6 +123660,11 @@ var buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allow
   if (permissions) {
     args.push("--permission-mode", claudePermissionModes[permissions]);
   }
+  if (permissions === void 0 || permissions === Permissions.Write) {
+    for (const dir of writableDirs ?? []) {
+      args.push("--add-dir", dir);
+    }
+  }
   if (environment?.noMcpServers) {
     args.push("--strict-mcp-config");
   }
@@ -123580,6 +123673,9 @@ var buildClaudeCodeArgs = ({ systemPromptPath, model, effort, permissions, allow
   }
   if (environment?.toolAllowlist) {
     args.push("--tools", environment.tools.join(","));
+  }
+  if (foregroundCommandsOnly) {
+    args.push("--settings", foregroundCommandsSettings({ timeoutMs }));
   }
   if (allowedCommands && allowedCommands.length > 0) {
     args.push("--allowedTools", ...allowedCommands.map((prefix) => `Bash(${prefix}:*)`));
@@ -123679,13 +123775,37 @@ var createClaudeCodeDriver = () => {
   const driver = {
     name: "claude-code",
     invoke: async (invocation) => {
-      const { prompt, systemPrompt, model, effort, permissions, allowedCommands, environment, cwd, timeoutMs, onEvent, onUsage } = invocation;
+      const {
+        prompt,
+        systemPrompt,
+        model,
+        effort,
+        permissions,
+        allowedCommands,
+        environment,
+        foregroundCommandsOnly,
+        writableDirs,
+        cwd,
+        timeoutMs,
+        onEvent,
+        onUsage
+      } = invocation;
       let resultEvent;
       const tallyAssistantUsage = createAssistantUsageTally();
       const systemPromptFile = systemPrompt ? await writeSystemPromptFile({ systemPrompt }) : void 0;
       const { exitCode, stdout, stderr } = await spawnCollect({
         command: "claude",
-        args: buildClaudeCodeArgs({ systemPromptPath: systemPromptFile?.path, model, effort, permissions, allowedCommands, environment }),
+        args: buildClaudeCodeArgs({
+          systemPromptPath: systemPromptFile?.path,
+          model,
+          effort,
+          permissions,
+          allowedCommands,
+          environment,
+          foregroundCommandsOnly,
+          timeoutMs,
+          writableDirs
+        }),
         cwd,
         stdinText: prompt,
         timeoutMs,
@@ -123733,12 +123853,18 @@ import { tmpdir as tmpdir2 } from "node:os";
 import { join as join11 } from "node:path";
 
 // src/drivers/buildCodexArgs.ts
-var buildCodexArgs = ({ outFile, model, effort, permissions }) => {
+var buildCodexArgs = ({ outFile, model, effort, permissions, writableDirs }) => {
   const args = ["exec", "--skip-git-repo-check", "--color", "never", "--output-last-message", outFile];
   if (permissions === Permissions.FullAccess) {
     args.push("--dangerously-bypass-approvals-and-sandbox");
   } else {
-    args.push("--sandbox", permissions === Permissions.ReadOnly ? "read-only" : "workspace-write");
+    const isReadOnly = permissions === Permissions.ReadOnly;
+    args.push("--sandbox", isReadOnly ? "read-only" : "workspace-write");
+    if (!isReadOnly) {
+      for (const dir of writableDirs ?? []) {
+        args.push("--add-dir", dir);
+      }
+    }
     args.push("-c", 'approval_policy="never"');
   }
   if (model) {
@@ -123755,10 +123881,10 @@ var createCodexDriver = () => {
   const driver = {
     name: "codex",
     invoke: async (invocation) => {
-      const { prompt, systemPrompt, model, effort, permissions, cwd, timeoutMs } = invocation;
+      const { prompt, systemPrompt, model, effort, permissions, writableDirs, cwd, timeoutMs } = invocation;
       const outDir = await mkdtemp2(join11(tmpdir2(), "lightsout-codex-"));
       const outFile = join11(outDir, "last-message.txt");
-      const args = buildCodexArgs({ outFile, model, effort, permissions });
+      const args = buildCodexArgs({ outFile, model, effort, permissions, writableDirs });
       const fullPrompt = systemPrompt ? `# Role instructions
 
 ${systemPrompt}
@@ -123790,12 +123916,18 @@ ${stderr}` })
   return driver;
 };
 
+// src/drivers/common/constants/PiVariant.ts
+var PiVariant = {
+  Pi: "pi",
+  Omp: "omp"
+};
+
 // src/drivers/buildPiArgs.ts
 var readOnlyTools = {
-  pi: "read,grep,find,ls",
-  omp: "read,grep,glob,lsp"
+  [PiVariant.Pi]: "read,grep,find,ls",
+  [PiVariant.Omp]: "read,grep,glob,lsp"
 };
-var buildPiArgs = ({ variant, systemPromptPath, model, effort, permissions }) => {
+var buildPiArgs = ({ variant, systemPromptPath, model, effort, permissions, writableDirs }) => {
   const args = ["-p", "--mode", "json", "--no-session"];
   if (systemPromptPath) {
     args.push("--append-system-prompt", systemPromptPath);
@@ -123809,8 +123941,11 @@ var buildPiArgs = ({ variant, systemPromptPath, model, effort, permissions }) =>
   if (permissions === Permissions.ReadOnly) {
     args.push("--tools", readOnlyTools[variant]);
   }
-  if (variant === "omp" && (permissions === Permissions.Write || permissions === Permissions.FullAccess)) {
+  if (variant === PiVariant.Omp && (permissions === Permissions.Write || permissions === Permissions.FullAccess)) {
     args.push("--approval-mode", permissions === Permissions.Write ? "write" : "yolo");
+  }
+  if (variant === PiVariant.Omp && permissions === Permissions.Write) {
+    args.push(...(writableDirs ?? []).map((dir) => `--add-dir=${dir}`));
   }
   return args;
 };
@@ -123871,7 +124006,7 @@ var createPiFamilyDriver = ({ name, variant, command }) => {
   const driver = {
     name,
     invoke: async (invocation) => {
-      const { prompt, systemPrompt, model, effort, permissions, cwd, timeoutMs, onEvent, onUsage } = invocation;
+      const { prompt, systemPrompt, model, effort, permissions, writableDirs, cwd, timeoutMs, onEvent, onUsage } = invocation;
       let agentEnd;
       let lastAssistant;
       let usage2;
@@ -123879,7 +124014,7 @@ var createPiFamilyDriver = ({ name, variant, command }) => {
       const systemPromptFile = systemPrompt ? await writeSystemPromptFile({ systemPrompt }) : void 0;
       const { exitCode, stdout, stderr } = await spawnCollect({
         command,
-        args: buildPiArgs({ variant, systemPromptPath: systemPromptFile?.path, model, effort, permissions }),
+        args: buildPiArgs({ variant, systemPromptPath: systemPromptFile?.path, model, effort, permissions, writableDirs }),
         cwd,
         stdinText: prompt,
         timeoutMs,
@@ -123919,8 +124054,8 @@ ${stderr}` }),
   };
   return driver;
 };
-var createPiDriver = () => createPiFamilyDriver({ name: "pi", variant: "pi", command: "pi" });
-var createOmpDriver = () => createPiFamilyDriver({ name: "omp", variant: "omp", command: "omp" });
+var createPiDriver = () => createPiFamilyDriver({ name: "pi", variant: PiVariant.Pi, command: "pi" });
+var createOmpDriver = () => createPiFamilyDriver({ name: "omp", variant: PiVariant.Omp, command: "omp" });
 
 // src/drivers/getDriver.ts
 var getDriver = ({ name }) => {
@@ -124053,7 +124188,7 @@ var checkJestMocks = async ({ cwd, packageDirs }) => {
     id: "jest-mocks",
     status: "warn",
     detail: jestFindings.join("; "),
-    fix: "add clearMocks: true, restoreMocks: true \u2014 then run that package\u2019s FULL test suite: tests relying on import-time or beforeAll mock calls will break and need rework (see test standards, Mock Cleanup)"
+    fix: "add clearMocks: true, restoreMocks: true \u2014 then run that package\u2019s FULL test suite: tests relying on import-time or beforeAll mock calls will break and need rework (see the lightsout/test-manual-mock-cleanup rule)"
   };
 };
 
@@ -125435,6 +125570,7 @@ var runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }) => {
   for (const audit of configuredPathAudits({ config: config2 })) {
     pushOptional({ checks, check: await checkConfiguredPaths({ cwd, ...audit }) });
   }
+  pushOptional({ checks, check: checkGenerateCommand({ config: config2 }) });
   pushOptional({ checks, check: await checkCoverageSummary({ config: config2, packageDirs }) });
   checks.push(await checkScriptBinaries({ cwd, config: config2 }));
   return checks.sort((a, b) => severityRank[a.status] - severityRank[b.status]);
@@ -125570,140 +125706,72 @@ var frictionCommand = async ({ cwd }) => {
   return exitCli({ code: 0 });
 };
 
-// src/cli/internal/common/render/printResult.ts
-import { basename as basename4 } from "node:path";
+// src/cli/implementCommand.ts
+import { randomUUID as randomUUID9 } from "node:crypto";
 
-// src/contracts/run/RunStatus.ts
-var RunStatus = {
-  Pending: "pending",
-  Running: "running",
-  Passed: "passed",
-  Failed: "failed",
-  /** A pausable state, not an error. Resumes when the window resets. */
-  PausedRateLimit: "paused-rate-limit",
-  /** Stopped at a caller-set budget ceiling (e.g. refactor --max-batches); resume to continue. */
-  PausedBudget: "paused-budget",
-  /** Supervisor determined a human decision is required. */
-  Escalated: "escalated"
+// src/cli/internal/common/detach/launchDetached.ts
+import { spawn as spawn3 } from "node:child_process";
+import { mkdir, open, readFile as readFile17 } from "node:fs/promises";
+import { dirname as dirname5 } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
+
+// src/cli/internal/common/constants/launchRunIdVariable.ts
+var launchRunIdVariable = "LIGHTSOUT_RUN_ID";
+
+// src/cli/internal/common/detach/getLaunchLogPath.ts
+import { join as join27 } from "node:path";
+var getLaunchLogPath = async ({ cwd, runId }) => {
+  return join27(await resolveSharedStateDir({ cwd }), "launches", `${runId}.log`);
 };
 
-// src/cli/internal/common/constants/statusIcons.ts
-var statusIcons = {
-  [RunStatus.Passed]: "\u2713",
-  [RunStatus.Failed]: "\u2717",
-  [RunStatus.Running]: "\u2026",
-  [RunStatus.Pending]: "\u25CB",
-  [RunStatus.PausedRateLimit]: "\u23F8",
-  // stopped and resumable, exactly like the rate-limit pause
-  [RunStatus.PausedBudget]: "\u23F8",
-  [RunStatus.Escalated]: "\u2691"
+// src/common/processes/readProcessStartTime.ts
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+var readProcessStartTime = async ({ pid }) => {
+  const output = await promisify(execFile)("ps", ["-o", "lstart=", "-p", String(pid)], {
+    env: { ...process.env, LC_ALL: "C", TZ: "UTC" }
+  }).catch(() => void 0);
+  const startTime = output?.stdout.trim();
+  return startTime === "" ? void 0 : startTime;
 };
 
-// src/cli/internal/common/render/renderTable.ts
-var renderTable = ({ headers, rows }) => {
-  const allCells = [headers, ...rows.map((row) => row.cells)];
-  const widths = headers.map((_, column) => Math.max(...allCells.map((cells) => (cells[column] ?? "").length)) + 2);
-  const rule = ({ left, mid, right }) => dim(`${left}${widths.map((width) => "\u2500".repeat(width)).join(mid)}${right}`);
-  const renderRow = ({ cells, emphasis, paintCell: paintCell2 }) => {
-    const rendered = cells.map((text, column) => {
-      const width = widths[column] ?? 0;
-      const padded = column === 0 ? ` ${text.padEnd(width - 1)}` : `${text.padStart(width - 1)} `;
-      const painted = paintCell2 ? paintCell2({ text, padded, column }) : padded;
-      return emphasis && text !== "\u2014" ? emphasis(painted) : painted;
-    });
-    return `${dim("\u2502")}${rendered.join(dim("\u2502"))}${dim("\u2502")}`;
-  };
-  const lines = [rule({ left: "\u250C", mid: "\u252C", right: "\u2510" }), renderRow({ cells: headers })];
-  rows.forEach((row, index) => {
-    if (index === 0 || row.ruleAbove !== false) {
-      lines.push(rule({ left: "\u251C", mid: "\u253C", right: "\u2524" }));
-    }
-    lines.push(renderRow(row));
-  });
-  lines.push(rule({ left: "\u2514", mid: "\u2534", right: "\u2518" }));
-  return lines;
-};
-
-// src/cli/internal/common/terminal/paintStatus.ts
-var paintStatus = ({ status, text }) => {
-  if (status === RunStatus.Passed) {
-    return green(text);
+// src/common/utils/readJsonFile.ts
+import { readFile as readFile15 } from "node:fs/promises";
+var readJsonFile = async ({ path, schema }) => {
+  const raw = await readFile15(path, "utf8").catch(() => void 0);
+  if (raw === void 0) {
+    return void 0;
   }
-  return status === RunStatus.Failed ? red(text) : yellow(text);
-};
-
-// src/cli/internal/common/render/printStepTable.ts
-var paintCell = ({ text, padded, status }) => {
-  if (text === "\u2014") {
-    return dim(padded);
-  }
-  if (status !== void 0 && text.startsWith(statusIcons[status] ?? "?")) {
-    return padded.replace(statusIcons[status] ?? "?", paintStatus({ status, text: statusIcons[status] ?? "?" }));
-  }
-  return padded;
-};
-var printStepTable = ({ steps, activeMs }) => {
-  const headers = ["step", "tries", "time", "agents", "out", "cost", "files"];
-  const rows = steps.map((step) => ({
-    status: step.status,
-    cells: [
-      `${statusIcons[step.status] ?? "?"} ${step.id}`,
-      `${step.attempts}`,
-      formatDuration({ ms: step.durationMs }),
-      step.invocations > 0 ? `${step.invocations}` : "\u2014",
-      step.invocations > 0 ? formatTokenCount({ count: step.outputTokens }) : "\u2014",
-      step.invocations > 0 ? formatCost({ usd: step.costUsd }) : "\u2014",
-      step.changedFiles ? `${step.changedFiles.length}` : "\u2014"
-    ]
-  }));
-  const invocations = steps.reduce((count2, step) => count2 + step.invocations, 0);
-  const totalCells = [
-    "  total",
-    "\u2014",
-    activeMs > 0 ? formatDuration({ ms: activeMs }) : "\u2014",
-    invocations > 0 ? `${invocations}` : "\u2014",
-    invocations > 0 ? formatTokenCount({ count: steps.reduce((count2, step) => count2 + step.outputTokens, 0) }) : "\u2014",
-    invocations > 0 ? formatCost({ usd: steps.reduce((total, step) => total + step.costUsd, 0) }) : "\u2014",
-    `${steps.reduce((count2, step) => count2 + (step.changedFiles?.length ?? 0), 0)}`
-  ];
-  const lines = renderTable({
-    headers,
-    rows: [
-      ...rows.map((row) => ({
-        cells: row.cells,
-        paintCell: ({ text, padded }) => paintCell({ text, padded, status: row.status })
-      })),
-      { cells: totalCells, emphasis: bold, paintCell: ({ text, padded }) => paintCell({ text, padded }) }
-    ]
-  });
-  for (const line of lines) {
-    console.log(line);
+  try {
+    const parsed = schema.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : void 0;
+  } catch {
+    return void 0;
   }
 };
 
-// src/cli/internal/common/utils/plural.ts
-var plural = ({ count: count2 }) => count2 === 1 ? "" : "s";
+// src/contracts/run/RunOwner.ts
+var RunOwner = external_exports.union([
+  external_exports.object({
+    pid: external_exports.number().int(),
+    processStartTime: external_exports.string().optional(),
+    recordedAt: external_exports.string()
+  }),
+  external_exports.object({
+    queueRunId: external_exports.string()
+  })
+]);
 
-// src/runState/isRunPaused.ts
-var isRunPaused = ({ status }) => status === RunStatus.PausedRateLimit || status === RunStatus.PausedBudget;
-
-// src/runState/summarizeRun.ts
-import { readdir as readdir11 } from "node:fs/promises";
-import { join as join31 } from "node:path";
-
-// src/common/selfCheck/selfCheckStepPrefix.ts
-var selfCheckStepPrefix = "self-check-";
-
-// src/common/selfCheck/isSelfCheckStep.ts
-var isSelfCheckStep = ({ step }) => step?.startsWith(selfCheckStepPrefix) ?? false;
+// src/runState/owner/getRunOwnerPath.ts
+import { join as join32 } from "node:path";
 
 // src/runState/internal/common/services/RunDirectoryIndex.ts
 import { readdir as readdir10 } from "node:fs/promises";
-import { join as join30 } from "node:path";
+import { join as join31 } from "node:path";
 
 // src/runState/internal/common/paths/listRunLocations.ts
 import { readdir as readdir9 } from "node:fs/promises";
-import { join as join29 } from "node:path";
+import { join as join30 } from "node:path";
 
 // src/contracts/run/PipelineKind.ts
 var PipelineKind = {
@@ -125720,7 +125788,7 @@ var PipelineKind = {
 };
 
 // src/runState/internal/common/paths/getCommandRunsDir.ts
-import { join as join27 } from "node:path";
+import { join as join28 } from "node:path";
 var commandFolders = {
   [PipelineKind.Implement]: "implement",
   [PipelineKind.Phases]: "implement",
@@ -125729,17 +125797,17 @@ var commandFolders = {
   [PipelineKind.Coverage]: "coverage",
   [PipelineKind.Queue]: "queue"
 };
-var getCommandRunsDir = ({ stateDir, pipeline }) => join27(stateDir, commandFolders[pipeline], "runs");
+var getCommandRunsDir = ({ stateDir, pipeline }) => join28(stateDir, commandFolders[pipeline], "runs");
 
 // src/runState/internal/common/paths/getWorkOrderRunsDir.ts
-import { join as join28 } from "node:path";
-var getWorkOrderRunsDir = ({ workOrderFolder }) => join28(workOrderFolder, "runs");
+import { join as join29 } from "node:path";
+var getWorkOrderRunsDir = ({ workOrderFolder }) => join29(workOrderFolder, "runs");
 
 // src/runState/internal/common/paths/listRunLocations.ts
 var listRunLocations = async ({ cwd }) => {
   const tickets = await workOrdersDir({ cwd });
   const entries = await readdir9(tickets, { withFileTypes: true }).catch(() => []);
-  const ticketRuns = entries.filter((entry) => entry.isDirectory()).map((entry) => getWorkOrderRunsDir({ workOrderFolder: join29(tickets, entry.name) }));
+  const ticketRuns = entries.filter((entry) => entry.isDirectory()).map((entry) => getWorkOrderRunsDir({ workOrderFolder: join30(tickets, entry.name) }));
   const stateDir = await resolveSharedStateDir({ cwd });
   const commandRuns = new Set(Object.values(PipelineKind).map((pipeline) => getCommandRunsDir({ stateDir, pipeline })));
   return [...ticketRuns, ...commandRuns];
@@ -125755,7 +125823,7 @@ var scanLocations = async ({ cwd }) => {
   for (const location of await listRunLocations({ cwd })) {
     const entries = await readdir10(location, { withFileTypes: true }).catch(() => []);
     for (const entry of entries.filter((candidate) => candidate.isDirectory())) {
-      found.set(entry.name, join30(location, entry.name));
+      found.set(entry.name, join31(location, entry.name));
     }
   }
   return found;
@@ -125814,6 +125882,403 @@ var runDirectoryIndex = new RunDirectoryIndex();
 
 // src/runState/common/paths/resolveRunDir.ts
 var resolveRunDir = async ({ cwd, runId }) => (await runDirectoryIndex.resolve({ cwd, runId })).runDir;
+
+// src/runState/owner/getRunOwnerPath.ts
+var getRunOwnerPath = async ({ cwd, runId }) => {
+  return join32(await resolveRunDir({ cwd, runId }), "owner.json");
+};
+
+// src/runState/owner/readRunOwner.ts
+var readRunOwner = async ({ cwd, runId }) => {
+  return readJsonFile({ path: await getRunOwnerPath({ cwd, runId }), schema: RunOwner });
+};
+
+// src/runState/readRunManifest.ts
+import { readFile as readFile16 } from "node:fs/promises";
+
+// src/contracts/run/AcceptanceTestRecord.ts
+var AcceptanceTestRecord = external_exports.object({
+  criterion: external_exports.string().min(1),
+  /** Repo-relative. */
+  testFile: external_exports.string().min(1),
+  testName: external_exports.string().min(1),
+  /** The gate key whose execution has to show this test passing. */
+  gate: external_exports.string().min(1)
+});
+
+// src/contracts/run/ApprovedTestRecord.ts
+var ApprovedTestRecord = external_exports.object({
+  /** Repo-relative. */
+  path: external_exports.string().min(1),
+  /** SHA-256 of the approved copy under the run's approved directory. Absent on an approved removal. */
+  sha256: external_exports.string().length(64).optional(),
+  /** True when the approved state of this path is "not in the tree" — no copy exists and none is expected. */
+  removed: external_exports.boolean().default(false)
+});
+
+// src/contracts/run/PackagesSource.ts
+var PackagesSource = {
+  /** Explicit `--packages` flag. */
+  Flag: "flag",
+  /** The plan's front-matter `packages:` list. */
+  FrontMatter: "front-matter",
+  /** Derived from concrete `<packagesDir>/<name>/` paths in the plan body. */
+  PlanPaths: "plan-paths"
+};
+
+// src/contracts/run/RunCommit.ts
+var RunCommit = external_exports.object({
+  sha: external_exports.string(),
+  subject: external_exports.string(),
+  /** A phase's own child run id, which is why a coordinator's list can name several. */
+  runId: external_exports.string()
+}).strict();
+
+// src/contracts/run/RunStatus.ts
+var RunStatus = {
+  Pending: "pending",
+  Running: "running",
+  Passed: "passed",
+  Failed: "failed",
+  /** A pausable state, not an error. Resumes when the window resets. */
+  PausedRateLimit: "paused-rate-limit",
+  /** Stopped at a caller-set budget ceiling (e.g. refactor --max-batches); resume to continue. */
+  PausedBudget: "paused-budget",
+  /** Supervisor determined a human decision is required. */
+  Escalated: "escalated"
+};
+
+// src/contracts/run/AgentUsage.ts
+var AgentUsage = external_exports.object({
+  inputTokens: external_exports.number(),
+  outputTokens: external_exports.number(),
+  cacheReadTokens: external_exports.number(),
+  cacheCreationTokens: external_exports.number(),
+  costUsd: external_exports.number()
+});
+
+// src/contracts/run/RunUsage.ts
+var RunUsage = AgentUsage.extend({
+  invocations: external_exports.number()
+});
+
+// src/contracts/gates/GateResult.ts
+var GateResult = external_exports.object({
+  /** Gate kind: 'generate' | 'check' | 'test' | 'testCoverage' | 'build'. */
+  kind: external_exports.string(),
+  /** 'root' or the package directory name. */
+  group: external_exports.string(),
+  command: external_exports.string(),
+  /** Absent when skipped. -1 = spawn failure or timeout; `timedOut` tells the two apart. */
+  exitCode: external_exports.number().optional(),
+  durationMs: external_exports.number().optional(),
+  rerun: external_exports.boolean().optional(),
+  /** A test runner that died without reporting a failing test, rather than evidence about the code. */
+  crashed: external_exports.literal(true).optional(),
+  /** Present (always `true`) when this attempt was stopped by the gate ceiling rather than returning an exit code. */
+  timedOut: external_exports.literal(true).optional(),
+  /** Present (always `true`) only on a scoped skip; absent otherwise. */
+  skipped: external_exports.literal(true).optional(),
+  /** Skip reason, e.g. `no "check" script`. */
+  reason: external_exports.string().optional(),
+  /** Last 2000 chars of stdout+stderr — present only on non-zero exit. */
+  outputTail: external_exports.string().optional(),
+  /** Repo-relative. */
+  testResultsDir: external_exports.string().optional()
+});
+
+// src/contracts/run/StepRecord.ts
+var StepRecord = external_exports.object({
+  id: external_exports.string(),
+  status: external_exports.enum(RunStatus),
+  attempts: external_exports.number().int().nonnegative(),
+  /** Active time, accumulated across attempts and resumes. */
+  durationMs: external_exports.number().optional(),
+  /** Paths from this step's reports; the run-wide union lives on the manifest. */
+  changedFiles: external_exports.array(external_exports.string()).optional(),
+  report: external_exports.unknown().optional(),
+  error: external_exports.string().optional(),
+  verification: external_exports.object({
+    failedFamilies: external_exports.array(external_exports.string()),
+    repairAttempts: external_exports.record(external_exports.string(), external_exports.number().int().nonnegative()),
+    failures: external_exports.array(GateResult),
+    needsFormatting: external_exports.boolean(),
+    guidedRepairAttempted: external_exports.boolean(),
+    supervisorDiagnosis: external_exports.string().optional()
+  }).optional()
+});
+
+// src/contracts/run/RunManifest.ts
+var RunManifest = external_exports.object({
+  runId: external_exports.string(),
+  createdAt: external_exports.string(),
+  updatedAt: external_exports.string(),
+  /** Relative to the target repo. For a phases run this is the overview path. */
+  plan: external_exports.string(),
+  /** A plan address `<work-order>/<plan-id>`. Absent on a run that belongs to no plan, including an implement run of a plan file outside the plans directory. */
+  planName: external_exports.string().optional(),
+  /** Absent means implement. */
+  pipeline: external_exports.enum(PipelineKind).optional(),
+  /** The ticket this run builds, e.g. 'LO-70'. Absent on a run started from a plan. */
+  ticketRef: external_exports.string().optional(),
+  /** Relative to the target repo. */
+  overview: external_exports.string().optional(),
+  /** Set on a phase's child run to the coordinator's run id. */
+  parentRunId: external_exports.string().optional(),
+  /** A resumed run must reuse it. */
+  harness: external_exports.string(),
+  /** A record of what the run started with; resume executes with the current config file. */
+  config: LightsoutConfig.optional(),
+  status: external_exports.enum(RunStatus),
+  currentStep: external_exports.string().nullable(),
+  steps: external_exports.array(StepRecord),
+  /** Lets a reader show a row for a step not yet reached. Absent on a pipeline that discovers its steps as it goes. */
+  stepOrder: external_exports.array(external_exports.string()).optional(),
+  /** The key a ship result is filed under. Absent on a detached HEAD and outside a worktree. */
+  branch: external_exports.string().optional(),
+  /** Absolute. Absent on a run that built in the checkout it was launched from. */
+  workspace: external_exports.string().optional(),
+  /** A passing run will ship this branch. Absent when no ship intent was resolved. */
+  willShip: external_exports.boolean().optional(),
+  changedFiles: external_exports.array(external_exports.string()),
+  /** A phased run's coordinator carries one per phase; every other run carries at most one. */
+  commits: external_exports.array(RunCommit).default([]),
+  /**
+   * Directory names under the packages dir. Expanded as changed files reveal
+   * the blast radius, never shrunk. Empty in non-monorepo mode.
+   */
+  packages: external_exports.array(external_exports.string()).default([]),
+  /** Recorded so a derived scope is never mistaken for a declared one. */
+  packagesSource: external_exports.enum(PackagesSource).optional(),
+  /** Per-invocation detail lives in the run dir's `agents.jsonl`. Absent for drivers reporting nothing. */
+  usage: RunUsage.optional(),
+  /** Paths already dirty when the run started, subtracted from every git snapshot so only the run's own changes are attributed to it. */
+  baselineDirtyFiles: external_exports.array(external_exports.string()).default([]),
+  /** What verify fix re-invocations hand back to test writers. */
+  testSubjects: external_exports.array(external_exports.string()).default([]),
+  /** One entry per plan ledger row. */
+  acceptanceTests: external_exports.array(AcceptanceTestRecord).default([]),
+  approvedTests: external_exports.array(ApprovedTestRecord).default([]),
+  /** Changed files the write-tests step skipped because nothing public reaches them; re-checked at run end. */
+  unreachableChangedFiles: external_exports.array(external_exports.string()).default([]),
+  /** Files the repo's coverage configuration does not collect, so verify fix re-invocations must not demand their execution. */
+  coverageExcludedChangedFiles: external_exports.array(external_exports.string()).default([])
+});
+
+// src/runState/internal/common/paths/getRunManifestPath.ts
+import { join as join33 } from "node:path";
+var getRunManifestPath = async ({ cwd, runId }) => join33(await resolveRunDir({ cwd, runId }), "manifest.json");
+
+// src/runState/readRunManifest.ts
+var readRunManifest = async ({ cwd, runId }) => {
+  const raw = await readFile16(await getRunManifestPath({ cwd, runId }), "utf8");
+  return RunManifest.parse(JSON.parse(raw));
+};
+
+// src/cli/internal/common/detach/launchDetached.ts
+var hasStarted = async ({ cwd, runId, pid, startTime }) => {
+  const owner = await readRunOwner({ cwd, runId }).catch(() => void 0);
+  const recorded = owner !== void 0 && "pid" in owner ? owner : void 0;
+  const ownsRun = recorded?.pid === pid && (startTime === void 0 || recorded.processStartTime === void 0 || recorded.processStartTime === startTime);
+  const manifest = ownsRun ? await readRunManifest({ cwd, runId }).catch(() => void 0) : void 0;
+  return manifest !== void 0;
+};
+var waitForExitOrLook = async ({ exited: exited2, pollMs }) => {
+  const controller = new AbortController();
+  const look = delay(pollMs, void 0, { signal: controller.signal }).then(
+    () => void 0,
+    () => void 0
+  );
+  const exitCode = await Promise.race([exited2, look]);
+  controller.abort();
+  return exitCode;
+};
+var waitForStart = async ({
+  cwd,
+  runId,
+  pid,
+  startTime,
+  exited: exited2,
+  pollMs
+}) => {
+  let exitCode;
+  let started = await hasStarted({ cwd, runId, pid, startTime });
+  while (!started && exitCode === void 0) {
+    exitCode = await waitForExitOrLook({ exited: exited2, pollMs });
+    started = await hasStarted({ cwd, runId, pid, startTime });
+  }
+  return { started, exitCode };
+};
+var relayChildOutput = async ({ logPath, offset }) => {
+  const written2 = await readFile17(logPath);
+  process.stderr.write(written2.subarray(offset));
+};
+var printStart = ({ runId, pid, relayMailbox }) => {
+  console.log(`run ${runId} has started`);
+  if (relayMailbox !== void 0) {
+    console.log(`engine pid: ${pid}`);
+    console.log(`relay mailbox: ${relayMailbox}`);
+  }
+};
+var spawnEngine = async ({ command, args, runId, logPath }) => {
+  await mkdir(dirname5(logPath), { recursive: true });
+  const log = await open(logPath, "a");
+  const { size: offset } = await log.stat();
+  const child = spawn3(process.execPath, [...process.execArgv, process.argv[1], command, ...args.filter((arg) => arg !== "--detach")], {
+    cwd: process.cwd(),
+    detached: true,
+    stdio: ["ignore", log.fd, log.fd],
+    env: { ...process.env, [launchRunIdVariable]: runId }
+  });
+  const exited2 = new Promise((resolve21) => {
+    child.once("exit", (code) => resolve21(code ?? 1));
+  });
+  const spawnError = await new Promise((resolve21) => {
+    child.once("spawn", () => resolve21(void 0));
+    child.once("error", (error51) => resolve21(error51));
+  });
+  await log.close();
+  child.unref();
+  return { child, exited: exited2, offset, spawnError };
+};
+var launchDetached = async ({ cwd, command, args, runId, relayMailbox, pollMs = 500 }) => {
+  if (process.platform === "win32") {
+    console.error("--detach needs a POSIX system (macOS or Linux)");
+    return 1;
+  }
+  const logPath = await getLaunchLogPath({ cwd, runId });
+  const { child, exited: exited2, offset, spawnError } = await spawnEngine({ command, args, runId, logPath });
+  const pid = child.pid;
+  if (spawnError !== void 0 || pid === void 0) {
+    console.error(`the lightsout engine could not be started: ${messageOf({ error: spawnError ?? "no process id was assigned" })}`);
+    return 1;
+  }
+  console.log(`starting run ${runId} \u2014 engine output: ${logPath}`);
+  const startTime = await readProcessStartTime({ pid });
+  const { started, exitCode } = await waitForStart({ cwd, runId, pid, startTime, exited: exited2, pollMs });
+  let code = 0;
+  if (started) {
+    printStart({ runId, pid, relayMailbox });
+  } else {
+    await relayChildOutput({ logPath, offset });
+    code = exitCode === void 0 || exitCode === 0 ? 1 : exitCode;
+  }
+  return code;
+};
+
+// src/cli/internal/common/detach/readLaunchRunId.ts
+var readLaunchRunId = ({ env }) => {
+  const runId = env[launchRunIdVariable];
+  delete env[launchRunIdVariable];
+  return runId === "" ? void 0 : runId;
+};
+
+// src/cli/internal/common/render/renderResult.ts
+import { basename as basename4 } from "node:path";
+
+// src/cli/internal/common/constants/statusIcons.ts
+var statusIcons = {
+  [RunStatus.Passed]: "\u2713",
+  [RunStatus.Failed]: "\u2717",
+  [RunStatus.Running]: "\u2026",
+  [RunStatus.Pending]: "\u25CB",
+  [RunStatus.PausedRateLimit]: "\u23F8",
+  // stopped and resumable, exactly like the rate-limit pause
+  [RunStatus.PausedBudget]: "\u23F8",
+  [RunStatus.Escalated]: "\u2691"
+};
+
+// src/cli/internal/common/render/renderTable.ts
+var renderTable = ({ headers, rows }) => {
+  const allCells = [headers, ...rows.map((row) => row.cells)];
+  const widths = headers.map((_, column) => Math.max(...allCells.map((cells) => (cells[column] ?? "").length)) + 2);
+  const rule = ({ left, mid, right }) => dim(`${left}${widths.map((width) => "\u2500".repeat(width)).join(mid)}${right}`);
+  const renderRow = ({ cells, emphasis, paintCell: paintCell2 }) => {
+    const rendered = cells.map((text, column) => {
+      const width = widths[column] ?? 0;
+      const padded = column === 0 ? ` ${text.padEnd(width - 1)}` : `${text.padStart(width - 1)} `;
+      const painted = paintCell2 ? paintCell2({ text, padded, column }) : padded;
+      return emphasis && text !== "\u2014" ? emphasis(painted) : painted;
+    });
+    return `${dim("\u2502")}${rendered.join(dim("\u2502"))}${dim("\u2502")}`;
+  };
+  const lines = [rule({ left: "\u250C", mid: "\u252C", right: "\u2510" }), renderRow({ cells: headers })];
+  rows.forEach((row, index) => {
+    if (index === 0 || row.ruleAbove !== false) {
+      lines.push(rule({ left: "\u251C", mid: "\u253C", right: "\u2524" }));
+    }
+    lines.push(renderRow(row));
+  });
+  lines.push(rule({ left: "\u2514", mid: "\u2534", right: "\u2518" }));
+  return lines;
+};
+
+// src/cli/internal/common/terminal/paintStatus.ts
+var paintStatus = ({ status, text }) => {
+  if (status === RunStatus.Passed) {
+    return green(text);
+  }
+  return status === RunStatus.Failed ? red(text) : yellow(text);
+};
+
+// src/cli/internal/common/render/renderStepTable.ts
+var paintCell = ({ text, padded, status }) => {
+  if (text === "\u2014") {
+    return dim(padded);
+  }
+  if (status !== void 0 && text.startsWith(statusIcons[status] ?? "?")) {
+    return padded.replace(statusIcons[status] ?? "?", paintStatus({ status, text: statusIcons[status] ?? "?" }));
+  }
+  return padded;
+};
+var renderStepTable = ({ steps, activeMs }) => {
+  const headers = ["step", "tries", "time", "agents", "out", "cost", "files"];
+  const rows = steps.map((step) => ({
+    status: step.status,
+    cells: [
+      `${statusIcons[step.status] ?? "?"} ${step.id}`,
+      `${step.attempts}`,
+      formatDuration({ ms: step.durationMs }),
+      step.invocations > 0 ? `${step.invocations}` : "\u2014",
+      step.invocations > 0 ? formatTokenCount({ count: step.outputTokens }) : "\u2014",
+      step.invocations > 0 ? formatCost({ usd: step.costUsd }) : "\u2014",
+      step.changedFiles ? `${step.changedFiles.length}` : "\u2014"
+    ]
+  }));
+  const invocations = steps.reduce((count2, step) => count2 + step.invocations, 0);
+  const totalCells = [
+    "  total",
+    "\u2014",
+    activeMs > 0 ? formatDuration({ ms: activeMs }) : "\u2014",
+    invocations > 0 ? `${invocations}` : "\u2014",
+    invocations > 0 ? formatTokenCount({ count: steps.reduce((count2, step) => count2 + step.outputTokens, 0) }) : "\u2014",
+    invocations > 0 ? formatCost({ usd: steps.reduce((total, step) => total + step.costUsd, 0) }) : "\u2014",
+    `${steps.reduce((count2, step) => count2 + (step.changedFiles?.length ?? 0), 0)}`
+  ];
+  return renderTable({
+    headers,
+    rows: [
+      ...rows.map((row) => ({
+        cells: row.cells,
+        paintCell: ({ text, padded }) => paintCell({ text, padded, status: row.status })
+      })),
+      { cells: totalCells, emphasis: bold, paintCell: ({ text, padded }) => paintCell({ text, padded }) }
+    ]
+  });
+};
+
+// src/cli/internal/common/utils/plural.ts
+var plural = ({ count: count2 }) => count2 === 1 ? "" : "s";
+
+// src/runState/summarizeRun.ts
+import { readdir as readdir11 } from "node:fs/promises";
+import { join as join34 } from "node:path";
+
+// src/common/selfCheck/selfCheckStepPrefix.ts
+var selfCheckStepPrefix = "self-check-";
+
+// src/common/selfCheck/isSelfCheckStep.ts
+var isSelfCheckStep = ({ step }) => step?.startsWith(selfCheckStepPrefix) ?? false;
 
 // src/contracts/run/CleanupEndReason.ts
 var CleanupEndReason = {
@@ -125952,11 +126417,11 @@ var CommandRecord = external_exports.object({
 });
 var summarizeRun = async ({ cwd, manifest }) => {
   const runDir = await resolveRunDir({ cwd, runId: manifest.runId });
-  const ledger = await readJsonlRecords({ path: join31(runDir, "agents.jsonl"), schema: LedgerRecord });
-  const commands2 = (await readJsonlRecords({ path: join31(runDir, "commands.jsonl"), schema: CommandRecord })).filter(
+  const ledger = await readJsonlRecords({ path: join34(runDir, "agents.jsonl"), schema: LedgerRecord });
+  const commands2 = (await readJsonlRecords({ path: join34(runDir, "commands.jsonl"), schema: CommandRecord })).filter(
     (command) => !isSelfCheckStep({ step: command.step })
   );
-  const agentFiles = await readdir11(join31(runDir, "agents")).catch(() => []);
+  const agentFiles = await readdir11(join34(runDir, "agents")).catch(() => []);
   const friction = (await readFriction({ cwd })).filter((entry) => entry.runId === manifest.runId);
   const perStepUsage = /* @__PURE__ */ new Map();
   for (const record3 of ledger) {
@@ -126006,8 +126471,8 @@ var summarizeRun = async ({ cwd, manifest }) => {
   };
 };
 
-// src/cli/internal/common/render/printResult.ts
-var label = ({ name, value }) => console.log(`${name.padEnd(10)}${value}`);
+// src/cli/internal/common/render/renderResult.ts
+var label = ({ name, value }) => `${name.padEnd(10)}${value}`;
 var describeGates = ({ gates }) => {
   const parts = [`${gates.commands} command${plural({ count: gates.commands })}`];
   if (gates.reruns > 0) {
@@ -126037,67 +126502,73 @@ var describeCommits = ({ manifest, ok }) => {
   }
   return ok && manifest.changedFiles.length > 0 ? "none added \u2014 this run\u2019s work was already in the branch\u2019s history" : void 0;
 };
-var printResult = async ({ result, cwd }) => {
-  const { manifest, ok, error: error51 } = result;
-  const summary = await summarizeRun({ cwd, manifest });
-  console.log("");
-  label({
-    name: "run",
-    value: `${formatShortRunId({ runId: manifest.runId })} \xB7 ${paintStatus({ status: manifest.status, text: bold(manifest.status.toUpperCase()) })}`
-  });
-  label({ name: "plan", value: basename4(manifest.plan) });
-  label({ name: "wall", value: formatDuration({ ms: summary.wallMs }) });
+var renderCostLines = ({ manifest, summary }) => {
+  const lines = [
+    label({
+      name: "run",
+      value: `${formatShortRunId({ runId: manifest.runId })} \xB7 ${paintStatus({ status: manifest.status, text: bold(manifest.status.toUpperCase()) })}`
+    }),
+    label({ name: "plan", value: basename4(manifest.plan) }),
+    label({ name: "wall", value: formatDuration({ ms: summary.wallMs }) })
+  ];
   if (summary.activeMs > 0) {
-    label({ name: "active", value: formatDuration({ ms: summary.activeMs }) });
+    lines.push(label({ name: "active", value: formatDuration({ ms: summary.activeMs }) }));
   }
-  label({ name: "gates", value: formatDuration({ ms: summary.gateMs }) });
+  lines.push(label({ name: "gates", value: formatDuration({ ms: summary.gateMs }) }));
   if (summary.usage && summary.usage.invocations > 0) {
     const { invocations, inputTokens, outputTokens, cacheReadTokens, costUsd } = summary.usage;
     const share = summary.cacheReadShare === void 0 ? "" : ` (${Math.round(summary.cacheReadShare * 100)}%)`;
-    label({
-      name: "tokens",
-      value: `in ${formatTokenCount({ count: inputTokens })} \xB7 out ${formatTokenCount({ count: outputTokens })} \xB7 cache-read ${formatTokenCount({ count: cacheReadTokens })}${share}`
-    });
-    label({ name: "cost", value: `${formatCost({ usd: costUsd })} API-equivalent \xB7 ${invocations} invocation${plural({ count: invocations })}` });
+    lines.push(
+      label({
+        name: "tokens",
+        value: `in ${formatTokenCount({ count: inputTokens })} \xB7 out ${formatTokenCount({ count: outputTokens })} \xB7 cache-read ${formatTokenCount({ count: cacheReadTokens })}${share}`
+      }),
+      label({ name: "cost", value: `${formatCost({ usd: costUsd })} API-equivalent \xB7 ${invocations} invocation${plural({ count: invocations })}` })
+    );
   }
-  console.log("");
-  printStepTable({ steps: summary.steps, activeMs: summary.activeMs });
-  console.log("");
-  label({ name: "gates", value: describeGates({ gates: summary.gates }) });
+  return lines;
+};
+var renderDetailLines = ({ manifest, summary, ok }) => {
+  const lines = [label({ name: "gates", value: describeGates({ gates: summary.gates }) })];
   if (summary.rejectedReports > 0) {
-    label({ name: "retries", value: `${summary.rejectedReports} rejected report${plural({ count: summary.rejectedReports })} re-emitted` });
+    lines.push(label({ name: "retries", value: `${summary.rejectedReports} rejected report${plural({ count: summary.rejectedReports })} re-emitted` }));
   }
   if (summary.cleanup) {
-    label({ name: "cleanup", value: describeCleanup({ cleanup: summary.cleanup }) });
+    lines.push(label({ name: "cleanup", value: describeCleanup({ cleanup: summary.cleanup }) }));
   }
   if (summary.frictionByArea.length > 0) {
     const total = summary.frictionByArea.reduce((count2, entry) => count2 + entry.count, 0);
-    label({ name: "friction", value: `${total} \xB7 ${summary.frictionByArea.map((entry) => `${entry.area} ${entry.count}`).join(" \xB7 ")}` });
+    lines.push(label({ name: "friction", value: `${total} \xB7 ${summary.frictionByArea.map((entry) => `${entry.area} ${entry.count}`).join(" \xB7 ")}` }));
   }
   if (manifest.packages.length > 0) {
-    label({ name: "scope", value: `${manifest.packages.join(" \xB7 ")}${manifest.packagesSource ? ` (${manifest.packagesSource})` : ""}` });
+    lines.push(label({ name: "scope", value: `${manifest.packages.join(" \xB7 ")}${manifest.packagesSource ? ` (${manifest.packagesSource})` : ""}` }));
   }
   const commits = describeCommits({ manifest, ok });
   if (commits !== void 0) {
-    label({ name: "commit", value: commits });
+    lines.push(label({ name: "commit", value: commits }));
   }
   if (manifest.unreachableChangedFiles.length > 0) {
-    label({
-      name: "warning",
-      value: `unreachable-changed-files: ${manifest.unreachableChangedFiles.join(", ")} \u2014 changed, but no public surface reaches them; no tests cover them`
-    });
+    lines.push(
+      label({
+        name: "warning",
+        value: `unreachable-changed-files: ${manifest.unreachableChangedFiles.join(", ")} \u2014 changed, but no public surface reaches them; no tests cover them`
+      })
+    );
   }
-  label({ name: "evidence", value: `.lightsout/runs/${manifest.runId}/` });
-  if (ok || error51 === void 0) {
-    return;
-  }
-  if (isRunPaused({ status: manifest.status })) {
-    console.log(`
-${error51}`);
-  } else {
-    console.error(`
-${error51}`);
-  }
+  lines.push(label({ name: "evidence", value: `.lightsout/runs/${manifest.runId}/` }));
+  return lines;
+};
+var renderResult = async ({ result, cwd }) => {
+  const { manifest, ok } = result;
+  const summary = await summarizeRun({ cwd, manifest });
+  return [
+    "",
+    ...renderCostLines({ manifest, summary }),
+    "",
+    ...renderStepTable({ steps: summary.steps, activeMs: summary.activeMs }),
+    "",
+    ...renderDetailLines({ manifest, summary, ok })
+  ];
 };
 
 // src/cli/internal/common/constants/contradictoryShipFlagsMessage.ts
@@ -126117,18 +126588,18 @@ var WorktreeOwner = {
 import { rm as rm3 } from "node:fs/promises";
 
 // src/worktree/records/internal/common/utils/getWorktreeRecordPath.ts
-import { join as join33 } from "node:path";
+import { join as join36 } from "node:path";
 
 // src/common/workspace/findWorkOrderForBranch.ts
 import { readdir as readdir12 } from "node:fs/promises";
-import { join as join32 } from "node:path";
+import { join as join35 } from "node:path";
 var findWorkOrderForBranch = async ({ cwd, branch }) => {
   const folder = await workOrdersDir({ cwd });
   const entries = await readdir12(folder, { withFileTypes: true }).catch(() => []);
   const names = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort((first, second) => first.localeCompare(second));
   let found;
   for (const name of names) {
-    const record3 = await readWorkOrderRecordFile({ workOrderFolder: join32(folder, name) });
+    const record3 = await readWorkOrderRecordFile({ workOrderFolder: join35(folder, name) });
     if (record3?.branch === branch) {
       found = { name, record: record3 };
       break;
@@ -126146,7 +126617,7 @@ var resolveBranchRecordDir = async ({ cwd, branch }) => {
 // src/worktree/records/internal/common/utils/getWorktreeRecordPath.ts
 var getWorktreeRecordPath = async ({ cwd, branch }) => {
   const folder = await resolveBranchRecordDir({ cwd, branch });
-  return folder === void 0 ? void 0 : join33(folder, "worktree.json");
+  return folder === void 0 ? void 0 : join36(folder, "worktree.json");
 };
 
 // src/worktree/records/deleteWorktreeRecord.ts
@@ -126156,21 +126627,6 @@ var deleteWorktreeRecord = async ({ cwd, branch }) => {
     return;
   }
   await rm3(path, { force: true }).catch(() => void 0);
-};
-
-// src/common/utils/readJsonFile.ts
-import { readFile as readFile15 } from "node:fs/promises";
-var readJsonFile = async ({ path, schema }) => {
-  const raw = await readFile15(path, "utf8").catch(() => void 0);
-  if (raw === void 0) {
-    return void 0;
-  }
-  try {
-    const parsed = schema.safeParse(JSON.parse(raw));
-    return parsed.success ? parsed.data : void 0;
-  } catch {
-    return void 0;
-  }
 };
 
 // src/contracts/worktree/WorktreeRecord.ts
@@ -126250,12 +126706,18 @@ var resolveRunCwd = async ({ cwd, manifest }) => {
 // src/cli/internal/common/constants/pausedExitCode.ts
 var pausedExitCode = 2;
 
-// src/cli/internal/common/utils/exitForRunResult.ts
-var exitForRunResult = ({ ok, manifest }) => {
+// src/runState/isRunPaused.ts
+var isRunPaused = ({ status }) => status === RunStatus.PausedRateLimit || status === RunStatus.PausedBudget;
+
+// src/cli/internal/common/utils/getRunResultExitCode.ts
+var getRunResultExitCode = ({ ok, manifest }) => {
+  let code = 1;
   if (ok) {
-    return exitCli({ code: 0 });
+    code = 0;
+  } else if (isRunPaused({ status: manifest.status })) {
+    code = pausedExitCode;
   }
-  return exitCli({ code: isRunPaused({ status: manifest.status }) ? pausedExitCode : 1 });
+  return code;
 };
 
 // src/cli/internal/common/utils/resolveCommandHarness.ts
@@ -126287,13 +126749,13 @@ import { relative as relative3, sep as sep2 } from "node:path";
 var formatPlanAddress = ({ workOrderName, planId }) => `${workOrderName}/${planId}`;
 
 // src/plan/common/paths/resolveRecordedPlanPath.ts
-import { join as join34, resolve as resolve4 } from "node:path";
+import { join as join37, resolve as resolve4 } from "node:path";
 var resolveRecordedPlanPath = async ({ cwd, path }) => {
   const [stateDir, workOrdersFolder, ...tail] = path.split(/[/\\]/);
   if (stateDir !== ".lightsout" || workOrdersFolder !== "work-orders" || tail.length === 0) {
     return resolve4(cwd, path);
   }
-  return join34(await workOrdersDir({ cwd }), ...tail);
+  return join37(await workOrdersDir({ cwd }), ...tail);
 };
 
 // src/plan/planNameFromPath.ts
@@ -126513,7 +126975,7 @@ var parseForgeJson = ({ stdout }) => {
 var remoteWaitTimings = { pollIntervalMs: 3e4, ceilingMs: 30 * 6e4 };
 
 // src/ship/internal/common/utils/sleep.ts
-var sleep = ({ ms }) => new Promise((resolve19) => setTimeout(resolve19, ms));
+var sleep = ({ ms }) => new Promise((resolve21) => setTimeout(resolve21, ms));
 
 // src/ship/forge/mergePullRequest.ts
 var StateView = external_exports.object({
@@ -126839,7 +127301,7 @@ var recordHarnessProcess = async ({
   driver,
   invocation,
   activity,
-  spawn: spawn4,
+  spawn: spawn5,
   reemit
 }) => {
   const startedAt = /* @__PURE__ */ new Date();
@@ -126868,7 +127330,7 @@ var recordHarnessProcess = async ({
       harness: driver.name,
       model: invocation.model,
       effort: invocation.effort,
-      spawn: spawn4,
+      spawn: spawn5,
       reemit,
       startedAt: startedAt.toISOString(),
       endedAt: endedAt.toISOString(),
@@ -126907,6 +127369,8 @@ var invokeAgentWithContract = async ({
   timeoutMs,
   allowedCommands,
   environment,
+  foregroundCommandsOnly,
+  writableDirs,
   maxRoleAttempts = 1,
   onEvent,
   onRejectedOutput,
@@ -126926,7 +127390,7 @@ var invokeAgentWithContract = async ({
     attempt += 1;
     const rung = await recordHarnessProcess({
       driver,
-      invocation: { ...active, cwd, model, effort, permissions, timeoutMs, allowedCommands, environment, onEvent },
+      invocation: { ...active, cwd, model, effort, permissions, timeoutMs, allowedCommands, writableDirs, environment, foregroundCommandsOnly, onEvent },
       activity,
       spawn: attempt,
       reemit: isReemit
@@ -127045,7 +127509,7 @@ var describeGateCoordinationTimeout = ({ holder, waitedMs }) => {
 
 // src/gates/gateLock/internal/acquireGateLock.ts
 import { existsSync as existsSync4, mkdirSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
-import { dirname as dirname5 } from "node:path";
+import { dirname as dirname6 } from "node:path";
 
 // src/gates/gateLock/internal/common/constants/gateLockTimings.ts
 var gateLockTimings = {
@@ -127124,7 +127588,7 @@ var readGateLock = ({ lockPath }) => {
 };
 
 // src/gates/gateLock/internal/acquireGateLock.ts
-var sleep2 = ({ ms }) => new Promise((resolve19) => setTimeout(resolve19, ms));
+var sleep2 = ({ ms }) => new Promise((resolve21) => setTimeout(resolve21, ms));
 var codeOf = ({ error: error51 }) => typeof error51 === "object" && error51 !== null && "code" in error51 ? error51.code : void 0;
 var claimLeftover = ({ lockPath, runId }) => {
   const asidePath = `${lockPath}.claim-${process.pid}-${runId}`;
@@ -127148,14 +127612,14 @@ var createReservation = ({ lockPath, cwd, runId }) => {
     outcome = { created: true, present: false, failure: void 0 };
   } catch (error51) {
     const code = codeOf({ error: error51 });
-    const sharedFolderMissing = code === "ENOENT" && existsSync4(dirname5(dirname5(lockPath)));
+    const sharedFolderMissing = code === "ENOENT" && existsSync4(dirname6(dirname6(lockPath)));
     if (code === "EEXIST") {
       outcome = { created: false, present: true, failure: void 0 };
     } else if (!sharedFolderMissing) {
       outcome = { created: false, present: false, failure: messageOf({ error: error51 }) };
     } else {
       try {
-        mkdirSync(dirname5(lockPath), { recursive: true });
+        mkdirSync(dirname6(lockPath), { recursive: true });
       } catch (mkdirError) {
         outcome = { created: false, present: false, failure: messageOf({ error: mkdirError }) };
       }
@@ -127201,9 +127665,9 @@ var acquireGateLock = async ({ lockPath, cwd, runId, waitCeilingMs, onProgress }
 };
 
 // src/gates/gateLock/internal/common/utils/getGateLockPath.ts
-import { join as join35 } from "node:path";
+import { join as join38 } from "node:path";
 var getGateLockPath = async ({ cwd }) => {
-  return join35(await resolveSharedStateDir({ cwd }), "gate-lock.json");
+  return join38(await resolveSharedStateDir({ cwd }), "gate-lock.json");
 };
 
 // src/gates/gateLock/internal/common/utils/writeGateLockGroups.ts
@@ -127285,7 +127749,7 @@ var stageCounts = {
 var stageCountOf = ({ schedule }) => stageCounts[schedule.kind];
 
 // src/gates/internal/createGateRunner.ts
-import { mkdir as mkdir4, rm as rm4 } from "node:fs/promises";
+import { mkdir as mkdir5, rm as rm4 } from "node:fs/promises";
 
 // src/gates/internal/common/constants/GateEnding.ts
 var GateEnding = {
@@ -127343,17 +127807,17 @@ var classifyGateEnding = ({ kind, result, timedOut }) => {
 };
 
 // src/gates/testResults/testResultsDir.ts
-import { join as join36 } from "node:path";
+import { join as join39 } from "node:path";
 var unsafeSegmentCharacters = /[^A-Za-z0-9._-]/g;
 var safeSegment = ({ segment }) => segment.replace(unsafeSegmentCharacters, "-");
 var testResultsDir = async ({ cwd, runId, step, group, kind }) => {
   const runDir = await resolveRunDir({ cwd, runId });
-  return join36(runDir, "test-results", safeSegment({ segment: step }), safeSegment({ segment: group }), safeSegment({ segment: kind }));
+  return join39(runDir, "test-results", safeSegment({ segment: step }), safeSegment({ segment: group }), safeSegment({ segment: kind }));
 };
 
 // src/gates/testResults/writeJestReporter.ts
-import { mkdir, writeFile as writeFile2 } from "node:fs/promises";
-import { join as join37 } from "node:path";
+import { mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
+import { join as join40 } from "node:path";
 
 // src/gates/testResults/internal/jestReporterSource.ts
 var jestReporterSource = `const { mkdirSync, writeFileSync } = require('node:fs');
@@ -127412,19 +127876,19 @@ module.exports = LightsoutJestReporter;
 // src/gates/testResults/writeJestReporter.ts
 var writeJestReporter = async ({ cwd, runId }) => {
   const runDir = await resolveRunDir({ cwd, runId });
-  const reporterPath = join37(runDir, "jest-reporter.cjs");
-  await mkdir(runDir, { recursive: true });
+  const reporterPath = join40(runDir, "jest-reporter.cjs");
+  await mkdir2(runDir, { recursive: true });
   await writeFile2(reporterPath, jestReporterSource);
   return reporterPath;
 };
 
 // src/runState/internal/common/utils/appendRunLog.ts
-import { appendFile, mkdir as mkdir2 } from "node:fs/promises";
-import { join as join38 } from "node:path";
+import { appendFile, mkdir as mkdir3 } from "node:fs/promises";
+import { join as join41 } from "node:path";
 var appendRunLog = async ({ cwd, runId, fileName, record: record3 }) => {
   const dir = await resolveRunDir({ cwd, runId });
-  await mkdir2(dir, { recursive: true });
-  await appendFile(join38(dir, fileName), `${JSON.stringify(record3)}
+  await mkdir3(dir, { recursive: true });
+  await appendFile(join41(dir, fileName), `${JSON.stringify(record3)}
 `, "utf8");
 };
 
@@ -127434,15 +127898,15 @@ var appendCommandLog = async ({ cwd, runId, record: record3 }) => {
 };
 
 // src/common/utils/appendJsonlRecords.ts
-import { appendFile as appendFile2, mkdir as mkdir3 } from "node:fs/promises";
-import { dirname as dirname6 } from "node:path";
+import { appendFile as appendFile2, mkdir as mkdir4 } from "node:fs/promises";
+import { dirname as dirname7 } from "node:path";
 var appendJsonlRecords = async ({ path, schema, entries, runId, step }) => {
   if (entries.length === 0) {
     return;
   }
   const at = (/* @__PURE__ */ new Date()).toISOString();
   const lines = entries.map((entry) => JSON.stringify(schema.parse({ ...entry, at, runId, step }))).join("\n");
-  await mkdir3(dirname6(path), { recursive: true });
+  await mkdir4(dirname7(path), { recursive: true });
   await appendFile2(path, `${lines}
 `, "utf8");
 };
@@ -127460,7 +127924,7 @@ var prepareEvidence = async ({ cwd, runId, step, kind, group }) => {
   const reporterPath = await writeJestReporter({ cwd, runId });
   const dir = await testResultsDir({ cwd, runId, step: step ?? "gates", group, kind });
   await rm4(dir, { recursive: true, force: true });
-  await mkdir4(dir, { recursive: true });
+  await mkdir5(dir, { recursive: true });
   return { dir, env: { [testReporterEnv.reporter]: reporterPath, [testReporterEnv.resultsDir]: dir } };
 };
 var spawnAttempt = async ({
@@ -128401,7 +128865,7 @@ var findPullRequest = async ({ branch, cwd, state }) => {
 
 // src/ship/internal/renderPullRequestBody.ts
 var renderPullRequestBody = ({ template, tokens }) => {
-  return template.replace(/\{([a-zA-Z0-9_-]+)\}/g, (written, name) => tokens[name] ?? written);
+  return template.replace(/\{([a-zA-Z0-9_-]+)\}/g, (written2, name) => tokens[name] ?? written2);
 };
 
 // src/ship/internal/openPullRequest.ts
@@ -128764,14 +129228,14 @@ var syncDefaultBranch = async ({ cwd, defaultBranch, branch, onProgress }) => {
 };
 
 // src/ship/internal/writeShipResult.ts
-import { mkdir as mkdir5, rename, writeFile as writeFile3 } from "node:fs/promises";
-import { dirname as dirname7 } from "node:path";
+import { mkdir as mkdir6, rename, writeFile as writeFile3 } from "node:fs/promises";
+import { dirname as dirname8 } from "node:path";
 
 // src/ship/internal/common/utils/getShipResultPath.ts
-import { join as join39 } from "node:path";
+import { join as join42 } from "node:path";
 var getShipResultPath = async ({ cwd, branch }) => {
   const folder = await resolveBranchRecordDir({ cwd, branch });
-  return folder === void 0 ? void 0 : join39(folder, "ship.json");
+  return folder === void 0 ? void 0 : join42(folder, "ship.json");
 };
 
 // src/ship/internal/writeShipResult.ts
@@ -128781,7 +129245,7 @@ var writeShipResult = async ({ cwd, result }) => {
     return void 0;
   }
   const tmpPath = `${resultPath}.tmp`;
-  await mkdir5(dirname7(resultPath), { recursive: true });
+  await mkdir6(dirname8(resultPath), { recursive: true });
   await writeFile3(tmpPath, `${JSON.stringify(result, null, "	")}
 `, "utf8");
   await rename(tmpPath, resultPath);
@@ -128789,21 +129253,27 @@ var writeShipResult = async ({ cwd, result }) => {
 };
 
 // src/ship/progress/ShippingProgressRecorder.ts
-import { mkdir as mkdir6, rename as rename2, stat as stat6, writeFile as writeFile5 } from "node:fs/promises";
-import { dirname as dirname8, join as join41 } from "node:path";
+import { mkdir as mkdir7, rename as rename3, stat as stat6, writeFile as writeFile5 } from "node:fs/promises";
+import { dirname as dirname9, join as join44 } from "node:path";
 
 // src/common/utils/writeJsonFile.ts
-import { writeFile as writeFile4 } from "node:fs/promises";
-var writeJsonFile = async ({ path, value }) => {
-  await writeFile4(path, `${JSON.stringify(value, void 0, "	")}
-`, "utf8");
+import { rename as rename2, writeFile as writeFile4 } from "node:fs/promises";
+var writeJsonFile = async ({ path, value, atomic = false }) => {
+  const content = `${JSON.stringify(value, void 0, "	")}
+`;
+  if (atomic) {
+    await writeFile4(`${path}.tmp`, content, "utf8");
+    await rename2(`${path}.tmp`, path);
+  } else {
+    await writeFile4(path, content, "utf8");
+  }
 };
 
 // src/ship/progress/internal/common/utils/getShippingProgressPath.ts
-import { join as join40 } from "node:path";
+import { join as join43 } from "node:path";
 var getShippingProgressPath = async ({ cwd, branch }) => {
   const folder = await resolveBranchRecordDir({ cwd, branch });
-  return folder === void 0 ? void 0 : join40(folder, "ship-progress.json");
+  return folder === void 0 ? void 0 : join43(folder, "ship-progress.json");
 };
 
 // src/ship/progress/ShippingProgressRecorder.ts
@@ -128814,7 +129284,7 @@ var freshRecord = ({ branch, maxAttempts }) => {
   return { branch, attempt: 1, maxAttempts, pid: process.pid, startedAt: now, updatedAt: now, steps: pendingSteps() };
 };
 var ensureIgnoreFile = async ({ folder }) => {
-  const ignorePath = join41(folder, ".gitignore");
+  const ignorePath = join44(folder, ".gitignore");
   const isFile = await stat6(ignorePath).then(
     (found) => found.isFile(),
     () => false
@@ -128829,11 +129299,11 @@ var writeRecord = async ({ recordPath, record: record3 }) => {
     if (path === void 0) {
       return;
     }
-    const folder = dirname8(path);
-    await mkdir6(folder, { recursive: true });
+    const folder = dirname9(path);
+    await mkdir7(folder, { recursive: true });
     await ensureIgnoreFile({ folder });
     await writeJsonFile({ path: `${path}.tmp`, value: record3 });
-    await rename2(`${path}.tmp`, path);
+    await rename3(`${path}.tmp`, path);
   } catch {
   }
 };
@@ -129208,6 +129678,24 @@ var reconcileShippedTicket = async ({ config: config2, env, ticketRef, onProgres
   return void 0;
 };
 
+// src/common/workspace/resolveWorkOrderNameForBranch.ts
+var resolveWorkOrderNameForBranch = async ({ cwd, branch }) => (await findWorkOrderForBranch({ cwd, branch }))?.name ?? branch;
+
+// src/workOrder/common/constants/WorkOrderShipStateKind.ts
+var WorkOrderShipStateKind = {
+  Shipped: "shipped",
+  ShipRequestMissing: "ship-request-missing",
+  ShipRequested: "ship-requested",
+  PlanOneWaiting: "plan-one-waiting",
+  PlanOneImplemented: "plan-one-implemented",
+  PlanOneExcluded: "plan-one-excluded",
+  TicketBodyUnbuilt: "ticket-body-unbuilt",
+  TicketBodyBuilding: "ticket-body-building",
+  TicketBodyFailed: "ticket-body-failed",
+  TicketBodyPassed: "ticket-body-passed",
+  HandBuiltAuthorized: "hand-built-authorized"
+};
+
 // src/workOrder/internal/common/record/appendWorkOrderEvent.ts
 var appendWorkOrderEvent = ({ record: record3, kind, detail, at }) => ({
   ...record3,
@@ -129215,7 +129703,7 @@ var appendWorkOrderEvent = ({ record: record3, kind, detail, at }) => ({
 });
 
 // src/workOrder/pullWorkOrderState.ts
-import { join as join47 } from "node:path";
+import { join as join50 } from "node:path";
 
 // src/workOrder/internal/common/constants/workOrderFileNames.ts
 var workOrderFileNames = {
@@ -129385,7 +129873,7 @@ var readPublishedWorkOrderState = async ({
 };
 
 // src/workOrder/internal/common/utils/readWorkOrderSyncState.ts
-import { join as join42 } from "node:path";
+import { join as join45 } from "node:path";
 
 // src/contracts/workOrder/WorkOrderSyncState.ts
 var sha256Digest2 = external_exports.string().regex(/^[a-f0-9]{64}$/, "a hash is written as 64 lowercase hex characters");
@@ -129398,7 +129886,7 @@ var WorkOrderSyncState = external_exports.object({
 }).strict();
 
 // src/workOrder/internal/common/utils/readWorkOrderSyncState.ts
-var readWorkOrderSyncState = async ({ workOrderFolder }) => readJsonFile({ path: join42(workOrderFolder, workOrderFileNames.sync), schema: WorkOrderSyncState });
+var readWorkOrderSyncState = async ({ workOrderFolder }) => readJsonFile({ path: join45(workOrderFolder, workOrderFileNames.sync), schema: WorkOrderSyncState });
 
 // src/workOrder/internal/common/utils/resolveWorkOrderTrackerTarget.ts
 var resolveWorkOrderTrackerTarget = ({
@@ -129420,14 +129908,14 @@ var resolveWorkOrderTrackerTarget = ({
 };
 
 // src/workOrder/readWorkOrderState.ts
-import { join as join43 } from "node:path";
+import { join as join46 } from "node:path";
 
 // src/workOrder/internal/common/utils/readWorkOrderStateFile.ts
-import { readFile as readFile16 } from "node:fs/promises";
+import { readFile as readFile18 } from "node:fs/promises";
 var readText = async ({ statePath }) => {
   let outcome;
   try {
-    outcome = { text: await readFile16(statePath, "utf8") };
+    outcome = { text: await readFile18(statePath, "utf8") };
   } catch (error51) {
     const missing = typeof error51 === "object" && error51 !== null && "code" in error51 && error51.code === "ENOENT";
     outcome = missing ? { missing: true } : { error: `the work order state ${statePath} could not be read: ${messageOf({ error: error51 })}` };
@@ -129470,7 +129958,7 @@ var readWorkOrderStateFile = async ({ statePath, name }) => {
 // src/workOrder/readWorkOrderState.ts
 var readWorkOrderState = async ({ cwd, name }) => {
   const workOrderFolder = await workOrderFolderDir({ cwd, name });
-  return readWorkOrderStateFile({ statePath: join43(workOrderFolder, workOrderFileNames.record), name });
+  return readWorkOrderStateFile({ statePath: join46(workOrderFolder, workOrderFileNames.record), name });
 };
 
 // src/workOrder/internal/common/utils/readWorkOrderWithTrackerTarget.ts
@@ -129489,16 +129977,16 @@ var readWorkOrderWithTrackerTarget = async ({
 };
 
 // src/workOrder/internal/common/utils/surfaceWorkOrderDivergence.ts
-import { join as join44 } from "node:path";
+import { join as join47 } from "node:path";
 
 // src/workOrder/internal/common/utils/writeWorkOrderFolderFile.ts
-import { mkdir as mkdir7, rename as rename3, writeFile as writeFile6 } from "node:fs/promises";
-import { dirname as dirname9 } from "node:path";
+import { mkdir as mkdir8, rename as rename4, writeFile as writeFile6 } from "node:fs/promises";
+import { dirname as dirname10 } from "node:path";
 var writeWorkOrderFolderFile = async ({ path, content }) => {
   const temporaryPath = `${path}.tmp`;
-  await mkdir7(dirname9(path), { recursive: true });
+  await mkdir8(dirname10(path), { recursive: true });
   await writeFile6(temporaryPath, content);
-  await rename3(temporaryPath, path);
+  await rename4(temporaryPath, path);
 };
 
 // src/workOrder/internal/common/utils/surfaceWorkOrderDivergence.ts
@@ -129506,7 +129994,7 @@ var surfaceWorkOrderDivergence = async ({ workOrderFolder, name, ticketRef, cont
   const sync = `lightsout work-order sync --name ${name}`;
   let saved = `the published copy is saved beside it as ${workOrderFileNames.published}`;
   try {
-    await writeWorkOrderFolderFile({ path: join44(workOrderFolder, workOrderFileNames.published), content });
+    await writeWorkOrderFolderFile({ path: join47(workOrderFolder, workOrderFileNames.published), content });
   } catch (error51) {
     saved = `the published copy could not be saved as ${workOrderFileNames.published} (${messageOf({ error: error51 })})`;
   }
@@ -129514,7 +130002,7 @@ var surfaceWorkOrderDivergence = async ({ workOrderFolder, name, ticketRef, cont
 };
 
 // src/workOrder/internal/common/utils/updateWorkOrderSyncState.ts
-import { join as join45 } from "node:path";
+import { join as join48 } from "node:path";
 var updateWorkOrderSyncState = async ({ workOrderFolder, recordSha256, planMarkers }) => {
   const current = await readWorkOrderSyncState({ workOrderFolder });
   const recorded = recordSha256 ?? current?.recordSha256;
@@ -129526,7 +130014,7 @@ var updateWorkOrderSyncState = async ({ workOrderFolder, recordSha256, planMarke
     next.recordSha256 = recorded;
   }
   await writeWorkOrderFolderFile({
-    path: join45(workOrderFolder, workOrderFileNames.sync),
+    path: join48(workOrderFolder, workOrderFileNames.sync),
     content: Buffer.from(`${JSON.stringify(next, void 0, "	")}
 `, "utf8")
   });
@@ -129535,9 +130023,9 @@ var updateWorkOrderSyncState = async ({ workOrderFolder, recordSha256, planMarke
 // src/workOrder/internal/common/utils/withWorkOrderStateLock.ts
 import { randomUUID as randomUUID2 } from "node:crypto";
 import { mkdirSync as mkdirSync2, readFileSync as readFileSync3, renameSync as renameSync3, unlinkSync as unlinkSync2, writeFileSync as writeFileSync3 } from "node:fs";
-import { join as join46 } from "node:path";
+import { join as join49 } from "node:path";
 var LockHolder = external_exports.object({ pid: external_exports.number(), token: external_exports.string(), acquiredAt: external_exports.string() });
-var sleep3 = ({ ms }) => new Promise((resolve19) => setTimeout(resolve19, ms));
+var sleep3 = ({ ms }) => new Promise((resolve21) => setTimeout(resolve21, ms));
 var readHolder = ({ lockPath }) => {
   let holder;
   try {
@@ -129625,7 +130113,7 @@ var withWorkOrderStateLock = async ({ workOrderFolder, run }) => {
   } catch (error51) {
     return { error: `the work order folder ${workOrderFolder} could not be created: ${messageOf({ error: error51 })}` };
   }
-  const lockPath = join46(workOrderFolder, workOrderFileNames.lock);
+  const lockPath = join49(workOrderFolder, workOrderFileNames.lock);
   const token = randomUUID2();
   const acquisition = await acquireLock({ lockPath, token });
   if ("error" in acquisition) {
@@ -129648,7 +130136,7 @@ var takePublished = async ({
 }) => {
   let outcome;
   try {
-    await writeWorkOrderFolderFile({ path: join47(workOrderFolder, workOrderFileNames.record), content });
+    await writeWorkOrderFolderFile({ path: join50(workOrderFolder, workOrderFileNames.record), content });
     await updateWorkOrderSyncState({ workOrderFolder, recordSha256: sha256({ content }) });
     outcome = { record: record3 };
   } catch (error51) {
@@ -129716,96 +130204,128 @@ var pullWorkOrderState = async ({
   });
 };
 
-// src/workOrder/readWorkOrderShipEligibility.ts
-var readTicketBodyEligibility = ({ record: record3 }) => {
+// src/workOrder/common/utils/formatRequestShipCommand.ts
+var formatRequestShipCommand = ({ name, planIds }) => `lightsout work-order request-ship --name ${name} --plans ${planIds.join(",")}`;
+
+// src/workOrder/shipping/readWorkOrderShipState.ts
+var readTicketBodyShipState = ({ record: record3 }) => {
   const build = record3.ticketBodyBuild;
-  let eligibility;
-  if (build === void 0) {
-    eligibility = {
-      eligible: false,
-      reason: `work order ${record3.name} is in single-plan mode and holds no plan 001, and no build from the ticket body has passed on it`
-    };
-  } else if (build.progress !== PlanProgress.Implemented) {
-    eligibility = {
-      eligible: false,
-      reason: `the build from the ticket body of work order ${record3.name} under run ${build.runId} has not passed, and a single-plan ticket holding no plan 001 ships once that build passed`
-    };
+  const authorization = record3.handBuiltShipAuthorization;
+  let state;
+  if (build?.progress === PlanProgress.Implemented) {
+    state = { kind: WorkOrderShipStateKind.TicketBodyPassed, runId: build.runId };
+  } else if (authorization !== void 0) {
+    state = { kind: WorkOrderShipStateKind.HandBuiltAuthorized, by: authorization.by, at: authorization.at };
+  } else if (build === void 0) {
+    state = { kind: WorkOrderShipStateKind.TicketBodyUnbuilt };
+  } else if (build.progress === PlanProgress.Failed) {
+    state = { kind: WorkOrderShipStateKind.TicketBodyFailed, runId: build.runId };
   } else {
-    eligibility = { eligible: true };
+    state = { kind: WorkOrderShipStateKind.TicketBodyBuilding, runId: build.runId };
   }
-  return eligibility;
+  return state;
 };
-var readSinglePlanEligibility = ({ record: record3 }) => {
+var readSinglePlanShipState = ({ record: record3 }) => {
   const first = record3.plans.find((plan) => planNumberOf({ id: plan.id }) === 1);
-  let eligibility;
+  let state;
   if (first === void 0) {
-    eligibility = readTicketBodyEligibility({ record: record3 });
+    state = readTicketBodyShipState({ record: record3 });
   } else if (first.exclusion !== void 0) {
-    eligibility = {
-      eligible: false,
-      reason: `plan ${first.id} is excluded from work order ${record3.name} \u2014 ${first.exclusion.reason} \u2014 so a single-plan ticket has no implementation to ship`
-    };
-  } else if (first.progress !== PlanProgress.Implemented) {
-    eligibility = {
-      eligible: false,
-      reason: `the implementation of plan ${first.id} on work order ${record3.name} has not finished, and a single-plan ticket ships once plan 001 is implemented`
-    };
+    state = { kind: WorkOrderShipStateKind.PlanOneExcluded, planId: first.id, reason: first.exclusion.reason };
+  } else if (first.progress === PlanProgress.Implemented) {
+    state = { kind: WorkOrderShipStateKind.PlanOneImplemented, planId: first.id };
   } else {
-    eligibility = { eligible: true };
+    state = { kind: WorkOrderShipStateKind.PlanOneWaiting, planId: first.id };
   }
-  return eligibility;
+  return state;
 };
-var describeRequestDrift = ({ missing, stale }) => {
+var readMultiplePlanShipState = ({ record: record3 }) => {
+  const included = record3.plans.filter((plan) => plan.exclusion === void 0);
+  const includedPlanIds = included.map((plan) => plan.id);
+  const request = record3.shipRequest;
+  let state;
+  if (request === void 0) {
+    state = { kind: WorkOrderShipStateKind.ShipRequestMissing, includedPlanIds };
+  } else {
+    const waiting = included.find((plan) => plan.progress !== PlanProgress.Implemented);
+    state = {
+      kind: WorkOrderShipStateKind.ShipRequested,
+      planIds: request.planIds,
+      includedPlanIds,
+      missingPlanIds: includedPlanIds.filter((id) => !request.planIds.includes(id)),
+      stalePlanIds: request.planIds.filter((id) => !includedPlanIds.includes(id)),
+      ...waiting === void 0 ? {} : { waitingPlanId: waiting.id }
+    };
+  }
+  return state;
+};
+var readWorkOrderShipState = ({ record: record3 }) => {
+  let state;
+  if (record3.shipped !== void 0) {
+    state = { kind: WorkOrderShipStateKind.Shipped, mergeCommit: record3.shipped.mergeCommit };
+  } else if (record3.mode === WorkOrderMode.SinglePlan) {
+    state = readSinglePlanShipState({ record: record3 });
+  } else {
+    state = readMultiplePlanShipState({ record: record3 });
+  }
+  return state;
+};
+
+// src/workOrder/shipping/readWorkOrderShipEligibility.ts
+var handBuiltRemedy = "to ship work built by hand instead, authorize it with `lightsout ship --hand-built`";
+var describeRequestDrift = ({ state }) => {
   const clauses = [
-    ...missing.length === 0 ? [] : [`it does not name ${missing.join(", ")}`],
-    ...stale.length === 0 ? [] : [`it names ${stale.join(", ")}, which the ticket no longer includes`]
+    ...state.missingPlanIds.length === 0 ? [] : [`it does not name ${state.missingPlanIds.join(", ")}`],
+    ...state.stalePlanIds.length === 0 ? [] : [`it names ${state.stalePlanIds.join(", ")}, which the ticket no longer includes`]
   ];
   return clauses.join(", and ");
 };
-var readMultiplePlanEligibility = ({ record: record3 }) => {
-  const included = record3.plans.filter((plan) => plan.exclusion === void 0);
-  const includedIds = included.map((plan) => plan.id);
-  const request = record3.shipRequest;
-  const askAgain = `\`lightsout work-order request-ship --name ${record3.name} --plans ${includedIds.join(",")}\``;
-  let eligibility;
-  if (request === void 0) {
-    eligibility = {
-      eligible: false,
-      reason: `work order ${record3.name} is in multiple-plan mode and carries no ship request, so ask for one with ${askAgain}`
-    };
-  } else {
-    const missing = includedIds.filter((id) => !request.planIds.includes(id));
-    const stale = request.planIds.filter((id) => !includedIds.includes(id));
-    const waiting = included.find((plan) => plan.progress !== PlanProgress.Implemented);
-    if (missing.length > 0 || stale.length > 0) {
-      eligibility = {
-        eligible: false,
-        reason: `the ship request on work order ${record3.name} no longer names the plans it holds \u2014 ${describeRequestDrift({ missing, stale })} \u2014 so request shipping again with ${askAgain}`
-      };
-    } else if (waiting !== void 0) {
-      eligibility = {
-        eligible: false,
-        reason: `the implementation of plan ${waiting.id} on work order ${record3.name} has not finished, and every plan its ship request names is implemented before the ticket ships`
-      };
-    } else {
-      eligibility = { eligible: true };
-    }
+var readShipRequestRefusal = ({ record: record3, state }) => {
+  const askAgain = `\`${formatRequestShipCommand({ name: record3.name, planIds: state.includedPlanIds })}\``;
+  let reason;
+  if (state.missingPlanIds.length > 0 || state.stalePlanIds.length > 0) {
+    reason = `the ship request on work order ${record3.name} no longer names the plans it holds \u2014 ${describeRequestDrift({ state })} \u2014 so request shipping again with ${askAgain}`;
+  } else if (state.waitingPlanId !== void 0) {
+    reason = `the implementation of plan ${state.waitingPlanId} on work order ${record3.name} has not finished, and every plan its ship request names is implemented before the ticket ships`;
   }
-  return eligibility;
+  return reason;
+};
+var readRefusal = ({ record: record3, state }) => {
+  let reason;
+  switch (state.kind) {
+    case WorkOrderShipStateKind.Shipped:
+      reason = `work order ${record3.name} already shipped as ${state.mergeCommit}, so its record no longer authorizes a merge`;
+      break;
+    case WorkOrderShipStateKind.ShipRequestMissing:
+      reason = `work order ${record3.name} is in multiple-plan mode and carries no ship request, so ask for one with \`${formatRequestShipCommand({ name: record3.name, planIds: state.includedPlanIds })}\``;
+      break;
+    case WorkOrderShipStateKind.ShipRequested:
+      reason = readShipRequestRefusal({ record: record3, state });
+      break;
+    case WorkOrderShipStateKind.PlanOneWaiting:
+      reason = `the implementation of plan ${state.planId} on work order ${record3.name} has not finished, and a single-plan ticket ships once plan 001 is implemented`;
+      break;
+    case WorkOrderShipStateKind.PlanOneExcluded:
+      reason = `plan ${state.planId} is excluded from work order ${record3.name} \u2014 ${state.reason} \u2014 so a single-plan ticket has no implementation to ship`;
+      break;
+    case WorkOrderShipStateKind.TicketBodyUnbuilt:
+      reason = `work order ${record3.name} is in single-plan mode and holds no plan 001, and no build from the ticket body has passed on it \u2014 ${handBuiltRemedy}`;
+      break;
+    case WorkOrderShipStateKind.TicketBodyBuilding:
+    case WorkOrderShipStateKind.TicketBodyFailed:
+      reason = `the build from the ticket body of work order ${record3.name} under run ${state.runId} has not passed, and a single-plan ticket holding no plan 001 ships once that build passed \u2014 ${handBuiltRemedy}`;
+      break;
+    case WorkOrderShipStateKind.PlanOneImplemented:
+    case WorkOrderShipStateKind.TicketBodyPassed:
+    case WorkOrderShipStateKind.HandBuiltAuthorized:
+      reason = void 0;
+      break;
+  }
+  return reason;
 };
 var readWorkOrderShipEligibility = ({ record: record3 }) => {
-  let eligibility;
-  if (record3.shipped !== void 0) {
-    eligibility = {
-      eligible: false,
-      reason: `work order ${record3.name} already shipped as ${record3.shipped.mergeCommit}, so its record no longer authorizes a merge`
-    };
-  } else if (record3.mode === WorkOrderMode.SinglePlan) {
-    eligibility = readSinglePlanEligibility({ record: record3 });
-  } else {
-    eligibility = readMultiplePlanEligibility({ record: record3 });
-  }
-  return eligibility;
+  const reason = readRefusal({ record: record3, state: readWorkOrderShipState({ record: record3 }) });
+  return reason === void 0 ? { eligible: true } : { eligible: false, reason };
 };
 
 // src/workOrder/internal/common/constants/publishedButUnrecorded.ts
@@ -129867,7 +130387,7 @@ var attachWorkOrderStateIfUnmoved = async ({
 
 // src/workOrder/internal/common/utils/recordWorkOrderSyncState.ts
 import { rm as rm5 } from "node:fs/promises";
-import { join as join48 } from "node:path";
+import { join as join51 } from "node:path";
 var recordWorkOrderSyncState = async ({
   workOrderFolder,
   recordSha256,
@@ -129881,7 +130401,7 @@ var recordWorkOrderSyncState = async ({
       try {
         await updateWorkOrderSyncState({ workOrderFolder, recordSha256, planMarkers });
         if (dropSurfacedCopy === true) {
-          await rm5(join48(workOrderFolder, workOrderFileNames.published), { force: true });
+          await rm5(join51(workOrderFolder, workOrderFileNames.published), { force: true });
         }
         return void 0;
       } catch (error51) {
@@ -129894,8 +130414,8 @@ var recordWorkOrderSyncState = async ({
 
 // src/workOrder/updateLocalWorkOrderState.ts
 import { randomUUID as randomUUID3 } from "node:crypto";
-import { rename as rename4, writeFile as writeFile7 } from "node:fs/promises";
-import { join as join49 } from "node:path";
+import { rename as rename5, writeFile as writeFile7 } from "node:fs/promises";
+import { join as join52 } from "node:path";
 var findHistoryRefusal = ({ current, next }) => {
   const recorded = current?.history ?? [];
   const kept = next.history.slice(0, recorded.length);
@@ -129924,10 +130444,10 @@ var writeChangedRecord = async ({
     outcome = refusal === void 0 ? outcome : { error: refusal };
   }
   if ("record" in outcome) {
-    const temporaryPath = join49(workOrderFolder, `${workOrderFileNames.record}.${randomUUID3()}.tmp`);
+    const temporaryPath = join52(workOrderFolder, `${workOrderFileNames.record}.${randomUUID3()}.tmp`);
     try {
       await writeFile7(temporaryPath, serializeWorkOrderState({ record: outcome.record }));
-      await rename4(temporaryPath, recordPath);
+      await rename5(temporaryPath, recordPath);
     } catch (error51) {
       outcome = { error: `the work order state ${recordPath} could not be written: ${messageOf({ error: error51 })}` };
     }
@@ -129936,7 +130456,7 @@ var writeChangedRecord = async ({
 };
 var updateLocalWorkOrderState = async ({ cwd, name, change }) => {
   const workOrderFolder = await workOrderFolderDir({ cwd, name });
-  const recordPath = join49(workOrderFolder, workOrderFileNames.record);
+  const recordPath = join52(workOrderFolder, workOrderFileNames.record);
   return withWorkOrderStateLock({
     workOrderFolder,
     run: async () => {
@@ -129992,11 +130512,25 @@ var updateSyncedWorkOrderState = async ({
 };
 
 // src/workOrder/implementRun/createWorkOrderShipGuard.ts
+var describeShipped = ({ record: record3, planIds, mergeCommit }) => {
+  const state = readWorkOrderShipState({ record: record3 });
+  const shipped = `work order ${record3.name} shipped as ${mergeCommit}`;
+  let detail = shipped;
+  if (state.kind === WorkOrderShipStateKind.TicketBodyPassed) {
+    detail = `${shipped} from the ticket body`;
+  } else if (state.kind === WorkOrderShipStateKind.HandBuiltAuthorized) {
+    detail = `${shipped} as hand-built work authorized by ${state.by}`;
+  } else if (planIds.length > 0) {
+    detail = `${shipped} with ${planIds.join(", ")}`;
+  }
+  return detail;
+};
 var createWorkOrderShipGuard = ({ config: config2, env, onProgress }) => ({
   authorize: async ({ cwd, branch }) => {
-    const pulled = await pullWorkOrderState({ cwd, name: branch, config: config2, env, onProgress });
+    const name = await resolveWorkOrderNameForBranch({ cwd, branch });
+    const pulled = await pullWorkOrderState({ cwd, name, config: config2, env, onProgress });
     if ("error" in pulled) {
-      const local = await readWorkOrderState({ cwd, name: branch });
+      const local = await readWorkOrderState({ cwd, name });
       return "error" in local || local.record !== void 0 ? pulled.error : void 0;
     }
     if (pulled.record === void 0) {
@@ -130006,7 +130540,8 @@ var createWorkOrderShipGuard = ({ config: config2, env, onProgress }) => ({
     return eligibility.eligible ? void 0 : eligibility.reason;
   },
   recordShipped: async ({ cwd, branch, mergeCommit }) => {
-    const read = await readWorkOrderState({ cwd, name: branch });
+    const name = await resolveWorkOrderNameForBranch({ cwd, branch });
+    const read = await readWorkOrderState({ cwd, name });
     if ("error" in read) {
       onProgress?.(`the merge ${mergeCommit} could not be recorded on the ticket: ${read.error}`);
       return;
@@ -130017,20 +130552,19 @@ var createWorkOrderShipGuard = ({ config: config2, env, onProgress }) => ({
     const at = (/* @__PURE__ */ new Date()).toISOString();
     const updated = await updateSyncedWorkOrderState({
       cwd,
-      name: branch,
+      name,
       config: config2,
       env,
       onProgress,
       change: (current) => {
         if (current === void 0) {
-          return { error: `work order ${branch} no longer has a record, so the merge ${mergeCommit} could not be recorded on it` };
+          return { error: `work order ${name} no longer has a record, so the merge ${mergeCommit} could not be recorded on it` };
         }
         const planIds = current.plans.filter((plan) => plan.exclusion === void 0).map((plan) => plan.id);
-        const shippedWith = planIds.length === 0 ? "from the ticket body" : `with ${planIds.join(", ")}`;
         return appendWorkOrderEvent({
           record: { ...current, shipped: { at, planIds, mergeCommit } },
           kind: WorkOrderEventKind.Shipped,
-          detail: `work order ${branch} shipped as ${mergeCommit} ${shippedWith}`,
+          detail: describeShipped({ record: current, planIds, mergeCommit }),
           at
         });
       }
@@ -130127,8 +130661,8 @@ var readWorkOrderRunTerms = async ({ cwd, name, planPath }) => {
   return { refusal, shipRequest };
 };
 
-// src/cli/internal/common/utils/exitAfterImplement.ts
-var exitAfterImplement = async ({ config: config2, cwd, result, shipFlag, noShipFlag, env }) => {
+// src/cli/internal/common/utils/shipAfterImplement.ts
+var shipAfterImplement = async ({ config: config2, cwd, result, shipFlag, noShipFlag, env }) => {
   const terms = await readWorkOrderRunTerms({
     cwd,
     name: await planNameFromPath({ cwd, planPath: result.manifest.plan }),
@@ -130137,22 +130671,22 @@ var exitAfterImplement = async ({ config: config2, cwd, result, shipFlag, noShip
   const intent = resolveShipIntent({ config: config2, shipFlag, noShipFlag, env, shipRequest: terms.shipRequest });
   if (intent.contradictory) {
     console.error(contradictoryShipFlagsMessage);
-    return exitCli({ code: 1 });
+    return 1;
   }
   if (!result.ok || !intent.willShip) {
     if (result.ok && intent.shipRequestBlocker !== void 0) {
       console.log(intent.shipRequestBlocker);
     }
-    return exitForRunResult({ ok: result.ok, manifest: result.manifest });
+    return getRunResultExitCode({ ok: result.ok, manifest: result.manifest });
   }
   if (intent.settings === void 0) {
     console.error(unusableTicketPatternMessage);
-    return exitCli({ code: 1 });
+    return 1;
   }
   const resolved = await resolveRunCwd({ cwd, manifest: result.manifest });
   if ("error" in resolved) {
     console.error(resolved.error);
-    return exitCli({ code: 1 });
+    return 1;
   }
   const workCwd = resolved.workspace;
   const { config: effectiveConfig, driver } = resolveEffectiveConfigAndDriver({ config: config2, command: "implement" });
@@ -130164,20 +130698,48 @@ var exitAfterImplement = async ({ config: config2, cwd, result, shipFlag, noShip
     onProgress: createProgressPrinter()
   });
   if (shipped.status === ShipStatus.Blocked) {
-    return exitCli({ code: 1 });
+    return 1;
   }
   await removeShippedRunWorkspace({ cwd: workCwd, manifest: result.manifest, onProgress: createProgressPrinter() });
   const reconciliationFailure = await reconcileShippedTicket({ config: config2, env, ticketRef: shipped.ticketRef, onProgress: createProgressPrinter() });
   if (reconciliationFailure !== void 0) {
     console.error(reconciliationFailure);
   }
-  return exitForRunResult({ ok: result.ok, manifest: result.manifest });
+  return getRunResultExitCode({ ok: result.ok, manifest: result.manifest });
+};
+
+// src/runState/finalReport/getRunFinalReportPath.ts
+import { join as join53 } from "node:path";
+var getRunFinalReportPath = async ({ cwd, runId }) => {
+  return join53(await resolveRunDir({ cwd, runId }), "report.json");
+};
+
+// src/runState/finalReport/writeRunFinalReport.ts
+var writeRunFinalReport = async ({ cwd, runId, report: report2 }) => {
+  await writeJsonFile({ path: await getRunFinalReportPath({ cwd, runId }), value: report2, atomic: true });
 };
 
 // src/cli/internal/common/implementRun/finishImplementRun.ts
+var renderErrorLines = ({ result }) => result.ok || result.error === void 0 ? [] : ["", result.error];
+var saveFinalReport = async ({ cwd, runId, lines, exitCode }) => {
+  try {
+    await writeRunFinalReport({ cwd, runId, report: { lines, exitCode, finishedAt: (/* @__PURE__ */ new Date()).toISOString() } });
+  } catch (error51) {
+    console.error(`could not save the final report of run ${runId}: ${messageOf({ error: error51 })}`);
+  }
+};
 var finishImplementRun = async ({ config: config2, cwd, result, flags }) => {
-  await printResult({ result, cwd });
-  return exitAfterImplement({
+  const reportLines = await renderResult({ result, cwd });
+  const errorLines = renderErrorLines({ result });
+  for (const line of reportLines) {
+    console.log(line);
+  }
+  if (errorLines.length > 0 && isRunPaused({ status: result.manifest.status })) {
+    console.log(errorLines.join("\n"));
+  } else if (errorLines.length > 0) {
+    console.error(errorLines.join("\n"));
+  }
+  const code = await shipAfterImplement({
     config: config2,
     cwd,
     result,
@@ -130185,15 +130747,22 @@ var finishImplementRun = async ({ config: config2, cwd, result, flags }) => {
     noShipFlag: flags.get("no-ship") === true,
     env: process.env
   });
+  await saveFinalReport({
+    cwd,
+    runId: result.manifest.parentRunId ?? result.manifest.runId,
+    lines: [...reportLines, ...errorLines],
+    exitCode: code
+  });
+  return exitCli({ code });
 };
 
 // src/cli/internal/common/implementRun/copyRunInputs.ts
-import { cp, mkdir as mkdir8 } from "node:fs/promises";
-import { basename as basename7, dirname as dirname10, join as join50, relative as relative5, resolve as resolve5 } from "node:path";
+import { cp, mkdir as mkdir9 } from "node:fs/promises";
+import { basename as basename7, dirname as dirname11, join as join54, relative as relative5, resolve as resolve5 } from "node:path";
 var copyLooseInput = async ({ sourceCwd, workspace, inputPath }) => {
   const source = resolve5(sourceCwd, inputPath);
-  const destination = join50(workspace, ".lightsout", "inputs", basename7(source));
-  await mkdir8(dirname10(destination), { recursive: true });
+  const destination = join54(workspace, ".lightsout", "inputs", basename7(source));
+  await mkdir9(dirname11(destination), { recursive: true });
   await cp(source, destination);
   return relative5(workspace, destination);
 };
@@ -130222,21 +130791,6 @@ var copyRunInputs = async ({
   return copied;
 };
 
-// src/cli/internal/common/implementRun/describeUncommittableTree.ts
-var describeUncommittableTree = async ({ cwd, isolated }) => {
-  if (isolated) {
-    return void 0;
-  }
-  const dirty = await readGitChangedFiles({ cwd });
-  let refusal;
-  if (dirty === void 0) {
-    refusal = `git could not read the tree at ${cwd} \u2014 the run commits what it builds, so it needs a readable git worktree`;
-  } else if (dirty.length > 0) {
-    refusal = `the run commits everything in the tree at ${cwd}; commit or stash your changes first`;
-  }
-  return refusal;
-};
-
 // src/cli/internal/common/constants/contradictoryWorktreeFlagsMessage.ts
 var contradictoryWorktreeFlagsMessage = "--worktree and --no-worktree contradict each other \u2014 pass at most one";
 
@@ -130252,23 +130806,23 @@ var resolveWorktreeIsolation = ({ flags, configured }) => {
 
 // src/workOrder/listWorkOrders.ts
 import { readdir as readdir13 } from "node:fs/promises";
-import { join as join51 } from "node:path";
+import { join as join55 } from "node:path";
 var listWorkOrders = async ({ cwd }) => {
   const folder = await workOrdersDir({ cwd });
   const entries = await readdir13(folder, { withFileTypes: true }).catch(() => []);
   const found = [];
-  const unreadable2 = [];
+  const unreadable3 = [];
   for (const entry of entries.filter((candidate) => candidate.isDirectory())) {
-    const read = await readWorkOrderStateFile({ statePath: join51(folder, entry.name, workOrderFileNames.record), name: entry.name });
+    const read = await readWorkOrderStateFile({ statePath: join55(folder, entry.name, workOrderFileNames.record), name: entry.name });
     if ("error" in read || read.record === void 0) {
-      unreadable2.push(entry.name);
+      unreadable3.push(entry.name);
     } else {
       found.push({ name: entry.name, record: read.record });
     }
   }
   return {
     found: found.sort((first, second) => first.name.localeCompare(second.name)),
-    unreadable: unreadable2.sort((first, second) => first.localeCompare(second))
+    unreadable: unreadable3.sort((first, second) => first.localeCompare(second))
   };
 };
 
@@ -130302,7 +130856,7 @@ var resolveRunBranch = async ({ cwd, planPath, ticketPath, ticketRef }) => {
 };
 
 // src/runState/lock/readRunLock.ts
-import { readFile as readFile17 } from "node:fs/promises";
+import { readFile as readFile19 } from "node:fs/promises";
 
 // src/contracts/run/RunLock.ts
 var RunLock = external_exports.object({
@@ -130312,14 +130866,14 @@ var RunLock = external_exports.object({
 });
 
 // src/runState/lock/internal/common/utils/getRunLockPath.ts
-import { join as join52 } from "node:path";
+import { join as join56 } from "node:path";
 var getRunLockPath = ({ cwd }) => {
-  return join52(cwd, ".lightsout", "lock.json");
+  return join56(cwd, ".lightsout", "lock.json");
 };
 
 // src/runState/lock/readRunLock.ts
 var readRunLock = async ({ cwd }) => {
-  const raw = await readFile17(getRunLockPath({ cwd }), "utf8").catch(() => void 0);
+  const raw = await readFile19(getRunLockPath({ cwd }), "utf8").catch(() => void 0);
   if (raw === void 0) {
     return void 0;
   }
@@ -130340,8 +130894,8 @@ var readLiveRunLock = async ({ cwd }) => {
 import { stat as stat7 } from "node:fs/promises";
 
 // src/worktree/records/writeWorktreeRecord.ts
-import { mkdir as mkdir9, rename as rename5 } from "node:fs/promises";
-import { dirname as dirname11 } from "node:path";
+import { mkdir as mkdir10, rename as rename6 } from "node:fs/promises";
+import { dirname as dirname12 } from "node:path";
 var writeWorktreeRecord = async ({ cwd, branch, owner, worktreePath, startPoint, onProgress }) => {
   const record3 = { branch, owner, worktreePath, createdAt: (/* @__PURE__ */ new Date()).toISOString(), ...startPoint === void 0 ? {} : { startPoint } };
   try {
@@ -130350,9 +130904,9 @@ var writeWorktreeRecord = async ({ cwd, branch, owner, worktreePath, startPoint,
       onProgress?.(`the worktree for ${branch} was not recorded as '${owner}': no work order's record stores that branch, so it keeps no local record`);
       return;
     }
-    await mkdir9(dirname11(recordPath), { recursive: true });
+    await mkdir10(dirname12(recordPath), { recursive: true });
     await writeJsonFile({ path: `${recordPath}.tmp`, value: record3 });
-    await rename5(`${recordPath}.tmp`, recordPath);
+    await rename6(`${recordPath}.tmp`, recordPath);
   } catch (error51) {
     const message = messageOf({ error: error51 });
     onProgress?.(`the worktree for ${branch} could not be recorded as '${owner}': ${message}`);
@@ -130360,18 +130914,18 @@ var writeWorktreeRecord = async ({ cwd, branch, owner, worktreePath, startPoint,
 };
 
 // src/worktree/resolveWorktreePath.ts
-import { join as join54 } from "node:path";
+import { join as join58 } from "node:path";
 
 // src/worktree/resolveWorktreesRoot.ts
-import { basename as basename8, dirname as dirname12, join as join53, resolve as resolve6 } from "node:path";
+import { basename as basename8, dirname as dirname13, join as join57, resolve as resolve6 } from "node:path";
 var resolveWorktreesRoot = async ({ cwd }) => {
   const primary = await readGitPrimaryCheckout({ cwd });
   const repo = resolve6(primary ?? cwd);
-  return join53(dirname12(repo), `${basename8(repo)}-worktrees`);
+  return join57(dirname13(repo), `${basename8(repo)}-worktrees`);
 };
 
 // src/worktree/resolveWorktreePath.ts
-var resolveWorktreePath = async ({ cwd, branch }) => join54(await resolveWorktreesRoot({ cwd }), (await findWorkOrderForBranch({ cwd, branch }))?.name ?? branch);
+var resolveWorktreePath = async ({ cwd, branch }) => join58(await resolveWorktreesRoot({ cwd }), await resolveWorkOrderNameForBranch({ cwd, branch }));
 
 // src/worktree/createWorktree.ts
 var exists = async ({ path }) => {
@@ -130612,7 +131166,7 @@ var resolveRunWorkspace = async ({
 
 // src/cli/internal/common/utils/resolvePlanTarget.ts
 import { stat as stat8 } from "node:fs/promises";
-import { join as join55 } from "node:path";
+import { join as join59 } from "node:path";
 var resolvePlanTarget = async ({ cwd, planPath }) => {
   const dir = await resolveRecordedPlanPath({ cwd, path: planPath });
   const isDirectory = await stat8(dir).then(
@@ -130622,17 +131176,46 @@ var resolvePlanTarget = async ({ cwd, planPath }) => {
   if (!isDirectory) {
     return { planPath };
   }
-  const holds = async ({ name }) => stat8(join55(dir, name)).then(
+  const holds = async ({ name }) => stat8(join59(dir, name)).then(
     (entry) => entry.isFile(),
     () => false
   );
   if (await holds({ name: "overview.md" })) {
-    return { overviewPath: join55(planPath, "overview.md") };
+    return { overviewPath: join59(planPath, "overview.md") };
   }
   if (await holds({ name: "plan.md" })) {
-    return { planPath: join55(planPath, "plan.md") };
+    return { planPath: join59(planPath, "plan.md") };
   }
   return { error: `plan folder holds neither overview.md nor plan.md: ${planPath}` };
+};
+
+// src/common/sourceFiles/isGeneratedPath.ts
+var isGeneratedPath = ({ path, generated }) => generated.some((entry) => {
+  const prefix = entry.replace(/\/$/, "");
+  return path === prefix || path.startsWith(`${prefix}/`);
+});
+
+// src/commit/describeUncommittableTree.ts
+var listPaths = ({ paths }) => {
+  const listedPathLimit = 20;
+  const listed = paths.slice(0, listedPathLimit).join(", ");
+  return paths.length > listedPathLimit ? `${listed} and ${paths.length - listedPathLimit} more` : listed;
+};
+var describeUncommittableTree = async ({ cwd, isolated, generated, remedy = "commit or stash them first" }) => {
+  if (isolated) {
+    return void 0;
+  }
+  const changed = await readGitChangedFiles({ cwd });
+  let refusal;
+  if (changed === void 0) {
+    refusal = `git could not read the tree at ${cwd} \u2014 the run commits what it builds, so it needs a readable git worktree`;
+  } else {
+    const dirty = changed.filter((path) => !isGeneratedPath({ path, generated }));
+    if (dirty.length > 0) {
+      refusal = `the run commits everything in the tree at ${cwd}, which holds uncommitted changes: ${listPaths({ paths: dirty })} \u2014 ${remedy}`;
+    }
+  }
+  return refusal;
 };
 
 // src/cli/internal/common/implementRun/openImplementWorkspace.ts
@@ -130646,7 +131229,7 @@ var openImplementWorkspace = async ({
   if ("error" in workspace) {
     return { error: workspace.error };
   }
-  const uncommittable = await describeUncommittableTree({ cwd: workspace.cwd, isolated: workspace.isolated });
+  const uncommittable = await describeUncommittableTree({ cwd: workspace.cwd, isolated: workspace.isolated, generated: [] });
   if (uncommittable !== void 0) {
     return { error: uncommittable };
   }
@@ -130685,8 +131268,8 @@ var pathExists = ({ path }) => stat9(path).then(
 );
 
 // src/brainstorm/restore/restoreBrainstormFiles.ts
-import { mkdir as mkdir10, writeFile as writeFile8 } from "node:fs/promises";
-import { join as join56 } from "node:path";
+import { mkdir as mkdir11, writeFile as writeFile8 } from "node:fs/promises";
+import { join as join60 } from "node:path";
 
 // src/common/attachmentManifest/parseAttachmentManifest.ts
 var parseAttachmentManifest = ({ text, markerName, isAllowedName }) => {
@@ -130772,13 +131355,13 @@ var writeIntoFolder = async ({ dir, files }) => {
   const restored = [];
   const skipped = [];
   try {
-    await mkdir10(dir, { recursive: true });
+    await mkdir11(dir, { recursive: true });
     for (const { title, text } of files) {
-      if (await pathExists({ path: join56(dir, title) })) {
+      if (await pathExists({ path: join60(dir, title) })) {
         skipped.push(title);
         continue;
       }
-      await writeFile8(join56(dir, title), text, "utf8");
+      await writeFile8(join60(dir, title), text, "utf8");
       restored.push(title);
     }
   } catch (error51) {
@@ -130913,18 +131496,18 @@ var validatePlanAttachmentGeneration = ({ files }) => {
 };
 
 // src/plan/restore/internal/common/utils/writeRestoredGeneration.ts
-import { mkdir as mkdir11, mkdtemp as mkdtemp3, rename as rename6, rm as rm6, writeFile as writeFile9 } from "node:fs/promises";
-import { dirname as dirname13, join as join57 } from "node:path";
+import { mkdir as mkdir12, mkdtemp as mkdtemp3, rename as rename7, rm as rm6, writeFile as writeFile9 } from "node:fs/promises";
+import { dirname as dirname14, join as join61 } from "node:path";
 var writeRestoredGeneration = async ({ dir, files }) => {
   let temporaryDir;
   try {
-    const parent = dirname13(dir);
-    await mkdir11(parent, { recursive: true });
-    temporaryDir = await mkdtemp3(join57(parent, ".restore-"));
+    const parent = dirname14(dir);
+    await mkdir12(parent, { recursive: true });
+    temporaryDir = await mkdtemp3(join61(parent, ".restore-"));
     for (const { title, text } of files) {
-      await writeFile9(join57(temporaryDir, title), text, "utf8");
+      await writeFile9(join61(temporaryDir, title), text, "utf8");
     }
-    await rename6(temporaryDir, dir);
+    await rename7(temporaryDir, dir);
     return void 0;
   } catch (error51) {
     if (temporaryDir !== void 0) {
@@ -131027,9 +131610,9 @@ var restorePlanWorkspace = async ({ cwd, name, identifier, settings, titlePrefix
   if (refusal !== void 0) {
     return { restored: [], error: refusal.error };
   }
-  const written = await writeRestoredGeneration({ dir: await planWorkspaceDir({ cwd, name }), files: read.files });
-  if (written !== void 0) {
-    return { restored: [], error: written.error };
+  const written2 = await writeRestoredGeneration({ dir: await planWorkspaceDir({ cwd, name }), files: read.files });
+  if (written2 !== void 0) {
+    return { restored: [], error: written2.error };
   }
   const restored = read.files.map(({ title }) => title).sort();
   return { restored, markerSha256: sha256({ content: manifestRead.text }) };
@@ -131286,9 +131869,37 @@ var resolveCommandShipIntent = ({ config: config2, flags, env, shipRequest }) =>
   return intent;
 };
 
-// src/phases/initializeSequence.ts
-import { access, readFile as readFile19 } from "node:fs/promises";
-import { dirname as dirname14, join as join60 } from "node:path";
+// src/commit/internal/common/utils/toLiteralPathspecs.ts
+var toLiteralPathspecs = ({ paths, exclude = false }) => {
+  const magic = exclude ? ":(exclude,literal)" : ":(literal)";
+  return paths.map((path) => quoteShellArgument({ argument: `${magic}${path}` })).join(" ");
+};
+
+// src/commit/discardGeneratedChanges.ts
+var discardGeneratedChanges = async ({ cwd, paths }) => {
+  const pathspecs = toLiteralPathspecs({ paths });
+  const resetFailure = await runOrDescribeFailure({ command: `git reset -q -- ${pathspecs}`, cwd });
+  if (resetFailure !== void 0) {
+    return resetFailure;
+  }
+  const listed = await runCommand({ command: `git ls-files -z -- ${pathspecs}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  if (listed?.exitCode !== 0) {
+    return "git could not tell which generated paths are tracked";
+  }
+  const tracked = listed.stdout.split("\0").filter(Boolean);
+  const untracked = paths.filter((path) => !tracked.includes(path));
+  const commands2 = [
+    ...tracked.length > 0 ? [`git checkout -- ${toLiteralPathspecs({ paths: tracked })}`] : [],
+    ...untracked.length > 0 ? [`git clean -fdq -- ${toLiteralPathspecs({ paths: untracked })}`] : []
+  ];
+  for (const command of commands2) {
+    const failure = await runOrDescribeFailure({ command, cwd });
+    if (failure !== void 0) {
+      return failure;
+    }
+  }
+  return void 0;
+};
 
 // src/common/utils/formatResumeCommand.ts
 var resumeDoor = "lightsout resume --run <id>";
@@ -131301,6 +131912,10 @@ var resumeCommandByPipeline = {
   [PipelineKind.Direct]: resumeDoor
 };
 var formatResumeCommand = ({ pipeline, runId }) => resumeCommandByPipeline[pipeline].replaceAll("<id>", runId);
+
+// src/phases/initializeSequence.ts
+import { access, readFile as readFile20 } from "node:fs/promises";
+import { dirname as dirname15, join as join63 } from "node:path";
 
 // src/common/utils/toRepoRelativePath.ts
 import { relative as relative6, resolve as resolve7 } from "node:path";
@@ -131316,174 +131931,6 @@ var listRunIds = async ({ cwd, workOrderName }) => {
     runIds.push(...entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name));
   }
   return runIds.sort();
-};
-
-// src/runState/readRunManifest.ts
-import { readFile as readFile18 } from "node:fs/promises";
-
-// src/contracts/run/AcceptanceTestRecord.ts
-var AcceptanceTestRecord = external_exports.object({
-  criterion: external_exports.string().min(1),
-  /** Repo-relative. */
-  testFile: external_exports.string().min(1),
-  testName: external_exports.string().min(1),
-  /** The gate key whose execution has to show this test passing. */
-  gate: external_exports.string().min(1)
-});
-
-// src/contracts/run/ApprovedTestRecord.ts
-var ApprovedTestRecord = external_exports.object({
-  /** Repo-relative. */
-  path: external_exports.string().min(1),
-  /** SHA-256 of the approved copy under the run's approved directory. Absent on an approved removal. */
-  sha256: external_exports.string().length(64).optional(),
-  /** True when the approved state of this path is "not in the tree" — no copy exists and none is expected. */
-  removed: external_exports.boolean().default(false)
-});
-
-// src/contracts/run/PackagesSource.ts
-var PackagesSource = {
-  /** Explicit `--packages` flag. */
-  Flag: "flag",
-  /** The plan's front-matter `packages:` list. */
-  FrontMatter: "front-matter",
-  /** Derived from concrete `<packagesDir>/<name>/` paths in the plan body. */
-  PlanPaths: "plan-paths"
-};
-
-// src/contracts/run/RunCommit.ts
-var RunCommit = external_exports.object({
-  sha: external_exports.string(),
-  subject: external_exports.string(),
-  /** A phase's own child run id, which is why a coordinator's list can name several. */
-  runId: external_exports.string()
-}).strict();
-
-// src/contracts/run/AgentUsage.ts
-var AgentUsage = external_exports.object({
-  inputTokens: external_exports.number(),
-  outputTokens: external_exports.number(),
-  cacheReadTokens: external_exports.number(),
-  cacheCreationTokens: external_exports.number(),
-  costUsd: external_exports.number()
-});
-
-// src/contracts/run/RunUsage.ts
-var RunUsage = AgentUsage.extend({
-  invocations: external_exports.number()
-});
-
-// src/contracts/gates/GateResult.ts
-var GateResult = external_exports.object({
-  /** Gate kind: 'generate' | 'check' | 'test' | 'testCoverage' | 'build'. */
-  kind: external_exports.string(),
-  /** 'root' or the package directory name. */
-  group: external_exports.string(),
-  command: external_exports.string(),
-  /** Absent when skipped. -1 = spawn failure or timeout; `timedOut` tells the two apart. */
-  exitCode: external_exports.number().optional(),
-  durationMs: external_exports.number().optional(),
-  rerun: external_exports.boolean().optional(),
-  /** A test runner that died without reporting a failing test, rather than evidence about the code. */
-  crashed: external_exports.literal(true).optional(),
-  /** Present (always `true`) when this attempt was stopped by the gate ceiling rather than returning an exit code. */
-  timedOut: external_exports.literal(true).optional(),
-  /** Present (always `true`) only on a scoped skip; absent otherwise. */
-  skipped: external_exports.literal(true).optional(),
-  /** Skip reason, e.g. `no "check" script`. */
-  reason: external_exports.string().optional(),
-  /** Last 2000 chars of stdout+stderr — present only on non-zero exit. */
-  outputTail: external_exports.string().optional(),
-  /** Repo-relative. */
-  testResultsDir: external_exports.string().optional()
-});
-
-// src/contracts/run/StepRecord.ts
-var StepRecord = external_exports.object({
-  id: external_exports.string(),
-  status: external_exports.enum(RunStatus),
-  attempts: external_exports.number().int().nonnegative(),
-  /** Active time, accumulated across attempts and resumes. */
-  durationMs: external_exports.number().optional(),
-  /** Paths from this step's reports; the run-wide union lives on the manifest. */
-  changedFiles: external_exports.array(external_exports.string()).optional(),
-  report: external_exports.unknown().optional(),
-  error: external_exports.string().optional(),
-  verification: external_exports.object({
-    failedFamilies: external_exports.array(external_exports.string()),
-    repairAttempts: external_exports.record(external_exports.string(), external_exports.number().int().nonnegative()),
-    failures: external_exports.array(GateResult),
-    needsFormatting: external_exports.boolean(),
-    guidedRepairAttempted: external_exports.boolean(),
-    supervisorDiagnosis: external_exports.string().optional()
-  }).optional()
-});
-
-// src/contracts/run/RunManifest.ts
-var RunManifest = external_exports.object({
-  runId: external_exports.string(),
-  createdAt: external_exports.string(),
-  updatedAt: external_exports.string(),
-  /** Relative to the target repo. For a phases run this is the overview path. */
-  plan: external_exports.string(),
-  /** A plan address `<work-order>/<plan-id>`. Absent on a run that belongs to no plan, including an implement run of a plan file outside the plans directory. */
-  planName: external_exports.string().optional(),
-  /** Absent means implement. */
-  pipeline: external_exports.enum(PipelineKind).optional(),
-  /** The ticket this run builds, e.g. 'LO-70'. Absent on a run started from a plan. */
-  ticketRef: external_exports.string().optional(),
-  /** Relative to the target repo. */
-  overview: external_exports.string().optional(),
-  /** Set on a phase's child run to the coordinator's run id. */
-  parentRunId: external_exports.string().optional(),
-  /** A resumed run must reuse it. */
-  harness: external_exports.string(),
-  /** A record of what the run started with; resume executes with the current config file. */
-  config: LightsoutConfig.optional(),
-  status: external_exports.enum(RunStatus),
-  currentStep: external_exports.string().nullable(),
-  steps: external_exports.array(StepRecord),
-  /** Lets a reader show a row for a step not yet reached. Absent on a pipeline that discovers its steps as it goes. */
-  stepOrder: external_exports.array(external_exports.string()).optional(),
-  /** The key a ship result is filed under. Absent on a detached HEAD and outside a worktree. */
-  branch: external_exports.string().optional(),
-  /** Absolute. Absent on a run that built in the checkout it was launched from. */
-  workspace: external_exports.string().optional(),
-  /** A passing run will ship this branch. Absent when no ship intent was resolved. */
-  willShip: external_exports.boolean().optional(),
-  changedFiles: external_exports.array(external_exports.string()),
-  /** A phased run's coordinator carries one per phase; every other run carries at most one. */
-  commits: external_exports.array(RunCommit).default([]),
-  /**
-   * Directory names under the packages dir. Expanded as changed files reveal
-   * the blast radius, never shrunk. Empty in non-monorepo mode.
-   */
-  packages: external_exports.array(external_exports.string()).default([]),
-  /** Recorded so a derived scope is never mistaken for a declared one. */
-  packagesSource: external_exports.enum(PackagesSource).optional(),
-  /** Per-invocation detail lives in the run dir's `agents.jsonl`. Absent for drivers reporting nothing. */
-  usage: RunUsage.optional(),
-  /** Paths already dirty when the run started, subtracted from every git snapshot so only the run's own changes are attributed to it. */
-  baselineDirtyFiles: external_exports.array(external_exports.string()).default([]),
-  /** What verify fix re-invocations hand back to test writers. */
-  testSubjects: external_exports.array(external_exports.string()).default([]),
-  /** One entry per plan ledger row. */
-  acceptanceTests: external_exports.array(AcceptanceTestRecord).default([]),
-  approvedTests: external_exports.array(ApprovedTestRecord).default([]),
-  /** Changed files the write-tests step skipped because nothing public reaches them; re-checked at run end. */
-  unreachableChangedFiles: external_exports.array(external_exports.string()).default([]),
-  /** Files the repo's coverage configuration does not collect, so verify fix re-invocations must not demand their execution. */
-  coverageExcludedChangedFiles: external_exports.array(external_exports.string()).default([])
-});
-
-// src/runState/internal/common/paths/getRunManifestPath.ts
-import { join as join58 } from "node:path";
-var getRunManifestPath = async ({ cwd, runId }) => join58(await resolveRunDir({ cwd, runId }), "manifest.json");
-
-// src/runState/readRunManifest.ts
-var readRunManifest = async ({ cwd, runId }) => {
-  const raw = await readFile18(await getRunManifestPath({ cwd, runId }), "utf8");
-  return RunManifest.parse(JSON.parse(raw));
 };
 
 // src/phases/findUnfinishedSequence.ts
@@ -131504,25 +131951,46 @@ var findUnfinishedSequence = async ({ cwd, planName }) => {
 
 // src/runState/createRun.ts
 import { randomUUID as randomUUID4 } from "node:crypto";
-import { mkdir as mkdir12 } from "node:fs/promises";
+import { mkdir as mkdir13 } from "node:fs/promises";
 import { resolve as resolve8 } from "node:path";
 
 // src/runState/common/paths/resolveNewRunDir.ts
-import { join as join59 } from "node:path";
+import { join as join62 } from "node:path";
 var resolveNewRunDir = async ({ cwd, planName, workOrderName, pipeline, runId }) => {
   const ticket = planName === void 0 ? workOrderName : workOrderNameOf({ name: planName });
   const runsDir = ticket === void 0 ? getCommandRunsDir({ stateDir: await resolveSharedStateDir({ cwd }), pipeline: pipeline ?? PipelineKind.Implement }) : getWorkOrderRunsDir({ workOrderFolder: await workOrderFolderDir({ cwd, name: ticket }) });
-  return join59(runsDir, runId);
+  return join62(runsDir, runId);
+};
+
+// src/runState/owner/writeRunOwner.ts
+import { rm as rm7 } from "node:fs/promises";
+var ownStartTime;
+var writeRunOwner = async ({ cwd, runId, queueRunId }) => {
+  let owner;
+  if (queueRunId === void 0) {
+    ownStartTime ??= readProcessStartTime({ pid: process.pid });
+    const processStartTime = await ownStartTime;
+    owner = {
+      pid: process.pid,
+      ...processStartTime === void 0 ? {} : { processStartTime },
+      recordedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+  } else {
+    owner = { queueRunId };
+  }
+  await rm7(await getRunFinalReportPath({ cwd, runId }), { force: true });
+  await writeJsonFile({ path: await getRunOwnerPath({ cwd, runId }), value: owner, atomic: true });
+  return owner;
 };
 
 // src/runState/writeRunManifest.ts
-import { rename as rename7 } from "node:fs/promises";
+import { rename as rename8 } from "node:fs/promises";
 var writeRunManifest = async ({ cwd, manifest }) => {
   const stamped = { ...manifest, updatedAt: (/* @__PURE__ */ new Date()).toISOString() };
   const manifestPath = await getRunManifestPath({ cwd, runId: manifest.runId });
   const tmpPath = `${manifestPath}.tmp`;
   await writeJsonFile({ path: tmpPath, value: stamped });
-  await rename7(tmpPath, manifestPath);
+  await rename8(tmpPath, manifestPath);
   return stamped;
 };
 
@@ -131538,7 +132006,8 @@ var createRun = async ({
   driver,
   config: config2,
   baselineDirtyFiles,
-  willShip
+  willShip,
+  queueRunId
 }) => {
   const now = (/* @__PURE__ */ new Date()).toISOString();
   const recordedPlan = toRepoRelativePath({ cwd, path: plan });
@@ -131581,15 +132050,19 @@ var createRun = async ({
     pipeline,
     runId: manifest.runId
   });
-  await mkdir12(runDir, { recursive: true });
+  await mkdir13(runDir, { recursive: true });
   runDirectoryIndex.record({ cwd, runId: manifest.runId, runDir });
-  return writeRunManifest({ cwd, manifest });
+  const written2 = await writeRunManifest({ cwd, manifest });
+  if (parentRunId === void 0) {
+    await writeRunOwner({ cwd, runId: manifest.runId, queueRunId });
+  }
+  return written2;
 };
 
 // src/phases/initializeSequence.ts
 var getPhaseFiles = async ({ cwd, overview }) => {
   const overviewFullPath = await resolveRecordedPlanPath({ cwd, path: overview });
-  const overviewContent = await readFile19(overviewFullPath, "utf8").catch(() => void 0);
+  const overviewContent = await readFile20(overviewFullPath, "utf8").catch(() => void 0);
   if (overviewContent === void 0) {
     throw new Error(`overview file not found: ${overviewFullPath}`);
   }
@@ -131606,7 +132079,7 @@ var getPhaseFiles = async ({ cwd, overview }) => {
 var assertPhaseFilesExist = async ({ cwd, overview, phases }) => {
   const missing = [];
   for (const file2 of phases) {
-    const phasePath = join60(dirname14(overview), file2);
+    const phasePath = join63(dirname15(overview), file2);
     const present = await access(await resolveRecordedPlanPath({ cwd, path: phasePath })).then(
       () => true,
       () => false
@@ -131628,7 +132101,8 @@ var initializeSequence = async ({
   startPhase,
   runId,
   existing,
-  willShip
+  willShip,
+  queueRunId
 }) => {
   if (existing) {
     const pipeline = existing.pipeline ?? PipelineKind.Implement;
@@ -131636,6 +132110,7 @@ var initializeSequence = async ({
       const resume = formatResumeCommand({ pipeline, runId: existing.runId });
       throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${resume}`);
     }
+    await writeRunOwner({ cwd, runId: existing.runId, queueRunId });
     return { manifest: existing };
   }
   if (!overviewPath) {
@@ -131653,7 +132128,7 @@ var initializeSequence = async ({
     const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: unfinished.runId });
     throw new Error(`an unfinished run for this plan already exists \u2014 resume with: ${resume}`);
   }
-  const created = await createRun({ cwd, runId, plan: overview, pipeline: PipelineKind.Phases, driver: driver.name, config: config2, willShip });
+  const created = await createRun({ cwd, runId, plan: overview, pipeline: PipelineKind.Phases, driver: driver.name, config: config2, willShip, queueRunId });
   const steps = phases.map((file2, index) => ({
     id: file2,
     status: index + 1 < firstPhase ? RunStatus.Passed : RunStatus.Pending,
@@ -131662,8 +132137,9 @@ var initializeSequence = async ({
   return { manifest: await writeRunManifest({ cwd, manifest: { ...created, steps } }) };
 };
 
-// src/phases/internal/runPhase.ts
-import { dirname as dirname25, join as join97 } from "node:path";
+// src/phases/internal/runPhase/runPhase.ts
+import { randomUUID as randomUUID6 } from "node:crypto";
+import { dirname as dirname26, join as join100 } from "node:path";
 
 // src/contracts/activity/ActivityLevelKind.ts
 var ActivityLevelKind = {
@@ -131681,47 +132157,129 @@ var PhaseReport = external_exports.object({
   runId: external_exports.string()
 });
 
-// src/commit/commitWorkOrderWork.ts
-import { mkdir as mkdir13, writeFile as writeFile10 } from "node:fs/promises";
-import { join as join61 } from "node:path";
+// src/phases/internal/runPhase/common/utils/confirmOwnership.ts
+var confirmOwnership = async ({ cwd, runId, queueRunId }) => {
+  const owner = await readRunOwner({ cwd, runId });
+  if (owner !== void 0 && ("queueRunId" in owner ? owner.queueRunId === queueRunId : owner.pid === process.pid)) {
+    return;
+  }
+  let holder = "has no owner record now";
+  if (owner !== void 0) {
+    holder = "queueRunId" in owner ? `is now owned by queue run ${owner.queueRunId}` : `is now owned by pid ${owner.pid}`;
+  }
+  throw new Error(`run ${runId} ${holder} \u2014 this process stops without recording the phase`);
+};
 
-// src/common/sourceFiles/isGeneratedPath.ts
-var isGeneratedPath = ({ path, generated }) => generated.some((entry) => {
-  const prefix = entry.replace(/\/$/, "");
-  return path === prefix || path.startsWith(`${prefix}/`);
+// src/phases/internal/runPhase/common/utils/persistStep.ts
+var persistStep = ({ cwd, manifest, index, record: record3, patch }) => {
+  const steps = manifest.steps.map((step, position) => position === index ? record3 : step);
+  return writeRunManifest({ cwd, manifest: { ...manifest, ...patch, steps } });
+};
+
+// src/phases/internal/runPhase/recordFinishedChild.ts
+var recordFromChild = ({ step, childResult }) => ({
+  ...step,
+  status: childResult.manifest.status,
+  attempts: step.attempts + 1,
+  durationMs: childResult.manifest.steps.reduce((total, childStep) => total + (childStep.durationMs ?? 0), 0),
+  report: { runId: childResult.manifest.runId },
+  error: childResult.error
 });
+var addUsage = ({ total, child }) => {
+  if (!child) {
+    return total;
+  }
+  if (!total) {
+    return child;
+  }
+  return {
+    invocations: total.invocations + child.invocations,
+    inputTokens: total.inputTokens + child.inputTokens,
+    outputTokens: total.outputTokens + child.outputTokens,
+    cacheReadTokens: total.cacheReadTokens + child.cacheReadTokens,
+    cacheCreationTokens: total.cacheCreationTokens + child.cacheCreationTokens,
+    costUsd: total.costUsd + child.costUsd
+  };
+};
+var recordFinishedChild = async ({
+  cwd,
+  manifest,
+  index,
+  step,
+  total,
+  childResult,
+  queueRunId
+}) => {
+  const child = childResult.manifest;
+  await confirmOwnership({ cwd, runId: manifest.runId, queueRunId });
+  const current = await persistStep({
+    cwd,
+    manifest,
+    index,
+    record: recordFromChild({ step, childResult }),
+    patch: {
+      status: childResult.ok ? RunStatus.Running : child.status,
+      changedFiles: [.../* @__PURE__ */ new Set([...manifest.changedFiles, ...child.changedFiles])],
+      // Each phase's entry carries its own child run id, and a resumed phase that
+      // skips a passed child returns before this patch, so concatenating cannot double one.
+      commits: [...manifest.commits, ...child.commits],
+      usage: addUsage({ total: manifest.usage, child: child.usage })
+    }
+  });
+  if (childResult.ok) {
+    return { manifest: current };
+  }
+  const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: current.runId });
+  const stopped = `phase ${index + 1}/${total} (${step.id}) ended ${child.status} \u2014 resume with: ${resume}`;
+  return { manifest: current, result: { ok: false, manifest: current, error: childResult.error ? `${stopped}
+${childResult.error}` : stopped } };
+};
+
+// src/worktree/records/isLightsoutWorktree.ts
+var isLightsoutWorktree = async ({ cwd, branch }) => branch !== void 0 && await readWorktreeRecord({ cwd, branch }) !== void 0;
+
+// src/phases/internal/runPhase/refuseDirtyPhaseStart.ts
+var refuseDirtyPhaseStart = async ({
+  cwd,
+  config: config2,
+  manifest,
+  index,
+  step,
+  queueRunId
+}) => {
+  if (step.status !== RunStatus.Pending || step.report !== void 0) {
+    return void 0;
+  }
+  const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.runId });
+  const refusal = await describeUncommittableTree({
+    cwd,
+    isolated: await isLightsoutWorktree({ cwd, branch: manifest.branch }),
+    generated: config2.generated ?? [],
+    remedy: `stash them, then resume with: ${resume}`
+  });
+  let refused;
+  if (refusal !== void 0) {
+    await confirmOwnership({ cwd, runId: manifest.runId, queueRunId });
+    const current = await persistStep({ cwd, manifest, index, record: step, patch: { status: RunStatus.Failed, currentStep: step.id } });
+    refused = { manifest: current, result: { ok: false, manifest: current, error: `phase ${step.id} was not started: ${refusal}` } };
+  }
+  return refused;
+};
 
 // src/commit/commitWorkOrderWork.ts
-var toPathspecs = ({ paths }) => paths.map((path) => quoteShellArgument({ argument: `:(literal)${path}` })).join(" ");
-var discardGeneratedChanges = async ({ cwd, paths }) => {
-  const pathspecs = toPathspecs({ paths });
-  const resetFailure = await runOrDescribeFailure({ command: `git reset -q -- ${pathspecs}`, cwd });
-  if (resetFailure !== void 0) {
-    return resetFailure;
-  }
-  const listed = await runCommand({ command: `git ls-files -z -- ${pathspecs}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
-  if (listed?.exitCode !== 0) {
-    return "git could not tell which generated paths are tracked";
-  }
-  const tracked = listed.stdout.split("\0").filter(Boolean);
-  const untracked = paths.filter((path) => !tracked.includes(path));
-  const commands2 = [
-    ...tracked.length > 0 ? [`git checkout -- ${toPathspecs({ paths: tracked })}`] : [],
-    ...untracked.length > 0 ? [`git clean -fdq -- ${toPathspecs({ paths: untracked })}`] : []
-  ];
-  for (const command of commands2) {
-    const failure = await runOrDescribeFailure({ command, cwd });
-    if (failure !== void 0) {
-      return failure;
-    }
-  }
-  return void 0;
+import { mkdir as mkdir14, writeFile as writeFile10 } from "node:fs/promises";
+import { join as join64 } from "node:path";
+var setAsideGeneratedChanges = async ({ cwd, paths, keepGenerated }) => {
+  const failure = keepGenerated ? await runOrDescribeFailure({ command: `git reset -q -- ${toLiteralPathspecs({ paths })}`, cwd }) : await discardGeneratedChanges({ cwd, paths });
+  const progress = keepGenerated ? `kept ${paths.length} generated path(s) on disk, uncommitted \u2014 the pre-ship step commits build output` : `discarded ${paths.length} generated path(s) \u2014 the pre-ship step commits build output`;
+  return failure === void 0 ? { progress } : { error: `git could not ${keepGenerated ? "unstage" : "discard"} the generated changes in ${cwd}: ${failure}` };
 };
 var commitWorkOrderWork = async ({
   cwd,
   composeMessage,
   runDir,
   generated = [],
+  keepGenerated = false,
   onProgress
 }) => {
   const changed = await readGitChangedFiles({ cwd });
@@ -131731,22 +132289,23 @@ var commitWorkOrderWork = async ({
   const generatedPaths = changed.filter((path) => isGeneratedPath({ path, generated }));
   const sourcePaths = changed.filter((path) => !isGeneratedPath({ path, generated }));
   if (generatedPaths.length > 0) {
-    const discardFailure = await discardGeneratedChanges({ cwd, paths: generatedPaths });
-    if (discardFailure !== void 0) {
-      return { error: `git could not discard the generated changes in ${cwd}: ${discardFailure}` };
+    const setAside = await setAsideGeneratedChanges({ cwd, paths: generatedPaths, keepGenerated });
+    if (setAside.error !== void 0) {
+      return { error: setAside.error };
     }
-    onProgress?.(`discarded ${generatedPaths.length} generated path(s) \u2014 the pre-ship step commits build output`);
+    onProgress?.(setAside.progress);
   }
   if (sourcePaths.length === 0) {
     return { committed: false };
   }
-  const stageFailure = await runOrDescribeFailure({ command: "git add -A -- .", cwd });
+  const exclusions = keepGenerated && generated.length > 0 ? ` ${toLiteralPathspecs({ paths: generated, exclude: true })}` : "";
+  const stageFailure = await runOrDescribeFailure({ command: `git add -A -- .${exclusions}`, cwd });
   if (stageFailure !== void 0) {
     return { error: `git could not stage the work in ${cwd}: ${stageFailure}` };
   }
   const message = await composeMessage({ cwd });
-  const messagePath = join61(runDir, "commit-message.txt");
-  await mkdir13(runDir, { recursive: true });
+  const messagePath = join64(runDir, "commit-message.txt");
+  await mkdir14(runDir, { recursive: true });
   await writeFile10(messagePath, message.endsWith("\n") ? message : `${message}
 `, "utf8");
   const commitFailure = await runOrDescribeFailure({ command: `git commit -F ${quoteShellArgument({ argument: messagePath })}`, cwd });
@@ -131760,7 +132319,7 @@ var commitWorkOrderWork = async ({
 var commitMessage_default = '# Role: Commit Message Writer\n\nYou write the one-line summary, and when it is needed a short body, of one git\ncommit. The commit is read in the history far more often than the ticket that\nasked for the change, so the summary has to say what the change does to a\nreader who has never seen that ticket.\n\n## Inputs\n\nYour task message contains:\n\n- the ticket reference the engine puts in front of your summary;\n- the reason the work was done \u2014 a plan\'s title, a ticket\'s body, or a\n  ticket\'s title;\n- the list of staged files, with how many lines each one gained and lost;\n- the staged diff itself. A large diff can be cut at the engine\'s limit, and a\n  note directly after it says so.\n\nThat is the whole of your input: you are given no tools, and there is nothing\nto investigate.\n\n## Decide\n\n- The summary says what the staged change DOES \u2014 imperative, and lowercase\n  first, in the style of `print which configuration file a run read`.\n- The summary is one line of at most 64 characters.\n- Never restate the ticket reference: the engine adds it in front of your\n  summary.\n- Describe the diff. Never copy the words of the reason or of the ticket \u2014 they\n  say why the work was asked for, not what the change does.\n- The body is optional plain prose of at most 1200 characters. Write one only\n  when the change needs more than the summary to be understood. No headings, no\n  bullet trailers, and no `lightsout` lines \u2014 the engine writes those itself.\n- When the diff was cut, the file list is the complete record of what changed:\n  describe the change from both, and never claim the change is smaller than the\n  file list shows.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"summary": "print which configuration file a run read",\n	"body": "The run\'s first progress line now names the file its settings came from, so a run that read an unexpected file says so before it spends anything."\n}\n```\n';
 
 // src/agents/buildCommitMessageInvocation.ts
-var buildCommitMessageInvocation = ({ reference, context, stat: stat15, diff, truncated }) => {
+var buildCommitMessageInvocation = ({ reference, context, stat: stat16, diff, truncated }) => {
   const sections = [
     `# Ticket
 
@@ -131770,7 +132329,7 @@ ${reference}`,
 ${context}`,
     `# Files changed
 
-${stat15}`,
+${stat16}`,
     `# Staged change
 
 ${diff}`,
@@ -131795,15 +132354,15 @@ var buildRunCommitMessage = ({ subject, body, unit, runId }) => {
 // src/common/git/readGitStagedChange.ts
 var readGitStagedChange = async ({ cwd, maxDiffLength }) => {
   const diffCommand = "git -c core.quotePath=false diff --cached --no-color --no-ext-diff";
-  const [stat15, diff] = await Promise.all([
+  const [stat16, diff] = await Promise.all([
     runCommand({ command: `${diffCommand} --stat=1000 -- .`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0),
     runCommand({ command: `${diffCommand} -- .`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0)
   ]);
-  if (stat15?.exitCode !== 0 || diff?.exitCode !== 0) {
+  if (stat16?.exitCode !== 0 || diff?.exitCode !== 0) {
     return void 0;
   }
   const truncated = diff.stdout.length > maxDiffLength;
-  return { stat: stat15.stdout, diff: truncated ? diff.stdout.slice(0, maxDiffLength) : diff.stdout, truncated };
+  return { stat: stat16.stdout, diff: truncated ? diff.stdout.slice(0, maxDiffLength) : diff.stdout, truncated };
 };
 
 // src/contracts/work/CommitMessage.ts
@@ -131876,8 +132435,7 @@ var composeCommitMessage = async ({ cwd, driver, config: config2, address, runId
 
 // src/commit/internal/common/utils/describeUnownedEdits.ts
 var describeUnownedEdits = async ({ cwd, manifest, generated }) => {
-  const record3 = manifest.branch === void 0 ? void 0 : await readWorktreeRecord({ cwd, branch: manifest.branch });
-  if (record3 !== void 0) {
+  if (await isLightsoutWorktree({ cwd, branch: manifest.branch })) {
     return void 0;
   }
   const own = /* @__PURE__ */ new Set([...manifest.changedFiles, ...manifest.baselineDirtyFiles]);
@@ -131939,7 +132497,7 @@ var readRunCommitAddress = async ({ cwd, manifest, onProgress }) => {
 };
 
 // src/commit/commitRunWork.ts
-var commitRunWork = async ({ run, driver, address, resumed }) => {
+var commitRunWork = async ({ run, driver, address, resumed, keepGenerated = false }) => {
   const manifest = run.current();
   const generated = run.config.generated ?? [];
   const changed = manifest.changedFiles.filter((path) => !isGeneratedPath({ path, generated }));
@@ -131968,6 +132526,7 @@ var commitRunWork = async ({ run, driver, address, resumed }) => {
     }),
     runDir,
     generated,
+    keepGenerated,
     onProgress
   });
   if ("error" in committed) {
@@ -131996,15 +132555,15 @@ var excludedSourcePaths = ({ config: config2 }) => [...config2?.generated ?? [],
 // src/common/workspace/resolveConsumerTypescript.ts
 import { readdirSync } from "node:fs";
 import { createRequire as createRequire2 } from "node:module";
-import { join as join62, resolve as resolve9 } from "node:path";
+import { join as join65, resolve as resolve9 } from "node:path";
 var resolveConsumerTypescript = ({ cwd, packagesDir = "packages" }) => {
   const root = resolve9(cwd);
   let packageNames = [];
   try {
-    packageNames = readdirSync(join62(root, packagesDir)).filter((name) => !name.startsWith("."));
+    packageNames = readdirSync(join65(root, packagesDir)).filter((name) => !name.startsWith("."));
   } catch {
   }
-  const manifests = [join62(root, "package.json"), ...packageNames.map((name) => join62(root, packagesDir, name, "package.json"))];
+  const manifests = [join65(root, "package.json"), ...packageNames.map((name) => join65(root, packagesDir, name, "package.json"))];
   for (const manifest of manifests) {
     try {
       const compiler = createRequire2(manifest)("typescript");
@@ -132016,24 +132575,24 @@ var resolveConsumerTypescript = ({ cwd, packagesDir = "packages" }) => {
 };
 
 // src/pipeline/approvedTests/removeApprovedTests.ts
-import { rm as rm7 } from "node:fs/promises";
+import { rm as rm8 } from "node:fs/promises";
 
 // src/pipeline/approvedTests/internal/common/utils/approvedTestsDir.ts
-import { join as join63 } from "node:path";
+import { join as join66 } from "node:path";
 var approvedTestsDir = async ({ cwd, runId }) => {
-  return join63(await resolveRunDir({ cwd, runId }), "approved");
+  return join66(await resolveRunDir({ cwd, runId }), "approved");
 };
 
 // src/pipeline/approvedTests/removeApprovedTests.ts
 var removeApprovedTests = async ({ run }) => {
-  await rm7(await approvedTestsDir({ cwd: run.cwd, runId: run.current().runId }), { recursive: true, force: true });
+  await rm8(await approvedTestsDir({ cwd: run.cwd, runId: run.current().runId }), { recursive: true, force: true });
 };
 
 // src/pipeline/internal/common/utils/readPlanSources.ts
-import { readFile as readFile20 } from "node:fs/promises";
+import { readFile as readFile21 } from "node:fs/promises";
 var readPlanSources = async ({ cwd, plan, overview }) => {
   const planPath = await resolveRecordedPlanPath({ cwd, path: plan });
-  const planContent = await readFile20(planPath, "utf8").catch(() => void 0);
+  const planContent = await readFile21(planPath, "utf8").catch(() => void 0);
   if (planContent === void 0) {
     return { error: `plan file not found: ${planPath}` };
   }
@@ -132041,7 +132600,7 @@ var readPlanSources = async ({ cwd, plan, overview }) => {
     return { planContent };
   }
   const overviewPath = await resolveRecordedPlanPath({ cwd, path: overview });
-  const overviewContent = await readFile20(overviewPath, "utf8").catch(() => void 0);
+  const overviewContent = await readFile21(overviewPath, "utf8").catch(() => void 0);
   if (overviewContent === void 0) {
     return { error: `overview file not found: ${overviewPath}` };
   }
@@ -132160,12 +132719,12 @@ var prepareRun = async ({ run, cwd, config: config2, packages }) => {
 };
 
 // src/pipeline/internal/common/utils/resolveTestSubjects.ts
-import { readFile as readFile23 } from "node:fs/promises";
-import { join as join66 } from "node:path";
+import { readFile as readFile24 } from "node:fs/promises";
+import { join as join69 } from "node:path";
 
 // src/common/moduleGraph/collectImportEdges.ts
-import { readFile as readFile22 } from "node:fs/promises";
-import { join as join65 } from "node:path";
+import { readFile as readFile23 } from "node:fs/promises";
+import { join as join68 } from "node:path";
 
 // src/common/moduleGraph/createSpecifierResolver.ts
 import { posix } from "node:path";
@@ -132223,8 +132782,8 @@ var createSpecifierResolver = ({ files, importAliases = /* @__PURE__ */ new Map(
 };
 
 // src/common/workspace/readImportAliases.ts
-import { readFile as readFile21 } from "node:fs/promises";
-import { join as join64, posix as posix2 } from "node:path";
+import { readFile as readFile22 } from "node:fs/promises";
+import { join as join67, posix as posix2 } from "node:path";
 var ImportTarget = external_exports.union([external_exports.string(), external_exports.object({ import: external_exports.string().optional(), default: external_exports.string().optional() })]);
 var Manifest2 = external_exports.object({ imports: external_exports.record(external_exports.string(), external_exports.unknown()).optional() });
 var readTarget = ({ value }) => {
@@ -132246,7 +132805,7 @@ var collectAncestorDirectories = ({ files }) => {
 var readImportAliases = async ({ cwd, files }) => {
   const aliases = /* @__PURE__ */ new Map();
   for (const directory of collectAncestorDirectories({ files })) {
-    const text = await readFile21(join64(cwd, directory, "package.json"), "utf8").catch(() => void 0);
+    const text = await readFile22(join67(cwd, directory, "package.json"), "utf8").catch(() => void 0);
     if (text === void 0) {
       continue;
     }
@@ -132270,16 +132829,16 @@ var readImportAliases = async ({ cwd, files }) => {
 
 // src/common/moduleGraph/collectImportEdges.ts
 var collectImportEdges = async ({ cwd, files, compiler }) => {
-  const resolve19 = createSpecifierResolver({ files, importAliases: await readImportAliases({ cwd, files }) });
+  const resolve21 = createSpecifierResolver({ files, importAliases: await readImportAliases({ cwd, files }) });
   const edges = [];
   for (const from of files) {
-    const content = await readFile22(join65(cwd, from), "utf8").catch(() => void 0);
+    const content = await readFile23(join68(cwd, from), "utf8").catch(() => void 0);
     if (content === void 0) {
       continue;
     }
     const specifiers = [...new Set(compiler.preProcessFile(content, true, true).importedFiles.map((imported) => imported.fileName))];
     for (const specifier of specifiers) {
-      const to = resolve19({ from, specifier });
+      const to = resolve21({ from, specifier });
       if (to !== void 0 && to !== from) {
         edges.push({ from, to });
       }
@@ -132338,7 +132897,7 @@ var resolvePartition = async ({ cwd, targets, universe, compiler }) => {
   const contents = /* @__PURE__ */ new Map();
   const isProvablyInert = async ({ file: file2 }) => {
     if (!contents.has(file2)) {
-      contents.set(file2, await readFile23(join66(cwd, file2), "utf8").catch(() => void 0));
+      contents.set(file2, await readFile24(join69(cwd, file2), "utf8").catch(() => void 0));
     }
     const content = contents.get(file2);
     return content !== void 0 && isInertSourceFile({ path: file2, content, compiler });
@@ -132424,8 +132983,8 @@ var runSteps = async ({ run, steps }) => {
 };
 
 // src/pipeline/internal/PipelineRun.ts
-import { mkdir as mkdir15, writeFile as writeFile11 } from "node:fs/promises";
-import { join as join68 } from "node:path";
+import { mkdir as mkdir16, writeFile as writeFile11 } from "node:fs/promises";
+import { join as join71 } from "node:path";
 
 // src/common/selfCheck/buildSelfCheckCommand.ts
 var buildSelfCheckCommand = ({ cwd, runId }) => {
@@ -132434,8 +132993,8 @@ var buildSelfCheckCommand = ({ cwd, runId }) => {
 };
 
 // src/runState/progress/createProgressSink.ts
-import { mkdir as mkdir14 } from "node:fs/promises";
-import { dirname as dirname15 } from "node:path";
+import { mkdir as mkdir15 } from "node:fs/promises";
+import { dirname as dirname16 } from "node:path";
 
 // src/common/utils/createEventFileSink.ts
 import { appendFile as appendFile3 } from "node:fs/promises";
@@ -132448,15 +133007,15 @@ var createEventFileSink = ({ path, ready }) => {
 };
 
 // src/runState/progress/getProgressLogPath.ts
-import { join as join67 } from "node:path";
+import { join as join70 } from "node:path";
 var getProgressLogPath = async ({ cwd, runId }) => {
-  return join67(await resolveRunDir({ cwd, runId }), "progress.jsonl");
+  return join70(await resolveRunDir({ cwd, runId }), "progress.jsonl");
 };
 
 // src/runState/progress/createProgressSink.ts
 var createProgressSink = ({ cwd, runId }) => {
   const logPath = getProgressLogPath({ cwd, runId });
-  const sink = createEventFileSink({ path: logPath, ready: logPath.then((path) => mkdir14(dirname15(path), { recursive: true })) });
+  const sink = createEventFileSink({ path: logPath, ready: logPath.then((path) => mkdir15(dirname16(path), { recursive: true })) });
   return (message) => {
     sink({ at: (/* @__PURE__ */ new Date()).toISOString(), message });
   };
@@ -132654,9 +133213,9 @@ var PipelineRun = class {
     this.transcriptCount += 1;
     const name = `stream-${String(this.transcriptCount).padStart(2, "0")}-${step}.jsonl`;
     const path = resolveRunDir({ cwd: this.cwd, runId: this.current().runId }).then(async (runDir) => {
-      const dir = join68(runDir, "agents");
-      await mkdir15(dir, { recursive: true });
-      return join68(dir, name);
+      const dir = join71(runDir, "agents");
+      await mkdir16(dir, { recursive: true });
+      return join71(dir, name);
     });
     return createEventFileSink({ path, ready: path });
   }
@@ -132665,14 +133224,14 @@ var PipelineRun = class {
   persistRejected({ step }) {
     return async ({ text, attempt, validationError }) => {
       this.rejectedCount += 1;
-      const dir = join68(await resolveRunDir({ cwd: this.cwd, runId: this.current().runId }), "agents");
+      const dir = join71(await resolveRunDir({ cwd: this.cwd, runId: this.current().runId }), "agents");
       const name = `rejected-${String(this.rejectedCount).padStart(2, "0")}-${step}-attempt${attempt}.txt`;
-      await mkdir15(dir, { recursive: true });
-      await writeFile11(join68(dir, name), `# step: ${step} \xB7 invocation attempt ${attempt}
+      await mkdir16(dir, { recursive: true });
+      await writeFile11(join71(dir, name), `# step: ${step} \xB7 invocation attempt ${attempt}
 # validation: ${validationError}
 
 ${text}`, "utf8");
-      this.progress(`step ${step}: agent final message failed the report contract \u2014 raw text saved to ${join68(dir, name)}`);
+      this.progress(`step ${step}: agent final message failed the report contract \u2014 raw text saved to ${join71(dir, name)}`);
     };
   }
   // onFirstEvent fires once, on the invocation's first streamed event — the
@@ -132718,6 +133277,13 @@ ${text}`, "utf8");
   }
 };
 
+// src/common/constants/BuildMode.ts
+var BuildMode = {
+  Standard: "standard",
+  RenamesOnly: "renames-only",
+  MoveFoldersAndFiles: "move-folders-and-files"
+};
+
 // src/common/sourceFiles/isSnapshotFile.ts
 var snapshotFileName = /\.snap$/;
 var isSnapshotFile = ({ path }) => {
@@ -132732,7 +133298,7 @@ var isTestSideFile = ({ path, standardsLibraries }) => {
 };
 
 // src/gates/testResults/checkTestResultsCapability.ts
-import { join as join70 } from "node:path";
+import { join as join73 } from "node:path";
 
 // src/gates/testResults/internal/satisfiesGateKey.ts
 var satisfiesGateKey = ({ gate, kind }) => {
@@ -132744,7 +133310,7 @@ var satisfiesGateKey = ({ gate, kind }) => {
 
 // src/gates/testResults/readTestResults.ts
 import { readdir as readdir15 } from "node:fs/promises";
-import { join as join69, relative as relative7 } from "node:path";
+import { join as join72, relative as relative7 } from "node:path";
 
 // src/contracts/gates/TestResultsFile.ts
 var TestResultsFile = external_exports.object({
@@ -132770,7 +133336,7 @@ var readTestResults = async ({ cwd, dir }) => {
   const entries = await readdir15(dir).catch(() => []);
   const merged = [];
   for (const entry of entries.filter((name) => name.endsWith(".json"))) {
-    const parsed = await readJsonFile({ path: join69(dir, entry), schema: TestResultsFile });
+    const parsed = await readJsonFile({ path: join72(dir, entry), schema: TestResultsFile });
     merged.push(...(parsed?.testResults ?? []).map((file2) => ({ ...file2, testFilePath: relative7(cwd, file2.testFilePath) })));
   }
   return merged;
@@ -132797,8 +133363,8 @@ var checkTestResultsCapability = async ({ cwd, gates, results, onProgress }) => 
       continue;
     }
     for (const green2 of greens) {
-      const written = green2.testResultsDir === void 0 ? [] : await readTestResults({ cwd, dir: join70(cwd, green2.testResultsDir) });
-      if (written.length === 0) {
+      const written2 = green2.testResultsDir === void 0 ? [] : await readTestResults({ cwd, dir: join73(cwd, green2.testResultsDir) });
+      if (written2.length === 0) {
         silent.push(`- gate \`${gate}\` in group \`${green2.group}\` ran green and wrote no per-test results`);
       }
     }
@@ -132811,13 +133377,13 @@ var checkTestResultsCapability = async ({ cwd, gates, results, onProgress }) => 
 };
 
 // src/pipeline/approvedTests/approveTestFiles.ts
-import { mkdir as mkdir16, readFile as readFile24, rm as rm8, writeFile as writeFile12 } from "node:fs/promises";
-import { dirname as dirname16, join as join72 } from "node:path";
+import { mkdir as mkdir17, readFile as readFile25, rm as rm9, writeFile as writeFile12 } from "node:fs/promises";
+import { dirname as dirname17, join as join75 } from "node:path";
 
 // src/pipeline/approvedTests/internal/approvedTestPath.ts
-import { join as join71 } from "node:path";
+import { join as join74 } from "node:path";
 var approvedTestPath = async ({ cwd, runId, path }) => {
-  return join71(await approvedTestsDir({ cwd, runId }), path);
+  return join74(await approvedTestsDir({ cwd, runId }), path);
 };
 
 // src/pipeline/approvedTests/approveTestFiles.ts
@@ -132825,14 +133391,14 @@ var approveTestFiles = async ({ run, paths }) => {
   const { runId, approvedTests } = run.current();
   const records = [];
   for (const path of paths) {
-    const content = await readFile24(join72(run.cwd, path)).catch(() => void 0);
+    const content = await readFile25(join75(run.cwd, path)).catch(() => void 0);
     const copy = await approvedTestPath({ cwd: run.cwd, runId, path });
     if (content === void 0) {
-      await rm8(copy, { force: true });
+      await rm9(copy, { force: true });
       records.push({ path, removed: true });
       continue;
     }
-    await mkdir16(dirname16(copy), { recursive: true });
+    await mkdir17(dirname17(copy), { recursive: true });
     await writeFile12(copy, content);
     records.push({ path, sha256: sha256({ content }), removed: false });
   }
@@ -132843,8 +133409,8 @@ var approveTestFiles = async ({ run, paths }) => {
 var resolveGateOverride = ({ overrides, checkpoint }) => Object.entries(overrides ?? {}).find(([key]) => key === checkpoint)?.[1];
 
 // src/coverage/checkChangedFilesExecuted.ts
-import { readFile as readFile29 } from "node:fs/promises";
-import { join as join80, relative as relative10 } from "node:path";
+import { readFile as readFile30 } from "node:fs/promises";
+import { join as join83, relative as relative10 } from "node:path";
 
 // src/common/sourceFiles/isTestableSourceFile.ts
 var isTestableSourceFile = ({ path }) => /\.(m|c)?[jt]sx?$/i.test(path);
@@ -132877,7 +133443,7 @@ import { resolve as resolve10 } from "node:path";
 
 // src/coverage/resolveCoverageScopes.ts
 import { readdir as readdir16 } from "node:fs/promises";
-import { join as join73 } from "node:path";
+import { join as join76 } from "node:path";
 var rootScope = "root";
 var listPackageScopes = async ({
   cwd,
@@ -132886,7 +133452,7 @@ var listPackageScopes = async ({
   summaryPath,
   scope
 }) => {
-  const entries = await readdir16(join73(cwd, packagesDir), { withFileTypes: true }).catch(() => []);
+  const entries = await readdir16(join76(cwd, packagesDir), { withFileTypes: true }).catch(() => []);
   const scriptName = extractRunScriptName({ command: template });
   const scopes = [];
   for (const entry of entries.filter((item) => item.isDirectory() && !item.name.startsWith("."))) {
@@ -132900,7 +133466,7 @@ var listPackageScopes = async ({
     scopes.push({
       scope: entry.name,
       command: template.split("{package}").join(manifest.name),
-      summaryPath: join73(packagesDir, entry.name, summaryPath)
+      summaryPath: join76(packagesDir, entry.name, summaryPath)
     });
   }
   return scopes;
@@ -132930,20 +133496,20 @@ var resolveScopeContext = async ({
 };
 
 // src/coverage/selectCollectedFiles/selectCollectedFiles.ts
-import { join as join77 } from "node:path";
+import { join as join80 } from "node:path";
 
 // src/coverage/internal/common/utils/scopeRootOf.ts
-import { join as join74 } from "node:path";
-var scopeRootOf = ({ root, scope, packagesDir, monorepo }) => monorepo ? join74(root, packagesDir, scope) : root;
+import { join as join77 } from "node:path";
+var scopeRootOf = ({ root, scope, packagesDir, monorepo }) => monorepo ? join77(root, packagesDir, scope) : root;
 
 // src/coverage/loadScopeJestConfig/loadScopeJestConfig.ts
-import { readFile as readFile26 } from "node:fs/promises";
+import { readFile as readFile27 } from "node:fs/promises";
 import { createRequire as createRequire3 } from "node:module";
-import { join as join76 } from "node:path";
+import { join as join79 } from "node:path";
 
 // src/coverage/loadScopeJestConfig/internal/common/utils/resolveJestConfigPath.ts
-import { readFile as readFile25, stat as stat10 } from "node:fs/promises";
-import { join as join75, resolve as resolve11 } from "node:path";
+import { readFile as readFile26, stat as stat10 } from "node:fs/promises";
+import { join as join78, resolve as resolve11 } from "node:path";
 var configFileNames = ["jest.config.cjs", "jest.config.js", "jest.config.mjs", "jest.config.json"];
 var exists2 = ({ path }) => stat10(path).then(
   () => true,
@@ -132958,7 +133524,7 @@ var configArgument = ({ command }) => {
 };
 var hasJestKey = async ({ manifestPath }) => {
   try {
-    const parsed = JSON.parse(await readFile25(manifestPath, "utf8"));
+    const parsed = JSON.parse(await readFile26(manifestPath, "utf8"));
     return typeof parsed === "object" && parsed !== null && "jest" in parsed;
   } catch {
     return false;
@@ -132972,14 +133538,14 @@ var resolveJestConfigPath = async ({ scopeRoot, coverageScript }) => {
   }
   let found;
   for (const name of configFileNames) {
-    if (found === void 0 && await exists2({ path: join75(scopeRoot, name) })) {
-      found = join75(scopeRoot, name);
+    if (found === void 0 && await exists2({ path: join78(scopeRoot, name) })) {
+      found = join78(scopeRoot, name);
     }
   }
   if (found !== void 0) {
     return found;
   }
-  const manifestPath = join75(scopeRoot, "package.json");
+  const manifestPath = join78(scopeRoot, "package.json");
   return await hasJestKey({ manifestPath }) ? manifestPath : void 0;
 };
 
@@ -132991,7 +133557,7 @@ var resolveScopeCoverageScript = async ({ scopeRoot, command }) => {
     return command;
   }
   try {
-    const parsed = ScopeManifest.safeParse(JSON.parse(await readFile26(join76(scopeRoot, "package.json"), "utf8")));
+    const parsed = ScopeManifest.safeParse(JSON.parse(await readFile27(join79(scopeRoot, "package.json"), "utf8")));
     return parsed.success ? parsed.data.scripts?.[scriptName] : void 0;
   } catch {
     return void 0;
@@ -133131,7 +133697,7 @@ var isCoverageCollectedFile = ({ absolutePath, collection }) => {
 };
 
 // src/coverage/selectCollectedFiles/internal/common/utils/readCoverageCollection.ts
-import { dirname as dirname17, resolve as resolve12 } from "node:path";
+import { dirname as dirname18, resolve as resolve12 } from "node:path";
 var defaultIgnorePatterns = ["/node_modules/"];
 var JestConfigShape = external_exports.looseObject({
   rootDir: external_exports.string().optional().catch(void 0),
@@ -133146,7 +133712,7 @@ var readCoverageCollection = ({ loaded }) => {
   if (!parsed.success) {
     return void 0;
   }
-  const configDir = dirname17(loaded.configPath);
+  const configDir = dirname18(loaded.configPath);
   return {
     rootDir: parsed.data.rootDir === void 0 ? configDir : resolve12(configDir, parsed.data.rootDir),
     collectCoverageFrom: parsed.data.collectCoverageFrom,
@@ -133171,14 +133737,14 @@ var selectCollectedFiles = async ({ cwd, config: config2, files }) => {
       collections.set(scope.scope, readCoverageCollection({ loaded: await loadScopeJestConfig({ scopeRoot, command: scope.command }) }));
     }
     const collection = collections.get(scope.scope);
-    (isCoverageCollectedFile({ absolutePath: join77(root, file2), collection }) ? collected : excluded).push(file2);
+    (isCoverageCollectedFile({ absolutePath: join80(root, file2), collection }) ? collected : excluded).push(file2);
   }
   return { collected, excluded };
 };
 
 // src/coverage/selectUnloadableFiles/selectUnloadableFiles.ts
-import { readFile as readFile28 } from "node:fs/promises";
-import { dirname as dirname19, join as join79 } from "node:path";
+import { readFile as readFile29 } from "node:fs/promises";
+import { dirname as dirname20, join as join82 } from "node:path";
 
 // src/common/sourceFiles/isUnloadableSourceFile.ts
 var hasModuleScopeAwait = ({ node, compiler }) => {
@@ -133261,15 +133827,15 @@ var readJestModuleMode = ({ loaded }) => {
 };
 
 // src/coverage/selectUnloadableFiles/internal/common/utils/readNearestPackageType.ts
-import { readFile as readFile27 } from "node:fs/promises";
-import { dirname as dirname18, join as join78, relative as relative9, sep as sep4 } from "node:path";
+import { readFile as readFile28 } from "node:fs/promises";
+import { dirname as dirname19, join as join81, relative as relative9, sep as sep4 } from "node:path";
 var withinScope = ({ directory, scopeRoot }) => {
   const path = relative9(scopeRoot, directory);
   return path === "" || !(path === ".." || path.startsWith(`..${sep4}`));
 };
 var readManifestType = async ({ manifestPath }) => {
   try {
-    const parsed = JSON.parse(await readFile27(manifestPath, "utf8"));
+    const parsed = JSON.parse(await readFile28(manifestPath, "utf8"));
     const declared = typeof parsed === "object" && parsed !== null && "type" in parsed ? parsed.type : void 0;
     return typeof declared === "string" ? declared : void 0;
   } catch {
@@ -133280,8 +133846,8 @@ var readNearestPackageType = async ({ fileDir, scopeRoot }) => {
   let directory = fileDir;
   let type;
   while (type === void 0 && withinScope({ directory, scopeRoot })) {
-    type = await readManifestType({ manifestPath: join78(directory, "package.json") });
-    const parent = dirname18(directory);
+    type = await readManifestType({ manifestPath: join81(directory, "package.json") });
+    const parent = dirname19(directory);
     if (parent === directory) {
       break;
     }
@@ -133301,7 +133867,7 @@ var selectUnloadableFiles = async ({ cwd, config: config2, files, compiler }) =>
   const loadable = [];
   const unloadable = [];
   for (const file2 of files) {
-    const content = await readFile28(join79(cwd, file2), "utf8").catch(() => void 0);
+    const content = await readFile29(join82(cwd, file2), "utf8").catch(() => void 0);
     if (content === void 0 || !isUnloadableSourceFile({ path: file2, content, compiler })) {
       loadable.push(file2);
       continue;
@@ -133315,7 +133881,7 @@ var selectUnloadableFiles = async ({ cwd, config: config2, files, compiler }) =>
     if (!modes.has(scope.scope)) {
       modes.set(scope.scope, readJestModuleMode({ loaded: await loadScopeJestConfig({ scopeRoot, command: scope.command }) }));
     }
-    const fileDir = dirname19(join79(root, file2));
+    const fileDir = dirname20(join82(root, file2));
     if (!packageTypes.has(fileDir)) {
       packageTypes.set(fileDir, await readNearestPackageType({ fileDir, scopeRoot }));
     }
@@ -133329,7 +133895,7 @@ var selectUnloadableFiles = async ({ cwd, config: config2, files, compiler }) =>
 var ExecutionSummaryReport = external_exports.record(external_exports.string(), external_exports.looseObject({ statements: external_exports.looseObject({ covered: external_exports.unknown(), total: external_exports.unknown() }) }));
 var readExecutionSummary = async ({ cwd, summaryPath }) => {
   try {
-    const parsed = ExecutionSummaryReport.parse(JSON.parse(await readFile29(join80(cwd, summaryPath), "utf8")));
+    const parsed = ExecutionSummaryReport.parse(JSON.parse(await readFile30(join83(cwd, summaryPath), "utf8")));
     return new Map(Object.entries(parsed).map(([key, entry]) => [relative10(cwd, key), entry.statements]));
   } catch {
     return void 0;
@@ -133344,7 +133910,7 @@ var checkChangedFilesExecuted = async ({ cwd, config: config2, changedFiles, com
   for (const file2 of changedFiles.filter(
     (changed) => isTestableSourceFile({ path: changed }) && !isTestFile({ path: changed }) && !isToolingConfigFile({ path: changed, packagesDir })
   )) {
-    const content = await readFile29(join80(cwd, file2), "utf8").catch(() => void 0);
+    const content = await readFile30(join83(cwd, file2), "utf8").catch(() => void 0);
     if (content !== void 0 && !isInertSourceFile({ path: file2, content, compiler })) {
       executable.push(file2);
     }
@@ -133400,7 +133966,7 @@ var resolveGateSchedule = ({ override }) => {
 };
 
 // src/gates/testResults/checkAcceptanceTests.ts
-import { join as join81 } from "node:path";
+import { join as join84 } from "node:path";
 
 // src/common/sourceFiles/matchesTestTitle.ts
 var placeholder = /%[sdifjop#%]|\$[A-Za-z_$][\w$]*(?:\.[\w$]+)*/g;
@@ -133429,7 +133995,7 @@ var covers = ({ gate, row, packagesDir }) => gate.skipped !== true && gate.exitC
 var createResultsReader = ({ cwd }) => {
   const readings = /* @__PURE__ */ new Map();
   return ({ dir }) => {
-    const started = readings.get(dir) ?? readTestResults({ cwd, dir: join81(cwd, dir) });
+    const started = readings.get(dir) ?? readTestResults({ cwd, dir: join84(cwd, dir) });
     readings.set(dir, started);
     return started;
   };
@@ -133511,7 +134077,7 @@ var changedFilesExecutedError = ({ run, packagesDir }) => {
     changedFiles: sourceFiles({ run }).filter((file2) => !manifest.unreachableChangedFiles.includes(file2))
   });
 };
-var runVerificationGates = async ({ run, coverage, checkpoint, rows, final }) => {
+var runVerificationGates = async ({ run, coverage, checkpoint, rows, final, changedFilesExecuted }) => {
   const packagesDir = run.config["packages-dir"] ?? defaultPackagesDir;
   const hasRootChanges = run.current().changedFiles.some((file2) => packageOf({ file: file2, packagesDir }) === void 0);
   const collector = collectGateObservations();
@@ -133545,7 +134111,7 @@ var runVerificationGates = async ({ run, coverage, checkpoint, rows, final }) =>
     });
     if (acceptanceError !== void 0) {
       verdict = { error: acceptanceError, failedFamilies: ["acceptance-tests"], crashes: [], timeouts: [], coordination: void 0, failures: [] };
-    } else if (coverageRan) {
+    } else if (coverageRan && changedFilesExecuted !== false) {
       const executedError = await changedFilesExecutedError({ run, packagesDir });
       verdict = executedError === void 0 ? { error: void 0, failedFamilies: [], crashes: [], timeouts: [], coordination: void 0, failures: [] } : { error: executedError, failedFamilies: ["changed-files-executed"], crashes: [], timeouts: [], coordination: void 0, failures: [] };
     }
@@ -133629,26 +134195,26 @@ var writeGateBlockedLabel = async ({ settings, identifier }) => {
   if (ticket === void 0) {
     return `the '${gateBlockedLabel}' label could not be written: the tracker knows no ticket ${identifier}`;
   }
-  const written = await setTicketLabel3({ settings, ticketId: ticket.id, label: gateBlockedLabel, present: true });
-  return written === void 0 ? void 0 : `the '${gateBlockedLabel}' label could not be written to ${identifier}: ${written.error}`;
+  const written2 = await setTicketLabel3({ settings, ticketId: ticket.id, label: gateBlockedLabel, present: true });
+  return written2 === void 0 ? void 0 : `the '${gateBlockedLabel}' label could not be written to ${identifier}: ${written2.error}`;
 };
 
 // src/gates/gateHolds/internal/common/utils/writeGateHold.ts
-import { mkdir as mkdir17, writeFile as writeFile13 } from "node:fs/promises";
-import { dirname as dirname20 } from "node:path";
+import { mkdir as mkdir18, writeFile as writeFile13 } from "node:fs/promises";
+import { dirname as dirname21 } from "node:path";
 
 // src/gates/gateHolds/internal/common/utils/getGateHoldPaths.ts
-import { join as join82 } from "node:path";
+import { join as join85 } from "node:path";
 var getGateHoldPaths = async ({ cwd }) => {
-  const dir = join82(await resolveSharedStateDir({ cwd }), "gate-holds");
-  return { dir, pathFor: ({ identifier }) => join82(dir, `${identifier.toLowerCase()}.json`) };
+  const dir = join85(await resolveSharedStateDir({ cwd }), "gate-holds");
+  return { dir, pathFor: ({ identifier }) => join85(dir, `${identifier.toLowerCase()}.json`) };
 };
 
 // src/gates/gateHolds/internal/common/utils/writeGateHold.ts
 var writeGateHold = async ({ cwd, identifier, hold }) => {
   const { pathFor } = await getGateHoldPaths({ cwd });
   const path = pathFor({ identifier });
-  await mkdir17(dirname20(path), { recursive: true });
+  await mkdir18(dirname21(path), { recursive: true });
   await writeFile13(path, JSON.stringify(hold), "utf8");
 };
 
@@ -133714,25 +134280,25 @@ var stopOnGateCoordination = async ({ run, stepId: stepId2, record: record3, coo
 };
 
 // src/runState/standardsBaseline/writeRunStandardsBaseline.ts
-import { mkdir as mkdir18 } from "node:fs/promises";
-import { dirname as dirname21 } from "node:path";
+import { mkdir as mkdir19 } from "node:fs/promises";
+import { dirname as dirname22 } from "node:path";
 
 // src/runState/standardsBaseline/internal/getRunStandardsBaselinePath.ts
-import { join as join83 } from "node:path";
+import { join as join86 } from "node:path";
 var getRunStandardsBaselinePath = async ({ cwd, runId }) => {
-  return join83(await resolveRunDir({ cwd, runId }), "standards-baseline.json");
+  return join86(await resolveRunDir({ cwd, runId }), "standards-baseline.json");
 };
 
 // src/runState/standardsBaseline/writeRunStandardsBaseline.ts
 var writeRunStandardsBaseline = async ({ cwd, runId, snapshot }) => {
   const path = await getRunStandardsBaselinePath({ cwd, runId });
-  await mkdir18(dirname21(path), { recursive: true });
+  await mkdir19(dirname22(path), { recursive: true });
   await writeJsonFile({ path, value: snapshot });
 };
 
 // src/standardsCheck/applyStandardsBaseline.ts
-import { readFile as readFile30, writeFile as writeFile14 } from "node:fs/promises";
-import { join as join84 } from "node:path";
+import { readFile as readFile31, writeFile as writeFile14 } from "node:fs/promises";
+import { join as join87 } from "node:path";
 var StandardsBaseline = external_exports.object({
   at: external_exports.string(),
   path: external_exports.string(),
@@ -133745,8 +134311,8 @@ var applyStandardsBaseline = async ({
   all,
   writeBaseline
 }) => {
-  const baselinePath = join84(cwd, "lightsout.standards-baseline.json");
-  const baselineRaw = await readFile30(baselinePath, "utf8").catch(() => void 0);
+  const baselinePath = join87(cwd, "lightsout.standards-baseline.json");
+  const baselineRaw = await readFile31(baselinePath, "utf8").catch(() => void 0);
   const notes = [];
   let baselineJson;
   try {
@@ -133756,7 +134322,7 @@ var applyStandardsBaseline = async ({
   }
   const baseline = baselineRaw === void 0 ? void 0 : StandardsBaseline.safeParse(baselineJson);
   if (writeBaseline) {
-    const siteKeys = [...new Set(findings.map((finding3) => finding3.siteKey))];
+    const siteKeys = [...new Set(findings.map((finding6) => finding6.siteKey))];
     await writeFile14(baselinePath, `${JSON.stringify({ at: (/* @__PURE__ */ new Date()).toISOString(), path: path ?? ".", siteKeys }, void 0, "	")}
 `, "utf8");
     notes.push(
@@ -133765,7 +134331,7 @@ var applyStandardsBaseline = async ({
     return { reported: findings, notes };
   }
   if (baseline === void 0) {
-    if (findings.some((finding3) => finding3.severity === StandardsSeverity.Blocking)) {
+    if (findings.some((finding6) => finding6.severity === StandardsSeverity.Blocking)) {
       notes.push(`no baseline \u2014 \`lightsout standards-check --baseline\` accepts these findings as existing debt so future runs report only what's new`);
     }
     return { reported: findings, notes };
@@ -133775,8 +134341,8 @@ var applyStandardsBaseline = async ({
     return { reported: findings, notes };
   }
   const accepted = new Set(baseline.data.siteKeys);
-  const fresh = findings.filter((finding3) => !accepted.has(finding3.siteKey));
-  const currentSiteKeys = new Set(findings.map((finding3) => finding3.siteKey));
+  const fresh = findings.filter((finding6) => !accepted.has(finding6.siteKey));
+  const currentSiteKeys = new Set(findings.map((finding6) => finding6.siteKey));
   const resolved = baseline.data.siteKeys.filter((siteKey) => !currentSiteKeys.has(siteKey)).length;
   if (!all && findings.length > fresh.length) {
     notes.push(`${findings.length - fresh.length} baselined finding(s) suppressed (--all to include)`);
@@ -133789,7 +134355,7 @@ var applyStandardsBaseline = async ({
 
 // src/standardsCheck/buildDominantPathNote.ts
 var findDominantPath = ({ findings }) => {
-  const paths = findings.map((finding3) => finding3.files[0]?.path).filter((path) => path !== void 0);
+  const paths = findings.map((finding6) => finding6.files[0]?.path).filter((path) => path !== void 0);
   if (paths.length < 20) {
     return void 0;
   }
@@ -133852,7 +134418,7 @@ var RabinKarp = class _RabinKarp {
     this.cloneValidators = cloneValidators;
   }
   async run(tokenMap, store) {
-    return new Promise((resolve19) => {
+    return new Promise((resolve21) => {
       let mapFrameInStore;
       let clone3 = null;
       const clones = [];
@@ -133884,7 +134450,7 @@ var RabinKarp = class _RabinKarp {
             if (clone3 && this.validate(clone3)) {
               clones.push(clone3);
             }
-            resolve19(clones);
+            resolve21(clones);
           }
         });
       };
@@ -133982,9 +134548,9 @@ var MemoryStore = class {
     this.values[namespace] = this.values[namespace] || {};
   }
   get(key) {
-    return new Promise((resolve19, reject) => {
+    return new Promise((resolve21, reject) => {
       if (key in this.values[this._namespace]) {
-        resolve19(this.values[this._namespace][key]);
+        resolve21(this.values[this._namespace][key]);
       } else {
         reject(new Error("not found"));
       }
@@ -145536,13 +146102,13 @@ var Tokenizer = class {
 };
 
 // src/standardsCheck/internal/common/checkInputs/readIntoCache.ts
-import { readFile as readFile31 } from "node:fs/promises";
-import { join as join85 } from "node:path";
+import { readFile as readFile32 } from "node:fs/promises";
+import { join as join88 } from "node:path";
 var readIntoCache = async ({ cwd, paths, cache }) => {
   const texts = /* @__PURE__ */ new Map();
   for (const path of paths) {
     if (!cache.has(path)) {
-      const text = await readFile31(join85(cwd, path), "utf8").catch(() => void 0);
+      const text = await readFile32(join88(cwd, path), "utf8").catch(() => void 0);
       if (text !== void 0) {
         cache.set(path, text);
       }
@@ -145629,13 +146195,13 @@ var buildCloneSpansInput = async ({ cwd, source, options, cache, compiler }) => 
 
 // src/common/workspace/readPackageDependencies.ts
 import { readdir as readdir17 } from "node:fs/promises";
-import { join as join86 } from "node:path";
+import { join as join89 } from "node:path";
 var readPackageDependencies = async ({ cwd, packagesDir }) => {
   const dependencies = /* @__PURE__ */ new Map();
-  dependencies.set(".", await readDependencyNames({ manifestPath: join86(cwd, "package.json") }) ?? []);
-  const children = await readdir17(join86(cwd, packagesDir)).catch(() => []);
+  dependencies.set(".", await readDependencyNames({ manifestPath: join89(cwd, "package.json") }) ?? []);
+  const children = await readdir17(join89(cwd, packagesDir)).catch(() => []);
   for (const name of children.sort()) {
-    const names = await readDependencyNames({ manifestPath: join86(cwd, packagesDir, name, "package.json") });
+    const names = await readDependencyNames({ manifestPath: join89(cwd, packagesDir, name, "package.json") });
     if (names !== void 0) {
       dependencies.set(`${packagesDir}/${name}`, names);
     }
@@ -145716,15 +146282,15 @@ var buildTestFileInput = async ({ cwd, tests, cache }) => {
 };
 
 // src/standardsCheck/internal/common/checkInputs/buildTypeCheckerInput.ts
-import { dirname as dirname22, join as join87, resolve as resolve13 } from "node:path";
+import { dirname as dirname23, join as join90, resolve as resolve13 } from "node:path";
 var findNearestConfig = ({ cwd, path, compiler }) => {
-  let folder = dirname22(resolve13(cwd, path));
+  let folder = dirname23(resolve13(cwd, path));
   while (folder.startsWith(cwd)) {
-    const candidate = join87(folder, "tsconfig.json");
+    const candidate = join90(folder, "tsconfig.json");
     if (compiler.sys.fileExists(candidate)) {
       return candidate;
     }
-    folder = dirname22(folder);
+    folder = dirname23(folder);
   }
   return void 0;
 };
@@ -145735,7 +146301,7 @@ var buildPrograms = ({ configPaths, compiler }) => {
     if (read.error !== void 0) {
       continue;
     }
-    const parsed = compiler.parseJsonConfigFileContent(read.config, compiler.sys, dirname22(configPath));
+    const parsed = compiler.parseJsonConfigFileContent(read.config, compiler.sys, dirname23(configPath));
     programs.set(configPath, compiler.createProgram({ rootNames: parsed.fileNames, options: parsed.options }));
   }
   return programs;
@@ -145893,11 +146459,11 @@ var runRuleCheck = async ({ rule, run, input, options }) => {
     throw new Error(`standards rule "${rule.name}" returned something that is not a list of findings: ${issues}`);
   }
   const prefix = `${rule.id}:`;
-  const misfiled = parsed.data.find((finding3) => !finding3.siteKey.startsWith(prefix));
+  const misfiled = parsed.data.find((finding6) => !finding6.siteKey.startsWith(prefix));
   if (misfiled !== void 0) {
     throw new Error(`standards rule "${rule.name}" wrote the site key "${misfiled.siteKey}", which does not start with its rule id "${prefix}"`);
   }
-  return parsed.data.map((finding3) => ({ ...finding3, siteKey: `${rule.name}:${finding3.siteKey.slice(prefix.length)}` }));
+  return parsed.data.map((finding6) => ({ ...finding6, siteKey: `${rule.name}:${finding6.siteKey.slice(prefix.length)}` }));
 };
 
 // src/standardsCheck/runPackageChecks.ts
@@ -145917,10 +146483,10 @@ var selectLiveRules = ({ groups }) => {
   }
   return [...live2.values()];
 };
-var gradeFindings = ({ rule, raw, groupOfFile }) => raw.flatMap((finding3) => {
-  const group = groupOfFile(finding3.files[0]?.path);
+var gradeFindings = ({ rule, raw, groupOfFile }) => raw.flatMap((finding6) => {
+  const group = groupOfFile(finding6.files[0]?.path);
   const grader = rule.graders.find((candidate) => candidate.group === group);
-  return grader === void 0 ? [] : [{ ...finding3, rule: rule.name, severity: grader.severity }];
+  return grader === void 0 ? [] : [{ ...finding6, rule: rule.name, severity: grader.severity }];
 });
 var runLiveRules = async ({
   live: live2,
@@ -145993,19 +146559,19 @@ var runPackageChecks = async ({
 };
 
 // src/standardsCheck/writeStandardsSnapshot.ts
-import { mkdir as mkdir19, writeFile as writeFile15 } from "node:fs/promises";
-import { join as join90 } from "node:path";
+import { mkdir as mkdir20, writeFile as writeFile15 } from "node:fs/promises";
+import { join as join93 } from "node:path";
 
 // src/standardsCheck/internal/common/paths/getStandardsCheckPath.ts
-import { join as join88 } from "node:path";
+import { join as join91 } from "node:path";
 var getStandardsCheckPath = ({ cwd }) => {
-  return join88(cwd, ".lightsout", "standards-check.json");
+  return join91(cwd, ".lightsout", "standards-check.json");
 };
 
 // src/standardsCheck/internal/common/paths/getStandardsSnapshotsDir.ts
-import { join as join89 } from "node:path";
+import { join as join92 } from "node:path";
 var getStandardsSnapshotsDir = ({ cwd }) => {
-  return join89(cwd, ".lightsout", "standards-check");
+  return join92(cwd, ".lightsout", "standards-check");
 };
 
 // src/standardsCheck/writeStandardsSnapshot.ts
@@ -146014,9 +146580,9 @@ var writeStandardsSnapshot = async ({ cwd, snapshot }) => {
 `;
   const snapshotsDir = getStandardsSnapshotsDir({ cwd });
   const fileName = `${snapshot.at.replaceAll(":", "-").replaceAll(".", "-")}.json`;
-  await mkdir19(snapshotsDir, { recursive: true });
+  await mkdir20(snapshotsDir, { recursive: true });
   await writeFile15(getStandardsCheckPath({ cwd }), body, "utf8");
-  await writeFile15(join90(snapshotsDir, fileName), body, "utf8");
+  await writeFile15(join93(snapshotsDir, fileName), body, "utf8");
 };
 
 // src/standardsCheck/runStandardsCheck.ts
@@ -146089,7 +146655,11 @@ ${error51}` });
     }
     const gateArtifacts = await readGitChangedFiles({ cwd: run.cwd });
     const baselineDirtyFiles = [.../* @__PURE__ */ new Set([...run.current().baselineDirtyFiles, ...gateArtifacts ?? []])];
-    const approvedTests = await approveTestFiles({ run, paths: baselineDirtyFiles.filter((path) => isTestSideFile({ path })) });
+    const generated = run.config.generated ?? [];
+    const approvedTests = await approveTestFiles({
+      run,
+      paths: baselineDirtyFiles.filter((path) => isTestSideFile({ path }) && !isGeneratedPath({ path, generated }))
+    });
     await captureStandardsBaseline({ run });
     await run.setStep({ record: { ...record3, status: RunStatus.Passed }, patch: { baselineDirtyFiles, approvedTests } });
     run.progress("step clean-slate passed");
@@ -146218,18 +146788,78 @@ ${result.stderr}`;
 // src/pipeline/internal/common/constants/testWriterConcurrency.ts
 var testWriterConcurrency = 10;
 
+// src/pipeline/internal/common/utils/collectChanged.ts
+import { lstat } from "node:fs/promises";
+import { isAbsolute as isAbsolute2, relative as relative11, resolve as resolve14, sep as sep5 } from "node:path";
+
+// src/common/constants/GitChangeKind.ts
+var GitChangeKind = {
+  Added: "added",
+  Modified: "modified",
+  Removed: "removed"
+};
+
+// src/common/git/readGitWorkingChanges.ts
+var kindOf = ({ code }) => {
+  let kind = GitChangeKind.Modified;
+  if (code.includes("D")) {
+    kind = GitChangeKind.Removed;
+  } else if (code === "??" || code.includes("A")) {
+    kind = GitChangeKind.Added;
+  }
+  return kind;
+};
+var readGitWorkingChanges = async ({ cwd }) => {
+  const prefix = await readGitPrefix({ cwd });
+  if (prefix === void 0) {
+    return void 0;
+  }
+  const status = await runCommand({ command: "git status --porcelain=v1 -uall --no-renames -- .", cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  if (status?.exitCode !== 0) {
+    return void 0;
+  }
+  return status.stdout.split("\n").filter(Boolean).map((line) => {
+    const path = line.slice(3).replace(/^"|"$/g, "");
+    return { path: prefix && path.startsWith(prefix) ? path.slice(prefix.length) : path, kind: kindOf({ code: line.slice(0, 2) }) };
+  }).filter((change) => !change.path.startsWith(".lightsout/"));
+};
+
 // src/pipeline/internal/common/utils/consumerRelative.ts
 var consumerRelative = ({ gitPrefix, file: file2 }) => gitPrefix && file2.startsWith(gitPrefix) ? file2.slice(gitPrefix.length) : file2;
 
 // src/pipeline/internal/common/utils/collectChanged.ts
+var toCwdRelative = ({ cwd, file: file2 }) => {
+  const path = relative11(cwd, resolve14(cwd, file2));
+  const outside = path === "" || path === ".." || path.startsWith(`..${sep5}`) || isAbsolute2(path);
+  return outside ? void 0 : path;
+};
+var toRealPath = async ({ cwd, keepSet, file: file2 }) => {
+  const path = toCwdRelative({ cwd, file: file2 });
+  if (path === void 0 || keepSet.has(path)) {
+    return path;
+  }
+  const stats = await lstat(resolve14(cwd, path)).catch(() => void 0);
+  return stats?.isFile() === true || stats?.isSymbolicLink() === true ? path : void 0;
+};
 var collectChanged = async ({ run, gitPrefix, reports }) => {
   const isGeneratedFile = ({ file: file2 }) => (run.config.generated ?? []).some((prefix) => file2.startsWith(prefix));
   const packagesDir = run.config["packages-dir"] ?? defaultPackagesDir;
   const fromGit = (await readGitChangedFiles({ cwd: run.cwd }) ?? []).filter(
     (file2) => !run.current().baselineDirtyFiles.includes(file2) && !isGeneratedFile({ file: file2 })
   );
-  const fromReports = reports.flatMap((report2) => report2.changedFiles.map((file2) => consumerRelative({ gitPrefix, file: file2.path }))).filter((file2) => !isGeneratedFile({ file: file2 }));
-  const changedFiles = [.../* @__PURE__ */ new Set([...run.current().changedFiles, ...fromReports, ...fromGit])];
+  const reported = reports.flatMap((report2) => report2.changedFiles.map((file2) => file2.path)).filter((path) => !isGeneratedFile({ file: consumerRelative({ gitPrefix, file: path }) }));
+  const keepSet = new Set((await readGitWorkingChanges({ cwd: run.cwd }) ?? []).map((change) => change.path));
+  const realPathsOf = ({ files }) => Promise.all(files.map((file2) => toRealPath({ cwd: run.cwd, keepSet, file: file2 })));
+  const carried = await realPathsOf({ files: run.current().changedFiles });
+  const fromReports = await realPathsOf({ files: reported.map((path) => consumerRelative({ gitPrefix, file: path })) });
+  const fromGitReal = await realPathsOf({ files: fromGit });
+  const changedFiles = [...new Set([...carried, ...fromReports, ...fromGitReal].flatMap((file2) => file2 === void 0 ? [] : [file2]))];
+  const dropped = [...new Set(reported.filter((_, index) => fromReports[index] === void 0))];
+  if (dropped.length > 0) {
+    run.progress(
+      `warning unreal-reported-paths: ${run.current().currentStep ?? "a step"} reported ${dropped.length} changed path(s) that are not files in the working tree, so they were left out: ${dropped.map((entry) => JSON.stringify(entry)).join(", ")}`
+    );
+  }
   const fromFiles = changedFiles.flatMap((file2) => {
     const packageDir = packageOf({ file: file2, packagesDir });
     return packageDir ? [packageDir] : [];
@@ -146242,8 +146872,8 @@ var createWarmSpawn = ({ group, spawnWriter, aggregate }) => {
   let settled2 = false;
   let collected = false;
   let release;
-  const gate = new Promise((resolve19) => {
-    release = resolve19;
+  const gate = new Promise((resolve21) => {
+    release = resolve21;
   });
   const warm = group === void 0 ? void 0 : spawnWriter({ group, onFirstEvent: release }).finally(() => {
     settled2 = true;
@@ -146341,16 +146971,16 @@ var endOfSpan = ({ content, from }) => {
   const stack = [content[from] ?? ""];
   let index = from + 1;
   while (index < content.length && stack.length > 0) {
-    const open = stack[stack.length - 1] ?? "";
+    const open2 = stack[stack.length - 1] ?? "";
     const char = content[index] ?? "";
     if (char === "\\") {
       index += 2;
-    } else if (open === "'" || open === '"') {
-      if (char === open) {
+    } else if (open2 === "'" || open2 === '"') {
+      if (char === open2) {
         stack.pop();
       }
       index += 1;
-    } else if (open === "`") {
+    } else if (open2 === "`") {
       if (char === "$" && content[index + 1] === "{") {
         stack.push("{");
         index += 1;
@@ -146359,7 +146989,7 @@ var endOfSpan = ({ content, from }) => {
       }
       index += 1;
     } else {
-      if (char === closers.get(open)) {
+      if (char === closers.get(open2)) {
         stack.pop();
       } else if (quotes.has(char) || closers.has(char)) {
         stack.push(char);
@@ -146444,10 +147074,10 @@ var groupLedgerRows = ({ rows }) => {
 };
 
 // src/pipeline/steps/ledger/missingLedgerNames.ts
-import { readFile as readFile32 } from "node:fs/promises";
-import { join as join91 } from "node:path";
+import { readFile as readFile33 } from "node:fs/promises";
+import { join as join94 } from "node:path";
 var missingLedgerNames = async ({ cwd, testFile, testNames }) => {
-  const content = await readFile32(join91(cwd, testFile), "utf8").catch(() => void 0);
+  const content = await readFile33(join94(cwd, testFile), "utf8").catch(() => void 0);
   return content === void 0 ? void 0 : testNames.filter((testName) => !holdsTestTitle({ content, testName }));
 };
 
@@ -146520,17 +147150,17 @@ var settleWrittenTests = async ({ context, assignments }) => {
   return { reports, errors, parked };
 };
 var writeLedgerTests = async ({ context, assignments }) => {
-  const written = await runLedgerWriters({ context, assignments });
-  const settled2 = written.parked || written.failures.length > 0 ? void 0 : await settleWrittenTests({ context, assignments });
-  const reports = [...written.reports, ...settled2?.reports ?? []];
+  const written2 = await runLedgerWriters({ context, assignments });
+  const settled2 = written2.parked || written2.failures.length > 0 ? void 0 : await settleWrittenTests({ context, assignments });
+  const reports = [...written2.reports, ...settled2?.reports ?? []];
   let failure;
-  if (written.parked || settled2?.parked) {
+  if (written2.parked || settled2?.parked) {
     failure = { status: RunStatus.PausedRateLimit, error: context.run.parkMessage() };
-  } else if (written.failures.length > 0) {
+  } else if (written2.failures.length > 0) {
     failure = {
-      status: written.terminated ? RunStatus.Escalated : RunStatus.Failed,
-      error: `${stepId}: ${written.failures.length} of ${assignments.length} writer(s) did not complete:
-${written.failures.join("\n")}`
+      status: written2.terminated ? RunStatus.Escalated : RunStatus.Failed,
+      error: `${stepId}: ${written2.failures.length} of ${assignments.length} writer(s) did not complete:
+${written2.failures.join("\n")}`
     };
   } else if (settled2 && settled2.errors.length > 0) {
     failure = {
@@ -146623,6 +147253,25 @@ Files already created or modified earlier in this run:
 
 ${changedFiles.map((file2) => `- ${file2}`).join("\n")}`;
 
+// src/agents/internal/common/utils/moveOnlySection.ts
+var moveOnlySection = ({ fileMoves = [], folderMoves = [] }) => listSection({
+  heading: "Move-folders-and-files phase",
+  intro: "This phase only moves folders and files. These are its moves:",
+  items: [...folderMoves.map(({ from, to }) => `- \`${from}/\` \u2192 \`${to}/\``), ...fileMoves.map(({ from, to }) => `- \`${from}\` \u2192 \`${to}\``)],
+  rules: [
+    "- Move each listed folder and file: its old path must be gone, and its files must arrive at the new path.",
+    "- Move every file in full. A file left at a listed old path, or left behind in a listed folder, is refused by name.",
+    "- A file that is not text, such as an image or another binary, may only be moved unchanged.",
+    "- Update the paths that point at moved files, wherever they are written in the repository, and change nothing else.",
+    "- Update a path where it is written: change the path text itself and keep every other character of the line as it was. A relative depth spelled as separate arguments, such as `path.join(__dirname, '..', 'x')`, cannot be updated in this mode; that change belongs in a standard phase.",
+    "- Write no tests.",
+    "- The standing brief's stop rule on the number of source files does not apply to this phase.",
+    "- In `changedFiles`, report the files you edited, plus one entry per moved folder rather than every file the folder carried.",
+    "- Before any gate runs, the engine pairs every removed file with an added file at its declared destination and refuses any file a declared move left at its old path. It also refuses any changed file that differs from the phase's starting commit in anything but the paths that point at moved files.",
+    "- That move check runs in place of the agent test-change review the standing brief describes: no agent reviews this phase's edits."
+  ]
+});
+
 // src/agents/internal/common/utils/renameOnlySection.ts
 var renameOnlySection = ({ renames = [] }) => listSection({
   heading: "Rename-only phase",
@@ -146668,6 +147317,15 @@ var featureExecutor_default = '# Role: Feature Executor\n\nYou are a principal s
 var defaultExecutorFileLimit = 50;
 
 // src/agents/buildFeatureExecutorInvocation.ts
+var modeSection = ({ planBuildMode }) => {
+  let section;
+  if (planBuildMode?.buildMode === BuildMode.RenamesOnly) {
+    section = renameOnlySection({ renames: planBuildMode.renames });
+  } else if (planBuildMode?.buildMode === BuildMode.MoveFoldersAndFiles) {
+    section = moveOnlySection({ fileMoves: planBuildMode.fileMoves, folderMoves: planBuildMode.folderMoves });
+  }
+  return section;
+};
 var buildFeatureExecutorInvocation = ({
   planContent,
   overviewContent,
@@ -146678,7 +147336,7 @@ var buildFeatureExecutorInvocation = ({
   fileLimit,
   acceptanceTests,
   selfCheckCommand: selfCheckCommand2,
-  renames
+  planBuildMode
 }) => {
   const roleSections = [applyPromptTokens({ text: featureExecutor_default, tokens: { fileLimit: fileLimit ?? defaultExecutorFileLimit } })];
   if (overviewContent) {
@@ -146693,9 +147351,9 @@ ${overviewContent}`
   roleSections.push(`# Plan
 
 ${planContent}`);
-  const renameOnly = renameOnlySection({ renames });
-  if (renameOnly) {
-    roleSections.push(renameOnly);
+  const mode = modeSection({ planBuildMode });
+  if (mode) {
+    roleSections.push(mode);
   }
   if (standards) {
     roleSections.push(`# Standards
@@ -146743,7 +147401,7 @@ ${errorContext}`
 };
 
 // src/pipeline/steps/buildSteps/internal/common/utils/buildFeatureFix.ts
-var buildFeatureFix = ({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, renames, selfCheckCommand: selfCheckCommand2 }) => ({ errorContext }) => buildFeatureExecutorInvocation({
+var buildFeatureFix = ({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand: selfCheckCommand2 }) => ({ errorContext }) => buildFeatureExecutorInvocation({
   planContent,
   overviewContent,
   standards,
@@ -146753,7 +147411,7 @@ var buildFeatureFix = ({ run, planContent, overviewContent, standards, fileLimit
   fileLimit,
   acceptanceTests: acceptanceTests(),
   selfCheckCommand: selfCheckCommand2,
-  renames
+  planBuildMode
 });
 
 // src/pipeline/internal/steps/formatStep.ts
@@ -146861,8 +147519,8 @@ var stopOnGateNoVerdict = ({ run, stepId: stepId2, record: record3, crashes, tim
 };
 
 // src/pipeline/approvedTests/internal/applyTestDispositions.ts
-import { readFile as readFile33 } from "node:fs/promises";
-import { join as join92 } from "node:path";
+import { readFile as readFile34 } from "node:fs/promises";
+import { join as join95 } from "node:path";
 
 // src/contracts/work/TestDisposition.ts
 var TestDisposition = {
@@ -146935,7 +147593,7 @@ var applyTestDispositions = async ({
     next.push(disposition === void 0 || refusal !== void 0 ? row : applyTo({ row, disposition }));
   }
   for (const row of next) {
-    const content = await readFile33(join92(run.cwd, row.testFile), "utf8").catch(() => void 0);
+    const content = await readFile34(join95(run.cwd, row.testFile), "utf8").catch(() => void 0);
     if (content === void 0 || !holdsTestTitle({ content, testName: row.testName })) {
       rejections.push(`${row.criterion}: \`${row.testName}\` is not stated in ${row.testFile} after the review's dispositions were applied`);
     }
@@ -146944,8 +147602,8 @@ var applyTestDispositions = async ({
 };
 
 // src/pipeline/approvedTests/internal/collectTestChanges.ts
-import { mkdir as mkdir20, readFile as readFile35, rm as rm9, writeFile as writeFile16 } from "node:fs/promises";
-import { dirname as dirname23, join as join93, relative as relative11 } from "node:path";
+import { mkdir as mkdir21, readFile as readFile36, rm as rm10, writeFile as writeFile16 } from "node:fs/promises";
+import { dirname as dirname24, join as join96, relative as relative12 } from "node:path";
 
 // src/pipeline/approvedTests/internal/common/constants/TestChangeKind.ts
 var TestChangeKind = {
@@ -146958,7 +147616,7 @@ var TestChangeKind = {
 };
 
 // src/pipeline/approvedTests/readApprovedTest.ts
-import { readFile as readFile34 } from "node:fs/promises";
+import { readFile as readFile35 } from "node:fs/promises";
 var readApprovedTest = async ({ run, path }) => {
   const { runId, approvedTests } = run.current();
   const record3 = approvedTests.find((entry) => entry.path === path);
@@ -146966,26 +147624,26 @@ var readApprovedTest = async ({ run, path }) => {
     return void 0;
   }
   if (record3?.sha256 !== void 0) {
-    return readFile34(await approvedTestPath({ cwd: run.cwd, runId, path }), "utf8").catch(() => void 0);
+    return readFile35(await approvedTestPath({ cwd: run.cwd, runId, path }), "utf8").catch(() => void 0);
   }
   return readGitCommittedFile({ cwd: run.cwd, path });
 };
 
 // src/pipeline/approvedTests/internal/collectTestChanges.ts
 var emptySide = "/dev/null";
-var kindOf = ({ live: live2, approved }) => {
+var kindOf2 = ({ live: live2, approved }) => {
   if (approved === void 0) {
     return TestChangeKind.Added;
   }
   return live2 === void 0 ? TestChangeKind.Removed : TestChangeKind.Modified;
 };
 var diffOf = async ({ cwd, path, kind, approved, scratch }) => {
-  const before = join93(scratch, path);
+  const before = join96(scratch, path);
   if (approved !== void 0) {
-    await mkdir20(dirname23(before), { recursive: true });
+    await mkdir21(dirname24(before), { recursive: true });
     await writeFile16(before, approved, "utf8");
   }
-  const left = approved === void 0 ? emptySide : relative11(cwd, before);
+  const left = approved === void 0 ? emptySide : relative12(cwd, before);
   const right = kind === TestChangeKind.Removed ? emptySide : path;
   const [quotedLeft, quotedRight] = [left, right].map((argument) => quoteShellArgument({ argument }));
   const shown = await runCommand({ command: `git diff --no-index ${quotedLeft} ${quotedRight}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
@@ -146999,17 +147657,17 @@ var collectTestChanges = async ({ run }) => {
   if (candidates.length === 0) {
     return [];
   }
-  const scratch = join93(dirname23(await approvedTestsDir({ cwd: run.cwd, runId: manifest.runId })), "approved-scratch");
-  await rm9(scratch, { recursive: true, force: true });
-  await mkdir20(scratch, { recursive: true });
+  const scratch = join96(dirname24(await approvedTestsDir({ cwd: run.cwd, runId: manifest.runId })), "approved-scratch");
+  await rm10(scratch, { recursive: true, force: true });
+  await mkdir21(scratch, { recursive: true });
   const changes = [];
   for (const path of candidates) {
-    const live2 = await readFile35(join93(run.cwd, path), "utf8").catch(() => void 0);
+    const live2 = await readFile36(join96(run.cwd, path), "utf8").catch(() => void 0);
     const approved = await readApprovedTest({ run, path });
     if (live2 === approved) {
       continue;
     }
-    const kind = kindOf({ live: live2, approved });
+    const kind = kindOf2({ live: live2, approved });
     changes.push({ path, kind, diff: await diffOf({ cwd: run.cwd, path, kind, approved, scratch }) });
   }
   return changes;
@@ -147188,46 +147846,134 @@ var reviewTestChanges = async ({ run, checkpoint, planContent, overviewContent }
   return {};
 };
 
-// src/pipeline/renameCheck/checkRenameOnlyChanges.ts
-import { readFile as readFile36 } from "node:fs/promises";
-import { join as join94 } from "node:path";
-
-// src/common/constants/GitChangeKind.ts
-var GitChangeKind = {
-  Added: "added",
-  Modified: "modified",
-  Removed: "removed"
+// src/common/constants/MoveDirection.ts
+var MoveDirection = {
+  Forward: "forward",
+  Back: "back"
 };
 
-// src/common/git/readGitWorkingChanges.ts
-var kindOf2 = ({ code }) => {
-  let kind = GitChangeKind.Modified;
-  if (code.includes("D")) {
-    kind = GitChangeKind.Removed;
-  } else if (code === "??" || code.includes("A")) {
-    kind = GitChangeKind.Added;
+// src/common/git/readGitHeadBlobIds.ts
+var readGitHeadBlobIds = async ({ cwd }) => {
+  const listing = await runCommand({ command: "git ls-tree -r -z HEAD", cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  let blobIds;
+  if (listing?.exitCode === 0) {
+    blobIds = /* @__PURE__ */ new Map();
+    for (const record3 of listing.stdout.split("\0").filter(Boolean)) {
+      const tab = record3.indexOf("	");
+      const [, type, id] = record3.slice(0, tab).split(" ");
+      if (type === "blob" && id !== void 0) {
+        blobIds.set(record3.slice(tab + 1), id);
+      }
+    }
   }
-  return kind;
+  return blobIds;
 };
-var readGitWorkingChanges = async ({ cwd }) => {
-  const prefix = await readGitPrefix({ cwd });
-  if (prefix === void 0) {
+
+// src/common/git/readGitWorkingBlobIds.ts
+var readGitWorkingBlobIds = async ({ cwd, paths }) => {
+  const chunkSize = 200;
+  let blobIds = /* @__PURE__ */ new Map();
+  for (let start = 0; start < paths.length && blobIds !== void 0; start += chunkSize) {
+    const chunk = paths.slice(start, start + chunkSize);
+    const quoted = chunk.map((path) => quoteShellArgument({ argument: path })).join(" ");
+    const hashed = await runCommand({ command: `git hash-object -- ${quoted}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+    const ids = hashed?.exitCode === 0 ? hashed.stdout.split("\n").filter(Boolean) : [];
+    if (ids.length === chunk.length) {
+      for (const [index, path] of chunk.entries()) {
+        blobIds.set(path, ids[index] ?? "");
+      }
+    } else {
+      blobIds = void 0;
+    }
+  }
+  return blobIds;
+};
+
+// src/common/utils/findCoveringMove.ts
+var endsOf = ({ move, direction }) => direction === MoveDirection.Forward ? { source: move.from, target: move.to } : { source: move.to, target: move.from };
+var findCoveringMove = ({ path, fileMoves, folderMoves, direction }) => {
+  const fileMatch = fileMoves.map((move) => endsOf({ move, direction })).find(({ source }) => source === path);
+  const folderMatch = folderMoves.map((move) => endsOf({ move, direction })).filter(({ source }) => path.startsWith(`${source}/`)).sort((left, right) => right.source.length - left.source.length)[0];
+  let covering;
+  if (fileMatch !== void 0) {
+    covering = { ...fileMatch, isFolder: false };
+  } else if (folderMatch !== void 0) {
+    covering = { ...folderMatch, isFolder: true };
+  }
+  return covering;
+};
+
+// src/common/utils/mapPathThroughMoves.ts
+var mapPathThroughMoves = ({ path, fileMoves, folderMoves, direction }) => {
+  const covering = findCoveringMove({ path, fileMoves, folderMoves, direction });
+  return covering === void 0 ? path : `${covering.target}${path.slice(covering.source.length)}`;
+};
+
+// src/pipeline/internal/common/checkpointChanges/pairCheckpointChanges.ts
+var pairCheckpointChanges = ({
+  removed,
+  added,
+  modified,
+  destinationOf,
+  wording
+}) => {
+  const unclaimed = new Set(added);
+  const comparisons = modified.map((path) => ({ startPath: path, currentPath: path }));
+  const refusals = [];
+  for (const path of removed) {
+    const destination = destinationOf({ path });
+    if (destination === path) {
+      refusals.push(`- ${path}: removed, and ${wording.uncovered}`);
+    } else if (unclaimed.delete(destination)) {
+      comparisons.push({ startPath: path, currentPath: destination });
+    } else {
+      refusals.push(`- ${path}: removed, but nothing was added at its ${wording.destination} ${destination}`);
+    }
+  }
+  for (const path of unclaimed) {
+    refusals.push(`- ${path}: added, but ${wording.unclaimed}`);
+  }
+  return { comparisons, refusals };
+};
+
+// src/pipeline/internal/common/checkpointChanges/readCheckpointChanges.ts
+var removedSinceHead = async ({ run, paths }) => {
+  const tracked = [];
+  for (const path of paths) {
+    if (await readGitCommittedFile({ cwd: run.cwd, path: `./${path}` }) !== void 0) {
+      tracked.push(path);
+    }
+  }
+  return tracked;
+};
+var readCheckpointChanges = async ({ run }) => {
+  const changes = await readGitWorkingChanges({ cwd: run.cwd });
+  if (changes === void 0) {
     return void 0;
   }
-  const status = await runCommand({ command: "git status --porcelain=v1 -uall --no-renames -- .", cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
-  if (status?.exitCode !== 0) {
-    return void 0;
-  }
-  return status.stdout.split("\n").filter(Boolean).map((line) => {
-    const path = line.slice(3).replace(/^"|"$/g, "");
-    return { path: prefix && path.startsWith(prefix) ? path.slice(prefix.length) : path, kind: kindOf2({ code: line.slice(0, 2) }) };
-  }).filter((change) => !change.path.startsWith(".lightsout/"));
+  const baselineDirty = new Set(run.current().baselineDirtyFiles);
+  const generated = run.config.generated ?? [];
+  const inScope = changes.filter(({ path }) => !baselineDirty.has(path) && !isGeneratedPath({ path, generated }));
+  const pathsOf = ({ kind }) => inScope.filter((change) => change.kind === kind).map((change) => change.path);
+  return {
+    removed: await removedSinceHead({ run, paths: pathsOf({ kind: GitChangeKind.Removed }) }),
+    added: pathsOf({ kind: GitChangeKind.Added }),
+    modified: pathsOf({ kind: GitChangeKind.Modified })
+  };
 };
 
-// src/pipeline/renameCheck/internal/common/utils/applyRenames.ts
-var applyRenames = ({ text, renames }) => renames.reduce((renamed, { from, to }) => renamed.replaceAll(from, to), text);
+// src/pipeline/internal/common/checkpointChanges/readComparisonSides.ts
+import { readFile as readFile37 } from "node:fs/promises";
+import { join as join97 } from "node:path";
+var readComparisonSides = async ({ run, comparison }) => {
+  const { startPath, currentPath } = comparison;
+  const start = await readGitCommittedFile({ cwd: run.cwd, path: `./${startPath}` }) ?? "";
+  const current = await readFile37(join97(run.cwd, currentPath), "utf8").catch(() => void 0) ?? "";
+  const label2 = startPath === currentPath ? currentPath : `${currentPath} (moved from ${startPath})`;
+  return { start, current, label: label2 };
+};
 
-// src/pipeline/renameCheck/internal/common/utils/countTokens.ts
+// src/pipeline/internal/common/tokens/countTokens.ts
 var countTokens = ({ text }) => {
   const tokens = text.match(/[\p{L}\p{N}_$]+|[^\s\p{L}\p{N}_$]/gu) ?? [];
   const counts = /* @__PURE__ */ new Map();
@@ -147240,70 +147986,154 @@ var countTokens = ({ text }) => {
   return counts;
 };
 
-// src/pipeline/renameCheck/checkRenameOnlyChanges.ts
-var describeSurplus = ({ more, less }) => {
+// src/pipeline/internal/common/tokens/describeTokenSurplus.ts
+var describeTokenSurplus = ({ more, less }) => {
   const listedTokenLimit = 20;
   const surplus = [...more].flatMap(([token, count2]) => count2 > (less.get(token) ?? 0) ? [`\`${token}\` \xD7${count2 - (less.get(token) ?? 0)}`] : []);
   const listed = surplus.slice(0, listedTokenLimit).join(", ");
   return surplus.length > listedTokenLimit ? `${listed} and ${surplus.length - listedTokenLimit} more` : listed;
 };
-var pairChanges = ({ removed, added, modified, renames }) => {
-  const unclaimed = new Set(added);
-  const comparisons = modified.map((path) => ({ startPath: path, currentPath: path }));
-  const refusals = [];
-  for (const path of removed) {
-    const destination = applyRenames({ text: path, renames });
-    if (destination === path) {
-      refusals.push(`- ${path}: removed, and no declared rename applies to its path`);
-    } else if (unclaimed.delete(destination)) {
-      comparisons.push({ startPath: path, currentPath: destination });
-    } else {
-      refusals.push(`- ${path}: removed, but nothing was added at its renamed path ${destination}`);
+
+// src/pipeline/moveCheck/internal/common/utils/countPathTokens.ts
+var countPathTokens = ({ text, standalonePaths }) => {
+  const pathRuns = [];
+  const rest = text.replace(/[\p{L}\p{N}_$@#~./-]+/gu, (run) => {
+    const isPathRun = run.includes("/") && /[\p{L}\p{N}]/u.test(run) || standalonePaths.has(run);
+    if (isPathRun) {
+      pathRuns.push(run);
+    }
+    return isPathRun ? " " : run;
+  });
+  return { inside: countTokens({ text: pathRuns.join("\n") }), outside: countTokens({ text: rest }) };
+};
+
+// src/pipeline/moveCheck/checkMoveOnlyChanges.ts
+var leaveOutCarriedAlong = ({ run, moves, removed, added }) => {
+  const baselineDirty = new Set(run.current().baselineDirtyFiles);
+  const generated = run.config.generated ?? [];
+  const mapped = ({ path, direction }) => mapPathThroughMoves({ path, ...moves, direction });
+  return {
+    removed: removed.filter((path) => !isGeneratedPath({ path: mapped({ path, direction: MoveDirection.Forward }), generated })),
+    added: added.filter((path) => {
+      const source = mapped({ path, direction: MoveDirection.Back });
+      return !baselineDirty.has(source) && !isGeneratedPath({ path: source, generated });
+    })
+  };
+};
+var coveringMoveLabel = ({ path, moves }) => {
+  const move = findCoveringMove({ path, ...moves, direction: MoveDirection.Forward });
+  const slash = move?.isFolder === true ? "/" : "";
+  return move === void 0 ? void 0 : `${move.source}${slash} \u2192 ${move.target}${slash}`;
+};
+var refuseLeftBehind = ({ run, moves, headBlobIds, removed }) => {
+  const baselineDirty = new Set(run.current().baselineDirtyFiles);
+  const generated = run.config.generated ?? [];
+  const removedPaths = new Set(removed);
+  return [...headBlobIds.keys()].flatMap((path) => {
+    const move = coveringMoveLabel({ path, moves });
+    const leftBehind = move !== void 0 && !removedPaths.has(path) && !baselineDirty.has(path) && !isGeneratedPath({ path, generated });
+    return leftBehind ? [`- ${path}: left at its old path by the declared move ${move}`] : [];
+  });
+};
+var buildContentBound = ({ moves }) => {
+  const paths = [...moves.fileMoves, ...moves.folderMoves].flatMap(({ from, to }) => [from, to]);
+  const allowedTokens = /* @__PURE__ */ new Set(["/", ".", "-", ...paths.flatMap((path) => [...countTokens({ text: path }).keys()])]);
+  const standalonePaths = new Set(paths.flatMap((path) => [path, path.split("/").at(-1) ?? path]));
+  return { allowedTokens, standalonePaths };
+};
+var withoutAllowed = ({ counts, allowedTokens }) => new Map([...counts].filter(([token]) => !allowedTokens.has(token)));
+var compareContent = async ({ run, comparison, bound }) => {
+  const { start, current, label: label2 } = await readComparisonSides({ run, comparison });
+  let refusal;
+  if (start.includes("\uFFFD") || current.includes("\uFFFD")) {
+    refusal = `- ${label2}: its content is not UTF-8 text, and a file that is not text may only be moved unchanged`;
+  } else {
+    const before = countPathTokens({ text: start, standalonePaths: bound.standalonePaths });
+    const after = countPathTokens({ text: current, standalonePaths: bound.standalonePaths });
+    const insideBefore = withoutAllowed({ counts: before.inside, allowedTokens: bound.allowedTokens });
+    const insideAfter = withoutAllowed({ counts: after.inside, allowedTokens: bound.allowedTokens });
+    const describeSurpluses = ({ more, less }) => more.map((counts, index) => describeTokenSurplus({ more: counts, less: less[index] ?? /* @__PURE__ */ new Map() })).filter(Boolean).join(", ");
+    const addedTokens = describeSurpluses({ more: [after.outside, insideAfter], less: [before.outside, insideBefore] });
+    const removedTokens = describeSurpluses({ more: [before.outside, insideBefore], less: [after.outside, insideAfter] });
+    if (addedTokens !== "" || removedTokens !== "") {
+      refusal = `- ${label2}: added ${addedTokens || "nothing"}; removed ${removedTokens || "nothing"}`;
     }
   }
-  for (const path of unclaimed) {
-    refusals.push(`- ${path}: added, but no removed file renames to it`);
-  }
-  return { comparisons, refusals };
+  return refusal;
 };
-var compareContent = async ({ run, comparison, renames }) => {
-  const { startPath, currentPath } = comparison;
-  const start = await readGitCommittedFile({ cwd: run.cwd, path: `./${startPath}` }) ?? "";
-  const current = await readFile36(join94(run.cwd, currentPath), "utf8").catch(() => void 0) ?? "";
+var unreadable2 = ({ checkpoint, what }) => ({
+  error: `${checkpoint}: the move check could not read ${what} from git, so nothing is proven; no gate ran.`
+});
+var checkMoveOnlyChanges = async ({ run, checkpoint, fileMoves, folderMoves }) => {
+  const moves = { fileMoves, folderMoves };
+  const changes = await readCheckpointChanges({ run });
+  if (changes === void 0) {
+    return unreadable2({ checkpoint, what: "the working changes" });
+  }
+  const headBlobIds = await readGitHeadBlobIds({ cwd: run.cwd });
+  if (headBlobIds === void 0) {
+    return unreadable2({ checkpoint, what: "the phase's starting commit" });
+  }
+  const { removed, added } = leaveOutCarriedAlong({ run, moves, removed: changes.removed, added: changes.added });
+  run.progress(
+    `${checkpoint}: move check \u2014 comparing ${removed.length + added.length + changes.modified.length} changed file(s) against the phase's starting commit`
+  );
+  const { comparisons, refusals } = pairCheckpointChanges({
+    removed,
+    added,
+    modified: changes.modified,
+    destinationOf: ({ path }) => mapPathThroughMoves({ path, ...moves, direction: MoveDirection.Forward }),
+    wording: { uncovered: "no declared move covers its path", destination: "moved path", unclaimed: "no removed file moves to it" }
+  });
+  refusals.push(...refuseLeftBehind({ run, moves, headBlobIds, removed: changes.removed }));
+  const workingBlobIds = await readGitWorkingBlobIds({ cwd: run.cwd, paths: comparisons.map(({ currentPath }) => currentPath) });
+  if (workingBlobIds === void 0) {
+    return unreadable2({ checkpoint, what: "the changed files" });
+  }
+  const bound = buildContentBound({ moves });
+  const changed = comparisons.filter(({ startPath, currentPath }) => headBlobIds.get(startPath) !== workingBlobIds.get(currentPath));
+  for (const comparison of changed) {
+    const refusal = await compareContent({ run, comparison, bound });
+    if (refusal !== void 0) {
+      refusals.push(refusal);
+    }
+  }
+  if (refusals.length === 0) {
+    run.progress(`${checkpoint}: move check \u2014 every changed file holds only the declared moves`);
+  }
+  return refusals.length === 0 ? {} : { error: [`${checkpoint}: the move check refused this checkpoint's changes; no gate ran.`, ...refusals].join("\n") };
+};
+
+// src/pipeline/renameCheck/internal/common/utils/applyRenames.ts
+var applyRenames = ({ text, renames }) => renames.reduce((renamed, { from, to }) => renamed.replaceAll(from, to), text);
+
+// src/pipeline/renameCheck/checkRenameOnlyChanges.ts
+var compareContent2 = async ({ run, comparison, renames }) => {
+  const { start, current, label: label2 } = await readComparisonSides({ run, comparison });
   const before = countTokens({ text: applyRenames({ text: start, renames }) });
   const after = countTokens({ text: applyRenames({ text: current, renames }) });
-  const addedTokens = describeSurplus({ more: after, less: before });
-  const removedTokens = describeSurplus({ more: before, less: after });
-  const label2 = startPath === currentPath ? currentPath : `${currentPath} (moved from ${startPath})`;
+  const addedTokens = describeTokenSurplus({ more: after, less: before });
+  const removedTokens = describeTokenSurplus({ more: before, less: after });
   return addedTokens === "" && removedTokens === "" ? void 0 : `- ${label2}: added ${addedTokens || "nothing"}; removed ${removedTokens || "nothing"}`;
 };
-var removedSinceHead = async ({ run, paths }) => {
-  const tracked = [];
-  for (const path of paths) {
-    if (await readGitCommittedFile({ cwd: run.cwd, path: `./${path}` }) !== void 0) {
-      tracked.push(path);
-    }
-  }
-  return tracked;
-};
 var checkRenameOnlyChanges = async ({ run, checkpoint, renames }) => {
-  const changes = await readGitWorkingChanges({ cwd: run.cwd });
+  const changes = await readCheckpointChanges({ run });
   if (changes === void 0) {
     return { error: `${checkpoint}: the rename check could not read the working changes from git, so nothing is proven; no gate ran.` };
   }
-  const baselineDirty = new Set(run.current().baselineDirtyFiles);
-  const generated = run.config.generated ?? [];
-  const inScope = changes.filter(({ path }) => !baselineDirty.has(path) && !isGeneratedPath({ path, generated }));
-  const pathsOf = ({ kind }) => inScope.filter((change) => change.kind === kind).map((change) => change.path);
-  const removed = await removedSinceHead({ run, paths: pathsOf({ kind: GitChangeKind.Removed }) });
-  const added = pathsOf({ kind: GitChangeKind.Added });
-  const modified = pathsOf({ kind: GitChangeKind.Modified });
+  const { removed, added, modified } = changes;
   run.progress(
     `${checkpoint}: rename check \u2014 comparing ${removed.length + added.length + modified.length} changed file(s) against the phase's starting commit`
   );
-  const { comparisons, refusals } = pairChanges({ removed, added, modified, renames });
+  const { comparisons, refusals } = pairCheckpointChanges({
+    removed,
+    added,
+    modified,
+    destinationOf: ({ path }) => applyRenames({ text: path, renames }),
+    wording: { uncovered: "no declared rename applies to its path", destination: "renamed path", unclaimed: "no removed file renames to it" }
+  });
   for (const comparison of comparisons) {
-    const refusal = await compareContent({ run, comparison, renames });
+    const refusal = await compareContent2({ run, comparison, renames });
     if (refusal !== void 0) {
       refusals.push(refusal);
     }
@@ -147319,18 +148149,18 @@ var approveRunnerSnapshots = async ({ run }) => {
   const manifest = run.current();
   const seen = [...await readGitChangedFiles({ cwd: run.cwd }) ?? [], ...manifest.changedFiles];
   const snapshots = [...new Set(seen)].filter((path) => isSnapshotFile({ path }) && !manifest.approvedTests.some((record3) => record3.path === path));
-  const written = [];
+  const written2 = [];
   for (const path of snapshots) {
     if (await readApprovedTest({ run, path }) === void 0) {
-      written.push(path);
+      written2.push(path);
     }
   }
-  if (written.length === 0) {
+  if (written2.length === 0) {
     return 0;
   }
-  await run.update({ patch: { approvedTests: await approveTestFiles({ run, paths: written }) } });
-  run.progress(`${manifest.currentStep ?? "verify"}: ${written.length} snapshot file(s) the gate run wrote were approved as the runner's own output`);
-  return written.length;
+  await run.update({ patch: { approvedTests: await approveTestFiles({ run, paths: written2 }) } });
+  run.progress(`${manifest.currentStep ?? "verify"}: ${written2.length} snapshot file(s) the gate run wrote were approved as the runner's own output`);
+  return written2.length;
 };
 
 // src/pipeline/steps/verify/reviewAndVerify.ts
@@ -147339,19 +148169,26 @@ var judgeChanges = async ({
   id,
   planContent,
   overviewContent,
-  renames
+  planBuildMode
 }) => {
   let error51;
   let family;
   let rateLimited = false;
-  if (renames.length > 0) {
-    ({ error: error51 } = await checkRenameOnlyChanges({ run, checkpoint: id, renames }));
-    family = "rename-check";
-  } else {
-    const review = await reviewTestChanges({ run, checkpoint: id, planContent, overviewContent });
-    error51 = review.error;
-    family = "test-review";
-    rateLimited = review.rateLimited === true;
+  switch (planBuildMode.buildMode) {
+    case BuildMode.RenamesOnly:
+      ({ error: error51 } = await checkRenameOnlyChanges({ run, checkpoint: id, renames: planBuildMode.renames }));
+      family = "rename-check";
+      break;
+    case BuildMode.MoveFoldersAndFiles:
+      ({ error: error51 } = await checkMoveOnlyChanges({ run, checkpoint: id, fileMoves: planBuildMode.fileMoves, folderMoves: planBuildMode.folderMoves }));
+      family = "move-check";
+      break;
+    default: {
+      const review = await reviewTestChanges({ run, checkpoint: id, planContent, overviewContent });
+      error51 = review.error;
+      family = "test-review";
+      rateLimited = review.rateLimited === true;
+    }
   }
   return { error: error51, family, rateLimited };
 };
@@ -147363,9 +148200,9 @@ var reviewAndVerify = async ({
   planContent,
   overviewContent,
   acceptanceTests,
-  renames
+  planBuildMode
 }) => {
-  const judgment = await judgeChanges({ run, id, planContent, overviewContent, renames });
+  const judgment = await judgeChanges({ run, id, planContent, overviewContent, planBuildMode });
   if (judgment.rateLimited) {
     return { rateLimited: true };
   }
@@ -147379,7 +148216,14 @@ var reviewAndVerify = async ({
       failures: []
     };
   }
-  const result = await runVerificationGates({ run, coverage, checkpoint: id, rows: acceptanceTests(), final });
+  const result = await runVerificationGates({
+    run,
+    coverage,
+    checkpoint: id,
+    rows: acceptanceTests(),
+    final,
+    changedFilesExecuted: planBuildMode.buildMode !== BuildMode.MoveFoldersAndFiles
+  });
   await approveRunnerSnapshots({ run });
   return result;
 };
@@ -147395,7 +148239,7 @@ var verificationOf = ({ record: record3 }) => record3.verification ?? {
 
 // src/pipeline/steps/verifyStep/internal/common/utils/formatAndVerify.ts
 var formatAndVerify = async ({ context, record: record3 }) => {
-  const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames } = context;
+  const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode } = context;
   const failures = [];
   const error51 = await runFormatter({
     cwd: run.cwd,
@@ -147409,7 +148253,7 @@ var formatAndVerify = async ({ context, record: record3 }) => {
   if (error51 !== void 0) {
     return { record: next, result: { error: error51, failedFamilies: ["format"], crashes: [], timeouts: [], coordination: void 0, failures, gates: [] } };
   }
-  const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames });
+  const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode });
   if ("rateLimited" in result) {
     return { parked: await run.stop({ record: next, status: RunStatus.PausedRateLimit, error: run.parkMessage() }) };
   }
@@ -147602,8 +148446,8 @@ ${ruling.guidance}`,
 
 // src/pipeline/steps/verifyStep/verifyStep.ts
 var enterVerification = async ({ context, record: record3 }) => {
-  const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames } = context;
-  const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames });
+  const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode } = context;
+  const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode });
   if ("rateLimited" in result) {
     return { parked: await run.stop({ record: record3, status: RunStatus.PausedRateLimit, error: run.parkMessage() }) };
   }
@@ -147663,10 +148507,10 @@ var verifyStep = ({
   coverage,
   acceptanceTests,
   final,
-  renames,
+  planBuildMode,
   buildFix
 }) => {
-  const context = { run, gitPrefix, planContent, overviewContent, id, coverage, acceptanceTests, final, renames, buildFix };
+  const context = { run, gitPrefix, planContent, overviewContent, id, coverage, acceptanceTests, final, planBuildMode, buildFix };
   return () => runVerificationStep({ context });
 };
 
@@ -147679,7 +148523,7 @@ var buildImplementSteps = ({
   standards,
   fileLimit,
   acceptanceTests,
-  renames,
+  planBuildMode,
   selfCheckCommand: selfCheckCommand2,
   buildFix
 }) => [
@@ -147698,7 +148542,7 @@ var buildImplementSteps = ({
         fileLimit,
         acceptanceTests: acceptanceTests(),
         selfCheckCommand: selfCheckCommand2,
-        renames
+        planBuildMode
       })
     })
   },
@@ -147712,7 +148556,7 @@ var buildImplementSteps = ({
       overviewContent,
       id: "verify-implement",
       acceptanceTests,
-      renames,
+      planBuildMode,
       buildFix
     })
   }
@@ -147751,7 +148595,7 @@ var RefactorScope = {
 var formatFindingSite = ({ file: file2 }) => `${file2.path}${file2.startLine ? `:${file2.startLine}${file2.endLine && file2.endLine !== file2.startLine ? `-${file2.endLine}` : ""}` : ""}`;
 
 // src/common/findings/formatFindingText.ts
-var formatFindingText = ({ finding: finding3 }) => finding3.guidance ? `${finding3.detail} \u2014 ${finding3.guidance}` : finding3.detail;
+var formatFindingText = ({ finding: finding6 }) => finding6.guidance ? `${finding6.detail} \u2014 ${finding6.guidance}` : finding6.detail;
 
 // src/agents/buildRefactorExecutorInvocation.ts
 var advisoryOutcomesSection = [
@@ -147763,11 +148607,11 @@ var advisoryOutcomesSection = [
 ].join("\n\n");
 var scopePrompt = ({ scope }) => scope === RefactorScope.Standalone ? refactorScopeStandalone_default : refactorScopeFeature_default;
 var worklistHeading = ({ scope }) => scope === RefactorScope.Standalone ? "# Files the findings name" : "# Changed files to review";
-var findingLine = (finding3) => {
-  const where = finding3.files.map((file2) => formatFindingSite({ file: file2 })).join(" \u2194 ");
-  return `- [${finding3.rule}] ${where} \u2014 ${formatFindingText({ finding: finding3 })}`;
+var findingLine = (finding6) => {
+  const where = finding6.files.map((file2) => formatFindingSite({ file: file2 })).join(" \u2194 ");
+  return `- [${finding6.rule}] ${where} \u2014 ${formatFindingText({ finding: finding6 })}`;
 };
-var advisoryLine = (finding3) => `${findingLine(finding3)} (siteKey: \`${finding3.siteKey}\`)`;
+var advisoryLine = (finding6) => `${findingLine(finding6)} (siteKey: \`${finding6.siteKey}\`)`;
 var buildRefactorExecutorInvocation = ({
   scope,
   planContent,
@@ -147866,9 +148710,9 @@ var buildCleanupRecord = ({ context, state }) => ({
 
 // src/pipeline/steps/refactorStep/internal/common/utils/describePersistingFindings.ts
 var describePersistingFindings = ({ findings, report: report2, roundsUsed }) => {
-  const findingLines = findings.map((finding3) => {
-    const where = finding3.files.map((file2) => formatFindingSite({ file: file2 })).join(", ");
-    return `- ${finding3.siteKey} \u2014 ${formatFindingText({ finding: finding3 })}
+  const findingLines = findings.map((finding6) => {
+    const where = finding6.files.map((file2) => formatFindingSite({ file: file2 })).join(", ");
+    return `- ${finding6.siteKey} \u2014 ${formatFindingText({ finding: finding6 })}
   at ${where}`;
   });
   const rationale = (report2?.friction ?? []).map((entry) => `- [${entry.area}] ${entry.detail}`);
@@ -147880,12 +148724,12 @@ var describePersistingFindings = ({ findings, report: report2, roundsUsed }) => 
 };
 
 // src/pipeline/steps/refactorStep/internal/common/utils/fingerprintScopeFiles.ts
-import { readFile as readFile37 } from "node:fs/promises";
-import { join as join95 } from "node:path";
+import { readFile as readFile38 } from "node:fs/promises";
+import { join as join98 } from "node:path";
 var fingerprintScopeFiles = async ({ run }) => {
   const entries = await Promise.all(
     standardsScopeFiles({ run }).map(async (file2) => {
-      const content = await readFile37(join95(run.cwd, file2)).catch(() => void 0);
+      const content = await readFile38(join98(run.cwd, file2)).catch(() => void 0);
       return content === void 0 ? [] : [[file2, sha256({ content })]];
     })
   );
@@ -148167,7 +149011,7 @@ var runExecutorPass = async ({
 // src/pipeline/steps/refactorStep/internal/common/utils/runCleanupRound.ts
 var sameEdits = ({ before, after }) => before.length === after.length && [...before].sort().join("\n") === [...after].sort().join("\n");
 var foldDecline = ({ context, state, findings, round }) => {
-  const declined = findings.map((finding3) => finding3.siteKey).sort().join("\n");
+  const declined = findings.map((finding6) => finding6.siteKey).sort().join("\n");
   if (declined === state.lastDeclined) {
     state.endReason = CleanupEndReason.DeclinedTwice;
     context.run.progress(`refactor round ${round}: the cleanup agent declined the same work list twice \u2014 no further round is bought`);
@@ -148212,17 +149056,17 @@ var attributeStandardsFindings = ({ live: live2, baseline }) => {
   if (baseline === void 0) {
     return { ...attributed, uncertain: [...live2] };
   }
-  const before = new Map(baseline.map((finding3) => [finding3.siteKey, finding3]));
-  for (const finding3 of live2) {
-    const previous = before.get(finding3.siteKey);
+  const before = new Map(baseline.map((finding6) => [finding6.siteKey, finding6]));
+  for (const finding6 of live2) {
+    const previous = before.get(finding6.siteKey);
     if (previous === void 0) {
-      attributed.introduced.push(finding3);
-    } else if (finding3.measure === void 0 || previous.measure === void 0) {
-      attributed.uncertain.push(finding3);
-    } else if (finding3.measure > previous.measure) {
-      attributed.worsened.push(finding3);
+      attributed.introduced.push(finding6);
+    } else if (finding6.measure === void 0 || previous.measure === void 0) {
+      attributed.uncertain.push(finding6);
+    } else if (finding6.measure > previous.measure) {
+      attributed.worsened.push(finding6);
     } else {
-      attributed.inherited.push(finding3);
+      attributed.inherited.push(finding6);
     }
   }
   return attributed;
@@ -148232,10 +149076,10 @@ var attributeStandardsFindings = ({ live: live2, baseline }) => {
 var selectStandardsFindings = ({ findings, changedFiles }) => {
   const changed = new Set(changedFiles);
   const isChanged = (path) => changed.has(path) || changedFiles.some((file2) => file2.startsWith(`${path}/`));
-  const touchesChanged = (finding3) => finding3.files.some((file2) => isChanged(file2.path));
+  const touchesChanged = (finding6) => finding6.files.some((file2) => isChanged(file2.path));
   return {
-    workList: findings.filter((finding3) => finding3.severity === StandardsSeverity.Blocking && touchesChanged(finding3)),
-    advisories: findings.filter((finding3) => finding3.severity === StandardsSeverity.Advisory && touchesChanged(finding3))
+    workList: findings.filter((finding6) => finding6.severity === StandardsSeverity.Blocking && touchesChanged(finding6)),
+    advisories: findings.filter((finding6) => finding6.severity === StandardsSeverity.Advisory && touchesChanged(finding6))
   };
 };
 
@@ -148249,8 +149093,8 @@ var standardsWorkList = async ({
   const attributed = attributeStandardsFindings({ live: [...scoped.workList, ...scoped.advisories], baseline });
   const qualifying = [...attributed.introduced, ...attributed.worsened];
   return {
-    workList: qualifying.filter((finding3) => finding3.severity === StandardsSeverity.Blocking),
-    advisories: qualifying.filter((finding3) => finding3.severity === StandardsSeverity.Advisory),
+    workList: qualifying.filter((finding6) => finding6.severity === StandardsSeverity.Blocking),
+    advisories: qualifying.filter((finding6) => finding6.severity === StandardsSeverity.Advisory),
     inherited: attributed.inherited,
     uncertain: attributed.uncertain
   };
@@ -148361,7 +149205,7 @@ var buildRefactorSteps = ({
   standards,
   skipRefactor,
   acceptanceTests,
-  renames
+  planBuildMode
 }) => skipRefactor ? [] : [
   {
     id: "refactor",
@@ -148383,7 +149227,7 @@ var buildRefactorSteps = ({
       // verification — and the last one is where every acceptance test
       // must be proven against the finished tree.
       final: true,
-      renames,
+      planBuildMode,
       buildFix: ({ errorContext }) => buildRefactorExecutorInvocation({
         scope: RefactorScope.Feature,
         planContent,
@@ -148530,8 +149374,8 @@ var groupTestTargets = async ({ run, subjects, compiler }) => {
 };
 
 // src/pipeline/internal/steps/selectTestTargets.ts
-import { readFile as readFile38, stat as stat11 } from "node:fs/promises";
-import { join as join96 } from "node:path";
+import { readFile as readFile39, stat as stat11 } from "node:fs/promises";
+import { join as join99 } from "node:path";
 var selectTestTargets = async ({
   run,
   candidates,
@@ -148548,9 +149392,9 @@ var selectTestTargets = async ({
   const deleted = [];
   const coverageExcluded = [];
   for (const file2 of candidates) {
-    const content = await readFile38(join96(run.cwd, file2), "utf8").catch(() => void 0);
+    const content = await readFile39(join99(run.cwd, file2), "utf8").catch(() => void 0);
     if (content === void 0) {
-      const exists3 = await stat11(join96(run.cwd, file2)).then(
+      const exists3 = await stat11(join99(run.cwd, file2)).then(
         () => true,
         () => false
       );
@@ -148779,14 +149623,17 @@ var buildTestSteps = ({
   testStandards,
   acceptanceTests,
   final,
-  renames,
+  planBuildMode,
   featureFix
 }) => [
   {
     id: "write-tests",
     skip: () => {
-      if (renames.length > 0) {
+      if (planBuildMode.buildMode === BuildMode.RenamesOnly) {
         return "the plan is rename-only, and a rename-only phase writes no tests";
+      }
+      if (planBuildMode.buildMode === BuildMode.MoveFoldersAndFiles) {
+        return "the plan is move-folders-and-files, and a move-folders-and-files phase writes no tests";
       }
       return sourceFiles({ run }).length === 0 ? "no eligible source files" : void 0;
     },
@@ -148804,8 +149651,8 @@ var buildTestSteps = ({
       coverage: true,
       acceptanceTests,
       final,
-      renames,
-      buildFix: renames.length > 0 ? featureFix : ({ errorContext }) => buildUnitTestWriterInvocation({
+      planBuildMode,
+      buildFix: planBuildMode.buildMode !== BuildMode.Standard ? featureFix : ({ errorContext }) => buildUnitTestWriterInvocation({
         planContent,
         subjects: run.current().testSubjects,
         mustExecute: sourceFiles({ run }).filter(
@@ -148818,6 +149665,18 @@ var buildTestSteps = ({
     })
   }
 ];
+
+// src/pipeline/steps/buildSteps/internal/common/utils/getLedgerMovePaths.ts
+var getLedgerMovePaths = ({ movePaths, folderMoves, testFiles }) => {
+  const pairs = [...movePaths];
+  for (const testFile of new Set(testFiles)) {
+    const source = mapPathThroughMoves({ path: testFile, fileMoves: [], folderMoves, direction: MoveDirection.Back });
+    if (source !== testFile && !pairs.some(({ to }) => to === testFile)) {
+      pairs.push({ from: source, to: testFile });
+    }
+  }
+  return pairs.filter(({ to }) => isTestSideFile({ path: to }));
+};
 
 // src/plan/internal/common/constants/generatedPlanRegions.ts
 var generatedPlanRegions = {
@@ -148934,18 +149793,26 @@ var pathFromLine = ({ line }) => {
 };
 
 // src/plan/internal/common/paths/pathPairFromLine.ts
+var isFolderToken = ({ token }) => token.endsWith("/") && !token.startsWith("/") && token.slice(0, -1).split("/").every((segment) => segment !== "" && segment !== "." && segment !== "..");
 var pathPairFromLine = ({ line }) => {
   const paths = [];
   for (const match of line.matchAll(/`([^`]+)`/g)) {
     const token = match[1].trim().split(/\s+/)[0];
     if (isPathToken({ token })) {
-      paths.push(token);
+      paths.push({ path: token, folder: false });
+    } else if (isFolderToken({ token })) {
+      paths.push({ path: token.slice(0, -1), folder: true });
     }
     if (paths.length === 2) {
       break;
     }
   }
-  return paths.length === 2 ? { from: paths[0], to: paths[1] } : void 0;
+  const [from, to] = paths;
+  let pair;
+  if (from !== void 0 && to !== void 0 && from.folder === to.folder) {
+    pair = from.folder ? { from: from.path, to: to.path, folder: true } : { from: from.path, to: to.path };
+  }
+  return pair;
 };
 
 // src/plan/internal/planCreatePaths.ts
@@ -149022,6 +149889,7 @@ var commandsFromVerification = ({ sectionLines }) => {
 };
 var movesFromPlan = ({ lines }) => {
   const moves = [];
+  const folderMoves = [];
   const malformedLines = [];
   let inMoveSection = false;
   for (const [index, line] of lines.entries()) {
@@ -149034,13 +149902,15 @@ var movesFromPlan = ({ lines }) => {
       continue;
     }
     const pair = pathPairFromLine({ line });
-    if (pair) {
-      moves.push(pair);
-    } else {
+    if (pair === void 0) {
       malformedLines.push(index + 1);
+    } else if (pair.folder) {
+      folderMoves.push({ from: pair.from, to: pair.to });
+    } else {
+      moves.push(pair);
     }
   }
-  return { moves, malformedLines };
+  return { moves, folderMoves, malformedLines };
 };
 var generatedRangesFrom = ({ parsed }) => {
   const ranges = /* @__PURE__ */ new Map();
@@ -149061,6 +149931,16 @@ var fileBudgetFrom = ({ sectionLines }) => {
   }
   return void 0;
 };
+var buildModeFrom = ({ sectionLines, renames }) => {
+  const declared = (sectionLines ?? []).find((line) => line.trim() !== "")?.trim().replace(/^`(.*)`$/, "$1");
+  let buildMode = BuildMode.Standard;
+  if (declared === BuildMode.MoveFoldersAndFiles) {
+    buildMode = BuildMode.MoveFoldersAndFiles;
+  } else if (renames.length > 0) {
+    buildMode = BuildMode.RenamesOnly;
+  }
+  return buildMode;
+};
 var parsePlan = ({ content, base }) => {
   const lines = content.split("\n");
   const parsed = parseSections({ lines });
@@ -149075,7 +149955,7 @@ var parsePlan = ({ content, base }) => {
   const title = lines.find((line) => /^#\s+/.test(line))?.replace(/^#\s+/, "").trim() ?? "";
   const variant = base === "overview.md" || sections.has("Phases") && sections.has("Cross-Phase Dependencies") || /—\s*Overview\s*$/.test(title) ? PlanFileKind.Overview : PlanFileKind.Implementable;
   const isSubheading = (line) => /^###\s+/.test(line);
-  const { moves, malformedLines } = movesFromPlan({ lines });
+  const { moves, folderMoves, malformedLines } = movesFromPlan({ lines });
   return {
     base,
     title,
@@ -149086,11 +149966,13 @@ var parsePlan = ({ content, base }) => {
     earlierPhaseModifyPaths: pathsFromLines({ sectionLines: sections.get("Files to Modify from Earlier Phases"), lineMatches: isSubheading }),
     deletePaths: pathsFromLines({ sectionLines: sections.get("Files to Delete"), lineMatches: isSubheading }),
     movePaths: moves,
+    folderMoves,
     malformedMoveLines: malformedLines,
     generatedRegionRanges,
     decisionLogRange: generatedRegionRanges.get(generatedPlanRegions.decisionLog),
     sectionRanges: new Map([...parsed].map(([heading, section]) => [heading, rangeOf({ section })])),
     fileBudget: fileBudgetFrom({ sectionLines: sections.get("File Budget") }),
+    buildMode: buildModeFrom({ sectionLines: sections.get("Build Mode"), renames: renamed.renames }),
     renames: renamed.renames,
     malformedRenameLines: renamed.malformedLines,
     mirrorPaths: pathsFromLines({ sectionLines: sections.get("Patterns to Mirror"), lineMatches: (line) => /^\s*-\s+/.test(line) }),
@@ -149104,28 +149986,47 @@ var parsePlan = ({ content, base }) => {
 };
 
 // src/pipeline/steps/buildSteps/buildSteps.ts
+var planBuildModeOf = ({
+  buildMode,
+  renames,
+  movePaths,
+  folderMoves
+}) => {
+  let planBuildMode = { buildMode: BuildMode.Standard };
+  if (buildMode === BuildMode.RenamesOnly) {
+    planBuildMode = { buildMode: BuildMode.RenamesOnly, renames };
+  } else if (buildMode === BuildMode.MoveFoldersAndFiles) {
+    planBuildMode = { buildMode: BuildMode.MoveFoldersAndFiles, fileMoves: movePaths, folderMoves };
+  }
+  return planBuildMode;
+};
+var ledgerSkipReason = ({ buildMode, ledgerRows }) => {
+  let reason = ledgerRows === 0 ? "the plan carries no acceptance-test ledger" : void 0;
+  if (buildMode === BuildMode.RenamesOnly) {
+    reason = "the plan is rename-only, and a rename states no acceptance criterion a ledger test could prove";
+  } else if (buildMode === BuildMode.MoveFoldersAndFiles) {
+    reason = "the plan is move-folders-and-files, and a move states no acceptance criterion a ledger test could prove";
+  }
+  return reason;
+};
 var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, testStandards, skipRefactor }) => {
   const plan = parsePlan({ content: planContent, base: "plan.md" });
   const fileLimit = plan.fileBudget ?? run.config["executor-file-limit"];
   const acceptanceTests = () => run.current().acceptanceTests;
   const ledgerGates = [...new Set(plan.ledger.map((row) => row.gate))];
-  const movePaths = plan.movePaths.filter((move) => isTestSideFile({ path: move.to }));
+  const movePaths = getLedgerMovePaths({ movePaths: plan.movePaths, folderMoves: plan.folderMoves, testFiles: plan.ledger.map((row) => row.testFile) });
   const deletePaths = plan.deletePaths.filter((path) => isTestSideFile({ path }));
-  const renameOnly = plan.renames.length > 0;
+  const planBuildMode = planBuildModeOf(plan);
+  const mechanical = planBuildMode.buildMode !== BuildMode.Standard;
   const selfCheckCommand2 = buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command;
-  const featureFix = buildFeatureFix({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, renames: plan.renames, selfCheckCommand: selfCheckCommand2 });
-  const leaveOutRefactor = skipRefactor === true || renameOnly;
+  const featureFix = buildFeatureFix({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand: selfCheckCommand2 });
+  const leaveOutRefactor = skipRefactor === true || mechanical;
   return [
     ...buildLedgerLintSteps({ run, malformedLines: plan.malformedLedgerLines }),
     { id: "clean-slate", run: cleanSlateStep({ run, ledgerGates }) },
     {
       id: "write-ledger-tests",
-      skip: () => {
-        if (renameOnly) {
-          return "the plan is rename-only, and a rename states no acceptance criterion a ledger test could prove";
-        }
-        return plan.ledger.length === 0 ? "the plan carries no acceptance-test ledger" : void 0;
-      },
+      skip: () => ledgerSkipReason({ buildMode: planBuildMode.buildMode, ledgerRows: plan.ledger.length }),
       run: writeLedgerTestsStep({ run, gitPrefix, planContent, overviewContent, rows: plan.ledger, testStandards, movePaths, deletePaths })
     },
     ...buildImplementSteps({
@@ -149136,7 +150037,7 @@ var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, tes
       standards,
       fileLimit,
       acceptanceTests,
-      renames: plan.renames,
+      planBuildMode,
       selfCheckCommand: selfCheckCommand2,
       buildFix: featureFix
     }),
@@ -149148,7 +150049,7 @@ var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, tes
       testStandards,
       acceptanceTests,
       final: leaveOutRefactor,
-      renames: plan.renames,
+      planBuildMode,
       featureFix
     }),
     ...buildRefactorSteps({
@@ -149159,7 +150060,7 @@ var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, tes
       standards,
       skipRefactor: leaveOutRefactor,
       acceptanceTests,
-      renames: plan.renames
+      planBuildMode
     })
   ];
 };
@@ -149168,8 +150069,13 @@ var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, tes
 import { randomUUID as randomUUID5 } from "node:crypto";
 
 // src/runState/lock/acquireRunLock.ts
-import { mkdir as mkdir21, unlink as unlink2, writeFile as writeFile17 } from "node:fs/promises";
-import { dirname as dirname24 } from "node:path";
+import { mkdir as mkdir22, unlink as unlink2, writeFile as writeFile17 } from "node:fs/promises";
+import { dirname as dirname25 } from "node:path";
+
+// src/runState/lock/describeRunLockHolder.ts
+var describeRunLockHolder = ({ holder }) => {
+  return `another lightsout run is active in this repo: run ${holder.runId} (pid ${holder.pid}, started ${holder.startedAt}). Wait for it to finish \u2014 or delete .lightsout/lock.json if you are certain nothing is running.`;
+};
 
 // src/runState/lock/RunLockError.ts
 var RunLockError = class extends Error {
@@ -149180,7 +150086,7 @@ var acquireRunLock = async ({ cwd, runId }) => {
   const lockPath = getRunLockPath({ cwd });
   const payload = `${JSON.stringify({ pid: process.pid, runId, startedAt: (/* @__PURE__ */ new Date()).toISOString() }, null, "	")}
 `;
-  await mkdir21(dirname24(lockPath), { recursive: true });
+  await mkdir22(dirname25(lockPath), { recursive: true });
   let stalePid;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
@@ -149194,9 +150100,7 @@ var acquireRunLock = async ({ cwd, runId }) => {
     }
     const holder = await readRunLock({ cwd });
     if (holder && isPidAlive({ pid: holder.pid })) {
-      throw new RunLockError(
-        `another lightsout run is active in this repo: run ${holder.runId} (pid ${holder.pid}, started ${holder.startedAt}). Wait for it to finish \u2014 or delete .lightsout/lock.json if you are certain nothing is running.`
-      );
+      throw new RunLockError(describeRunLockHolder({ holder }));
     }
     stalePid = holder?.pid;
     await unlink2(lockPath).catch(() => void 0);
@@ -149246,9 +150150,9 @@ var recheckUnreachable = async ({ run }) => {
     );
   }
 };
-var finishRun = async ({ run, resumed }) => {
+var finishRun = async ({ run, resumed, keepGenerated }) => {
   await recheckUnreachable({ run });
-  const uncommitted = await commitRunWork({ run, driver: run.driver, resumed });
+  const uncommitted = await commitRunWork({ run, driver: run.driver, resumed, keepGenerated });
   let result;
   if (uncommitted === void 0) {
     await removeApprovedTests({ run });
@@ -149270,12 +150174,16 @@ var executePipeline = async ({
   parentRunId,
   packages,
   existing,
-  inheritedBaseline,
   skipRefactor,
   level,
   willShip,
-  onProgress
+  keepGenerated = false,
+  onProgress,
+  queueRunId
 }) => {
+  if (existing !== void 0 && existing.parentRunId === void 0) {
+    await writeRunOwner({ cwd, runId: existing.runId, queueRunId });
+  }
   const run = new PipelineRun({
     cwd,
     config: config2,
@@ -149291,8 +150199,9 @@ var executePipeline = async ({
       parentRunId,
       driver: driver.name,
       config: config2,
-      baselineDirtyFiles: inheritedBaseline ?? await readGitChangedFiles({ cwd }),
-      willShip
+      baselineDirtyFiles: await readGitChangedFiles({ cwd }),
+      willShip,
+      queueRunId
     })
   });
   const prepared = await prepareRun({ run, cwd, config: config2, packages });
@@ -149311,45 +150220,11 @@ var executePipeline = async ({
   if (stopped) {
     return stopped;
   }
-  return finishRun({ run, resumed: inheritedBaseline !== void 0 || existing !== void 0 });
+  return finishRun({ run, resumed: existing !== void 0, keepGenerated });
 };
 var runImplementPipeline = (params) => withRunLock({ params, run: executePipeline });
 
-// src/phases/internal/runPhase.ts
-var persistStep = ({
-  cwd,
-  manifest,
-  index,
-  record: record3,
-  patch
-}) => {
-  const steps = manifest.steps.map((step, position) => position === index ? record3 : step);
-  return writeRunManifest({ cwd, manifest: { ...manifest, ...patch, steps } });
-};
-var recordFromChild = ({ step, childResult }) => ({
-  ...step,
-  status: childResult.manifest.status,
-  attempts: step.attempts + 1,
-  durationMs: childResult.manifest.steps.reduce((total, childStep) => total + (childStep.durationMs ?? 0), 0),
-  report: { runId: childResult.manifest.runId },
-  error: childResult.error
-});
-var addUsage = ({ total, child }) => {
-  if (!child) {
-    return total;
-  }
-  if (!total) {
-    return child;
-  }
-  return {
-    invocations: total.invocations + child.invocations,
-    inputTokens: total.inputTokens + child.inputTokens,
-    outputTokens: total.outputTokens + child.outputTokens,
-    cacheReadTokens: total.cacheReadTokens + child.cacheReadTokens,
-    cacheCreationTokens: total.cacheCreationTokens + child.cacheCreationTokens,
-    costUsd: total.costUsd + child.costUsd
-  };
-};
+// src/phases/internal/runPhase/runPhase.ts
 var readRecordedChild = async ({ cwd, step }) => {
   const recorded = PhaseReport.safeParse(step.report);
   return recorded.success ? await readRunManifest({ cwd, runId: recorded.data.runId }).catch(() => void 0) : void 0;
@@ -149366,36 +150241,24 @@ var runChild = async (params) => {
   }
   return result;
 };
-var recordFinishedChild = async ({
+var recordThrownChild = async ({
   cwd,
   manifest,
   index,
   step,
-  total,
-  childResult
+  childRunId,
+  failure,
+  queueRunId
 }) => {
-  const child = childResult.manifest;
+  await confirmOwnership({ cwd, runId: manifest.runId, queueRunId });
   const current = await persistStep({
     cwd,
     manifest,
     index,
-    record: recordFromChild({ step, childResult }),
-    patch: {
-      status: childResult.ok ? RunStatus.Running : child.status,
-      changedFiles: [.../* @__PURE__ */ new Set([...manifest.changedFiles, ...child.changedFiles])],
-      // Each phase's entry carries its own child run id, and a resumed phase that
-      // skips a passed child returns before this patch, so concatenating cannot double one.
-      commits: [...manifest.commits, ...child.commits],
-      usage: addUsage({ total: manifest.usage, child: child.usage })
-    }
+    record: { ...step, status: RunStatus.Failed, error: failure, report: { runId: childRunId } },
+    patch: { status: RunStatus.Failed }
   });
-  if (childResult.ok) {
-    return { manifest: current };
-  }
-  const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: current.runId });
-  const stopped = `phase ${index + 1}/${total} (${step.id}) ended ${child.status} \u2014 resume with: ${resume}`;
-  return { manifest: current, result: { ok: false, manifest: current, error: childResult.error ? `${stopped}
-${childResult.error}` : stopped } };
+  return { manifest: current, result: { ok: false, manifest: current, error: failure } };
 };
 var runPhase = async ({
   cwd,
@@ -149406,21 +150269,27 @@ var runPhase = async ({
   step,
   total,
   skipRefactor,
-  resumed,
   level,
-  onProgress
+  onProgress,
+  queueRunId
 }) => {
   const label2 = `phase ${index + 1}/${total}: ${step.id}`;
   onProgress?.(label2);
   const childManifest = await readRecordedChild({ cwd, step });
   if (childManifest?.status === RunStatus.Passed) {
+    await confirmOwnership({ cwd, runId: manifest.runId, queueRunId });
     return { manifest: await persistStep({ cwd, manifest, index, record: { ...step, status: RunStatus.Passed } }) };
   }
-  let current = await persistStep({
+  const refused = await refuseDirtyPhaseStart({ cwd, config: config2, manifest, index, step, queueRunId });
+  if (refused !== void 0) {
+    return refused;
+  }
+  const childRunId = childManifest?.runId ?? randomUUID6();
+  const current = await persistStep({
     cwd,
     manifest,
     index,
-    record: { ...step, status: RunStatus.Running, error: void 0 },
+    record: { ...step, status: RunStatus.Running, error: void 0, report: { runId: childRunId } },
     patch: { status: RunStatus.Running, currentStep: step.id }
   });
   const pass = level?.open({ level: ActivityLevelKind.Pass, label: label2 });
@@ -149430,35 +150299,57 @@ var runPhase = async ({
       cwd,
       driver,
       config: config2,
-      planPath: join97(dirname25(current.plan), step.id),
+      runId: childRunId,
+      planPath: join100(dirname26(current.plan), step.id),
       overviewPath: current.plan,
       parentRunId: current.runId,
       existing: childManifest,
-      // A phase that never started would otherwise snapshot a tree somebody may
-      // have edited since the sequence began and call every edit in it its own.
-      inheritedBaseline: resumed && childManifest === void 0 ? [...current.changedFiles, ...current.baselineDirtyFiles] : void 0,
       skipRefactor,
+      // The coordinator discards the carried build output once the whole sequence passes.
+      keepGenerated: true,
       level: pass,
       onProgress
     });
     if ("failure" in childResult) {
-      current = await persistStep({
-        cwd,
-        manifest: current,
-        index,
-        record: { ...step, status: RunStatus.Failed, error: childResult.failure },
-        patch: { status: RunStatus.Failed }
-      });
-      return { manifest: current, result: { ok: false, manifest: current, error: childResult.failure } };
+      return await recordThrownChild({ cwd, manifest: current, index, step, childRunId, failure: childResult.failure, queueRunId });
     }
     outcome = childResult.manifest.status;
-    return await recordFinishedChild({ cwd, manifest: current, index, step, total, childResult });
+    return await recordFinishedChild({ cwd, manifest: current, index, step, total, childResult, queueRunId });
   } finally {
     pass?.close({ outcome });
   }
 };
 
 // src/phases/runPhasesPipeline.ts
+var discardCarriedGenerated = async ({
+  cwd,
+  config: config2,
+  runId,
+  narrate
+}) => {
+  const generated = config2.generated ?? [];
+  if (generated.length === 0) {
+    return void 0;
+  }
+  return withRunLock({
+    params: { cwd, runId, onProgress: narrate },
+    run: async () => {
+      const changed = await readGitChangedFiles({ cwd });
+      if (changed === void 0) {
+        return `git could not read the tree at ${cwd}, so the carried generated changes were not discarded`;
+      }
+      const paths = changed.filter((path) => isGeneratedPath({ path, generated }));
+      if (paths.length === 0) {
+        return void 0;
+      }
+      const failure = await discardGeneratedChanges({ cwd, paths });
+      if (failure === void 0) {
+        narrate(`discarded ${paths.length} carried generated path(s) \u2014 the pre-ship step commits build output`);
+      }
+      return failure === void 0 ? void 0 : `git could not discard the carried generated changes in ${cwd}: ${failure}`;
+    }
+  });
+};
 var runPhasesPipeline = async ({
   cwd,
   driver,
@@ -149470,9 +150361,14 @@ var runPhasesPipeline = async ({
   skipRefactor,
   level,
   willShip,
-  onProgress
+  onProgress,
+  queueRunId
 }) => {
-  const initialized = await initializeSequence({ cwd, driver, config: config2, overviewPath, startPhase, runId, existing, willShip });
+  const holder = await readLiveRunLock({ cwd });
+  if (holder !== void 0) {
+    throw new RunLockError(describeRunLockHolder({ holder }));
+  }
+  const initialized = await initializeSequence({ cwd, driver, config: config2, overviewPath, startPhase, runId, existing, willShip, queueRunId });
   let manifest = initialized.manifest;
   const sink = createProgressSink({ cwd, runId: manifest.runId });
   const narrate = (message) => {
@@ -149492,15 +150388,21 @@ var runPhasesPipeline = async ({
       index,
       step,
       total,
-      resumed: existing !== void 0,
       skipRefactor,
       level,
-      onProgress: narrate
+      onProgress: narrate,
+      queueRunId
     });
     manifest = phase.manifest;
     if (phase.result) {
       return phase.result;
     }
+  }
+  const discardFailure = await discardCarriedGenerated({ cwd, config: config2, runId: manifest.runId, narrate });
+  if (discardFailure !== void 0) {
+    manifest = await writeRunManifest({ cwd, manifest: { ...manifest, status: RunStatus.Failed, currentStep: null } });
+    const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.runId });
+    return { ok: false, manifest, error: `every phase passed, but ${discardFailure} \u2014 resume with: ${resume}` };
   }
   manifest = await writeRunManifest({ cwd, manifest: { ...manifest, status: RunStatus.Passed, currentStep: null } });
   return { ok: true, manifest };
@@ -149535,22 +150437,22 @@ ${error51.message}`);
 import { stat as stat12 } from "node:fs/promises";
 
 // src/activity/activityRecordPath.ts
-import { join as join98 } from "node:path";
+import { join as join101 } from "node:path";
 
 // src/activity/common/constants/activityRecordFileName.ts
 var activityRecordFileName = "activity.jsonl";
 
 // src/activity/activityRecordPath.ts
-var activityRecordPath = ({ dir }) => join98(dir, activityRecordFileName);
+var activityRecordPath = ({ dir }) => join101(dir, activityRecordFileName);
 
 // src/activity/createActivityRecorder.ts
-import { randomUUID as randomUUID6 } from "node:crypto";
+import { randomUUID as randomUUID7 } from "node:crypto";
 
 // src/activity/internal/common/utils/appendActivityMark.ts
-import { appendFile as appendFile4, mkdir as mkdir22 } from "node:fs/promises";
-import { dirname as dirname26 } from "node:path";
+import { appendFile as appendFile4, mkdir as mkdir23 } from "node:fs/promises";
+import { dirname as dirname27 } from "node:path";
 var appendActivityMark = async ({ path, mark }) => {
-  await mkdir22(dirname26(path), { recursive: true }).then(() => appendFile4(path, `${JSON.stringify(mark)}
+  await mkdir23(dirname27(path), { recursive: true }).then(() => appendFile4(path, `${JSON.stringify(mark)}
 `, "utf8")).catch(() => void 0);
 };
 
@@ -149576,7 +150478,7 @@ var createLevel = ({ id, queue }) => {
   return {
     id,
     open: ({ level, label: label2 }) => {
-      const childId = randomUUID6();
+      const childId = randomUUID7();
       queue.write({ kind: ActivityMarkKind.LevelStart, id: childId, parentId: id, level, label: label2, at: (/* @__PURE__ */ new Date()).toISOString() });
       return createLevel({ id: childId, queue });
     },
@@ -149640,8 +150542,8 @@ var describeGateHold = ({ hold, identifier }) => {
 var isTicketGateHeld = ({ holds, identifier, labels }) => holds[identifier.toLowerCase()] !== void 0 || labels.includes(gateBlockedLabel);
 
 // src/gates/gateHolds/internal/common/utils/readGateHolds.ts
-import { readdir as readdir18, readFile as readFile39 } from "node:fs/promises";
-import { join as join99 } from "node:path";
+import { readdir as readdir18, readFile as readFile40 } from "node:fs/promises";
+import { join as join102 } from "node:path";
 
 // src/contracts/gates/GateHold.ts
 var GateHold = external_exports.object({
@@ -149659,7 +150561,7 @@ var GateHold = external_exports.object({
 
 // src/gates/gateHolds/internal/common/utils/readGateHolds.ts
 var readOneHold = async ({ path }) => {
-  const raw = await readFile39(path, "utf8").catch(() => void 0);
+  const raw = await readFile40(path, "utf8").catch(() => void 0);
   if (raw === void 0) {
     return void 0;
   }
@@ -149674,7 +150576,7 @@ var readGateHolds = async ({ cwd }) => {
   const names = await readdir18(dir).catch(() => []);
   const holds = {};
   for (const name of names.filter((entry) => entry.endsWith(".json"))) {
-    const hold = await readOneHold({ path: join99(dir, name) });
+    const hold = await readOneHold({ path: join102(dir, name) });
     if (hold !== void 0) {
       holds[name.slice(0, -".json".length).toLowerCase()] = hold;
     }
@@ -149787,29 +150689,29 @@ var requireImplementLifecycle = async ({ cwd, config: config2, env, ticketRef, o
 };
 
 // src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts
-import { randomUUID as randomUUID7 } from "node:crypto";
-import { readFile as readFile41 } from "node:fs/promises";
+import { randomUUID as randomUUID8 } from "node:crypto";
+import { readFile as readFile42 } from "node:fs/promises";
 
 // src/plan/publish/durablePlanFiles.ts
-import { basename as basename11, join as join101 } from "node:path";
+import { basename as basename11, join as join104 } from "node:path";
 
 // src/plan/common/utils/resolvePlanDeliverable.ts
-import { readdir as readdir19, readFile as readFile40 } from "node:fs/promises";
-import { join as join100 } from "node:path";
+import { readdir as readdir19, readFile as readFile41 } from "node:fs/promises";
+import { join as join103 } from "node:path";
 var resolvePlanDeliverable = async ({ cwd, name }) => {
   const dir = await planWorkspaceDir({ cwd, name });
-  const singlePath = join100(dir, "plan.md");
+  const singlePath = join103(dir, "plan.md");
   let overviewPath;
   let overviewText;
   const files = [];
   if (await pathExists({ path: singlePath })) {
-    files.push({ path: singlePath, text: await readFile40(singlePath, "utf8") });
+    files.push({ path: singlePath, text: await readFile41(singlePath, "utf8") });
   } else {
     const dirEntries = await readdir19(dir).catch(() => []);
     const entries = dirEntries.filter((entry) => entry === "overview.md" || /^phase\d+.*\.md$/.test(entry)).sort();
     for (const entry of entries) {
-      const path = join100(dir, entry);
-      const text = await readFile40(path, "utf8");
+      const path = join103(dir, entry);
+      const text = await readFile41(path, "utf8");
       if (entry === "overview.md") {
         overviewPath = path;
         overviewText = text;
@@ -149844,7 +150746,7 @@ var durablePlanFiles = async ({ cwd, name }) => {
   const deliverablePaths = deliverable.overviewPath === void 0 ? [] : [deliverable.overviewPath];
   const files = [...deliverablePaths, ...deliverable.files.map((file2) => file2.path)].map((path) => ({ name: basename11(path), path }));
   for (const record3 of durablePlanFileNames.records) {
-    const path = join101(dir, record3);
+    const path = join104(dir, record3);
     if (await pathExists({ path })) {
       files.push({ name: record3, path });
     }
@@ -149860,7 +150762,7 @@ var readPlanSnapshot = async ({ cwd, name }) => {
   const durable = await durablePlanFiles({ cwd, name });
   const snapshot = [];
   for (const file2 of durable.files) {
-    const content = await readFile41(file2.path).catch(() => void 0);
+    const content = await readFile42(file2.path).catch(() => void 0);
     if (content !== void 0) {
       snapshot.push({ name: file2.name, sha256: sha256({ content }) });
     }
@@ -149928,10 +150830,10 @@ var recordOutcome = async ({
   });
   return "error" in updated ? updated.error : void 0;
 };
-var runWorkOrderPlanLifecycle = async ({ cwd, name, resumeRunId, run }) => {
+var runWorkOrderPlanLifecycle = async ({ cwd, name, resumeRunId, runId: preMintedRunId, run }) => {
   const address = name === void 0 ? void 0 : parsePlanAddress({ name });
   if (name === void 0 || address === void 0) {
-    return { result: await run({ runId: resumeRunId ?? randomUUID7() }) };
+    return { result: await run({ runId: resumeRunId ?? preMintedRunId ?? randomUUID8() }) };
   }
   const { workOrderName, planId } = address;
   const read = await readWorkOrderState({ cwd, name: workOrderName });
@@ -149940,7 +150842,7 @@ var runWorkOrderPlanLifecycle = async ({ cwd, name, resumeRunId, run }) => {
   }
   const { record: record3 } = read;
   if (record3 === void 0) {
-    return { result: await run({ runId: resumeRunId ?? randomUUID7() }) };
+    return { result: await run({ runId: resumeRunId ?? preMintedRunId ?? randomUUID8() }) };
   }
   const blocker = findPlanImplementationBlocker({ record: record3, planId });
   if (blocker !== void 0) {
@@ -149960,7 +150862,7 @@ var runWorkOrderPlanLifecycle = async ({ cwd, name, resumeRunId, run }) => {
       refusal: `git could not name the commit ${cwd} is standing on, and the implementation of plan ${planId} on work order ${workOrderName} is recorded against the commit it starts from`
     };
   }
-  const runId = resumeRunId ?? randomUUID7();
+  const runId = resumeRunId ?? preMintedRunId ?? randomUUID8();
   const started = await recordImplementing({ cwd, workOrderName, planId, runId, headCommit });
   if ("error" in started) {
     return { refusal: started.error };
@@ -150018,7 +150920,18 @@ var runResolvedPipeline = ({
     })
   })
 );
-var implementCommand = async ({ flags, cwd }) => {
+var launchDetachedImplement = async ({ flags, rest, cwd }) => {
+  if (flags.get("detach") !== true) {
+    console.error(usage);
+    return exitCli({ code: 1 });
+  }
+  return exitCli({ code: await launchDetached({ cwd, command: "implement", args: rest, runId: randomUUID9() }) });
+};
+var implementCommand = async ({ flags, rest, cwd }) => {
+  const launchedRunId = readLaunchRunId({ env: process.env });
+  if (flags.has("detach")) {
+    return launchDetachedImplement({ flags, rest, cwd });
+  }
   const inputs = await resolveImplementInputs({ flags, cwd });
   if ("error" in inputs) {
     console.error(inputs.error);
@@ -150049,6 +150962,7 @@ var implementCommand = async ({ flags, cwd }) => {
   const outcome = await runWorkOrderPlanLifecycle({
     cwd: workspace.cwd,
     name: planName,
+    runId: launchedRunId,
     run: ({ runId }) => runResolvedPipeline({
       cwd,
       workspace: workspace.cwd,
@@ -150072,8 +150986,8 @@ var implementCommand = async ({ flags, cwd }) => {
 };
 
 // src/cli/implementDirectCommand.ts
-import { readFile as readFile42 } from "node:fs/promises";
-import { resolve as resolve14 } from "node:path";
+import { readFile as readFile43 } from "node:fs/promises";
+import { resolve as resolve15 } from "node:path";
 
 // src/cli/internal/common/implementRun/openDirectWorkspace.ts
 var openDirectWorkspace = async ({
@@ -150094,7 +151008,7 @@ var openDirectWorkspace = async ({
   if ("error" in workspace) {
     return { error: workspace.error };
   }
-  const uncommittable = await describeUncommittableTree({ cwd: workspace.cwd, isolated: workspace.isolated });
+  const uncommittable = await describeUncommittableTree({ cwd: workspace.cwd, isolated: workspace.isolated, generated: [] });
   if (uncommittable !== void 0) {
     return { error: uncommittable };
   }
@@ -150178,10 +151092,10 @@ ${gates.error}` });
 
 // src/direct/internal/common/utils/createDirectRun.ts
 import { writeFile as writeFile18 } from "node:fs/promises";
-import { join as join102 } from "node:path";
-var createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, config: config2, willShip }) => {
+import { join as join105 } from "node:path";
+var createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, config: config2, willShip, queueRunId }) => {
   const workOrderName = await readGitCurrentBranch({ cwd });
-  const ticketPath = join102(await resolveNewRunDir({ cwd, workOrderName, pipeline: PipelineKind.Direct, runId }), "ticket.md");
+  const ticketPath = join105(await resolveNewRunDir({ cwd, workOrderName, pipeline: PipelineKind.Direct, runId }), "ticket.md");
   const manifest = await createRun({
     cwd,
     runId,
@@ -150191,7 +151105,8 @@ var createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, co
     driver: driverName,
     config: config2,
     baselineDirtyFiles: await readGitChangedFiles({ cwd }),
-    willShip
+    willShip,
+    queueRunId
   });
   await writeFile18(ticketPath, ticketBody.endsWith("\n") ? ticketBody : `${ticketBody}
 `, "utf8");
@@ -150435,9 +151350,13 @@ var executeDirectWork = async ({
   answeredQuestion,
   willShip,
   existing,
-  onProgress
+  onProgress,
+  queueRunId
 }) => {
-  const manifest = existing ?? await createDirectRun({ cwd, runId, ticketBody, ticketRef, driverName, config: config2, willShip });
+  if (existing !== void 0) {
+    await writeRunOwner({ cwd, runId: existing.runId, queueRunId });
+  }
+  const manifest = existing ?? await createDirectRun({ cwd, runId, ticketBody, ticketRef, driverName, config: config2, willShip, queueRunId });
   const run = new RunState({ cwd, config: config2, manifest, onProgress });
   const stop = ({ record: record3, status, error: error51 }) => stopDirectRun({ run, record: record3, status, error: error51 });
   await run.update({ patch: { status: RunStatus.Running, stepOrder: ["pre-flight", "implement", "verify"] } });
@@ -150466,7 +151385,17 @@ var executeDirectWork = async ({
 var runDirectWork = (params) => withRunLock({ params, run: executeDirectWork });
 
 // src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts
-import { randomUUID as randomUUID8 } from "node:crypto";
+import { randomUUID as randomUUID10 } from "node:crypto";
+
+// src/workOrder/internal/common/record/recordHandBuiltShipAuthorizationWithdrawal.ts
+var recordHandBuiltShipAuthorizationWithdrawal = ({ record: record3, detail, at }) => record3.handBuiltShipAuthorization === void 0 ? record3 : appendWorkOrderEvent({
+  record: { ...record3, handBuiltShipAuthorization: void 0 },
+  kind: WorkOrderEventKind.HandBuiltShipAuthorizationWithdrawn,
+  detail,
+  at
+});
+
+// src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts
 var recordImplementing2 = ({ cwd, workOrderName, build }) => updateLocalWorkOrderState({
   cwd,
   name: workOrderName,
@@ -150479,7 +151408,11 @@ var recordImplementing2 = ({ cwd, workOrderName, build }) => updateLocalWorkOrde
         error: `work order ${workOrderName} is no longer a single-plan work order holding no plan 001, so it is not built from the ticket body \u2014 build it through its plans instead`
       };
     }
-    return { ...current, ticketBodyBuild: build };
+    return recordHandBuiltShipAuthorizationWithdrawal({
+      record: { ...current, ticketBodyBuild: build },
+      detail: `a build from the ticket body started under run ${build.runId}, so the hand-built authorization no longer stands`,
+      at: build.startedAt
+    });
   }
 });
 var recordOutcome2 = async ({ cwd, workOrderName, build, result }) => {
@@ -150503,9 +151436,9 @@ var runWorkOrderBodyBuildLifecycle = async ({ cwd, workOrderName, run }) => {
   }
   const { record: record3 } = read;
   if (record3 === void 0 || !isPlanlessWorkOrder({ record: record3 })) {
-    return { result: await run({ runId: randomUUID8() }) };
+    return { result: await run({ runId: randomUUID10() }) };
   }
-  const build = { runId: randomUUID8(), progress: PlanProgress.Implementing, startedAt: (/* @__PURE__ */ new Date()).toISOString() };
+  const build = { runId: randomUUID10(), progress: PlanProgress.Implementing, startedAt: (/* @__PURE__ */ new Date()).toISOString() };
   const started = await recordImplementing2({ cwd, workOrderName, build });
   if ("error" in started) {
     return { refusal: started.error };
@@ -150578,7 +151511,7 @@ var printDirectRunHeader = ({
 };
 var implementDirectCommand = async ({ flags, cwd }) => {
   const namedTicketPath = await getRequiredFlag({ flags, name: "ticket" });
-  const ticketBody = await readFile42(resolve14(cwd, namedTicketPath), "utf8").catch(() => void 0);
+  const ticketBody = await readFile43(resolve15(cwd, namedTicketPath), "utf8").catch(() => void 0);
   if (ticketBody === void 0) {
     console.error(`ticket file not found: ${namedTicketPath}`);
     return exitCli({ code: 1 });
@@ -150651,7 +151584,7 @@ var PromptImprovementStatus = {
 
 // src/runPromptImprovement.ts
 import { readdir as readdir20 } from "node:fs/promises";
-import { join as join103 } from "node:path";
+import { join as join106 } from "node:path";
 
 // src/agents/prompts/promptImprover.md
 var promptImprover_default = '# Role: Prompt Improver\n\nYou maintain the agent role prompts of a deterministic coding pipeline.\nFriction reports from past runs \u2014 moments where an agent was confused,\nguessed, or fought its instructions \u2014 are your only input signal. Your job is\nto turn *systemic* friction into the smallest possible prompt improvements.\n\n## Judge before editing\n\n- Look for **systemic patterns**: the same confusion appearing across multiple\n  entries or runs. A single one-off entry is signal to note in `summary`, not\n  a reason to edit.\n- Entries are tagged `friction` (something fought the agent) or `decision`\n  (the input was silent and the agent had to choose). A recurring decision is\n  prime signal: something upstream \u2014 the plan template, a prompt, a standard \u2014\n  should have settled it.\n- Only friction with area `prompt` \u2014 or friction clearly traceable to prompt\n  wording \u2014 justifies editing a prompt file. Friction about plans, standards,\n  or environment is outside your control: summarize it as recommendations in\n  `summary`, change nothing for it.\n- Read the affected prompt file in full before judging: the confusion may\n  already be addressed and the agent missed it \u2014 in that case, consider\n  whether the existing wording buries the rule, and sharpen placement rather\n  than adding repetition.\n\n## Edit rules\n\n- Edit ONLY the prompt files listed in your task. Nothing else, ever \u2014 no\n  source code, no contracts, no docs.\n- Make the **smallest change that removes the confusion**: sharpen a sentence,\n  resolve a contradiction, add one clarifying clause. Do not restructure,\n  re-voice, or grow a prompt beyond what the fix requires.\n- Preserve every prompt\'s report-contract section: the JSON shape is\n  load-bearing. Never alter field names, statuses, or the output-format rules.\n- Zero edits is a valid, common outcome (`complete` with empty `changedFiles`)\n  when friction is one-off, already addressed, or out of scope.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "packages/agents/prompts/example.md", "summary": "one clause on what was clarified and which friction drove it" }],\n	"summary": "patterns found, edits made, and recommendations for out-of-scope friction (plan/standards/environment)",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "prompt", "detail": "optional \u2014 friction with your own instructions; omit when clean" }]\n}\n```\n';
@@ -150683,8 +151616,8 @@ var runPromptImprovement = async ({ consumerCwd, engineCwd, driver, model, effor
   if (friction.length === 0) {
     return { status: PromptImprovementStatus.NoFriction, friction };
   }
-  const files = await readdir20(join103(engineCwd, promptsDir));
-  const promptFiles = files.filter((file2) => file2.endsWith(".md")).map((file2) => join103(promptsDir, file2));
+  const files = await readdir20(join106(engineCwd, promptsDir));
+  const promptFiles = files.filter((file2) => file2.endsWith(".md")).map((file2) => join106(promptsDir, file2));
   const improverTimeoutMs = 20 * 6e4;
   const outcome = await invokeAgentWithContract({
     driver,
@@ -150826,7 +151759,8 @@ var openPlanWorktree = async ({ cwd, config: config2, flags, name }) => {
 };
 
 // src/cli/plan/internal/planWorkspaceCommand.ts
-var planWorkspaceCommand = async ({ worktree }) => {
+var planWorkspaceCommand = async ({ worktree, name }) => {
+  console.log(`plan folder: ${await planWorkspaceDir({ cwd: worktree.cwd, name })}`);
   console.log(worktree.cwd);
   return exitCli({ code: 0 });
 };
@@ -150865,11 +151799,11 @@ var PlanRunStatus = {
 };
 
 // src/plan/progress/getPlanningProgressPath.ts
-import { join as join104 } from "node:path";
-var getPlanningProgressPath = async ({ cwd, name }) => join104(await planWorkspaceDir({ cwd, name }), "planning-progress.json");
+import { join as join107 } from "node:path";
+var getPlanningProgressPath = async ({ cwd, name }) => join107(await planWorkspaceDir({ cwd, name }), "planning-progress.json");
 
 // src/plan/progress/internal/common/utils/writePlanningProgress.ts
-import { rename as rename8 } from "node:fs/promises";
+import { rename as rename9 } from "node:fs/promises";
 var writePlanningProgress = async ({ cwd, progress }) => {
   if (!await pathExists({ path: await planWorkspaceDir({ cwd, name: progress.name }) })) {
     return;
@@ -150877,7 +151811,7 @@ var writePlanningProgress = async ({ cwd, progress }) => {
   const recordPath = await getPlanningProgressPath({ cwd, name: progress.name });
   const tmpPath = `${recordPath}.tmp`;
   await writeJsonFile({ path: tmpPath, value: progress });
-  await rename8(tmpPath, recordPath);
+  await rename9(tmpPath, recordPath);
 };
 
 // src/contracts/plan/progress/PlanningStepRecord.ts
@@ -150967,7 +151901,7 @@ var recordPlanningStep = async ({ cwd, name, step, work, statusOf }) => {
 };
 
 // src/plan/runPlanDedup.ts
-import { basename as basename15, join as join108 } from "node:path";
+import { basename as basename15, join as join111 } from "node:path";
 
 // src/agents/prompts/planDedup.md
 var planDedup_default = '# Role: Judge Plan Dedup\n\nYou judge whether a plan proposes to **create code that already exists**. The\nengine has already done independent detection \u2014 it compared every planned new\nsymbol against the real export index and handed you the name collisions it\nfound. You do not search; you **judge and filter** those collisions and\nrecommend how to resolve each. You work autonomously and your final message is\nmachine-parsed \u2014 one JSON report, not prose.\n\n**Doctrine:** an agent claiming a symbol is novel is not evidence; the engine\'s\nname-index match is. Your job is to rule which of those matches are *real*\nduplicates the plan should not create as-is, and what to do about each.\n\n## Input\n\nThe task message provides the plan text and a `## Detected name collisions`\nsection (each: a planned new symbol and the existing exports it name-collides\nwith, name \u2192 path). When present, the overview plan (shared context for a\nphased plan \u2014 read it, do not judge it standalone) and supplemental code\nstandards are appended to these role instructions rather than arriving in the\ntask message.\n\n## What to decide per detected collision\n\nFor each planned symbol in `## Detected name collisions`, emit one verdict:\n\n- **`isDuplicate`** \u2014 is this a *real* duplicate the plan should not create\n  as-is? Name collisions are heuristic; a genuinely distinct symbol that merely\n  shares a normalized name (e.g. a per-package analog with different behavior) is\n  `false`.\n- **`recommendation`** \u2014 the resolution, from this menu:\n  - `reuse` \u2014 the existing symbol already does the job; the plan should import it\n    instead of creating a new one.\n  - `extend` \u2014 the existing symbol nearly fits; modify it rather than fork.\n  - `extract` \u2014 the concept should become shared code both the plan and existing\n    callers use. Give a `suggestedLocation` (mirror where this repo already keeps\n    shared code) and `migrateCallers` (existing files that should adopt it).\n  - `defer` \u2014 a real duplication, but resolving it now is out of scope; accept it\n    consciously as logged debt.\n  - `distinct` \u2014 used with `isDuplicate: false`: legitimately not the same thing.\n- **`rationale`** \u2014 one line: why this verdict.\n- **`suggestedLocation`** / **`migrateCallers`** \u2014 only for `extract`.\n\n## Rules\n\n- Judge only the detected collisions; do not re-run detection or invent\n  collisions not present in the input. (Name-level detection is v1\'s scope;\n  behavioral duplication \u2014 same job, different name \u2014 is out of scope here.)\n- A well-scoped plan touching a fresh area may have every verdict\n  `isDuplicate: false`. Do not manufacture duplicates.\n- `reuse`/`extend`/`extract`/`defer` imply `isDuplicate: true`; `distinct`\n  implies `isDuplicate: false`.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`. An empty `verdicts` array is a legitimate result.\n\n```\n{\n	"verdicts": [\n		{\n			"plannedSymbol": "<the planned new symbol>",\n			"isDuplicate": true,\n			"recommendation": "reuse|extend|extract|defer|distinct",\n			"rationale": "<one line>",\n			"suggestedLocation": "<path \u2014 extract only>",\n			"migrateCallers": ["<existing file \u2014 extract only>", "..."]\n		}\n	]\n}\n```\n';
@@ -151040,7 +151974,7 @@ var planAgentTimeouts = {
 };
 
 // src/plan/detectPriorArtCandidates.ts
-import { readFile as readFile43 } from "node:fs/promises";
+import { readFile as readFile44 } from "node:fs/promises";
 import { basename as basename13 } from "node:path";
 
 // src/plan/common/utils/getExportName.ts
@@ -151068,13 +152002,14 @@ var getNameKey = ({ name }) => {
 };
 
 // src/plan/evidence/buildExportCensus.ts
-var buildExportCensus = async ({ cwd, config: config2, exclude = [] }) => {
+var buildExportCensus = async ({ cwd, config: config2, exclude = [], excludeFolders = [] }) => {
   const excluded = new Set(exclude);
+  const isExcluded = (file2) => excluded.has(file2) || excludeFolders.some((folder) => file2 === folder || file2.startsWith(`${folder}/`));
   const { files, standardsLibraries } = await listSourceFiles({ cwd, exclude: excludedSourcePaths({ config: config2 }) });
   const buckets = /* @__PURE__ */ new Map();
   for (const file2 of files) {
     const name = getExportName({ path: file2 });
-    if (isTestFile({ path: file2, standardsLibraries }) || name === "index" || excluded.has(file2)) {
+    if (isTestFile({ path: file2, standardsLibraries }) || name === "index" || isExcluded(file2)) {
       continue;
     }
     const key = getNameKey({ name });
@@ -151107,8 +152042,9 @@ var detectPriorArtCandidates = async ({ cwd, planPaths, config: config2 }) => {
   const planned = [];
   const plannedPaths = /* @__PURE__ */ new Set();
   const emptiedPaths = /* @__PURE__ */ new Set();
+  const emptiedFolders = /* @__PURE__ */ new Set();
   for (const planPath of planPaths) {
-    const planText = await readFile43(planPath, "utf8").catch(() => void 0);
+    const planText = await readFile44(planPath, "utf8").catch(() => void 0);
     if (planText === void 0) {
       continue;
     }
@@ -151116,6 +152052,9 @@ var detectPriorArtCandidates = async ({ cwd, planPaths, config: config2 }) => {
     const plan = parsePlan({ content: planText, base });
     for (const path of [...plan.deletePaths, ...plan.movePaths.map((move) => move.from)]) {
       emptiedPaths.add(path);
+    }
+    for (const move of plan.folderMoves) {
+      emptiedFolders.add(move.from);
     }
     for (const createPath of plan.createPaths) {
       plannedPaths.add(createPath);
@@ -151129,7 +152068,7 @@ var detectPriorArtCandidates = async ({ cwd, planPaths, config: config2 }) => {
   if (planned.length === 0) {
     return [];
   }
-  const census = await buildExportCensus({ cwd, config: config2, exclude: [...plannedPaths, ...emptiedPaths] });
+  const census = await buildExportCensus({ cwd, config: config2, exclude: [...plannedPaths, ...emptiedPaths], excludeFolders: [...emptiedFolders] });
   const collisions = new Map(
     detectExportCollisions({ census, symbols: planned.map(({ plannedSymbol }) => plannedSymbol) }).map((collision) => [
       collision.symbol,
@@ -151154,7 +152093,30 @@ var planAgentConcurrency = 12;
 
 // src/plan/internal/common/utils/createPlanAgentRunner.ts
 import { writeFile as writeFile19 } from "node:fs/promises";
-import { join as join105 } from "node:path";
+import { join as join108 } from "node:path";
+
+// src/common/utils/getDirsOutsideCwd.ts
+import { realpath as realpath3 } from "node:fs/promises";
+import { isAbsolute as isAbsolute3, relative as relative13, resolve as resolve16 } from "node:path";
+var resolveReal = ({ path }) => realpath3(path).catch(() => resolve16(path));
+var getDirsOutsideCwd = async ({ cwd, dirs }) => {
+  const realCwd = await resolveReal({ path: cwd });
+  const realDirs = await Promise.all(dirs.map((dir) => resolveReal({ path: dir })));
+  return dirs.filter((_dir, index) => {
+    const fromCwd = relative13(realCwd, realDirs[index] ?? "");
+    return fromCwd === ".." || fromCwd.startsWith("../") || isAbsolute3(fromCwd);
+  });
+};
+
+// src/plan/internal/common/utils/createPlanAgentRunner.ts
+var writableDirsByFolder = /* @__PURE__ */ new Map();
+var getWritableDirs = ({ cwd, workspaceDir }) => {
+  const key = `${cwd}\0${workspaceDir}`;
+  const known = writableDirsByFolder.get(key);
+  const writableDirs = known ?? getDirsOutsideCwd({ cwd, dirs: [workspaceDir] });
+  writableDirsByFolder.set(key, writableDirs);
+  return writableDirs;
+};
 var createPlanAgentRunner = ({
   cwd,
   driver,
@@ -151168,7 +152130,8 @@ var createPlanAgentRunner = ({
   environment,
   level
 }) => {
-  const onEvent = createEventFileSink({ path: join105(workspaceDir, `${step}-stream.jsonl`) });
+  const onEvent = createEventFileSink({ path: join108(workspaceDir, `${step}-stream.jsonl`) });
+  const writableDirs = getWritableDirs({ cwd, workspaceDir });
   return async ({ invocation, contract, label: label2, allowedCommands }) => {
     const stepLevel = level?.open({ level: ActivityLevelKind.Step, label: label2 === void 0 ? step : `${step}-${label2}` });
     const outcome = await invokeAgentWithContract({
@@ -151182,11 +152145,12 @@ var createPlanAgentRunner = ({
       timeoutMs,
       maxRoleAttempts,
       allowedCommands,
+      writableDirs: await writableDirs,
       environment,
       onEvent,
       onRejectedOutput: async ({ text, attempt }) => {
         const name = `${step}-rejected-${label2 === void 0 ? "" : `${label2}-`}${attempt}.txt`;
-        await writeFile19(join105(workspaceDir, name), text, "utf8").catch(() => void 0);
+        await writeFile19(join108(workspaceDir, name), text, "utf8").catch(() => void 0);
       },
       activity: stepLevel
     });
@@ -151214,10 +152178,10 @@ var drainTasks = async ({ tasks, concurrency, shouldStop }) => {
 };
 
 // src/plan/internal/common/utils/getPlanDetectionPass.ts
-import { mkdir as mkdir23 } from "node:fs/promises";
+import { mkdir as mkdir24 } from "node:fs/promises";
 
 // src/plan/readBrainstormDecisions.ts
-import { join as join107 } from "node:path";
+import { join as join110 } from "node:path";
 
 // src/contracts/plan/decisions/DecisionSource.ts
 var DecisionSource = {
@@ -151251,11 +152215,11 @@ var BrainstormDecisions = external_exports.object({
 });
 
 // src/plan/internal/common/utils/readPlanWorkspaceFile.ts
-import { readFile as readFile44 } from "node:fs/promises";
-import { join as join106 } from "node:path";
+import { readFile as readFile45 } from "node:fs/promises";
+import { join as join109 } from "node:path";
 var readPlanWorkspaceFile = async ({ cwd, name, fileName, schema, notFound }) => {
-  const filePath = join106(await planWorkspaceDir({ cwd, name }), fileName);
-  const raw = await readFile44(filePath, "utf8").catch(() => {
+  const filePath = join109(await planWorkspaceDir({ cwd, name }), fileName);
+  const raw = await readFile45(filePath, "utf8").catch(() => {
     throw new Error(notFound(filePath));
   });
   return schema.parse(JSON.parse(raw));
@@ -151264,7 +152228,7 @@ var readPlanWorkspaceFile = async ({ cwd, name, fileName, schema, notFound }) =>
 // src/plan/readBrainstormDecisions.ts
 var brainstormDecisionsFile = "brainstorm-decisions.json";
 var readBrainstormDecisions = async ({ cwd, name }) => {
-  const filePath = join107(await planWorkspaceDir({ cwd, name }), brainstormDecisionsFile);
+  const filePath = join110(await planWorkspaceDir({ cwd, name }), brainstormDecisionsFile);
   const present = await pathExists({ path: filePath });
   if (!present) {
     return void 0;
@@ -151327,7 +152291,7 @@ var getPlanDetectionInputs = async ({ cwd, name }) => {
 // src/plan/internal/common/utils/getPlanDetectionPass.ts
 var getPlanDetectionPass = async ({ cwd, name }) => {
   const workspaceDir = await planWorkspaceDir({ cwd, name });
-  await mkdir23(workspaceDir, { recursive: true });
+  await mkdir24(workspaceDir, { recursive: true });
   const inputs = await getPlanDetectionInputs({ cwd, name });
   return { ...inputs, workspaceDir };
 };
@@ -151395,7 +152359,8 @@ var StructuralCheck = {
   DecisionLogCurrent: "decision-log-current",
   GlobalConstraintsCurrent: "global-constraints-current",
   HandoffDeclared: "handoff-declared",
-  RenamesWellFormed: "renames-well-formed"
+  RenamesWellFormed: "renames-well-formed",
+  BuildModeWellFormed: "build-mode-well-formed"
 };
 
 // src/plan/decisionLog/decisionLogReference.ts
@@ -151590,7 +152555,7 @@ var runPlanDedup = async (params) => {
     return { status: PlanRunStatus.Failed, workspaceDir, error: `${files}: ${stale[0].issue} \u2014 ${stale[0].fix}` };
   }
   const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: config2 });
-  const dedupPath = join108(workspaceDir, "dedup.json");
+  const dedupPath = join111(workspaceDir, "dedup.json");
   const writeReport = async ({
     findings: findings2,
     reviewed: reviewed2 = [],
@@ -151664,11 +152629,11 @@ ${yellow("incomplete scan")} \u2014 ${dedup.incompleteReason ?? "the pass did no
     `
 ${bold(`plan dedup ${name}`)} \u2014 ${count2 > 0 ? yellow(`${count2} duplication(s) to review`) : green("no duplication found")} (reviewed ${dedup.reviewedAt})`
   );
-  for (const finding3 of dedup.findings) {
+  for (const finding6 of dedup.findings) {
     console.log(
-      `${yellow("\u29C9")} ${finding3.phase} \xB7 ${finding3.plannedSymbol} [${finding3.recommendation}] collides with ${finding3.collidesWith.map((collision) => collision.path).join(", ")}`
+      `${yellow("\u29C9")} ${finding6.phase} \xB7 ${finding6.plannedSymbol} [${finding6.recommendation}] collides with ${finding6.collidesWith.map((collision) => collision.path).join(", ")}`
     );
-    console.log(dim(`   ${finding3.rationale}`));
+    console.log(dim(`   ${finding6.rationale}`));
   }
   console.log(`
 dedup: ${dedupPath}`);
@@ -151676,10 +152641,10 @@ dedup: ${dedupPath}`);
 };
 
 // src/cli/internal/common/render/printStructuralFinding.ts
-var printStructuralFinding = ({ finding: finding3, write = console.log }) => {
-  const marker = finding3.severity === FindingSeverity.Advisory ? dim("note") : yellow("\u26A0");
-  write(`${marker} ${finding3.phase} [${finding3.check}] ${finding3.location} \u2014 ${finding3.issue}`);
-  write(dim(`   fix: ${finding3.fix}`));
+var printStructuralFinding = ({ finding: finding6, write = console.log }) => {
+  const marker = finding6.severity === FindingSeverity.Advisory ? dim("note") : yellow("\u26A0");
+  write(`${marker} ${finding6.phase} [${finding6.check}] ${finding6.location} \u2014 ${finding6.issue}`);
+  write(dim(`   fix: ${finding6.fix}`));
 };
 
 // src/cli/plan/internal/common/utils/exitOnPlanFailure.ts
@@ -151702,11 +152667,11 @@ var PlanVariant = {
 };
 
 // src/plan/common/utils/getBlockingFindings.ts
-var getBlockingFindings = ({ findings }) => findings.filter((finding3) => finding3.severity === FindingSeverity.Blocking);
+var getBlockingFindings = ({ findings }) => findings.filter((finding6) => finding6.severity === FindingSeverity.Blocking);
 
 // src/plan/draft/runPlanDraft.ts
-import { mkdir as mkdir24 } from "node:fs/promises";
-import { join as join122 } from "node:path";
+import { mkdir as mkdir25 } from "node:fs/promises";
+import { join as join126 } from "node:path";
 
 // src/plan/draft/estimatePlanScope.ts
 var estimatePlanScope = ({ facts, executorFileLimit }) => {
@@ -151724,14 +152689,14 @@ var estimatePlanScope = ({ facts, executorFileLimit }) => {
 };
 
 // src/plan/draft/focused/draftFocusedPhasedPlan.ts
-import { readFile as readFile53 } from "node:fs/promises";
+import { readFile as readFile54 } from "node:fs/promises";
 import { basename as basename27 } from "node:path";
 
 // src/plan/decisionLog/syncPlanDecisions.ts
 import { basename as basename18 } from "node:path";
 
 // src/plan/decisionLog/writeDecisionLogSection.ts
-import { readFile as readFile45 } from "node:fs/promises";
+import { readFile as readFile46 } from "node:fs/promises";
 import { basename as basename16 } from "node:path";
 
 // src/plan/internal/common/rewriting/replaceSectionSpan.ts
@@ -151760,7 +152725,7 @@ var insertSection = ({ lines, sectionLines }) => {
   return anchor === -1 ? [...body, "", ...sectionLines, ...trailingNewline ? [""] : []] : [...lines.slice(0, anchor), ...sectionLines, "", ...lines.slice(anchor)];
 };
 var writeDecisionLogSection = async ({ path, section }) => {
-  const original = await readFile45(path, "utf8");
+  const original = await readFile46(path, "utf8");
   const plan = parsePlan({ content: original, base: basename16(path) });
   const sectionLines = section.split("\n");
   const range = plan.decisionLogRange;
@@ -151769,7 +152734,7 @@ var writeDecisionLogSection = async ({ path, section }) => {
 };
 
 // src/plan/sections/writePlanSection.ts
-import { readFile as readFile46 } from "node:fs/promises";
+import { readFile as readFile47 } from "node:fs/promises";
 import { basename as basename17 } from "node:path";
 var insertSection2 = ({ lines, anchorEnd, sectionLines }) => {
   if (anchorEnd === void 0) {
@@ -151780,7 +152745,7 @@ var insertSection2 = ({ lines, anchorEnd, sectionLines }) => {
   return [...lines.slice(0, anchorEnd), ...sectionLines, "", ...lines.slice(anchorEnd)];
 };
 var writePlanSection = async ({ path, heading, section, after }) => {
-  const original = await readFile46(path, "utf8");
+  const original = await readFile47(path, "utf8");
   const plan = parsePlan({ content: original, base: basename17(path) });
   const sectionLines = section.split("\n");
   const range = plan.sectionRanges.get(heading);
@@ -151866,7 +152831,7 @@ var syncPlanDecisions = async ({ cwd, name, decisions, planPaths }) => {
 };
 
 // src/plan/draft/focused/internal/authorFocusedPhaseFiles.ts
-import { join as join110 } from "node:path";
+import { join as join113 } from "node:path";
 
 // src/agents/buildFocusedPlanWriterInvocation/internal/common/utils/evidenceSection.ts
 var evidenceSection = ({ brief }) => `## Collected source evidence
@@ -152019,7 +152984,15 @@ var declarationBlock = ({ label: label2, declaration }) => `### ${label2}
 \`\`\`json
 ${JSON.stringify(declaration, void 0, "	")}
 \`\`\``;
-var renamesBullet = ({ declaration }) => declaration.renamesOnly === true ? "This phase is **rename-only**. Its file carries a `## Renames` section, one `-` bullet per rename with the old and new text each in a backtick span; lists nothing under Files to Create; states no Acceptance Tests rows; and carries a `## File Budget` covering every file the rename spans." : "This phase is not rename-only: its file carries no `## Renames` section.";
+var buildModeBullet = ({ declaration }) => {
+  let bullet2 = "This phase is a standard phase, with no mechanical build mode: its file carries no `## Renames` and no `## Build Mode` section.";
+  if (declaration.buildMode === BuildMode.RenamesOnly) {
+    bullet2 = "This phase is **rename-only**. Its file carries a `## Renames` section, one `-` bullet per rename with the old and new text each in a backtick span; lists nothing under Files to Create; states no Acceptance Tests rows; and carries a `## File Budget` covering every file the rename spans.";
+  } else if (declaration.buildMode === BuildMode.MoveFoldersAndFiles) {
+    bullet2 = "This phase is **move-folders-and-files**. Its file carries a `## Build Mode` section whose body is `move-folders-and-files`; lists its moves under `## Files to Move` and nothing under Files to Create, Files to Modify, Files to Modify from Earlier Phases or Files to Delete; carries no `## Renames` section and no Acceptance Tests rows; and needs no `## File Budget`, being exempt from the file budget and the touched-file ceiling.";
+  }
+  return bullet2;
+};
 var phaseSection = ({ path, overviewText, declaration, previousDeclaration, touchedFileCeiling: touchedFileCeiling2 }) => `## Phase authoring
 
 Author \`${path}\` and nothing else. The phase breakdown is already settled \u2014 do not re-decide it, do not renumber, and do not write any other phase's file. Every other phase is being authored right now by another agent, so no sibling phase file exists for you to read: the declarations below are the whole of what you may rely on. Report only this file in \`filesWritten\`.
@@ -152031,21 +153004,21 @@ ${previousDeclaration === void 0 ? "### The previous phase\n\nThis is phase 1 \u
 ### Writing against the declaration
 
 - The declared \`creates\`, \`exports\` and \`scripts\` are a **floor, not a ceiling**. Your file MUST create every declared path, export every declared name and add every declared script \u2014 and is free to create whatever else the phase needs. The declaration lists only what crosses a phase boundary, so an internal file no other phase touches is never in it.
-- The declared \`createdCount\` and \`touchedCount\` are the overview agent's **estimate** and are not a target. Write what the work requires; the engine stamps the real counts into the overview afterwards. The only hard limits are the created-file ceiling, the touched-file ceiling of ${touchedFileCeiling2} source files (which no \`## File Budget\` raises, and which a rename-only phase is exempt from), and this phase's own \`## File Budget\`.
+- The declared \`createdCount\` and \`touchedCount\` are the overview agent's **estimate** and are not a target. Write what the work requires; the engine stamps the real counts into the overview afterwards. The only hard limits are the created-file ceiling, the touched-file ceiling of ${touchedFileCeiling2} source files (which no \`## File Budget\` raises, and which a rename-only or move-folders-and-files phase is exempt from), and this phase's own \`## File Budget\`.
 - \`## What Next Plan Expects\` states this phase's own declared \`creates\`, \`exports\` and \`scripts\`, each in a backticked span, and nothing else. Write \`None.\` when every bullet of your declaration is \`none\`, and \`None \u2014 final phase.\` when your row is the last in the overview's \`## Phases\` table.
 - \`## Prerequisites\` states the previous phase's declared \`creates\`, \`exports\` and \`scripts\`, each in a backticked span. Phase 1 states the pre-feature codebase state instead.
 - \`## File Budget\` is written when the declaration carries a \`fileBudget\`, repeating that integer. If your phase's real work needs a HIGHER budget than the declaration states, write **the number you need** \u2014 never the declared one \u2014 and omit the section entirely if you need none. The mismatch is reported and resolved against the overview later; understating your budget to avoid a finding is the one thing that would actually break the run.
-- ${renamesBullet({ declaration })}
+- ${buildModeBullet({ declaration })}
 
 ### The settled overview
 
 ${overviewText}`;
 
 // src/agents/prompts/focusedPlanContractTemplate.md
-var focusedPlanContractTemplate_default = "# Plan Template\n\nTemplates for plans consumed by `lightsout implement` and graded by the\ndeterministic structural lint (`plan grade`, structure) and the gap-check agent\n(`plan grade`, decisions). Three variants: **Single Plan** (standalone feature),\n**Overview Plan** (multi-phase context), and **Phase Plan** (one implementation\nscope under an overview).\n\nThis repository writes plans as CONTRACTS: an implementable plan states its\ntestable behaviour in `## Acceptance Tests` rows, and its file entries state the\nsurface \u2014 signatures, wiring, constraints \u2014 that no test can carry.\n\n## Rules (all variants)\n\nThese mirror the structural-lint and gap-check rubrics \u2014 a plan violating them\nwill not reach A:\n\n- **No placeholders.** No `???`, `TBD`, `TODO`, or unresolved `{tokens}`. Every\n  open question must be resolved before the plan is written.\n- **Every referenced path verified.** Files listed under Files to Modify and\n  Patterns to Mirror must exist on disk at write time. Files to Create must not.\n- **Backticks around a path assert it exists.** Every backticked span that\n  names a file \u2014 anywhere in the plan, not only under the file headings \u2014 is\n  checked against the working tree and blocks if it is not there. A path\n  written to illustrate a shape rather than to name a real file goes in plain\n  prose, without backticks. Search patterns are exempt: a span holding `*` is\n  read as a glob, never as a claim.\n- **Earlier-phase files have their own heading.** In a phased plan, a file an\n  EARLIER PHASE creates is changed under `## Files to Modify from Earlier\n  Phases` \u2014 never `## Files to Modify` (whose paths exist on disk today) and\n  never `## Files to Create` (whose paths no phase has claimed). Deletes and\n  moves have their own headings too; every path under all five is checked and\n  counted.\n- **Hand-offs chain by name.** Each phase's `## What Next Plan Expects` and the\n  next phase's `## Prerequisites` must name the same files and exports, in\n  backticked spans \u2014 a file path or a bare symbol name. A name one phase hands\n  forward and the next never claims is a structural defect.\n- **Signatures, not vibes.** Services and modules define their methods and\n  signatures \u2014 never \"create a service for X\" without saying what it exposes.\n- **Explicit dependency graph.** Module definitions include imports/exports;\n  cross-module wiring is stated (exports match imports).\n- **Real script names.** Verification commands reference scripts that exist in\n  the target `package.json` (or the configured `scripts` overrides).\n- **Within the created-file ceiling.** Each plan (or each phase) CREATES at most\n  {{createdFileCeiling}} source files. This is a hard ceiling: a phase over it is split, and no\n  declaration raises it. A created file has to be specified \u2014 its signatures, its\n  exports, its behaviour stated by its rows \u2014 which is what makes creating that\n  many of them a full phase.\n- **Touched files counted and declared.** Each plan (or each phase) also states\n  how many source files it touches in total (created, modified, modified from an\n  earlier phase, deleted, and both sides of every move). Above {{fileLimit}} the plan is\n  still legal, but it must carry a `## File Budget` covering its real count,\n  because {{fileLimit}} is where the implementing agent stops. A plan or phase that\n  touches more than {{touchedFileCeiling}} source files is refused and must be split:\n  neither the config nor a `## File Budget` raises that ceiling. The one exemption\n  is a rename-only plan or phase \u2014 its `## Renames` section, plus the\n  `**Renames only:** yes` bullet on the overview. A phase that creates three files\n  and renames an import across two hundred is legitimate work only as a rename-only\n  phase, with the rename gathered into a phase of its own; a phase that authors\n  that many from scratch is not.\n- **What counts as a source file.** Every path the plan names except test files,\n  `index` barrels, and `.d.ts` declaration files. A hand-authored type-only\n  module \u2014 a `.ts` file exporting one interface \u2014 DOES count: it still has to be\n  specified and written.\n- **Prior art recorded.** Every newly-created exported symbol is justified in a\n  `## Prior Art` section: the searches run against existing exports that prove it\n  is new, or the existing symbol it mirrors/extends.\n- **Global constraints are engine-composed.** Every variant carries a\n  `## Global Constraints` section, and the engine composes its content from the\n  same decision records the writer was handed. Write no bullet under that\n  heading, and leave one a file already carries exactly as found \u2014 anything\n  written there is replaced.\n- **Acceptance tests named, not narrated.** Every IMPLEMENTABLE variant \u2014 a\n  Single Plan, and each Phase Plan \u2014 carries a `## Acceptance Tests` table with\n  one row per acceptance criterion: the criterion, the test file that states it\n  in a backticked span, the exact test name, and the gate that runs it. A file\n  whose behaviour no test can state is listed under `## Prose Files` with the\n  reason instead. Every created or modified source file is reached by a row or\n  named in that list. An Overview Plan carries neither section: the overview\n  creates nothing, so a row written there would belong to no executor.\n- **Behaviour lives in the ledger.** A file entry states the file's exported\n  signatures, the imports it needs and the names it exports, the integration\n  points it wires into, the file it mirrors, and the architectural constraints\n  binding it \u2014 and then says that its behaviour is stated in the\n  `## Acceptance Tests` rows. Narrating the same expectation in prose beside a\n  row that already states it is the duplication this shape exists to remove.\n  Prose no test can express \u2014 a constraint, an ordering requirement, the reason\n  a path was rejected \u2014 still belongs in the entry.\n- **A criterion is a testable sentence.** Each `## Acceptance Tests` row's\n  criterion names the inputs, the condition that makes the case distinct, the\n  expected result, and the failure case the test pins. A criterion naming only a\n  subject is intent, not a criterion.\n- **Rename-only phases.** A plan or phase whose whole work is renaming symbols\n  or paths may be declared rename-only with a `## Renames` section, one `-`\n  bullet per rename naming the old and the new text, each in backticks. Gather\n  renames into their own phase where you can, covering every file the rename\n  spans. A rename-only file creates nothing, and it is built without test\n  writing: the engine checks in code that every changed file differs from the\n  phase's start only by the declared renames. Each rename is a literal,\n  case-sensitive substitution of every occurrence, applied in the order listed,\n  to file paths and file contents alike \u2014 and no rename's new text may contain\n  any rename's old text, own or another's.\n{{documentationRule}}\n\n---\n\n## Single Plan\n\n```markdown\n# <Feature Name>\n\n## Context\n\n<1\u20132 paragraphs: what this feature does, why it is needed, and the relevant\ncurrent state of the codebase.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Prerequisites\n\n- <required state before implementation begins, or \"None\">\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <why this package is touched>\n\n<!-- Single-package repos: state \"Single-package repository.\" packagesDir is the\nrepo's package directory convention (default `packages`). -->\n\n## Files to Create\n\n### `<packagesDir>/<name>/src/path/to/file.ts`\n\n<Purpose in one line. Then the surface: exported functions/classes with full\nsignatures, the imports it needs, what it exports, the integration points it\nwires into, the file it mirrors, and the architectural constraints binding it.\nClose by saying its behaviour is stated in the `## Acceptance Tests` rows \u2014 do\nnot restate there what a row already holds.>\n\n## Files to Modify\n\n### `<packagesDir>/<name>/src/path/to/existing.ts`\n\n<What changes and where: which function/section, what is added/removed/changed,\nthe resulting signature, and how it integrates with the created files. The\nexpectation it must then satisfy is a row, not a paragraph.>\n\n## Files to Modify from Earlier Phases\n\n<Optional \u2014 omit the heading entirely when this plan has no such work. Every\npath here must be one an EARLIER PHASE creates, and must not exist on disk yet;\na file that is already there belongs under Files to Modify.>\n\n### `<packagesDir>/<name>/src/path/to/from-phase-one.ts`\n\n<Which phase creates it, and what changes here.>\n\n## Files to Delete\n\n<Optional \u2014 omit the heading entirely when this plan deletes nothing.>\n\n### `<packagesDir>/<name>/src/path/to/going.ts`\n\n<Why it goes, and what takes over its callers.>\n\n## Files to Move\n\n<Optional \u2014 omit the heading entirely when this plan moves nothing. Each\nsubheading names exactly two paths in backticks, old then new.>\n\n### `<packagesDir>/<name>/src/old/path.ts` \u2192 `<packagesDir>/<name>/src/new/path.ts`\n\n<What moves and why.>\n\n## File Budget\n\n<Optional \u2014 omit this section unless the plan touches more than {{fileLimit}}\nsource files. A single integer on its own line: the total source files this plan\ntouches. It must cover the real count, and it does NOT raise the created-file\nceiling, which is fixed at {{createdFileCeiling}}.>\n<Nor does it raise the touched-file ceiling, which is fixed at\n{{touchedFileCeiling}} for every plan that is not rename-only.>\n\n## Renames\n\n<Optional \u2014 omit the heading entirely unless this plan is rename-only. One\nbullet per rename, the old text then the new, each in backticks, in the order\nthey are applied. A rename-only plan lists nothing under Files to Create.>\n\n- `<oldName>` \u2192 `<newName>`\n\n## Patterns to Mirror\n\n- `<packagesDir>/<name>/src/path/to/analogous.ts` \u2014 <what to take from it:\n  structure, naming, error handling, etc.>\n\n## Prior Art\n\nOne line per newly-created exported symbol, recording the dedup search that\njustifies its newness:\n\n- `<symbol>` \u2014 searched <terms>, found none (new)\n- `<symbol>` \u2014 mirrors `<existing export>` (extends, does not duplicate)\n\n## Scope Boundaries\n\n**Do:**\n- <in-scope item>\n\n**Do NOT:**\n- <explicitly out-of-scope item \u2014 adjacent work the agent might be tempted to do>\n\n## Verification\n\n- `<resolved check command>` \u2014 types clean\n- `<resolved test-unit command>` \u2014 tests pass\n\n## Acceptance Tests\n\n<!-- One row per acceptance criterion. The test file goes in backticks and may\nalready exist; the test name is the exact string the test writer will use; the\ngate is a key from the repository's gates, and a blank cell means `test`. Each\ncriterion names the inputs, the condition that makes the case distinct, the\nexpected result, and the failure case it pins. A rename-only file keeps this\nheading and states no rows, since a rename adds no behaviour a new test could\nstate. -->\n\n| Criterion | Test file | Test name | Gate |\n|-----------|-----------|-----------|------|\n| <one-line acceptance criterion> | `<packagesDir>/<name>/src/path/to/file.unit.test.ts` | <exact test name> | test |\n\n## Prose Files\n\n<!-- One bullet per file whose behaviour no test can state, each also listed\nunder one of the file headings above. A bullet with no reason is a blocking\nfinding. -->\n\n- `<path>` \u2014 <why no test states this file's behaviour>\n\n## What Next Plan Expects\n\n<For a standalone plan: \"None \u2014 standalone plan.\" Otherwise: the exact state a\nfollow-up plan can rely on \u2014 files that exist, exports available, behavior\nguaranteed.>\n```\n\n---\n\n## Overview Plan\n\nThe overview carries context shared by all phases. It is **not implemented\ndirectly** \u2014 it is passed alongside each phase to `lightsout implement` and to\n`plan grade` as context.\n\n```markdown\n# <Feature Name> \u2014 Overview\n\n## Context\n\n<What this feature does, why, and the relevant current state.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced. The\noverview holds the plan's complete history; each phase file points at it.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Architecture\n\n<How the pieces fit together across phases: data flow, module boundaries,\nshared types. A diagram or short prose map.>\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <role in this feature>\n\n## Phases\n\nThis table and `## Phase Declarations` below are two views of ONE phase record.\nState each phase once here \u2014 its number, its `phase<N>-<slug>.md` filename, a\none-line scope, and its two counts \u2014 and state its cross-boundary names once\nbelow. The engine normalises the number-and-filename pairing across both views\nbefore the lint runs, so checking one copy against the other by hand is not your\nwork.\n\nCreates and Touches are integer counts of source files \u2014 the same set the\ncreated-file ceiling and the touched-file budget are measured on (test files,\n`index` barrels and `.d.ts` declarations excluded; a hand-authored type-only\nmodule counts). Each must equal the count the phase file itself lists.\n\n| # | File | Scope | Creates | Touches |\n|---|------|-------|---------|---------|\n| 1 | `phase1-<slug>.md` | <one-line scope> | <n> | <n> |\n| 2 | `phase2-<slug>.md` | <one-line scope> | <n> | <n> |\n\n## Phase Declarations\n\nOne block per phase \u2014 the same phase record the table above lists, carrying what\nthe table cannot. List ONLY what crosses a phase boundary: the files a later\nphase builds against, the exported names later phases import, and the package\nscripts this phase adds. The phase file already holds its complete file\nlist \u2014 repeating it here creates two lists that drift the moment either is\nedited. Write `none` for a bullet with nothing to declare. The engine keeps each\nblock's number and filename agreeing with its table row, so write the\ncross-boundary bullets once and leave the pairing to it.\n\n### Phase 1 \u2014 `phase1-<slug>.md`\n\n- **Creates:** `<packagesDir>/<name>/src/path/to/file.ts`\n- **Exports:** `<symbol>`\n- **Scripts:** none\n\n### Phase 2 \u2014 `phase2-<slug>.md`\n\n- **Creates:** none\n- **Exports:** none\n- **Scripts:** none\n- **File budget:** <n>\n- **Renames only:** yes\n\n<!-- **File budget:** is optional: include it only when that phase file carries a\n`## File Budget`, and repeat the same integer. It must cover that phase's Touches\ncount, and it never raises the created-file ceiling, which is fixed at\n{{createdFileCeiling}}. It never raises the touched-file ceiling of\n{{touchedFileCeiling}} either; only a phase declared `**Renames only:** yes` is\nexempt from that one. **Renames only:** is optional too: write it, reading\n`yes`, only for a phase whose file carries a `## Renames` section. -->\n\n## Cross-Phase Dependencies\n\n- Phase 2 depends on Phase 1's <export/file/behavior>.\n```\n\n---\n\n## Phase Plan\n\nIdentical to the Single Plan with these adjustments:\n\n- Title: `# <Feature Name> \u2014 Phase <N>: <Phase Name>`\n- **Prerequisites** states the prior phase's end state: \"Phase <N-1> complete:\n  <files/exports that now exist>.\" Phase 1 states the pre-feature codebase state.\n- **Decision Log** is composed by the engine with\n  `lightsout plan sync-decisions`, exactly as in the Single Plan: write neither\n  the heading's content nor a row. A phase file's section points at the\n  overview's complete history rather than repeating it.\n- **Global Constraints** is composed by the engine in every phase, exactly as in\n  the Single Plan: the heading is required and its content is not yours to\n  write.\n- **Prior Art** is still mandatory \u2014 one line per newly-created exported symbol.\n- **Files to Modify from Earlier Phases** is where a file an earlier phase\n  creates is changed \u2014 never Files to Modify (whose paths must exist on disk\n  today) and never Files to Create (whose paths no phase has claimed yet).\n- **Files to Delete**, **Files to Move** and **File Budget** carry the same\n  meaning as in the Single Plan, per phase.\n- **What Next Plan Expects** is mandatory and chains: it must list exactly what\n  the next phase's Prerequisites will claim. The final phase states \"None \u2014\n  final phase.\"\n- **Acceptance Tests** and **Prose Files** are required in every phase and never\n  on the overview: the overview creates nothing, so a row written there would\n  belong to no executor.\n";
+var focusedPlanContractTemplate_default = "# Plan Template\n\nTemplates for plans consumed by `lightsout implement` and graded by the\ndeterministic structural lint (`plan grade`, structure) and the gap-check agent\n(`plan grade`, decisions). Three variants: **Single Plan** (standalone feature),\n**Overview Plan** (multi-phase context), and **Phase Plan** (one implementation\nscope under an overview).\n\nThis repository writes plans as CONTRACTS: an implementable plan states its\ntestable behaviour in `## Acceptance Tests` rows, and its file entries state the\nsurface \u2014 signatures, wiring, constraints \u2014 that no test can carry.\n\n## Rules (all variants)\n\nThese mirror the structural-lint and gap-check rubrics \u2014 a plan violating them\nwill not reach A:\n\n- **No placeholders.** No `???`, `TBD`, `TODO`, or unresolved `{tokens}`. Every\n  open question must be resolved before the plan is written.\n- **Every referenced path verified.** Files listed under Files to Modify and\n  Patterns to Mirror must exist on disk at write time. Files to Create must not.\n- **Backticks around a path assert it exists.** Every backticked span that\n  names a file \u2014 anywhere in the plan, not only under the file headings \u2014 is\n  checked against the working tree and blocks if it is not there. A path\n  written to illustrate a shape rather than to name a real file goes in plain\n  prose, without backticks. Search patterns are exempt: a span holding `*` is\n  read as a glob, never as a claim.\n- **Earlier-phase files have their own heading.** In a phased plan, a file an\n  EARLIER PHASE creates is changed under `## Files to Modify from Earlier\n  Phases` \u2014 never `## Files to Modify` (whose paths exist on disk today) and\n  never `## Files to Create` (whose paths no phase has claimed). A file an\n  earlier phase's folder move carried is named the same way, by its new path\n  under `## Files to Modify from Earlier Phases`. Deletes and\n  moves have their own headings too; every path under all five is checked and\n  counted.\n- **Hand-offs chain by name.** Each phase's `## What Next Plan Expects` and the\n  next phase's `## Prerequisites` must name the same files and exports, in\n  backticked spans \u2014 a file path or a bare symbol name. A name one phase hands\n  forward and the next never claims is a structural defect.\n- **Signatures, not vibes.** Services and modules define their methods and\n  signatures \u2014 never \"create a service for X\" without saying what it exposes.\n- **Explicit dependency graph.** Module definitions include imports/exports;\n  cross-module wiring is stated (exports match imports).\n- **Real script names.** Verification commands reference scripts that exist in\n  the target `package.json` (or the configured `scripts` overrides).\n- **Within the created-file ceiling.** Each plan (or each phase) CREATES at most\n  {{createdFileCeiling}} source files. This is a hard ceiling: a phase over it is split, and no\n  declaration raises it. A created file has to be specified \u2014 its signatures, its\n  exports, its behaviour stated by its rows \u2014 which is what makes creating that\n  many of them a full phase.\n- **Touched files counted and declared.** Each plan (or each phase) also states\n  how many source files it touches in total (created, modified, modified from an\n  earlier phase, deleted, and both sides of every move). A folder move counts\n  every file it carries, on both sides. Above {{fileLimit}} the plan is\n  still legal, but it must carry a `## File Budget` covering its real count,\n  because {{fileLimit}} is where the implementing agent stops. A plan or phase that\n  touches more than {{touchedFileCeiling}} source files is refused and must be split:\n  neither the config nor a `## File Budget` raises that ceiling. There are two\n  exemptions. One is a rename-only plan or phase \u2014 its `## Renames` section, plus the\n  `**Renames only:** yes` bullet on the overview. The other is a\n  move-folders-and-files plan or phase \u2014 its `## Build Mode` section reading\n  `move-folders-and-files`, plus the `**Moves folders and files only:** yes`\n  bullet on the overview. A phase that creates three files\n  and renames an import across two hundred is legitimate work only as a rename-only\n  phase, with the rename gathered into a phase of its own; a phase that authors\n  that many from scratch is not. Likewise, a phase that relocates a folder of\n  three hundred files is legitimate work only as a move-folders-and-files phase,\n  with the move gathered into a phase of its own.\n- **What counts as a source file.** Every path the plan names except test files,\n  `index` barrels, and `.d.ts` declaration files. A hand-authored type-only\n  module \u2014 a `.ts` file exporting one interface \u2014 DOES count: it still has to be\n  specified and written.\n- **Prior art recorded.** Every newly-created exported symbol is justified in a\n  `## Prior Art` section: the searches run against existing exports that prove it\n  is new, or the existing symbol it mirrors/extends.\n- **Global constraints are engine-composed.** Every variant carries a\n  `## Global Constraints` section, and the engine composes its content from the\n  same decision records the writer was handed. Write no bullet under that\n  heading, and leave one a file already carries exactly as found \u2014 anything\n  written there is replaced.\n- **Acceptance tests named, not narrated.** Every IMPLEMENTABLE variant \u2014 a\n  Single Plan, and each Phase Plan \u2014 carries a `## Acceptance Tests` table with\n  one row per acceptance criterion: the criterion, the test file that states it\n  in a backticked span, the exact test name, and the gate that runs it. A file\n  whose behaviour no test can state is listed under `## Prose Files` with the\n  reason instead. Every created or modified source file is reached by a row or\n  named in that list. An Overview Plan carries neither section: the overview\n  creates nothing, so a row written there would belong to no executor.\n- **Behaviour lives in the ledger.** A file entry states the file's exported\n  signatures, the imports it needs and the names it exports, the integration\n  points it wires into, the file it mirrors, and the architectural constraints\n  binding it \u2014 and then says that its behaviour is stated in the\n  `## Acceptance Tests` rows. Narrating the same expectation in prose beside a\n  row that already states it is the duplication this shape exists to remove.\n  Prose no test can express \u2014 a constraint, an ordering requirement, the reason\n  a path was rejected \u2014 still belongs in the entry.\n- **A criterion is a testable sentence.** Each `## Acceptance Tests` row's\n  criterion names the inputs, the condition that makes the case distinct, the\n  expected result, and the failure case the test pins. A criterion naming only a\n  subject is intent, not a criterion.\n- **Rename-only phases.** A plan or phase whose whole work is renaming symbols\n  or paths may be declared rename-only with a `## Renames` section, one `-`\n  bullet per rename naming the old and the new text, each in backticks. Gather\n  renames into their own phase where you can, covering every file the rename\n  spans. A rename-only file creates nothing, and it is built without test\n  writing: the engine checks in code that every changed file differs from the\n  phase's start only by the declared renames. Each rename is a literal,\n  case-sensitive substitution of every occurrence, applied in the order listed,\n  to file paths and file contents alike \u2014 and no rename's new text may contain\n  any rename's old text, own or another's.\n- **Move-folders-and-files phases.** A plan or phase whose whole work is moving\n  folders and files may be declared move-folders-and-files with a `## Build Mode`\n  section whose body is the single line `move-folders-and-files`. Its\n  `## Files to Move` headings name file moves and folder moves: a folder move\n  names two folders, each ending in `/`, never one file and one folder. It lists\n  nothing under Files to Create, Files to Modify or Files to Delete, carries no\n  `## Renames`, and states no Acceptance Tests rows. It needs no `## File Budget`\n  and is exempt from the touched-file ceiling. A move and feature work are two\n  phases. A destination folder must not already exist, and the moves in one\n  phase must not overlap, chain or swap. It is built without test writing,\n  without the reviewing agent and without refactor: the engine instead checks in\n  code that every removed file pairs with an added file at its declared\n  destination, that no declared move left a file at its old path, and that every\n  changed file differs from the phase's start only in the paths that point at\n  moved files, every other character staying as it was. A file that is not text,\n  such as a binary, may only move unchanged.\n{{documentationRule}}\n\n---\n\n## Single Plan\n\n```markdown\n# <Feature Name>\n\n## Context\n\n<1\u20132 paragraphs: what this feature does, why it is needed, and the relevant\ncurrent state of the codebase.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Prerequisites\n\n- <required state before implementation begins, or \"None\">\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <why this package is touched>\n\n<!-- Single-package repos: state \"Single-package repository.\" packagesDir is the\nrepo's package directory convention (default `packages`). -->\n\n## Files to Create\n\n### `<packagesDir>/<name>/src/path/to/file.ts`\n\n<Purpose in one line. Then the surface: exported functions/classes with full\nsignatures, the imports it needs, what it exports, the integration points it\nwires into, the file it mirrors, and the architectural constraints binding it.\nClose by saying its behaviour is stated in the `## Acceptance Tests` rows \u2014 do\nnot restate there what a row already holds.>\n\n## Files to Modify\n\n### `<packagesDir>/<name>/src/path/to/existing.ts`\n\n<What changes and where: which function/section, what is added/removed/changed,\nthe resulting signature, and how it integrates with the created files. The\nexpectation it must then satisfy is a row, not a paragraph.>\n\n## Files to Modify from Earlier Phases\n\n<Optional \u2014 omit the heading entirely when this plan has no such work. Every\npath here must be one an EARLIER PHASE creates, and must not exist on disk yet;\na file that is already there belongs under Files to Modify.>\n\n### `<packagesDir>/<name>/src/path/to/from-phase-one.ts`\n\n<Which phase creates it, and what changes here.>\n\n## Files to Delete\n\n<Optional \u2014 omit the heading entirely when this plan deletes nothing.>\n\n### `<packagesDir>/<name>/src/path/to/going.ts`\n\n<Why it goes, and what takes over its callers.>\n\n## Files to Move\n\n<Optional \u2014 omit the heading entirely when this plan moves nothing. Each\nsubheading names two files or two folders in backticks, old then new, a folder\nwritten with a trailing `/`.>\n\n### `<packagesDir>/<name>/src/old/path.ts` \u2192 `<packagesDir>/<name>/src/new/path.ts`\n\n<What moves and why.>\n\n### `<packagesDir>/<name>/src/old/folder/` \u2192 `<packagesDir>/<name>/src/new/folder/`\n\n<What moves and why.>\n\n## File Budget\n\n<Optional \u2014 omit this section unless the plan touches more than {{fileLimit}}\nsource files. A single integer on its own line: the total source files this plan\ntouches. It must cover the real count, and it does NOT raise the created-file\nceiling, which is fixed at {{createdFileCeiling}}.>\n<Nor does it raise the touched-file ceiling, which is fixed at\n{{touchedFileCeiling}} for every plan that is neither rename-only nor\nmove-folders-and-files.>\n\n## Renames\n\n<Optional \u2014 omit the heading entirely unless this plan is rename-only. One\nbullet per rename, the old text then the new, each in backticks, in the order\nthey are applied. A rename-only plan lists nothing under Files to Create.>\n\n- `<oldName>` \u2192 `<newName>`\n\n## Build Mode\n\n<Optional \u2014 omit the heading entirely unless this plan is\nmove-folders-and-files. Its body is the one line below. A plan carrying it\ncarries no `## Renames`.>\n\nmove-folders-and-files\n\n## Patterns to Mirror\n\n- `<packagesDir>/<name>/src/path/to/analogous.ts` \u2014 <what to take from it:\n  structure, naming, error handling, etc.>\n\n## Prior Art\n\nOne line per newly-created exported symbol, recording the dedup search that\njustifies its newness:\n\n- `<symbol>` \u2014 searched <terms>, found none (new)\n- `<symbol>` \u2014 mirrors `<existing export>` (extends, does not duplicate)\n\n## Scope Boundaries\n\n**Do:**\n- <in-scope item>\n\n**Do NOT:**\n- <explicitly out-of-scope item \u2014 adjacent work the agent might be tempted to do>\n\n## Verification\n\n- `<resolved check command>` \u2014 types clean\n- `<resolved test-unit command>` \u2014 tests pass\n\n## Acceptance Tests\n\n<!-- One row per acceptance criterion. The test file goes in backticks and may\nalready exist; the test name is the exact string the test writer will use; the\ngate is a key from the repository's gates, and a blank cell means `test`. Each\ncriterion names the inputs, the condition that makes the case distinct, the\nexpected result, and the failure case it pins. A rename-only file keeps this\nheading and states no rows, since a rename adds no behaviour a new test could\nstate. A move-folders-and-files file keeps this heading and states no rows\neither, since a move adds no behaviour a new test could state. -->\n\n| Criterion | Test file | Test name | Gate |\n|-----------|-----------|-----------|------|\n| <one-line acceptance criterion> | `<packagesDir>/<name>/src/path/to/file.unit.test.ts` | <exact test name> | test |\n\n## Prose Files\n\n<!-- One bullet per file whose behaviour no test can state, each also listed\nunder one of the file headings above. A bullet with no reason is a blocking\nfinding. -->\n\n- `<path>` \u2014 <why no test states this file's behaviour>\n\n## What Next Plan Expects\n\n<For a standalone plan: \"None \u2014 standalone plan.\" Otherwise: the exact state a\nfollow-up plan can rely on \u2014 files that exist, exports available, behavior\nguaranteed.>\n```\n\n---\n\n## Overview Plan\n\nThe overview carries context shared by all phases. It is **not implemented\ndirectly** \u2014 it is passed alongside each phase to `lightsout implement` and to\n`plan grade` as context.\n\n```markdown\n# <Feature Name> \u2014 Overview\n\n## Context\n\n<What this feature does, why, and the relevant current state.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced. The\noverview holds the plan's complete history; each phase file points at it.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Architecture\n\n<How the pieces fit together across phases: data flow, module boundaries,\nshared types. A diagram or short prose map.>\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <role in this feature>\n\n## Phases\n\nThis table and `## Phase Declarations` below are two views of ONE phase record.\nState each phase once here \u2014 its number, its `phase<N>-<slug>.md` filename, a\none-line scope, and its two counts \u2014 and state its cross-boundary names once\nbelow. The engine normalises the number-and-filename pairing across both views\nbefore the lint runs, so checking one copy against the other by hand is not your\nwork.\n\nCreates and Touches are integer counts of source files \u2014 the same set the\ncreated-file ceiling and the touched-file budget are measured on (test files,\n`index` barrels and `.d.ts` declarations excluded; a hand-authored type-only\nmodule counts). Each must equal the count the phase file itself lists.\n\n| # | File | Scope | Creates | Touches |\n|---|------|-------|---------|---------|\n| 1 | `phase1-<slug>.md` | <one-line scope> | <n> | <n> |\n| 2 | `phase2-<slug>.md` | <one-line scope> | <n> | <n> |\n\n## Phase Declarations\n\nOne block per phase \u2014 the same phase record the table above lists, carrying what\nthe table cannot. List ONLY what crosses a phase boundary: the files a later\nphase builds against, the exported names later phases import, and the package\nscripts this phase adds. The phase file already holds its complete file\nlist \u2014 repeating it here creates two lists that drift the moment either is\nedited. Write `none` for a bullet with nothing to declare. The engine keeps each\nblock's number and filename agreeing with its table row, so write the\ncross-boundary bullets once and leave the pairing to it.\n\n### Phase 1 \u2014 `phase1-<slug>.md`\n\n- **Creates:** `<packagesDir>/<name>/src/path/to/file.ts`\n- **Exports:** `<symbol>`\n- **Scripts:** none\n\n### Phase 2 \u2014 `phase2-<slug>.md`\n\n- **Creates:** none\n- **Exports:** none\n- **Scripts:** none\n- **File budget:** <n>\n- **Renames only:** yes\n\n<!-- **File budget:** is optional: include it only when that phase file carries a\n`## File Budget`, and repeat the same integer. It must cover that phase's Touches\ncount, and it never raises the created-file ceiling, which is fixed at\n{{createdFileCeiling}}. It never raises the touched-file ceiling of\n{{touchedFileCeiling}} either; only a phase declared `**Renames only:** yes` or\n`**Moves folders and files only:** yes` is exempt from that one. **Renames only:**\nis optional too: write it, reading `yes`, only for a phase whose file carries a\n`## Renames` section. **Moves folders and files only:** is optional as well:\nwrite it, reading `yes`, only for a phase whose file carries a `## Build Mode`\nsection reading `move-folders-and-files`, never beside **Renames only:** in one\nblock, and with no **File budget:**. Such a phase's **Creates:** may name the\ndestination folder exactly as its `## Files to Move` heading writes it, rather\nthan every file the folder carries. -->\n\n## Cross-Phase Dependencies\n\n- Phase 2 depends on Phase 1's <export/file/behavior>.\n```\n\n---\n\n## Phase Plan\n\nIdentical to the Single Plan with these adjustments:\n\n- Title: `# <Feature Name> \u2014 Phase <N>: <Phase Name>`\n- **Prerequisites** states the prior phase's end state: \"Phase <N-1> complete:\n  <files/exports that now exist>.\" Phase 1 states the pre-feature codebase state.\n- **Decision Log** is composed by the engine with\n  `lightsout plan sync-decisions`, exactly as in the Single Plan: write neither\n  the heading's content nor a row. A phase file's section points at the\n  overview's complete history rather than repeating it.\n- **Global Constraints** is composed by the engine in every phase, exactly as in\n  the Single Plan: the heading is required and its content is not yours to\n  write.\n- **Prior Art** is still mandatory \u2014 one line per newly-created exported symbol.\n- **Files to Modify from Earlier Phases** is where a file an earlier phase\n  creates is changed \u2014 never Files to Modify (whose paths must exist on disk\n  today) and never Files to Create (whose paths no phase has claimed yet).\n- **Files to Delete**, **Files to Move** and **File Budget** carry the same\n  meaning as in the Single Plan, per phase.\n- **What Next Plan Expects** is mandatory and chains: it must list exactly what\n  the next phase's Prerequisites will claim. The final phase states \"None \u2014\n  final phase.\"\n- **Acceptance Tests** and **Prose Files** are required in every phase and never\n  on the overview: the overview creates nothing, so a row written there would\n  belong to no executor.\n";
 
 // src/agents/prompts/focusedPlanTemplate.md
-var focusedPlanTemplate_default = "# Plan Template\n\nTemplates for plans consumed by `lightsout implement` and graded by the\ndeterministic structural lint (`plan grade`, structure) and the gap-check agent\n(`plan grade`, decisions). Three variants: **Single Plan** (standalone feature),\n**Overview Plan** (multi-phase context), and **Phase Plan** (one implementation\nscope under an overview).\n\n## Rules (all variants)\n\nThese mirror the structural-lint and gap-check rubrics \u2014 a plan violating them\nwill not reach A:\n\n- **No placeholders.** No `???`, `TBD`, `TODO`, or unresolved `{tokens}`. Every\n  open question must be resolved before the plan is written.\n- **Every referenced path verified.** Files listed under Files to Modify and\n  Patterns to Mirror must exist on disk at write time. Files to Create must not.\n- **Backticks around a path assert it exists.** Every backticked span that\n  names a file \u2014 anywhere in the plan, not only under the file headings \u2014 is\n  checked against the working tree and blocks if it is not there. A path\n  written to illustrate a shape rather than to name a real file goes in plain\n  prose, without backticks. Search patterns are exempt: a span holding `*` is\n  read as a glob, never as a claim.\n- **Earlier-phase files have their own heading.** In a phased plan, a file an\n  EARLIER PHASE creates is changed under `## Files to Modify from Earlier\n  Phases` \u2014 never `## Files to Modify` (whose paths exist on disk today) and\n  never `## Files to Create` (whose paths no phase has claimed). Deletes and\n  moves have their own headings too; every path under all five is checked and\n  counted.\n- **Hand-offs chain by name.** Each phase's `## What Next Plan Expects` and the\n  next phase's `## Prerequisites` must name the same files and exports, in\n  backticked spans \u2014 a file path or a bare symbol name. A name one phase hands\n  forward and the next never claims is a structural defect.\n- **Signatures, not vibes.** Services and modules define their methods and\n  signatures \u2014 never \"create a service for X\" without saying what it exposes.\n- **Explicit dependency graph.** Module definitions include imports/exports;\n  cross-module wiring is stated (exports match imports).\n- **Real script names.** Verification commands reference scripts that exist in\n  the target `package.json` (or the configured `scripts` overrides).\n- **Within the created-file ceiling.** Each plan (or each phase) CREATES at most\n  {{createdFileCeiling}} source files. This is a hard ceiling: a phase over it is split, and no\n  declaration raises it. A created file has to be specified \u2014 its signatures, its\n  exports, its behaviour written out \u2014 which is what makes creating that many of\n  them a full phase.\n- **Touched files counted and declared.** Each plan (or each phase) also states\n  how many source files it touches in total (created, modified, modified from an\n  earlier phase, deleted, and both sides of every move). Above {{fileLimit}} the plan is\n  still legal, but it must carry a `## File Budget` covering its real count,\n  because {{fileLimit}} is where the implementing agent stops. A plan or phase that\n  touches more than {{touchedFileCeiling}} source files is refused and must be split:\n  neither the config nor a `## File Budget` raises that ceiling. The one exemption\n  is a rename-only plan or phase \u2014 its `## Renames` section, plus the\n  `**Renames only:** yes` bullet on the overview. A phase that creates three files\n  and renames an import across two hundred is legitimate work only as a rename-only\n  phase, with the rename gathered into a phase of its own; a phase that authors\n  that many from scratch is not.\n- **What counts as a source file.** Every path the plan names except test files,\n  `index` barrels, and `.d.ts` declaration files. A hand-authored type-only\n  module \u2014 a `.ts` file exporting one interface \u2014 DOES count: it still has to be\n  specified and written.\n- **Prior art recorded.** Every newly-created exported symbol is justified in a\n  `## Prior Art` section: the searches run against existing exports that prove it\n  is new, or the existing symbol it mirrors/extends.\n- **Global constraints are engine-composed.** Every variant carries a\n  `## Global Constraints` section, and the engine composes its content from the\n  same decision records the writer was handed. Write no bullet under that\n  heading, and leave one a file already carries exactly as found \u2014 anything\n  written there is replaced.\n- **Rename-only phases.** A plan or phase whose whole work is renaming symbols\n  or paths may be declared rename-only with a `## Renames` section, one `-`\n  bullet per rename naming the old and the new text, each in backticks. Gather\n  renames into their own phase where you can, covering every file the rename\n  spans. A rename-only file creates nothing, and it is built without test\n  writing: the engine checks in code that every changed file differs from the\n  phase's start only by the declared renames. Each rename is a literal,\n  case-sensitive substitution of every occurrence, applied in the order listed,\n  to file paths and file contents alike \u2014 and no rename's new text may contain\n  any rename's old text, own or another's.\n{{documentationRule}}\n\n---\n\n## Single Plan\n\n```markdown\n# <Feature Name>\n\n## Context\n\n<1\u20132 paragraphs: what this feature does, why it is needed, and the relevant\ncurrent state of the codebase.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Prerequisites\n\n- <required state before implementation begins, or \"None\">\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <why this package is touched>\n\n<!-- Single-package repos: state \"Single-package repository.\" packagesDir is the\nrepo's package directory convention (default `packages`). -->\n\n## Files to Create\n\n### `<packagesDir>/<name>/src/path/to/file.ts`\n\n<Purpose. Key contents: exported functions/classes with full signatures,\nmethods, imports it needs, what it exports. Enough detail that a fresh-context\nagent writes the right code without guessing.>\n\n## Files to Modify\n\n### `<packagesDir>/<name>/src/path/to/existing.ts`\n\n<What changes and where: which function/section, what is added/removed/changed,\nand how it integrates with the created files.>\n\n## Files to Modify from Earlier Phases\n\n<Optional \u2014 omit the heading entirely when this plan has no such work. Every\npath here must be one an EARLIER PHASE creates, and must not exist on disk yet;\na file that is already there belongs under Files to Modify.>\n\n### `<packagesDir>/<name>/src/path/to/from-phase-one.ts`\n\n<Which phase creates it, and what changes here.>\n\n## Files to Delete\n\n<Optional \u2014 omit the heading entirely when this plan deletes nothing.>\n\n### `<packagesDir>/<name>/src/path/to/going.ts`\n\n<Why it goes, and what takes over its callers.>\n\n## Files to Move\n\n<Optional \u2014 omit the heading entirely when this plan moves nothing. Each\nsubheading names exactly two paths in backticks, old then new.>\n\n### `<packagesDir>/<name>/src/old/path.ts` \u2192 `<packagesDir>/<name>/src/new/path.ts`\n\n<What moves and why.>\n\n## File Budget\n\n<Optional \u2014 omit this section unless the plan touches more than {{fileLimit}}\nsource files. A single integer on its own line: the total source files this plan\ntouches. It must cover the real count, and it does NOT raise the created-file\nceiling, which is fixed at {{createdFileCeiling}}.>\n<Nor does it raise the touched-file ceiling, which is fixed at\n{{touchedFileCeiling}} for every plan that is not rename-only.>\n\n## Renames\n\n<Optional \u2014 omit the heading entirely unless this plan is rename-only. One\nbullet per rename, the old text then the new, each in backticks, in the order\nthey are applied. A rename-only plan lists nothing under Files to Create.>\n\n- `<oldName>` \u2192 `<newName>`\n\n## Patterns to Mirror\n\n- `<packagesDir>/<name>/src/path/to/analogous.ts` \u2014 <what to take from it:\n  structure, naming, error handling, etc.>\n\n## Prior Art\n\nOne line per newly-created exported symbol, recording the dedup search that\njustifies its newness:\n\n- `<symbol>` \u2014 searched <terms>, found none (new)\n- `<symbol>` \u2014 mirrors `<existing export>` (extends, does not duplicate)\n\n## Scope Boundaries\n\n**Do:**\n- <in-scope item>\n\n**Do NOT:**\n- <explicitly out-of-scope item \u2014 adjacent work the agent might be tempted to do>\n\n## Verification\n\n- `<resolved check command>` \u2014 types clean\n- `<resolved test-unit command>` \u2014 tests pass\n\n## What Next Plan Expects\n\n<For a standalone plan: \"None \u2014 standalone plan.\" Otherwise: the exact state a\nfollow-up plan can rely on \u2014 files that exist, exports available, behavior\nguaranteed.>\n```\n\n---\n\n## Overview Plan\n\nThe overview carries context shared by all phases. It is **not implemented\ndirectly** \u2014 it is passed alongside each phase to `lightsout implement` and to\n`plan grade` as context.\n\n```markdown\n# <Feature Name> \u2014 Overview\n\n## Context\n\n<What this feature does, why, and the relevant current state.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced. The\noverview holds the plan's complete history; each phase file points at it.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Architecture\n\n<How the pieces fit together across phases: data flow, module boundaries,\nshared types. A diagram or short prose map.>\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <role in this feature>\n\n## Phases\n\nThis table and `## Phase Declarations` below are two views of ONE phase record.\nState each phase once here \u2014 its number, its `phase<N>-<slug>.md` filename, a\none-line scope, and its two counts \u2014 and state its cross-boundary names once\nbelow. The engine normalises the number-and-filename pairing across both views\nbefore the lint runs, so checking one copy against the other by hand is not your\nwork.\n\nCreates and Touches are integer counts of source files \u2014 the same set the\ncreated-file ceiling and the touched-file budget are measured on (test files,\n`index` barrels and `.d.ts` declarations excluded; a hand-authored type-only\nmodule counts). Each must equal the count the phase file itself lists.\n\n| # | File | Scope | Creates | Touches |\n|---|------|-------|---------|---------|\n| 1 | `phase1-<slug>.md` | <one-line scope> | <n> | <n> |\n| 2 | `phase2-<slug>.md` | <one-line scope> | <n> | <n> |\n\n## Phase Declarations\n\nOne block per phase \u2014 the same phase record the table above lists, carrying what\nthe table cannot. List ONLY what crosses a phase boundary: the files a later\nphase builds against, the exported names later phases import, and the package\nscripts this phase adds. The phase file already holds its complete file\nlist \u2014 repeating it here creates two lists that drift the moment either is\nedited. Write `none` for a bullet with nothing to declare. The engine keeps each\nblock's number and filename agreeing with its table row, so write the\ncross-boundary bullets once and leave the pairing to it.\n\n### Phase 1 \u2014 `phase1-<slug>.md`\n\n- **Creates:** `<packagesDir>/<name>/src/path/to/file.ts`\n- **Exports:** `<symbol>`\n- **Scripts:** none\n\n### Phase 2 \u2014 `phase2-<slug>.md`\n\n- **Creates:** none\n- **Exports:** none\n- **Scripts:** none\n- **File budget:** <n>\n- **Renames only:** yes\n\n<!-- **File budget:** is optional: include it only when that phase file carries a\n`## File Budget`, and repeat the same integer. It must cover that phase's Touches\ncount, and it never raises the created-file ceiling, which is fixed at\n{{createdFileCeiling}}. It never raises the touched-file ceiling of\n{{touchedFileCeiling}} either; only a phase declared `**Renames only:** yes` is\nexempt from that one. **Renames only:** is optional too: write it, reading\n`yes`, only for a phase whose file carries a `## Renames` section. -->\n\n## Cross-Phase Dependencies\n\n- Phase 2 depends on Phase 1's <export/file/behavior>.\n```\n\n---\n\n## Phase Plan\n\nIdentical to the Single Plan with these adjustments:\n\n- Title: `# <Feature Name> \u2014 Phase <N>: <Phase Name>`\n- **Prerequisites** states the prior phase's end state: \"Phase <N-1> complete:\n  <files/exports that now exist>.\" Phase 1 states the pre-feature codebase state.\n- **Decision Log** is composed by the engine with\n  `lightsout plan sync-decisions`, exactly as in the Single Plan: write neither\n  the heading's content nor a row. A phase file's section points at the\n  overview's complete history rather than repeating it.\n- **Global Constraints** is composed by the engine in every phase, exactly as in\n  the Single Plan: the heading is required and its content is not yours to\n  write.\n- **Prior Art** is still mandatory \u2014 one line per newly-created exported symbol.\n- **Files to Modify from Earlier Phases** is where a file an earlier phase\n  creates is changed \u2014 never Files to Modify (whose paths must exist on disk\n  today) and never Files to Create (whose paths no phase has claimed yet).\n- **Files to Delete**, **Files to Move** and **File Budget** carry the same\n  meaning as in the Single Plan, per phase.\n- **What Next Plan Expects** is mandatory and chains: it must list exactly what\n  the next phase's Prerequisites will claim. The final phase states \"None \u2014\n  final phase.\"\n";
+var focusedPlanTemplate_default = "# Plan Template\n\nTemplates for plans consumed by `lightsout implement` and graded by the\ndeterministic structural lint (`plan grade`, structure) and the gap-check agent\n(`plan grade`, decisions). Three variants: **Single Plan** (standalone feature),\n**Overview Plan** (multi-phase context), and **Phase Plan** (one implementation\nscope under an overview).\n\n## Rules (all variants)\n\nThese mirror the structural-lint and gap-check rubrics \u2014 a plan violating them\nwill not reach A:\n\n- **No placeholders.** No `???`, `TBD`, `TODO`, or unresolved `{tokens}`. Every\n  open question must be resolved before the plan is written.\n- **Every referenced path verified.** Files listed under Files to Modify and\n  Patterns to Mirror must exist on disk at write time. Files to Create must not.\n- **Backticks around a path assert it exists.** Every backticked span that\n  names a file \u2014 anywhere in the plan, not only under the file headings \u2014 is\n  checked against the working tree and blocks if it is not there. A path\n  written to illustrate a shape rather than to name a real file goes in plain\n  prose, without backticks. Search patterns are exempt: a span holding `*` is\n  read as a glob, never as a claim.\n- **Earlier-phase files have their own heading.** In a phased plan, a file an\n  EARLIER PHASE creates is changed under `## Files to Modify from Earlier\n  Phases` \u2014 never `## Files to Modify` (whose paths exist on disk today) and\n  never `## Files to Create` (whose paths no phase has claimed). A file an\n  earlier phase's folder move carried is named the same way, by its new path\n  under `## Files to Modify from Earlier Phases`. Deletes and\n  moves have their own headings too; every path under all five is checked and\n  counted.\n- **Hand-offs chain by name.** Each phase's `## What Next Plan Expects` and the\n  next phase's `## Prerequisites` must name the same files and exports, in\n  backticked spans \u2014 a file path or a bare symbol name. A name one phase hands\n  forward and the next never claims is a structural defect.\n- **Signatures, not vibes.** Services and modules define their methods and\n  signatures \u2014 never \"create a service for X\" without saying what it exposes.\n- **Explicit dependency graph.** Module definitions include imports/exports;\n  cross-module wiring is stated (exports match imports).\n- **Real script names.** Verification commands reference scripts that exist in\n  the target `package.json` (or the configured `scripts` overrides).\n- **Within the created-file ceiling.** Each plan (or each phase) CREATES at most\n  {{createdFileCeiling}} source files. This is a hard ceiling: a phase over it is split, and no\n  declaration raises it. A created file has to be specified \u2014 its signatures, its\n  exports, its behaviour written out \u2014 which is what makes creating that many of\n  them a full phase.\n- **Touched files counted and declared.** Each plan (or each phase) also states\n  how many source files it touches in total (created, modified, modified from an\n  earlier phase, deleted, and both sides of every move). A folder move counts\n  every file it carries, on both sides. Above {{fileLimit}} the plan is\n  still legal, but it must carry a `## File Budget` covering its real count,\n  because {{fileLimit}} is where the implementing agent stops. A plan or phase that\n  touches more than {{touchedFileCeiling}} source files is refused and must be split:\n  neither the config nor a `## File Budget` raises that ceiling. There are two\n  exemptions. One is a rename-only plan or phase \u2014 its `## Renames` section, plus the\n  `**Renames only:** yes` bullet on the overview. The other is a\n  move-folders-and-files plan or phase \u2014 its `## Build Mode` section reading\n  `move-folders-and-files`, plus the `**Moves folders and files only:** yes`\n  bullet on the overview. A phase that creates three files\n  and renames an import across two hundred is legitimate work only as a rename-only\n  phase, with the rename gathered into a phase of its own; a phase that authors\n  that many from scratch is not. Likewise, a phase that relocates a folder of\n  three hundred files is legitimate work only as a move-folders-and-files phase,\n  with the move gathered into a phase of its own.\n- **What counts as a source file.** Every path the plan names except test files,\n  `index` barrels, and `.d.ts` declaration files. A hand-authored type-only\n  module \u2014 a `.ts` file exporting one interface \u2014 DOES count: it still has to be\n  specified and written.\n- **Prior art recorded.** Every newly-created exported symbol is justified in a\n  `## Prior Art` section: the searches run against existing exports that prove it\n  is new, or the existing symbol it mirrors/extends.\n- **Global constraints are engine-composed.** Every variant carries a\n  `## Global Constraints` section, and the engine composes its content from the\n  same decision records the writer was handed. Write no bullet under that\n  heading, and leave one a file already carries exactly as found \u2014 anything\n  written there is replaced.\n- **Rename-only phases.** A plan or phase whose whole work is renaming symbols\n  or paths may be declared rename-only with a `## Renames` section, one `-`\n  bullet per rename naming the old and the new text, each in backticks. Gather\n  renames into their own phase where you can, covering every file the rename\n  spans. A rename-only file creates nothing, and it is built without test\n  writing: the engine checks in code that every changed file differs from the\n  phase's start only by the declared renames. Each rename is a literal,\n  case-sensitive substitution of every occurrence, applied in the order listed,\n  to file paths and file contents alike \u2014 and no rename's new text may contain\n  any rename's old text, own or another's.\n- **Move-folders-and-files phases.** A plan or phase whose whole work is moving\n  folders and files may be declared move-folders-and-files with a `## Build Mode`\n  section whose body is the single line `move-folders-and-files`. Its\n  `## Files to Move` headings name file moves and folder moves: a folder move\n  names two folders, each ending in `/`, never one file and one folder. It lists\n  nothing under Files to Create, Files to Modify or Files to Delete, carries no\n  `## Renames`, and states no Acceptance Tests rows. It needs no `## File Budget`\n  and is exempt from the touched-file ceiling. A move and feature work are two\n  phases. A destination folder must not already exist, and the moves in one\n  phase must not overlap, chain or swap. It is built without test writing,\n  without the reviewing agent and without refactor: the engine instead checks in\n  code that every removed file pairs with an added file at its declared\n  destination, that no declared move left a file at its old path, and that every\n  changed file differs from the phase's start only in the paths that point at\n  moved files, every other character staying as it was. A file that is not text,\n  such as a binary, may only move unchanged.\n{{documentationRule}}\n\n---\n\n## Single Plan\n\n```markdown\n# <Feature Name>\n\n## Context\n\n<1\u20132 paragraphs: what this feature does, why it is needed, and the relevant\ncurrent state of the codebase.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Prerequisites\n\n- <required state before implementation begins, or \"None\">\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <why this package is touched>\n\n<!-- Single-package repos: state \"Single-package repository.\" packagesDir is the\nrepo's package directory convention (default `packages`). -->\n\n## Files to Create\n\n### `<packagesDir>/<name>/src/path/to/file.ts`\n\n<Purpose. Key contents: exported functions/classes with full signatures,\nmethods, imports it needs, what it exports. Enough detail that a fresh-context\nagent writes the right code without guessing.>\n\n## Files to Modify\n\n### `<packagesDir>/<name>/src/path/to/existing.ts`\n\n<What changes and where: which function/section, what is added/removed/changed,\nand how it integrates with the created files.>\n\n## Files to Modify from Earlier Phases\n\n<Optional \u2014 omit the heading entirely when this plan has no such work. Every\npath here must be one an EARLIER PHASE creates, and must not exist on disk yet;\na file that is already there belongs under Files to Modify.>\n\n### `<packagesDir>/<name>/src/path/to/from-phase-one.ts`\n\n<Which phase creates it, and what changes here.>\n\n## Files to Delete\n\n<Optional \u2014 omit the heading entirely when this plan deletes nothing.>\n\n### `<packagesDir>/<name>/src/path/to/going.ts`\n\n<Why it goes, and what takes over its callers.>\n\n## Files to Move\n\n<Optional \u2014 omit the heading entirely when this plan moves nothing. Each\nsubheading names two files or two folders in backticks, old then new, a folder\nwritten with a trailing `/`.>\n\n### `<packagesDir>/<name>/src/old/path.ts` \u2192 `<packagesDir>/<name>/src/new/path.ts`\n\n<What moves and why.>\n\n### `<packagesDir>/<name>/src/old/folder/` \u2192 `<packagesDir>/<name>/src/new/folder/`\n\n<What moves and why.>\n\n## File Budget\n\n<Optional \u2014 omit this section unless the plan touches more than {{fileLimit}}\nsource files. A single integer on its own line: the total source files this plan\ntouches. It must cover the real count, and it does NOT raise the created-file\nceiling, which is fixed at {{createdFileCeiling}}.>\n<Nor does it raise the touched-file ceiling, which is fixed at\n{{touchedFileCeiling}} for every plan that is neither rename-only nor\nmove-folders-and-files.>\n\n## Renames\n\n<Optional \u2014 omit the heading entirely unless this plan is rename-only. One\nbullet per rename, the old text then the new, each in backticks, in the order\nthey are applied. A rename-only plan lists nothing under Files to Create.>\n\n- `<oldName>` \u2192 `<newName>`\n\n## Build Mode\n\n<Optional \u2014 omit the heading entirely unless this plan is\nmove-folders-and-files. Its body is the one line below. A plan carrying it\ncarries no `## Renames`.>\n\nmove-folders-and-files\n\n## Patterns to Mirror\n\n- `<packagesDir>/<name>/src/path/to/analogous.ts` \u2014 <what to take from it:\n  structure, naming, error handling, etc.>\n\n## Prior Art\n\nOne line per newly-created exported symbol, recording the dedup search that\njustifies its newness:\n\n- `<symbol>` \u2014 searched <terms>, found none (new)\n- `<symbol>` \u2014 mirrors `<existing export>` (extends, does not duplicate)\n\n## Scope Boundaries\n\n**Do:**\n- <in-scope item>\n\n**Do NOT:**\n- <explicitly out-of-scope item \u2014 adjacent work the agent might be tempted to do>\n\n## Verification\n\n- `<resolved check command>` \u2014 types clean\n- `<resolved test-unit command>` \u2014 tests pass\n\n## What Next Plan Expects\n\n<For a standalone plan: \"None \u2014 standalone plan.\" Otherwise: the exact state a\nfollow-up plan can rely on \u2014 files that exist, exports available, behavior\nguaranteed.>\n```\n\n---\n\n## Overview Plan\n\nThe overview carries context shared by all phases. It is **not implemented\ndirectly** \u2014 it is passed alongside each phase to `lightsout implement` and to\n`plan grade` as context.\n\n```markdown\n# <Feature Name> \u2014 Overview\n\n## Context\n\n<What this feature does, why, and the relevant current state.>\n\n## Decision Log\n\nComposed by the engine with `lightsout plan sync-decisions` from this plan's\nsaved decision records. Write neither this heading's content nor a row: the\nengine puts the section in place, and anything written here is replaced. The\noverview holds the plan's complete history; each phase file points at it.\n\n## Global Constraints\n\nComposed by the engine from this plan's saved decision records, exactly as the\nDecision Log above is. Write neither this heading's content nor a bullet: the\nengine puts the section in place, and anything written here is replaced.\n\n## Architecture\n\n<How the pieces fit together across phases: data flow, module boundaries,\nshared types. A diagram or short prose map.>\n\n## Affected Packages\n\n- `<packagesDir>/<name>` \u2014 <role in this feature>\n\n## Phases\n\nThis table and `## Phase Declarations` below are two views of ONE phase record.\nState each phase once here \u2014 its number, its `phase<N>-<slug>.md` filename, a\none-line scope, and its two counts \u2014 and state its cross-boundary names once\nbelow. The engine normalises the number-and-filename pairing across both views\nbefore the lint runs, so checking one copy against the other by hand is not your\nwork.\n\nCreates and Touches are integer counts of source files \u2014 the same set the\ncreated-file ceiling and the touched-file budget are measured on (test files,\n`index` barrels and `.d.ts` declarations excluded; a hand-authored type-only\nmodule counts). Each must equal the count the phase file itself lists.\n\n| # | File | Scope | Creates | Touches |\n|---|------|-------|---------|---------|\n| 1 | `phase1-<slug>.md` | <one-line scope> | <n> | <n> |\n| 2 | `phase2-<slug>.md` | <one-line scope> | <n> | <n> |\n\n## Phase Declarations\n\nOne block per phase \u2014 the same phase record the table above lists, carrying what\nthe table cannot. List ONLY what crosses a phase boundary: the files a later\nphase builds against, the exported names later phases import, and the package\nscripts this phase adds. The phase file already holds its complete file\nlist \u2014 repeating it here creates two lists that drift the moment either is\nedited. Write `none` for a bullet with nothing to declare. The engine keeps each\nblock's number and filename agreeing with its table row, so write the\ncross-boundary bullets once and leave the pairing to it.\n\n### Phase 1 \u2014 `phase1-<slug>.md`\n\n- **Creates:** `<packagesDir>/<name>/src/path/to/file.ts`\n- **Exports:** `<symbol>`\n- **Scripts:** none\n\n### Phase 2 \u2014 `phase2-<slug>.md`\n\n- **Creates:** none\n- **Exports:** none\n- **Scripts:** none\n- **File budget:** <n>\n- **Renames only:** yes\n\n<!-- **File budget:** is optional: include it only when that phase file carries a\n`## File Budget`, and repeat the same integer. It must cover that phase's Touches\ncount, and it never raises the created-file ceiling, which is fixed at\n{{createdFileCeiling}}. It never raises the touched-file ceiling of\n{{touchedFileCeiling}} either; only a phase declared `**Renames only:** yes` or\n`**Moves folders and files only:** yes` is exempt from that one. **Renames only:**\nis optional too: write it, reading `yes`, only for a phase whose file carries a\n`## Renames` section. **Moves folders and files only:** is optional as well:\nwrite it, reading `yes`, only for a phase whose file carries a `## Build Mode`\nsection reading `move-folders-and-files`, never beside **Renames only:** in one\nblock, and with no **File budget:**. Such a phase's **Creates:** may name the\ndestination folder exactly as its `## Files to Move` heading writes it, rather\nthan every file the folder carries. -->\n\n## Cross-Phase Dependencies\n\n- Phase 2 depends on Phase 1's <export/file/behavior>.\n```\n\n---\n\n## Phase Plan\n\nIdentical to the Single Plan with these adjustments:\n\n- Title: `# <Feature Name> \u2014 Phase <N>: <Phase Name>`\n- **Prerequisites** states the prior phase's end state: \"Phase <N-1> complete:\n  <files/exports that now exist>.\" Phase 1 states the pre-feature codebase state.\n- **Decision Log** is composed by the engine with\n  `lightsout plan sync-decisions`, exactly as in the Single Plan: write neither\n  the heading's content nor a row. A phase file's section points at the\n  overview's complete history rather than repeating it.\n- **Global Constraints** is composed by the engine in every phase, exactly as in\n  the Single Plan: the heading is required and its content is not yours to\n  write.\n- **Prior Art** is still mandatory \u2014 one line per newly-created exported symbol.\n- **Files to Modify from Earlier Phases** is where a file an earlier phase\n  creates is changed \u2014 never Files to Modify (whose paths must exist on disk\n  today) and never Files to Create (whose paths no phase has claimed yet).\n- **Files to Delete**, **Files to Move** and **File Budget** carry the same\n  meaning as in the Single Plan, per phase.\n- **What Next Plan Expects** is mandatory and chains: it must list exactly what\n  the next phase's Prerequisites will claim. The final phase states \"None \u2014\n  final phase.\"\n";
 
 // src/agents/prompts/focusedPlanWriter.md
 var focusedPlanWriter_default = '# Role: Plan Writer\n\nYou draft implementation plan file(s) that a fresh-context agent can implement\nwithout guessing. You work autonomously from the task message; you write the\nplan file(s) to disk and your final message is machine-parsed \u2014 one JSON report,\nnot prose for a human.\n\nYou deliberately receive **only** a decisions record, a verified facts list, and\nthe evidence the engine collected for you \u2014 no planning conversation. If you\ncannot draft the plan from those inputs alone, the inputs are incomplete: report\nwhat is missing and terminate. Do not fill gaps with guesses \u2014 a gap you paper\nover becomes a failure in the implementing agent.\n\n## Input\n\nThe task message provides:\n\n- **Feature request** \u2014 what is being built.\n- **Output files** \u2014 where to write each plan file (absolute paths) and which\n  template variant (`single`, `overview`, or `phase`) applies to each.\n- **Collected source evidence** \u2014 the real contents of the files your assignment\n  touches, read off disk by the engine from the paths the verified facts\n  recorded. Each block is tied to the exact file contents it was taken from, so\n  what it shows is what was there. What it does not show is not a claim that the\n  file holds nothing else: a block may carry selected definitions rather than a\n  whole file, and it says so when it does. Absent entirely means this spawn was\n  given no evidence, not that the files are empty.\n- **Prior art census** \u2014 the existing exported names that match, by name, the\n  symbols your assignment says you will create. It is a mechanical name\n  comparison over the repository\'s exports, not a finding: a match is a question\n  to answer, and no match is no proof that differently named functionality is\n  absent. Absent entirely means no census was run for this spawn.\n- **Decisions record** \u2014 the design decisions (JSON), with chosen answers and\n  rationale. Each row carries a `source` naming where the decision came from;\n  `Brainstorm` rows were settled in a separate design conversation before\n  planning began \u2014 the engine merges them in, and they are as binding as the\n  plan\'s own.\n- **Verified facts** \u2014 codebase facts already verified on disk (JSON): affected\n  packages, files to modify, patterns to mirror, integration points, scripts,\n  naming conventions. You receive these whole, never trimmed to your assignment:\n  they carry the architectural map, and which part of a map matters to one phase\n  is a judgment, not a filter.\n- **Code standards** (optional) \u2014 supplemental conventions the plan\'s file\n  placements, naming, signatures, and patterns should conform to. Absence is\n  fine; this is not a hard gate.\n\nThe plan template is inlined in your system prompt below. Follow the variant\nthat each output file names.\n\n## Workflow\n\n### 1. Validate inputs\n\nConfirm the message carries a feature request, output path(s) with variants, a\ndecisions record, and a facts list. If any is missing, report the error result\nbelow and terminate \u2014 write no files.\n\n### 2. Work from the collected evidence\n\nThe collected source evidence is your starting point, not a summary to re-derive.\nThe engine read those files once for this whole draft; re-reading a file the\nevidence already covers is the exact cost this role exists to remove, and on a\nphased plan it is paid once per phase. So:\n\n- Take every exported name, signature and integration point you reference from\n  the evidence. Never transcribe a signature the evidence does not show \u2014 not\n  from the facts list, not from memory, not from a name that looks familiar.\n- You keep your file read and search tools, and you use them for what the\n  evidence does not answer: a file no block covers, a caller the blocks do not\n  reach, the rest of a file whose block carried only selected definitions.\n- Verify each file you plan to create does **not** already exist. That check is\n  cheap and the evidence cannot stand in for it, because a path nobody recorded\n  has no block.\n- Where what the evidence shows and what the facts state cannot be reconciled,\n  and reading the source does not settle it, report the discrepancies and\n  terminate. An unresolved discrepancy stops the draft; it never becomes a guess.\n- A referenced path that is not on disk, or a script that does not exist, is the\n  same stop: report and terminate.\n\n### 3. Prior art (from the census)\n\nDo not search the repository once per symbol you intend to create \u2014 the engine\nalready ran that comparison and handed you the result.\n\n- For each planned symbol the census answers, state the reuse decision the result\n  implies: mirror the existing export, extend it, or say why it cannot serve and\n  a new symbol is warranted. A real collision is worth one targeted read of the\n  colliding export before you decide.\n- A census match is a name match. It is not proof of duplication, and no match is\n  not proof that functionality under a different name is absent. That judgment is\n  yours, and it is why you still think about reuse at all.\n- A planned symbol the census does not cover \u2014 typically one in a file no\n  declaration names \u2014 gets **one** targeted search, not a search per symbol.\n- Record the outcome in the plan\'s `## Prior Art` section, one line per new\n  symbol: what was searched or compared, what it found, and the existing symbol\n  it mirrors where there is one.\n\n### 4. Write the plan\n\nWrite each output file following its template variant exactly. While writing:\n\n- Resolve every detail from the decisions record, the facts, and the collected\n  evidence. No `???`, `TBD`, `TODO`, or unresolved `{tokens}` \u2014 if a detail\n  cannot be resolved from your inputs, that is a step 1/2 failure: report and\n  terminate.\n- Define methods and signatures for every service/module the plan creates.\n- Make the dependency graph explicit: imports/exports per created file,\n  cross-module wiring stated (exports match imports).\n- Make scope boundaries concrete \u2014 name the adjacent work the implementing agent\n  must NOT do.\n- State human-facing copy \u2014 an error message, a progress line, a warning \u2014 as\n  what it has to tell the reader, never as the sentence to reproduce. Quoting\n  the wording reads as an instruction to pin it exactly, which the standards\n  forbid for copy, so every agent downstream stops to re-decide the same\n  conflict. Name the parts that carry meaning \u2014 a path, a command, an\n  identifier \u2014 and leave the connecting prose to the implementer.\n- For multi-phase plans, chain the contract: each phase\'s "What Next Plan\n  Expects" must list exactly what the next phase\'s Prerequisites claim.\n- **Leave every engine-composed section alone.** The engine composes these from\n  the same records you were handed, and replaces whatever stands where they go:\n  - `## Decision Log` \u2014 write no heading content and no row.\n  - `## Global Constraints` \u2014 write no bullet. The engine reads the decisions\n    record for it.\n  - On an overview, the pairing of each `## Phases` row\'s number and filename\n    with its `### Phase <N> \u2014 ` declaration heading. You state each phase\'s\n    scope, its estimated counts and its cross-boundary declarations once; the\n    engine makes the two views agree.\n\n  For each of them: write no content, and where a file you are editing already\n  carries the section, leave it exactly as you found it.\n- Keep each plan (or phase) within 40 source files to create/modify.\n- When the task message carries an `## Acceptance-test ledger` section, write the\n  contract shape: every created file\'s full exported signatures and the file it\n  mirrors, one `## Acceptance Tests` row per acceptance criterion, every file\n  with no testable behaviour listed under `## Prose Files` with its reason, and\n  no narration of inner implementation. A behaviour expectation is a ledger row,\n  not a paragraph.\n\n### 5. Self-review\n\nIf the task message includes a `## Self-lint` section, run its commands first\n(Bash), in the order it lists them: where it carries a sync command, that one\ncomposes every engine-owned section \u2014 the Decision Log, the Global Constraints,\nand the phase row and declaration pairing \u2014 and runs before the lint, so the\nlint never reports a section you are forbidden to write. Fix every finding the\nlint prints in the plan file(s) and re-run until it exits 0; if a re-run prints\nthe identical findings twice, stop looping and continue. If a command itself\ncannot be executed, skip it \u2014 the engine syncs and lints your output either way.\n\nThen check each written file against the grading criteria: every referenced\nexisting path verified; every created file listed with signatures and\nimports/exports; no placeholders; scope boundaries explicit; prerequisites\nstated; verification commands resolvable; "What Next Plan Expects" present; no\ncontent authored for any engine-composed section; a `## Prior Art` line for\nevery new symbol. If a "Code standards" section was provided, confirm the plan\'s\nplacements and naming conform to it. If an acceptance-test ledger was asked for,\nconfirm every row names a test file and a test name, and that every created\nsource file is either reached by a row or listed under `## Prose Files` with a\nreason.\n\n## Phased plans \u2014 hard naming rule\n\nA phased plan is drafted in two stages, and the task message tells you which\nstage you are in.\n\n- **Overview only** (a `## Overview only` section is present) \u2014 author\n  `overview.md` and nothing else. Its `## Phases` table and its\n  `## Phase Declarations` blocks are what the phase writers are given, so a\n  phase you do not declare is never authored at all.\n- **Phase authoring** (a `## Phase authoring` section is present) \u2014 author\n  exactly one `phase<N>-<slug>.md`, against the settled overview and the\n  declaration row you are handed. Satisfy that declaration exactly: create every\n  path it names, export every name it names, add every script it names. Do NOT\n  re-decide the breakdown, renumber anything, or write another phase\'s file.\n  Every sibling phase is being authored concurrently, so none of them is on disk\n  for you to read \u2014 the declarations you are given are the whole of what you may\n  rely on.\n\nThe file names are **required**, not stylistic \u2014 `plan grade` finds the files\n**by name**: `overview.md` is read as context, and each `phase<N>-<slug>.md` is\ngraded. That directory also holds the plan\'s working files (notes, facts,\ndecisions, records), so anything not matching those names is ignored. The engine\ndictates the exact output path in both modes; report **every** written path in\n`filesWritten`.\n\nA phase spawn is given no `## Self-lint` section, and that is deliberate rather\nthan an oversight: its sibling phases are not on disk yet, so a lint run there\nwould report provenance and hand-off findings that are artefacts of when it\nlooked, not defects. The engine lints and converges the finished set afterwards.\n\n## Report \u2014 your entire final message is one JSON object\n\nWrite the plan file(s) to disk at the given paths **first**, then emit exactly\none JSON `PlanDraftReport` object as your entire final message. Output ONLY the\nJSON \u2014 no fences, no surrounding text. Your message starts with `{` and ends\nwith `}`.\n\n```\n{\n	"status": "drafted",\n	"filesWritten": [\n		{ "path": "<absolute path written>", "variant": "single|overview|phase", "scope": "<phase slug, or \'single\'>" }\n	],\n	"decisionsApplied": <number>,\n	"assumptions": ["<any input you had to treat as an assumption>"],\n	"discrepancies": []\n}\n```\n\nIf inputs were invalid or facts failed verification, write **no** files and\nreport the error result \u2014 `status` is `"error"` and `discrepancies` lists what\nis wrong:\n\n```\n{\n	"status": "error",\n	"filesWritten": [],\n	"decisionsApplied": 0,\n	"assumptions": [],\n	"discrepancies": ["facts reference src/x.ts \u2014 does not exist on disk", "..."]\n}\n```\n\n## Operational rules\n\n- Do not ask clarifying questions \u2014 proceed immediately; unresolvable inputs are\n  reported via the error result, not asked about.\n- Write **only** the plan files at the provided output paths. Do not create or\n  modify source files, tests, or anything else.\n- Do not implement any part of the feature. Do not create commits or branches.\n- You run in a focused environment: no external tool servers are connected, no\n  skill or slash-command catalogue is loaded, and you have no delegation or\n  workflow tooling. Do not attempt to hand work to another agent or to invoke a\n  skill \u2014 there is none to invoke, and trying wastes the spawn. Your\n  capabilities are reading files, searching the repository, and the check\n  commands the task message permits.\n- Respect all instructions in the project\'s CLAUDE.md files.\n';
@@ -152205,9 +153178,9 @@ var planWriterEnvironment = {
 };
 
 // src/plan/internal/common/paths/verifyDraftedFiles.ts
-import { isAbsolute as isAbsolute2, join as join109 } from "node:path";
+import { isAbsolute as isAbsolute4, join as join112 } from "node:path";
 var verifyDraftedFiles = async ({ cwd, filesWritten }) => {
-  const planPaths = filesWritten.map((file2) => isAbsolute2(file2.path) ? file2.path : join109(cwd, file2.path));
+  const planPaths = filesWritten.map((file2) => isAbsolute4(file2.path) ? file2.path : join112(cwd, file2.path));
   if (planPaths.length === 0) {
     return { error: "plan-writer reported drafted but listed no files written" };
   }
@@ -152343,7 +153316,7 @@ var spawnPhase = async ({
     invocation: buildFocusedPlanWriterInvocation({
       facts,
       decisions,
-      outputs: [{ path: join110(workspaceDir, declaration.file), variant: PlanVariant.Phase }],
+      outputs: [{ path: join113(workspaceDir, declaration.file), variant: PlanVariant.Phase }],
       overviewText,
       declaration,
       previousDeclaration,
@@ -152443,10 +153416,10 @@ var authorFocusedPlanFiles = async ({
 var renderDraftEvidenceBrief = ({ evidence }) => renderEvidenceBrief({ index: evidence, paths: evidence.entries.map((entry) => entry.path) });
 
 // src/plan/draft/internal/common/utils/getAdvisoryFindings.ts
-var getAdvisoryFindings = ({ findings }) => findings.filter((finding3) => finding3.severity === FindingSeverity.Advisory);
+var getAdvisoryFindings = ({ findings }) => findings.filter((finding6) => finding6.severity === FindingSeverity.Advisory);
 
 // src/plan/draft/repairPlanStructure.ts
-import { join as join117 } from "node:path";
+import { join as join121 } from "node:path";
 
 // src/agents/prompts/planRepair.md
 var planRepair_default = '# Role: Plan Repairer\n\nYou fix an existing drafted plan in place. You do NOT re-author it. You work\nautonomously from the task message; you Edit the listed plan file(s) and your\nfinal message is machine-parsed \u2014 one JSON report, not prose for a human.\n\n## Input\n\nThe task message provides:\n\n- **Plan files to repair** \u2014 the absolute path(s) of the drafted plan file(s)\n  to Read and Edit in place.\n- **Structural findings to resolve** \u2014 the typed structural defects the\n  deterministic lint flagged, each with its exact `fix` string.\n- **Reference files** (Read on demand) \u2014 absolute paths of the plan\'s own\n  decisions (`decisions.json`, the design decisions), the brainstorm decisions\n  (`brainstorm-decisions.json` \u2014 present only when the work came from a\n  `/brainstorm` hand-off, holding decisions settled before planning began),\n  and the verified facts (`facts.json`, codebase facts already verified on\n  disk). The two decision files together are the decisions record: a fix that\n  rebuilds a section derived from decisions (Global Constraints above all) must\n  draw on the rows in both \u2014 and where two of them answer one question,\n  the last row sharing a `question` is the live one. When a finding\'s fix\n  requires content \u2014 a placeholder to fill, a missing section to write \u2014 the\n  content MUST come from Reading these files, never from a guess. Findings\n  whose `fix` string is complete need no Read at all.\n\n## Workflow\n\n1. Read each listed plan file.\n2. For each finding, apply the smallest edit that resolves it \u2014 apply the\n   finding\'s `fix` string literally where it is concrete; where the fix\n   requires content (a placeholder to fill, a missing section to write),\n   resolve it by Reading the reference files.\n3. Hard rule: **minimal edits resolving only the flagged findings \u2014 do not\n   restructure, re-order, re-word, or touch any content the findings do not\n   name.** The `## Decision Log` is outside every edit you may make: the engine\n   composes it, and a finding that names it is reported rather than fixed.\n4. If a finding cannot be resolved from the inputs, stop and report status\n   `error` with the reason per finding in `discrepancies` \u2014 never paper over\n   it.\n\n## Report \u2014 your entire final message is one JSON object\n\nEmit exactly one JSON `PlanFixReport` object as your entire final message.\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts\nwith `{` and ends with `}`.\n\n```\n{\n	"status": "fixed",\n	"filesEdited": ["<absolute path edited>"],\n	"discrepancies": []\n}\n```\n\nIf a finding cannot be resolved from the inputs, report the error result \u2014\n`status` is `"error"` and `discrepancies` states why, per finding:\n\n```\n{\n	"status": "error",\n	"filesEdited": [],\n	"discrepancies": ["<finding> \u2014 cannot be resolved because <reason>", "..."]\n}\n```\n\n## Operational rules\n\n- Edit **only** the listed plan files; never source files, tests, or anything\n  else.\n- The `## Decision Log` section is composed by the engine from the saved\n  decision records. Never edit, re-order or re-word it by hand \u2014 not even to\n  resolve a finding that names it. Report such a finding in `discrepancies`\n  instead; the engine composes the section again itself.\n- Do not implement any part of the feature. Do not create commits or branches.\n- Do not ask clarifying questions \u2014 proceed immediately; unresolvable findings\n  are reported via the error result, not asked about.\n- Respect all instructions in the project\'s CLAUDE.md files.\n';
@@ -152469,8 +153442,8 @@ var buildPlanRepairInvocation = ({
   factsPath,
   docs
 }) => {
-  const findingLines = findings.map((finding3) => `- [${finding3.check}] ${finding3.location} \u2014 ${finding3.issue}
-  fix: ${finding3.fix}`);
+  const findingLines = findings.map((finding6) => `- [${finding6.check}] ${finding6.location} \u2014 ${finding6.issue}
+  fix: ${finding6.fix}`);
   const referenceLines = [
     `- Decisions record: ${decisionsPath}`,
     ...brainstormDecisionsPath ? [`- Brainstorm decisions (settled during brainstorm, before planning began): ${brainstormDecisionsPath}`] : [],
@@ -152510,17 +153483,17 @@ var PlanFixReport = external_exports.object({
 });
 
 // src/plan/draft/internal/common/utils/getFindingSetKey.ts
-var getFindingSetKey = ({ findings }) => getBlockingFindings({ findings }).map((finding3) => [finding3.check, finding3.issue].join("|")).sort().join("\n");
+var getFindingSetKey = ({ findings }) => getBlockingFindings({ findings }).map((finding6) => [finding6.check, finding6.issue].join("|")).sort().join("\n");
 
 // src/plan/internal/common/constants/maxPlanRepairAttempts.ts
 var maxPlanRepairAttempts = 3;
 
 // src/plan/draft/internal/common/utils/convergeFindings.ts
 var convergeFindings = async ({ name, verb, findingNoun, check: check2, unreadableError, runAttempt, progress }) => {
-  const unreadable2 = { status: PlanRunStatus.Failed, error: unreadableError };
+  const unreadable3 = { status: PlanRunStatus.Failed, error: unreadableError };
   let findings = await check2();
   if (findings === void 0) {
-    return unreadable2;
+    return unreadable3;
   }
   for (let attempt = 1; attempt <= maxPlanRepairAttempts && getBlockingFindings({ findings }).length > 0; attempt += 1) {
     const blocking = getBlockingFindings({ findings });
@@ -152538,7 +153511,7 @@ var convergeFindings = async ({ name, verb, findingNoun, check: check2, unreadab
     }
     findings = await check2();
     if (findings === void 0) {
-      return unreadable2;
+      return unreadable3;
     }
     if (declined) {
       break;
@@ -152551,13 +153524,13 @@ var convergeFindings = async ({ name, verb, findingNoun, check: check2, unreadab
   return { status: PlanRunStatus.Complete, findings };
 };
 
-// src/plan/draft/repairMechanicalFindings.ts
-import { readFile as readFile48 } from "node:fs/promises";
-import { basename as basename20 } from "node:path";
+// src/plan/sections/syncPhaseSectionsFromFiles.ts
+import { readFile as readFile50 } from "node:fs/promises";
+import { basename as basename21 } from "node:path";
 
 // src/plan/draft/stampPhaseCounts.ts
-import { readFile as readFile47, writeFile as writeFile21 } from "node:fs/promises";
-import { basename as basename19 } from "node:path";
+import { readFile as readFile49 } from "node:fs/promises";
+import { basename as basename20 } from "node:path";
 
 // src/plan/internal/common/paths/isPlanSourceFile.ts
 var isPlanSourceFile = ({ path }) => !isTestFile({ path }) && !/(^|\/)index\.[jt]sx?$/.test(path) && !/\.d\.ts$/.test(path);
@@ -152584,6 +153557,237 @@ var getPlanTouchedPaths = ({ plan }) => {
   const created = plan.createPaths.filter((path) => isPlanSourceFile({ path }));
   const touched = getPlanNamedPaths({ plan }).filter((path) => isPlanSourceFile({ path }));
   return { created: [...new Set(created)], touched: [...new Set(touched)] };
+};
+
+// src/plan/internal/common/utils/readPhaseFiles.ts
+import { readFile as readFile48 } from "node:fs/promises";
+import { basename as basename19 } from "node:path";
+var phaseNumber = ({ base }) => base === "overview.md" ? 0 : Number(/^phase(\d+)-/.exec(base)?.[1] ?? 1);
+var readPhaseFiles = async ({ planPaths }) => {
+  const phases = [];
+  const findings = [];
+  for (const planPath of planPaths) {
+    const content = await readFile48(planPath, "utf8").catch(() => void 0);
+    const base = basename19(planPath);
+    if (content === void 0) {
+      findings.push({
+        check: StructuralCheck.SectionsPresent,
+        severity: FindingSeverity.Blocking,
+        phase: base,
+        issue: "plan file could not be read",
+        location: planPath,
+        fix: "ensure the draft wrote the plan file at this path"
+      });
+      continue;
+    }
+    phases.push({ path: planPath, base, number: phaseNumber({ base }), plan: parsePlan({ content, base }) });
+  }
+  return { phases, findings };
+};
+
+// src/plan/internal/expandFolderMoves/expandFolderMoves.ts
+import { readdir as readdir21, stat as stat14 } from "node:fs/promises";
+import { join as join114, relative as relative14 } from "node:path";
+
+// src/common/git/readGitTrackedFiles.ts
+var readGitTrackedFiles = async ({ cwd, folders }) => {
+  const pathspecs = folders.map((folder) => quoteShellArgument({ argument: folder })).join(" ");
+  const listing = await runCommand({ command: `git --literal-pathspecs ls-files -z -- ${pathspecs}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  return listing?.exitCode === 0 ? listing.stdout.split("\0").filter(Boolean) : void 0;
+};
+
+// src/plan/internal/common/utils/getPhaseProvenance.ts
+var getPhaseProvenance = ({ phases }) => {
+  const providedBefore = /* @__PURE__ */ new Map();
+  const removedBefore = /* @__PURE__ */ new Map();
+  const createdBy = /* @__PURE__ */ new Map();
+  const removedBy = /* @__PURE__ */ new Map();
+  const provided = /* @__PURE__ */ new Set();
+  const removed = /* @__PURE__ */ new Set();
+  for (const phase of phases) {
+    providedBefore.set(phase.base, new Set(provided));
+    removedBefore.set(phase.base, new Set(removed));
+    for (const path of [...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to)]) {
+      provided.add(path);
+      removed.delete(path);
+      createdBy.set(path, phase.base);
+    }
+    for (const path of [...phase.plan.deletePaths, ...phase.plan.movePaths.map((move) => move.from)]) {
+      removed.add(path);
+      provided.delete(path);
+      removedBy.set(path, phase.base);
+    }
+  }
+  return { providedBefore, removedBefore, createdBy, removedBy };
+};
+
+// src/plan/internal/expandFolderMoves/checkMoveOverlaps.ts
+var overlaps = ({ left, right, folders }) => left === right || folders.left && right.startsWith(`${left}/`) || folders.right && left.startsWith(`${right}/`);
+var defectOf = ({ first, second }) => {
+  const folders = { left: first.folder, right: second.folder };
+  const reversed = { left: second.folder, right: first.folder };
+  let defect;
+  if (overlaps({ left: first.move.from, right: second.move.from, folders })) {
+    defect = "both move from the same place";
+  } else if (overlaps({ left: first.move.to, right: second.move.to, folders })) {
+    defect = "both land in the same place";
+  } else if (overlaps({ left: first.move.to, right: second.move.from, folders }) || overlaps({ left: second.move.to, right: first.move.from, folders: reversed })) {
+    defect = "one moves what the other lands or leaves, so the two chain or swap";
+  }
+  return defect;
+};
+var written = ({ move, folder }) => {
+  const slash = folder ? "/" : "";
+  return `\`${move.from}${slash}\` \u2192 \`${move.to}${slash}\``;
+};
+var finding = ({ phase, first, second, defect }) => ({
+  check: StructuralCheck.MoveWellFormed,
+  severity: FindingSeverity.Blocking,
+  phase,
+  issue: `the moves ${written(first)} and ${written(second)} overlap: ${defect}, so which one wins cannot be told from the plan`,
+  location: `${phase} \u2192 Files to Move`,
+  fix: "merge the two into one move, or split one of them into a later phase"
+});
+var checkMoveOverlaps = ({ plan, phase }) => {
+  const moves = [...plan.movePaths.map((move) => ({ move, folder: false })), ...plan.folderMoves.map((move) => ({ move, folder: true }))];
+  const findings = [];
+  const flagged = /* @__PURE__ */ new Set();
+  for (const [index, first] of moves.entries()) {
+    for (const second of moves.slice(index + 1)) {
+      const defect = defectOf({ first, second });
+      if (defect !== void 0) {
+        findings.push(finding({ phase, first, second, defect }));
+        flagged.add(first);
+        flagged.add(second);
+      }
+    }
+  }
+  return { findings, flagged: moves.filter((entry) => flagged.has(entry)).map(({ move }) => ({ from: move.from, to: move.to })) };
+};
+
+// src/plan/internal/expandFolderMoves/expandFolderMoves.ts
+var isSameMove = ({ left, right }) => left.from === right.from && left.to === right.to;
+var isUnder = ({ path, folder }) => path.startsWith(`${folder}/`);
+var withMovePaths = ({ phase, movePaths }) => ({ ...phase, plan: { ...phase.plan, movePaths } });
+var withoutFlagged = ({ phase, flagged }) => {
+  const kept = phase.plan.movePaths.filter((move) => !flagged.some((entry) => isSameMove({ left: entry, right: move })));
+  return kept.length === phase.plan.movePaths.length ? phase : withMovePaths({ phase, movePaths: kept });
+};
+var holdsUntrackedFiles = async ({ cwd, folder, tracked }) => {
+  const root = join114(cwd, folder);
+  const found = await stat14(root).catch(() => void 0);
+  let holds = found?.isFile() === true;
+  if (found?.isDirectory() === true) {
+    const entries = await readdir21(root, { recursive: true, withFileTypes: true });
+    holds = entries.some((entry) => !entry.isDirectory() && !tracked.has(relative14(cwd, join114(entry.parentPath, entry.name))));
+  }
+  return holds;
+};
+var finding2 = ({ phase, move, issue: issue2, fix }) => ({
+  check: StructuralCheck.MoveWellFormed,
+  severity: FindingSeverity.Blocking,
+  phase,
+  issue: `the folder move \`${move.from}/\` \u2192 \`${move.to}/\` ${issue2}`,
+  location: `${phase} \u2192 ${move.from}/`,
+  fix
+});
+var folderDefect = async ({
+  cwd,
+  phase,
+  move,
+  filesUnder,
+  tracked
+}) => {
+  let defect;
+  if (move.to === move.from || isUnder({ path: move.to, folder: move.from })) {
+    defect = finding2({
+      phase,
+      move,
+      issue: "lands inside its own source folder",
+      fix: "choose a destination outside the source folder"
+    });
+  } else if (filesUnder(move.to).length > 0 || await holdsUntrackedFiles({ cwd, folder: move.to, tracked })) {
+    defect = finding2({
+      phase,
+      move,
+      issue: "lands on a destination that already exists, so git would nest the folder inside it rather than move it",
+      fix: "choose a destination folder that does not exist yet"
+    });
+  } else if (filesUnder(move.from).length === 0) {
+    defect = finding2({
+      phase,
+      move,
+      issue: "carries no files: git tracks none under its source and no earlier phase adds any there",
+      fix: "correct the source folder"
+    });
+  }
+  return defect;
+};
+var expandPhase = async ({
+  cwd,
+  phase,
+  earlier,
+  trackedFiles,
+  flagged
+}) => {
+  const provenance = getPhaseProvenance({ phases: [...earlier, phase] });
+  const provided = provenance.providedBefore.get(phase.base) ?? /* @__PURE__ */ new Set();
+  const removed = provenance.removedBefore.get(phase.base) ?? /* @__PURE__ */ new Set();
+  const tracked = new Set(trackedFiles);
+  const filesUnder = (folder) => [.../* @__PURE__ */ new Set([...trackedFiles.filter((path) => !removed.has(path)), ...provided])].filter((path) => isUnder({ path, folder })).sort();
+  const checkedCarried = [];
+  const provenanceCarried = [];
+  const findings = [];
+  for (const move of phase.plan.folderMoves) {
+    const carried = filesUnder(move.from).map((path) => ({
+      from: path,
+      to: mapPathThroughMoves({ path, fileMoves: [], folderMoves: [move], direction: MoveDirection.Forward })
+    }));
+    const isFlagged = flagged.some((entry) => isSameMove({ left: entry, right: move }));
+    const defect = isFlagged ? void 0 : await folderDefect({ cwd, phase: phase.base, move, filesUnder, tracked });
+    provenanceCarried.push(...carried);
+    if (defect !== void 0) {
+      findings.push(defect);
+    } else if (!isFlagged) {
+      checkedCarried.push(...carried);
+    }
+  }
+  const kept = withoutFlagged({ phase, flagged });
+  return {
+    checked: withMovePaths({ phase: kept, movePaths: [...kept.plan.movePaths, ...checkedCarried] }),
+    provenance: withMovePaths({ phase, movePaths: [...phase.plan.movePaths, ...provenanceCarried] }),
+    findings
+  };
+};
+var expandFolderMoves = async ({
+  cwd,
+  phases
+}) => {
+  const overlaps2 = phases.map((phase) => checkMoveOverlaps({ plan: phase.plan, phase: phase.base }));
+  const folders = [...new Set(phases.flatMap((phase) => phase.plan.folderMoves.flatMap((move) => [move.from, move.to])))];
+  const trackedFiles = folders.length === 0 ? [] : await readGitTrackedFiles({ cwd, folders });
+  if (trackedFiles === void 0) {
+    throw new Error(
+      `git could not list the files it tracks in ${cwd}: folder moves are expanded from the files git tracks, so the plan check must run inside the repository's git working tree`
+    );
+  }
+  const checkedPhases = [];
+  const provenancePhases = [];
+  const findings = [];
+  for (const [index, phase] of phases.entries()) {
+    const { findings: overlapFindings, flagged } = overlaps2[index] ?? { findings: [], flagged: [] };
+    const expanded = phase.plan.folderMoves.length === 0 ? { checked: withoutFlagged({ phase, flagged }), provenance: phase, findings: [] } : await expandPhase({ cwd, phase, earlier: provenancePhases, trackedFiles, flagged });
+    checkedPhases.push(expanded.checked);
+    provenancePhases.push(expanded.provenance);
+    findings.push(...overlapFindings, ...expanded.findings);
+  }
+  return { phases: checkedPhases, provenancePhases, findings };
+};
+
+// src/plan/common/constants/buildModeBulletLabels.ts
+var buildModeBulletLabels = {
+  [BuildMode.RenamesOnly]: "Renames only",
+  [BuildMode.MoveFoldersAndFiles]: "Moves folders and files only"
 };
 
 // src/plan/internal/common/constants/planSentinelTokens.ts
@@ -152630,9 +153834,19 @@ var fileBudgetFrom2 = ({ lines }) => {
   const value = bulletLine({ lines, label: "File budget" })?.replace(/^\s*-\s+\*\*[^*]+\*\*/, "");
   return integerFrom({ cell: /(\d+)/.exec(value ?? "")?.[1] });
 };
-var renamesOnlyFrom = ({ lines }) => {
-  const value = bulletLine({ lines, label: "Renames only" })?.replace(/^\s*-\s+\*\*[^*]+\*\*/, "");
-  return value?.trim().toLowerCase() === "yes" ? true : void 0;
+var saysYes = ({ lines, label: label2 }) => bulletLine({ lines, label: label2 })?.replace(/^\s*-\s+\*\*[^*]+\*\*/, "").trim().toLowerCase() === "yes";
+var buildModeFrom2 = ({ lines }) => {
+  const renamesOnly = saysYes({ lines, label: buildModeBulletLabels[BuildMode.RenamesOnly] });
+  const movesOnly = saysYes({ lines, label: buildModeBulletLabels[BuildMode.MoveFoldersAndFiles] });
+  let declared = {};
+  if (renamesOnly && movesOnly) {
+    declared = { buildModeConflict: true };
+  } else if (renamesOnly) {
+    declared = { buildMode: BuildMode.RenamesOnly };
+  } else if (movesOnly) {
+    declared = { buildMode: BuildMode.MoveFoldersAndFiles };
+  }
+  return declared;
 };
 var blocksFrom = ({ sectionLines, firstLine }) => {
   const lines = sectionLines ?? [];
@@ -152654,7 +153868,7 @@ var blocksFrom = ({ sectionLines, firstLine }) => {
       exports: bulletValues({ lines: blockLines, label: "Exports" }),
       scripts: bulletValues({ lines: blockLines, label: "Scripts" }),
       fileBudget: fileBudgetFrom2({ lines: blockLines }),
-      renamesOnly: renamesOnlyFrom({ lines: blockLines }),
+      ...buildModeFrom2({ lines: blockLines }),
       blockRange: { start, end: (blocks[index + 1]?.start ?? sectionEnd + 1) - 1 }
     });
   }
@@ -152676,11 +153890,12 @@ var parsePhaseDeclarations = ({ plan }) => {
       exports: block?.exports ?? [],
       scripts: block?.scripts ?? [],
       fileBudget: block?.fileBudget,
-      ...block?.renamesOnly === true ? { renamesOnly: true } : {},
+      ...block?.buildMode === void 0 ? {} : { buildMode: block.buildMode },
+      ...block?.buildModeConflict === true ? { buildModeConflict: true } : {},
       ...block === void 0 ? {} : { blockRange: block.blockRange }
     };
   });
-  const orphans = blocks.filter(({ file: file2 }) => !claimed.has(file2)).map(({ file: file2, creates, exports, scripts, fileBudget, renamesOnly, blockRange }) => ({
+  const orphans = blocks.filter(({ file: file2 }) => !claimed.has(file2)).map(({ file: file2, creates, exports, scripts, fileBudget, buildMode, buildModeConflict, blockRange }) => ({
     number: 0,
     file: file2,
     scope: "",
@@ -152688,19 +153903,21 @@ var parsePhaseDeclarations = ({ plan }) => {
     exports,
     scripts,
     fileBudget,
-    ...renamesOnly === true ? { renamesOnly: true } : {},
+    ...buildMode === void 0 ? {} : { buildMode },
+    ...buildModeConflict === true ? { buildModeConflict } : {},
     blockRange
   }));
   return [...declared, ...orphans];
 };
 
 // src/plan/draft/stampPhaseCounts.ts
-var getCounts = async ({ phasePaths }) => {
+var getCounts = async ({ cwd, phasePaths }) => {
+  const { phases } = await readPhaseFiles({ planPaths: phasePaths });
+  const expansion = await expandFolderMoves({ cwd, phases: phases.sort((one, other) => one.number - other.number) });
   const counts = /* @__PURE__ */ new Map();
-  for (const phasePath of phasePaths) {
-    const base = basename19(phasePath);
-    const { created, touched } = getPlanTouchedPaths({ plan: parsePlan({ content: await readFile47(phasePath, "utf8"), base }) });
-    counts.set(base, { created: created.length, touched: touched.length });
+  for (const phase of expansion.phases) {
+    const { created, touched } = getPlanTouchedPaths({ plan: phase.plan });
+    counts.set(phase.base, { created: created.length, touched: touched.length });
   }
   return counts;
 };
@@ -152725,13 +153942,13 @@ var rewriteRows = ({ lines, counts }) => {
     return `${indent}|${cells.join("|")}|`;
   });
 };
-var stampPhaseCounts = async ({ overviewPath, phasePaths }) => {
-  const counts = await getCounts({ phasePaths });
-  const overviewBase2 = basename19(overviewPath);
-  const original = await readFile47(overviewPath, "utf8");
-  const stamped = rewriteRows({ lines: original.split("\n"), counts }).join("\n");
-  await writeFile21(overviewPath, stamped, "utf8");
-  return parsePhaseDeclarations({ plan: parsePlan({ content: stamped, base: overviewBase2 }) });
+var stampPhaseCounts = async ({ cwd, overviewPath, phasePaths }) => {
+  const counts = await getCounts({ cwd, phasePaths });
+  const overviewBase2 = basename20(overviewPath);
+  const original = await readFile49(overviewPath, "utf8");
+  const lines = rewriteRows({ lines: original.split("\n"), counts });
+  await writePlanFileIfChanged({ path: overviewPath, original, lines });
+  return parsePhaseDeclarations({ plan: parsePlan({ content: lines.join("\n"), base: overviewBase2 }) });
 };
 
 // src/plan/sections/renderPhaseDeclaration.ts
@@ -152743,7 +153960,7 @@ var renderPhaseDeclaration = ({ declaration }) => {
     bullet({ label: "Exports", values: declaration.exports }),
     bullet({ label: "Scripts", values: declaration.scripts }),
     ...declaration.fileBudget === void 0 ? [] : [`- **File budget:** ${declaration.fileBudget}`],
-    ...declaration.renamesOnly === true ? ["- **Renames only:** yes"] : []
+    ...declaration.buildMode === void 0 ? [] : [`- **${buildModeBulletLabels[declaration.buildMode]}:** yes`]
   ];
   return `### Phase ${declaration.number} \u2014 \`${declaration.file}\`
 
@@ -152764,7 +153981,7 @@ var renderPhaseRow = ({ declaration }) => {
 };
 
 // src/plan/sections/syncPhaseSections.ts
-var composedNote = "Composed by `lightsout plan draft` from this plan's phase files. Do not edit by hand.";
+var composedNote = "Composed by `lightsout plan draft` from this plan's phase files. When the phase breakdown changes, edit this row or block for each changed phase, then run `lightsout plan sync-phases` to restate the rest.";
 var renderPhasesSection = ({ declarations }) => {
   const headerRow = "| # | File | Scope | Creates | Touches |";
   const separatorRow = "|---|------|-------|---------|---------|";
@@ -152804,54 +154021,59 @@ var syncPhaseSections = async ({ overviewPath, declarations, phaseFiles }) => {
   return { path: overviewPath, updated: phases.updated || blocks.updated };
 };
 
-// src/plan/draft/repairMechanicalFindings.ts
+// src/plan/sections/syncPhaseSectionsFromFiles.ts
 var withOwnDeclarations = async ({ declarations, phasePaths }) => {
   const owned = /* @__PURE__ */ new Map();
   for (const phasePath of phasePaths) {
-    const base = basename20(phasePath);
-    const plan = parsePlan({ content: await readFile48(phasePath, "utf8"), base });
-    owned.set(base, { fileBudget: plan.fileBudget, renamesOnly: plan.renames.length > 0 });
+    const base = basename21(phasePath);
+    const plan = parsePlan({ content: await readFile50(phasePath, "utf8"), base });
+    owned.set(base, { fileBudget: plan.fileBudget, buildMode: plan.buildMode });
   }
   return declarations.map((declaration) => {
     const own = owned.get(declaration.file);
     if (own === void 0) {
       return declaration;
     }
-    const { renamesOnly: _renamesOnly, ...rest } = declaration;
-    return { ...rest, fileBudget: own.fileBudget, ...own.renamesOnly ? { renamesOnly: true } : {} };
+    const { buildMode: _buildMode, buildModeConflict: _buildModeConflict, ...rest } = declaration;
+    return { ...rest, fileBudget: own.fileBudget, ...own.buildMode === BuildMode.Standard ? {} : { buildMode: own.buildMode } };
   });
 };
+var syncPhaseSectionsFromFiles = async ({ cwd, overviewPath, phasePaths }) => {
+  const before = await readFile50(overviewPath, "utf8");
+  const stamped = await stampPhaseCounts({ cwd, overviewPath, phasePaths });
+  await syncPhaseSections({
+    overviewPath,
+    declarations: await withOwnDeclarations({ declarations: stamped, phasePaths }),
+    phaseFiles: phasePaths.map((path) => basename21(path))
+  });
+  return { path: overviewPath, updated: await readFile50(overviewPath, "utf8") !== before };
+};
+
+// src/plan/draft/repairMechanicalFindings.ts
 var repairMechanicalFindings = async ({ cwd, name, planPaths, decisions, overviewPath }) => {
   const synced = await syncPlanDecisions({ cwd, name, planPaths, decisions });
   const files = [..."files" in synced ? synced.files : [], ...await syncGlobalConstraints({ planPaths, decisions })];
   if (overviewPath !== void 0) {
     const phasePaths = planPaths.filter((path) => path !== overviewPath);
-    const stamped = await stampPhaseCounts({ overviewPath, phasePaths });
-    files.push(
-      await syncPhaseSections({
-        overviewPath,
-        declarations: await withOwnDeclarations({ declarations: stamped, phasePaths }),
-        phaseFiles: phasePaths.map((path) => basename20(path))
-      })
-    );
+    files.push(await syncPhaseSectionsFromFiles({ cwd, overviewPath, phasePaths }));
   }
   return files;
 };
 
 // src/plan/internal/common/paths/readRepoPathIndex.ts
-import { readdir as readdir21 } from "node:fs/promises";
-import { join as join111, relative as relative12 } from "node:path";
+import { readdir as readdir22 } from "node:fs/promises";
+import { join as join115, relative as relative15 } from "node:path";
 var prunedDirs = /* @__PURE__ */ new Set(["node_modules", ".git"]);
-var readEntries = ({ dir }) => readdir21(dir, { withFileTypes: true }).catch(() => void 0);
+var readEntries = ({ dir }) => readdir22(dir, { withFileTypes: true }).catch(() => void 0);
 var walkFiles = async ({ cwd, dir, entries }) => {
   const files = [];
   for (const entry of entries) {
     if (prunedDirs.has(entry.name)) {
       continue;
     }
-    const path = join111(dir, entry.name);
+    const path = join115(dir, entry.name);
     if (!entry.isDirectory()) {
-      files.push(relative12(cwd, path));
+      files.push(relative15(cwd, path));
       continue;
     }
     const nested = await readEntries({ dir: path });
@@ -152870,34 +154092,9 @@ var readRepoPathIndex = async ({ cwd }) => {
   return { topLevelDirs, files: files ?? [] };
 };
 
-// src/plan/internal/common/utils/getPhaseProvenance.ts
-var getPhaseProvenance = ({ phases }) => {
-  const providedBefore = /* @__PURE__ */ new Map();
-  const removedBefore = /* @__PURE__ */ new Map();
-  const createdBy = /* @__PURE__ */ new Map();
-  const removedBy = /* @__PURE__ */ new Map();
-  const provided = /* @__PURE__ */ new Set();
-  const removed = /* @__PURE__ */ new Set();
-  for (const phase of phases) {
-    providedBefore.set(phase.base, new Set(provided));
-    removedBefore.set(phase.base, new Set(removed));
-    for (const path of [...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to)]) {
-      provided.add(path);
-      removed.delete(path);
-      createdBy.set(path, phase.base);
-    }
-    for (const path of [...phase.plan.deletePaths, ...phase.plan.movePaths.map((move) => move.from)]) {
-      removed.add(path);
-      provided.delete(path);
-      removedBy.set(path, phase.base);
-    }
-  }
-  return { providedBefore, removedBefore, createdBy, removedBy };
-};
-
 // src/plan/lint/checkAcceptanceLedger.ts
-import { readFile as readFile49 } from "node:fs/promises";
-import { join as join112 } from "node:path";
+import { readFile as readFile51 } from "node:fs/promises";
+import { join as join116 } from "node:path";
 
 // src/plan/lint/internal/checkLedgerCoverage.ts
 var checkLedgerCoverage = ({ plan, phase, coverable }) => {
@@ -152928,10 +154125,10 @@ var checkLedgerCoverage = ({ plan, phase, coverable }) => {
 // src/plan/lint/internal/checkMovedAwayLedgerFiles.ts
 var checkMovedAwayLedgerFiles = ({ plan, phase }) => {
   const findings = [];
-  const movedAway = new Set(plan.movePaths.map((move) => move.from));
+  const isMovedAway = (testFile) => mapPathThroughMoves({ path: testFile, fileMoves: plan.movePaths, folderMoves: plan.folderMoves, direction: MoveDirection.Forward }) !== testFile;
   const reported = /* @__PURE__ */ new Set();
   for (const row of plan.ledger) {
-    if (movedAway.has(row.testFile) && !reported.has(row.testFile)) {
+    if (isMovedAway(row.testFile) && !reported.has(row.testFile)) {
       reported.add(row.testFile);
       findings.push({
         check: StructuralCheck.LedgerWellFormed,
@@ -152948,19 +154145,18 @@ var checkMovedAwayLedgerFiles = ({ plan, phase }) => {
 
 // src/plan/lint/checkAcceptanceLedger.ts
 var getCoverablePaths = ({ plan }) => {
-  if (plan.renames.length > 0) {
+  if (plan.buildMode !== BuildMode.Standard) {
     return [];
   }
   const excused = new Set(plan.proseFiles.map((file2) => file2.path));
   return [...new Set(getPlanWrittenPaths({ plan }))].filter((path) => isPlanSourceFile({ path }) && !excused.has(path));
 };
 var statesTest = async ({ cwd, testFile, testName }) => {
-  const content = await readFile49(join112(cwd, testFile), "utf8").catch(() => void 0);
+  const content = await readFile51(join116(cwd, testFile), "utf8").catch(() => void 0);
   return content !== void 0 && holdsTestTitle({ content, testName });
 };
-var resolveReadPath = ({ plan, testFile }) => plan.movePaths.find((move) => move.to === testFile)?.from ?? testFile;
 var isTestGate = ({ gate }) => gate === "test" || gate.startsWith("test-");
-var finding = ({ phase, issue: issue2, location, fix }) => ({
+var finding3 = ({ phase, issue: issue2, location, fix }) => ({
   check: StructuralCheck.LedgerWellFormed,
   severity: FindingSeverity.Blocking,
   phase,
@@ -152972,7 +154168,7 @@ var checkShape = ({ plan, phase, required: required2, coverable }) => {
   const findings = [];
   if (!plan.sections.has("Acceptance Tests") && required2 && coverable.length > 0) {
     findings.push(
-      finding({
+      finding3({
         phase,
         issue: "no `## Acceptance Tests` section, and this plan writes source files no prose-files entry excuses",
         location: `${phase} \u2192 Acceptance Tests`,
@@ -152982,7 +154178,7 @@ var checkShape = ({ plan, phase, required: required2, coverable }) => {
   }
   for (const line of plan.malformedLedgerLines) {
     findings.push(
-      finding({
+      finding3({
         phase,
         issue: "an Acceptance Tests row does not carry a criterion, a backticked test file and a test name",
         location: `${phase}:${line}`,
@@ -152992,7 +154188,7 @@ var checkShape = ({ plan, phase, required: required2, coverable }) => {
   }
   for (const line of plan.malformedProseLines) {
     findings.push(
-      finding({
+      finding3({
         phase,
         issue: "a Prose Files bullet names a path but states no reason",
         location: `${phase}:${line}`,
@@ -153009,7 +154205,7 @@ var checkRows = async ({ plan, cwd, phase, gateKeys }) => {
     const location = `${phase}:${row.line}`;
     if (!isTestFile({ path: row.testFile })) {
       findings.push(
-        finding({
+        finding3({
           phase,
           issue: `ledger row names '${row.testFile}', which is not a test file`,
           location,
@@ -153019,7 +154215,7 @@ var checkRows = async ({ plan, cwd, phase, gateKeys }) => {
     }
     if (gateKeys.size > 0 && !gateKeys.has(row.gate)) {
       findings.push(
-        finding({
+        finding3({
           phase,
           issue: `ledger row names gate '${row.gate}', which no configured gate runs`,
           location,
@@ -153028,7 +154224,7 @@ var checkRows = async ({ plan, cwd, phase, gateKeys }) => {
       );
     } else if (!isTestGate({ gate: row.gate })) {
       findings.push(
-        finding({
+        finding3({
           phase,
           issue: `ledger row names gate '${row.gate}', which runs no tests \u2014 no execution of it can carry a test result, so the row could never be proven`,
           location,
@@ -153039,7 +154235,7 @@ var checkRows = async ({ plan, cwd, phase, gateKeys }) => {
     const key = `${row.testFile}|${row.testName}`;
     if (seen.has(key)) {
       findings.push(
-        finding({
+        finding3({
           phase,
           issue: `two ledger rows name the same test: '${row.testName}' in ${row.testFile}`,
           location,
@@ -153048,10 +154244,10 @@ var checkRows = async ({ plan, cwd, phase, gateKeys }) => {
       );
     }
     seen.add(key);
-    const readPath = resolveReadPath({ plan, testFile: row.testFile });
+    const readPath = mapPathThroughMoves({ path: row.testFile, fileMoves: plan.movePaths, folderMoves: plan.folderMoves, direction: MoveDirection.Back });
     if (await statesTest({ cwd, testFile: readPath, testName: row.testName })) {
       findings.push(
-        finding({
+        finding3({
           phase,
           issue: readPath === row.testFile ? `'${row.testName}' is already a test in ${row.testFile}` : `'${row.testName}' is already a test in ${readPath}, which this plan moves to ${row.testFile}`,
           location,
@@ -153073,7 +154269,7 @@ var checkAcceptanceLedger = async ({ plan, cwd, phase, required: required2, gate
 };
 
 // src/plan/internal/common/naming/getComparableTokens.ts
-import { basename as basename21 } from "node:path";
+import { basename as basename22 } from "node:path";
 var isIdentifierSpan = ({ span }) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(span);
 var getComparableTokens = ({ lines }) => {
   const tokens = /* @__PURE__ */ new Map();
@@ -153083,7 +154279,7 @@ var getComparableTokens = ({ lines }) => {
         continue;
       }
       if (isPathToken({ token: span })) {
-        tokens.set(basename21(span), span);
+        tokens.set(basename22(span), span);
       } else if (isIdentifierSpan({ span })) {
         tokens.set(span, span);
       }
@@ -153116,12 +154312,12 @@ var checkHandoffDeclared = ({ plan, phase }) => {
 };
 
 // src/plan/lint/checkPlanPaths.ts
-import { basename as basename22, join as join113 } from "node:path";
-var locate = ({ planPath, path }) => `${basename22(planPath)} \u2192 ${path}`;
+import { basename as basename23, join as join117 } from "node:path";
+var locate = ({ planPath, path }) => `${basename23(planPath)} \u2192 ${path}`;
 var checkSuppliedPaths = async ({ plan, cwd, planPath, phase, provided }) => {
   const findings = [];
   for (const path of [...plan.modifyPaths, ...plan.mirrorPaths]) {
-    if (provided.has(path) || await pathExists({ path: join113(cwd, path) })) {
+    if (provided.has(path) || await pathExists({ path: join117(cwd, path) })) {
       continue;
     }
     findings.push({
@@ -153143,7 +154339,7 @@ var checkNewPaths = async ({ plan, cwd, planPath, phase, provided }) => {
   ];
   for (const { paths, label: label2 } of groups) {
     for (const path of paths) {
-      const exists3 = await pathExists({ path: join113(cwd, path) });
+      const exists3 = await pathExists({ path: join117(cwd, path) });
       if (!exists3 && !provided.has(path)) {
         continue;
       }
@@ -153162,7 +154358,7 @@ var checkNewPaths = async ({ plan, cwd, planPath, phase, provided }) => {
 var checkRemovedPaths = async ({ plan, cwd, planPath, phase, phased }) => {
   const findings = [];
   for (const path of plan.earlierPhaseModifyPaths) {
-    if (await pathExists({ path: join113(cwd, path) })) {
+    if (await pathExists({ path: join117(cwd, path) })) {
       findings.push({
         check: StructuralCheck.PathExists,
         severity: FindingSeverity.Blocking,
@@ -153174,7 +154370,7 @@ var checkRemovedPaths = async ({ plan, cwd, planPath, phase, phased }) => {
     }
   }
   for (const path of phased ? [] : [...plan.deletePaths, ...plan.movePaths.map((move) => move.from)]) {
-    if (!await pathExists({ path: join113(cwd, path) })) {
+    if (!await pathExists({ path: join117(cwd, path) })) {
       findings.push({
         check: StructuralCheck.PathExists,
         severity: FindingSeverity.Blocking,
@@ -153208,17 +154404,17 @@ var checkPlanSizes = ({ phase, fileLimit, counts }) => {
       fix: `split the phase so it creates no more than ${createdFileCeiling} files`
     });
   }
-  if (touched > touchedFileCeiling && phase.plan.renames.length === 0) {
+  if (touched > touchedFileCeiling && phase.plan.buildMode === BuildMode.Standard) {
     findings.push({
       check: StructuralCheck.TouchedFilesWithinCeiling,
       severity: FindingSeverity.Blocking,
       phase: phase.base,
       issue: `plan touches ${touched} source files, over the ${touchedFileCeiling}-file ceiling`,
       location: phase.base,
-      fix: `split the phase so it touches no more than ${touchedFileCeiling} files \u2014 or, if its whole work is renaming, declare it rename-only with a '## Renames' section`
+      fix: `split the phase so it touches no more than ${touchedFileCeiling} files \u2014 or declare it rename-only with a '## Renames' section if its whole work is renaming, or move-folders-and-files with a '## Build Mode' section reading \`move-folders-and-files\` if its whole work is moving folders and files`
     });
   }
-  if (touched > budget) {
+  if (touched > budget && phase.plan.buildMode !== BuildMode.MoveFoldersAndFiles) {
     const source = phase.plan.fileBudget === void 0 ? "the configured executor-file-limit" : "this plan's own ## File Budget";
     findings.push({
       check: StructuralCheck.ScopeWithinGuardrail,
@@ -153233,7 +154429,7 @@ var checkPlanSizes = ({ phase, fileLimit, counts }) => {
 };
 
 // src/plan/lint/checkProsePaths.ts
-import { basename as basename23, join as join114 } from "node:path";
+import { basename as basename24, join as join118 } from "node:path";
 
 // src/plan/lint/internal/common/utils/isLineInRange.ts
 var isLineInRange = ({ line, range }) => range !== void 0 && line >= range.start && line <= range.end;
@@ -153270,7 +154466,7 @@ var getAccountedPaths = ({ plan, planned }) => [
   .../* @__PURE__ */ new Set([...getPlanNamedPaths({ plan, includeMirrors: true }), ...planned])
 ];
 var isCandidateOnDisk = async ({ candidate, cwd, index }) => {
-  const anchored = index.topLevelDirs.has(candidate.split("/")[0]) && await pathExists({ path: join114(cwd, candidate) });
+  const anchored = index.topLevelDirs.has(candidate.split("/")[0]) && await pathExists({ path: join118(cwd, candidate) });
   return anchored || index.files.some((path) => isTailOf({ candidate, path }));
 };
 var checkProsePaths = async ({ plan, cwd, planPath, phase, planned, index }) => {
@@ -153289,7 +154485,7 @@ var checkProsePaths = async ({ plan, cwd, planPath, phase, planned, index }) => 
         severity: FindingSeverity.Blocking,
         phase,
         issue: `path named in prose does not exist: ${candidate}`,
-        location: `${basename23(planPath)}:${line}`,
+        location: `${basename24(planPath)}:${line}`,
         fix: "correct the path, or drop the backticks if the span is not naming a real file"
       });
     }
@@ -153298,8 +154494,8 @@ var checkProsePaths = async ({ plan, cwd, planPath, phase, planned, index }) => 
 };
 
 // src/plan/lint/checkVerificationScripts.ts
-import { readFile as readFile50 } from "node:fs/promises";
-import { basename as basename24, join as join115 } from "node:path";
+import { readFile as readFile52 } from "node:fs/promises";
+import { basename as basename25, join as join119 } from "node:path";
 
 // src/plan/internal/common/utils/getManifestScriptKeys.ts
 var Manifest3 = external_exports.object({ scripts: external_exports.record(external_exports.string(), external_exports.unknown()).optional() });
@@ -153341,10 +154537,10 @@ var getPackageDirs = ({ plan, packagesDir }) => {
   return packageDirs;
 };
 var getAvailableScripts = async ({ cwd, packagesDir, packageDirs }) => {
-  const manifestPaths = [join115(cwd, "package.json"), ...[...packageDirs].map((dir) => join115(cwd, packagesDir, dir, "package.json"))];
+  const manifestPaths = [join119(cwd, "package.json"), ...[...packageDirs].map((dir) => join119(cwd, packagesDir, dir, "package.json"))];
   const availableScripts = /* @__PURE__ */ new Set();
   for (const manifestPath of manifestPaths) {
-    const raw = await readFile50(manifestPath, "utf8").catch(() => void 0);
+    const raw = await readFile52(manifestPath, "utf8").catch(() => void 0);
     if (!raw) {
       continue;
     }
@@ -153379,7 +154575,7 @@ var checkVerificationScripts = async ({
         severity: FindingSeverity.Blocking,
         phase,
         issue: `verification command '${command}' references package script '${scriptName}' which is not in any target package.json`,
-        location: `${basename24(planPath)} \u2192 Verification`,
+        location: `${basename25(planPath)} \u2192 Verification`,
         fix: `use a script that exists, or add '${scriptName}' to the package.json`
       });
     }
@@ -153387,8 +154583,61 @@ var checkVerificationScripts = async ({
   return findings;
 };
 
+// src/plan/lint/internal/checkBuildMode.ts
+var finding4 = ({ phase, issue: issue2, fix }) => ({
+  check: StructuralCheck.BuildModeWellFormed,
+  severity: FindingSeverity.Blocking,
+  phase,
+  issue: issue2,
+  location: `${phase} \u2192 Build Mode`,
+  fix
+});
+var unknownModeDefects = ({ plan, phase }) => plan.sections.has("Build Mode") && plan.buildMode !== BuildMode.MoveFoldersAndFiles ? [
+  finding4({
+    phase,
+    issue: "the '## Build Mode' section names no known build mode",
+    fix: "make the section's first line read `move-folders-and-files`, or drop the section"
+  })
+] : [];
+var separatePhase = "or move that work into a separate standard phase, since a move and feature work are two phases";
+var moveOnlyDefects = ({ plan, phase }) => {
+  const modified = [...plan.modifyPaths, ...plan.earlierPhaseModifyPaths];
+  const listed = [
+    {
+      count: plan.createPaths.length,
+      issue: `a move-folders-and-files file lists files to create (${plan.createPaths.join(", ")}), but a move creates no file of its own`,
+      fix: `drop the Files to Create entries, ${separatePhase}`
+    },
+    {
+      count: modified.length,
+      issue: `a move-folders-and-files file lists files to modify (${modified.join(", ")}), but a move's own path updates are never listed`,
+      fix: `drop the Files to Modify and Files to Modify from Earlier Phases entries, ${separatePhase}`
+    },
+    {
+      count: plan.deletePaths.length,
+      issue: `a move-folders-and-files file lists files to delete (${plan.deletePaths.join(", ")}), but a move deletes no file`,
+      fix: `drop the Files to Delete entries, ${separatePhase}`
+    },
+    {
+      count: plan.renames.length,
+      issue: `a move-folders-and-files file lists ${plan.renames.length} rename(s), but a phase has exactly one build mode`,
+      fix: "drop the '## Renames' section, or move the renames into a separate rename-only phase"
+    },
+    {
+      count: plan.ledger.length,
+      issue: `a move-folders-and-files file states ${plan.ledger.length} acceptance-test row(s), but a move adds no behaviour a new test could state and the build writes no tests for it`,
+      fix: `keep the Acceptance Tests heading with no rows, ${separatePhase}`
+    }
+  ];
+  return listed.filter(({ count: count2 }) => count2 > 0).map(({ issue: issue2, fix }) => finding4({ phase, issue: issue2, fix }));
+};
+var checkBuildMode = ({ plan, phase }) => [
+  ...unknownModeDefects({ plan, phase }),
+  ...plan.buildMode === BuildMode.MoveFoldersAndFiles ? moveOnlyDefects({ plan, phase }) : []
+];
+
 // src/plan/lint/internal/checkRenames.ts
-var finding2 = ({ phase, issue: issue2, location, fix }) => ({
+var finding5 = ({ phase, issue: issue2, location, fix }) => ({
   check: StructuralCheck.RenamesWellFormed,
   severity: FindingSeverity.Blocking,
   phase,
@@ -153396,23 +154645,23 @@ var finding2 = ({ phase, issue: issue2, location, fix }) => ({
   location,
   fix
 });
-var renameDefects = ({ plan, phase }) => plan.renames.flatMap((rename13) => {
-  const location = `${phase}:${rename13.line}`;
-  if (rename13.from === rename13.to) {
+var renameDefects = ({ plan, phase }) => plan.renames.flatMap((rename14) => {
+  const location = `${phase}:${rename14.line}`;
+  if (rename14.from === rename14.to) {
     return [
-      finding2({
+      finding5({
         phase,
-        issue: `the rename of '${rename13.from}' renames it to itself`,
+        issue: `the rename of '${rename14.from}' renames it to itself`,
         location,
         fix: "drop the bullet, or name the text it really becomes"
       })
     ];
   }
-  const contained = plan.renames.filter((other) => rename13.to.includes(other.from)).map((other) => `'${other.from}'`);
+  const contained = plan.renames.filter((other) => rename14.to.includes(other.from)).map((other) => `'${other.from}'`);
   return contained.length === 0 ? [] : [
-    finding2({
+    finding5({
       phase,
-      issue: `the new text '${rename13.to}' contains the old text ${contained.join(", ")}, so applying the renames a second time would change the result \u2014 and the build's rename check applies them to both sides of every change`,
+      issue: `the new text '${rename14.to}' contains the old text ${contained.join(", ")}, so applying the renames a second time would change the result \u2014 and the build's rename check applies them to both sides of every change`,
       location,
       fix: "rename a longer, more specific text so no new text contains any old one"
     })
@@ -153423,7 +154672,7 @@ var renameOnlyDefects = ({ plan, phase }) => {
   const findings = [];
   if (plan.createPaths.length > 0) {
     findings.push(
-      finding2({
+      finding5({
         phase,
         issue: `a rename-only file lists files to create (${plan.createPaths.join(", ")}), but a rename moves a file rather than creating one`,
         location,
@@ -153433,7 +154682,7 @@ var renameOnlyDefects = ({ plan, phase }) => {
   }
   if (plan.ledger.length > 0) {
     findings.push(
-      finding2({
+      finding5({
         phase,
         issue: `a rename-only file states ${plan.ledger.length} acceptance-test row(s), but a rename adds no behaviour a new test could state and the build writes no tests for it`,
         location,
@@ -153445,7 +154694,7 @@ var renameOnlyDefects = ({ plan, phase }) => {
 };
 var checkRenames = ({ plan, phase }) => [
   ...plan.malformedRenameLines.map(
-    (line) => finding2({
+    (line) => finding5({
       phase,
       issue: "a Renames bullet does not name exactly two texts",
       location: `${phase}:${line}`,
@@ -153453,37 +154702,11 @@ var checkRenames = ({ plan, phase }) => [
     })
   ),
   ...renameDefects({ plan, phase }),
-  ...plan.renames.length > 0 ? renameOnlyDefects({ plan, phase }) : []
+  ...plan.buildMode === BuildMode.RenamesOnly ? renameOnlyDefects({ plan, phase }) : []
 ];
 
-// src/plan/lint/internal/common/utils/readPhaseFiles.ts
-import { readFile as readFile51 } from "node:fs/promises";
-import { basename as basename25 } from "node:path";
-var phaseNumber = ({ base }) => base === "overview.md" ? 0 : Number(/^phase(\d+)-/.exec(base)?.[1] ?? 1);
-var readPhaseFiles = async ({ planPaths }) => {
-  const phases = [];
-  const findings = [];
-  for (const planPath of planPaths) {
-    const content = await readFile51(planPath, "utf8").catch(() => void 0);
-    const base = basename25(planPath);
-    if (content === void 0) {
-      findings.push({
-        check: StructuralCheck.SectionsPresent,
-        severity: FindingSeverity.Blocking,
-        phase: base,
-        issue: "plan file could not be read",
-        location: planPath,
-        fix: "ensure the draft wrote the plan file at this path"
-      });
-      continue;
-    }
-    phases.push({ path: planPath, base, number: phaseNumber({ base }), plan: parsePlan({ content, base }) });
-  }
-  return { phases, findings };
-};
-
 // src/plan/lint/checkFileProvenance.ts
-import { join as join116 } from "node:path";
+import { join as join120 } from "node:path";
 var stamp = ({ phase, defects }) => defects.map(({ path, issue: issue2, fix }) => ({
   check: StructuralCheck.FileProvenance,
   severity: FindingSeverity.Blocking,
@@ -153530,7 +154753,7 @@ var missingRemovalDefects = async ({
 }) => {
   const defects = [];
   for (const path of [...phase.plan.deletePaths, ...phase.plan.movePaths.map((move) => move.from)]) {
-    if (providedBefore.has(path) || removedBefore.has(path) || await pathExists({ path: join116(cwd, path) })) {
+    if (providedBefore.has(path) || removedBefore.has(path) || await pathExists({ path: join120(cwd, path) })) {
       continue;
     }
     defects.push({
@@ -153584,7 +154807,7 @@ var checkPhaseCount = ({ phaseCount, overviewBase: overviewBase2 }) => {
   ];
 };
 
-// src/plan/lint/internal/common/utils/getDeclarationDefects.ts
+// src/plan/common/utils/getDeclarationDefects.ts
 var getDeclarationDefects = ({ declarations, locations }) => {
   const defects = [];
   const numbered = declarations.filter((declaration) => declaration.number > 0);
@@ -153610,23 +154833,20 @@ var getDeclarationDefects = ({ declarations, locations }) => {
       fix: "rename the file or the row so the number and the filename agree"
     });
   }
+  for (const declaration of declarations.filter((candidate) => candidate.buildModeConflict === true)) {
+    defects.push({
+      issue: `the declaration block for '${declaration.file}' reads yes on both the '${buildModeBulletLabels[BuildMode.RenamesOnly]}' and the '${buildModeBulletLabels[BuildMode.MoveFoldersAndFiles]}' bullets, but a phase has exactly one build mode`,
+      location: locations.declarationsSection,
+      fix: `keep only the bullet that matches the phase file \u2014 '${buildModeBulletLabels[BuildMode.RenamesOnly]}' for a phase with a '## Renames' section, '${buildModeBulletLabels[BuildMode.MoveFoldersAndFiles]}' for a phase with a '## Build Mode' section \u2014 and delete the other`
+    });
+  }
   return defects;
 };
 
-// src/plan/lint/checkPhaseDeclarations.ts
-var stamp2 = ({ defects }) => defects.map((defect) => ({ check: StructuralCheck.DeclarationConsistent, severity: FindingSeverity.Blocking, ...defect }));
-var namesIn = ({ phase }) => {
-  const spans = /* @__PURE__ */ new Set();
-  for (const line of phase.plan.lines) {
-    for (const span of getCodeSpans({ line })) {
-      spans.add(span);
-    }
-  }
-  return { spans, exports: new Set(phase.plan.createPaths.map((path) => getExportName({ path }))) };
-};
-var phaseSetDefects = ({ declarations, phases, overviewBase: overviewBase2 }) => {
+// src/plan/common/utils/getPhaseSetDefects.ts
+var getPhaseSetDefects = ({ declarations, phaseFiles, overviewBase: overviewBase2 }) => {
   const defects = [];
-  for (const declaration of declarations.filter((candidate) => !phases.some((phase) => phase.base === candidate.file))) {
+  for (const declaration of declarations.filter((candidate) => !phaseFiles.includes(candidate.file))) {
     defects.push({
       phase: overviewBase2,
       issue: `the phase breakdown declares '${declaration.file}', which is not one of this plan's phase files`,
@@ -153634,12 +154854,12 @@ var phaseSetDefects = ({ declarations, phases, overviewBase: overviewBase2 }) =>
       fix: "correct the filename, or drop the row and its declaration block"
     });
   }
-  for (const phase of phases.filter((candidate) => !declarations.some((declaration) => declaration.file === candidate.base))) {
+  for (const phaseFile of phaseFiles.filter((candidate) => !declarations.some((declaration) => declaration.file === candidate))) {
     defects.push({
-      phase: phase.base,
+      phase: phaseFile,
       issue: "this phase file has no row in the overview's phase breakdown",
-      location: phase.base,
-      fix: `add a '## Phases' row and a '## Phase Declarations' block for ${phase.base}`
+      location: phaseFile,
+      fix: `add a '## Phases' row and a '## Phase Declarations' block for ${phaseFile}`
     });
   }
   defects.push(
@@ -153653,6 +154873,18 @@ var phaseSetDefects = ({ declarations, phases, overviewBase: overviewBase2 }) =>
     }).map((defect) => ({ phase: overviewBase2, ...defect }))
   );
   return defects;
+};
+
+// src/plan/lint/checkPhaseDeclarations.ts
+var stamp2 = ({ defects }) => defects.map((defect) => ({ check: StructuralCheck.DeclarationConsistent, severity: FindingSeverity.Blocking, ...defect }));
+var namesIn = ({ phase }) => {
+  const spans = /* @__PURE__ */ new Set();
+  for (const line of phase.plan.lines) {
+    for (const span of getCodeSpans({ line })) {
+      spans.add(span);
+    }
+  }
+  return { spans, exports: new Set(phase.plan.createPaths.map((path) => getExportName({ path }))) };
 };
 var numberDefects = ({
   declaration,
@@ -153691,7 +154923,7 @@ var numberDefects = ({
       fix: "the two copies must agree \u2014 the door check reads the overview, the implementing agent is handed the phase file"
     });
   }
-  if (declaration.fileBudget !== void 0 && declaration.touchedCount !== void 0 && declaration.fileBudget < declaration.touchedCount) {
+  if (declaration.buildMode !== BuildMode.MoveFoldersAndFiles && declaration.fileBudget !== void 0 && declaration.touchedCount !== void 0 && declaration.fileBudget < declaration.touchedCount) {
     defects.push({
       phase: overviewBase2,
       issue: `the file budget declared for ${declaration.file} (${declaration.fileBudget}) is below its own touched count (${declaration.touchedCount})`,
@@ -153704,8 +154936,8 @@ var numberDefects = ({
 var nameDefects = ({ declaration, phase, overviewBase: overviewBase2 }) => {
   const defects = [];
   const { spans, exports } = namesIn({ phase });
-  const written = /* @__PURE__ */ new Set([...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to)]);
-  for (const path of declaration.creates.filter((candidate) => !written.has(candidate))) {
+  const written2 = /* @__PURE__ */ new Set([...phase.plan.createPaths, ...phase.plan.movePaths.map((move) => move.to), ...phase.plan.folderMoves.map((move) => move.to)]);
+  for (const path of declaration.creates.filter((candidate) => !written2.has(candidate.replace(/\/$/, "")))) {
     defects.push({
       phase: overviewBase2,
       issue: `${declaration.file} is declared to create '${path}', which it lists under neither Files to Create nor Files to Move`,
@@ -153731,27 +154963,28 @@ var nameDefects = ({ declaration, phase, overviewBase: overviewBase2 }) => {
   }
   return defects;
 };
-var renamesDefects = ({ declaration, phase, overviewBase: overviewBase2 }) => {
-  const declared = declaration.renamesOnly === true;
-  const own = phase.plan.renames.length > 0;
-  return declared === own ? [] : [
+var modeBulletAdvice = ({ buildMode }) => buildMode === BuildMode.Standard ? "no mode bullet" : `only the '${buildModeBulletLabels[buildMode]}: yes' bullet`;
+var buildModeDefects = ({ declaration, phase, overviewBase: overviewBase2 }) => {
+  const declared = declaration.buildMode ?? BuildMode.Standard;
+  const own = phase.plan.buildMode;
+  return declaration.buildModeConflict === true || declared === own ? [] : [
     {
       phase: overviewBase2,
-      issue: declared ? `${declaration.file} is declared rename-only, but its own file carries no '## Renames' section` : `${declaration.file} carries a '## Renames' section, but its declaration has no 'Renames only' bullet`,
+      issue: `${declaration.file} is declared with build mode '${declared}', but its own file's build mode is '${own}'`,
       location: `${overviewBase2} \u2192 Phase Declarations`,
-      fix: "the two copies must agree \u2014 write the Renames only bullet exactly when the phase file declares its renames, since the implementing agent is handed the phase file"
+      fix: `the two copies must agree, since the implementing agent is handed the phase file \u2014 give ${declaration.file}'s declaration block ${modeBulletAdvice({ buildMode: own })}; the mechanical repair applies this`
     }
   ];
 };
 var checkPhaseDeclarations = ({ declarations, phases, overviewBase: overviewBase2, counts }) => {
-  const defects = phaseSetDefects({ declarations, phases, overviewBase: overviewBase2 });
+  const defects = getPhaseSetDefects({ declarations, phaseFiles: phases.map((phase) => phase.base), overviewBase: overviewBase2 });
   for (const declaration of declarations) {
     const phase = phases.find((candidate) => candidate.base === declaration.file);
     if (phase) {
       defects.push(
         ...numberDefects({ declaration, phase, overviewBase: overviewBase2, counts }),
         ...nameDefects({ declaration, phase, overviewBase: overviewBase2 }),
-        ...renamesDefects({ declaration, phase, overviewBase: overviewBase2 })
+        ...buildModeDefects({ declaration, phase, overviewBase: overviewBase2 })
       );
     }
   }
@@ -153867,9 +155100,9 @@ var checkMoves = ({ phase }) => phase.plan.malformedMoveLines.map((line) => ({
   check: StructuralCheck.MoveWellFormed,
   severity: FindingSeverity.Blocking,
   phase: phase.base,
-  issue: "a Files to Move heading does not name two paths",
+  issue: "a Files to Move heading does not name two file paths or two folder paths",
   location: `${phase.base}:${line}`,
-  fix: "write the heading as an old path and a new path, each in backticks"
+  fix: "write the heading as an old path and a new path, each in backticks: two file paths, or two folder paths each ending in `/`"
 }));
 var getDeclaredScripts = ({ overview, phases }) => {
   const byPhase = /* @__PURE__ */ new Map();
@@ -153887,7 +155120,7 @@ var getDeclaredScripts = ({ overview, phases }) => {
   byPhase.set(overview.base, new Set(declarations.flatMap((declaration) => declaration.scripts)));
   return byPhase;
 };
-var isCleared = ({ finding: finding3, clearedCreates }) => finding3.check === StructuralCheck.PathExists && clearedCreates.has(`${finding3.phase}|${finding3.location.split(" \u2192 ").at(-1)}`);
+var isCleared = ({ finding: finding6, clearedCreates }) => finding6.check === StructuralCheck.PathExists && clearedCreates.has(`${finding6.phase}|${finding6.location.split(" \u2192 ").at(-1)}`);
 var checkPackages = ({ phase, packagesDir }) => getPlanNamedPaths({ plan: phase.plan }).filter((path) => path.startsWith(`${packagesDir}/`) && !path.slice(packagesDir.length + 1).includes("/")).map((path) => ({
   check: StructuralCheck.PackagesIdentifiable,
   severity: FindingSeverity.Blocking,
@@ -153905,9 +155138,12 @@ var lintPlanStructure = async ({ cwd, planPaths, decisions, config: config2 }) =
   const configCommands = new Set(Object.values(config2?.gates ?? {}).filter((value) => typeof value === "string"));
   const { phases, findings } = await readPhaseFiles({ planPaths });
   const overview = phases.find((file2) => file2.plan.variant === PlanFileKind.Overview);
-  const implementable = phases.filter((file2) => file2.plan.variant !== PlanFileKind.Overview).sort((one, other) => one.number - other.number);
+  const sorted = phases.filter((file2) => file2.plan.variant !== PlanFileKind.Overview).sort((one, other) => one.number - other.number);
+  const expansion = await expandFolderMoves({ cwd, phases: sorted });
+  const implementable = expansion.phases;
   const phased = isPhasedDeliverable({ hasOverview: overview !== void 0, implementableCount: implementable.length });
-  const provenance = getPhaseProvenance({ phases: implementable });
+  const provenance = getPhaseProvenance({ phases: expansion.provenancePhases });
+  findings.push(...expansion.findings);
   const declaredByPhase = getDeclaredScripts({ overview, phases: implementable });
   const repoIndex = await readRepoPathIndex({ cwd });
   const syncCommand = buildPlanSyncDecisionsCommand({ cwd, name: decisions.planName }).command;
@@ -153927,7 +155163,8 @@ var lintPlanStructure = async ({ cwd, planPaths, decisions, config: config2 }) =
       ...await checkVerificationScripts({ ...shared, packagesDir, configCommands, declaredScripts }),
       ...phase.plan.variant === PlanFileKind.Implementable ? [
         ...await checkAcceptanceLedger({ plan: phase.plan, cwd, phase: phase.base, required: contract, gateKeys }),
-        ...checkRenames({ plan: phase.plan, phase: phase.base })
+        ...checkRenames({ plan: phase.plan, phase: phase.base }),
+        ...checkBuildMode({ plan: phase.plan, phase: phase.base })
       ] : [],
       ...checkDecisionLog({ plan: phase.plan, phase: phase.base, decisions, phased, syncCommand }),
       ...checkGlobalConstraints({ plan: phase.plan, phase: phase.base, decisions, syncCommand }),
@@ -153939,7 +155176,7 @@ var lintPlanStructure = async ({ cwd, planPaths, decisions, config: config2 }) =
     );
   }
   const crossPhase = await lintPlanCrossPhase({ cwd, overview, phases: implementable, provenance, counts });
-  return [...findings.filter((finding3) => !isCleared({ finding: finding3, clearedCreates: crossPhase.clearedCreates })), ...crossPhase.findings];
+  return [...findings.filter((finding6) => !isCleared({ finding: finding6, clearedCreates: crossPhase.clearedCreates })), ...crossPhase.findings];
 };
 
 // src/plan/draft/repairPlanStructure.ts
@@ -153951,9 +155188,9 @@ var runRepairAttempt = async ({ params, findings, attempt }) => {
     invocation: buildPlanRepairInvocation({
       findings,
       planPaths,
-      decisionsPath: join117(workspaceDir, "decisions.json"),
+      decisionsPath: join121(workspaceDir, "decisions.json"),
       brainstormDecisionsPath,
-      factsPath: join117(workspaceDir, "facts.json"),
+      factsPath: join121(workspaceDir, "facts.json"),
       docs: config2?.docs
     }),
     contract: PlanFixReport
@@ -154034,11 +155271,11 @@ var stopForPhaseFailure = ({ phases, draftStop }) => {
 };
 
 // src/plan/draft/repairPhaseBreakdown.ts
-import { readFile as readFile52 } from "node:fs/promises";
-import { basename as basename26, join as join118 } from "node:path";
+import { readFile as readFile53 } from "node:fs/promises";
+import { basename as basename26, join as join122 } from "node:path";
 
 // src/agents/prompts/planReshape.md
-var planReshape_default = '# Role: Plan Reshaper\n\nYou re-split a phased plan\'s phase breakdown in place. You work autonomously\nfrom the task message; you Edit the overview file and your final message is\nmachine-parsed \u2014 one JSON report, not prose for a human.\n\nThis is the one plan-editing role that is allowed to restructure. The plan\nrepairer applies the smallest edit that resolves a finding and never re-orders\nanything; you are here because the breakdown itself does not fit, and making it\nfit means moving work between phases.\n\n## Input\n\nThe task message provides:\n\n- **Overview file to reshape** \u2014 the absolute path of the overview to Read and\n  Edit in place. It is the only file you may touch; the phase files do not exist\n  yet.\n- **Created-file ceiling** \u2014 the hard per-phase limit every phase must come in\n  under. No declaration raises it.\n- **Touched-file ceiling** \u2014 the hard per-phase limit on touched source files.\n  No `## File Budget` raises it; only a phase declared `- **Renames only:** yes`\n  is exempt from it.\n- **Breakdown findings to resolve** \u2014 the typed findings saying which declared\n  phases are too large or malformed, each with its exact `fix` string.\n- **Reference files** (Read on demand) \u2014 absolute paths of the plan\'s own\n  decisions (`decisions.json`), the brainstorm decisions\n  (`brainstorm-decisions.json` \u2014 present only when the work came from a\n  `/brainstorm` hand-off), and the verified facts (`facts.json`). Read them when\n  a re-split needs to know what the work actually is; a purely arithmetic\n  correction needs no Read at all.\n\n## Workflow\n\n1. Read the overview file.\n2. Re-split the phase breakdown so every finding is resolved: move work between\n   phases, add a phase, renumber, and rewrite the `## Phases` table and the\n   `## Phase Declarations` blocks to match.\n3. Split at a seam the overview\'s `## Architecture` section already implies \u2014 a\n   module boundary, a contract, a layer \u2014 rather than at whatever line balances\n   the counts. A breakdown split on arithmetic alone produces phases that hand\n   half a concept to each other.\n4. Hold every one of these:\n   - every phase\'s declared `Creates` count is at or under the ceiling named in\n     the findings;\n   - every phase\'s declared `Touches` count is at or under the touched-file\n     ceiling, unless its block reads `- **Renames only:** yes`. Add that bullet\n     only to a phase whose whole work is renaming \u2014 never as a way around the\n     ceiling;\n   - phase numbers run 1..n in table order, with no gaps and no duplicates;\n   - every row\'s filename reads `phase<N>-<slug>.md`, agreeing with its number;\n   - every `## Phases` row has a `### Phase <N> \u2014 ` block and vice versa;\n   - both count columns hold an integer;\n   - every declared create, export and script that was there before is still\n     declared afterwards, in whichever phase now owns it. A re-split moves work;\n     it never drops it.\n5. Touch no other section of the overview. Context, Decision Log, Global\n   Constraints, Architecture, Affected Packages and Cross-Phase Dependencies stay\n   exactly as written \u2014 except where a cross-phase dependency names a phase you\n   renumbered, which you update to keep it true.\n6. If a finding cannot be resolved from the inputs, stop and report status\n   `error` with the reason per finding in `discrepancies` \u2014 never paper over it.\n\n## Report \u2014 your entire final message is one JSON object\n\nEmit exactly one JSON `PlanFixReport` object as your entire final message.\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts\nwith `{` and ends with `}`.\n\n```\n{\n	"status": "fixed",\n	"filesEdited": ["<absolute path edited>"],\n	"discrepancies": []\n}\n```\n\nIf a finding cannot be resolved from the inputs, report the error result \u2014\n`status` is `"error"` and `discrepancies` states why, per finding:\n\n```\n{\n	"status": "error",\n	"filesEdited": [],\n	"discrepancies": ["<finding> \u2014 cannot be resolved because <reason>", "..."]\n}\n```\n\n## Operational rules\n\n- Edit **only** the listed overview file; never a phase file, a source file, a\n  test, or anything else.\n- Do not write the phase files. Separate agents author them from the breakdown\n  you settle here.\n- Do not implement any part of the feature. Do not create commits or branches.\n- Do not ask clarifying questions \u2014 proceed immediately; unresolvable findings\n  are reported via the error result, not asked about.\n- Respect all instructions in the project\'s CLAUDE.md files.\n';
+var planReshape_default = '# Role: Plan Reshaper\n\nYou re-split a phased plan\'s phase breakdown in place. You work autonomously\nfrom the task message; you Edit the overview file and your final message is\nmachine-parsed \u2014 one JSON report, not prose for a human.\n\nThis is the one plan-editing role that is allowed to restructure. The plan\nrepairer applies the smallest edit that resolves a finding and never re-orders\nanything; you are here because the breakdown itself does not fit, and making it\nfit means moving work between phases.\n\n## Input\n\nThe task message provides:\n\n- **Overview file to reshape** \u2014 the absolute path of the overview to Read and\n  Edit in place. It is the only file you may touch; the phase files do not exist\n  yet.\n- **Created-file ceiling** \u2014 the hard per-phase limit every phase must come in\n  under. No declaration raises it.\n- **Touched-file ceiling** \u2014 the hard per-phase limit on touched source files.\n  No `## File Budget` raises it; only a phase declared `- **Renames only:** yes`\n  or `- **Moves folders and files only:** yes` is exempt from it.\n- **Breakdown findings to resolve** \u2014 the typed findings saying which declared\n  phases are too large or malformed, each with its exact `fix` string.\n- **Reference files** (Read on demand) \u2014 absolute paths of the plan\'s own\n  decisions (`decisions.json`), the brainstorm decisions\n  (`brainstorm-decisions.json` \u2014 present only when the work came from a\n  `/brainstorm` hand-off), and the verified facts (`facts.json`). Read them when\n  a re-split needs to know what the work actually is; a purely arithmetic\n  correction needs no Read at all.\n\n## Workflow\n\n1. Read the overview file.\n2. Re-split the phase breakdown so every finding is resolved: move work between\n   phases, add a phase, renumber, and rewrite the `## Phases` table and the\n   `## Phase Declarations` blocks to match.\n3. Split at a seam the overview\'s `## Architecture` section already implies \u2014 a\n   module boundary, a contract, a layer \u2014 rather than at whatever line balances\n   the counts. A breakdown split on arithmetic alone produces phases that hand\n   half a concept to each other.\n4. Hold every one of these:\n   - every phase\'s declared `Creates` count is at or under the ceiling named in\n     the findings;\n   - every phase\'s declared `Touches` count is at or under the touched-file\n     ceiling, unless its block reads `- **Renames only:** yes` or\n     `- **Moves folders and files only:** yes`. Add the first bullet only to a\n     phase whose whole work is renaming, and the second only to a phase whose\n     whole work is moving folders and files \u2014 never either as a way around the\n     ceiling, and never both in one block. When a breakdown is over the ceiling\n     because one phase moves a large folder beside other work, the re-split\n     gathers the move into a phase of its own declared\n     `- **Moves folders and files only:** yes`;\n   - phase numbers run 1..n in table order, with no gaps and no duplicates;\n   - every row\'s filename reads `phase<N>-<slug>.md`, agreeing with its number;\n   - every `## Phases` row has a `### Phase <N> \u2014 ` block and vice versa;\n   - both count columns hold an integer;\n   - every declared create, export and script that was there before is still\n     declared afterwards, in whichever phase now owns it. A re-split moves work;\n     it never drops it.\n5. Touch no other section of the overview. Context, Decision Log, Global\n   Constraints, Architecture, Affected Packages and Cross-Phase Dependencies stay\n   exactly as written \u2014 except where a cross-phase dependency names a phase you\n   renumbered, which you update to keep it true.\n6. If a finding cannot be resolved from the inputs, stop and report status\n   `error` with the reason per finding in `discrepancies` \u2014 never paper over it.\n\n## Report \u2014 your entire final message is one JSON object\n\nEmit exactly one JSON `PlanFixReport` object as your entire final message.\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts\nwith `{` and ends with `}`.\n\n```\n{\n	"status": "fixed",\n	"filesEdited": ["<absolute path edited>"],\n	"discrepancies": []\n}\n```\n\nIf a finding cannot be resolved from the inputs, report the error result \u2014\n`status` is `"error"` and `discrepancies` states why, per finding:\n\n```\n{\n	"status": "error",\n	"filesEdited": [],\n	"discrepancies": ["<finding> \u2014 cannot be resolved because <reason>", "..."]\n}\n```\n\n## Operational rules\n\n- Edit **only** the listed overview file; never a phase file, a source file, a\n  test, or anything else.\n- Do not write the phase files. Separate agents author them from the breakdown\n  you settle here.\n- Do not implement any part of the feature. Do not create commits or branches.\n- Do not ask clarifying questions \u2014 proceed immediately; unresolvable findings\n  are reported via the error result, not asked about.\n- Respect all instructions in the project\'s CLAUDE.md files.\n';
 
 // src/agents/buildPlanReshapeInvocation.ts
 var buildPlanReshapeInvocation = ({
@@ -154050,8 +155287,8 @@ var buildPlanReshapeInvocation = ({
   brainstormDecisionsPath,
   factsPath
 }) => {
-  const findingLines = findings.map((finding3) => `- [${finding3.check}] ${finding3.location} \u2014 ${finding3.issue}
-  fix: ${finding3.fix}`);
+  const findingLines = findings.map((finding6) => `- [${finding6.check}] ${finding6.location} \u2014 ${finding6.issue}
+  fix: ${finding6.fix}`);
   const referenceLines = [
     `- Decisions record: ${decisionsPath}`,
     ...brainstormDecisionsPath ? [`- Brainstorm decisions (settled during brainstorm, before planning began): ${brainstormDecisionsPath}`] : [],
@@ -154067,7 +155304,7 @@ var buildPlanReshapeInvocation = ({
 No phase may declare more than ${createdFileCeiling2} created source files. This is fixed and no declaration raises it.`,
     `## Touched-file ceiling
 
-No phase may declare more than ${touchedFileCeiling2} touched source files, and a \`## File Budget\` never raises that. The only exemption is a phase whose declaration block carries \`- **Renames only:** yes\`, and that bullet is only for a phase whose whole work is renaming.`,
+No phase may declare more than ${touchedFileCeiling2} touched source files, and a \`## File Budget\` never raises that. There are two exemptions: a phase whose declaration block carries \`- **Renames only:** yes\`, a bullet only for a phase whose whole work is renaming, and a phase whose declaration block carries \`- **Moves folders and files only:** yes\`, a bullet only for a phase whose whole work is moving folders and files.`,
     `## Breakdown findings to resolve
 
 ${findingLines.join("\n")}`,
@@ -154127,7 +155364,7 @@ var shapeDefects = ({ declarations }) => getDeclarationDefects({
 var sizeDefects = ({ declarations, executorFileLimit }) => {
   const defects = [];
   for (const declaration of declarations) {
-    const { file: file2, createdCount, touchedCount, fileBudget, renamesOnly } = declaration;
+    const { file: file2, createdCount, touchedCount, fileBudget, buildMode } = declaration;
     const budget = fileBudget ?? executorFileLimit;
     for (const { label: label2 } of [
       { label: "Creates", count: createdCount },
@@ -154150,16 +155387,16 @@ var sizeDefects = ({ declarations, executorFileLimit }) => {
         fix: `split this phase into two in the '## Phases' table and '## Phase Declarations'`
       });
     }
-    if (touchedCount !== void 0 && touchedCount > touchedFileCeiling && renamesOnly !== true) {
+    if (touchedCount !== void 0 && touchedCount > touchedFileCeiling && buildMode === void 0) {
       defects.push({
         check: StructuralCheck.TouchedFilesWithinCeiling,
         severity: FindingSeverity.Blocking,
         issue: `${file2} is declared to touch ${touchedCount} source files, over the ${touchedFileCeiling}-file ceiling`,
         location: `Phases \u2192 ${file2}`,
-        fix: `split this phase in the '## Phases' table and '## Phase Declarations' so each touches no more than ${touchedFileCeiling} files \u2014 or, if its whole work is renaming, declare it with the '- **Renames only:** yes' bullet instead`
+        fix: `split this phase in the '## Phases' table and '## Phase Declarations' so each touches no more than ${touchedFileCeiling} files \u2014 or declare it with the '- **${buildModeBulletLabels[BuildMode.RenamesOnly]}:** yes' bullet if its whole work is renaming, or the '- **${buildModeBulletLabels[BuildMode.MoveFoldersAndFiles]}:** yes' bullet if its whole work is moving folders and files`
       });
     }
-    if (touchedCount !== void 0 && touchedCount > budget) {
+    if (touchedCount !== void 0 && touchedCount > budget && buildMode !== BuildMode.MoveFoldersAndFiles) {
       const source = fileBudget === void 0 ? "the configured executor-file-limit" : `${file2}'s own declared file budget`;
       defects.push({
         check: StructuralCheck.ScopeWithinGuardrail,
@@ -154184,7 +155421,7 @@ var checkPhaseBreakdown = ({ overviewText, overviewBase: overviewBase2, executor
 
 // src/plan/draft/repairPhaseBreakdown.ts
 var checkOverviewOnDisk = async ({ overviewPath, executorFileLimit }) => {
-  const overviewText = await readFile52(overviewPath, "utf8").catch(() => void 0);
+  const overviewText = await readFile53(overviewPath, "utf8").catch(() => void 0);
   return overviewText === void 0 ? void 0 : checkPhaseBreakdown({ overviewText, overviewBase: basename26(overviewPath), executorFileLimit });
 };
 var runReshapeAttempt = async ({ params, findings, attempt }) => {
@@ -154207,9 +155444,9 @@ var runReshapeAttempt = async ({ params, findings, attempt }) => {
       planPaths: [overviewPath],
       createdFileCeiling,
       touchedFileCeiling,
-      decisionsPath: join118(workspaceDir, "decisions.json"),
+      decisionsPath: join122(workspaceDir, "decisions.json"),
       brainstormDecisionsPath,
-      factsPath: join118(workspaceDir, "facts.json")
+      factsPath: join122(workspaceDir, "facts.json")
     }),
     contract: PlanFixReport
   });
@@ -154230,10 +155467,10 @@ var repairPhaseBreakdown = async (params) => {
 };
 
 // src/plan/internal/common/paths/planDraftOutputs.ts
-import { join as join119 } from "node:path";
+import { join as join123 } from "node:path";
 var planDraftOutputs = async ({ cwd, name, variant }) => {
   const dir = await planWorkspaceDir({ cwd, name });
-  return variant === PlanVariant.Single ? [{ path: join119(dir, "plan.md"), variant: PlanVariant.Single }] : [{ path: join119(dir, "overview.md"), variant: PlanVariant.Overview }];
+  return variant === PlanVariant.Single ? [{ path: join123(dir, "plan.md"), variant: PlanVariant.Single }] : [{ path: join123(dir, "overview.md"), variant: PlanVariant.Overview }];
 };
 
 // src/plan/draft/focused/draftFocusedPhasedPlan.ts
@@ -154257,7 +155494,7 @@ var readCheckedBreakdown = async ({
   }
   await syncPlanDecisions({ cwd, name, planPaths: [overviewPath], decisions });
   await syncGlobalConstraints({ planPaths: [overviewPath], decisions });
-  const overviewText = await readFile53(overviewPath, "utf8");
+  const overviewText = await readFile54(overviewPath, "utf8");
   return { overviewText, declarations: parsePhaseDeclarations({ plan: parsePlan({ content: overviewText, base: basename27(overviewPath) }) }) };
 };
 var composeEngineSections = async ({
@@ -154269,8 +155506,7 @@ var composeEngineSections = async ({
 }) => {
   await syncPlanDecisions({ cwd, name, planPaths: phasePaths, decisions });
   await syncGlobalConstraints({ planPaths: [overviewPath, ...phasePaths], decisions });
-  const stamped = await stampPhaseCounts({ overviewPath, phasePaths });
-  await syncPhaseSections({ overviewPath, declarations: stamped, phaseFiles: phasePaths.map((path) => basename27(path)) });
+  await syncPhaseSectionsFromFiles({ cwd, overviewPath, phasePaths });
 };
 var draftFocusedPhasedPlan = async ({ context, step }) => {
   const { cwd, driver, name, workspaceDir, facts, decisions, brainstormDecisionsPath, config: config2, executorFileLimit, evidence } = context;
@@ -154291,9 +155527,9 @@ var draftFocusedPhasedPlan = async ({ context, step }) => {
   }
   await syncPlanDecisions({ cwd, name, planPaths: [overviewPath], decisions });
   await syncGlobalConstraints({ planPaths: [overviewPath], decisions });
-  const spawn4 = { cwd, driver, name, workspaceDir, model, effort, permissions, timeoutMs, level, progress };
+  const spawn5 = { cwd, driver, name, workspaceDir, model, effort, permissions, timeoutMs, level, progress };
   const checked = await readCheckedBreakdown({
-    params: { ...spawn4, overviewPath, brainstormDecisionsPath, executorFileLimit },
+    params: { ...spawn5, overviewPath, brainstormDecisionsPath, executorFileLimit },
     decisions,
     advisories,
     draftStop
@@ -154302,7 +155538,7 @@ var draftFocusedPhasedPlan = async ({ context, step }) => {
     return checked.stop;
   }
   const phases = await authorFocusedPhaseFiles({
-    ...spawn4,
+    ...spawn5,
     facts,
     decisions,
     overviewText: checked.overviewText,
@@ -154335,9 +155571,9 @@ var buildPlanLintCommand = ({ cwd, name }) => {
 };
 
 // src/plan/draft/internal/common/utils/deleteAbandonedPlan.ts
-import { rm as rm10 } from "node:fs/promises";
+import { rm as rm11 } from "node:fs/promises";
 var deleteAbandonedPlan = async ({ path }) => {
-  await rm10(path, { force: true }).catch(() => void 0);
+  await rm11(path, { force: true }).catch(() => void 0);
   return await pathExists({ path }) ? `the abandoned single draft could not be deleted at ${path}` : void 0;
 };
 
@@ -154369,7 +155605,7 @@ var draftFocusedSinglePlan = async ({ context }) => {
     advisories
   });
   const overCeiling = converged.blocking.find(
-    (finding3) => finding3.check === StructuralCheck.CreatedFilesWithinCeiling || finding3.check === StructuralCheck.TouchedFilesWithinCeiling
+    (finding6) => finding6.check === StructuralCheck.CreatedFilesWithinCeiling || finding6.check === StructuralCheck.TouchedFilesWithinCeiling
   );
   if (overCeiling) {
     progress(`plan draft ${name}: ${overCeiling.issue} \u2014 deleting ${outputs[0].path} and re-drafting phased`);
@@ -154380,8 +155616,8 @@ var draftFocusedSinglePlan = async ({ context }) => {
 };
 
 // src/plan/evidence/collectSourceEvidence.ts
-import { readFile as readFile54 } from "node:fs/promises";
-import { join as join121 } from "node:path";
+import { readFile as readFile55 } from "node:fs/promises";
+import { join as join125 } from "node:path";
 
 // src/contracts/plan/evidence/SourceEvidenceEntry.ts
 var SourceEvidenceEntry = external_exports.object({
@@ -154456,8 +155692,8 @@ var extractSourceEvidence = ({ path, content, compiler }) => {
 };
 
 // src/plan/evidence/sourceEvidencePath.ts
-import { join as join120 } from "node:path";
-var sourceEvidencePath = async ({ cwd, name }) => join120(await planWorkspaceDir({ cwd, name }), "source-evidence.json");
+import { join as join124 } from "node:path";
+var sourceEvidencePath = async ({ cwd, name }) => join124(await planWorkspaceDir({ cwd, name }), "source-evidence.json");
 
 // src/plan/evidence/collectSourceEvidence.ts
 var atPath2 = ({ at }) => at.replace(/:\d+(?::\d+)?$/, "");
@@ -154501,16 +155737,16 @@ var collectSourceEvidence = async ({ cwd, name, facts, config: config2 }) => {
   const stored = new Map((previous?.entries ?? []).map((entry) => [entry.path, entry]));
   const compiler = resolveConsumerTypescript({ cwd, packagesDir: config2?.["packages-dir"] ?? defaultPackagesDir });
   const entries = [];
-  for (const [relative17, roles] of wantedPaths({ facts })) {
-    const content = await readFile54(join121(cwd, relative17), "utf8").catch(() => void 0);
+  for (const [relative20, roles] of wantedPaths({ facts })) {
+    const content = await readFile55(join125(cwd, relative20), "utf8").catch(() => void 0);
     if (content === void 0) {
-      entries.push({ path: relative17, sha256: "", kind: SourceEvidenceKind.Missing, bytes: 0, text: "", roles, definitions: [] });
+      entries.push({ path: relative20, sha256: "", kind: SourceEvidenceKind.Missing, bytes: 0, text: "", roles, definitions: [] });
       continue;
     }
     const hash3 = sha256({ content });
-    const reusable = stored.get(relative17);
+    const reusable = stored.get(relative20);
     entries.push(
-      reusable !== void 0 && reusable.sha256 === hash3 ? { ...reusable, roles } : collectEntry({ path: relative17, content, hash: hash3, roles, compiler })
+      reusable !== void 0 && reusable.sha256 === hash3 ? { ...reusable, roles } : collectEntry({ path: relative20, content, hash: hash3, roles, compiler })
     );
   }
   const index = SourceEvidenceIndex.parse({
@@ -154604,7 +155840,7 @@ var runPlanDraft = async ({
 }) => {
   const progress = onProgress ?? (() => void 0);
   const workspaceDir = await planWorkspaceDir({ cwd, name });
-  await mkdir24(workspaceDir, { recursive: true });
+  await mkdir25(workspaceDir, { recursive: true });
   const facts = await readPlanFacts({ cwd, name });
   const { merged, brainstorm } = await readMergedDecisions({ cwd, name, onProgress: progress });
   const config2 = await readOptionalConfig({ cwd });
@@ -154618,7 +155854,7 @@ var runPlanDraft = async ({
     workspaceDir,
     facts,
     decisions: merged,
-    brainstormDecisionsPath: brainstorm ? join122(workspaceDir, "brainstorm-decisions.json") : void 0,
+    brainstormDecisionsPath: brainstorm ? join126(workspaceDir, "brainstorm-decisions.json") : void 0,
     evidence: await collectSourceEvidence({ cwd, name, facts, config: config2 }),
     config: config2,
     executorFileLimit,
@@ -154635,8 +155871,8 @@ var runPlanDraft = async ({
 
 // src/cli/plan/planDraftCommand.ts
 var printPlanAdvisories = ({ advisories }) => {
-  for (const finding3 of advisories) {
-    printStructuralFinding({ finding: finding3 });
+  for (const finding6 of advisories) {
+    printStructuralFinding({ finding: finding6 });
   }
 };
 var planDraftCommand = async ({ cwd, driver, name, standards, config: config2, flags }) => {
@@ -154670,8 +155906,8 @@ ${red("facts error")} \u2014 the plan-writer found the facts/decisions do not ma
     const blocking = getBlockingFindings({ findings: result.findings });
     console.error(`
 ${red(`${blocking.length} structural issue(s)`)} remain after re-drafting \u2014 resolve, then re-draft:`);
-    for (const finding3 of blocking) {
-      printStructuralFinding({ finding: finding3, write: console.error });
+    for (const finding6 of blocking) {
+      printStructuralFinding({ finding: finding6, write: console.error });
     }
     printPlanAdvisories({ advisories: result.advisories });
     return exitCli({ code: 1 });
@@ -154727,15 +155963,15 @@ var printGradedGap = ({ gap, write = console.log }) => {
 var getBlockingGaps = ({ gaps }) => gaps.filter((gap) => isBlockingGap({ gap }));
 
 // src/plan/common/utils/gradeMemoryPath.ts
-import { join as join123 } from "node:path";
-var gradeMemoryPath = async ({ cwd, name }) => join123(await planWorkspaceDir({ cwd, name }), gradeMemoryFileName);
+import { join as join127 } from "node:path";
+var gradeMemoryPath = async ({ cwd, name }) => join127(await planWorkspaceDir({ cwd, name }), gradeMemoryFileName);
 
 // src/plan/gradeHistoryPath.ts
-import { join as join124 } from "node:path";
-var gradeHistoryPath = async ({ cwd, name }) => join124(await planWorkspaceDir({ cwd, name }), "grade-history.jsonl");
+import { join as join128 } from "node:path";
+var gradeHistoryPath = async ({ cwd, name }) => join128(await planWorkspaceDir({ cwd, name }), "grade-history.jsonl");
 
 // src/plan/runPlanGrade.ts
-import { basename as basename42, join as join129 } from "node:path";
+import { basename as basename42, join as join133 } from "node:path";
 
 // src/contracts/plan/memory/GradeScope.ts
 var GradeScope = {
@@ -154746,8 +155982,8 @@ var GradeScope = {
 };
 
 // src/plan/internal/appendGradeHistory.ts
-import { appendFile as appendFile5, mkdir as mkdir25 } from "node:fs/promises";
-import { dirname as dirname27 } from "node:path";
+import { appendFile as appendFile5, mkdir as mkdir26 } from "node:fs/promises";
+import { dirname as dirname28 } from "node:path";
 
 // src/contracts/plan/grade/GapCheckLens.ts
 var GapCheckLens = {
@@ -154955,7 +156191,7 @@ var GradeReport = external_exports.object({
 // src/plan/internal/appendGradeHistory.ts
 var appendGradeHistory = async ({ cwd, name, report: report2 }) => {
   const path = await gradeHistoryPath({ cwd, name });
-  await mkdir25(dirname27(path), { recursive: true });
+  await mkdir26(dirname28(path), { recursive: true });
   await appendFile5(path, `${JSON.stringify(GradeReport.parse(report2))}
 `, "utf8");
 };
@@ -155040,8 +156276,8 @@ var createGradeReport = ({
 };
 
 // src/plan/internal/common/grading/notePriorArtCollisions.ts
-import { readFile as readFile55 } from "node:fs/promises";
-import { join as join125 } from "node:path";
+import { readFile as readFile56 } from "node:fs/promises";
+import { join as join129 } from "node:path";
 
 // src/contracts/dedup/DedupFinding.ts
 var DedupFinding = DedupVerdict.omit({ isDuplicate: true }).extend({
@@ -155075,7 +156311,7 @@ var DedupReport = external_exports.object({
 // src/plan/internal/common/grading/notePriorArtCollisions.ts
 var collisionKey = ({ plannedSymbol, plannedPath, phase }) => `${phase} ${plannedPath} ${plannedSymbol}`;
 var readSettledCollisions = async ({ workspaceDir }) => {
-  const text = await readFile55(join125(workspaceDir, "dedup.json"), "utf8").catch(() => void 0);
+  const text = await readFile56(join129(workspaceDir, "dedup.json"), "utf8").catch(() => void 0);
   if (text === void 0) {
     return /* @__PURE__ */ new Set();
   }
@@ -155112,7 +156348,7 @@ var readReusableGrade = async ({ gradePath, sha256: sha2562 }) => {
 };
 
 // src/plan/internal/common/grading/runGradePass.ts
-import { basename as basename38, join as join127 } from "node:path";
+import { basename as basename38, join as join131 } from "node:path";
 
 // src/plan/internal/common/memory/collapseText.ts
 var collapseText = ({ text }) => text.replace(/\s+/g, " ").trim().toLowerCase();
@@ -155146,7 +156382,7 @@ var collapseSide = ({ gap, gaps }) => {
 var collapseGroupedGaps = ({ gaps }) => gaps.flatMap((gap) => (gap.findingId ?? "") === "" ? [gap] : collapseSide({ gap, gaps }));
 
 // src/plan/internal/common/grading/drainGradeAgents.ts
-import { basename as basename31, relative as relative14 } from "node:path";
+import { basename as basename31, relative as relative17 } from "node:path";
 
 // src/agents/prompts/planGapCheck.md
 var planGapCheck_default = '# Role: Check Plan Gaps\n\nYou check a plan for **adequacy**: whether its content is complete and decided\nenough for a fresh-context agent to implement via `lightsout implement` without\nguessing. This is the semantic half of plan quality. You work autonomously and\nyour final message is machine-parsed \u2014 one JSON report, not prose.\n\n**Boundary:** you own **adequacy** \u2014 is the present content enough to build, or\nmust a human decide something. The plan\'s **structure** (paths exist, scripts\nexist, no placeholders, required sections, naming, file-count scope) is already\nverified deterministically in code. Do **not** re-flag structural defects \u2014 only\ndecision-level gaps.\n\n## You are one of three\n\nThree checkers run against this same plan at the same time, each given a\ndifferent brief. Your own brief follows these instructions and **narrows which\nof the gap areas below you report**. Everything all three of us find is kept and\nrecorded as a union \u2014 nothing is voted on and nothing is dropped for being found\nonce. Each finding is then handed to its own judge, which decides who has to\nsettle it, and only the findings that need a human decide the plan\'s grade.\n\nNone of that changes your job: report what you find. The weighing is somebody\nelse\'s.\n\nSo do not compensate for the others. A real gap that belongs to another lens is\nnot lost by your leaving it alone; it is being looked for right now by a checker\nwhose whole job it is. Reporting outside your brief adds a duplicate, not\ncoverage.\n\n## Input\n\nThe task message provides the plan text to check. When present, the overview\nplan (context shared across phases \u2014 read it for design decisions and\ndependencies, but do not grade it standalone) and supplemental code standards\nthe implementing agent will also load are appended to these role instructions\nrather than arriving in the task message.\n\n## What counts as a gap\n\nA gap is something that would make the agent **guess** or that needs a human to\n**decide between valid alternatives**. Flag a check only when the agent could not\nderive the answer from the plan, the overview, the codebase, or the standards.\n\n- **underspecified-surface** \u2014 services/modules described as intent ("create a\n  service") without defined methods/signatures the agent can implement.\n- **unwired-dependency** \u2014 cross-module dependencies where the plan does not make\n  exports match imports, so the agent must invent the contract.\n- **insufficient-detail** \u2014 a file to create/modify lacks enough detail to build\n  it without guessing its behavior.\n- **omitted-decision** \u2014 points where multiple valid approaches exist and the\n  plan picks none (behavior, edge cases, error handling, what to return).\n- **ambiguous-boundary** \u2014 scope boundaries present but so vague the agent cannot\n  tell what is in vs out.\n- **standards-conflict** \u2014 instructions that contradict the supplied standards.\n- **phase-seam-mismatch** \u2014 a value one phase defines and a later phase consumes\n  under a different shape, where both phases state the shape.\n\n## Rules\n\n- `NONE` is a real result. A well-elicited, structurally clean plan should\n  return no gaps. Do not manufacture gaps.\n- Only flag gaps that force the agent to **guess** or need a **human decision**.\n  Details derivable from the codebase, overview, or standards are not gaps.\n- Do not re-flag structural defects (paths, scripts, placeholders, naming,\n  sections, scope) \u2014 those are checked in code.\n- Each gap states what must be decided and the valid options if you can surface\n  them.\n\n## Findings already settled for this plan file\n\nA list of settled findings may be appended to these instructions. Each entry is a\nquestion an earlier pass raised against this very file and someone settled \u2014 a\nhuman answered it into the plan, or a judge showed the implementing agent can\ndecide it or that the plan already answers it.\n\nIt is there so the same question is not asked twice, and it is **context, not\ncoverage**:\n\n- Read every part of this plan file exactly as you would if the list were empty.\n  A settled record never narrows your lens and never excuses skipping a section.\n- Report one of its entries again only when you have **new evidence** the settled\n  answer does not already cover \u2014 the plan changed under it, or the answer turns\n  out not to hold. Say what that evidence is in the gap text.\n- A question the list settles, that the plan still settles, is not a gap.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`. An empty `gaps` array is the clean result.\n\n```\n{\n	"gaps": [\n		{\n			"area": "underspecified-surface|unwired-dependency|insufficient-detail|omitted-decision|ambiguous-boundary|standards-conflict|phase-seam-mismatch",\n			"gap": "<what is missing or ambiguous>",\n			"decision": "<the decision a human must make>",\n			"options": ["<valid alternative>", "..."]\n		}\n	]\n}\n```\n';
@@ -155339,7 +156575,7 @@ var drainGapCheckers = async ({
 };
 
 // src/plan/internal/common/grading/judgeGaps.ts
-import { relative as relative13 } from "node:path";
+import { relative as relative16 } from "node:path";
 
 // src/agents/prompts/planGapJudge.md
 var planGapJudge_default = '# Role: Judge a Plan Gap Batch\n\nYou are handed **several observations** readers raised against a plan, and you\nanswer **one** question about each: who has to settle it. Before that, you\ndecide which of them describe the same underlying defect. You work autonomously\nand your final message is machine-parsed \u2014 one JSON object, not prose.\n\n## What you are given\n\nThe task message provides the text of every plan file the observations span \u2014\none `## Plan file:` section each \u2014 and the observations themselves, each under\nan engine-assigned identifier (`### o1`, `### o4`, \u2026) with its plan file, area,\nlens, finding, decision and offered options. When present, the overview plan\n(shared context for a phased plan \u2014 read it, do not judge it standalone) and\nsupplemental code standards are appended to these role instructions rather than\narriving in the task message.\n\nYou may read the repository. You make no edits.\n\n## The plan\'s other phases\n\nWhen the task message names the plan\'s folder, the plan is phased and its other\nphase files are on disk beside the ones you were given. An observation about\nsomething a neighbouring phase produces or consumes cannot be settled from one\nside alone, and a judge that guesses at the neighbour is the rubber stamp this\nbrief exists to prevent \u2014 so when the neighbour is not one of the plan files you\nwere given, open it and look.\n\nAn observation contained entirely in the files you were given needs none of\nthis. Do not read the whole plan out of thoroughness.\n\n## First: which observations are one defect\n\nThe engine put these observations together because their wording overlaps. That\nis a hint, never proof. Two or more observations are the **same defect** only\nwhen you can state:\n\n- a **common violated requirement or contradiction** every one of them is an\n  instance of, and\n- **one corrective decision** that settles every one of them.\n\nShared wording, a shared symbol or an overlapping file is not enough on its own.\nObservations of one contradiction seen from two phases usually ARE one defect;\ntwo different questions that happen to name the same file usually are NOT.\n\nWhen you are not sure, keep them apart. Being unsure is a normal answer, not a\nfailure: an observation you rule on its own is judged exactly as it would be\nalone.\n\n## The one question\n\nFor each defect \u2014 a confirmed group, or a single observation \u2014 who settles it: a\nhuman, the implementing agent, or nobody, because it is already answered.\n\n## The bar\n\nCould a fresh-context agent implementing this plan derive the answer from the\nplan, the overview, the codebase and the standards \u2014 and be right?\n\nThis is the same bar the reader briefs state, which is why you read the\nrepository rather than the plan text alone. "The plan does not say it" is not\nenough; the question is whether the agent would still get it right.\n\n## The three outcomes, and the evidence each demands\n\n- **`needs-a-human`** \u2014 the agent cannot work it out. Two defensible answers\n  exist and the plan picks neither, or the choice turns on intent nothing in the\n  repository carries. Supply **`humanDecision`**: the decision the human has to\n  make.\n- **`agent-can-decide`** \u2014 the agent can settle it correctly on its own, from\n  the plan, the codebase or the standards. Supply **`agentDecision`** (what it\n  would decide) and **`safeBecause`** (why that choice is safe to make\n  unattended).\n- **`already-answered`** \u2014 the reader missed an answer that is already there.\n  Supply **`answers`**: one entry for **every** plan file the ruling\'s\n  observations span, each naming that file in `phase` and giving, in `answerAt`,\n  either the exact line of **that file** that states the answer \u2014 copied\n  verbatim from its `## Plan file:` section \u2014 or the path of a file on disk.\n  Every file a ruling spans is one of the `## Plan file:` sections you were\n  given, so you are never asked to cite a file you cannot read. One citation\n  waving away a contradiction observed in two files is refused: an answer in one\n  file is no evidence about the other.\n\n## Your rulings\n\nYou return a **list** of rulings.\n\n- A ruling names the identifiers it covers in **`covers`**. Naming two or more is\n  your claim that they are one defect, and it must state that defect in\n  **`sharedDefect`** \u2014 the common requirement or contradiction, in one sentence.\n  Naming one is an ordinary single ruling.\n- **Every identifier you were given must appear in exactly one ruling.** An\n  observation no ruling covers, one covered by two rulings, and any identifier\n  you were not given all leave the affected observations unjudged \u2014 which blocks\n  the plan.\n- A ruling over a group settles the whole group with one outcome. There is no\n  vote: if the members need different outcomes, they are not one defect.\n\n## Findings already on record\n\nThe task message may list the records the plan\'s memory already holds for the\nplan files you were given, each with an id and the state it is in. When it\ndoes, decide **first**, for each ruling, whether it is the **same question** as\none of them.\n\n- If it is, put that record\'s id in the ruling\'s **`matchesFinding`**. If it is\n  not, leave the field unset.\n- Never name an id that is not on the list. One the plan does not hold points\n  nowhere, and the engine treats that whole ruling as no answer at all \u2014 which\n  blocks the plan.\n- Matching is **orthogonal to your ruling**: a matched ruling still gets a full\n  verdict with the evidence its outcome demands.\n- A match you rule `needs-a-human` **reopens** a record someone already closed.\n  Rule that way only on evidence the earlier clearance was wrong, or that the\n  assumptions it rested on have changed. A reader re-wording a settled question\n  is not such evidence.\n\n## Rules\n\n- Judge only the observations you were given. Do not read the plan for new\n  gaps, and do not re-check its structure \u2014 that is verified deterministically\n  in code.\n- The evidence your outcome demands is mandatory. A ruling without it is\n  discarded and every observation it covers is treated as unjudged, which blocks\n  the plan.\n- Cite what you actually read. A citation the engine cannot find in the plan\n  file it names, or a path that is not on disk, is discarded and blocks.\n- When you cannot tell, `needs-a-human` is the safe answer. Asking costs one\n  question; waving something through costs an unattended run that stalls.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`. Include only the evidence fields each outcome demands.\n\n```\n{\n	"verdicts": [\n		{\n			"covers": ["<every identifier this ruling settles>"],\n			"sharedDefect": "<two or more covered: the one defect they all are>",\n			"outcome": "needs-a-human|agent-can-decide|already-answered",\n			"humanDecision": "<needs-a-human only>",\n			"agentDecision": "<agent-can-decide only>",\n			"safeBecause": "<agent-can-decide only>",\n			"answers": [{ "phase": "<a plan file the ruling spans>", "answerAt": "<already-answered only: that file\'s exact line, or a path on disk>" }],\n			"matchesFinding": "<the id of the record this ruling repeats, when one is on the list>"\n		}\n	]\n}\n```\n';
@@ -155495,8 +156731,8 @@ var citationPathToken = ({ citation }) => {
 };
 
 // src/plan/internal/common/paths/citedPathExists.ts
-import { isAbsolute as isAbsolute3, join as join126 } from "node:path";
-var citedPathExists = async ({ cwd, token }) => pathExists({ path: isAbsolute3(token) ? token : join126(cwd, token) });
+import { isAbsolute as isAbsolute5, join as join130 } from "node:path";
+var citedPathExists = async ({ cwd, token }) => pathExists({ path: isAbsolute5(token) ? token : join130(cwd, token) });
 
 // src/plan/internal/common/memory/confirmCitation.ts
 var minimumCitationLength = 24;
@@ -155677,7 +156913,7 @@ var spawnGapJudge = async ({ params, batch, batchIndex }) => {
       standards,
       // Only a phased plan has siblings to point at, and the judge opens one
       // itself when an observation is about a seam its batch does not span.
-      planDir: overviewText === void 0 ? void 0 : relative13(cwd, workspaceDir),
+      planDir: overviewText === void 0 ? void 0 : relative16(cwd, workspaceDir),
       records: batchRecords({ memory: params.memory, batch }),
       observations: batch.observations.map(({ id, gap }) => ({ id, observation: gap }))
     }),
@@ -155732,7 +156968,7 @@ var spawnGapChecker = async ({
       standards,
       // Only a phased plan has siblings to point at, and the wiring checker
       // opens one itself when a consumed name's shape is declared elsewhere.
-      planDir: pass.overviewText === void 0 ? void 0 : relative14(cwd, pass.workspaceDir),
+      planDir: pass.overviewText === void 0 ? void 0 : relative17(cwd, pass.workspaceDir),
       lens,
       settled: phaseFindingRecords({ memory, phase: basename31(file2.path), statuses: settledStatuses })
     }),
@@ -156104,6 +157340,10 @@ var providedBy = ({ phase, exports }) => /* @__PURE__ */ new Set([
   ...exports,
   ...getComparableTokens({ lines: phase.plan.sections.get("What Next Plan Expects") ?? [] }).keys()
 ]);
+var namesPathUnderFolderMove = ({ phase, other }) => {
+  const folders = other.plan.folderMoves.flatMap((move) => [move.from, move.to]);
+  return getPlanNamedPaths({ plan: phase.plan }).some((path) => folders.some((folder) => path.startsWith(`${folder}/`)));
+};
 var getPhaseConnections = ({ phases, declarations }) => {
   const paired = phases.map((phase) => ({ phase, declaration: declarations.find((entry) => entry.file === phase.base) }));
   const undeclared = paired.filter((entry) => entry.declaration === void 0);
@@ -156121,7 +157361,7 @@ var getPhaseConnections = ({ phases, declarations }) => {
   const connections = new Map(phases.map((phase) => [phase.base, /* @__PURE__ */ new Set()]));
   for (const left of phases) {
     for (const right of phases) {
-      const linked = left.base !== right.base && [...consumes.get(left.base) ?? []].some((token) => provides.get(right.base)?.has(token));
+      const linked = left.base !== right.base && ([...consumes.get(left.base) ?? []].some((token) => provides.get(right.base)?.has(token)) || namesPathUnderFolderMove({ phase: left, other: right }));
       if (linked) {
         connections.get(left.base)?.add(right.base);
         connections.get(right.base)?.add(left.base);
@@ -156381,9 +157621,9 @@ var recordReadCoverage = ({
     return { readers: standing, docs };
   }
   const fresh = freshEntries({ read, light, designHashes, connections, at });
-  const written = new Set(fresh.map((entry) => keyOf(entry)));
+  const written2 = new Set(fresh.map((entry) => keyOf(entry)));
   return {
-    readers: [...standing.filter((entry) => !written.has(keyOf(entry))), ...fresh],
+    readers: [...standing.filter((entry) => !written2.has(keyOf(entry))), ...fresh],
     docs: documentationChecked ? documentationEntry({ designHashes, at }) : docs
   };
 };
@@ -156417,7 +157657,7 @@ var recordPassCoverage = ({
 };
 
 // src/plan/internal/common/memory/verifyOpenFindings.ts
-import { basename as basename37, relative as relative15 } from "node:path";
+import { basename as basename37, relative as relative18 } from "node:path";
 
 // src/agents/prompts/planFindingRecheck.md
 var planFindingRecheck_default = '# Role: Re-check a Settled Plan Question\n\nYou are handed **one** question a human was previously asked to settle, and the\ncurrent text of the plan it was raised against. You answer **one** question\nabout it: does the plan now state the answer? You work autonomously and your\nfinal message is machine-parsed \u2014 one JSON object, not prose.\n\n## What you are given\n\nThe task message provides the current plan text and the single record on file \u2014\nits id, the area it was raised under, what the reader found missing, the\ndecision it demanded, the options offered, and what the original judge said a\nhuman had to decide. When present, the overview plan (shared context for a\nphased plan \u2014 read it, do not judge it standalone) and supplemental code\nstandards are appended to these role instructions rather than arriving in the\ntask message.\n\nYou may read the repository. You make no edits.\n\n## The plan\'s other phases\n\nWhen the task message names the plan\'s folder, the plan is phased and its other\nphase files are on disk beside the text you were given. A question raised\nagainst one phase can be answered in another \u2014 a repair often moves a decision\ninto the overview\'s Decision Log or into the phase that owns the seam. Open a\nsibling when the answer plausibly moved there.\n\n## A record that spans several plan files\n\nA judge may have confirmed that readers in several plan files described one\ndefect, and the record then holds each of their observations. When the task\nmessage says this spawn asks about one plan file of such a record, answer **only\nfor that file**, in the words of that file\'s own observation. The record closes\nonly once every one of its files is confirmed separately, so an answer stated in\na different file is no evidence about this one \u2014 cite the plan text you were\ngiven, never a line from a sibling.\n\n## The two answers\n\n- **`already-answered`** \u2014 the plan now genuinely settles this question. A\n  reader of the plan would not have to guess, invent, or decide anything the\n  record asked about.\n- **`needs-a-human`** \u2014 it does not. Restate the outstanding decision in\n  `humanDecision`, in the terms a human can answer.\n\nYou never rule `agent-can-decide`. Downgrading a human\'s question to an\nassumption the implementing agent may make is not re-verification; it is\nanswering a different question from the one on file. If the plan does not state\nthe answer, the answer is `needs-a-human`.\n\n## The citation rule\n\n`answerAt` is your evidence, and the engine checks it before it closes anything.\n\n- Paste the **exact plan line** that states the answer \u2014 a Decision Log row, a\n  sentence from a file entry, a rule from a Scope Boundaries bullet. Copy it\n  verbatim from the text you were given.\n- Never paraphrase it, never give a heading on its own, and never describe where\n  to look ("see the Decision Log"). The engine looks for your quote in the plan\n  text; a quote it cannot find refuses the closure and the record stays open and\n  blocking.\n- A file path is the one non-quote citation allowed, and it must be a file that\n  is really on disk.\n\nA record you cannot close honestly is a record that should stay open. An\ninvented citation does not close it \u2014 it costs the run a pass and leaves the\nquestion exactly where it was.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text. Your message starts with\n`{` and ends with `}`.\n\n```\n{\n	"outcome": "already-answered|needs-a-human",\n	"answerAt": "<already-answered: the exact plan line that states the answer, or a file path on disk>",\n	"humanDecision": "<needs-a-human: the decision still outstanding>"\n}\n```\n';
@@ -156549,7 +157789,7 @@ var spawnRecheck = async ({ params, pair }) => {
       standards,
       // Only a phased plan has siblings to point at, and a record raised
       // against one phase may now be answered in another.
-      planDir: overviewText === void 0 ? void 0 : relative15(cwd, workspaceDir),
+      planDir: overviewText === void 0 ? void 0 : relative18(cwd, workspaceDir),
       record: pair.record,
       observation: pair.observation,
       locations: pair.locations
@@ -156690,7 +157930,7 @@ var persistPass = async ({
   report: report2,
   memory
 }) => {
-  await writeJsonFile({ path: join127(workspaceDir, gradeFileName), value: report2 });
+  await writeJsonFile({ path: join131(workspaceDir, gradeFileName), value: report2 });
   await appendGradeHistory({ cwd, name, report: report2 });
   await writeGradeMemory({ cwd, name, memory });
 };
@@ -156760,9 +158000,9 @@ var runGradePass = async (args) => {
 };
 
 // src/plan/internal/common/memory/readGradeMemory.ts
-import { readFile as readFile56 } from "node:fs/promises";
+import { readFile as readFile57 } from "node:fs/promises";
 var readJson = async ({ path }) => {
-  const text = await readFile56(path, "utf8");
+  const text = await readFile57(path, "utf8");
   try {
     const value = JSON.parse(text);
     return { value };
@@ -156838,8 +158078,8 @@ var decideGradeScope = ({ files, overviewText, memory, inputs, narrowed }) => {
 };
 
 // src/plan/internal/common/scope/getGradeInputs.ts
-import { readFile as readFile57 } from "node:fs/promises";
-import { basename as basename40, join as join128 } from "node:path";
+import { readFile as readFile58 } from "node:fs/promises";
+import { basename as basename40, join as join132 } from "node:path";
 
 // src/agents/common/constants/planGradePromptTexts.ts
 var planGradePromptTexts = [
@@ -156898,7 +158138,7 @@ var getOverviewDesignHashes = ({ overview, phaseFiles }) => {
 
 // src/plan/internal/common/scope/getGradeInputs.ts
 var hashFile = async ({ path }) => {
-  const content = await readFile57(path).catch(() => void 0);
+  const content = await readFile58(path).catch(() => void 0);
   return content === void 0 ? "absent" : sha256({ content });
 };
 var planRelevantConfig = ({ config: config2 }) => ({
@@ -156908,7 +158148,7 @@ var planRelevantConfig = ({ config: config2 }) => ({
   "packages-dir": config2?.["packages-dir"],
   "executor-file-limit": config2?.["executor-file-limit"]
 });
-var hashChangedFiles = async ({ cwd, changed }) => Promise.all([...changed].sort().map(async (path) => ({ path, sha256: await hashFile({ path: join128(cwd, path) }) })));
+var hashChangedFiles = async ({ cwd, changed }) => Promise.all([...changed].sort().map(async (path) => ({ path, sha256: await hashFile({ path: join132(cwd, path) }) })));
 var toDecisionEntry = ({ row }) => {
   const phases = row.question.startsWith("Global constraint:") ? void 0 : row.phases;
   return {
@@ -156920,7 +158160,7 @@ var toDecisionEntry = ({ row }) => {
 var overviewBase = "overview.md";
 var readPlanFile = async ({ path }) => {
   const file2 = basename40(path);
-  const content = await readFile57(path).catch(() => void 0);
+  const content = await readFile58(path).catch(() => void 0);
   return content === void 0 ? { file: file2, sha256: "absent" } : { file: file2, sha256: sha256({ content }), plan: parsePlan({ content: content.toString("utf8"), base: file2 }) };
 };
 var readDecisionPart = ({ decisions, overviewDesign }) => ({
@@ -157042,7 +158282,7 @@ var runPlanGrade = async (params) => {
   if ("error" in selection) {
     return { status: PlanRunStatus.Failed, workspaceDir, error: selection.error };
   }
-  const gradePath = join129(workspaceDir, gradeFileName);
+  const gradePath = join133(workspaceDir, gradeFileName);
   const structural = await lintPlanStructure({ cwd, planPaths, decisions: pass.decisions, config: config2 });
   const stamp3 = await readGradeStamp({ cwd });
   const blockingStructural = getBlockingFindings({ findings: structural });
@@ -157150,8 +158390,8 @@ ${bold(`plan grade ${name}`)} \u2014 ${grade.passed ? green(grade.grade) : red(g
   console.log(`  checked: ${grade.phasesChecked.length} phase file(s) \xD7 ${grade.lenses.length} lens(es)${checked}`);
   printCoverage({ grade });
   printWeights({ weights: grade.weights });
-  for (const finding3 of grade.structural) {
-    printStructuralFinding({ finding: finding3 });
+  for (const finding6 of grade.structural) {
+    printStructuralFinding({ finding: finding6 });
   }
   printGaps({ gaps: blocking });
   console.log(`
@@ -157192,8 +158432,8 @@ ${result.error}`);
   const note = advisory === 0 ? "" : `, ${advisory} advisory finding(s)`;
   console.log(`
 ${bold(`plan lint ${name}`)} \u2014 ${headline}${note} (${planPaths.length} file(s))`);
-  for (const finding3 of findings) {
-    printStructuralFinding({ finding: finding3 });
+  for (const finding6 of findings) {
+    printStructuralFinding({ finding: finding6 });
   }
   return exitCli({ code: blocking.length > 0 ? 1 : 0 });
 };
@@ -157228,13 +158468,13 @@ var attachDurableFiles = async ({
 };
 
 // src/plan/publish/internal/common/utils/prepareAttachments.ts
-import { readFile as readFile58 } from "node:fs/promises";
+import { readFile as readFile59 } from "node:fs/promises";
 var prepareAttachments2 = async ({ files }) => {
   const durable = [];
   const carried = files.filter(({ name }) => name !== brainstormNotesFileName);
   for (const file2 of carried) {
     try {
-      durable.push({ name: file2.name, content: await readFile58(file2.path) });
+      durable.push({ name: file2.name, content: await readFile59(file2.path) });
     } catch (error51) {
       return { error: `could not read ${file2.name} before publishing: ${messageOf({ error: error51 })}` };
     }
@@ -157314,7 +158554,7 @@ var publishPlan = async ({ cwd, name, config: config2, env, onProgress, titlePre
 };
 
 // src/workOrder/internal/common/utils/matchesImplementedSnapshot.ts
-import { readFile as readFile59 } from "node:fs/promises";
+import { readFile as readFile60 } from "node:fs/promises";
 var matchesImplementedSnapshot = async ({ cwd, address, snapshot }) => {
   const durable = await durablePlanFiles({ cwd, name: address });
   const named = new Set(snapshot.map(({ name }) => name));
@@ -157322,7 +158562,7 @@ var matchesImplementedSnapshot = async ({ cwd, address, snapshot }) => {
   let matches = durable.error === void 0 && attachable.every(({ name }) => named.has(name));
   for (const entry of snapshot) {
     const file2 = matches ? durable.files.find(({ name }) => name === entry.name) : void 0;
-    const content = file2 === void 0 ? void 0 : await readFile59(file2.path).catch(() => void 0);
+    const content = file2 === void 0 ? void 0 : await readFile60(file2.path).catch(() => void 0);
     matches = matches && content !== void 0 && sha256({ content }) === entry.sha256;
   }
   return matches;
@@ -157345,8 +158585,8 @@ var findPlanPublishRefusal = async ({ cwd, address, planId, name, record: record
 };
 
 // src/workOrder/internal/common/utils/publishBrainstormWhenNotesChanged.ts
-import { readFile as readFile60 } from "node:fs/promises";
-import { join as join130 } from "node:path";
+import { readFile as readFile61 } from "node:fs/promises";
+import { join as join134 } from "node:path";
 var readCommittedNotesHash = async ({
   planId,
   target
@@ -157382,7 +158622,7 @@ var publishBrainstormWhenNotesChanged = async ({
   env,
   onProgress
 }) => {
-  const notesPath = join130(await planWorkspaceDir({ cwd, name: address }), brainstormNotesFileName);
+  const notesPath = join134(await planWorkspaceDir({ cwd, name: address }), brainstormNotesFileName);
   if (!await pathExists({ path: notesPath })) {
     return { published: [] };
   }
@@ -157390,7 +158630,7 @@ var publishBrainstormWhenNotesChanged = async ({
   if ("error" in committed) {
     return committed;
   }
-  const onDisk = sha256({ content: await readFile60(notesPath) });
+  const onDisk = sha256({ content: await readFile61(notesPath) });
   if (committed.committed === onDisk) {
     return { published: [] };
   }
@@ -157558,6 +158798,59 @@ ${bold(`plan sync-decisions ${name}`)} \u2014 ${result.files.length} file(s)`);
   return exitCli({ code: 0 });
 };
 
+// src/cli/plan/planSyncPhasesCommand.ts
+import { basename as basename45 } from "node:path";
+
+// src/plan/sections/syncPlanPhases.ts
+import { basename as basename44 } from "node:path";
+var missingBlockDefects = ({ declarations, phaseFiles }) => {
+  const unblocked = declarations.filter((row) => row.number > 0 && row.blockRange === void 0 && phaseFiles.includes(row.file));
+  return unblocked.map((row) => ({
+    issue: `phase ${row.number} ('${row.file}') has a '## Phases' row but no '## Phase Declarations' block`,
+    fix: `add a '### Phase ${row.number}' block for ${row.file}`
+  }));
+};
+var syncPlanPhases = async ({ cwd, name }) => {
+  const deliverable = await resolvePlanDeliverable({ cwd, name });
+  if (deliverable.error !== void 0) {
+    return { status: PlanRunStatus.Failed, error: deliverable.error };
+  }
+  if (deliverable.overviewPath === void 0 || deliverable.overviewText === void 0) {
+    return { status: PlanRunStatus.Failed, error: `cannot sync phases for '${name}': it has no overview.md, so there is no phase breakdown to sync` };
+  }
+  const overviewBase2 = basename44(deliverable.overviewPath);
+  const phaseFiles = deliverable.files.map((file3) => basename44(file3.path));
+  const declarations = parsePhaseDeclarations({ plan: parsePlan({ content: deliverable.overviewText, base: overviewBase2 }) });
+  const defects = [...getPhaseSetDefects({ declarations, phaseFiles, overviewBase: overviewBase2 }), ...missingBlockDefects({ declarations, phaseFiles })];
+  if (defects.length > 0) {
+    return {
+      status: PlanRunStatus.Failed,
+      error: [
+        `cannot sync phases for '${name}': the phase files and the overview's breakdown do not line up`,
+        ...defects.map((defect) => `  ${defect.issue} \u2014 ${defect.fix}`),
+        "Adding a missing row or block, and renumbering or renaming phase files, is your own edit; make it, then run this command again."
+      ].join("\n")
+    };
+  }
+  const file2 = await syncPhaseSectionsFromFiles({ cwd, overviewPath: deliverable.overviewPath, phasePaths: deliverable.files.map((phase) => phase.path) });
+  return { status: PlanRunStatus.Complete, file: file2 };
+};
+
+// src/cli/plan/planSyncPhasesCommand.ts
+var planSyncPhasesCommand = async ({ flags, cwd }) => {
+  const name = await getRequiredFlag({ flags, name: "name" });
+  const result = await syncPlanPhases({ cwd, name });
+  if (result.status === PlanRunStatus.Failed) {
+    console.error(`
+${result.error}`);
+    return exitCli({ code: 1 });
+  }
+  console.log(`
+${bold(`plan sync-phases ${name}`)}`);
+  console.log(`  ${basename45(result.file.path)} \u2014 ${result.file.updated ? "updated" : "unchanged"}`);
+  return exitCli({ code: 0 });
+};
+
 // src/cli/internal/common/utils/ensureBrainstormFiles.ts
 var report = ({
   restored,
@@ -157597,8 +158890,8 @@ var ensureBrainstormFiles = async ({ cwd, name, write = console.log }) => {
 };
 
 // src/plan/runPlanVerifyFacts.ts
-import { copyFile, mkdir as mkdir26, writeFile as writeFile22 } from "node:fs/promises";
-import { join as join132, resolve as resolve15 } from "node:path";
+import { copyFile, mkdir as mkdir27, writeFile as writeFile21 } from "node:fs/promises";
+import { join as join136, resolve as resolve17 } from "node:path";
 
 // src/contracts/plan/facts/AuthoredFacts.ts
 var AuthoredFacts = external_exports.object({
@@ -157607,13 +158900,13 @@ var AuthoredFacts = external_exports.object({
 });
 
 // src/plan/verifyFacts.ts
-import { readFile as readFile61 } from "node:fs/promises";
-import { join as join131 } from "node:path";
+import { readFile as readFile62 } from "node:fs/promises";
+import { join as join135 } from "node:path";
 var verifyFacts = async ({ cwd, facts }) => {
   const paths = facts.areas.flatMap((area) => [...area.filesToModify.map((file2) => file2.path), ...area.patternsToMirror.map((pattern) => pattern.path)]);
   const missingPaths = [];
   for (const path of paths) {
-    const exists3 = await pathExists({ path: join131(cwd, path) });
+    const exists3 = await pathExists({ path: join135(cwd, path) });
     if (!exists3) {
       missingPaths.push(path);
     }
@@ -157624,10 +158917,10 @@ var verifyFacts = async ({ cwd, facts }) => {
     if (area.scripts.length === 0) {
       continue;
     }
-    const manifestPaths = [join131(cwd, "package.json"), ...area.affectedPackages.map((pkg) => join131(cwd, pkg, "package.json"))];
+    const manifestPaths = [join135(cwd, "package.json"), ...area.affectedPackages.map((pkg) => join135(cwd, pkg, "package.json"))];
     const available = /* @__PURE__ */ new Set();
     for (const manifestPath of manifestPaths) {
-      const raw = await readFile61(manifestPath, "utf8").catch(() => void 0);
+      const raw = await readFile62(manifestPath, "utf8").catch(() => void 0);
       if (raw) {
         for (const key of getManifestScriptKeys({ raw })) {
           available.add(key);
@@ -157656,15 +158949,15 @@ var snapshotNotes = async ({
   notesFile,
   progress
 }) => {
-  const source = resolve15(cwd, notesFile);
-  const destination = join132(workspaceDir, "brainstorm-notes.md");
+  const source = resolve17(cwd, notesFile);
+  const destination = join136(workspaceDir, "brainstorm-notes.md");
   const alreadyFrozen = await pathExists({ path: destination });
   if (alreadyFrozen) {
     progress("plan verify-facts \xB7 brainstorm-notes.md already frozen \u2014 snapshot skipped");
     return { error: void 0 };
   }
   try {
-    await mkdir26(workspaceDir, { recursive: true });
+    await mkdir27(workspaceDir, { recursive: true });
     await copyFile(source, destination);
   } catch {
     return { error: `notes file not found: ${source}` };
@@ -157675,7 +158968,7 @@ var snapshotNotes = async ({
 var runPlanVerifyFacts = async ({ cwd, name, notesFile, onProgress }) => {
   const progress = onProgress ?? (() => void 0);
   const workspaceDir = await planWorkspaceDir({ cwd, name });
-  const factsPath = join132(workspaceDir, "facts.json");
+  const factsPath = join136(workspaceDir, "facts.json");
   if (notesFile !== void 0) {
     const snapshot = await snapshotNotes({ cwd, workspaceDir, notesFile, progress });
     if (snapshot.error !== void 0) {
@@ -157701,7 +158994,7 @@ var runPlanVerifyFacts = async ({ cwd, name, notesFile, onProgress }) => {
     verification,
     verifiedAt: (/* @__PURE__ */ new Date()).toISOString()
   };
-  await writeFile22(factsPath, `${JSON.stringify(facts, void 0, "	")}
+  await writeFile21(factsPath, `${JSON.stringify(facts, void 0, "	")}
 `, "utf8");
   const missingPart = verification.missingPaths.length > 0 ? `, ${verification.missingPaths.length} missing: ${verification.missingPaths.join(", ")}` : "";
   progress(
@@ -157769,7 +159062,8 @@ var readPlanningStandards = async ({ cwd, config: config2 }) => {
 // src/cli/plan/planCommand.ts
 var openDispatchCheckout = async ({ cwd, flags, subcommand }) => {
   const name = getStringFlag({ flags, name: "name" });
-  if (name === void 0 || !["workspace", "draft", "dedup", "grade", "lint", "publish", "sync-decisions", "verify-facts"].includes(subcommand ?? "")) {
+  const checkoutSubcommands = ["workspace", "draft", "dedup", "grade", "lint", "publish", "sync-decisions", "sync-phases", "verify-facts"];
+  if (name === void 0 || !checkoutSubcommands.includes(subcommand ?? "")) {
     return { cwd, worktree: void 0 };
   }
   if (parsePlanAddress({ name }) === void 0) {
@@ -157785,12 +159079,10 @@ var openDispatchCheckout = async ({ cwd, flags, subcommand }) => {
 };
 var planCommand = async ({ flags, rest, cwd: launchingCwd }) => {
   const subcommand = getPositionals({ args: rest })[0];
-  if (subcommand === "workspace") {
-    await getRequiredFlag({ flags, name: "name" });
-  }
+  const workspaceName = subcommand === "workspace" ? await getRequiredFlag({ flags, name: "name" }) : void 0;
   const { cwd, worktree } = await openDispatchCheckout({ cwd: launchingCwd, flags, subcommand });
-  if (subcommand === "workspace" && worktree !== void 0) {
-    await planWorkspaceCommand({ worktree });
+  if (workspaceName !== void 0 && worktree !== void 0) {
+    await planWorkspaceCommand({ worktree, name: workspaceName });
     return;
   }
   if (subcommand === "verify-facts") {
@@ -157803,6 +159095,10 @@ var planCommand = async ({ flags, rest, cwd: launchingCwd }) => {
   }
   if (subcommand === "sync-decisions") {
     await planSyncDecisionsCommand({ flags, rest, cwd });
+    return;
+  }
+  if (subcommand === "sync-phases") {
+    await planSyncPhasesCommand({ flags, rest, cwd });
     return;
   }
   if (subcommand === "publish") {
@@ -157831,7 +159127,8 @@ var planCommand = async ({ flags, rest, cwd: launchingCwd }) => {
 };
 
 // src/cli/queueCommand.ts
-import { resolve as resolve16 } from "node:path";
+import { randomUUID as randomUUID11 } from "node:crypto";
+import { resolve as resolve18 } from "node:path";
 
 // src/cli/internal/common/constants/QueueBoardState.ts
 var QueueBoardState = {
@@ -157839,9 +159136,6 @@ var QueueBoardState = {
   Stopped: "stopped",
   Finished: "finished"
 };
-
-// src/cli/internal/common/constants/queueUpdateIntervalMs.ts
-var queueUpdateIntervalMs = 6e5;
 
 // src/cli/internal/common/queueBoard/toInlineMarkdown.ts
 var toInlineMarkdown = ({ text, maxLength }) => {
@@ -157884,7 +159178,7 @@ var toHeading = ({ state, at }) => {
   const time3 = toClock({ at });
   let heading = `Queue finished \xB7 ${time3}`;
   if (state === QueueBoardState.Live) {
-    heading = `Queue update \xB7 ${time3} \xB7 next update ${toClock({ at: new Date(at.getTime() + queueUpdateIntervalMs) })}`;
+    heading = `Queue update \xB7 ${time3}`;
   } else if (state === QueueBoardState.Stopped) {
     heading = `Queue stopped \xB7 last update ${time3}`;
   }
@@ -157910,7 +159204,7 @@ var renderQueueBoard = ({ tickets, state, at }) => {
 };
 
 // src/queue/board/toQueueBoardTickets.ts
-import { join as join133 } from "node:path";
+import { join as join137 } from "node:path";
 var describeWork = ({ ticket, name, branch, worktreePath }) => ({
   identifier: ticket.identifier,
   title: ticket.title,
@@ -157920,7 +159214,7 @@ var describeWork = ({ ticket, name, branch, worktreePath }) => ({
   branch,
   worktreePath
 });
-var describeUnbuilt = ({ workOrder, live: live2 }) => describeWork({ ticket: workOrder.ticket, name: workOrder.name, branch: workOrder.branch, worktreePath: join133(live2.worktreesRoot, workOrder.name) });
+var describeUnbuilt = ({ workOrder, live: live2 }) => describeWork({ ticket: workOrder.ticket, name: workOrder.name, branch: workOrder.branch, worktreePath: join137(live2.worktreesRoot, workOrder.name) });
 var placeLeftBehind = ({ entry, lane, reason }) => ({
   identifier: entry.identifier,
   title: entry.title,
@@ -157982,21 +159276,32 @@ var toQueueBoardTickets = ({ settled: settled2, live: live2, at }) => {
   return inColumnOrder.map((ticket) => ({ ...ticket, enteredAt: toEnteredAt({ ticket, live: live2, at }) }));
 };
 
+// src/queue/board/getQueueSummaryPath.ts
+import { join as join138 } from "node:path";
+var getQueueSummaryPath = async ({ cwd, runId }) => {
+  return join138(await resolveRunDir({ cwd, runId }), "summary.json");
+};
+
+// src/queue/board/writeQueueSummary.ts
+var writeQueueSummary = async ({ cwd, runId, summary }) => {
+  await writeJsonFile({ path: await getQueueSummaryPath({ cwd, runId }), value: summary, atomic: true });
+};
+
 // src/queue/common/utils/isParkedOutcome.ts
 var isParkedOutcome = ({ outcome }) => !outcome.ready && outcome.open === void 0;
 
 // src/queue/relay/emptyRelayMailbox.ts
-import { mkdir as mkdir27, readdir as readdir22, rm as rm11 } from "node:fs/promises";
-import { join as join134 } from "node:path";
+import { mkdir as mkdir28, readdir as readdir23, rm as rm12 } from "node:fs/promises";
+import { join as join139 } from "node:path";
 var emptyRelayMailbox = async ({ directory }) => {
-  await mkdir27(directory, { recursive: true });
-  const entries = await readdir22(directory);
-  await Promise.all(entries.map((entry) => rm11(join134(directory, entry), { force: true, recursive: true })));
+  await mkdir28(directory, { recursive: true });
+  const entries = await readdir23(directory);
+  await Promise.all(entries.map((entry) => rm12(join139(directory, entry), { force: true, recursive: true })));
 };
 
 // src/queue/relay/FileQuestionRelay.ts
-import { readFile as readFile62, rename as rename9, rm as rm12 } from "node:fs/promises";
-import { join as join136 } from "node:path";
+import { readFile as readFile63, rename as rename10, rm as rm13 } from "node:fs/promises";
+import { join as join141 } from "node:path";
 
 // src/contracts/queue/RelayAnswer.ts
 var RelayAnswer = external_exports.object({
@@ -158015,7 +159320,7 @@ var RelayQuestion = external_exports.object({
 });
 
 // src/queue/relay/internal/recordRelayedAnswer.ts
-import { join as join135 } from "node:path";
+import { join as join140 } from "node:path";
 
 // src/ticketTracker/internal/common/utils/addLineUnderHeading.ts
 var readHeadingLevel = ({ line }) => {
@@ -158306,7 +159611,7 @@ var recordRelayedAnswer = async ({
   onProgress
 }) => {
   await appendJsonlRecords({
-    path: join135(coordinatorRunDir, "decisions.jsonl"),
+    path: join140(coordinatorRunDir, "decisions.jsonl"),
     schema: QueueQuestionRecord,
     entries: [{ question, answer, ticket: ticket.identifier }],
     runId: coordinatorRunId,
@@ -158334,7 +159639,7 @@ var readJson2 = ({ raw }) => {
   }
 };
 var readRelayAnswer = async ({ path }) => {
-  const raw = await readFile62(path, "utf8").catch(() => void 0);
+  const raw = await readFile63(path, "utf8").catch(() => void 0);
   if (raw === void 0) {
     return void 0;
   }
@@ -158343,8 +159648,8 @@ var readRelayAnswer = async ({ path }) => {
   return answer === "" ? void 0 : answer;
 };
 var removeExchange = async ({ questionPath, answerPath }) => {
-  await rm12(questionPath, { force: true });
-  await rm12(answerPath, { force: true });
+  await rm13(questionPath, { force: true });
+  await rm13(answerPath, { force: true });
 };
 var FileQuestionRelay = class {
   settings;
@@ -158373,8 +159678,8 @@ var FileQuestionRelay = class {
     }
     this.sequence += 1;
     const stem = `${ticket.identifier.toLowerCase()}-${this.sequence}`;
-    const questionPath = join136(this.directory, `${stem}.question.json`);
-    const answerPath = join136(this.directory, `${stem}.answer.json`);
+    const questionPath = join141(this.directory, `${stem}.question.json`);
+    const answerPath = join141(this.directory, `${stem}.answer.json`);
     await this.putQuestion({ stem, questionPath, question, ticket });
     const answer = await this.waitForAnswer({ questionPath, answerPath, question });
     await removeExchange({ questionPath, answerPath });
@@ -158407,9 +159712,9 @@ var FileQuestionRelay = class {
   /** The question file, written under a temporary name and renamed in — a watcher globbing `*.question.json` must never read half of one. */
   async putQuestion({ stem, questionPath, question, ticket }) {
     const entry = RelayQuestion.parse({ ticket: ticket.identifier, title: ticket.title, question, askedAt: (/* @__PURE__ */ new Date()).toISOString() });
-    const temporaryPath = join136(this.directory, `${stem}.tmp`);
+    const temporaryPath = join141(this.directory, `${stem}.tmp`);
     await writeJsonFile({ path: temporaryPath, value: entry });
-    await rename9(temporaryPath, questionPath);
+    await rename10(temporaryPath, questionPath);
     this.createProgressSink({ ticket })(`waiting for an answer in ${questionPath}`);
   }
   /**
@@ -158441,8 +159746,8 @@ var FileQuestionRelay = class {
           throw new Error(`no answer arrived within ${this.settings.questionTimeoutMs}ms for: ${question}`);
         }
         await Promise.race([
-          new Promise((resolve19) => {
-            timer = setTimeout(resolve19, pollMs);
+          new Promise((resolve21) => {
+            timer = setTimeout(resolve21, pollMs);
           }),
           abandoned
         ]);
@@ -158587,13 +159892,13 @@ var BoardQuestionRelay = class {
 };
 
 // src/queue/board/QueueBoardRecorder.ts
-import { mkdir as mkdir28, rename as rename10 } from "node:fs/promises";
-import { dirname as dirname28 } from "node:path";
+import { mkdir as mkdir29, rename as rename11 } from "node:fs/promises";
+import { dirname as dirname29 } from "node:path";
 
 // src/queue/board/getQueueBoardPath.ts
-import { join as join137 } from "node:path";
+import { join as join142 } from "node:path";
 var getQueueBoardPath = async ({ cwd, runId }) => {
-  return join137(await resolveRunDir({ cwd, runId }), "board.json");
+  return join142(await resolveRunDir({ cwd, runId }), "board.json");
 };
 
 // src/queue/board/QueueBoardRecorder.ts
@@ -158657,9 +159962,9 @@ var QueueBoardRecorder = class {
       });
       const board = { coordinatorRunId: this.runId, updatedAt: takenAt, tickets };
       this.entered = new Map(tickets.map((ticket) => [ticket.identifier.toLowerCase(), { lane: ticket.lane, at: ticket.enteredAt }]));
-      await mkdir28(dirname28(path), { recursive: true });
+      await mkdir29(dirname29(path), { recursive: true });
       await writeJsonFile({ path: `${path}.tmp`, value: board });
-      await rename10(`${path}.tmp`, path);
+      await rename11(`${path}.tmp`, path);
     } catch (error51) {
       this.onProgress?.(`the queue board ${path ?? `of run ${this.runId}`} could not be written: ${messageOf({ error: error51 })}`);
     }
@@ -158677,7 +159982,7 @@ var createMainCheckoutSerializer = () => {
 };
 
 // src/queue/internal/common/utils/startCoordinatorRun.ts
-import { join as join138 } from "node:path";
+import { join as join143 } from "node:path";
 var startCoordinatorRun = async ({
   cwd,
   runId,
@@ -158685,10 +159990,17 @@ var startCoordinatorRun = async ({
   config: config2
 }) => {
   const coordinatorRunDir = await resolveNewRunDir({ cwd, pipeline: PipelineKind.Queue, runId });
-  const planPath = join138(coordinatorRunDir, "queue.md");
+  const planPath = join143(coordinatorRunDir, "queue.md");
   const manifest = await createRun({ cwd, runId, plan: planPath, pipeline: PipelineKind.Queue, driver: driverName, config: config2 });
   await writeManifestWithUsage({ cwd, manifest, patch: { status: RunStatus.Running }, usageTotals: seedUsageTotals({ usage: manifest.usage }) });
   return { coordinatorRunDir, planPath, manifest };
+};
+
+// src/queue/internal/common/utils/toCoordinatorStatus.ts
+var toCoordinatorStatus = ({ drained }) => {
+  const unfinished = drained.leftBehind.filter((entry) => entry.settled !== true);
+  const parked = drained.outcomes.filter((outcome) => isParkedOutcome({ outcome }));
+  return parked.length === 0 && unfinished.length === 0 ? RunStatus.Passed : RunStatus.Escalated;
 };
 
 // src/queue/drainLanes/internal/common/utils/admitSelection.ts
@@ -158732,10 +160044,10 @@ var BranchState = external_exports.object({
 });
 
 // src/queue/branchState/internal/common/utils/getBranchStatePath.ts
-import { join as join139 } from "node:path";
+import { join as join144 } from "node:path";
 var getBranchStatePath = async ({ cwd, branch }) => {
   const folder = await resolveBranchRecordDir({ cwd, branch });
-  return folder === void 0 ? void 0 : join139(folder, "branch-state.json");
+  return folder === void 0 ? void 0 : join144(folder, "branch-state.json");
 };
 
 // src/queue/branchState/readBranchState.ts
@@ -158745,8 +160057,8 @@ var readBranchState = async ({ cwd, branch }) => {
 };
 
 // src/queue/branchState/writeBranchState.ts
-import { mkdir as mkdir29, rename as rename11 } from "node:fs/promises";
-import { dirname as dirname29 } from "node:path";
+import { mkdir as mkdir30, rename as rename12 } from "node:fs/promises";
+import { dirname as dirname30 } from "node:path";
 var writeBranchState = async ({ cwd, branch, phase, onProgress }) => {
   const record3 = { branch, phase, updatedAt: (/* @__PURE__ */ new Date()).toISOString() };
   try {
@@ -158755,9 +160067,9 @@ var writeBranchState = async ({ cwd, branch, phase, onProgress }) => {
       onProgress?.(`the branch state for ${branch} was not recorded as '${phase}': no work order's record stores that branch, so it keeps no local record`);
       return;
     }
-    await mkdir29(dirname29(statePath), { recursive: true });
+    await mkdir30(dirname30(statePath), { recursive: true });
     await writeJsonFile({ path: `${statePath}.tmp`, value: record3 });
-    await rename11(`${statePath}.tmp`, statePath);
+    await rename12(`${statePath}.tmp`, statePath);
   } catch (error51) {
     const message = messageOf({ error: error51 });
     onProgress?.(`the branch state for ${branch} could not be recorded as '${phase}': ${message}`);
@@ -159035,12 +160347,12 @@ var createWorkOrder = async ({
   if (refusal !== void 0) {
     return { error: refusal };
   }
-  const written = await updateLocalWorkOrderState({
+  const written2 = await updateLocalWorkOrderState({
     cwd,
     name: composed.name,
     change: (current) => current === void 0 ? buildWorkOrderState({ name: composed.name, branch, ticketRef: naming.ticketRef, mode, config: config2 }) : { error: takenRefusal({ name: composed.name }) }
   });
-  return "error" in written ? written : { name: composed.name, branch, record: written.record };
+  return "error" in written2 ? written2 : { name: composed.name, branch, record: written2.record };
 };
 
 // src/queue/nameWaveWorkOrders.ts
@@ -159166,14 +160478,14 @@ var startBuilds = ({ context, state, flight }) => {
 };
 
 // src/queue/drainLanes/internal/common/utils/writeQueuePlan.ts
-import { writeFile as writeFile23 } from "node:fs/promises";
-import { join as join140 } from "node:path";
+import { writeFile as writeFile22 } from "node:fs/promises";
+import { join as join145 } from "node:path";
 var writeQueuePlan = async ({ path, cwd, queued }) => {
   const root = await resolveWorktreesRoot({ cwd });
   const lines = queued.map(
-    (workOrder) => `- ${workOrder.ticket.identifier} \xB7 ${workOrder.ticket.worker} \xB7 ${workOrder.branch} \xB7 ${join140(root, workOrder.name)}`
+    (workOrder) => `- ${workOrder.ticket.identifier} \xB7 ${workOrder.ticket.worker} \xB7 ${workOrder.branch} \xB7 ${join145(root, workOrder.name)}`
   );
-  await writeFile23(path, `# queue drain
+  await writeFile22(path, `# queue drain
 
 ${lines.join("\n")}
 `, "utf8");
@@ -159639,7 +160951,7 @@ var drainQueue = async ({
 };
 
 // src/queue/internal/runQueueWorkOrder.ts
-import { join as join142 } from "node:path";
+import { join as join147 } from "node:path";
 
 // src/common/git/readGitCommitsAhead.ts
 var readGitCommitsAhead = async ({ cwd, defaultBranch }) => {
@@ -159707,10 +161019,41 @@ var toWorkerOutcome = ({ outcome, onFailedRun }) => {
   return onFailedRun({ stated: result.error ?? `the run ended ${result.manifest.status}`, result });
 };
 
+// src/runState/owner/removeRunOwner.ts
+import { rm as rm14 } from "node:fs/promises";
+var removeRunOwner = async ({ cwd, runId }) => {
+  const ownerPath = await getRunOwnerPath({ cwd, runId }).catch((error51) => {
+    if (error51 instanceof RunNotFoundError) {
+      return void 0;
+    }
+    throw error51;
+  });
+  if (ownerPath === void 0) {
+    return;
+  }
+  await rm14(ownerPath, { force: true });
+};
+
 // src/queue/workers/internal/common/utils/buildFromTicketBody.ts
 var buildFromTicketBody = async ({ step }) => {
-  const { cwd, record: record3, plan, ticket, config: config2, driver, driverName, onProgress } = step;
-  const run = ({ runId }) => runDirectWork({ cwd, ticketBody: ticket.description, ticketRef: ticket.identifier, runId, driver, driverName, config: config2, onProgress });
+  const { cwd, record: record3, plan, ticket, config: config2, driver, driverName, onProgress, queueRunId } = step;
+  const run = async ({ runId }) => {
+    try {
+      return await runDirectWork({
+        cwd,
+        ticketBody: ticket.description,
+        ticketRef: ticket.identifier,
+        runId,
+        driver,
+        driverName,
+        config: config2,
+        onProgress,
+        queueRunId
+      });
+    } finally {
+      await removeRunOwner({ cwd, runId });
+    }
+  };
   let outcome;
   if (plan === void 0) {
     onProgress?.(`${ticket.identifier} holds no plan on work order ${record3.name}, so it is built from the ticket body`);
@@ -159795,21 +161138,27 @@ var settleLeftoverWork = async ({ step, leftover }) => {
 };
 
 // src/queue/workers/internal/runPlanFolderPipeline.ts
-import { join as join141 } from "node:path";
-var runPlanFolderPipeline = async ({ cwd, name, config: config2, driver, onProgress }) => {
+import { join as join146 } from "node:path";
+var runPlanFolderPipeline = async ({ cwd, name, config: config2, driver, onProgress, queueRunId }) => {
   const folder = await planWorkspaceDir({ cwd, name });
-  const overviewPath = join141(folder, "overview.md");
+  const overviewPath = join146(folder, "overview.md");
   const phased = await pathExists({ path: overviewPath });
   const outcome = await runWorkOrderPlanLifecycle({
     cwd,
     name,
-    run: ({ runId }) => recordPlanCommandRun({
-      cwd,
-      name,
-      label: "implement",
-      statusOf: ({ result }) => result.manifest.status,
-      work: ({ level }) => phased ? runPhasesPipeline({ cwd, driver, config: config2, overviewPath, runId, level, onProgress }) : runImplementPipeline({ cwd, driver, config: config2, planPath: join141(folder, "plan.md"), runId, level, onProgress })
-    })
+    run: async ({ runId }) => {
+      try {
+        return await recordPlanCommandRun({
+          cwd,
+          name,
+          label: "implement",
+          statusOf: ({ result }) => result.manifest.status,
+          work: ({ level }) => phased ? runPhasesPipeline({ cwd, driver, config: config2, overviewPath, runId, level, onProgress, queueRunId }) : runImplementPipeline({ cwd, driver, config: config2, planPath: join146(folder, "plan.md"), runId, level, onProgress, queueRunId })
+        });
+      } finally {
+        await removeRunOwner({ cwd, runId });
+      }
+    }
   });
   return toWorkerOutcome({
     outcome,
@@ -159836,7 +161185,7 @@ var takePlanBeingPlanned = ({ step, allowTicketBodyBuild }) => {
   return buildFromTicketBody({ step });
 };
 var buildReadyPlan = async ({ step }) => {
-  const { cwd, record: record3, plan, config: config2, env, driver, onProgress } = step;
+  const { cwd, record: record3, plan, config: config2, env, driver, onProgress, queueRunId } = step;
   const address = formatPlanAddress({ workOrderName: record3.name, planId: plan.id });
   if (!await pathExists({ path: await planWorkspaceDir({ cwd, name: address }) })) {
     const restored = await restoreWorkOrderPlan({ cwd, address, config: config2, env, onProgress });
@@ -159848,7 +161197,7 @@ var buildReadyPlan = async ({ step }) => {
       return { error: `plan ${plan.id} is ready to implement on work order ${record3.name}, but nothing${carrier} carries published files for it` };
     }
   }
-  return runPlanFolderPipeline({ cwd, name: address, config: config2, driver, onProgress });
+  return runPlanFolderPipeline({ cwd, name: address, config: config2, driver, onProgress, queueRunId });
 };
 var confirmPlanImplemented = async ({ step, workOrderName }) => {
   const { cwd, plan } = step;
@@ -159875,10 +161224,11 @@ var buildWorkOrderPlans = async ({
   driverName,
   workOrderRunDir,
   allowTicketBodyBuild,
-  onProgress
+  onProgress,
+  queueRunId
 }) => {
   if (allowTicketBodyBuild && isPlanlessWorkOrder({ record: record3 })) {
-    return buildPlanlessWorkOrder({ step: { cwd, record: record3, ticket, config: config2, env, driver, driverName, workOrderRunDir, onProgress }, workOrderName });
+    return buildPlanlessWorkOrder({ step: { cwd, record: record3, ticket, config: config2, env, driver, driverName, workOrderRunDir, onProgress, queueRunId }, workOrderName });
   }
   const leftover = await readLeftoverWork({ cwd, config: config2 });
   let current = record3;
@@ -159888,7 +161238,7 @@ var buildWorkOrderPlans = async ({
     if (plan === void 0) {
       return decideTicketOutcome({ record: current });
     }
-    const step = { cwd, record: current, plan, ticket, config: config2, env, driver, driverName, workOrderRunDir, onProgress };
+    const step = { cwd, record: current, plan, ticket, config: config2, env, driver, driverName, workOrderRunDir, onProgress, queueRunId };
     const stalled = findStalledPlanRefusal({ record: current, plan });
     if (stalled !== void 0) {
       return { error: stalled };
@@ -159913,7 +161263,7 @@ var buildWorkOrderPlans = async ({
 };
 
 // src/agents/prompts/queueAutoPlan.md
-var queueAutoPlan_default = '# Role: Headless Auto-Plan Worker\n\nYou are running unattended in a git worktree that already holds this ticket\'s\nbranch. Nobody is watching your session. The queue that spawned you relays\nanything you cannot decide to the one terminal a human is sitting at, and\nre-invokes you with their answer.\n\n## What to do\n\n1. Invoke the `lightsout:auto-plan` skill on the ticket appended below and\n   follow it exactly as written. It plans the ticket and publishes the approved\n   durable plan to that ticket.\n2. Your job ends the moment that publish step has succeeded \u2014 report then. A\n   publish failure is a worker failure to report, not a reason to continue from\n   the one local copy. The queue builds the plan itself, as an engine\n   subprocess outside this session, from the plan folder you leave in the\n   worktree: leave the plan in exactly the folder the task message\'s plan\n   address names, because that address is where the engine looks once your\n   session has ended.\n\nThe task message names the exact engine invocation to type. That string is\nalso the only command prefix this session was granted, so wherever the skill\'s\nown text says `lightsout <subcommand>`, run the granted invocation followed by\n`<subcommand>` instead. Anything else will simply be refused.\n\nThe `lightsout:auto-plan` skill ships in the same plugin as the engine that\nspawned you, so a user running the queue has it installed. If your session\ncannot find it, do NOT improvise a planning process: report `failed` with a\nfailure saying the lightsout plugin\'s skills are not available to spawned\nsessions, so the ticket parks with a message a human can act on.\n\n## The worktree may already hold your earlier work\n\nInspect it before assuming it is fresh. A previous invocation of you may have\nwritten a plan folder \u2014 this happens after a relayed answer and after a\nrestart. The folder the task message\'s plan address names is yours, whatever\nelse the worktree holds: do not re-derive a name, and do not touch another\nplan\'s folder. Fold the relayed answer into your own folder and continue from\nwhere the previous invocation stopped, rather than planning it again.\n\n## You have no user\n\nNever ask a question directly \u2014 there is nobody in your session to answer it.\nWhen a question clears the skill\'s escalation bar, stop and report\n`terminated:ambiguity` with the question as the FIRST entry of `failures`. The\nengine relays it to the terminal that started the queue, records the answer on\nthe ticket, and re-invokes you with it. Ask one question at a time.\n\n## Never implement\n\nNever run the engine\'s `implement` subcommand, and never invoke the\n`lightsout:implement` skill. A build takes hours, and a build started inside an\nagent session dies with that session \u2014 which is the very failure this worker\nexists to remove. The queue runs the build itself, outside any session.\n\n## Never ship\n\nNever run `lightsout ship`, and never pass `--ship`. Shipping is the queue\'s\nown step: it rebases each branch onto fresh main and re-runs the gates, one\nbranch at a time. A branch that ships itself races that order.\n\n## The ticket record is the engine\'s\n\nNever add a plan to the ticket, never change the ticket\'s mode, never request or\nwithdraw a ship request, and never exclude a plan. The engine chose the plan you\nare writing and created it on the record before your session started, and the\nqueue decides when the ticket ships. Nothing you do changes either.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. Your\nmessage starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was built, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 omit when clean" }]\n}\n```\n\nReport `complete` only when the plan was written, graded and\npublished to the ticket. Never claim work you did not do \u2014 the engine diffs the\ntree, and a false report is worse than a failed one.\n';
+var queueAutoPlan_default = '# Role: Headless Auto-Plan Worker\n\nYou are running unattended in a git worktree that already holds this ticket\'s\nbranch. Nobody is watching your session. The queue that spawned you relays\nanything you cannot decide to the one terminal a human is sitting at, and\nre-invokes you with their answer.\n\n## What to do\n\n1. Invoke the `lightsout:auto-plan` skill on the ticket appended below and\n   follow it exactly as written. It plans the ticket and publishes the approved\n   durable plan to that ticket.\n2. Your job ends the moment that publish step has succeeded \u2014 report then. A\n   publish failure is a worker failure to report, not a reason to continue from\n   the one local copy. The queue builds the plan itself, as an engine\n   subprocess outside this session, from the plan folder at the absolute path\n   the task message names, which lies in the primary checkout outside this\n   worktree: author the plan in exactly that folder, because that is where the\n   engine looks once your session has ended.\n\nThe task message names the exact engine invocation to type. That string is\nalso the only command prefix this session was granted, so wherever the skill\'s\nown text says `lightsout <subcommand>`, run the granted invocation followed by\n`<subcommand>` instead. Anything else will simply be refused.\n\nThe `lightsout:auto-plan` skill ships in the same plugin as the engine that\nspawned you, so a user running the queue has it installed. If your session\ncannot find it, do NOT improvise a planning process: report `failed` with a\nfailure saying the lightsout plugin\'s skills are not available to spawned\nsessions, so the ticket parks with a message a human can act on.\n\n## Every engine command runs to its exit\n\nThis is a hard rule. Run every engine subcommand in the foreground and wait\nuntil it exits \u2014 before you act on its output, and before your turn ends.\n`plan draft` is the long one: it may run for many minutes, and it is still run\nin the foreground and waited on.\n\nNever background an engine command. Never end the turn while an engine command\nis still running. The harness kills anything still running when your turn ends,\nand the engine checks the plan\'s planning record afterwards and parks a session\nthat left a step running. A command you could not wait on to its exit is a\nworker failure: report `failed` with the step named.\n\n## The plan folder may already hold your earlier work\n\nInspect the plan folder the task message names, and the worktree\'s code, before\nassuming either is fresh. A previous invocation of you may have written to them\n\u2014 this happens after a relayed answer and after a restart. The plan folder the\ntask message names is yours, whatever else sits beside it: do not re-derive a\nname, and do not touch another plan\'s folder. Fold the relayed answer into your own folder and continue from\nwhere the previous invocation stopped, rather than planning it again.\n\n## You have no user\n\nNever ask a question directly \u2014 there is nobody in your session to answer it.\nWhen a question clears the skill\'s escalation bar, stop and report\n`terminated:ambiguity` with the question as the FIRST entry of `failures`. The\nengine relays it to the terminal that started the queue, records the answer on\nthe ticket, and re-invokes you with it. Ask one question at a time.\n\n## Never implement\n\nNever run the engine\'s `implement` subcommand, and never invoke the\n`lightsout:implement` skill. A build takes hours, and a build started inside an\nagent session dies with that session \u2014 which is the very failure this worker\nexists to remove. The queue runs the build itself, outside any session.\n\n## Never ship\n\nNever run `lightsout ship`, and never pass `--ship`. Shipping is the queue\'s\nown step: it rebases each branch onto fresh main and re-runs the gates, one\nbranch at a time. A branch that ships itself races that order.\n\n## The ticket record is the engine\'s\n\nNever add a plan to the ticket, never change the ticket\'s mode, never request or\nwithdraw a ship request, and never exclude a plan. The engine chose the plan you\nare writing and created it on the record before your session started, and the\nqueue decides when the ticket ships. Nothing you do changes either.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. Your\nmessage starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was built, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 omit when clean" }]\n}\n```\n\nReport `complete` only when the plan was written, graded and\npublished to the ticket, and every engine command the session started has\nexited. Never claim work you did not do \u2014 the engine diffs the\ntree, and a false report is worse than a failed one.\n';
 
 // src/agents/buildQueueAutoPlanInvocation.ts
 var buildQueueAutoPlanInvocation = ({
@@ -159922,6 +161272,7 @@ var buildQueueAutoPlanInvocation = ({
   ticketBody,
   engineCli,
   planAddress,
+  planFolder,
   answeredQuestion
 }) => {
   const systemPrompt = [queueAutoPlan_default, `# Ticket ${ticketRef}: ${ticketTitle}
@@ -159934,6 +161285,8 @@ Run every engine subcommand as:
 
 \`${engineCli} <subcommand>\`
 
+Run each subcommand in the foreground and wait for it to exit before acting on its output or ending the turn.
+
 Nothing else is granted to this session.`,
     `# The plan you are planning
 
@@ -159941,7 +161294,7 @@ Plan exactly this plan and no other:
 
 \`${planAddress}\`
 
-That is its address, and \`${planWorkspacePath({ name: planAddress })}\` is the folder in this worktree it names. Pass the address as \`--name\` to every \`plan\` and \`brainstorm\` subcommand, and leave the plan's files in exactly that folder.
+That is its address, and it names the plan folder \`${planFolder}\`, which lies in the primary checkout, outside this worktree. Run the engine from the worktree and pass the address as \`--name\` to every \`plan\` and \`brainstorm\` subcommand, but author and edit the plan's files in exactly that folder, at that absolute path.
 
 The engine has already added this plan to the ticket's record, so never run \`work-order add-plan\` or any other \`work-order\` subcommand.`
   ];
@@ -159949,7 +161302,7 @@ The engine has already added this plan to the ticket's record, so never run \`wo
     sections.push(
       `# Your question, answered
 
-You stopped and asked this. The worktree already holds whatever you had done when you asked \u2014 continue from there rather than starting over.
+You stopped and asked this. The worktree and the plan folder already hold whatever you had done when you asked \u2014 continue from there rather than starting over.
 
 Question: ${answeredQuestion.question}
 
@@ -159961,7 +161314,7 @@ Answer: ${answeredQuestion.answer}`
 };
 
 // src/workOrder/addWorkOrderPlan.ts
-import { mkdir as mkdir30 } from "node:fs/promises";
+import { mkdir as mkdir31 } from "node:fs/promises";
 
 // src/workOrder/internal/common/record/composePlanId.ts
 var composePlanId = ({ number: number4, slug }) => {
@@ -160026,14 +161379,20 @@ var addPlanToRecord = ({
     detail: `plan ${allocated.id} was added to work order ${name}`,
     at
   });
+  const requestWithdrawn = recordShipRequestWithdrawal({
+    record: added,
+    detail: `plan ${allocated.id} was added, so the ship request naming ${existing.shipRequest?.planIds.join(", ") ?? ""} no longer covers the ticket's work`,
+    at
+  });
   return {
-    record: recordShipRequestWithdrawal({
-      record: added,
-      detail: `plan ${allocated.id} was added, so the ship request naming ${existing.shipRequest?.planIds.join(", ") ?? ""} no longer covers the ticket's work`,
+    record: recordHandBuiltShipAuthorizationWithdrawal({
+      record: requestWithdrawn,
+      detail: `plan ${allocated.id} was added, so the hand-built authorization by ${existing.handBuiltShipAuthorization?.by ?? ""} no longer covers the ticket's work`,
       at
     }),
     planId: allocated.id,
-    withdrew: existing.shipRequest !== void 0
+    withdrew: existing.shipRequest !== void 0,
+    withdrewHandBuilt: existing.handBuiltShipAuthorization !== void 0
   };
 };
 var addWorkOrderPlan = async ({
@@ -160068,11 +161427,17 @@ var addWorkOrderPlan = async ({
     return { error: `the plan was not added to work order ${name}: the store reported no change` };
   }
   const address = formatPlanAddress({ workOrderName: name, planId: addition.planId });
-  await mkdir30(await planWorkspaceDir({ cwd, name: address }), { recursive: true });
+  await mkdir31(await planWorkspaceDir({ cwd, name: address }), { recursive: true });
+  const notices = [
+    ...addition.withdrew ? [
+      `the pending ship request was withdrawn because plan ${addition.planId} was added \u2014 ask again with \`lightsout work-order request-ship --name ${name}\` once the ticket's work is settled`
+    ] : [],
+    ...addition.withdrewHandBuilt ? [`the hand-built ship authorization was withdrawn because plan ${addition.planId} was added \u2014 the ticket now ships through that plan`] : []
+  ];
   return {
     address,
     record: updated.record,
-    notice: addition.withdrew ? `the pending ship request was withdrawn because plan ${addition.planId} was added \u2014 ask again with \`lightsout work-order request-ship --name ${name}\` once the ticket's work is settled` : void 0,
+    notice: notices.length === 0 ? void 0 : notices.join("; "),
     publishError: updated.publishError
   };
 };
@@ -160123,6 +161488,15 @@ var chooseAutoPlanTarget = async (params) => {
 };
 
 // src/queue/workers/internal/runAutoPlanWorker.ts
+var findUnfinishedSteps = async ({ cwd, name, sinceMs }) => {
+  const progress = await readPlanningProgress({ cwd, name });
+  return (progress?.steps ?? []).filter((entry) => entry.status === RunStatus.Running && Date.parse(entry.startedAt) >= sinceMs);
+};
+var describeUnfinishedSteps = ({ ticketRef, unfinished }) => {
+  const steps = unfinished.map(({ step }) => step).join(", ");
+  const live2 = unfinished.filter(({ pid }) => isPidAlive({ pid })).map(({ step, pid }) => ` The ${step} step's process is still running as pid ${pid}.`).join("");
+  return `${ticketRef}'s auto-plan session ended while the engine command for its ${steps} step was still running, so no finished plan exists \u2014 nothing was built.${live2}`;
+};
 var runPlanningSession = async ({
   cwd,
   ticket,
@@ -160134,6 +161508,8 @@ var runPlanningSession = async ({
   onProgress
 }) => {
   const engineCli = `node ${process.argv[1]}`;
+  const folder = await planWorkspaceDir({ cwd, name: planAddress });
+  const sessionStartedMs = Date.now();
   const outcome = await invokeAgentWithContract({
     driver,
     cwd,
@@ -160143,6 +161519,7 @@ var runPlanningSession = async ({
       ticketBody: ticket.description,
       engineCli,
       planAddress,
+      planFolder: folder,
       answeredQuestion
     }),
     contract: WorkReport,
@@ -160150,8 +161527,14 @@ var runPlanningSession = async ({
     effort: config2.effort,
     permissions: config2.permissions,
     timeoutMs: settings.workerTimeoutMs,
-    allowedCommands: [...config2["agent-commands"] ?? [], engineCli]
+    allowedCommands: [...config2["agent-commands"] ?? [], engineCli],
+    writableDirs: await getDirsOutsideCwd({ cwd, dirs: [folder] }),
+    foregroundCommandsOnly: true
   });
+  const unfinished = await findUnfinishedSteps({ cwd, name: planAddress, sinceMs: sessionStartedMs });
+  if (unfinished.length > 0) {
+    return { error: describeUnfinishedSteps({ ticketRef: ticket.identifier, unfinished }) };
+  }
   if (!outcome.ok) {
     return { error: outcome.failure };
   }
@@ -160163,7 +161546,6 @@ var runPlanningSession = async ({
   if (report2.status !== WorkReportStatus.Complete) {
     return { error: refusal };
   }
-  const folder = await planWorkspaceDir({ cwd, name: planAddress });
   if (!await pathExists({ path: folder })) {
     return { error: `${ticket.identifier}'s auto-plan session reported a finished plan, but no plan folder exists at ${folder} \u2014 nothing was built` };
   }
@@ -160181,13 +161563,27 @@ var runAutoPlanWorker = async ({
   env,
   workOrderRunDir,
   answeredQuestion,
-  onProgress
+  onProgress,
+  queueRunId
 }) => {
   const chosen = await chooseAutoPlanTarget({ cwd, workOrderName, ticket, config: config2, env, onProgress });
   if ("error" in chosen) {
     return { error: chosen.error };
   }
-  const build = ({ record: record3 }) => buildWorkOrderPlans({ cwd, workOrderName, ticket, record: record3, config: config2, env, driver, driverName, workOrderRunDir, allowTicketBodyBuild: false, onProgress });
+  const build = ({ record: record3 }) => buildWorkOrderPlans({
+    cwd,
+    workOrderName,
+    ticket,
+    record: record3,
+    config: config2,
+    env,
+    driver,
+    driverName,
+    workOrderRunDir,
+    allowTicketBodyBuild: false,
+    onProgress,
+    queueRunId
+  });
   if (chosen.address === void 0) {
     const built = await build({ record: chosen.record });
     return built.open === void 0 ? built : { open: `no plan is waiting to be planned on ${ticket.identifier}: ${built.open}` };
@@ -160216,22 +161612,30 @@ var runDirectWorker = async ({
   driver,
   driverName,
   answeredQuestion,
-  onProgress
+  onProgress,
+  queueRunId
 }) => {
   const outcome = await runWorkOrderBodyBuildLifecycle({
     cwd,
     workOrderName,
-    run: ({ runId }) => runDirectWork({
-      cwd,
-      ticketBody: ticket.description,
-      ticketRef: ticket.identifier,
-      runId,
-      driver,
-      driverName,
-      config: config2,
-      answeredQuestion,
-      onProgress
-    })
+    run: async ({ runId }) => {
+      try {
+        return await runDirectWork({
+          cwd,
+          ticketBody: ticket.description,
+          ticketRef: ticket.identifier,
+          runId,
+          driver,
+          driverName,
+          config: config2,
+          answeredQuestion,
+          onProgress,
+          queueRunId
+        });
+      } finally {
+        await removeRunOwner({ cwd, runId });
+      }
+    }
   });
   return toWorkerOutcome({
     outcome,
@@ -160247,7 +161651,8 @@ var runPlanWorker = async ({
   driverName,
   env,
   workOrderRunDir,
-  onProgress
+  onProgress,
+  queueRunId
 }) => {
   const pulled = await pullWorkOrderState({ cwd, name: workOrderName, config: config2, env, onProgress });
   if ("error" in pulled) {
@@ -160265,11 +161670,12 @@ var runPlanWorker = async ({
       driverName,
       workOrderRunDir,
       allowTicketBodyBuild: true,
-      onProgress
+      onProgress,
+      queueRunId
     });
   }
   onProgress?.(`${ticket.identifier} carries no published plan, so it is built from the ticket body`);
-  return runDirectWorker({ cwd, workOrderName, ticket, config: config2, driver, driverName, onProgress });
+  return runDirectWorker({ cwd, workOrderName, ticket, config: config2, driver, driverName, onProgress, queueRunId });
 };
 var runWorkerWithRelay = async ({
   worktreePath,
@@ -160290,8 +161696,8 @@ var runWorkerWithRelay = async ({
   let answeredQuestion;
   for (let turn = 0; ; turn += 1) {
     const workers = {
-      [QueueWorker.Direct]: () => runDirectWorker({ cwd: worktreePath, workOrderName, ticket, config: config2, driver, driverName, answeredQuestion, onProgress }),
-      [QueueWorker.Plan]: () => runPlanWorker({ cwd: worktreePath, ticket, workOrderName, config: config2, driver, driverName, env, workOrderRunDir, onProgress }),
+      [QueueWorker.Direct]: () => runDirectWorker({ cwd: worktreePath, workOrderName, ticket, config: config2, driver, driverName, answeredQuestion, onProgress, queueRunId: coordinatorRunId }),
+      [QueueWorker.Plan]: () => runPlanWorker({ cwd: worktreePath, ticket, workOrderName, config: config2, driver, driverName, env, workOrderRunDir, onProgress, queueRunId: coordinatorRunId }),
       [QueueWorker.AutoPlan]: () => runAutoPlanWorker({
         cwd: worktreePath,
         ticket,
@@ -160303,7 +161709,8 @@ var runWorkerWithRelay = async ({
         env,
         workOrderRunDir,
         answeredQuestion,
-        onProgress
+        onProgress,
+        queueRunId: coordinatorRunId
       })
     };
     const outcome = await workers[ticket.worker]();
@@ -160365,7 +161772,7 @@ var runQueueWorkOrder = async ({
   onProgress
 }) => {
   const { ticket, name, branch } = workOrder;
-  const workOrderRunDir = join142(coordinatorRunDir, "work-orders", ticket.identifier);
+  const workOrderRunDir = join147(coordinatorRunDir, "work-orders", ticket.identifier);
   const created = await createTicketWorktree({ cwd, branch, defaultBranch, setup: settings.setup, serializeWorktreeAdd, onProgress });
   if (typeof created !== "string") {
     return { ticket, name, branch, worktreePath: await resolveWorktreePath({ cwd, branch }), ready: false, error: created.error };
@@ -160407,6 +161814,30 @@ var runQueueWorkOrder = async ({
   return { ticket, name, branch, worktreePath, ...settled2 };
 };
 
+// src/queue/internal/settleEmptyDrain.ts
+var settleEmptyDrain = async ({ cwd, runId, recordEmptyDrain, driverName, config: config2, first, parked, onProgress }) => {
+  onProgress?.(
+    first.blocked.length > 0 ? "nothing to do \u2014 every eligible ticket is waiting on an unfinished blocker" : "nothing to do \u2014 no eligible tickets, and no parked worktrees to pick up"
+  );
+  const empty = { outcomes: [], leftBehind: [...parked.leftBehind, ...first.skipped, ...first.blocked] };
+  if (recordEmptyDrain !== true) {
+    return empty;
+  }
+  return withRunLock({
+    params: { cwd, runId, onProgress },
+    run: async ({ runId: lockedRunId }) => {
+      const { manifest } = await startCoordinatorRun({ cwd, runId: lockedRunId, driverName, config: config2 });
+      await writeManifestWithUsage({
+        cwd,
+        manifest,
+        patch: { status: toCoordinatorStatus({ drained: empty }), currentStep: null },
+        usageTotals: seedUsageTotals({ usage: manifest.usage })
+      });
+      return empty;
+    }
+  });
+};
+
 // src/queue/internal/settleParkedLabels.ts
 var settleParkedLabels = async ({ settings, trackerSettings, outcomes, onProgress }) => {
   if (settings.parkedLabel === void 0) {
@@ -160414,14 +161845,14 @@ var settleParkedLabels = async ({ settings, trackerSettings, outcomes, onProgres
   }
   await Promise.all(
     outcomes.map(async (outcome) => {
-      const written = await setTicketLabel3({
+      const written2 = await setTicketLabel3({
         settings: trackerSettings,
         ticketId: outcome.ticket.id,
         label: settings.parkedLabel,
         present: isParkedOutcome({ outcome })
       });
-      if (written !== void 0) {
-        onProgress?.(`${outcome.ticket.identifier} \xB7 the '${settings.parkedLabel}' label could not be written: ${written.error}`);
+      if (written2 !== void 0) {
+        onProgress?.(`${outcome.ticket.identifier} \xB7 the '${settings.parkedLabel}' label could not be written: ${written2.error}`);
       }
     })
   );
@@ -160531,8 +161962,8 @@ var checkQueueStartup = async ({ cwd, settings, trackerSettings, shipSettings })
 };
 
 // src/queue/worktrees/scanParkedWorktrees.ts
-import { realpath as realpath3 } from "node:fs/promises";
-import { join as join143 } from "node:path";
+import { realpath as realpath4 } from "node:fs/promises";
+import { join as join148 } from "node:path";
 
 // src/queue/worktrees/internal/common/constants/ParkedTreeBucket.ts
 var ParkedTreeBucket = {
@@ -160605,7 +162036,7 @@ var settleUnmergedTree = async ({
 var toQueuePath = ({ path, root, realRoot }) => {
   for (const prefix of [root, realRoot]) {
     if (path.startsWith(`${prefix}/`)) {
-      return join143(root, path.slice(prefix.length + 1));
+      return join148(root, path.slice(prefix.length + 1));
     }
   }
   return void 0;
@@ -160613,7 +162044,7 @@ var toQueuePath = ({ path, root, realRoot }) => {
 var listQueueWorktrees = async ({ cwd, onProgress }) => {
   const listed = await runCommand({ command: "git worktree list --porcelain", cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
   const root = await resolveWorktreesRoot({ cwd });
-  const realRoot = await realpath3(root).catch(() => root);
+  const realRoot = await realpath4(root).catch(() => root);
   const trees = [];
   for (const block of (listed?.exitCode === 0 ? listed.stdout : "").split("\n\n")) {
     const reported = /^worktree (.+)$/m.exec(block)?.[1];
@@ -160705,11 +162136,6 @@ var scanParkedWorktrees = async ({ cwd, defaultBranch, settings, trackerSettings
 };
 
 // src/queue/runQueue.ts
-var toCoordinatorStatus = ({ drained }) => {
-  const unfinished = drained.leftBehind.filter((entry) => entry.settled !== true);
-  const parked = drained.outcomes.filter((outcome) => isParkedOutcome({ outcome }));
-  return parked.length === 0 && unfinished.length === 0 ? RunStatus.Passed : RunStatus.Escalated;
-};
 var drainAndShip = async ({
   cwd,
   runId,
@@ -160776,6 +162202,8 @@ var drainAndShip = async ({
 };
 var runQueue = async ({
   cwd,
+  runId,
+  recordEmptyDrain,
   settings,
   trackerSettings,
   shipSettings,
@@ -160808,17 +162236,13 @@ var runQueue = async ({
     onProgress
   });
   if (first.runnable.length === 0 && parked.outcomes.length === 0 && parked.merged.length === 0) {
-    onProgress?.(
-      first.blocked.length > 0 ? "nothing to do \u2014 every eligible ticket is waiting on an unfinished blocker" : "nothing to do \u2014 no eligible tickets, and no parked worktrees to pick up"
-    );
-    const empty = { outcomes: [], leftBehind: [...parked.leftBehind, ...first.skipped, ...first.blocked] };
-    return empty;
+    return settleEmptyDrain({ cwd, runId, recordEmptyDrain, driverName, config: config2, first, parked, onProgress });
   }
   return withRunLock({
-    params: { cwd, onProgress },
-    run: ({ runId }) => drainAndShip({
+    params: { cwd, runId, onProgress },
+    run: ({ runId: lockedRunId }) => drainAndShip({
       cwd,
-      runId,
+      runId: lockedRunId,
       settings,
       trackerSettings,
       shipSettings,
@@ -160893,31 +162317,50 @@ var resolveQueueStartup = ({ config: config2, env }) => {
   }
   return { settings, trackerSettings, shipSettings };
 };
-var printFinalBoard = ({ report: report2 }) => {
+var renderFinalBoard = ({ report: report2 }) => {
   const at = /* @__PURE__ */ new Date();
   const tickets = toQueueBoardTickets({ settled: report2, at: at.toISOString() });
-  for (const line of renderQueueBoard({ tickets, state: QueueBoardState.Finished, at })) {
-    console.log(line);
-  }
-  console.log("");
+  return renderQueueBoard({ tickets, state: QueueBoardState.Finished, at });
 };
-var printDrainReport = ({ report: report2 }) => {
+var renderDrainReport = ({ report: report2 }) => {
+  const lines = [];
   for (const outcome of report2.outcomes) {
     if (outcome.ready) {
-      console.log(`${outcome.ticket.identifier} ${outcome.branch} shipped`);
+      lines.push(`${outcome.ticket.identifier} ${outcome.branch} shipped`);
       if (outcome.reconciliationFailure !== void 0) {
-        console.log(`  ${outcome.reconciliationFailure}`);
+        lines.push(`  ${outcome.reconciliationFailure}`);
       }
     } else {
       const stop = outcome.open === void 0 ? `parked: ${outcome.error ?? "no reason recorded"}` : `left open: ${outcome.open}`;
-      console.log(`${outcome.ticket.identifier} ${outcome.branch} ${stop}`);
-      console.log(`  worktree: ${outcome.worktreePath}`);
+      lines.push(`${outcome.ticket.identifier} ${outcome.branch} ${stop}`, `  worktree: ${outcome.worktreePath}`);
     }
   }
   for (const entry of report2.leftBehind) {
-    console.log(`${entry.identifier} ${entry.reason}`);
+    lines.push(`${entry.identifier} ${entry.reason}`);
+  }
+  return lines;
+};
+var saveQueueSummary = async ({ cwd, runId, summary }) => {
+  try {
+    await writeQueueSummary({ cwd, runId, summary });
+  } catch (error51) {
+    if (!(error51 instanceof RunNotFoundError)) {
+      console.error(`could not save the summary of queue run ${runId}: ${messageOf({ error: error51 })}`);
+    }
   }
 };
+var finishDrain2 = async ({ cwd, runId, report: report2 }) => {
+  const boardLines = renderFinalBoard({ report: report2 });
+  const reportLines = renderDrainReport({ report: report2 });
+  for (const line of [...boardLines, "", ...reportLines]) {
+    console.log(line);
+  }
+  const resumable = report2.leftBehind.some((entry) => entry.settled !== true) || report2.outcomes.some((outcome) => isParkedOutcome({ outcome }));
+  const code = resumable ? pausedExitCode : 0;
+  await saveQueueSummary({ cwd, runId, summary: { boardLines, reportLines, exitCode: code, finishedAt: (/* @__PURE__ */ new Date()).toISOString() } });
+  return code;
+};
+var resolveRelayMailbox = ({ requested, cwd }) => requested === true || requested === void 0 ? resolve18(cwd, ".lightsout", "queue", "relay") : resolve18(cwd, requested);
 var buildRelay = async ({
   requested,
   settings,
@@ -160927,12 +162370,25 @@ var buildRelay = async ({
   if (requested === void 0) {
     return new TerminalQuestionRelay({ settings, trackerSettings, input: process.stdin, output: process.stdout });
   }
-  const directory = requested === true ? resolve16(cwd, ".lightsout", "queue", "relay") : resolve16(cwd, requested);
+  const directory = resolveRelayMailbox({ requested, cwd });
   await emptyRelayMailbox({ directory });
   console.log(`relaying questions through ${directory}`);
   return new FileQuestionRelay({ settings, trackerSettings, directory, output: process.stdout });
 };
-var queueCommand = async ({ flags, cwd }) => {
+var launchDetachedQueue = async ({ flags, rest, cwd }) => {
+  if (flags.get("detach") !== true) {
+    console.error(usage);
+    return exitCli({ code: 1 });
+  }
+  const args = flags.has("file-relay") ? rest : [...rest, "--file-relay"];
+  const relayMailbox = resolveRelayMailbox({ requested: flags.get("file-relay"), cwd });
+  return exitCli({ code: await launchDetached({ cwd, command: "queue", args, runId: randomUUID11(), relayMailbox }) });
+};
+var queueCommand = async ({ flags, rest, cwd }) => {
+  const launchedRunId = readLaunchRunId({ env: process.env });
+  if (flags.has("detach")) {
+    return launchDetachedQueue({ flags, rest, cwd });
+  }
   const loaded = await readConfig({ cwd });
   const startup = resolveQueueStartup({ config: loaded, env: process.env });
   if ("error" in startup) {
@@ -160952,9 +162408,14 @@ var queueCommand = async ({ flags, cwd }) => {
     }
   }
   process.env.LIGHTSOUT_NO_SHIP = "1";
+  const runId = launchedRunId ?? randomUUID11();
   const relay = await buildRelay({ requested, settings, trackerSettings, cwd });
   const report2 = await runQueue({
     cwd,
+    runId,
+    // A detached child always records its run, so its parent's handshake and
+    // the saved summary have a run to find even when there is nothing to drain.
+    recordEmptyDrain: launchedRunId !== void 0,
     settings,
     trackerSettings,
     shipSettings,
@@ -160969,10 +162430,7 @@ var queueCommand = async ({ flags, cwd }) => {
     console.error(report2.error);
     return exitCli({ code: 1 });
   }
-  printFinalBoard({ report: report2 });
-  printDrainReport({ report: report2 });
-  const resumable = report2.leftBehind.some((entry) => entry.settled !== true) || report2.outcomes.some((outcome) => isParkedOutcome({ outcome }));
-  return exitCli({ code: resumable ? pausedExitCode : 0 });
+  return exitCli({ code: await finishDrain2({ cwd, runId, report: report2 }) });
 };
 
 // src/cli/internal/common/render/printBatchLine.ts
@@ -161045,6 +162503,9 @@ ${bold(`refactor ${formatShortRunId({ runId: manifest.runId })}`)} \u2014 ${stat
   printRunFooter({ manifest, ending: result.ok ? void 0 : result.error });
 };
 
+// src/cli/internal/common/utils/exitForRunResult.ts
+var exitForRunResult = ({ ok, manifest }) => exitCli({ code: getRunResultExitCode({ ok, manifest }) });
+
 // src/cli/internal/common/utils/runBatchedCommand.ts
 var runBatchedCommand = async ({ flags, cwd, command, run, print }) => {
   const resumeRunId = getStringFlag({ flags, name: "run" });
@@ -161080,8 +162541,8 @@ ${error51 instanceof RunLockError ? error51.message : messageOf({ error: error51
 };
 
 // src/refactor/initializeRun.ts
-import { readFile as readFile63 } from "node:fs/promises";
-import { join as join144 } from "node:path";
+import { readFile as readFile64 } from "node:fs/promises";
+import { join as join149 } from "node:path";
 
 // src/contracts/refactor/RefactorBatch.ts
 var RefactorBatch = external_exports.object({
@@ -161155,16 +162616,16 @@ var batchFindings = ({ blocking, advisories, packagesDir }) => {
     }
     return segments.length > 1 && segments[0] ? segments[0] : "(root)";
   };
-  const folderOf = ({ finding: finding3 }) => {
-    const areas = new Set(finding3.files.map((file2) => areaOf({ path: file2.path })));
+  const folderOf = ({ finding: finding6 }) => {
+    const areas = new Set(finding6.files.map((file2) => areaOf({ path: file2.path })));
     return areas.size > 1 ? "(cross)" : [...areas][0] ?? "(root)";
   };
   const groups = /* @__PURE__ */ new Map();
-  for (const finding3 of blocking) {
-    const folder = folderOf({ finding: finding3 });
-    const key = `${finding3.rule}\0${folder}`;
-    const group = groups.get(key) ?? { rule: finding3.rule, folder, findings: [] };
-    group.findings.push(finding3);
+  for (const finding6 of blocking) {
+    const folder = folderOf({ finding: finding6 });
+    const key = `${finding6.rule}\0${folder}`;
+    const group = groups.get(key) ?? { rule: finding6.rule, folder, findings: [] };
+    group.findings.push(finding6);
     groups.set(key, group);
   }
   const crossLast = ({ folder }) => folder === "(cross)" ? 1 : 0;
@@ -161176,7 +162637,7 @@ var batchFindings = ({ blocking, advisories, packagesDir }) => {
     const sorted = [...group.findings].sort((a, b) => a.siteKey.localeCompare(b.siteKey));
     for (let start = 0; start < sorted.length; start += maxBatchFindings) {
       const chunk = sorted.slice(start, start + maxBatchFindings);
-      const chunkFiles = new Set(chunk.flatMap((finding3) => finding3.files.map((file2) => file2.path)));
+      const chunkFiles = new Set(chunk.flatMap((finding6) => finding6.files.map((file2) => file2.path)));
       const number4 = String(batches.length + 1).padStart(2, "0");
       batches.push({
         id: `batch-${number4}:${group.rule}:${group.folder}`,
@@ -161198,10 +162659,10 @@ var buildWorklist = async ({ cwd, config: config2, path, all = false }) => {
     path: path ?? ".",
     all,
     batches: batchFindings({
-      blocking: findings.filter((finding3) => finding3.severity === StandardsSeverity.Blocking),
+      blocking: findings.filter((finding6) => finding6.severity === StandardsSeverity.Blocking),
       // Every advisory, not just the size ones: a rule whose advisories never
       // reach the agent can never be judged, only reported to a human.
-      advisories: findings.filter((finding3) => finding3.severity === StandardsSeverity.Advisory),
+      advisories: findings.filter((finding6) => finding6.severity === StandardsSeverity.Advisory),
       packagesDir: config2["packages-dir"] ?? defaultPackagesDir
     })
   };
@@ -161224,8 +162685,10 @@ var initializeRun = async ({
       const resume = formatResumeCommand({ pipeline, runId: existing.runId });
       throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${resume}`);
     }
-    const frozen = join144(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
-    return { manifest: existing, worklist: RefactorWorklist.parse(JSON.parse(await readFile63(frozen, "utf8"))) };
+    const frozen = join149(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
+    const worklist2 = RefactorWorklist.parse(JSON.parse(await readFile64(frozen, "utf8")));
+    await writeRunOwner({ cwd, runId: existing.runId });
+    return { manifest: existing, worklist: worklist2 };
   }
   const dirty = await readGitChangedFiles({ cwd });
   if (dirty === void 0) {
@@ -161238,7 +162701,7 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
     );
   }
   const worklist = await buildWorklist({ cwd, config: config2, path, all });
-  const worklistPath = join144(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Refactor, runId }), "worklist.json");
+  const worklistPath = join149(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Refactor, runId }), "worklist.json");
   const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Refactor, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
   await writeJsonFile({ path: worklistPath, value: worklist });
   return { manifest, worklist };
@@ -161248,23 +162711,23 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
 var describeIntroducedFindings = ({ findings }) => [
   `refactor introduced ${findings.length} blocking finding(s) it never set out to fix:`,
   ...findings.map(
-    (finding3) => `- ${finding3.siteKey} \u2014 ${formatFindingText({ finding: finding3 })}
-  at ${finding3.files.map((file2) => formatFindingSite({ file: file2 })).join(", ")}`
+    (finding6) => `- ${finding6.siteKey} \u2014 ${formatFindingText({ finding: finding6 })}
+  at ${finding6.files.map((file2) => formatFindingSite({ file: file2 })).join(", ")}`
   ),
   "The run\u2019s changes are in the working tree \u2014 review them, fix these, and re-run."
 ].join("\n");
 
 // src/refactor/findIntroducedFindings.ts
 var findIntroducedFindings = ({ frozen, live: live2, severity }) => {
-  const frozenSiteKeys = new Set(frozen.map((finding3) => finding3.siteKey));
-  return live2.filter((finding3) => finding3.severity === severity && !frozenSiteKeys.has(finding3.siteKey));
+  const frozenSiteKeys = new Set(frozen.map((finding6) => finding6.siteKey));
+  return live2.filter((finding6) => finding6.severity === severity && !frozenSiteKeys.has(finding6.siteKey));
 };
 
 // src/refactor/internal/countByRule.ts
 var countByRule = ({ findings }) => {
   const counts = {};
-  for (const finding3 of findings) {
-    counts[finding3.rule] = (counts[finding3.rule] ?? 0) + 1;
+  for (const finding6 of findings) {
+    counts[finding6.rule] = (counts[finding6.rule] ?? 0) + 1;
   }
   return counts;
 };
@@ -161272,7 +162735,7 @@ var countByRule = ({ findings }) => {
 // src/refactor/internal/closeRefactorRun.ts
 var closeRefactorRun = async ({ run, worklist }) => {
   const finalCheck = await runStandardsCheck({ cwd: run.cwd, path: worklist.path === "." ? void 0 : worklist.path, all: worklist.all, persist: false });
-  const after = countByRule({ findings: finalCheck.findings.filter((finding3) => finding3.severity === StandardsSeverity.Blocking) });
+  const after = countByRule({ findings: finalCheck.findings.filter((finding6) => finding6.severity === StandardsSeverity.Blocking) });
   const introduced = findIntroducedFindings({
     frozen: worklist.batches.flatMap((batch) => batch.blocking),
     live: finalCheck.findings,
@@ -161357,9 +162820,9 @@ var ReviewFindingRecord = StandardsFinding.extend({
 });
 
 // src/runState/internal/common/paths/getReviewFindingsPath.ts
-import { join as join145 } from "node:path";
+import { join as join150 } from "node:path";
 var getReviewFindingsPath = async ({ cwd }) => {
-  return join145(await resolveSharedStateDir({ cwd }), "review-findings.jsonl");
+  return join150(await resolveSharedStateDir({ cwd }), "review-findings.jsonl");
 };
 
 // src/runState/appendReviewFindings.ts
@@ -161410,8 +162873,8 @@ var collectBatchAdvisories = async ({
   timeoutMs,
   onProgress
 }) => {
-  const batchFiles = new Set(batch.blocking.flatMap((finding3) => finding3.files.map((file2) => file2.path)));
-  const machine = findings.filter((finding3) => finding3.severity === StandardsSeverity.Advisory && finding3.files.some((file2) => batchFiles.has(file2.path)));
+  const batchFiles = new Set(batch.blocking.flatMap((finding6) => finding6.files.map((file2) => file2.path)));
+  const machine = findings.filter((finding6) => finding6.severity === StandardsSeverity.Advisory && finding6.files.some((file2) => batchFiles.has(file2.path)));
   const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: [...batchFiles], packagesDir, agentReview, timeoutMs, onProgress });
   return [...machine, ...reviewed];
 };
@@ -161481,8 +162944,8 @@ var createBatchRecorder = ({ cwd, config: config2, attributedFiles }) => {
 
 // src/refactor/batch/matchRemainingFindings.ts
 var matchRemainingFindings = ({ frozen, live: live2 }) => {
-  const liveSiteKeys = new Set(live2.map((finding3) => finding3.siteKey));
-  return frozen.filter((finding3) => liveSiteKeys.has(finding3.siteKey)).map((finding3) => finding3.siteKey);
+  const liveSiteKeys = new Set(live2.map((finding6) => finding6.siteKey));
+  return frozen.filter((finding6) => liveSiteKeys.has(finding6.siteKey)).map((finding6) => finding6.siteKey);
 };
 
 // src/refactor/batch/internal/createSiteChecker.ts
@@ -161496,8 +162959,8 @@ var createSiteChecker = ({ cwd, checkPath, checkAll }) => {
 };
 
 // src/refactor/batch/internal/invokeBatchAgent.ts
-import { mkdir as mkdir31, writeFile as writeFile24 } from "node:fs/promises";
-import { join as join146 } from "node:path";
+import { mkdir as mkdir32, writeFile as writeFile23 } from "node:fs/promises";
+import { join as join151 } from "node:path";
 var invokeBatchAgent = async ({
   cwd,
   runId,
@@ -161514,10 +162977,10 @@ var invokeBatchAgent = async ({
   onProgress,
   recordUsage
 }) => {
-  const agentsDir = join146(await resolveRunDir({ cwd, runId }), "agents");
+  const agentsDir = join151(await resolveRunDir({ cwd, runId }), "agents");
   const slug = batch.id.replace(/[:/]/g, "_");
-  const streamPath = join146(agentsDir, `stream-${slug}-${invocationCount}.jsonl`);
-  await mkdir31(agentsDir, { recursive: true });
+  const streamPath = join151(agentsDir, `stream-${slug}-${invocationCount}.jsonl`);
+  await mkdir32(agentsDir, { recursive: true });
   const outcome = await invokeAgentWithContract({
     driver,
     cwd,
@@ -161530,7 +162993,7 @@ var invokeBatchAgent = async ({
     allowedCommands: config2["agent-commands"],
     onEvent: createEventFileSink({ path: streamPath }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile24(join146(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile23(join151(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
   const formatError2 = await runFormatter({ cwd, runId, config: config2, step: batch.id });
@@ -161563,8 +163026,8 @@ var SettleKind = {
 };
 
 // src/refactor/batch/internal/superviseBatch.ts
-import { mkdir as mkdir32, writeFile as writeFile25 } from "node:fs/promises";
-import { join as join147 } from "node:path";
+import { mkdir as mkdir33, writeFile as writeFile24 } from "node:fs/promises";
+import { join as join152 } from "node:path";
 var consultBatchSupervisor = async ({
   cwd,
   runId,
@@ -161575,9 +163038,9 @@ var consultBatchSupervisor = async ({
   gateError,
   attempts
 }) => {
-  const agentsDir = join147(await resolveRunDir({ cwd, runId }), "agents");
+  const agentsDir = join152(await resolveRunDir({ cwd, runId }), "agents");
   const slug = batchId.replace(/[:/]/g, "_");
-  await mkdir32(agentsDir, { recursive: true });
+  await mkdir33(agentsDir, { recursive: true });
   return consultSupervisor({
     driver,
     cwd,
@@ -161586,9 +163049,9 @@ var consultBatchSupervisor = async ({
     stepId: batchId,
     errorOutput: gateError,
     attempts,
-    onEvent: createEventFileSink({ path: join147(agentsDir, `stream-${slug}-supervisor.jsonl`) }),
+    onEvent: createEventFileSink({ path: join152(agentsDir, `stream-${slug}-supervisor.jsonl`) }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile25(join147(agentsDir, `rejected-${slug}-supervisor-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile24(join152(agentsDir, `rejected-${slug}-supervisor-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
 };
@@ -161875,12 +163338,12 @@ var createFixInvoker = ({ tools, files, workFindings, advisories, standards, tes
 
 // src/refactor/batch/polishBatchOutput.ts
 var polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards, testStandards, onProgress }) => {
-  const resolve19 = () => tools.finish({ outcome: BatchOutcome.Resolved, remainingSiteKeys: [] });
+  const resolve21 = () => tools.finish({ outcome: BatchOutcome.Resolved, remainingSiteKeys: [] });
   const introduced = await tools.reviewOutput({ baseline });
   if (introduced.length === 0) {
-    return resolve19();
+    return resolve21();
   }
-  const files = [...new Set(introduced.flatMap((finding3) => finding3.files.map((file2) => file2.path)))];
+  const files = [...new Set(introduced.flatMap((finding6) => finding6.files.map((file2) => file2.path)))];
   onProgress(`${batch.id}: the review of what this batch wrote raised ${introduced.length} new advisory(s) \u2014 spending one polish pass`);
   await tools.invoke({
     label: "polish",
@@ -161902,7 +163365,7 @@ var polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards
   }
   const revived = await tools.remainingSiteKeys({ frozen: workFindings });
   if (revived.length === 0) {
-    return resolve19();
+    return resolve21();
   }
   onProgress(`${batch.id}: the polish pass brought back ${revived.length} site(s) this batch had cleared \u2014 recorded as declined`);
   return tools.finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: revived });
@@ -161910,7 +163373,7 @@ var polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards
 
 // src/refactor/batch/internal/runBatchPass.ts
 var runBatchPass = async ({ tools, batch, pass, workFindings, advisories, standards, testStandards, onProgress }) => {
-  const files = [...new Set(workFindings.flatMap((finding3) => finding3.files.map((file2) => file2.path)))];
+  const files = [...new Set(workFindings.flatMap((finding6) => finding6.files.map((file2) => file2.path)))];
   const attempt = await tools.invoke({
     label: pass === 1 ? "" : "requeue",
     invocation: buildRefactorExecutorInvocation({
@@ -161949,7 +163412,7 @@ var runBatchPass = async ({ tools, batch, pass, workFindings, advisories, standa
         outcome = { stop: await tools.finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: remaining }) };
       } else {
         onProgress(`${batch.id}: ${remaining.length} site(s) persist after a changing pass`);
-        outcome = { workFindings: workFindings.filter((finding3) => remaining.includes(finding3.siteKey)) };
+        outcome = { workFindings: workFindings.filter((finding6) => remaining.includes(finding6.siteKey)) };
       }
     }
   }
@@ -161964,7 +163427,7 @@ var readStandingWork = ({ batch, findings, onProgress }) => {
       `${batch.id}: ${batch.blocking.length - standing.size} of ${batch.blocking.length} site(s) already resolved by earlier work \u2014 working the ${standing.size} still standing`
     );
   }
-  return findings.filter((finding3) => standing.has(finding3.siteKey));
+  return findings.filter((finding6) => standing.has(finding6.siteKey));
 };
 
 // src/refactor/batch/runBatch.ts
@@ -162031,7 +163494,7 @@ var runBatch = async ({
       workFindings = passed.workFindings;
     }
   }
-  return stop ?? await tools.finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: workFindings.map((finding3) => finding3.siteKey) });
+  return stop ?? await tools.finish({ outcome: BatchOutcome.Declined, remainingSiteKeys: workFindings.map((finding6) => finding6.siteKey) });
 };
 
 // src/common/constants/maxConsecutiveDeclines.ts
@@ -162294,11 +163757,11 @@ var peakOverlap = ({ windows }) => {
   const moments = [...windows.map((window2) => ({ at: window2.end, delta: -1 })), ...windows.map((window2) => ({ at: window2.start, delta: 1 }))].sort(
     (left, right) => left.at - right.at || left.delta - right.delta
   );
-  let open = 0;
+  let open2 = 0;
   let peak = 0;
   for (const moment of moments) {
-    open += moment.delta;
-    peak = Math.max(peak, open);
+    open2 += moment.delta;
+    peak = Math.max(peak, open2);
   }
   return peak;
 };
@@ -162495,10 +163958,10 @@ var printActivityReport = ({ target, workOrderFolder, plans, pricing }) => {
 };
 
 // src/cli/internal/common/activityReport/resolveReportTargets.ts
-import { readdir as readdir23 } from "node:fs/promises";
+import { readdir as readdir24 } from "node:fs/promises";
 var resolveReportTargets = async ({ cwd, name }) => {
   const folder = await planWorkspaceDir({ cwd, name });
-  const children = await readdir23(folder, { withFileTypes: true }).catch(() => void 0);
+  const children = await readdir24(folder, { withFileTypes: true }).catch(() => void 0);
   if (children === void 0) {
     return { error: `no plan folder named '${name}' under ${folder}` };
   }
@@ -162517,8 +163980,8 @@ var foldLevels = ({ marks }) => {
     if (mark.kind !== ActivityMarkKind.LevelStart) {
       continue;
     }
-    const open = levels.get(mark.id);
-    if (open === void 0) {
+    const open2 = levels.get(mark.id);
+    if (open2 === void 0) {
       levels.set(mark.id, {
         id: mark.id,
         level: mark.level,
@@ -162529,28 +163992,28 @@ var foldLevels = ({ marks }) => {
         ends: 0
       });
     } else {
-      open.starts += 1;
-      open.startedAt = isEarlier({ left: mark.at, right: open.startedAt }) ? mark.at : open.startedAt;
+      open2.starts += 1;
+      open2.startedAt = isEarlier({ left: mark.at, right: open2.startedAt }) ? mark.at : open2.startedAt;
     }
   }
   for (const mark of marks) {
     if (mark.kind !== ActivityMarkKind.LevelEnd) {
       continue;
     }
-    const open = levels.get(mark.id);
-    if (open === void 0) {
+    const open2 = levels.get(mark.id);
+    if (open2 === void 0) {
       continue;
     }
-    open.ends += 1;
-    if (open.endedAt === void 0 || !isEarlier({ left: mark.at, right: open.endedAt })) {
-      open.endedAt = mark.at;
-      open.outcome = mark.outcome;
+    open2.ends += 1;
+    if (open2.endedAt === void 0 || !isEarlier({ left: mark.at, right: open2.endedAt })) {
+      open2.endedAt = mark.at;
+      open2.outcome = mark.outcome;
     }
   }
-  for (const open of levels.values()) {
-    if (open.ends < open.starts) {
-      open.endedAt = void 0;
-      open.outcome = void 0;
+  for (const open2 of levels.values()) {
+    if (open2.ends < open2.starts) {
+      open2.endedAt = void 0;
+      open2.outcome = void 0;
     }
   }
   return levels;
@@ -162558,12 +164021,12 @@ var foldLevels = ({ marks }) => {
 var groupChildren = ({ levels }) => {
   const children = /* @__PURE__ */ new Map();
   const roots = [];
-  for (const open of levels.values()) {
-    const parent = open.parentId === void 0 ? void 0 : levels.get(open.parentId);
+  for (const open2 of levels.values()) {
+    const parent = open2.parentId === void 0 ? void 0 : levels.get(open2.parentId);
     if (parent === void 0) {
-      roots.push(open);
+      roots.push(open2);
     } else {
-      children.set(parent.id, [...children.get(parent.id) ?? [], open]);
+      children.set(parent.id, [...children.get(parent.id) ?? [], open2]);
     }
   }
   return { children, roots };
@@ -162715,9 +164178,9 @@ var reportCommand = async ({ cwd, flags }) => {
 };
 
 // src/cli/internal/common/implementRun/continueDirectRun.ts
-import { readFile as readFile64 } from "node:fs/promises";
-import { resolve as resolve17 } from "node:path";
-var readFrozenTicket = ({ cwd, manifest }) => readFile64(resolve17(cwd, manifest.plan), "utf8").catch(() => void 0);
+import { readFile as readFile65 } from "node:fs/promises";
+import { resolve as resolve19 } from "node:path";
+var readFrozenTicket = ({ cwd, manifest }) => readFile65(resolve19(cwd, manifest.plan), "utf8").catch(() => void 0);
 var continueDirectRun = async ({ cwd, workspace, manifest, config: config2, driver, willShip }) => {
   const ticketBody = await readFrozenTicket({ cwd, manifest });
   if (ticketBody === void 0) {
@@ -162780,21 +164243,71 @@ var readResumeClearance = async ({
   return { name, shipIntent };
 };
 
+// src/runState/isRecordedProcessAlive.ts
+var isRecordedProcessAlive = async ({ pid, processStartTime }) => {
+  if (!isPidAlive({ pid })) {
+    return false;
+  }
+  const liveStartTime = processStartTime === void 0 ? void 0 : await readProcessStartTime({ pid });
+  return liveStartTime === void 0 || liveStartTime === processStartTime;
+};
+
+// src/runState/owner/resolveOwnerProcess.ts
+var resolveOwnerProcess = async ({ cwd, owner }) => {
+  if ("pid" in owner) {
+    return owner;
+  }
+  const queueOwner = await readRunOwner({ cwd, runId: owner.queueRunId }).catch((error51) => {
+    if (error51 instanceof RunNotFoundError) {
+      return void 0;
+    }
+    throw error51;
+  });
+  return queueOwner !== void 0 && "pid" in queueOwner ? queueOwner : void 0;
+};
+
+// src/cli/internal/common/implementRun/reportLiveOwner.ts
+var reportLiveOwner = async ({ cwd, manifest }) => {
+  const owner = await readRunOwner({ cwd, runId: manifest.runId });
+  const queueRunId = owner !== void 0 && "queueRunId" in owner ? owner.queueRunId : void 0;
+  const recorded = owner === void 0 ? void 0 : await resolveOwnerProcess({ cwd, owner });
+  if (recorded === void 0 || !await isRecordedProcessAlive(recorded)) {
+    return false;
+  }
+  console.error(
+    queueRunId === void 0 ? `run ${manifest.runId} is still running under process ${recorded.pid} \u2014 stop it first with: lightsout stop --run ${manifest.runId}` : `run ${manifest.runId} is a worker of queue run ${queueRunId}, still running under process ${recorded.pid} \u2014 stop the queue first with: lightsout stop --run ${queueRunId}`
+  );
+  return true;
+};
+
 // src/cli/resumeCommand.ts
 var resumedHere = [PipelineKind.Implement, PipelineKind.Phases, PipelineKind.Direct];
-var readResumableRun = async ({ cwd, flags }) => {
+var readNamedRun = async ({ cwd, flags }) => {
   const runId = getStringFlag({ flags, name: "run" });
   if (!runId) {
     console.error(usage);
     return exitCli({ code: 1 });
   }
-  const manifest = await readRunManifest({ cwd, runId }).catch((error51) => {
+  return readRunManifest({ cwd, runId }).catch((error51) => {
     if (error51 instanceof RunNotFoundError) {
       console.error(error51.message);
       return exitCli({ code: 1 });
     }
     throw error51;
   });
+};
+var refusePhaseChild = async ({ manifest, resumeFlags }) => {
+  if (manifest.parentRunId === void 0) {
+    return;
+  }
+  console.error(
+    `run ${manifest.runId} is a phase of sequence ${manifest.parentRunId} \u2014 resume it with: ${formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.parentRunId })}${resumeFlags}`
+  );
+  return exitCli({ code: 1 });
+};
+var readResumableRun = async ({ cwd, flags }) => {
+  const manifest = await readNamedRun({ cwd, flags });
+  await refusePhaseChild({ manifest, resumeFlags: "" });
   const pipeline = manifest.pipeline ?? PipelineKind.Implement;
   if (!resumedHere.includes(pipeline)) {
     console.error(`run ${manifest.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${formatResumeCommand({ pipeline, runId: manifest.runId })}`);
@@ -162834,9 +164347,25 @@ var prepareResumedRun = async ({ cwd, manifest, loaded, willShip }) => {
   };
   return { resumable, config: config2, driver: getDriver({ name: manifest.harness }) };
 };
-var resumeCommand = async ({ flags, cwd }) => {
+var launchDetachedResume = async ({ flags, rest, cwd }) => {
+  if (flags.get("detach") !== true) {
+    console.error(usage);
+    return exitCli({ code: 1 });
+  }
+  const manifest = await readNamedRun({ cwd, flags });
+  await refusePhaseChild({ manifest, resumeFlags: " --detach" });
+  return exitCli({ code: await launchDetached({ cwd, command: "resume", args: rest, runId: manifest.runId }) });
+};
+var resumeCommand = async ({ flags, rest, cwd }) => {
+  readLaunchRunId({ env: process.env });
+  if (flags.has("detach")) {
+    return launchDetachedResume({ flags, rest, cwd });
+  }
   const skipRefactor = flags.get("skip-refactor") === true;
   const { manifest, pipeline } = await readResumableRun({ cwd, flags });
+  if (await reportLiveOwner({ cwd, manifest })) {
+    return exitCli({ code: 1 });
+  }
   const located = await resolveRunCwd({ cwd, manifest });
   if ("error" in located) {
     console.error(located.error);
@@ -162878,15 +164407,7 @@ var resumeCommand = async ({ flags, cwd }) => {
   if (result === void 0) {
     return exitCli({ code: 1 });
   }
-  await printResult({ result, cwd });
-  return exitAfterImplement({
-    config: loaded,
-    cwd: workspace,
-    result,
-    shipFlag: flags.get("ship") === true,
-    noShipFlag: flags.get("no-ship") === true,
-    env: process.env
-  });
+  return finishImplementRun({ config: loaded, cwd: workspace, result, flags });
 };
 
 // src/gates/common/constants/SelfCheckReason.ts
@@ -163085,13 +164606,141 @@ ${result.coordination}`);
   return exitCli({ code: failed ? 1 : 0 });
 };
 
+// src/common/git/readGitIdentity.ts
+var readGitConfigValue = async ({ cwd, key }) => {
+  const read = await runCommand({ command: `git config ${key}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  const value = read && read.exitCode === 0 ? read.stdout.trim() : "";
+  return value === "" ? void 0 : value;
+};
+var readGitIdentity = async ({ cwd }) => {
+  const name = await readGitConfigValue({ cwd, key: "user.name" });
+  const email3 = await readGitConfigValue({ cwd, key: "user.email" });
+  return { ...name === void 0 ? {} : { name }, ...email3 === void 0 ? {} : { email: email3 } };
+};
+
+// src/workOrder/shipping/authorizeHandBuiltShip.ts
+var recordAuthorization = ({ record: record3, name, branch, identity }) => {
+  if (identity.name === void 0 || identity.email === void 0) {
+    const unset = [...identity.name === void 0 ? ["user.name"] : [], ...identity.email === void 0 ? ["user.email"] : []];
+    const commands2 = unset.map((key) => `\`git config ${key} <value>\``);
+    return {
+      error: `git's ${unset.join(" and ")} ${unset.length === 1 ? "is" : "are"} unset in this checkout, so nobody can be recorded as authorizing hand-built work on work order ${name} \u2014 set ${unset.length === 1 ? "it" : "them"} with ${commands2.join(" and ")}`
+    };
+  }
+  const by = `${identity.name} ${identity.email}`;
+  const at = (/* @__PURE__ */ new Date()).toISOString();
+  return {
+    record: appendWorkOrderEvent({
+      record: { ...record3, handBuiltShipAuthorization: { by, at } },
+      kind: WorkOrderEventKind.HandBuiltShipAuthorized,
+      detail: `${by} authorized shipping the hand-built work on branch ${branch} as work order ${name}`,
+      at
+    })
+  };
+};
+var decideAuthorization = ({ record: record3, name, branch, identity }) => {
+  const state = readWorkOrderShipState({ record: record3 });
+  let decision;
+  if (state.kind === WorkOrderShipStateKind.TicketBodyPassed) {
+    decision = {
+      kept: `the build from the ticket body of work order ${name} under run ${state.runId} already passed, so there is no hand-built work to authorize and nothing was recorded`
+    };
+  } else if (state.kind === WorkOrderShipStateKind.HandBuiltAuthorized) {
+    decision = { kept: `${state.by} already authorized shipping hand-built work on work order ${name} at ${state.at}, so that authorization is kept` };
+  } else if (state.kind === WorkOrderShipStateKind.ShipRequestMissing || state.kind === WorkOrderShipStateKind.ShipRequested) {
+    decision = {
+      error: `work order ${name} is in multiple-plan mode, where it ships on a ship request rather than on hand-built work \u2014 ask for one with \`lightsout work-order request-ship --name ${name} --plans <id,id>\``
+    };
+  } else if (state.kind === WorkOrderShipStateKind.TicketBodyUnbuilt || state.kind === WorkOrderShipStateKind.TicketBodyBuilding || state.kind === WorkOrderShipStateKind.TicketBodyFailed) {
+    decision = recordAuthorization({ record: record3, name, branch, identity });
+  } else {
+    decision = {
+      error: `work order ${name} holds plan 001, and a single-plan work order holding plan 001 ships through that plan alone, so there is no hand-built work to authorize \u2014 ship it through plan 001 instead`
+    };
+  }
+  return decision;
+};
+var authorizeHandBuiltShip = async ({
+  cwd,
+  name,
+  branch,
+  identity,
+  config: config2,
+  env,
+  onProgress
+}) => {
+  let kept;
+  const updated = await updateSyncedWorkOrderState({
+    cwd,
+    name,
+    config: config2,
+    env,
+    onProgress,
+    change: (current) => {
+      if (current === void 0) {
+        return {
+          error: `no work order saves branch ${branch}, so there is no hand-built work to authorize \u2014 plain \`lightsout ship\` ships a branch no work order claims`
+        };
+      }
+      const record3 = requireWorkOrderState({ record: current, name });
+      if ("error" in record3) {
+        return record3;
+      }
+      const decision = decideAuthorization({ record: record3, name, branch, identity });
+      let next;
+      if ("kept" in decision) {
+        kept = decision.kept;
+        next = record3;
+      } else {
+        next = "error" in decision ? decision : decision.record;
+      }
+      return next;
+    }
+  });
+  return "error" in updated ? updated : { record: updated.record, notice: kept, publishError: updated.publishError };
+};
+
 // src/cli/shipCommand.ts
-var shipCommand = async ({ cwd }) => {
+var authorizeHandBuiltWork = async ({ cwd, config: config2 }) => {
+  const branch = await readGitCurrentBranch({ cwd });
+  if (branch === void 0) {
+    return "HEAD names no branch, so no work order is being shipped and there is no hand-built work to authorize \u2014 check out the branch to ship first";
+  }
+  const authorized = await authorizeHandBuiltShip({
+    cwd,
+    name: await resolveWorkOrderNameForBranch({ cwd, branch }),
+    branch,
+    identity: await readGitIdentity({ cwd }),
+    config: config2,
+    env: process.env,
+    onProgress: createProgressPrinter()
+  });
+  let refusal;
+  if ("error" in authorized) {
+    refusal = authorized.error;
+  } else {
+    if (authorized.notice !== void 0) {
+      console.log(authorized.notice);
+    }
+    if (authorized.publishError !== void 0) {
+      console.error(`warning: ${authorized.publishError}`);
+    }
+  }
+  return refusal;
+};
+var shipCommand = async ({ flags, cwd }) => {
   const config2 = await readConfig({ cwd });
   const settings = resolveShipSettings({ config: config2 });
   if (settings === void 0) {
     console.error(unusableTicketPatternMessage);
     return exitCli({ code: 1 });
+  }
+  if (flags.get("hand-built") === true) {
+    const refusal = await authorizeHandBuiltWork({ cwd, config: config2 });
+    if (refusal !== void 0) {
+      console.error(refusal);
+      return exitCli({ code: 1 });
+    }
   }
   const { config: effectiveConfig, driver } = resolveEffectiveConfigAndDriver({ config: config2, command: "implement" });
   const result = await runShip({
@@ -163162,34 +164811,34 @@ var printFindingGroups = ({ findings }) => {
   const locationColumnCap = 52;
   const detailIndent = "      ";
   const groups = /* @__PURE__ */ new Map();
-  for (const finding3 of findings) {
-    const key = `${finding3.severity}:${finding3.rule}`;
-    const group = groups.get(key) ?? { rule: finding3.rule, severity: finding3.severity, findings: [] };
-    group.findings.push(finding3);
+  for (const finding6 of findings) {
+    const key = `${finding6.severity}:${finding6.rule}`;
+    const group = groups.get(key) ?? { rule: finding6.rule, severity: finding6.severity, findings: [] };
+    group.findings.push(finding6);
     groups.set(key, group);
   }
   for (const { rule, severity, findings: group } of groups.values()) {
     console.log("");
     console.log(headingOf2({ rule, severity, count: group.length }));
-    const singleWidths = group.flatMap((finding3) => finding3.files.length === 1 ? finding3.files.map((file2) => formatFindingSite({ file: file2 }).length) : []);
+    const singleWidths = group.flatMap((finding6) => finding6.files.length === 1 ? finding6.files.map((file2) => formatFindingSite({ file: file2 }).length) : []);
     const column = Math.min(Math.max(0, ...singleWidths), locationColumnCap);
     const byGuidance = /* @__PURE__ */ new Map();
-    for (const finding3 of group) {
-      byGuidance.set(finding3.guidance ?? "", [...byGuidance.get(finding3.guidance ?? "") ?? [], finding3]);
+    for (const finding6 of group) {
+      byGuidance.set(finding6.guidance ?? "", [...byGuidance.get(finding6.guidance ?? "") ?? [], finding6]);
     }
     for (const [guidance, partition] of byGuidance) {
       console.log("");
-      for (const finding3 of partition) {
-        const locations = finding3.files.map((file2) => formatFindingSite({ file: file2 }));
+      for (const finding6 of partition) {
+        const locations = finding6.files.map((file2) => formatFindingSite({ file: file2 }));
         const inline = locations.length === 1 ? locations[0] : void 0;
         if (inline !== void 0 && inline.length <= column) {
-          console.log(`${rowIndent}${inline.padEnd(column + 2)}${dim(finding3.detail)}`);
+          console.log(`${rowIndent}${inline.padEnd(column + 2)}${dim(finding6.detail)}`);
           continue;
         }
         for (const location of locations) {
           console.log(`${rowIndent}${location}`);
         }
-        for (const line of wrapText({ text: finding3.detail, width, indent: detailIndent })) {
+        for (const line of wrapText({ text: finding6.detail, width, indent: detailIndent })) {
           console.log(dim(line));
         }
       }
@@ -163245,7 +164894,7 @@ var printStandardsRuleList = ({ rules }) => {
 };
 
 // src/cli/internal/common/render/printStandardsSummary.ts
-var countOf = ({ findings, rule, severity }) => findings.filter((finding3) => finding3.rule === rule && finding3.severity === severity).length;
+var countOf = ({ findings, rule, severity }) => findings.filter((finding6) => finding6.rule === rule && finding6.severity === severity).length;
 var cell = ({ count: count2 }) => count2 === 0 ? "\u2014" : `${count2}`;
 var printStandardsSummary = ({ findings, rules, reportPath }) => {
   console.log("");
@@ -163257,7 +164906,7 @@ var printStandardsSummary = ({ findings, rules, reportPath }) => {
     return;
   }
   const summaryOf = ({ rule }) => rules.find((listing) => listing.rule === rule)?.summary ?? "";
-  const reported = [...new Set(findings.map((finding3) => finding3.rule))];
+  const reported = [...new Set(findings.map((finding6) => finding6.rule))];
   const rows = reported.flatMap((rule) => [
     {
       cells: [
@@ -163275,8 +164924,8 @@ var printStandardsSummary = ({ findings, rules, reportPath }) => {
   const totals = {
     cells: [
       "total",
-      cell({ count: findings.filter((finding3) => finding3.severity === StandardsSeverity.Blocking).length }),
-      cell({ count: findings.filter((finding3) => finding3.severity === StandardsSeverity.Advisory).length })
+      cell({ count: findings.filter((finding6) => finding6.severity === StandardsSeverity.Blocking).length }),
+      cell({ count: findings.filter((finding6) => finding6.severity === StandardsSeverity.Advisory).length })
     ],
     emphasis: bold
   };
@@ -163469,8 +165118,8 @@ var printStandardsHealth = ({ health }) => {
 };
 
 // src/standardsCheck/buildStandardsHealth.ts
-import { readFile as readFile65 } from "node:fs/promises";
-import { join as join148 } from "node:path";
+import { readFile as readFile66 } from "node:fs/promises";
+import { join as join153 } from "node:path";
 var emptyTally = () => ({
   attempted: 0,
   resolved: 0,
@@ -163495,24 +165144,24 @@ var readRefactorRun = async ({ cwd, runId }) => {
   if ((manifest.pipeline ?? "implement") !== "refactor") {
     return void 0;
   }
-  const worklist = RefactorWorklist.parse(JSON.parse(await readFile65(join148(await resolveRunDir({ cwd, runId }), "worklist.json"), "utf8")));
+  const worklist = RefactorWorklist.parse(JSON.parse(await readFile66(join153(await resolveRunDir({ cwd, runId }), "worklist.json"), "utf8")));
   return { worklist, steps: manifest.steps };
 };
 var countBatchSites = ({ tallies, blocking, report: report2 }) => {
   const remaining = report2 ? new Set(report2.remainingSiteKeys) : void 0;
   const leftStanding = /* @__PURE__ */ new Set();
-  for (const finding3 of blocking) {
-    const tally = tallyFor({ tallies, rule: finding3.rule });
+  for (const finding6 of blocking) {
+    const tally = tallyFor({ tallies, rule: finding6.rule });
     tally.attempted += 1;
     if (remaining === void 0) {
       tally.untracked += 1;
       continue;
     }
-    if (!remaining.has(finding3.siteKey)) {
+    if (!remaining.has(finding6.siteKey)) {
       tally.resolved += 1;
       continue;
     }
-    leftStanding.add(finding3.rule);
+    leftStanding.add(finding6.rule);
     if (report2?.outcome === BatchOutcome.Declined) {
       tally.declined += 1;
     } else {
@@ -163576,12 +165225,12 @@ var standardsHealthCommand = async ({ cwd }) => {
 };
 
 // src/cli/standardsValidateCommand.ts
-import { resolve as resolve18 } from "node:path";
+import { resolve as resolve20 } from "node:path";
 
 // src/standardsCheck/validateStandardsLibrary.ts
-import { readdir as readdir25 } from "node:fs/promises";
+import { readdir as readdir26 } from "node:fs/promises";
 import { createRequire as createRequire5 } from "node:module";
-import { join as join151 } from "node:path";
+import { join as join158 } from "node:path";
 
 // src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts
 var checkFixtureTree = async ({ cwd, rule, inputKind, run, label: label2, compiler }) => {
@@ -163607,7 +165256,7 @@ var checkFixtureTree = async ({ cwd, rule, inputKind, run, label: label2, compil
 };
 
 // src/standardsCheck/internal/common/utils/fixtureChecks/checkRuleExample.ts
-import { join as join150 } from "node:path";
+import { join as join155 } from "node:path";
 
 // src/contracts/views/FixtureSide.ts
 var FixtureSide = {
@@ -163616,14 +165265,14 @@ var FixtureSide = {
 };
 
 // src/standardsLibraries/common/utils/listFixtureFiles.ts
-import { readdir as readdir24 } from "node:fs/promises";
-import { join as join149 } from "node:path";
+import { readdir as readdir25 } from "node:fs/promises";
+import { join as join154 } from "node:path";
 var listFixtureFiles = async ({ root }) => {
-  const entries = await readdir24(root, { withFileTypes: true }).catch(() => []);
+  const entries = await readdir25(root, { withFileTypes: true }).catch(() => []);
   const paths = [];
   for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
     if (entry.isDirectory()) {
-      paths.push(...(await listFixtureFiles({ root: join149(root, entry.name) })).map((path) => `${entry.name}/${path}`));
+      paths.push(...(await listFixtureFiles({ root: join154(root, entry.name) })).map((path) => `${entry.name}/${path}`));
     } else {
       paths.push(entry.name);
     }
@@ -163636,12 +165285,57 @@ var checkRuleExample = async ({ rule }) => {
   const { example } = rule;
   const problems = [];
   for (const side of Object.values(FixtureSide)) {
-    const files = example === void 0 ? [] : await listFixtureFiles({ root: join150(rule.fixturesPath, side) });
+    const files = example === void 0 ? [] : await listFixtureFiles({ root: join155(rule.fixturesPath, side) });
     if (example?.kind === RuleExampleKind.Snippet && files.length !== 1) {
       problems.push(`${rule.id}: declares a snippet example, but fixtures/${side}/ holds ${files.length} files \u2014 a snippet is one file a side`);
     }
     if (example?.kind === RuleExampleKind.Repo && !files.includes(example.focus[side])) {
       problems.push(`${rule.id}: its example focuses ${example.focus[side]}, which fixtures/${side}/ does not hold`);
+    }
+  }
+  return problems;
+};
+
+// src/standardsCheck/internal/common/utils/proseChecks/checkLibraryProse.ts
+import { dirname as dirname31, join as join157 } from "node:path";
+
+// src/standardsCheck/internal/common/utils/proseChecks/findBrokenLinks.ts
+import { existsSync as existsSync5 } from "node:fs";
+import { join as join156 } from "node:path";
+var inlineLink = /\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g;
+var isOnDisk = ({ target }) => !/^[a-z][a-z0-9+.-]*:/i.test(target) && !target.startsWith("#");
+var outsideFences = ({ text }) => {
+  let fence;
+  return text.split("\n").filter((line) => {
+    const marker = /^ {0,3}(`{3,}|~{3,})/.exec(line)?.[1];
+    if (marker === void 0) {
+      return fence === void 0;
+    }
+    if (fence === void 0) {
+      fence = marker;
+    } else if (marker[0] === fence[0] && marker.length >= fence.length) {
+      fence = void 0;
+    }
+    return false;
+  }).join("\n");
+};
+var findBrokenLinks = ({ text, fromFolder }) => [...outsideFences({ text }).matchAll(inlineLink)].map((match) => match[1]).filter((target) => isOnDisk({ target })).filter((target) => !existsSync5(join156(fromFolder, decodeURI(target.split(/[#?]/)[0]))));
+
+// src/standardsCheck/internal/common/utils/proseChecks/checkLibraryProse.ts
+var hasInstructions = ({ prose }) => prose.split("\n").some((line) => line.trim().length > 0 && !/^ {0,3}#{1,6}(\s|$)/.test(line));
+var checkLibraryProse = ({ library }) => {
+  const problems = [];
+  for (const rule of library.rules) {
+    if (!hasInstructions({ prose: rule.prose })) {
+      problems.push(`${rule.id}: rule.md has no prose under its heading \u2014 agents read the prose, so they are never told this rule`);
+    }
+    for (const target of findBrokenLinks({ text: rule.prose, fromFolder: dirname31(rule.fixturesPath) })) {
+      problems.push(`${rule.id}: rule.md links to ${target}, which does not exist`);
+    }
+  }
+  for (const topic of library.documents) {
+    for (const target of findBrokenLinks({ text: topic.intro, fromFolder: join157(library.rootPath, "rules", topic.path) })) {
+      problems.push(`${topic.path}: topic.md links to ${target}, which does not exist`);
     }
   }
   return problems;
@@ -163664,7 +165358,7 @@ var getEngineTypescript = () => {
 var missingFixtureSides = async ({ fixturesPath }) => {
   const missing = [];
   for (const side of Object.values(FixtureSide2)) {
-    const entries = await readdir25(join151(fixturesPath, side)).catch(() => void 0);
+    const entries = await readdir26(join158(fixturesPath, side)).catch(() => void 0);
     if (entries === void 0 || entries.length === 0) {
       missing.push(side);
     }
@@ -163672,7 +165366,7 @@ var missingFixtureSides = async ({ fixturesPath }) => {
   return missing;
 };
 var namePaths = ({ found }) => {
-  const paths = [...new Set(found.flatMap((finding3) => finding3.files.slice(0, 1).map((file2) => file2.path)))];
+  const paths = [...new Set(found.flatMap((finding6) => finding6.files.slice(0, 1).map((file2) => file2.path)))];
   return paths.length > 3 ? `${paths.slice(0, 3).join(", ")}, \u2026` : paths.join(", ");
 };
 var checkFrameworkOwned = async ({ library, compiler }) => {
@@ -163681,7 +165375,7 @@ var checkFrameworkOwned = async ({ library, compiler }) => {
   if (frameworkOwnedFixturesPath === void 0) {
     return heldNothing;
   }
-  const entries = await readdir25(frameworkOwnedFixturesPath, { withFileTypes: true }).catch(() => []);
+  const entries = await readdir26(frameworkOwnedFixturesPath, { withFileTypes: true }).catch(() => []);
   const frameworks = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
   if (frameworks.length === 0) {
     return heldNothing;
@@ -163695,7 +165389,7 @@ var checkFrameworkOwned = async ({ library, compiler }) => {
       }
       try {
         const found = await checkFixtureTree({
-          cwd: join151(frameworkOwnedFixturesPath, framework),
+          cwd: join158(frameworkOwnedFixturesPath, framework),
           rule,
           inputKind,
           run,
@@ -163762,7 +165456,7 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
     }
     for (const side of Object.values(FixtureSide2)) {
       try {
-        const found = await checkFixtureTree({ cwd: join151(rule.fixturesPath, side), rule, inputKind, run, label: `fixtures/${side}/`, compiler });
+        const found = await checkFixtureTree({ cwd: join158(rule.fixturesPath, side), rule, inputKind, run, label: `fixtures/${side}/`, compiler });
         if (side === FixtureSide2.Fail && found.length === 0) {
           problems.push(`${rule.id}: the fail fixture produced no finding \u2014 the check does not catch what the rule describes`);
         }
@@ -163776,6 +165470,7 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
   }
   const frameworkOwned = await checkFrameworkOwned({ library, compiler });
   problems.push(...frameworkOwned.problems);
+  problems.push(...checkLibraryProse({ library }));
   notes.push(...frameworkOwned.notes);
   problems.push(...findUnresolvedRequirements({ libraries }));
   const packFiles = checkPackFiles({ library, libraries });
@@ -163785,7 +165480,7 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
 
 // src/cli/standardsValidateCommand.ts
 var readLibraries = async ({ requested, cwd }) => {
-  const library = await readStandardsLibrary({ packPath: requested === void 0 ? resolveDefaultStandardsLibrary() : resolve18(cwd, requested) });
+  const library = await readStandardsLibrary({ packPath: requested === void 0 ? resolveDefaultStandardsLibrary() : resolve20(cwd, requested) });
   const config2 = await readOptionalConfig({ cwd });
   let libraries;
   if (library.name === builtInStandardsLibraryName) {
@@ -163844,12 +165539,13 @@ var layoutGlyphs = {
 };
 var rowGlyph = ({ status }) => status === void 0 ? notReachedGlyph : layoutGlyphs[status] ?? statusIcons[status];
 var rowCells = ({ row }) => {
-  const glyph = rowGlyph({ status: row.status });
   if (row.status === void 0 || row.status === RunStatus.Pending) {
-    return { glyph, status: void 0, id: row.id, outcome: emDash, duration: void 0 };
+    return { glyph: rowGlyph({ status: row.status }), status: void 0, id: row.id, outcome: emDash, duration: void 0 };
   }
-  const outcome = row.attempts > 1 ? `${row.status} (x${row.attempts})` : row.status;
-  return { glyph, status: row.status, id: row.id, outcome, duration: formatClockDuration({ ms: row.durationMs }) };
+  const glyph = row.stopped === true ? "\u25A0" : rowGlyph({ status: row.status });
+  const shown = row.stopped === true ? "stopped" : row.status;
+  const outcome = row.attempts > 1 ? `${shown} (x${row.attempts})` : shown;
+  return { glyph, status: shown, id: row.id, outcome, duration: formatClockDuration({ ms: row.durationMs }) };
 };
 var renderProgressBlock = ({ title, tag, rows, diagnostics, totals, now }) => {
   const cells = rows.map((row) => rowCells({ row }));
@@ -163953,7 +165649,7 @@ var loadPlanningProgressBlock = async ({ cwd, name }) => {
 };
 
 // src/ship/progress/readShippingProgress.ts
-import { readFile as readFile66 } from "node:fs/promises";
+import { readFile as readFile67 } from "node:fs/promises";
 
 // src/contracts/ship/ShippingProgress.ts
 var shippingStepRecord = external_exports.object({
@@ -163989,7 +165685,7 @@ var readShippingProgress = async ({ cwd, branch }) => {
   let exists3 = true;
   let progress;
   try {
-    const parsed = ShippingProgress.safeParse(JSON.parse(await readFile66(path, "utf8")));
+    const parsed = ShippingProgress.safeParse(JSON.parse(await readFile67(path, "utf8")));
     progress = parsed.success ? parsed.data : void 0;
   } catch (error51) {
     exists3 = !isMissingFile({ error: error51 });
@@ -164103,37 +165799,72 @@ var cleanupLines = ({ row }) => {
   return [` cleanup       ${parts.join(" \xB7 ")}`];
 };
 var renderRunProgress = ({ progress }) => {
-  const diagnostics = progress.rows.flatMap((row) => [...verificationLines({ row }), ...cleanupLines({ row })]);
+  const stopped = (progress.status === RunStatus.Running || progress.status === RunStatus.Pending) && !progress.live;
+  const rows = stopped ? progress.rows.map((row) => row.status === RunStatus.Running ? { ...row, stopped: true } : row) : progress.rows;
+  const stoppedLines = stopped ? [` no live process \u2014 resume with ${progress.resumeCommand}`] : [];
+  const diagnostics = [...stoppedLines, ...progress.rows.flatMap((row) => [...verificationLines({ row }), ...cleanupLines({ row })])];
   const cost = progress.costUsd === void 0 ? "" : ` \xB7 ${formatCost({ usd: progress.costUsd })}`;
   const totals = `elapsed ${formatClockDuration({ ms: progress.elapsedMs })} \xB7 ${progress.changedFileCount} files${cost}`;
-  return renderProgressBlock({ title: progress.title, tag: progress.shortId, rows: progress.rows, diagnostics, totals, now: progress.now });
+  return renderProgressBlock({ title: progress.title, tag: progress.shortId, rows, diagnostics, totals, now: progress.now });
+};
+
+// src/runState/common/utils/findRunningChildRunId.ts
+var findRunningChildRunId = ({ manifest }) => {
+  const running = manifest.steps.find((step) => step.status === RunStatus.Running);
+  return PhaseReport.safeParse(running?.report).data?.runId;
+};
+
+// src/runState/isRunLive.ts
+var isRunLive = ({ manifest, root, ownerAlive, liveLockRunId }) => {
+  if (manifest.status !== RunStatus.Running && manifest.status !== RunStatus.Pending) {
+    return false;
+  }
+  let live2;
+  if (ownerAlive === void 0) {
+    live2 = liveLockRunId === manifest.runId;
+  } else if (manifest.parentRunId === void 0) {
+    live2 = ownerAlive;
+  } else {
+    const movingChildId = root?.status === RunStatus.Running ? findRunningChildRunId({ manifest: root }) : void 0;
+    live2 = ownerAlive && movingChildId === manifest.runId;
+  }
+  return live2;
 };
 
 // src/runState/lock/readRunProcessLock.ts
-import { stat as stat14 } from "node:fs/promises";
+import { stat as stat15 } from "node:fs/promises";
 var readRunProcessLock = async ({ cwd, manifest }) => {
   const { workspace } = manifest;
-  const recorded = workspace === void 0 ? void 0 : await stat14(workspace).then(
+  const recorded = workspace === void 0 ? void 0 : await stat15(workspace).then(
     (entry) => entry.isDirectory() ? workspace : void 0,
     () => void 0
   );
   return readRunLock({ cwd: recorded ?? cwd });
 };
 
-// src/runState/isRunLive.ts
-var isRunLive = ({ manifest, lock }) => {
-  if (!lock || !isPidAlive({ pid: lock.pid })) {
-    return false;
+// src/runState/readRunLiveness.ts
+var readOwnerOrNothing = ({ cwd, runId }) => readRunOwner({ cwd, runId }).catch((error51) => {
+  if (error51 instanceof RunNotFoundError) {
+    return void 0;
   }
-  if (lock.runId === manifest.runId) {
-    return true;
+  throw error51;
+});
+var readLiveLockHolder = async ({ cwd, manifest }) => {
+  const lock = await readRunProcessLock({ cwd, manifest });
+  return lock !== void 0 && isPidAlive({ pid: lock.pid }) ? lock : void 0;
+};
+var readRunLiveness = async ({ cwd, manifest }) => {
+  if (manifest.status !== RunStatus.Running && manifest.status !== RunStatus.Pending) {
+    return { live: false, pid: void 0 };
   }
-  const running = manifest.steps.find((step) => step.status === RunStatus.Running);
-  if (manifest.pipeline !== PipelineKind.Phases || running === void 0) {
-    return false;
-  }
-  const child = PhaseReport.safeParse(running.report);
-  return child.success && child.data.runId === lock.runId;
+  const { parentRunId } = manifest;
+  const root = parentRunId === void 0 ? void 0 : await readRunManifest({ cwd, runId: parentRunId }).catch(() => void 0);
+  const owner = await readOwnerOrNothing({ cwd, runId: parentRunId ?? manifest.runId });
+  const ownerProcess = owner === void 0 ? void 0 : await resolveOwnerProcess({ cwd, owner });
+  const ownerAlive = owner === void 0 ? void 0 : ownerProcess !== void 0 && await isRecordedProcessAlive(ownerProcess);
+  const lockHolder = owner === void 0 ? await readLiveLockHolder({ cwd, manifest }) : void 0;
+  const live2 = isRunLive({ manifest, root, ownerAlive, liveLockRunId: lockHolder?.runId });
+  return { live: live2, pid: live2 ? ownerProcess?.pid ?? lockHolder?.pid : void 0 };
 };
 
 // src/contracts/run/ProgressRecord.ts
@@ -164180,7 +165911,7 @@ var readShipResult = async ({ cwd, branch }) => {
 };
 
 // src/views/internal/common/utils/getRunTitle.ts
-import { basename as basename44, dirname as dirname30 } from "node:path";
+import { basename as basename46, dirname as dirname32 } from "node:path";
 var namedRuleLimit = 3;
 var describeRules = ({ rules }) => {
   const distinct = [...new Set(rules)];
@@ -164189,9 +165920,9 @@ var describeRules = ({ rules }) => {
   return rest > 0 ? `${named} +${rest} more` : named;
 };
 var getRunTitle = ({ plan, worklist }) => {
-  const name = basename44(plan);
+  const name = basename46(plan);
   const stem = name.replace(/\.md$/, "");
-  const folder = basename44(dirname30(plan));
+  const folder = basename46(dirname32(plan));
   const rules = worklist?.kind === PipelineKind.Refactor ? worklist.worklist?.batches.map((batch) => batch.rule) ?? [] : [];
   let title;
   if (worklist?.kind === PipelineKind.Coverage) {
@@ -164223,8 +165954,7 @@ var readShipRow = async ({ cwd, manifest }) => {
     cleanup: void 0
   };
 };
-var getRunProgress = async ({ cwd, manifest, lock }) => {
-  const live2 = isRunLive({ manifest, lock });
+var getRunProgress = async ({ cwd, manifest, live: live2 }) => {
   const sinceWriteMs = live2 ? Math.max(0, Date.now() - Date.parse(manifest.updatedAt)) : 0;
   const rows = manifest.steps.map((step) => ({
     id: step.id,
@@ -164255,15 +165985,16 @@ var getRunProgress = async ({ cwd, manifest, lock }) => {
     changedFileCount: manifest.changedFiles.length,
     costUsd: manifest.usage?.costUsd,
     now: await readLastProgressMessage({ cwd, runId: manifest.runId }),
-    awaitingShip: shipRow !== void 0 && shipRow.status === void 0
+    awaitingShip: shipRow !== void 0 && shipRow.status === void 0,
+    resumeCommand: manifest.parentRunId === void 0 ? formatResumeCommand({ pipeline: manifest.pipeline ?? PipelineKind.Implement, runId: manifest.runId }) : formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.parentRunId })
   };
 };
 
 // src/cli/internal/common/progressBlock/loadRunProgressBlock.ts
 var loadRunProgressBlock = async ({ cwd, runId }) => {
   const manifest = await readRunManifest({ cwd, runId });
-  const lock = await readRunProcessLock({ cwd, manifest });
-  const progress = await getRunProgress({ cwd, manifest, lock });
+  const { live: live2 } = await readRunLiveness({ cwd, manifest });
+  const progress = await getRunProgress({ cwd, manifest, live: live2 });
   return { progress, lines: renderRunProgress({ progress }) };
 };
 
@@ -164279,8 +166010,7 @@ var isRunResumable = ({ status, live: live2 }) => {
 };
 
 // src/views/internal/common/utils/buildRunListing.ts
-var buildRunListing = ({ manifest, lock, worklist }) => {
-  const live2 = isRunLive({ manifest, lock });
+var buildRunListing = ({ manifest, live: live2, worklist }) => {
   return {
     runId: manifest.runId,
     shortId: formatShortRunId({ runId: manifest.runId }),
@@ -164303,8 +166033,8 @@ var buildRunListing = ({ manifest, lock, worklist }) => {
 };
 
 // src/views/internal/common/utils/readFrozenWorklist.ts
-import { readFile as readFile67 } from "node:fs/promises";
-import { join as join152 } from "node:path";
+import { readFile as readFile68 } from "node:fs/promises";
+import { join as join159 } from "node:path";
 
 // src/contracts/coverage/CoverageFile.ts
 var CoverageFile = external_exports.object({
@@ -164333,7 +166063,7 @@ var CoverageWorklist = external_exports.object({
 
 // src/views/internal/common/utils/readFrozenWorklist.ts
 var readFrozenWorklist = async ({ cwd, manifest }) => {
-  const raw = await readFile67(join152(await resolveRunDir({ cwd, runId: manifest.runId }), "worklist.json"), "utf8").catch(() => void 0);
+  const raw = await readFile68(join159(await resolveRunDir({ cwd, runId: manifest.runId }), "worklist.json"), "utf8").catch(() => void 0);
   let parsed;
   try {
     parsed = raw === void 0 ? void 0 : JSON.parse(raw);
@@ -164350,9 +166080,9 @@ var readFrozenWorklist = async ({ cwd, manifest }) => {
 };
 
 // src/views/internal/common/utils/readRunListing.ts
-var readRunListing = async ({ cwd, manifest, lock, worklist }) => {
+var readRunListing = async ({ cwd, manifest, live: live2, worklist }) => {
   const frozen = worklist ?? (manifest.plan.endsWith("worklist.json") ? await readFrozenWorklist({ cwd, manifest }) : void 0);
-  return buildRunListing({ manifest, lock, worklist: frozen });
+  return buildRunListing({ manifest, live: live2, worklist: frozen });
 };
 
 // src/views/listRuns.ts
@@ -164363,22 +166093,27 @@ var listRuns = async ({ cwd, workOrderName }) => {
     if (manifest === void 0) {
       continue;
     }
-    listings.push(await readRunListing({ cwd, manifest, lock: await readRunProcessLock({ cwd, manifest }) }));
+    const { live: live2 } = await readRunLiveness({ cwd, manifest });
+    listings.push(await readRunListing({ cwd, manifest, live: live2 }));
   }
   return listings.sort((first, second) => second.updatedAt.localeCompare(first.updatedAt));
 };
 
 // src/cli/internal/common/progressBlock/loadRunFamilyProgressBlock.ts
+var chooseChild = async ({ cwd, root, children }) => {
+  const rootManifest = await readRunManifest({ cwd, runId: root }).catch(() => void 0);
+  const namedChildId = rootManifest === void 0 ? void 0 : findRunningChildRunId({ manifest: rootManifest });
+  return namedChildId === void 0 ? children.find((run) => run.status === RunStatus.Running || run.status === RunStatus.Pending) ?? children[0] : children.find((run) => run.runId === namedChildId);
+};
 var loadRunFamilyProgressBlock = async ({ cwd, runId }) => {
   const listings = await listRuns({ cwd });
   const chosen = listings.find((run) => run.runId === runId);
   const named = chosen === void 0 ? runId : getRunFamilyRoot({ run: chosen });
   const root = listings.some((run) => run.runId === named) ? named : runId;
   const children = listings.filter((run) => run.runId !== root && getRunFamilyRoot({ run }) === root);
-  const going = children.find((run) => run.status === RunStatus.Running || run.status === RunStatus.Pending);
-  const child = going ?? children[0];
-  const { lines } = await loadRunProgressBlock({ cwd, runId: root });
-  return child === void 0 ? lines : [...lines, "", ...(await loadRunProgressBlock({ cwd, runId: child.runId })).lines];
+  const child = await chooseChild({ cwd, root, children });
+  const { progress, lines } = await loadRunProgressBlock({ cwd, runId: root });
+  return { progress, lines: child === void 0 ? lines : [...lines, "", ...(await loadRunProgressBlock({ cwd, runId: child.runId })).lines] };
 };
 
 // src/cli/internal/common/queueBoard/loadActiveTicketBlock.ts
@@ -164399,9 +166134,7 @@ var loadShippingBlock = async ({ ticket, worktreePath }) => {
 var findBuildRun = async ({ ticket, worktreePath, workOrderName }) => {
   const since = Date.parse(ticket.buildStartedAt ?? ticket.enteredAt);
   const candidates = (await listRuns({ cwd: worktreePath, workOrderName })).filter((run) => Date.parse(run.createdAt) >= since).sort((first, second) => Date.parse(second.createdAt) - Date.parse(first.createdAt));
-  const lock = await readRunLock({ cwd: worktreePath });
-  const locked = lock !== void 0 && isPidAlive({ pid: lock.pid }) ? candidates.find((run) => run.runId === lock.runId) : void 0;
-  return locked ?? candidates[0];
+  return candidates.find((run) => run.live) ?? candidates[0];
 };
 var loadPlanningBlock = async ({ worktreePath, workOrderName }) => {
   const read = await readWorkOrderState({ cwd: worktreePath, name: workOrderName });
@@ -164422,7 +166155,7 @@ var loadBuildBlock = async ({ ticket, worktreePath }) => {
   if (workOrderName === void 0) {
     lines = [`the board recorded no work order for ${ticket.identifier}`];
   } else if (run !== void 0) {
-    lines = await loadRunFamilyProgressBlock({ cwd: worktreePath, runId: run.runId });
+    lines = (await loadRunFamilyProgressBlock({ cwd: worktreePath, runId: run.runId })).lines;
   } else if (ticket.worker === QueueWorker.AutoPlan) {
     lines = await loadPlanningBlock({ worktreePath, workOrderName });
   } else {
@@ -164450,19 +166183,15 @@ var renderTicketDetailBlock = ({ ticket, lines }) => {
 };
 
 // src/cli/internal/common/queueBoard/resolveQueueRun.ts
-import { setTimeout as delay } from "node:timers/promises";
-var findLockedQueueRun = async ({ cwd }) => {
-  const lock = await readRunLock({ cwd });
-  const holder = lock !== void 0 && isPidAlive({ pid: lock.pid }) ? lock.runId : void 0;
-  return holder === void 0 ? void 0 : (await listRuns({ cwd })).find((run) => run.runId === holder && run.pipeline === PipelineKind.Queue);
-};
+import { setTimeout as delay2 } from "node:timers/promises";
+var findLiveQueueRun = async ({ cwd }) => (await listRuns({ cwd })).find((run) => run.pipeline === PipelineKind.Queue && run.live);
 var findNamedRun = async ({ cwd, runId }) => (await listRuns({ cwd })).find((run) => run.runId === runId);
 var resolveQueueRun = async ({ cwd, runId, wait = false, graceMs = 6e4, pollMs = 2e3 }) => {
-  const find = () => runId === void 0 ? findLockedQueueRun({ cwd }) : findNamedRun({ cwd, runId });
+  const find = () => runId === void 0 ? findLiveQueueRun({ cwd }) : findNamedRun({ cwd, runId });
   const deadline = Date.now() + (runId === void 0 && wait ? graceMs : 0);
   let listing = await find();
   while (listing === void 0 && Date.now() < deadline) {
-    await delay(pollMs);
+    await delay2(pollMs);
     listing = await find();
   }
   return listing;
@@ -164506,6 +166235,23 @@ var readQueueBoard = async ({ cwd, runId }) => {
   return readJsonFile({ path: await getQueueBoardPath({ cwd, runId }), schema: QueueBoard });
 };
 
+// src/contracts/queue/QueueSummary.ts
+var QueueSummary = external_exports.object({
+  /** The finished board exactly as the queue printed it. */
+  boardLines: external_exports.array(external_exports.string()),
+  /** The per-ticket drain report exactly as the queue printed it. */
+  reportLines: external_exports.array(external_exports.string()),
+  /** The code the queue command exited with. */
+  exitCode: external_exports.number().int(),
+  /** ISO time the drain finished. */
+  finishedAt: external_exports.string()
+});
+
+// src/queue/board/readQueueSummary.ts
+var readQueueSummary = async ({ cwd, runId }) => {
+  return readJsonFile({ path: await getQueueSummaryPath({ cwd, runId }), schema: QueueSummary });
+};
+
 // src/cli/internal/common/queueBoard/printQueueStatus.ts
 var toBoardState = ({ listing }) => {
   const going = listing.status === RunStatus.Running || listing.status === RunStatus.Pending;
@@ -164517,12 +166263,19 @@ var toBoardState = ({ listing }) => {
 };
 var isActive = ({ ticket }) => ticket.lane === QueueLane.Building || ticket.lane === QueueLane.ShippingNow || ticket.lane === QueueLane.Blocked && ticket.question !== void 0;
 var printBoard = async ({ cwd, listing }) => {
+  const state = toBoardState({ listing });
+  const summary = state === QueueBoardState.Finished ? await readQueueSummary({ cwd, runId: listing.runId }) : void 0;
+  if (summary !== void 0) {
+    for (const line of [...summary.boardLines, "", ...summary.reportLines]) {
+      console.log(line);
+    }
+    return;
+  }
   const board = await readQueueBoard({ cwd, runId: listing.runId });
   if (board === void 0) {
     console.log(`the queue run has no readable board yet: ${await getQueueBoardPath({ cwd, runId: listing.runId })}`);
     return;
   }
-  const state = toBoardState({ listing });
   const at = state === QueueBoardState.Live ? /* @__PURE__ */ new Date() : new Date(board.updatedAt);
   const active = state === QueueBoardState.Live ? Object.values(QueueLane).flatMap((lane) => board.tickets.filter((ticket) => ticket.lane === lane && isActive({ ticket }))) : [];
   const lines = renderQueueBoard({ tickets: board.tickets, state, at });
@@ -164550,9 +166303,14 @@ var printQueueStatus = async ({ cwd, runId, wait }) => {
   return code;
 };
 
-// src/cli/internal/common/render/printRunProgress.ts
-var printRunProgress = async ({ cwd, runId }) => {
-  const { progress, lines } = await loadRunProgressBlock({ cwd, runId });
+// src/cli/internal/common/runStatus/printAmbiguousRuns.ts
+var printAmbiguousRuns = ({ roots }) => {
+  console.error(`several runs are going: ${roots.join(", ")}`);
+  console.error("pick one with --run <id>");
+};
+
+// src/cli/internal/common/render/printProgressFrame.ts
+var printProgressFrame = ({ progress, lines }) => {
   console.log("");
   for (const line of lines) {
     console.log(line);
@@ -164560,24 +166318,69 @@ var printRunProgress = async ({ cwd, runId }) => {
   return progress;
 };
 
-// src/cli/internal/common/runStatus/printAmbiguousRuns.ts
-var printAmbiguousRuns = ({ roots }) => {
-  console.error(`several runs are going: ${roots.join(", ")}`);
-  console.error("pick one with --run <id>");
-};
+// src/cli/internal/common/runStatus/printRunFamilyScreen.ts
+var printRunFamilyScreen = async ({ cwd, runId }) => printProgressFrame(await loadRunFamilyProgressBlock({ cwd, runId }));
 
 // src/cli/internal/common/runStatus/printNewestRun.ts
 var printNewestRun = async ({ cwd }) => {
   const newest = (await listRuns({ cwd }))[0]?.runId;
   if (newest === void 0) {
     console.log("no runs found");
-    return;
+    return void 0;
   }
-  await printRunProgress({ cwd, runId: newest });
+  await printRunFamilyScreen({ cwd, runId: newest });
+  return newest;
+};
+
+// src/cli/internal/common/runStatus/printRunFinalReport.ts
+import { access as access2 } from "node:fs/promises";
+
+// src/contracts/run/RunFinalReport.ts
+var RunFinalReport = external_exports.object({
+  /** The report exactly as the command printed it, one entry per line, the run's error included. */
+  lines: external_exports.array(external_exports.string()),
+  /** The code the command exited with — after ship, not the run's own result. */
+  exitCode: external_exports.number().int(),
+  /** ISO time the command finished. */
+  finishedAt: external_exports.string()
+});
+
+// src/runState/finalReport/readRunFinalReport.ts
+var readRunFinalReport = async ({ cwd, runId }) => {
+  return readJsonFile({ path: await getRunFinalReportPath({ cwd, runId }), schema: RunFinalReport });
+};
+
+// src/cli/internal/common/runStatus/printRunFinalReport.ts
+var readFamilyRoot = async ({ cwd, runId }) => {
+  const named = await readRunManifest({ cwd, runId }).catch(() => void 0);
+  return named?.parentRunId === void 0 ? named : readRunManifest({ cwd, runId: named.parentRunId }).catch(() => void 0);
+};
+var readExplainingLaunchLog = async ({ cwd, root, finished, saved }) => {
+  const stopped = !finished && !(await readRunLiveness({ cwd, manifest: root })).live;
+  if (!stopped && (!finished || saved)) {
+    return void 0;
+  }
+  const logPath = await getLaunchLogPath({ cwd, runId: root.runId });
+  return access2(logPath).then(
+    () => logPath,
+    () => void 0
+  );
+};
+var printRunFinalReport = async ({ cwd, runId }) => {
+  const root = await readFamilyRoot({ cwd, runId });
+  const finished = root !== void 0 && root.status !== RunStatus.Running && root.status !== RunStatus.Pending;
+  const report2 = finished ? await readRunFinalReport({ cwd, runId: root.runId }) : void 0;
+  const launchLog = root === void 0 ? void 0 : await readExplainingLaunchLog({ cwd, root, finished, saved: report2 !== void 0 });
+  for (const line of report2?.lines ?? []) {
+    console.log(line);
+  }
+  if (launchLog !== void 0) {
+    console.log(`engine output: ${launchLog}`);
+  }
 };
 
 // src/cli/internal/common/utils/resolveWatchTarget.ts
-import { setTimeout as delay2 } from "node:timers/promises";
+import { setTimeout as delay3 } from "node:timers/promises";
 
 // src/cli/internal/common/runFamily/groupRunFamilies.ts
 var groupRunFamilies = ({ runs }) => {
@@ -164590,26 +166393,20 @@ var groupRunFamilies = ({ runs }) => {
 };
 
 // src/cli/internal/common/utils/resolveWatchTarget.ts
-var findGoingRuns = async ({ cwd, rootRunId }) => (await listRuns({ cwd })).filter(
-  (run) => (run.status === RunStatus.Running || run.status === RunStatus.Pending) && (rootRunId === void 0 || getRunFamilyRoot({ run }) === rootRunId)
-);
-var selectCandidates = ({ families }) => {
-  const live2 = families.filter((family) => family.runs.some((run) => run.live));
-  return live2.length > 0 ? live2 : families;
-};
-var resolveWatchTarget = async ({ cwd, rootRunId, graceMs = 6e4, pollMs = 2e3 }) => {
+var findGoingRuns = async ({ cwd }) => (await listRuns({ cwd })).filter((run) => (run.status === RunStatus.Running || run.status === RunStatus.Pending) && run.live);
+var resolveWatchTarget = async ({ cwd, graceMs = 6e4, pollMs = 2e3 }) => {
   const deadline = Date.now() + graceMs;
-  let going = await findGoingRuns({ cwd, rootRunId });
+  let going = await findGoingRuns({ cwd });
   while (going.length === 0 && Date.now() < deadline) {
-    await delay2(pollMs);
-    going = await findGoingRuns({ cwd, rootRunId });
+    await delay3(pollMs);
+    going = await findGoingRuns({ cwd });
   }
-  const candidates = selectCandidates({ families: groupRunFamilies({ runs: going }) });
-  const [only] = candidates;
+  const families = groupRunFamilies({ runs: going });
+  const [only] = families;
   const head = only?.runs[0];
   let target;
-  if (candidates.length > 1) {
-    target = { ambiguous: candidates.map((family) => family.root) };
+  if (families.length > 1) {
+    target = { ambiguous: families.map((family) => family.root) };
   } else if (only !== void 0 && head !== void 0) {
     target = { runId: head.runId, rootRunId: only.root };
   }
@@ -164628,62 +166425,55 @@ var printGoingRunStatus = async ({ cwd, flags }) => {
     printAmbiguousRuns({ roots: going.ambiguous });
     code = 1;
   } else if (going === void 0) {
-    await printNewestRun({ cwd });
-  } else {
-    console.log("");
-    for (const line of await loadRunFamilyProgressBlock({ cwd, runId: going.runId })) {
-      console.log(line);
+    const newest = await printNewestRun({ cwd });
+    if (newest !== void 0) {
+      await printRunFinalReport({ cwd, runId: newest });
     }
+  } else {
+    await printRunFamilyScreen({ cwd, runId: going.runId });
   }
   return code;
 };
 
-// src/cli/internal/common/utils/watchRunProgress.ts
-import { setTimeout as delay3 } from "node:timers/promises";
-var settleShip = async ({ cwd, runId, pollMs, ceilingMs }) => {
-  const deadline = Date.now() + ceilingMs;
-  let awaiting = true;
-  while (awaiting && Date.now() < deadline) {
-    await delay3(pollMs);
-    const manifest = await readRunManifest({ cwd, runId });
-    const lock = await readRunProcessLock({ cwd, manifest });
-    awaiting = (await getRunProgress({ cwd, manifest, lock })).awaitingShip;
+// src/runState/common/paths/resolveRunId.ts
+var resolveRunId2 = async ({ cwd, runId }) => (await runDirectoryIndex.resolve({ cwd, runId })).runId;
+
+// src/cli/internal/common/utils/resolveTypedRunId.ts
+var resolveTypedRunId = ({ cwd, runId }) => resolveRunId2({ cwd, runId }).catch((error51) => {
+  if (error51 instanceof RunNotFoundError) {
+    console.error(error51.message);
+    return exitCli({ code: 1 });
   }
-  await printRunProgress({ cwd, runId });
-};
-var watchRunProgress = async ({
+  throw error51;
+});
+
+// src/cli/internal/common/utils/watchRunProgress.ts
+import { setTimeout as delay4 } from "node:timers/promises";
+var settleShip = async ({
   cwd,
   runId,
   rootRunId,
-  intervalMs = 12e4,
-  handoffMs = 1e4,
-  shipPollMs = 1e4,
-  shipCeilingMs = 18e5
+  pollMs,
+  ceilingMs
 }) => {
-  const deadFrameCeiling = 2;
-  let deadFrames = 0;
-  let watching = true;
-  let last;
-  while (watching) {
-    const resolved = runId !== void 0 || rootRunId === void 0 ? void 0 : await resolveWatchTarget({ cwd, rootRunId, graceMs: handoffMs });
-    const target = runId ?? (resolved !== void 0 && "runId" in resolved ? resolved.runId : void 0);
-    if (target === void 0) {
-      break;
-    }
-    last = await printRunProgress({ cwd, runId: target });
-    deadFrames = last.live ? 0 : deadFrames + 1;
-    watching = (last.status === RunStatus.Running || last.status === RunStatus.Pending) && deadFrames < deadFrameCeiling;
-    if (watching) {
-      await delay3(intervalMs);
-    }
+  const deadline = Date.now() + ceilingMs;
+  let awaiting = true;
+  while (awaiting && Date.now() < deadline) {
+    await delay4(pollMs);
+    awaiting = (await loadRunProgressBlock({ cwd, runId: rootRunId })).progress.awaitingShip;
   }
-  if (last?.awaitingShip === true && last.status === RunStatus.Passed) {
-    await settleShip({ cwd, runId: last.runId, pollMs: shipPollMs, ceilingMs: shipCeilingMs });
+  await printRunFamilyScreen({ cwd, runId });
+};
+var watchRunProgress = async ({ cwd, runId, intervalMs = 12e4, shipPollMs = 1e4, shipCeilingMs = 18e5 }) => {
+  let last = await printRunFamilyScreen({ cwd, runId });
+  while ((last.status === RunStatus.Running || last.status === RunStatus.Pending) && last.live) {
+    await delay4(intervalMs);
+    last = await printRunFamilyScreen({ cwd, runId });
+  }
+  if (last.awaitingShip && last.status === RunStatus.Passed) {
+    await settleShip({ cwd, runId, rootRunId: last.runId, pollMs: shipPollMs, ceilingMs: shipCeilingMs });
   }
 };
-
-// src/runState/common/paths/resolveRunId.ts
-var resolveRunId2 = async ({ cwd, runId }) => (await runDirectoryIndex.resolve({ cwd, runId })).runId;
 
 // src/cli/statusCommand.ts
 var printRunListing = async ({ cwd }) => {
@@ -164695,8 +166485,8 @@ var printRunListing = async ({ cwd }) => {
   for (const runId of runIds) {
     const manifest = await readRunManifest({ cwd, runId }).catch(() => void 0);
     if (manifest) {
-      const lock = await readRunProcessLock({ cwd, manifest });
-      const zombie = manifest.status === RunStatus.Running && !isRunLive({ manifest, lock });
+      const { live: live2 } = await readRunLiveness({ cwd, manifest });
+      const zombie = manifest.status === RunStatus.Running && !live2;
       const status = zombie ? `${manifest.status} (no live process \u2014 crashed? resume with --run ${manifest.runId})` : manifest.status;
       const phases = manifest.pipeline === PipelineKind.Phases ? `  phases: ${manifest.steps.filter((step) => step.status === RunStatus.Passed).length}/${manifest.steps.length}` : "";
       const ticket = manifest.ticketRef === void 0 ? "" : `  ticket: ${manifest.ticketRef}`;
@@ -164728,13 +166518,6 @@ var printShippingStatus = async ({ cwd, flags }) => {
   }
   return exitCli({ code: 0 });
 };
-var resolveTypedRunId = ({ cwd, runId }) => resolveRunId2({ cwd, runId }).catch((error51) => {
-  if (error51 instanceof RunNotFoundError) {
-    console.error(error51.message);
-    return exitCli({ code: 1 });
-  }
-  throw error51;
-});
 var printQueueForm = async ({ cwd, flags }) => {
   const valued = flags.get("queue") !== true || flags.has("wait") && flags.get("wait") !== true;
   const clash = flags.has("watch") || flags.has("planning") || flags.has("shipping") || flags.has("now");
@@ -164772,7 +166555,12 @@ var statusCommand = async ({ cwd, flags }) => {
   }
   if (runFlag !== void 0) {
     const runId = await resolveTypedRunId({ cwd, runId: runFlag });
-    await (watch ? watchRunProgress({ cwd, runId }) : printRunProgress({ cwd, runId }));
+    if (watch) {
+      await watchRunProgress({ cwd, runId });
+    } else {
+      await printRunFamilyScreen({ cwd, runId });
+      await printRunFinalReport({ cwd, runId });
+    }
     return exitCli({ code: 0 });
   }
   const going = await resolveWatchTarget({ cwd });
@@ -164780,8 +166568,190 @@ var statusCommand = async ({ cwd, flags }) => {
     printAmbiguousRuns({ roots: going.ambiguous });
     return exitCli({ code: 1 });
   }
-  await (going === void 0 ? printNewestRun({ cwd }) : watchRunProgress({ cwd, rootRunId: going.rootRunId }));
+  await (going === void 0 ? printNewestRun({ cwd }) : watchRunProgress({ cwd, runId: going.rootRunId }));
   return exitCli({ code: 0 });
+};
+
+// src/common/constants/StopProcessOutcome.ts
+var StopProcessOutcome = {
+  Exited: "exited",
+  Killed: "killed",
+  Survived: "survived",
+  Refused: "refused"
+};
+
+// src/common/processes/stopProcess.ts
+import { setTimeout as delay5 } from "node:timers/promises";
+var SignalAnswer = {
+  Sent: "sent",
+  Gone: "gone",
+  Refused: "refused"
+};
+var sendSignal = ({ pid, signal }) => {
+  try {
+    process.kill(pid, signal);
+    return SignalAnswer.Sent;
+  } catch (error51) {
+    const code = typeof error51 === "object" && error51 !== null && "code" in error51 ? error51.code : void 0;
+    if (code === "ESRCH") {
+      return SignalAnswer.Gone;
+    }
+    if (code === "EPERM") {
+      return SignalAnswer.Refused;
+    }
+    throw error51;
+  }
+};
+var exitsWithin = async ({ pid, processStartTime, windowMs, pollMs }) => {
+  const deadline = Date.now() + windowMs;
+  let alive = await isRecordedProcessAlive({ pid, processStartTime });
+  while (alive && Date.now() < deadline) {
+    await delay5(pollMs);
+    alive = await isRecordedProcessAlive({ pid, processStartTime });
+  }
+  return !alive;
+};
+var escalate = async ({ pid, processStartTime, pollMs }) => {
+  const killed = sendSignal({ pid, signal: "SIGKILL" });
+  const confirmationMs = 1e3;
+  let outcome = killed === SignalAnswer.Refused ? StopProcessOutcome.Refused : StopProcessOutcome.Exited;
+  if (killed === SignalAnswer.Sent) {
+    outcome = await exitsWithin({ pid, processStartTime, windowMs: confirmationMs, pollMs }) ? StopProcessOutcome.Killed : StopProcessOutcome.Survived;
+  }
+  return outcome;
+};
+var stopProcess = async ({ pid, processStartTime, graceMs = 1e4, pollMs = 200 }) => {
+  if (!Number.isInteger(pid) || pid <= 0) {
+    throw new RangeError(`refusing to signal pid ${pid}: only a single positive process id can be stopped`);
+  }
+  if (!await isRecordedProcessAlive({ pid, processStartTime })) {
+    return StopProcessOutcome.Exited;
+  }
+  const terminated = sendSignal({ pid, signal: "SIGTERM" });
+  let outcome = StopProcessOutcome.Exited;
+  if (terminated === SignalAnswer.Refused) {
+    outcome = StopProcessOutcome.Refused;
+  } else if (terminated === SignalAnswer.Sent && !await exitsWithin({ pid, processStartTime, windowMs: graceMs, pollMs })) {
+    outcome = await escalate({ pid, processStartTime, pollMs });
+  }
+  return outcome;
+};
+
+// src/cli/stopCommand.ts
+var StopTargetKind = {
+  Nothing: "nothing",
+  QueueWorker: "queue-worker",
+  Mismatch: "mismatch",
+  Process: "process"
+};
+var readFamilyRoot2 = async ({ cwd, runId }) => {
+  try {
+    const manifest = await readRunManifest({ cwd, runId });
+    return { root: manifest.parentRunId === void 0 ? manifest : await readRunManifest({ cwd, runId: manifest.parentRunId }) };
+  } catch (error51) {
+    return { error: messageOf({ error: error51 }) };
+  }
+};
+var readManifestOrUndefined = ({ cwd, runId }) => readRunManifest({ cwd, runId }).catch(() => void 0);
+var isStillGoing = async ({ cwd, root }) => root.status === RunStatus.Running || root.status === RunStatus.Pending || (await getRunProgress({ cwd, manifest: root, live: false })).awaitingShip;
+var findOwnerTarget = async ({
+  cwd,
+  root,
+  pid,
+  processStartTime
+}) => {
+  if (!isPidAlive({ pid })) {
+    return { kind: StopTargetKind.Nothing };
+  }
+  const liveStartTime = await readProcessStartTime({ pid });
+  let target = { kind: StopTargetKind.Process, pid, processStartTime };
+  if (processStartTime !== void 0 && liveStartTime !== void 0 && processStartTime !== liveStartTime) {
+    target = { kind: StopTargetKind.Mismatch, pid };
+  } else if ((processStartTime === void 0 || liveStartTime === void 0) && !await isStillGoing({ cwd, root })) {
+    target = { kind: StopTargetKind.Nothing };
+  }
+  return target;
+};
+var isFamilyRun = async ({ cwd, root, runId }) => runId === root.runId || (await readManifestOrUndefined({ cwd, runId }))?.parentRunId === root.runId;
+var findHoldingQueue = async ({ cwd, pid }) => {
+  const checkoutLock = await readRunLock({ cwd });
+  const holdsIt = checkoutLock !== void 0 && checkoutLock.pid === pid && isPidAlive({ pid });
+  const holder = holdsIt ? await readManifestOrUndefined({ cwd, runId: checkoutLock.runId }) : void 0;
+  return holder?.pipeline === PipelineKind.Queue ? holder.runId : void 0;
+};
+var findLockTarget = async ({ cwd, root }) => {
+  const lock = await readRunProcessLock({ cwd, manifest: root });
+  if (lock === void 0 || !isPidAlive({ pid: lock.pid }) || !await isFamilyRun({ cwd, root, runId: lock.runId })) {
+    return { kind: StopTargetKind.Nothing };
+  }
+  const queueRunId = await findHoldingQueue({ cwd, pid: lock.pid });
+  let target = { kind: StopTargetKind.Process, pid: lock.pid };
+  if (queueRunId !== void 0) {
+    target = { kind: StopTargetKind.QueueWorker, queueRunId };
+  } else if (!await isStillGoing({ cwd, root })) {
+    target = { kind: StopTargetKind.Nothing };
+  }
+  return target;
+};
+var findStopTarget = async ({ cwd, root }) => {
+  const owner = await readRunOwner({ cwd, runId: root.runId });
+  if (owner === void 0) {
+    return findLockTarget({ cwd, root });
+  }
+  return "queueRunId" in owner ? { kind: StopTargetKind.QueueWorker, queueRunId: owner.queueRunId } : findOwnerTarget({ cwd, root, pid: owner.pid, processStartTime: owner.processStartTime });
+};
+var reportOutcome = ({ root, pid, outcome }) => {
+  const resumeCommand2 = formatResumeCommand({ pipeline: root.pipeline ?? PipelineKind.Implement, runId: root.runId });
+  const messages = {
+    [StopProcessOutcome.Exited]: () => console.log(`run ${root.runId} stopped. Resume it with: ${resumeCommand2}`),
+    [StopProcessOutcome.Killed]: () => console.error(
+      `run ${root.runId}: the engine did not shut down within ten seconds and had to be killed outright, so the run's agent process groups may remain. Make sure no agent is still working in the run's worktree before resuming it.`
+    ),
+    [StopProcessOutcome.Survived]: () => console.error(`run ${root.runId}: pid ${pid} is still alive after SIGKILL.`),
+    [StopProcessOutcome.Refused]: () => console.error(`run ${root.runId}: the system refused to signal pid ${pid}, so it was left alone.`)
+  };
+  messages[outcome]();
+  return exitCli({ code: outcome === StopProcessOutcome.Exited ? 0 : 1 });
+};
+var stopTarget = async ({ root, target }) => {
+  const stopped = await stopProcess({ pid: target.pid, processStartTime: target.processStartTime }).catch((error51) => ({
+    error: messageOf({ error: error51 })
+  }));
+  if (typeof stopped === "object") {
+    console.error(`stop: ${stopped.error}`);
+    return exitCli({ code: 1 });
+  }
+  return reportOutcome({ root, pid: target.pid, outcome: stopped });
+};
+var actOnTarget = ({ root, target }) => {
+  if (target.kind === StopTargetKind.Process) {
+    return stopTarget({ root, target });
+  }
+  if (target.kind === StopTargetKind.QueueWorker) {
+    console.error(
+      `run ${root.runId} is a queue worker's run, which lives inside the queue's process \u2014 stop its queue instead: lightsout stop --run ${target.queueRunId}`
+    );
+  } else if (target.kind === StopTargetKind.Mismatch) {
+    console.error(`run ${root.runId}: pid ${target.pid} now belongs to a different process, so it was left alone.`);
+  } else {
+    console.log(`run ${root.runId}: no live process stands behind it, so there is nothing to stop.`);
+  }
+  return exitCli({ code: target.kind === StopTargetKind.Nothing ? 0 : 1 });
+};
+var stopCommand = async ({ flags, cwd }) => {
+  if (process.platform === "win32") {
+    console.error("lightsout stop needs a POSIX system (macOS or Linux).");
+    return exitCli({ code: 1 });
+  }
+  const typedRunId = await getRequiredFlag({ flags, name: "run" });
+  const runId = await resolveTypedRunId({ cwd, runId: typedRunId });
+  const family = await readFamilyRoot2({ cwd, runId });
+  if ("error" in family) {
+    console.error(`stop: ${family.error}`);
+    return exitCli({ code: 1 });
+  }
+  const target = await findStopTarget({ cwd, root: family.root });
+  return actOnTarget({ root: family.root, target });
 };
 
 // src/cli/internal/common/render/printCoverageResult.ts
@@ -164822,23 +166792,23 @@ ${bold(`test-coverage-to-threshold ${formatShortRunId({ runId: manifest.runId })
 };
 
 // src/coverage/initializeCoverageRun.ts
-import { readFile as readFile69, writeFile as writeFile26 } from "node:fs/promises";
-import { join as join154 } from "node:path";
+import { readFile as readFile70, writeFile as writeFile25 } from "node:fs/promises";
+import { join as join161 } from "node:path";
 
 // src/coverage/runCoverageCheck.ts
-import { readFile as readFile68 } from "node:fs/promises";
-import { join as join153, relative as relative16 } from "node:path";
+import { readFile as readFile69 } from "node:fs/promises";
+import { join as join160, relative as relative19 } from "node:path";
 var CoverageSummaryReport = external_exports.record(external_exports.string(), external_exports.looseObject({ statements: external_exports.looseObject({ pct: external_exports.unknown() }) }));
 var readJsonFile2 = async ({ path }) => {
   try {
-    const parsed = JSON.parse(await readFile68(path, "utf8"));
+    const parsed = JSON.parse(await readFile69(path, "utf8"));
     return parsed;
   } catch {
     return void 0;
   }
 };
 var readScopeSummary = async ({ cwd, scope, summaryPath, passed }) => {
-  const parsed = CoverageSummaryReport.safeParse(await readJsonFile2({ path: join153(cwd, summaryPath) }));
+  const parsed = CoverageSummaryReport.safeParse(await readJsonFile2({ path: join160(cwd, summaryPath) }));
   if (!parsed.success) {
     throw new Error(buildMissingSummaryMessage({ summaryPath, scope }));
   }
@@ -164853,7 +166823,7 @@ var readScopeSummary = async ({ cwd, scope, summaryPath, passed }) => {
       statementsPct = pct;
       continue;
     }
-    files.push({ path: relative16(cwd, key), scope, statementsPct: pct });
+    files.push({ path: relative19(cwd, key), scope, statementsPct: pct });
   }
   return { files, total: { scope, statementsPct, passed } };
 };
@@ -164907,8 +166877,10 @@ var initializeCoverageRun = async ({
       const resume = formatResumeCommand({ pipeline, runId: existing.runId });
       throw new Error(`run ${existing.runId} belongs to the ${pipeline} pipeline \u2014 resume it with: ${resume}`);
     }
-    const frozen = join154(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
-    return { manifest: existing, worklist: CoverageWorklist.parse(JSON.parse(await readFile69(frozen, "utf8"))) };
+    const frozen = join161(await resolveRunDir({ cwd, runId: existing.runId }), "worklist.json");
+    const worklist2 = CoverageWorklist.parse(JSON.parse(await readFile70(frozen, "utf8")));
+    await writeRunOwner({ cwd, runId: existing.runId });
+    return { manifest: existing, worklist: worklist2 };
   }
   if (typeof config2.gates["test-coverage"] !== "string" && config2["package-gates"]?.["test-coverage"] === void 0) {
     throw new Error('the coverage gate is opted out ("test-coverage": false) \u2014 test-coverage-to-threshold has nothing to run');
@@ -164925,9 +166897,9 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
   }
   const measured = await runCoverageCheck({ cwd, config: config2 });
   const worklist = { at: (/* @__PURE__ */ new Date()).toISOString(), totals: measured.totals, files: measured.files };
-  const worklistPath = join154(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Coverage, runId }), "worklist.json");
+  const worklistPath = join161(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Coverage, runId }), "worklist.json");
   const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Coverage, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
-  await writeFile26(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
+  await writeFile25(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
 `, "utf8");
   return { manifest, worklist };
 };
@@ -164984,7 +166956,7 @@ var CoverageRun = class {
 };
 
 // src/coverage/batch/internal/checkTestsOnly.ts
-import { dirname as dirname31 } from "node:path";
+import { dirname as dirname33 } from "node:path";
 var isMeasurementOutput = ({ path, coverageDir, packagesDir }) => {
   const owner = packageOf({ file: path, packagesDir });
   const withinPackage = owner === void 0 ? path : path.slice(`${packagesDir}/${owner}/`.length);
@@ -164997,7 +166969,7 @@ var checkTestsOnly = async ({
   reportedFiles,
   attributedFiles
 }) => {
-  const coverageDir = dirname31(config2["coverage-summary-path"] ?? defaultCoverageSummaryPath);
+  const coverageDir = dirname33(config2["coverage-summary-path"] ?? defaultCoverageSummaryPath);
   const packagesDir = config2["packages-dir"] ?? defaultPackagesDir;
   const changedFiles = (await collectBatchChanges({ cwd, config: config2, reportedFiles, attributedFiles })).filter(
     (path) => !isMeasurementOutput({ path, coverageDir, packagesDir })
@@ -165012,8 +166984,8 @@ The tree is left as it stands \u2014 revert these changes by hand before resumin
 };
 
 // src/coverage/batch/invokeCoverageAgent.ts
-import { mkdir as mkdir33, writeFile as writeFile27 } from "node:fs/promises";
-import { join as join155 } from "node:path";
+import { mkdir as mkdir34, writeFile as writeFile26 } from "node:fs/promises";
+import { join as join162 } from "node:path";
 var invokeCoverageAgent = async ({
   cwd,
   runId,
@@ -165028,10 +167000,10 @@ var invokeCoverageAgent = async ({
   rationale,
   recordUsage
 }) => {
-  const agentsDir = join155(await resolveRunDir({ cwd, runId }), "agents");
+  const agentsDir = join162(await resolveRunDir({ cwd, runId }), "agents");
   const slug = batchId.replace(/[:/]/g, "_");
-  const streamPath = join155(agentsDir, `stream-${slug}-${invocationCount}.jsonl`);
-  await mkdir33(agentsDir, { recursive: true });
+  const streamPath = join162(agentsDir, `stream-${slug}-${invocationCount}.jsonl`);
+  await mkdir34(agentsDir, { recursive: true });
   const outcome = await invokeAgentWithContract({
     driver,
     cwd,
@@ -165044,7 +167016,7 @@ var invokeCoverageAgent = async ({
     allowedCommands: config2["agent-commands"],
     onEvent: createEventFileSink({ path: streamPath }),
     onRejectedOutput: async ({ text, attempt }) => {
-      await writeFile27(join155(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
+      await writeFile26(join162(agentsDir, `rejected-${slug}-${invocationCount}-${attempt}.txt`), text, "utf8").catch(() => void 0);
     }
   });
   await recordUsage({ step: `${batchId}${label2 ? ` ${label2}` : ""}`, usage: outcome.usage });
@@ -165279,8 +167251,8 @@ var buildCoverageBatch = ({ files, components, batchNumber, batchSize = 5 }) => 
 };
 
 // src/coverage/selectCoverageCandidates.ts
-import { readFile as readFile70 } from "node:fs/promises";
-import { join as join156 } from "node:path";
+import { readFile as readFile71 } from "node:fs/promises";
+import { join as join163 } from "node:path";
 var selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, standardsLibraries, compiler }) => {
   const failingScopes = new Set(measured.totals.filter((total) => !total.passed).map((total) => total.scope));
   const candidates = [];
@@ -165288,7 +167260,7 @@ var selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, standardsL
     if (!failingScopes.has(file2.scope) || setAsidePaths.has(file2.path) || file2.statementsPct >= 100 || isTestFile({ path: file2.path, standardsLibraries }) || !isTestableSourceFile({ path: file2.path })) {
       continue;
     }
-    const content = compiler === void 0 ? void 0 : await readFile70(join156(cwd, file2.path), "utf8").catch(() => void 0);
+    const content = compiler === void 0 ? void 0 : await readFile71(join163(cwd, file2.path), "utf8").catch(() => void 0);
     if (compiler !== void 0 && content !== void 0 && isInertSourceFile({ path: file2.path, content, compiler })) {
       continue;
     }
@@ -165581,11 +167553,11 @@ var ticketStateCommand = async ({ flags, cwd }) => {
     console.error(`${ref} could not be written: ${failure.error}`);
     return exitCli({ code: 1 });
   }
-  const written = [
+  const written2 = [
     planningStatus === void 0 ? void 0 : `planning status '${lifecycle.planningStatusLabels[planningStatus]}'`,
     trackerStatus === void 0 ? void 0 : `tracker status '${lifecycle.statusNames[trackerStatus]}'`
   ].filter((part) => part !== void 0);
-  console.log(`${ref}: ${written.join(" and ")}`);
+  console.log(`${ref}: ${written2.join(" and ")}`);
   return exitCli({ code: 0 });
 };
 
@@ -165644,7 +167616,7 @@ var getSpokenPickerText = ({ toolInput }) => {
 };
 
 // src/voice/getSpokenQuestion.ts
-import { readFile as readFile71 } from "node:fs/promises";
+import { readFile as readFile72 } from "node:fs/promises";
 
 // src/voice/internal/common/utils/isQuestionText.ts
 var isQuestionText = ({ text }) => {
@@ -165700,7 +167672,7 @@ var getQuestionTexts = ({ entries }) => {
   return texts;
 };
 var getSpokenQuestion = async ({ transcriptPath }) => {
-  const raw = await readFile71(transcriptPath, "utf8").catch(() => void 0);
+  const raw = await readFile72(transcriptPath, "utf8").catch(() => void 0);
   if (raw === void 0) {
     return void 0;
   }
@@ -165710,34 +167682,34 @@ var getSpokenQuestion = async ({ transcriptPath }) => {
 };
 
 // src/voice/isVoiceOn.ts
-import { access as access2 } from "node:fs/promises";
+import { access as access3 } from "node:fs/promises";
 
 // src/voice/internal/common/paths/getVoiceMarkerPath.ts
-import { join as join157 } from "node:path";
+import { join as join164 } from "node:path";
 var getVoiceMarkerPath = ({ cwd }) => {
-  return join157(cwd, ".lightsout", "voice-on");
+  return join164(cwd, ".lightsout", "voice-on");
 };
 
 // src/voice/isVoiceOn.ts
 var isVoiceOn = async ({ cwd }) => {
-  return access2(getVoiceMarkerPath({ cwd })).then(() => true).catch(() => false);
+  return access3(getVoiceMarkerPath({ cwd })).then(() => true).catch(() => false);
 };
 
 // src/voice/speakText.ts
-import { spawn as spawn3 } from "node:child_process";
-import { writeFile as writeFile28 } from "node:fs/promises";
+import { spawn as spawn4 } from "node:child_process";
+import { writeFile as writeFile27 } from "node:fs/promises";
 
 // src/voice/internal/common/paths/getVoicePidPath.ts
-import { join as join158 } from "node:path";
+import { join as join165 } from "node:path";
 var getVoicePidPath = ({ cwd }) => {
-  return join158(cwd, ".lightsout", "voice-pid");
+  return join165(cwd, ".lightsout", "voice-pid");
 };
 
 // src/voice/stopSpeech.ts
-import { readFile as readFile72, rm as rm13 } from "node:fs/promises";
+import { readFile as readFile73, rm as rm15 } from "node:fs/promises";
 var stopSpeech = async ({ cwd }) => {
   const pidPath = getVoicePidPath({ cwd });
-  const raw = await readFile72(pidPath, "utf8").catch(() => void 0);
+  const raw = await readFile73(pidPath, "utf8").catch(() => void 0);
   if (raw === void 0) {
     return;
   }
@@ -165748,19 +167720,19 @@ var stopSpeech = async ({ cwd }) => {
     } catch {
     }
   }
-  await rm13(pidPath, { force: true });
+  await rm15(pidPath, { force: true });
 };
 
 // src/voice/speakText.ts
 var speakText = async ({ cwd, text }) => {
   await stopSpeech({ cwd });
-  const child = spawn3("say", [], { stdio: ["pipe", "ignore", "ignore"], detached: true });
+  const child = spawn4("say", [], { stdio: ["pipe", "ignore", "ignore"], detached: true });
   child.on("error", () => {
   });
   child.stdin?.write(text);
   child.stdin?.end();
   if (child.pid !== void 0) {
-    await writeFile28(getVoicePidPath({ cwd }), String(child.pid), "utf8");
+    await writeFile27(getVoicePidPath({ cwd }), String(child.pid), "utf8");
   }
   child.unref();
 };
@@ -165825,9 +167797,9 @@ var voiceHookCommand = async ({ cwd, input }) => {
 };
 
 // src/voice/deleteVoiceMarker.ts
-import { rm as rm14 } from "node:fs/promises";
+import { rm as rm16 } from "node:fs/promises";
 var deleteVoiceMarker = async ({ cwd }) => {
-  await rm14(getVoiceMarkerPath({ cwd }), { force: true });
+  await rm16(getVoiceMarkerPath({ cwd }), { force: true });
 };
 
 // src/cli/voice/voiceOffCommand.ts
@@ -165838,12 +167810,12 @@ var voiceOffCommand = async ({ cwd }) => {
 };
 
 // src/voice/createVoiceMarker.ts
-import { mkdir as mkdir34, writeFile as writeFile29 } from "node:fs/promises";
-import { dirname as dirname32 } from "node:path";
+import { mkdir as mkdir35, writeFile as writeFile28 } from "node:fs/promises";
+import { dirname as dirname34 } from "node:path";
 var createVoiceMarker = async ({ cwd }) => {
   const markerPath = getVoiceMarkerPath({ cwd });
-  await mkdir34(dirname32(markerPath), { recursive: true });
-  await writeFile29(markerPath, "", "utf8");
+  await mkdir35(dirname34(markerPath), { recursive: true });
+  await writeFile28(markerPath, "", "utf8");
 };
 
 // src/cli/voice/voiceOnCommand.ts
@@ -166114,14 +168086,14 @@ var excludeWorkOrderPlan = async (params) => {
   if ("error" in verification) {
     return verification;
   }
-  const written = await recordExclusion({ params, verifiedCommit: verification.commit });
-  if ("error" in written) {
-    return written;
+  const written2 = await recordExclusion({ params, verifiedCommit: verification.commit });
+  if ("error" in written2) {
+    return written2;
   }
   return {
-    record: written.record,
-    notice: written.withdrew ? `the pending ship request was withdrawn because plan ${target.id} is no longer part of work order ${name}'s work \u2014 ask again with \`lightsout work-order request-ship --name ${name}\`` : void 0,
-    publishError: written.publishError
+    record: written2.record,
+    notice: written2.withdrew ? `the pending ship request was withdrawn because plan ${target.id} is no longer part of work order ${name}'s work \u2014 ask again with \`lightsout work-order request-ship --name ${name}\`` : void 0,
+    publishError: written2.publishError
   };
 };
 
@@ -166235,7 +168207,14 @@ var setWorkOrderMode = async ({ cwd, name, mode, approve, config: config2, env, 
       }
       const at = (/* @__PURE__ */ new Date()).toISOString();
       return mode === WorkOrderMode.SinglePlan ? switchToSinglePlan({ record: record3, afterImplement: shipSettings.afterImplement, approve, at }) : appendWorkOrderEvent({
-        record: { ...record3, mode: WorkOrderMode.MultiplePlan },
+        record: {
+          ...recordHandBuiltShipAuthorizationWithdrawal({
+            record: record3,
+            detail: `work order ${name} moved to multiple-plan mode, where it ships on a ship request, so the hand-built authorization no longer stands`,
+            at
+          }),
+          mode: WorkOrderMode.MultiplePlan
+        },
         kind: WorkOrderEventKind.ModeChanged,
         detail: `work order ${name} is now in multiple-plan mode`,
         at
@@ -166442,6 +168421,48 @@ var planProgressWording = {
 };
 var describePlanProgress = ({ progress }) => planProgressWording[progress];
 
+// src/cli/workOrder/internal/common/utils/describeWorkOrderShipState.ts
+var describeShipRequest = ({ name, state }) => state.missingPlanIds.length === 0 && state.stalePlanIds.length === 0 ? `ship request: ${state.planIds.join(", ")} \u2014 the work order ships once every one of them is implemented` : `ship request: ${state.planIds.join(", ")} \u2014 it no longer names the plans the work order holds, so request shipping again with \`${formatRequestShipCommand({ name, planIds: state.includedPlanIds })}\``;
+var describeWorkOrderShipState = ({ name, state }) => {
+  let line;
+  switch (state.kind) {
+    case WorkOrderShipStateKind.Shipped:
+      line = `shipped as ${state.mergeCommit}`;
+      break;
+    case WorkOrderShipStateKind.ShipRequestMissing:
+      line = "no ship request is pending, so this work order stays open";
+      break;
+    case WorkOrderShipStateKind.ShipRequested:
+      line = describeShipRequest({ name, state });
+      break;
+    case WorkOrderShipStateKind.PlanOneWaiting:
+      line = `the work order ships once plan ${state.planId} is implemented`;
+      break;
+    case WorkOrderShipStateKind.PlanOneImplemented:
+      line = `plan ${state.planId} is implemented, so the work order is ready to ship`;
+      break;
+    case WorkOrderShipStateKind.PlanOneExcluded:
+      line = `plan ${state.planId} is excluded \u2014 ${state.reason} \u2014 so the work order has nothing to ship`;
+      break;
+    case WorkOrderShipStateKind.TicketBodyUnbuilt:
+      line = "the work order ships once a build of the ticket passes, or as work built by hand through `lightsout ship --hand-built`";
+      break;
+    case WorkOrderShipStateKind.TicketBodyBuilding:
+      line = `a build of the ticket is recorded as in progress under run ${state.runId}`;
+      break;
+    case WorkOrderShipStateKind.TicketBodyFailed:
+      line = `the build of the ticket under run ${state.runId} failed \u2014 resume it with \`lightsout resume --run ${state.runId}\`, or ship work built by hand through \`lightsout ship --hand-built\``;
+      break;
+    case WorkOrderShipStateKind.TicketBodyPassed:
+      line = `the build of the ticket under run ${state.runId} passed, so the work order is ready to ship`;
+      break;
+    case WorkOrderShipStateKind.HandBuiltAuthorized:
+      line = `${state.by} authorized shipping hand-built work at ${state.at}, so the work order is ready to ship`;
+      break;
+  }
+  return line;
+};
+
 // src/cli/workOrder/internal/workOrderShowCommand.ts
 var renderWorkOrderState = ({ record: record3 }) => [
   // The label leads, because it is what every other subcommand is typed with;
@@ -166453,8 +168474,8 @@ var renderWorkOrderState = ({ record: record3 }) => [
   }),
   // A work order holding no plan 001 ships on its build from the ticket body, so that build is shown like a plan.
   ...record3.ticketBodyBuild === void 0 ? [] : [`  built from the ticket body \u2014 ${describePlanProgress({ progress: record3.ticketBodyBuild.progress })}`],
-  record3.shipRequest === void 0 ? "no ship request is pending, so this work order stays open" : `ship request: ${record3.shipRequest.planIds.join(", ")} \u2014 the work order ships once every one of them is implemented`,
-  ...record3.shipped === void 0 ? [] : [`shipped as ${record3.shipped.mergeCommit}`]
+  // One line from the same reader the ship check decides from, so the two never disagree.
+  describeWorkOrderShipState({ name: record3.name, state: readWorkOrderShipState({ record: record3 }) })
 ];
 var workOrderShowCommand = async ({ flags, cwd }) => {
   const name = await getRequiredFlag({ flags, name: "name" });
@@ -166513,9 +168534,9 @@ var mergeOneSidedPlans = ({ kept, other, keptFrom, at }) => {
 };
 
 // src/workOrder/divergence/internal/resolvePlanWorkingCheckout.ts
-import { dirname as dirname33 } from "node:path";
+import { dirname as dirname35 } from "node:path";
 var resolvePlanWorkingCheckout = async ({ cwd }) => {
-  return { checkout: dirname33(await resolveSharedStateDir({ cwd })), otherCopies: [] };
+  return { checkout: dirname35(await resolveSharedStateDir({ cwd })), otherCopies: [] };
 };
 
 // src/workOrder/divergence/keepLocalWorkOrderState.ts
@@ -166634,8 +168655,8 @@ var keepLocalWorkOrderState = async ({
 };
 
 // src/workOrder/divergence/keepPublishedWorkOrderState.ts
-import { rename as rename12, rm as rm15 } from "node:fs/promises";
-import { join as join159 } from "node:path";
+import { rename as rename13, rm as rm17 } from "node:fs/promises";
+import { join as join166 } from "node:path";
 var readPublishedPlanMarker = async ({
   planId,
   target
@@ -166671,7 +168692,7 @@ var setPlanFolderAside = async ({
     aside = `${dir}.local-${attempt}`;
   }
   try {
-    await rename12(dir, aside);
+    await rename13(dir, aside);
   } catch (error51) {
     return { error: `the local copy of plan ${planId} at ${dir} could not be moved aside: ${messageOf({ error: error51 })}` };
   }
@@ -166722,9 +168743,9 @@ var takePublishedPlan = async ({
 };
 var writeKeptRecord = async ({ workOrderFolder, record: record3 }) => {
   const content = serializeWorkOrderState({ record: record3 });
-  await writeWorkOrderFolderFile({ path: join159(workOrderFolder, workOrderFileNames.record), content });
+  await writeWorkOrderFolderFile({ path: join166(workOrderFolder, workOrderFileNames.record), content });
   await updateWorkOrderSyncState({ workOrderFolder, recordSha256: sha256({ content }) });
-  await rm15(join159(workOrderFolder, workOrderFileNames.published), { force: true });
+  await rm17(join166(workOrderFolder, workOrderFileNames.published), { force: true });
 };
 var keepPublishedWorkOrderState = async ({
   cwd,
@@ -166750,7 +168771,7 @@ var keepPublishedWorkOrderState = async ({
     return merged;
   }
   const workOrderFolder = await workOrderFolderDir({ cwd, name });
-  const written = await withWorkOrderStateLock({
+  const written2 = await withWorkOrderStateLock({
     workOrderFolder,
     run: async () => {
       try {
@@ -166761,8 +168782,8 @@ var keepPublishedWorkOrderState = async ({
       }
     }
   });
-  if (written !== void 0) {
-    return written;
+  if (written2 !== void 0) {
+    return written2;
   }
   const syncState = await readWorkOrderSyncState({ workOrderFolder });
   for (const planId of findDivergentPlanIds({ record: merged, syncState })) {
@@ -166878,6 +168899,7 @@ var commands = {
   "implement-direct": implementDirectCommand,
   queue: queueCommand,
   resume: resumeCommand,
+  stop: stopCommand,
   ship: shipCommand,
   "self-check": selfCheckCommand,
   "ticket-state": ticketStateCommand,

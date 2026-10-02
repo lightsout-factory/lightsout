@@ -5,19 +5,18 @@ import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { loadPlanningProgressBlock } from '#src/cli/internal/common/progressBlock/loadPlanningProgressBlock.ts';
 import { loadShippingProgressBlock } from '#src/cli/internal/common/progressBlock/loadShippingProgressBlock.ts';
 import { printQueueStatus } from '#src/cli/internal/common/queueBoard/printQueueStatus.ts';
-import { printRunProgress } from '#src/cli/internal/common/render/printRunProgress.ts';
 import { printAmbiguousRuns } from '#src/cli/internal/common/runStatus/printAmbiguousRuns.ts';
 import { printGoingRunStatus } from '#src/cli/internal/common/runStatus/printGoingRunStatus.ts';
 import { printNewestRun } from '#src/cli/internal/common/runStatus/printNewestRun.ts';
+import { printRunFamilyScreen } from '#src/cli/internal/common/runStatus/printRunFamilyScreen.ts';
+import { printRunFinalReport } from '#src/cli/internal/common/runStatus/printRunFinalReport.ts';
+import { resolveTypedRunId } from '#src/cli/internal/common/utils/resolveTypedRunId.ts';
 import { resolveWatchTarget } from '#src/cli/internal/common/utils/resolveWatchTarget.ts';
 import { watchRunProgress } from '#src/cli/internal/common/utils/watchRunProgress.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { resolveRunId } from '#src/runState/common/paths/resolveRunId.ts';
-import { isRunLive } from '#src/runState/isRunLive.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
-import { readRunProcessLock } from '#src/runState/lock/readRunProcessLock.ts';
-import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
+import { readRunLiveness } from '#src/runState/readRunLiveness.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 
 // Scripts read this listing, so its format must not change.
@@ -33,11 +32,9 @@ const printRunListing = async ({ cwd }: { cwd: string }) => {
 		const manifest = await readRunManifest({ cwd, runId }).catch(() => undefined);
 
 		if (manifest) {
-			// Taken per run rather than once: the run lock is per-checkout, so an
-			// isolated run's holder is in the workspace it recorded rather than here.
-			const lock = await readRunProcessLock({ cwd, manifest });
+			const { live } = await readRunLiveness({ cwd, manifest });
 			// A `running` manifest with no live process is a crash leftover: resumable, not lost.
-			const zombie = manifest.status === RunStatus.Running && !isRunLive({ manifest, lock });
+			const zombie = manifest.status === RunStatus.Running && !live;
 			const status = zombie ? `${manifest.status} (no live process — crashed? resume with --run ${manifest.runId})` : manifest.status;
 			const phases =
 				manifest.pipeline === PipelineKind.Phases
@@ -85,17 +82,6 @@ const printShippingStatus = async ({ cwd, flags }: { cwd: string; flags: Map<str
 
 	return exitCli({ code: 0 });
 };
-
-// An unknown run id the user typed is a message, never a stack trace.
-const resolveTypedRunId = ({ cwd, runId }: { cwd: string; runId: string }) =>
-	resolveRunId({ cwd, runId }).catch((error: unknown) => {
-		if (error instanceof RunNotFoundError) {
-			console.error(error.message);
-			return exitCli({ code: 1 });
-		}
-
-		throw error;
-	});
 
 const printQueueForm = async ({ cwd, flags }: { cwd: string; flags: Map<string, string | true> }) => {
 	const valued = flags.get('queue') !== true || (flags.has('wait') && flags.get('wait') !== true);
@@ -154,7 +140,14 @@ export const statusCommand = async ({ cwd, flags }: CommandContext): Promise<voi
 	if (runFlag !== undefined) {
 		const runId = await resolveTypedRunId({ cwd, runId: runFlag });
 
-		await (watch ? watchRunProgress({ cwd, runId }) : printRunProgress({ cwd, runId }));
+		if (watch) {
+			await watchRunProgress({ cwd, runId });
+		} else {
+			// The family screen, so naming a coordinator or any of its phases shows
+			// the phase sequence and the steps of the phase moving now alike.
+			await printRunFamilyScreen({ cwd, runId });
+			await printRunFinalReport({ cwd, runId });
+		}
 
 		return exitCli({ code: 0 });
 	}
@@ -169,7 +162,7 @@ export const statusCommand = async ({ cwd, flags }: CommandContext): Promise<voi
 		return exitCli({ code: 1 });
 	}
 
-	await (going === undefined ? printNewestRun({ cwd }) : watchRunProgress({ cwd, rootRunId: going.rootRunId }));
+	await (going === undefined ? printNewestRun({ cwd }) : watchRunProgress({ cwd, runId: going.rootRunId }));
 
 	return exitCli({ code: 0 });
 };

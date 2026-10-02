@@ -20,6 +20,7 @@ import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { buildSteps } from '#src/pipeline/steps/buildSteps/buildSteps.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { withRunLock } from '#src/runState/lock/withRunLock.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 
 // Later steps may have connected a file write-tests skipped to a public surface,
 // so each is re-resolved; anything still orphaned stays under a named warning.
@@ -51,10 +52,10 @@ const recheckUnreachable = async ({ run }: { run: PipelineRun }) => {
  * and before the passed stamp, because a run stamped passed could not then be
  * failed by the commit.
  */
-const finishRun = async ({ run, resumed }: { run: PipelineRun; resumed: boolean }): Promise<PipelineResult> => {
+const finishRun = async ({ run, resumed, keepGenerated }: { run: PipelineRun; resumed: boolean; keepGenerated: boolean }): Promise<PipelineResult> => {
 	await recheckUnreachable({ run });
 
-	const uncommitted = await commitRunWork({ run, driver: run.driver, resumed });
+	const uncommitted = await commitRunWork({ run, driver: run.driver, resumed, keepGenerated });
 	let result: PipelineResult;
 
 	if (uncommitted === undefined) {
@@ -89,14 +90,19 @@ interface Params {
 	packages?: string[];
 	/** Resume: steps already passed are skipped. */
 	existing?: RunManifest;
-	/** Supplied only when a resumed sequence reaches a phase that had not started, so there is no child manifest to adopt. It seeds the baseline in place of a fresh git snapshot. */
-	inheritedBaseline?: string[];
 	skipRefactor?: boolean;
 	/** Absent wherever no run is being recorded. */
 	level?: ActivityLevel;
 	/** Ignored when resuming: the existing manifest already carries it. */
 	willShip?: boolean;
+	/**
+	 * Set by the phase coordinator so a phase's commit leaves build output on disk for the next phase. Default false; honoured on resume too.
+	 * A per-call parameter rather than read from `parentRunId`: a phase run resumed directly by its own id has no coordinator left to discard afterwards, so it must discard.
+	 */
+	keepGenerated?: boolean;
 	onProgress?: (message: string) => void;
+	/** The queue run a worker build belongs to; the run's owner record points there. */
+	queueRunId?: string;
 }
 
 /**
@@ -114,12 +120,18 @@ const executePipeline = async ({
 	parentRunId,
 	packages,
 	existing,
-	inheritedBaseline,
 	skipRefactor,
 	level,
 	willShip,
+	keepGenerated = false,
 	onProgress,
+	queueRunId,
 }: Params & { runId: string }): Promise<PipelineResult> => {
+	// A resumed phase child has no owner record: its coordinator answers for it.
+	if (existing !== undefined && existing.parentRunId === undefined) {
+		await writeRunOwner({ cwd, runId: existing.runId, queueRunId });
+	}
+
 	const run = new PipelineRun({
 		cwd,
 		config,
@@ -137,8 +149,9 @@ const executePipeline = async ({
 				parentRunId,
 				driver: driver.name,
 				config,
-				baselineDirtyFiles: inheritedBaseline ?? (await readGitChangedFiles({ cwd })),
+				baselineDirtyFiles: await readGitChangedFiles({ cwd }),
 				willShip,
+				queueRunId,
 			})),
 	});
 	const prepared = await prepareRun({ run, cwd, config, packages });
@@ -167,7 +180,7 @@ const executePipeline = async ({
 		return stopped;
 	}
 
-	return finishRun({ run, resumed: inheritedBaseline !== undefined || existing !== undefined });
+	return finishRun({ run, resumed: existing !== undefined, keepGenerated });
 };
 
 /** The refactor pipeline takes the same repo lock, so the two can never race one tree. */

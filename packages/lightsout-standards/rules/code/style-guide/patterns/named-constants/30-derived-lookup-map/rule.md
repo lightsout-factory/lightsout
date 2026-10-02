@@ -1,12 +1,12 @@
 ---
-summary: "a constant that merely uses the union kept in the `const` object's file"
+summary: "Lookup tables built on a named set of values."
 checked: false
 severity: advisory
 ---
 
-## Derived Lookup Maps May Co-Locate
+## Derived Lookup Map
 
-A lookup map keyed by the union (`Record<Action, …>`) may live in the same file as the `const` object — the two are tautologically coupled, so every change to one changes the other.
+A lookup map is derived when the union is its key type, `Record<LogLevel, string>`, so that every member has an entry. A derived map may share the `const` object's file, as `multi-export`'s exceptions allow, because a change to one always changes the other. A constant that only uses the union, such as a default value or a subset of members, gets its own file, placed as `constants` says.
 
 ```typescript
 export const LogLevel = {
@@ -23,5 +23,3 @@ export const logLevelLabels: Record<LogLevel, string> = {
 	[LogLevel.Error]: 'Error',
 };
 ```
-
-An unrelated constant that merely *uses* the union goes in `constants/` as usual.

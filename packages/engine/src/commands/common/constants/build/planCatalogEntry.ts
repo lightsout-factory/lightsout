@@ -16,6 +16,7 @@ export const planCatalogEntry: CommandCatalogEntry = {
 		{ id: 'plan-verify-facts', positional: 'verify-facts' },
 		{ id: 'plan-draft', positional: 'draft' },
 		{ id: 'plan-sync-decisions', positional: 'sync-decisions' },
+		{ id: 'plan-sync-phases', positional: 'sync-phases' },
 		{ id: 'plan-lint', positional: 'lint' },
 		{ id: 'plan-dedup', positional: 'dedup' },
 		{ id: 'plan-grade', positional: 'grade', note: '--phase grades only those phases, and always marks the result incomplete' },
@@ -69,7 +70,7 @@ export const planCatalogEntry: CommandCatalogEntry = {
 	],
 	steps: planSteps,
 	records: CommandRecordKind.Plans,
-	related: ['auto-plan', 'brainstorm', 'implement', 'resume', 'ship', 'implement-direct', 'queue', 'work-order', 'ticket-state', 'self-check'],
+	related: ['auto-plan', 'brainstorm', 'implement', 'resume', 'stop', 'ship', 'implement-direct', 'queue', 'work-order', 'ticket-state', 'self-check'],
 	graphic: {
 		title: 'How /plan turns a request into an implementation-ready spec',
 		subtitle: 'Final spec and every decision recorded before any code is written.',

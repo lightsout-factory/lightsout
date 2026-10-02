@@ -56,16 +56,18 @@ const documents = documentPaths.map((path) => ({ path, text: readFileSync(join(r
  * folder holds its plans`, and a rename that fixed only the lower-case
  * sentences would leave the heading standing.
  */
-const findBannedPhrases = ({ banned, ignoreCase = false }: { banned: string[]; ignoreCase?: boolean }) =>
-	documents.flatMap(({ path, text }) =>
-		text.split('\n').flatMap((line, index) => {
-			const haystack = ignoreCase ? line.toLowerCase() : line;
+const findBannedPhrases = ({ banned, ignoreCase = false, paths }: { banned: string[]; ignoreCase?: boolean; paths?: string[] }) =>
+	documents
+		.filter(({ path }) => paths === undefined || paths.includes(path))
+		.flatMap(({ path, text }) =>
+			text.split('\n').flatMap((line, index) => {
+				const haystack = ignoreCase ? line.toLowerCase() : line;
 
-			return banned
-				.filter((phrase) => haystack.includes(ignoreCase ? phrase.toLowerCase() : phrase))
-				.map((phrase) => ({ file: path, line: index + 1, held: phrase, text: line.trim() }));
-		}),
-	);
+				return banned
+					.filter((phrase) => haystack.includes(ignoreCase ? phrase.toLowerCase() : phrase))
+					.map((phrase) => ({ file: path, line: index + 1, held: phrase, text: line.trim() }));
+			}),
+		);
 
 /** Every place a document spells the retired `lightsout ticket` command word, reading `lightsout ticket-state` as the tracker command it still is. */
 const findRetiredCommandWord = () =>
@@ -80,6 +82,10 @@ const findRetiredCommandWord = () =>
 /** The documents that do NOT hold `phrase` — the inverse of the bans, for the one sentence two documents have to teach. */
 const findDocumentsMissing = ({ phrase, paths }: { phrase: string; paths: string[] }) =>
 	documents.filter(({ path, text }) => paths.includes(path) && !text.includes(phrase)).map(({ path }) => path);
+
+/** The phrases of `phrases` that the document at `path` does NOT hold — so a failure names the missing phrase rather than the document alone. */
+const findPhrasesMissing = ({ path, phrases }: { path: string; phrases: string[] }) =>
+	phrases.filter((phrase) => findDocumentsMissing({ phrase, paths: [path] }).length > 0);
 
 describe('document vocabulary', () => {
 	test('no document names the retired .lightsout/tickets folder', () => {
@@ -118,5 +124,41 @@ describe('document vocabulary', () => {
 		const missing = findDocumentsMissing({ phrase: 'lightsout work-order new', paths: ['README.md', 'plugin/skills/ticket-workflow/SKILL.md'] });
 
 		expect(missing).toStrictEqual([]);
+	});
+
+	test('the implement skill launches detached with the longest timeout and points to /lightsout:status --run and lightsout stop', () => {
+		const missing = findPhrasesMissing({
+			path: 'plugin/skills/implement/SKILL.md',
+			phrases: ['implement --detach', 'resume --detach --run', '/lightsout:status --run', 'lightsout stop --run', 'timeout 600000'],
+		});
+
+		expect(missing).toStrictEqual([]);
+	});
+
+	test('neither the implement nor the auto-plan skill relays a status --watch or reads BashOutput', () => {
+		const offences = findBannedPhrases({
+			banned: ['status --watch', 'BashOutput'],
+			paths: ['plugin/skills/implement/SKILL.md', 'plugin/skills/auto-plan/SKILL.md'],
+		});
+
+		expect(offences).toStrictEqual([]);
+	});
+
+	test('the queue skill launches queue --detach with the longest timeout, keeps its capped answer-file watcher and posts status --queue --run once the queue ends', () => {
+		const queueSkill = 'plugin/skills/queue/SKILL.md';
+
+		const missing = findPhrasesMissing({
+			path: queueSkill,
+			phrases: ['queue --detach', 'timeout 600000', '/lightsout:status queue', '60 minutes', '.answer.json', 'status --queue --run'],
+		});
+		const retiredLaunchSnapshot = findBannedPhrases({ banned: ['status --queue --wait'], paths: [queueSkill] });
+
+		expect({ missing, retiredLaunchSnapshot }).toStrictEqual({ missing: [], retiredLaunchSnapshot: [] });
+	});
+
+	test('no document promises a ten-minute post or a next update', () => {
+		const offences = findBannedPhrases({ banned: ['ten-minute', 'every ten minutes', 'next update'], ignoreCase: true });
+
+		expect(offences).toStrictEqual([]);
 	});
 });

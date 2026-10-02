@@ -71,7 +71,7 @@ describe('resolveRunDir', () => {
 			runDirs: ['work-orders/lo-155-ticket-scoped-state/runs/be7bc314-1845-44c0-bb6c-a8c2becb7f92', 'direct/runs/abcdefgh', 'direct/runs/abcdefgh-2222'],
 		});
 
-		// the eight characters printResult shows are what a user copies back
+		// the eight characters renderResult shows are what a user copies back
 		const shortened = await resolveRunDir({ cwd, runId: 'be7bc314' });
 		const exact = await resolveRunDir({ cwd, runId: 'abcdefgh' });
 

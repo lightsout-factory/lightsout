@@ -1,16 +1,16 @@
 ---
-summary: "a declaration whose name is not in the casing its kind takes"
+summary: "How names are cased by what they declare."
 checked: true
 severity: advisory
 ---
 
-| Item              | Convention                            | Example                                   |
-| ----------------- | ------------------------------------- | ----------------------------------------- |
-| Variables         | camelCase                             | `userName`, `isActive`                    |
-| Functions/Methods | camelCase                             | `getUserName()`, `calculateTotal()`       |
-| Classes           | PascalCase                            | `UserService`, `ApiClient`                |
-| Interfaces        | PascalCase                            | `UserProfile`, `ApiResponse`              |
-| Types             | PascalCase                            | `UserId`, `RequestOptions`                |
-| Value constants   | camelCase                             | `maxRetries`, `emailRegex`                |
-| Named constants   | PascalCase                            | `Action`, `LogLevel` (see [named-constants.md](../patterns/named-constants.md)) |
-| File names        | See [file-naming.md](./file-naming.md) | —                                         |
+## Casing
+
+Case a name by what it declares:
+
+- Variables, functions and methods are camelCase: `userName`, `isActive`, `calculateTotal()`.
+- Classes, interfaces and types are PascalCase: `UserService`, `UserProfile`, `UserId`.
+
+Constants are cased as `named-constant-casing` says, and file names as `filename-mismatch` says.
+
+A name's casing tells the reader what kind of thing it is before they find its declaration.

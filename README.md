@@ -166,7 +166,7 @@ When drafting, the engine reads the source files the verified facts recorded onc
 
 When a plan starts from a `/brainstorm` hand-off, the decisions already settled there are carried straight into the plan rather than asked again; a settled decision is re-opened only when exploring the code turns up a concrete conflict. One the planner believes is weak is flagged to you once, with the better alternative and what the settled choice costs, and stands until you change it.
 
-The plan's Decision Log is composed by the engine from the saved decision records rather than typed out by the writer, and so is the Global Constraints section listing the project-wide rules those records settled. `lightsout plan sync-decisions --name <name>` regenerates both sections in every file of the plan, and a decision's named phases show in its Choice cell — run it after a decision is recorded, and again as often as you like: a file whose two sections already match the records is left untouched.
+The plan's Decision Log is composed by the engine from the saved decision records rather than typed out by the writer, and so is the Global Constraints section listing the project-wide rules those records settled. `lightsout plan sync-decisions --name <name>` regenerates both sections in every file of the plan, and a decision's named phases show in its Choice cell — run it after a decision is recorded, and again as often as you like: a file whose two sections already match the records is left untouched. `lightsout plan sync-phases --name <name>` does the same for a phased plan's `## Phases` table and `## Phase Declarations` once the phase breakdown changes after drafting: it restates them from the phase files, writes only the overview and nothing at all when it already matches, and refuses — naming each — a phase file and row that do not line up.
 
 Once a ticket-backed plan is approved as ready, run `lightsout plan publish --name <name>`. It attaches only the durable design record — the single or
 phased plan deliverable and whichever of `brainstorm-notes.md`, `decisions.json`,
@@ -246,7 +246,7 @@ A run that passes commits what it built before it ends — one commit per unit o
 
 A run whose agents changed no files is a failure with a non-zero exit, never a quiet success: a unit that produced nothing is the signature of an agent that failed silently, and the queue parks that ticket for a human rather than shipping it.
 
-Because the commit stages the whole tree, both implement commands refuse to start in a checkout that already holds uncommitted changes — commit or stash them first. Only the checkout you chose to work in is judged; a worktree lightsout cut or adopted for the run is not, so the default path is unaffected.
+Because the commit stages the whole tree, both implement commands refuse to start in a checkout that already holds uncommitted changes, and the refusal lists those files — commit or stash them first. Only the checkout you chose to work in is judged; a worktree lightsout cut or adopted for the run is not, so the default path is unaffected. A phased plan checks the tree again before each phase starts, so an edit made while a sequence runs or sits parked stops it before the next phase, with advice to stash the listed files and resume. That per-phase check does not count paths under `generated`, because each phase leaves its build output on disk for the next; the check before a fresh run still counts them.
 
 After each code-writing stage, the full repository is formatted before deterministic gates run. If a test, lint, type-check, coverage, build, or formatting family fails, that family receives bounded repair attempts before the run escalates; root and package executions of the same family share the allowance. When the run succeeds, the complete record is written to `.lightsout/runs/<id>/`.
 
@@ -282,12 +282,14 @@ builds somewhere else.
 
 Planning establishes that worktree first. `/plan` and `/auto-plan` run
 `lightsout plan workspace --name <name>` before they explore or draft, which cuts
-the tree at the plan's path from your checkout's committed `HEAD` and prints the
-tree's path; every later plan step works from it, so another agent editing your
-checkout cannot move the code a grade is measured against. The tree holds code
-work only: the plan folder itself stays in your main checkout at
-`.lightsout/work-orders/<work-order>/plans/<plan-id>/`, whichever checkout a plan
-command runs from, and is never copied either way. The implementation run then
+the tree at the plan's path from your checkout's committed `HEAD`, then prints
+the plan folder's absolute path on a line labelled `plan folder:` and the
+tree's path alone on the last line; every later plan step works from the tree,
+so another agent editing your checkout cannot move the code a grade is measured
+against. The tree holds code work only: the plan folder itself stays in your
+main checkout at `.lightsout/work-orders/<work-order>/plans/<plan-id>/`,
+whichever checkout a plan command runs from, and is never copied either way, so
+the plan's own files are written at the printed plan folder path. The implementation run then
 continues in that same tree rather than cutting a second one. Pass
 `--no-worktree`, or set `plan.worktree` to false, to plan in the launching
 checkout deliberately.
@@ -335,6 +337,16 @@ ship request a human asked for, and otherwise prints the one sentence saying wha
 it is still waiting for and exits on the run's own result. A single-plan ticket,
 and a branch no work order claims, chain exactly as they always have.
 
+`lightsout implement --detach` runs the build in a background engine process
+that outlives the terminal or chat session that started it. The command prints
+the run id and where the engine's output is kept — a launch log at
+`.lightsout/launches/<id>.log` in the primary checkout — as soon as the engine
+is spawned, then returns once the run has started. A run the engine refuses to
+start is never reported as started: the refusal is relayed from the launch log
+and the command exits with the engine's own code. Without `--detach`, the run
+stays in the foreground, printing as it goes, and Ctrl-C stops it. `--detach`
+needs macOS or Linux.
+
 [![How /implement turns the spec into verified code](assets/implement-workflow-light.svg)](assets/implement-workflow-light.svg)
 
 ```text
@@ -357,21 +369,55 @@ lightsout status --queue --run <id>
 lightsout status --queue --wait
 ```
 
-`--watch` refreshes the detailed block until the run stops. A failing verification row shows its gate families, root/package groups, per-family repair counts, whether a supervisor-guided repair ran, the supervisor diagnosis when present, and the final output line. The complete command, exit code, timing, and output-tail history remains in `.lightsout/runs/<run-id>/commands.jsonl`.
+`--watch` repaints, every two minutes, the same screen `--now` prints — for a phased plan, the phase sequence and the phase moving now — and follows the run's family until it stops going. A failing verification row shows its gate families, root/package groups, per-family repair counts, whether a supervisor-guided repair ran, the supervisor diagnosis when present, and the final output line. The complete command, exit code, timing, and output-tail history remains in `.lightsout/runs/<run-id>/commands.jsonl`.
 
-With no `--run`, `--watch` follows the one run that is going — a phased plan's coordinator and the phase it is running count as one run, not two — and waits a minute for a run you have only just started to appear. If several unrelated runs are going at once it names their ids and asks you to pick one with `--run <id>` rather than guessing which you meant. A watch already following a run stays with that run and never crosses to unrelated work.
+`--run <id>` prints the same screen `--now` does, however many other runs are going: for a phased plan, the phase sequence first, then the steps of the phase moving now — and naming any phase's own run id shows exactly what naming the coordinator's does.
 
-`--now` answers the same question once, without following anything: it shows the run that is going, printed once and never repainted. For a phased plan it shows both levels — the phase sequence first, then the phase moving now. It answers immediately rather than waiting for a run to appear, because nobody typing it has just started one. With nothing going it falls back to the newest run of any status, and with several unrelated runs going it names their ids and asks you to pick one with `--run <id>`. `--now` cannot be combined with `--run`, `--watch`, `--planning`, `--shipping` or `--queue`.
+Once a run has finished, `--run <id>` prints its saved final report after its block: the lines the `implement`, `implement-direct` or `resume` command printed when it ended, so a run's outcome stays readable after nobody is watching the command that drove it. A run that is going again shows no saved report until the command now driving it ends.
+
+With no `--run`, `--watch` follows the one run that is going — a phased plan's coordinator and the phase it is running count as one run, not two — and waits a minute for a run you have only just started to appear. If several unrelated runs are going at once it names their ids and asks you to pick one with `--run <id>` rather than guessing which you meant. A watch already following a run stays with that run's family and never crosses to unrelated work.
+
+A running or pending run with no live process behind it is drawn with its running step stopped (`■`) and a line naming the command that resumes it, and such a run is never counted as the run that is going by `--watch` or `--now`.
+
+`--now` answers the same question once, without following anything: it shows the run that is going, printed once and never repainted. For a phased plan it shows both levels — the phase sequence first, then the phase moving now. It answers immediately rather than waiting for a run to appear, because nobody typing it has just started one. With nothing going it falls back to the newest run of any status, followed by that run's saved final report when it has one, and with several unrelated runs going it names their ids and asks you to pick one with `--run <id>`. `--now` cannot be combined with `--run`, `--watch`, `--planning`, `--shipping` or `--queue`.
 
 `--planning <name>` shows a plan that is still being planned, printed once in the same layout as a run's block. It has five fixed steps — verify-facts, draft, dedup, grade and publish — and each `lightsout plan` subcommand records its own step in the plan folder as it runs: whether it is running, how it ended, how many times it ran and how long it took. A plan with no record yet shows every step not reached. An unreadable record prints one line naming the file. A step whose process has gone is not shown as running: it is drawn failed, and the block says no live process is recording it and when the record was last updated. The record stays on your machine — `lightsout plan publish` does not attach it to the ticket. `--planning` cannot be combined with `--run` or `--watch`.
 
 `--shipping <branch>` shows a branch that is being shipped, printed once in the same layout as a run's block. It has six fixed steps — integrate, push, pull-request, checks, merge and sync — with the attempt number in the block's title. It reads the record from the checkout that ships the branch, so point it at a worktree with `--cwd <path>`. A branch with no record yet shows every step not reached. An unreadable record prints one line naming the file. A ship whose process has gone is never shown as running: its running step is drawn failed, and the block says no live process is recording it and when the record was last updated. `--shipping` cannot be combined with `--run`, `--watch` or `--planning`.
 
-`--queue` shows a queue run as one update: first a board with seven columns — Parked, Blocked, Build Queue, Building, Ship Queue, Shipping Now and Shipped — where each cell holds only a ticket's ID, linked to the ticket, then a list with one line per ticket giving its title and, when it has one, its reason, then one block for each active ticket. A ticket is active while it is building, while it is shipping, or while its worker waits for an answer to a relayed question. Each block is exactly what the standalone `--run`, `--planning` or `--shipping` form prints for that ticket, and shows only that ticket's own run — never the run of another ticket the queue is building at the same time. For a ticket building a phased plan it is both levels at once: the coordinator's phase overview, a blank line, then the phase moving now. A bare `--queue` answers at once and prints a single line when no queue run is going; `--wait` asks it to wait up to a minute instead, which is what a status request made right after launching a queue needs. `--run <id>` names a past or crashed queue run instead: a crashed one is shown as stopped, with no ticket active. `--queue` prints once and cannot be combined with `--watch`, `--planning`, `--shipping` or `--now`.
+`--queue` shows a queue run as one update: first a board with seven columns — Parked, Blocked, Build Queue, Building, Ship Queue, Shipping Now and Shipped — where each cell holds only a ticket's ID, linked to the ticket, then a list with one line per ticket giving its title and, when it has one, its reason, then one block for each active ticket. A ticket is active while it is building, while it is shipping, or while its worker waits for an answer to a relayed question. Each block is exactly what the standalone `--run`, `--planning` or `--shipping` form prints for that ticket, and shows only that ticket's own run — never the run of another ticket the queue is building at the same time. For a ticket building a phased plan it is both levels at once: the coordinator's phase overview, a blank line, then the phase moving now. A bare `--queue` answers at once and prints a single line when no queue run is going; `--wait` asks it to wait up to a minute instead, which is what a status request made right after launching a queue needs. `--run <id>` names a past or crashed queue run instead: a crashed one is shown as stopped, with no ticket active. A finished queue run named this way prints the board and per-ticket report the queue printed when it ended, saved in its run folder. `--queue` prints once and cannot be combined with `--watch`, `--planning`, `--shipping` or `--now`.
 
 Every one of these views is reachable from a session as well as a terminal: the `status` skill forwards whatever you ask for to the same command and posts what it printed.
 
-`lightsout resume --run <id>` picks a parked run back up in the workspace that run recorded, so a run built in its own worktree carries on in that worktree rather than in the checkout you happen to be standing in. Direct runs built from a ticket resume here too, from the ticket frozen beside the run: a run that already passed its gates goes straight to the commit and the ship rather than building the ticket again. If the recorded workspace has been removed, resume says so and stops.
+`lightsout resume --run <id>` picks a parked run back up in the workspace that run recorded, so a run built in its own worktree carries on in that worktree rather than in the checkout you happen to be standing in. Direct runs built from a ticket resume here too, from the ticket frozen beside the run: a run that already passed its gates goes straight to the commit and the ship rather than building the ticket again. If the recorded workspace has been removed, resume says so and stops. `lightsout resume --detach --run <id>` resumes the run in a background engine process instead: it prints the run id and the launch log the engine's output is appended to, returns once the run has resumed, and relays the engine's refusal and exit code when it does not.
+
+### lightsout stop
+
+Stop the engine process behind a detached or unreachable run, from any terminal
+or session. It takes any run id of the family — a phased plan's coordinator or
+one of its phases — full or shortened, and stops the process recorded for the
+whole family.
+
+The engine is asked to shut down first, which stops its own agents and gates.
+If it is still running after ten seconds it is killed outright: the command
+then prints no resume command, warns that the run's agent process groups may
+remain, tells you to make sure no agent is still working in the run's worktree
+before you resume it, and exits 1. A process whose start time no longer matches
+the one recorded for the run is some other process that reused the pid, so it
+is left alone and reported, with exit 1. A queue worker's run lives inside the
+queue's process, so it is refused, and the message names the queue run to stop
+instead. A run with nothing running behind it is reported as not running, with
+exit 0.
+
+The run's record is never changed, so the run stays resumable, and a clean stop
+prints the command that resumes it. A run started before owner records existed
+is stopped through the run lock when the lock names that run, and only while the
+run is still going. `lightsout stop` needs a POSIX system (macOS or Linux); on
+Windows it refuses with exit 1.
+
+```text
+lightsout stop --run <id>
+```
 
 ### lightsout report
 
@@ -455,9 +501,16 @@ Take a committed branch from where it stands to merged and cleaned up. `lightsou
 
 A branch whose ticket has a record merges only when that record authorizes it:
 a single-plan ticket once plan 001 is implemented, a multiple-plan ticket once an
-explicit ship request naming its included plans is satisfied. The record is asked
-before anything is pushed and again immediately before the merge, so a plan added
-to the ticket while its checks were running still stops it. A refusal is a blocked
+explicit ship request naming its included plans is satisfied, and a single-plan
+ticket holding no plan 001 once its build from the ticket body passed, or once a
+person ran `lightsout ship --hand-built` to authorize work built by hand. That
+authorization is saved on the record with who gave it (git's `user.name` and
+`user.email`) and when, and lasts until the ticket ships; adding plan 001, a build
+from the ticket body starting, or a switch to multiple-plan mode withdraws it. The
+gates and checks ship already runs apply to hand-built work exactly as to work the
+engine built. The record is found by the branch it saves, and is asked before
+anything is pushed and again immediately before the merge, so a plan added to the
+ticket while its checks were running still stops it. A refusal is a blocked
 result with reason `ticket-not-authorized` and one sentence saying what the ticket
 is waiting for, and nothing reaches the remote. A branch no work order claims
 ships exactly as it always has. How a human files that request is the
@@ -467,6 +520,7 @@ It has no slash command of its own. Its house conventions — the branch pattern
 
 ```text
 lightsout ship
+lightsout ship --hand-built
 ```
 
 ### lightsout ticket-state
@@ -522,8 +576,8 @@ and it must name every plan the ticket still includes; `--withdraw` takes it
 back. `exclude-plan` takes one plan out of the ticket's work for good — a plan
 whose implementation started is only excluded on a branch this repository's own
 gates have just passed on — and `retitle-plan` changes only what a plan is
-called, never its id, its folder or a pending request. `show` reads the record,
-and `sync` settles one that moved on two machines at once.
+called, never its id, its folder or a pending request. `show` reads the record
+and reports what the work order's shipping is waiting for, and `sync` settles one that moved on two machines at once.
 
 Every change is published to the ticket when a `ticket-tracker` block is
 configured, so another machine restores the ticket's settings and its plans;
@@ -552,13 +606,21 @@ Each ticket gets a fresh worktree cut from the default branch, the config's `set
 
 When a worker hits a question only a human can answer, the queue relays it: to your terminal by default, or — with `--file-relay` — to a mailbox the `queue` skill watches from a Claude Code or Codex session, so you can keep working and answer when asked. A question nobody answers parks its ticket after `question-timeout`; a later run picks parked work back up, worktree and all. A worktree whose ticket a human already closed is never resumed: if its branch merged, the ticket is reconciled to Done, and if it did not, the worktree is reported and left in place because it may hold work nobody has merged. The queue writes down where each branch stands — still being built, finished and waiting to merge, left open, or already merged — so a later run picks the work back up as what it actually is, and never rebuilds a branch that is already finished or merges one twice.
 
+`lightsout queue --detach` drains in a background engine process that outlives
+the terminal or chat session that started it. It implies `--file-relay`, on the
+default mailbox unless a directory is given, because nobody is at a terminal to
+answer. The command prints the queue run's id and the launch log the engine's
+output goes to, and once the queue run has started it also names the engine pid
+and the relay mailbox, then returns. A queue that refuses to start relays its
+refusal and exit code instead.
+
 A ticket that owns several plans has the plans that are ready to implement built one at a time, lowest number first, each committed as its own commit — so a later plan is built on what the plans before it left, and any one plan's implementation can be taken out again by its own commit. A lower plan somebody is still planning holds the plans after it back. A plan whose implementation failed, or whose implementation has not finished, parks the ticket naming that plan, `lightsout resume` to finish it and `lightsout work-order exclude-plan` to take it out of the order — the queue repairs neither itself.
 
 A ticket with several plans that nothing has yet approved shipping is left open rather than parked: it takes no parked label, keeps its tracker status and keeps its worktree, and a later run picks it up again to build whichever plans have since become ready to implement, or to ship it once its ship request is satisfied. For an auto-plan ticket the engine chooses which plan the session writes — the lowest plan still being planned, or a new plan 001 when the ticket has no plans yet.
 
 A hold is the stronger case. Only one gate run at a time may use the machine across all of a repository's worktrees, and a run whose gates never got it within the wait ceiling stops without judging the code: no gate command ran, so nothing about the code failed. Its worktree and every commit in it are left exactly as they are, and the ticket is put on hold — recorded as the `queue-blocked-gate-timed-out` label beside the parked one. Neither a later `lightsout queue` run nor `lightsout resume` will take that ticket while the label stands. Removing the label from the ticket is what releases it; the queue never removes it for you.
 
-When the queue ends it prints a final board, headed as finished, with every ticket in the column it ended in, and then its per-ticket report. With the `queue` skill, the conversation also gets a board at launch and a `lightsout status --queue` update every ten minutes while the queue drains. A queue held in a terminal prints no periodic board; run `lightsout status --queue` for one, or ask the `status` skill for the same board from inside a session.
+When the queue ends it prints a final board, headed as finished, with every ticket in the column it ended in, and then its per-ticket report. The `queue` skill launches the queue detached, relays each question as it arrives, and once the queue has ended posts the finished board and report the queue saved. It makes no timed board posts: a board comes from asking for one, through the `status` skill or `lightsout status --queue`. A queue held in a terminal prints no periodic board; run `lightsout status --queue` for one, or ask the `status` skill for the same board from inside a session.
 
 Exit codes carry the whole story: `0` — everything eligible shipped; `2` — work remains that a re-run picks up (parked or left-behind tickets), which a ticket left open is not, because it waits on a human decision rather than on a re-run; `1` — the queue refused to start, and the message says why.
 

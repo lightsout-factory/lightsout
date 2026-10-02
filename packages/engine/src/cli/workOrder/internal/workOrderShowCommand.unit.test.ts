@@ -173,9 +173,9 @@ describe('workOrderShowCommand', () => {
 		// a shipped work order's record never changes again, so the commit it
 		// shipped as is the line that tells a reader why everything else refuses
 		expect(output).toContain('9f1c2d3');
-		// with nothing left to approve, the ship-request line says so rather than
-		// naming a request that was consumed
-		expect(output).toContain('no ship request is pending');
+		// once shipped, the merge commit is the whole shipping story, so no
+		// ship-request line follows it to say the work order stays open
+		expect(output).not.toContain('no ship request is pending');
 		expect(errors).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([0]);
 	});
@@ -267,5 +267,60 @@ describe('workOrderShowCommand', () => {
 		expect(logged.filter((line) => /ticket body/i.test(line))).toStrictEqual([]);
 		expect(errors).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([0]);
+	});
+
+	test('prints the ship state line of a single-plan work order instead of the ship request line', async () => {
+		const { context, logged, errors, exitCodes } = setupShow({
+			args: ['--name', 'add-search-filters'],
+			outcome: {
+				record: {
+					...trackerFreeRecord,
+					plans: [{ id: '001-add-search-filters', title: 'Add search filters', progress: 'implemented', createdAt: '2026-09-12T10:00:00.000Z' }],
+				},
+			},
+		});
+
+		await expect(workOrderShowCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// a single-plan work order ships on plan 001 alone, so it is never waiting
+		// for a ship request and never told it stays open
+		expect({
+			readyLines: logged.filter((line) => /ready to ship/i.test(line)).length,
+			shipRequestLines: logged.filter((line) => /ship request/i.test(line)),
+			staysOpenLines: logged.filter((line) => /stays open/i.test(line)),
+			errors,
+			exitCodes,
+		}).toStrictEqual({ readyLines: 1, shipRequestLines: [], staysOpenLines: [], errors: [], exitCodes: [0] });
+	});
+
+	test("prints a shipped work order's merge commit as its only shipping line", async () => {
+		const { context, logged, errors, exitCodes } = setupShow({ outcome: { record: everyProgressRecord } });
+
+		await expect(workOrderShowCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const shippingLines = logged.filter((line) => /ship/i.test(line));
+
+		// once shipped, the merge commit is the whole story: no second line goes on
+		// to say the work order stays open waiting for a request
+		expect({ shippingLineCount: shippingLines.length, staysOpenLines: logged.filter((line) => /stays open/i.test(line)), errors, exitCodes }).toStrictEqual({
+			shippingLineCount: 1,
+			staysOpenLines: [],
+			errors: [],
+			exitCodes: [0],
+		});
+		expect(shippingLines[0]).toContain('9f1c2d3');
+	});
+
+	test('prints who authorized hand-built work and when on a single-plan work order holding no plan 001', async () => {
+		const { context, logged, errors, exitCodes } = setupShow({
+			args: ['--name', 'lo-166-x'],
+			outcome: { record: { ...planlessRecord, handBuiltShipAuthorization: { by: 'Dana Reyes dana@example.com', at: '2026-09-12T16:00:00.000Z' } } },
+		});
+
+		await expect(workOrderShowCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const authorizationLines = logged.filter((line) => line.includes('Dana Reyes dana@example.com') && line.includes('2026-09-12T16:00:00.000Z'));
+
+		expect({ authorizationLineCount: authorizationLines.length, errors, exitCodes }).toStrictEqual({ authorizationLineCount: 1, errors: [], exitCodes: [0] });
 	});
 });

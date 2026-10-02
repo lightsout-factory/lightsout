@@ -1,19 +1,19 @@
 ---
-summary: "an alias written from memory instead of read from the package's own declaration"
+summary: "Which path alias to use, and how to write it."
 checked: false
 severity: advisory
 ---
 
 ## Path Aliases
 
-Each package declares its own path aliases, in `package.json` → `imports` or in `tsconfig.json` → `compilerOptions.paths`. Common patterns:
+Each package declares its own path aliases, in `package.json` `imports` or in `tsconfig.json` `compilerOptions.paths`. Read the package's own declaration for the alias; never write one from memory. Common ones:
 
 | Alias | Declared in | Example |
 | --- | --- | --- |
-| `#src/*` | `package.json` → `imports` | `import { X } from '#src/common/utils/X.ts'` |
-| `@/*` | `tsconfig.json` → `paths` | `import { X } from '@/common/utils/X'` |
-| `@src/*` | `tsconfig.json` → `paths` | `import { X } from '@src/common/utils/X'` |
+| `#src/*` | `package.json` `imports` | `import { X } from '#src/common/utils/X.ts'` |
+| `@/*` | `tsconfig.json` `paths` | `import { X } from '@/common/utils/X'` |
+| `@src/*` | `tsconfig.json` `paths` | `import { X } from '@src/common/utils/X'` |
 
-**Rule:** Always read the package's own declaration to determine the correct alias. Do not hardcode aliases from memory.
+An `imports` alias resolves literally, so the specifier carries the extension of the file it names: `#src/cli/shipCommand.ts`. An extensionless `#src/cli/shipCommand` names a file that does not exist. A `paths` alias is resolved the usual way, so `@/cli` is right there.
 
-**Gotcha — a package-imports alias resolves its target literally.** `"#src/*": "./src/*"` substitutes the captured text and stops: Node, TypeScript and esbuild do no extension probing on an `imports` target, so the specifier must carry the file extension it resolves to (`#src/runState/summarizeRun.ts`, `#src/cli/shipCommand.ts`). An extensionless `#src/cli/shipCommand` names a file that does not exist. A tsconfig `paths` alias is probed the ordinary way, so `@/cli` is correct there.
+Packages differ, and a remembered alias may be one this package never declared.

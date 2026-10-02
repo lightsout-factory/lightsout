@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
@@ -73,6 +73,19 @@ const setupFolderMoveStamp = ({ tracked, rows, phases }: { tracked: string[]; ro
 	});
 
 	return { cwd, overviewPath, phasePaths, readOverview: () => readFileSync(overviewPath, 'utf8') };
+};
+
+/** A workspace whose overview already states its phase file's real counts, backdated so any rewrite would move its modification time. */
+const setupMatchedStamp = () => {
+	const stamp = setupStamp({
+		rows: [{ number: 1, file: 'phase1-core.md', created: 2, touched: 3 }],
+		phases: { 'phase1-core.md': { create: ['src/a.ts', 'src/b.ts'], modify: ['src/c.ts'] } },
+	});
+	const backdated = new Date('2020-01-01T00:00:00.000Z');
+
+	utimesSync(stamp.overviewPath, backdated, backdated);
+
+	return { ...stamp, original: stamp.readOverview(), modifiedAt: statSync(stamp.overviewPath).mtimeMs };
 };
 
 /** The same overview carrying a second table, under a later heading, whose row names a phase file. */
@@ -254,6 +267,25 @@ describe('stampPhaseCounts', () => {
 				{ file: 'phase1-move.md', createdCount: 0, touchedCount: 6 },
 				{ file: 'phase2-wire.md', createdCount: 1, touchedCount: 4 },
 			],
+		});
+	});
+
+	test('an overview whose counts already match its phase files is not rewritten', async () => {
+		const stamp = setupMatchedStamp();
+
+		const declarations = await stampPhaseCounts({ cwd: stamp.cwd, overviewPath: stamp.overviewPath, phasePaths: stamp.phasePaths });
+
+		// a stamp that changes nothing must not touch the file: its modification
+		// time stays where the backdate put it, so `plan sync-phases` on a plan in
+		// step writes nothing at all
+		expect({
+			text: stamp.readOverview(),
+			modifiedAt: statSync(stamp.overviewPath).mtimeMs,
+			declared: countsOf({ declarations }),
+		}).toStrictEqual({
+			text: stamp.original,
+			modifiedAt: stamp.modifiedAt,
+			declared: [{ file: 'phase1-core.md', createdCount: 2, touchedCount: 3 }],
 		});
 	});
 });

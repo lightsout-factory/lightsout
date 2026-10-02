@@ -6,8 +6,6 @@ import type { QueueBoardTicket } from '#src/contracts/queue/QueueBoardTicket.ts'
 import { QueueLane } from '#src/contracts/queue/QueueLane.ts';
 import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
-import { isPidAlive } from '#src/runState/isPidAlive.ts';
-import { readRunLock } from '#src/runState/lock/readRunLock.ts';
 import { readShippingProgress } from '#src/ship/progress/readShippingProgress.ts';
 import { listRuns } from '#src/views/listRuns.ts';
 import { findNextPlanToPlan } from '#src/workOrder/findNextPlanToPlan.ts';
@@ -43,18 +41,17 @@ const loadShippingBlock = async ({ ticket, worktreePath }: { ticket: QueueBoardT
 
 /**
  * Only runs created since the build began count: anything older in this folder
- * belongs to an earlier queue invocation. The run lock's holder wins while its
- * process lives (a phase child during a phase, its coordinator between phases).
+ * belongs to an earlier queue invocation. A run a live process stands behind
+ * wins over a newer one with nothing behind it, so a stopped retry never hides
+ * the build that is still moving.
  */
 const findBuildRun = async ({ ticket, worktreePath, workOrderName }: { ticket: QueueBoardTicket; worktreePath: string; workOrderName: string }) => {
 	const since = Date.parse(ticket.buildStartedAt ?? ticket.enteredAt);
 	const candidates = (await listRuns({ cwd: worktreePath, workOrderName }))
 		.filter((run) => Date.parse(run.createdAt) >= since)
 		.sort((first, second) => Date.parse(second.createdAt) - Date.parse(first.createdAt));
-	const lock = await readRunLock({ cwd: worktreePath });
-	const locked = lock !== undefined && isPidAlive({ pid: lock.pid }) ? candidates.find((run) => run.runId === lock.runId) : undefined;
 
-	return locked ?? candidates[0];
+	return candidates.find((run) => run.live) ?? candidates[0];
 };
 
 /**
@@ -94,7 +91,7 @@ const loadBuildBlock = async ({ ticket, worktreePath }: { ticket: QueueBoardTick
 	if (workOrderName === undefined) {
 		lines = [`the board recorded no work order for ${ticket.identifier}`];
 	} else if (run !== undefined) {
-		lines = await loadRunFamilyProgressBlock({ cwd: worktreePath, runId: run.runId });
+		lines = (await loadRunFamilyProgressBlock({ cwd: worktreePath, runId: run.runId })).lines;
 	} else if (ticket.worker === QueueWorker.AutoPlan) {
 		lines = await loadPlanningBlock({ worktreePath, workOrderName });
 	} else {

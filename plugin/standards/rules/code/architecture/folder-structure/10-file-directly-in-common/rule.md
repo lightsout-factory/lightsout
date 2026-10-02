@@ -1,5 +1,5 @@
 ---
-summary: "Files in `common/` go in a folder for their kind of code."
+summary: "Shared files go in a folder for their kind of code."
 checked: true
 severity: advisory
 example:

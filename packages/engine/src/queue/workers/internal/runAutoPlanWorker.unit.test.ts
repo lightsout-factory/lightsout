@@ -183,6 +183,7 @@ const setupAutoPlanWorker = ({
 			settings: queueSettingsFixture(),
 			env: { LINEAR_API_KEY: 'key-1' },
 			workOrderRunDir: join(cwd, '.lightsout', 'runs', 'run-q', 'work-orders', 'LO-70'),
+			queueRunId: 'run-q',
 			onProgress: (message: string) => progress.push(message),
 		},
 	};
@@ -224,6 +225,7 @@ const setupHeadlessWorktreeSession = () => {
 			settings: queueSettingsFixture(),
 			env: { LINEAR_API_KEY: 'key-1' },
 			workOrderRunDir: join(runDirFor({ cwd: worktree, runId: 'run-q', pipeline: 'queue' }), 'work-orders', 'LO-70'),
+			queueRunId: 'run-q',
 		},
 	};
 };
@@ -296,6 +298,27 @@ describe('runAutoPlanWorker', () => {
 
 		expect(outcome).toStrictEqual({});
 		expect(mockBuildTicketPlans).toHaveBeenCalledWith(expect.objectContaining({ cwd: params.cwd, workOrderName, record: plannedRecord }));
+	});
+
+	test('hands a worktree session the absolute plan folder under the primary checkout, granted as a writable directory', async () => {
+		const { params } = setupHeadlessWorktreeSession();
+		// the session's tree is cut at <primary>/.worktrees/<work order>
+		const primary = join(params.cwd, '..', '..');
+		const relativeFolder = `.lightsout/work-orders/${workOrderName}/plans/${planId}`;
+		const folder = join(primary, relativeFolder);
+
+		await runAutoPlanWorker(params);
+
+		const call = mockInvokeAgentWithContract.mock.calls[0]?.[0] as (InvokeCall & { writableDirs?: string[] }) | undefined;
+		const prompt = call?.invocation.prompt ?? '';
+
+		expect({
+			namesAbsoluteFolder: prompt.includes(folder),
+			// every mention of the folder is the absolute one, never a path the session would read inside its tree
+			everyMentionAbsolute: prompt.split(relativeFolder).length === prompt.split(folder).length,
+			namesWorktreeFolder: prompt.includes(join(params.cwd, relativeFolder)),
+			writableDirs: call?.writableDirs,
+		}).toStrictEqual({ namesAbsoluteFolder: true, everyMentionAbsolute: true, namesWorktreeFolder: false, writableDirs: [folder] });
 	});
 
 	test("plans and builds against the work order's label", async () => {

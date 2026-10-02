@@ -16,5 +16,5 @@ export const selfCheckCatalogEntry: CommandCatalogEntry = {
 	],
 	steps: [],
 	records: CommandRecordKind.Nothing,
-	related: ['auto-plan', 'brainstorm', 'plan', 'implement', 'implement-direct', 'resume', 'ship', 'queue', 'work-order', 'ticket-state'],
+	related: ['auto-plan', 'brainstorm', 'plan', 'implement', 'implement-direct', 'resume', 'stop', 'ship', 'queue', 'work-order', 'ticket-state'],
 };

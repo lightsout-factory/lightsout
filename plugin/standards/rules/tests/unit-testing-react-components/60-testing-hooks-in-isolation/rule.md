@@ -1,5 +1,5 @@
 ---
-summary: "a hook test that mocks more framework primitives than the hook under test uses"
+summary: "Testing a hook without rendering a component."
 checked: false
 severity: advisory
 ---

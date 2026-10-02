@@ -24,65 +24,70 @@ engine, where it is deterministic code. Do not add workflow steps to this file.
    `ticket-tracker.api-key-env` holds a value. For Jira, also confirm the
    variable named by `ticket-tracker.api-user-email-env` holds the account
    email. If a required variable is empty, stop and say which variable to set
-   — the engine's own refusal would otherwise arrive minutes later in a
-   background log.
-3. Start the queue in the background, relaying questions through the mailbox
-   rather than a terminal:
+   — the detached launch relays the engine's refusal at once, so checking the
+   variable first only saves a wasted launch.
+3. Launch the queue detached, **in the foreground**, from the project
+   directory, with **both streams captured together**:
 
    ```sh
-   node "<plugin-root>/dist/cli.mjs" queue --file-relay
+   node "<plugin-root>/dist/cli.mjs" queue --detach 2>&1
    ```
 
-   Run it with the Bash tool in the background — the harness notifies the
-   session when a background command exits. Tell the user it has started and
-   that they can keep working; questions will come to them here.
+   `--detach` implies the file relay, so questions come through the mailbox
+   rather than a terminal; add `--file-relay <dir>` only when the user named a
+   mailbox directory. The command returns as soon as the queue has started,
+   and the queue goes on in a process of its own. Worktree setup and tracker
+   writes can come before the queue has started and outlast a harness's
+   default command timeout, so run the command with the longest timeout the
+   harness allows (Claude Code: `timeout 600000`). The engine prints
+   `starting run <full id> — engine output: <launch log path>` at once, before
+   it waits.
 
-   Then post the launch snapshot. Run, in the foreground:
+   Post everything the command printed into the conversation **verbatim**.
+   Then:
+
+   - **Nonzero exit — the queue refused to start.** Its output is the refusal:
+     post it and stop, with no sentence of your own around it.
+   - **The harness cut the call off before it returned.** Post what it printed
+     and tell the user that `/lightsout:status --run <id>`, with the id from
+     the `starting run` line, shows whether the queue started. Start no
+     watcher: the engine pid and the mailbox are printed only once the queue
+     has started.
+   - **Zero exit — the queue has started.** Keep the three values the engine
+     printed: the queue run id (`run <id> has started`), the engine pid
+     (`engine pid: <pid>`) and the mailbox directory (`relay mailbox: <dir>`).
+     Tell the user:
+     - the queue has started and runs outside this session, so they can keep
+       working;
+     - questions will come to them here;
+     - `/lightsout:status queue` (`lightsout status --queue`) shows the board
+       whenever they ask;
+     - `lightsout stop --run <id>` stops the queue.
+
+     Also create an empty **relayed list** — a file that holds the name of
+     each question file already posted, one name per line. Keep it outside the
+     mailbox folder, which the engine owns and empties:
+
+     ```sh
+     mktemp
+     ```
+4. Watch the mailbox the engine printed with a **watcher of its own**: a
+   background Bash command that polls every 15 seconds and exits as soon as
+   one of three things holds:
+   - the mailbox holds a `*.question.json` file whose name is not in the
+     relayed list;
+   - the queue's engine pid — the one `queue --detach` printed — is no longer
+     running;
+   - the watcher has run for 60 minutes, which keeps it under the harness's
+     limit on a background command's life.
+
+   For example, with the kept values put in place of the placeholders:
 
    ```sh
-   node "<plugin-root>/dist/cli.mjs" status --queue --wait
-   ```
-
-   `--wait` is what makes it wait up to a minute for the queue run you have
-   just started to appear; without it the command answers at once, which here
-   would be that no queue is going. The ten-minute updates in step 5 run
-   against a queue that already exists, so they use the bare `status --queue`
-   and must not spend that minute.
-
-   Post its output into the conversation **verbatim** — no commentary, no
-   summary, no reformatting. The engine owns that rendering: a board of seven
-   columns (a markdown table), then one fenced status block per active ticket.
-   The skill only carries it. Record the **next update time** as an absolute
-   time ten minutes after this post, as epoch seconds:
-
-   ```sh
-   echo $(( $(date +%s) + 600 ))
-   ```
-
-   Also create an empty **relayed list** — a file that holds the name of each
-   question file already posted, one name per line. Keep it outside the
-   mailbox folder, which the engine owns and empties:
-
-   ```sh
-   mktemp
-   ```
-
-   If the queue's background command has already exited by now, skip to
-   step 7.
-4. Watch the mailbox at `.lightsout/queue/relay` under the repo root — the
-   path the engine prints on startup — with a **watcher of its own**: a
-   second background Bash command that polls every 15 seconds and exits as
-   soon as one of three things holds:
-   - a `*.question.json` file exists whose name is not in the relayed list;
-   - the clock has reached the stored next update time;
-   - the queue process has ended.
-
-   For example, with the stored values put in place of the placeholders:
-
-   ```sh
-   while kill -0 <queue-pid> 2>/dev/null && [ "$(date +%s)" -lt <next-update-epoch> ]; do
+   deadline=$(( $(date +%s) + 3600 ))
+   while kill -0 <queue-pid> 2>/dev/null && [ "$(date +%s)" -lt "$deadline" ]; do
      new=""
-     for file in .lightsout/queue/relay/*.question.json; do
+     for file in "<mailbox>"/*.question.json; do
        [ -e "$file" ] && ! grep -qxF "$(basename "$file")" "<relayed-list>" && new="$file"
      done
      [ -n "$new" ] && break
@@ -90,46 +95,49 @@ engine, where it is deterministic code. Do not add workflow steps to this file.
    done
    ```
 
-   Because both the queue and the watcher run in the background, the session
-   stays free for the user between events; the watcher exiting is what wakes
-   the session. (A harness with a dedicated wait-on-condition tool may use it
-   in place of the shell loop — same cadence, same three wake conditions.)
-5. When the watcher wakes the session, check which conditions hold:
-   - **The next update time has been reached:** run
-     `node "<plugin-root>/dist/cli.mjs" status --queue`, post its output
-     verbatim, and set the next update time to ten minutes after this post.
+   Because the watcher runs in the background, the session stays free for the
+   user between events; the watcher exiting is what wakes the session. (A
+   harness with a dedicated wait-on-condition tool may use it in place of the
+   shell loop — same cadence, same three wake conditions.)
+
+   In a harness that cannot run a background command, start no watcher.
+   Instead tell the user that questions wait in `<mailbox>` until the
+   configured `question-timeout` and then park their ticket, and that asking
+   you to check for questions runs one pass of the question check in the
+   foreground: any question file not in the relayed list is relayed exactly as
+   on a wake.
+5. When the watcher wakes the session, check which condition holds:
    - **A question file not yet relayed exists:** read it — it holds `ticket`,
      `title`, `question` and `askedAt` — and put the complete ticket context
      and question in the response, never only in commentary. Add its file
-     name to the relayed list. A question neither resets the update clock nor
-     waits for it.
-   - **Both are due:** the complete `status --queue` output comes first and
-     the question block last, in the same response.
-
-   Any post made while a relayed question is still unanswered ends with that
-   question's complete block again, after the board, so the response that
-   waits for the user always carries the whole question.
-
-   Then re-start the watcher (step 4) at once, with the kept next update time,
-   and give the session back to the user. Do not wait for an answer: the
-   ten-minute posts continue while a question is open, because the other
-   workers keep running.
+     name to the relayed list, re-start the watcher (step 4) at once, and give
+     the session back to the user. Do not wait for an answer: the other
+     workers keep running.
+   - **The queue's engine pid has ended:** go to step 7.
+   - **Neither holds — the watcher reached its 60 minutes:** re-start the
+     watcher (step 4) silently and post nothing.
 
    When the user answers, write the answer beside the question as a sibling
    file: same stem, `.answer.json` instead of `.question.json`, holding
    `{"answer": "<what the user said>"}`. The engine picks it up within two
    seconds, deletes both files, and the worker continues. Drop that question's
-   file name from the relayed list, then re-start the watcher (step 4) with
-   the kept next update time.
+   file name from the relayed list, then re-start the watcher (step 4).
 6. A question the user does not answer parks its ticket once the config's
    `question-timeout` elapses (default one hour). Say so if they ask; a later
    drain picks parked work back up.
-7. When the queue's own background command exits, stop any running watcher
-   and relay the queue's final output verbatim, from the finished board —
-   headed `Queue finished` — through the report lines after it: one line per
-   ticket — shipped, parked with the reason and its worktree path, left open
-   with what it is waiting for, or left behind with why. Post no further
-   `status --queue` updates.
+7. When the watcher wakes because the queue's engine pid has ended, stop the
+   watcher. Then run, in the foreground, with both streams captured together
+   and the kept queue run id:
+
+   ```sh
+   node "<plugin-root>/dist/cli.mjs" status --queue --run <id> 2>&1
+   ```
+
+   Post its output verbatim. It is the board and drain report the queue saved
+   when it finished: the finished board — headed `Queue finished` — then one
+   line per ticket — shipped, parked with the reason and its worktree path,
+   left open with what it is waiting for, or left behind with why. Post
+   nothing further.
 
 The bare `node "<absolute path to cli.mjs>" queue` command still exists for
 anyone who would rather hold their own terminal, where questions are asked on
@@ -215,19 +223,24 @@ stdin instead.
   everything unblocked runs and ships, then it re-reads the tracker and takes
   whatever the finished work just unblocked, stopping when a re-read finds
   nothing new.
-- **The ten-minute posts:** at launch and then every ten minutes, this
-  session posts the output of `lightsout status --queue`. First comes a board
+- **The board on request:** `/lightsout:status queue` (`lightsout status
+  --queue`) shows the queue's board whenever the user asks. First comes a board
   with seven columns — Parked, Blocked, Build Queue, Building, Ship Queue,
   Shipping Now and Shipped — where each ticket's ID sits in the one column it
-  is in now, so tickets move across the columns from one post to the next.
+  is in now, so tickets move across the columns from one board to the next.
   Under the table is a list with one line per ticket: its title, and its reason
   when it has one. Below that is a detail block for each active ticket: one
   that is building, shipping, or waiting for an answer. A detail block is
   exactly what `lightsout status` prints for that ticket's run, planning or
   ship in its worktree. A run's block lists every step the run will take, with
-  the steps it has not reached shown as pending. This is separate from the implement skill's two-minute watch,
-  which follows a single run.
-- **Exit codes:** 0 — everything eligible shipped. 2 — work remains that a
+  the steps it has not reached shown as pending.
+- **It runs detached from this session:** the queue runs in a process of its
+  own, so it outlives this session. `lightsout stop --run <queue run id>` stops
+  it; stopping a worker's own run is refused, with a message naming the queue
+  run to stop instead.
+- **Exit codes:** these are the queue's own exit code, which
+  `status --queue --run <id>` shows once a detached queue has ended. 0 —
+  everything eligible shipped. 2 — work remains that a
   re-run picks up (parked or left-behind tickets); a ticket left open is not
   that, because it waits on a human decision rather than on a re-run, so it never
   makes the queue exit 2. 1 — the queue refused to start; the message says why.

@@ -9,6 +9,7 @@ const commandIds = [
 	'implement',
 	'implement-direct',
 	'resume',
+	'stop',
 	'ship',
 	'queue',
 	'work-order',

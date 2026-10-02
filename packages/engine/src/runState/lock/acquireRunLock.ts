@@ -1,6 +1,7 @@
 import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { isPidAlive } from '#src/runState/isPidAlive.ts';
+import { describeRunLockHolder } from '#src/runState/lock/describeRunLockHolder.ts';
 import { getRunLockPath } from '#src/runState/lock/internal/common/utils/getRunLockPath.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 import { readRunLock } from '#src/runState/lock/readRunLock.ts';
@@ -39,9 +40,7 @@ export const acquireRunLock = async ({ cwd, runId }: Params): Promise<{ stalePid
 		const holder = await readRunLock({ cwd });
 
 		if (holder && isPidAlive({ pid: holder.pid })) {
-			throw new RunLockError(
-				`another lightsout run is active in this repo: run ${holder.runId} (pid ${holder.pid}, started ${holder.startedAt}). Wait for it to finish — or delete .lightsout/lock.json if you are certain nothing is running.`,
-			);
+			throw new RunLockError(describeRunLockHolder({ holder }));
 		}
 
 		stalePid = holder?.pid;

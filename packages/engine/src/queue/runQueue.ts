@@ -1,5 +1,4 @@
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
 import { syncGateHolds } from '#src/gates/gateHolds/syncGateHolds.ts';
@@ -9,13 +8,14 @@ import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
 import type { QueueDrainReport } from '#src/queue/common/types/QueueDrainReport.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
-import { isParkedOutcome } from '#src/queue/common/utils/isParkedOutcome.ts';
 import type { ParkedWork } from '#src/queue/internal/common/types/ParkedWork.ts';
 import type { WaveSelection } from '#src/queue/internal/common/types/WaveSelection.ts';
 import { createMainCheckoutSerializer } from '#src/queue/internal/common/utils/createMainCheckoutSerializer.ts';
 import { startCoordinatorRun } from '#src/queue/internal/common/utils/startCoordinatorRun.ts';
+import { toCoordinatorStatus } from '#src/queue/internal/common/utils/toCoordinatorStatus.ts';
 import { drainQueue } from '#src/queue/internal/drainQueue.ts';
 import { runQueueWorkOrder } from '#src/queue/internal/runQueueWorkOrder.ts';
+import { settleEmptyDrain } from '#src/queue/internal/settleEmptyDrain.ts';
 import { settleParkedLabels } from '#src/queue/internal/settleParkedLabels.ts';
 import { checkQueueStartup } from '#src/queue/startup/checkQueueStartup.ts';
 import { listEligibleTickets } from '#src/queue/ticketSelection/listEligibleTickets.ts';
@@ -30,6 +30,14 @@ import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSet
 
 interface Params {
 	cwd: string;
+	/** The id the queue coordinator run is created under, minted by the caller; a fresh one when absent. */
+	runId?: string;
+	/**
+	 * A detached queue's child records its run even when nothing is left to do,
+	 * so the launcher's handshake and the saved summary have a run to find. A
+	 * foreground drain leaves it off, and an empty drain then creates no run.
+	 */
+	recordEmptyDrain?: boolean;
 	settings: QueueSettings;
 	trackerSettings: TrackerSettings;
 	shipSettings: ShipSettings;
@@ -41,17 +49,6 @@ interface Params {
 	relay: QuestionRelay;
 	onProgress?: (message: string) => void;
 }
-
-/**
- * A reconciled already-merged ticket is settled and never re-offered, and a
- * ticket the queue left open waits on a human, so neither counts as work left.
- */
-const toCoordinatorStatus = ({ drained }: { drained: QueueDrainReport }) => {
-	const unfinished = drained.leftBehind.filter((entry) => entry.settled !== true);
-	const parked = drained.outcomes.filter((outcome) => isParkedOutcome({ outcome }));
-
-	return parked.length === 0 && unfinished.length === 0 ? RunStatus.Passed : RunStatus.Escalated;
-};
 
 const drainAndShip = async ({
 	cwd,
@@ -138,6 +135,8 @@ const drainAndShip = async ({
  */
 export const runQueue = async ({
 	cwd,
+	runId,
+	recordEmptyDrain,
 	settings,
 	trackerSettings,
 	shipSettings,
@@ -181,23 +180,15 @@ export const runQueue = async ({
 	});
 
 	if (first.runnable.length === 0 && parked.outcomes.length === 0 && parked.merged.length === 0) {
-		onProgress?.(
-			first.blocked.length > 0
-				? 'nothing to do — every eligible ticket is waiting on an unfinished blocker'
-				: 'nothing to do — no eligible tickets, and no parked worktrees to pick up',
-		);
-
-		const empty: QueueDrainReport = { outcomes: [], leftBehind: [...parked.leftBehind, ...first.skipped, ...first.blocked] };
-
-		return empty;
+		return settleEmptyDrain({ cwd, runId, recordEmptyDrain, driverName, config, first, parked, onProgress });
 	}
 
 	return withRunLock({
-		params: { cwd, onProgress },
-		run: ({ runId }) =>
+		params: { cwd, runId, onProgress },
+		run: ({ runId: lockedRunId }) =>
 			drainAndShip({
 				cwd,
-				runId,
+				runId: lockedRunId,
 				settings,
 				trackerSettings,
 				shipSettings,

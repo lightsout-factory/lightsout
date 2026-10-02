@@ -21,7 +21,8 @@ export const statusCatalogEntry: CommandCatalogEntry = {
 		{
 			name: 'run',
 			value: '<id>',
-			meaning: 'Show one run in detail — its steps, their outcomes and durations, what it is doing now. Takes the shortened eight-character id reports print.',
+			meaning:
+				'Show one run in detail — its steps, their outcomes and durations, what it is doing now — the same screen --now prints, so a phased plan shows its phase sequence followed by the phase moving now, whichever of its runs is named: the coordinator or any phase. Works however many other runs are going. Takes the shortened eight-character id reports print. Once the run has finished, its saved final report — the lines the command printed when it ended — follows the block.',
 			fallback: 'Every run is listed, one line each.',
 			shape: 'status-run',
 			required: false,
@@ -29,7 +30,7 @@ export const statusCatalogEntry: CommandCatalogEntry = {
 		{
 			name: 'watch',
 			meaning:
-				'Repaint the detail block every two minutes until the run stops, so a detached run can be followed. Without --run it follows the one run that is going, and its phase children with it; when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing.',
+				"Repaint, every two minutes, the same screen --now prints — for a phased plan, its phase sequence and the phase moving now — until the run's family stops going, so a detached run can be followed. A run with no live process behind it is drawn stopped and never followed as the going run. Without --run it follows the one run that is going, and its phase children with it; when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing.",
 			fallback: 'The block is printed once.',
 			shape: 'status-run',
 			required: false,
@@ -37,7 +38,7 @@ export const statusCatalogEntry: CommandCatalogEntry = {
 		{
 			name: 'now',
 			meaning:
-				'Show the run that is going, printed once and never repainted — for a phased plan, its phase sequence followed by the phase moving now. It answers at once rather than waiting for a run to appear; with nothing going it falls back to the newest run of any status, and when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing. Cannot be combined with --run, --watch, --planning, --shipping or --queue.',
+				'Show the run that is going, printed once and never repainted — for a phased plan, its phase sequence followed by the phase moving now. It answers at once rather than waiting for a run to appear, and a run with no live process behind it is never counted as the run that is going; with nothing going it falls back to the newest run of any status, followed by that run’s saved final report when it has one, and when several unrelated runs are going it names their ids and asks for --run <id> instead of guessing. Cannot be combined with --run, --watch, --planning, --shipping or --queue.',
 			shape: 'status-now',
 			required: true,
 		},
@@ -67,7 +68,8 @@ export const statusCatalogEntry: CommandCatalogEntry = {
 		{
 			name: 'run',
 			value: '<id>',
-			meaning: 'The queue run to show — a past or crashed one included. Takes the shortened eight-character id reports print.',
+			meaning:
+				'The queue run to show — a past or crashed one included. Takes the shortened eight-character id reports print. A finished queue run shows the board and per-ticket report the queue printed when it ended.',
 			fallback: "The live queue run this checkout's run lock names.",
 			shape: 'status-queue',
 			required: false,

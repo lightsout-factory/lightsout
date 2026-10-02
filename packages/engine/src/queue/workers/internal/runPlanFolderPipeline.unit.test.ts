@@ -3,7 +3,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
+import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.ts';
@@ -13,6 +15,9 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { runPlanFolderPipeline } from '#src/queue/workers/internal/runPlanFolderPipeline.ts';
+import { createRun } from '#src/runState/createRun.ts';
+import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
+import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 
@@ -23,6 +28,8 @@ interface PipelineCall {
 	driver: Driver;
 	planPath?: string;
 	overviewPath?: string;
+	runId?: string;
+	queueRunId?: string;
 	onProgress?: (message: string) => void;
 }
 
@@ -152,11 +159,49 @@ const setupTicketPlanFolder = ({ plans, result }: { plans: WorkOrderPlan[]; resu
 const planAt = ({ workOrderFolder, id }: { workOrderFolder: string; id: string }) =>
 	(JSON.parse(readFileSync(join(workOrderFolder, 'state.json'), 'utf8')) as WorkOrderState).plans.find((plan) => plan.id === id);
 
+/**
+ * A plan folder whose pipeline stands in for the real one up to its first agent
+ * invocation: it creates its run under the id it was handed, carrying the queue
+ * run id it was handed, the way either pipeline's own run creation does, then
+ * reads the owner record from inside the build — where the agent would be
+ * working — before passing, or throwing when `throws` is set.
+ */
+const setupOwnedBuild = ({ phased = false, throws = false }: { phased?: boolean; throws?: boolean } = {}) => {
+	const { cwd, name, folder, onProgress } = setupPlanFolder({ phased });
+	const seen: { runId?: string; owner?: RunOwner } = {};
+	const build = async ({ runId, overviewPath, queueRunId }: PipelineCall): Promise<PipelineResult> => {
+		const manifest = await createRun({
+			cwd,
+			runId,
+			plan: join(folder, 'plan.md'),
+			overview: overviewPath,
+			pipeline: phased ? PipelineKind.Phases : PipelineKind.Implement,
+			driver: 'claude-code',
+			config,
+			queueRunId,
+		});
+
+		seen.runId = manifest.runId;
+		seen.owner = await readRunOwner({ cwd, runId: manifest.runId });
+
+		if (throws) {
+			throw new Error('the harness crashed mid-build');
+		}
+
+		return { ok: true, manifest: { ...manifest, status: RunStatus.Passed } };
+	};
+
+	mockRunPhasesPipeline.mockImplementation(build);
+	mockRunImplementPipeline.mockImplementation(build);
+
+	return { cwd, name, onProgress, seen };
+};
+
 describe('runPlanFolderPipeline', () => {
 	test('runs the phases pipeline against the overview a phased plan folder holds', async () => {
 		const { cwd, name, folder, onProgress } = setupPlanFolder({ phased: true });
 
-		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress });
+		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'queue-run' });
 
 		expect(mockRunPhasesPipeline).toHaveBeenCalledWith(expect.objectContaining({ cwd, config, driver, overviewPath: join(folder, 'overview.md'), onProgress }));
 		expect(mockRunImplementPipeline).not.toHaveBeenCalled();
@@ -166,7 +211,7 @@ describe('runPlanFolderPipeline', () => {
 	test('runs the implement pipeline against the plan file when the folder is not phased', async () => {
 		const { cwd, name, folder, onProgress } = setupPlanFolder();
 
-		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress });
+		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'queue-run' });
 
 		expect(mockRunImplementPipeline).toHaveBeenCalledWith(expect.objectContaining({ cwd, config, driver, planPath: join(folder, 'plan.md'), onProgress }));
 		expect(mockRunPhasesPipeline).not.toHaveBeenCalled();
@@ -176,7 +221,7 @@ describe('runPlanFolderPipeline', () => {
 	test('parks a failed build with the resume sentence naming the run it continues', async () => {
 		const { cwd, name, onProgress } = setupPlanFolder({ result: { ok: false, error: 'the gates stayed red', manifest: manifestOf(RunStatus.Failed) } });
 
-		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress });
+		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'queue-run' });
 
 		// the worktree is left standing, so the sentence a human reads is the one
 		// command that picks the run back up where it stopped
@@ -186,7 +231,7 @@ describe('runPlanFolderPipeline', () => {
 	test('names the state a pipeline ended in when it stopped without saying why', async () => {
 		const { cwd, name, onProgress } = setupPlanFolder({ result: { ok: false, manifest: manifestOf(RunStatus.Escalated) } });
 
-		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress });
+		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'queue-run' });
 
 		// a run that stated no reason still has a state, and naming it beats an
 		// empty error nobody can act on
@@ -199,7 +244,7 @@ describe('runPlanFolderPipeline', () => {
 			result: { ok: true, manifest: passedPlanManifest({ planId: secondPlan }) },
 		});
 
-		const outcome = await runPlanFolderPipeline({ cwd, name: `${workOrderName}/${secondPlan}`, config, driver, onProgress });
+		const outcome = await runPlanFolderPipeline({ cwd, name: `${workOrderName}/${secondPlan}`, config, driver, onProgress, queueRunId: 'queue-run' });
 
 		// a work order's plans implement in numeric order, so the plan standing in the
 		// way is named and nothing is built or recorded for the one that is blocked
@@ -216,11 +261,44 @@ describe('runPlanFolderPipeline', () => {
 			result: { ok: true, manifest: passedPlanManifest({ planId: firstPlan }) },
 		});
 
-		const outcome = await runPlanFolderPipeline({ cwd, name: `${workOrderName}/${firstPlan}`, config, driver, onProgress });
+		const outcome = await runPlanFolderPipeline({ cwd, name: `${workOrderName}/${firstPlan}`, config, driver, onProgress, queueRunId: 'queue-run' });
 
 		expect(outcome).toStrictEqual({});
 		expect(planAt({ workOrderFolder, id: firstPlan })).toEqual(
 			expect.objectContaining({ progress: 'implemented', implementation: expect.objectContaining({ finishedAt: expect.any(String) }) }),
 		);
+	});
+
+	test.each([{ phased: true }, { phased: false }])(
+		'points whichever pipeline builds the plan folder at the queue run until the build settles',
+		async ({ phased }) => {
+			const { cwd, name, onProgress, seen } = setupOwnedBuild({ phased });
+
+			const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'q-1' });
+
+			const ownerAfter = await readRunOwner({ cwd, runId: seen.runId ?? 'no-run-was-created' });
+
+			// while the build works its run answers to the queue that is still alive;
+			// once it has settled the run points at nothing, so it cannot read live
+			// on the queue's behalf
+			expect({ outcome, ownerDuring: seen.owner, ownerAfter }).toStrictEqual({
+				outcome: {},
+				ownerDuring: { queueRunId: 'q-1' },
+				ownerAfter: undefined,
+			});
+		},
+	);
+
+	test('removes the owner record of a build that throws', async () => {
+		const { cwd, name, onProgress, seen } = setupOwnedBuild({ throws: true });
+
+		const error = await getRejectionError({ promise: runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'q-1' }) });
+
+		const ownerAfter = await readRunOwner({ cwd, runId: seen.runId ?? 'no-run-was-created' });
+
+		// the queue parks a worker that throws and keeps going, so the run it left
+		// in running must not keep pointing at that live queue
+		expect(error.message).toContain('the harness crashed mid-build');
+		expect({ ownerDuring: seen.owner, ownerAfter }).toStrictEqual({ ownerDuring: { queueRunId: 'q-1' }, ownerAfter: undefined });
 	});
 });

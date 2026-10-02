@@ -1,11 +1,11 @@
 ---
-summary: "a named constant in camelCase, or a lone value constant in PascalCase"
+summary: "How named constants and plain constants are cased."
 checked: false
 severity: advisory
 ---
 
-## Casing
+## Named Constant Casing
 
-Named constants are **PascalCase** (`Action`, `LogLevel`) — the `const` object and its derived `type` share one name, and the type must be PascalCase. The file matches: `Action.ts`.
+A named constant is a `const` object with a union type derived from it, such as `Action` or `LogLevel`. Name it in PascalCase, because the object and its type share one name and a type is PascalCase.
 
-This is distinct from plain **value constants** (a single scalar or config value like `maxRetries`, `emailRegex`), which stay **camelCase**. The test: if it backs a union or has members consumers dot into (`Action.Add`), it's a named constant → PascalCase; if it's a lone value, it's a value constant → camelCase.
+Every other constant is a value constant and is camelCase: a single value such as `maxRetries` or `emailRegex`, or an object that groups related values such as `featureThresholds`.

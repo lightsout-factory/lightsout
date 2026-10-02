@@ -359,6 +359,21 @@ describe('runQueue', () => {
 		expect(mockRunQueueTicket).toHaveBeenCalledWith(expect.objectContaining({ env: { LINEAR_API_KEY: 'queue-token' } }));
 	});
 
+	test('creates the coordinator run under the id its caller minted', async () => {
+		const { cwd, drain, relay } = setupDrain();
+
+		mockListEligibleTickets.mockResolvedValueOnce([]).mockResolvedValueOnce([ticketOf({ number: 70 })]);
+
+		await drain({ runId: '0b7c1d2e-3f40-4a51-8b62-7c83d94ea5f6' });
+		await drain({ runId: '9e8d7c6b-5a49-4382-9716-05f4e3d2c1b0' });
+		relay.close();
+
+		const { runId, manifest } = readCoordinatorRun({ cwd });
+		const runIds = readdirSync(dirname(runDirFor({ cwd, runId, pipeline: 'queue' })));
+
+		expect({ runIds, manifestRunId: manifest.runId }).toStrictEqual({ runIds: [runId], manifestRunId: '9e8d7c6b-5a49-4382-9716-05f4e3d2c1b0' });
+	});
+
 	test('carries a skipped ticket into the report beside the outcomes, so nothing vanishes from the summary', async () => {
 		const { drain, relay } = setupDrain({
 			eligible: [ticketOf({ number: 70 }), { ...ticketOf({ number: 70 }), planningStatus: PlanningStatus.Complete, worker: QueueWorker.Plan }],

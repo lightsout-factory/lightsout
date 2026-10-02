@@ -16,6 +16,7 @@ import { verifyDirectWork } from '#src/direct/internal/verifyDirectWork.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { withRunLock } from '#src/runState/lock/withRunLock.ts';
+import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { resolveStandards } from '#src/standards/resolveStandards.ts';
 
 interface Params {
@@ -38,6 +39,8 @@ interface Params {
 	/** The run to continue instead of minting a new one — a resumed direct run keeps its id, its frozen ticket input and the partial changes already in its tree. */
 	existing?: RunManifest;
 	onProgress?: (message: string) => void;
+	/** The queue run a worker build belongs to; the run's owner record points there. */
+	queueRunId?: string;
 }
 
 /**
@@ -159,8 +162,13 @@ const executeDirectWork = async ({
 	willShip,
 	existing,
 	onProgress,
+	queueRunId,
 }: Params & { runId: string }) => {
-	const manifest = existing ?? (await createDirectRun({ cwd, runId, ticketBody, ticketRef, driverName, config, willShip }));
+	if (existing !== undefined) {
+		await writeRunOwner({ cwd, runId: existing.runId, queueRunId });
+	}
+
+	const manifest = existing ?? (await createDirectRun({ cwd, runId, ticketBody, ticketRef, driverName, config, willShip, queueRunId }));
 	const run = new RunState({ cwd, config, manifest, onProgress });
 	const stop = ({ record, status, error }: { record: StepRecord; status: RunStatus; error: string }) => stopDirectRun({ run, record, status, error });
 

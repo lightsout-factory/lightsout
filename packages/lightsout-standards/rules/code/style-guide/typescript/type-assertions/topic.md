@@ -1,1 +1,3 @@
-# Type assertions (`as`)
+# Type Assertions
+
+Casting a value to a type instead of proving it.

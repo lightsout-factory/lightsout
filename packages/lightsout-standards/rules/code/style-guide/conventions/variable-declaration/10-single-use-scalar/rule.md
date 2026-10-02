@@ -1,9 +1,11 @@
 ---
-summary: "a module-scope scalar constant only one place reads"
+summary: "Where a value used in only one place is declared."
 checked: true
 severity: advisory
 ---
 
-## Don't Hoist Single-Use Scalars
+## Single-Use Scalar
 
-Don't hoist single-use scalars to module scope or a constants file. A value used by one function and not a lookup map is declared inline — `const maxRetries = 10;` inside the function, not `const MAX_RETRIES = 10;` at module scope. Promote to a module-level constant (or `constants/`) only when it's consumed in 2+ places, or it's a lookup map / structured config.
+Declare a scalar that is read in only one place where it is read, not at module scope or in a constants file: `const maxRetries = 10;` inside the function, not `const MAX_RETRIES = 10;` at the top of the module. Hoist it to module scope only when two or more places read it, or when it is a lookup map or structured config.
+
+A value declared beside its only reader is read without a jump to find it.

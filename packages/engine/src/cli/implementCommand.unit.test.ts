@@ -31,7 +31,9 @@ const writePhasedPlanFolder = ({ cwd, phases }: { cwd: string; phases: number })
 // command's whole render-and-exit path is observable without an agent.
 // `folderFiles` seeds plans/demo for the folder cases and `phases` seeds it with
 // a real overview; `locked` plants a live run lock, which is how a folder
-// holding a REAL plan — one plan.md or a whole table of phases — fails fast too.
+// holding a REAL plan — one plan.md or a whole table of phases — fails fast too:
+// a single plan's run refuses to take the lock, and a phased sequence's
+// coordinator refuses the live holder before it creates its run.
 const setupImplement = ({
 	args,
 	folderFiles,
@@ -193,7 +195,7 @@ test('implementCommand: a plan folder holding an overview runs every phase, and 
 
 	// no start-phase segment: the sequence starts where it always does
 	expect(logged[1]).toBe(`  overview: ${join(planFolder, 'overview.md')}`);
-	// the planted lock stops the first phase's own run, which means the phase loop was entered
+	// the planted lock is refused by the coordinator's pre-check, which means the phased path was taken
 	expect(errors.join('\n')).toContain('another lightsout run is active in this repo');
 	expect(exitCodes).toStrictEqual([1]);
 });

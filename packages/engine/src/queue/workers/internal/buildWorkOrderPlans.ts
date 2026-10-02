@@ -41,6 +41,8 @@ interface Params {
 	/** True only for the plan worker: a single-plan work order whose plan 001 is still being planned, or that holds no plan 001, is then built from the ticket body. */
 	allowTicketBodyBuild: boolean;
 	onProgress?: (message: string) => void;
+	/** The queue run whose owner record answers for every run this builds. */
+	queueRunId: string;
 }
 
 /** Generated paths are left out: build output is the pre-ship step's to commit, never a plan's. */
@@ -74,7 +76,7 @@ const takePlanBeingPlanned = ({ step, allowTicketBodyBuild }: { step: WorkOrderP
 };
 
 const buildReadyPlan = async ({ step }: { step: WorkOrderPlanStep }) => {
-	const { cwd, record, plan, config, env, driver, onProgress } = step;
+	const { cwd, record, plan, config, env, driver, onProgress, queueRunId } = step;
 	const address = formatPlanAddress({ workOrderName: record.name, planId: plan.id });
 
 	if (!(await pathExists({ path: await planWorkspaceDir({ cwd, name: address }) }))) {
@@ -91,7 +93,7 @@ const buildReadyPlan = async ({ step }: { step: WorkOrderPlanStep }) => {
 		}
 	}
 
-	return runPlanFolderPipeline({ cwd, name: address, config, driver, onProgress });
+	return runPlanFolderPipeline({ cwd, name: address, config, driver, onProgress, queueRunId });
 };
 
 /**
@@ -140,9 +142,10 @@ export const buildWorkOrderPlans = async ({
 	workOrderRunDir,
 	allowTicketBodyBuild,
 	onProgress,
+	queueRunId,
 }: Params): Promise<WorkerOutcome> => {
 	if (allowTicketBodyBuild && isPlanlessWorkOrder({ record })) {
-		return buildPlanlessWorkOrder({ step: { cwd, record, ticket, config, env, driver, driverName, workOrderRunDir, onProgress }, workOrderName });
+		return buildPlanlessWorkOrder({ step: { cwd, record, ticket, config, env, driver, driverName, workOrderRunDir, onProgress, queueRunId }, workOrderName });
 	}
 
 	// Read before anything is built, so it holds only work that was already there.
@@ -157,7 +160,7 @@ export const buildWorkOrderPlans = async ({
 			return decideTicketOutcome({ record: current });
 		}
 
-		const step: WorkOrderPlanStep = { cwd, record: current, plan, ticket, config, env, driver, driverName, workOrderRunDir, onProgress };
+		const step: WorkOrderPlanStep = { cwd, record: current, plan, ticket, config, env, driver, driverName, workOrderRunDir, onProgress, queueRunId };
 		// Asked before any leftover work is settled: a failed or paused build's
 		// partial changes are what `lightsout resume` expects to find in the tree.
 		const stalled = findStalledPlanRefusal({ record: current, plan });

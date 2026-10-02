@@ -291,32 +291,6 @@ describe('runImplementPipeline', () => {
 		}).toStrictEqual({ firstRunPassed: true, passed: true, status: 'passed', commits: 1, head: landed });
 	});
 
-	test('seeds a run from an inherited baseline and guards it', async () => {
-		const { dir, driver, config } = await setupStrayTreeRun();
-		const inherited = ['src/phaseOne.js', 'src/usePhaseOne.js'];
-		const before = headSha({ cwd: dir });
-
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true, inheritedBaseline: inherited });
-
-		expect({
-			// the list the caller handed down, not a snapshot of the tree at start
-			baseline: result.manifest.baselineDirtyFiles,
-			passed: result.ok,
-			status: result.manifest.status,
-			// and the guard that list turns on names the file nothing recorded
-			error: result.error,
-			commits: result.manifest.commits,
-			head: headSha({ cwd: dir }),
-		}).toEqual({
-			baseline: ['src/phaseOne.js', 'src/usePhaseOne.js'],
-			passed: false,
-			status: 'failed',
-			error: expect.stringMatching(/did not make[\s\S]*stray\.txt/),
-			commits: [],
-			head: before,
-		});
-	});
-
 	test('leaves a first run unguarded', async () => {
 		const { dir, driver, config } = await setupStrayTreeRun();
 

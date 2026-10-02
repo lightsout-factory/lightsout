@@ -104,7 +104,16 @@ test('renderUsage: prints the self-check line, so an agent-run command is listed
 	expect(lines.indexOf(selfCheck)).toBe(ticketState + 1);
 });
 
-test('renderUsage: prints the plan sync-decisions line between plan draft and plan lint', () => {
+test('renderUsage: prints the stop line directly after the resume line', () => {
+	const { lines } = setupRenderUsage();
+
+	const resume = lines.findIndex((line) => line.startsWith('  lightsout resume --run <id>'));
+
+	expect(resume).toBeGreaterThanOrEqual(0);
+	expect(lines[resume + 1]).toBe('  lightsout stop --run <id> [--cwd <path>]');
+});
+
+test('renderUsage: prints the plan sync-decisions line between plan draft and plan sync-phases, ahead of plan lint', () => {
 	const { lines } = setupRenderUsage();
 
 	const sync = lines.filter((line) => line.startsWith('  lightsout plan sync-decisions'));
@@ -113,7 +122,19 @@ test('renderUsage: prints the plan sync-decisions line between plan draft and pl
 
 	expect(sync).toStrictEqual(['  lightsout plan sync-decisions --name <name> [--cwd <path>] [--worktree] [--no-worktree]']);
 	expect(lines.indexOf(sync[0] ?? '')).toBe(draft + 1);
-	expect(lint).toBe(draft + 2);
+	expect(lint).toBe(draft + 3);
+});
+
+test('renderUsage: prints the plan sync-phases line between plan sync-decisions and plan lint', () => {
+	const { lines } = setupRenderUsage();
+
+	const syncPhases = lines.filter((line) => line.startsWith('  lightsout plan sync-phases'));
+	const syncDecisions = lines.findIndex((line) => line.startsWith('  lightsout plan sync-decisions'));
+	const lint = lines.findIndex((line) => line.startsWith('  lightsout plan lint'));
+
+	expect(syncPhases).toStrictEqual(['  lightsout plan sync-phases --name <name> [--cwd <path>] [--worktree] [--no-worktree]']);
+	expect(lines.indexOf(syncPhases[0] ?? '')).toBe(syncDecisions + 1);
+	expect(lint).toBe(syncDecisions + 2);
 });
 
 test('prints the status --planning line after the status --run and --now lines', () => {
