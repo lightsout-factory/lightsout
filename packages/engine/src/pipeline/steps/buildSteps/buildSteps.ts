@@ -76,7 +76,9 @@ export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, stand
 	// re-invocation of it: the two differ only in the user prompt, and a section
 	// on one but not the other would split the role's cached system prompt in two.
 	const selfCheckCommand = buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command;
-	const featureFix = buildFeatureFix({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand });
+	// A mechanical plan writes no new code, so there is nothing a listing of shared code could save it from duplicating.
+	const planFiles = mechanical ? [] : [...plan.createPaths, ...plan.modifyPaths, ...plan.earlierPhaseModifyPaths];
+	const featureFix = buildFeatureFix({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand, planFiles });
 	const leaveOutRefactor = skipRefactor === true || mechanical;
 
 	return [
@@ -97,6 +99,7 @@ export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, stand
 			acceptanceTests,
 			planBuildMode,
 			selfCheckCommand,
+			planFiles,
 			buildFix: featureFix,
 		}),
 		...buildTestSteps({

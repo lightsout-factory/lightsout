@@ -1,6 +1,7 @@
 import { buildRefactorExecutorInvocation } from '#src/agents/buildRefactorExecutorInvocation.ts';
 import { RefactorScope } from '#src/common/constants/RefactorScope.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
+import { listSharedCode } from '#src/common/sharedCode/listSharedCode.ts';
 import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import { standardsScopeFiles } from '#src/pipeline/internal/common/utils/standardsScopeFiles.ts';
@@ -60,7 +61,7 @@ export const buildRefactorSteps = ({
 						// must be proven against the finished tree.
 						final: true,
 						planBuildMode,
-						buildFix: ({ errorContext }) =>
+						buildFix: async ({ errorContext }) =>
 							buildRefactorExecutorInvocation({
 								scope: RefactorScope.Feature,
 								planContent,
@@ -69,6 +70,7 @@ export const buildRefactorSteps = ({
 								standards,
 								errorContext,
 								selfCheckCommand: buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command,
+								sharedCode: await listSharedCode({ cwd: run.cwd, config: run.config, workFiles: standardsScopeFiles({ run }) }),
 							}),
 					}),
 				},

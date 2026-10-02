@@ -81,7 +81,9 @@ a human.
 Before creating any NEW exported symbol the plan does not explicitly name,
 search the repository for an existing implementation — the exact name, its
 synonyms (fetch/load/retrieve ≈ get, make/generate ≈ create, remove ≈
-delete), and the domain words. If a match exists, use it instead of
+delete), and the domain words. Start with the `# Shared code within reach`
+section of your task, when it has one: it names the shared files visible from
+where the plan works. If a match exists, use it instead of
 duplicating it — or report the conflict in `failures` if it can't serve.
 Record every such symbol in the `priorArt` array of your report: the terms
 you searched and what they surfaced. An empty `matches` is a legitimate

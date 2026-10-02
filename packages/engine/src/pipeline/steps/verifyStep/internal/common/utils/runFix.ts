@@ -16,7 +16,7 @@ interface Params {
 
 export const runFix = async ({ context, errorContext, record }: Params): Promise<RepairOutcome> => {
 	const { run, gitPrefix, id } = context;
-	const fix = await run.invokeRole({ invocation: context.buildFix({ errorContext }), step: id });
+	const fix = await run.invokeRole({ invocation: await context.buildFix({ errorContext }), step: id });
 
 	if (!fix.ok && fix.rateLimited) {
 		return { parked: await run.stop({ record, status: RunStatus.PausedRateLimit, error: run.parkMessage() }) };

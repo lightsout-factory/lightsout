@@ -109,7 +109,7 @@ const setupFormattingReentry = () => {
 		recordUsage: async () => {},
 	};
 
-	const buildFix = () => ({ systemPrompt: 'repair the checkpoint', prompt: 'repair the checkpoint' });
+	const buildFix = async () => ({ systemPrompt: 'repair the checkpoint', prompt: 'repair the checkpoint' });
 
 	return { run: run as unknown as PipelineRun, manifest, buildFix, roleInvocations, stopped: () => stopped };
 };

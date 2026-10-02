@@ -1,3 +1,6 @@
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
@@ -67,7 +70,7 @@ jest.mock('#src/standardsCheck/runStandardsCheck.ts', () => ({
 }));
 // -------------------------
 
-const setupBatchTools = ({ packagesDir }: { packagesDir: string }) => {
+const setupBatchTools = ({ packagesDir, cwd = '/repo' }: { packagesDir: string; cwd?: string }) => {
 	mockReviewBatchOutput.mockResolvedValue([]);
 	mockCollectBatchChanges.mockResolvedValue(['apps/web/src/index.ts']);
 	mockRunStandardsCheck.mockResolvedValue({ findings: [], notes: [] });
@@ -80,7 +83,7 @@ const setupBatchTools = ({ packagesDir }: { packagesDir: string }) => {
 	};
 	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': packagesDir };
 	const tools = createBatchTools({
-		cwd: '/repo',
+		cwd,
 		runId: 'run-1',
 		driver: createUncalledDriver({ reason: 'the batch output review is stubbed, so no agent is spawned' }),
 		config,
@@ -113,5 +116,18 @@ describe('createBatchTools', () => {
 		await tools.checkLive();
 
 		expect(mockRunStandardsCheck.mock.calls[0]?.[0].config).toBe(config);
+	});
+
+	test('reads the shared code within reach of the given files off the batch’s own tree', async () => {
+		const cwd = await mkdtemp(join(tmpdir(), 'lightsout-batch-tools-'));
+
+		await mkdir(join(cwd, 'apps/web/src/common/utils'), { recursive: true });
+		await writeFile(join(cwd, 'apps/web/src/common/utils/formatDate.ts'), 'export const formatDate = () => 1;\n', 'utf8');
+
+		const { tools } = setupBatchTools({ packagesDir: 'apps', cwd });
+
+		const sharedCode = await tools.sharedCode({ files: ['apps/web/src/index.ts'] });
+
+		expect(sharedCode).toStrictEqual([{ path: 'apps/web/src/common', groups: [{ folder: 'utils', names: ['formatDate'] }] }]);
 	});
 });

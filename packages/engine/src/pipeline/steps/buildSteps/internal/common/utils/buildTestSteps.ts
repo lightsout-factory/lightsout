@@ -68,7 +68,7 @@ export const buildTestSteps = ({
 			buildFix:
 				planBuildMode.buildMode !== BuildMode.Standard
 					? featureFix
-					: ({ errorContext }) =>
+					: async ({ errorContext }) =>
 							buildUnitTestWriterInvocation({
 								planContent,
 								subjects: run.current().testSubjects,

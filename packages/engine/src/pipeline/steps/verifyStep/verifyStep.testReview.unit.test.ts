@@ -212,7 +212,7 @@ const setupTestReviewRun = ({
 		recordUsage: async () => {},
 	};
 
-	const buildFix = ({ errorContext }: { errorContext: string }) => {
+	const buildFix = async ({ errorContext }: { errorContext: string }) => {
 		fixErrorContexts.push(errorContext);
 
 		return { systemPrompt: 'repair the checkpoint', prompt: errorContext };
