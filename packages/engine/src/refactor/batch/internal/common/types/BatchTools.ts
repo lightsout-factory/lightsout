@@ -1,4 +1,3 @@
-import type { listSharedCode } from '#src/common/sharedCode/listSharedCode.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { runBatchGates } from '#src/gates/runBatchGates.ts';
 import type { BatchRecorder } from '#src/refactor/batch/internal/common/types/BatchRecorder.ts';
@@ -23,6 +22,4 @@ export interface BatchTools {
 	reviewOutput: (params: { baseline: StandardsFinding[] }) => ReturnType<typeof reviewBatchOutput>;
 	settle: (params: { invokeFix: Parameters<typeof settleBatchGates>[0]['invokeFix'] }) => ReturnType<typeof settleBatchGates>;
 	rationale: BatchRecorder['rationale'];
-	/** The shared code visible from the files an agent is about to work on, read from the tree as it stands at the call. */
-	sharedCode: (params: { files: string[] }) => ReturnType<typeof listSharedCode>;
 }

@@ -52,7 +52,6 @@ export const polishBatchOutput = async ({ tools, batch, baseline, workFindings, 
 			standards,
 			advisories: introduced,
 			reportAdvisoryOutcomes: true,
-			sharedCode: await tools.sharedCode({ files }),
 		}),
 	});
 

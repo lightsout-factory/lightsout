@@ -16,7 +16,7 @@ interface Params {
 /** Shared by every pass that can turn a gate red, so the fixing agent gets the same account of the work from each. */
 export const createFixInvoker =
 	({ tools, files, workFindings, advisories, standards, testStandards }: Params): Parameters<typeof settleBatchGates>[0]['invokeFix'] =>
-	async ({ label, gateError, guidance }) =>
+	({ label, gateError, guidance }) =>
 		tools.invoke({
 			label,
 			invocation: buildBatchFixInvocation({
@@ -28,6 +28,5 @@ export const createFixInvoker =
 				advisories,
 				gateError,
 				guidance,
-				sharedCode: await tools.sharedCode({ files }),
 			}),
 		});

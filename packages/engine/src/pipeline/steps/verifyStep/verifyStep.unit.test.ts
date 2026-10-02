@@ -153,7 +153,7 @@ describe('verifyStep', () => {
 			id: 'verify-implement',
 			acceptanceTests: () => [],
 			planBuildMode: { buildMode: BuildMode.Standard },
-			buildFix: async () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
+			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
 		expect(escalation?.error).toEqual(expect.stringContaining(gateError));
@@ -175,7 +175,7 @@ describe('verifyStep', () => {
 			id: 'verify-implement',
 			acceptanceTests: () => [],
 			planBuildMode: { buildMode: BuildMode.Standard },
-			buildFix: async () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
+			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
 		expect(escalation?.error).toEqual(expect.stringContaining(coordination));
@@ -197,7 +197,7 @@ describe('verifyStep', () => {
 			id: 'verify-implement',
 			acceptanceTests: () => [],
 			planBuildMode: { buildMode: BuildMode.Standard },
-			buildFix: async () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
+			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
 		expect(roleInvocations).toStrictEqual(['verify-implement']);
@@ -224,7 +224,7 @@ describe('verifyStep', () => {
 			id: 'verify-implement',
 			acceptanceTests: () => [],
 			planBuildMode: { buildMode: BuildMode.Standard },
-			buildFix: async () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
+			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
 		expect(mockTakeGateHold).toHaveBeenCalledWith(
@@ -254,7 +254,7 @@ describe('verifyStep', () => {
 			id: 'verify-implement',
 			acceptanceTests: () => [],
 			planBuildMode: { buildMode: BuildMode.Standard },
-			buildFix: async () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
+			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
 		expect(escalation?.error).toEqual(expect.stringContaining(timeout));
@@ -283,7 +283,7 @@ describe('verifyStep', () => {
 			id: 'verify-implement',
 			acceptanceTests: () => [],
 			planBuildMode: { buildMode: BuildMode.Standard },
-			buildFix: async () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
+			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
 		expect(roleInvocations).toStrictEqual([]);
@@ -306,7 +306,7 @@ describe('verifyStep', () => {
 			id: 'verify-implement',
 			acceptanceTests: () => [],
 			planBuildMode: { buildMode: BuildMode.Standard },
-			buildFix: async () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
+			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
 		const error = stopped()?.error ?? '';

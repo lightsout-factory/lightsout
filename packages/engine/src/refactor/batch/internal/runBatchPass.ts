@@ -39,7 +39,6 @@ export const runBatchPass = async ({ tools, batch, pass, workFindings, advisorie
 			findings: workFindings,
 			advisories,
 			reportAdvisoryOutcomes: true,
-			sharedCode: await tools.sharedCode({ files }),
 		}),
 	});
 	const changedNothing = attempt.ok && attempt.report.changedFiles.length === 0;

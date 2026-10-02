@@ -32,16 +32,13 @@ interface StubParams {
 /** A `BatchTools` that records what the polish asked of it, so the test can read back the decisions rather than the plumbing. */
 const setupTools = ({ introduced = [], settleKind = SettleKind.Green, revived = [] }: StubParams = {}) => {
 	const invocations: string[] = [];
-	const prompts: string[] = [];
-	const sharedCodeAskedFor: string[][] = [];
 	const finished: { outcome: BatchOutcome; remainingSiteKeys: string[] }[] = [];
 	const progress: string[] = [];
 	const reviewed: StandardsFinding[][] = [];
 
 	const tools = {
-		invoke: async ({ label, invocation }: { label: string; invocation: { prompt: string } }) => {
+		invoke: async ({ label }: { label: string }) => {
 			invocations.push(label);
-			prompts.push(invocation.prompt);
 
 			return { ok: true as const, report: { summary: '', changedFiles: ['src/a.ts'], advisoryOutcomes: [] } };
 		},
@@ -57,11 +54,6 @@ const setupTools = ({ introduced = [], settleKind = SettleKind.Green, revived = 
 		},
 		settle: async () => (settleKind === SettleKind.Green ? { kind: SettleKind.Green } : { kind: settleKind, error: 'a human must look at this' }),
 		remainingSiteKeys: async () => revived,
-		sharedCode: async ({ files }: { files: string[] }) => {
-			sharedCodeAskedFor.push(files);
-
-			return [{ path: 'src/common', groups: [{ folder: 'utils', names: ['formatDate'] }] }];
-		},
 	} as unknown as BatchTools;
 
 	const call = () =>
@@ -73,7 +65,7 @@ const setupTools = ({ introduced = [], settleKind = SettleKind.Green, revived = 
 			onProgress: (line) => progress.push(line),
 		});
 
-	return { call, invocations, prompts, sharedCodeAskedFor, finished, progress, reviewed };
+	return { call, invocations, finished, progress, reviewed };
 };
 
 describe('polishBatchOutput', () => {
@@ -103,16 +95,6 @@ describe('polishBatchOutput', () => {
 		expect(invocations).toStrictEqual(['polish']);
 		expect(finished).toStrictEqual([{ outcome: BatchOutcome.Resolved, remainingSiteKeys: [] }]);
 		expect(progress.some((line) => line.includes('raised 1 new advisory(s)'))).toBe(true);
-	});
-
-	test('the polish agent is shown the shared code within reach of the files the new advisories name', async () => {
-		const { call, prompts, sharedCodeAskedFor } = setupTools({ introduced: [finding({ siteKey: 'single-return:src/a.ts' })] });
-
-		await call();
-
-		expect(sharedCodeAskedFor).toStrictEqual([['src/a.ts']]);
-		expect(prompts[0]).toContain('# Shared code within reach');
-		expect(prompts[0]).toContain('`src/common/`\n- utils/: formatDate');
 	});
 
 	test('a polish that revives a site the batch had cleared is a decline, not a pass', async () => {

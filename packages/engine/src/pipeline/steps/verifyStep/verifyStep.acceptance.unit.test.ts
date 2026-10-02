@@ -99,7 +99,7 @@ describe('verifyStep', () => {
 			acceptanceTests: () => rows,
 			final: true,
 			planBuildMode: { buildMode: BuildMode.Standard },
-			buildFix: async () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
+			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
 		// The rows and the final flag are what let the gate run prove that every

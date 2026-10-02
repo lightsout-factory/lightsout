@@ -11,8 +11,7 @@ interface Params {
 	run: PipelineRun;
 	gitPrefix?: string;
 	id: string;
-	/** Awaited at the moment of the spawn, so an invocation may read the tree as it then stands. */
-	build: () => Promise<{ systemPrompt: string; prompt: string }>;
+	build: () => { systemPrompt: string; prompt: string };
 	/** Fail the run when the step completes without changing anything — a no-op "success" is a lie. */
 	requireChanges?: boolean;
 }
@@ -24,7 +23,7 @@ export const workStep = ({ run, gitPrefix, id, build, requireChanges }: Params):
 		await run.setStep({ record });
 		run.progress(`step ${id} — attempt ${record.attempts} · invoking agent (ceiling ${run.agentTimeoutMs / 60_000}m)`);
 
-		const outcome = await invokeRoleOrStop({ run, record, invocation: await build(), step: id });
+		const outcome = await invokeRoleOrStop({ run, record, invocation: build(), step: id });
 
 		if ('stopped' in outcome) {
 			return outcome.stopped;

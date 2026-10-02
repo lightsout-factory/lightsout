@@ -1,5 +1,4 @@
 import { buildFeatureExecutorInvocation } from '#src/agents/buildFeatureExecutorInvocation.ts';
-import { listSharedCode } from '#src/common/sharedCode/listSharedCode.ts';
 import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
@@ -22,8 +21,6 @@ interface Params {
 	planBuildMode: PlanBuildMode;
 	/** The same command the fix re-invocation carries, so the role's cached system prompt stays one. */
 	selfCheckCommand: string;
-	/** The files the plan names, which is where the implementing agent is about to work. */
-	planFiles: string[];
 	buildFix: FixBuilder;
 }
 
@@ -37,7 +34,6 @@ export const buildImplementSteps = ({
 	acceptanceTests,
 	planBuildMode,
 	selfCheckCommand,
-	planFiles,
 	buildFix,
 }: Params): PipelineStep[] => [
 	{
@@ -47,7 +43,7 @@ export const buildImplementSteps = ({
 			gitPrefix,
 			id: 'implement',
 			requireChanges: true,
-			build: async () =>
+			build: () =>
 				buildFeatureExecutorInvocation({
 					planContent,
 					overviewContent,
@@ -57,7 +53,6 @@ export const buildImplementSteps = ({
 					acceptanceTests: acceptanceTests(),
 					selfCheckCommand,
 					planBuildMode,
-					sharedCode: await listSharedCode({ cwd: run.cwd, config: run.config, workFiles: planFiles }),
 				}),
 		}),
 	},

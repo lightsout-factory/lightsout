@@ -1,4 +1,3 @@
-import { listSharedCode } from '#src/common/sharedCode/listSharedCode.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
@@ -111,7 +110,5 @@ export const createBatchTools = ({
 			gates,
 		});
 
-	const sharedCode = ({ files }: { files: string[] }) => listSharedCode({ cwd, config, workFiles: files });
-
-	return { invoke, reportOf, finish, gates, checkLive, remainingSiteKeys, reviewOutput, settle, rationale, sharedCode };
+	return { invoke, reportOf, finish, gates, checkLive, remainingSiteKeys, reviewOutput, settle, rationale };
 };

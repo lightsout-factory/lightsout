@@ -5,12 +5,10 @@ import { changedFilesSection } from '#src/agents/internal/common/utils/changedFi
 import { moveOnlySection } from '#src/agents/internal/common/utils/moveOnlySection.ts';
 import { renameOnlySection } from '#src/agents/internal/common/utils/renameOnlySection.ts';
 import { selfCheckSection } from '#src/agents/internal/common/utils/selfCheckSection.ts';
-import { sharedCodeSection } from '#src/agents/internal/common/utils/sharedCodeSection.ts';
 import featureExecutorPrompt from '#src/agents/prompts/featureExecutor.md';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { defaultExecutorFileLimit } from '#src/common/constants/defaultExecutorFileLimit.ts';
 import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
-import type { SharedCodeFolder } from '#src/common/types/SharedCodeFolder.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 
 interface Params {
@@ -34,8 +32,6 @@ interface Params {
 	selfCheckCommand?: string;
 	/** The phase's build mode and the renames or moves it declares; absent means Standard. */
 	planBuildMode?: PlanBuildMode;
-	/** The `common/` folders visible from the files the plan names, as the tree holds them at this spawn. */
-	sharedCode?: SharedCodeFolder[];
 }
 
 const modeSection = ({ planBuildMode }: { planBuildMode?: PlanBuildMode }) => {
@@ -66,7 +62,6 @@ export const buildFeatureExecutorInvocation = ({
 	acceptanceTests,
 	selfCheckCommand,
 	planBuildMode,
-	sharedCode,
 }: Params): { systemPrompt: string; prompt: string } => {
 	const roleSections = [
 		applyPromptTokens({ text: featureExecutorPrompt, tokens: { ...sharedPromptSections, fileLimit: fileLimit ?? defaultExecutorFileLimit } }),
@@ -104,18 +99,27 @@ export const buildFeatureExecutorInvocation = ({
 		roleSections.push(selfCheck);
 	}
 
-	// The shared code rides the task message, not the system prompt: it is read
-	// from the tree at every spawn, so a fix re-invocation sees what its own first
-	// attempt added.
-	const sections = [
-		sharedCodeSection({ sharedCode }),
-		changedFilesSection({ changedFiles }),
-		acceptanceTestsSection({ acceptanceTests }),
-		errorContext
-			? `# Verification failure\n\nA previous attempt implemented this plan, but the engine's verification gate failed. Diagnose from the output below, fix the root cause in source, and report as usual — your report must reflect the cumulative set of changed files.\n\n${errorContext}`
-			: undefined,
-		'Remember: your entire final message must be exactly one JSON report object — nothing else.',
-	].filter((section) => section !== undefined);
+	const sections: string[] = [];
+
+	const changed = changedFilesSection({ changedFiles });
+
+	if (changed) {
+		sections.push(changed);
+	}
+
+	const acceptance = acceptanceTestsSection({ acceptanceTests });
+
+	if (acceptance) {
+		sections.push(acceptance);
+	}
+
+	if (errorContext) {
+		sections.push(
+			`# Verification failure\n\nA previous attempt implemented this plan, but the engine's verification gate failed. Diagnose from the output below, fix the root cause in source, and report as usual — your report must reflect the cumulative set of changed files.\n\n${errorContext}`,
+		);
+	}
+
+	sections.push('Remember: your entire final message must be exactly one JSON report object — nothing else.');
 
 	return {
 		systemPrompt: roleSections.join('\n\n---\n\n'),

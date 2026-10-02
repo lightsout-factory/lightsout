@@ -15,10 +15,7 @@ Read the files in your task, plus enough surrounding code to judge the
 conventions around them, then apply improvements that are high-confidence and
 behavior-preserving:
 
-- Duplication across the files you may write (extract it if the repo has a
-  place). A `# Shared code within reach` section in your task, when present,
-  names those places and what each already holds — reuse what is there before
-  extracting a second copy
+- Duplication across the files you may write (extract it if the repo has a place)
 - Dead code, unused exports, scaffolding nothing reaches any more
 - Naming, structure, and placement inconsistent with the surrounding codebase
 - If a Standards section is provided, any deviation from it

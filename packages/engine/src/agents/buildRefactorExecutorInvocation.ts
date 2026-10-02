@@ -1,14 +1,12 @@
 import { sharedPromptSections } from '#src/agents/internal/common/constants/sharedPromptSections.ts';
 import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
 import { selfCheckSection } from '#src/agents/internal/common/utils/selfCheckSection.ts';
-import { sharedCodeSection } from '#src/agents/internal/common/utils/sharedCodeSection.ts';
 import refactorExecutorPrompt from '#src/agents/prompts/refactorExecutor.md';
 import refactorScopeFeaturePrompt from '#src/agents/prompts/refactorScopeFeature.md';
 import refactorScopeStandalonePrompt from '#src/agents/prompts/refactorScopeStandalone.md';
 import { RefactorScope } from '#src/common/constants/RefactorScope.ts';
 import { formatFindingSite } from '#src/common/findings/formatFindingSite.ts';
 import { formatFindingText } from '#src/common/findings/formatFindingText.ts';
-import type { SharedCodeFolder } from '#src/common/types/SharedCodeFolder.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 
 interface Params {
@@ -39,8 +37,6 @@ interface Params {
 	errorContext?: string;
 	/** The engine's own self-check, exactly as this spawn may run it. Absent = this spawn gets no self-check and is told nothing about one. */
 	selfCheckCommand?: string;
-	/** The `common/` folders visible from the files to work on, as the tree holds them at this spawn — where an extraction belongs, and what already exists to reuse. */
-	sharedCode?: SharedCodeFolder[];
 }
 
 /**
@@ -94,7 +90,6 @@ export const buildRefactorExecutorInvocation = ({
 	reportAdvisoryOutcomes,
 	errorContext,
 	selfCheckCommand,
-	sharedCode,
 }: Params): { systemPrompt: string; prompt: string } => {
 	const roleSections = [refactorExecutorPrompt, scopePrompt({ scope })].map((text) => applyPromptTokens({ text, tokens: sharedPromptSections }));
 
@@ -119,11 +114,6 @@ export const buildRefactorExecutorInvocation = ({
 	}
 
 	const sections = [`${worklistHeading({ scope })}\n\n${changedFiles.map((file) => `- ${file}`).join('\n')}`];
-	const shared = sharedCodeSection({ sharedCode });
-
-	if (shared) {
-		sections.push(shared);
-	}
 
 	if ((findings && findings.length > 0) || (advisories && advisories.length > 0)) {
 		const parts = ['# Standards findings (deterministic checks)'];

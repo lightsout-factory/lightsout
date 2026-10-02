@@ -1,5 +1,4 @@
 import { buildFeatureExecutorInvocation } from '#src/agents/buildFeatureExecutorInvocation.ts';
-import { listSharedCode } from '#src/common/sharedCode/listSharedCode.ts';
 import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
@@ -15,8 +14,6 @@ interface Params {
 	acceptanceTests: () => AcceptanceTestRecord[];
 	planBuildMode: PlanBuildMode;
 	selfCheckCommand: string;
-	/** The files the plan names. A repair also works in whatever the run has changed since. */
-	planFiles: string[];
 }
 
 /**
@@ -26,8 +23,8 @@ interface Params {
  * system prompt splits in two.
  */
 export const buildFeatureFix =
-	({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand, planFiles }: Params): FixBuilder =>
-	async ({ errorContext }) =>
+	({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand }: Params): FixBuilder =>
+	({ errorContext }) =>
 		buildFeatureExecutorInvocation({
 			planContent,
 			overviewContent,
@@ -39,5 +36,4 @@ export const buildFeatureFix =
 			acceptanceTests: acceptanceTests(),
 			selfCheckCommand,
 			planBuildMode,
-			sharedCode: await listSharedCode({ cwd: run.cwd, config: run.config, workFiles: [...planFiles, ...run.current().changedFiles] }),
 		});

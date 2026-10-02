@@ -1,7 +1,6 @@
 import { buildRefactorExecutorInvocation } from '#src/agents/buildRefactorExecutorInvocation.ts';
 import { RefactorScope } from '#src/common/constants/RefactorScope.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
-import { listSharedCode } from '#src/common/sharedCode/listSharedCode.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
@@ -58,18 +57,16 @@ export const runExecutorPass = async ({
 	advisories,
 	before,
 }: Params): Promise<{ parked: PipelineResult } | { record: StepRecord; report?: WorkReport; failure?: string; edited: string[] }> => {
-	const scopeFiles = standardsScopeFiles({ run });
 	const outcome = await run.invokeRole({
 		invocation: buildRefactorExecutorInvocation({
 			scope: RefactorScope.Feature,
 			planContent,
 			overviewContent,
-			changedFiles: scopeFiles,
+			changedFiles: standardsScopeFiles({ run }),
 			standards,
 			findings,
 			advisories,
 			selfCheckCommand: buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command,
-			sharedCode: await listSharedCode({ cwd: run.cwd, config: run.config, workFiles: scopeFiles }),
 		}),
 		step: 'refactor',
 	});

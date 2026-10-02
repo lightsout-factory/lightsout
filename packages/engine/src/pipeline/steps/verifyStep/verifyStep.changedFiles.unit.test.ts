@@ -133,7 +133,7 @@ describe('verifyStep', () => {
 			id: checkpoint,
 			acceptanceTests: () => [],
 			planBuildMode: { buildMode: BuildMode.Standard },
-			buildFix: async () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
+			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
 		expect({
@@ -158,7 +158,7 @@ describe('verifyStep', () => {
 			id: checkpoint,
 			acceptanceTests: () => [],
 			planBuildMode: { buildMode: BuildMode.Standard },
-			buildFix: async () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
+			buildFix: () => ({ systemPrompt: 'fix the gates', prompt: 'fix the gates' }),
 		})();
 
 		expect({
