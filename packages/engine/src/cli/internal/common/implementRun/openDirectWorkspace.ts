@@ -1,9 +1,9 @@
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { copyRunInputs } from '#src/cli/internal/common/implementRun/copyRunInputs.ts';
-import { describeUncommittableTree } from '#src/cli/internal/common/implementRun/describeUncommittableTree.ts';
 import { resolveRunWorkspace } from '#src/cli/internal/common/implementRun/resolveRunWorkspace.ts';
 import type { RunWorkspace } from '#src/cli/internal/common/types/RunWorkspace.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
+import { describeUncommittableTree } from '#src/commit/describeUncommittableTree.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 
 interface Params {
@@ -41,7 +41,8 @@ export const openDirectWorkspace = async ({
 		return { error: workspace.error };
 	}
 
-	const uncommittable = await describeUncommittableTree({ cwd: workspace.cwd, isolated: workspace.isolated });
+	// Empty: a fresh run commits with `keepGenerated` false, so its commit discards changed generated paths — exempting them would start it over a person's uncommitted build output and then delete it.
+	const uncommittable = await describeUncommittableTree({ cwd: workspace.cwd, isolated: workspace.isolated, generated: [] });
 
 	if (uncommittable !== undefined) {
 		return { error: uncommittable };

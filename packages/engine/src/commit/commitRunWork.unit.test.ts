@@ -212,6 +212,28 @@ describe('commitRunWork', () => {
 		expect(uncommitted).toEqual(expect.stringContaining('notes/stray.md'));
 	});
 
+	test('compares the tree of a resumed run whose branch no worktree record claims', async () => {
+		const { cwd, run, manifestNow, driver } = await setup({
+			dirty: { 'src/thing.ts': 'export const thing = 1;\n', 'notes/stray.md': '# somebody else was here\n' },
+			changedFiles: ['src/thing.ts'],
+			// The work order stores the branch, but no worktree record is filed with
+			// it, so the checkout is one a person chose and the comparison runs.
+			record: 'valid',
+		});
+
+		const uncommitted = await commitRunWork({ run, driver, resumed: true });
+
+		const staged = execSync('git diff --cached --name-only', { cwd }).toString();
+
+		expect({ uncommitted, branch: manifestNow().branch, staged, commits: manifestNow().commits, subject: headSubject({ cwd }) }).toEqual({
+			uncommitted: expect.stringContaining('notes/stray.md'),
+			branch: 'lo-152-commit',
+			staged: '',
+			commits: [],
+			subject: 'ignore',
+		});
+	});
+
 	test("narrates the commit through the run's progress sink", async () => {
 		const { run, progress, driver } = await setup({ dirty: { 'src/thing.ts': 'export const thing = 1;\n' }, changedFiles: ['src/thing.ts'] });
 

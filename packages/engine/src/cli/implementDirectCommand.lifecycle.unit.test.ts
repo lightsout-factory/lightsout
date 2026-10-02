@@ -170,7 +170,9 @@ describe('implementDirectCommand pre-source lifecycle guard', () => {
 
 		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(errors).toStrictEqual([`the run commits everything in the tree at ${context.cwd}; commit or stash your changes first`]);
+		expect(errors).toStrictEqual([
+			`the run commits everything in the tree at ${context.cwd}, which holds uncommitted changes: stray.ts — commit or stash them first`,
+		]);
 		expect(mockRequireImplementLifecycle).not.toHaveBeenCalled();
 		expect(exitCodes).toStrictEqual([1]);
 	});

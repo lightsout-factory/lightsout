@@ -157,7 +157,6 @@ export const runPhasesPipeline = async ({
 			index,
 			step,
 			total,
-			resumed: existing !== undefined,
 			skipRefactor,
 			level,
 			onProgress: narrate,

@@ -244,7 +244,7 @@ A run that passes commits what it built before it ends — one commit per unit o
 
 A run whose agents changed no files is a failure with a non-zero exit, never a quiet success: a unit that produced nothing is the signature of an agent that failed silently, and the queue parks that ticket for a human rather than shipping it.
 
-Because the commit stages the whole tree, both implement commands refuse to start in a checkout that already holds uncommitted changes — commit or stash them first. Only the checkout you chose to work in is judged; a worktree lightsout cut or adopted for the run is not, so the default path is unaffected.
+Because the commit stages the whole tree, both implement commands refuse to start in a checkout that already holds uncommitted changes, and the refusal lists those files — commit or stash them first. Only the checkout you chose to work in is judged; a worktree lightsout cut or adopted for the run is not, so the default path is unaffected. A phased plan checks the tree again before each phase starts, so an edit made while a sequence runs or sits parked stops it before the next phase, with advice to stash the listed files and resume. That per-phase check does not count paths under `generated`, because each phase leaves its build output on disk for the next; the check before a fresh run still counts them.
 
 After each code-writing stage, the full repository is formatted before deterministic gates run. If a test, lint, type-check, coverage, build, or formatting family fails, that family receives bounded repair attempts before the run escalates; root and package executions of the same family share the allowance. When the run succeeds, the complete record is written to `.lightsout/runs/<id>/`.
 
