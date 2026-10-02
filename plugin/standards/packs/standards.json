@@ -1,0 +1,6 @@
+{
+	"description": "Every bundled standard: TypeScript style, structure and unit testing for every package, plus the React, TanStack Start and NestJS rules in each package that uses that framework.",
+	"include": {
+		"packs": ["lightsout/typescript", "lightsout/structure", "lightsout/unit-testing", "lightsout/react", "lightsout/tanstack-start", "lightsout/nestjs"]
+	}
+}

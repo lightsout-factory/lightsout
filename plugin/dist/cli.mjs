@@ -123189,6 +123189,7 @@ var StandardsRuleSettings = external_exports.record(
 var standardsPackAddress = external_exports.string().refine((value) => /^[^/]+\/[^/]+$/.test(value), {
   message: "a standards pack is named <library>/<pack> \u2014 exactly one slash, the library before it and the pack after it"
 });
+var standardsPackSelection = external_exports.union([standardsPackAddress, external_exports.array(standardsPackAddress).min(1)]);
 var LightsoutConfig = external_exports.object({
   /** Harness name. Defaults to 'claude-code'. */
   harness: external_exports.string().optional(),
@@ -123277,21 +123278,21 @@ var LightsoutConfig = external_exports.object({
    */
   "gate-overrides": GateOverrides.optional(),
   /**
-   * The standards pack for the repo root and every package
-   * `package-standards-packs` does not name, as `<library>/<pack>`. Unset =
-   * detected, for the root from the root `package.json` and for each package
-   * from its own; `false` = no standards for the root and every unnamed package.
+   * The standards for the repo root and every package
+   * `package-standards-packs` does not name: one pack address,
+   * `<library>/<pack>`, or a list of them. Standards are opt-in, so unset
+   * and `false` both mean no standards for the root and every unnamed package.
    */
-  "standards-pack": external_exports.union([standardsPackAddress, external_exports.literal(false)]).optional(),
+  "standards-pack": external_exports.union([standardsPackSelection, external_exports.literal(false)]).optional(),
   /**
-   * A pack of its own for each package that differs from `standards-pack`.
+   * Standards of its own for each package that differs from `standards-pack`.
    * Keys are package folder names under `packages-dir`, as `--packages` uses
-   * them; values are pack addresses (`<library>/<pack>`). `false` is not
-   * accepted here: only `standards-pack` takes it. Parsing never reads the
-   * disk, so a key naming no workspace package is refused when the groups
-   * resolve, by `resolveStandardsGroups`.
+   * them; values are one pack address (`<library>/<pack>`) or a list of them.
+   * `false` is not accepted here: only `standards-pack` takes it. Parsing
+   * never reads the disk, so a key naming no workspace package is refused when
+   * the groups resolve, by `resolveStandardsGroups`.
    */
-  "package-standards-packs": external_exports.record(external_exports.string().min(1), standardsPackAddress).optional(),
+  "package-standards-packs": external_exports.record(external_exports.string().min(1), standardsPackSelection).optional(),
   /**
    * Standards libraries registered beside the built-in one. Each key is a
    * library name; each value is a repo-relative folder (starting `./` or
@@ -124259,7 +124260,10 @@ import { readdir as readdir2, readFile as readFile6 } from "node:fs/promises";
 import { join as join13 } from "node:path";
 
 // src/common/config/selectsNoStandards.ts
-var selectsNoStandards = ({ config: config2 }) => config2?.["standards-pack"] === false && Object.keys(config2["package-standards-packs"] ?? {}).length === 0;
+var selectsNoStandards = ({ config: config2 }) => {
+  const repo = config2?.["standards-pack"];
+  return (repo === void 0 || repo === false) && Object.keys(config2?.["package-standards-packs"] ?? {}).length === 0;
+};
 
 // src/doctor/checkLintRules.ts
 var checkLintRules = async ({ config: config2, packageDirs }) => {
@@ -124330,14 +124334,6 @@ var listWorkspacePackages = async ({ cwd, packagesDir }) => {
   return directories.filter((_, index) => hasManifest[index]).map(({ name }) => name);
 };
 
-// src/contracts/standards/StandardsPackSource.ts
-var StandardsPackSource = {
-  /** The config named the pack. */
-  Named: "named",
-  /** Nothing named a pack, so lightsout picked one of its own from the package's dependencies. */
-  Detected: "detected"
-};
-
 // src/common/workspace/readDependencyNames.ts
 import { readFile as readFile7 } from "node:fs/promises";
 var Manifest = external_exports.object({
@@ -124361,18 +124357,6 @@ var readDependencyNames = async ({ manifestPath }) => {
     return [];
   }
   return [parsed.data.dependencies, parsed.data.devDependencies, parsed.data.peerDependencies].flatMap((record3) => Object.keys(record3 ?? {}));
-};
-
-// src/standards/detectStandardsPack.ts
-var packSignals = [
-  { address: "lightsout/tanstack-start-app", signals: ["@tanstack/react-start", "@tanstack/start"] },
-  { address: "lightsout/nestjs-app", signals: ["@nestjs/core"] },
-  { address: "lightsout/react-app", signals: ["react", "preact", "react-dom"] }
-];
-var detectStandardsPack = async ({ manifestPath }) => {
-  const dependencies = new Set(await readDependencyNames({ manifestPath }));
-  const match = packSignals.find(({ signals }) => signals.some((signal) => dependencies.has(signal)));
-  return match?.address ?? "lightsout/node";
 };
 
 // src/standardsLibraries/mapPackRules.ts
@@ -124402,7 +124386,7 @@ var resolveRuleName = ({ name, rules }) => {
 
 // src/standards/internal/resolveRuleStates.ts
 var resolveEntries = ({ packs, ruleSettings }) => {
-  const rules = [...mapPackRules({ packs }).values()];
+  const rules = [...new Map([...packs.flatMap((pack) => pack.inactiveRules), ...mapPackRules({ packs }).values()].map((rule) => [rule.name, rule])).values()];
   const settings = /* @__PURE__ */ new Map();
   const keyFor = /* @__PURE__ */ new Map();
   for (const [key, entry] of Object.entries(ruleSettings)) {
@@ -124573,7 +124557,16 @@ var StandardsPackFile = external_exports.object({
     rules: external_exports.array(external_exports.string()).optional()
   }).strict().optional(),
   /** Severity and options for rules already in the pack, applied after every include. */
-  "rule-settings": StandardsRuleSettings.optional()
+  "rule-settings": StandardsRuleSettings.optional(),
+  /**
+   * Makes the pack conditional: it brings its rules to a package only when
+   * that package's `package.json` declares one of these dependencies. A pack
+   * without it applies everywhere.
+   */
+  "applies-when": external_exports.object({
+    /** npm package names; declaring any one of them is enough. */
+    dependencies: external_exports.array(external_exports.string().min(1)).min(1)
+  }).strict().optional()
 }).strict();
 
 // src/standardsLibraries/internal/common/parsing/parsePackFolder.ts
@@ -124584,13 +124577,14 @@ var parsePackFile = async ({ folderPath, name, problems }) => {
   try {
     const parsed = StandardsPackFile.safeParse(JSON.parse(await readFile8(join15(folderPath, fileName), "utf8")));
     if (parsed.success) {
-      const { description, include, "rule-settings": ruleSettings } = parsed.data;
+      const { description, include, "rule-settings": ruleSettings, "applies-when": appliesWhen } = parsed.data;
       pack = {
         name,
         filePath,
         description,
         include: { packs: include?.packs ?? [], topics: include?.topics ?? [], rules: include?.rules ?? [] },
-        ruleSettings: ruleSettings ?? {}
+        ruleSettings: ruleSettings ?? {},
+        appliesWhen
       };
     } else {
       problems.push(`${filePath}: ${formatSchemaIssues({ issues: parsed.error.issues, subject: "pack file" })}`);
@@ -125050,11 +125044,30 @@ ${unresolved.map((line) => `- ${line}`).join("\n")}`);
   return libraries;
 };
 
-// src/standardsLibraries/internal/expandPack.ts
-var splitAddress = ({ address }) => {
+// src/standardsLibraries/internal/common/utils/applyPackCondition.ts
+var applyPackCondition = ({ address, packFile, expansion, dependencies }) => {
+  const { appliesWhen } = packFile;
+  let result = expansion;
+  if (appliesWhen !== void 0) {
+    const applies = dependencies === void 0 || appliesWhen.dependencies.some((name) => dependencies.has(name));
+    result = applies ? { ...expansion, conditionalPacks: /* @__PURE__ */ new Set([...expansion.conditionalPacks, address]) } : {
+      topics: /* @__PURE__ */ new Map(),
+      rules: /* @__PURE__ */ new Map(),
+      settings: /* @__PURE__ */ new Map(),
+      conditionalPacks: /* @__PURE__ */ new Set(),
+      inactiveRules: new Map([...expansion.inactiveRules, ...expansion.rules])
+    };
+  }
+  return result;
+};
+
+// src/standardsLibraries/internal/common/utils/splitPackAddress.ts
+var splitPackAddress = ({ address }) => {
   const slash = address.indexOf("/");
   return slash === -1 ? void 0 : { libraryName: address.slice(0, slash), path: address.slice(slash + 1) };
 };
+
+// src/standardsLibraries/internal/common/utils/findPackFile.ts
 var findPackFile = ({ address, libraries, chain }) => {
   const includedBy = chain.at(-1);
   const fail = ({ reason }) => new Error(includedBy === void 0 ? `pack ${address}: ${reason}` : `pack ${includedBy}: include.packs entry "${address}" ${reason}`);
@@ -125062,7 +125075,7 @@ var findPackFile = ({ address, libraries, chain }) => {
   if (cycleStart !== -1) {
     throw fail({ reason: `closes an include cycle: ${[...chain.slice(cycleStart), address].join(" \u2192 ")}` });
   }
-  const parts = splitAddress({ address });
+  const parts = splitPackAddress({ address });
   const library = libraries.find((candidate) => candidate.name === parts?.libraryName);
   if (parts === void 0 || library === void 0) {
     throw fail({
@@ -125075,6 +125088,8 @@ var findPackFile = ({ address, libraries, chain }) => {
   }
   return { library, packFile };
 };
+
+// src/standardsLibraries/internal/expandPacks.ts
 var findVisibleLibraries = ({
   address,
   library,
@@ -125088,7 +125103,7 @@ var findVisibleLibraries = ({
     ...include.rules.filter((entry) => entry.includes("/")).map((entry) => ({ list: "include.rules", entry }))
   ];
   for (const { list, entry } of entries) {
-    const libraryName = splitAddress({ address: entry })?.libraryName;
+    const libraryName = splitPackAddress({ address: entry })?.libraryName;
     const named = libraries.find((candidate) => candidate.name === libraryName);
     if (libraryName === void 0) {
       throw new Error(`pack ${address}: ${list} entry "${entry}" is not an address of the form <library>/<name>`);
@@ -125131,9 +125146,15 @@ var mergeExpansion = ({ into, from }) => {
   for (const [name, setting] of from.settings) {
     mergeSetting({ settings: into.settings, name, setting });
   }
+  for (const conditionalPack of from.conditionalPacks) {
+    into.conditionalPacks.add(conditionalPack);
+  }
+  for (const [name, rule] of from.inactiveRules) {
+    into.inactiveRules.set(name, rule);
+  }
 };
 var addWholeTopic = ({ address, entry, expansion, libraries }) => {
-  const parts = splitAddress({ address: entry });
+  const parts = splitPackAddress({ address: entry });
   const library = libraries.find((candidate) => candidate.name === parts?.libraryName);
   const topic = library?.documents.find((candidate) => candidate.path === parts?.path);
   if (library === void 0 || topic === void 0) {
@@ -125166,19 +125187,29 @@ var applyRuleSettings = ({ address, expansion, ruleSettings, libraries }) => {
     if ("problem" in resolved) {
       throw new Error(`pack ${address}: rule-settings entry "${key}" \u2014 ${resolved.problem}`);
     }
-    if (!expansion.rules.has(resolved.rule.name)) {
-      throw new Error(`pack ${address}: rule-settings entry "${key}" names ${resolved.rule.name}, which the pack does not include`);
+    const { name } = resolved.rule;
+    if (!expansion.rules.has(name) && !expansion.inactiveRules.has(name)) {
+      throw new Error(`pack ${address}: rule-settings entry "${key}" names ${name}, which the pack does not include`);
     }
-    const setting = typeof value === "string" ? { severity: value, options: {} } : { severity: value.severity, options: value.options ?? {} };
-    mergeSetting({ settings: expansion.settings, name: resolved.rule.name, setting });
+    if (expansion.rules.has(name)) {
+      const setting = typeof value === "string" ? { severity: value, options: {} } : { severity: value.severity, options: value.options ?? {} };
+      mergeSetting({ settings: expansion.settings, name, setting });
+    }
   }
 };
-var expandPack = ({ address, libraries, chain }) => {
+var emptyExpansion = () => ({
+  topics: /* @__PURE__ */ new Map(),
+  rules: /* @__PURE__ */ new Map(),
+  settings: /* @__PURE__ */ new Map(),
+  conditionalPacks: /* @__PURE__ */ new Set(),
+  inactiveRules: /* @__PURE__ */ new Map()
+});
+var expandPack = ({ address, libraries, chain, dependencies }) => {
   const { library, packFile } = findPackFile({ address, libraries, chain });
   const visible = findVisibleLibraries({ address, library, include: packFile.include, libraries });
-  const expansion = { topics: /* @__PURE__ */ new Map(), rules: /* @__PURE__ */ new Map(), settings: /* @__PURE__ */ new Map() };
+  const expansion = emptyExpansion();
   for (const entry of packFile.include.packs) {
-    mergeExpansion({ into: expansion, from: expandPack({ address: entry, libraries, chain: [...chain, address] }) });
+    mergeExpansion({ into: expansion, from: expandPack({ address: entry, libraries, chain: [...chain, address], dependencies }) });
   }
   for (const entry of packFile.include.topics) {
     addWholeTopic({ address, entry, expansion, libraries: visible });
@@ -125187,19 +125218,28 @@ var expandPack = ({ address, libraries, chain }) => {
     addSingleRule({ address, entry, expansion, libraries: visible });
   }
   applyRuleSettings({ address, expansion, ruleSettings: packFile.ruleSettings, libraries: visible });
+  return applyPackCondition({ address, packFile, expansion, dependencies });
+};
+var expandPacks = ({ addresses, libraries, dependencies }) => {
+  const expansion = emptyExpansion();
+  for (const address of addresses) {
+    mergeExpansion({ into: expansion, from: expandPack({ address, libraries, chain: [], dependencies }) });
+  }
   return expansion;
 };
 
 // src/standardsLibraries/resolveStandardsPack.ts
-var resolveStandardsPack = ({ address, libraries }) => {
-  const expansion = expandPack({ address, libraries, chain: [] });
+var resolveStandardsPack = ({ addresses, libraries, dependencies }) => {
+  const expansion = expandPacks({ addresses, libraries, dependencies });
   return {
-    name: address,
+    name: addresses.join(" + "),
     topics: [...expansion.topics.values()],
     rules: [...expansion.rules.values()].map((rule) => {
       const setting = expansion.settings.get(rule.name);
       return { rule, severity: setting?.severity ?? rule.defaultSeverity, options: { ...rule.defaultOptions, ...setting?.options } };
-    })
+    }),
+    conditionalPacks: [...expansion.conditionalPacks],
+    inactiveRules: [...expansion.inactiveRules.values()].filter((rule) => !expansion.rules.has(rule.name))
   };
 };
 
@@ -125218,29 +125258,33 @@ var refuseUnknownPackages = ({
     );
   }
 };
-var choosePack = async ({ name, manifestPath, config: config2 }) => {
+var refuseSettingsWithoutPack = ({ config: config2 }) => {
+  if (config2?.["standards-pack"] === void 0 && Object.keys(config2?.["standards-rule-settings"] ?? {}).length > 0) {
+    throw new Error(
+      'standards-rule-settings is set but standards-pack is not, so its settings apply to nothing \u2014 standards are opt-in: add "standards-pack": "lightsout/standards" to turn on the bundled standards, or "standards-pack": false to run with none'
+    );
+  }
+};
+var choosePack = ({ name, manifestPath, config: config2 }) => {
   const own = name === "" ? void 0 : config2?.["package-standards-packs"]?.[name];
   const repo = config2?.["standards-pack"];
-  let choice;
-  if (own !== void 0) {
-    choice = { name, address: own, source: StandardsPackSource.Named };
-  } else if (typeof repo === "string") {
-    choice = { name, address: repo, source: StandardsPackSource.Named };
-  } else if (repo === void 0) {
-    choice = { name, address: await detectStandardsPack({ manifestPath }), source: StandardsPackSource.Detected };
-  }
-  return choice;
+  const selection = own ?? (repo === false ? void 0 : repo);
+  return selection === void 0 ? void 0 : { name, addresses: [selection].flat(), manifestPath };
 };
-var formGroups = ({ choices }) => {
+var resolvePackagePack = async ({ choice, libraries }) => {
+  const dependencies = new Set(await readDependencyNames({ manifestPath: choice.manifestPath }) ?? []);
+  return { name: choice.name, pack: resolveStandardsPack({ addresses: choice.addresses, libraries, dependencies }) };
+};
+var formGroups = ({ packagePacks }) => {
   const byKey = /* @__PURE__ */ new Map();
-  for (const { name, address, source } of choices) {
-    const key = `${address}\0${source}`;
-    const entry = byKey.get(key) ?? { address, source, packages: [] };
+  for (const { name, pack } of packagePacks) {
+    const key = [pack.name, ...pack.conditionalPacks].join("\0");
+    const entry = byKey.get(key) ?? { pack, packages: [] };
     entry.packages.push(name);
     byKey.set(key, entry);
   }
   return [...byKey.values()].map((entry) => ({ ...entry, packages: [...entry.packages].sort(byName) })).sort(
-    (first, second) => Number(second.packages.includes("")) - Number(first.packages.includes("")) || byName(first.address, second.address) || byName(first.source, second.source)
+    (first, second) => Number(second.packages.includes("")) - Number(first.packages.includes("")) || byName(first.pack.name, second.pack.name) || byName(first.pack.conditionalPacks.join(), second.pack.conditionalPacks.join())
   );
 };
 var keepScope = ({ groups, packages }) => {
@@ -125251,26 +125295,21 @@ var keepScope = ({ groups, packages }) => {
 };
 var resolveStandardsGroups = async ({ cwd, config: config2, packages }) => {
   if (selectsNoStandards({ config: config2 })) {
+    refuseSettingsWithoutPack({ config: config2 });
     return [];
   }
-  const packagePacks = config2?.["package-standards-packs"] ?? {};
   const packagesDir = config2?.["packages-dir"] ?? defaultPackagesDir;
   const workspace = (await listWorkspacePackages({ cwd, packagesDir })).sort(byName);
-  refuseUnknownPackages({ packagePacks, workspace, packagesDir });
-  const choices = await Promise.all([
+  refuseUnknownPackages({ packagePacks: config2?.["package-standards-packs"] ?? {}, workspace, packagesDir });
+  const choices = [
     choosePack({ name: "", manifestPath: join21(cwd, "package.json"), config: config2 }),
     ...workspace.map((name) => choosePack({ name, manifestPath: join21(cwd, packagesDir, name, "package.json"), config: config2 }))
-  ]);
-  const formed = formGroups({ choices: choices.filter((choice) => choice !== void 0) });
+  ].filter((choice) => choice !== void 0);
   const libraries = await resolveStandardsLibraries({ cwd, config: config2 });
-  const packs = /* @__PURE__ */ new Map();
-  const resolved = formed.map((entry) => {
-    const pack = packs.get(entry.address) ?? resolveStandardsPack({ address: entry.address, libraries });
-    packs.set(entry.address, pack);
-    return { ...entry, pack };
-  });
-  const statesPerPack = resolveRuleStates({ packs: resolved.map(({ pack }) => pack), ruleSettings: config2?.["standards-rule-settings"] });
-  const groups = resolved.map(({ packages: covered, pack, source }, index) => ({ packages: covered, pack, source, states: statesPerPack[index] }));
+  const packagePacks = await Promise.all(choices.map((choice) => resolvePackagePack({ choice, libraries })));
+  const formed = formGroups({ packagePacks });
+  const statesPerPack = resolveRuleStates({ packs: formed.map(({ pack }) => pack), ruleSettings: config2?.["standards-rule-settings"] });
+  const groups = formed.map(({ packages: covered, pack }, index) => ({ packages: covered, pack, states: statesPerPack[index] }));
   return keepScope({ groups, packages });
 };
 
@@ -125410,6 +125449,19 @@ var checkSourceWalk = async ({ cwd, generated = [] }) => {
     status: "fail",
     detail: `${unexplained.length} tracked source file(s) the walk never reads: ${shown.join(", ")}${unexplained.length > shown.length ? ", \u2026" : ""}`,
     fix: "no rule reads these \u2014 either the walk is skipping a directory it should not, or the path belongs in the config's `generated` list"
+  };
+};
+
+// src/doctor/checkStandardsPack.ts
+var checkStandardsPack = ({ config: config2 }) => {
+  const namesPackagePack = Object.keys(config2["package-standards-packs"] ?? {}).length > 0;
+  if (config2["standards-pack"] !== void 0 || namesPackagePack) {
+    return void 0;
+  }
+  return {
+    id: "standards-pack",
+    status: "note",
+    detail: 'no `standards-pack` is set, so runs use no code standards: agents get no rules and no standards checks run. Set `"standards-pack": "lightsout/standards"` to turn on the bundled standards, or `"standards-pack": false` to record that none are wanted.'
   };
 };
 
@@ -125564,6 +125616,7 @@ var runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }) => {
   pushOptional({ checks, check: await checkJestMocks({ cwd, packageDirs }) });
   pushOptional({ checks, check: await checkJestReporter({ cwd, packageDirs }) });
   pushOptional({ checks, check: await checkUserEvent({ packageDirs }) });
+  pushOptional({ checks, check: checkStandardsPack({ config: config2 }) });
   pushOptional({ checks, check: await checkLintRules({ config: config2, packageDirs }) });
   pushOptional({ checks, check: await checkRuleRequirements({ cwd, config: config2 }) });
   for (const audit of configuredPathAudits({ config: config2 })) {
@@ -131798,16 +131851,18 @@ var printConfigSource = ({ configPath }) => {
 var defaultSupervisorTimeoutMinutes = 15;
 
 // src/cli/internal/common/render/printRunHeader.ts
-var standardsLinesOf = ({ groups }) => {
+var describePack = ({ group }) => group.pack.conditionalPacks.length === 0 ? group.pack.name : `${group.pack.name} (with ${group.pack.conditionalPacks.join(", ")})`;
+var standardsLinesOf = ({ groups, config: config2 }) => {
   const root = groups.find((group) => group.packages.includes(""));
-  const packageLines = groups.filter((group) => group !== root && (root === void 0 || group.pack.name !== root.pack.name || group.source !== root.source)).flatMap((group) => group.packages.filter((name) => name !== "").map((name) => ({ name, description: `${group.pack.name} (${group.source})` }))).sort((first, second) => first.name.localeCompare(second.name)).map(({ name, description }) => `    ${name}: ${description}`);
-  const rootLine = root === void 0 ? "  repo root: none (standards-pack false)" : `  repo root: ${root.pack.name} (${root.source})`;
+  const packageLines = groups.filter((group) => group !== root).flatMap((group) => group.packages.filter((name) => name !== "").map((name) => ({ name, description: describePack({ group }) }))).sort((first, second) => first.name.localeCompare(second.name)).map(({ name, description }) => `    ${name}: ${description}`);
+  const noneReason = config2["standards-pack"] === false ? "standards-pack false" : "no standards-pack";
+  const rootLine = root === void 0 ? `  repo root: none (${noneReason})` : `  repo root: ${describePack({ group: root })}`;
   return [rootLine, ...packageLines];
 };
 var describeStandards = async ({ config: config2, cwd }) => {
   let lines;
   try {
-    lines = standardsLinesOf({ groups: await resolveStandardsGroups({ cwd, config: config2 }) });
+    lines = standardsLinesOf({ groups: await resolveStandardsGroups({ cwd, config: config2 }), config: config2 });
   } catch (error51) {
     lines = [`  standards: will not load \u2014 ${messageOf({ error: error51 })}`];
   }
@@ -165529,7 +165584,7 @@ var checkPackFiles = ({ library, libraries }) => {
   for (const packFile of library.packs) {
     const address = `${library.name}/${packFile.name}`;
     try {
-      const pack = resolveStandardsPack({ address, libraries });
+      const pack = resolveStandardsPack({ addresses: [address], libraries, dependencies: void 0 });
       for (const { rule, required: required2 } of findMissingRequirements({ rules: pack.rules })) {
         warnings.push(`${pack.name}: ${rule} requires ${required2}, which the pack does not send to agents`);
       }

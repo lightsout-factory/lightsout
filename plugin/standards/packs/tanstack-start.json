@@ -2,5 +2,8 @@
 	"description": "TanStack Start: how the base rules apply to a TanStack Start application.",
 	"include": {
 		"topics": ["lightsout/code/architecture/tanstack-start"]
+	},
+	"applies-when": {
+		"dependencies": ["@tanstack/react-start", "@tanstack/start"]
 	}
 }
