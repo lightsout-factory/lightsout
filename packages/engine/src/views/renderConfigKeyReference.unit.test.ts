@@ -87,6 +87,20 @@ describe('renderConfigKeyReference', () => {
 		expect(deletedRows).toStrictEqual([undefined, undefined]);
 	});
 
+	test('the executor-file-limit row is optional, names the touched-file ceiling of 70 and exempts move-folders-and-files beside rename-only', () => {
+		const fileLimitRow = findRow({ key: 'executor-file-limit' }) ?? '';
+
+		const named = {
+			optional: fileLimitRow.startsWith('| `executor-file-limit` | no | '),
+			ceiling: /touched-file ceiling of 70 source files/.test(fileLimitRow),
+			renameOnly: /rename-only/.test(fileLimitRow),
+			moveFoldersAndFiles: /move-folders-and-files plan or phase is exempt/.test(fileLimitRow),
+			fileBudget: /`## File Budget`/.test(fileLimitRow),
+		};
+
+		expect(named).toStrictEqual({ optional: true, ceiling: true, renameOnly: true, moveFoldersAndFiles: true, fileBudget: true });
+	});
+
 	test('the generated row says a phased plan carries build output between phases, discards it once the sequence passes, and why to set gates.generate', () => {
 		const generatedRow = findRow({ key: 'generated' });
 

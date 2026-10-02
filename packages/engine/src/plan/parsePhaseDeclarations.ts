@@ -1,3 +1,5 @@
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
+import { buildModeBulletLabels } from '#src/plan/common/constants/buildModeBulletLabels.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 import { planSentinelTokens } from '#src/plan/internal/common/constants/planSentinelTokens.ts';
 import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';
@@ -23,7 +25,8 @@ interface PhaseBlock {
 	exports: string[];
 	scripts: string[];
 	fileBudget?: number;
-	renamesOnly?: boolean;
+	buildMode?: PhaseDeclaration['buildMode'];
+	buildModeConflict?: true;
 	blockRange: { start: number; end: number };
 }
 
@@ -84,10 +87,27 @@ const fileBudgetFrom = ({ lines }: { lines: string[] }) => {
 	return integerFrom({ cell: /(\d+)/.exec(value ?? '')?.[1] });
 };
 
-const renamesOnlyFrom = ({ lines }: { lines: string[] }) => {
-	const value = bulletLine({ lines, label: 'Renames only' })?.replace(/^\s*-\s+\*\*[^*]+\*\*/, '');
+const saysYes = ({ lines, label }: { lines: string[]; label: string }) =>
+	bulletLine({ lines, label })
+		?.replace(/^\s*-\s+\*\*[^*]+\*\*/, '')
+		.trim()
+		.toLowerCase() === 'yes';
 
-	return value?.trim().toLowerCase() === 'yes' ? true : undefined;
+/** Both bullets saying yes declares neither mode: guessing which one wins would hide the drafting mistake. */
+const buildModeFrom = ({ lines }: { lines: string[] }) => {
+	const renamesOnly = saysYes({ lines, label: buildModeBulletLabels[BuildMode.RenamesOnly] });
+	const movesOnly = saysYes({ lines, label: buildModeBulletLabels[BuildMode.MoveFoldersAndFiles] });
+	let declared: Pick<PhaseBlock, 'buildMode' | 'buildModeConflict'> = {};
+
+	if (renamesOnly && movesOnly) {
+		declared = { buildModeConflict: true };
+	} else if (renamesOnly) {
+		declared = { buildMode: BuildMode.RenamesOnly };
+	} else if (movesOnly) {
+		declared = { buildMode: BuildMode.MoveFoldersAndFiles };
+	}
+
+	return declared;
 };
 
 const blocksFrom = ({ sectionLines, firstLine }: { sectionLines: string[] | undefined; firstLine: number }) => {
@@ -116,7 +136,7 @@ const blocksFrom = ({ sectionLines, firstLine }: { sectionLines: string[] | unde
 			exports: bulletValues({ lines: blockLines, label: 'Exports' }),
 			scripts: bulletValues({ lines: blockLines, label: 'Scripts' }),
 			fileBudget: fileBudgetFrom({ lines: blockLines }),
-			renamesOnly: renamesOnlyFrom({ lines: blockLines }),
+			...buildModeFrom({ lines: blockLines }),
 			blockRange: { start, end: (blocks[index + 1]?.start ?? sectionEnd + 1) - 1 },
 		});
 	}
@@ -155,13 +175,14 @@ export const parsePhaseDeclarations = ({ plan }: Params): PhaseDeclaration[] => 
 			exports: block?.exports ?? [],
 			scripts: block?.scripts ?? [],
 			fileBudget: block?.fileBudget,
-			...(block?.renamesOnly === true ? { renamesOnly: true } : {}),
+			...(block?.buildMode === undefined ? {} : { buildMode: block.buildMode }),
+			...(block?.buildModeConflict === true ? { buildModeConflict: true } : {}),
 			...(block === undefined ? {} : { blockRange: block.blockRange }),
 		};
 	});
 	const orphans = blocks
 		.filter(({ file }) => !claimed.has(file))
-		.map(({ file, creates, exports, scripts, fileBudget, renamesOnly, blockRange }) => ({
+		.map(({ file, creates, exports, scripts, fileBudget, buildMode, buildModeConflict, blockRange }) => ({
 			number: 0,
 			file,
 			scope: '',
@@ -169,7 +190,8 @@ export const parsePhaseDeclarations = ({ plan }: Params): PhaseDeclaration[] => 
 			exports,
 			scripts,
 			fileBudget,
-			...(renamesOnly === true ? { renamesOnly: true } : {}),
+			...(buildMode === undefined ? {} : { buildMode }),
+			...(buildModeConflict === true ? { buildModeConflict } : {}),
 			blockRange,
 		}));
 

@@ -1,3 +1,5 @@
+import { MoveDirection } from '#src/common/constants/MoveDirection.ts';
+import { mapPathThroughMoves } from '#src/common/utils/mapPathThroughMoves.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
@@ -10,20 +12,22 @@ interface Params {
 }
 
 /**
- * A move's source is gone by the time the gates run. A modified test file is
- * fine, because a reviewer judges the change against the plan before any gate
- * runs, and a move's destination is where the test then lives.
+ * A move's source is gone by the time the gates run, and so is every file under
+ * a folder move's source. A modified test file is fine, because a reviewer
+ * judges the change against the plan before any gate runs, and a move's
+ * destination is where the test then lives.
  */
 export const checkMovedAwayLedgerFiles = ({ plan, phase }: Params): StructuralFinding[] => {
 	const findings: StructuralFinding[] = [];
-	const movedAway = new Set(plan.movePaths.map((move) => move.from));
+	const isMovedAway = (testFile: string) =>
+		mapPathThroughMoves({ path: testFile, fileMoves: plan.movePaths, folderMoves: plan.folderMoves, direction: MoveDirection.Forward }) !== testFile;
 
 	// One finding per file rather than per row, so repeats do not bury the other
 	// findings.
 	const reported = new Set<string>();
 
 	for (const row of plan.ledger) {
-		if (movedAway.has(row.testFile) && !reported.has(row.testFile)) {
+		if (isMovedAway(row.testFile) && !reported.has(row.testFile)) {
 			reported.add(row.testFile);
 			findings.push({
 				check: StructuralCheck.LedgerWellFormed,

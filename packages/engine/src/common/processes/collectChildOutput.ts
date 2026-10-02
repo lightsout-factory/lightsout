@@ -67,15 +67,19 @@ export const collectChildOutput = ({ child, timeout, onStdoutLine, onTimeout }: 
 		const timer = timeout ? setTimeout(expire, timeout.ms) : undefined;
 		const stopRelay = relayShutdownSignals({ child });
 
-		child.stdout?.on('data', (chunk: Buffer) => {
-			const text = chunk.toString();
+		// A stream decoder holds back a multi-byte character split across two
+		// chunks until it is whole, where decoding each chunk alone would turn
+		// either half into a replacement character.
+		child.stdout?.setEncoding('utf8');
+		child.stderr?.setEncoding('utf8');
 
+		child.stdout?.on('data', (text: string) => {
 			stdout += text;
 			emitLines({ text });
 		});
 
-		child.stderr?.on('data', (chunk: Buffer) => {
-			stderr += chunk.toString();
+		child.stderr?.on('data', (text: string) => {
+			stderr += text;
 		});
 
 		child.on('error', (error) => {

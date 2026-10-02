@@ -1,4 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import { getPhaseConnections } from '#src/plan/internal/common/scope/getPhaseConnections.ts';
@@ -9,6 +10,10 @@ interface PhaseSpec {
 	create?: string[];
 	/** `## Files to Modify` paths — provided too, even though no phase creates them. */
 	modify?: string[];
+	/** `## Files to Modify from Earlier Phases` paths — files an earlier phase provides. */
+	earlierModify?: string[];
+	/** `## Files to Move` folder moves, with no trailing `/`, as the parser holds them. */
+	folderMoves?: { from: string; to: string }[];
 	/** Backticked spans in the phase's prose: what it reads from elsewhere in the plan. */
 	mentions?: string[];
 	/** The `## What Next Plan Expects` tokens this phase hands to the next one. */
@@ -22,7 +27,16 @@ interface PhaseSpec {
 }
 
 /** A parsed plan carrying the two things the graph reads: the paths its headings name, and every backticked span in its text. */
-const planWith = ({ base, create = [], modify = [], mentions = [], handsForward = [], handsForwardText = [] }: PhaseSpec): PhaseFile['plan'] => {
+const planWith = ({
+	base,
+	create = [],
+	modify = [],
+	earlierModify = [],
+	folderMoves = [],
+	mentions = [],
+	handsForward = [],
+	handsForwardText = [],
+}: PhaseSpec): PhaseFile['plan'] => {
 	const handoffLines = [...handsForward.map((token) => `- \`${token}\``), ...handsForwardText];
 
 	return {
@@ -32,9 +46,10 @@ const planWith = ({ base, create = [], modify = [], mentions = [], handsForward 
 		sections: new Map([['What Next Plan Expects', handoffLines]]),
 		createPaths: create,
 		modifyPaths: modify,
-		earlierPhaseModifyPaths: [],
+		earlierPhaseModifyPaths: earlierModify,
 		deletePaths: [],
 		movePaths: [],
+		folderMoves,
 		malformedMoveLines: [],
 		generatedRegionRanges: new Map(),
 		sectionRanges: new Map(),
@@ -44,10 +59,12 @@ const planWith = ({ base, create = [], modify = [], mentions = [], handsForward 
 		malformedLedgerLines: [],
 		proseFiles: [],
 		malformedProseLines: [],
+		buildMode: BuildMode.Standard,
 		renames: [],
 		malformedRenameLines: [],
 		lines: [
-			...[...create, ...modify].map((path) => `### \`${path}\``),
+			...[...create, ...modify, ...earlierModify].map((path) => `### \`${path}\``),
+			...folderMoves.map((move) => `### \`${move.from}/\` → \`${move.to}/\``),
 			...mentions.map((token) => `- this phase builds against \`${token}\``),
 			'## What Next Plan Expects',
 			...handoffLines,
@@ -174,5 +191,26 @@ describe('getPhaseConnections', () => {
 		// span, and it is still an absence: a phase whose text says the same word must
 		// not be joined to it, or every phase declaring nothing would join every other
 		expect(edgesOf({ result })).toStrictEqual({ 'phase1-final.md': [], 'phase2-later.md': [] });
+	});
+
+	test("getPhaseConnections: a phase naming a path under another phase's folder move is connected to it", () => {
+		const { phases, declarations } = setupPhases({
+			specs: [
+				{ base: 'phase1-move.md', folderMoves: [{ from: 'src/old', to: 'src/new' }] },
+				{ base: 'phase2-edit.md', earlierModify: ['src/new/a.ts'] },
+				{ base: 'phase3-elsewhere.md', earlierModify: ['src/newer/b.ts'] },
+			],
+		});
+
+		const result = getPhaseConnections({ phases, declarations });
+
+		// phase 2 shares no basename, export or hand-off token with phase 1, yet the
+		// file it edits is one phase 1's folder move carries; src/newer shares only a
+		// name prefix with src/new, so phase 3 stays apart
+		expect(edgesOf({ result })).toStrictEqual({
+			'phase1-move.md': ['phase2-edit.md'],
+			'phase2-edit.md': ['phase1-move.md'],
+			'phase3-elsewhere.md': [],
+		});
 	});
 });

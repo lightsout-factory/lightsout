@@ -87,6 +87,29 @@ test('runVerificationGates: no coverage gate ran, so the changed-files-executed 
 	expect(readGateLog({ dir })).toStrictEqual(['root check']);
 });
 
+test('runVerificationGates: a checkpoint can lift the per-file executed check while the coverage gate still runs', async () => {
+	const { dir, run } = await setupCoverageRun({ override: ['test-coverage'] });
+
+	const lifted = await runVerificationGates({ run, coverage: true, checkpoint: 'verify-tests', rows: [], changedFilesExecuted: false });
+	const kept = await runVerificationGates({ run, coverage: true, checkpoint: 'verify-tests', rows: [] });
+
+	// the same never-executed file both times: lifting the check clears the
+	// verdict, while the coverage gate itself runs on each checkpoint
+	expect({
+		liftedError: lifted.error,
+		liftedFamilies: lifted.failedFamilies,
+		keptNamesFile: (kept.error ?? '').includes('never executed under the tests: src/feature.ts'),
+		keptFamilies: kept.failedFamilies,
+		gateLog: readGateLog({ dir }),
+	}).toStrictEqual({
+		liftedError: undefined,
+		liftedFamilies: [],
+		keptNamesFile: true,
+		keptFamilies: ['changed-files-executed'],
+		gateLog: ['root coverage', 'root coverage'],
+	});
+});
+
 /**
  * A two-package consumer repo whose `check` gate is one planted script: it
  * exits red at once for `@acme/api` and outlives the gate ceiling for

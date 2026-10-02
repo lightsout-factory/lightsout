@@ -104,6 +104,28 @@ describe('buildPlanReshapeInvocation', () => {
 		expect(touchedSection).toMatch(/Renames only/);
 	});
 
+	test('the touched-file ceiling section and the role prompt name the move-folders-and-files exemption beside the rename-only one', () => {
+		const params = setupReshape({ touchedFileCeiling: 70 });
+
+		const { systemPrompt, prompt } = buildPlanReshapeInvocation(params);
+
+		const touchedSection = prompt.split('## Touched-file ceiling\n\n')[1]?.split('\n\n## ')[0] ?? '';
+		// rename-only stays an exemption, and the move-folders-and-files bullet now stands beside it in both texts
+		expect({
+			sectionNamesRenamesOnly: touchedSection.includes('Renames only'),
+			sectionNamesMovesOnly: touchedSection.includes('Moves folders and files only'),
+			sectionStatesCeiling: /\b70\b/.test(touchedSection),
+			rolePromptNamesRenamesOnly: systemPrompt.includes('Renames only'),
+			rolePromptNamesMovesOnly: systemPrompt.includes('Moves folders and files only'),
+		}).toStrictEqual({
+			sectionNamesRenamesOnly: true,
+			sectionNamesMovesOnly: true,
+			sectionStatesCeiling: true,
+			rolePromptNamesRenamesOnly: true,
+			rolePromptNamesMovesOnly: true,
+		});
+	});
+
 	test('each finding carries its check, location, issue and exact fix string', () => {
 		const params = setupReshape({
 			findings: [

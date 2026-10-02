@@ -11,6 +11,8 @@ interface Params {
 	config?: LightsoutConfig;
 	/** A plan's own created and emptied paths. */
 	exclude?: string[];
+	/** cwd-relative folders, no trailing `/`, whose every file is left out — a folder the plan moves away. */
+	excludeFolders?: string[];
 }
 
 /**
@@ -18,15 +20,16 @@ interface Params {
  * barrels are left out because neither can be prior art: a test states what the
  * code should do, and a barrel re-exports a name the census already holds.
  */
-export const buildExportCensus = async ({ cwd, config, exclude = [] }: Params): Promise<ExportCensus> => {
+export const buildExportCensus = async ({ cwd, config, exclude = [], excludeFolders = [] }: Params): Promise<ExportCensus> => {
 	const excluded = new Set(exclude);
+	const isExcluded = (file: string) => excluded.has(file) || excludeFolders.some((folder) => file === folder || file.startsWith(`${folder}/`));
 	const { files, standardsLibraries } = await listSourceFiles({ cwd, exclude: excludedSourcePaths({ config }) });
 	const buckets: ExportCensus = new Map();
 
 	for (const file of files) {
 		const name = getExportName({ path: file });
 
-		if (isTestFile({ path: file, standardsLibraries }) || name === 'index' || excluded.has(file)) {
+		if (isTestFile({ path: file, standardsLibraries }) || name === 'index' || isExcluded(file)) {
 			continue;
 		}
 

@@ -267,3 +267,19 @@ test('detectPriorArtCandidates: the shared export census yields the same candida
 		},
 	]);
 });
+
+test.each([
+	{ moves: [{ from: 'src/old/', to: 'src/new/' }], expected: [] },
+	{
+		moves: [],
+		expected: [{ plannedSymbol: 'parse', plannedPath: 'src/fresh/parse.ts', phase: 'plan.md', collidesWith: [{ name: 'parse', path: 'src/old/parse.ts' }] }],
+	},
+])('detectPriorArtCandidates: a planned symbol does not collide with its copy in a folder the plan moves away', async ({ moves, expected }) => {
+	const { cwd, planPaths } = setup({ existing: ['src/old/parse.ts'], creates: ['src/fresh/parse.ts'], moves });
+
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+
+	// a folder move empties every file under its source, aligned on the slash,
+	// just as a file move empties its one source path
+	expect(candidates).toStrictEqual(expected);
+});

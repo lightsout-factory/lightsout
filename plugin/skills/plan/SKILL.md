@@ -385,7 +385,12 @@ resplit the phases: edit the overview's `## Phases` table and its
 `## Phase Declarations` to spread the created and touched files across more
 phases, and re-run `plan draft`. A phase whose whole work is renaming may
 instead be declared rename-only: a `## Renames` section in its phase file and
-the `- **Renames only:** yes` bullet in its overview declaration.
+the `- **Renames only:** yes` bullet in its overview declaration. A phase whose
+whole work is moving folders and files may instead be declared
+move-folders-and-files: a `## Build Mode` section reading
+`move-folders-and-files` in its phase file and the
+`- **Moves folders and files only:** yes` bullet in its overview declaration. A
+large folder move beside other work is resplit into a phase of its own for this.
 
 Once phase files exist, never re-draft to change the breakdown. Edit the phase
 files at `<plan-folder>` — split, merge, or move work between them — and, for
@@ -394,8 +399,8 @@ overview, then run:
 ```sh
 node "<plugin-root>/dist/cli.mjs" plan sync-phases --name <name>
 ```
-It restates every phase's counts, file budget and renames-only flag from the
-phase files and writes only the overview. It refuses — naming each — any phase
+It restates every phase's counts, file budget and build mode from the phase
+files and writes only the overview. It refuses — naming each — any phase
 file, row, block or number that does not line up; fix those by hand (add the
 missing row or block, renumber, rename the file) and run it again.
 

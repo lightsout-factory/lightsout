@@ -28,7 +28,9 @@ will not reach A:
 - **Earlier-phase files have their own heading.** In a phased plan, a file an
   EARLIER PHASE creates is changed under `## Files to Modify from Earlier
   Phases` — never `## Files to Modify` (whose paths exist on disk today) and
-  never `## Files to Create` (whose paths no phase has claimed). Deletes and
+  never `## Files to Create` (whose paths no phase has claimed). A file an
+  earlier phase's folder move carried is named the same way, by its new path
+  under `## Files to Modify from Earlier Phases`. Deletes and
   moves have their own headings too; every path under all five is checked and
   counted.
 - **Hand-offs chain by name.** Each phase's `## What Next Plan Expects` and the
@@ -48,16 +50,22 @@ will not reach A:
   many of them a full phase.
 - **Touched files counted and declared.** Each plan (or each phase) also states
   how many source files it touches in total (created, modified, modified from an
-  earlier phase, deleted, and both sides of every move). Above {{fileLimit}} the plan is
+  earlier phase, deleted, and both sides of every move). A folder move counts
+  every file it carries, on both sides. Above {{fileLimit}} the plan is
   still legal, but it must carry a `## File Budget` covering its real count,
   because {{fileLimit}} is where the implementing agent stops. A plan or phase that
   touches more than {{touchedFileCeiling}} source files is refused and must be split:
-  neither the config nor a `## File Budget` raises that ceiling. The one exemption
-  is a rename-only plan or phase — its `## Renames` section, plus the
-  `**Renames only:** yes` bullet on the overview. A phase that creates three files
+  neither the config nor a `## File Budget` raises that ceiling. There are two
+  exemptions. One is a rename-only plan or phase — its `## Renames` section, plus the
+  `**Renames only:** yes` bullet on the overview. The other is a
+  move-folders-and-files plan or phase — its `## Build Mode` section reading
+  `move-folders-and-files`, plus the `**Moves folders and files only:** yes`
+  bullet on the overview. A phase that creates three files
   and renames an import across two hundred is legitimate work only as a rename-only
   phase, with the rename gathered into a phase of its own; a phase that authors
-  that many from scratch is not.
+  that many from scratch is not. Likewise, a phase that relocates a folder of
+  three hundred files is legitimate work only as a move-folders-and-files phase,
+  with the move gathered into a phase of its own.
 - **What counts as a source file.** Every path the plan names except test files,
   `index` barrels, and `.d.ts` declaration files. A hand-authored type-only
   module — a `.ts` file exporting one interface — DOES count: it still has to be
@@ -99,6 +107,22 @@ will not reach A:
   case-sensitive substitution of every occurrence, applied in the order listed,
   to file paths and file contents alike — and no rename's new text may contain
   any rename's old text, own or another's.
+- **Move-folders-and-files phases.** A plan or phase whose whole work is moving
+  folders and files may be declared move-folders-and-files with a `## Build Mode`
+  section whose body is the single line `move-folders-and-files`. Its
+  `## Files to Move` headings name file moves and folder moves: a folder move
+  names two folders, each ending in `/`, never one file and one folder. It lists
+  nothing under Files to Create, Files to Modify or Files to Delete, carries no
+  `## Renames`, and states no Acceptance Tests rows. It needs no `## File Budget`
+  and is exempt from the touched-file ceiling. A move and feature work are two
+  phases. A destination folder must not already exist, and the moves in one
+  phase must not overlap, chain or swap. It is built without test writing,
+  without the reviewing agent and without refactor: the engine instead checks in
+  code that every removed file pairs with an added file at its declared
+  destination, that no declared move left a file at its old path, and that every
+  changed file differs from the phase's start only in the paths that point at
+  moved files, every other character staying as it was. A file that is not text,
+  such as a binary, may only move unchanged.
 {{documentationRule}}
 
 ---
@@ -176,9 +200,14 @@ a file that is already there belongs under Files to Modify.>
 ## Files to Move
 
 <Optional — omit the heading entirely when this plan moves nothing. Each
-subheading names exactly two paths in backticks, old then new.>
+subheading names two files or two folders in backticks, old then new, a folder
+written with a trailing `/`.>
 
 ### `<packagesDir>/<name>/src/old/path.ts` → `<packagesDir>/<name>/src/new/path.ts`
+
+<What moves and why.>
+
+### `<packagesDir>/<name>/src/old/folder/` → `<packagesDir>/<name>/src/new/folder/`
 
 <What moves and why.>
 
@@ -189,7 +218,8 @@ source files. A single integer on its own line: the total source files this plan
 touches. It must cover the real count, and it does NOT raise the created-file
 ceiling, which is fixed at {{createdFileCeiling}}.>
 <Nor does it raise the touched-file ceiling, which is fixed at
-{{touchedFileCeiling}} for every plan that is not rename-only.>
+{{touchedFileCeiling}} for every plan that is neither rename-only nor
+move-folders-and-files.>
 
 ## Renames
 
@@ -198,6 +228,14 @@ bullet per rename, the old text then the new, each in backticks, in the order
 they are applied. A rename-only plan lists nothing under Files to Create.>
 
 - `<oldName>` → `<newName>`
+
+## Build Mode
+
+<Optional — omit the heading entirely unless this plan is
+move-folders-and-files. Its body is the one line below. A plan carrying it
+carries no `## Renames`.>
+
+move-folders-and-files
 
 ## Patterns to Mirror
 
@@ -233,7 +271,8 @@ gate is a key from the repository's gates, and a blank cell means `test`. Each
 criterion names the inputs, the condition that makes the case distinct, the
 expected result, and the failure case it pins. A rename-only file keeps this
 heading and states no rows, since a rename adds no behaviour a new test could
-state. -->
+state. A move-folders-and-files file keeps this heading and states no rows
+either, since a move adds no behaviour a new test could state. -->
 
 | Criterion | Test file | Test name | Gate |
 |-----------|-----------|-----------|------|
@@ -330,9 +369,15 @@ edited. Write `none` for a bullet with nothing to declare.
 `## File Budget`, and repeat the same integer. It must cover that phase's Touches
 count, and it never raises the created-file ceiling, which is fixed at
 {{createdFileCeiling}}. It never raises the touched-file ceiling of
-{{touchedFileCeiling}} either; only a phase declared `**Renames only:** yes` is
-exempt from that one. **Renames only:** is optional too: write it, reading
-`yes`, only for a phase whose file carries a `## Renames` section. -->
+{{touchedFileCeiling}} either; only a phase declared `**Renames only:** yes` or
+`**Moves folders and files only:** yes` is exempt from that one. **Renames only:**
+is optional too: write it, reading `yes`, only for a phase whose file carries a
+`## Renames` section. **Moves folders and files only:** is optional as well:
+write it, reading `yes`, only for a phase whose file carries a `## Build Mode`
+section reading `move-folders-and-files`, never beside **Renames only:** in one
+block, and with no **File budget:**. Such a phase's **Creates:** may name the
+destination folder exactly as its `## Files to Move` heading writes it, rather
+than every file the folder carries. -->
 
 ## Cross-Phase Dependencies
 

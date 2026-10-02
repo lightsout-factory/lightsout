@@ -1,3 +1,4 @@
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { createdFileCeiling } from '#src/common/constants/createdFileCeiling.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
@@ -13,7 +14,11 @@ interface Params {
 	counts: PhaseSizeCounts;
 }
 
-/** A rename-only plan is exempt from the touched ceiling, because a repo-wide rename's size is not what makes it hard. */
+/**
+ * A mechanical plan is exempt from the touched ceiling, because a repo-wide
+ * rename's or move's size is not what makes it hard. A move-folders-and-files
+ * plan is also exempt from its file budget, so it earns no over-budget advisory.
+ */
 export const checkPlanSizes = ({ phase, fileLimit, counts }: Params): StructuralFinding[] => {
 	const findings: StructuralFinding[] = [];
 	const { created, touched } = counts;
@@ -30,18 +35,18 @@ export const checkPlanSizes = ({ phase, fileLimit, counts }: Params): Structural
 		});
 	}
 
-	if (touched > touchedFileCeiling && phase.plan.renames.length === 0) {
+	if (touched > touchedFileCeiling && phase.plan.buildMode === BuildMode.Standard) {
 		findings.push({
 			check: StructuralCheck.TouchedFilesWithinCeiling,
 			severity: FindingSeverity.Blocking,
 			phase: phase.base,
 			issue: `plan touches ${touched} source files, over the ${touchedFileCeiling}-file ceiling`,
 			location: phase.base,
-			fix: `split the phase so it touches no more than ${touchedFileCeiling} files — or, if its whole work is renaming, declare it rename-only with a '## Renames' section`,
+			fix: `split the phase so it touches no more than ${touchedFileCeiling} files — or declare it rename-only with a '## Renames' section if its whole work is renaming, or move-folders-and-files with a '## Build Mode' section reading \`move-folders-and-files\` if its whole work is moving folders and files`,
 		});
 	}
 
-	if (touched > budget) {
+	if (touched > budget && phase.plan.buildMode !== BuildMode.MoveFoldersAndFiles) {
 		const source = phase.plan.fileBudget === undefined ? 'the configured executor-file-limit' : "this plan's own ## File Budget";
 
 		findings.push({

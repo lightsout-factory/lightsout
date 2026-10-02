@@ -13,6 +13,7 @@ import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 import { createPhaseDriver } from '#tests/helpers/createPhaseDriver.ts';
 import { readPhaseChildRuns } from '#tests/helpers/readPhaseChildRuns.ts';
+import { runInRepo } from '#tests/helpers/runInRepo.ts';
 import { setupPhasedRepo } from '#tests/helpers/setupPhasedRepo.ts';
 
 /** What a command stamps over the config as read: a harness, model and effort the file never set. */
@@ -38,8 +39,10 @@ const setupFreshSequence = async () => {
  * A sequence whose phase 1 passed and whose phase 2 never started: the
  * coordinator stopped after recording phase 1, so the phase-2 step names no run
  * of its own. Since then lightsout.config.json was rewritten with a gate
- * command the sequence never started with. The resume hands on the config the
- * coordinator recorded, as `resume` does, with a stamped config over it.
+ * command the sequence never started with, and the rewrite committed, because
+ * a phase starting for the first time refuses a tree holding uncommitted
+ * edits. The resume hands on the config the coordinator recorded, as `resume`
+ * does, with a stamped config over it.
  */
 const setupResumedSequence = async () => {
 	const { dir, overviewPath } = setupPhasedRepo({ phases: 2 });
@@ -67,6 +70,7 @@ const setupResumedSequence = async () => {
 	const original: { gates: Record<string, unknown> } = JSON.parse(readFileSync(configPath, 'utf8'));
 
 	writeFileSync(configPath, JSON.stringify({ ...original, gates: { ...original.gates, check: 'true # edited after the sequence began' } }));
+	runInRepo({ cwd: dir, command: 'git', args: ['commit', '-qm', 'edit the config', '--', 'lightsout.config.json'] });
 
 	const coordinator = await readRunManifest({ cwd: dir, runId: existing.runId });
 	const answered = readRunConfig({ manifest: coordinator });

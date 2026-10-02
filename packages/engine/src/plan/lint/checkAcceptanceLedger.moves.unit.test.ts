@@ -159,4 +159,48 @@ describe('checkAcceptanceLedger', () => {
 			}),
 		]);
 	});
+
+	test('refuses a ledger row naming a test file inside a folder the plan moves away', async () => {
+		const { plan, cwd, gateKeys } = setupMoves({
+			rows: ['| one | `src/old/parse.unit.test.ts` | reads a row | test |', '| two | `src/old/parse.unit.test.ts` | reads a second row | test |'],
+			changes: moveSection({ from: 'src/old/', to: 'src/new/' }),
+		});
+
+		const findings = await checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required: true, gateKeys });
+
+		// the file sits under the folder's source, so it is gone when the tests run,
+		// matched by the folder prefix rather than an exact file move
+		expect(findings).toEqual([
+			expect.objectContaining({
+				check: StructuralCheck.LedgerWellFormed,
+				severity: FindingSeverity.Blocking,
+				phase: 'plan.md',
+				location: 'plan.md:7',
+				issue: expect.stringContaining('src/old/parse.unit.test.ts'),
+			}),
+		]);
+	});
+
+	test("refuses a ledger row under a folder move's destination whose source file already states that test", async () => {
+		const { plan, cwd, gateKeys } = setupMoves({
+			rows: ['| the parser reads a row | `src/new/parse.unit.test.ts` | reads a row | test |'],
+			changes: moveSection({ from: 'src/old/', to: 'src/new/' }),
+			files: { 'src/old/parse.unit.test.ts': "test('reads a row', () => {});\n" },
+		});
+
+		const findings = await checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required: true, gateKeys });
+
+		// the destination does not exist yet, so the rule reads the file the folder
+		// move carries there, and the finding names both
+		expect(findings).toEqual([
+			expect.objectContaining({
+				check: StructuralCheck.LedgerWellFormed,
+				severity: FindingSeverity.Blocking,
+				phase: 'plan.md',
+				location: 'plan.md:7',
+				issue: expect.stringMatching(/reads a row[\s\S]*src\/new\/parse\.unit\.test\.ts/),
+			}),
+		]);
+		expect(findings[0]?.issue).toEqual(expect.stringContaining('src/old/parse.unit.test.ts'));
+	});
 });

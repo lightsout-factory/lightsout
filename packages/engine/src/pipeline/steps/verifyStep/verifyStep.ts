@@ -13,8 +13,8 @@ import { runGuidedRepair } from '#src/pipeline/steps/verifyStep/internal/common/
 import { withResult } from '#src/pipeline/steps/verifyStep/internal/common/utils/withResult.ts';
 
 const enterVerification = async ({ context, record }: { context: VerifyContext; record: StepRecord }): Promise<RepairOutcome> => {
-	const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames } = context;
-	const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, renames });
+	const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode } = context;
+	const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode });
 
 	if ('rateLimited' in result) {
 		return { parked: await run.stop({ record, status: RunStatus.PausedRateLimit, error: run.parkMessage() }) };
@@ -90,8 +90,9 @@ const runVerificationStep = async ({ context }: { context: VerifyContext }) => {
 };
 
 /**
- * The test-change review (or a rename-only plan's rename check) can go red without a gate being
- * spent, and rides this checkpoint's repair budget rather than opening its own.
+ * The test-change review, or a mechanical plan's code check (the rename check or the move check),
+ * can go red without a gate being spent, and rides this checkpoint's repair budget rather than
+ * opening its own.
  */
 export const verifyStep = ({
 	run,
@@ -102,10 +103,10 @@ export const verifyStep = ({
 	coverage,
 	acceptanceTests,
 	final,
-	renames,
+	planBuildMode,
 	buildFix,
 }: VerifyContext): PipelineStep['run'] => {
-	const context: VerifyContext = { run, gitPrefix, planContent, overviewContent, id, coverage, acceptanceTests, final, renames, buildFix };
+	const context: VerifyContext = { run, gitPrefix, planContent, overviewContent, id, coverage, acceptanceTests, final, planBuildMode, buildFix };
 
 	return () => runVerificationStep({ context });
 };

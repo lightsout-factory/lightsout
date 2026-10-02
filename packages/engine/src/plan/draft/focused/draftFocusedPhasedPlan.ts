@@ -92,7 +92,7 @@ const composeEngineSections = async ({
 	await syncPlanDecisions({ cwd, name, planPaths: phasePaths, decisions });
 	await syncGlobalConstraints({ planPaths: [overviewPath, ...phasePaths], decisions });
 
-	await syncPhaseSectionsFromFiles({ overviewPath, phasePaths });
+	await syncPhaseSectionsFromFiles({ cwd, overviewPath, phasePaths });
 };
 
 /**

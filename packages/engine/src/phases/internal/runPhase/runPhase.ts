@@ -13,6 +13,7 @@ import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { confirmOwnership } from '#src/phases/internal/runPhase/common/utils/confirmOwnership.ts';
 import { persistStep } from '#src/phases/internal/runPhase/common/utils/persistStep.ts';
 import { recordFinishedChild } from '#src/phases/internal/runPhase/recordFinishedChild.ts';
+import { refuseDirtyPhaseStart } from '#src/phases/internal/runPhase/refuseDirtyPhaseStart.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
@@ -93,8 +94,6 @@ interface PhaseParams {
 	step: StepRecord;
 	total: number;
 	skipRefactor?: boolean;
-	/** Whether the SEQUENCE this phase belongs to was resumed. Forwarded to the child's pipeline call, because a phase that had not started when the sequence parked has no child manifest of its own to prove it from. */
-	resumed: boolean;
 	/** The command-run level this phase's own pass level is opened under. Absent wherever no run is being recorded. */
 	level?: ActivityLevel;
 	onProgress?: (message: string) => void;
@@ -120,7 +119,6 @@ export const runPhase = async ({
 	step,
 	total,
 	skipRefactor,
-	resumed,
 	level,
 	onProgress,
 	queueRunId,
@@ -135,6 +133,14 @@ export const runPhase = async ({
 		await confirmOwnership({ cwd, runId: manifest.runId, queueRunId });
 
 		return { manifest: await persistStep({ cwd, manifest, index, record: { ...step, status: RunStatus.Passed } }) };
+	}
+
+	// Before the step is persisted running or its pass level opened, so a refusal
+	// never leaves the phase looking half-run.
+	const refused = await refuseDirtyPhaseStart({ cwd, config, manifest, index, step, queueRunId });
+
+	if (refused !== undefined) {
+		return refused;
 	}
 
 	// A step naming a run that cannot be read re-runs the phase in a new run.
@@ -164,9 +170,6 @@ export const runPhase = async ({
 			overviewPath: current.plan,
 			parentRunId: current.runId,
 			existing: childManifest,
-			// A phase that never started would otherwise snapshot a tree somebody may
-			// have edited since the sequence began and call every edit in it its own.
-			inheritedBaseline: resumed && childManifest === undefined ? [...current.changedFiles, ...current.baselineDirtyFiles] : undefined,
 			skipRefactor,
 			// The coordinator discards the carried build output once the whole sequence passes.
 			keepGenerated: true,

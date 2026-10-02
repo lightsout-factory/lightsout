@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';
 import { checkVerificationScripts } from '#src/plan/lint/checkVerificationScripts.ts';
 
@@ -28,6 +29,7 @@ const planWith = ({
 	earlierPhaseModifyPaths,
 	deletePaths,
 	movePaths,
+	folderMoves: [],
 	malformedMoveLines: [],
 	generatedRegionRanges: new Map(),
 	sectionRanges: new Map(),
@@ -37,6 +39,7 @@ const planWith = ({
 	malformedLedgerLines: [],
 	proseFiles: [],
 	malformedProseLines: [],
+	buildMode: BuildMode.Standard,
 	renames: [],
 	malformedRenameLines: [],
 	lines: [],

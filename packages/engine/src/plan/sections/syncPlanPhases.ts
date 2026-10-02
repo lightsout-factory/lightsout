@@ -65,7 +65,7 @@ export const syncPlanPhases = async ({ cwd, name }: Params): Promise<SyncPlanPha
 		};
 	}
 
-	const file = await syncPhaseSectionsFromFiles({ overviewPath: deliverable.overviewPath, phasePaths: deliverable.files.map((phase) => phase.path) });
+	const file = await syncPhaseSectionsFromFiles({ cwd, overviewPath: deliverable.overviewPath, phasePaths: deliverable.files.map((phase) => phase.path) });
 
 	return { status: PlanRunStatus.Complete, file };
 };

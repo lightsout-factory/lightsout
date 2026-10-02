@@ -1,5 +1,5 @@
 import { buildFeatureExecutorInvocation } from '#src/agents/buildFeatureExecutorInvocation.ts';
-import type { RenameRule } from '#src/contracts/plan/renames/RenameRule.ts';
+import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import type { FixBuilder } from '#src/pipeline/internal/steps/common/types/FixBuilder.ts';
@@ -12,17 +12,18 @@ interface Params {
 	fileLimit: number | undefined;
 	/** Read at every call rather than captured once. */
 	acceptanceTests: () => AcceptanceTestRecord[];
-	renames: RenameRule[];
+	planBuildMode: PlanBuildMode;
 	selfCheckCommand: string;
 }
 
 /**
- * A rename-only plan's verify-tests also repairs through this, because a unit-test writer
- * must not repair a phase that writes no tests. It must receive the same `selfCheckCommand`
- * and `renames` as the implement spawn, or the role's cached system prompt splits in two.
+ * A rename-only or move-folders-and-files plan's verify-tests also repairs through this,
+ * because a unit-test writer must not repair a phase that writes no tests. It must receive the
+ * same `selfCheckCommand` and `planBuildMode` as the implement spawn, or the role's cached
+ * system prompt splits in two.
  */
 export const buildFeatureFix =
-	({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, renames, selfCheckCommand }: Params): FixBuilder =>
+	({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand }: Params): FixBuilder =>
 	({ errorContext }) =>
 		buildFeatureExecutorInvocation({
 			planContent,
@@ -34,5 +35,5 @@ export const buildFeatureFix =
 			fileLimit,
 			acceptanceTests: acceptanceTests(),
 			selfCheckCommand,
-			renames,
+			planBuildMode,
 		});

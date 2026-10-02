@@ -1,3 +1,5 @@
+import type { BuildMode } from '#src/common/constants/BuildMode.ts';
+
 /**
  * Only the work that crosses a phase boundary: the phase file holds the
  * complete file list, and repeating it here would create two lists that drift.
@@ -23,8 +25,10 @@ export interface PhaseDeclaration {
 	scripts: string[];
 	/** The phase's declared `## File Budget`, absent when it takes the configured default. */
 	fileBudget?: number;
-	/** Present and `true` only when the declaration block carries `- **Renames only:** yes`; omitted rather than `false` otherwise. */
-	renamesOnly?: boolean;
+	/** Present only for a mechanical phase: the one mode bullet its declaration block reads `yes` on. Omitted for a standard phase, as optional declaration fields are. */
+	buildMode?: Exclude<BuildMode, typeof BuildMode.Standard>;
+	/** Present and `true` only when the block reads `yes` on both mode bullets; `buildMode` is then omitted, because guessing which one wins would hide the drafting mistake. */
+	buildModeConflict?: boolean;
 	/** 1-based line of this phase's row in the overview's `## Phases` table; absent for a declaration block with no matching row. */
 	rowLine?: number;
 	/** 1-based inclusive line range of this phase's `### Phase <N>` block; absent for a table row with no matching block. */

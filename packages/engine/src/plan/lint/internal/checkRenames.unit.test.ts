@@ -146,4 +146,24 @@ describe('checkRenames', () => {
 			],
 		]);
 	});
+
+	test('checkRenames: the rename-only rules apply only to a file whose build mode is renames-only', () => {
+		const spec = { create: ['src/omega.ts'], renames: [{ from: 'alpha', to: 'omega' }] };
+		const { plan: moveOnly } = setupPlan({ spec, appended: '\n## Build Mode\n\nmove-folders-and-files\n' });
+		const { plan: renameOnly } = setupPlan({ spec });
+
+		const findings = [moveOnly, renameOnly].map((plan) => reported({ plan }));
+
+		expect(findings).toStrictEqual([
+			[],
+			[
+				{
+					check: StructuralCheck.RenamesWellFormed,
+					severity: FindingSeverity.Blocking,
+					phase,
+					location: `${phase} → Renames`,
+				},
+			],
+		]);
+	});
 });

@@ -47,4 +47,16 @@ describe('buildExportCensus', () => {
 			'parse thing': [{ name: 'parseThing', path: 'src/parseThing.ts' }],
 		});
 	});
+
+	test('buildExportCensus: excludeFolders leaves out every file under a folder, aligned on the slash', async () => {
+		const { cwd, config } = setupCensusRepo({ existing: ['src/old/a.ts', 'src/old/deep/b.ts', 'src/older/c.ts'] });
+
+		const census = await buildExportCensus({ cwd, config, excludeFolders: ['src/old'] });
+
+		// src/older shares only a name prefix with src/old, so a bare string-prefix
+		// match would wrongly drop c.ts as well
+		expect(Object.fromEntries(census)).toStrictEqual({
+			c: [{ name: 'c', path: 'src/older/c.ts' }],
+		});
+	});
 });

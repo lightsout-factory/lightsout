@@ -93,8 +93,6 @@ interface Params {
 	packages?: string[];
 	/** Resume: steps already passed are skipped. */
 	existing?: RunManifest;
-	/** Supplied only when a resumed sequence reaches a phase that had not started, so there is no child manifest to adopt. It seeds the baseline in place of a fresh git snapshot. */
-	inheritedBaseline?: string[];
 	skipRefactor?: boolean;
 	/** Absent wherever no run is being recorded. */
 	level?: ActivityLevel;
@@ -126,7 +124,6 @@ const executePipeline = async ({
 	parentRunId,
 	packages,
 	existing,
-	inheritedBaseline,
 	skipRefactor,
 	level,
 	willShip,
@@ -156,7 +153,7 @@ const executePipeline = async ({
 				parentRunId,
 				driver: driver.name,
 				loadedConfig,
-				baselineDirtyFiles: inheritedBaseline ?? (await readGitChangedFiles({ cwd })),
+				baselineDirtyFiles: await readGitChangedFiles({ cwd }),
 				willShip,
 				queueRunId,
 			})),
@@ -187,7 +184,7 @@ const executePipeline = async ({
 		return stopped;
 	}
 
-	return finishRun({ run, resumed: inheritedBaseline !== undefined || existing !== undefined, keepGenerated });
+	return finishRun({ run, resumed: existing !== undefined, keepGenerated });
 };
 
 /** The refactor pipeline takes the same repo lock, so the two can never race one tree. */
