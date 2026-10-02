@@ -22,6 +22,6 @@ export const checkStandardsPack = ({ config }: Params): DoctorCheck | undefined 
 		id: 'standards-pack',
 		status: 'note',
 		detail:
-			'no `standards-pack` is set, so runs use no code standards: agents get no rules and no standards checks run. Set `"standards-pack": "lightsout/standards"` to turn on the bundled standards, or `"standards-pack": false` to record that none are wanted.',
+			'no `standards-pack` is set, so runs use no code standards: agents get no rules and no standards checks run. Set `"standards-pack"` to a pack address, `"<library>/<pack>"`, to turn standards on, or to `false` to record that none are wanted.',
 	};
 };

@@ -64,7 +64,7 @@ const refuseUnknownPackages = ({
 const refuseSettingsWithoutPack = ({ config }: { config: LightsoutConfig | undefined }) => {
 	if (config?.['standards-pack'] === undefined && Object.keys(config?.['standards-rule-settings'] ?? {}).length > 0) {
 		throw new Error(
-			'standards-rule-settings is set but standards-pack is not, so its settings apply to nothing — standards are opt-in: add "standards-pack": "lightsout/standards" to turn on the bundled standards, or "standards-pack": false to run with none',
+			'standards-rule-settings is set but standards-pack is not, so its settings apply to nothing — standards are opt-in: set "standards-pack" to a pack address, "<library>/<pack>", to turn standards on, or to false to run with none',
 		);
 	}
 };

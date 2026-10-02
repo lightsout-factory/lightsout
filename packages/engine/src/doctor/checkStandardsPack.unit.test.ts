@@ -25,7 +25,7 @@ describe('checkStandardsPack', () => {
 		expect(check).toEqual({
 			id: 'standards-pack',
 			status: 'note',
-			detail: expect.stringMatching(/no `standards-pack` is set.*"standards-pack": "lightsout\/standards"/),
+			detail: expect.stringMatching(/no `standards-pack` is set.*Set `"standards-pack"` to a pack address/),
 		});
 	});
 

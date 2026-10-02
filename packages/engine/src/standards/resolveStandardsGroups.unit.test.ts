@@ -174,7 +174,7 @@ describe('resolveStandardsGroups', () => {
 		const error = await getRejectionError({ promise: resolveStandardsGroups({ cwd, config }) });
 
 		// settings that would apply to nothing are a repo that meant to have standards, not a quiet no-op
-		expect(error.message).toEqual(expect.stringMatching(/standards-rule-settings is set but standards-pack is not.*"standards-pack": "lightsout\/standards"/));
+		expect(error.message).toEqual(expect.stringMatching(/standards-rule-settings is set but standards-pack is not.*set "standards-pack" to a pack address/));
 	});
 
 	test('resolveStandardsGroups: standards-pack false keeps its rule settings unread, so turning standards off never needs them deleted', async () => {
