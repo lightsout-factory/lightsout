@@ -1,8 +1,10 @@
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { createdFileCeiling } from '#src/common/constants/createdFileCeiling.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
+import { buildModeBulletLabels } from '#src/plan/common/constants/buildModeBulletLabels.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';
 import { checkPhaseCount } from '#src/plan/lint/checkPhaseCount.ts';
@@ -85,13 +87,16 @@ const shapeDefects = ({ declarations }: { declarations: PhaseDeclaration[] }) =>
 
 /**
  * The only size check that runs before any phase file exists, so a count that
- * cannot be read stops the run rather than waving the phase through.
+ * cannot be read stops the run rather than waving the phase through. Both
+ * mechanical modes are exempt from the touched ceiling, and a
+ * move-folders-and-files phase from its file budget too; a block declaring both
+ * modes declares neither, so the ceiling still binds it.
  */
 const sizeDefects = ({ declarations, executorFileLimit }: { declarations: PhaseDeclaration[]; executorFileLimit: number }) => {
 	const defects: Defect[] = [];
 
 	for (const declaration of declarations) {
-		const { file, createdCount, touchedCount, fileBudget, renamesOnly } = declaration;
+		const { file, createdCount, touchedCount, fileBudget, buildMode } = declaration;
 		const budget = fileBudget ?? executorFileLimit;
 
 		for (const { label } of [
@@ -117,17 +122,17 @@ const sizeDefects = ({ declarations, executorFileLimit }: { declarations: PhaseD
 			});
 		}
 
-		if (touchedCount !== undefined && touchedCount > touchedFileCeiling && renamesOnly !== true) {
+		if (touchedCount !== undefined && touchedCount > touchedFileCeiling && buildMode === undefined) {
 			defects.push({
 				check: StructuralCheck.TouchedFilesWithinCeiling,
 				severity: FindingSeverity.Blocking,
 				issue: `${file} is declared to touch ${touchedCount} source files, over the ${touchedFileCeiling}-file ceiling`,
 				location: `Phases → ${file}`,
-				fix: `split this phase in the '## Phases' table and '## Phase Declarations' so each touches no more than ${touchedFileCeiling} files — or, if its whole work is renaming, declare it with the '- **Renames only:** yes' bullet instead`,
+				fix: `split this phase in the '## Phases' table and '## Phase Declarations' so each touches no more than ${touchedFileCeiling} files — or declare it with the '- **${buildModeBulletLabels[BuildMode.RenamesOnly]}:** yes' bullet if its whole work is renaming, or the '- **${buildModeBulletLabels[BuildMode.MoveFoldersAndFiles]}:** yes' bullet if its whole work is moving folders and files`,
 			});
 		}
 
-		if (touchedCount !== undefined && touchedCount > budget) {
+		if (touchedCount !== undefined && touchedCount > budget && buildMode !== BuildMode.MoveFoldersAndFiles) {
 			const source = fileBudget === undefined ? 'the configured executor-file-limit' : `${file}'s own declared file budget`;
 
 			defects.push({

@@ -1,5 +1,6 @@
 import { expect, test } from '@jest/globals';
 import { buildFocusedPlanWriterInvocation } from '#src/agents/buildFocusedPlanWriterInvocation/buildFocusedPlanWriterInvocation.ts';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import type { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
@@ -360,4 +361,44 @@ test('buildFocusedPlanWriterInvocation: a phase spawn is told the touched ceilin
 	expect(ceilingBullets[0]).toMatch(/hard limit/i);
 	expect(ceilingBullets[0]).toMatch(/touched-file ceiling/i);
 	expect(ceilingBullets[0]).toMatch(/rename-only/i);
+});
+
+/** One phase spawn per declared build mode — move-folders-and-files, renames-only and none — over a distinctive touched ceiling. */
+const setupBuildModeSpawns = (): FocusedParams[] =>
+	[{ buildMode: BuildMode.MoveFoldersAndFiles }, { buildMode: BuildMode.RenamesOnly }, {}].map((mode: Pick<PhaseDeclaration, 'buildMode'>) =>
+		setupFocusedDraft({
+			outputs: [{ path: '/repo/.lightsout/work-orders/foo/plans/phase2-wiring.md', variant: 'phase' }],
+			overviewText: '# Foo — Overview\n\nOVERVIEW-SENTINEL',
+			declaration: { ...declarationRow(), ...mode },
+			limits: { executorFileLimit: 80, createdFileCeiling: 12, touchedFileCeiling: 45 },
+		}),
+	);
+
+/** What one brief says of its build mode: the mode bullet's claims (a standard one names both sections to rule them out) and the ceiling bullet's exemptions. */
+const buildModeClaims = ({ prompt }: { prompt: string }) => {
+	const mode = phaseAuthoringBullets({ prompt })
+		.filter((line) => !/\b45\b/.test(line) && /`## (Renames|Build Mode)`/.test(line))
+		.join('\n');
+
+	return {
+		namesBuildModeSection: mode.includes('`## Build Mode`'),
+		readsMoveMode: mode.includes('move-folders-and-files'),
+		noRenamesSection: /\bno `## Renames`/.test(mode),
+		renameOnly: mode.includes('**rename-only**'),
+		ceilingExemptsBoth: phaseAuthoringBullets({ prompt }).some(
+			(line) => /\b45\b/.test(line) && /rename-only/i.test(line) && /move-folders-and-files/i.test(line),
+		),
+	};
+};
+
+test('buildFocusedPlanWriterInvocation: the phase-authoring brief states the declared build mode and both modes exempt from the touched ceiling', () => {
+	const spawns = setupBuildModeSpawns();
+
+	const prompts = spawns.map((params) => buildFocusedPlanWriterInvocation(params).prompt);
+
+	expect(prompts.map((prompt) => buildModeClaims({ prompt }))).toStrictEqual([
+		{ namesBuildModeSection: true, readsMoveMode: true, noRenamesSection: true, renameOnly: false, ceilingExemptsBoth: true },
+		{ namesBuildModeSection: false, readsMoveMode: false, noRenamesSection: false, renameOnly: true, ceilingExemptsBoth: true },
+		{ namesBuildModeSection: true, readsMoveMode: false, noRenamesSection: true, renameOnly: false, ceilingExemptsBoth: true },
+	]);
 });

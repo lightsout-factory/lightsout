@@ -1,4 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import { getPhaseConnections } from '#src/plan/internal/common/scope/getPhaseConnections.ts';
@@ -44,6 +45,7 @@ const planWith = ({ base, create = [], modify = [], mentions = [], handsForward 
 		malformedLedgerLines: [],
 		proseFiles: [],
 		malformedProseLines: [],
+		buildMode: BuildMode.Standard,
 		renames: [],
 		malformedRenameLines: [],
 		lines: [

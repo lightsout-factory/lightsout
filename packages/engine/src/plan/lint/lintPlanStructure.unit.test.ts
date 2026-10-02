@@ -9,7 +9,7 @@ import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure.ts';
 import { renderGlobalConstraints } from '#src/plan/sections/renderGlobalConstraints.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
-import { phaseBody } from '#tests/helpers/phasePlan.ts';
+import { overviewBody, phaseBody } from '#tests/helpers/phasePlan.ts';
 import { planBodyWith } from '#tests/helpers/planBodyWith.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { writeDemoPlanFile } from '#tests/helpers/writeDemoPlanFile.ts';
@@ -348,4 +348,68 @@ test('lintPlanStructure: a rename-only plan is exempt from the touched ceiling',
 
 	// a rename's size is not what makes it hard, got: ${JSON.stringify(findings)}
 	expect(ceiling).toStrictEqual([]);
+});
+
+test('lintPlanStructure: a move-folders-and-files plan is exempt from the touched ceiling and the over-budget advisory', async () => {
+	const cwd = setupConsumerRepo();
+	const move = Array.from({ length: 36 }, (_, index) => ({ from: `src/old${index}.ts`, to: `src/new${index}.ts` }));
+	const path = writeDemoPlanFile({ cwd, name: 'wide-move.md', body: phaseBody({ move, buildMode: 'move-folders-and-files', reference: false }) });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const sizes = findings.filter(
+		(finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling || finding.check === StructuralCheck.ScopeWithinGuardrail,
+	);
+
+	// moves count on both sides, so these touch well past the 70-file ceiling and
+	// the 50-file default budget — a mechanical move's size is not what makes it
+	// hard, got: ${JSON.stringify(findings)}
+	expect(sizes).toStrictEqual([]);
+});
+
+test('lintPlanStructure: the touched-ceiling fix for a standard plan points at both mechanical build modes', async () => {
+	const cwd = setupConsumerRepo();
+	const path = writeDemoPlanFile({ cwd, name: 'too-wide-standard.md', body: phaseBody({ modify: touchedPaths({ count: 71 }), reference: false }) });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const ceiling = findings
+		.filter((finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling)
+		.map(({ severity, fix }) => ({
+			severity,
+			namesRenames: fix.includes('## Renames'),
+			namesBuildMode: fix.includes('## Build Mode'),
+			namesMoveMode: fix.includes('move-folders-and-files'),
+		}));
+
+	expect(ceiling).toStrictEqual([{ severity: FindingSeverity.Blocking, namesRenames: true, namesBuildMode: true, namesMoveMode: true }]);
+});
+
+test("lintPlanStructure: an implementable plan's Build Mode section is held to the build-mode-well-formed check", async () => {
+	const cwd = setupConsumerRepo();
+	const implementable = writeDemoPlanFile({
+		cwd,
+		name: 'unknown-mode.md',
+		body: phaseBody({ modify: ['src/index.js'], buildMode: 'sideways', reference: false }),
+	});
+	const overview = writeDemoPlanFile({
+		cwd,
+		name: 'overview.md',
+		body: `${overviewBody({ rows: [{ file: 'phase1-demo.md' }] })}\n## Build Mode\n\nsideways\n`,
+	});
+
+	const refused = await lintPlanStructure({ cwd, planPaths: [implementable], decisions: emptyDecisionsRecord() });
+	const ignored = await lintPlanStructure({ cwd, planPaths: [overview], decisions: emptyDecisionsRecord() });
+	const refusedModes = refused.filter((finding) => finding.check === StructuralCheck.BuildModeWellFormed);
+	const ignoredModes = ignored.filter((finding) => finding.check === StructuralCheck.BuildModeWellFormed);
+
+	// the per-file loop must reach the build-mode check for an implementable file
+	// only — an overview builds nothing, got: ${JSON.stringify(refused)}
+	expect(refusedModes).toEqual([
+		expect.objectContaining({
+			check: 'build-mode-well-formed',
+			severity: FindingSeverity.Blocking,
+			phase: 'unknown-mode.md',
+			location: 'unknown-mode.md → Build Mode',
+		}),
+	]);
+	expect(ignoredModes).toStrictEqual([]);
 });

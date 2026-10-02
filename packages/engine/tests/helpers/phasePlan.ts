@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import { decisionLogReference } from '#src/plan/decisionLog/decisionLogReference.ts';
 import { renderDecisionLog } from '#src/plan/decisionLog/renderDecisionLog.ts';
@@ -24,8 +25,10 @@ export interface PhaseSpec {
 	commands?: string[];
 	/** The optional `## File Budget` this phase declares for itself. */
 	fileBudget?: number;
-	/** The optional `## Renames` section — one bullet per rename, old text then new. A phase with any is rename-only. */
+	/** The optional `## Renames` section — one bullet per rename, old text then new. A phase with any is rename-only unless its Build Mode says otherwise. */
 	renames?: { from: string; to: string }[];
+	/** The optional `## Build Mode` section's raw body, so a case can write the move mode or a mode no parser knows. */
+	buildMode?: string;
 	/** Whether the file carries the Decision Log pointer. A phase of a phased deliverable does; a body standing in for a single `plan.md` carries the rendered table instead. */
 	reference?: boolean;
 }
@@ -43,8 +46,8 @@ export interface DeclarationSpec {
 	scripts?: string[];
 	/** The optional `- **File budget:**` bullet, omitted when the phase declares none. */
 	fileBudget?: number;
-	/** Writes the optional `- **Renames only:** yes` bullet when true. */
-	renamesOnly?: boolean;
+	/** Writes the one mode bullet that declares this build mode, or none when absent. */
+	buildMode?: BuildMode;
 }
 
 /** One `## <heading>` section of `### \`path\`` subheadings, or nothing at all when the phase has no such work. */
@@ -62,6 +65,16 @@ const budgetSection = ({ fileBudget }: { fileBudget?: number }) => (fileBudget =
 const renamesSection = ({ renames }: { renames: { from: string; to: string }[] }) =>
 	renames.length === 0 ? '' : `## Renames\n\n${renames.map(({ from, to }) => `- \`${from}\` → \`${to}\``).join('\n')}\n\n`;
 
+/** The optional `## Build Mode` section, absent when the phase takes the mode its other sections imply. */
+const buildModeSection = ({ buildMode }: { buildMode?: string }) => (buildMode === undefined ? '' : `## Build Mode\n\n${buildMode}\n\n`);
+
+/** The mode bullet each declared build mode writes; a standard phase writes none. */
+const modeBullets: Record<BuildMode, string> = {
+	[BuildMode.Standard]: '',
+	[BuildMode.RenamesOnly]: '\n- **Renames only:** yes',
+	[BuildMode.MoveFoldersAndFiles]: '\n- **Moves folders and files only:** yes',
+};
+
 /** One bullet of a declaration block: its backticked values, or the template's `none` sentinel when it declares nothing. */
 const declarationBullet = ({ label, values }: { label: string; values: string[] }) =>
 	`- **${label}:** ${values.length === 0 ? 'none' : values.map((value) => `\`${value}\``).join(', ')}`;
@@ -69,13 +82,13 @@ const declarationBullet = ({ label, values }: { label: string; values: string[] 
 /** One `### Phase <n> — \`<file>\`` block of the overview's `## Phase Declarations`. */
 const declarationBlock = ({ row }: { row: DeclarationSpec }) => {
 	const budget = row.fileBudget === undefined ? '' : `\n- **File budget:** ${row.fileBudget}`;
-	const renamesOnly = row.renamesOnly === true ? '\n- **Renames only:** yes' : '';
+	const modeBullet = modeBullets[row.buildMode ?? BuildMode.Standard];
 
 	return `### Phase ${row.number ?? 1} — \`${row.file}\`
 
 ${declarationBullet({ label: 'Creates', values: row.creates ?? [] })}
 ${declarationBullet({ label: 'Exports', values: row.exports ?? [] })}
-${declarationBullet({ label: 'Scripts', values: row.scripts ?? [] })}${budget}${renamesOnly}
+${declarationBullet({ label: 'Scripts', values: row.scripts ?? [] })}${budget}${modeBullet}
 `;
 };
 
@@ -92,6 +105,7 @@ export const phaseBody = ({
 	commands = ['true'],
 	fileBudget,
 	renames = [],
+	buildMode,
 	reference = true,
 }: PhaseSpec = {}) => {
 	const paths = [
@@ -102,6 +116,7 @@ export const phaseBody = ({
 		moveSection({ moves: move }),
 		budgetSection({ fileBudget }),
 		renamesSection({ renames }),
+		buildModeSection({ buildMode }),
 	].join('');
 
 	return `# Phase

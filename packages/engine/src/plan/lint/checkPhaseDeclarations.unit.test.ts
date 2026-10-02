@@ -1,4 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
@@ -236,9 +237,9 @@ describe('checkPhaseDeclarations', () => {
 			specs: [{ base: 'phase1-declared.md' }, { base: 'phase2-undeclared.md', spec: { renames } }, { base: 'phase3-agreed.md', spec: { renames } }],
 		});
 		const declarations = [
-			declarationFor({ number: 1, file: 'phase1-declared.md', renamesOnly: true }),
+			declarationFor({ number: 1, file: 'phase1-declared.md', buildMode: BuildMode.RenamesOnly }),
 			declarationFor({ number: 2, file: 'phase2-undeclared.md' }),
-			declarationFor({ number: 3, file: 'phase3-agreed.md', renamesOnly: true }),
+			declarationFor({ number: 3, file: 'phase3-agreed.md', buildMode: BuildMode.RenamesOnly }),
 		];
 		const counts = new Map([
 			['phase1-declared.md', { created: 0, touched: 0 }],
@@ -264,6 +265,93 @@ describe('checkPhaseDeclarations', () => {
 				phase: 'overview.md',
 				location: 'overview.md → Phase Declarations',
 				issue: expect.stringContaining('phase2-undeclared.md'),
+			}),
+		]);
+	});
+
+	test("checkPhaseDeclarations: a declared build mode that disagrees with the phase file's own is one blocking finding", () => {
+		const moves = [{ from: 'src/old/a.ts', to: 'src/new/a.ts' }];
+		const phases = phaseFilesFor({
+			specs: [
+				{ base: 'phase1-declared.md', spec: { renames: [{ from: 'oldName', to: 'newName' }] } },
+				{ base: 'phase2-undeclared.md', spec: { buildMode: 'move-folders-and-files', move: moves } },
+				{ base: 'phase3-agreed.md', spec: { buildMode: 'move-folders-and-files', move: moves } },
+			],
+		});
+		const declarations = [
+			declarationFor({ number: 1, file: 'phase1-declared.md', buildMode: BuildMode.MoveFoldersAndFiles }),
+			declarationFor({ number: 2, file: 'phase2-undeclared.md' }),
+			declarationFor({ number: 3, file: 'phase3-agreed.md', buildMode: BuildMode.MoveFoldersAndFiles }),
+		];
+		const counts = new Map([
+			['phase1-declared.md', { created: 0, touched: 0 }],
+			['phase2-undeclared.md', { created: 0, touched: 0 }],
+			['phase3-agreed.md', { created: 0, touched: 0 }],
+		]);
+
+		const findings = check({ declarations, phases, counts });
+
+		// one finding for the move bullet over a rename-only file and one for the
+		// move-only file with no bullet; the phase whose two copies agree is silent
+		expect(findings).toEqual([
+			expect.objectContaining({
+				check: StructuralCheck.DeclarationConsistent,
+				severity: FindingSeverity.Blocking,
+				phase: 'overview.md',
+				location: 'overview.md → Phase Declarations',
+				issue: expect.stringContaining('phase1-declared.md'),
+			}),
+			expect.objectContaining({
+				check: StructuralCheck.DeclarationConsistent,
+				severity: FindingSeverity.Blocking,
+				phase: 'overview.md',
+				location: 'overview.md → Phase Declarations',
+				issue: expect.stringContaining('phase2-undeclared.md'),
+			}),
+		]);
+	});
+
+	test('checkPhaseDeclarations: a move-folders-and-files phase is exempt from the budget-below-touched-count finding', () => {
+		const created = ['src/a.ts', 'src/b.ts', 'src/c.ts', 'src/d.ts', 'src/e.ts'];
+		const phases = phaseFilesFor({
+			specs: [
+				{
+					base: 'phase1-moves.md',
+					spec: { buildMode: 'move-folders-and-files', move: [{ from: 'src/old/a.ts', to: 'src/new/a.ts' }], fileBudget: 3 },
+				},
+				{ base: 'phase2-standard.md', spec: { create: created, fileBudget: 3 } },
+			],
+		});
+		const declarations = [
+			declarationFor({ number: 1, file: 'phase1-moves.md', touchedCount: 5, fileBudget: 3, buildMode: BuildMode.MoveFoldersAndFiles }),
+			declarationFor({ number: 2, file: 'phase2-standard.md', createdCount: 5, touchedCount: 5, fileBudget: 3 }),
+		];
+		const counts = new Map([
+			['phase1-moves.md', { created: 0, touched: 5 }],
+			['phase2-standard.md', { created: 5, touched: 5 }],
+		]);
+
+		const findings = check({ declarations, phases, counts });
+
+		// the same budget and touched count: only the standard phase is held to its budget
+		expect(findings.map((finding) => finding.issue)).toStrictEqual(['the file budget declared for phase2-standard.md (3) is below its own touched count (5)']);
+	});
+
+	test('a declaration block saying yes to both mode bullets is one finding, not a second build-mode disagreement', () => {
+		const phases = phaseFilesFor({ specs: [{ base: 'phase1-renamed.md', spec: { renames: [{ from: 'oldName', to: 'newName' }] } }] });
+		const declarations = [declarationFor({ file: 'phase1-renamed.md', buildModeConflict: true })];
+
+		const findings = check({ declarations, phases, counts: new Map([['phase1-renamed.md', { created: 0, touched: 0 }]]) });
+
+		// the conflicting block declares no mode, which differs from the rename-only
+		// phase file, yet the conflict alone is reported so one mistake earns one finding
+		expect(findings).toEqual([
+			expect.objectContaining({
+				check: StructuralCheck.DeclarationConsistent,
+				severity: FindingSeverity.Blocking,
+				phase: 'overview.md',
+				location: 'overview.md → Phase Declarations',
+				issue: expect.stringMatching(/phase1-renamed\.md.*Renames only.*Moves folders and files only/),
 			}),
 		]);
 	});

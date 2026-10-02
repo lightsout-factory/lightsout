@@ -1,4 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
 import { parsePlan } from '#src/plan/parsePlan.ts';
@@ -32,10 +33,19 @@ const setupBudgetContrast = () => {
 
 /** A rename-only phase beside one that is not — the contrast the Renames only bullet turns on. */
 const setupRenamesOnlyContrast = () => {
-	const { declaration: renameOnly } = setupDeclaration({ renamesOnly: true });
+	const { declaration: renameOnly } = setupDeclaration({ buildMode: BuildMode.RenamesOnly });
 	const { declaration: plain } = setupDeclaration({ number: 2, file: 'phase2-wiring.md', scope: 'the wiring' });
 
 	return { renameOnly, plain };
+};
+
+/** A phase of each mechanical build mode beside a standard one — the contrast the mode bullets turn on. */
+const setupBuildModeContrast = () => {
+	const { declaration: renameOnly } = setupDeclaration({ buildMode: BuildMode.RenamesOnly });
+	const { declaration: moveOnly } = setupDeclaration({ number: 2, file: 'phase2-move.md', scope: 'the move', buildMode: BuildMode.MoveFoldersAndFiles });
+	const { declaration: standard } = setupDeclaration({ number: 3, file: 'phase3-wiring.md', scope: 'the wiring' });
+
+	return { renameOnly, moveOnly, standard };
 };
 
 /**
@@ -122,9 +132,47 @@ describe('renderPhaseDeclaration', () => {
 
 		expect(renameOnlyBlock).toMatch(/^-\s+\*\*Renames only:\*\*\s+yes\s*$/m);
 		expect(plainBlock).not.toMatch(/Renames only/i);
-		expect({ renamesOnly: renameOnlyParsed?.renamesOnly, plainCarriesRenamesOnly: Object.hasOwn(plainParsed ?? {}, 'renamesOnly') }).toStrictEqual({
-			renamesOnly: true,
-			plainCarriesRenamesOnly: false,
+		expect({ buildMode: renameOnlyParsed?.buildMode, plainCarriesBuildMode: Object.hasOwn(plainParsed ?? {}, 'buildMode') }).toStrictEqual({
+			buildMode: 'renames-only',
+			plainCarriesBuildMode: false,
+		});
+	});
+
+	test('renderPhaseDeclaration: each declared build mode renders its one bullet and parses back to the same build mode', () => {
+		const { renameOnly, moveOnly, standard } = setupBuildModeContrast();
+
+		const renameOnlyBlock = renderPhaseDeclaration({ declaration: renameOnly });
+		const moveOnlyBlock = renderPhaseDeclaration({ declaration: moveOnly });
+		const standardBlock = renderPhaseDeclaration({ declaration: standard });
+		const [renameOnlyParsed] = parseBack({ block: renameOnlyBlock, rows: '| 1 | `phase1-core.md` | the core | 1 | 2 |' });
+		const [moveOnlyParsed] = parseBack({ block: moveOnlyBlock, rows: '| 2 | `phase2-move.md` | the move | 1 | 2 |' });
+		const [standardParsed] = parseBack({ block: standardBlock, rows: '| 3 | `phase3-wiring.md` | the wiring | 1 | 2 |' });
+
+		expect({
+			renameOnlyBullets: {
+				renamesOnly: /^-\s+\*\*Renames only:\*\*\s+yes\s*$/m.test(renameOnlyBlock),
+				movesOnly: /Moves folders and files only/i.test(renameOnlyBlock),
+			},
+			moveOnlyBullets: {
+				renamesOnly: /Renames only/i.test(moveOnlyBlock),
+				movesOnly: /^-\s+\*\*Moves folders and files only:\*\*\s+yes\s*$/m.test(moveOnlyBlock),
+			},
+			standardBullets: {
+				renamesOnly: /Renames only/i.test(standardBlock),
+				movesOnly: /Moves folders and files only/i.test(standardBlock),
+			},
+			renameOnlyParsedMode: renameOnlyParsed?.buildMode,
+			moveOnlyParsedMode: moveOnlyParsed?.buildMode,
+			standardCarriesBuildMode: Object.hasOwn(standardParsed ?? {}, 'buildMode'),
+			parsedConflicts: [renameOnlyParsed, moveOnlyParsed, standardParsed].map((parsed) => Object.hasOwn(parsed ?? {}, 'buildModeConflict')),
+		}).toStrictEqual({
+			renameOnlyBullets: { renamesOnly: true, movesOnly: false },
+			moveOnlyBullets: { renamesOnly: false, movesOnly: true },
+			standardBullets: { renamesOnly: false, movesOnly: false },
+			renameOnlyParsedMode: 'renames-only',
+			moveOnlyParsedMode: 'move-folders-and-files',
+			standardCarriesBuildMode: false,
+			parsedConflicts: [false, false, false],
 		});
 	});
 });

@@ -20,6 +20,7 @@ export const StructuralCheck = {
 	GlobalConstraintsCurrent: 'global-constraints-current',
 	HandoffDeclared: 'handoff-declared',
 	RenamesWellFormed: 'renames-well-formed',
+	BuildModeWellFormed: 'build-mode-well-formed',
 } as const;
 
 export type StructuralCheck = (typeof StructuralCheck)[keyof typeof StructuralCheck];

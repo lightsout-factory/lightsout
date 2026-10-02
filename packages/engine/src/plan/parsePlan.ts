@@ -1,3 +1,5 @@
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
+import type { RenameRule } from '#src/contracts/plan/renames/RenameRule.ts';
 import { generatedPlanRegions } from '#src/plan/internal/common/constants/generatedPlanRegions.ts';
 import { PlanFileKind } from '#src/plan/internal/common/constants/PlanFileKind.ts';
 import { parseAcceptanceLedger } from '#src/plan/internal/common/parsing/parseAcceptanceLedger.ts';
@@ -150,6 +152,27 @@ const fileBudgetFrom = ({ sectionLines }: { sectionLines: string[] | undefined }
 	return undefined;
 };
 
+/**
+ * A `## Build Mode` section outranks a `## Renames` one, and only the exact
+ * literal names the mode: anything else in that section is left for the lint
+ * to report rather than guessed at here.
+ */
+const buildModeFrom = ({ sectionLines, renames }: { sectionLines: string[] | undefined; renames: RenameRule[] }) => {
+	const declared = (sectionLines ?? [])
+		.find((line) => line.trim() !== '')
+		?.trim()
+		.replace(/^`(.*)`$/, '$1');
+	let buildMode: BuildMode = BuildMode.Standard;
+
+	if (declared === BuildMode.MoveFoldersAndFiles) {
+		buildMode = BuildMode.MoveFoldersAndFiles;
+	} else if (renames.length > 0) {
+		buildMode = BuildMode.RenamesOnly;
+	}
+
+	return buildMode;
+};
+
 interface Params {
 	content: string;
 	/** The plan file's basename — `overview.md` is one of the overview-variant signals. */
@@ -194,6 +217,7 @@ export const parsePlan = ({ content, base }: Params): ParsedPlan => {
 		decisionLogRange: generatedRegionRanges.get(generatedPlanRegions.decisionLog),
 		sectionRanges: new Map([...parsed].map(([heading, section]) => [heading, rangeOf({ section })])),
 		fileBudget: fileBudgetFrom({ sectionLines: sections.get('File Budget') }),
+		buildMode: buildModeFrom({ sectionLines: sections.get('Build Mode'), renames: renamed.renames }),
 		renames: renamed.renames,
 		malformedRenameLines: renamed.malformedLines,
 		mirrorPaths: pathsFromLines({ sectionLines: sections.get('Patterns to Mirror'), lineMatches: (line) => /^\s*-\s+/.test(line) }),

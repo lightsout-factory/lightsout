@@ -1,4 +1,6 @@
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
+import { buildModeBulletLabels } from '#src/plan/common/constants/buildModeBulletLabels.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 
 interface Params {
@@ -43,6 +45,14 @@ export const getDeclarationDefects = ({ declarations, locations }: Params): Pick
 			issue: `phase ${declaration.number} is declared in '${declaration.file}', whose name does not read phase${declaration.number}-<slug>.md`,
 			location: locations.phaseRow(declaration.file),
 			fix: 'rename the file or the row so the number and the filename agree',
+		});
+	}
+
+	for (const declaration of declarations.filter((candidate) => candidate.buildModeConflict === true)) {
+		defects.push({
+			issue: `the declaration block for '${declaration.file}' reads yes on both the '${buildModeBulletLabels[BuildMode.RenamesOnly]}' and the '${buildModeBulletLabels[BuildMode.MoveFoldersAndFiles]}' bullets, but a phase has exactly one build mode`,
+			location: locations.declarationsSection,
+			fix: `keep only the bullet that matches the phase file — '${buildModeBulletLabels[BuildMode.RenamesOnly]}' for a phase with a '## Renames' section, '${buildModeBulletLabels[BuildMode.MoveFoldersAndFiles]}' for a phase with a '## Build Mode' section — and delete the other`,
 		});
 	}
 

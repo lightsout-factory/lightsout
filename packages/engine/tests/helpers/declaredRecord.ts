@@ -16,7 +16,7 @@ interface Params {
  * move whenever a fixture gained a heading.
  */
 export const declaredRecord = ({ declarations }: Params): PhaseDeclaration[] =>
-	declarations.map(({ number, file, scope, createdCount, touchedCount, creates, exports, scripts, fileBudget, renamesOnly }) => ({
+	declarations.map(({ number, file, scope, createdCount, touchedCount, creates, exports, scripts, fileBudget, buildMode, buildModeConflict }) => ({
 		number,
 		file,
 		scope,
@@ -26,5 +26,6 @@ export const declaredRecord = ({ declarations }: Params): PhaseDeclaration[] =>
 		exports,
 		scripts,
 		fileBudget,
-		...(renamesOnly === undefined ? {} : { renamesOnly }),
+		...(buildMode === undefined ? {} : { buildMode }),
+		...(buildModeConflict === undefined ? {} : { buildModeConflict }),
 	}));

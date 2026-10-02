@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { holdsTestTitle } from '#src/common/sourceFiles/holdsTestTitle.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
@@ -24,11 +25,12 @@ interface Params {
 
 /**
  * `getPlanWrittenPaths` rather than the whole heading set: a deleted file and a
- * move's source are named by a heading but written by nobody. A rename-only file
- * has none, because a rename adds no behaviour a new test could state.
+ * move's source are named by a heading but written by nobody. A rename-only or
+ * move-folders-and-files file has none, because a mechanical rename or move adds
+ * no behaviour a new test could state.
  */
 const getCoverablePaths = ({ plan }: { plan: ParsedPlan }) => {
-	if (plan.renames.length > 0) {
+	if (plan.buildMode !== BuildMode.Standard) {
 		return [];
 	}
 

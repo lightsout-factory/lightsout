@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { DecisionRow } from '#src/contracts/plan/decisions/DecisionRow.ts';
 import { DecisionSource } from '#src/contracts/plan/decisions/DecisionSource.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
@@ -75,6 +76,13 @@ const withoutSection = ({ text, heading }: { text: string; heading: string }) =>
 
 	return [...lines.slice(0, start), ...(next === -1 ? [] : rest.slice(next))].join('\n');
 };
+
+/**
+ * The same overview with its last declaration block saying yes to both mode
+ * bullets — a drafting mistake the shared helper's one-mode spec cannot write.
+ */
+const withBothModeBullets = ({ text }: { text: string }) =>
+	text.replace('\n\n## Cross-Phase Dependencies', '\n- **Renames only:** yes\n- **Moves folders and files only:** yes\n\n## Cross-Phase Dependencies');
 
 /**
  * Whether the lint still reports each of the four things the engine composes.
@@ -255,7 +263,7 @@ describe('repairMechanicalFindings', () => {
 			overview: overviewBody({
 				rows: [
 					{ number: 1, file: 'phase1-rename.md', created: 0, touched: 1 },
-					{ number: 2, file: 'phase2-wire.md', created: 0, touched: 1, renamesOnly: true },
+					{ number: 2, file: 'phase2-wire.md', created: 0, touched: 1, buildMode: BuildMode.RenamesOnly },
 				],
 			}),
 			phases: {
@@ -287,15 +295,76 @@ describe('repairMechanicalFindings', () => {
 			after,
 			declared: declarations.map((declaration) => ({
 				file: declaration.file,
-				carriesRenamesOnly: Object.hasOwn(declaration, 'renamesOnly'),
-				renamesOnly: declaration.renamesOnly,
+				carriesBuildMode: Object.hasOwn(declaration, 'buildMode'),
+				buildMode: declaration.buildMode,
 			})),
 		}).toStrictEqual({
 			before: 2,
 			after: 0,
 			declared: [
-				{ file: 'phase1-rename.md', carriesRenamesOnly: true, renamesOnly: true },
-				{ file: 'phase2-wire.md', carriesRenamesOnly: false, renamesOnly: undefined },
+				{ file: 'phase1-rename.md', carriesBuildMode: true, buildMode: 'renames-only' },
+				{ file: 'phase2-wire.md', carriesBuildMode: false, buildMode: undefined },
+			],
+		});
+	});
+
+	test('repairMechanicalFindings: each overview block takes its build mode from its phase file, replacing a missing, stale or conflicting one', async () => {
+		const deliverable = setupPhasedDeliverable({
+			decisions: noDecisions(),
+			// three blocks, each wrong a different way: the moving phase carries no mode
+			// bullet, the standard phase a stale Renames only one, and the renaming phase
+			// says yes to both bullets — every count already agrees, so nothing else is in
+			// dispute, and no filename spells a mode word the issue match would catch
+			overview: withBothModeBullets({
+				text: overviewBody({
+					rows: [
+						{ number: 1, file: 'phase1-relocate.md', created: 0, touched: 2 },
+						{ number: 2, file: 'phase2-wire.md', created: 0, touched: 1, buildMode: BuildMode.RenamesOnly },
+						{ number: 3, file: 'phase3-retitle.md', created: 0, touched: 1 },
+					],
+				}),
+			}),
+			phases: {
+				'phase1-relocate.md': phaseBody({ move: [{ from: 'src/old/a.ts', to: 'src/new/a.ts' }], buildMode: 'move-folders-and-files' }),
+				'phase2-wire.md': phaseBody({ modify: ['src/three.ts'] }),
+				'phase3-retitle.md': phaseBody({ modify: ['src/two.ts'], renames: [{ from: 'oldName', to: 'newName' }] }),
+			},
+			existing: ['src/old/a.ts', 'src/two.ts', 'src/three.ts'],
+		});
+		const buildModeDisagreements = ({ findings }: { findings: StructuralFinding[] }) =>
+			findings.filter((finding) => finding.check === StructuralCheck.DeclarationConsistent && /renames|move/i.test(finding.issue)).length;
+		const before = buildModeDisagreements({ findings: await deliverable.lint() });
+
+		await repairMechanicalFindings({
+			cwd: deliverable.cwd,
+			name: deliverable.name,
+			planPaths: deliverable.planPaths,
+			decisions: deliverable.decisions,
+			overviewPath: deliverable.overviewPath,
+		});
+
+		const after = buildModeDisagreements({ findings: await deliverable.lint() });
+		const declarations = parsePhaseDeclarations({ plan: parsePlan({ content: deliverable.read({ base: 'overview.md' }), base: 'overview.md' }) });
+
+		// the phase file is the authoritative copy: the moving phase gains its bullet,
+		// the standard phase loses its stale one outright, and the conflicting block
+		// keeps only the bullet its phase file's own mode names
+		expect({
+			before,
+			after,
+			declared: declarations.map((declaration) => ({
+				file: declaration.file,
+				carriesBuildMode: Object.hasOwn(declaration, 'buildMode'),
+				buildMode: declaration.buildMode,
+				carriesBuildModeConflict: Object.hasOwn(declaration, 'buildModeConflict'),
+			})),
+		}).toStrictEqual({
+			before: 3,
+			after: 0,
+			declared: [
+				{ file: 'phase1-relocate.md', carriesBuildMode: true, buildMode: 'move-folders-and-files', carriesBuildModeConflict: false },
+				{ file: 'phase2-wire.md', carriesBuildMode: false, buildMode: undefined, carriesBuildModeConflict: false },
+				{ file: 'phase3-retitle.md', carriesBuildMode: true, buildMode: 'renames-only', carriesBuildModeConflict: false },
 			],
 		});
 	});

@@ -21,6 +21,7 @@ import { checkPlanPaths } from '#src/plan/lint/checkPlanPaths.ts';
 import { checkPlanSizes } from '#src/plan/lint/checkPlanSizes.ts';
 import { checkProsePaths } from '#src/plan/lint/checkProsePaths.ts';
 import { checkVerificationScripts } from '#src/plan/lint/checkVerificationScripts.ts';
+import { checkBuildMode } from '#src/plan/lint/internal/checkBuildMode.ts';
 import { checkRenames } from '#src/plan/lint/internal/checkRenames.ts';
 import { isPhasedDeliverable } from '#src/plan/lint/internal/common/utils/isPhasedDeliverable.ts';
 import { readPhaseFiles } from '#src/plan/lint/internal/common/utils/readPhaseFiles.ts';
@@ -167,6 +168,7 @@ export const lintPlanStructure = async ({ cwd, planPaths, decisions, config }: P
 				? [
 						...(await checkAcceptanceLedger({ plan: phase.plan, cwd, phase: phase.base, required: contract, gateKeys })),
 						...checkRenames({ plan: phase.plan, phase: phase.base }),
+						...checkBuildMode({ plan: phase.plan, phase: phase.base }),
 					]
 				: []),
 			...checkDecisionLog({ plan: phase.plan, phase: phase.base, decisions, phased, syncCommand }),

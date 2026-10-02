@@ -71,6 +71,26 @@ ${renames ? '\n## Renames\n\n- `parseRow` → `readRow`\n' : ''}
 		base: 'plan.md',
 	});
 
+/** A plan moving one file and modifying one source file with no Acceptance Tests section, with a `## Build Mode` section reading `move-folders-and-files` or without one. */
+const movePlanWith = ({ moveMode }: { moveMode: boolean }) =>
+	parsePlan({
+		content: `# Plan
+${moveMode ? '\n## Build Mode\n\nmove-folders-and-files\n' : ''}
+## Files to Move
+
+### \`src/old/parse.ts\` → \`src/new/parse.ts\`
+
+Moved.
+
+## Files to Modify
+
+### \`src/app.ts\`
+
+Point the import at the moved parser.
+`,
+		base: 'plan.md',
+	});
+
 describe('checkAcceptanceLedger', () => {
 	test('a well-formed ledger covering the plan is silent', async () => {
 		await expect(check({ plan: planWith({ ledger: goodRow }) })).resolves.toStrictEqual([]);
@@ -214,6 +234,21 @@ describe('checkAcceptanceLedger', () => {
 		expect(findings).toStrictEqual({
 			renameOnly: [],
 			withoutRenames: [{ check: StructuralCheck.LedgerCovers, location: 'plan.md → Acceptance Tests' }],
+		});
+	});
+
+	test('a move-folders-and-files plan is asked for no acceptance-test rows', async () => {
+		const moveOnly = movePlanWith({ moveMode: true });
+		const standard = movePlanWith({ moveMode: false });
+
+		const findings = {
+			moveOnly: await reported({ plan: moveOnly }),
+			standard: await reported({ plan: standard }),
+		};
+
+		expect(findings).toStrictEqual({
+			moveOnly: [],
+			standard: [{ check: StructuralCheck.LedgerWellFormed, location: 'plan.md → Acceptance Tests' }],
 		});
 	});
 });

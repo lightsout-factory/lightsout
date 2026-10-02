@@ -279,4 +279,55 @@ describe('parsePlan', () => {
 		expect(plan.decisionLogRange).toStrictEqual({ start: 3, end: 6 });
 		expect(plan.decisionLogRange).toBe(entry);
 	});
+
+	test('parsePlan: a Build Mode section reading move-folders-and-files, with or without backticks, sets the move-folders-and-files build mode', () => {
+		const bare = parse({ content: '# Plan\n\n## Build Mode\n\nmove-folders-and-files\n' });
+		const backticked = parse({ content: '# Plan\n\n## Build Mode\n\n`move-folders-and-files`\n' });
+		const afterBlankLines = parse({ content: '# Plan\n\n## Build Mode\n\n\n\nmove-folders-and-files\n' });
+		const withRenames = parse({ content: '# Plan\n\n## Build Mode\n\nmove-folders-and-files\n\n## Renames\n\n- `oldName` → `newName`\n' });
+		const standardBody = parse({ content: '# Plan\n\n## Build Mode\n\nstandard\n' });
+		const wrongCase = parse({ content: '# Plan\n\n## Build Mode\n\nMove-Folders-And-Files\n' });
+
+		// the Build Mode section outranks a Renames section, and only the exact
+		// lower-case literal names the mode — anything else is left for the lint
+		expect({
+			bare: bare.buildMode,
+			backticked: backticked.buildMode,
+			afterBlankLines: afterBlankLines.buildMode,
+			withRenames: withRenames.buildMode,
+			standardBody: standardBody.buildMode,
+			wrongCase: wrongCase.buildMode,
+		}).toStrictEqual({
+			bare: 'move-folders-and-files',
+			backticked: 'move-folders-and-files',
+			afterBlankLines: 'move-folders-and-files',
+			withRenames: 'move-folders-and-files',
+			standardBody: 'standard',
+			wrongCase: 'standard',
+		});
+	});
+
+	test('parsePlan: without a recognised Build Mode section, a file with renames is renames-only and any other file is standard', () => {
+		const renamed = parse({ content: '# Plan\n\n## Renames\n\n- `oldName` → `newName`\n' });
+		const plain = parse({ content: '# Plan\n\n## Files to Modify\n\n### `src/a.ts`\n' });
+		const malformedOnly = parse({ content: '# Plan\n\n## Renames\n\n- `only`\n' });
+		const unknownModeWithRenames = parse({ content: '# Plan\n\n## Build Mode\n\nmove-everything\n\n## Renames\n\n- `oldName` → `newName`\n' });
+		const unknownModeAlone = parse({ content: '# Plan\n\n## Build Mode\n\nmove-everything\n' });
+
+		// a malformed bullet is no rename, and an unknown mode decides nothing, so
+		// both fall through to the renames rule
+		expect({
+			renamed: renamed.buildMode,
+			plain: plain.buildMode,
+			malformedOnly: malformedOnly.buildMode,
+			unknownModeWithRenames: unknownModeWithRenames.buildMode,
+			unknownModeAlone: unknownModeAlone.buildMode,
+		}).toStrictEqual({
+			renamed: 'renames-only',
+			plain: 'standard',
+			malformedOnly: 'standard',
+			unknownModeWithRenames: 'renames-only',
+			unknownModeAlone: 'standard',
+		});
+	});
 });
