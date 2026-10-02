@@ -1,12 +1,12 @@
 {
   "name": "lightsout",
-  "description": "The built-in TypeScript standards: rules that keep a repo the same shape at every level, correct what models get wrong by default and settle code style, 38 of them enforced by code.",
+  "description": "The built-in TypeScript standards: rules that keep a repo the same shape at every level, correct what models get wrong by default and settle code style, 39 of them enforced by code.",
   "homepage": "https://github.com/lightsout-factory/lightsout/tree/main/packages/lightsout-standards",
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
     "rules": 69,
-    "checked": 38,
+    "checked": 39,
     "judgment": 31,
     "topics": 18,
     "packs": 7,
@@ -414,7 +414,7 @@
       ],
       "totals": {
         "rules": 32,
-        "checked": 23,
+        "checked": 24,
         "judgment": 9,
         "topics": 6
       }
@@ -898,7 +898,7 @@
       ],
       "totals": {
         "rules": 69,
-        "checked": 38,
+        "checked": 39,
         "judgment": 31,
         "topics": 18
       }
@@ -3587,7 +3587,7 @@
       "set": "code",
       "documentPath": "code/fractal/shared-code",
       "summary": "Where code that several modules use belongs.",
-      "checked": false,
+      "checked": true,
       "reviewed": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},

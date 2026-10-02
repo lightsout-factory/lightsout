@@ -13,14 +13,17 @@ const countBefore = ({ row, label }: { row: string; label: string }) => {
 /**
  * The totals row of a standards table, read into numbers — so a test can say
  * the counts add up without pinning how many rules the pack holds today, which
- * changes every time a rule is written or removed.
+ * changes every time a rule is written or removed. `bothWays` counts the rows
+ * a code check and an agent share, since such a rule is counted under both.
  *
  * @param stdout - the command's output
  */
 export const readRuleTotals = ({ stdout }: Params) => {
-	const row = stdout.split('\n').find((line) => /│ \d+ rule\(s\)/.test(line)) ?? '';
+	const lines = stdout.split('\n');
+	const row = lines.find((line) => /│ \d+ rule\(s\)/.test(line)) ?? '';
 
 	return {
+		bothWays: lines.filter((line) => /│\s+code and judgment\s+│/.test(line)).length,
 		rules: countBefore({ row, label: 'rule\\(s\\)' }),
 		blocking: countBefore({ row, label: 'blocking' }),
 		advisory: countBefore({ row, label: 'advisory' }),

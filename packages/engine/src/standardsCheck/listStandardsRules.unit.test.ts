@@ -82,6 +82,7 @@ const durableRuleIds = [
 	'circular-dependencies',
 	'multi-export',
 	'filename-mismatch',
+	'shared-code-placement',
 	'file-directly-in-common',
 	'banned-folder-name',
 	'case-collision',

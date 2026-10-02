@@ -140,15 +140,15 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 	expect(stdout).toMatch(/│ lightsout\/object-args\s+│\s+advisory\s+│\s+judgment\s+│\s+lightsout: code\/code-style\/functions\s+│/);
 	// a rule's live numbers ride its summary line
 	expect(stdout).toContain('minTokens 50');
-	// the totals close it off, counting every rule once by state and once by
-	// who checks it
+	// the totals close it off, counting every rule once by state, and once by
+	// who checks it — twice when a code check and an agent share it
 	const totals = readRuleTotals({ stdout });
 	expect({
 		byState: (totals.blocking ?? 0) + (totals.advisory ?? 0) + (totals.off ?? 0),
 		byChecker: (totals.code ?? 0) + (totals.judgment ?? 0),
 	}).toStrictEqual({
 		byState: totals.rules,
-		byChecker: totals.rules,
+		byChecker: (totals.rules ?? 0) + totals.bothWays,
 	});
 	// the test-shape rules name the document they enforce
 	expect(stdout).toMatch(/│ lightsout\/test-manual-mock-cleanup\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: tests\/code-style\s+│/);
