@@ -241,6 +241,27 @@ const setupOwnedWorktree = async () => {
 	return { worktreePath, liveBlock };
 };
 
+/**
+ * A worktree holding run A filed under the ticket's work order, its manifest
+ * recording the config path the run read at its start, plus the run's block as
+ * `loadRunProgressBlock` draws it.
+ */
+const setupConfiguredWorktree = async () => {
+	jest.spyOn(Date, 'now').mockReturnValue(pinnedNow);
+
+	const worktreePath = await freshCwd();
+
+	await mkdir(join(worktreePath, '.lightsout'), { recursive: true });
+	await seedRunDir({
+		cwd: worktreePath,
+		manifest: { ...manifestOf(runs.a), planName: `${workOrderName}/001-board-links`, configPath: '/repo/lightsout.config.json' },
+	});
+
+	const { lines: runBlock } = await loadRunProgressBlock({ cwd: worktreePath, runId: runs.a.runId });
+
+	return { worktreePath, runBlock };
+};
+
 describe('loadActiveTicketBlock', () => {
 	test('shows the build run a live owner stands behind over a newer stopped one', async () => {
 		const { worktreePath, liveBlock } = await setupOwnedWorktree();
@@ -401,5 +422,14 @@ describe('loadActiveTicketBlock', () => {
 		const lines = await loadActiveTicketBlock({ ticket });
 
 		expect(lines).toEqual([expect.stringMatching(/no work order.*LO-9/i)]);
+	});
+
+	test("a building ticket's block carries no config line even when its run recorded a config path", async () => {
+		const { worktreePath, runBlock } = await setupConfiguredWorktree();
+		const ticket = ticketOf({ lane: QueueLane.Building, enteredAt: buildStartedAt, buildStartedAt, worktreePath, workOrderName });
+
+		const lines = await loadActiveTicketBlock({ ticket });
+
+		expect({ lines, carriesConfigLine: lines.some((line) => line.includes('config:')) }).toStrictEqual({ lines: runBlock, carriesConfigLine: false });
 	});
 });

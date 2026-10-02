@@ -22,7 +22,7 @@ const idleDriver: Driver = { name: 'stub', invoke: async () => ({ text: '', exit
 const setupRun = async ({ config }: { config: LightsoutConfig }) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-prepare-run-'));
 	const progress: string[] = [];
-	const manifest = await createRun({ cwd, plan: 'plan.md', pipeline: 'implement', driver: idleDriver.name, config });
+	const manifest = await createRun({ cwd, plan: 'plan.md', pipeline: 'implement', driver: idleDriver.name, loadedConfig: { config } });
 
 	return { cwd, progress, run: new PipelineRun({ cwd, config, driver: idleDriver, manifest, onProgress: (line) => progress.push(line) }) };
 };

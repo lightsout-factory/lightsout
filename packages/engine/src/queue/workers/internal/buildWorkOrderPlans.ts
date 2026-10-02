@@ -2,6 +2,7 @@ import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
 import { planNumberOf } from '#src/common/planAddress/planNumberOf.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
@@ -31,6 +32,8 @@ interface Params {
 	/** The record as the caller's pull answered it. */
 	record: WorkOrderState;
 	config: LightsoutConfig;
+	/** The queue's startup config as it was read from disk, and its path, which every run this builds records. */
+	loadedConfig: LoadedConfig;
 	/** The process environment the tracker credentials are read from. */
 	env: NodeJS.ProcessEnv;
 	driver: Driver;
@@ -76,7 +79,7 @@ const takePlanBeingPlanned = ({ step, allowTicketBodyBuild }: { step: WorkOrderP
 };
 
 const buildReadyPlan = async ({ step }: { step: WorkOrderPlanStep }) => {
-	const { cwd, record, plan, config, env, driver, onProgress, queueRunId } = step;
+	const { cwd, record, plan, config, loadedConfig, env, driver, onProgress, queueRunId } = step;
 	const address = formatPlanAddress({ workOrderName: record.name, planId: plan.id });
 
 	if (!(await pathExists({ path: await planWorkspaceDir({ cwd, name: address }) }))) {
@@ -93,7 +96,7 @@ const buildReadyPlan = async ({ step }: { step: WorkOrderPlanStep }) => {
 		}
 	}
 
-	return runPlanFolderPipeline({ cwd, name: address, config, driver, onProgress, queueRunId });
+	return runPlanFolderPipeline({ cwd, name: address, config, loadedConfig, driver, onProgress, queueRunId });
 };
 
 /**
@@ -136,6 +139,7 @@ export const buildWorkOrderPlans = async ({
 	ticket,
 	record,
 	config,
+	loadedConfig,
 	env,
 	driver,
 	driverName,
@@ -144,8 +148,10 @@ export const buildWorkOrderPlans = async ({
 	onProgress,
 	queueRunId,
 }: Params): Promise<WorkerOutcome> => {
+	const stepInputs = { cwd, ticket, config, loadedConfig, env, driver, driverName, workOrderRunDir, onProgress, queueRunId };
+
 	if (allowTicketBodyBuild && isPlanlessWorkOrder({ record })) {
-		return buildPlanlessWorkOrder({ step: { cwd, record, ticket, config, env, driver, driverName, workOrderRunDir, onProgress, queueRunId }, workOrderName });
+		return buildPlanlessWorkOrder({ step: { ...stepInputs, record }, workOrderName });
 	}
 
 	// Read before anything is built, so it holds only work that was already there.
@@ -160,7 +166,7 @@ export const buildWorkOrderPlans = async ({
 			return decideTicketOutcome({ record: current });
 		}
 
-		const step: WorkOrderPlanStep = { cwd, record: current, plan, ticket, config, env, driver, driverName, workOrderRunDir, onProgress, queueRunId };
+		const step: WorkOrderPlanStep = { ...stepInputs, record: current, plan };
 		// Asked before any leftover work is settled: a failed or paused build's
 		// partial changes are what `lightsout resume` expects to find in the tree.
 		const stalled = findStalledPlanRefusal({ record: current, plan });

@@ -73,6 +73,7 @@ test('write-tests fan-out: files under __tests__/ are test files, never writer t
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 	});
 

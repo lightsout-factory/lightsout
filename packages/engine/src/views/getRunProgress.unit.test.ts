@@ -127,6 +127,23 @@ const setupResumable = () => {
 	return { cwd, manifests };
 };
 
+/**
+ * Two runs, one that recorded /repo/lightsout.config.json and one that predates
+ * the record, in a checkout holding a config file of its own at another path.
+ */
+const setupRecordedConfig = () => {
+	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-run-progress-'));
+	const manifests = [manifestOf({ runId: 'run-recorded-01', configPath: '/repo/lightsout.config.json' }), manifestOf({ runId: 'run-unrecorded-01' })];
+
+	writeFileSync(join(cwd, 'lightsout.config.json'), '{}', 'utf8');
+
+	for (const manifest of manifests) {
+		mkdirSync(runDirFor({ cwd, runId: manifest.runId }), { recursive: true });
+	}
+
+	return { cwd, manifests };
+};
+
 describe('getRunProgress', () => {
 	test('every recorded step becomes a row, in the order the manifest records them', async () => {
 		const verification = {
@@ -379,6 +396,17 @@ describe('getRunProgress', () => {
 			['run-implement-01', false, 5_000, 'lightsout resume --run run-implement-01'],
 			['run-refactor-01', false, 5_000, 'lightsout refactor --run run-refactor-01'],
 			['run-phase-child-01', false, 5_000, 'lightsout resume --run run-sequence-01'],
+		]);
+	});
+
+	test('the progress carries the config path the run recorded, and none for a run that recorded none', async () => {
+		const { cwd, manifests } = setupRecordedConfig();
+
+		const progresses = await Promise.all(manifests.map((manifest) => getRunProgress({ cwd, manifest, live: false })));
+
+		expect(progresses.map((progress) => [progress.runId, progress.configPath])).toStrictEqual([
+			['run-recorded-01', '/repo/lightsout.config.json'],
+			['run-unrecorded-01', undefined],
 		]);
 	});
 });

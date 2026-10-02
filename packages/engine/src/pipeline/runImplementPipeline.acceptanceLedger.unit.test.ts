@@ -144,7 +144,7 @@ describe('runImplementPipeline', () => {
 			evidence: [{ file: widgetFile, name: widgetTestName }],
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		const implementPrompt = prompts.find((entry) => entry.role === 'implement')?.prompt ?? '';
 
@@ -170,7 +170,7 @@ describe('runImplementPipeline', () => {
 			],
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		const approvedOf = ({ path }: { path: string }) => result.manifest.approvedTests.find((record) => record.path === path);
 
@@ -198,7 +198,7 @@ describe('runImplementPipeline', () => {
 			evidence: [{ file: widgetFile, name: widgetTestName }],
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		const writerPrompts = prompts.filter((entry) => entry.role === 'write-tests').map((entry) => entry.prompt);
 
@@ -212,7 +212,7 @@ describe('runImplementPipeline', () => {
 	test('write-ledger-tests: a plan carrying no ledger records why it was skipped and briefs no acceptance section', async () => {
 		const { dir, driver, prompts, config } = await setupLedgerRun({ plan: '# Plan: add the widget\n' });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		const skipped = result.manifest.steps.find((record) => record.id === 'write-ledger-tests');
 
@@ -234,7 +234,7 @@ describe('runImplementPipeline', () => {
 			parkLedgerWriter: true,
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		expect(result.ok).toBe(false);
 		expect(result.manifest.status).toBe('paused-rate-limit');

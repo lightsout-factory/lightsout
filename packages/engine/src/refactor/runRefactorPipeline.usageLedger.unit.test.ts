@@ -55,7 +55,7 @@ describe('runRefactorPipeline usage ledger', () => {
 	test('records the resolved effort beside the model on every ledger line', async () => {
 		const { dir, driver, config, readLedger } = await setupLedgerRun({ config: { model: 'stub-model', effort: 'xhigh' } });
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 
@@ -71,7 +71,7 @@ describe('runRefactorPipeline usage ledger', () => {
 	test('omits effort from ledger lines when config sets none', async () => {
 		const { dir, driver, config, readLedger } = await setupLedgerRun({ config: { model: 'stub-model' } });
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 

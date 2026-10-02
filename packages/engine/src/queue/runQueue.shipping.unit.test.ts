@@ -188,6 +188,7 @@ const drainQueue = ({ cwd, settings, progress }: { cwd: string; settings: QueueS
 		trackerSettings: trackerSettingsFixture(),
 		shipSettings,
 		config,
+		loadedConfig: { config },
 		env: {},
 		driver,
 		driverName: driver.name,

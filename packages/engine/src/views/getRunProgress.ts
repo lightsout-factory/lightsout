@@ -89,5 +89,6 @@ export const getRunProgress = async ({ cwd, manifest, live }: Params): Promise<R
 			manifest.parentRunId === undefined
 				? formatResumeCommand({ pipeline: manifest.pipeline ?? PipelineKind.Implement, runId: manifest.runId })
 				: formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.parentRunId }),
+		configPath: manifest.configPath,
 	};
 };

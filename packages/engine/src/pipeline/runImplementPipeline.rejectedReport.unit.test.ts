@@ -58,6 +58,7 @@ test('a final message that fails the report contract is saved to the run dir bef
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progressLines.push(message),
 	});
@@ -116,7 +117,13 @@ test('two rejected messages in one run are filed under distinct sequence numbers
 		}),
 	};
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.ok).toBe(true);
 

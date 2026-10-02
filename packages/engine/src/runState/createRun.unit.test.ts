@@ -226,10 +226,57 @@ describe('createRun', () => {
 	test('snapshots the resolved config as the settings that produced this run', async () => {
 		const { cwd } = setupRepo();
 
-		const manifest = await createRun({ cwd, plan: 'plan.md', driver: 'stub', config });
+		const manifest = await createRun({ cwd, plan: 'plan.md', driver: 'stub', loadedConfig: { config } });
 		const read = await readRunManifest({ cwd, runId: manifest.runId });
 
 		expect(read.config).toStrictEqual({ harness: 'stub', gates: { check: 'true', test: 'true', 'test-coverage': false } });
+	});
+
+	test('records the as-read config and its absolute path from the loaded config', async () => {
+		const { cwd } = setupRepo();
+		const configPath = resolve(cwd, '..', 'launching-checkout', 'lightsout.config.json');
+		const asRead: LightsoutConfig = { harness: 'codex', gates: { check: 'true', test: 'true', 'test-coverage': false } };
+
+		const manifest = await createRun({ cwd, plan: 'plan.md', driver: 'stub', loadedConfig: { config: asRead, path: configPath } });
+		const read = await readRunManifest({ cwd, runId: manifest.runId });
+
+		// the stamped driver name is the manifest's harness, never the recorded config's
+		expect({
+			returned: { config: manifest.config, configPath: manifest.configPath },
+			onDisk: { config: read.config, configPath: read.configPath },
+		}).toStrictEqual({
+			returned: { config: { harness: 'codex', gates: { check: 'true', test: 'true', 'test-coverage': false } }, configPath },
+			onDisk: { config: { harness: 'codex', gates: { check: 'true', test: 'true', 'test-coverage': false } }, configPath },
+		});
+	});
+
+	test('records no config path when the loaded config carries none', async () => {
+		const { cwd } = setupRepo();
+
+		const manifest = await createRun({ cwd, plan: 'plan.md', driver: 'stub', loadedConfig: { config } });
+		const read = await readRunManifest({ cwd, runId: manifest.runId });
+
+		// unset, not an empty string or a path derived from the checkout
+		expect({ config: read.config, configPath: read.configPath, returnedConfigPath: manifest.configPath }).toStrictEqual({
+			config: { harness: 'stub', gates: { check: 'true', test: 'true', 'test-coverage': false } },
+			configPath: undefined,
+			returnedConfigPath: undefined,
+		});
+	});
+
+	test('records neither a config nor a config path when no loaded config is given', async () => {
+		const { cwd } = setupRepo();
+
+		const manifest = await createRun({ cwd, plan: 'plan.md', driver: 'stub' });
+		const read = await readRunManifest({ cwd, runId: manifest.runId });
+
+		expect({
+			returned: { config: manifest.config, configPath: manifest.configPath },
+			onDisk: { config: read.config, configPath: read.configPath },
+		}).toStrictEqual({
+			returned: { config: undefined, configPath: undefined },
+			onDisk: { config: undefined, configPath: undefined },
+		});
 	});
 
 	test('seeds the dirty paths that changed-file attribution subtracts', async () => {

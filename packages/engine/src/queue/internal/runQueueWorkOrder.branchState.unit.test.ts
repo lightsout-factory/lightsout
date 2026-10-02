@@ -150,6 +150,7 @@ const setupTicketRun = () => {
 			// the sequence, and the prefixed case has its own arrangement below.
 			workOrder: { ticket: given, name: 'lo-70-drain-the-backlog', branch: 'lo-70-drain-the-backlog' },
 			config,
+			loadedConfig: { config },
 			driver,
 			driverName: 'claude-code',
 			defaultBranch: 'main',

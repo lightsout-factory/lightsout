@@ -1,8 +1,8 @@
 import { access, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { toRepoRelativePath } from '#src/common/utils/toRepoRelativePath.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
@@ -19,7 +19,8 @@ import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 interface Params {
 	cwd: string;
 	driver: Driver;
-	config: LightsoutConfig;
+	/** The config as it was read from disk, and its path, recorded on a fresh coordinator. Ignored when resuming. */
+	loadedConfig: LoadedConfig;
 	overviewPath?: string;
 	startPhase?: number;
 	/** The id a fresh coordinator is created under, minted by the caller. Ignored when resuming. */
@@ -86,7 +87,7 @@ const assertPhaseFilesExist = async ({ cwd, overview, phases }: { cwd: string; o
 export const initializeSequence = async ({
 	cwd,
 	driver,
-	config,
+	loadedConfig,
 	overviewPath,
 	startPhase,
 	runId,
@@ -130,7 +131,7 @@ export const initializeSequence = async ({
 		throw new Error(`an unfinished run for this plan already exists — resume with: ${resume}`);
 	}
 
-	const created = await createRun({ cwd, runId, plan: overview, pipeline: PipelineKind.Phases, driver: driver.name, config, willShip, queueRunId });
+	const created = await createRun({ cwd, runId, plan: overview, pipeline: PipelineKind.Phases, driver: driver.name, loadedConfig, willShip, queueRunId });
 	// Phases below the starting one are recorded as done OUTSIDE the sequence —
 	// adopted, never re-run, and never counted as this run's work.
 	const steps: StepRecord[] = phases.map((file, index) => ({

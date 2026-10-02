@@ -109,8 +109,11 @@ const setupSelfCheck = async ({
 		mockRunSelfCheck.mockResolvedValueOnce(result);
 	}
 
+	// Each run records the consumer repo's own config, the one self-check runs the gates on.
+	const config = JSON.parse(readFileSync(join(cwd, 'lightsout.config.json'), 'utf8'));
+
 	for (const [index, step] of steps.entries()) {
-		await seedRunDir({ cwd, manifest: { runId: runIds[index], pipeline, status: RunStatus.Running, currentStep: step } });
+		await seedRunDir({ cwd, manifest: { runId: runIds[index], pipeline, status: RunStatus.Running, currentStep: step, config } });
 	}
 
 	if (lockPid !== undefined) {
@@ -122,13 +125,23 @@ const setupSelfCheck = async ({
 	return { contexts, cwd, runIds, ...captured };
 };
 
-/** A repo holding no runs at all, and a context naming a run id nothing on disk answers to. */
-const setupMissingRun = () => {
+/**
+ * One run at the implement step whose manifest records `recordedConfig` (or no
+ * config when it is undefined), in a worktree whose own lightsout.config.json
+ * carries a key this engine rejects — so a self-check that read the file would
+ * fail on it rather than reach the gates.
+ */
+const setupRecordedConfig = async ({ recordedConfig }: { recordedConfig: Record<string, unknown> | undefined }) => {
 	const captured = captureCommandOutput();
-	const cwd = setupConsumerRepo();
-	const context: CommandContext = { flags: parseFlags({ args: ['--run', 'run-gone'] }), rest: [], cwd };
+	const cwd = setupConsumerRepo({ config: { 'not-a-lightsout-key': true } });
+	const runId = 'run-recorded';
 
-	return { context, ...captured };
+	mockRunSelfCheck.mockResolvedValueOnce(endingOf({ reason: 'ran' }));
+	await seedRunDir({ cwd, manifest: { runId, status: RunStatus.Running, currentStep: 'implement', config: recordedConfig } });
+
+	const context: CommandContext = { flags: parseFlags({ args: ['--run', runId] }), rest: [], cwd };
+
+	return { context, runId, ...captured };
 };
 
 describe('selfCheckCommand', () => {
@@ -238,19 +251,6 @@ describe('selfCheckCommand', () => {
 		expect(logged.filter((line) => /verdict/i.test(line))).toHaveLength(3);
 	});
 
-	test('selfCheckCommand: says in one line that a run id names no run on disk, and exits 1 without running a gate', async () => {
-		const { context, errors, logged, exitCodes } = setupMissingRun();
-
-		await expect(selfCheckCommand(context)).rejects.toThrow(/process\.exit/);
-
-		// a stack trace in the agent's shell would spend one of its three rounds on
-		// the tool rather than on the code
-		expect(mockRunSelfCheck).not.toHaveBeenCalled();
-		expect(exitCodes).toStrictEqual([1]);
-		expect(errors.join('\n')).toContain("no run matching 'run-gone'");
-		expect(logged).toStrictEqual([]);
-	});
-
 	// Each row reaches the no-self-check ending down a different branch of the
 	// step lookup, so they are one behaviour with three ways in — a run between
 	// steps, a pipeline this feature does not serve, and the direct pipeline's
@@ -357,5 +357,31 @@ describe('selfCheckCommand', () => {
 		expect(output).toContain('engine: [web] test-e2e timed out: every attempt ran past the 15-minute gate ceiling');
 		expect(output).not.toContain('pnpm test:e2e --filter web');
 		expect(output).toContain('pnpm check');
+	});
+
+	test("selfCheckCommand: runs the gates on the config the run recorded, even when the worktree's file no longer parses", async () => {
+		const { context, exitCodes } = await setupRecordedConfig({
+			recordedConfig: { gates: { check: 'pnpm recorded-check', test: 'true', 'test-coverage': false } },
+		});
+
+		await expect(selfCheckCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// the worktree's file carries a key this engine rejects, so reaching the
+		// gates at all, with the recorded check, proves the file was never read
+		expect(mockRunSelfCheck.mock.calls.map(([params]) => params.config.gates.check)).toStrictEqual(['pnpm recorded-check']);
+		expect(exitCodes).toStrictEqual([0]);
+	});
+
+	test('selfCheckCommand: refuses in one self-check line when the run recorded no config, and runs no gate', async () => {
+		const { context, runId, errors, logged, exitCodes } = await setupRecordedConfig({ recordedConfig: undefined });
+
+		await expect(selfCheckCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// one prefixed line in the agent's shell, never a fallback to the
+		// worktree's file and never a gate run on a config the run did not start with
+		expect(mockRunSelfCheck).not.toHaveBeenCalled();
+		expect(exitCodes).toStrictEqual([1]);
+		expect(errors.join('\n').split('\n')).toEqual([expect.stringMatching(new RegExp(`^self-check: .*${runId}`))]);
+		expect(logged).toStrictEqual([]);
 	});
 });

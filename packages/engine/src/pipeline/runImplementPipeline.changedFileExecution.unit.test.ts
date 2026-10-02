@@ -125,7 +125,7 @@ describe('runImplementPipeline', () => {
 	test('verify-tests: a changed file the tests never execute fails the gate with the named error', async () => {
 		const { dir, driver, config } = await setupExecutionRun({ statements: { 'src/feature.ts': { covered: 0, total: 4 } } });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 		expect(result.ok).toBe(false);
 		expect(result.error ?? '').toContain('changed-file-execution: 1 changed file(s) never executed under the tests: src/feature.ts');
@@ -147,7 +147,7 @@ describe('runImplementPipeline', () => {
 			onFix: { 'src/feature.ts': { covered: 4, total: 4 } },
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 		expect(result.ok).toBe(true);
 		// the first attempt was red on execution alone; the fix retry cleared it
@@ -164,7 +164,7 @@ describe('runImplementPipeline', () => {
 			statements: { 'src/feature/feature.ts': { covered: 3, total: 3 } },
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 		expect(result.ok).toBe(true);
 		expect(result.manifest.unreachableChangedFiles).toStrictEqual(['src/feature/internal/orphan.ts']);
@@ -178,7 +178,7 @@ describe('runImplementPipeline', () => {
 			jestConfig: { collectCoverageFrom: ['src/**/*.ts'] },
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 		expect(result.ok).toBe(true);
 		expect(result.manifest.coverageExcludedChangedFiles).toStrictEqual(['src/App.tsx']);
@@ -187,7 +187,7 @@ describe('runImplementPipeline', () => {
 	test('a changed file the repo DOES collect still fails the gate when the report never lists it', async () => {
 		const { dir, driver, config } = await setupExecutionRun({ statements: {}, jestConfig: { collectCoverageFrom: ['src/**/*.ts'] } });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 		expect(result.ok).toBe(false);
 		expect(result.error ?? '').toContain('changed-file-execution: 1 changed file(s) never executed under the tests: src/feature.ts');
@@ -210,7 +210,7 @@ describe('runImplementPipeline', () => {
 			jestConfig: { collectCoverageFrom: ['src/**/*.ts'] },
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 		const fixPrompt = writerPrompts.find((prompt) => prompt.includes('# Verification failure'));
 
 		expect(result.ok).toBe(true);
@@ -266,7 +266,13 @@ test('generate runs first in every gate set; generated prefixes earn no attribut
 			},
 		}),
 	};
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 	const commands = readCommandLog(dir, result.manifest.runId);
 
 	expect(result.ok).toBe(true);

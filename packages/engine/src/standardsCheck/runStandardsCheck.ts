@@ -1,5 +1,5 @@
-import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 import { applyStandardsBaseline } from '#src/standardsCheck/applyStandardsBaseline.ts';
@@ -9,6 +9,7 @@ import { writeStandardsSnapshot } from '#src/standardsCheck/writeStandardsSnapsh
 
 interface Params {
 	cwd: string;
+	config: LightsoutConfig | undefined;
 	/** Repo-relative subpath to check (default: the whole repo). */
 	path?: string;
 	/** Include baselined findings instead of only what's new since the baseline. */
@@ -22,19 +23,21 @@ interface Params {
 
 /**
  * Detection is code — agents are never asked to "go find problems". Baselining
- * is explicit, never a side effect of a check run.
+ * is explicit, never a side effect of a check run. The config is passed in
+ * rather than read, because the tree under `cwd` may hold a config edited after
+ * the run started.
  *
  * @throws {Error} When the standards pack cannot be loaded, or a check misbehaves — a repo that asked for standards and did not get them must not run.
  */
 export const runStandardsCheck = async ({
 	cwd,
+	config,
 	path,
 	all = false,
 	writeBaseline = false,
 	persist = true,
 	onProgress,
 }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
-	const config = await readOptionalConfig({ cwd });
 	const groups = await resolveStandardsGroups({ cwd, config });
 	const checked = await runPackageChecks({
 		cwd,

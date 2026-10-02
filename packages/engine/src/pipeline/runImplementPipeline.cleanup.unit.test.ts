@@ -139,7 +139,7 @@ describe('runImplementPipeline', () => {
 			onRefactor: () => report(),
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 		const record = cleanupRecordOf({ steps: result.manifest.steps });
 
 		expectDefined(record);
@@ -161,7 +161,7 @@ describe('runImplementPipeline', () => {
 			},
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 		const record = cleanupRecordOf({ steps: result.manifest.steps });
 
 		expectDefined(record);
@@ -173,7 +173,7 @@ describe('runImplementPipeline', () => {
 	test('a finding standing at the budget ends cleanup without stopping the run', async () => {
 		const { dir, driver, config, roundsRun } = await setupCleanupRun({ onRefactor: editWithoutFixing });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 		const record = cleanupRecordOf({ steps: result.manifest.steps });
 		// the standing finding is recorded, and the run still walks on to the formatter and its last verification
 		const cleanupOnwards = result.manifest.steps.filter((step) => ['refactor', 'format-refactor', 'verify-refactor'].includes(step.id));
@@ -193,7 +193,7 @@ describe('runImplementPipeline', () => {
 			onRefactor: () => report({ changedFiles: [] }),
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 		const record = cleanupRecordOf({ steps: result.manifest.steps });
 
 		expectDefined(record);
@@ -208,7 +208,7 @@ describe('runImplementPipeline', () => {
 		// of the budget.
 		const { dir, driver, config } = await setupCleanupRun({ onRefactor: () => report({ changedFiles: [] }) });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 		const record = cleanupRecordOf({ steps: result.manifest.steps });
 
 		expectDefined(record);
@@ -228,10 +228,10 @@ describe('runImplementPipeline', () => {
 			parkRound: 1,
 			onRefactor: () => report({ changedFiles: [] }),
 		});
-		const parked = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const parked = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 		const existing = await readRunManifest({ cwd: dir, runId: parked.manifest.runId });
 
-		const resumed = await runImplementPipeline({ cwd: dir, driver, config, existing });
+		const resumed = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, existing });
 		const record = cleanupRecordOf({ steps: resumed.manifest.steps });
 
 		expectDefined(record);
@@ -248,7 +248,7 @@ describe('runImplementPipeline', () => {
 	])('the configured max-rounds caps the cleanup executor rounds', async ({ repoConfig, rounds }) => {
 		const { dir, driver, config, roundsRun } = await setupCleanupRun({ config: repoConfig, onRefactor: editWithoutFixing });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 		const record = cleanupRecordOf({ steps: result.manifest.steps });
 
 		expectDefined(record);
@@ -267,7 +267,7 @@ describe('runImplementPipeline', () => {
 			},
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 		const record = cleanupRecordOf({ steps: result.manifest.steps });
 
 		expectDefined(record);
@@ -291,7 +291,14 @@ describe('runImplementPipeline', () => {
 		});
 		const progress: string[] = [];
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress: (line) => progress.push(line) });
+		const result = await runImplementPipeline({
+			cwd: dir,
+			driver,
+			config,
+			loadedConfig: { config },
+			planPath: 'plan.md',
+			onProgress: (line) => progress.push(line),
+		});
 		const record = cleanupRecordOf({ steps: result.manifest.steps });
 
 		expectDefined(record);
@@ -318,7 +325,7 @@ describe('runImplementPipeline', () => {
 			},
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 		const record = cleanupRecordOf({ steps: result.manifest.steps });
 
 		expectDefined(record);
@@ -353,7 +360,7 @@ describe('runImplementPipeline', () => {
 			onRefactor: () => report({ changedFiles: [] }),
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 		const record = cleanupRecordOf({ steps: result.manifest.steps });
 
 		expectDefined(record);

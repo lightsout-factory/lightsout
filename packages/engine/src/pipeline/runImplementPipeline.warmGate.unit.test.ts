@@ -67,7 +67,13 @@ test('write-tests warm gate: a real driver stream event releases the held-back w
 		}),
 	};
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.ok).toBe(true);
 	// two modules, each with the caller wiring it in → four writer groups

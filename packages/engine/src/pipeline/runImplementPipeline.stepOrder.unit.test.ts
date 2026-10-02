@@ -40,7 +40,15 @@ const setupDeclaredRun = () => {
 	};
 
 	const run = async ({ skipRefactor, willShip }: { skipRefactor?: boolean; willShip?: boolean } = {}) =>
-		runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md', skipRefactor, willShip });
+		runImplementPipeline({
+			cwd: dir,
+			driver,
+			config: await readConfig({ cwd: dir }),
+			loadedConfig: { config: await readConfig({ cwd: dir }) },
+			planPath: 'plan.md',
+			skipRefactor,
+			willShip,
+		});
 
 	return { dir, run };
 };

@@ -1,3 +1,4 @@
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
@@ -42,6 +43,8 @@ interface Params {
 	trackerSettings: TrackerSettings;
 	shipSettings: ShipSettings;
 	config: LightsoutConfig;
+	/** The queue's startup config, as it was read from disk before the command stamped its harness on it, and its path. The coordinator's run and every ticket's runs record this one value, so one queue run keeps one config for every ticket. */
+	loadedConfig: LoadedConfig;
 	/** The process environment the tracker credentials are read from. Passed rather than read, so a test never needs to mutate `process.env`. */
 	env: NodeJS.ProcessEnv;
 	driver: Driver;
@@ -57,6 +60,7 @@ const drainAndShip = async ({
 	trackerSettings,
 	shipSettings,
 	config,
+	loadedConfig,
 	env,
 	driver,
 	driverName,
@@ -67,7 +71,7 @@ const drainAndShip = async ({
 	holds,
 	onProgress,
 }: Params & { runId: string; defaultBranch: string; first: WaveSelection; parked: ParkedWork; holds: GateHolds }) => {
-	const { coordinatorRunDir, planPath, manifest } = await startCoordinatorRun({ cwd, runId, driverName, config });
+	const { coordinatorRunDir, planPath, manifest } = await startCoordinatorRun({ cwd, runId, driverName, loadedConfig });
 
 	// One chain per drain, threaded to everything that mutates the main checkout:
 	// the builders' `git worktree add`, the merge tail's removal and the re-scan's.
@@ -102,6 +106,7 @@ const drainAndShip = async ({
 				trackerSettings,
 				workOrder,
 				config,
+				loadedConfig,
 				driver,
 				driverName,
 				defaultBranch,
@@ -141,6 +146,7 @@ export const runQueue = async ({
 	trackerSettings,
 	shipSettings,
 	config,
+	loadedConfig,
 	env,
 	driver,
 	driverName,
@@ -180,7 +186,7 @@ export const runQueue = async ({
 	});
 
 	if (first.runnable.length === 0 && parked.outcomes.length === 0 && parked.merged.length === 0) {
-		return settleEmptyDrain({ cwd, runId, recordEmptyDrain, driverName, config, first, parked, onProgress });
+		return settleEmptyDrain({ cwd, runId, recordEmptyDrain, driverName, loadedConfig, first, parked, onProgress });
 	}
 
 	return withRunLock({
@@ -193,6 +199,7 @@ export const runQueue = async ({
 				trackerSettings,
 				shipSettings,
 				config,
+				loadedConfig,
 				env,
 				driver,
 				driverName,

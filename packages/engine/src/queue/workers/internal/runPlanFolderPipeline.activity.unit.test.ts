@@ -106,7 +106,7 @@ describe('runPlanFolderPipeline', () => {
 	test.each([{ phased: false }, { phased: true }])('a queue build records a command run under the plan it built', async ({ phased }) => {
 		const { cwd, planDir, onProgress } = await setupQueueBuild({ phased });
 
-		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'queue-run' });
+		const outcome = await runPlanFolderPipeline({ cwd, name, config, loadedConfig: { config }, driver, onProgress, queueRunId: 'queue-run' });
 
 		const report = buildActivityTree({ plan: name, marks: await readActivityMarks({ dir: planDir }) });
 
@@ -140,7 +140,7 @@ describe('runPlanFolderPipeline', () => {
 		const failed = { ok: false, error: 'the test gate stayed red', manifest: { ...passedManifest, status: RunStatus.Failed } };
 		const { cwd, planDir, onProgress } = await setupQueueBuild({ result: failed });
 
-		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'queue-run' });
+		const outcome = await runPlanFolderPipeline({ cwd, name, config, loadedConfig: { config }, driver, onProgress, queueRunId: 'queue-run' });
 
 		const report = buildActivityTree({ plan: name, marks: await readActivityMarks({ dir: planDir }) });
 

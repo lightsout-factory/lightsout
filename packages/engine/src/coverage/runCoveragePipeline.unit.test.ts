@@ -163,7 +163,16 @@ const runPipeline = async ({
 	maxBatches?: number;
 	existing?: RunManifest;
 	onProgress?: (message: string) => void;
-}) => runCoveragePipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), maxBatches, existing, onProgress });
+}) =>
+	runCoveragePipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		maxBatches,
+		existing,
+		onProgress,
+	});
 
 describe('runCoveragePipeline', () => {
 	test('a repo already over its threshold ends green without spawning anything', async () => {

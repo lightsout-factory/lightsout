@@ -93,6 +93,7 @@ const setupLeftoverCommit = ({ staged = false, answer }: { staged?: boolean; ans
 		plan,
 		ticket,
 		config,
+		loadedConfig: { config },
 		env: {},
 		driver,
 		driverName: driver.name,

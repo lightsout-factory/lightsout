@@ -60,6 +60,21 @@ test('printRunHeader: the config line names the file the run loaded, which need 
 	expect(lineFor({ logged, label: 'config' })).toBe('  config: /repo/lightsout.config.json');
 });
 
+test('printRunHeader: prints no config line when there is no recorded path to name', async () => {
+	const { config, driver, cwd, logged } = setupHeader();
+
+	// a resumed run whose manifest predates the recorded path has no path to name, and its checkout may well have a config
+	await printRunHeader({ config, driver, cwd, configPath: undefined });
+
+	expect(logged).toStrictEqual([
+		'  cwd: /repo',
+		'  repo root: lightsout/node (detected)',
+		'  harness: claude-code · model: harness default · effort: harness default · permissions: write',
+		'  timeouts: agent 60m · supervisor 15m · gate 15m',
+		'  gates (root): check=[pnpm check] test=[pnpm test:unit] coverage=[pnpm test:coverage]',
+	]);
+});
+
 test('printRunHeader: the harness line names the resolved harness, model, effort, and permissions', async () => {
 	const { config, driver, cwd, logged } = setupHeader({ driverName: 'codex', config: { model: 'gpt-5.2', effort: 'high', permissions: 'full-access' } });
 

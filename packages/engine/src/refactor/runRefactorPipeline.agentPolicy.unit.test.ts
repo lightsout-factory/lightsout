@@ -69,7 +69,7 @@ describe('invokeBatchAgent — via runRefactorPipeline', () => {
 	test('defaults a batch invocation to write permissions and the harness default effort when config sets neither', async () => {
 		const { dir, driver, config, invocations } = await setupBatchPolicy();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// the stub driver was invoked
@@ -83,7 +83,7 @@ describe('invokeBatchAgent — via runRefactorPipeline', () => {
 	test('passes a configured effort and full-access level to every batch invocation', async () => {
 		const { dir, driver, config, invocations } = await setupBatchPolicy({ config: { effort: 'high', permissions: 'full-access' } });
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// the configured level and effort replace the defaults:

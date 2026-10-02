@@ -73,7 +73,7 @@ describe('runImplementPipeline', () => {
 	test('gate-overrides: clean-slate runs the gates its own key names, and the verify checkpoints keep the engine default', async () => {
 		const { dir, driver, config } = await setupOverrideRun({ overrides: { 'clean-slate': ['build'] } });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		expect(result.ok).toBe(true);
 		// the build alone at clean-slate, because that checkpoint is the one the
@@ -85,7 +85,7 @@ describe('runImplementPipeline', () => {
 	test('gate-overrides: each verify checkpoint reads its own key — one runs a named list, the next runs nothing', async () => {
 		const { dir, driver, config } = await setupOverrideRun({ overrides: { 'verify-implement': ['check'], 'verify-tests': 'off' } });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		expect(result.ok).toBe(true);
 		// clean-slate is unlisted and keeps the default, verify-implement runs the
@@ -98,7 +98,7 @@ describe('runImplementPipeline', () => {
 	test('a red cheap gate at clean-slate holds the expensive tier, so the build never runs at that checkpoint', async () => {
 		const { dir, driver, config } = await setupOverrideRun({ scripts: { check: 'echo RED-CHECK >&2; exit 1' } });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		expect(result.ok).toBe(false);
 		expect(result.error ?? '').toMatch(/RED-CHECK/);

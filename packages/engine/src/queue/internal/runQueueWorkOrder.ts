@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
@@ -26,6 +27,8 @@ interface Params {
 	/** The work order this run builds: its ticket, its label, and the branch its record stores. */
 	workOrder: NamedWorkOrder;
 	config: LightsoutConfig;
+	/** The queue's startup config as it was read from disk, and its path, which every run this ticket creates records. */
+	loadedConfig: LoadedConfig;
 	driver: Driver;
 	/** Recorded on the worker's manifest as the harness name. */
 	driverName: string;
@@ -104,6 +107,7 @@ export const runQueueWorkOrder = async ({
 	trackerSettings,
 	workOrder,
 	config,
+	loadedConfig,
 	driver,
 	driverName,
 	defaultBranch,
@@ -137,6 +141,7 @@ export const runQueueWorkOrder = async ({
 		ticket,
 		workOrderName: name,
 		config,
+		loadedConfig,
 		driver,
 		driverName,
 		settings,

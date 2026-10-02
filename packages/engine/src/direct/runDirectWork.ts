@@ -1,6 +1,7 @@
 import { maxCheapFixRetries } from '#src/common/constants/maxCheapFixRetries.ts';
 import { RunState } from '#src/common/services/RunState.ts';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { describeGateCoordinationStop } from '#src/common/utils/describeGateCoordinationStop.ts';
 import { describeGateNoVerdictStop } from '#src/common/utils/describeGateNoVerdictStop.ts';
 import { runPreflightGate } from '#src/common/utils/runPreflightGate.ts';
@@ -32,6 +33,8 @@ interface Params {
 	/** Recorded on the manifest as the harness name. */
 	driverName: string;
 	config: LightsoutConfig;
+	/** The config as it was read from disk, before the command stamped its harness on it, and its path. Recorded on a fresh run; a resume's manifest already carries it. */
+	loadedConfig: LoadedConfig;
 	/** The answer to a question a previous invocation asked — the queue's relay loop threads it back in. */
 	answeredQuestion?: AnsweredQuestion;
 	/** Resolved before the run starts: a passing run will ship this branch. Recorded on the manifest so the progress view can show a ship row. */
@@ -158,6 +161,7 @@ const executeDirectWork = async ({
 	driver,
 	driverName,
 	config,
+	loadedConfig,
 	answeredQuestion,
 	willShip,
 	existing,
@@ -168,7 +172,7 @@ const executeDirectWork = async ({
 		await writeRunOwner({ cwd, runId: existing.runId, queueRunId });
 	}
 
-	const manifest = existing ?? (await createDirectRun({ cwd, runId, ticketBody, ticketRef, driverName, config, willShip, queueRunId }));
+	const manifest = existing ?? (await createDirectRun({ cwd, runId, ticketBody, ticketRef, driverName, loadedConfig, willShip, queueRunId }));
 	const run = new RunState({ cwd, config, manifest, onProgress });
 	const stop = ({ record, status, error }: { record: StepRecord; status: RunStatus; error: string }) => stopDirectRun({ run, record, status, error });
 

@@ -1,3 +1,4 @@
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { runPreflightGate } from '#src/common/utils/runPreflightGate.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
@@ -17,6 +18,8 @@ interface Params {
 	cwd: string;
 	driver: Driver;
 	config: LightsoutConfig;
+	/** The config as it was read from disk, before the command stamped its harness on it, and its path, recorded on a fresh run. */
+	loadedConfig: LoadedConfig;
 	/** Repo-relative check scope (default: the whole repo). */
 	path?: string;
 	/** Include baselined findings — burn-down mode. */
@@ -42,6 +45,7 @@ const executeRefactor = async ({
 	runId,
 	driver,
 	config,
+	loadedConfig,
 	path,
 	all,
 	maxBatches,
@@ -50,7 +54,7 @@ const executeRefactor = async ({
 	existing,
 	onProgress,
 }: Params & { runId: string }): Promise<RefactorResult> => {
-	const { manifest, worklist } = await initializeRun({ cwd, runId, driver, config, path, all, allowDirty, existing });
+	const { manifest, worklist } = await initializeRun({ cwd, runId, driver, config, loadedConfig, path, all, allowDirty, existing });
 	// Declines and the systemic streak survive park/resume boundaries — they
 	// are rebuilt from persisted step reports, never process memory.
 	const seeded = seedResumeState({ manifest, batches: worklist.batches });

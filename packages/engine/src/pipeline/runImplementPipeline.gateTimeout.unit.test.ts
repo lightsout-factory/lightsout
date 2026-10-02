@@ -72,7 +72,7 @@ const setupTimingOutVerifyRun = async () => {
 test('verify: a gate that runs past its ceiling on both attempts stops the step naming the gate and the ceiling, without a fix', async () => {
 	const { dir, driver, counts, config } = await setupTimingOutVerifyRun();
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 	const step = result.manifest.steps.find((step) => step.id === 'verify-implement');
 
 	// the timeout is named for what it is — which gate, and which ceiling it ran

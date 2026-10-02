@@ -122745,6 +122745,12 @@ var createProgressPrinter = () => {
 // src/cli/internal/common/utils/describeMissingPlanAddress.ts
 var describeMissingPlanAddress = ({ name, missing }) => `'${name}' is not a plan address, so there is no ${missing} \u2014 a plan of a work order is addressed as '<work-order-name>/<plan-id>', and \`lightsout work-order show --name ${name}\` lists the plans that work order holds`;
 
+// src/common/config/describeConfigIssues.ts
+var describeConfigIssues = ({ error: error51 }) => error51.issues.map((issue2) => {
+  const where = issue2.path.join(".");
+  return `  ${where === "" ? "" : `${where}: `}${issue2.message}`;
+});
+
 // src/contracts/ConfigAutoPlan.ts
 var ConfigAutoPlan = external_exports.object({
   /**
@@ -123320,13 +123326,6 @@ var LightsoutConfig = external_exports.object({
 });
 
 // src/common/config/parseConfig.ts
-var describeIssues = ({ error: error51, configPath }) => {
-  const lines = error51.issues.map((issue2) => {
-    const where = issue2.path.join(".");
-    return `  ${where === "" ? "" : `${where}: `}${issue2.message}`;
-  });
-  return [`lightsout.config.json at ${configPath} is not valid:`, ...lines].join("\n");
-};
 var parseConfig = ({ raw, configPath }) => {
   try {
     return LightsoutConfig.parse(JSON.parse(raw));
@@ -123334,7 +123333,7 @@ var parseConfig = ({ raw, configPath }) => {
     if (error51 instanceof SyntaxError) {
       throw new SyntaxError(`lightsout.config.json at ${configPath} is not valid JSON \u2014 ${messageOf({ error: error51 })}`);
     }
-    throw error51 instanceof external_exports.ZodError ? new Error(describeIssues({ error: error51, configPath })) : error51;
+    throw error51 instanceof external_exports.ZodError ? new Error([`lightsout.config.json at ${configPath} is not valid:`, ...describeConfigIssues({ error: error51 })].join("\n")) : error51;
   }
 };
 
@@ -126027,8 +126026,14 @@ var RunManifest = external_exports.object({
   parentRunId: external_exports.string().optional(),
   /** A resumed run must reuse it. */
   harness: external_exports.string(),
-  /** A record of what the run started with; resume executes with the current config file. */
-  config: LightsoutConfig.optional(),
+  /**
+   * The config the run is held to. Kept as plain data so a manifest stays
+   * readable when the engine's config schema changes; it is validated strictly
+   * only where a run uses it.
+   */
+  config: external_exports.record(external_exports.string(), external_exports.unknown()).optional(),
+  /** Absolute, because its reader stands in another checkout: the file the recorded config was read from. Absent on a run that has no recorded path. */
+  configPath: external_exports.string().optional(),
   status: external_exports.enum(RunStatus),
   currentStep: external_exports.string().nullable(),
   steps: external_exports.array(StepRecord),
@@ -126502,6 +126507,7 @@ var describeCommits = ({ manifest, ok }) => {
   }
   return ok && manifest.changedFiles.length > 0 ? "none added \u2014 this run\u2019s work was already in the branch\u2019s history" : void 0;
 };
+var describeConfigChange = ({ manifest }) => manifest.configPath !== void 0 && manifest.changedFiles.includes("lightsout.config.json") ? `lightsout.config.json changed during this run; this run kept the configuration it started with, from ${manifest.configPath}. Runs pick up the edit once it is in the checkout they start from.` : void 0;
 var renderCostLines = ({ manifest, summary }) => {
   const lines = [
     label({
@@ -126554,6 +126560,10 @@ var renderDetailLines = ({ manifest, summary, ok }) => {
         value: `unreachable-changed-files: ${manifest.unreachableChangedFiles.join(", ")} \u2014 changed, but no public surface reaches them; no tests cover them`
       })
     );
+  }
+  const configChange = describeConfigChange({ manifest });
+  if (configChange !== void 0) {
+    lines.push(label({ name: "config", value: configChange }));
   }
   lines.push(label({ name: "evidence", value: `.lightsout/runs/${manifest.runId}/` }));
   return lines;
@@ -131806,7 +131816,9 @@ var describeStandards = async ({ config: config2, cwd }) => {
 var printRunHeader = async ({ config: config2, driver, cwd, configPath }) => {
   const coverage = config2.gates["test-coverage"] === false ? "off (explicit)" : config2.gates["test-coverage"];
   console.log(`  cwd: ${cwd}`);
-  printConfigSource({ configPath });
+  if (configPath !== void 0) {
+    printConfigSource({ configPath });
+  }
   for (const line of await describeStandards({ config: config2, cwd })) {
     console.log(line);
   }
@@ -132004,7 +132016,7 @@ var createRun = async ({
   overview,
   parentRunId,
   driver,
-  config: config2,
+  loadedConfig,
   baselineDirtyFiles,
   willShip,
   queueRunId
@@ -132024,11 +132036,12 @@ var createRun = async ({
     overview: overview === void 0 ? void 0 : toRepoRelativePath({ cwd, path: overview }),
     parentRunId,
     harness: driver,
-    config: config2,
+    config: loadedConfig?.config,
     branch,
     // Absolute, because the reader that wants it stands in another checkout
     // and has nothing to join a relative path onto.
     workspace: resolve8(cwd),
+    configPath: loadedConfig?.path,
     willShip,
     status: RunStatus.Pending,
     currentStep: null,
@@ -132096,7 +132109,7 @@ ${missing.map((file2) => `  ${file2}`).join("\n")}`);
 var initializeSequence = async ({
   cwd,
   driver,
-  config: config2,
+  loadedConfig,
   overviewPath,
   startPhase,
   runId,
@@ -132128,7 +132141,7 @@ var initializeSequence = async ({
     const resume = formatResumeCommand({ pipeline: PipelineKind.Phases, runId: unfinished.runId });
     throw new Error(`an unfinished run for this plan already exists \u2014 resume with: ${resume}`);
   }
-  const created = await createRun({ cwd, runId, plan: overview, pipeline: PipelineKind.Phases, driver: driver.name, config: config2, willShip, queueRunId });
+  const created = await createRun({ cwd, runId, plan: overview, pipeline: PipelineKind.Phases, driver: driver.name, loadedConfig, willShip, queueRunId });
   const steps = phases.map((file2, index) => ({
     id: file2,
     status: index + 1 < firstPhase ? RunStatus.Passed : RunStatus.Pending,
@@ -146588,13 +146601,13 @@ var writeStandardsSnapshot = async ({ cwd, snapshot }) => {
 // src/standardsCheck/runStandardsCheck.ts
 var runStandardsCheck = async ({
   cwd,
+  config: config2,
   path,
   all = false,
   writeBaseline = false,
   persist = true,
   onProgress
 }) => {
-  const config2 = await readOptionalConfig({ cwd });
   const groups = await resolveStandardsGroups({ cwd, config: config2 });
   const checked = await runPackageChecks({
     cwd,
@@ -146622,7 +146635,7 @@ var runStandardsCheck = async ({
 var captureStandardsBaseline = async ({ run }) => {
   run.progress("capturing the pre-edit standards baseline over the whole repository \u2014 this is the last moment the tree is the state the run started from");
   try {
-    const { findings, notes } = await runStandardsCheck({ cwd: run.cwd, persist: false, all: true });
+    const { findings, notes } = await runStandardsCheck({ cwd: run.cwd, config: run.config, persist: false, all: true });
     await writeRunStandardsBaseline({
       cwd: run.cwd,
       runId: run.current().runId,
@@ -149088,7 +149101,7 @@ var standardsWorkList = async ({
   run,
   baseline
 }) => {
-  const { findings } = await runStandardsCheck({ cwd: run.cwd, persist: false, all: true });
+  const { findings } = await runStandardsCheck({ cwd: run.cwd, config: run.config, persist: false, all: true });
   const scoped = selectStandardsFindings({ findings, changedFiles: standardsScopeFiles({ run }) });
   const attributed = attributeStandardsFindings({ live: [...scoped.workList, ...scoped.advisories], baseline });
   const qualifying = [...attributed.introduced, ...attributed.worsened];
@@ -150169,6 +150182,7 @@ var executePipeline = async ({
   runId,
   driver,
   config: config2,
+  loadedConfig,
   planPath,
   overviewPath,
   parentRunId,
@@ -150198,7 +150212,7 @@ var executePipeline = async ({
       overview: overviewPath,
       parentRunId,
       driver: driver.name,
-      config: config2,
+      loadedConfig,
       baselineDirtyFiles: await readGitChangedFiles({ cwd }),
       willShip,
       queueRunId
@@ -150264,6 +150278,7 @@ var runPhase = async ({
   cwd,
   driver,
   config: config2,
+  loadedConfig,
   manifest,
   index,
   step,
@@ -150299,6 +150314,7 @@ var runPhase = async ({
       cwd,
       driver,
       config: config2,
+      loadedConfig,
       runId: childRunId,
       planPath: join100(dirname26(current.plan), step.id),
       overviewPath: current.plan,
@@ -150354,6 +150370,7 @@ var runPhasesPipeline = async ({
   cwd,
   driver,
   config: config2,
+  loadedConfig,
   overviewPath,
   startPhase,
   runId,
@@ -150368,7 +150385,7 @@ var runPhasesPipeline = async ({
   if (holder !== void 0) {
     throw new RunLockError(describeRunLockHolder({ holder }));
   }
-  const initialized = await initializeSequence({ cwd, driver, config: config2, overviewPath, startPhase, runId, existing, willShip, queueRunId });
+  const initialized = await initializeSequence({ cwd, driver, loadedConfig, overviewPath, startPhase, runId, existing, willShip, queueRunId });
   let manifest = initialized.manifest;
   const sink = createProgressSink({ cwd, runId: manifest.runId });
   const narrate = (message) => {
@@ -150384,6 +150401,7 @@ var runPhasesPipeline = async ({
       cwd,
       driver,
       config: config2,
+      loadedConfig,
       manifest,
       index,
       step,
@@ -150432,6 +150450,12 @@ ${error51.message}`);
     throw error51;
   }
 };
+
+// src/common/config/readLoadedConfig.ts
+var readLoadedConfig = async ({ cwd }) => ({
+  config: await readConfig({ cwd }),
+  path: resolveConfigPath({ cwd })
+});
 
 // src/plan/progress/recordPlanCommandRun.ts
 import { stat as stat12 } from "node:fs/promises";
@@ -150885,6 +150909,7 @@ var runResolvedPipeline = ({
   runId,
   driver,
   config: config2,
+  loadedConfig,
   skipRefactor,
   willShip
 }) => (
@@ -150898,6 +150923,7 @@ var runResolvedPipeline = ({
       cwd: workspace,
       driver,
       config: config2,
+      loadedConfig,
       overviewPath: target.overviewPath,
       startPhase,
       runId,
@@ -150913,6 +150939,7 @@ var runResolvedPipeline = ({
       runId,
       driver,
       config: config2,
+      loadedConfig,
       skipRefactor,
       willShip,
       level,
@@ -150939,7 +150966,8 @@ var implementCommand = async ({ flags, rest, cwd }) => {
   }
   const { planPath, overviewPath, packages, startPhase, planName, shipRequest } = inputs;
   const skipRefactor = flags.get("skip-refactor") === true;
-  const loaded = await readConfig({ cwd });
+  const loadedConfig = await readLoadedConfig({ cwd });
+  const { config: loaded, path: configPath } = loadedConfig;
   const { driverName, model, effort } = resolveCommandHarness({ config: loaded, command: "implement" });
   const driver = getDriver({ name: driverName });
   const config2 = { ...loaded, harness: driverName, model, effort };
@@ -150958,7 +150986,7 @@ var implementCommand = async ({ flags, rest, cwd }) => {
     console.error(refused);
     return exitCli({ code: 1 });
   }
-  await printRunStart({ target, overviewPath, packages, startPhase, config: config2, driver, cwd: workspace.cwd, configPath: resolveConfigPath({ cwd }) });
+  await printRunStart({ target, overviewPath, packages, startPhase, config: config2, driver, cwd: workspace.cwd, configPath });
   const outcome = await runWorkOrderPlanLifecycle({
     cwd: workspace.cwd,
     name: planName,
@@ -150974,6 +151002,7 @@ var implementCommand = async ({ flags, rest, cwd }) => {
       runId,
       driver,
       config: config2,
+      loadedConfig,
       skipRefactor,
       willShip: shipIntent.willShip
     })
@@ -151093,7 +151122,7 @@ ${gates.error}` });
 // src/direct/internal/common/utils/createDirectRun.ts
 import { writeFile as writeFile18 } from "node:fs/promises";
 import { join as join105 } from "node:path";
-var createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, config: config2, willShip, queueRunId }) => {
+var createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, loadedConfig, willShip, queueRunId }) => {
   const workOrderName = await readGitCurrentBranch({ cwd });
   const ticketPath = join105(await resolveNewRunDir({ cwd, workOrderName, pipeline: PipelineKind.Direct, runId }), "ticket.md");
   const manifest = await createRun({
@@ -151103,7 +151132,7 @@ var createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, co
     pipeline: PipelineKind.Direct,
     ticketRef,
     driver: driverName,
-    config: config2,
+    loadedConfig,
     baselineDirtyFiles: await readGitChangedFiles({ cwd }),
     willShip,
     queueRunId
@@ -151347,6 +151376,7 @@ var executeDirectWork = async ({
   driver,
   driverName,
   config: config2,
+  loadedConfig,
   answeredQuestion,
   willShip,
   existing,
@@ -151356,7 +151386,7 @@ var executeDirectWork = async ({
   if (existing !== void 0) {
     await writeRunOwner({ cwd, runId: existing.runId, queueRunId });
   }
-  const manifest = existing ?? await createDirectRun({ cwd, runId, ticketBody, ticketRef, driverName, config: config2, willShip, queueRunId });
+  const manifest = existing ?? await createDirectRun({ cwd, runId, ticketBody, ticketRef, driverName, loadedConfig, willShip, queueRunId });
   const run = new RunState({ cwd, config: config2, manifest, onProgress });
   const stop = ({ record: record3, status, error: error51 }) => stopDirectRun({ run, record: record3, status, error: error51 });
   await run.update({ patch: { status: RunStatus.Running, stepOrder: ["pre-flight", "implement", "verify"] } });
@@ -151468,9 +151498,10 @@ var runDirectBuild = async ({
   driver,
   driverName,
   config: config2,
+  loadedConfig,
   willShip
 }) => {
-  const build = (runId) => runDirectWork({ cwd, ticketBody, ticketRef, runId, driver, driverName, config: config2, willShip, onProgress: createProgressPrinter() });
+  const build = (runId) => runDirectWork({ cwd, ticketBody, ticketRef, runId, driver, driverName, config: config2, loadedConfig, willShip, onProgress: createProgressPrinter() });
   const outcome = await runRecordedBuild({ cwd, target, build });
   if ("refusal" in outcome) {
     return { refusal: outcome.refusal };
@@ -151516,7 +151547,8 @@ var implementDirectCommand = async ({ flags, cwd }) => {
     console.error(`ticket file not found: ${namedTicketPath}`);
     return exitCli({ code: 1 });
   }
-  const loaded = await readConfig({ cwd });
+  const loadedConfig = await readLoadedConfig({ cwd });
+  const { config: loaded, path: configPath } = loadedConfig;
   const shipIntent = resolveCommandShipIntent({ config: loaded, flags, env: process.env });
   if (shipIntent === void 0) {
     return exitCli({ code: 1 });
@@ -151534,7 +151566,7 @@ var implementDirectCommand = async ({ flags, cwd }) => {
     return exitCli({ code: 1 });
   }
   const { ticketRef, config: config2, driver, driverName, target } = prepared;
-  printDirectRunHeader({ workspace, ticketRef, ticketPath, configPath: resolveConfigPath({ cwd }) });
+  printDirectRunHeader({ workspace, ticketRef, ticketPath, configPath });
   const built = await runDirectBuild({
     cwd: workspace.cwd,
     target,
@@ -151543,6 +151575,7 @@ var implementDirectCommand = async ({ flags, cwd }) => {
     driver,
     driverName,
     config: config2,
+    loadedConfig,
     willShip: shipIntent.willShip
   });
   if ("refusal" in built) {
@@ -159987,11 +160020,11 @@ var startCoordinatorRun = async ({
   cwd,
   runId,
   driverName,
-  config: config2
+  loadedConfig
 }) => {
   const coordinatorRunDir = await resolveNewRunDir({ cwd, pipeline: PipelineKind.Queue, runId });
   const planPath = join143(coordinatorRunDir, "queue.md");
-  const manifest = await createRun({ cwd, runId, plan: planPath, pipeline: PipelineKind.Queue, driver: driverName, config: config2 });
+  const manifest = await createRun({ cwd, runId, plan: planPath, pipeline: PipelineKind.Queue, driver: driverName, loadedConfig });
   await writeManifestWithUsage({ cwd, manifest, patch: { status: RunStatus.Running }, usageTotals: seedUsageTotals({ usage: manifest.usage }) });
   return { coordinatorRunDir, planPath, manifest };
 };
@@ -161036,7 +161069,7 @@ var removeRunOwner = async ({ cwd, runId }) => {
 
 // src/queue/workers/internal/common/utils/buildFromTicketBody.ts
 var buildFromTicketBody = async ({ step }) => {
-  const { cwd, record: record3, plan, ticket, config: config2, driver, driverName, onProgress, queueRunId } = step;
+  const { cwd, record: record3, plan, ticket, config: config2, loadedConfig, driver, driverName, onProgress, queueRunId } = step;
   const run = async ({ runId }) => {
     try {
       return await runDirectWork({
@@ -161047,6 +161080,7 @@ var buildFromTicketBody = async ({ step }) => {
         driver,
         driverName,
         config: config2,
+        loadedConfig,
         onProgress,
         queueRunId
       });
@@ -161139,7 +161173,7 @@ var settleLeftoverWork = async ({ step, leftover }) => {
 
 // src/queue/workers/internal/runPlanFolderPipeline.ts
 import { join as join146 } from "node:path";
-var runPlanFolderPipeline = async ({ cwd, name, config: config2, driver, onProgress, queueRunId }) => {
+var runPlanFolderPipeline = async ({ cwd, name, config: config2, loadedConfig, driver, onProgress, queueRunId }) => {
   const folder = await planWorkspaceDir({ cwd, name });
   const overviewPath = join146(folder, "overview.md");
   const phased = await pathExists({ path: overviewPath });
@@ -161153,7 +161187,7 @@ var runPlanFolderPipeline = async ({ cwd, name, config: config2, driver, onProgr
           name,
           label: "implement",
           statusOf: ({ result }) => result.manifest.status,
-          work: ({ level }) => phased ? runPhasesPipeline({ cwd, driver, config: config2, overviewPath, runId, level, onProgress, queueRunId }) : runImplementPipeline({ cwd, driver, config: config2, planPath: join146(folder, "plan.md"), runId, level, onProgress, queueRunId })
+          work: ({ level }) => phased ? runPhasesPipeline({ cwd, driver, config: config2, loadedConfig, overviewPath, runId, level, onProgress, queueRunId }) : runImplementPipeline({ cwd, driver, config: config2, loadedConfig, planPath: join146(folder, "plan.md"), runId, level, onProgress, queueRunId })
         });
       } finally {
         await removeRunOwner({ cwd, runId });
@@ -161185,7 +161219,7 @@ var takePlanBeingPlanned = ({ step, allowTicketBodyBuild }) => {
   return buildFromTicketBody({ step });
 };
 var buildReadyPlan = async ({ step }) => {
-  const { cwd, record: record3, plan, config: config2, env, driver, onProgress, queueRunId } = step;
+  const { cwd, record: record3, plan, config: config2, loadedConfig, env, driver, onProgress, queueRunId } = step;
   const address = formatPlanAddress({ workOrderName: record3.name, planId: plan.id });
   if (!await pathExists({ path: await planWorkspaceDir({ cwd, name: address }) })) {
     const restored = await restoreWorkOrderPlan({ cwd, address, config: config2, env, onProgress });
@@ -161197,7 +161231,7 @@ var buildReadyPlan = async ({ step }) => {
       return { error: `plan ${plan.id} is ready to implement on work order ${record3.name}, but nothing${carrier} carries published files for it` };
     }
   }
-  return runPlanFolderPipeline({ cwd, name: address, config: config2, driver, onProgress, queueRunId });
+  return runPlanFolderPipeline({ cwd, name: address, config: config2, loadedConfig, driver, onProgress, queueRunId });
 };
 var confirmPlanImplemented = async ({ step, workOrderName }) => {
   const { cwd, plan } = step;
@@ -161219,6 +161253,7 @@ var buildWorkOrderPlans = async ({
   ticket,
   record: record3,
   config: config2,
+  loadedConfig,
   env,
   driver,
   driverName,
@@ -161227,8 +161262,9 @@ var buildWorkOrderPlans = async ({
   onProgress,
   queueRunId
 }) => {
+  const stepInputs = { cwd, ticket, config: config2, loadedConfig, env, driver, driverName, workOrderRunDir, onProgress, queueRunId };
   if (allowTicketBodyBuild && isPlanlessWorkOrder({ record: record3 })) {
-    return buildPlanlessWorkOrder({ step: { cwd, record: record3, ticket, config: config2, env, driver, driverName, workOrderRunDir, onProgress, queueRunId }, workOrderName });
+    return buildPlanlessWorkOrder({ step: { ...stepInputs, record: record3 }, workOrderName });
   }
   const leftover = await readLeftoverWork({ cwd, config: config2 });
   let current = record3;
@@ -161238,7 +161274,7 @@ var buildWorkOrderPlans = async ({
     if (plan === void 0) {
       return decideTicketOutcome({ record: current });
     }
-    const step = { cwd, record: current, plan, ticket, config: config2, env, driver, driverName, workOrderRunDir, onProgress, queueRunId };
+    const step = { ...stepInputs, record: current, plan };
     const stalled = findStalledPlanRefusal({ record: current, plan });
     if (stalled !== void 0) {
       return { error: stalled };
@@ -161557,6 +161593,7 @@ var runAutoPlanWorker = async ({
   ticket,
   workOrderName,
   config: config2,
+  loadedConfig,
   driver,
   driverName,
   settings,
@@ -161576,6 +161613,7 @@ var runAutoPlanWorker = async ({
     ticket,
     record: record3,
     config: config2,
+    loadedConfig,
     env,
     driver,
     driverName,
@@ -161609,6 +161647,7 @@ var runDirectWorker = async ({
   workOrderName,
   ticket,
   config: config2,
+  loadedConfig,
   driver,
   driverName,
   answeredQuestion,
@@ -161628,6 +161667,7 @@ var runDirectWorker = async ({
           driver,
           driverName,
           config: config2,
+          loadedConfig,
           answeredQuestion,
           onProgress,
           queueRunId
@@ -161647,6 +161687,7 @@ var runPlanWorker = async ({
   ticket,
   workOrderName,
   config: config2,
+  loadedConfig,
   driver,
   driverName,
   env,
@@ -161665,6 +161706,7 @@ var runPlanWorker = async ({
       ticket,
       record: pulled.record,
       config: config2,
+      loadedConfig,
       env,
       driver,
       driverName,
@@ -161675,13 +161717,14 @@ var runPlanWorker = async ({
     });
   }
   onProgress?.(`${ticket.identifier} carries no published plan, so it is built from the ticket body`);
-  return runDirectWorker({ cwd, workOrderName, ticket, config: config2, driver, driverName, onProgress, queueRunId });
+  return runDirectWorker({ cwd, workOrderName, ticket, config: config2, loadedConfig, driver, driverName, onProgress, queueRunId });
 };
 var runWorkerWithRelay = async ({
   worktreePath,
   workOrderName,
   ticket,
   config: config2,
+  loadedConfig,
   driver,
   driverName,
   settings,
@@ -161693,25 +161736,13 @@ var runWorkerWithRelay = async ({
   onProgress
 }) => {
   const maxRelayedQuestions = 2;
+  const workerInputs = { cwd: worktreePath, workOrderName, ticket, config: config2, loadedConfig, driver, driverName, onProgress, queueRunId: coordinatorRunId };
   let answeredQuestion;
   for (let turn = 0; ; turn += 1) {
     const workers = {
-      [QueueWorker.Direct]: () => runDirectWorker({ cwd: worktreePath, workOrderName, ticket, config: config2, driver, driverName, answeredQuestion, onProgress, queueRunId: coordinatorRunId }),
-      [QueueWorker.Plan]: () => runPlanWorker({ cwd: worktreePath, ticket, workOrderName, config: config2, driver, driverName, env, workOrderRunDir, onProgress, queueRunId: coordinatorRunId }),
-      [QueueWorker.AutoPlan]: () => runAutoPlanWorker({
-        cwd: worktreePath,
-        ticket,
-        workOrderName,
-        config: config2,
-        driver,
-        driverName,
-        settings,
-        env,
-        workOrderRunDir,
-        answeredQuestion,
-        onProgress,
-        queueRunId: coordinatorRunId
-      })
+      [QueueWorker.Direct]: () => runDirectWorker({ ...workerInputs, answeredQuestion }),
+      [QueueWorker.Plan]: () => runPlanWorker({ ...workerInputs, env, workOrderRunDir }),
+      [QueueWorker.AutoPlan]: () => runAutoPlanWorker({ ...workerInputs, settings, env, workOrderRunDir, answeredQuestion })
     };
     const outcome = await workers[ticket.worker]();
     if (outcome.question === void 0) {
@@ -161761,6 +161792,7 @@ var runQueueWorkOrder = async ({
   trackerSettings,
   workOrder,
   config: config2,
+  loadedConfig,
   driver,
   driverName,
   defaultBranch,
@@ -161788,6 +161820,7 @@ var runQueueWorkOrder = async ({
     ticket,
     workOrderName: name,
     config: config2,
+    loadedConfig,
     driver,
     driverName,
     settings,
@@ -161815,7 +161848,16 @@ var runQueueWorkOrder = async ({
 };
 
 // src/queue/internal/settleEmptyDrain.ts
-var settleEmptyDrain = async ({ cwd, runId, recordEmptyDrain, driverName, config: config2, first, parked, onProgress }) => {
+var settleEmptyDrain = async ({
+  cwd,
+  runId,
+  recordEmptyDrain,
+  driverName,
+  loadedConfig,
+  first,
+  parked,
+  onProgress
+}) => {
   onProgress?.(
     first.blocked.length > 0 ? "nothing to do \u2014 every eligible ticket is waiting on an unfinished blocker" : "nothing to do \u2014 no eligible tickets, and no parked worktrees to pick up"
   );
@@ -161826,7 +161868,7 @@ var settleEmptyDrain = async ({ cwd, runId, recordEmptyDrain, driverName, config
   return withRunLock({
     params: { cwd, runId, onProgress },
     run: async ({ runId: lockedRunId }) => {
-      const { manifest } = await startCoordinatorRun({ cwd, runId: lockedRunId, driverName, config: config2 });
+      const { manifest } = await startCoordinatorRun({ cwd, runId: lockedRunId, driverName, loadedConfig });
       await writeManifestWithUsage({
         cwd,
         manifest,
@@ -162143,6 +162185,7 @@ var drainAndShip = async ({
   trackerSettings,
   shipSettings,
   config: config2,
+  loadedConfig,
   env,
   driver,
   driverName,
@@ -162153,7 +162196,7 @@ var drainAndShip = async ({
   holds,
   onProgress
 }) => {
-  const { coordinatorRunDir, planPath, manifest } = await startCoordinatorRun({ cwd, runId, driverName, config: config2 });
+  const { coordinatorRunDir, planPath, manifest } = await startCoordinatorRun({ cwd, runId, driverName, loadedConfig });
   const serializeMainCheckout = createMainCheckoutSerializer();
   const board = new QueueBoardRecorder({ cwd, runId, onProgress });
   const boardRelay = new BoardQuestionRelay({ relay, board });
@@ -162183,6 +162226,7 @@ var drainAndShip = async ({
       trackerSettings,
       workOrder,
       config: config2,
+      loadedConfig,
       driver,
       driverName,
       defaultBranch,
@@ -162208,6 +162252,7 @@ var runQueue = async ({
   trackerSettings,
   shipSettings,
   config: config2,
+  loadedConfig,
   env,
   driver,
   driverName,
@@ -162236,7 +162281,7 @@ var runQueue = async ({
     onProgress
   });
   if (first.runnable.length === 0 && parked.outcomes.length === 0 && parked.merged.length === 0) {
-    return settleEmptyDrain({ cwd, runId, recordEmptyDrain, driverName, config: config2, first, parked, onProgress });
+    return settleEmptyDrain({ cwd, runId, recordEmptyDrain, driverName, loadedConfig, first, parked, onProgress });
   }
   return withRunLock({
     params: { cwd, runId, onProgress },
@@ -162247,6 +162292,7 @@ var runQueue = async ({
       trackerSettings,
       shipSettings,
       config: config2,
+      loadedConfig,
       env,
       driver,
       driverName,
@@ -162389,14 +162435,14 @@ var queueCommand = async ({ flags, rest, cwd }) => {
   if (flags.has("detach")) {
     return launchDetachedQueue({ flags, rest, cwd });
   }
-  const loaded = await readConfig({ cwd });
-  const startup = resolveQueueStartup({ config: loaded, env: process.env });
+  const loadedConfig = await readLoadedConfig({ cwd });
+  const startup = resolveQueueStartup({ config: loadedConfig.config, env: process.env });
   if ("error" in startup) {
     console.error(startup.error);
     return exitCli({ code: 1 });
   }
   const { settings, trackerSettings, shipSettings } = startup;
-  const { config: config2, driver, driverName } = resolveEffectiveConfigAndDriver({ config: loaded, command: "implement" });
+  const { config: config2, driver, driverName } = resolveEffectiveConfigAndDriver({ config: loadedConfig.config, command: "implement" });
   const requested = flags.get("file-relay");
   if (requested !== void 0) {
     const holder = await readRunLock({ cwd });
@@ -162420,6 +162466,7 @@ var queueCommand = async ({ flags, rest, cwd }) => {
     trackerSettings,
     shipSettings,
     config: config2,
+    loadedConfig,
     env: process.env,
     driver,
     driverName,
@@ -162506,14 +162553,36 @@ ${bold(`refactor ${formatShortRunId({ runId: manifest.runId })}`)} \u2014 ${stat
 // src/cli/internal/common/utils/exitForRunResult.ts
 var exitForRunResult = ({ ok, manifest }) => exitCli({ code: getRunResultExitCode({ ok, manifest }) });
 
+// src/common/config/readRunConfig.ts
+var describeRejection = ({ manifest, error: error51 }) => {
+  const recordedAt = manifest.configPath === void 0 ? "" : ` (read from ${manifest.configPath})`;
+  return [
+    `run ${manifest.runId} recorded a configuration${recordedAt} that this engine does not accept:`,
+    ...describeConfigIssues({ error: error51 }),
+    "start a new run"
+  ].join("\n");
+};
+var readRunConfig = ({ manifest }) => {
+  if (manifest.config === void 0) {
+    return {
+      error: `run ${manifest.runId} recorded no configuration, so it cannot continue on the configuration it started with \u2014 start a new run`
+    };
+  }
+  const parsed = LightsoutConfig.safeParse(manifest.config);
+  return parsed.success ? { config: parsed.data } : { error: describeRejection({ manifest, error: parsed.error }) };
+};
+
 // src/cli/internal/common/utils/runBatchedCommand.ts
+var loadConfig = async ({ cwd, existing }) => {
+  if (existing === void 0) {
+    return readLoadedConfig({ cwd });
+  }
+  const recorded = readRunConfig({ manifest: existing });
+  return "error" in recorded ? recorded : { config: recorded.config, path: existing.configPath };
+};
 var runBatchedCommand = async ({ flags, cwd, command, run, print }) => {
   const resumeRunId = getStringFlag({ flags, name: "run" });
   const maxBatchesFlag = getStringFlag({ flags, name: "max-batches" });
-  const loaded = await readConfig({ cwd });
-  const { driverName, model, effort } = resolveCommandHarness({ config: loaded, command });
-  const driver = getDriver({ name: driverName });
-  const config2 = { ...loaded, harness: driverName, model, effort };
   const maxBatches = maxBatchesFlag === void 0 ? void 0 : Number.parseInt(maxBatchesFlag, 10);
   if (maxBatches !== void 0 && (!Number.isFinite(maxBatches) || maxBatches < 1)) {
     console.error(`--max-batches must be a positive integer, got '${maxBatchesFlag}'`);
@@ -162526,11 +162595,21 @@ var runBatchedCommand = async ({ flags, cwd, command, run, print }) => {
     console.error(messageOf({ error: error51 }));
     return exitCli({ code: 1 });
   }
+  const loaded = await loadConfig({ cwd, existing });
+  if ("error" in loaded) {
+    console.error(loaded.error);
+    return exitCli({ code: 1 });
+  }
+  const { driverName, model, effort } = resolveCommandHarness({ config: loaded.config, command });
+  const driver = getDriver({ name: driverName });
+  const config2 = { ...loaded.config, harness: driverName, model, effort };
   console.log(`lightsout: ${command} ${existing ? `resuming run ${existing.runId}` : "starting run"}`);
-  printConfigSource({ configPath: resolveConfigPath({ cwd }) });
+  if (loaded.path !== void 0) {
+    printConfigSource({ configPath: loaded.path });
+  }
   let result;
   try {
-    result = await run({ config: config2, driver, maxBatches, existing });
+    result = await run({ config: config2, loadedConfig: loaded, driver, maxBatches, existing });
   } catch (error51) {
     console.error(`
 ${error51 instanceof RunLockError ? error51.message : messageOf({ error: error51 })}`);
@@ -162653,7 +162732,7 @@ var batchFindings = ({ blocking, advisories, packagesDir }) => {
 
 // src/refactor/internal/buildWorklist.ts
 var buildWorklist = async ({ cwd, config: config2, path, all = false }) => {
-  const { findings } = await runStandardsCheck({ cwd, path, all, persist: false });
+  const { findings } = await runStandardsCheck({ cwd, config: config2, path, all, persist: false });
   return {
     at: (/* @__PURE__ */ new Date()).toISOString(),
     path: path ?? ".",
@@ -162674,6 +162753,7 @@ var initializeRun = async ({
   runId,
   driver,
   config: config2,
+  loadedConfig,
   path,
   all,
   allowDirty = false,
@@ -162702,7 +162782,15 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
   }
   const worklist = await buildWorklist({ cwd, config: config2, path, all });
   const worklistPath = join149(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Refactor, runId }), "worklist.json");
-  const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Refactor, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
+  const manifest = await createRun({
+    cwd,
+    runId,
+    plan: worklistPath,
+    pipeline: PipelineKind.Refactor,
+    driver: driver.name,
+    loadedConfig,
+    baselineDirtyFiles: dirty
+  });
   await writeJsonFile({ path: worklistPath, value: worklist });
   return { manifest, worklist };
 };
@@ -162734,7 +162822,13 @@ var countByRule = ({ findings }) => {
 
 // src/refactor/internal/closeRefactorRun.ts
 var closeRefactorRun = async ({ run, worklist }) => {
-  const finalCheck = await runStandardsCheck({ cwd: run.cwd, path: worklist.path === "." ? void 0 : worklist.path, all: worklist.all, persist: false });
+  const finalCheck = await runStandardsCheck({
+    cwd: run.cwd,
+    config: run.config,
+    path: worklist.path === "." ? void 0 : worklist.path,
+    all: worklist.all,
+    persist: false
+  });
   const after = countByRule({ findings: finalCheck.findings.filter((finding6) => finding6.severity === StandardsSeverity.Blocking) });
   const introduced = findIntroducedFindings({
     frozen: worklist.batches.flatMap((batch) => batch.blocking),
@@ -162949,8 +163043,8 @@ var matchRemainingFindings = ({ frozen, live: live2 }) => {
 };
 
 // src/refactor/batch/internal/createSiteChecker.ts
-var createSiteChecker = ({ cwd, checkPath, checkAll }) => {
-  const checkLive = () => runStandardsCheck({ cwd, path: checkPath, all: checkAll, persist: false });
+var createSiteChecker = ({ cwd, config: config2, checkPath, checkAll }) => {
+  const checkLive = () => runStandardsCheck({ cwd, config: config2, path: checkPath, all: checkAll, persist: false });
   const remainingSiteKeys = async ({ frozen }) => {
     const { findings } = await checkLive();
     return matchRemainingFindings({ frozen, live: findings });
@@ -163209,7 +163303,7 @@ var createBatchTools = ({
   recordUsage
 }) => {
   const { rationale, reportedFiles, advisoryOutcomes, reportOf, changedFiles, finish } = createBatchRecorder({ cwd, config: config2, attributedFiles });
-  const { checkLive, remainingSiteKeys } = createSiteChecker({ cwd, checkPath, checkAll });
+  const { checkLive, remainingSiteKeys } = createSiteChecker({ cwd, config: config2, checkPath, checkAll });
   let invocationCount = 0;
   const invoke = ({ label: label2, invocation }) => {
     invocationCount += 1;
@@ -163617,6 +163711,7 @@ var executeRefactor = async ({
   runId,
   driver,
   config: config2,
+  loadedConfig,
   path,
   all,
   maxBatches,
@@ -163625,7 +163720,7 @@ var executeRefactor = async ({
   existing,
   onProgress
 }) => {
-  const { manifest, worklist } = await initializeRun({ cwd, runId, driver, config: config2, path, all, allowDirty, existing });
+  const { manifest, worklist } = await initializeRun({ cwd, runId, driver, config: config2, loadedConfig, path, all, allowDirty, existing });
   const seeded = seedResumeState({ manifest, batches: worklist.batches });
   const before = countByRule({ findings: worklist.batches.flatMap((batch) => batch.blocking) });
   const run = new RefactorRun({ cwd, config: config2, manifest, onProgress, declined: seeded.declined, before });
@@ -163669,10 +163764,11 @@ var refactorCommand = ({ flags, cwd }) => runBatchedCommand({
   cwd,
   command: "refactor",
   print: printRefactorResult,
-  run: ({ config: config2, driver, maxBatches, existing }) => runRefactorPipeline({
+  run: ({ config: config2, loadedConfig, driver, maxBatches, existing }) => runRefactorPipeline({
     cwd,
     driver,
     config: config2,
+    loadedConfig,
     path: getStringFlag({ flags, name: "path" }),
     all: flags.get("all") === true,
     maxBatches,
@@ -164177,29 +164273,6 @@ var reportCommand = async ({ cwd, flags }) => {
   return exitCli({ code: 0 });
 };
 
-// src/cli/internal/common/implementRun/continueDirectRun.ts
-import { readFile as readFile65 } from "node:fs/promises";
-import { resolve as resolve19 } from "node:path";
-var readFrozenTicket = ({ cwd, manifest }) => readFile65(resolve19(cwd, manifest.plan), "utf8").catch(() => void 0);
-var continueDirectRun = async ({ cwd, workspace, manifest, config: config2, driver, willShip }) => {
-  const ticketBody = await readFrozenTicket({ cwd, manifest });
-  if (ticketBody === void 0) {
-    console.error(`ticket file not found: ${manifest.plan}`);
-    return exitCli({ code: 1 });
-  }
-  return runDirectWork({
-    cwd: workspace,
-    ticketBody,
-    ticketRef: manifest.ticketRef ?? manifest.branch ?? "ticket",
-    driver,
-    driverName: manifest.harness,
-    config: config2,
-    existing: manifest,
-    willShip,
-    onProgress: createProgressPrinter()
-  });
-};
-
 // src/cli/internal/common/implementRun/readResumedPlanName.ts
 var readResumedPlanName = async ({ cwd, manifest }) => {
   const fromPath = await planNameFromPath({ cwd, planPath: manifest.plan });
@@ -164280,6 +164353,50 @@ var reportLiveOwner = async ({ cwd, manifest }) => {
   return true;
 };
 
+// src/cli/internal/common/implementRun/continueDirectRun.ts
+import { readFile as readFile65 } from "node:fs/promises";
+import { resolve as resolve19 } from "node:path";
+var readFrozenTicket = ({ cwd, manifest }) => readFile65(resolve19(cwd, manifest.plan), "utf8").catch(() => void 0);
+var continueDirectRun = async ({ cwd, workspace, manifest, config: config2, loadedConfig, driver, willShip }) => {
+  const ticketBody = await readFrozenTicket({ cwd, manifest });
+  if (ticketBody === void 0) {
+    console.error(`ticket file not found: ${manifest.plan}`);
+    return exitCli({ code: 1 });
+  }
+  return runDirectWork({
+    cwd: workspace,
+    ticketBody,
+    ticketRef: manifest.ticketRef ?? manifest.branch ?? "ticket",
+    driver,
+    driverName: manifest.harness,
+    config: config2,
+    loadedConfig,
+    existing: manifest,
+    willShip,
+    onProgress: createProgressPrinter()
+  });
+};
+
+// src/cli/internal/common/implementRun/runResumedPipeline.ts
+var runResumedPipeline = ({
+  pipeline,
+  cwd,
+  workspace,
+  driver,
+  config: config2,
+  loadedConfig,
+  willShip,
+  resumable,
+  skipRefactor,
+  level
+}) => {
+  if (pipeline === PipelineKind.Direct) {
+    return continueDirectRun({ cwd, workspace, manifest: resumable, config: config2, loadedConfig, driver, willShip });
+  }
+  const params = { cwd: workspace, driver, config: config2, loadedConfig, existing: resumable, skipRefactor, level, onProgress: createProgressPrinter() };
+  return pipeline === PipelineKind.Phases ? runPhasesOrFailFast(params) : runPipelineOrFailFast(params);
+};
+
 // src/cli/resumeCommand.ts
 var resumedHere = [PipelineKind.Implement, PipelineKind.Phases, PipelineKind.Direct];
 var readNamedRun = async ({ cwd, flags }) => {
@@ -164319,22 +164436,18 @@ var readResumableRun = async ({ cwd, flags }) => {
   }
   return { manifest, pipeline };
 };
-var runResumedPipeline = ({
-  pipeline,
-  cwd,
-  workspace,
-  driver,
-  config: config2,
-  willShip,
-  resumable,
-  skipRefactor,
-  level
-}) => {
-  if (pipeline === PipelineKind.Direct) {
-    return continueDirectRun({ cwd, workspace, manifest: resumable, config: config2, driver, willShip });
+var locateResumedRun = async ({ cwd, manifest }) => {
+  const located = await resolveRunCwd({ cwd, manifest });
+  if ("error" in located) {
+    console.error(located.error);
+    return exitCli({ code: 1 });
   }
-  const params = { cwd: workspace, driver, config: config2, existing: resumable, skipRefactor, level, onProgress: createProgressPrinter() };
-  return pipeline === PipelineKind.Phases ? runPhasesOrFailFast(params) : runPipelineOrFailFast(params);
+  const recorded = readRunConfig({ manifest });
+  if ("error" in recorded) {
+    console.error(recorded.error);
+    return exitCli({ code: 1 });
+  }
+  return { workspace: located.workspace, loaded: recorded.config };
 };
 var prepareResumedRun = async ({ cwd, manifest, loaded, willShip }) => {
   const resumable = manifest.willShip === true === willShip ? manifest : await writeRunManifest({ cwd, manifest: { ...manifest, willShip } });
@@ -164366,13 +164479,8 @@ var resumeCommand = async ({ flags, rest, cwd }) => {
   if (await reportLiveOwner({ cwd, manifest })) {
     return exitCli({ code: 1 });
   }
-  const located = await resolveRunCwd({ cwd, manifest });
-  if ("error" in located) {
-    console.error(located.error);
-    return exitCli({ code: 1 });
-  }
-  const workspace = located.workspace;
-  const loaded = await readConfig({ cwd });
+  const { workspace, loaded } = await locateResumedRun({ cwd, manifest });
+  const loadedConfig = { config: loaded, path: manifest.configPath };
   const clearance = await readResumeClearance({ workspace, manifest, loaded, flags });
   if (clearance === void 0) {
     return exitCli({ code: 1 });
@@ -164380,7 +164488,7 @@ var resumeCommand = async ({ flags, rest, cwd }) => {
   const { name, shipIntent } = clearance;
   const { resumable, config: config2, driver } = await prepareResumedRun({ cwd, manifest, loaded, willShip: shipIntent.willShip });
   console.log(`lightsout: resuming run ${manifest.runId} (was: ${manifest.status}, plan: ${manifest.plan})`);
-  await printRunHeader({ config: config2, driver, cwd, configPath: resolveConfigPath({ cwd }) });
+  await printRunHeader({ config: config2, driver, cwd, configPath: manifest.configPath });
   const outcome = await runWorkOrderPlanLifecycle({
     cwd: workspace,
     name,
@@ -164396,6 +164504,7 @@ var resumeCommand = async ({ flags, rest, cwd }) => {
         workspace,
         driver,
         config: config2,
+        loadedConfig,
         willShip: shipIntent.willShip,
         resumable,
         skipRefactor,
@@ -164581,7 +164690,12 @@ var selfCheckCommand = async ({ flags, cwd }) => {
     return exitCli({ code: 1 });
   }
   const { manifest } = found;
-  const config2 = await readConfig({ cwd });
+  const recorded = readRunConfig({ manifest });
+  if ("error" in recorded) {
+    console.error(`self-check: ${recorded.error}`);
+    return exitCli({ code: 1 });
+  }
+  const { config: config2 } = recorded;
   const step = manifest.currentStep;
   const resolved = step === null ? void 0 : selfCheckOfStep({ pipeline: manifest.pipeline, step });
   if (step === null || resolved === void 0) {
@@ -165032,6 +165146,7 @@ var standardsCheckCommand = async ({ flags, cwd }) => {
     const startedAt = Date.now();
     const checked = await runStandardsCheck({
       cwd,
+      config: config2,
       path: checkPath,
       all: flags.get("all") === true,
       writeBaseline: flags.get("baseline") === true,
@@ -165986,7 +166101,8 @@ var getRunProgress = async ({ cwd, manifest, live: live2 }) => {
     costUsd: manifest.usage?.costUsd,
     now: await readLastProgressMessage({ cwd, runId: manifest.runId }),
     awaitingShip: shipRow !== void 0 && shipRow.status === void 0,
-    resumeCommand: manifest.parentRunId === void 0 ? formatResumeCommand({ pipeline: manifest.pipeline ?? PipelineKind.Implement, runId: manifest.runId }) : formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.parentRunId })
+    resumeCommand: manifest.parentRunId === void 0 ? formatResumeCommand({ pipeline: manifest.pipeline ?? PipelineKind.Implement, runId: manifest.runId }) : formatResumeCommand({ pipeline: PipelineKind.Phases, runId: manifest.parentRunId }),
+    configPath: manifest.configPath
   };
 };
 
@@ -166319,7 +166435,13 @@ var printProgressFrame = ({ progress, lines }) => {
 };
 
 // src/cli/internal/common/runStatus/printRunFamilyScreen.ts
-var printRunFamilyScreen = async ({ cwd, runId }) => printProgressFrame(await loadRunFamilyProgressBlock({ cwd, runId }));
+var printRunFamilyScreen = async ({ cwd, runId }) => {
+  const progress = printProgressFrame(await loadRunFamilyProgressBlock({ cwd, runId }));
+  if (progress.configPath !== void 0) {
+    printConfigSource({ configPath: progress.configPath });
+  }
+  return progress;
+};
 
 // src/cli/internal/common/runStatus/printNewestRun.ts
 var printNewestRun = async ({ cwd }) => {
@@ -166868,6 +166990,7 @@ var initializeCoverageRun = async ({
   runId,
   driver,
   config: config2,
+  loadedConfig,
   allowDirty = false,
   existing
 }) => {
@@ -166898,7 +167021,15 @@ ${dirty.map((file2) => `  ${file2}`).join("\n")}`
   const measured = await runCoverageCheck({ cwd, config: config2 });
   const worklist = { at: (/* @__PURE__ */ new Date()).toISOString(), totals: measured.totals, files: measured.files };
   const worklistPath = join161(await resolveNewRunDir({ cwd, pipeline: PipelineKind.Coverage, runId }), "worklist.json");
-  const manifest = await createRun({ cwd, runId, plan: worklistPath, pipeline: PipelineKind.Coverage, driver: driver.name, config: config2, baselineDirtyFiles: dirty });
+  const manifest = await createRun({
+    cwd,
+    runId,
+    plan: worklistPath,
+    pipeline: PipelineKind.Coverage,
+    driver: driver.name,
+    loadedConfig,
+    baselineDirtyFiles: dirty
+  });
   await writeFile25(worklistPath, `${JSON.stringify(worklist, void 0, "	")}
 `, "utf8");
   return { manifest, worklist };
@@ -167454,12 +167585,13 @@ var executeCoverage = async ({
   runId,
   driver,
   config: config2,
+  loadedConfig,
   maxBatches,
   allowDirty,
   existing,
   onProgress
 }) => {
-  const { manifest, worklist } = await initializeCoverageRun({ cwd, runId, driver, config: config2, allowDirty, existing });
+  const { manifest, worklist } = await initializeCoverageRun({ cwd, runId, driver, config: config2, loadedConfig, allowDirty, existing });
   const seeded = seedCoverageResumeState({ manifest });
   const run = new CoverageRun({ cwd, config: config2, manifest, onProgress, setAside: seeded.setAside, before: worklist.totals });
   await run.update({ patch: { status: RunStatus.Running } });
@@ -167485,7 +167617,16 @@ var testCoverageToThresholdCommand = ({ flags, cwd }) => runBatchedCommand({
   cwd,
   command: "test-coverage-to-threshold",
   print: printCoverageResult,
-  run: ({ config: config2, driver, maxBatches, existing }) => runCoveragePipeline({ cwd, driver, config: config2, maxBatches, allowDirty: flags.get("allow-dirty") === true, existing, onProgress: createProgressPrinter() })
+  run: ({ config: config2, loadedConfig, driver, maxBatches, existing }) => runCoveragePipeline({
+    cwd,
+    driver,
+    config: config2,
+    loadedConfig,
+    maxBatches,
+    allowDirty: flags.get("allow-dirty") === true,
+    existing,
+    onProgress: createProgressPrinter()
+  })
 });
 
 // src/cli/ticketStateCommand.ts

@@ -124,7 +124,7 @@ describe('runImplementPipeline', () => {
 	test('write-ledger-tests: a committed file that already heads a test with the ledger’s name stops the run before any writer is paid for', async () => {
 		const { dir, driver, prompts, config } = await setupLedgerTitlesRun({ committed: statingBody });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		expect(result.ok).toBe(false);
 		// a test written for older behaviour cannot stand as a new criterion's
@@ -137,7 +137,7 @@ describe('runImplementPipeline', () => {
 	test('write-ledger-tests: a committed file that only quotes the ledger’s name is no conflict, because it heads no test with it', async () => {
 		const { dir, driver, prompts, config } = await setupLedgerTitlesRun({ committed: quotingBody });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		expect(result.ok).toBe(true);
 		// the name sits in a comment, a variable and a `describe` head, none of
@@ -149,7 +149,7 @@ describe('runImplementPipeline', () => {
 	test('write-ledger-tests: a first pass that leaves the name quoted but heads no test with it earns one repair, and the repaired bytes are what get locked', async () => {
 		const { dir, driver, prompts, config } = await setupLedgerTitlesRun({ committed: quotingBody, passes: [quotingBody, statingBody] });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		const writerPrompts = prompts.filter((entry) => entry.role === 'write-ledger-tests').map((entry) => entry.prompt);
 

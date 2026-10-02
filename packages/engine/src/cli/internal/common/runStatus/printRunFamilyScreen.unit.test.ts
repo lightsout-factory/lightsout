@@ -20,9 +20,10 @@ const loneRunId = 'llll3333-lone-run';
  * A finished phased family on disk — a coordinator naming both of its phase
  * children on its steps, and the two children — plus the family block as the
  * real `loadRunFamilyProgressBlock` draws it for the second child, read before
- * stdout is captured so the expectation is the loader's own answer.
+ * stdout is captured so the expectation is the loader's own answer. Each
+ * manifest records the config path it is given, and none when it is given none.
  */
-const setupFamilyScreen = async () => {
+const setupFamilyScreen = async ({ coordinatorConfigPath, phaseConfigPath }: { coordinatorConfigPath?: string; phaseConfigPath?: string } = {}) => {
 	jest.spyOn(Date, 'now').mockReturnValue(pinnedNow);
 
 	const cwd = await freshCwd();
@@ -32,6 +33,7 @@ const setupFamilyScreen = async () => {
 		manifest: {
 			runId: coordinatorId,
 			pipeline: 'phases',
+			configPath: coordinatorConfigPath,
 			plan: 'plans/phased/overview.md',
 			createdAt: '2026-09-10T10:00:00.000Z',
 			updatedAt: '2026-09-10T10:20:00.000Z',
@@ -54,6 +56,7 @@ const setupFamilyScreen = async () => {
 				runId,
 				plan,
 				parentRunId: coordinatorId,
+				configPath: phaseConfigPath,
 				createdAt: '2026-09-10T10:01:00.000Z',
 				updatedAt,
 				status: RunStatus.Passed,
@@ -117,5 +120,32 @@ describe('printRunFamilyScreen', () => {
 		expect({ logged, progress }).toStrictEqual({ logged: ['', ...block.lines], progress: block.progress });
 		// a frame relayed into a chat transcript must leave the frames before it readable
 		expect(logged.some((line) => line.includes(String.fromCharCode(27)))).toBe(false);
+	});
+
+	test("ends the screen with the family root's recorded config path as one config line", async () => {
+		const { cwd, family, logged } = await setupFamilyScreen({
+			coordinatorConfigPath: '/repo/lightsout.config.json',
+			phaseConfigPath: '/repo/worktrees/phase-two/lightsout.config.json',
+		});
+
+		const progress = await printRunFamilyScreen({ cwd, runId: secondPhaseId });
+
+		expect({ logged, progress, rootRunId: progress.runId, configPath: progress.configPath }).toStrictEqual({
+			logged: ['', ...family.lines, '  config: /repo/lightsout.config.json'],
+			progress: family.progress,
+			rootRunId: coordinatorId,
+			configPath: '/repo/lightsout.config.json',
+		});
+	});
+
+	test('prints no config line for a run that recorded no config path, rather than claiming the checkout has none', async () => {
+		const { cwd, block, logged } = await setupLoneRun();
+
+		await printRunFamilyScreen({ cwd, runId: loneRunId });
+
+		expect({ logged, printsConfigLine: logged.some((line) => line.startsWith('  config:')) }).toStrictEqual({
+			logged: ['', ...block.lines],
+			printsConfigLine: false,
+		});
 	});
 });

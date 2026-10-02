@@ -77,6 +77,7 @@ export const standardsCheckCommand = async ({ flags, cwd }: CommandContext): Pro
 		// what the reader was shown, and two writers to one file would race.
 		const checked = await runStandardsCheck({
 			cwd,
+			config,
 			path: checkPath,
 			all: flags.get('all') === true,
 			writeBaseline: flags.get('baseline') === true,

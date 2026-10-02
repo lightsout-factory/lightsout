@@ -1,6 +1,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import { readConfig } from '#src/common/config/readConfig.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import type { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
@@ -79,6 +81,23 @@ const setupOwnedRuns = () => {
 	return { cwd, implementManifest: { ...manifestWith({ pipeline: 'implement' }), runId: 'run-2' } };
 };
 
+/**
+ * A clean repo for a fresh run beside a parked refactor run, each handed a
+ * loaded config that differs from the stamped one in harness and gate — so a
+ * fresh run can be seen to record the loaded config and a resume to ignore it.
+ */
+const setupLoadedConfigRuns = () => {
+	const freshCwd = setupConsumerRepo();
+	const { cwd: resumeCwd } = setupParkedRefactorRun();
+	const loadedConfig: LoadedConfig = {
+		config: { harness: 'codex', gates: { check: 'pnpm check', test: 'true', 'test-coverage': false } },
+		path: join(freshCwd, 'lightsout.config.json'),
+	};
+	const existing = manifestWith({ pipeline: 'refactor' });
+
+	return { freshCwd, resumeCwd, loadedConfig, existing };
+};
+
 /** The work-list the run froze into its run dir, read back through its contract. */
 const readFrozenWorklist = ({ cwd, manifest }: { cwd: string; manifest: RunManifest }) =>
 	RefactorWorklist.parse(JSON.parse(readFileSync(join(cwd, manifest.plan), 'utf8')));
@@ -88,7 +107,7 @@ describe('initializeRun', () => {
 		const cwd = setupConsumerRepo();
 
 		const error = await getRejectionError({
-			promise: initializeRun({ cwd, runId: 'run-1', driver, config, existing: manifestWith({ pipeline: 'implement' }) }),
+			promise: initializeRun({ cwd, runId: 'run-1', driver, config, loadedConfig: { config }, existing: manifestWith({ pipeline: 'implement' }) }),
 		});
 
 		expect(error.message).toMatch(/belongs to the implement pipeline — resume it with: lightsout resume --run run-1/);
@@ -99,7 +118,9 @@ describe('initializeRun', () => {
 
 		// pre-discriminator manifests carry no pipeline; assuming refactor would
 		// let `lightsout refactor --run` hijack somebody's implement run
-		const error = await getRejectionError({ promise: initializeRun({ cwd, runId: 'run-1', driver, config, existing: manifestWith({}) }) });
+		const error = await getRejectionError({
+			promise: initializeRun({ cwd, runId: 'run-1', driver, config, loadedConfig: { config }, existing: manifestWith({}) }),
+		});
 
 		expect(error.message).toMatch(/belongs to the implement pipeline/);
 	});
@@ -107,7 +128,14 @@ describe('initializeRun', () => {
 	test("a resume reads the frozen work-list out of the run's own folder rather than the path the manifest records", async () => {
 		const { cwd } = setupParkedRefactorRun();
 
-		const { manifest, worklist } = await initializeRun({ cwd, runId: 'run-2', driver, config, existing: manifestWith({ pipeline: 'refactor' }) });
+		const { manifest, worklist } = await initializeRun({
+			cwd,
+			runId: 'run-2',
+			driver,
+			config,
+			loadedConfig: { config },
+			existing: manifestWith({ pipeline: 'refactor' }),
+		});
 
 		// the parked run is resumed with the list it froze — never a fresh check of the tree
 		expect(manifest.runId).toBe('run-1');
@@ -117,7 +145,7 @@ describe('initializeRun', () => {
 	test('a fresh run computes the work-list from the tree and freezes the very list it returns', async () => {
 		const cwd = setupPackageRepo();
 
-		const { manifest, worklist } = await initializeRun({ cwd, runId: 'run-1', driver, config });
+		const { manifest, worklist } = await initializeRun({ cwd, runId: 'run-1', driver, config, loadedConfig: { config } });
 
 		// the manifest points at the frozen file, and the frozen file is what the
 		// caller got — resume re-reads this rather than checking the tree again
@@ -130,7 +158,15 @@ describe('initializeRun', () => {
 	test("batches a package's finding under the packages folder lightsout supplies when the config names none", async () => {
 		const cwd = setupPackageRepo();
 
-		const { worklist } = await initializeRun({ cwd, runId: 'run-1', driver, config });
+		// the run checks with the config it is handed, so it is handed the repo's
+		// own, whose strict profile makes the planted defect blocking work
+		const { worklist } = await initializeRun({
+			cwd,
+			runId: 'run-1',
+			driver,
+			config: await readConfig({ cwd }),
+			loadedConfig: { config: await readConfig({ cwd }) },
+		});
 
 		const batch = worklist.batches.find((entry) => entry.rule === 'lightsout/multi-export');
 
@@ -144,7 +180,13 @@ describe('initializeRun', () => {
 	test('reads the packages folder the config names, so a repo whose packages live elsewhere is batched by it', async () => {
 		const cwd = setupPackageRepo();
 
-		const { worklist } = await initializeRun({ cwd, runId: 'run-1', driver, config: { ...config, 'packages-dir': 'modules' } });
+		const { worklist } = await initializeRun({
+			cwd,
+			runId: 'run-1',
+			driver,
+			config: { ...(await readConfig({ cwd })), 'packages-dir': 'modules' },
+			loadedConfig: { config: { ...(await readConfig({ cwd })), 'packages-dir': 'modules' } },
+		});
 
 		const batch = worklist.batches.find((entry) => entry.rule === 'lightsout/multi-export');
 
@@ -157,8 +199,8 @@ describe('initializeRun', () => {
 		const { cwd, implementManifest } = setupOwnedRuns();
 
 		const [resumed, refused] = await Promise.allSettled([
-			initializeRun({ cwd, runId: 'run-3', driver, config, existing: manifestWith({ pipeline: 'refactor' }) }),
-			initializeRun({ cwd, runId: 'run-4', driver, config, existing: implementManifest }),
+			initializeRun({ cwd, runId: 'run-3', driver, config, loadedConfig: { config }, existing: manifestWith({ pipeline: 'refactor' }) }),
+			initializeRun({ cwd, runId: 'run-4', driver, config, loadedConfig: { config }, existing: implementManifest }),
 		]);
 		const [refactorOwner, implementOwner] = await Promise.all([readRunOwner({ cwd, runId: 'run-1' }), readRunOwner({ cwd, runId: 'run-2' })]);
 
@@ -170,5 +212,26 @@ describe('initializeRun', () => {
 			implementOwner: undefined,
 		});
 		expect(refactorOwner).toEqual(expect.objectContaining({ pid: process.pid }));
+	});
+
+	test('a fresh refactor run records the loaded config and its path, and a resume keeps the recorded one', async () => {
+		const { freshCwd, resumeCwd, loadedConfig, existing } = setupLoadedConfigRuns();
+
+		const [fresh, resumed] = await Promise.all([
+			initializeRun({ cwd: freshCwd, runId: 'run-1', driver, config, loadedConfig }),
+			initializeRun({ cwd: resumeCwd, runId: 'run-2', driver, config, loadedConfig, existing }),
+		]);
+
+		// the fresh run records the config as read and the file it came from,
+		// never the stamped one; the resume keeps exactly what its manifest recorded
+		expect({
+			freshConfig: fresh.manifest.config,
+			freshConfigPath: fresh.manifest.configPath,
+			resumedManifest: resumed.manifest,
+		}).toStrictEqual({
+			freshConfig: { harness: 'codex', gates: { check: 'pnpm check', test: 'true', 'test-coverage': false } },
+			freshConfigPath: join(freshCwd, 'lightsout.config.json'),
+			resumedManifest: manifestWith({ pipeline: 'refactor' }),
+		});
 	});
 });

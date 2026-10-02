@@ -105,7 +105,14 @@ describe('runImplementPipeline', () => {
 		const { dir, driver, config, writerPrompts } = await setupRouteTreeRun();
 
 		const progress: string[] = [];
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress: (message) => progress.push(message) });
+		const result = await runImplementPipeline({
+			cwd: dir,
+			driver,
+			config,
+			loadedConfig: { config },
+			planPath: 'plan.md',
+			onProgress: (message) => progress.push(message),
+		});
 
 		expect(result.ok).toBe(true);
 		// neither route sits in an internal/ folder, so each is its own subject —
@@ -121,7 +128,14 @@ describe('runImplementPipeline', () => {
 		const { dir, driver, config } = await setupRouteTreeRun({ withPlainModule: true });
 
 		const progress: string[] = [];
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', onProgress: (message) => progress.push(message) });
+		const result = await runImplementPipeline({
+			cwd: dir,
+			driver,
+			config,
+			loadedConfig: { config },
+			planPath: 'plan.md',
+			onProgress: (message) => progress.push(message),
+		});
 
 		expect(result.ok).toBe(true);
 		expect(result.manifest.testSubjects).toStrictEqual(['src/feature/feature.ts', 'src/routes/index.tsx', 'src/routes/runs.tsx']);

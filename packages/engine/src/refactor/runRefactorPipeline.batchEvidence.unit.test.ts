@@ -72,7 +72,7 @@ describe('runRefactorPipeline batch evidence', () => {
 				},
 		});
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 
@@ -120,7 +120,7 @@ describe('runRefactorPipeline batch evidence', () => {
 				},
 		});
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 
@@ -141,7 +141,7 @@ describe('runRefactorPipeline batch evidence', () => {
 			}),
 		});
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// the improvement loop needs to know which batch of which run fought the agent
@@ -179,7 +179,7 @@ describe('runRefactorPipeline batch evidence', () => {
 				},
 		});
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// the forgotten file is still the batch’s doing — agents can forget, git
@@ -205,7 +205,7 @@ describe('runRefactorPipeline batch evidence', () => {
 				},
 		});
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// build output the run happened to produce is not work the human must review

@@ -91,7 +91,7 @@ describe('runImplementPipeline', () => {
 			config: { 'executor-file-limit': 12 },
 		});
 
-		await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+		await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 		expect(stopRuleLimit({ systemPrompt: systemPrompts.implement })).toBe('200');
 		// substitution happens as the invocation is assembled, so no agent ever
@@ -102,7 +102,7 @@ describe('runImplementPipeline', () => {
 	test('a plan declaring no budget is held to executor-file-limit', async () => {
 		const { dir, driver, systemPrompts, config } = await setupFileLimitRun({ config: { 'executor-file-limit': 12 } });
 
-		await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+		await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 		expect(stopRuleLimit({ systemPrompt: systemPrompts.implement })).toBe('12');
 	});
@@ -110,7 +110,7 @@ describe('runImplementPipeline', () => {
 	test('neither a budget nor a configured limit falls back to the default', async () => {
 		const { dir, driver, systemPrompts, config } = await setupFileLimitRun();
 
-		await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+		await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 		expect(stopRuleLimit({ systemPrompt: systemPrompts.implement })).toBe('50');
 	});
@@ -118,7 +118,7 @@ describe('runImplementPipeline', () => {
 	test("the verify-implement fix re-invocation is held to the plan's budget too", async () => {
 		const { dir, driver, systemPrompts, config } = await setupFileLimitRun({ plan: planWithBudget({ fileBudget: 200 }), redGate: true });
 
-		await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config });
+		await runImplementPipeline({ cwd: dir, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 		expect(stopRuleLimit({ systemPrompt: systemPrompts.fix })).toBe('200');
 	});

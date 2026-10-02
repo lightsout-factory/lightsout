@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { QueueDrainReport } from '#src/queue/common/types/QueueDrainReport.ts';
 import type { ParkedWork } from '#src/queue/internal/common/types/ParkedWork.ts';
 import type { WaveSelection } from '#src/queue/internal/common/types/WaveSelection.ts';
@@ -13,7 +13,8 @@ interface Params {
 	runId: string | undefined;
 	recordEmptyDrain: boolean | undefined;
 	driverName: string;
-	config: LightsoutConfig;
+	/** The queue's startup config as it was read from disk, and its path, recorded on the empty drain's run. */
+	loadedConfig: LoadedConfig;
 	first: WaveSelection;
 	parked: ParkedWork;
 	onProgress?: (message: string) => void;
@@ -26,7 +27,16 @@ interface Params {
  *
  * @param recordEmptyDrain - true when a detached queue's child must leave a run for the launcher's handshake and the saved summary
  */
-export const settleEmptyDrain = async ({ cwd, runId, recordEmptyDrain, driverName, config, first, parked, onProgress }: Params): Promise<QueueDrainReport> => {
+export const settleEmptyDrain = async ({
+	cwd,
+	runId,
+	recordEmptyDrain,
+	driverName,
+	loadedConfig,
+	first,
+	parked,
+	onProgress,
+}: Params): Promise<QueueDrainReport> => {
 	onProgress?.(
 		first.blocked.length > 0
 			? 'nothing to do — every eligible ticket is waiting on an unfinished blocker'
@@ -42,7 +52,7 @@ export const settleEmptyDrain = async ({ cwd, runId, recordEmptyDrain, driverNam
 	return withRunLock({
 		params: { cwd, runId, onProgress },
 		run: async ({ runId: lockedRunId }) => {
-			const { manifest } = await startCoordinatorRun({ cwd, runId: lockedRunId, driverName, config });
+			const { manifest } = await startCoordinatorRun({ cwd, runId: lockedRunId, driverName, loadedConfig });
 
 			await writeManifestWithUsage({
 				cwd,

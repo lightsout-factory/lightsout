@@ -2,7 +2,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { readGitCurrentBranch } from '#src/common/git/readGitCurrentBranch.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { resolveNewRunDir } from '#src/runState/common/paths/resolveNewRunDir.ts';
@@ -16,14 +16,15 @@ interface Params {
 	ticketRef: string;
 	/** Recorded on the manifest as the harness name. */
 	driverName: string;
-	config: LightsoutConfig;
+	/** The config as it was read from disk, and its path, recorded on the run's manifest. */
+	loadedConfig: LoadedConfig;
 	/** Resolved before the run starts: a passing run will ship this branch. */
 	willShip?: boolean;
 	/** The queue run a worker build belongs to; the run's owner record points there. */
 	queueRunId?: string;
 }
 
-export const createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, config, willShip, queueRunId }: Params): Promise<RunManifest> => {
+export const createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, driverName, loadedConfig, willShip, queueRunId }: Params): Promise<RunManifest> => {
 	// The directory has to be known before the run is created: the manifest's
 	// `plan` field points at a `ticket.md` inside it. A direct run belongs to no
 	// plan, so it is filed under the ticket branch it is built on — and under
@@ -37,7 +38,7 @@ export const createDirectRun = async ({ cwd, runId, ticketBody, ticketRef, drive
 		pipeline: PipelineKind.Direct,
 		ticketRef,
 		driver: driverName,
-		config,
+		loadedConfig,
 		baselineDirtyFiles: await readGitChangedFiles({ cwd }),
 		willShip,
 		queueRunId,

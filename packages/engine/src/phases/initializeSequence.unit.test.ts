@@ -12,6 +12,7 @@ import { initializeSequence } from '#src/phases/initializeSequence.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
+import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { plantSequence } from '#tests/helpers/plantSequence.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
@@ -103,7 +104,7 @@ const setupTicketPlanFolder = ({ recordedPlanName }: { recordedPlanName: string 
 
 /** Creates the run folder a resumed manifest names: a resume rewrites that run's owner record, so the run must exist on disk. */
 const plantResumedRun = async ({ dir, existing }: { dir: string; existing: RunManifest }) => {
-	await createRun({ cwd: dir, runId: existing.runId, plan: existing.plan, pipeline: PipelineKind.Phases, driver: 'stub', config });
+	await createRun({ cwd: dir, runId: existing.runId, plan: existing.plan, pipeline: PipelineKind.Phases, driver: 'stub', loadedConfig: { config } });
 };
 
 /**
@@ -113,8 +114,14 @@ const plantResumedRun = async ({ dir, existing }: { dir: string; existing: RunMa
  */
 const setupOwnedRuns = async () => {
 	const { dir, overviewPath } = setupPlanFolder({ phases: 1 });
-	const { manifest: coordinator } = await initializeSequence({ cwd: dir, driver, config, overviewPath });
-	const implementRun = await createRun({ cwd: dir, plan: join('plans', 'demo', 'phase1.md'), pipeline: PipelineKind.Implement, driver: 'stub', config });
+	const { manifest: coordinator } = await initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath });
+	const implementRun = await createRun({
+		cwd: dir,
+		plan: join('plans', 'demo', 'phase1.md'),
+		pipeline: PipelineKind.Implement,
+		driver: 'stub',
+		loadedConfig: { config },
+	});
 	const staleOwner = { pid: 999999, recordedAt: '2026-01-01T00:00:00.000Z' };
 
 	writeFileSync(await getRunOwnerPath({ cwd: dir, runId: coordinator.runId }), JSON.stringify(staleOwner));
@@ -127,7 +134,7 @@ describe('initializeSequence', () => {
 	test('a fresh sequence gets one pending step per phase, in the overview’s written order', async () => {
 		const { dir, overviewPath } = setupPlanFolder({ phases: 2 });
 
-		const { manifest } = await initializeSequence({ cwd: dir, driver, config, overviewPath });
+		const { manifest } = await initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath });
 
 		expect(manifest.pipeline).toBe('phases');
 		expect(manifest.plan).toBe(overviewPath);
@@ -140,7 +147,7 @@ describe('initializeSequence', () => {
 	test('--start-phase records the earlier phases as done outside the sequence', async () => {
 		const { dir, overviewPath } = setupPlanFolder({ phases: 2 });
 
-		const { manifest } = await initializeSequence({ cwd: dir, driver, config, overviewPath, startPhase: 2 });
+		const { manifest } = await initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath, startPhase: 2 });
 
 		// adopted, not implemented: passed with nothing spent on it
 		expect(manifest.steps).toStrictEqual([
@@ -152,7 +159,7 @@ describe('initializeSequence', () => {
 	test('a fresh sequence records the ship intent it was started with', async () => {
 		const { dir, overviewPath } = setupPlanFolder({ phases: 1 });
 
-		const { manifest } = await initializeSequence({ cwd: dir, driver, config, overviewPath, willShip: true });
+		const { manifest } = await initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath, willShip: true });
 
 		// a phased run ships exactly as a single-plan run does, so its coordinator
 		// carries the stamp the progress view draws the ship row from
@@ -162,7 +169,7 @@ describe('initializeSequence', () => {
 	test('a fresh sequence records no ship intent when there was none', async () => {
 		const { dir, overviewPath } = setupPlanFolder({ phases: 1 });
 
-		const { manifest } = await initializeSequence({ cwd: dir, driver, config, overviewPath });
+		const { manifest } = await initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath });
 
 		expect(manifest.willShip).toBeUndefined();
 	});
@@ -171,10 +178,10 @@ describe('initializeSequence', () => {
 		const { dir, overviewPath } = setupPlanFolder({ phases: 1 });
 		const existing = { ...foreignManifest({ pipeline: 'phases' }), plan: join('plans', 'demo', 'overview.md') };
 
-		const fresh = await initializeSequence({ cwd: dir, driver, config, overviewPath, runId: 'minted-coordinator-id' });
+		const fresh = await initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath, runId: 'minted-coordinator-id' });
 		await plantResumedRun({ dir, existing });
 
-		const resumed = await initializeSequence({ cwd: dir, driver, config, existing, runId: 'minted-coordinator-id' });
+		const resumed = await initializeSequence({ cwd: dir, driver, loadedConfig: { config }, existing, runId: 'minted-coordinator-id' });
 
 		// the caller mints a fresh run's id so the plan's progress can name the run
 		// before it starts; a run being resumed keeps the id its manifest already has
@@ -185,7 +192,7 @@ describe('initializeSequence', () => {
 	test('an absolute overview path is recorded the way this repo stores plan paths', async () => {
 		const { dir } = setupPlanFolder({ phases: 1 });
 
-		const { manifest } = await initializeSequence({ cwd: dir, driver, config, overviewPath: join(dir, 'plans', 'demo', 'overview.md') });
+		const { manifest } = await initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath: join(dir, 'plans', 'demo', 'overview.md') });
 
 		// stored cwd-relative, so the guard recognises the same overview named either way
 		expect(manifest.plan).toBe(join('plans', 'demo', 'overview.md'));
@@ -196,7 +203,7 @@ describe('initializeSequence', () => {
 		const existing = { ...foreignManifest({ pipeline: 'phases' }), plan: join('plans', 'demo', 'overview.md') };
 		await plantResumedRun({ dir, existing });
 
-		await expect(initializeSequence({ cwd: dir, driver, config, existing })).resolves.toStrictEqual({ manifest: existing });
+		await expect(initializeSequence({ cwd: dir, driver, loadedConfig: { config }, existing })).resolves.toStrictEqual({ manifest: existing });
 	});
 
 	test.each([
@@ -206,7 +213,9 @@ describe('initializeSequence', () => {
 	])('resuming $label here is refused and names the door for the $named pipeline', async ({ pipeline, named, door }) => {
 		const { dir } = setupPlanFolder({ phases: 1 });
 
-		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, config, existing: foreignManifest({ pipeline }) }) });
+		const error = await getRejectionError({
+			promise: initializeSequence({ cwd: dir, driver, loadedConfig: { config }, existing: foreignManifest({ pipeline }) }),
+		});
 
 		expect(error.message).toContain(`belongs to the ${named} pipeline`);
 		expect(error.message).toContain(door);
@@ -215,7 +224,7 @@ describe('initializeSequence', () => {
 	test('a fresh sequence with no overview path is refused, and no state is written', async () => {
 		const { dir } = setupPlanFolder({ phases: 1 });
 
-		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, config }) });
+		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, loadedConfig: { config } }) });
 
 		expect(error.message).toMatch(/needs an overview path/);
 		expect(existsSync(join(dir, '.lightsout', 'runs'))).toBe(false);
@@ -224,7 +233,9 @@ describe('initializeSequence', () => {
 	test('an overview that is not on disk is refused, naming the path it looked for', async () => {
 		const { dir } = setupPlanFolder({ phases: 1 });
 
-		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, config, overviewPath: join('plans', 'demo', 'missing.md') }) });
+		const error = await getRejectionError({
+			promise: initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath: join('plans', 'demo', 'missing.md') }),
+		});
 
 		expect(error.message).toMatch(/overview file not found/);
 		expect(error.message).toContain(join(dir, 'plans', 'demo', 'missing.md'));
@@ -236,7 +247,7 @@ describe('initializeSequence', () => {
 
 		writeFileSync(join(dir, 'plans', 'demo', 'overview.md'), '# Feature — Overview\n\n## Summary\n\nNo table here.\n');
 
-		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, config, overviewPath }) });
+		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath }) });
 
 		expect(error.message).toMatch(/no Phases table rows/);
 		expect(existsSync(join(dir, '.lightsout', 'runs'))).toBe(false);
@@ -245,7 +256,7 @@ describe('initializeSequence', () => {
 	test('an overview listing the same phase file twice is refused before any state is written', async () => {
 		const { dir, overviewPath } = setupPlanFolder({ phases: 2, duplicate: true });
 
-		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, config, overviewPath }) });
+		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath }) });
 
 		expect(error.message).toMatch(/overview lists phase1\.md twice/);
 		// nothing was created — a malformed table fails before the run exists
@@ -259,7 +270,7 @@ describe('initializeSequence', () => {
 	])('--start-phase $startPhase ($label) is refused before any state is written', async ({ startPhase }) => {
 		const { dir, overviewPath } = setupPlanFolder({ phases: 2 });
 
-		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, config, overviewPath, startPhase }) });
+		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath, startPhase }) });
 
 		expect(error.message).toContain('--start-phase must be between 1 and 2');
 		expect(existsSync(join(dir, '.lightsout', 'runs'))).toBe(false);
@@ -270,7 +281,7 @@ describe('initializeSequence', () => {
 
 		rmSync(join(dir, 'plans', 'demo', 'phase2.md'));
 
-		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, config, overviewPath }) });
+		const error = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath }) });
 
 		expect(error.message).toMatch(/names files that do not exist/);
 		expect(error.message).toContain(join('plans', 'demo', 'phase2.md'));
@@ -286,7 +297,7 @@ describe('initializeSequence', () => {
 		// the guard is the plan a coordinator recorded, and an overview that sits in
 		// no plan folder records none — a loose overview is left unguarded rather
 		// than matching every nameless coordinator on disk
-		const { manifest } = await initializeSequence({ cwd: dir, driver, config, overviewPath });
+		const { manifest } = await initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath });
 
 		expect(manifest.planName).toBe(undefined);
 		expect(manifest.steps).toStrictEqual([{ id: 'phase1.md', status: 'pending', attempts: 0 }]);
@@ -295,7 +306,7 @@ describe('initializeSequence', () => {
 	test('a phased plan whose folder lives in the primary checkout initializes from a linked worktree', async () => {
 		const { worktree, overviewPath } = setupLinkedPlanWorktree({ phases: 3 });
 
-		const { manifest } = await initializeSequence({ cwd: worktree, driver, config, overviewPath });
+		const { manifest } = await initializeSequence({ cwd: worktree, driver, loadedConfig: { config }, overviewPath });
 
 		// The plan folder sits in the primary checkout, never in the worktree the
 		// run works in. Resolving either the overview or its phase files against
@@ -308,8 +319,10 @@ describe('initializeSequence', () => {
 		const samePlan = setupTicketPlanFolder({ recordedPlanName: 'lo-155-record-the-plan/001-recorded-plan-name' });
 		const otherPlan = setupTicketPlanFolder({ recordedPlanName: 'lo-160-something-else/001-another-plan' });
 
-		const refused = await getRejectionError({ promise: initializeSequence({ cwd: samePlan.dir, driver, config, overviewPath: samePlan.overviewPath }) });
-		const started = await initializeSequence({ cwd: otherPlan.dir, driver, config, overviewPath: otherPlan.overviewPath });
+		const refused = await getRejectionError({
+			promise: initializeSequence({ cwd: samePlan.dir, driver, loadedConfig: { config }, overviewPath: samePlan.overviewPath }),
+		});
+		const started = await initializeSequence({ cwd: otherPlan.dir, driver, loadedConfig: { config }, overviewPath: otherPlan.overviewPath });
 
 		// The guard reads the plan each coordinator recorded, so the same plan is
 		// caught however its overview path is spelled, and an unrelated plan whose
@@ -322,8 +335,8 @@ describe('initializeSequence', () => {
 	test("replaces a resumed coordinator's owner record and writes nothing for a run another pipeline owns", async () => {
 		const { dir, coordinator, implementRun, staleOwner } = await setupOwnedRuns();
 
-		await initializeSequence({ cwd: dir, driver, config, existing: coordinator });
-		const refused = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, config, existing: implementRun }) });
+		await initializeSequence({ cwd: dir, driver, loadedConfig: { config }, existing: coordinator });
+		const refused = await getRejectionError({ promise: initializeSequence({ cwd: dir, driver, loadedConfig: { config }, existing: implementRun }) });
 
 		const coordinatorOwner = await readRunOwner({ cwd: dir, runId: coordinator.runId });
 		const implementOwner = await readRunOwner({ cwd: dir, runId: implementRun.runId });
@@ -338,10 +351,26 @@ describe('initializeSequence', () => {
 	test('points a fresh queue worker sequence at the queue run', async () => {
 		const { dir, overviewPath } = setupPlanFolder({ phases: 1 });
 
-		const { manifest } = await initializeSequence({ cwd: dir, driver, config, overviewPath, queueRunId: 'q-1' });
+		const { manifest } = await initializeSequence({ cwd: dir, driver, loadedConfig: { config }, overviewPath, queueRunId: 'q-1' });
 
 		const owner = await readRunOwner({ cwd: dir, runId: manifest.runId });
 
 		expect(owner).toStrictEqual({ queueRunId: 'q-1' });
+	});
+
+	test('a fresh coordinator records the loaded config and the path it was read from', async () => {
+		const { dir, overviewPath } = setupPlanFolder({ phases: 1 });
+
+		const { manifest } = await initializeSequence({ cwd: dir, driver, loadedConfig: { config, path: join(dir, 'lightsout.config.json') }, overviewPath });
+
+		const onDisk = await readRunManifest({ cwd: dir, runId: manifest.runId });
+
+		expect({
+			returned: { config: manifest.config, configPath: manifest.configPath },
+			onDisk: { config: onDisk.config, configPath: onDisk.configPath },
+		}).toStrictEqual({
+			returned: { config: { gates: { check: 'true', test: 'true', 'test-coverage': false } }, configPath: join(dir, 'lightsout.config.json') },
+			onDisk: { config: { gates: { check: 'true', test: 'true', 'test-coverage': false } }, configPath: join(dir, 'lightsout.config.json') },
+		});
 	});
 });

@@ -15,8 +15,8 @@ import { resolveCommandHarness } from '#src/cli/internal/common/utils/resolveCom
 import { resolveCommandShipIntent } from '#src/cli/internal/common/utils/resolveCommandShipIntent.ts';
 import { runPhasesOrFailFast } from '#src/cli/internal/common/utils/runPhasesOrFailFast.ts';
 import { runPipelineOrFailFast } from '#src/cli/internal/common/utils/runPipelineOrFailFast.ts';
-import { readConfig } from '#src/common/config/readConfig.ts';
-import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
+import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { getDriver } from '#src/drivers/getDriver.ts';
@@ -41,6 +41,7 @@ const runResolvedPipeline = ({
 	runId,
 	driver,
 	config,
+	loadedConfig,
 	skipRefactor,
 	willShip,
 }: {
@@ -55,6 +56,8 @@ const runResolvedPipeline = ({
 	runId: string;
 	driver: Driver;
 	config: LightsoutConfig;
+	/** The config as it was read from disk, before the command stamped its harness on it, and its path. */
+	loadedConfig: LoadedConfig;
 	skipRefactor: boolean;
 	willShip: boolean;
 }) =>
@@ -70,6 +73,7 @@ const runResolvedPipeline = ({
 						cwd: workspace,
 						driver,
 						config,
+						loadedConfig,
 						overviewPath: target.overviewPath,
 						startPhase,
 						runId,
@@ -86,6 +90,7 @@ const runResolvedPipeline = ({
 						runId,
 						driver,
 						config,
+						loadedConfig,
 						skipRefactor,
 						willShip,
 						level,
@@ -123,7 +128,9 @@ export const implementCommand = async ({ flags, rest, cwd }: CommandContext): Pr
 
 	const { planPath, overviewPath, packages, startPhase, planName, shipRequest } = inputs;
 	const skipRefactor = flags.get('skip-refactor') === true;
-	const loaded = await readConfig({ cwd });
+	// From the launching checkout, never the opened workspace: the run follows the config it was launched with.
+	const loadedConfig = await readLoadedConfig({ cwd });
+	const { config: loaded, path: configPath } = loadedConfig;
 	const { driverName, model, effort } = resolveCommandHarness({ config: loaded, command: 'implement' });
 	const driver = getDriver({ name: driverName });
 	const config = { ...loaded, harness: driverName, model, effort };
@@ -151,7 +158,7 @@ export const implementCommand = async ({ flags, rest, cwd }: CommandContext): Pr
 		return exitCli({ code: 1 });
 	}
 
-	await printRunStart({ target, overviewPath, packages, startPhase, config, driver, cwd: workspace.cwd, configPath: resolveConfigPath({ cwd }) });
+	await printRunStart({ target, overviewPath, packages, startPhase, config, driver, cwd: workspace.cwd, configPath });
 
 	const outcome = await runWorkOrderPlanLifecycle({
 		cwd: workspace.cwd,
@@ -169,6 +176,7 @@ export const implementCommand = async ({ flags, rest, cwd }: CommandContext): Pr
 				runId,
 				driver,
 				config,
+				loadedConfig,
 				skipRefactor,
 				willShip: shipIntent.willShip,
 			}),

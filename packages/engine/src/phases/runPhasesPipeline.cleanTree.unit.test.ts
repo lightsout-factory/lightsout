@@ -38,10 +38,13 @@ test('stops a fresh sequence before its next phase when the checkout is edited m
 	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
 	const seen: number[] = [];
 
+	const config = await readConfig({ cwd: dir });
+
 	const result = await runPhasesPipeline({
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen }),
-		config: await readConfig({ cwd: dir }),
+		config,
+		loadedConfig: { config },
 		overviewPath,
 		skipRefactor: true,
 		onProgress: strayAtPhaseTwo({ dir }),
@@ -67,10 +70,13 @@ test('stops a fresh sequence before its next phase when the checkout is edited m
 test('a fresh sequence in an unedited checkout runs every phase from an empty baseline', async () => {
 	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
 
+	const config = await readConfig({ cwd: dir });
+
 	const result = await runPhasesPipeline({
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen: [] }),
-		config: await readConfig({ cwd: dir }),
+		config,
+		loadedConfig: { config },
 		overviewPath,
 		skipRefactor: true,
 	});
@@ -85,10 +91,13 @@ test('starts each new phase in a worktree a lightsout record claims without judg
 	const { dir, overviewPath } = setupClaimedPhasedRepo();
 	const seen: number[] = [];
 
+	const config = await readConfig({ cwd: dir });
+
 	const result = await runPhasesPipeline({
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen }),
-		config: await readConfig({ cwd: dir }),
+		config,
+		loadedConfig: { config },
 		overviewPath,
 		skipRefactor: true,
 		onProgress: strayAtPhaseTwo({ dir }),

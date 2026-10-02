@@ -65,7 +65,7 @@ describe('runRefactorPipeline against a work-list that went stale mid-run', () =
 			},
 		};
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		expect(fixPrompts).toHaveLength(2);

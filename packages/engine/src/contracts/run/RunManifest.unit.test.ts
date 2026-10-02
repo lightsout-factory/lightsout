@@ -1,4 +1,5 @@
 import { expect, test } from '@jest/globals';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { RunManifest } from '#src/contracts/run/RunManifest.ts';
 
 const base = {
@@ -177,12 +178,13 @@ test('RunManifest: the approved test records default to an empty list and round-
 	expect(RunManifest.safeParse({ ...base, harness: 'codex', approvedTests: [{ ...copy, sha256: 'abc' }] }).success).toBe(false);
 });
 
-test('RunManifest: an unparseable config snapshot fails the manifest', () => {
-	const stale = { ...base, harness: 'codex', config: { driver: 'codex', gates: { check: 'c', test: 't', 'test-coverage': false } } };
+test('RunManifest: a config snapshot in a shape the config schema has since dropped keeps the manifest readable', () => {
+	const config = { driver: 'codex', gates: { check: 'c', test: 't', 'test-coverage': false } };
+	const stale = { ...base, harness: 'codex', config };
 
-	// the snapshot is a real config, held to the same read boundary — a manifest
-	// cannot smuggle in a shape the config schema refuses
-	expect(RunManifest.safeParse(stale).success).toBe(false);
+	// the snapshot is plain data at the read boundary — the strict config check
+	// happens only where a run uses it, so an older manifest still lists and reads
+	expect(RunManifest.parse(stale).config).toStrictEqual(config);
 });
 
 test('RunManifest: workspace records where the run worked, is optional so older manifests keep reading, and refuses a non-string', () => {
@@ -228,4 +230,42 @@ test('RunManifest: planName is optional so an earlier manifest still parses, rou
 	// the field can only ever be a name — a number is a corrupt manifest, not a
 	// plan nobody can look up
 	expect(RunManifest.safeParse({ ...base, harness: 'codex', planName: 3 }).success).toBe(false);
+});
+
+test('RunManifest: a recorded config the current config schema rejects still parses, kept exactly as recorded', () => {
+	const config = { 'standards-pak': ['acme/house'], gates: { check: 'c', test: 't', 'test-coverage': false } };
+
+	const parsed = RunManifest.safeParse({ ...base, harness: 'codex', config });
+
+	// the recorded config really is one this engine's strict config schema refuses
+	expect(LightsoutConfig.safeParse(config).success).toBe(false);
+	// the manifest still reads, with the config kept as the plain data it recorded,
+	// so an engine upgrade never makes the run vanish from listings
+	expect(parsed.success ? parsed.data.config : parsed.error.message).toStrictEqual(config);
+});
+
+test('RunManifest: configPath is kept when recorded and absent when not', () => {
+	const recorded = RunManifest.parse({ ...base, harness: 'codex', configPath: '/repo/lightsout.config.json' });
+	const unrecorded = RunManifest.safeParse({ ...base, harness: 'codex' });
+
+	// the absolute path of the file the recorded config was read from round-trips
+	expect(recorded.configPath).toBe('/repo/lightsout.config.json');
+	// a run with no recorded path, such as one written before the field existed,
+	// still reads, with no path rather than a parse failure
+	expect({ success: unrecorded.success, configPath: unrecorded.data?.configPath }).toStrictEqual({ success: true, configPath: undefined });
+});
+
+test('RunManifest: a recorded config that is not an object fails the read boundary', () => {
+	const parsed = RunManifest.safeParse({ ...base, harness: 'codex', config: 'lightsout.config.json' });
+
+	// the field only ever holds keyed config data — a string is a corrupt manifest
+	expect(parsed.success).toBe(false);
+});
+
+test('RunManifest: a recorded configPath that is not a string fails the read boundary', () => {
+	const parsed = RunManifest.safeParse({ ...base, harness: 'codex', configPath: 3 });
+
+	// a non-string configPath is a corrupt manifest, not a file a later run could
+	// read the recorded config's origin from
+	expect(parsed.success).toBe(false);
 });

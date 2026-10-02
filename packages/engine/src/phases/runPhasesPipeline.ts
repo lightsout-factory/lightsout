@@ -2,6 +2,7 @@ import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts'
 import { discardGeneratedChanges } from '#src/commit/discardGeneratedChanges.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
@@ -22,6 +23,8 @@ interface Params {
 	cwd: string;
 	driver: Driver;
 	config: LightsoutConfig;
+	/** The config as it was read from disk, before the command stamped its harness on it, and its path. The coordinator records it on a fresh sequence, and every phase child records the same value; on a resume it is the config the sequence recorded. */
+	loadedConfig: LoadedConfig;
 	/** Overview path for a fresh sequence (cwd-relative or absolute). Ignored when resuming (the manifest owns it). */
 	overviewPath?: string;
 	/** 1-based phase a fresh sequence starts from; earlier phases are recorded as passed outside the sequence. Default 1. */
@@ -115,6 +118,7 @@ export const runPhasesPipeline = async ({
 	cwd,
 	driver,
 	config,
+	loadedConfig,
 	overviewPath,
 	startPhase,
 	runId,
@@ -131,7 +135,7 @@ export const runPhasesPipeline = async ({
 		throw new RunLockError(describeRunLockHolder({ holder }));
 	}
 
-	const initialized = await initializeSequence({ cwd, driver, config, overviewPath, startPhase, runId, existing, willShip, queueRunId });
+	const initialized = await initializeSequence({ cwd, driver, loadedConfig, overviewPath, startPhase, runId, existing, willShip, queueRunId });
 
 	let manifest = initialized.manifest;
 
@@ -153,6 +157,7 @@ export const runPhasesPipeline = async ({
 			cwd,
 			driver,
 			config,
+			loadedConfig,
 			manifest,
 			index,
 			step,

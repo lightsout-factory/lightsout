@@ -367,3 +367,33 @@ test('prints no commit line for a run that left nothing', async () => {
 
 	expect(commitLines({ lines })).toStrictEqual([]);
 });
+
+/** The config lines of the result block — the notice that the run edited a config it never re-read. */
+const configLines = ({ lines }: { lines: string[] }) => labelLines({ lines }).filter((line) => line.startsWith('config '));
+
+test('renderResult: a run that changed lightsout.config.json says so on a config line just before the evidence line, naming the recorded path', async () => {
+	const { result, cwd } = setupResult({ manifest: { configPath: '/repo/lightsout.config.json', changedFiles: ['lightsout.config.json', 'src/a.ts'] } });
+
+	const lines = await renderResult({ result, cwd });
+	const labels = labelLines({ lines });
+	const configs = configLines({ lines });
+	const next = labels[labels.indexOf(configs[0] ?? '') + 1];
+
+	expect({ count: configs.length, next }).toStrictEqual({ count: 1, next: 'evidence  .lightsout/runs/run-1234-abcd/' });
+	// the wording is the printer's own; the line has to name the edited file, the recorded path, and that the run kept its starting config
+	expect(configs[0]).toContain('/repo/lightsout.config.json');
+	expect(configs[0]?.replace('/repo/lightsout.config.json', '')).toContain('lightsout.config.json');
+	expect(configs[0]).toMatch(/kept[^.]*start/i);
+});
+
+test.each([
+	{ manifest: { changedFiles: ['lightsout.config.json'] } },
+	{ manifest: { configPath: '/repo/lightsout.config.json', changedFiles: ['packages/app/lightsout.config.json', 'src/index.ts'] } },
+	{ manifest: { configPath: '/repo/lightsout.config.json', changedFiles: [] } },
+])('renderResult: prints no config line when the run left the root lightsout.config.json alone or recorded no config path', async ({ manifest }) => {
+	const { result, cwd } = setupResult({ manifest });
+
+	const lines = await renderResult({ result, cwd });
+
+	expect(configLines({ lines })).toStrictEqual([]);
+});

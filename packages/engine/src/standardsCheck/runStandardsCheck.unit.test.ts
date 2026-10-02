@@ -2,6 +2,8 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, symlinkS
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { expect, test } from '@jest/globals';
+import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
 
 const bigBody = `
@@ -66,7 +68,7 @@ const setupCheckRepo = () => {
 
 test('the standards check finds each planted defect and respects the exceptions', async () => {
 	const dir = setupCheckRepo();
-	const { findings, notes } = await runStandardsCheck({ cwd: dir });
+	const { findings, notes } = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }) });
 	const byRule = (rule: string) => findings.filter((finding) => finding.rule === rule);
 
 	// typescript resolved for the AST tier: ${notes.join('; ')}
@@ -125,7 +127,7 @@ test('the standards check finds each planted defect and respects the exceptions'
 
 test('baseline ratchet: --baseline accepts debt explicitly; later runs report only what is new', async () => {
 	const dir = setupCheckRepo();
-	const first = await runStandardsCheck({ cwd: dir });
+	const first = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }) });
 
 	// a run without a baseline reports the full debt
 	expect(first.findings.length > 0).toBeTruthy();
@@ -134,7 +136,7 @@ test('baseline ratchet: --baseline accepts debt explicitly; later runs report on
 	// the accept-debt hint is offered
 	expect(first.notes.some((note) => note.includes('--baseline'))).toBeTruthy();
 
-	const accepting = await runStandardsCheck({ cwd: dir, writeBaseline: true });
+	const accepting = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }), writeBaseline: true });
 
 	// the explicit flag writes the committed ledger at the repo root
 	expect(existsSync(join(dir, 'lightsout.standards-baseline.json'))).toBeTruthy();
@@ -150,7 +152,7 @@ test('baseline ratchet: --baseline accepts debt explicitly; later runs report on
 	// accepting debt says how much of it was accepted:\n${accepting.notes.join('\n')}
 	expect(accepting.notes.some((note) => note.includes(`baseline written: ${ledger.siteKeys.length} site(s)`))).toBeTruthy();
 
-	const second = await runStandardsCheck({ cwd: dir });
+	const second = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }) });
 
 	// clean re-check is silent: ${second.findings.map((finding) =>
 	// finding.siteKey).join(', ')}
@@ -161,14 +163,14 @@ test('baseline ratchet: --baseline accepts debt explicitly; later runs report on
 	// a new defect lands after the baseline was accepted
 	writeFileSync(join(dir, 'src/b/config.ts'), 'export const readConfig = () => 1;\nexport const writeConfig = () => 2;\n');
 
-	const third = await runStandardsCheck({ cwd: dir });
+	const third = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }) });
 
 	// the new finding is reported
 	expect(third.findings.some((finding) => finding.siteKey === 'lightsout/multi-export:src/b/config.ts')).toBeTruthy();
 	// the baselined site stays suppressed
 	expect(third.findings.some((finding) => finding.siteKey === 'lightsout/multi-export:src/a/config.ts')).toBeFalsy();
 
-	const everything = await runStandardsCheck({ cwd: dir, all: true });
+	const everything = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }), all: true });
 
 	// --all includes the baselined findings
 	expect(everything.findings.length > third.findings.length).toBeTruthy();
@@ -192,7 +194,12 @@ test('runStandardsCheck reports stage progress and leaves the evidence file alon
 	const dir = setupLedgerRepo();
 	const messages: string[] = [];
 
-	const { findings } = await runStandardsCheck({ cwd: dir, persist: false, onProgress: (message) => messages.push(message) });
+	const { findings } = await runStandardsCheck({
+		cwd: dir,
+		config: await readOptionalConfig({ cwd: dir }),
+		persist: false,
+		onProgress: (message) => messages.push(message),
+	});
 
 	// the opening progress line counts the scope: ${messages[0]}
 	expect(messages[0]?.includes('1 source file(s)')).toBeTruthy();
@@ -210,7 +217,7 @@ test('runStandardsCheck reports stage progress and leaves the evidence file alon
 test('a persisting run writes the typed evidence file it returns', async () => {
 	const dir = setupLedgerRepo();
 
-	const { findings, notes } = await runStandardsCheck({ cwd: dir });
+	const { findings, notes } = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }) });
 
 	const raw = readFileSync(join(dir, '.lightsout/standards-check.json'), 'utf8');
 	const report = JSON.parse(raw) as { at: string; path: string; findings: Array<{ siteKey: string }>; notes: string[] };
@@ -294,7 +301,7 @@ const setupOwnPackRepo = () => {
 test("a repo's own standards pack supplies the rules, and the bundled defaults do not run beside them", async () => {
 	const dir = setupOwnPackRepo();
 
-	const { findings } = await runStandardsCheck({ cwd: dir, persist: false });
+	const { findings } = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }), persist: false });
 
 	// the rule id comes from the folder the check was loaded from, and the
 	// severity from that rule's own declaration
@@ -327,11 +334,54 @@ const setupScopedRepo = () => {
 test('--path checks the subpath it was given, and the evidence file records that scope', async () => {
 	const dir = setupScopedRepo();
 
-	const { findings } = await runStandardsCheck({ cwd: dir, path: 'src/core' });
+	const { findings } = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }), path: 'src/core' });
 
 	const report = JSON.parse(readFileSync(join(dir, '.lightsout/standards-check.json'), 'utf8')) as { path: string };
 	// the files outside the scope are never handed to a check
 	expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['acme/house-no-loose-files:src/core/inner.ts']);
 	// a scoped report says what it covered, so nobody reads it as the whole repo
 	expect(report.path).toBe('src/core');
+});
+
+/**
+ * A repo on the house pack whose `lightsout.config.json` on disk was edited
+ * after the run started into one the engine rejects, beside the config the run
+ * started with.
+ */
+const setupRejectedConfigRepo = () => {
+	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-handed-'));
+	const startingConfig = {
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		'standards-libraries': { acme: writeOwnPack() },
+		'standards-pack': 'acme/house',
+	};
+
+	writeTree({
+		dir,
+		files: {
+			'src/alpha.ts': 'export const alpha = 1;\n',
+			'src/beta.ts': 'export const beta = 2;\n',
+			'lightsout.config.json': JSON.stringify({ ...startingConfig, 'standards-pak': 'acme/house' }),
+		},
+	});
+
+	return { dir, config: LightsoutConfig.parse(startingConfig) };
+};
+
+test('checks with the config it is handed even when the lightsout.config.json on disk would be rejected', async () => {
+	const { dir, config } = setupRejectedConfigRepo();
+
+	const { findings } = await runStandardsCheck({ cwd: dir, config, persist: false });
+
+	// the handed config's pack runs; the edited file on disk is never parsed
+	expect(findings.map((finding) => finding.siteKey).sort()).toStrictEqual(['acme/house-no-loose-files:src/alpha.ts', 'acme/house-no-loose-files:src/beta.ts']);
+});
+
+test('handed no config, never falls back to the pack the lightsout.config.json on disk names', async () => {
+	const dir = setupOwnPackRepo();
+
+	const { findings } = await runStandardsCheck({ cwd: dir, config: undefined, persist: false });
+
+	// the file on disk names acme/house, but only the handed config counts
+	expect(findings.filter((finding) => finding.rule.startsWith('acme/house'))).toStrictEqual([]);
 });

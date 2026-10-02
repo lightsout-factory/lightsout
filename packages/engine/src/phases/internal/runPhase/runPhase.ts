@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
@@ -86,6 +87,8 @@ interface PhaseParams {
 	cwd: string;
 	driver: Driver;
 	config: LightsoutConfig;
+	/** The coordinator's value, handed to every child it creates. */
+	loadedConfig: LoadedConfig;
 	manifest: RunManifest;
 	index: number;
 	step: StepRecord;
@@ -110,6 +113,7 @@ export const runPhase = async ({
 	cwd,
 	driver,
 	config,
+	loadedConfig,
 	manifest,
 	index,
 	step,
@@ -160,6 +164,7 @@ export const runPhase = async ({
 			cwd,
 			driver,
 			config,
+			loadedConfig,
 			runId: childRunId,
 			planPath: join(dirname(current.plan), step.id),
 			overviewPath: current.plan,

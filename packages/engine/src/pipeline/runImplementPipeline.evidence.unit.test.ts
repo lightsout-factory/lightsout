@@ -112,7 +112,7 @@ describe('runImplementPipeline', () => {
 		// reporter looks like from outside
 		const { dir, driver, prompts, config } = await setupEvidenceRun({ testGate: 'true' });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		expect(result.ok).toBe(false);
 		expect(result.manifest.status).toBe('failed');
@@ -137,7 +137,7 @@ describe('runImplementPipeline', () => {
 			overrides: { 'verify-implement': ['check'] },
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		const finalStep = result.manifest.steps.find((step) => step.id === 'verify-tests');
 
@@ -157,7 +157,7 @@ describe('runImplementPipeline', () => {
 			testGate: gateResultsCommand({ tests: [{ file: ledgerFile, name: ledgerTestName, status: 'passed' }] }),
 		});
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 		const testGates = readCommandLog(dir, result.manifest.runId).filter((entry) => entry.kind === 'test');
 

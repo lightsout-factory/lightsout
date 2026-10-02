@@ -21,4 +21,6 @@ export interface RunProgress {
 	awaitingShip: boolean;
 	/** The command that continues this run — a phase child's names its coordinator's resume, because the sequence is what resumes. */
 	resumeCommand: string;
+	/** The absolute path of the `lightsout.config.json` the run recorded at its start; absent on a run that recorded none. */
+	configPath?: string;
 }

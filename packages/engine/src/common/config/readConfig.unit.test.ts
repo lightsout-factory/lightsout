@@ -113,3 +113,22 @@ test('readConfig: an override naming a gate the repo does not configure throws, 
 	expect(error.message).toMatch(/unknown gate 'test-e2e'/);
 	expect(error.message).toMatch(/gate-overrides\.verify-tests/);
 });
+
+test("readConfig: a misspelled key fails with the file's path on the first line and one indented line per issue", async () => {
+	const { cwd, configPath } = setupRepo({
+		raw: JSON.stringify({
+			gates: { check: 'tsc --noEmit', test: 'node --test', 'test-coverage': false },
+			generatd: ['plugin/dist/'],
+		}),
+	});
+
+	const error = await getRejectionError({ promise: readConfig({ cwd }) });
+
+	const [headline, ...issueLines] = error.message.split('\n');
+	expect({
+		headlineNamesPath: headline?.includes(configPath),
+		hasIssueLines: issueLines.length > 0,
+		everyIssueLineIndented: issueLines.every((line) => /^ {2}\S/.test(line)),
+		namesMisspelledKey: issueLines.some((line) => line.includes('generatd')),
+	}).toStrictEqual({ headlineNamesPath: true, hasIssueLines: true, everyIssueLineIndented: true, namesMisspelledKey: true });
+});

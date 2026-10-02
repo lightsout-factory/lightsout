@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { runDirectWork } from '#src/direct/runDirectWork.ts';
@@ -19,6 +20,8 @@ interface Params {
 	/** The run being continued, restamped with this invocation's ship intent. */
 	manifest: RunManifest;
 	config: LightsoutConfig;
+	/** The run's recorded config and path. */
+	loadedConfig: LoadedConfig;
 	driver: Driver;
 	/** Whether a passing run will ship, so a continued build records the same row a first one would. */
 	willShip: boolean;
@@ -29,7 +32,7 @@ interface Params {
  * run's own `verify` step record whether anything is left to build, so a
  * resumed run and a first run cannot end differently.
  */
-export const continueDirectRun = async ({ cwd, workspace, manifest, config, driver, willShip }: Params): Promise<PipelineResult> => {
+export const continueDirectRun = async ({ cwd, workspace, manifest, config, loadedConfig, driver, willShip }: Params): Promise<PipelineResult> => {
 	const ticketBody = await readFrozenTicket({ cwd, manifest });
 
 	if (ticketBody === undefined) {
@@ -44,6 +47,7 @@ export const continueDirectRun = async ({ cwd, workspace, manifest, config, driv
 		driver,
 		driverName: manifest.harness,
 		config,
+		loadedConfig,
 		existing: manifest,
 		willShip,
 		onProgress: createProgressPrinter(),

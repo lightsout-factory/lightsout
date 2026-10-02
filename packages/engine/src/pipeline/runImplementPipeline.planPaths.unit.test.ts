@@ -59,7 +59,7 @@ const setupPlanRun = async () => {
 test('an absolute --plan is read from where it points and recorded relative to the repo', async () => {
 	const { dir, driver, briefs, config } = await setupPlanRun();
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: join(dir, 'plan.md'), skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: join(dir, 'plan.md'), skipRefactor: true });
 
 	// the run found its plan — the implementer was handed its text
 	expect(result.ok).toBe(true);
@@ -75,6 +75,7 @@ test('an absolute --overview is read and recorded the same way', async () => {
 		cwd: dir,
 		driver,
 		config,
+		loadedConfig: { config },
 		planPath: 'plan.md',
 		overviewPath: join(dir, 'overview.md'),
 		skipRefactor: true,
@@ -88,7 +89,7 @@ test('an absolute --overview is read and recorded the same way', async () => {
 test('a relative --plan is recorded exactly as named — the form it always had', async () => {
 	const { dir, driver, config } = await setupPlanRun();
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md', skipRefactor: true });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', skipRefactor: true });
 
 	expect(result.ok).toBe(true);
 	expect(result.manifest.plan).toBe('plan.md');
@@ -156,6 +157,7 @@ test('a run working in a linked worktree reads its plan and overview from the pr
 		cwd: worktree,
 		driver,
 		config,
+		loadedConfig: { config },
 		planPath: join(planFolder, 'phase1-observability.md'),
 		overviewPath: join(planFolder, 'overview.md'),
 		skipRefactor: true,

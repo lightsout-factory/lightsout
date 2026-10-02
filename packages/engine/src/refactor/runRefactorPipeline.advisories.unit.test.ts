@@ -63,7 +63,7 @@ test('refactor: advisories are recomputed at batch time, not served stale from t
 	};
 
 	const config = await readConfig({ cwd: dir });
-	const parked = await runRefactorPipeline({ cwd: dir, driver, config });
+	const parked = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 	expect(parked.manifest.status).toBe('paused-rate-limit');
 
@@ -72,7 +72,7 @@ test('refactor: advisories are recomputed at batch time, not served stale from t
 	writeSource({ dir, path: 'alpha/multi.ts', source: `${'// shift\n'.repeat(10)}export const alpha = 1;\n${bigFunction}` });
 
 	const existing = await readRunManifest({ cwd: dir, runId: parked.manifest.runId });
-	const resumed = await runRefactorPipeline({ cwd: dir, driver, config, existing });
+	const resumed = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config }, existing });
 
 	expect(resumed.ok).toBe(true);
 	// the advisory in the prompt cites the LIVE line (12), not the frozen one (2)
@@ -114,7 +114,12 @@ test('refactor: every advisory on the batch’s files rides the executor prompt,
 		},
 	};
 
-	const result = await runRefactorPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }) });
+	const result = await runRefactorPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+	});
 
 	expect(result.ok).toBe(true);
 

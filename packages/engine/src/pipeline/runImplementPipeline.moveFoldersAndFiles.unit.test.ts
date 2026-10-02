@@ -158,7 +158,7 @@ describe('runImplementPipeline', () => {
 	test('a move-folders-and-files plan skips both test writers and the refactor steps, runs no test-change review, and passes', async () => {
 		const { dir, driver, invocations, config } = await setupMoveRun();
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 		const ledgerWriter = result.manifest.steps.find((step) => step.id === 'write-ledger-tests');
 		const testWriter = result.manifest.steps.find((step) => step.id === 'write-tests');
@@ -186,7 +186,7 @@ describe('runImplementPipeline', () => {
 	test("a move-folders-and-files plan refused by the move check is repaired by the implement agent's fix turn", async () => {
 		const { dir, driver, invocations, config } = await setupMoveRun({ implementIncrement: 2 });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 		const checkpoint = result.manifest.steps.find((step) => step.id === 'verify-implement');
 		const fixPrompts = invocations.filter((entry) => entry.role === 'fix').map((entry) => entry.prompt);
@@ -202,7 +202,7 @@ describe('runImplementPipeline', () => {
 	test("a move-folders-and-files plan's verify-tests repair goes to the implement agent, never the unit-test writer", async () => {
 		const { dir, driver, invocations, config } = await setupMoveRun({ redVerifyTestsGate: true });
 
-		const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 		const repairs = invocations
 			.filter((entry) => entry.role === 'fix')

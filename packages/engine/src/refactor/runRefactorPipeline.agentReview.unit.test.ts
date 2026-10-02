@@ -156,7 +156,7 @@ describe('runRefactorPipeline agent review', () => {
 	test('the reviewer’s findings join the advisory list the batch’s executor is handed', async () => {
 		const { dir, driver, config, executorPrompts } = await setupReviewedRun({ onReview: reviewFinding });
 
-		await runRefactorPipeline({ cwd: dir, driver, config });
+		await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		// under the advisory heading, sited by the engine and carrying both halves
 		// of its text — judgment handed to a judge, never blocking work
@@ -166,7 +166,7 @@ describe('runRefactorPipeline agent review', () => {
 	test('the batch’s executor is asked to account for each advisory it was shown', async () => {
 		const { dir, driver, config, executorPrompts } = await setupReviewedRun({ onReview: reviewFinding });
 
-		await runRefactorPipeline({ cwd: dir, driver, config });
+		await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		// a batch persists that answer, so a batch is a caller that may ask for it
 		expect(executorPrompts[0] ?? '').toContain('# Report what you did about each advisory');
@@ -175,7 +175,7 @@ describe('runRefactorPipeline agent review', () => {
 	test('each batch is reviewed against its own files, never the whole repo', async () => {
 		const { dir, driver, config, reviewScopes } = await setupReviewedRun({ folders: ['alpha', 'beta'] });
 
-		await runRefactorPipeline({ cwd: dir, driver, config });
+		await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		// a reviewer reading the whole repo per batch would spend the run's budget
 		// re-reading files no one is working on
@@ -186,7 +186,7 @@ describe('runRefactorPipeline agent review', () => {
 	test('each batch is read a second time, against the code it actually wrote', async () => {
 		const { dir, driver, config, reviewScopes } = await setupReviewedRun({ folders: ['alpha', 'beta'] });
 
-		await runRefactorPipeline({ cwd: dir, driver, config });
+		await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		// the first read judges the code the batch inherited; nothing would ever
 		// read its output if this second one did not — and the file the executor
@@ -207,7 +207,7 @@ describe('runRefactorPipeline agent review', () => {
 					: reviewReport(),
 		});
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// the batch's own executor pass came first and knew nothing of it; the
@@ -219,7 +219,7 @@ describe('runRefactorPipeline agent review', () => {
 	test('every batch reads the same judgment rules — the run resolves them once', async () => {
 		const { dir, driver, config, reviewRuleIds } = await setupReviewedRun({ folders: ['alpha', 'beta'] });
 
-		await runRefactorPipeline({ cwd: dir, driver, config });
+		await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		// non-empty first, or two empty lists would agree about nothing
 		expect(reviewRuleIds[0]?.length ?? 0).toBeGreaterThan(0);
@@ -229,7 +229,7 @@ describe('runRefactorPipeline agent review', () => {
 	test('the judgment rules come from every pack the config names, not the bundled one alone', async () => {
 		const { dir, driver, config, reviewRuleIds } = await setupReviewedRun({ housePack: true });
 
-		await runRefactorPipeline({ cwd: dir, driver, config });
+		await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		// a rule no shipped pack declares, so it can only have come from the pack
 		// the config named — and that pack's included built-in rules come with it
@@ -244,7 +244,7 @@ describe('runRefactorPipeline agent review', () => {
 			},
 		});
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config, agentReview: false, onProgress });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config }, agentReview: false, onProgress });
 
 		expect(result.ok).toBe(true);
 		expect(reviewScopes).toStrictEqual([]);
@@ -254,7 +254,7 @@ describe('runRefactorPipeline agent review', () => {
 	test('a review that could not run is narrated against its batch and the batch is still worked', async () => {
 		const { dir, driver, config, progress, onProgress } = await setupReviewedRun({ onReview: () => 'the harness fell over' });
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config, onProgress });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config }, onProgress });
 
 		// the batch is real work — a missing answer must not stop it
 		expect(result.ok).toBe(true);

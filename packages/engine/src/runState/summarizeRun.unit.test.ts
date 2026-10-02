@@ -129,7 +129,7 @@ const setupPipelineRun = async () => {
 	};
 
 	const config = await readConfig({ cwd });
-	const result = await runImplementPipeline({ cwd, planPath: 'plan.md', driver, config });
+	const result = await runImplementPipeline({ cwd, planPath: 'plan.md', driver, config, loadedConfig: { config } });
 
 	return { cwd, result };
 };

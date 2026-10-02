@@ -177,7 +177,7 @@ const setupOwnedBuild = ({ phased = false, throws = false }: { phased?: boolean;
 			overview: overviewPath,
 			pipeline: phased ? PipelineKind.Phases : PipelineKind.Implement,
 			driver: 'claude-code',
-			config,
+			loadedConfig: { config },
 			queueRunId,
 		});
 
@@ -201,7 +201,7 @@ describe('runPlanFolderPipeline', () => {
 	test('runs the phases pipeline against the overview a phased plan folder holds', async () => {
 		const { cwd, name, folder, onProgress } = setupPlanFolder({ phased: true });
 
-		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'queue-run' });
+		const outcome = await runPlanFolderPipeline({ cwd, name, config, loadedConfig: { config }, driver, onProgress, queueRunId: 'queue-run' });
 
 		expect(mockRunPhasesPipeline).toHaveBeenCalledWith(expect.objectContaining({ cwd, config, driver, overviewPath: join(folder, 'overview.md'), onProgress }));
 		expect(mockRunImplementPipeline).not.toHaveBeenCalled();
@@ -211,7 +211,7 @@ describe('runPlanFolderPipeline', () => {
 	test('runs the implement pipeline against the plan file when the folder is not phased', async () => {
 		const { cwd, name, folder, onProgress } = setupPlanFolder();
 
-		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'queue-run' });
+		const outcome = await runPlanFolderPipeline({ cwd, name, config, loadedConfig: { config }, driver, onProgress, queueRunId: 'queue-run' });
 
 		expect(mockRunImplementPipeline).toHaveBeenCalledWith(expect.objectContaining({ cwd, config, driver, planPath: join(folder, 'plan.md'), onProgress }));
 		expect(mockRunPhasesPipeline).not.toHaveBeenCalled();
@@ -221,7 +221,7 @@ describe('runPlanFolderPipeline', () => {
 	test('parks a failed build with the resume sentence naming the run it continues', async () => {
 		const { cwd, name, onProgress } = setupPlanFolder({ result: { ok: false, error: 'the gates stayed red', manifest: manifestOf(RunStatus.Failed) } });
 
-		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'queue-run' });
+		const outcome = await runPlanFolderPipeline({ cwd, name, config, loadedConfig: { config }, driver, onProgress, queueRunId: 'queue-run' });
 
 		// the worktree is left standing, so the sentence a human reads is the one
 		// command that picks the run back up where it stopped
@@ -231,7 +231,7 @@ describe('runPlanFolderPipeline', () => {
 	test('names the state a pipeline ended in when it stopped without saying why', async () => {
 		const { cwd, name, onProgress } = setupPlanFolder({ result: { ok: false, manifest: manifestOf(RunStatus.Escalated) } });
 
-		const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'queue-run' });
+		const outcome = await runPlanFolderPipeline({ cwd, name, config, loadedConfig: { config }, driver, onProgress, queueRunId: 'queue-run' });
 
 		// a run that stated no reason still has a state, and naming it beats an
 		// empty error nobody can act on
@@ -244,7 +244,15 @@ describe('runPlanFolderPipeline', () => {
 			result: { ok: true, manifest: passedPlanManifest({ planId: secondPlan }) },
 		});
 
-		const outcome = await runPlanFolderPipeline({ cwd, name: `${workOrderName}/${secondPlan}`, config, driver, onProgress, queueRunId: 'queue-run' });
+		const outcome = await runPlanFolderPipeline({
+			cwd,
+			name: `${workOrderName}/${secondPlan}`,
+			config,
+			loadedConfig: { config },
+			driver,
+			onProgress,
+			queueRunId: 'queue-run',
+		});
 
 		// a work order's plans implement in numeric order, so the plan standing in the
 		// way is named and nothing is built or recorded for the one that is blocked
@@ -261,7 +269,15 @@ describe('runPlanFolderPipeline', () => {
 			result: { ok: true, manifest: passedPlanManifest({ planId: firstPlan }) },
 		});
 
-		const outcome = await runPlanFolderPipeline({ cwd, name: `${workOrderName}/${firstPlan}`, config, driver, onProgress, queueRunId: 'queue-run' });
+		const outcome = await runPlanFolderPipeline({
+			cwd,
+			name: `${workOrderName}/${firstPlan}`,
+			config,
+			loadedConfig: { config },
+			driver,
+			onProgress,
+			queueRunId: 'queue-run',
+		});
 
 		expect(outcome).toStrictEqual({});
 		expect(planAt({ workOrderFolder, id: firstPlan })).toEqual(
@@ -274,7 +290,7 @@ describe('runPlanFolderPipeline', () => {
 		async ({ phased }) => {
 			const { cwd, name, onProgress, seen } = setupOwnedBuild({ phased });
 
-			const outcome = await runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'q-1' });
+			const outcome = await runPlanFolderPipeline({ cwd, name, config, loadedConfig: { config }, driver, onProgress, queueRunId: 'q-1' });
 
 			const ownerAfter = await readRunOwner({ cwd, runId: seen.runId ?? 'no-run-was-created' });
 
@@ -292,7 +308,9 @@ describe('runPlanFolderPipeline', () => {
 	test('removes the owner record of a build that throws', async () => {
 		const { cwd, name, onProgress, seen } = setupOwnedBuild({ throws: true });
 
-		const error = await getRejectionError({ promise: runPlanFolderPipeline({ cwd, name, config, driver, onProgress, queueRunId: 'q-1' }) });
+		const error = await getRejectionError({
+			promise: runPlanFolderPipeline({ cwd, name, config, loadedConfig: { config }, driver, onProgress, queueRunId: 'q-1' }),
+		});
 
 		const ownerAfter = await readRunOwner({ cwd, runId: seen.runId ?? 'no-run-was-created' });
 

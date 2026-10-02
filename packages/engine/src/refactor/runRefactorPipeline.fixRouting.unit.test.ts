@@ -196,7 +196,7 @@ describe('buildBatchFixInvocation — via runRefactorPipeline', () => {
 	test('routes a coverage-only red to the test writer', async () => {
 		const { dir, driver, config, prompts } = await setupSingleGateRed({ gate: 'test-coverage', flag: 'coverage.flag' });
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		const fixPrompt = fixPromptOf({ prompts });
 
@@ -214,7 +214,7 @@ describe('buildBatchFixInvocation — via runRefactorPipeline', () => {
 	test('hands the batch files to the test writer as both subjects and must-execute', async () => {
 		const { dir, driver, config, prompts } = await setupSingleGateRed({ gate: 'test-coverage', flag: 'coverage.flag' });
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		const fixPrompt = fixPromptOf({ prompts }) ?? '';
 
@@ -229,7 +229,7 @@ describe('buildBatchFixInvocation — via runRefactorPipeline', () => {
 	test('routes a non-coverage red back to the refactor executor', async () => {
 		const { dir, driver, config, prompts } = await setupSingleGateRed({ gate: 'check', flag: 'check.flag' });
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		const fixPrompt = fixPromptOf({ prompts });
 
@@ -247,7 +247,7 @@ describe('buildBatchFixInvocation — via runRefactorPipeline', () => {
 	test('routes a coverage red mixed with another kind to the refactor executor', async () => {
 		const { dir, driver, config, prompts } = await setupMixedRed();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		const fixPrompt = fixPromptOf({ prompts });
 
@@ -266,7 +266,7 @@ describe('buildBatchFixInvocation — via runRefactorPipeline', () => {
 	test('carries the batch’s findings into the refactor executor’s fix invocation', async () => {
 		const { dir, driver, config, prompts } = await setupSingleGateRed({ gate: 'check', flag: 'check.flag' });
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		const fixPrompt = fixPromptOf({ prompts }) ?? '';
 
@@ -281,7 +281,7 @@ describe('buildBatchFixInvocation — via runRefactorPipeline', () => {
 	test('carries the live size advisories into the refactor executor’s fix invocation', async () => {
 		const { dir, driver, config, prompts } = await setupAdvisoryGateRed();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		const fixPrompt = fixPromptOf({ prompts }) ?? '';
 
@@ -294,7 +294,7 @@ describe('buildBatchFixInvocation — via runRefactorPipeline', () => {
 	test('asks the fix pass to account for the advisories it carries', async () => {
 		const { dir, driver, config, prompts } = await setupAdvisoryGateRed();
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		const fixPrompt = fixPromptOf({ prompts }) ?? '';
 

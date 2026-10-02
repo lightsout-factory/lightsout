@@ -5,6 +5,7 @@ import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { readGitPrefix } from '#src/common/git/readGitPrefix.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
+import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
@@ -78,6 +79,8 @@ interface Params {
 	cwd: string;
 	driver: Driver;
 	config: LightsoutConfig;
+	/** The config as it was read from disk, before the command stamped its harness on it, and its path. Recorded on a fresh run; a resume's manifest already carries it. */
+	loadedConfig: LoadedConfig;
 	/** Minted by the caller so the run can be named before it starts. Ignored when resuming. */
 	runId?: string;
 	/** Ignored when resuming (the manifest owns it). */
@@ -115,6 +118,7 @@ const executePipeline = async ({
 	runId,
 	driver,
 	config,
+	loadedConfig,
 	planPath,
 	overviewPath,
 	parentRunId,
@@ -148,7 +152,7 @@ const executePipeline = async ({
 				overview: overviewPath,
 				parentRunId,
 				driver: driver.name,
-				config,
+				loadedConfig,
 				baselineDirtyFiles: await readGitChangedFiles({ cwd }),
 				willShip,
 				queueRunId,

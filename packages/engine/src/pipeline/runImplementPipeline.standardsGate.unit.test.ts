@@ -109,6 +109,7 @@ test('standards gate: findings feed the refactor prompt; a fixing pass clears th
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progress.push(message),
 	});
@@ -149,7 +150,13 @@ test('standards default on when unspecified; false switches them off explicitly'
 			}),
 		};
 
-		await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+		await runImplementPipeline({
+			cwd: dir,
+			driver,
+			config: await readConfig({ cwd: dir }),
+			loadedConfig: { config: await readConfig({ cwd: dir }) },
+			planPath: 'plan.md',
+		});
 
 		return implementPrompt;
 	};
@@ -181,6 +188,7 @@ test('a declared standards pack that cannot be loaded stops the run before any a
 		cwd: dir,
 		driver,
 		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
 		planPath: 'plan.md',
 		onProgress: (message) => progress.push(message),
 	});
@@ -248,7 +256,7 @@ const setupStandardsConfigRun = async ({ config }: { config: Record<string, unkn
 test('standards packs off: the refactor gate loads no pack, spends no reviewer, and the loop still completes', async () => {
 	const { dir, driver, config, reviewSystemPrompts } = await setupStandardsConfigRun({ config: { 'standards-pack': false } });
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config, planPath: 'plan.md' });
+	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
 	// no pack means no judgment rule to read, so no agent is spent saying so —
 	// and the machine half having nothing to report is what lets the loop finish
@@ -290,7 +298,13 @@ test('a ledgered site the run measurably worsened still qualifies, and an unchan
 		},
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	const cleanup = RefactorStepReport.parse(result.manifest.steps.find((step) => step.id === 'refactor')?.report);
 	const remaining = cleanup.remaining.map((finding) => finding.siteKey);
@@ -332,7 +346,13 @@ test('a folder finding already in the baseline never gates a change inside the f
 		},
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	const cleanup = RefactorStepReport.parse(result.manifest.steps.find((step) => step.id === 'refactor')?.report);
 
@@ -371,7 +391,13 @@ test('a run with no baseline records every finding as uncertain', async () => {
 		},
 	});
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	const cleanup = RefactorStepReport.parse(result.manifest.steps.find((step) => step.id === 'refactor')?.report);
 

@@ -79,7 +79,7 @@ describe('runRefactorPipeline red gates', () => {
 			},
 		};
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(true);
 		// the batch resolved once the gate went green
@@ -106,7 +106,7 @@ describe('runRefactorPipeline red gates', () => {
 			},
 		};
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		// the clusters are gone from the tree, but a red gate is not "work verified"
 		expect(result.ok).toBe(false);
@@ -136,7 +136,7 @@ describe('runRefactorPipeline red gates', () => {
 			},
 		};
 
-		const result = await runRefactorPipeline({ cwd: dir, driver, config });
+		const result = await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
 
 		expect(result.ok).toBe(false);
 		// a rate limit mid-fix is pausable state, never an error

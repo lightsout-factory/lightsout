@@ -13,8 +13,11 @@ interface Params {
 	config: LightsoutConfig;
 	driver: Driver;
 	cwd: string;
-	/** The absolute path of the config file the run loaded — not always under `cwd`, which is where the run builds. */
-	configPath: string;
+	/**
+	 * The absolute path of the config file the run loaded — not always under `cwd`, which is where the run builds.
+	 * Undefined only for a resumed run whose manifest predates the recorded path, and the header then prints no config line.
+	 */
+	configPath: string | undefined;
 }
 
 /** The root's pack, then one indented line for each package whose pack address or source differs from the root's. */
@@ -47,7 +50,11 @@ export const printRunHeader = async ({ config, driver, cwd, configPath }: Params
 	const coverage = config.gates['test-coverage'] === false ? 'off (explicit)' : config.gates['test-coverage'];
 
 	console.log(`  cwd: ${cwd}`);
-	printConfigSource({ configPath });
+	// printConfigSource reads undefined as a checkout with no config file, which a run that recorded no path need not be.
+	if (configPath !== undefined) {
+		printConfigSource({ configPath });
+	}
+
 	for (const line of await describeStandards({ config, cwd })) {
 		console.log(line);
 	}

@@ -41,6 +41,7 @@ test('runPhasesPipeline: resume skips the passed phases and continues the interr
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen: [], parkAt: 2 }),
 		config,
+		loadedConfig: { config },
 		overviewPath,
 		skipRefactor: true,
 	});
@@ -53,6 +54,7 @@ test('runPhasesPipeline: resume skips the passed phases and continues the interr
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen }),
 		config,
+		loadedConfig: { config },
 		existing: await readRunManifest({ cwd: dir, runId: parked.manifest.runId }),
 		skipRefactor: true,
 	});
@@ -70,7 +72,14 @@ test('runPhasesPipeline: resume skips the passed phases and continues the interr
 test('runPhasesPipeline: a phase whose own run already passed is adopted on resume, never bought twice', async () => {
 	const { dir, overviewPath } = setupPhasedRepo({ phases: 1 });
 	const config = await readConfig({ cwd: dir });
-	const passed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
+	const passed = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	// a crash between the phase finishing and the coordinator recording it: the
 	// step still says running, but the run it names is done
 	const crashed = await writeRunManifest({
@@ -84,7 +93,14 @@ test('runPhasesPipeline: a phase whose own run already passed is adopted on resu
 	});
 	const seen: number[] = [];
 
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen }), config, existing: crashed, skipRefactor: true });
+	const resumed = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen }),
+		config,
+		loadedConfig: { config },
+		existing: crashed,
+		skipRefactor: true,
+	});
 
 	expect(resumed.ok).toBe(true);
 	// no agent ran, and the phase's own run id is still the record
@@ -97,7 +113,14 @@ test('runPhasesPipeline: a phase whose own run already passed is adopted on resu
 test('runPhasesPipeline: a step naming a run that is gone re-runs the phase in a new run', async () => {
 	const { dir, overviewPath } = setupPhasedRepo({ phases: 1 });
 	const config = await readConfig({ cwd: dir });
-	const passed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, overviewPath, skipRefactor: true });
+	const passed = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const orphaned = await writeRunManifest({
 		cwd: dir,
 		manifest: {
@@ -108,7 +131,14 @@ test('runPhasesPipeline: a step naming a run that is gone re-runs the phase in a
 	});
 	const seen: number[] = [];
 
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen }), config, existing: orphaned, skipRefactor: true });
+	const resumed = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen }),
+		config,
+		loadedConfig: { config },
+		existing: orphaned,
+		skipRefactor: true,
+	});
 
 	expect(resumed.ok).toBe(true);
 	// an unreadable child settles nothing, so the phase is implemented again
@@ -120,7 +150,14 @@ test('runPhasesPipeline: a step naming a run that is gone re-runs the phase in a
 testUnlessRoot('runPhasesPipeline: a phase that throws for a reason other than the lock is recorded as that phase failing', async () => {
 	const { dir, overviewPath } = setupPhasedRepo({ phases: 1 });
 	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }), config, overviewPath, skipRefactor: true });
+	const parked = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const stateDir = join(dir, '.lightsout');
 
 	// the run state directory turns read-only between the park and the resume,
@@ -128,7 +165,14 @@ testUnlessRoot('runPhasesPipeline: a phase that throws for a reason other than t
 	chmodSync(stateDir, 0o555);
 	lockedStateDir = stateDir;
 
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, existing: parked.manifest, skipRefactor: true });
+	const resumed = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		loadedConfig: { config },
+		existing: parked.manifest,
+		skipRefactor: true,
+	});
 
 	expect(resumed.ok).toBe(false);
 	expect(resumed.manifest.status).toBe('failed');
@@ -141,10 +185,24 @@ testUnlessRoot('runPhasesPipeline: a phase that throws for a reason other than t
 test("leaves a started phase's own recorded baseline alone", async () => {
 	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
 	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [], parkAt: 2 }), config, overviewPath, skipRefactor: true });
+	const parked = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [], parkAt: 2 }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const [, started] = await readPhaseChildRuns({ cwd: dir, manifest: parked.manifest });
 
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, existing: parked.manifest, skipRefactor: true });
+	const resumed = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		loadedConfig: { config },
+		existing: parked.manifest,
+		skipRefactor: true,
+	});
 	const [, second] = await readPhaseChildRuns({ cwd: dir, manifest: resumed.manifest });
 
 	// phase 2 already had a run of its own, so it keeps the set that run recorded
@@ -198,9 +256,23 @@ const createRenamingPhaseDriver = ({ dir }: { dir: string }): Driver => {
 test('an unstarted phase of a resumed sequence baselines from its own clean snapshot', async () => {
 	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
 	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }), config, overviewPath, skipRefactor: true });
+	const parked = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [] }), config, existing: parked.manifest, skipRefactor: true });
+	const resumed = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [] }),
+		config,
+		loadedConfig: { config },
+		existing: parked.manifest,
+		skipRefactor: true,
+	});
 	const [, second] = await readPhaseChildRuns({ cwd: dir, manifest: resumed.manifest });
 
 	// phase 1 committed its file before phase 2 began, so phase 2's own snapshot is clean and claims none of it
@@ -213,13 +285,21 @@ test('an unstarted phase of a resumed sequence baselines from its own clean snap
 test('refuses to start an unstarted phase of a resumed sequence when the checkout holds an uncommitted edit', async () => {
 	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
 	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }), config, overviewPath, skipRefactor: true });
+	const parked = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const seen: number[] = [];
 
 	const refused = await runPhasesPipeline({
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen }),
 		config,
+		loadedConfig: { config },
 		existing: parked.manifest,
 		skipRefactor: true,
 		onProgress: writeStrayAtPhaseTwo({ dir }),
@@ -250,11 +330,19 @@ test('refuses to start an unstarted phase of a resumed sequence when the checkou
 test('a refused phase starts on resume once the checkout is clean', async () => {
 	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
 	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }), config, overviewPath, skipRefactor: true });
+	const parked = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const refused = await runPhasesPipeline({
 		cwd: dir,
 		driver: createPhaseDriver({ dir, seen: [] }),
 		config,
+		loadedConfig: { config },
 		existing: parked.manifest,
 		skipRefactor: true,
 		onProgress: writeStrayAtPhaseTwo({ dir }),
@@ -263,7 +351,14 @@ test('a refused phase starts on resume once the checkout is clean', async () => 
 
 	rmSync(join(dir, 'notes'), { recursive: true, force: true });
 
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen }), config, existing: refused.manifest, skipRefactor: true });
+	const resumed = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen }),
+		config,
+		loadedConfig: { config },
+		existing: refused.manifest,
+		skipRefactor: true,
+	});
 
 	// only the refused phase runs; the one that passed before the refusal is not bought again
 	expect({ ok: resumed.ok, status: resumed.manifest.status, seen }).toStrictEqual({ ok: true, status: 'passed', seen: [2] });
@@ -272,13 +367,27 @@ test('a refused phase starts on resume once the checkout is clean', async () => 
 test('the phase that was mid-way at the pause continues without the first-start clean-tree check', async () => {
 	const { dir, overviewPath } = setupCommittablePhasedRepo({ phases: 2 });
 	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }), config, overviewPath, skipRefactor: true });
+	const parked = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const seen: number[] = [];
 
 	mkdirSync(join(dir, 'notes'), { recursive: true });
 	writeFileSync(join(dir, 'notes/stray.md'), 'a note the person left\n');
 
-	const resumed = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen }), config, existing: parked.manifest, skipRefactor: true });
+	const resumed = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen }),
+		config,
+		loadedConfig: { config },
+		existing: parked.manifest,
+		skipRefactor: true,
+	});
 
 	// phase 1 already names a run of its own, so its agent is handed the phase again rather than the
 	// phase being refused as not started; whatever the commit then says about the stray file is its own judgement
@@ -295,13 +404,21 @@ test('a rename-only phase started after a resume passes its rename check on corr
 	commitAll({ cwd: dir, message: 'declare the rename' });
 
 	const config = await readConfig({ cwd: dir });
-	const parked = await runPhasesPipeline({ cwd: dir, driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }), config, overviewPath, skipRefactor: true });
+	const parked = await runPhasesPipeline({
+		cwd: dir,
+		driver: createPhaseDriver({ dir, seen: [], parkAt: 1 }),
+		config,
+		loadedConfig: { config },
+		overviewPath,
+		skipRefactor: true,
+	});
 	const progress: string[] = [];
 
 	const resumed = await runPhasesPipeline({
 		cwd: dir,
 		driver: createRenamingPhaseDriver({ dir }),
 		config,
+		loadedConfig: { config },
 		existing: parked.manifest,
 		skipRefactor: true,
 		onProgress: (message) => {

@@ -184,7 +184,16 @@ const runPipeline = async ({
 	maxBatches?: number;
 	existing?: RunManifest;
 	onProgress?: (message: string) => void;
-}) => runCoveragePipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), maxBatches, existing, onProgress });
+}) =>
+	runCoveragePipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		maxBatches,
+		existing,
+		onProgress,
+	});
 
 describe('runCoveragePipeline gates and scoping', () => {
 	test('a red pre-flight gate fails the run before any batch, because a batch cannot be blamed for it', async () => {

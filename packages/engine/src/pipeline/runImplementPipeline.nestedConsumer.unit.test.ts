@@ -61,7 +61,13 @@ test('nested consumer: agent-reported repo-root-relative paths normalize to cons
 		}),
 	};
 
-	const result = await runImplementPipeline({ cwd: dir, driver, config: await readConfig({ cwd: dir }), planPath: 'plan.md' });
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
 
 	expect(result.ok).toBe(true);
 	// one real module and the caller wiring it in — two writers, not three: the
