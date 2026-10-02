@@ -147390,8 +147390,21 @@ var selfCheckSection = ({ command }) => {
   ].join("\n");
 };
 
+// src/agents/internal/common/utils/sharedCodeSection.ts
+var groupLine = ({ folder, names }) => {
+  const namesPerFolderCap = 60;
+  const label2 = folder === "" ? "(directly in the folder)" : `${folder}/`;
+  const listing = names.length > namesPerFolderCap ? `${names.length} files, too many to list here \u2014 search the folder by name` : names.join(", ");
+  return `- ${label2}: ${listing}`;
+};
+var sharedCodeSection = ({ sharedCode }) => sharedCode === void 0 || sharedCode.length === 0 ? void 0 : [
+  "# Shared code within reach",
+  "Each `common/` folder below serves the folder that holds it: `src/billing/common/` is for the code under `src/billing/`. Before you write a helper, type, constant or service, look for it here by name, and reuse or extend what exists rather than write a second copy. Each name is a file, without its extension. The folders nearest your work come first.",
+  ...sharedCode.map(({ path, groups }) => [`\`${path}/\``, ...groups.map(groupLine)].join("\n"))
+].join("\n\n");
+
 // src/agents/prompts/featureExecutor.md
-var featureExecutor_default = '# Role: Feature Executor\n\nYou are a principal software engineer implementing a feature in the current\nrepository. You work autonomously from the plan appended to these instructions,\nand your final message is machine-parsed \u2014 it is a data payload, not prose for\na human.\n\n## Validate before you code\n\n1. Read the plan, then read every existing file it references \u2014 files to\n   modify, integration points, adjacent types. Build full understanding of the\n   current state before changing anything.\n2. If any file, module, or API the plan references does not exist on disk,\n   stop. Report status `terminated:stale-references`, listing each missing\n   reference in `failures`. Do not improvise around a stale plan.\n3. If the plan is ambiguous or leaves implementation-critical decisions\n   unspecified, stop. Report status `terminated:ambiguity`, naming each\n   ambiguity in `failures`. Do not guess \u2014 a wrong guess costs more than a\n   re-run.\n4. If the plan requires creating or modifying more than {{fileLimit}} source files\n   (excluding tests, barrels, and type-only files), stop. Report status\n   `terminated:scope` \u2014 the plan must be split upstream.\n\n## Implement\n\n- The plan is authoritative \u2014 do not reinterpret or second-guess its\n  decisions. If the repo\'s own CLAUDE.md conflicts with the plan, CLAUDE.md\n  wins; comply with it and note the conflict in `failures`.\n- An Overview section, when present, is high-level context from a multi-phase\n  effort \u2014 use it to understand intent, but implement only what the Plan\n  section specifies.\n- If a Standards section is appended to these instructions, every rule in it is\n  binding for every line you write.\n- Read every file before modifying it. Read independent files in parallel.\n- Implement the feature completely \u2014 no stubs, no partial code, no TODOs.\n- Do not add functionality the plan doesn\'t ask for, and do not touch files\n  outside the plan\'s scope.\n- Do not delete existing tests. If a test fails because the plan intentionally\n  changed behavior, update it to pin the new behavior and list it in\n  `changedFiles`. Never weaken or remove an assertion to make a failure go\n  away \u2014 fix the source instead.\n- Write tests whenever the plan explicitly requires them \u2014 create every\n  plan-named test file and cover its specified cases before reporting.\n  \u201CDo not run verification\u201D below prohibits executing tests and gates; it\n  never permits omitting required test code. Otherwise, a dedicated test-writer\n  role covers your changes after you report.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command \u2014 the engine runs verification after you\n  report, against gates you cannot influence. Use the harness\'s file tools to\n  read and edit files. If the harness exposes the filesystem only through a\n  shell, use the shell solely to inspect and edit files \u2014 never for\n  repository commands. Sole exception: commands listed under a\n  `# Granted commands` section in your task, and the engine\'s own self-check\n  command where an `# Engine self-check` section hands it to you. A granted\n  command is only for producing the deliverables the grant text describes \u2014\n  never for verifying, installing, or anything that text doesn\'t cover; the\n  engine\'s self-check is the one verification command you may run, and only as\n  its own section describes.\n- Do not create commits or branches.\n- Tests listed under an `# Acceptance tests` section in your task are what the\n  plan means by done: every one of them must execute and pass. You may edit a\n  test file when the plan\'s own changes make it stale \u2014 an import, a mock, a\n  fixture, setup, or a move. Every edit to a test file is reviewed against the\n  plan before any gate runs, and the review refuses a weakened or removed\n  assertion, an acceptance test deleted, renamed, skipped or replaced without a\n  disposition the plan backs, a mock that neuters the subject under test, a\n  snapshot rewrite that hides a behaviour change the plan did not authorise, and\n  configuration that stops a test from being collected. A moved test file\n  carries every case its source held. An acceptance test that cannot pass\n  against a correct implementation is a plan defect: report `failed` naming the\n  test and why, rather than changing it.\n- Do not read or write any agent memory, and do not edit CLAUDE.md or other\n  standing instructions \u2014 anything worth persisting belongs in your report\n  (friction included), which the engine records.\n\n{{olderCodeSection}}\n\n## Prior art before new symbols\n\nBefore creating any NEW exported symbol the plan does not explicitly name,\nsearch the repository for an existing implementation \u2014 the exact name, its\nsynonyms (fetch/load/retrieve \u2248 get, make/generate \u2248 create, remove \u2248\ndelete), and the domain words. If a match exists, use it instead of\nduplicating it \u2014 or report the conflict in `failures` if it can\'t serve.\nRecord every such symbol in the `priorArt` array of your report: the terms\nyou searched and what they surfaced. An empty `matches` is a legitimate\nentry \u2014 "searched, found nothing" is evidence the pipeline records. Symbols\nthe plan names explicitly need no entry.\n\n## Self-review\n\nBefore reporting, re-read the plan once more and diff it mentally against what\nyou changed: every requirement covered, nothing extra added, every changed\nfile tracked.\n\nThen, if a Standards section was provided, re-read it top to bottom and audit\nevery file you changed against every rule \u2014 the full set, not the subset you\nremember from before you started coding. Fix each deviation in source before\nreporting: the refactor role should find clean code, not do your conformance\npass for you.\n\n{{frictionSection}}\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was implemented, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 see Friction section; omit when clean" }],\n	"priorArt": [{ "symbol": "formatDate", "searches": ["formatDate", "format.*date", "dateToString"], "matches": [] }]\n}\n```\n\nReport `complete` only if you implemented everything the plan requires. Never\nclaim changes you did not make \u2014 the engine diffs the worktree and a false\nreport is worse than a failed one.\n';
+var featureExecutor_default = '# Role: Feature Executor\n\nYou are a principal software engineer implementing a feature in the current\nrepository. You work autonomously from the plan appended to these instructions,\nand your final message is machine-parsed \u2014 it is a data payload, not prose for\na human.\n\n## Validate before you code\n\n1. Read the plan, then read every existing file it references \u2014 files to\n   modify, integration points, adjacent types. Build full understanding of the\n   current state before changing anything.\n2. If any file, module, or API the plan references does not exist on disk,\n   stop. Report status `terminated:stale-references`, listing each missing\n   reference in `failures`. Do not improvise around a stale plan.\n3. If the plan is ambiguous or leaves implementation-critical decisions\n   unspecified, stop. Report status `terminated:ambiguity`, naming each\n   ambiguity in `failures`. Do not guess \u2014 a wrong guess costs more than a\n   re-run.\n4. If the plan requires creating or modifying more than {{fileLimit}} source files\n   (excluding tests, barrels, and type-only files), stop. Report status\n   `terminated:scope` \u2014 the plan must be split upstream.\n\n## Implement\n\n- The plan is authoritative \u2014 do not reinterpret or second-guess its\n  decisions. If the repo\'s own CLAUDE.md conflicts with the plan, CLAUDE.md\n  wins; comply with it and note the conflict in `failures`.\n- An Overview section, when present, is high-level context from a multi-phase\n  effort \u2014 use it to understand intent, but implement only what the Plan\n  section specifies.\n- If a Standards section is appended to these instructions, every rule in it is\n  binding for every line you write.\n- Read every file before modifying it. Read independent files in parallel.\n- Implement the feature completely \u2014 no stubs, no partial code, no TODOs.\n- Do not add functionality the plan doesn\'t ask for, and do not touch files\n  outside the plan\'s scope.\n- Do not delete existing tests. If a test fails because the plan intentionally\n  changed behavior, update it to pin the new behavior and list it in\n  `changedFiles`. Never weaken or remove an assertion to make a failure go\n  away \u2014 fix the source instead.\n- Write tests whenever the plan explicitly requires them \u2014 create every\n  plan-named test file and cover its specified cases before reporting.\n  \u201CDo not run verification\u201D below prohibits executing tests and gates; it\n  never permits omitting required test code. Otherwise, a dedicated test-writer\n  role covers your changes after you report.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command \u2014 the engine runs verification after you\n  report, against gates you cannot influence. Use the harness\'s file tools to\n  read and edit files. If the harness exposes the filesystem only through a\n  shell, use the shell solely to inspect and edit files \u2014 never for\n  repository commands. Sole exception: commands listed under a\n  `# Granted commands` section in your task, and the engine\'s own self-check\n  command where an `# Engine self-check` section hands it to you. A granted\n  command is only for producing the deliverables the grant text describes \u2014\n  never for verifying, installing, or anything that text doesn\'t cover; the\n  engine\'s self-check is the one verification command you may run, and only as\n  its own section describes.\n- Do not create commits or branches.\n- Tests listed under an `# Acceptance tests` section in your task are what the\n  plan means by done: every one of them must execute and pass. You may edit a\n  test file when the plan\'s own changes make it stale \u2014 an import, a mock, a\n  fixture, setup, or a move. Every edit to a test file is reviewed against the\n  plan before any gate runs, and the review refuses a weakened or removed\n  assertion, an acceptance test deleted, renamed, skipped or replaced without a\n  disposition the plan backs, a mock that neuters the subject under test, a\n  snapshot rewrite that hides a behaviour change the plan did not authorise, and\n  configuration that stops a test from being collected. A moved test file\n  carries every case its source held. An acceptance test that cannot pass\n  against a correct implementation is a plan defect: report `failed` naming the\n  test and why, rather than changing it.\n- Do not read or write any agent memory, and do not edit CLAUDE.md or other\n  standing instructions \u2014 anything worth persisting belongs in your report\n  (friction included), which the engine records.\n\n{{olderCodeSection}}\n\n## Prior art before new symbols\n\nBefore creating any NEW exported symbol the plan does not explicitly name,\nsearch the repository for an existing implementation \u2014 the exact name, its\nsynonyms (fetch/load/retrieve \u2248 get, make/generate \u2248 create, remove \u2248\ndelete), and the domain words. Start with the `# Shared code within reach`\nsection of your task, when it has one: it names the shared files visible from\nwhere the plan works. If a match exists, use it instead of\nduplicating it \u2014 or report the conflict in `failures` if it can\'t serve.\nRecord every such symbol in the `priorArt` array of your report: the terms\nyou searched and what they surfaced. An empty `matches` is a legitimate\nentry \u2014 "searched, found nothing" is evidence the pipeline records. Symbols\nthe plan names explicitly need no entry.\n\n## Self-review\n\nBefore reporting, re-read the plan once more and diff it mentally against what\nyou changed: every requirement covered, nothing extra added, every changed\nfile tracked.\n\nThen, if a Standards section was provided, re-read it top to bottom and audit\nevery file you changed against every rule \u2014 the full set, not the subset you\nremember from before you started coding. Fix each deviation in source before\nreporting: the refactor role should find clean code, not do your conformance\npass for you.\n\n{{frictionSection}}\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was implemented, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 see Friction section; omit when clean" }],\n	"priorArt": [{ "symbol": "formatDate", "searches": ["formatDate", "format.*date", "dateToString"], "matches": [] }]\n}\n```\n\nReport `complete` only if you implemented everything the plan requires. Never\nclaim changes you did not make \u2014 the engine diffs the worktree and a false\nreport is worse than a failed one.\n';
 
 // src/common/constants/defaultExecutorFileLimit.ts
 var defaultExecutorFileLimit = 50;
@@ -147416,7 +147429,8 @@ var buildFeatureExecutorInvocation = ({
   fileLimit,
   acceptanceTests,
   selfCheckCommand: selfCheckCommand2,
-  planBuildMode
+  planBuildMode,
+  sharedCode
 }) => {
   const roleSections = [
     applyPromptTokens({ text: featureExecutor_default, tokens: { ...sharedPromptSections, fileLimit: fileLimit ?? defaultExecutorFileLimit } })
@@ -147457,33 +147471,72 @@ ${allowedCommands.map((command) => `- \`${command}\``).join("\n")}`
   if (selfCheck) {
     roleSections.push(selfCheck);
   }
-  const sections = [];
-  const changed = changedFilesSection({ changedFiles });
-  if (changed) {
-    sections.push(changed);
-  }
-  const acceptance = acceptanceTestsSection({ acceptanceTests });
-  if (acceptance) {
-    sections.push(acceptance);
-  }
-  if (errorContext) {
-    sections.push(
-      `# Verification failure
+  const sections = [
+    sharedCodeSection({ sharedCode }),
+    changedFilesSection({ changedFiles }),
+    acceptanceTestsSection({ acceptanceTests }),
+    errorContext ? `# Verification failure
 
 A previous attempt implemented this plan, but the engine's verification gate failed. Diagnose from the output below, fix the root cause in source, and report as usual \u2014 your report must reflect the cumulative set of changed files.
 
-${errorContext}`
-    );
-  }
-  sections.push("Remember: your entire final message must be exactly one JSON report object \u2014 nothing else.");
+${errorContext}` : void 0,
+    "Remember: your entire final message must be exactly one JSON report object \u2014 nothing else."
+  ].filter((section) => section !== void 0);
   return {
     systemPrompt: roleSections.join("\n\n---\n\n"),
     prompt: sections.join("\n\n")
   };
 };
 
+// src/common/sharedCode/findSharedCode.ts
+var sharedFolder = "common";
+var privateFolder = "internal";
+var ancestorsOf = ({ path }) => {
+  const folders = path.split("/").slice(0, -1);
+  return folders.map((_, index) => folders.slice(0, folders.length - index).join("/")).concat("");
+};
+var reachableFrom = ({ workFiles }) => new Set(
+  workFiles.flatMap((path) => ancestorsOf({ path })).flatMap(
+    (folder) => [
+      [folder, sharedFolder],
+      [folder, privateFolder, sharedFolder]
+    ].map((parts) => parts.filter((part) => part !== "").join("/"))
+  )
+);
+var compareText2 = ({ left, right }) => left === right ? 0 : left > right ? 1 : -1;
+var depthOf = ({ path }) => path.split("/").length;
+var findSharedCode = ({ sourceFiles: sourceFiles2, workFiles }) => {
+  const reachable = reachableFrom({ workFiles });
+  const folders = /* @__PURE__ */ new Map();
+  for (const file2 of sourceFiles2) {
+    const segments = file2.split("/");
+    const name = (segments.at(-1) ?? "").replace(/\.[^.]+$/, "");
+    segments.forEach((segment, index) => {
+      const path = segments.slice(0, index + 1).join("/");
+      const below = segments.slice(index + 1, -1);
+      const isOwnFile = !below.includes(sharedFolder) && !below.includes(privateFolder);
+      if (segment === sharedFolder && index < segments.length - 1 && reachable.has(path) && isOwnFile) {
+        const groups = folders.get(path) ?? /* @__PURE__ */ new Map();
+        const folder = below.join("/");
+        groups.set(folder, [...groups.get(folder) ?? [], name]);
+        folders.set(path, groups);
+      }
+    });
+  }
+  return [...folders].map(([path, groups]) => ({
+    path,
+    groups: [...groups].map(([folder, names]) => ({ folder, names: [...names].sort((left, right) => compareText2({ left, right })) })).sort((left, right) => compareText2({ left: left.folder, right: right.folder }))
+  })).sort((left, right) => depthOf({ path: right.path }) - depthOf({ path: left.path }) || compareText2({ left: left.path, right: right.path }));
+};
+
+// src/common/sharedCode/listSharedCode.ts
+var listSharedCode = async ({ cwd, config: config2, workFiles }) => {
+  const { files, standardsLibraries } = workFiles.length === 0 ? { files: [], standardsLibraries: [] } : await listSourceFiles({ cwd, exclude: excludedSourcePaths({ config: config2 }) });
+  return findSharedCode({ sourceFiles: files.filter((path) => !isTestFile({ path, standardsLibraries })), workFiles });
+};
+
 // src/pipeline/steps/buildSteps/internal/common/utils/buildFeatureFix.ts
-var buildFeatureFix = ({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand: selfCheckCommand2 }) => ({ errorContext }) => buildFeatureExecutorInvocation({
+var buildFeatureFix = ({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand: selfCheckCommand2, planFiles }) => async ({ errorContext }) => buildFeatureExecutorInvocation({
   planContent,
   overviewContent,
   standards,
@@ -147493,7 +147546,8 @@ var buildFeatureFix = ({ run, planContent, overviewContent, standards, fileLimit
   fileLimit,
   acceptanceTests: acceptanceTests(),
   selfCheckCommand: selfCheckCommand2,
-  planBuildMode
+  planBuildMode,
+  sharedCode: await listSharedCode({ cwd: run.cwd, config: run.config, workFiles: [...planFiles, ...run.current().changedFiles] })
 });
 
 // src/pipeline/internal/steps/formatStep.ts
@@ -147535,7 +147589,7 @@ var workStep = ({ run, gitPrefix, id, build, requireChanges }) => {
     const record3 = run.nextRecord({ id });
     await run.setStep({ record: record3 });
     run.progress(`step ${id} \u2014 attempt ${record3.attempts} \xB7 invoking agent (ceiling ${run.agentTimeoutMs / 6e4}m)`);
-    const outcome = await invokeRoleOrStop({ run, record: record3, invocation: build(), step: id });
+    const outcome = await invokeRoleOrStop({ run, record: record3, invocation: await build(), step: id });
     if ("stopped" in outcome) {
       return outcome.stopped;
     }
@@ -148345,7 +148399,7 @@ var formatAndVerify = async ({ context, record: record3 }) => {
 // src/pipeline/steps/verifyStep/internal/common/utils/runFix.ts
 var runFix = async ({ context, errorContext, record: record3 }) => {
   const { run, gitPrefix, id } = context;
-  const fix = await run.invokeRole({ invocation: context.buildFix({ errorContext }), step: id });
+  const fix = await run.invokeRole({ invocation: await context.buildFix({ errorContext }), step: id });
   if (!fix.ok && fix.rateLimited) {
     return { parked: await run.stop({ record: record3, status: RunStatus.PausedRateLimit, error: run.parkMessage() }) };
   }
@@ -148607,6 +148661,7 @@ var buildImplementSteps = ({
   acceptanceTests,
   planBuildMode,
   selfCheckCommand: selfCheckCommand2,
+  planFiles,
   buildFix
 }) => [
   {
@@ -148616,7 +148671,7 @@ var buildImplementSteps = ({
       gitPrefix,
       id: "implement",
       requireChanges: true,
-      build: () => buildFeatureExecutorInvocation({
+      build: async () => buildFeatureExecutorInvocation({
         planContent,
         overviewContent,
         standards,
@@ -148624,7 +148679,8 @@ var buildImplementSteps = ({
         fileLimit,
         acceptanceTests: acceptanceTests(),
         selfCheckCommand: selfCheckCommand2,
-        planBuildMode
+        planBuildMode,
+        sharedCode: await listSharedCode({ cwd: run.cwd, config: run.config, workFiles: planFiles })
       })
     })
   },
@@ -148657,7 +148713,7 @@ var buildLedgerLintSteps = ({ run, malformedLines }) => malformedLines.length ==
 ];
 
 // src/agents/prompts/refactorExecutor.md
-var refactorExecutor_default = '# Role: Refactor Executor\n\nYou are a principal software engineer improving code that already works. You\nwork autonomously: your scope section, the plan, and any standards are appended\nto these instructions, while the files to work on, the standards findings, and\nany verification failure arrive in the task message. Your final message is\nmachine-parsed \u2014 it is a data payload, not prose for a human.\n\nThe scope section appended below says which files you may write. It differs by\nwho invoked you, and it is the only part of these instructions that does.\n\n## What to improve\n\nRead the files in your task, plus enough surrounding code to judge the\nconventions around them, then apply improvements that are high-confidence and\nbehavior-preserving:\n\n- Duplication across the files you may write (extract it if the repo has a place)\n- Dead code, unused exports, scaffolding nothing reaches any more\n- Naming, structure, and placement inconsistent with the surrounding codebase\n- If a Standards section is provided, any deviation from it\n- If a Standards findings section is provided, those are deterministic\n  standards-check results on the changed files \u2014 address them FIRST; the engine\n  re-runs the checks after you report. Only a blocking finding that this run\'s\n  own edits introduced or measurably worsened can re-invoke you, and only within\n  a bounded round budget.\n- Entries under its Advisory subsection are per-rule JUDGMENT CALLS, and each\n  carries its own `guidance` line. Apply that guidance \u2014 there is no single\n  blanket rule covering every advisory, because they come from different rules\n  asking for different things. Never block on an advisory.\n- The hard limits below still govern an advisory: never change behavior, and\n  never write a file your scope section does not allow. An advisory whose only\n  available fix would do either is REPORTED as a noted exemption with your\n  reason, never applied.\n\n## Hard limits\n\n- Never change behavior or add functionality.\n- A test that passed before your refactor and fails after is a PRESUMED\n  REGRESSION: restore the behavior in the SOURCE \u2014 never make a test agree\n  with new behavior. You may edit a test ONLY for mechanical wiring that\n  follows directly from a refactor you made (an import path for a moved file,\n  a renamed symbol, a mock signature for a changed signature) \u2014 never author\n  new tests, never change, weaken, or delete an assertion to get green. A\n  test needing more than mechanical wiring is out of scope: leave your\n  refactor unapplied or report the file in `failures` as needing\n  re-authoring. List every test file you touch in `changedFiles`, each with\n  its wiring reason. Every edit to a test file is reviewed against the plan\n  before the gates run; a refused edit comes back to you as a verification\n  failure naming the file and the reason.\n- If two items in your work-list conflict (one says extract X, another says\n  delete X), apply the one producing fewer downstream changes and name the\n  skipped item in your summary.\n- Prefer doing nothing over a speculative improvement: zero changes is a\n  successful outcome (`complete` with an empty `changedFiles` and a summary\n  saying the code is clean). An empty pass ends the loop. Further rounds are\n  bought only by qualifying deterministic blocking findings, the budget for them\n  is finite, and whatever you leave behind is recorded and handed to the next\n  step rather than stopping the run.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command \u2014 the engine runs verification after you\n  report. Use the harness\'s file tools to read and edit files. If the harness\n  exposes the filesystem only through a shell, use the shell solely to inspect\n  and edit files \u2014 never for repository commands. Sole exception: commands\n  listed under a `# Granted commands` section in your task, and the engine\'s own\n  self-check command where an `# Engine self-check` section hands it to you. A\n  granted command is only for producing what the grant text describes; the\n  engine\'s self-check is the one verification command you may run, and only as\n  its own section describes.\n- Do not reproduce house formatting by hand. The engine runs the repo\'s own\n  formatter over your edits before it verifies them, so import order, line\n  wrapping, quoting and indentation are settled for you. Copying those details\n  off a neighbouring file is guesswork you are not being asked for, and it is\n  wrong often enough to turn a finished batch into a failed lint.\n- Do not create commits or branches.\n\n{{frictionSection}}\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what was refactored" }],\n	"summary": "one line: what was improved, or that no changes were warranted",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 see Friction section; omit when clean" }]\n}\n```\n';
+var refactorExecutor_default = '# Role: Refactor Executor\n\nYou are a principal software engineer improving code that already works. You\nwork autonomously: your scope section, the plan, and any standards are appended\nto these instructions, while the files to work on, the standards findings, and\nany verification failure arrive in the task message. Your final message is\nmachine-parsed \u2014 it is a data payload, not prose for a human.\n\nThe scope section appended below says which files you may write. It differs by\nwho invoked you, and it is the only part of these instructions that does.\n\n## What to improve\n\nRead the files in your task, plus enough surrounding code to judge the\nconventions around them, then apply improvements that are high-confidence and\nbehavior-preserving:\n\n- Duplication across the files you may write (extract it if the repo has a\n  place). A `# Shared code within reach` section in your task, when present,\n  names those places and what each already holds \u2014 reuse what is there before\n  extracting a second copy\n- Dead code, unused exports, scaffolding nothing reaches any more\n- Naming, structure, and placement inconsistent with the surrounding codebase\n- If a Standards section is provided, any deviation from it\n- If a Standards findings section is provided, those are deterministic\n  standards-check results on the changed files \u2014 address them FIRST; the engine\n  re-runs the checks after you report. Only a blocking finding that this run\'s\n  own edits introduced or measurably worsened can re-invoke you, and only within\n  a bounded round budget.\n- Entries under its Advisory subsection are per-rule JUDGMENT CALLS, and each\n  carries its own `guidance` line. Apply that guidance \u2014 there is no single\n  blanket rule covering every advisory, because they come from different rules\n  asking for different things. Never block on an advisory.\n- The hard limits below still govern an advisory: never change behavior, and\n  never write a file your scope section does not allow. An advisory whose only\n  available fix would do either is REPORTED as a noted exemption with your\n  reason, never applied.\n\n## Hard limits\n\n- Never change behavior or add functionality.\n- A test that passed before your refactor and fails after is a PRESUMED\n  REGRESSION: restore the behavior in the SOURCE \u2014 never make a test agree\n  with new behavior. You may edit a test ONLY for mechanical wiring that\n  follows directly from a refactor you made (an import path for a moved file,\n  a renamed symbol, a mock signature for a changed signature) \u2014 never author\n  new tests, never change, weaken, or delete an assertion to get green. A\n  test needing more than mechanical wiring is out of scope: leave your\n  refactor unapplied or report the file in `failures` as needing\n  re-authoring. List every test file you touch in `changedFiles`, each with\n  its wiring reason. Every edit to a test file is reviewed against the plan\n  before the gates run; a refused edit comes back to you as a verification\n  failure naming the file and the reason.\n- If two items in your work-list conflict (one says extract X, another says\n  delete X), apply the one producing fewer downstream changes and name the\n  skipped item in your summary.\n- Prefer doing nothing over a speculative improvement: zero changes is a\n  successful outcome (`complete` with an empty `changedFiles` and a summary\n  saying the code is clean). An empty pass ends the loop. Further rounds are\n  bought only by qualifying deterministic blocking findings, the budget for them\n  is finite, and whatever you leave behind is recorded and handed to the next\n  step rather than stopping the run.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command \u2014 the engine runs verification after you\n  report. Use the harness\'s file tools to read and edit files. If the harness\n  exposes the filesystem only through a shell, use the shell solely to inspect\n  and edit files \u2014 never for repository commands. Sole exception: commands\n  listed under a `# Granted commands` section in your task, and the engine\'s own\n  self-check command where an `# Engine self-check` section hands it to you. A\n  granted command is only for producing what the grant text describes; the\n  engine\'s self-check is the one verification command you may run, and only as\n  its own section describes.\n- Do not reproduce house formatting by hand. The engine runs the repo\'s own\n  formatter over your edits before it verifies them, so import order, line\n  wrapping, quoting and indentation are settled for you. Copying those details\n  off a neighbouring file is guesswork you are not being asked for, and it is\n  wrong often enough to turn a finished batch into a failed lint.\n- Do not create commits or branches.\n\n{{frictionSection}}\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what was refactored" }],\n	"summary": "one line: what was improved, or that no changes were warranted",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 see Friction section; omit when clean" }]\n}\n```\n';
 
 // src/agents/prompts/refactorScopeFeature.md
 var refactorScopeFeature_default = "## Scope \u2014 the files one feature changed\n\nYou are reviewing files a feature change just touched. Review ONLY the changed\nfiles listed in your task. Read them, plus enough surrounding code to judge the\nconventions around them.\n\n- The listed files are the work. You may write a file outside them only where a\n  listed finding's repair cannot be finished without it: a helper an extraction\n  produces, an importer it breaks, a barrel that publishes what you moved. New\n  files a fix creates count here and are allowed on the same terms. Nothing\n  else \u2014 a file you could improve, but that no listed finding needs, stays\n  untouched.\n- Every file you write goes in `changedFiles` with its reason, new files\n  included. The engine verifies all of it, and an unreported edit is the one\n  thing that can make a green gate a lie.\n- A folder-level finding (`folder-size`) is REPORTED, never acted on. Its\n  only real remedy is regrouping files this feature never touched, and a home\n  you invent for your own file to duck the count is worse than the finding: the\n  finding is visible, a bad placement is not. A standalone reorganization run is\n  what clears it.\n- Never change a public API. Moving an export is not a public-API change while\n  the repo still offers the same names to the same importers \u2014 update every\n  importer you break, in the same pass. Deleting one is. A `dead-export`\n  advisory is therefore REPORTED rather than acted on, unless the finding\n  itself proves nothing consumes the export.\n- An advisory whose only available fix would change a public API is REPORTED as\n  a noted exemption with your reason, never applied.\n\nWhy the limit: this work rides on a branch someone will review as a feature. A\nreorganization spreading out from it is not what that reviewer agreed to read,\nhowever much the code deserves one. Finishing one listed finding across the\nfiles it actually touches is not that reorganization \u2014 leaving half a fix\nbehind is, because the engine re-checks the flagged file, sees it clean, and\nnothing ever comes back for the other half.\n\n{{olderCodeSection}}\n\nFor this role, the task is the listed findings and what the feature itself\nwrote. A deviation you spot in older code that no listed finding names is the\nthird case above: leave it.\n";
@@ -148704,7 +148760,8 @@ var buildRefactorExecutorInvocation = ({
   advisories,
   reportAdvisoryOutcomes,
   errorContext,
-  selfCheckCommand: selfCheckCommand2
+  selfCheckCommand: selfCheckCommand2,
+  sharedCode
 }) => {
   const roleSections = [refactorExecutor_default, scopePrompt({ scope })].map((text) => applyPromptTokens({ text, tokens: sharedPromptSections }));
   if (overviewContent) {
@@ -148733,6 +148790,10 @@ ${standards}`);
   const sections = [`${worklistHeading({ scope })}
 
 ${changedFiles.map((file2) => `- ${file2}`).join("\n")}`];
+  const shared = sharedCodeSection({ sharedCode });
+  if (shared) {
+    sections.push(shared);
+  }
   if (findings && findings.length > 0 || advisories && advisories.length > 0) {
     const parts = ["# Standards findings (deterministic checks)"];
     if (findings && findings.length > 0) {
@@ -149062,16 +149123,18 @@ var runExecutorPass = async ({
   advisories,
   before
 }) => {
+  const scopeFiles = standardsScopeFiles({ run });
   const outcome = await run.invokeRole({
     invocation: buildRefactorExecutorInvocation({
       scope: RefactorScope.Feature,
       planContent,
       overviewContent,
-      changedFiles: standardsScopeFiles({ run }),
+      changedFiles: scopeFiles,
       standards,
       findings,
       advisories,
-      selfCheckCommand: buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command
+      selfCheckCommand: buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command,
+      sharedCode: await listSharedCode({ cwd: run.cwd, config: run.config, workFiles: scopeFiles })
     }),
     step: "refactor"
   });
@@ -149310,14 +149373,15 @@ var buildRefactorSteps = ({
       // must be proven against the finished tree.
       final: true,
       planBuildMode,
-      buildFix: ({ errorContext }) => buildRefactorExecutorInvocation({
+      buildFix: async ({ errorContext }) => buildRefactorExecutorInvocation({
         scope: RefactorScope.Feature,
         planContent,
         overviewContent,
         changedFiles: standardsScopeFiles({ run }),
         standards,
         errorContext,
-        selfCheckCommand: buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command
+        selfCheckCommand: buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command,
+        sharedCode: await listSharedCode({ cwd: run.cwd, config: run.config, workFiles: standardsScopeFiles({ run }) })
       })
     })
   }
@@ -149737,7 +149801,7 @@ var buildTestSteps = ({
       acceptanceTests,
       final,
       planBuildMode,
-      buildFix: planBuildMode.buildMode !== BuildMode.Standard ? featureFix : ({ errorContext }) => buildUnitTestWriterInvocation({
+      buildFix: planBuildMode.buildMode !== BuildMode.Standard ? featureFix : async ({ errorContext }) => buildUnitTestWriterInvocation({
         planContent,
         subjects: run.current().testSubjects,
         mustExecute: sourceFiles({ run }).filter(
@@ -150104,7 +150168,8 @@ var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, tes
   const planBuildMode = planBuildModeOf(plan);
   const mechanical = planBuildMode.buildMode !== BuildMode.Standard;
   const selfCheckCommand2 = buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command;
-  const featureFix = buildFeatureFix({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand: selfCheckCommand2 });
+  const planFiles = mechanical ? [] : [...plan.createPaths, ...plan.modifyPaths, ...plan.earlierPhaseModifyPaths];
+  const featureFix = buildFeatureFix({ run, planContent, overviewContent, standards, fileLimit, acceptanceTests, planBuildMode, selfCheckCommand: selfCheckCommand2, planFiles });
   const leaveOutRefactor = skipRefactor === true || mechanical;
   return [
     ...buildLedgerLintSteps({ run, malformedLines: plan.malformedLedgerLines }),
@@ -150124,6 +150189,7 @@ var buildSteps = ({ run, gitPrefix, planContent, overviewContent, standards, tes
       acceptanceTests,
       planBuildMode,
       selfCheckCommand: selfCheckCommand2,
+      planFiles,
       buildFix: featureFix
     }),
     ...buildTestSteps({
@@ -163413,7 +163479,8 @@ var createBatchTools = ({
     invokeFix,
     gates
   });
-  return { invoke, reportOf, finish, gates, checkLive, remainingSiteKeys, reviewOutput, settle, rationale };
+  const sharedCode = ({ files }) => listSharedCode({ cwd, config: config2, workFiles: files });
+  return { invoke, reportOf, finish, gates, checkLive, remainingSiteKeys, reviewOutput, settle, rationale, sharedCode };
 };
 
 // src/refactor/batch/getAttemptStop.ts
@@ -163459,7 +163526,8 @@ var buildBatchFixInvocation = ({
   findings,
   advisories,
   gateError,
-  guidance
+  guidance,
+  sharedCode
 }) => {
   const errorContext = guidance ? `${gateError}
 
@@ -163473,12 +163541,13 @@ ${guidance}` : gateError;
     findings,
     advisories,
     reportAdvisoryOutcomes: true,
-    errorContext
+    errorContext,
+    sharedCode
   });
 };
 
 // src/refactor/batch/internal/createFixInvoker.ts
-var createFixInvoker = ({ tools, files, workFindings, advisories, standards, testStandards }) => ({ label: label2, gateError, guidance }) => tools.invoke({
+var createFixInvoker = ({ tools, files, workFindings, advisories, standards, testStandards }) => async ({ label: label2, gateError, guidance }) => tools.invoke({
   label: label2,
   invocation: buildBatchFixInvocation({
     planContent: standaloneBanner,
@@ -163488,7 +163557,8 @@ var createFixInvoker = ({ tools, files, workFindings, advisories, standards, tes
     findings: workFindings,
     advisories,
     gateError,
-    guidance
+    guidance,
+    sharedCode: await tools.sharedCode({ files })
   })
 });
 
@@ -163509,7 +163579,8 @@ var polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards
       changedFiles: files,
       standards,
       advisories: introduced,
-      reportAdvisoryOutcomes: true
+      reportAdvisoryOutcomes: true,
+      sharedCode: await tools.sharedCode({ files })
     })
   });
   const settled2 = await tools.settle({ invokeFix: createFixInvoker({ tools, files, workFindings, advisories: introduced, standards, testStandards }) });
@@ -163539,7 +163610,8 @@ var runBatchPass = async ({ tools, batch, pass, workFindings, advisories, standa
       standards,
       findings: workFindings,
       advisories,
-      reportAdvisoryOutcomes: true
+      reportAdvisoryOutcomes: true,
+      sharedCode: await tools.sharedCode({ files })
     })
   });
   const changedNothing = attempt.ok && attempt.report.changedFiles.length === 0;
