@@ -95,6 +95,14 @@ describe('renderConfigKeyReference', () => {
 		);
 	});
 
+	test('the commands row is optional and says a resume keeps the recorded harness and takes model and effort from the configuration the run recorded, not the current file', () => {
+		const commandsRow = findRow({ key: 'commands' });
+
+		expect(commandsRow).toMatch(
+			/^\| `commands` \| no \| .*`resume`.*recorded harness.*\bmodel\b.*\beffort\b.*configuration the run recorded.*\b(?:never|not)\b.*\bfile\b/,
+		);
+	});
+
 	test('renders a package-standards-packs row as optional', () => {
 		const packagePacksRow = findRow({ key: 'package-standards-packs' });
 

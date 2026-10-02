@@ -57,6 +57,15 @@ const describeCommits = ({ manifest, ok }: { manifest: RunManifest; ok: boolean 
 	return ok && manifest.changedFiles.length > 0 ? 'none added — this run’s work was already in the branch’s history' : undefined;
 };
 
+/**
+ * A run follows the config it read at its start, so a run that edited the
+ * root config says the edit was not in force, rather than implying it was.
+ */
+const describeConfigChange = ({ manifest }: { manifest: RunManifest }) =>
+	manifest.configPath !== undefined && manifest.changedFiles.includes('lightsout.config.json')
+		? `lightsout.config.json changed during this run; this run kept the configuration it started with, from ${manifest.configPath}. Runs pick up the edit once it is in the checkout they start from.`
+		: undefined;
+
 interface Params {
 	result: PipelineResult;
 	cwd: string;
@@ -130,6 +139,12 @@ const renderDetailLines = ({ manifest, summary, ok }: { manifest: RunManifest; s
 				value: `unreachable-changed-files: ${manifest.unreachableChangedFiles.join(', ')} — changed, but no public surface reaches them; no tests cover them`,
 			}),
 		);
+	}
+
+	const configChange = describeConfigChange({ manifest });
+
+	if (configChange !== undefined) {
+		lines.push(label({ name: 'config', value: configChange }));
 	}
 
 	lines.push(label({ name: 'evidence', value: `.lightsout/runs/${manifest.runId}/` }));

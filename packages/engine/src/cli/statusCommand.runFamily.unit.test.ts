@@ -79,14 +79,16 @@ const unrelatedManifests: SeededManifest[] = unrelatedRunIds.map((runId) => ({
  * A checkout draining a queue: the phased family and two unrelated runs, every
  * root owned by this live test process so each counts as going. The expected
  * screen is the coordinator's block, then the moving phase's, as the loader
- * draws them before stdout is captured.
+ * draws them before stdout is captured. The coordinator and its phases each
+ * record the config path they are given, and none when given none.
  */
-const setupBusyCheckout = async () => {
+const setupBusyCheckout = async ({ rootConfigPath, phaseConfigPath }: { rootConfigPath?: string; phaseConfigPath?: string } = {}) => {
 	jest.spyOn(Date, 'now').mockReturnValue(pinnedNow);
 
 	const cwd = await freshCwd();
+	const family = [{ ...coordinatorManifest, configPath: rootConfigPath }, ...phaseManifests.map((manifest) => ({ ...manifest, configPath: phaseConfigPath }))];
 
-	for (const manifest of [coordinatorManifest, ...phaseManifests, ...unrelatedManifests]) {
+	for (const manifest of [...family, ...unrelatedManifests]) {
 		const runDir = await seedRunDir({ cwd, manifest });
 
 		if (manifest.parentRunId === undefined) {
@@ -144,5 +146,20 @@ describe('statusCommand --run on a phased family', () => {
 		expect(named.logged).toStrictEqual(expected);
 		expect(named.errors).toStrictEqual([]);
 		expect(named.exitCodes).toStrictEqual([0]);
+	});
+
+	test("--run naming a phase ends the screen with the coordinator's recorded config path, not the phase's", async () => {
+		const { cwd, expected } = await setupBusyCheckout({
+			rootConfigPath: '/repo/lightsout.config.json',
+			phaseConfigPath: '/repo/worktrees/phase-2/lightsout.config.json',
+		});
+
+		const named = await runStatus({ cwd, args: { run: movingPhaseRunId } });
+
+		expect({ logged: named.logged, errors: named.errors, exitCodes: named.exitCodes }).toStrictEqual({
+			logged: [...expected, '  config: /repo/lightsout.config.json'],
+			errors: [],
+			exitCodes: [0],
+		});
 	});
 });

@@ -6,6 +6,8 @@ Lightsout is configured from a single file at the root of your repository:
 lightsout.config.json
 ```
 
+A run reads this file once, when it starts, from the checkout the command was launched in. Every later step of the run uses that configuration, including the standards checks and the agents' self-check, and so does every resume of the run. An edit therefore takes effect on the next run started from a checkout that holds it. The run records the file's path, which `lightsout status --run` shows. A gate command that itself runs a `lightsout` command is its own command, and reads the `lightsout.config.json` of the checkout it runs in.
+
 ## Minimal setup
 
 To run lightsout, define the commands it should use to verify the work:
@@ -324,7 +326,7 @@ is overwritten the next time `pnpm build:config-reference` runs.
 | `model` | no | Model override passed through to the selected harness. |
 | `effort` | no | Reasoning effort passed through to the harness — one of `low`, `medium`, `high`, `xhigh` or `max`. Omit to take each harness's own default. |
 | `permissions` | no | Harness-neutral capability level for agent invocations: `write` lets agents edit files and run commands inside the workspace, `full-access` bypasses the harness's sandbox entirely. Defaults to 'write'. `read-only` is engine-selected for the supervisor and is deliberately not settable — it would make a writing role write nothing. |
-| `commands` | no | Per-command harness selection for `plan`, `implement`, `refactor`, `test-coverage-to-threshold` and `improve` (`plan` covers draft, dedup and grade; `resume` always keeps the run manifest’s recorded harness). Each entry overrides the global harness, model and effort for that command; unlisted commands use the globals. A global model is not inherited by a command that selects a different harness; a global effort is, because the five levels mean the same thing everywhere. An unknown command key is rejected rather than silently ignored. |
+| `commands` | no | Per-command harness selection for `plan`, `implement`, `refactor`, `test-coverage-to-threshold` and `improve` (`plan` covers draft, dedup and grade; `resume` always keeps the run manifest’s recorded harness, and takes model and effort from the configuration the run recorded when it started, never from the file as it reads now). Each entry overrides the global harness, model and effort for that command; unlisted commands use the globals. A global model is not inherited by a command that selects a different harness; a global effort is, because the five levels mean the same thing everywhere. An unknown command key is rejected rather than silently ignored. |
 | `gates` | yes | Verification commands — the mechanical gates. Full shell commands, run by the engine itself; agents never run them. |
 | `timeouts` | no | Agent invocation ceilings, in minutes. A hit ceiling is a recorded step failure the run can resume from — never a crash. |
 | `timeouts.agent-minutes` | no | Ceiling for the working roles — executor, test writers, refactorer, fixes. Defaults to 60. Reaching it stops the harness together with every process it started — a terminate signal first, then a kill if that is ignored. |

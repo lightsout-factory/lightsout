@@ -56,4 +56,18 @@ describe('configKeyDescriptions', () => {
 		expect(description).toMatch(/`## File Budget`/);
 		expect(description).toMatch(/renames? ?-?only/i);
 	});
+
+	test('the commands sentence says resume follows the configuration the run recorded rather than the current file', () => {
+		// a run follows one configuration from start to finish, so the page must not
+		// let a reader think a resume picks its model or effort up from the file as
+		// it reads now; the clause runs from `resume` to the end of its sentence,
+		// where a dot inside a file name such as lightsout.config.json is no stop
+		const resumeClause = /`resume`.*?(?:\.\s|\.$|$)/s.exec(configKeyDescriptions.commands)?.[0] ?? '';
+
+		expect(resumeClause).toMatch(/recorded harness/i);
+		expect(resumeClause).toMatch(/\bmodel\b/i);
+		expect(resumeClause).toMatch(/\beffort\b/i);
+		expect(resumeClause).toMatch(/\bconfig(?:uration)?\b[^.]*\brecorded\b|\brecorded\b[^.]*\bconfig(?:uration)?\b/i);
+		expect(resumeClause).toMatch(/\b(?:never|not|rather than)\b.*?(?:\bfile\b|lightsout\.config\.json)/i);
+	});
 });

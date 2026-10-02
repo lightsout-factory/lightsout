@@ -98,6 +98,20 @@ const setupResumeCleanup = ({
 		}),
 	});
 
+/**
+ * A resumed run that edited the repo-root lightsout.config.json and recorded the
+ * config path it started from. The resumed pipeline stops at its own plan read,
+ * so the seeded changed files are still what the report card renders.
+ */
+const setupResumeConfigEdit = () =>
+	setupResume({
+		args: ['--run', runId],
+		manifest: manifestOf({ pipeline: 'implement', configPath: '/repo/lightsout.config.json', changedFiles: ['lightsout.config.json', 'src/a.ts'] }),
+	});
+
+/** The report card's config lines — the run header's indented `  config:` source line is not one of them. */
+const cardConfigLines = ({ logged }: { logged: string[] }) => logged.filter((line) => line.startsWith('config '));
+
 /** The step-table rows the summary printed, each split back into its trimmed cell values. */
 const tableRows = ({ logged }: { logged: string[] }) =>
 	logged
@@ -215,5 +229,27 @@ describe('resumeCommand run summary', () => {
 
 		// only the rejected- prefixed file counts; the accepted report beside it does not
 		expect(logged).toContain('retries   1 rejected report re-emitted');
+	});
+
+	test('a resumed run that edited lightsout.config.json says on a config line, just before the evidence line, that it kept the config recorded at its start', async () => {
+		const { context, logged } = setupResumeConfigEdit();
+
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const configs = cardConfigLines({ logged });
+		const next = logged[logged.indexOf(configs[0] ?? '') + 1];
+
+		expect({ count: configs.length, next }).toStrictEqual({ count: 1, next: 'evidence  .lightsout/runs/run-resume-01/' });
+		// the wording is the printer's own; the line has to name the recorded path and that the run kept its starting config
+		expect(configs[0]).toContain('/repo/lightsout.config.json');
+		expect(configs[0]).toMatch(/kept[^.]*start/i);
+	});
+
+	test('a resumed run that recorded a config path but left lightsout.config.json alone prints no config line on its card', async () => {
+		const { context, logged } = setupResumeSummary();
+
+		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(cardConfigLines({ logged })).toStrictEqual([]);
 	});
 });
