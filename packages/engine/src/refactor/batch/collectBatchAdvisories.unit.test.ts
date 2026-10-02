@@ -29,18 +29,18 @@ const batch = ({ paths }: { paths: string[] }): RefactorBatch => ({
 });
 
 const judgmentRule: LoadedStandardsRule = {
-	id: 'module-exports',
-	name: 'acme/module-exports',
+	id: 'object-args',
+	name: 'acme/object-args',
 	library: 'acme',
 	set: 'code',
-	documentPath: 'code/style-guide/structure/import-paths',
-	summary: 'a relative import in an aliased package',
+	documentPath: 'code/code-style/functions',
+	summary: 'three positional arguments on an exported function',
 	prose: 'the argument for the rule',
 	checked: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
-	fixturesPath: '/packages/acme/module-exports/fixtures',
+	fixturesPath: '/packages/acme/object-args/fixtures',
 };
 
 const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup => ({
@@ -70,7 +70,7 @@ const setupAppsWorkspace = async () => {
 	await mkdir(join(cwd, 'apps', 'web-app'), { recursive: true });
 	await writeFile(join(cwd, 'apps', 'web-app', 'package.json'), '{}');
 	const { driver, onProgress } = setupDriver({
-		text: JSON.stringify({ findings: [{ rule: 'module-exports', files: [{ path: 'apps/web-app/src/a.ts' }], detail: 'a relative import' }] }),
+		text: JSON.stringify({ findings: [{ rule: 'object-args', files: [{ path: 'apps/web-app/src/a.ts' }], detail: 'three positional arguments' }] }),
 	});
 	const webAppGroup: StandardsGroup = { ...groupOf({ rules: [judgmentRule] }), packages: ['web-app'] };
 
@@ -106,7 +106,7 @@ describe('collectBatchAdvisories', () => {
 
 	test('the agent’s read of the judgment rules joins the same list, after the machine’s', async () => {
 		const { driver, onProgress } = setupDriver({
-			text: JSON.stringify({ findings: [{ rule: 'module-exports', files: [{ path: 'src/a.ts' }], detail: 'a relative import' }] }),
+			text: JSON.stringify({ findings: [{ rule: 'object-args', files: [{ path: 'src/a.ts' }], detail: 'three positional arguments' }] }),
 		});
 
 		const advisories = await collectBatchAdvisories({
@@ -122,7 +122,7 @@ describe('collectBatchAdvisories', () => {
 			onProgress,
 		});
 
-		expect(advisories.map((entry) => entry.rule)).toStrictEqual(['function-size', 'acme/module-exports']);
+		expect(advisories.map((entry) => entry.rule)).toStrictEqual(['function-size', 'acme/object-args']);
 		// and it arrives as advice, like everything else in this list
 		expect(advisories[1]?.severity).toBe(StandardsSeverity.Advisory);
 	});
@@ -189,6 +189,6 @@ describe('collectBatchAdvisories', () => {
 		});
 
 		// the finding survives only when the review places apps/web-app in the web-app group
-		expect(advisories.map((entry) => entry.siteKey)).toStrictEqual(['acme/module-exports:apps/web-app/src/a.ts']);
+		expect(advisories.map((entry) => entry.siteKey)).toStrictEqual(['acme/object-args:apps/web-app/src/a.ts']);
 	});
 });

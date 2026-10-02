@@ -161,12 +161,12 @@ describe('buildStandardsHealth', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'module-exports' })] }),
+			groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'module-folder-layout' })] }),
 		});
 
 		expect(health.totals).toStrictEqual({ rules: 2, checked: 1, judgment: 1 });
 		// sorted by id, so the report diffs cleanly between runs
-		expect(health.rules.map((entry) => entry.rule)).toStrictEqual(['acme/module-exports', 'acme/multi-export']);
+		expect(health.rules.map((entry) => entry.rule)).toStrictEqual(['acme/module-folder-layout', 'acme/multi-export']);
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(
 			expect.objectContaining({ attempted: 0, resolved: 0, declined: 0, untracked: 0, adviceApplied: 0, adviceDeclined: 0, reasons: [] }),
 		);
@@ -365,12 +365,12 @@ describe('buildStandardsHealth', () => {
 		const health = await buildStandardsHealth({
 			cwd,
 			groups: [
-				...groupsOf({ pack: 'zeta/house', rules: [rule({ id: 'module-exports', name: 'zeta/module-exports', library: 'zeta' })] }),
+				...groupsOf({ pack: 'zeta/house', rules: [rule({ id: 'module-folder-layout', name: 'zeta/module-folder-layout', library: 'zeta' })] }),
 				...groupsOf({ pack: 'alpha/house', rules: [rule({ id: 'multi-export', name: 'alpha/multi-export', library: 'alpha', checked: true })] }),
 			],
 		});
 
-		expect(health.rules.map((entry) => entry.rule)).toStrictEqual(['alpha/multi-export', 'zeta/module-exports']);
+		expect(health.rules.map((entry) => entry.rule)).toStrictEqual(['alpha/multi-export', 'zeta/module-folder-layout']);
 		expect(health.totals).toStrictEqual({ rules: 2, checked: 1, judgment: 1 });
 	});
 
@@ -407,7 +407,7 @@ describe('buildStandardsHealth', () => {
 		const health = await buildStandardsHealth({
 			cwd,
 			groups: groupsOf({
-				pack: 'lightsout/node',
+				pack: 'lightsout/standards',
 				rules: [rule({ id: 'function-size', library: 'lightsout', name: 'lightsout/function-size', checked: true })],
 			}),
 		});
@@ -421,17 +421,17 @@ describe('buildStandardsHealth', () => {
 	test("buildStandardsHealth: rows follow the groups' packs, not the whole library", async () => {
 		const cwd = mkdtempSync(join(tmpdir(), 'lightsout-health-groups-'));
 		const multiExport = rule({ id: 'multi-export', checked: true });
-		const moduleExports = rule({ id: 'module-exports' });
+		const moduleFolderLayout = rule({ id: 'module-folder-layout' });
 		const groups = [
 			groupOf({ pack: 'acme/structure', rules: [multiExport], topicRuleIds: ['multi-export', 'left-out'] }),
-			groupOf({ pack: 'acme/house', rules: [multiExport, moduleExports], topicRuleIds: ['multi-export', 'module-exports', 'left-out'] }),
+			groupOf({ pack: 'acme/house', rules: [multiExport, moduleFolderLayout], topicRuleIds: ['multi-export', 'module-folder-layout', 'left-out'] }),
 		];
 
 		const health = await buildStandardsHealth({ cwd, groups });
 
 		// a rule in both packs is one row; left-out sits in the topic, but neither pack brings it in, so it has none
 		expect({ rules: health.rules.map((entry) => entry.rule), totals: health.totals }).toStrictEqual({
-			rules: ['acme/module-exports', 'acme/multi-export'],
+			rules: ['acme/module-folder-layout', 'acme/multi-export'],
 			totals: { rules: 2, checked: 1, judgment: 1 },
 		});
 	});

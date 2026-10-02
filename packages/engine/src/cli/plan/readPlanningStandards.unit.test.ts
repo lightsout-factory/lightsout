@@ -66,13 +66,13 @@ test('readPlanningStandards: with no config it loads nothing, whatever the consu
 	expect(logged).toStrictEqual([]);
 });
 
-test("readPlanningStandards: a config naming the shipped node pack loads that pack's code prose, which carries no react topic", async () => {
+test('readPlanningStandards: a config naming the shipped standards pack loads its code prose, without the react topic in a repo that declares no react', async () => {
 	const { cwd, logged } = setupStandards();
 
-	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/node' }) });
+	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/standards' }) });
 
-	expect(standards ?? '').toMatch(/<!-- lightsout: code\/architecture\/folder-structure -->/);
-	expect((standards ?? '').includes('code/architecture/react')).toBeFalsy();
+	expect(standards ?? '').toMatch(/<!-- lightsout: code\/fractal\/modules -->/);
+	expect((standards ?? '').includes('code/frameworks/react')).toBeFalsy();
 	expect(logged).toStrictEqual([]);
 });
 
@@ -88,7 +88,7 @@ test('readPlanningStandards: standards turned off explicitly loads nothing at al
 test('readPlanningStandards: planning gets the code set only — the test tree is not its business', async () => {
 	const { cwd } = setupStandards();
 
-	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/node' }) });
+	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/standards' }) });
 
 	// the code set did load, so a missing tests marker is the set left out and not standards switched off
 	expect(standards ?? '').toMatch(/<!-- lightsout: code\//);
@@ -126,12 +126,12 @@ test("readPlanningStandards: planning reads the selected pack's code prose", asy
 	const { cwd, logged } = setupStandards({ dependencies: { react: '^19.0.0' } });
 
 	const switchedOff = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': false }) });
-	const named = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/react-app' }) });
+	const named = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/standards' }) });
 
-	// standards-pack false selects no pack; lightsout/react-app carries the react topic over the node ones, for a package declaring react
+	// standards-pack false selects no pack; lightsout/standards carries the react topic beside the fractal ones, for a package declaring react
 	expect(switchedOff).toBe(undefined);
-	expect(named ?? '').toMatch(/<!-- lightsout: code\/architecture\/folder-structure -->/);
-	expect(named ?? '').toMatch(/<!-- lightsout: code\/architecture\/react -->/);
+	expect(named ?? '').toMatch(/<!-- lightsout: code\/fractal\/modules -->/);
+	expect(named ?? '').toMatch(/<!-- lightsout: code\/frameworks\/react -->/);
 	expect((named ?? '').includes('<!-- lightsout: tests/')).toBeFalsy();
 	expect(logged).toStrictEqual([]);
 });

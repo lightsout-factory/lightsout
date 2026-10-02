@@ -4,7 +4,7 @@ import { StandardsPackFile } from '#src/contracts/StandardsPackFile.ts';
 const setupPackFiles = () => {
 	const packWithoutDescription = {
 		include: {
-			packs: ['lightsout/node'],
+			packs: ['lightsout/standards'],
 			topics: ['acme/code/architecture/services'],
 			rules: ['acme/no-default-export', 'file-size'],
 		},
@@ -14,7 +14,7 @@ const setupPackFiles = () => {
 		},
 		'applies-when': { dependencies: ['react', 'preact'] },
 	};
-	const fullPack = { description: 'House TypeScript style on top of the lightsout node pack.', ...packWithoutDescription };
+	const fullPack = { description: 'House TypeScript style on top of the lightsout standards pack.', ...packWithoutDescription };
 	const packWithUnknownKey = { ...fullPack, rules: ['file-size'] };
 
 	return { fullPack, packWithoutDescription, packWithUnknownKey };

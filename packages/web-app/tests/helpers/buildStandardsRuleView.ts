@@ -24,8 +24,8 @@ export const buildStandardsRuleView = ({
 	history = {},
 }: Params = {}): StandardsRuleView => ({
 	rule,
-	doc: '@lightsout/lightsout-standards: code/style-guide/patterns/functions',
-	documentPath: 'code/style-guide/patterns/functions',
+	doc: '@lightsout/lightsout-standards: code/fractal/size',
+	documentPath: 'code/fractal/size',
 	set: StandardsSet.Code,
 	summary: 'a file over the standards line cap',
 	prose,

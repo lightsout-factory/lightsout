@@ -3,7 +3,7 @@ import { getStandardsView } from '#src/views/getStandardsView.ts';
 import { seedConfiguredCwd } from '#tests/helpers/seedConfiguredCwd.ts';
 
 /** A repo that registers no library of its own and names one of the packs the engine ships. */
-const setupShippedPackRepo = async () => ({ cwd: await seedConfiguredCwd({ config: { 'standards-pack': 'lightsout/node' } }) });
+const setupShippedPackRepo = async () => ({ cwd: await seedConfiguredCwd({ config: { 'standards-pack': 'lightsout/standards' } }) });
 
 test('a repo naming a shipped pack is described by the standards that ship with the engine', async () => {
 	const { cwd } = await setupShippedPackRepo();

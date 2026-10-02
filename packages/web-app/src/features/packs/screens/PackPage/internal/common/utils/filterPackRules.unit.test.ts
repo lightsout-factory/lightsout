@@ -8,11 +8,11 @@ import { buildStandardsPackRuleListing } from '#tests/helpers/buildStandardsPack
 const rules = [
 	buildStandardsPackRuleListing({ id: 'type-assertion', set: StandardsSet.Code, checked: true, defaultSeverity: StandardsSeverity.Blocking }),
 	buildStandardsPackRuleListing({
-		id: 'test-shared-let',
+		id: 'no-test-state-in-hooks',
 		set: StandardsSet.Tests,
 		checked: true,
 		defaultSeverity: StandardsSeverity.Advisory,
-		summary: 'a let shared between tests',
+		summary: 'test state built in a hook',
 	}),
 	buildStandardsPackRuleListing({
 		id: 'component-file-structure',
@@ -29,19 +29,19 @@ describe('filterPackRules', () => {
 	test('narrows nothing when nothing was asked for, so an untouched page shows the whole pack', () => {
 		const { ids } = setupFilterPackRules();
 
-		expect(ids).toStrictEqual(['type-assertion', 'test-shared-let', 'component-file-structure']);
+		expect(ids).toStrictEqual(['type-assertion', 'no-test-state-in-hooks', 'component-file-structure']);
 	});
 
 	test('keeps only the rules of the set asked for', () => {
 		const { ids } = setupFilterPackRules({ filters: { set: StandardsSet.Tests } });
 
-		expect(ids).toStrictEqual(['test-shared-let']);
+		expect(ids).toStrictEqual(['no-test-state-in-hooks']);
 	});
 
 	test('keeps only the deterministic checks when the reader asked for those', () => {
 		const { ids } = setupFilterPackRules({ filters: { check: CheckKind.Deterministic } });
 
-		expect(ids).toStrictEqual(['type-assertion', 'test-shared-let']);
+		expect(ids).toStrictEqual(['type-assertion', 'no-test-state-in-hooks']);
 	});
 
 	test('keeps only the agent checks when the reader asked for those', () => {
@@ -77,7 +77,7 @@ describe('filterPackRules', () => {
 	test('treats a box holding only spaces as an empty box rather than as text nothing matches', () => {
 		const { ids } = setupFilterPackRules({ filters: { text: '   ' } });
 
-		expect(ids).toStrictEqual(['type-assertion', 'test-shared-let', 'component-file-structure']);
+		expect(ids).toStrictEqual(['type-assertion', 'no-test-state-in-hooks', 'component-file-structure']);
 	});
 
 	test('applies every filter at once, so two narrowings are an intersection rather than a union', () => {

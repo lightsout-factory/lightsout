@@ -174,7 +174,7 @@ test('a finding whose rule no pack loads is counted as an orphan, and lands on n
 });
 
 test('findings are counted per full rule name and a short-named finding is an orphan', async () => {
-	const cwd = await seedStandardsRepo({ pack: 'lightsout/node' });
+	const cwd = await seedStandardsRepo({ pack: 'lightsout/standards' });
 
 	await writeStandardsSnapshot({
 		cwd,
@@ -395,7 +395,7 @@ test('a repo that declares no standards packs still reports the findings its las
 	expect(view.findings.map((entry) => entry.siteKey)).toStrictEqual(['acme/house-loose-file:src/loose.ts', 'name:src/loose.ts']);
 });
 
-/** A repo whose root depends on React but whose config selects the node pack by name. */
+/** A repo whose root depends on React but whose config selects the fractal pack alone, by name. */
 const seedSelectedPackRepo = async () => {
 	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-view-selected-pack-'));
 
@@ -405,7 +405,7 @@ const seedSelectedPackRepo = async () => {
 			'package.json': JSON.stringify({ name: 'app', dependencies: { react: '^19.0.0' } }),
 			'lightsout.config.json': JSON.stringify({
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
-				'standards-pack': 'lightsout/node',
+				'standards-pack': 'lightsout/fractal',
 			}),
 		},
 	});
@@ -419,12 +419,12 @@ test('getStandardsView: rows follow the selected pack', async () => {
 	const view = await getStandardsView({ cwd });
 	const names = view.rules.map((rule) => rule.rule);
 
-	// a node rule gets its row; a React architecture rule the library holds but the node pack leaves out gets none
+	// a fractal rule gets its row; a React architecture rule the library holds but the fractal pack leaves out gets none
 	expect({
-		hasNodeRule: names.includes('lightsout/function-size'),
+		hasFractalRule: names.includes('lightsout/function-size'),
 		hasReactRule: names.includes('lightsout/component-file-structure'),
-		reactTopicRows: view.rules.filter((rule) => rule.documentPath === 'code/architecture/react').length,
-	}).toStrictEqual({ hasNodeRule: true, hasReactRule: false, reactTopicRows: 0 });
+		reactTopicRows: view.rules.filter((rule) => rule.documentPath === 'code/frameworks/react').length,
+	}).toStrictEqual({ hasFractalRule: true, hasReactRule: false, reactTopicRows: 0 });
 });
 
 test('a declared standards pack that cannot be loaded fails the view rather than describing half a repo', async () => {

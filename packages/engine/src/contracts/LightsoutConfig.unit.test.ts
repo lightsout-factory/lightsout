@@ -238,11 +238,11 @@ test('LightsoutConfig accepts standards-libraries as a map of names to strings a
 });
 
 test('LightsoutConfig: standards-pack takes a library/pack address or false', () => {
-	const named = LightsoutConfig.parse({ ...base, 'standards-pack': 'lightsout/node' });
+	const named = LightsoutConfig.parse({ ...base, 'standards-pack': 'lightsout/standards' });
 	const off = LightsoutConfig.parse({ ...base, 'standards-pack': false });
 
 	// a library/pack address and false both survive parsing as written
-	expect({ named: named['standards-pack'], off: off['standards-pack'] }).toStrictEqual({ named: 'lightsout/node', off: false });
+	expect({ named: named['standards-pack'], off: off['standards-pack'] }).toStrictEqual({ named: 'lightsout/standards', off: false });
 	// a pack name with no library says nothing about where the pack lives
 	expect(LightsoutConfig.safeParse({ ...base, 'standards-pack': 'node' }).success).toBe(false);
 	// only false switches standards off — true selects no pack
@@ -250,7 +250,7 @@ test('LightsoutConfig: standards-pack takes a library/pack address or false', ()
 });
 
 test.each([
-	{ label: 'a second slash', address: 'lightsout/node/extra' },
+	{ label: 'a second slash', address: 'lightsout/standards/extra' },
 	{ label: 'no library before the slash', address: '/node' },
 	{ label: 'no pack after the slash', address: 'lightsout/' },
 ])('LightsoutConfig: a standards-pack address with $label is refused, and the refusal names the <library>/<pack> form', ({ address }) => {
@@ -262,10 +262,10 @@ test.each([
 });
 
 test('accepts package-standards-packs as a map of package folder to pack address and refuses a value that is not a pack address', () => {
-	const parsed = LightsoutConfig.parse({ ...base, 'package-standards-packs': { 'web-app': 'lightsout/react-app' } });
+	const parsed = LightsoutConfig.parse({ ...base, 'package-standards-packs': { 'web-app': 'lightsout/fractal' } });
 
 	// the map survives parsing as written: a package folder name to a pack address
-	expect(parsed['package-standards-packs']).toStrictEqual({ 'web-app': 'lightsout/react-app' });
+	expect(parsed['package-standards-packs']).toStrictEqual({ 'web-app': 'lightsout/fractal' });
 
 	// an empty value, false or a number is no pack address, and the issue sits at
 	// the package's own key — only standards-pack takes false
@@ -278,7 +278,7 @@ test('accepts package-standards-packs as a map of package folder to pack address
 	// standards-pack gives for the same value — one address schema, one refusal
 	const addressRefusalsOf = (result: ReturnType<typeof LightsoutConfig.safeParse>) =>
 		(result.error?.issues ?? []).map((issue) => issue.message).filter((message) => /<library>\/<pack>/.test(message));
-	const refusals = ['react-app', 'lightsout/react/app'].map((address) => {
+	const refusals = ['fractal', 'lightsout/code/fractal'].map((address) => {
 		const packageRefusals = addressRefusalsOf(LightsoutConfig.safeParse({ ...base, 'package-standards-packs': { 'web-app': address } }));
 		const repoRefusals = addressRefusalsOf(LightsoutConfig.safeParse({ ...base, 'standards-pack': address }));
 		return { refused: packageRefusals.length > 0, sameAsStandardsPack: packageRefusals.join('\n') === repoRefusals.join('\n') };

@@ -47,7 +47,7 @@ jest.mock('@tanstack/react-router', () => ({
 const packRules = [
 	buildStandardsPackRuleListing({ id: 'no-any' }),
 	buildStandardsPackRuleListing({ id: 'type-assertion' }),
-	buildStandardsPackRuleListing({ id: 'import-type-only' }),
+	buildStandardsPackRuleListing({ id: 'explicit-return-type' }),
 ];
 
 const setupRuleDetail = ({ rule = buildStandardsPackRuleView(), rules = packRules }: { rule?: StandardsPackRuleView; rules?: typeof packRules } = {}) => {
@@ -67,7 +67,7 @@ const buildPack = ({ name, rules }: { name: string; rules: string[] }): Standard
 	name,
 	address: `lightsout/${name}`,
 	include: { packs: [], topics: [], rules: [] },
-	topics: ['lightsout/code/style-guide/typescript/type-assertions'],
+	topics: ['lightsout/code/agent-corrections/type-safety'],
 	rules: rules.map((rule) => ({ name: rule, severity: StandardsSeverity.Blocking, options: {} })),
 	totals: { rules: rules.length, checked: rules.length, judgment: 0, topics: 1 },
 });
@@ -89,19 +89,19 @@ const packHoldingCases: { packs: StandardsPackListing[]; expected: { packLinks: 
 	{
 		packs: [
 			buildPack({ name: 'nestjs', rules: ['lightsout/no-any'] }),
-			buildPack({ name: 'node', rules: ['lightsout/type-assertion'] }),
-			buildPack({ name: 'react-app', rules: ['lightsout/no-any', 'lightsout/type-assertion'] }),
+			buildPack({ name: 'standards', rules: ['lightsout/type-assertion'] }),
+			buildPack({ name: 'react', rules: ['lightsout/no-any', 'lightsout/type-assertion'] }),
 		],
 		expected: {
 			packLinks: [
-				{ name: 'lightsout/node', href: '/standards-packs/lightsout/packs/node' },
-				{ name: 'lightsout/react-app', href: '/standards-packs/lightsout/packs/react-app' },
+				{ name: 'lightsout/standards', href: '/standards-packs/lightsout/packs/standards' },
+				{ name: 'lightsout/react', href: '/standards-packs/lightsout/packs/react' },
 			],
 			saysNoPack: false,
 		},
 	},
 	{
-		packs: [buildPack({ name: 'nestjs', rules: ['lightsout/no-any'] }), buildPack({ name: 'node', rules: ['lightsout/no-any'] })],
+		packs: [buildPack({ name: 'nestjs', rules: ['lightsout/no-any'] }), buildPack({ name: 'standards', rules: ['lightsout/no-any'] })],
 		expected: { packLinks: [], saysNoPack: true },
 	},
 ];
@@ -246,7 +246,7 @@ describe('RuleDetail', () => {
 			.getAllByRole('link')
 			.map((link) => link.getAttribute('href'));
 
-		expect(links).toStrictEqual(['/standards-packs/lightsout/rules/no-any', '/standards-packs/lightsout/rules/import-type-only']);
+		expect(links).toStrictEqual(['/standards-packs/lightsout/rules/no-any', '/standards-packs/lightsout/rules/explicit-return-type']);
 	});
 
 	test('shows no neighbour links for a rule alone in its set', () => {
@@ -295,6 +295,6 @@ describe('RuleDetail', () => {
 			.getAllByRole('link')
 			.map((link) => link.getAttribute('href'));
 
-		expect(links).toStrictEqual(['/standards-packs/lightsout/rules/no-any', '/standards-packs/lightsout/rules/import-type-only']);
+		expect(links).toStrictEqual(['/standards-packs/lightsout/rules/no-any', '/standards-packs/lightsout/rules/explicit-return-type']);
 	});
 });

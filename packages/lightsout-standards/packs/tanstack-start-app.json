@@ -1,6 +1,0 @@
-{
-	"description": "For a TanStack Start app: the react-app pack plus TanStack Start.",
-	"include": {
-		"packs": ["lightsout/react-app", "lightsout/tanstack-start"]
-	}
-}

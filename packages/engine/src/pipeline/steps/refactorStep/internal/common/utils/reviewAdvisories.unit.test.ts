@@ -41,7 +41,7 @@ const setupRun = ({ packagesDir }: { packagesDir: string }) => {
 		progress: jest.fn<(message: string) => void>(),
 	} as unknown as PipelineRun;
 	const groups: StandardsGroup[] = [
-		{ packages: [''], pack: { name: 'lightsout/node', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] }, states: new Map() },
+		{ packages: [''], pack: { name: 'lightsout/standards', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] }, states: new Map() },
 	];
 
 	return { run, groups };

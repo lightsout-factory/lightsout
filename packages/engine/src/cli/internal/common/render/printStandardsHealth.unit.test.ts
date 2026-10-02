@@ -48,10 +48,10 @@ describe('printStandardsHealth', () => {
 	test('a rule nobody has ever put to the test reads as dashes, never as zeroes', () => {
 		const { logged } = setupPrinter();
 
-		printStandardsHealth({ health: healthOf({ rules: [healthRule({ rule: 'module-exports', checked: false })] }) });
+		printStandardsHealth({ health: healthOf({ rules: [healthRule({ rule: 'object-args', checked: false })] }) });
 
 		// 0% would answer a question nobody asked
-		expect(cellsOf({ logged })[1]).toStrictEqual(['module-exports', 'judgment', '—', '—', '—', '—', '—', '—', '—']);
+		expect(cellsOf({ logged })[1]).toStrictEqual(['object-args', 'judgment', '—', '—', '—', '—', '—', '—', '—']);
 	});
 
 	test('the two accounts sit in their own columns, each with its own rate', () => {
@@ -140,7 +140,7 @@ describe('printStandardsHealth', () => {
 		const rule: StandardsHealthRule = {
 			rule: 'lightsout/function-size',
 			set: 'code',
-			documentPath: 'code/style-guide/patterns/functions',
+			documentPath: 'code/fractal/size',
 			checked: true,
 			attempted: 1,
 			resolved: 1,
@@ -165,7 +165,7 @@ describe('printStandardsHealth', () => {
 			health: healthOf({
 				rules: [
 					healthRule({ rule: 'multi-export', attempted: 2, resolved: 1, declined: 1 }),
-					healthRule({ rule: 'module-exports', checked: false, adviceApplied: 1, adviceDeclined: 1 }),
+					healthRule({ rule: 'object-args', checked: false, adviceApplied: 1, adviceDeclined: 1 }),
 				],
 			}),
 		});

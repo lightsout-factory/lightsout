@@ -28,12 +28,12 @@ describe('selectsNoStandards', () => {
 	});
 
 	test.each<StandardsCase>([
-		{ label: 'a named standards-pack', standards: { 'standards-pack': 'lightsout/node' } },
-		{ label: 'a standards-pack list', standards: { 'standards-pack': ['lightsout/node', 'lightsout/react'] } },
-		{ label: 'a package entry with standards-pack unset', standards: { 'package-standards-packs': { 'web-app': 'lightsout/react-app' } } },
+		{ label: 'a named standards-pack', standards: { 'standards-pack': 'lightsout/standards' } },
+		{ label: 'a standards-pack list', standards: { 'standards-pack': ['lightsout/standards', 'lightsout/react'] } },
+		{ label: 'a package entry with standards-pack unset', standards: { 'package-standards-packs': { 'web-app': 'lightsout/fractal' } } },
 		{
 			label: 'a package entry with standards-pack false',
-			standards: { 'standards-pack': false, 'package-standards-packs': { 'web-app': 'lightsout/react-app' } },
+			standards: { 'standards-pack': false, 'package-standards-packs': { 'web-app': 'lightsout/fractal' } },
 		},
 	])('keeps standards on for $label', ({ standards }) => {
 		const { config } = setupConfig({ standards });

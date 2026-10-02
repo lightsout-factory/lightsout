@@ -9,7 +9,7 @@ import { checkLintRules } from '#src/doctor/checkLintRules.ts';
 const unsetConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 /** Standards are opt-in, so the config every check below runs under names a pack. */
-const config: LightsoutConfig = { ...unsetConfig, 'standards-pack': 'lightsout/node' };
+const config: LightsoutConfig = { ...unsetConfig, 'standards-pack': 'lightsout/standards' };
 
 /** A package directory holding the given lint config files. */
 const setupPackage = ({ files = {} }: { files?: Record<string, string> } = {}) => {
@@ -44,7 +44,7 @@ describe('checkLintRules', () => {
 		const { packageDirs } = setupPackage({ files: { 'biome.json': '{}' } });
 
 		const named = await checkLintRules({
-			config: { ...config, 'standards-pack': false, 'package-standards-packs': { 'web-app': 'lightsout/react-app' } },
+			config: { ...config, 'standards-pack': false, 'package-standards-packs': { 'web-app': 'lightsout/fractal' } },
 			packageDirs,
 		});
 		const unnamed = await checkLintRules({ config: { ...config, 'standards-pack': false }, packageDirs });

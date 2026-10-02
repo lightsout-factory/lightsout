@@ -17,13 +17,13 @@ const writeManifests = ({ cwd, dependencies = {} }: { cwd: string; dependencies?
 };
 
 /**
- * A monorepo of `engine` and `web-app` on the repo's node pack, where web-app
- * alone is given the react pack through `package-standards-packs` and declares
- * react, which is what that pack's conditional react rules need to apply.
+ * A monorepo of `engine` and `web-app` on the repo's fractal pack, where web-app
+ * alone is given the react pack beside it through `package-standards-packs` and
+ * declares react, which is what that conditional pack's rules need to apply.
  */
 const setupPackagePacks = async () => {
 	const cwd = await seedConfiguredCwd({
-		config: { 'standards-pack': 'lightsout/node', 'package-standards-packs': { 'web-app': 'lightsout/react-app' } },
+		config: { 'standards-pack': 'lightsout/fractal', 'package-standards-packs': { 'web-app': ['lightsout/fractal', 'lightsout/react'] } },
 	});
 
 	writeManifests({ cwd, dependencies: { 'web-app': { react: '^19.0.0' } } });
@@ -91,8 +91,8 @@ describe('getConfigView', () => {
 			},
 		}).toStrictEqual({
 			standardsGroups: [
-				{ packages: ['', 'engine'], appliesTo: 'repo root (outside packages), engine', pack: 'lightsout/node', conditionalPacks: [] },
-				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/react-app', conditionalPacks: ['lightsout/react'] },
+				{ packages: ['', 'engine'], appliesTo: 'repo root (outside packages), engine', pack: 'lightsout/fractal', conditionalPacks: [] },
+				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/fractal + lightsout/react', conditionalPacks: ['lightsout/react'] },
 			],
 			packageSets: [
 				{ packages: ['', 'engine', 'web-app'], appliesTo: 'repo root (outside packages), engine, web-app' },

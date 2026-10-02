@@ -9,8 +9,8 @@ import { seedSprawlRepo } from '#tests/helpers/sprawl/seedSprawlRepo.ts';
 // pack's own rule file — and a rule file that cannot answer has to stop the
 // build rather than let a plausible number ship.
 
-const fileSizeRule = 'rules/code/style-guide/patterns/functions/30-file-size/rule.md';
-const functionSizeRule = 'rules/code/style-guide/patterns/functions/25-function-size/rule.md';
+const fileSizeRule = 'rules/code/fractal/size/10-file-size/rule.md';
+const functionSizeRule = 'rules/code/fractal/size/05-function-size/rule.md';
 const repos: string[] = [];
 
 const setupCapsRepo = ({ rules }: { rules?: Record<string, string | undefined> } = {}) => {
@@ -74,7 +74,7 @@ describe('readSprawlCaps', () => {
 
 		const result = readCaps({ cwd });
 
-		expect(result.error).toMatch(/25-function-size\/rule\.md has no options: block/);
+		expect(result.error).toMatch(/05-function-size\/rule\.md has no options: block/);
 	});
 
 	test('refuses when an options block is missing the key the cap is read from', () => {
@@ -99,8 +99,8 @@ describe('readSprawlCaps', () => {
 			rules: {
 				[fileSizeRule]: optionsRule({ options: ['  file: 110', '  tsxFile: 130'] }),
 				[functionSizeRule]: optionsRule({ options: ['  function: 35'] }),
-				'rules/tests/unit-testing/18-test-file-size/rule.md': optionsRule({ options: ['  testFile: 410'] }),
-				'rules/code/architecture/folder-structure/35-folder-size/rule.md': optionsRule({ options: ['  cap: 4'] }),
+				'rules/tests/fractal/15-test-file-size/rule.md': optionsRule({ options: ['  testFile: 410'] }),
+				'rules/code/fractal/size/15-folder-size/rule.md': optionsRule({ options: ['  cap: 4'] }),
 			},
 		});
 		const { cwd: missingCwd } = setupCapsRepo({
@@ -112,7 +112,7 @@ describe('readSprawlCaps', () => {
 
 		expect({ caps: read.caps, error: refused.error }).toEqual({
 			caps: { file: 110, tsxFile: 130, function: 35, testFile: 410, folderCensus: 4 },
-			error: expect.stringMatching(/25-function-size\/rule\.md has no options: block/),
+			error: expect.stringMatching(/05-function-size\/rule\.md has no options: block/),
 		});
 	});
 
@@ -121,21 +121,21 @@ describe('readSprawlCaps', () => {
 
 		const result = readCaps({ cwd });
 
-		expect(result.error).toMatch(/25-function-size/);
+		expect(result.error).toMatch(/05-function-size/);
 	});
 
 	test('refuses when the cap rule files sit at the library root instead of under rules', () => {
 		const rootRule = ({ options }: { options: string[] }) => ['---', 'summary: "a rule"', 'options:', ...options, '---', '', 'prose below', ''].join('\n');
 		const { cwd } = setupCapsRepo({
 			rules: {
-				'rules/code/style-guide/patterns/functions/30-file-size/rule.md': undefined,
-				'rules/code/style-guide/patterns/functions/25-function-size/rule.md': undefined,
-				'rules/tests/unit-testing/18-test-file-size/rule.md': undefined,
-				'rules/code/architecture/folder-structure/35-folder-size/rule.md': undefined,
-				'code/style-guide/patterns/functions/30-file-size/rule.md': rootRule({ options: ['  file: 100', '  tsxFile: 120'] }),
-				'code/style-guide/patterns/functions/25-function-size/rule.md': rootRule({ options: ['  function: 30'] }),
-				'tests/unit-testing/18-test-file-size/rule.md': rootRule({ options: ['  testFile: 400'] }),
-				'code/architecture/folder-structure/35-folder-size/rule.md': rootRule({ options: ['  cap: 3'] }),
+				'rules/code/fractal/size/10-file-size/rule.md': undefined,
+				'rules/code/fractal/size/05-function-size/rule.md': undefined,
+				'rules/tests/fractal/15-test-file-size/rule.md': undefined,
+				'rules/code/fractal/size/15-folder-size/rule.md': undefined,
+				'code/fractal/size/10-file-size/rule.md': rootRule({ options: ['  file: 100', '  tsxFile: 120'] }),
+				'code/fractal/size/05-function-size/rule.md': rootRule({ options: ['  function: 30'] }),
+				'tests/fractal/15-test-file-size/rule.md': rootRule({ options: ['  testFile: 400'] }),
+				'code/fractal/size/15-folder-size/rule.md': rootRule({ options: ['  cap: 3'] }),
 			},
 		});
 
@@ -143,7 +143,7 @@ describe('readSprawlCaps', () => {
 
 		expect({ carriesCaps: Object.hasOwn(result, 'caps'), error: result.error }).toEqual({
 			carriesCaps: false,
-			error: expect.stringMatching(/rules\/code\/style-guide\/patterns\/functions\/30-file-size\/rule\.md/),
+			error: expect.stringMatching(/rules\/code\/fractal\/size\/10-file-size\/rule\.md/),
 		});
 	});
 });

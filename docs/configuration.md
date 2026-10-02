@@ -199,6 +199,17 @@ every rule it needs. In a monorepo a package may select different ones with
 }
 ```
 
+The built-in `lightsout` library groups its rules into packs by what each is
+for, so a repository can take one goal without the others:
+
+| Pack | What it is for |
+| --- | --- |
+| `lightsout/fractal` | Keeps the repo the same shape at every level, so any file's place is predictable and a duplicate is found by searching for its name. |
+| `lightsout/agent-corrections` | Corrects mistakes current models make by default. |
+| `lightsout/code-style` | Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values and a unit test. |
+| `lightsout/react`, `lightsout/tanstack-start`, `lightsout/nestjs` | Framework rules. Each reaches only the packages whose `package.json` declares that framework. |
+| `lightsout/standards` | All of the above. |
+
 `standards-pack` takes one pack address or a list of them. Listed packs apply
 in order, and the last listed wins where two grade one rule differently:
 
@@ -468,7 +479,7 @@ Run `lightsout standards-check --list` to print every rule with the standards do
 
 #### What the default pack blocks
 
-The pack lightsout ships blocks only what is wrong on its own terms — code that lies about its types (`no-any`, `type-assertion`, `import-type-only`, `explicit-return-type`), code nothing uses (`dead-export`, `duplicate-function-body`), a tree that breaks across filesystems (`case-collision`), doc tags git or the compiler already own (`brittle-doc-tags`), and tests that are silently weaker than they read (`test-shared-let`, `test-assert-in-hook`, `test-mock-prefix`, `test-mock-untyped`, `test-mock-wrapper-untyped`, `test-strict-equal-matcher`) or can never pass at all (`test-never-passing-assertion`). Every rule about where files go, what they are called, and how many exports they hold ships `advisory`: it is still reported and still handed to the refactor agent, but a repository adopting lightsout is not blocked on day one by a layout it has not yet agreed to.
+The pack lightsout ships blocks only what is wrong on its own terms — code that lies about its types (`no-any`, `type-assertion`, `explicit-return-type`), code nothing uses (`dead-export`, `duplicate-function-body`), a tree that breaks across filesystems (`case-collision`), and tests that are silently weaker than they read (`no-test-state-in-hooks`, `test-mock-prefix`, `test-mock-untyped`, `test-mock-wrapper-untyped`, `test-strict-equal-matcher`). Every rule about where files go, what they are called, and how many exports they hold ships `advisory`: it is still reported and still handed to the refactor agent, but a repository adopting lightsout is not blocked on day one by a layout it has not yet agreed to.
 
 A repository that wants the strict profile promotes those rules itself — an explicit, committed list of what it holds itself to. This is the block lightsout's own repository runs:
 
@@ -479,30 +490,22 @@ A repository that wants the strict profile promotes those rules itself — an ex
     "banned-folder-name": "blocking",
     "bare-string-union": "blocking",
     "barrel-star": "blocking",
-    "casing": "blocking",
     "class-inheritance": "blocking",
     "code-in-index-file": "blocking",
-    "folder-size": "blocking",
     "file-directly-in-common": "blocking",
-    "folder-casing": "blocking",
+    "file-size": "blocking",
     "folder-index-file": "blocking",
+    "folder-size": "blocking",
+    "function-size": "blocking",
     "import-path-alias": "blocking",
     "import-through-index": "blocking",
     "internal-import-from-outside": "blocking",
     "multi-export": "blocking",
-    "oversized-setup-factory": "blocking",
-    "params-interface-docs": "blocking",
-    "single-file-domain-folder": "blocking",
     "single-use-scalar": "blocking",
-    "file-size": "blocking",
-    "function-size": "blocking",
-    "test-in-tests-folder": "blocking",
-    "test-manual-mock-cleanup": "blocking",
-    "test-mock-return-in-hook": "blocking",
-    "test-nested-describe": "blocking",
-    "test-not-beside-subject": "blocking",
+    "test-beside-subject": "blocking",
     "test-file-size": "blocking",
-    "test-support-in-src": "blocking",
+    "test-manual-mock-cleanup": "blocking",
+    "test-support-in-src": "blocking"
   },
 }
 ```

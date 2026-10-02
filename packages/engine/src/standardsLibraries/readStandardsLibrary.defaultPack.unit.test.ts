@@ -28,9 +28,13 @@ const setupDefaultPack = async () => {
 	return { pack: await readStandardsLibrary({ packPath }) };
 };
 
-/** The one group a repo whose manifest names no framework gets: the shipped library's node pack, every rule at the pack's own grade. */
-const nodeGroupOf = ({ pack }: { pack: LoadedStandardsLibrary }): StandardsGroup => {
-	const resolved = resolveStandardsPack({ addresses: ['lightsout/node'], libraries: [pack], dependencies: undefined });
+/**
+ * The one group a repo whose manifest names no framework gets: the shipped
+ * library's standards pack with none of its framework packs applied, every
+ * rule at the pack's own grade.
+ */
+const frameworkFreeGroupOf = ({ pack }: { pack: LoadedStandardsLibrary }): StandardsGroup => {
+	const resolved = resolveStandardsPack({ addresses: ['lightsout/standards'], libraries: [pack], dependencies: new Set() });
 
 	return {
 		packages: [''],
@@ -103,13 +107,13 @@ const setupLibraryLayout = async () => {
 };
 
 describe('readStandardsLibrary', () => {
-	test('carries all 22 shipped documents, split across the code and tests trees', async () => {
+	test('carries all 18 shipped documents, split across the code and tests trees', async () => {
 		const { pack } = await setupDefaultPack();
 
 		expect(pack.name).toBe('lightsout');
-		expect(pack.documents).toHaveLength(22);
-		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(20);
-		expect(pack.documents.filter((document) => document.set === StandardsSet.Tests)).toHaveLength(2);
+		expect(pack.documents).toHaveLength(18);
+		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(14);
+		expect(pack.documents.filter((document) => document.set === StandardsSet.Tests)).toHaveLength(4);
 	});
 
 	test('carries the line and the address the root file states about the pack itself', async () => {
@@ -118,7 +122,7 @@ describe('readStandardsLibrary', () => {
 		// what a pack page shows under the name — read from the root file rather
 		// than from any folder, so this is the only place they can come from
 		expect({ description: pack.description, homepage: pack.homepage }).toEqual({
-			description: expect.stringContaining('TypeScript pack'),
+			description: expect.stringContaining('TypeScript standards'),
 			homepage: 'https://github.com/lightsout-factory/lightsout/tree/main/packages/lightsout-standards',
 		});
 	});
@@ -139,12 +143,12 @@ describe('readStandardsLibrary', () => {
 	test('assembles both sets for a repo running no framework, each document headed by where it came from', async () => {
 		const { pack } = await setupDefaultPack();
 
-		const { code, tests } = buildStandardsDocuments({ groups: [nodeGroupOf({ pack })] });
+		const { code, tests } = buildStandardsDocuments({ groups: [frameworkFreeGroupOf({ pack })] });
 
-		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(17);
-		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(1);
+		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(11);
+		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(3);
 		// the prose itself rides along, not just the headers
-		expect(code ?? '').toContain('One Export Per File');
+		expect(code ?? '').toContain('Module Folder Layout');
 		expect(tests ?? '').toContain('Module Boundary Testing');
 	});
 

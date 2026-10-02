@@ -4,7 +4,7 @@ import { buildHookContentCheck } from './buildHookContentCheck.ts';
 
 const buildCheck = ({ hooks }: { hooks: string[] }) =>
 	buildHookContentCheck({
-		rule: 'test-assert-in-hook',
+		rule: 'no-test-state-in-hooks',
 		hooks,
 		pattern: /\bexpect\s*\(/,
 		detailSuffix: 'asserts',
@@ -25,7 +25,7 @@ describe('buildHookContentCheck', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'test-assert-in-hook:src/profile.unit.test.ts',
+				siteKey: 'no-test-state-in-hooks:src/profile.unit.test.ts',
 				files: [{ path: 'src/profile.unit.test.ts', startLine: 2, endLine: 4 }],
 				detail: 'beforeEach at line 2 asserts',
 				guidance: 'Act and assert live in the `test`; a hook only arranges.',
@@ -53,7 +53,7 @@ describe('buildHookContentCheck', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'test-assert-in-hook:src/profile.unit.test.ts',
+				siteKey: 'no-test-state-in-hooks:src/profile.unit.test.ts',
 				files: [{ path: 'src/profile.unit.test.ts', startLine: 2, endLine: 4 }],
 				detail: 'afterEach at line 2 asserts',
 				guidance: 'Act and assert live in the `test`; a hook only arranges.',

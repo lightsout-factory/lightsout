@@ -234,13 +234,13 @@ describe('standardsCheckCommand', () => {
 	test('--list prints the resolved ledger and answers without running a single check', async () => {
 		// the table's full shape is printStandardsRuleList's own test's to pin —
 		// what the command owns is that the resolved rules reach it, and that
-		// listing is a read, never a run. The repo's config names lightsout/node,
+		// listing is a read, never a run. The repo's config names lightsout/standards,
 		// so that is the one group the ledger is built from.
 		const { context, logged, exitCodes } = setupRuleList({ cwd: setupConsumerRepo({ git: false }) });
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(listParams()?.groups.map(({ pack }) => pack.name)).toStrictEqual(['lightsout/node']);
+		expect(listParams()?.groups.map(({ pack }) => pack.name)).toStrictEqual(['lightsout/standards']);
 		expect(cellsOf({ logged })).toContainEqual([
 			'multi-export',
 			'blocking',
@@ -319,12 +319,12 @@ describe('standardsCheckCommand', () => {
 		const { context, logged } = setupCheck({
 			args: [],
 			check: { findings: [finding({ rule: 'duplicate-code-block', severity: StandardsSeverity.Blocking, siteKey: 'duplicate-code-block:src/a.ts:1' })] },
-			review: { findings: [finding({ rule: 'module-exports', siteKey: 'module-exports:src/a.ts', detail: 'a relative import in an aliased package' })] },
+			review: { findings: [finding({ rule: 'object-args', siteKey: 'object-args:src/a.ts', detail: 'three positional arguments on an exported function' })] },
 		});
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(headingsOf({ logged })).toStrictEqual(['⚠ duplicate-code-block · 1 blocking', 'ℹ module-exports · 1 advisory']);
+		expect(headingsOf({ logged })).toStrictEqual(['⚠ duplicate-code-block · 1 blocking', 'ℹ object-args · 1 advisory']);
 		// the fast half's answer is on screen before the slow half starts — a
 		// reader waiting on the agent already has the deterministic result
 		expect(logged.indexOf('⚠ duplicate-code-block · 1 blocking')).toBeLessThan(logged.indexOf('Agent review'));

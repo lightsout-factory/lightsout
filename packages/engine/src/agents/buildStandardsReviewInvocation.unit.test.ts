@@ -134,8 +134,8 @@ describe('buildStandardsReviewInvocation', () => {
 	test("states a rule's applies-to packages beside its id only when the entry carries them", () => {
 		const { systemPrompt } = buildStandardsReviewInvocation({
 			rules: [
-				{ name: 'lightsout/web-only', documentPath: 'code/architecture/react', prose: 'the web argument', appliesTo: 'web-app' },
-				{ name: 'lightsout/everywhere', documentPath: 'code/architecture/react', prose: 'the shared argument' },
+				{ name: 'lightsout/web-only', documentPath: 'code/frameworks/react', prose: 'the web argument', appliesTo: 'web-app' },
+				{ name: 'lightsout/everywhere', documentPath: 'code/frameworks/react', prose: 'the shared argument' },
 			],
 			files: ['src/a.ts'],
 		});

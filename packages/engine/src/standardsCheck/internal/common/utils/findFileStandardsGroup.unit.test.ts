@@ -9,8 +9,8 @@ const buildGroup = ({ packages, pack }: { packages: string[]; pack: string }): S
 });
 
 const setupGroups = ({ rootPackages }: { rootPackages: string[] }) => {
-	const rootGroup = buildGroup({ packages: rootPackages, pack: 'lightsout/node' });
-	const webAppGroup = buildGroup({ packages: ['web-app'], pack: 'lightsout/react-app' });
+	const rootGroup = buildGroup({ packages: rootPackages, pack: 'lightsout/standards' });
+	const webAppGroup = buildGroup({ packages: ['web-app'], pack: 'lightsout/fractal' });
 
 	return { rootGroup, webAppGroup, groups: [rootGroup, webAppGroup] };
 };

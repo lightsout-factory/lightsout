@@ -1,18 +1,16 @@
 import { describe, expect, test } from '@jest/globals';
 import type { FrameworkCarveOut } from '../types/FrameworkCarveOut.ts';
-import type { UnconsumedExport } from '../types/UnconsumedExport.ts';
 import { buildUnconsumedFindings } from './buildUnconsumedFindings.ts';
 
 /**
- * A repo as the file-text input carries it, plus the verdict one rule claims
- * over it. `files` narrows the scope when a file is present only as a reference;
+ * A repo as the file-text input carries it, plus the wording one rule reports
+ * it in. `files` narrows the scope when a file is present only as a reference;
  * left out, every file in `contents` is judged.
  */
 const setupRepo = ({
 	contents,
 	files,
 	rule = 'dead-export',
-	matches = ({ test }: UnconsumedExport['reachedBy']) => !test,
 	detail = 'referenced nowhere else',
 	guidance = 'A dead code candidate. Delete it — version control has the history.',
 	standardsLibraries = [],
@@ -21,7 +19,6 @@ const setupRepo = ({
 	contents: Array<[string, string]>;
 	files?: string[];
 	rule?: string;
-	matches?: (reachedBy: UnconsumedExport['reachedBy']) => boolean;
 	detail?: string;
 	guidance?: string;
 	standardsLibraries?: string[];
@@ -32,7 +29,6 @@ const setupRepo = ({
 	standardsLibraries,
 	carveOuts,
 	rule,
-	matches,
 	detail,
 	guidance,
 });
@@ -43,14 +39,13 @@ const startCarveOuts: FrameworkCarveOut[] = [
 		directory: '.',
 		entryFiles: ['router.tsx', 'server.ts', 'client.tsx'],
 		exemptFolderNames: [],
-		kebabCase: false,
 		routerRoots: ['routes'],
 	},
 ];
 
 describe('buildUnconsumedFindings', () => {
 	test('reports the export no other file mentions, keyed by the rule and the file declaring it', () => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({
 			contents: [
 				['src/index.ts', "export { renderGreeting } from './feature/renderGreeting';"],
 				['src/feature/renderGreeting.ts', 'export const renderGreeting = ({ name }: { name: string }): string => `<p>${name}</p>`;'],
@@ -58,7 +53,7 @@ describe('buildUnconsumedFindings', () => {
 			],
 		});
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		expect(findings).toStrictEqual([
 			{
@@ -71,7 +66,7 @@ describe('buildUnconsumedFindings', () => {
 	});
 
 	test('an export another source file imports is consumed, so the verdict passes it over', () => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({
 			contents: [
 				['src/index.ts', "export { renderGreeting } from './feature/renderGreeting';"],
 				[
@@ -82,17 +77,17 @@ describe('buildUnconsumedFindings', () => {
 			],
 		});
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('every unconsumed export of one file lands in a single finding that names each', () => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({
 			contents: [['src/feature/tokens.ts', 'export const alphaToken = 1;\nexport const betaToken = 2;']],
 		});
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		expect(findings).toStrictEqual([
 			{
@@ -104,32 +99,21 @@ describe('buildUnconsumedFindings', () => {
 		]);
 	});
 
-	test('a verdict claiming test-reached exports reports the one only a test mentions', () => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({
+	test('leaves an export alone when a test still mentions it', () => {
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({
 			contents: [
 				['src/feature/buildGreeting.ts', 'export const buildGreeting = ({ name }: { name: string }): string => `Hello, ${name}.`;'],
 				['src/feature/buildGreeting.unit.test.ts', "import { buildGreeting } from './buildGreeting';"],
 			],
-			rule: 'test-only-export',
-			matches: ({ test }) => test,
-			detail: 'referenced only by tests',
-			guidance: 'A production-dead candidate: only its own tests keep it alive.',
 		});
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
-		expect(findings).toStrictEqual([
-			{
-				siteKey: 'test-only-export:src/feature/buildGreeting.ts',
-				files: [{ path: 'src/feature/buildGreeting.ts' }],
-				detail: "'buildGreeting' is referenced only by tests",
-				guidance: 'A production-dead candidate: only its own tests keep it alive.',
-			},
-		]);
+		expect(findings).toStrictEqual([]);
 	});
 
 	test('forwards the carve-outs, so a route file consuming a screen leaves it unreported, whatever a folder barrel lists', () => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({
 			contents: [
 				['src/routes/index.tsx', "import { RunsIndex } from '../features/app/screens/RunsIndex';\n\nexport const Route = { component: RunsIndex };"],
 				['src/features/app/screens/RunsIndex/index.ts', "export { RunsIndex } from './RunsIndex';"],
@@ -138,7 +122,7 @@ describe('buildUnconsumedFindings', () => {
 			carveOuts: startCarveOuts,
 		});
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		// counted without the carve-outs, that route file is a barrel and the screen
 		// it renders reads as used by nobody
@@ -146,27 +130,27 @@ describe('buildUnconsumedFindings', () => {
 	});
 
 	test('an index file that only imports is an ordinary consumer, not a barrel', () => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({
 			contents: [
 				['src/app/index.ts', "import { startApp } from './startApp';\n\nstartApp();"],
 				['src/app/startApp.ts', 'export const startApp = (): void => {};'],
 			],
 		});
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('names under four characters are left unjudged, since ordinary words collide with them', () => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({
 			contents: [
 				['src/feature/sum.ts', 'export const sum = ({ a, b }: { a: number; b: number }): number => a + b;'],
 				['src/feature/total.ts', 'export const total = 42;'],
 			],
 		});
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		expect(findings).toStrictEqual([
 			{
@@ -179,20 +163,20 @@ describe('buildUnconsumedFindings', () => {
 	});
 
 	test('what a barrel or a test declares is never judged — those names belong elsewhere', () => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({
 			contents: [
 				['src/feature/index.ts', 'export const barrelHelper = 1;'],
 				['src/feature/helpers.unit.test.ts', 'export const helperStub = 2;'],
 			],
 		});
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('a file outside the scope still counts as a reference and is never reported itself', () => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({
 			contents: [
 				['src/feature/buildGreeting.ts', 'export const buildGreeting = ({ name }: { name: string }): string => `Hello, ${name}.`;'],
 				['src/app/runApp.ts', "import { buildGreeting } from '../feature/buildGreeting';\n\nexport const runApp = () => buildGreeting({ name: 'world' });"],
@@ -200,7 +184,7 @@ describe('buildUnconsumedFindings', () => {
 			files: ['src/feature/buildGreeting.ts'],
 		});
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -214,9 +198,9 @@ describe('buildUnconsumedFindings', () => {
 		{ form: 'a type', line: 'export type AlphaKind = string;', name: 'AlphaKind' },
 		{ form: 'an enum', line: 'export enum AlphaMode {}', name: 'AlphaMode' },
 	])('counts $form as a declaration, so an unreferenced $name is reported', ({ line, name }) => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({ contents: [['src/feature/alpha.ts', line]] });
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({ contents: [['src/feature/alpha.ts', line]] });
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		expect(findings).toStrictEqual([
 			{
@@ -229,17 +213,17 @@ describe('buildUnconsumedFindings', () => {
 	});
 
 	test('forwards the pack roots, so a rule under a declared pack’s tests/ is judged as the source it is', () => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({
-			contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({
+			contents: [['standards/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
 			standardsLibraries: ['standards'],
 		});
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'dead-export:standards/tests/unit-testing/10-rule/check.ts',
-				files: [{ path: 'standards/tests/unit-testing/10-rule/check.ts' }],
+				siteKey: 'dead-export:standards/tests/code-style/10-rule/check.ts',
+				files: [{ path: 'standards/tests/code-style/10-rule/check.ts' }],
 				detail: "'checkRule' is referenced nowhere else",
 				guidance: 'A dead code candidate. Delete it — version control has the history.',
 			},
@@ -247,11 +231,11 @@ describe('buildUnconsumedFindings', () => {
 	});
 
 	test('the same path with no pack declared above it is test code, which declares nothing judged', () => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({
-			contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({
+			contents: [['standards/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
 		});
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -262,9 +246,9 @@ describe('buildUnconsumedFindings', () => {
 		{ form: 'a star re-export', text: "export * from './alphaValue';" },
 		{ form: 'an unexported const', text: 'const alphaValue = 1;' },
 	])('reads $form as declaring nothing of its own', ({ text }) => {
-		const { files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance } = setupRepo({ contents: [['src/feature/things.ts', text]] });
+		const { files, contents, standardsLibraries, carveOuts, rule, detail, guidance } = setupRepo({ contents: [['src/feature/things.ts', text]] });
 
-		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, matches, detail, guidance });
+		const findings = buildUnconsumedFindings({ files, contents, standardsLibraries, carveOuts, rule, detail, guidance });
 
 		expect(findings).toStrictEqual([]);
 	});

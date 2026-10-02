@@ -14,8 +14,8 @@ interface Params {
 
 /** One pack file of the lightsout library, resolved, as the library's view lists it. */
 export const buildStandardsPackListing = ({
-	name = 'node',
-	description = 'Every Node package.',
+	name = 'standards',
+	description = 'Every bundled standard at once.',
 	include = { packs: [], topics: [], rules: [] },
 	topics = [],
 	rules = [],

@@ -323,9 +323,9 @@ test('an introduced blocking finding on a test file the run wrote is worked and 
 
 	expectDefined(cleanup);
 	// severity still directs the effort: it is handed over as blocking work
-	expect(refactorPrompts[0] ?? '').toMatch(/Blocking —[\s\S]*- \[lightsout\/test-in-tests-folder\]/);
+	expect(refactorPrompts[0] ?? '').toMatch(/Blocking —[\s\S]*- \[lightsout\/test-beside-subject\]/);
 	// the executor left it, so it is recorded rather than escalated
-	expect(cleanup.remaining.map((finding) => finding.rule)).toContain('lightsout/test-in-tests-folder');
+	expect(cleanup.remaining.map((finding) => finding.rule)).toContain('lightsout/test-beside-subject');
 	expect(result.manifest.steps.find((step) => step.id === 'refactor')?.status).toBe('passed');
 	expect(result.ok).toBe(true);
 });

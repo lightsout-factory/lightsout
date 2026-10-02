@@ -30,7 +30,7 @@ const filesOffered = ({ prompt }: { prompt: string }) =>
  * pack, so a run can be pointed at a pack the plugin does not ship. Its only
  * rule is judgment-only (no `check.ts`), which is the half of a pack the batch
  * review reads — and a rule that declares no check contributes no findings, so
- * the pack includes the bundled `lightsout/node` pack beside its own topic:
+ * the pack includes the bundled `lightsout/standards` pack beside its own topic:
  * something has to raise the finding the batch under review is built from.
  */
 const writeHousePack = ({ dir }: { dir: string }) => {
@@ -38,7 +38,8 @@ const writeHousePack = ({ dir }: { dir: string }) => {
 		'lightsout-standards.json': '{ "name": "house", "formatVersion": 2 }\n',
 		'rules/code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
 		'rules/code/demo/01-house-rule/rule.md': '---\nsummary: a rule only the house pack declares\n---\n\nThe rule prose.\n',
-		'packs/house.json': '{ "description": "The node pack and the house rule.", "include": { "packs": ["lightsout/node"], "topics": ["house/code/demo"] } }\n',
+		'packs/house.json':
+			'{ "description": "The standards pack and the house rule.", "include": { "packs": ["lightsout/standards"], "topics": ["house/code/demo"] } }\n',
 	};
 
 	for (const [path, content] of Object.entries(files)) {

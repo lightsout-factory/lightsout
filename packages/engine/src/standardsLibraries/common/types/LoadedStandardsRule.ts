@@ -10,7 +10,7 @@ export interface LoadedStandardsRule {
 	/** The manifest name of the library the rule belongs to. */
 	library: string;
 	set: StandardsSet;
-	/** Pack-relative document folder path, e.g. 'code/style-guide/patterns/functions'. */
+	/** Pack-relative document folder path, e.g. 'code/code-style/functions'. */
 	documentPath: string;
 	/** One line from rule.md front matter — what the rule catches. */
 	summary: string;

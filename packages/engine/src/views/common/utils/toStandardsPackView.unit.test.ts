@@ -17,11 +17,11 @@ const setupBundle = ({ described = true }: { described?: boolean } = {}) => {
 		totals: { rules: 2, checked: 1, judgment: 1, topics: 1, packs: 1, withFixtures: 1 },
 		packs: [
 			{
-				name: 'node',
-				address: 'lightsout/node',
-				description: 'Every Node package.',
-				include: { packs: [], topics: ['lightsout/code/style-guide/patterns/functions'], rules: [] },
-				topics: ['lightsout/code/style-guide/patterns/functions'],
+				name: 'standards',
+				address: 'lightsout/standards',
+				description: 'Every bundled standard.',
+				include: { packs: [], topics: ['lightsout/code/fractal/size'], rules: [] },
+				topics: ['lightsout/code/fractal/size'],
 				rules: [
 					{ name: 'lightsout/function-size', severity: StandardsSeverity.Blocking, options: { lines: 40 } },
 					{ name: 'lightsout/pure-functions', severity: StandardsSeverity.Advisory, options: {} },
@@ -32,8 +32,8 @@ const setupBundle = ({ described = true }: { described?: boolean } = {}) => {
 		topics: [
 			{
 				set: StandardsSet.Code,
-				path: 'code/style-guide/patterns/functions',
-				intro: '# Functions\n\nBackground the rules share.',
+				path: 'code/fractal/size',
+				intro: '# Size\n\nBackground the rules share.',
 				ruleIds: ['function-size', 'pure-functions'],
 			},
 		],
@@ -42,7 +42,7 @@ const setupBundle = ({ described = true }: { described?: boolean } = {}) => {
 				id: 'function-size',
 				name: 'lightsout/function-size',
 				set: StandardsSet.Code,
-				documentPath: 'code/style-guide/patterns/functions',
+				documentPath: 'code/fractal/size',
 				summary: 'Keep each function under its line cap.',
 				checked: true,
 				defaultSeverity: StandardsSeverity.Advisory,
@@ -59,7 +59,7 @@ const setupBundle = ({ described = true }: { described?: boolean } = {}) => {
 				id: 'pure-functions',
 				name: 'lightsout/pure-functions',
 				set: StandardsSet.Code,
-				documentPath: 'code/style-guide/patterns/functions',
+				documentPath: 'code/fractal/size',
 				summary: 'Keep functions free of hidden side effects.',
 				checked: false,
 				defaultSeverity: StandardsSeverity.Advisory,
@@ -90,11 +90,11 @@ describe('toStandardsPackView', () => {
 			totals: { rules: 2, checked: 1, judgment: 1, topics: 1, packs: 1, withFixtures: 1 },
 			packs: [
 				{
-					name: 'node',
-					address: 'lightsout/node',
-					description: 'Every Node package.',
-					include: { packs: [], topics: ['lightsout/code/style-guide/patterns/functions'], rules: [] },
-					topics: ['lightsout/code/style-guide/patterns/functions'],
+					name: 'standards',
+					address: 'lightsout/standards',
+					description: 'Every bundled standard.',
+					include: { packs: [], topics: ['lightsout/code/fractal/size'], rules: [] },
+					topics: ['lightsout/code/fractal/size'],
 					rules: [
 						{ name: 'lightsout/function-size', severity: 'blocking', options: { lines: 40 } },
 						{ name: 'lightsout/pure-functions', severity: 'advisory', options: {} },
@@ -105,8 +105,8 @@ describe('toStandardsPackView', () => {
 			topics: [
 				{
 					set: 'code',
-					path: 'code/style-guide/patterns/functions',
-					intro: '# Functions\n\nBackground the rules share.',
+					path: 'code/fractal/size',
+					intro: '# Size\n\nBackground the rules share.',
 					ruleIds: ['function-size', 'pure-functions'],
 				},
 			],
@@ -115,7 +115,7 @@ describe('toStandardsPackView', () => {
 					id: 'function-size',
 					name: 'lightsout/function-size',
 					set: 'code',
-					documentPath: 'code/style-guide/patterns/functions',
+					documentPath: 'code/fractal/size',
 					summary: 'Keep each function under its line cap.',
 					checked: true,
 					defaultSeverity: 'advisory',
@@ -126,7 +126,7 @@ describe('toStandardsPackView', () => {
 					id: 'pure-functions',
 					name: 'lightsout/pure-functions',
 					set: 'code',
-					documentPath: 'code/style-guide/patterns/functions',
+					documentPath: 'code/fractal/size',
 					summary: 'Keep functions free of hidden side effects.',
 					checked: false,
 					defaultSeverity: 'advisory',

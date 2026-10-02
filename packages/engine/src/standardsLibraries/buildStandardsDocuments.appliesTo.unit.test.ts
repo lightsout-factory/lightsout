@@ -50,10 +50,10 @@ const rules = {
 };
 
 const topics = {
-	architecture: buildTopic({ path: 'code/architecture', title: 'Architecture', ruleIds: ['graduation'] }),
+	modules: buildTopic({ path: 'code/fractal/modules', title: 'Modules', ruleIds: ['graduation'] }),
 	patterns: buildTopic({ path: 'code/style/patterns', title: 'Patterns', ruleIds: ['functions', 'classes'] }),
-	unitTesting: buildTopic({ path: 'tests/unit-testing', title: 'Unit Testing', ruleIds: ['mock-prefix'], set: StandardsSet.Tests }),
-	react: buildTopic({ path: 'code/architecture/react', title: 'React', ruleIds: ['hooks-at-top'] }),
+	testStyle: buildTopic({ path: 'tests/code-style', title: 'Test Style', ruleIds: ['mock-prefix'], set: StandardsSet.Tests }),
+	react: buildTopic({ path: 'code/frameworks/react', title: 'React', ruleIds: ['hooks-at-top'] }),
 };
 
 interface PackContents {
@@ -62,16 +62,16 @@ interface PackContents {
 	rules: LoadedStandardsRule[];
 }
 
-const nodePack: PackContents = {
-	name: 'lightsout/node',
-	topics: [topics.architecture, topics.patterns, topics.unitTesting],
+const fractalPack: PackContents = {
+	name: 'lightsout/fractal',
+	topics: [topics.modules, topics.patterns, topics.testStyle],
 	rules: [rules.graduation, rules.functions, rules.classes, rules.mockPrefix],
 };
 
-const reactAppPack: PackContents = {
-	name: 'lightsout/react-app',
-	topics: [...nodePack.topics, topics.react],
-	rules: [...nodePack.rules, rules.hooksAtTop],
+const standardsPack: PackContents = {
+	name: 'lightsout/standards',
+	topics: [...fractalPack.topics, topics.react],
+	rules: [...fractalPack.rules, rules.hooksAtTop],
 };
 
 /**
@@ -96,17 +96,17 @@ const buildGroup = ({ packages, pack, off = [] }: { packages: string[]; pack: Pa
 	};
 };
 
-/** lightsout/node for every package, once as one group and once split into two groups. */
+/** lightsout/fractal for every package, once as one group and once split into two groups. */
 const setupSinglePack = () => {
-	const oneGroup = [buildGroup({ packages: ['', 'engine', 'web-app'], pack: nodePack })];
-	const twoGroups = [buildGroup({ packages: ['', 'engine'], pack: nodePack }), buildGroup({ packages: ['web-app'], pack: nodePack })];
+	const oneGroup = [buildGroup({ packages: ['', 'engine', 'web-app'], pack: fractalPack })];
+	const twoGroups = [buildGroup({ packages: ['', 'engine'], pack: fractalPack }), buildGroup({ packages: ['web-app'], pack: fractalPack })];
 
 	return { oneGroup, twoGroups };
 };
 
-/** The root and engine on lightsout/node; web-app on lightsout/react-app, whose rule-settings turn `webAppOff` off. */
+/** The root and engine on lightsout/fractal; web-app on lightsout/standards, whose rule-settings turn `webAppOff` off. */
 const setupSplitPacks = ({ webAppOff = [] }: { webAppOff?: string[] } = {}) => {
-	const groups = [buildGroup({ packages: ['', 'engine'], pack: nodePack }), buildGroup({ packages: ['web-app'], pack: reactAppPack, off: webAppOff })];
+	const groups = [buildGroup({ packages: ['', 'engine'], pack: fractalPack }), buildGroup({ packages: ['web-app'], pack: standardsPack, off: webAppOff })];
 
 	return { groups };
 };
@@ -127,7 +127,7 @@ const setupFencedProse = () => {
 	const groups = [
 		buildGroup({
 			packages: ['', 'engine'],
-			pack: { name: 'lightsout/tests-only', topics: [topics.unitTesting], rules: [rules.mockPrefix] },
+			pack: { name: 'lightsout/tests-only', topics: [topics.testStyle], rules: [rules.mockPrefix] },
 		}),
 		buildGroup({ packages: ['web-app'], pack: { name: 'lightsout/docs', topics: [docsTopic], rules: [docLayout] } }),
 	];
@@ -163,10 +163,10 @@ describe('buildStandardsDocuments', () => {
 		expect(split).toStrictEqual(single);
 		expect(single).toStrictEqual({
 			code: [
-				'<!-- lightsout: code/architecture -->\n# Architecture\n\nBackground for Architecture.\n\n## Graduation\n\nA concept earns its folder.',
+				'<!-- lightsout: code/fractal/modules -->\n# Modules\n\nBackground for Modules.\n\n## Graduation\n\nA concept earns its folder.',
 				'<!-- lightsout: code/style/patterns -->\n# Patterns\n\nBackground for Patterns.\n\n## Functions\n\nUse arrow functions.\n\n## Classes\n\nDefault to functions.',
 			].join('\n\n'),
-			tests: '<!-- lightsout: tests/unit-testing -->\n# Unit Testing\n\nBackground for Unit Testing.\n\n## Mock Prefix\n\nMocks carry a mock prefix.',
+			tests: '<!-- lightsout: tests/code-style -->\n# Test Style\n\nBackground for Test Style.\n\n## Mock Prefix\n\nMocks carry a mock prefix.',
 		});
 	});
 
@@ -177,9 +177,9 @@ describe('buildStandardsDocuments', () => {
 
 		expect(nonBlankLines(code)).toStrictEqual([
 			'## Applies to: repo root (outside packages), engine, web-app',
-			'<!-- lightsout: code/architecture -->',
-			'### Architecture',
-			'Background for Architecture.',
+			'<!-- lightsout: code/fractal/modules -->',
+			'### Modules',
+			'Background for Modules.',
 			'#### Graduation',
 			'A concept earns its folder.',
 			'<!-- lightsout: code/style/patterns -->',
@@ -190,7 +190,7 @@ describe('buildStandardsDocuments', () => {
 			'#### Classes',
 			'Default to functions.',
 			'## Applies to: web-app',
-			'<!-- lightsout: code/architecture/react -->',
+			'<!-- lightsout: code/frameworks/react -->',
 			'### React',
 			'Background for React.',
 			'#### Hooks At Top',
@@ -205,9 +205,9 @@ describe('buildStandardsDocuments', () => {
 
 		expect(nonBlankLines(code)).toStrictEqual([
 			'## Applies to: repo root (outside packages), engine, web-app',
-			'<!-- lightsout: code/architecture -->',
-			'### Architecture',
-			'Background for Architecture.',
+			'<!-- lightsout: code/fractal/modules -->',
+			'### Modules',
+			'Background for Modules.',
 			'#### Graduation',
 			'A concept earns its folder.',
 			'<!-- lightsout: code/style/patterns -->',
@@ -219,7 +219,7 @@ describe('buildStandardsDocuments', () => {
 			'#### Classes',
 			'Default to functions.',
 			'## Applies to: web-app',
-			'<!-- lightsout: code/architecture/react -->',
+			'<!-- lightsout: code/frameworks/react -->',
 			'### React',
 			'Background for React.',
 			'#### Hooks At Top',
@@ -264,7 +264,7 @@ describe('buildStandardsDocuments', () => {
 		const { code, tests } = buildStandardsDocuments({ groups });
 
 		expect({ tests, codeOpensWithHeading: (code ?? '').startsWith('## Applies to: ') }).toStrictEqual({
-			tests: '<!-- lightsout: tests/unit-testing -->\n# Unit Testing\n\nBackground for Unit Testing.\n\n## Mock Prefix\n\nMocks carry a mock prefix.',
+			tests: '<!-- lightsout: tests/code-style -->\n# Test Style\n\nBackground for Test Style.\n\n## Mock Prefix\n\nMocks carry a mock prefix.',
 			codeOpensWithHeading: true,
 		});
 	});

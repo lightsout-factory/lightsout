@@ -26,7 +26,6 @@ const startCarveOuts: FrameworkCarveOut[] = [
 		directory: '.',
 		entryFiles: ['router.tsx', 'server.ts', 'client.tsx'],
 		exemptFolderNames: [],
-		kebabCase: false,
 		routerRoots: ['routes'],
 	},
 ];
@@ -35,7 +34,7 @@ describe('getUnconsumedExports', () => {
 	test('reports an export nothing else mentions, with nothing having reached it', () => {
 		const found = getUnconsumedExports(setupRepo({ contents: [['src/ingestion/ingestRecords.ts', 'export const ingestRecords = (): number => 1;']] }));
 
-		expect(found).toStrictEqual([{ file: 'src/ingestion/ingestRecords.ts', name: 'ingestRecords', reachedBy: { test: false } }]);
+		expect(found).toStrictEqual([{ file: 'src/ingestion/ingestRecords.ts', name: 'ingestRecords' }]);
 	});
 
 	test('does not count a folder barrel listing an export as a use, since nothing imports through one', () => {
@@ -48,7 +47,7 @@ describe('getUnconsumedExports', () => {
 			}),
 		);
 
-		expect(found).toStrictEqual([{ file: 'src/ingestion/ingestRecords.ts', name: 'ingestRecords', reachedBy: { test: false } }]);
+		expect(found).toStrictEqual([{ file: 'src/ingestion/ingestRecords.ts', name: 'ingestRecords' }]);
 	});
 
 	test('counts a package entry listing an export as a use, since other packages read the entry', () => {
@@ -67,7 +66,7 @@ describe('getUnconsumedExports', () => {
 		expect(found).toStrictEqual([]);
 	});
 
-	test('says a test reached an export only its own tests mention', () => {
+	test('counts a test’s mention as a reference, so an export its tests still use is not reported', () => {
 		const found = getUnconsumedExports(
 			setupRepo({
 				contents: [
@@ -77,7 +76,7 @@ describe('getUnconsumedExports', () => {
 			}),
 		);
 
-		expect(found).toStrictEqual([{ file: 'src/ingestion/ingestRecords.ts', name: 'ingestRecords', reachedBy: { test: true } }]);
+		expect(found).toStrictEqual([]);
 	});
 
 	test('reports nothing when a production file references the export', () => {
@@ -139,24 +138,22 @@ describe('getUnconsumedExports', () => {
 		);
 
 		// vendorExport is unconsumed too, but out of scope and so not this run's business
-		expect(found).toStrictEqual([{ file: 'src/ingestion/ingestRecords.ts', name: 'ingestRecords', reachedBy: { test: false } }]);
+		expect(found).toStrictEqual([{ file: 'src/ingestion/ingestRecords.ts', name: 'ingestRecords' }]);
 	});
 
 	test('inside a declared pack, a rule under tests/ declares an export like any other source file', () => {
 		const found = getUnconsumedExports(
 			setupRepo({
-				contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
+				contents: [['standards/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
 				standardsLibraries: ['standards'],
 			}),
 		);
 
-		expect(found).toStrictEqual([{ file: 'standards/tests/unit-testing/10-rule/check.ts', name: 'checkRule', reachedBy: { test: false } }]);
+		expect(found).toStrictEqual([{ file: 'standards/tests/code-style/10-rule/check.ts', name: 'checkRule' }]);
 	});
 
 	test('the same path with no pack declared above it is a test, whose helpers are its own', () => {
-		const found = getUnconsumedExports(
-			setupRepo({ contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const checkRule = (): number => 1;']] }),
-		);
+		const found = getUnconsumedExports(setupRepo({ contents: [['standards/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']] }));
 
 		expect(found).toStrictEqual([]);
 	});
@@ -166,7 +163,7 @@ describe('getUnconsumedExports', () => {
 			setupRepo({
 				contents: [
 					['src/ingestion/ingestRecords.ts', 'export const ingestRecords = (): number => 1;'],
-					['standards/tests/unit-testing/10-rule/check.ts', 'ingestRecords();'],
+					['standards/tests/code-style/10-rule/check.ts', 'ingestRecords();'],
 				],
 				standardsLibraries: ['standards'],
 			}),
@@ -213,7 +210,7 @@ describe('getUnconsumedExports', () => {
 		expect(found).toStrictEqual([]);
 	});
 
-	test('a test co-located inside the router directory still counts as a test, not as production code', () => {
+	test('a test co-located inside the router directory references what it mentions, like any other test', () => {
 		const found = getUnconsumedExports(
 			setupRepo({
 				contents: [
@@ -224,8 +221,6 @@ describe('getUnconsumedExports', () => {
 			}),
 		);
 
-		// counting it as a framework consumer would switch off the test-only
-		// verdict for every route tree
-		expect(found).toStrictEqual([{ file: 'src/features/runs/getRunDetails.ts', name: 'getRunDetails', reachedBy: { test: true } }]);
+		expect(found).toStrictEqual([]);
 	});
 });

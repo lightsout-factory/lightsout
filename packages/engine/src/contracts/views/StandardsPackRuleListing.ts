@@ -12,7 +12,7 @@ export const StandardsPackRuleListing = z.object({
 	/** The full name `<library>/<id>`. */
 	name: z.string(),
 	set: z.enum(StandardsSet),
-	/** Pack-relative document folder path, e.g. 'code/style-guide/patterns/functions'. */
+	/** Pack-relative document folder path, e.g. 'code/code-style/functions'. */
 	documentPath: z.string(),
 	summary: z.string(),
 	checked: z.boolean(),

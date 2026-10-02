@@ -55,7 +55,7 @@ const setupRepo = ({ withHouseLibrary = false, dependencies = {} }: { withHouseL
 };
 
 /**
- * A temp monorepo whose config names lightsout/node as the repo pack, with
+ * A temp monorepo whose config names lightsout/standards as the repo pack, with
  * workspace packages `admin` and `web` both given lightsout/react through
  * `package-standards-packs`, so they share one group apart from the root's.
  * Both declare react, which is what brings that conditional pack's rules in.
@@ -74,7 +74,7 @@ const setupMonorepo = () => {
 
 	const config: LightsoutConfig = {
 		...baseConfig,
-		'standards-pack': 'lightsout/node',
+		'standards-pack': 'lightsout/standards',
 		'package-standards-packs': { admin: 'lightsout/react', web: 'lightsout/react' },
 	};
 
@@ -85,8 +85,6 @@ const setupMonorepo = () => {
 const reactMissingRequirements = [
 	{ rule: 'lightsout/component-file-structure', required: 'lightsout/folder-index-file' },
 	{ rule: 'lightsout/component-file-structure', required: 'lightsout/module-folder-layout' },
-	{ rule: 'lightsout/component-file-structure', required: 'lightsout/single-file-domain-folder' },
-	{ rule: 'lightsout/component-file-structure', required: 'lightsout/ungrouped-domain-utils' },
 ];
 
 describe('checkRuleRequirements', () => {
@@ -101,11 +99,11 @@ describe('checkRuleRequirements', () => {
 
 	test("passes when every group's pack sends each required rule", async () => {
 		const { cwd } = setupRepo();
-		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/node' };
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/standards' };
 
 		const check = await checkRuleRequirements({ cwd, config });
 
-		// lightsout/node holds every rule its rules require
+		// lightsout/standards sends every rule its rules require
 		expect({ id: check?.id, status: check?.status, namesOneGroup: /\b1\b/.test(check?.detail ?? '') }).toStrictEqual({
 			id: 'rule-requirements',
 			status: 'pass',
@@ -132,7 +130,7 @@ describe('checkRuleRequirements', () => {
 			id: 'rule-requirements',
 			status: 'warn',
 			hasFix: true,
-			entryCount: 4,
+			entryCount: 2,
 			everyEntryNamesGroupAndPack: true,
 			coveredRequirements: reactMissingRequirements.map(() => true),
 		});
@@ -145,14 +143,14 @@ describe('checkRuleRequirements', () => {
 
 		const entries = (check?.detail ?? '').split('; ');
 
-		// the root group's lightsout/node sends every requirement, so every entry is the admin and web group's
+		// the root group's lightsout/standards sends every requirement, so every entry is the admin and web group's
 		expect({
 			id: check?.id,
 			status: check?.status,
 			entryCount: entries.length,
 			everyEntryNamesBothPackages: entries.every((entry) => entry.includes('admin') && entry.includes('web') && entry.includes('lightsout/react')),
 			anyEntryNamesRoot: entries.some((entry) => entry.includes('repo root (outside packages)')),
-		}).toStrictEqual({ id: 'rule-requirements', status: 'warn', entryCount: 4, everyEntryNamesBothPackages: true, anyEntryNamesRoot: false });
+		}).toStrictEqual({ id: 'rule-requirements', status: 'warn', entryCount: 2, everyEntryNamesBothPackages: true, anyEntryNamesRoot: false });
 	});
 
 	test('judges requirements after standards-rule-settings apply', async () => {

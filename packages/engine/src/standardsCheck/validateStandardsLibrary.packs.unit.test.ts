@@ -83,9 +83,9 @@ const setupBrokenPacks = () => {
 
 /** house's one pack includes a pack from the built-in library and one from acme; acme is registered only when asked. */
 const setupCrossLibraryPack = ({ acmeRegistered }: { acmeRegistered: boolean }) => {
-	const builtIn = library({ name: 'lightsout', packs: [packFile({ name: 'node' })] });
+	const builtIn = library({ name: 'lightsout', packs: [packFile({ name: 'standards' })] });
 	const acme = library({ name: 'acme', packs: [packFile({ name: 'extras' })] });
-	const house = library({ name: 'house', packs: [packFile({ name: 'combined', packs: ['lightsout/node', 'acme/extras'] })] });
+	const house = library({ name: 'house', packs: [packFile({ name: 'combined', packs: ['lightsout/standards', 'acme/extras'] })] });
 	const libraries = acmeRegistered ? [builtIn, acme, house] : [builtIn, house];
 
 	return { house, libraries };

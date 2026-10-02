@@ -135,13 +135,13 @@ describe('reviewStandards', () => {
 
 	test("the review is bounded and scoped by the repo's own config, over the files the path filter leaves", async () => {
 		const cwd = setupRepo({ sources: ['src/index.ts', 'scripts/build.ts'] });
-		const config: LightsoutConfig = { gates, harness: 'codex', 'standards-pack': 'lightsout/react-app', timeouts: { 'agent-minutes': 5 } };
+		const config: LightsoutConfig = { gates, harness: 'codex', 'standards-pack': 'lightsout/fractal', timeouts: { 'agent-minutes': 5 } };
 
 		await reviewStandards({ cwd, config, path: 'src' });
 
 		expect(reviewParams()?.driver.name).toBe('codex');
 		// the configured pack is taken as given — the same answer the machine half gets
-		expect(reviewParams()?.groups.map(({ pack }) => pack.name)).toStrictEqual(['lightsout/react-app']);
+		expect(reviewParams()?.groups.map(({ pack }) => pack.name)).toStrictEqual(['lightsout/fractal']);
 		expect(reviewParams()?.timeoutMs).toBe(5 * 60_000);
 		// and the scope is the subtree the caller named
 		expect(reviewParams()?.files).toStrictEqual(['src/index.ts']);

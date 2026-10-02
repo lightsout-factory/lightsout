@@ -28,8 +28,8 @@ const ruleFiles = ({ path, summary }: { path: string; summary: string }) => ({
 
 /**
  * A small built-in `lightsout` library holding the three pack addresses these
- * tests reach: `node` (one base topic, rule `tabs`), `react-app` (node plus one
- * react topic, rule `hooks-first`) and `react` (the react topic alone, applying
+ * tests reach: `fractal` (one base topic, rule `tabs`), `standards` (fractal plus
+ * one react topic, rule `hooks-first`) and `react` (the react topic alone, applying
  * only to a package that declares react), so which pack a group got shows in
  * its rules as well as its name.
  */
@@ -37,16 +37,16 @@ const builtInLibraryFiles = {
 	'lightsout-standards.json': '{ "name": "lightsout", "formatVersion": 2 }\n',
 	'rules/code/base/topic.md': '# Base\n\nHow every package writes code.\n',
 	...ruleFiles({ path: 'rules/code/base/01-tabs', summary: 'indent with tabs' }),
-	'rules/code/react/topic.md': '# React\n\nHow components are written.\n',
-	...ruleFiles({ path: 'rules/code/react/01-hooks-first', summary: 'hooks come before handlers' }),
-	'packs/node.json': JSON.stringify({ description: 'The node pack.', include: { topics: ['lightsout/code/base'] } }),
-	'packs/react-app.json': JSON.stringify({
-		description: 'The react-app pack.',
-		include: { packs: ['lightsout/node'], topics: ['lightsout/code/react'] },
+	'rules/code/frameworks/react/topic.md': '# React\n\nHow components are written.\n',
+	...ruleFiles({ path: 'rules/code/frameworks/react/01-hooks-first', summary: 'hooks come before handlers' }),
+	'packs/fractal.json': JSON.stringify({ description: 'The fractal pack.', include: { topics: ['lightsout/code/base'] } }),
+	'packs/standards.json': JSON.stringify({
+		description: 'The standards pack.',
+		include: { packs: ['lightsout/fractal'], topics: ['lightsout/code/frameworks/react'] },
 	}),
 	'packs/react.json': JSON.stringify({
 		description: 'The react pack.',
-		include: { topics: ['lightsout/code/react'] },
+		include: { topics: ['lightsout/code/frameworks/react'] },
 		'applies-when': { dependencies: ['react'] },
 	}),
 };
@@ -96,14 +96,14 @@ const summarizeGroups = ({ groups }: { groups: StandardsGroup[] }) =>
 		rules: group.pack.rules.map(({ rule }) => rule.name).sort(),
 	}));
 
-/** The packs every test's package entry or repo pack lists when it wants the conditional react pack beside node. */
-const nodeWithReact = ['lightsout/node', 'lightsout/react'];
+/** The packs every test's package entry or repo pack lists when it wants the conditional react pack beside fractal. */
+const fractalWithReact = ['lightsout/fractal', 'lightsout/react'];
 
-/** The repo pack is node for the root and engine; web-app is named onto react-app. */
+/** The repo pack is fractal for the root and engine; web-app is named onto standards. */
 const splitConfig: LightsoutConfig = {
 	...baseConfig,
-	'standards-pack': 'lightsout/node',
-	'package-standards-packs': { 'web-app': 'lightsout/react-app' },
+	'standards-pack': 'lightsout/fractal',
+	'package-standards-packs': { 'web-app': 'lightsout/standards' },
 };
 
 describe('resolveStandardsGroups', () => {
@@ -113,23 +113,23 @@ describe('resolveStandardsGroups', () => {
 		const groups = await resolveStandardsGroups({ cwd, config: splitConfig });
 
 		expect(summarizeGroups({ groups })).toStrictEqual([
-			{ packages: ['', 'engine'], pack: 'lightsout/node', conditionalPacks: [], rules: ['lightsout/tabs'] },
-			{ packages: ['web-app'], pack: 'lightsout/react-app', conditionalPacks: [], rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
+			{ packages: ['', 'engine'], pack: 'lightsout/fractal', conditionalPacks: [], rules: ['lightsout/tabs'] },
+			{ packages: ['web-app'], pack: 'lightsout/standards', conditionalPacks: [], rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
 		]);
 	});
 
 	test('splits packages naming the same packs into two groups when a conditional pack applies to only one of them', async () => {
 		const { cwd } = setupRepo({ workspacePackages: { engine: {}, 'web-app': { react: '^19.0.0' } } });
-		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': nodeWithReact };
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': fractalWithReact };
 
 		const groups = await resolveStandardsGroups({ cwd, config });
 
 		// the root manifest declares no react, so lightsout/react can only have applied from web-app's own manifest
 		expect(summarizeGroups({ groups })).toStrictEqual([
-			{ packages: ['', 'engine'], pack: 'lightsout/node + lightsout/react', conditionalPacks: [], rules: ['lightsout/tabs'] },
+			{ packages: ['', 'engine'], pack: 'lightsout/fractal + lightsout/react', conditionalPacks: [], rules: ['lightsout/tabs'] },
 			{
 				packages: ['web-app'],
-				pack: 'lightsout/node + lightsout/react',
+				pack: 'lightsout/fractal + lightsout/react',
 				conditionalPacks: ['lightsout/react'],
 				rules: ['lightsout/hooks-first', 'lightsout/tabs'],
 			},
@@ -138,7 +138,7 @@ describe('resolveStandardsGroups', () => {
 
 	test('accepts a standards-rule-settings entry for a rule only a conditional pack that applied to no package holds', async () => {
 		const { cwd } = setupRepo();
-		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': nodeWithReact, 'standards-rule-settings': { 'hooks-first': 'advisory' } };
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': fractalWithReact, 'standards-rule-settings': { 'hooks-first': 'advisory' } };
 
 		const groups = await resolveStandardsGroups({ cwd, config });
 
@@ -151,12 +151,12 @@ describe('resolveStandardsGroups', () => {
 		{ repoPack: 'unset', config: baseConfig },
 	])('with standards-pack $repoPack, returns groups only for packages package-standards-packs names', async ({ config }) => {
 		const { cwd } = setupRepo();
-		const packageConfig: LightsoutConfig = { ...config, 'package-standards-packs': { 'web-app': 'lightsout/react-app' } };
+		const packageConfig: LightsoutConfig = { ...config, 'package-standards-packs': { 'web-app': 'lightsout/standards' } };
 
 		const groups = await resolveStandardsGroups({ cwd, config: packageConfig });
 
 		expect(summarizeGroups({ groups })).toStrictEqual([
-			{ packages: ['web-app'], pack: 'lightsout/react-app', conditionalPacks: [], rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
+			{ packages: ['web-app'], pack: 'lightsout/standards', conditionalPacks: [], rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
 		]);
 	});
 
@@ -172,7 +172,7 @@ describe('resolveStandardsGroups', () => {
 
 	test('refuses a package-standards-packs key that names no workspace package, listing the packages that exist', async () => {
 		const { cwd } = setupRepo();
-		const config: LightsoutConfig = { ...baseConfig, 'package-standards-packs': { 'web-ap': 'lightsout/node' } };
+		const config: LightsoutConfig = { ...baseConfig, 'package-standards-packs': { 'web-ap': 'lightsout/fractal' } };
 
 		const error = await getRejectionError({ promise: resolveStandardsGroups({ cwd, config }) });
 
@@ -184,7 +184,7 @@ describe('resolveStandardsGroups', () => {
 
 	test('refuses a package-standards-packs key in a repo with no workspace package, saying none exist', async () => {
 		const { cwd } = setupRepo({ workspacePackages: {} });
-		const config: LightsoutConfig = { ...baseConfig, 'package-standards-packs': { 'web-app': 'lightsout/react-app' } };
+		const config: LightsoutConfig = { ...baseConfig, 'package-standards-packs': { 'web-app': 'lightsout/standards' } };
 
 		const error = await getRejectionError({ promise: resolveStandardsGroups({ cwd, config }) });
 
@@ -218,7 +218,7 @@ describe('resolveStandardsGroups', () => {
 
 		// hooks-first sits only in web-app's pack, which the engine scope never reaches, yet the name still resolves
 		expect({ scoped: summarizeGroups({ groups: scoped }).map(({ packages, pack }) => ({ packages, pack })), error: error.message }).toEqual({
-			scoped: [{ packages: ['', 'engine'], pack: 'lightsout/node' }],
+			scoped: [{ packages: ['', 'engine'], pack: 'lightsout/fractal' }],
 			error: expect.stringContaining('no-such-rule'),
 		});
 	});
@@ -229,8 +229,8 @@ describe('resolveStandardsGroups', () => {
 		const groups = await resolveStandardsGroups({ cwd, config: splitConfig, packages: ['web-app'] });
 
 		expect(summarizeGroups({ groups }).map(({ packages, pack }) => ({ packages, pack }))).toStrictEqual([
-			{ packages: [''], pack: 'lightsout/node' },
-			{ packages: ['web-app'], pack: 'lightsout/react-app' },
+			{ packages: [''], pack: 'lightsout/fractal' },
+			{ packages: ['web-app'], pack: 'lightsout/standards' },
 		]);
 	});
 
@@ -240,34 +240,36 @@ describe('resolveStandardsGroups', () => {
 		const groups = await resolveStandardsGroups({ cwd, config: splitConfig, packages: ['web-app', 'scripts'] });
 
 		expect(summarizeGroups({ groups }).map(({ packages, pack }) => ({ packages, pack }))).toStrictEqual([
-			{ packages: [''], pack: 'lightsout/node' },
-			{ packages: ['web-app'], pack: 'lightsout/react-app' },
+			{ packages: [''], pack: 'lightsout/fractal' },
+			{ packages: ['web-app'], pack: 'lightsout/standards' },
 		]);
 	});
 
 	test("puts a package named onto the repo's own pack in the root's group", async () => {
 		const { cwd } = setupRepo({ workspacePackages: { engine: {} } });
-		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/node', 'package-standards-packs': { engine: 'lightsout/node' } };
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/fractal', 'package-standards-packs': { engine: 'lightsout/fractal' } };
 
 		const groups = await resolveStandardsGroups({ cwd, config });
 
-		expect(summarizeGroups({ groups })).toStrictEqual([{ packages: ['', 'engine'], pack: 'lightsout/node', conditionalPacks: [], rules: ['lightsout/tabs'] }]);
+		expect(summarizeGroups({ groups })).toStrictEqual([
+			{ packages: ['', 'engine'], pack: 'lightsout/fractal', conditionalPacks: [], rules: ['lightsout/tabs'] },
+		]);
 	});
 
 	test('orders groups that leave the root out by pack name, then by the conditional packs that applied', async () => {
 		const { cwd } = setupRepo({ workspacePackages: { 'a-web': { react: '^19.0.0' }, 'b-api': {}, 'c-lib': {} } });
 		const config: LightsoutConfig = {
 			...baseConfig,
-			'package-standards-packs': { 'a-web': nodeWithReact, 'b-api': nodeWithReact, 'c-lib': 'lightsout/node' },
+			'package-standards-packs': { 'a-web': fractalWithReact, 'b-api': fractalWithReact, 'c-lib': 'lightsout/fractal' },
 		};
 
 		const groups = await resolveStandardsGroups({ cwd, config });
 
 		// the packages resolve in the order a-web, b-api, c-lib, so only the sort can put c-lib first and a-web last
 		expect(summarizeGroups({ groups }).map(({ packages, pack, conditionalPacks }) => ({ packages, pack, conditionalPacks }))).toStrictEqual([
-			{ packages: ['c-lib'], pack: 'lightsout/node', conditionalPacks: [] },
-			{ packages: ['b-api'], pack: 'lightsout/node + lightsout/react', conditionalPacks: [] },
-			{ packages: ['a-web'], pack: 'lightsout/node + lightsout/react', conditionalPacks: ['lightsout/react'] },
+			{ packages: ['c-lib'], pack: 'lightsout/fractal', conditionalPacks: [] },
+			{ packages: ['b-api'], pack: 'lightsout/fractal + lightsout/react', conditionalPacks: [] },
+			{ packages: ['a-web'], pack: 'lightsout/fractal + lightsout/react', conditionalPacks: ['lightsout/react'] },
 		]);
 	});
 });

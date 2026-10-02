@@ -18,10 +18,10 @@ const frontMatter = ({ options }: { options: string[] }) => ['---', 'summary: "a
  * would go red the day someone tuned a cap.
  */
 const defaultRules: Record<string, string> = {
-	'rules/code/style-guide/patterns/functions/30-file-size/rule.md': frontMatter({ options: ['  file: 100', '  tsxFile: 120'] }),
-	'rules/code/style-guide/patterns/functions/25-function-size/rule.md': frontMatter({ options: ['  function: 30'] }),
-	'rules/tests/unit-testing/18-test-file-size/rule.md': frontMatter({ options: ['  testFile: 400'] }),
-	'rules/code/architecture/folder-structure/35-folder-size/rule.md': frontMatter({ options: ['  cap: 3'] }),
+	'rules/code/fractal/size/10-file-size/rule.md': frontMatter({ options: ['  file: 100', '  tsxFile: 120'] }),
+	'rules/code/fractal/size/05-function-size/rule.md': frontMatter({ options: ['  function: 30'] }),
+	'rules/tests/fractal/15-test-file-size/rule.md': frontMatter({ options: ['  testFile: 400'] }),
+	'rules/code/fractal/size/15-folder-size/rule.md': frontMatter({ options: ['  cap: 3'] }),
 };
 
 interface Params {

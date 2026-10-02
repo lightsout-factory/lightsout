@@ -119,7 +119,7 @@ describe('buildConfigSections', () => {
 	});
 
 	test('lists package-standards-packs in the Standards section with the value the file set', () => {
-		const packagePacks = { 'web-app': 'lightsout/react-app' };
+		const packagePacks = { 'web-app': 'lightsout/fractal' };
 		const configs = [{ 'package-standards-packs': packagePacks }, {}];
 
 		const rows = configs.map((config) => {
@@ -142,13 +142,13 @@ describe('buildConfigSections', () => {
 	});
 
 	test('buildConfigSections: the Standards section leads with standards-pack and drops the deleted keys', () => {
-		const standards = buildSections({ config: { 'standards-pack': 'lightsout/node' } }).find((section) => section.title === 'Standards');
+		const standards = buildSections({ config: { 'standards-pack': 'lightsout/standards' } }).find((section) => section.title === 'Standards');
 
 		const keys = standards?.fields.map((field) => field.key);
 
 		expect({ keys, first: standards?.fields[0] }).toStrictEqual({
 			keys: ['standards-pack', 'package-standards-packs', 'standards-libraries', 'standards-rule-settings'],
-			first: { key: 'standards-pack', value: 'lightsout/node', fromConfig: true, description: configKeyDescriptions['standards-pack'] },
+			first: { key: 'standards-pack', value: 'lightsout/standards', fromConfig: true, description: configKeyDescriptions['standards-pack'] },
 		});
 	});
 

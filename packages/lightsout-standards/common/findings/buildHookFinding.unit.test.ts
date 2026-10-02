@@ -14,7 +14,7 @@ const hookBlock = ({ callee, body, startLine, endLine }: { callee: string; body:
 
 /** The hook blocks a rule handed over, plus the words it wants said about the ones that match. */
 const setupHookFinding = ({ blocks = [] }: { blocks?: CallBlock[] } = {}) => ({
-	rule: 'test-assert-in-hook',
+	rule: 'no-test-state-in-hooks',
 	file: 'src/alpha.unit.test.ts',
 	blocks,
 	pattern: /\bexpect\s*\(/,
@@ -30,7 +30,7 @@ describe('buildHookFinding', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'test-assert-in-hook:src/alpha.unit.test.ts',
+				siteKey: 'no-test-state-in-hooks:src/alpha.unit.test.ts',
 				files: [{ path: 'src/alpha.unit.test.ts', startLine: 4, endLine: 6 }],
 				detail: 'beforeEach at line 4 asserts',
 				guidance: 'Act and assert live in the `test`; a hook only arranges.',
@@ -58,7 +58,7 @@ describe('buildHookFinding', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'test-assert-in-hook:src/alpha.unit.test.ts',
+				siteKey: 'no-test-state-in-hooks:src/alpha.unit.test.ts',
 				files: [
 					{ path: 'src/alpha.unit.test.ts', startLine: 4, endLine: 6 },
 					{ path: 'src/alpha.unit.test.ts', startLine: 12, endLine: 14 },
@@ -81,7 +81,7 @@ describe('buildHookFinding', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'test-assert-in-hook:src/alpha.unit.test.ts',
+				siteKey: 'no-test-state-in-hooks:src/alpha.unit.test.ts',
 				files: [{ path: 'src/alpha.unit.test.ts', startLine: 12, endLine: 14 }],
 				detail: 'beforeEach at line 12 asserts',
 				guidance: 'Act and assert live in the `test`; a hook only arranges.',

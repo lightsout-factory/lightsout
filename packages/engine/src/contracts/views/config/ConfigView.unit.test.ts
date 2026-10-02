@@ -18,7 +18,7 @@ const setupConfigView = ({ ruleNumbers, group = {} }: { ruleNumbers: Record<stri
 		harness: 'claude-code',
 		model: null,
 		sections: [],
-		standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', conditionalPacks: [], ...group }],
+		standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/standards', conditionalPacks: [], ...group }],
 		ruleStates: [ruleState],
 	};
 
@@ -29,10 +29,10 @@ const setupPerPackageConfigView = () => {
 	const rootGroup = {
 		packages: ['', 'engine'],
 		appliesTo: 'repo root (outside packages), engine',
-		pack: 'lightsout/node + lightsout/react',
+		pack: 'lightsout/standards + lightsout/react',
 		conditionalPacks: [],
 	};
-	const webAppGroup = { packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/node + lightsout/react', conditionalPacks: ['lightsout/react'] };
+	const webAppGroup = { packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/standards + lightsout/react', conditionalPacks: ['lightsout/react'] };
 	const ruleState = {
 		rule: 'lightsout/folder-size',
 		id: 'folder-size',
@@ -51,8 +51,8 @@ const setupPerPackageConfigView = () => {
 		standardsGroups,
 		ruleStates: [ruleState],
 	});
-	const webAppGroupWithoutAppliesTo = { packages: ['web-app'], pack: 'lightsout/node + lightsout/react', conditionalPacks: ['lightsout/react'] };
-	const webAppGroupWithoutConditionalPacks = { packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/node + lightsout/react' };
+	const webAppGroupWithoutAppliesTo = { packages: ['web-app'], pack: 'lightsout/standards + lightsout/react', conditionalPacks: ['lightsout/react'] };
+	const webAppGroupWithoutConditionalPacks = { packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/standards + lightsout/react' };
 	const perPackageView = buildView([rootGroup, webAppGroup]);
 	const withoutAppliesToView = buildView([rootGroup, webAppGroupWithoutAppliesTo]);
 	const withoutConditionalPacksView = buildView([rootGroup, webAppGroupWithoutConditionalPacks]);
@@ -78,10 +78,10 @@ describe('ConfigView', () => {
 				{
 					packages: ['', 'engine'],
 					appliesTo: 'repo root (outside packages), engine',
-					pack: 'lightsout/node + lightsout/react',
+					pack: 'lightsout/standards + lightsout/react',
 					conditionalPacks: [],
 				},
-				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/node + lightsout/react', conditionalPacks: ['lightsout/react'] },
+				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/standards + lightsout/react', conditionalPacks: ['lightsout/react'] },
 			],
 			ruleStateScopes: [{ packages: ['', 'engine', 'web-app'], appliesTo: 'repo root (outside packages), engine, web-app' }],
 			withoutAppliesToParsed: false,
@@ -142,7 +142,7 @@ describe('ConfigView', () => {
 			missingGroupsParsed: false,
 			carriesPacks: false,
 			carriesChannels: false,
-			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', conditionalPacks: [] }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/standards', conditionalPacks: [] }],
 		});
 	});
 

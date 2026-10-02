@@ -39,10 +39,10 @@ jest.mock('#src/standardsCheck/listStandardsRules.ts', () => ({
 const resolveParams = () => mockResolveStandardsGroups.mock.calls[0]?.[0];
 const listParams = () => mockListStandardsRules.mock.calls[0]?.[0];
 
-/** One root group holding the node pack — its contents are the listing's business, not this loader's. */
+/** One root group holding the standards pack — its contents are the listing's business, not this loader's. */
 const nodeGroup = (): StandardsGroup => ({
 	packages: [''],
-	pack: { name: 'lightsout/node', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
+	pack: { name: 'lightsout/standards', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
 	states: new Map(),
 });
 

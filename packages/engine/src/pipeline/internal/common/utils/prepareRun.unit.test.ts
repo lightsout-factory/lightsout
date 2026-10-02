@@ -165,16 +165,16 @@ describe('prepareRun', () => {
 
 	test("prepareRun: a pack that will not load is the run's error, and no channels line is printed", async () => {
 		const missingPackConfig: LightsoutConfig = { ...plainRepo, 'standards-pack': 'lightsout/ghost' };
-		const nodePackConfig: LightsoutConfig = { ...plainRepo, 'standards-pack': 'lightsout/node' };
+		const standardsPackConfig: LightsoutConfig = { ...plainRepo, 'standards-pack': 'lightsout/standards' };
 		const failing = await setupRun({ config: missingPackConfig });
-		const loading = await setupRun({ config: nodePackConfig });
+		const loading = await setupRun({ config: standardsPackConfig });
 
 		write({ cwd: failing.cwd, path: 'plan.md', content: '# Plan\n' });
 		write({ cwd: loading.cwd, path: 'plan.md', content: '# Plan\n' });
 
 		const [failed, loaded] = await Promise.all([
 			prepareRun({ run: failing.run, cwd: failing.cwd, config: missingPackConfig, packages: undefined }),
-			prepareRun({ run: loading.run, cwd: loading.cwd, config: nodePackConfig, packages: undefined }),
+			prepareRun({ run: loading.run, cwd: loading.cwd, config: standardsPackConfig, packages: undefined }),
 		]);
 
 		// the header names the pack now, so no run prints the old channels line

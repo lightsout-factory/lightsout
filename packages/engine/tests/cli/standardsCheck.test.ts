@@ -10,8 +10,8 @@ import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 /**
  * A one-rule library the built-in override points at, so a listing read back
  * off it proves the CLI child loaded this folder rather than plugin/standards/.
- * It is named lightsout, as the built-in library must be, and holds the node
- * pack the fixture's config names.
+ * It is named lightsout, as the built-in library must be, and holds the
+ * standards pack the fixture's config names.
  * restoreMocks puts the variable back after the test.
  */
 const setupEnvStandards = async () => {
@@ -19,7 +19,7 @@ const setupEnvStandards = async () => {
 	writeRepoFile({ cwd: libraryPath, path: 'lightsout-standards.json', content: '{ "name": "lightsout", "formatVersion": 2 }\n' });
 	writeRepoFile({
 		cwd: libraryPath,
-		path: 'packs/node.json',
+		path: 'packs/standards.json',
 		content: '{ "description": "The demo topic.", "include": { "topics": ["lightsout/code/demo"] } }\n',
 	});
 	writeRepoFile({ cwd: libraryPath, path: 'rules/code/demo/topic.md', content: '# Demo\n\nThe document the rule argues under.\n' });
@@ -134,10 +134,10 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 	const { stdout, stderr, code } = await runCli({ args: ['standards-check', '--list', '--cwd', cwd] });
 
 	// every rule is listed with the state it runs at, who checks it, and the doc it enforces
-	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/style-guide\/conventions\/naming\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/fractal\/duplication\s+│/);
 	expect(stdout).toMatch(/│ lightsout\/type-assertion\s+│\s+blocking\s+│\s+code\s+│/);
 	// a rule no check covers is listed too, and says so
-	expect(stdout).toMatch(/│ lightsout\/module-exports\s+│\s+advisory\s+│\s+judgment\s+│\s+lightsout: code\/style-guide\/structure\/module-api\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/object-args\s+│\s+advisory\s+│\s+judgment\s+│\s+lightsout: code\/code-style\/functions\s+│/);
 	// a rule's live numbers ride its summary line
 	expect(stdout).toContain('minTokens 50');
 	// the totals close it off, counting every rule once by state and once by
@@ -151,11 +151,11 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 		byChecker: totals.rules,
 	});
 	// the test-shape rules name the document they enforce
-	expect(stdout).toMatch(/│ lightsout\/test-nested-describe\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: tests\/unit-testing\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/test-manual-mock-cleanup\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: tests\/code-style\s+│/);
 	// and so do the file-placement rules, across the three docs they come from
-	expect(stdout).toMatch(/│ lightsout\/banned-folder-name\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/architecture\/folder-structure\s+│/);
-	expect(stdout).toMatch(/│ lightsout\/folder-index-file\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/style-guide\/structure\/module-api\s+│/);
-	expect(stdout).toMatch(/│ lightsout\/folder-casing\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/architecture\/folder-structure\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/banned-folder-name\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/fractal\/shared-code\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/folder-index-file\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/fractal\/imports\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/test-beside-subject\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: tests\/fractal\s+│/);
 	// --list answers a question about configuration — it never checks the tree
 	expect(stdout.includes('report: .lightsout/standards-check.json')).toBeFalsy();
 	expect(stderr).toBe('');

@@ -57,7 +57,7 @@ const setupCommand = ({ health, config }: { health?: StandardsHealth; config?: R
 				{
 					rule: 'lightsout/multi-export',
 					set: 'code',
-					documentPath: 'code/style-guide/structure/one-export-per-file',
+					documentPath: 'code/fractal/modules',
 					checked: true,
 					attempted: 2,
 					resolved: 1,
@@ -142,7 +142,7 @@ describe('standardsHealthCommand', () => {
 					{
 						rule: 'lightsout/file-size',
 						set: 'code',
-						documentPath: 'code/style-guide/structure/size',
+						documentPath: 'code/fractal/size',
 						checked: true,
 						attempted: 3,
 						resolved: 0,

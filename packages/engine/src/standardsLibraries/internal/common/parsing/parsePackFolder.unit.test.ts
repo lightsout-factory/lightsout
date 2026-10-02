@@ -40,7 +40,7 @@ describe('parsePackFolder', () => {
 			files: {
 				'zeta.json': JSON.stringify({
 					description: 'Zeta pack.',
-					include: { packs: ['lightsout/node'] },
+					include: { packs: ['lightsout/standards'] },
 					'rule-settings': { size: 'blocking', 'function-length': { options: { cap: 40 } } },
 				}),
 				'alpha.json': JSON.stringify({ description: 'Alpha pack.' }),
@@ -64,7 +64,7 @@ describe('parsePackFolder', () => {
 					name: 'zeta',
 					filePath: 'packs/zeta.json',
 					description: 'Zeta pack.',
-					include: { packs: ['lightsout/node'], topics: [], rules: [] },
+					include: { packs: ['lightsout/standards'], topics: [], rules: [] },
 					ruleSettings: { size: 'blocking', 'function-length': { options: { cap: 40 } } },
 					appliesWhen: undefined,
 				},
@@ -120,8 +120,8 @@ describe('parsePackFolder', () => {
 		const { folderPath } = setupPackFolder({
 			files: {
 				'broken.json': '{ "description": ',
-				'shapeless.json': JSON.stringify({ description: 'Has an unknown key.', extends: ['lightsout/node'] }),
-				'valid.json': JSON.stringify({ description: 'Valid pack.', include: { topics: ['lightsout/tests/unit-testing'] } }),
+				'shapeless.json': JSON.stringify({ description: 'Has an unknown key.', extends: ['lightsout/standards'] }),
+				'valid.json': JSON.stringify({ description: 'Valid pack.', include: { topics: ['lightsout/tests/code-style'] } }),
 			},
 		});
 		const problems: string[] = [];
@@ -139,7 +139,7 @@ describe('parsePackFolder', () => {
 			files: {
 				'.DS_Store': '\u0000\u0001not json',
 				'README.md': '# Packs\n\nOne file per pack.\n',
-				'node.json': JSON.stringify({ description: 'Node pack.' }),
+				'standards.json': JSON.stringify({ description: 'Standards pack.' }),
 			},
 			folders: ['drafts'],
 		});
@@ -147,6 +147,6 @@ describe('parsePackFolder', () => {
 
 		const packs = await parsePackFolder({ folderPath, problems });
 
-		expect({ names: packs.map((pack) => pack.name), problems }).toStrictEqual({ names: ['node'], problems: [] });
+		expect({ names: packs.map((pack) => pack.name), problems }).toStrictEqual({ names: ['standards'], problems: [] });
 	});
 });

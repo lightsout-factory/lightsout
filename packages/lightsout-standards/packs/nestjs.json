@@ -1,7 +1,7 @@
 {
-	"description": "NestJS: how the base rules apply to a NestJS application.",
+	"description": "Stops the other rules from fighting what NestJS mandates, in each package that uses NestJS.",
 	"include": {
-		"topics": ["lightsout/code/architecture/nestjs"]
+		"topics": ["lightsout/code/frameworks/nestjs"]
 	},
 	"applies-when": {
 		"dependencies": ["@nestjs/core"]

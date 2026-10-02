@@ -47,7 +47,7 @@ jest.mock('@tanstack/react-router', () => ({
 const packRules = [
 	buildStandardsPackRuleListing({ id: 'no-any' }),
 	buildStandardsPackRuleListing({ id: 'type-assertion' }),
-	buildStandardsPackRuleListing({ id: 'import-type-only' }),
+	buildStandardsPackRuleListing({ id: 'explicit-return-type' }),
 ];
 
 const setupRuleDetail = ({ rule = buildStandardsPackRuleView() }: { rule?: StandardsPackRuleView } = {}) => {

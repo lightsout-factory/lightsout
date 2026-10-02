@@ -182,8 +182,8 @@ const setupStandardsHeader = async ({ config = {} }: { config?: Partial<Lightsou
 };
 
 test.each<{ standardsPack: string | string[]; expected: string }>([
-	{ standardsPack: 'lightsout/react-app', expected: '  repo root: lightsout/react-app' },
-	{ standardsPack: ['lightsout/node', 'lightsout/react-app'], expected: '  repo root: lightsout/node + lightsout/react-app' },
+	{ standardsPack: 'lightsout/fractal', expected: '  repo root: lightsout/fractal' },
+	{ standardsPack: ['lightsout/standards', 'lightsout/fractal'], expected: '  repo root: lightsout/standards + lightsout/fractal' },
 ])('printRunHeader: the repo root line names the pack the config names, a list joined in listed order', async ({ standardsPack, expected }) => {
 	const { config, driver, cwd, logged } = await setupStandardsHeader({ config: { 'standards-pack': standardsPack } });
 
@@ -235,33 +235,33 @@ interface PackageStandardsCase {
 const packageStandardsCases: PackageStandardsCase[] = [
 	{
 		// tools names the root's own pack, so it shares the root's group and gets no line
-		config: { 'standards-pack': 'lightsout/node', 'package-standards-packs': { 'web-app': 'lightsout/react-app', tools: 'lightsout/node' } },
+		config: { 'standards-pack': 'lightsout/standards', 'package-standards-packs': { 'web-app': 'lightsout/fractal', tools: 'lightsout/standards' } },
 		packages: ['engine', 'tools', 'web-app'],
 		expected: [
-			{ text: 'repo root: lightsout/node', nested: false },
-			{ text: 'web-app: lightsout/react-app', nested: true },
+			{ text: 'repo root: lightsout/standards', nested: false },
+			{ text: 'web-app: lightsout/fractal', nested: true },
 		],
 	},
 	{
-		config: { 'standards-pack': 'lightsout/node' },
+		config: { 'standards-pack': 'lightsout/standards' },
 		packages: ['engine'],
-		expected: [{ text: 'repo root: lightsout/node', nested: false }],
+		expected: [{ text: 'repo root: lightsout/standards', nested: false }],
 	},
 	{
-		config: { 'standards-pack': false, 'package-standards-packs': { 'web-app': 'lightsout/react-app' } },
+		config: { 'standards-pack': false, 'package-standards-packs': { 'web-app': 'lightsout/fractal' } },
 		packages: ['engine', 'web-app'],
 		expected: [
 			{ text: 'repo root: none (standards-pack false)', nested: false },
-			{ text: 'web-app: lightsout/react-app', nested: true },
+			{ text: 'web-app: lightsout/fractal', nested: true },
 		],
 	},
 	{
-		config: { 'package-standards-packs': { 'web-app': 'lightsout/react-app', tools: 'lightsout/node' } },
+		config: { 'package-standards-packs': { 'web-app': 'lightsout/fractal', tools: 'lightsout/standards' } },
 		packages: ['engine', 'tools', 'web-app'],
 		expected: [
 			{ text: 'repo root: none (no standards-pack)', nested: false },
-			{ text: 'tools: lightsout/node', nested: true },
-			{ text: 'web-app: lightsout/react-app', nested: true },
+			{ text: 'tools: lightsout/standards', nested: true },
+			{ text: 'web-app: lightsout/fractal', nested: true },
 		],
 	},
 ];

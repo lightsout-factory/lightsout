@@ -75,7 +75,7 @@ const setupBatchTools = ({ packagesDir }: { packagesDir: string }) => {
 	const batch: RefactorBatch = { id: 'batch-01:multi-export:apps/web', rule: 'lightsout/multi-export', folder: 'apps/web', blocking: [], advisories: [] };
 	const group: StandardsGroup = {
 		packages: ['', 'web'],
-		pack: { name: 'lightsout/node', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
+		pack: { name: 'lightsout/standards', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
 		states: new Map(),
 	};
 	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': packagesDir };

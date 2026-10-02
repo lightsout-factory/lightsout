@@ -2,10 +2,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const capSources = [
-	{ rule: 'rules/code/style-guide/patterns/functions/30-file-size/rule.md', keys: { file: 'file', tsxFile: 'tsxFile' } },
-	{ rule: 'rules/code/style-guide/patterns/functions/25-function-size/rule.md', keys: { function: 'function' } },
-	{ rule: 'rules/tests/unit-testing/18-test-file-size/rule.md', keys: { testFile: 'testFile' } },
-	{ rule: 'rules/code/architecture/folder-structure/35-folder-size/rule.md', keys: { folderCensus: 'cap' } },
+	{ rule: 'rules/code/fractal/size/10-file-size/rule.md', keys: { file: 'file', tsxFile: 'tsxFile' } },
+	{ rule: 'rules/code/fractal/size/05-function-size/rule.md', keys: { function: 'function' } },
+	{ rule: 'rules/tests/fractal/15-test-file-size/rule.md', keys: { testFile: 'testFile' } },
+	{ rule: 'rules/code/fractal/size/15-folder-size/rule.md', keys: { folderCensus: 'cap' } },
 ];
 
 /**

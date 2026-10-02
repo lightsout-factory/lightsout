@@ -50,8 +50,8 @@ const parsePackFile = async ({ folderPath, name, problems }: { folderPath: strin
  */
 export const parsePackFolder = async ({ folderPath, problems }: Params): Promise<LoadedStandardsPackFile[]> => {
 	const entries = await readdir(folderPath, { withFileTypes: true }).catch(() => []);
-	// Sorted by stem, not file name: `.` sorts after `-`, so `node-app.json` would
-	// otherwise come before `node.json`.
+	// Sorted by stem, not file name: `.` sorts after `-`, so `react-native.json` would
+	// otherwise come before `react.json`.
 	const names = entries
 		.filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
 		.map((entry) => entry.name.slice(0, -'.json'.length))

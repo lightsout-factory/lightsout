@@ -6,12 +6,12 @@ import { seedConfiguredCwd } from '#tests/helpers/seedConfiguredCwd.ts';
 interface Params {
 	/** Accept the planted findings as debt first, so the suppression and --all paths are reachable. */
 	baseline?: boolean;
-	/** Extra top-level config fields, merged beside the gates and the `lightsout/node` pack the fixture names. */
+	/** Extra top-level config fields, merged beside the gates and the `lightsout/standards` pack the fixture names. */
 	config?: Record<string, unknown>;
 }
 
 /**
- * A repo on the `lightsout/node` pack with a planted tier-0 synonym pair split
+ * A repo on the `lightsout/standards` pack with a planted tier-0 synonym pair split
  * across two folders, and no node_modules — so the compiler-gated tiers degrade
  * to a note, which is the other rendering path `standards-check` owns.
  * Standards are opt-in, so the config names the pack: without it nothing here
@@ -23,7 +23,7 @@ interface Params {
  * fixture never meant to plant.
  */
 export const seedStandardsFixture = async ({ baseline = false, config }: Params = {}): Promise<{ cwd: string }> => {
-	const cwd = await seedConfiguredCwd({ config: { 'standards-pack': 'lightsout/node', ...config } });
+	const cwd = await seedConfiguredCwd({ config: { 'standards-pack': 'lightsout/standards', ...config } });
 
 	await mkdir(join(cwd, 'src', 'a'), { recursive: true });
 	await mkdir(join(cwd, 'src', 'b'), { recursive: true });

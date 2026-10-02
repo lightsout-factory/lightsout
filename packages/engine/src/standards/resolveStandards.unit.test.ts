@@ -62,17 +62,17 @@ const codeOnlyPackageFiles = ({ at, name }: { at: string; name: string }) => ({
 describe('resolveStandards', () => {
 	test('resolveStandards: the prose comes from the pack the config names', async () => {
 		const { cwd } = setupRepo({ files: { 'package.json': JSON.stringify({ name: 'app', dependencies: { react: '^19.0.0' } }) } });
-		const reactAppConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/react-app' };
-		const nodeConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/node' };
+		const fractalWithReactConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': ['lightsout/fractal', 'lightsout/react'] };
+		const fractalConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/fractal' };
 
-		const reactApp = await resolveStandards({ cwd, config: reactAppConfig });
-		const node = await resolveStandards({ cwd, config: nodeConfig });
+		const fractalWithReact = await resolveStandards({ cwd, config: fractalWithReactConfig });
+		const fractal = await resolveStandards({ cwd, config: fractalConfig });
 
-		// lightsout/react-app carries the react architecture topic
-		expect(reactApp.standards ?? '').toContain('<!-- lightsout: code/architecture/react -->');
-		expect(reactApp.groups.map((group) => group.pack.name)).toStrictEqual(['lightsout/react-app']);
-		// nothing is detected: the root manifest declares react, and the named node pack still leaves the react topic out
-		expect(node.standards ?? '').not.toContain('code/architecture/react');
+		// lightsout/react carries the react architecture topic
+		expect(fractalWithReact.standards ?? '').toContain('<!-- lightsout: code/frameworks/react -->');
+		expect(fractalWithReact.groups.map((group) => group.pack.name)).toStrictEqual(['lightsout/fractal + lightsout/react']);
+		// nothing is detected: the root manifest declares react, and the named fractal pack still leaves the react topic out
+		expect(fractal.standards ?? '').not.toContain('code/frameworks/react');
 	});
 
 	test('resolveStandards: standards-pack false yields no prose and no group', async () => {
@@ -90,13 +90,13 @@ describe('resolveStandards', () => {
 
 	test('loads the package the plugin ships when the consumer names one of its packs', async () => {
 		const { cwd } = setupRepo();
-		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/node' };
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/standards' };
 
 		const resolved = await resolveStandards({ cwd, config });
 
 		expect(resolved.standards).toContain('<!-- lightsout: code/');
 		expect(resolved.testStandards).toContain('<!-- lightsout: tests/');
-		expect(resolved.groups.map((group) => group.pack.name)).toStrictEqual(['lightsout/node']);
+		expect(resolved.groups.map((group) => group.pack.name)).toStrictEqual(['lightsout/standards']);
 	});
 
 	test('loads nothing when the consumer names no standards pack, whatever its manifest declares', async () => {

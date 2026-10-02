@@ -130,7 +130,7 @@ test('standards gate: findings feed the refactor prompt; a fixing pass clears th
 	);
 });
 
-test('standards default on when unspecified; false switches them off explicitly', async () => {
+test('the pack the config names reaches the implement prompt; false switches standards off explicitly', async () => {
 	const run = async ({ config }: { config: Record<string, unknown> }) => {
 		const dir = setupConsumerRepo({ config });
 		let implementPrompt = '';
@@ -161,12 +161,12 @@ test('standards default on when unspecified; false switches them off explicitly'
 		return implementPrompt;
 	};
 
-	const defaulted = await run({ config: {} });
+	const named = await run({ config: {} });
 
-	// unspecified → standards section present
-	expect(defaulted.includes('# Standards\n\nThese rules are binding')).toBeTruthy();
-	// bundled defaults inlined
-	expect(defaulted.includes('One Export Per File')).toBeTruthy();
+	// the helper's config names lightsout/standards → standards section present
+	expect(named.includes('# Standards\n\nThese rules are binding')).toBeTruthy();
+	// the pack's rules are inlined
+	expect(named.includes('Module Folder Layout')).toBeTruthy();
 
 	const disabled = await run({ config: { 'standards-pack': false } });
 

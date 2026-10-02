@@ -31,7 +31,7 @@ interface Params {
 	rules?: StandardsPackRuleListing[];
 	/** Left out, one topic per distinct `documentPath` across the rules. */
 	topics?: StandardsTopicView[];
-	/** Left out, one `node` pack holding every rule. */
+	/** Left out, one `standards` pack holding every rule. */
 	packs?: StandardsPackListing[];
 	/** Applied last, so a test can drop an optional field the defaults fill. */
 	overrides?: Partial<StandardsPackView>;

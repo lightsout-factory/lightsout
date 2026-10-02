@@ -30,7 +30,8 @@ interface Params {
  * Whole-word name counting, which is honest here because one-export-per-file
  * makes every export a distinct searchable name. Conservative by construction:
  * a name mentioned in a comment or a string counts as a reference, so calling a
- * live export unconsumed is rare. Names under four characters are skipped —
+ * live export unconsumed is rare. A test's mention counts like any other: an
+ * export its tests still use is not dead. Names under four characters are skipped —
  * they collide with ordinary words too often to measure. Barrels, test files
  * and files the framework resolves declare nothing that is judged: a barrel's
  * names belong to the file it re-exports, a test's helpers are the test's own,
@@ -68,27 +69,24 @@ export const getUnconsumedExports = ({ files, contents, standardsLibraries, carv
 
 	for (const { name, file } of declarations) {
 		const pattern = new RegExp(`\\b${name}\\b`);
-		const reachedBy = { test: false };
-		let source = false;
+		let referenced = false;
 
 		for (const [other, text] of contents) {
 			if (other === file || !pattern.test(text)) {
 				continue;
 			}
 
-			if (isTestFile({ path: other, standardsLibraries })) {
-				reachedBy.test = true;
-			} else if (isFrameworkLoadedFile({ path: other, carveOut: getPathCarveOut({ carveOuts, path: other }) })) {
-				source = true;
-			} else if (isBarrel({ file: other, text })) {
-				source ||= isPackageEntry({ path: other, entries });
-			} else {
-				source = true;
-			}
+			const isFolderBarrel =
+				!isTestFile({ path: other, standardsLibraries }) &&
+				!isFrameworkLoadedFile({ path: other, carveOut: getPathCarveOut({ carveOuts, path: other }) }) &&
+				isBarrel({ file: other, text }) &&
+				!isPackageEntry({ path: other, entries });
+
+			referenced ||= !isFolderBarrel;
 		}
 
-		if (!source) {
-			unconsumed.push({ file, name, reachedBy });
+		if (!referenced) {
+			unconsumed.push({ file, name });
 		}
 	}
 

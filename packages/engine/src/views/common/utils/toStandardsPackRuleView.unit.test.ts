@@ -15,13 +15,13 @@ const setupBundle = () => {
 		built: false,
 		totals: { rules: 1, checked: 1, judgment: 0, topics: 1, packs: 0, withFixtures: 1 },
 		packs: [],
-		topics: [{ set: StandardsSet.Code, path: 'code/style-guide/patterns/functions', intro: '# Functions\n', ruleIds: ['function-size'] }],
+		topics: [{ set: StandardsSet.Code, path: 'code/fractal/size', intro: '# Size\n', ruleIds: ['function-size'] }],
 		rules: [
 			{
 				id: 'function-size',
 				name: 'lightsout/function-size',
 				set: StandardsSet.Code,
-				documentPath: 'code/style-guide/patterns/functions',
+				documentPath: 'code/fractal/size',
 				summary: 'Keep each function under its line cap.',
 				checked: true,
 				defaultSeverity: StandardsSeverity.Advisory,

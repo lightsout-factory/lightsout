@@ -26,7 +26,7 @@ or reviews one, so every rule in every library has the same shape.
   handling or naming. Its `topic.md` is a title and the background every rule
   in it shares, said once. Folders without a `topic.md` only group topics. A
   topic is addressed as `<library>/<path under rules/>`, such as
-  `lightsout/code/architecture/react`.
+  `lightsout/code/frameworks/react`.
 - **Rule:** a folder named `<NN>-<id>`. `<NN>` sets only the reading order. The
   `<id>` is the rule's key, and its full name is `<library>/<id>`. Findings are
   written with the full name. A short id is accepted wherever it is unique.

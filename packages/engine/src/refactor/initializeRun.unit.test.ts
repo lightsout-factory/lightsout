@@ -15,7 +15,7 @@ import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/node' };
+const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/standards' };
 const driver: Driver = { name: 'stub', invoke: async () => ({ text: '', exitCode: 0 }) };
 
 const manifestWith = ({ pipeline }: { pipeline?: PipelineKind }): RunManifest => ({

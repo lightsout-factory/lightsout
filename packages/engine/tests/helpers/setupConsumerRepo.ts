@@ -23,16 +23,16 @@ interface Params {
 }
 
 /**
- * The rules that ask "does anything consume this?", switched off.
+ * The rule that asks "does anything consume this?", switched off.
  *
  * For a fixture whose subject IS an unconsumed or hidden export —
- * writer selection, import topology, unreachable-file handling — leaving these
+ * writer selection, import topology, unreachable-file handling — leaving it
  * on reports the fixture's own premise as work to delete, and the run never
  * reaches the question the test asks. Ordinary fixtures wire their modules into
  * a consumer with `writeSource` instead of switching anything off.
  */
 export const reachabilityRulesOff = {
-	'standards-rule-settings': { 'dead-export': 'off', 'test-only-export': 'off' },
+	'standards-rule-settings': { 'dead-export': 'off' },
 };
 
 /** The one source file a repo carries when a test plants none of its own. */
@@ -48,7 +48,7 @@ const defaultSources = { 'src/index.js': 'export const one = 1;\n' };
  * export. Something has to be the end of that chain, which is why the entry
  * point exports nothing itself.
  *
- * Standards are opt-in, so the config names `lightsout/node` and runs the
+ * Standards are opt-in, so the config names `lightsout/standards` and runs the
  * strict profile (`strictProfile`) over it: the layout rules the pack ships
  * advisory are blocking here, so a planted layout defect is work the pipeline
  * must do. A test's own `standards-rule-settings` merge over it. A test that
@@ -73,7 +73,7 @@ export const setupConsumerRepo = ({ git = true, plan = '# Plan: add feature\n', 
 			...('standards-pack' in (config ?? {})
 				? {}
 				: {
-						'standards-pack': 'lightsout/node',
+						'standards-pack': 'lightsout/standards',
 						'standards-rule-settings': {
 							...strictProfile,
 							...(typeof config?.['standards-rule-settings'] === 'object' ? config['standards-rule-settings'] : {}),

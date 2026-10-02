@@ -17,22 +17,22 @@ const setupSelection = ({ selection }: { selection: unknown }) => {
 };
 
 test('LightsoutConfig: standards-pack and a package-standards-packs entry each take a list of pack addresses, kept in listed order', () => {
-	const { repoConfig, packageConfig } = setupSelection({ selection: ['lightsout/node', 'house/strict', 'lightsout/node'] });
+	const { repoConfig, packageConfig } = setupSelection({ selection: ['lightsout/standards', 'house/strict', 'lightsout/standards'] });
 
 	const parsed = { repo: LightsoutConfig.parse(repoConfig)['standards-pack'], package: LightsoutConfig.parse(packageConfig)['package-standards-packs'] };
 
 	// the order is the merge order — the last listed wins — so parsing neither sorts nor dedupes it
 	expect(parsed).toStrictEqual({
-		repo: ['lightsout/node', 'house/strict', 'lightsout/node'],
-		package: { 'web-app': ['lightsout/node', 'house/strict', 'lightsout/node'] },
+		repo: ['lightsout/standards', 'house/strict', 'lightsout/standards'],
+		package: { 'web-app': ['lightsout/standards', 'house/strict', 'lightsout/standards'] },
 	});
 });
 
 test.each([
 	{ problem: 'an empty list', selection: [] },
-	{ problem: 'a list holding an address with no slash', selection: ['lightsout/node', 'react'] },
+	{ problem: 'a list holding an address with no slash', selection: ['lightsout/standards', 'react'] },
 	{ problem: 'a list holding an address with two slashes', selection: ['lightsout/packs/node'] },
-	{ problem: 'a list holding false', selection: ['lightsout/node', false] },
+	{ problem: 'a list holding false', selection: ['lightsout/standards', false] },
 ])('LightsoutConfig: $problem is refused under standards-pack and under a package-standards-packs entry alike', ({ selection }) => {
 	const { repoConfig, packageConfig } = setupSelection({ selection });
 
@@ -42,7 +42,7 @@ test.each([
 });
 
 test('LightsoutConfig: a malformed address inside a list is refused at its own position, naming the <library>/<pack> form', () => {
-	const { packageConfig } = setupSelection({ selection: ['lightsout/node', 'react'] });
+	const { packageConfig } = setupSelection({ selection: ['lightsout/standards', 'react'] });
 
 	const result = LightsoutConfig.safeParse(packageConfig);
 

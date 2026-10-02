@@ -12,13 +12,13 @@ import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/L
 import type { ResolvedPackRule } from '#src/standardsLibraries/common/types/ResolvedPackRule.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 
-/** Standards are opt-in, so the config a case starts from names the shipped node pack; a case on another pack, or none, overrides it. */
-const baseConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false as const }, 'standards-pack': 'lightsout/node' };
+/** Standards are opt-in, so the config a case starts from names the shipped standards pack; a case on another pack, or none, overrides it. */
+const baseConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false as const }, 'standards-pack': 'lightsout/standards' };
 
 /**
  * The repo the listing is read for — the shipped library answers regardless,
  * since it travels with the engine, and the pack it gets is the one the config
- * names, lightsout/node.
+ * names, lightsout/standards.
  *
  * The workspace root rather than the working directory: this suite runs from
  * inside the engine package, and one case below looks up a document inside the
@@ -27,8 +27,8 @@ const baseConfig = { gates: { check: 'true', test: 'true', 'test-coverage': fals
 const cwd = join(__dirname, '..', '..', '..', '..');
 
 /**
- * The rule ids that predate the pack format. A repo's baseline keys, its
- * config overrides and its frozen refactor work-lists are all written in these
+ * The ids of the rules code checks. A repo's baseline keys, its config
+ * overrides and its frozen refactor work-lists are all written in these
  * strings, so one of them going missing is a silent break in persisted data —
  * which is why they are restated here rather than read back off the pack.
  *
@@ -41,39 +41,62 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  * 2026-09-24 the rules that read a folder's `index.ts` as its public API were
  * retired with the model itself: `barrel-dead-entry`, `barrel-is-only-consumer`,
  * `barrel-under-common`, `module-boundary`, and the check behind `placement`.
+ *
+ * On 2026-10-02 the library was pruned from 93 rules to 68 and regrouped by
+ * goal. Twenty-two ids were retired with no replacement:
+ * `ungrouped-domain-utils`, `single-file-domain-folder`,
+ * `top-level-domain-nouns`, `casing`, `verbose-names`, `import-type-only`,
+ * `module-exports`, `brittle-doc-tags`, `params-interface-docs`,
+ * `types-and-interfaces`, `test-multiple-setups`,
+ * `test-never-passing-assertion`, `test-only-export`,
+ * `oversized-setup-factory`, `test-nested-describe`,
+ * `precedence-in-repos-with-older-tests`, `module-out-of-common`,
+ * `folder-casing`, `doc-elements`, `named-constant-casing`,
+ * `derived-lookup-map` and `props-union-exemption`. Five more were merged into
+ * two new ids, and are gone under their old spellings: `test-shared-let`,
+ * `test-assert-in-hook` and `test-mock-return-in-hook` became
+ * `no-test-state-in-hooks`; `test-in-tests-folder` and
+ * `test-not-beside-subject` became `test-beside-subject`. From that date the
+ * list holds every checked rule, not only the ones that predate the pack format.
  */
 const durableRuleIds = [
-	'banned-folder-name',
-	'barrel-star',
-	'folder-size',
+	'type-alias-indirection',
+	'banned-class-shapes',
+	'type-assertion',
+	'no-any',
+	'class-inheritance',
+	'explicit-return-type',
+	'single-use-scalar',
+	'bare-string-union',
+	'discriminant-const-object',
 	'dead-export',
+	'duplicate-function-body',
 	'duplicate-code-block',
 	'duplicate-export-name',
-	'duplicate-function-body',
-	'file-directly-in-common',
-	'filename-mismatch',
-	'folder-casing',
-	'multi-export',
-	'oversized-setup-factory',
-	'single-file-domain-folder',
-	'file-size',
-	'function-size',
 	'synonym-export-name',
-	'test-assert-in-hook',
-	'test-in-tests-folder',
-	'test-manual-mock-cleanup',
+	'import-path-alias',
+	'import-through-index',
+	'folder-index-file',
+	'barrel-star',
+	'code-in-index-file',
+	'internal-import-from-outside',
+	'multi-export',
+	'filename-mismatch',
+	'file-directly-in-common',
+	'banned-folder-name',
+	'case-collision',
+	'function-size',
+	'file-size',
+	'folder-size',
+	'no-test-state-in-hooks',
+	'test-strict-equal-matcher',
 	'test-mock-prefix',
-	'test-mock-return-in-hook',
 	'test-mock-untyped',
 	'test-mock-wrapper-untyped',
-	'test-multiple-setups',
-	'test-nested-describe',
-	'test-not-beside-subject',
-	'test-only-export',
-	'test-shared-let',
-	'test-strict-equal-matcher',
+	'test-manual-mock-cleanup',
+	'test-beside-subject',
 	'test-support-in-src',
-	'ungrouped-domain-utils',
+	'test-file-size',
 ];
 
 /** The shipped library's rules are listed by full name, the name a finding and a baseline key carry. */
@@ -146,7 +169,7 @@ const setupRepo = ({ libraries = [] }: { libraries?: LibrarySpec[] } = {}) => {
 	return { cwd: repoCwd };
 };
 
-/** The listing a repo gets: the groups its config resolves to, listed. The config names lightsout/node and nothing else unless the case passes its own. */
+/** The listing a repo gets: the groups its config resolves to, listed. The config names lightsout/standards and nothing else unless the case passes its own. */
 const listFor = async ({ cwd, config = LightsoutConfig.parse(baseConfig) }: { cwd: string; config?: LightsoutConfig }) =>
 	listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config }) });
 
@@ -217,8 +240,8 @@ const setupSplitGroups = () => {
 		['acme/beta-rule', { severity: StandardsSeverity.Advisory, options: { maxLines: 40 }, fromConfig: false, reachesAgents: true }],
 	]);
 	const groups: StandardsGroup[] = [
-		{ packages: ['', 'engine'], pack: { name: 'acme/node', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states: rootStates },
-		{ packages: ['web-app'], pack: { name: 'acme/react-app', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states: webAppStates },
+		{ packages: ['', 'engine'], pack: { name: 'acme/base', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states: rootStates },
+		{ packages: ['web-app'], pack: { name: 'acme/web', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states: webAppStates },
 	];
 
 	return { groups };
@@ -251,8 +274,8 @@ describe('listStandardsRules', () => {
 		// or it reads as though every listed rule were enforced
 		expect(rules.some((rule) => rule.checked)).toBe(true);
 		expect(rules.some((rule) => !rule.checked)).toBe(true);
-		// and every one of the durable ids is a rule code checks — they are the
-		// rules that had a check before the pack format existed
+		// and every one of the durable ids is a rule code checks — a finding, and so
+		// a baseline key, can only ever carry one of those
 		expect(rules.filter((rule) => durableRuleNames.includes(rule.rule) && !rule.checked).map((rule) => rule.rule)).toStrictEqual([]);
 	});
 
@@ -286,22 +309,16 @@ describe('listStandardsRules', () => {
 		const checkedFromTests = fromTests.filter((rule) => durableRuleNames.includes(rule.rule)).map((rule) => rule.rule);
 
 		// which half of the ledger holds a rule is read off the document it comes
-		// from — which is why `test-only-export` and the four test-location rules
-		// sit here, away from the passes they used to share
+		// from — which is why the test-location rules and `test-file-size` sit
+		// here, away from the code rules that check placement and size
 		expect(checkedFromTests.sort()).toStrictEqual([
-			'lightsout/oversized-setup-factory',
-			'lightsout/test-assert-in-hook',
-			'lightsout/test-in-tests-folder',
+			'lightsout/no-test-state-in-hooks',
+			'lightsout/test-beside-subject',
+			'lightsout/test-file-size',
 			'lightsout/test-manual-mock-cleanup',
 			'lightsout/test-mock-prefix',
-			'lightsout/test-mock-return-in-hook',
 			'lightsout/test-mock-untyped',
 			'lightsout/test-mock-wrapper-untyped',
-			'lightsout/test-multiple-setups',
-			'lightsout/test-nested-describe',
-			'lightsout/test-not-beside-subject',
-			'lightsout/test-only-export',
-			'lightsout/test-shared-let',
 			'lightsout/test-strict-equal-matcher',
 			'lightsout/test-support-in-src',
 		]);
@@ -316,24 +333,19 @@ describe('listStandardsRules', () => {
 			.map((rule) => rule.rule)
 			.sort();
 
-		// types that lie, code nothing uses, a tree that breaks across
-		// filesystems, doc tags another tool owns, and tests that are silently
-		// weaker than they read or can never pass at all. Everything about
-		// layout ships advisory.
+		// types that lie, code nothing uses or that copies other code under a new
+		// name, a tree that breaks across filesystems, and tests that are silently
+		// weaker than they read. Everything about layout ships advisory.
 		expect(blocking).toStrictEqual([
-			'lightsout/brittle-doc-tags',
 			'lightsout/case-collision',
 			'lightsout/dead-export',
 			'lightsout/duplicate-function-body',
 			'lightsout/explicit-return-type',
-			'lightsout/import-type-only',
 			'lightsout/no-any',
-			'lightsout/test-assert-in-hook',
+			'lightsout/no-test-state-in-hooks',
 			'lightsout/test-mock-prefix',
 			'lightsout/test-mock-untyped',
 			'lightsout/test-mock-wrapper-untyped',
-			'lightsout/test-never-passing-assertion',
-			'lightsout/test-shared-let',
 			'lightsout/test-strict-equal-matcher',
 			'lightsout/type-assertion',
 		]);

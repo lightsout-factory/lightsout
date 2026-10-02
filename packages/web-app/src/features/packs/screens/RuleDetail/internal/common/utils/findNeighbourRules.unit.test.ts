@@ -21,14 +21,14 @@ const setupFindNeighbourRules = ({ ruleId, rules = libraryRules }: { ruleId: str
 
 const setupTopicSteps = () => {
 	const topics: StandardsTopicView[] = [
-		{ set: StandardsSet.Code, path: 'code/style-guide/patterns/functions', intro: '# Functions', ruleIds: ['object-args', 'function-size'] },
-		{ set: StandardsSet.Code, path: 'code/architecture/react', intro: '# React', ruleIds: ['component-size', 'hook-naming'] },
+		{ set: StandardsSet.Code, path: 'code/code-style/functions', intro: '# Functions', ruleIds: ['object-args', 'single-return'] },
+		{ set: StandardsSet.Code, path: 'code/frameworks/react', intro: '# React', ruleIds: ['component-size', 'hook-naming'] },
 	];
 	const rules = [
-		buildStandardsPackRuleListing({ id: 'object-args', documentPath: 'code/style-guide/patterns/functions' }),
-		buildStandardsPackRuleListing({ id: 'function-size', documentPath: 'code/style-guide/patterns/functions' }),
-		buildStandardsPackRuleListing({ id: 'component-size', documentPath: 'code/architecture/react' }),
-		buildStandardsPackRuleListing({ id: 'hook-naming', documentPath: 'code/architecture/react' }),
+		buildStandardsPackRuleListing({ id: 'object-args', documentPath: 'code/code-style/functions' }),
+		buildStandardsPackRuleListing({ id: 'single-return', documentPath: 'code/code-style/functions' }),
+		buildStandardsPackRuleListing({ id: 'component-size', documentPath: 'code/frameworks/react' }),
+		buildStandardsPackRuleListing({ id: 'hook-naming', documentPath: 'code/frameworks/react' }),
 	];
 
 	return { topics, rules };
@@ -62,11 +62,11 @@ describe('findNeighbourRules', () => {
 	test("steps from one topic's last rule into the next topic's first rule", () => {
 		const { topics, rules } = setupTopicSteps();
 
-		const [fromLastOfA, fromFirstOfB] = ['function-size', 'component-size'].map((ruleId) => findNeighbourRules({ topics, rules, ruleId }));
+		const [fromLastOfA, fromFirstOfB] = ['single-return', 'component-size'].map((ruleId) => findNeighbourRules({ topics, rules, ruleId }));
 
 		expect({ nextAfterA: fromLastOfA?.next?.id, previousBeforeB: fromFirstOfB?.previous?.id }).toStrictEqual({
 			nextAfterA: 'component-size',
-			previousBeforeB: 'function-size',
+			previousBeforeB: 'single-return',
 		});
 	});
 });

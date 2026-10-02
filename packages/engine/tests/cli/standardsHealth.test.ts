@@ -11,7 +11,7 @@ test('cli: standards-health reports every rule as machine-checked or judgment, a
 	// the coverage claim is counted off the package's own folders, so it lands
 	// even in a repo that has never run anything
 	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+code\s+│/);
-	expect(stdout).toMatch(/│ lightsout\/module-exports\s+│\s+judgment\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/object-args\s+│\s+judgment\s+│/);
 	// a repo with no refactor history has nothing to say about declines, and says
 	// so with a dash rather than a zero that would read as "never declined"
 	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+code\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│/);

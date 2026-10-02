@@ -20,17 +20,17 @@ const bigBody = `
 	return total * 100;
 `;
 
-/** Standards are opt-in, so a repo checked against the bundled rules names the node pack. */
-const nodePackConfig = JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/node' });
+/** Standards are opt-in, so a repo checked against the bundled rules names the standards pack. */
+const standardsPackConfig = JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/standards' });
 
-/** A consumer repo on the node pack with one planted defect per rule. */
+/** A consumer repo on the standards pack with one planted defect per rule. */
 const setupCheckRepo = () => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-test-'));
 
-	mkdirSync(join(dir, 'src/a/utils'), { recursive: true });
+	mkdirSync(join(dir, 'src/a/common'), { recursive: true });
 	mkdirSync(join(dir, 'src/b'), { recursive: true });
 	mkdirSync(join(dir, 'node_modules'), { recursive: true });
-	writeFileSync(join(dir, 'lightsout.config.json'), nodePackConfig);
+	writeFileSync(join(dir, 'lightsout.config.json'), standardsPackConfig);
 	// The AST tier borrows the consumer's TypeScript — hand the fixture ours.
 	symlinkSync(join(process.cwd(), 'node_modules/typescript'), join(dir, 'node_modules/typescript'), 'dir');
 
@@ -50,11 +50,10 @@ const setupCheckRepo = () => {
 	writeFileSync(join(dir, 'src/a/normalizeRecord.ts'), 'export const normalizeRecord = () => 1;\n');
 	writeFileSync(join(dir, 'src/b/normalizeRecord.ts'), 'export const normalizeRecord = () => 2;\n');
 
-	// structure: multi-export violation, misnamed file, domain-folder candidates
+	// structure: multi-export violation, misnamed file, a file directly in common
 	writeFileSync(join(dir, 'src/a/config.ts'), 'export const readConfig = () => 1;\nexport const saveConfig = () => 2;\n');
 	writeFileSync(join(dir, 'src/a/helpers.ts'), 'export const buildLabel = () => 1;\n');
-	writeFileSync(join(dir, 'src/a/utils/formatDate.ts'), 'export const formatDate = () => 1;\n');
-	writeFileSync(join(dir, 'src/a/utils/formatCurrency.ts'), 'export const formatCurrency = () => 1;\n');
+	writeFileSync(join(dir, 'src/a/common/formatDate.ts'), 'export const formatDate = () => 1;\n');
 
 	// size: oversized .ts file; a 280-line .tsx rides the larger JSX cap (~300)
 	writeFileSync(join(dir, 'src/b/huge.ts'), `export const huge = () => 1;\n${'// filler\n'.repeat(300)}`);
@@ -100,7 +99,7 @@ test('the standards check finds each planted defect and respects the exceptions'
 	const structure = [
 		...byRule('lightsout/multi-export'),
 		...byRule('lightsout/filename-mismatch'),
-		...byRule('lightsout/ungrouped-domain-utils'),
+		...byRule('lightsout/file-directly-in-common'),
 		...byRule('lightsout/folder-size'),
 	];
 
@@ -108,10 +107,8 @@ test('the standards check finds each planted defect and respects the exceptions'
 	expect(structure.some((finding) => finding.siteKey === 'lightsout/multi-export:src/a/config.ts')).toBeTruthy();
 	// misnamed file flagged
 	expect(structure.some((finding) => finding.siteKey === 'lightsout/filename-mismatch:src/a/helpers.ts')).toBeTruthy();
-	const domainFolderSite = 'lightsout/ungrouped-domain-utils:src/a/utils/formatCurrency.ts|src/a/utils/formatDate.ts';
-
-	// domain-folder candidate
-	expect(structure.some((finding) => finding.siteKey === domainFolderSite)).toBeTruthy();
+	// file directly in common flagged
+	expect(structure.some((finding) => finding.siteKey === 'lightsout/file-directly-in-common:src/a/common/formatDate.ts')).toBeTruthy();
 
 	// oversized file flagged
 	expect(byRule('lightsout/file-size').some((finding) => finding.files[0]?.path === 'src/b/huge.ts')).toBeTruthy();
@@ -180,12 +177,12 @@ test('baseline ratchet: --baseline accepts debt explicitly; later runs report on
 	expect(everything.findings.length > third.findings.length).toBeTruthy();
 });
 
-/** The smallest repo on the node pack that still yields one known, stable finding site. */
+/** The smallest repo on the standards pack that still yields one known, stable finding site. */
 const setupLedgerRepo = ({ ledger }: { ledger?: string } = {}) => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-ledger-'));
 
 	mkdirSync(join(dir, 'src/a'), { recursive: true });
-	writeFileSync(join(dir, 'lightsout.config.json'), nodePackConfig);
+	writeFileSync(join(dir, 'lightsout.config.json'), standardsPackConfig);
 	writeFileSync(join(dir, 'src/a/config.ts'), 'export const readConfig = () => 1;\nexport const saveConfig = () => 2;\n');
 
 	if (ledger !== undefined) {

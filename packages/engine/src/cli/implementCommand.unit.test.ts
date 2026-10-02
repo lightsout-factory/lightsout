@@ -258,7 +258,7 @@ test('implementCommand: a repo that declared no opt-ins gets no lines for them �
 	// a coverage gate switched off is announced as explicit, and the pack the
 	// config names is printed as the repo root's
 	expect(logged).toContain('  gates (root): check=[true] test=[true] coverage=[off (explicit)]');
-	expect(logged).toContain('  repo root: lightsout/node');
+	expect(logged).toContain('  repo root: lightsout/standards');
 	expect(logged).toContain('  timeouts: agent 60m · supervisor 15m · gate 15m');
 	expect(logged.some((line) => /^ {2}(generate|agent commands|generated|format|gates \((root, opt-in|per package)\))/.test(line))).toBe(false);
 	expect(exitCodes).toStrictEqual([1]);

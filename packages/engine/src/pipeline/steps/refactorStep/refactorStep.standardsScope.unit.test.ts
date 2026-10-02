@@ -77,7 +77,7 @@ const setupRefactorRun = ({ packages }: { packages: string[] }) => {
 	mockReadRunStandardsBaseline.mockResolvedValue(undefined);
 
 	const manifest = { runId: 'run-1', steps: [], changedFiles: [], packages, acceptanceTests: [], approvedTests: [] } as unknown as RunManifest;
-	const config = { 'standards-pack': 'lightsout/node' } as unknown as LightsoutConfig;
+	const config = { 'standards-pack': 'lightsout/standards' } as unknown as LightsoutConfig;
 	const cwd = '/tmp/lightsout-refactor-step-standards-scope';
 	const run = {
 		cwd,

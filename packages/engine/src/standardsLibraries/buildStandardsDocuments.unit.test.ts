@@ -50,8 +50,8 @@ const setupPack = (): LoadedStandardsLibrary => ({
 	rootPath: '/pkg',
 	documents: [
 		buildDocument({ path: 'code/style/patterns', intro: '# Patterns', ruleIds: ['functions', 'classes'] }),
-		buildDocument({ path: 'code/architecture', intro: '# Architecture', ruleIds: ['graduation'] }),
-		buildDocument({ path: 'tests/unit-testing', intro: '# Unit Testing', ruleIds: ['mock-prefix'], set: 'tests' }),
+		buildDocument({ path: 'code/fractal/modules', intro: '# Modules', ruleIds: ['graduation'] }),
+		buildDocument({ path: 'tests/code-style', intro: '# Test Style', ruleIds: ['mock-prefix'], set: 'tests' }),
 	],
 	rules: [
 		buildRule({ id: 'functions', prose: 'Use arrow functions.' }),
@@ -136,7 +136,7 @@ const setupGroup = ({
 }): StandardsGroup => ({
 	packages: [''],
 	pack: {
-		name: 'lightsout/node',
+		name: 'lightsout/fractal',
 		topics,
 		rules: rules.map(({ rule, severity = StandardsSeverity.Advisory, packSeverity = severity }) => ({ rule, severity: packSeverity, options: {} })),
 		conditionalPacks: [],
@@ -157,15 +157,15 @@ describe('buildStandardsDocuments', () => {
 		const { code, tests } = buildStandardsDocuments({ groups: [groupOfLibrary({ library: pack })] });
 
 		// the header names the pack and the document folder it came from
-		expect(code).toContain('<!-- lightsout defaults: code/architecture -->\n# Architecture\n\nA concept earns its folder.');
+		expect(code).toContain('<!-- lightsout defaults: code/fractal/modules -->\n# Modules\n\nA concept earns its folder.');
 		// rule prose follows the intro in ruleIds order, joined by a blank line
 		expect(code).toContain('<!-- lightsout defaults: code/style/patterns -->\n# Patterns\n\nUse arrow functions.\n\nDefault to functions.');
 		// documents are joined the same way — a blank line between them
 		expect(code).toBe(
-			'<!-- lightsout defaults: code/architecture -->\n# Architecture\n\nA concept earns its folder.\n\n<!-- lightsout defaults: code/style/patterns -->\n# Patterns\n\nUse arrow functions.\n\nDefault to functions.',
+			'<!-- lightsout defaults: code/fractal/modules -->\n# Modules\n\nA concept earns its folder.\n\n<!-- lightsout defaults: code/style/patterns -->\n# Patterns\n\nUse arrow functions.\n\nDefault to functions.',
 		);
 		// each set is assembled on its own
-		expect(tests).toBe('<!-- lightsout defaults: tests/unit-testing -->\n# Unit Testing\n\nMocks carry a mock prefix.');
+		expect(tests).toBe('<!-- lightsout defaults: tests/code-style -->\n# Test Style\n\nMocks carry a mock prefix.');
 	});
 
 	test('leaves a set out entirely when no document is in play for it', () => {
@@ -187,7 +187,7 @@ describe('buildStandardsDocuments', () => {
 
 		expect(assembled.code).toBe(undefined);
 		expect('code' in assembled).toBeFalsy();
-		expect(assembled.tests).toBe('<!-- lightsout defaults: tests/unit-testing -->\n# Unit Testing\n\nMocks carry a mock prefix.');
+		expect(assembled.tests).toBe('<!-- lightsout defaults: tests/code-style -->\n# Test Style\n\nMocks carry a mock prefix.');
 	});
 
 	test('sorts documents by path and keeps two documents sharing a path in the order given', () => {
@@ -287,9 +287,9 @@ describe('buildStandardsDocuments', () => {
 	test('buildStandardsDocuments: each group topic renders into its own set with its library and path line', () => {
 		const group = setupGroup({
 			topics: [
-				buildLightsoutTopic({ path: 'code/architecture', intro: '# Architecture', ruleIds: ['graduation'] }),
+				buildLightsoutTopic({ path: 'code/fractal/modules', intro: '# Modules', ruleIds: ['graduation'] }),
 				buildLightsoutTopic({ path: 'code/style/patterns', intro: '# Patterns', ruleIds: ['functions', 'classes'] }),
-				buildLightsoutTopic({ path: 'tests/unit-testing', intro: '# Unit Testing', ruleIds: ['mock-prefix'], set: 'tests' }),
+				buildLightsoutTopic({ path: 'tests/code-style', intro: '# Test Style', ruleIds: ['mock-prefix'], set: 'tests' }),
 			],
 			rules: [
 				{ rule: buildLightsoutRule({ id: 'graduation', prose: 'A concept earns its folder.' }) },
@@ -302,8 +302,8 @@ describe('buildStandardsDocuments', () => {
 		const assembled = buildStandardsDocuments({ groups: [group] });
 
 		expect(assembled).toStrictEqual({
-			code: '<!-- lightsout: code/architecture -->\n# Architecture\n\nA concept earns its folder.\n\n<!-- lightsout: code/style/patterns -->\n# Patterns\n\nUse arrow functions.\n\nDefault to functions.',
-			tests: '<!-- lightsout: tests/unit-testing -->\n# Unit Testing\n\nMocks carry a mock prefix.',
+			code: '<!-- lightsout: code/fractal/modules -->\n# Modules\n\nA concept earns its folder.\n\n<!-- lightsout: code/style/patterns -->\n# Patterns\n\nUse arrow functions.\n\nDefault to functions.',
+			tests: '<!-- lightsout: tests/code-style -->\n# Test Style\n\nMocks carry a mock prefix.',
 		});
 	});
 
@@ -343,12 +343,12 @@ describe('buildStandardsDocuments', () => {
 		{
 			groups: [
 				setupGroup({
-					// the library also holds code/architecture/react and tests/unit-testing, which lightsout/node leaves out
-					topics: [buildLightsoutTopic({ path: 'code/architecture', intro: '# Architecture', ruleIds: ['graduation'] })],
+					// the library also holds code/frameworks/react and tests/code-style, which lightsout/fractal leaves out
+					topics: [buildLightsoutTopic({ path: 'code/fractal/modules', intro: '# Modules', ruleIds: ['graduation'] })],
 					rules: [{ rule: buildLightsoutRule({ id: 'graduation', prose: 'A concept earns its folder.' }) }],
 				}),
 			],
-			expected: { code: '<!-- lightsout: code/architecture -->\n# Architecture\n\nA concept earns its folder.' },
+			expected: { code: '<!-- lightsout: code/fractal/modules -->\n# Modules\n\nA concept earns its folder.' },
 		},
 		{ groups: [], expected: {} },
 	])("buildStandardsDocuments: only the pack's own topics render, and an empty set or no group renders nothing", ({ groups, expected }) => {

@@ -302,36 +302,24 @@ describe('getStandardsPackBundle', () => {
 		expect(error.message).toMatch(/house\/app[\s\S]*acme/);
 	});
 
-	test('bundles the authored lightsout library with its eleven packs', async () => {
+	test('bundles the authored lightsout library with its seven packs', async () => {
 		const { cwd } = setupThisRepo();
 
 		const bundle = await getStandardsPackBundle({ cwd });
 		const documentPathByName = new Map(bundle.rules.map((rule) => [rule.name, rule.documentPath]));
-		const tanstackStartApp = bundle.packs.find((pack) => pack.address === 'lightsout/tanstack-start-app');
-		const tanstackStartAppTopics = new Set(tanstackStartApp?.rules.map((rule) => documentPathByName.get(rule.name)));
+		const standards = bundle.packs.find((pack) => pack.address === 'lightsout/standards');
+		const standardsTopics = new Set(standards?.rules.map((rule) => documentPathByName.get(rule.name)));
 
 		expect({
 			name: bundle.name,
 			built: bundle.built,
 			packs: bundle.packs.map((pack) => pack.name),
-			holdsReact: tanstackStartAppTopics.has('code/architecture/react'),
-			holdsTanstackStart: tanstackStartAppTopics.has('code/architecture/tanstack-start'),
+			holdsReact: standardsTopics.has('code/frameworks/react'),
+			holdsTanstackStart: standardsTopics.has('code/frameworks/tanstack-start'),
 		}).toStrictEqual({
 			name: 'lightsout',
 			built: false,
-			packs: [
-				'nestjs',
-				'nestjs-app',
-				'node',
-				'react',
-				'react-app',
-				'standards',
-				'structure',
-				'tanstack-start',
-				'tanstack-start-app',
-				'typescript',
-				'unit-testing',
-			],
+			packs: ['agent-corrections', 'code-style', 'fractal', 'nestjs', 'react', 'standards', 'tanstack-start'],
 			holdsReact: true,
 			holdsTanstackStart: true,
 		});

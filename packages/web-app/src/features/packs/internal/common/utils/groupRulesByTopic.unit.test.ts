@@ -6,9 +6,9 @@ import { buildStandardsPackRuleListing } from '#tests/helpers/buildStandardsPack
 import { buildStandardsPackView } from '#tests/helpers/buildStandardsPackView.ts';
 
 const allRules = [
-	buildStandardsPackRuleListing({ id: 'type-assertion', documentPath: 'code/style-guide/typescript/type-assertions' }),
-	buildStandardsPackRuleListing({ id: 'explicit-return-type', documentPath: 'code/style-guide/typescript/return-types' }),
-	buildStandardsPackRuleListing({ id: 'object-args', documentPath: 'code/style-guide/patterns/functions' }),
+	buildStandardsPackRuleListing({ id: 'type-assertion', documentPath: 'code/agent-corrections/type-safety' }),
+	buildStandardsPackRuleListing({ id: 'class-syntax', documentPath: 'code/code-style/classes' }),
+	buildStandardsPackRuleListing({ id: 'object-args', documentPath: 'code/code-style/functions' }),
 ];
 
 const setupGroupRulesByTopic = ({ rules = allRules }: { rules?: StandardsPackRuleListing[] } = {}) => {
@@ -26,15 +26,15 @@ const buildTopic = ({ path, ruleIds }: { path: string; ruleIds: string[] }): Sta
 
 const setupThreeTopics = () => {
 	const topics = [
-		buildTopic({ path: 'code/architecture/react', ruleIds: ['react-a', 'react-b'] }),
-		buildTopic({ path: 'code/architecture/nestjs', ruleIds: ['nest-a'] }),
-		buildTopic({ path: 'code/style-guide/patterns/functions', ruleIds: ['fn-a', 'fn-b'] }),
+		buildTopic({ path: 'code/frameworks/react', ruleIds: ['react-a', 'react-b'] }),
+		buildTopic({ path: 'code/frameworks/nestjs', ruleIds: ['nest-a'] }),
+		buildTopic({ path: 'code/code-style/functions', ruleIds: ['fn-a', 'fn-b'] }),
 	];
 	const rules = [
-		buildStandardsPackRuleListing({ id: 'fn-b', documentPath: 'code/style-guide/patterns/functions' }),
-		buildStandardsPackRuleListing({ id: 'react-b', documentPath: 'code/architecture/react' }),
-		buildStandardsPackRuleListing({ id: 'fn-a', documentPath: 'code/style-guide/patterns/functions' }),
-		buildStandardsPackRuleListing({ id: 'react-a', documentPath: 'code/architecture/react' }),
+		buildStandardsPackRuleListing({ id: 'fn-b', documentPath: 'code/code-style/functions' }),
+		buildStandardsPackRuleListing({ id: 'react-b', documentPath: 'code/frameworks/react' }),
+		buildStandardsPackRuleListing({ id: 'fn-a', documentPath: 'code/code-style/functions' }),
+		buildStandardsPackRuleListing({ id: 'react-a', documentPath: 'code/frameworks/react' }),
 	];
 
 	return { topics, rules };
@@ -47,8 +47,8 @@ describe('groupRulesByTopic', () => {
 		const groups = groupRulesByTopic({ topics, rules });
 
 		expect(groups.map((group) => ({ path: group.topic.path, ruleIds: group.rules.map((rule) => rule.id) }))).toStrictEqual([
-			{ path: 'code/architecture/react', ruleIds: ['react-a', 'react-b'] },
-			{ path: 'code/style-guide/patterns/functions', ruleIds: ['fn-a', 'fn-b'] },
+			{ path: 'code/frameworks/react', ruleIds: ['react-a', 'react-b'] },
+			{ path: 'code/code-style/functions', ruleIds: ['fn-a', 'fn-b'] },
 		]);
 	});
 
@@ -56,9 +56,9 @@ describe('groupRulesByTopic', () => {
 		const { groups } = setupGroupRulesByTopic();
 
 		expect(groups.map((group) => group.topic.path)).toStrictEqual([
-			'code/style-guide/typescript/type-assertions',
-			'code/style-guide/typescript/return-types',
-			'code/style-guide/patterns/functions',
+			'code/agent-corrections/type-safety',
+			'code/code-style/classes',
+			'code/code-style/functions',
 		]);
 	});
 
@@ -75,7 +75,7 @@ describe('groupRulesByTopic', () => {
 	test('drops a topic whose rules were all filtered away, so a run of empty headings never appears', () => {
 		const { groups } = setupGroupRulesByTopic({ rules: [allRules[2]] });
 
-		expect(groups.map((group) => group.topic.path)).toStrictEqual(['code/style-guide/patterns/functions']);
+		expect(groups.map((group) => group.topic.path)).toStrictEqual(['code/code-style/functions']);
 	});
 
 	test('answers with nothing at all when no rule survived, which is the state the page owns an empty line for', () => {
@@ -87,6 +87,6 @@ describe('groupRulesByTopic', () => {
 	test('drops a rule no topic claims rather than inventing a group to hold it', () => {
 		const { groups } = setupGroupRulesByTopic({ rules: [...allRules, buildStandardsPackRuleListing({ id: 'orphan', documentPath: 'code/nowhere' })] });
 
-		expect(groups.flatMap((group) => group.rules.map((rule) => rule.id))).toStrictEqual(['type-assertion', 'explicit-return-type', 'object-args']);
+		expect(groups.flatMap((group) => group.rules.map((rule) => rule.id))).toStrictEqual(['type-assertion', 'class-syntax', 'object-args']);
 	});
 });

@@ -26,7 +26,7 @@ const dirtyNoteFile = 'notes.md';
  * file sits never reaches the question the test asks.
  */
 const dirtyBaselineConfig = {
-	'standards-rule-settings': { ...reachabilityRulesOff['standards-rule-settings'], 'test-in-tests-folder': 'off', 'test-not-beside-subject': 'off' },
+	'standards-rule-settings': { ...reachabilityRulesOff['standards-rule-settings'], 'test-beside-subject': 'off' },
 };
 
 /** Every test-file path a prompt names, however the prompt lays them out. */

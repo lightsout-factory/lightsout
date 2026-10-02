@@ -147,7 +147,7 @@ describe('getConfigView', () => {
 
 	test('each rule state carries the options it runs with in this repo', async () => {
 		const cwd = await seedConfiguredCwd({
-			config: { 'standards-pack': 'lightsout/node', 'standards-rule-settings': { 'folder-size': { options: { cap: 15 } } } },
+			config: { 'standards-pack': 'lightsout/standards', 'standards-rule-settings': { 'folder-size': { options: { cap: 15 } } } },
 		});
 
 		const view = await getConfigView({ cwd });
@@ -285,7 +285,7 @@ describe('getConfigView', () => {
 	});
 
 	test("getConfigView: the view names the configured pack group and each rule's library", async () => {
-		const { cwd } = await setupFrameworkFreeRepo({ standards: { 'standards-pack': 'lightsout/node' } });
+		const { cwd } = await setupFrameworkFreeRepo({ standards: { 'standards-pack': 'lightsout/standards' } });
 
 		const view = await getConfigView({ cwd });
 
@@ -296,7 +296,7 @@ describe('getConfigView', () => {
 			hasRuleStates: view.ruleStates.length > 0,
 			libraries: [...new Set(view.ruleStates.map((state) => state.library))],
 		}).toStrictEqual({
-			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', conditionalPacks: [] }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/standards', conditionalPacks: [] }],
 			carriesPacks: false,
 			carriesChannels: false,
 			hasRuleStates: true,
@@ -316,7 +316,7 @@ describe('getConfigView', () => {
 	});
 
 	test('lists rule states and packs with no channel', async () => {
-		const { cwd } = await setupFrameworkFreeRepo({ standards: { 'standards-pack': 'lightsout/node' } });
+		const { cwd } = await setupFrameworkFreeRepo({ standards: { 'standards-pack': 'lightsout/standards' } });
 
 		const view = await getConfigView({ cwd });
 

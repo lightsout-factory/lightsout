@@ -35,10 +35,10 @@ describe('readPathLists', () => {
 	});
 
 	test('carries the pack roots the input declares, rather than a fixed empty list', () => {
-		const input = setupFileListInput({ source: ['standards/tests/unit-testing/10-rule/check.ts'], standardsLibraries: ['standards'] });
+		const input = setupFileListInput({ source: ['standards/tests/code-style/10-rule/check.ts'], standardsLibraries: ['standards'] });
 
 		expect(readPathLists({ input })).toStrictEqual({
-			files: ['standards/tests/unit-testing/10-rule/check.ts'],
+			files: ['standards/tests/code-style/10-rule/check.ts'],
 			tests: [],
 			standardsLibraries: ['standards'],
 		});

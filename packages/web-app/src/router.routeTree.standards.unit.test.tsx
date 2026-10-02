@@ -99,7 +99,7 @@ const setupPacksPage = () => {
 const setupPackPage = ({ search = {} }: { search?: Record<string, unknown> } = {}) => {
 	const { pack, pages } = setupRouteTree();
 	const route = pages['/_site/standards-packs/$library/packs/$pack'];
-	jest.spyOn(route, 'useParams').mockReturnValue({ library: 'lightsout', pack: 'node' });
+	jest.spyOn(route, 'useParams').mockReturnValue({ library: 'lightsout', pack: 'standards' });
 	jest.spyOn(route, 'useSearch').mockReturnValue(search);
 	const Page = route.options.component;
 
@@ -153,7 +153,7 @@ describe('routeTree standards routes', () => {
 	test('the packs route shows a card for each pack the shipped library holds', () => {
 		setupPacksPage();
 
-		expect(screen.getByRole('heading', { level: 3, name: 'lightsout/node' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { level: 3, name: 'lightsout/standards' })).toBeInTheDocument();
 	});
 
 	test('the packs route warms its own list before the page renders', async () => {
@@ -167,7 +167,7 @@ describe('routeTree standards routes', () => {
 	test('the pack route renders the pack the path names, by its address', () => {
 		setupPackPage();
 
-		const heading = screen.getByRole('heading', { level: 1, name: 'lightsout/node' });
+		const heading = screen.getByRole('heading', { level: 1, name: 'lightsout/standards' });
 
 		expect(heading).toBeInTheDocument();
 	});
@@ -183,7 +183,7 @@ describe('routeTree standards routes', () => {
 	test('the pack route warms the shipped library before the page renders', async () => {
 		const { loader, pack, queryClient } = setupLoader({ id: '/_site/standards-packs/$library/packs/$pack' });
 
-		await loader({ context: { queryClient }, params: { library: 'lightsout', pack: 'node' } });
+		await loader({ context: { queryClient }, params: { library: 'lightsout', pack: 'standards' } });
 
 		expect(queryClient.getQueryData([QueryKey.DefaultPack])).toStrictEqual(pack);
 	});
@@ -303,9 +303,9 @@ describe('routeTree standards routes', () => {
 
 		const outcomes = await Promise.all(
 			[
-				{ library: 'lightsout', pack: 'node' },
+				{ library: 'lightsout', pack: 'standards' },
 				{ library: 'lightsout', pack: 'vue' },
-				{ library: 'acme', pack: 'node' },
+				{ library: 'acme', pack: 'standards' },
 			].map((params) =>
 				loader({ context: { queryClient }, params }).then(
 					() => 'found',

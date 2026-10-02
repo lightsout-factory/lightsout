@@ -10,7 +10,7 @@ import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 const baseConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 /** Standards are opt-in, so a test that wants the root and every package on one pack names it. */
-const nodeConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/node' };
+const fractalConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/fractal' };
 
 /** Writes each repo-relative file under `root`, making the folders it sits under. */
 const writeFiles = ({ root, files }: { root: string; files: Record<string, string> }) => {
@@ -31,20 +31,20 @@ const ruleFiles = ({ path, summary }: { path: string; summary: string }) => ({
 
 /**
  * A small built-in `lightsout` library holding the two pack addresses these
- * tests reach: `node` (one base topic, rule `tabs`) and `react-app` (node plus
- * one react topic, rule `hooks-first`), so which pack a group got shows in its
+ * tests reach: `fractal` (one base topic, rule `tabs`) and `standards` (fractal
+ * plus one react topic, rule `hooks-first`), so which pack a group got shows in its
  * rules as well as its name.
  */
 const builtInLibraryFiles = {
 	'lightsout-standards.json': '{ "name": "lightsout", "formatVersion": 2 }\n',
 	'rules/code/base/topic.md': '# Base\n\nHow every package writes code.\n',
 	...ruleFiles({ path: 'rules/code/base/01-tabs', summary: 'indent with tabs' }),
-	'rules/code/react/topic.md': '# React\n\nHow components are written.\n',
-	...ruleFiles({ path: 'rules/code/react/01-hooks-first', summary: 'hooks come before handlers' }),
-	'packs/node.json': JSON.stringify({ description: 'The node pack.', include: { topics: ['lightsout/code/base'] } }),
-	'packs/react-app.json': JSON.stringify({
-		description: 'The react-app pack.',
-		include: { packs: ['lightsout/node'], topics: ['lightsout/code/react'] },
+	'rules/code/frameworks/react/topic.md': '# React\n\nHow components are written.\n',
+	...ruleFiles({ path: 'rules/code/frameworks/react/01-hooks-first', summary: 'hooks come before handlers' }),
+	'packs/fractal.json': JSON.stringify({ description: 'The fractal pack.', include: { topics: ['lightsout/code/base'] } }),
+	'packs/standards.json': JSON.stringify({
+		description: 'The standards pack.',
+		include: { packs: ['lightsout/fractal'], topics: ['lightsout/code/frameworks/react'] },
 	}),
 };
 
@@ -139,21 +139,21 @@ describe('resolveStandardsGroups', () => {
 	test('resolveStandardsGroups: the named pack covers the root and every workspace package, whatever the root manifest declares', async () => {
 		const { cwd } = setupRepo({ rootDependencies: { react: '^19.0.0' }, workspacePackages: ['web', 'api'] });
 
-		const groups = await resolveStandardsGroups({ cwd, config: nodeConfig });
+		const groups = await resolveStandardsGroups({ cwd, config: fractalConfig });
 
 		expect(summarizeGroups({ groups })).toStrictEqual([
-			{ packages: ['', 'api', 'web'], pack: 'lightsout/node', conditionalPacks: [], rules: ['lightsout/tabs'] },
+			{ packages: ['', 'api', 'web'], pack: 'lightsout/fractal', conditionalPacks: [], rules: ['lightsout/tabs'] },
 		]);
 	});
 
 	test('resolveStandardsGroups: a list of packs resolves as one pack named after every address, holding what each brings', async () => {
 		const { cwd } = setupRepo();
-		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': ['lightsout/node', 'lightsout/react-app'] };
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': ['lightsout/fractal', 'lightsout/standards'] };
 
 		const groups = await resolveStandardsGroups({ cwd, config });
 
 		expect(summarizeGroups({ groups })).toStrictEqual([
-			{ packages: [''], pack: 'lightsout/node + lightsout/react-app', conditionalPacks: [], rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
+			{ packages: [''], pack: 'lightsout/fractal + lightsout/standards', conditionalPacks: [], rules: ['lightsout/hooks-first', 'lightsout/tabs'] },
 		]);
 	});
 
@@ -190,8 +190,8 @@ describe('resolveStandardsGroups', () => {
 		const { workspaceCwd, flatCwd } = setupScopeRepos();
 
 		const [scoped, flat] = await Promise.all([
-			resolveStandardsGroups({ cwd: workspaceCwd, config: nodeConfig, packages: ['engine'] }),
-			resolveStandardsGroups({ cwd: flatCwd, config: nodeConfig }),
+			resolveStandardsGroups({ cwd: workspaceCwd, config: fractalConfig, packages: ['engine'] }),
+			resolveStandardsGroups({ cwd: flatCwd, config: fractalConfig }),
 		]);
 
 		expect({ scoped: scoped.map((group) => group.packages), flat: flat.map((group) => group.packages) }).toStrictEqual({
@@ -202,8 +202,8 @@ describe('resolveStandardsGroups', () => {
 
 	test('resolveStandardsGroups: repo rule settings are applied as the last layer and an unknown name fails', async () => {
 		const { cwd } = setupRepo();
-		const config: LightsoutConfig = { ...nodeConfig, 'standards-rule-settings': { tabs: 'advisory' } };
-		const unknown: LightsoutConfig = { ...nodeConfig, 'standards-rule-settings': { 'no-such-rule': 'advisory' } };
+		const config: LightsoutConfig = { ...fractalConfig, 'standards-rule-settings': { tabs: 'advisory' } };
+		const unknown: LightsoutConfig = { ...fractalConfig, 'standards-rule-settings': { 'no-such-rule': 'advisory' } };
 
 		const [groups, error] = await Promise.all([
 			resolveStandardsGroups({ cwd, config }),
@@ -227,19 +227,19 @@ describe('resolveStandardsGroups', () => {
 		const { defaultCwd, appsCwd } = setupPackagesDirRepos();
 
 		const [defaults, apps] = await Promise.all([
-			resolveStandardsGroups({ cwd: defaultCwd, config: nodeConfig }),
-			resolveStandardsGroups({ cwd: appsCwd, config: { ...nodeConfig, 'packages-dir': 'apps' } }),
+			resolveStandardsGroups({ cwd: defaultCwd, config: fractalConfig }),
+			resolveStandardsGroups({ cwd: appsCwd, config: { ...fractalConfig, 'packages-dir': 'apps' } }),
 		]);
 
 		expect({ defaults: summarizeGroups({ groups: defaults }), apps: apps.map((group) => group.packages) }).toStrictEqual({
-			defaults: [{ packages: ['', 'engine'], pack: 'lightsout/node', conditionalPacks: [], rules: ['lightsout/tabs'] }],
+			defaults: [{ packages: ['', 'engine'], pack: 'lightsout/fractal', conditionalPacks: [], rules: ['lightsout/tabs'] }],
 			apps: [['', 'site']],
 		});
 	});
 
 	test('two rule settings naming one rule, by short and by full name, fail and name both', async () => {
 		const { cwd } = setupRepo();
-		const config: LightsoutConfig = { ...nodeConfig, 'standards-rule-settings': { tabs: 'advisory', 'lightsout/tabs': 'off' } };
+		const config: LightsoutConfig = { ...fractalConfig, 'standards-rule-settings': { tabs: 'advisory', 'lightsout/tabs': 'off' } };
 
 		const error = await getRejectionError({ promise: resolveStandardsGroups({ cwd, config }) });
 

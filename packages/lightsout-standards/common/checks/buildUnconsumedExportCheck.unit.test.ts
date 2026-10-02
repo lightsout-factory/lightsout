@@ -11,21 +11,20 @@ const setupUnusedRepo = () =>
 		],
 	});
 
-const buildCheck = ({ matches }: { matches: Parameters<typeof buildUnconsumedExportCheck>[0]['matches'] }) =>
+const buildCheck = () =>
 	buildUnconsumedExportCheck({
 		rule: 'dead-export',
-		matches,
 		detail: 'referenced nowhere else',
 		guidance: 'Delete it?',
 	});
 
 describe('buildUnconsumedExportCheck', () => {
 	test('declares the file-text input its rules read, since the verdict counts mentions across the repo', () => {
-		expect(buildCheck({ matches: ({ test: byTest }) => !byTest }).inputKind).toBe('file-text');
+		expect(buildCheck().inputKind).toBe('file-text');
 	});
 
-	test('reports the exports whose verdict the rule claims, in the wording the rule gave', async () => {
-		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input: setupUnusedRepo(), options: {} });
+	test('reports the exports nothing references, in the wording the rule gave', async () => {
+		const findings = await buildCheck().run({ input: setupUnusedRepo(), options: {} });
 
 		expect(findings).toStrictEqual([
 			{
@@ -37,25 +36,18 @@ describe('buildUnconsumedExportCheck', () => {
 		]);
 	});
 
-	test('claims nothing when the rule’s verdict does not match, so the verdicts stay mutually exclusive', async () => {
-		// the same repo, read by the rule that wants a test mention instead
-		const findings = await buildCheck({ matches: ({ test: byTest }) => byTest }).run({ input: setupUnusedRepo(), options: {} });
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('inside a declared pack, a rule under tests/ declares an export the verdict can reach', async () => {
+	test('inside a declared pack, a rule under tests/ declares an export the check judges', async () => {
 		const input = setupFileTextInput({
-			contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
+			contents: [['standards/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
 			standardsLibraries: ['standards'],
 		});
 
-		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input, options: {} });
+		const findings = await buildCheck().run({ input, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'dead-export:standards/tests/unit-testing/10-rule/check.ts',
-				files: [{ path: 'standards/tests/unit-testing/10-rule/check.ts' }],
+				siteKey: 'dead-export:standards/tests/code-style/10-rule/check.ts',
+				files: [{ path: 'standards/tests/code-style/10-rule/check.ts' }],
 				detail: "'checkRule' is referenced nowhere else",
 				guidance: 'Delete it?',
 			},
@@ -64,16 +56,16 @@ describe('buildUnconsumedExportCheck', () => {
 
 	test('the same path with no pack declared above it is test code, whose own helpers are nobody’s public API', async () => {
 		const input = setupFileTextInput({
-			contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
+			contents: [['standards/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
 		});
 
-		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input, options: {} });
+		const findings = await buildCheck().run({ input, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
 	test('returns nothing for an input of any other kind rather than refusing', async () => {
-		const findings = await buildCheck({ matches: () => true }).run({ input: setupOtherKindInput(), options: {} });
+		const findings = await buildCheck().run({ input: setupOtherKindInput(), options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -88,7 +80,7 @@ describe('buildUnconsumedExportCheck', () => {
 			],
 		});
 
-		const findings = await buildCheck({ matches: ({ test: byTest }) => !byTest }).run({ input, options: {} });
+		const findings = await buildCheck().run({ input, options: {} });
 
 		// with no carve-out derived, that route file reads as a barrel and the
 		// screen it renders as used by nobody

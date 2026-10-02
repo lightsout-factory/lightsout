@@ -39,24 +39,25 @@ name, so it outlives the folder it came from. A repository names a rule in
 
 ## Packs
 
-The six topic packs:
+Packs are grouped by what the rules are for, and the rule tree mirrors them:
+`rules/code/<pack>/<topic>/` and `rules/tests/<pack>/`.
 
-- `typescript` — style conventions, functions, classes, named constants,
-  return types, type assertions and TSDoc.
-- `structure` — architecture decisions, folder structure, import paths, module
-  boundaries, one export per file and type placement.
-- `unit-testing` — how unit tests are written.
-- `react` — React architecture, component and hook patterns, and React
-  component tests.
-- `tanstack-start` — how the base rules apply to a TanStack Start application.
-- `nestjs` — how the base rules apply to a NestJS application.
+- `fractal` — keeps the repo the same shape at every level: modules, shared
+  code, size caps, duplication and imports, plus where tests sit.
+- `agent-corrections` — corrects mistakes current models make by default:
+  design, type safety, comments, and what a test asserts and mocks. A rule
+  stays only while models still make the mistake without it.
+- `code-style` — one way to write a function, a class, a set of named values
+  and a unit test.
+- `react`, `tanstack-start`, `nestjs` — framework rules, under
+  `rules/code/frameworks/` and `rules/tests/frameworks/`. Each declares
+  `applies-when`, so it reaches only the packages that depend on the framework.
+- `standards` — every pack above. It is the pack the docs tell a repository to
+  opt into, and the one this repo runs.
 
-The four combined packs:
-
-- `node` — `typescript`, `structure` and `unit-testing`.
-- `react-app` — `node` and `react`.
-- `tanstack-start-app` — `react-app` and `tanstack-start`.
-- `nestjs-app` — `node` and `nestjs`.
+`fractal` and `agent-corrections` each stand alone: no rule in them names, or
+`requires`, a rule in another pack. `code-style` and the framework packs may
+refer to `fractal` rules.
 
 The shipped packs carry no `rule-settings`, so every rule keeps the severity
 and options its `rule.md` gives it. A new rule in an existing topic reaches
@@ -70,22 +71,21 @@ write or review a rule in any library: the name, summary, prose, examples,
 finding text, changing an existing rule and renaming one. Follow it. This file
 holds only what is particular to this library and this repo.
 
-## In This Pack
+## In This Library
 
-- **Prefixes this pack uses:** `no-` (a ban), `prefer-` (a default), and
+- **Prefixes this library uses:** `no-` (a ban), `prefer-` (a default), and
   subject prefixes: `test-` (a rule about a test file), `barrel-`, `class-` and
   `duplicate-`. `path-` named how a check worked, and is retired.
 - **Shared words:** ids are also read in the `durableRuleIds` ledger, so
-  `test-in-tests-folder` keeps its `test-`. `test-mega-factory` became
-  `oversized-setup-factory`: a setup factory is a test-only thing, so `test-`
-  added nothing. Word order: `folder-size`, not `folder-census`.
-- **Framework topics:** a framework topic states what the framework mandates as fact, and this pack's own conventions as conventions.
+  `test-beside-subject` keeps its `test-`. Word order: `folder-size`, not
+  `folder-census`.
+- **Framework topics:** a framework topic states what the framework mandates as fact, and this library's own conventions as conventions.
 - **The model rule:**
-  `rules/code/architecture/architecture-decisions/05-module-file-to-folder/rule.md`
+  `rules/code/fractal/modules/05-module-file-to-folder/rule.md`
   sets the register for prose.
 - **Shared helpers:** a check imports a helper from `common/` through
   `#common/*`, never by a relative path into `common/`.
-- **Examples follow the pack's own layout:** a file inside a module folder goes
+- **Examples follow the library's own layout:** a file inside a module folder goes
   under `common/<type>/`, and each file has one export.
 - **Comments in examples:** `dead-export`'s check counts mentions, so it reads a
   comment's words as uses.
