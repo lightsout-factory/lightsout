@@ -124700,7 +124700,7 @@ var importCheckModule = async ({ checkPath }) => {
 // src/standardsLibraries/internal/common/parsing/parseRuleFolder.ts
 var ruleDeclaration = external_exports.object({
   summary: external_exports.string().min(1),
-  checked: external_exports.boolean().default(false),
+  checked: external_exports.union([external_exports.boolean(), external_exports.literal("partial")]).default(false),
   severity: external_exports.enum(StandardsSeverity).default(StandardsSeverity.Advisory),
   options: external_exports.record(external_exports.string(), external_exports.number()).default({}),
   example: RuleExample.optional(),
@@ -124715,7 +124715,12 @@ var getRuleDeclaration = async ({ folderPath, rulePath, found }) => {
   const parsed = text === void 0 ? void 0 : parseDeclaration({ text, schema: ruleDeclaration, filePath, problems: found });
   return { declaration: parsed?.declaration, prose: parsed?.body ?? "" };
 };
-var findCheckFile = async ({ folderPath, rulePath, checked, found }) => {
+var findCheckFile = async ({
+  folderPath,
+  rulePath,
+  checked,
+  found
+}) => {
   const shipped = [];
   for (const fileName of ["check.ts", "check.js"]) {
     if (await hasFile({ path: join16(folderPath, fileName) })) {
@@ -124727,11 +124732,11 @@ var findCheckFile = async ({ folderPath, rulePath, checked, found }) => {
     found.push(`${rulePath}: ships both check.ts and check.js \u2014 a rule ships one`);
   } else if (shipped.length === 1) {
     checkFileName = shipped[0];
-  } else if (checked === true) {
-    found.push(`${rulePath}: declares checked: true but ships no check.ts or check.js`);
+  } else if (checked === true || checked === "partial") {
+    found.push(`${rulePath}: declares checked: ${checked} but ships no check.ts or check.js`);
   }
   if (checked === false && checkFileName !== void 0) {
-    found.push(`${rulePath}: ships a ${checkFileName} but does not declare checked: true`);
+    found.push(`${rulePath}: ships a ${checkFileName} but declares neither checked: true nor checked: partial`);
   }
   return checkFileName === void 0 ? void 0 : join16(folderPath, checkFileName);
 };
@@ -124760,7 +124765,8 @@ var parseRuleFolder = async ({ folderPath, set: set2, documentPath, library, pro
   }
   const { declaration, prose } = await getRuleDeclaration({ folderPath, rulePath, found });
   const checkPath = await findCheckFile({ folderPath, rulePath, checked: declaration?.checked, found });
-  const check2 = declaration?.checked === true && checkPath !== void 0 ? await loadCheck({ checkPath, rulePath, found }) : void 0;
+  const declaresCheck = declaration !== void 0 && declaration.checked !== false;
+  const check2 = declaresCheck && checkPath !== void 0 ? await loadCheck({ checkPath, rulePath, found }) : void 0;
   const fixturesPath = join16(folderPath, "fixtures");
   problems.push(...found);
   let rule;
@@ -124773,7 +124779,8 @@ var parseRuleFolder = async ({ folderPath, set: set2, documentPath, library, pro
       documentPath,
       summary: declaration.summary,
       prose,
-      checked: declaration.checked,
+      checked: declaration.checked !== false,
+      reviewed: declaration.checked !== true,
       defaultSeverity: declaration.severity,
       defaultOptions: declaration.options,
       // As written: readStandardsLibrary resolves the names once every rule of the library is loaded.
@@ -148820,12 +148827,13 @@ var readPriorCleanup = ({ run }) => {
 };
 
 // src/agents/prompts/standardsReviewer.md
-var standardsReviewer_default = '# Role: Standards Reviewer\n\nYou read a set of standards rules against a set of files and report where the\nfiles break them. The rules are the ones no code can check \u2014 they are judgment,\nwhich is why a reader is doing this instead of a check. Their full text is\nappended to these instructions; the files in scope arrive in the task message.\nYour final message is machine-parsed \u2014 it is a data payload, not prose for a\nhuman.\n\n## What you are for\n\nEvery rule you are given was written out in full on purpose: its argument is\nwhat lets you recognise a violation the author never anticipated. Read the\nargument, not just the headline, and apply it to what the files actually do.\n\n## How to work\n\n- Read the files in scope. Read enough surrounding code to judge conventions \u2014\n  reading outside the scope is fine, reporting outside it is not.\n- Report a violation only when you can point at a specific file and say, in the\n  rule\'s own terms, what is wrong there. "This file could be cleaner" is not a\n  finding.\n- Quote the rule\'s reasoning in your `detail`, so a reader can disagree with you\n  on the merits rather than guessing what you had in mind.\n- Prefer silence to speculation. An empty `findings` list is a correct and\n  common answer, and a report full of weak findings makes the whole review\n  ignorable.\n- Report each violation once, at the site where it lives. Do not re-report the\n  same problem under several rules.\n\n## Your findings are advice\n\nEverything you report is advisory. It never blocks a run, never fails a gate,\nand never obliges anyone to act \u2014 a human or another agent weighs it in context\nand may decline it with a reason. Write accordingly: state what you saw, why the\nrule cares, and what you would do about it. Do not escalate, do not insist, and\ndo not pad the list to look thorough.\n\n## Hard limits\n\n- Change nothing. You read and report; you never edit, create, or delete files.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command. Use the harness\'s file tools to read. If the\n  harness exposes the filesystem only through a shell, use the shell solely\n  to read files \u2014 never for repository commands.\n- `rule` must be one of the rule names given to you, copied exactly as given,\n  library prefix included. A finding naming any other rule is dropped.\n- Every finding needs at least one file, with a repo-relative path as it was\n  listed to you. Line numbers are welcome when you have them.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"findings": [\n		{\n			"rule": "library/rule-name-exactly-as-given",\n			"files": [{ "path": "src/example.ts", "startLine": 12, "endLine": 30 }],\n			"detail": "what is true of this site, in the rule\'s own terms",\n			"guidance": "optional \u2014 what to do about findings of this kind"\n		}\n	]\n}\n```\n\nAn empty list is written as `{ "findings": [] }`.\n';
+var standardsReviewer_default = '# Role: Standards Reviewer\n\nYou read a set of standards rules against a set of files and report where the\nfiles break them. The rules are the ones code cannot check in full \u2014 they take\njudgment, which is why a reader is doing this instead of a check. Where a code\ncheck already covers part of a rule, the rule says so, and that part is not\nyours to report. Their full text is appended to these instructions; the files\nin scope arrive in the task message.\nYour final message is machine-parsed \u2014 it is a data payload, not prose for a\nhuman.\n\n## What you are for\n\nEvery rule you are given was written out in full on purpose: its argument is\nwhat lets you recognise a violation the author never anticipated. Read the\nargument, not just the headline, and apply it to what the files actually do.\n\n## How to work\n\n- Read the files in scope. Read enough surrounding code to judge conventions \u2014\n  reading outside the scope is fine, reporting outside it is not.\n- Report a violation only when you can point at a specific file and say, in the\n  rule\'s own terms, what is wrong there. "This file could be cleaner" is not a\n  finding.\n- Quote the rule\'s reasoning in your `detail`, so a reader can disagree with you\n  on the merits rather than guessing what you had in mind.\n- Prefer silence to speculation. An empty `findings` list is a correct and\n  common answer, and a report full of weak findings makes the whole review\n  ignorable.\n- Report each violation once, at the site where it lives. Do not re-report the\n  same problem under several rules.\n\n## Your findings are advice\n\nEverything you report is advisory. It never blocks a run, never fails a gate,\nand never obliges anyone to act \u2014 a human or another agent weighs it in context\nand may decline it with a reason. Write accordingly: state what you saw, why the\nrule cares, and what you would do about it. Do not escalate, do not insist, and\ndo not pad the list to look thorough.\n\n## Hard limits\n\n- Change nothing. You read and report; you never edit, create, or delete files.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command. Use the harness\'s file tools to read. If the\n  harness exposes the filesystem only through a shell, use the shell solely\n  to read files \u2014 never for repository commands.\n- `rule` must be one of the rule names given to you, copied exactly as given,\n  library prefix included. A finding naming any other rule is dropped.\n- Every finding needs at least one file, with a repo-relative path as it was\n  listed to you. Line numbers are welcome when you have them.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"findings": [\n		{\n			"rule": "library/rule-name-exactly-as-given",\n			"files": [{ "path": "src/example.ts", "startLine": 12, "endLine": 30 }],\n			"detail": "what is true of this site, in the rule\'s own terms",\n			"guidance": "optional \u2014 what to do about findings of this kind"\n		}\n	]\n}\n```\n\nAn empty list is written as `{ "findings": [] }`.\n';
 
 // src/agents/buildStandardsReviewInvocation.ts
 var ruleSection = ({ rule }) => {
   const scope = rule.appliesTo === void 0 ? [] : [`Applies only to: ${rule.appliesTo} \u2014 judge this rule only in files of those packages.`];
-  return [`**Rule: \`${rule.name}\`**`, ...scope, rule.prose].join("\n\n");
+  const checked = rule.checked ? ["A code check already reports part of this rule. Report only what that check could not have found."] : [];
+  return [`**Rule: \`${rule.name}\`**`, ...scope, ...checked, rule.prose].join("\n\n");
 };
 var buildStandardsReviewInvocation = ({ rules, files }) => {
   const byDocument = /* @__PURE__ */ new Map();
@@ -148910,7 +148918,7 @@ var runsRule = ({ group, name }) => {
 var collectJudgmentRules = ({ groups }) => [
   ...collectGroupItems({
     groups,
-    itemsOf: ({ group }) => group.pack.rules.map(({ rule }) => rule).filter((rule) => !rule.checked && runsRule({ group, name: rule.name })),
+    itemsOf: ({ group }) => group.pack.rules.map(({ rule }) => rule).filter((rule) => rule.reviewed && runsRule({ group, name: rule.name })),
     keyOf: ({ item }) => item.name
   }).values()
 ].map(({ item, packages }) => ({ rule: item, packages }));
@@ -148993,7 +149001,7 @@ var runStandardsReview = async ({
   }
   const ruleCount = `${rules.length} rule${rules.length === 1 ? "" : "s"}`;
   onProgress?.(
-    `The agent review is now running. ${driver.name} is reading your code against the ${ruleCount} no automated check can judge. This usually takes a few minutes.`
+    `The agent review is now running. ${driver.name} is reading your code against the ${ruleCount} that take judgment. This usually takes a few minutes.`
   );
   const heartbeat = createAgentHeartbeat({ label: "agent review", onProgress: (message) => onProgress?.(message) });
   const outcome = await invokeAgentWithContract({
@@ -165024,6 +165032,14 @@ var printFindingGroups = ({ findings }) => {
   }
 };
 
+// src/cli/internal/common/render/common/utils/describeCheckedBy.ts
+var describeCheckedBy = ({ rule }) => {
+  if (rule.checked && rule.reviewed) {
+    return "code and judgment";
+  }
+  return rule.checked ? "code" : "judgment";
+};
+
 // src/cli/internal/common/render/printStandardsRuleList.ts
 var countRules = ({ rules, where }) => new Set(rules.filter(where).map((rule) => rule.rule)).size;
 var describeOptions = ({ options }) => Object.entries(options).map(([name, value]) => `${name} ${value}`).join(", ");
@@ -165035,7 +165051,7 @@ var printStandardsRuleList = ({ rules }) => {
         cells: [
           rule.rule,
           rule.fromConfig ? `${rule.severity} (config)` : rule.severity,
-          rule.checked ? "code" : "judgment",
+          describeCheckedBy({ rule }),
           rule.doc,
           describePackageSet({ packages: rule.packages })
         ]
@@ -165049,7 +165065,7 @@ var printStandardsRuleList = ({ rules }) => {
   });
   const atSeverity = (severity) => countRules({ rules, where: (rule) => rule.severity === severity });
   const checked = countRules({ rules, where: (rule) => rule.checked });
-  const judged = countRules({ rules, where: (rule) => !rule.checked });
+  const judged = countRules({ rules, where: (rule) => rule.reviewed });
   const totals = {
     cells: [
       `${countRules({ rules, where: () => true })} rule(s)`,
@@ -165126,6 +165142,7 @@ var listStandardsRules = ({ groups }) => {
         doc: `${rule.library}: ${rule.documentPath}`,
         summary: rule.summary,
         checked: rule.checked,
+        reviewed: rule.reviewed,
         severity: state.severity,
         fromConfig: state.fromConfig,
         options: state.options,
@@ -165243,7 +165260,7 @@ var ruleRows = ({ rule }) => {
     {
       cells: [
         rule.rule,
-        rule.checked ? "code" : "judgment",
+        describeCheckedBy({ rule }),
         count({ value: rule.attempted }),
         count({ value: rule.resolved }),
         count({ value: rule.declined }),
@@ -165381,11 +165398,14 @@ var buildStandardsHealth = async ({ cwd, groups }) => {
     set: rule.set,
     documentPath: rule.documentPath,
     checked: rule.checked,
+    reviewed: rule.reviewed,
     ...tallies.get(rule.name) ?? emptyTally()
   }));
   rules.sort((first, second) => first.rule.localeCompare(second.rule));
-  const checked = rules.filter((rule) => rule.checked).length;
-  return { rules, totals: { rules: rules.length, checked, judgment: rules.length - checked } };
+  return {
+    rules,
+    totals: { rules: rules.length, checked: rules.filter((rule) => rule.checked).length, judgment: rules.filter((rule) => rule.reviewed).length }
+  };
 };
 
 // src/cli/standardsHealthCommand.ts
@@ -165682,14 +165702,14 @@ var standardsValidateCommand = async ({ flags, cwd }) => {
     console.log(`${red("\u2717")} ${problem}`);
   }
   const checked = library.rules.filter((rule) => rule.checked).length;
-  const judgment = library.rules.length - checked;
+  const reviewed = library.rules.filter((rule) => rule.reviewed).length;
   const packFiles = library.packs.length;
   console.log("");
   if (problems.length > 0) {
     console.log(`${library.name} \u2014 ${problems.length} problem(s) across ${checked} checked rule(s) and ${packFiles} pack file(s)`);
     return exitCli({ code: 1 });
   }
-  console.log(green(`${library.name} \u2014 ${checked} checked rule(s) validated, ${judgment} judgment-only rule(s), ${packFiles} pack file(s)`));
+  console.log(green(`${library.name} \u2014 ${checked} checked rule(s) validated, ${reviewed} agent-reviewed rule(s), ${packFiles} pack file(s)`));
   return exitCli({ code: 0 });
 };
 
