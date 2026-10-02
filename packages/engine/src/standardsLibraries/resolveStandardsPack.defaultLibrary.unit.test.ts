@@ -27,8 +27,8 @@ const structureTopics = [
 	'code/style-guide/structure/one-export-per-file',
 	'code/style-guide/structure/type-placement',
 ];
-const unitTestingTopics = ['tests/unit-testing', 'tests/unit-test-examples'];
-const reactTopics = ['code/architecture/react', 'code/style-guide/patterns/react-components', 'tests/unit-testing-react-components'];
+const unitTestingTopics = ['tests/unit-testing'];
+const reactTopics = ['code/architecture/react', 'tests/unit-testing-react-components'];
 const tanstackStartTopics = ['code/architecture/tanstack-start'];
 const nestjsTopics = ['code/architecture/nestjs'];
 const nodeTopics = [...typescriptTopics, ...structureTopics, ...unitTestingTopics];

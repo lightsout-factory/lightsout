@@ -24,7 +24,7 @@ const setupRequiresFolders = () => {
 		frontMatter: 'summary: a component file laid out outside its folder\nrequires:\n  - folder-index-file\n  - house/module-folder-layout',
 	});
 	const bareStringFolderPath = writeRuleFolder({
-		folderName: '20-react-domain-folders',
+		folderName: '20-shared-folder-layout',
 		frontMatter: 'summary: a domain folder holding loose files\nrequires: folder-index-file',
 	});
 
@@ -60,7 +60,7 @@ describe('parseRuleFolder', () => {
 			listRequires: ['folder-index-file', 'house/module-folder-layout'],
 			listProblems: [],
 			bareStringRule: undefined,
-			bareStringProblems: [expect.stringContaining('code/architecture/react/20-react-domain-folders/rule.md')],
+			bareStringProblems: [expect.stringContaining('code/architecture/react/20-shared-folder-layout/rule.md')],
 		});
 	});
 });

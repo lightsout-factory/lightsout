@@ -47,7 +47,7 @@ test('cli: standards-check prints each finding, the rule breakdown, and exits 0'
 	// and the tally is a table, closed off by the report path
 	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+—\s+│\s+1\s+│/);
 	// the rule's summary rides under its own row — a rule id alone says nothing
-	expect(stdout).toMatch(/│ One concept under two names\.\s*│/);
+	expect(stdout).toMatch(/│ One naming pattern, and one name for each concept\.\s*│/);
 	expect(stdout).toMatch(/report: \.lightsout\/standards-check\.json\n$/);
 	// the standards check reports; it never fails the caller
 	expect(code).toBe(0);
@@ -137,7 +137,7 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+advisory\s+│\s+code\s+│\s+lightsout: code\/style-guide\/conventions\/naming\s+│/);
 	expect(stdout).toMatch(/│ lightsout\/type-assertion\s+│\s+blocking\s+│\s+code\s+│/);
 	// a rule no check covers is listed too, and says so
-	expect(stdout).toMatch(/│ lightsout\/path-aliases\s+│\s+advisory\s+│\s+judgment\s+│\s+lightsout: code\/style-guide\/structure\/import-paths\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/module-exports\s+│\s+advisory\s+│\s+judgment\s+│\s+lightsout: code\/style-guide\/structure\/module-api\s+│/);
 	// a rule's live numbers ride its summary line
 	expect(stdout).toContain('minTokens 50');
 	// the totals close it off, counting every rule once by state and once by

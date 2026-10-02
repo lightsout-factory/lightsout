@@ -2,8 +2,6 @@
 summary: "Where a feature's hooks live, and why a query hook infers its return type."
 checked: false
 severity: advisory
-requires:
-  - file-naming-conventions
 ---
 
 ## TanStack Hooks

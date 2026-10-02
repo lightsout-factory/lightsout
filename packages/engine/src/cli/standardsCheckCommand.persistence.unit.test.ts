@@ -105,7 +105,7 @@ describe('standardsCheckCommand persistence', () => {
 				findings: [finding({ rule: 'duplicate-code-block', severity: StandardsSeverity.Blocking, siteKey: 'duplicate-code-block:src/a.ts:1' })],
 				notes: ['3 site(s) held back by the baseline'],
 			},
-			review: { findings: [finding({ rule: 'path-aliases', siteKey: 'path-aliases:src/a.ts' })] },
+			review: { findings: [finding({ rule: 'module-exports', siteKey: 'module-exports:src/a.ts' })] },
 		});
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
@@ -116,7 +116,7 @@ describe('standardsCheckCommand persistence', () => {
 		const written = writtenReport({ cwd });
 
 		expect(written?.path).toBe('.');
-		expect(written?.findings.map((entry) => entry.rule)).toStrictEqual(['duplicate-code-block', 'path-aliases']);
+		expect(written?.findings.map((entry) => entry.rule)).toStrictEqual(['duplicate-code-block', 'module-exports']);
 		expect(written?.notes).toStrictEqual(['3 site(s) held back by the baseline']);
 
 		const dated = datedSnapshots({ cwd });
@@ -184,7 +184,7 @@ describe('standardsCheckCommand persistence', () => {
 	test('a review-only run prints but writes nothing — the evidence file is the machine half’s', async () => {
 		const { context, cwd, logged } = setupCheck({
 			args: ['--agent-review'],
-			review: { findings: [finding({ rule: 'path-aliases', siteKey: 'path-aliases:src/a.ts' })] },
+			review: { findings: [finding({ rule: 'module-exports', siteKey: 'module-exports:src/a.ts' })] },
 		});
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);

@@ -5,12 +5,12 @@
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
-    "rules": 110,
+    "rules": 93,
     "checked": 52,
-    "judgment": 58,
-    "topics": 24,
+    "judgment": 41,
+    "topics": 22,
     "packs": 10,
-    "withFixtures": 110
+    "withFixtures": 93
   },
   "packs": [
     {
@@ -66,17 +66,11 @@
         "lightsout/code/style-guide/structure/type-placement",
         "lightsout/code/style-guide/typescript/return-types",
         "lightsout/code/style-guide/typescript/type-assertions",
-        "lightsout/tests/unit-test-examples",
         "lightsout/tests/unit-testing"
       ],
       "rules": [
         {
           "name": "lightsout/assertions-pin-contracts",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/async",
           "severity": "advisory",
           "options": {}
         },
@@ -126,17 +120,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/class-graduation",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/class-inheritance",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/class-surface",
           "severity": "advisory",
           "options": {}
         },
@@ -147,16 +131,6 @@
         },
         {
           "name": "lightsout/code-in-index-file",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/constants",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/cross-package-sharing",
           "severity": "advisory",
           "options": {}
         },
@@ -245,11 +219,6 @@
           }
         },
         {
-          "name": "lightsout/formatter-config",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/function-size",
           "severity": "advisory",
           "options": {
@@ -265,11 +234,6 @@
         },
         {
           "name": "lightsout/import-through-index",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/import-time-side-effects",
           "severity": "advisory",
           "options": {}
         },
@@ -319,17 +283,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/named-constant-boundaries",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/named-constant-casing",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/naming-consistency",
           "severity": "advisory",
           "options": {}
         },
@@ -366,11 +320,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/path-aliases",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/per-folder-readmes",
           "severity": "advisory",
           "options": {}
@@ -397,11 +346,6 @@
         },
         {
           "name": "lightsout/reuse-common-code",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/setup-factories",
           "severity": "advisory",
           "options": {}
         },
@@ -564,10 +508,10 @@
         }
       ],
       "totals": {
-        "rules": 95,
+        "rules": 84,
         "checked": 52,
-        "judgment": 43,
-        "topics": 20
+        "judgment": 32,
+        "topics": 19
       }
     },
     {
@@ -601,17 +545,11 @@
         "lightsout/code/style-guide/structure/type-placement",
         "lightsout/code/style-guide/typescript/return-types",
         "lightsout/code/style-guide/typescript/type-assertions",
-        "lightsout/tests/unit-test-examples",
         "lightsout/tests/unit-testing"
       ],
       "rules": [
         {
           "name": "lightsout/assertions-pin-contracts",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/async",
           "severity": "advisory",
           "options": {}
         },
@@ -661,17 +599,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/class-graduation",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/class-inheritance",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/class-surface",
           "severity": "advisory",
           "options": {}
         },
@@ -682,16 +610,6 @@
         },
         {
           "name": "lightsout/code-in-index-file",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/constants",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/cross-package-sharing",
           "severity": "advisory",
           "options": {}
         },
@@ -780,11 +698,6 @@
           }
         },
         {
-          "name": "lightsout/formatter-config",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/function-size",
           "severity": "advisory",
           "options": {
@@ -800,11 +713,6 @@
         },
         {
           "name": "lightsout/import-through-index",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/import-time-side-effects",
           "severity": "advisory",
           "options": {}
         },
@@ -854,17 +762,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/named-constant-boundaries",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/named-constant-casing",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/naming-consistency",
           "severity": "advisory",
           "options": {}
         },
@@ -901,11 +799,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/path-aliases",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/per-folder-readmes",
           "severity": "advisory",
           "options": {}
@@ -932,11 +825,6 @@
         },
         {
           "name": "lightsout/reuse-common-code",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/setup-factories",
           "severity": "advisory",
           "options": {}
         },
@@ -1099,10 +987,10 @@
         }
       ],
       "totals": {
-        "rules": 95,
+        "rules": 84,
         "checked": 52,
-        "judgment": 43,
-        "topics": 19
+        "judgment": 32,
+        "topics": 18
       }
     },
     {
@@ -1113,24 +1001,17 @@
         "packs": [],
         "topics": [
           "lightsout/code/architecture/react",
-          "lightsout/code/style-guide/patterns/react-components",
           "lightsout/tests/unit-testing-react-components"
         ],
         "rules": []
       },
       "topics": [
         "lightsout/code/architecture/react",
-        "lightsout/code/style-guide/patterns/react-components",
         "lightsout/tests/unit-testing-react-components"
       ],
       "rules": [
         {
           "name": "lightsout/component-file-structure",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/file-naming-conventions",
           "severity": "advisory",
           "options": {}
         },
@@ -1145,41 +1026,16 @@
           "options": {}
         },
         {
-          "name": "lightsout/query-priority",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/react-domain-folders",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/react-size-thresholds",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/testing-hooks-in-isolation",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/testing-user-interactions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/the-render-pattern",
           "severity": "advisory",
           "options": {}
         }
       ],
       "totals": {
-        "rules": 10,
+        "rules": 4,
         "checked": 0,
-        "judgment": 10,
-        "topics": 3
+        "judgment": 4,
+        "topics": 2
       }
     },
     {
@@ -1207,25 +1063,18 @@
         "lightsout/code/style-guide/patterns/classes",
         "lightsout/code/style-guide/patterns/functions",
         "lightsout/code/style-guide/patterns/named-constants",
-        "lightsout/code/style-guide/patterns/react-components",
         "lightsout/code/style-guide/structure/import-paths",
         "lightsout/code/style-guide/structure/module-api",
         "lightsout/code/style-guide/structure/one-export-per-file",
         "lightsout/code/style-guide/structure/type-placement",
         "lightsout/code/style-guide/typescript/return-types",
         "lightsout/code/style-guide/typescript/type-assertions",
-        "lightsout/tests/unit-test-examples",
         "lightsout/tests/unit-testing",
         "lightsout/tests/unit-testing-react-components"
       ],
       "rules": [
         {
           "name": "lightsout/assertions-pin-contracts",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/async",
           "severity": "advisory",
           "options": {}
         },
@@ -1275,17 +1124,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/class-graduation",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/class-inheritance",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/class-surface",
           "severity": "advisory",
           "options": {}
         },
@@ -1301,16 +1140,6 @@
         },
         {
           "name": "lightsout/component-file-structure",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/constants",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/cross-package-sharing",
           "severity": "advisory",
           "options": {}
         },
@@ -1364,11 +1193,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/file-naming-conventions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/file-size",
           "severity": "advisory",
           "options": {
@@ -1404,11 +1228,6 @@
           }
         },
         {
-          "name": "lightsout/formatter-config",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/framework-basics",
           "severity": "advisory",
           "options": {}
@@ -1429,11 +1248,6 @@
         },
         {
           "name": "lightsout/import-through-index",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/import-time-side-effects",
           "severity": "advisory",
           "options": {}
         },
@@ -1488,17 +1302,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/named-constant-boundaries",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/named-constant-casing",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/naming-consistency",
           "severity": "advisory",
           "options": {}
         },
@@ -1535,11 +1339,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/path-aliases",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/per-folder-readmes",
           "severity": "advisory",
           "options": {}
@@ -1565,27 +1364,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/query-priority",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/react-domain-folders",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/react-size-thresholds",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/reuse-common-code",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/setup-factories",
           "severity": "advisory",
           "options": {}
         },
@@ -1707,16 +1486,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/testing-hooks-in-isolation",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/testing-user-interactions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/the-render-pattern",
           "severity": "advisory",
           "options": {}
@@ -1763,10 +1532,10 @@
         }
       ],
       "totals": {
-        "rules": 105,
+        "rules": 88,
         "checked": 52,
-        "judgment": 53,
-        "topics": 22
+        "judgment": 36,
+        "topics": 20
       }
     },
     {
@@ -1820,16 +1589,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/constants",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/cross-package-sharing",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/dead-export",
           "severity": "blocking",
           "options": {}
@@ -1916,11 +1675,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/path-aliases",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/per-folder-readmes",
           "severity": "advisory",
           "options": {}
@@ -1977,9 +1731,9 @@
         }
       ],
       "totals": {
-        "rules": 35,
+        "rules": 32,
         "checked": 19,
-        "judgment": 16,
+        "judgment": 13,
         "topics": 6
       }
     },
@@ -2057,25 +1811,18 @@
         "lightsout/code/style-guide/patterns/classes",
         "lightsout/code/style-guide/patterns/functions",
         "lightsout/code/style-guide/patterns/named-constants",
-        "lightsout/code/style-guide/patterns/react-components",
         "lightsout/code/style-guide/structure/import-paths",
         "lightsout/code/style-guide/structure/module-api",
         "lightsout/code/style-guide/structure/one-export-per-file",
         "lightsout/code/style-guide/structure/type-placement",
         "lightsout/code/style-guide/typescript/return-types",
         "lightsout/code/style-guide/typescript/type-assertions",
-        "lightsout/tests/unit-test-examples",
         "lightsout/tests/unit-testing",
         "lightsout/tests/unit-testing-react-components"
       ],
       "rules": [
         {
           "name": "lightsout/assertions-pin-contracts",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/async",
           "severity": "advisory",
           "options": {}
         },
@@ -2125,17 +1872,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/class-graduation",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/class-inheritance",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/class-surface",
           "severity": "advisory",
           "options": {}
         },
@@ -2151,16 +1888,6 @@
         },
         {
           "name": "lightsout/component-file-structure",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/constants",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/cross-package-sharing",
           "severity": "advisory",
           "options": {}
         },
@@ -2219,11 +1946,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/file-naming-conventions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/file-naming-for-server-functions",
           "severity": "advisory",
           "options": {}
@@ -2264,11 +1986,6 @@
           }
         },
         {
-          "name": "lightsout/formatter-config",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/framework-basics",
           "severity": "advisory",
           "options": {}
@@ -2289,11 +2006,6 @@
         },
         {
           "name": "lightsout/import-through-index",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/import-time-side-effects",
           "severity": "advisory",
           "options": {}
         },
@@ -2348,17 +2060,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/named-constant-boundaries",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/named-constant-casing",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/naming-consistency",
           "severity": "advisory",
           "options": {}
         },
@@ -2395,11 +2097,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/path-aliases",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/per-folder-readmes",
           "severity": "advisory",
           "options": {}
@@ -2430,32 +2127,12 @@
           "options": {}
         },
         {
-          "name": "lightsout/query-priority",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/react-domain-folders",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/react-size-thresholds",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/reuse-common-code",
           "severity": "advisory",
           "options": {}
         },
         {
           "name": "lightsout/server-functions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/setup-factories",
           "severity": "advisory",
           "options": {}
         },
@@ -2582,16 +2259,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/testing-hooks-in-isolation",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/testing-user-interactions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/the-render-pattern",
           "severity": "advisory",
           "options": {}
@@ -2638,10 +2305,10 @@
         }
       ],
       "totals": {
-        "rules": 110,
+        "rules": 93,
         "checked": 52,
-        "judgment": 58,
-        "topics": 23
+        "judgment": 41,
+        "topics": 21
       }
     },
     {
@@ -2705,17 +2372,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/class-graduation",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/class-inheritance",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/class-surface",
           "severity": "advisory",
           "options": {}
         },
@@ -2758,11 +2415,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/formatter-config",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/function-size",
           "severity": "advisory",
           "options": {
@@ -2777,17 +2429,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/named-constant-boundaries",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/named-constant-casing",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/naming-consistency",
           "severity": "advisory",
           "options": {}
         },
@@ -2858,26 +2500,24 @@
         }
       ],
       "totals": {
-        "rules": 34,
+        "rules": 29,
         "checked": 16,
-        "judgment": 18,
+        "judgment": 13,
         "topics": 11
       }
     },
     {
       "name": "unit-testing",
       "address": "lightsout/unit-testing",
-      "description": "Unit testing: how unit tests are written, with worked examples.",
+      "description": "Unit testing: how unit tests are written.",
       "include": {
         "packs": [],
         "topics": [
-          "lightsout/tests/unit-testing",
-          "lightsout/tests/unit-test-examples"
+          "lightsout/tests/unit-testing"
         ],
         "rules": []
       },
       "topics": [
-        "lightsout/tests/unit-test-examples",
         "lightsout/tests/unit-testing"
       ],
       "rules": [
@@ -2887,17 +2527,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/async",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/files-that-must-not-have-dedicated-tests",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/import-time-side-effects",
           "severity": "advisory",
           "options": {}
         },
@@ -2920,11 +2550,6 @@
         },
         {
           "name": "lightsout/precedence-in-repos-with-older-tests",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/setup-factories",
           "severity": "advisory",
           "options": {}
         },
@@ -3017,10 +2642,10 @@
         }
       ],
       "totals": {
-        "rules": 26,
+        "rules": 23,
         "checked": 17,
-        "judgment": 9,
-        "topics": 2
+        "judgment": 6,
+        "topics": 1
       }
     }
   ],
@@ -3059,7 +2684,6 @@
         "ungrouped-domain-utils",
         "single-file-domain-folder",
         "case-collision",
-        "cross-package-sharing",
         "shared-package-criteria"
       ]
     },
@@ -3074,9 +2698,7 @@
       "path": "code/architecture/react",
       "intro": "# React Architecture\n\nHow the base rules apply to React code: components, hooks and JSX. React mandates no file layout and no file names.",
       "ruleIds": [
-        "component-file-structure",
-        "react-domain-folders",
-        "file-naming-conventions"
+        "component-file-structure"
       ]
     },
     {
@@ -3124,7 +2746,6 @@
       "path": "code/style-guide/conventions/lint-and-formatting",
       "intro": "# Lint and Formatting\n\nRules a linter or formatter can apply mechanically.",
       "ruleIds": [
-        "formatter-config",
         "import-type-only",
         "no-any"
       ]
@@ -3134,7 +2755,6 @@
       "path": "code/style-guide/conventions/naming",
       "intro": "# Naming\n\nHow names are chosen, so code is found by searching for it.",
       "ruleIds": [
-        "naming-consistency",
         "synonym-export-name",
         "naming-for-reuse"
       ]
@@ -3156,8 +2776,6 @@
         "class-bright-line",
         "banned-class-shapes",
         "class-syntax",
-        "class-graduation",
-        "class-surface",
         "class-inheritance"
       ]
     },
@@ -3180,7 +2798,6 @@
       "ruleIds": [
         "bare-string-union",
         "named-constant-casing",
-        "named-constant-boundaries",
         "discriminant-const-object",
         "props-union-exemption",
         "derived-lookup-map"
@@ -3188,19 +2805,10 @@
     },
     {
       "set": "code",
-      "path": "code/style-guide/patterns/react-components",
-      "intro": "# Component & Hook Patterns\n\nHow React components and hooks are kept short and focused.",
-      "ruleIds": [
-        "react-size-thresholds"
-      ]
-    },
-    {
-      "set": "code",
       "path": "code/style-guide/structure/import-paths",
       "intro": "# Import Path Strategy\n\nHow an import names the file it reads from.",
       "ruleIds": [
-        "import-path-alias",
-        "path-aliases"
+        "import-path-alias"
       ]
     },
     {
@@ -3229,8 +2837,7 @@
       "path": "code/style-guide/structure/type-placement",
       "intro": "# Type & Constant Placement\n\nWhich folder inside a `common/` holds a type or a constant.",
       "ruleIds": [
-        "types-and-interfaces",
-        "constants"
+        "types-and-interfaces"
       ]
     },
     {
@@ -3248,12 +2855,6 @@
       "ruleIds": [
         "type-assertion"
       ]
-    },
-    {
-      "set": "tests",
-      "path": "tests/unit-test-examples",
-      "intro": "# Unit Test Examples\n\nTwo complete tests, showing the unit-testing rules applied end to end.\n\n## Function with Mocked Dependencies\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { UserProfile } from '@/profiles/UserProfile';\nimport { AppSettings } from '@/settings/AppSettings';\nimport { getAvatarUrl } from '@/avatars/getAvatarUrl';\n\n// Mocked Imports\n// -------------------------\nconst mockGetAvatarFromProfile = jest.fn<(params: { profile: UserProfile }) => string | null>();\n\njest.mock('@/profiles/getAvatarFromProfile', () => ({\n\tgetAvatarFromProfile: (params: { profile: UserProfile }) =>\n\t\tmockGetAvatarFromProfile(params),\n}));\n// -------------------------\nconst mockGetAvatarFromGravatar = jest.fn<(params: { email: string }) => string | null>();\n\njest.mock('@/gravatar/getAvatarFromGravatar', () => ({\n\tgetAvatarFromGravatar: (params: { email: string }) =>\n\t\tmockGetAvatarFromGravatar(params),\n}));\n// -------------------------\n\nconst setupAvatar = ({\n\tprofile = null,\n\tgravatar = null,\n\tsetting,\n}: {\n\tprofile?: string | null;\n\tgravatar?: string | null;\n\tsetting?: 'hasCustomAvatar' | 'useGravatar';\n} = {}) => {\n\tmockGetAvatarFromProfile.mockReturnValue(profile);\n\tmockGetAvatarFromGravatar.mockReturnValue(gravatar);\n\n\tconst userProfile = new UserProfile({\n\t\tprofileData: { email: 'user@example.com', displayName: 'Test User' },\n\t});\n\tconst appSettings = new AppSettings({ isGuest: false, defaultPreferences: {} });\n\tif (setting) {\n\t\tappSettings.set(setting, true);\n\t}\n\n\treturn { userProfile, appSettings };\n};\n\ndescribe('getAvatarUrl', () => {\n\ttest('returns null when no avatar conditions are met', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar();\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBeNull();\n\t});\n\n\ttest('returns the profile avatar when the user has a custom avatar', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar({\n\t\t\tprofile: 'https://cdn.example.com/avatars/user-123.png',\n\t\t\tsetting: 'hasCustomAvatar',\n\t\t});\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBe('https://cdn.example.com/avatars/user-123.png');\n\t});\n});\n```\n\n## Parameterized with test.each\n\n```typescript\nimport { expect, describe, test } from '@jest/globals';\nimport { formatCurrency } from '@/common/utils/formatCurrency';\n\ndescribe('formatCurrency', () => {\n\ttest.each([\n\t\t{ amount: 100, locale: 'en-US', expected: '$1.00' },\n\t\t{ amount: 100, locale: 'en-GB', expected: '£1.00' },\n\t\t{ amount: 0, locale: 'en-US', expected: '$0.00' },\n\t\t{ amount: -50, locale: 'en-US', expected: '-$0.50' },\n\t])(\n\t\t'formats $amount in $locale as $expected',\n\t\t({ amount, locale, expected }) => {\n\t\t\tconst formatted = formatCurrency({ amount, locale });\n\n\t\t\texpect(formatted).toBe(expected);\n\t\t},\n\t);\n});\n```",
-      "ruleIds": []
     },
     {
       "set": "tests",
@@ -3276,15 +2877,12 @@
         "test-strict-equal-matcher",
         "test-never-passing-assertion",
         "assertions-pin-contracts",
-        "setup-factories",
         "oversized-setup-factory",
         "test-mock-prefix",
         "test-mock-return-in-hook",
         "test-mock-untyped",
         "test-mock-wrapper-untyped",
         "jest-spyon-vs-jest-mock",
-        "async",
-        "import-time-side-effects",
         "test-manual-mock-cleanup"
       ]
     },
@@ -3295,10 +2893,7 @@
       "ruleIds": [
         "framework-basics",
         "the-render-pattern",
-        "query-priority",
-        "mocking-component-dependencies",
-        "testing-user-interactions",
-        "testing-hooks-in-isolation"
+        "mocking-component-dependencies"
       ]
     }
   ],
@@ -3327,36 +2922,6 @@
           "side": "fail",
           "path": "src/errors/getErrorCode.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { getErrorCode } from './getErrorCode';\nimport { errorCodes } from './errorCodes';\n\ndescribe('getErrorCode', () => {\n\ttest('names the connection failure by its wire code', () => {\n\t\tconst code = getErrorCode({ kind: 'connection' });\n\n\t\t// comparing the module's own constant to itself — true even when the value is wrong\n\t\texpect(code).toBe(errorCodes.connection);\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
-      "id": "async",
-      "name": "lightsout/async",
-      "set": "tests",
-      "documentPath": "tests/unit-testing",
-      "summary": "Testing asynchronous code.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Async\n\nGive an async mock its result with `mockResolvedValue` or `mockRejectedValue` in the setup factory (`test-mock-return-in-hook`), `await` the act in the test, and assert a rejection with `await expect(act).rejects.toThrow(...)`.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/users/getUserData.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { getUserData } from './getUserData';\n\nconst mockFindUser = jest.fn<(id: string) => Promise<{ id: string } | null>>();\n\nconst setupUser = ({ found = true }: { found?: boolean } = {}) => {\n\tif (found) {\n\t\tmockFindUser.mockResolvedValue({ id: '1' });\n\t} else {\n\t\tmockFindUser.mockRejectedValue(new Error('Not found'));\n\t}\n\n\treturn { findUser: mockFindUser };\n};\n\ndescribe('getUserData', () => {\n\ttest('rejects when the user does not exist', async () => {\n\t\tconst { findUser } = setupUser({ found: false });\n\n\t\tawait expect(getUserData({ findUser, userId: '999' })).rejects.toThrow('Not found');\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/users/getUserData.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { getUserData } from './getUserData';\n\nconst mockFindUser = jest.fn<(id: string) => Promise<{ id: string } | null>>();\n\ndescribe('getUserData', () => {\n\ttest('rejects when the user does not exist', () => {\n\t\tmockFindUser.mockImplementation(() => Promise.reject(new Error('Not found')));\n\n\t\t// nothing is awaited, so the assertion runs before the rejection lands and\n\t\t// the test passes whatever the unit does\n\t\tgetUserData({ findUser: mockFindUser, userId: '999' }).catch((error: Error) => {\n\t\t\texpect(error.message).toBe('Not found');\n\t\t});\n\t});\n});\n"
         }
       ],
       "example": {
@@ -3744,7 +3309,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Class Bright Line\n\nDefault to functions. Write a class if, and only if, at least one of these holds:\n\n- **(a)** Mutable state persists across method calls: a `RateLimiter` counting its remaining tokens, a cache, a connection pool.\n- **(b)** Three or more operations share injected config or dependencies: an `HttpClient` whose base URL, retries and credentials are injected once and used by every method.\n- **(c)** Several implementations share one interface: `FileSource` and `S3Source` behind a `RecordSource` contract.\n- **(d)** The framework requires it: NestJS services, resolvers and guards, because its dependency injection needs classes.\n\nWhen none holds, write functions in a module. To check, ask whether \"how many of these exist right now?\" is a meaningful question: two `HttpClient`s pointed at different APIs, yes, so a class; two `formatDate`s, no, so a function.",
+      "prose": "## Class Bright Line\n\nDefault to functions. Write a class if, and only if, at least one of these holds:\n\n- **(a)** Mutable state persists across method calls: a `RateLimiter` counting its remaining tokens, a cache, a connection pool.\n- **(b)** Three or more operations share injected config or dependencies: an `HttpClient` whose base URL, retries and credentials are injected once and used by every method.\n- **(c)** Several implementations share one interface: `FileSource` and `S3Source` behind a `RecordSource` contract.\n- **(d)** The framework requires it: NestJS services, resolvers and guards, because its dependency injection needs classes.\n\nWhen none holds, write functions in a module. To check, ask whether \"how many of these exist right now?\" is a meaningful question: two `HttpClient`s pointed at different APIs, yes, so a class; two `formatDate`s, no, so a function.\n\nKeep a class's methods to behaviour that needs its state. Put other logic in functions rather than instance methods, placed as `private-helper-colocation` and `module-file-to-folder` say: logic that needs no state is easier to read and reuse as a function.",
       "fixtures": [
         {
           "side": "pass",
@@ -3755,36 +3320,6 @@
           "side": "fail",
           "path": "src/pricing/PriceFormatter.ts",
           "text": "interface ConstructorParams {\n\tlocale: string;\n}\n\n// None of the four criteria hold: nothing persists between calls, one operation\n// uses the injected value, there is no second implementation and no framework\n// asked for a class. \"How many PriceFormatters exist?\" is not a question.\nexport class PriceFormatter {\n\tprivate readonly locale: string;\n\n\tconstructor({ locale }: ConstructorParams) {\n\t\tthis.locale = locale;\n\t}\n\n\tformat({ amount }: { amount: number }): string {\n\t\treturn amount.toLocaleString(this.locale);\n\t}\n}\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
-      "id": "class-graduation",
-      "name": "lightsout/class-graduation",
-      "set": "code",
-      "documentPath": "code/style-guide/patterns/classes",
-      "summary": "When a class gets a folder of its own.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Class Graduation\n\nA class is a module: `module-file-to-folder` decides whether it is a file or a folder. Never make a folder for a class that has no files of its own, such as a folder holding only the class and an index file.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/rate/RateLimiter.ts",
-          "text": "interface ConstructorParams {\n\ttokens: number;\n}\n\n// No companions, so no folder: the file is the module and the compiler enforces\n// its boundary for free.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ tokens }: ConstructorParams) {\n\t\tthis.remaining = tokens;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/rate/RateLimiter/RateLimiter.ts",
-          "text": "interface ConstructorParams {\n\ttokens: number;\n}\n\n// A folder and a barrel around a class that bundles nothing — ceremony, not\n// structure. `RateLimiter.ts` beside its test is the whole module.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ tokens }: ConstructorParams) {\n\t\tthis.remaining = tokens;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
         }
       ],
       "example": {
@@ -3828,36 +3363,6 @@
           "fail": "src/runs/RefactorRun.ts",
           "pass": "src/runs/RefactorRun.ts"
         }
-      }
-    },
-    {
-      "id": "class-surface",
-      "name": "lightsout/class-surface",
-      "set": "code",
-      "documentPath": "code/style-guide/patterns/classes",
-      "summary": "What belongs on a class and what belongs in functions.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Class Surface\n\nKeep a class's methods to behaviour that needs its state. Put other logic in functions rather than instance methods, placed as `private-helper-colocation` and `module-file-to-folder` say.\n\nLogic that needs no state is easier to read and reuse as a function than as a method.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/http/HttpClient.ts",
-          "text": "interface ConstructorParams {\n\tbaseUrl: string;\n}\n\n// The stateless half is a co-located helper, so the class surface is only what\n// genuinely needs the injected base url.\nconst buildQuery = ({ query }: { query: Record<string, string> }) =>\n\tObject.entries(query)\n\t\t.map(([key, value]) => `${key}=${value}`)\n\t\t.join('&');\n\nexport class HttpClient {\n\tprivate readonly baseUrl: string;\n\n\tconstructor({ baseUrl }: ConstructorParams) {\n\t\tthis.baseUrl = baseUrl;\n\t}\n\n\tget({ path, query }: { path: string; query: Record<string, string> }): string {\n\t\treturn `${this.baseUrl}${path}?${buildQuery({ query })}`;\n\t}\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/http/HttpClient.ts",
-          "text": "interface ConstructorParams {\n\tbaseUrl: string;\n}\n\n// `buildQuery` touches no state — it is on the surface only because it was\n// written where the class was, and every consumer now sees it as API.\nexport class HttpClient {\n\tprivate readonly baseUrl: string;\n\n\tconstructor({ baseUrl }: ConstructorParams) {\n\t\tthis.baseUrl = baseUrl;\n\t}\n\n\tget({ path, query }: { path: string; query: Record<string, string> }): string {\n\t\treturn `${this.baseUrl}${path}?${this.buildQuery({ query })}`;\n\t}\n\n\tbuildQuery({ query }: { query: Record<string, string> }): string {\n\t\treturn Object.entries(query)\n\t\t\t.map(([key, value]) => `${key}=${value}`)\n\t\t\t.join('&');\n\t}\n}\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
       }
     },
     {
@@ -3962,7 +3467,7 @@
         "pass": 3,
         "fail": 1
       },
-      "prose": "## Component File Structure\n\nA component is a module: one `.tsx` file until it needs files only it uses, as `module-file-to-folder` says.\n\nLeave a component's return type to inference, an exception to `explicit-return-type`. React's own types are a component's contract, so an annotation such as `JSX.Element` only adds noise.",
+      "prose": "## Component File Structure\n\nA component is a module: one `.tsx` file until it needs files only it uses, as `module-file-to-folder` says.\n\nLeave a component's return type to inference, an exception to `explicit-return-type`. React's own types are a component's contract, so an annotation such as `JSX.Element` only adds noise.\n\nKeep components and hooks short:\n\n- When a component passes its limit in `function-size`, extract sub-components.\n- A hook composes; it does not compute. Move its pure logic into utility functions the hook calls.\n- Move inline styles and repeated `className` logic into a shared class or component.\n\nLogic outside a component or hook can be read and tested without rendering anything.",
       "fixtures": [
         {
           "side": "pass",
@@ -3990,80 +3495,6 @@
         "focus": {
           "fail": "src/components/StatusBadge/StatusBadge.tsx",
           "pass": "src/components/InstallPanel/InstallPanel.tsx"
-        }
-      }
-    },
-    {
-      "id": "constants",
-      "name": "lightsout/constants",
-      "set": "code",
-      "documentPath": "code/style-guide/structure/type-placement",
-      "summary": "Where constants go.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Constants\n\nPut a constant in the `constants/` folder of the lowest `common/` its users share, as `shared-code-placement` says, never in `types/`. A constant only one module uses stays in that module's own `common/constants/`. A `const` object with its derived union and lookup map lives in `constants/` under the object's name, as `bare-string-union` and `derived-lookup-map` say.\n\n```typescript\n// common/constants/defaultConfig.ts\nimport type { Config } from '@/path/to/common/types/Config';\n\nexport const defaultConfig: Config = { name: 'default' };\n```\n\nA constant may instead keep its type in the same `constants/` file, named for the value, under `multi-export`'s exception 5. When the type has any other consumer, it goes in `types/`.\n\nConstants are values, not types, so they get a folder of their own.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/common/constants/defaultConfig.ts",
-          "text": "export const defaultConfig = { name: 'default' };\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/types/defaultConfig.ts",
-          "text": "export const defaultConfig = { name: 'default' };\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
-      "id": "cross-package-sharing",
-      "name": "lightsout/cross-package-sharing",
-      "set": "code",
-      "documentPath": "code/architecture/folder-structure",
-      "summary": "Code that several packages need.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## Cross-Package Sharing\n\nNever copy code from one package into another. Code that `shared-package-criteria` lets into a shared package goes there instead of a copy in each package.\n\nA shared package where everything is public is like a `common/`: its `src/` holds domain folders, not modules. Decide each folder as `module-out-of-common` does: a folder whose every file is something its users call directly is a domain folder.\n\nCopies in each package drift apart, and a fix then reaches only one of them.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "packages/api/src/auth/getAuth.ts",
-          "text": "import { hasPermission } from '@scope/shared/permissions/utils/hasPermission';\n\nexport const getAuth = hasPermission;\n"
-        },
-        {
-          "side": "pass",
-          "path": "packages/shared/src/permissions/utils/hasPermission.ts",
-          "text": "export const hasPermission = () => true;\n"
-        },
-        {
-          "side": "fail",
-          "path": "packages/api/src/permissions/utils/hasPermission.ts",
-          "text": "export const hasPermission = () => true;\n"
-        },
-        {
-          "side": "fail",
-          "path": "packages/frontend/src/permissions/utils/hasPermission.ts",
-          "text": "export const hasPermission = () => true;\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "packages/api/src/permissions/utils/hasPermission.ts",
-          "pass": "packages/api/src/auth/getAuth.ts"
         }
       }
     },
@@ -4144,7 +3575,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Derived Lookup Map\n\nA lookup map is derived when the union is its key type, `Record<LogLevel, string>`, so that every member has an entry. A derived map may share the `const` object's file, as `multi-export`'s exceptions allow, because a change to one always changes the other. A constant that only uses the union, such as a default value or a subset of members, gets its own file, placed as `constants` says.\n\n```typescript\nexport const LogLevel = {\n\tDebug: 'debug',\n\tInfo: 'info',\n\tError: 'error',\n} as const;\n\nexport type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];\n\nexport const logLevelLabels: Record<LogLevel, string> = {\n\t[LogLevel.Debug]: 'Debug',\n\t[LogLevel.Info]: 'Info',\n\t[LogLevel.Error]: 'Error',\n};\n```",
+      "prose": "## Derived Lookup Map\n\nA lookup map is derived when the union is its key type, `Record<LogLevel, string>`, so that every member has an entry. A derived map may share the `const` object's file, as `multi-export`'s exceptions allow, because a change to one always changes the other. A constant that only uses the union, such as a default value or a subset of members, gets its own file, placed as `types-and-interfaces` says.\n\n```typescript\nexport const LogLevel = {\n\tDebug: 'debug',\n\tInfo: 'info',\n\tError: 'error',\n} as const;\n\nexport type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];\n\nexport const logLevelLabels: Record<LogLevel, string> = {\n\t[LogLevel.Debug]: 'Debug',\n\t[LogLevel.Info]: 'Info',\n\t[LogLevel.Error]: 'Error',\n};\n```",
       "fixtures": [
         {
           "side": "pass",
@@ -4525,50 +3956,6 @@
         "focus": {
           "fail": "src/billing/common/formatRate.ts",
           "pass": "src/billing/common/utils/formatRate.ts"
-        }
-      }
-    },
-    {
-      "id": "file-naming-conventions",
-      "name": "lightsout/file-naming-conventions",
-      "set": "code",
-      "documentPath": "code/architecture/react",
-      "summary": "How React files are named, and which extension they take.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## File Naming Conventions\n\nName a React file as `filename-mismatch` says, and its folder as `folder-casing` says.\n\nGive a file the `.tsx` extension only when it contains JSX. A hook or utility with no JSX is `.ts`, such as `useIssues.ts`.\n\nTypeScript parses JSX only in a `.tsx` file, so a `.ts` extension tells the reader the file renders nothing.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/components/IssueDetailContent.tsx",
-          "text": "interface Props {\n\ttitle: string;\n}\n\nexport const IssueDetailContent = ({ title }: Props) => <h1>{title}</h1>;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/hooks/useIssues.ts",
-          "text": "// Components PascalCase, hooks camelCase — each file carries the casing its\n// kind mandates.\nexport const useIssues = () => ({ issues: [] });\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/components/issue-detail-content.tsx",
-          "text": "interface Props {\n\ttitle: string;\n}\n\n// A component file in kebab-case with no framework mandating it — the name has\n// to carry the export's own PascalCase.\nexport const IssueDetailContent = ({ title }: Props) => <h1>{title}</h1>;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/hooks/UseIssues.ts",
-          "text": "export const useIssues = () => ({ issues: [] });\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/components/issue-detail-content.tsx",
-          "pass": "src/components/IssueDetailContent.tsx"
         }
       }
     },
@@ -5131,36 +4518,6 @@
       }
     },
     {
-      "id": "formatter-config",
-      "name": "lightsout/formatter-config",
-      "set": "code",
-      "documentPath": "code/style-guide/conventions/lint-and-formatting",
-      "summary": "Following the project's own formatting setup.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Formatter Config\n\nFollow the project's formatter and linter configuration (`biome.json`, `.prettierrc`, `eslint.config.*`). With none configured, keep formatting consistent with the code around it. The other rules in this topic hold even where that configuration does not enforce them.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/billing/getChargeLabel.ts",
-          "text": "// Tabs and single quotes, as the repo's own formatter config asks for.\nexport const getChargeLabel = ({ amount }: { amount: number }): string => `${amount}`;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/getChargeLabel.ts",
-          "text": "// Two-space indent and double quotes in a repo whose formatter config says otherwise.\nexport const getChargeLabel = ({ amount }: { amount: number }): string => {\n  return \"\" + amount;\n};\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
       "id": "framework-basics",
       "name": "lightsout/framework-basics",
       "set": "tests",
@@ -5237,7 +4594,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Import Path Alias\n\nUse the package's configured path alias for every import. A package has aliases when it declares `imports` in `package.json` or `compilerOptions.paths` in `tsconfig.json`, and then never uses a relative path (`./`, `../`), not even for a sibling file, a `common/` subfolder or a package entry's re-exports.\n\nWhen a package declares no aliases, use relative paths consistently, and consider adding aliases.\n\n```typescript\n// Correct: an imports alias, then a paths alias\nimport { features } from '#src/features/home/common/constants/features.ts';\nimport { features } from '@/features/home/common/constants/features';\n\n// Incorrect in a package with aliases\nimport { features } from './common/constants/features';\n```\n\nThen every import of a file reads the same, wherever it is written.",
+      "prose": "## Import Path Alias\n\nUse the package's configured path alias for every import. A package has aliases when it declares `imports` in `package.json` or `compilerOptions.paths` in `tsconfig.json`, and then never uses a relative path (`./`, `../`), not even for a sibling file, a `common/` subfolder or a package entry's re-exports.\n\nWhen a package declares no aliases, use relative paths consistently, and consider adding aliases.\n\nRead the alias from the package's own declaration; never write one from memory, because packages differ. An `imports` alias resolves literally, so the specifier carries the extension of the file it names: `#src/cli/shipCommand.ts`, never `#src/cli/shipCommand`. A `paths` alias is resolved the usual way, so it takes no extension.\n\n```typescript\n// Correct: an imports alias, then a paths alias\nimport { features } from '#src/features/home/common/constants/features.ts';\nimport { features } from '@/features/home/common/constants/features';\n\n// Incorrect in a package with aliases\nimport { features } from './common/constants/features';\n```\n\nThen every import of a file reads the same, wherever it is written.",
       "fixtures": [
         {
           "side": "pass",
@@ -5345,36 +4702,6 @@
           "fail": "src/ingestion/common/utils/normalizeRecord.ts",
           "pass": "package.json"
         }
-      }
-    },
-    {
-      "id": "import-time-side-effects",
-      "name": "lightsout/import-time-side-effects",
-      "set": "tests",
-      "documentPath": "tests/unit-testing",
-      "summary": "Testing code that acts when it is imported.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Import-Time Side Effects\n\n- Use **`jest.isolateModules`** when the module acts at import time (reads `document.currentScript`, checks globals): each call gets a fresh module instance, so per-test state changes take effect on the next require inside the isolate block.\n- Branches unreachable in the default `jsdom` environment (e.g., SSR guards on `typeof window`) get a **separate test file** with a `/** @jest-environment node */` docblock, named to distinguish it (`autoInitInBrowser.ssr.unit.test.ts`).",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/boot/autoInit.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\n\nconst setupBoot = ({ hasScript = true }: { hasScript?: boolean } = {}) => {\n\tjest.replaceProperty(document, 'currentScript', hasScript ? document.createElement('script') : null);\n\n\treturn { hasScript };\n};\n\ndescribe('autoInit', () => {\n\ttest('reads the current script the module was loaded from', () => {\n\t\tsetupBoot({ hasScript: true });\n\n\t\tlet loaded: { isInitialized: boolean } | undefined;\n\t\tjest.isolateModules(() => {\n\t\t\tloaded = require('./autoInit') as { isInitialized: boolean };\n\t\t});\n\n\t\texpect(loaded?.isInitialized).toBe(true);\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/boot/autoInit.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { isInitialized } from './autoInit';\n\ndescribe('autoInit', () => {\n\ttest('reads the current script the module was loaded from', () => {\n\t\t// the module already ran at import time, so this change arrives too late\n\t\t// and every later test shares the one instance\n\t\tjest.replaceProperty(document, 'currentScript', document.createElement('script'));\n\n\t\texpect(isInitialized).toBe(true);\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
       }
     },
     {
@@ -5836,36 +5163,6 @@
       }
     },
     {
-      "id": "named-constant-boundaries",
-      "name": "lightsout/named-constant-boundaries",
-      "set": "code",
-      "documentPath": "code/style-guide/patterns/named-constants",
-      "summary": "Turning outside text into a named value safely.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Named Constant Boundaries\n\nAt a boundary, such as a JSON payload, a query parameter or a database value, an incoming string is not yet a member of the union. Convert it with a small validation function, such as `parseAction`, not a cast (`type-assertion`).",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/actions/parseAction.ts",
-          "text": "import { Action } from '../common/constants/Action';\n\n// The boundary is where the string becomes the union, and a validation function\n// is what makes that true.\nexport const parseAction = ({ value }: { value: string }): Action | undefined =>\n\tObject.values(Action).find((member) => member === value);\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/actions/readAction.ts",
-          "text": "import type { Action } from '../common/constants/Action';\n\n// The query string is not the union yet, and the cast says it is — an unknown\n// value now travels as a checked one.\nexport const readAction = ({ query }: { query: Record<string, string> }): Action => query.action as Action;\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
       "id": "named-constant-casing",
       "name": "lightsout/named-constant-casing",
       "set": "code",
@@ -5889,36 +5186,6 @@
           "side": "fail",
           "path": "src/common/constants/action.ts",
           "text": "// Members consumers dot into, so it is a named constant — and named constants\n// are PascalCase, file included.\nexport const action = {\n\tAdd: 'add',\n\tRemove: 'remove',\n} as const;\n\nexport type action = (typeof action)[keyof typeof action];\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
-      "id": "naming-consistency",
-      "name": "lightsout/naming-consistency",
-      "set": "code",
-      "documentPath": "code/style-guide/conventions/naming",
-      "summary": "Keeping one naming pattern within an area of the code.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Naming Consistency\n\nUse one naming pattern for each kind of name within a domain. When the codebase already uses one, follow it; never introduce a competing one.\n\n- Data fetching: one of `getData`, `fetchData` or `loadData`, not a mix. Beside `getUserData`, a new reader is `getUserSettings`, not `fetchUserSettings`.\n- Booleans: consistent prefixes, such as `is`, `has`, `should` and `can`.\n- Event handlers: one pattern, `onSubmit` or `handleSubmit`.\n\nWhen names follow one pattern, a reader can guess a name and search finds it.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/orders/isOrderPaid.ts",
-          "text": "// The domain already prefixes its booleans with `is`, so this one does too.\nexport const isOrderPaid = ({ paidAt }: { paidAt: string | null }): boolean => paidAt !== null;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/orders/orderIsPaid.ts",
-          "text": "// A second boolean convention in a domain whose other predicates read `isX`.\nexport const orderIsPaid = ({ paidAt }: { paidAt: string | null }): boolean => paidAt !== null;\n"
         }
       ],
       "example": {
@@ -6110,36 +5377,6 @@
           "side": "fail",
           "path": "src/billing/chargeInvoice.ts",
           "text": "/**\n * The arguments chargeInvoice takes.\n */\ninterface Params {\n\tinvoiceId: string;\n\tpayerName: string;\n}\n\nexport const chargeInvoice = ({ invoiceId, payerName }: Params): string => `${invoiceId}${payerName}`;\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
-      "id": "path-aliases",
-      "name": "lightsout/path-aliases",
-      "set": "code",
-      "documentPath": "code/style-guide/structure/import-paths",
-      "summary": "Which path alias to use, and how to write it.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Path Aliases\n\nEach package declares its own path aliases, in `package.json` `imports` or in `tsconfig.json` `compilerOptions.paths`. Read the package's own declaration for the alias; never write one from memory. Common ones:\n\n| Alias | Declared in | Example |\n| --- | --- | --- |\n| `#src/*` | `package.json` `imports` | `import { X } from '#src/common/utils/X.ts'` |\n| `@/*` | `tsconfig.json` `paths` | `import { X } from '@/common/utils/X'` |\n| `@src/*` | `tsconfig.json` `paths` | `import { X } from '@src/common/utils/X'` |\n\nAn `imports` alias resolves literally, so the specifier carries the extension of the file it names: `#src/cli/shipCommand.ts`. An extensionless `#src/cli/shipCommand` names a file that does not exist. A `paths` alias is resolved the usual way, so `@/cli` is right there.\n\nPackages differ, and a remembered alias may be one this package never declared.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/billing/getChargeLabel.ts",
-          "text": "import { formatRate } from '@/common/utils/formatRate';\n\nexport const getChargeLabel = (): string => formatRate();\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/getChargeLabel.ts",
-          "text": "import { formatRate } from '@src/common/utils/formatRate';\n\nexport const getChargeLabel = (): string => formatRate();\n"
         }
       ],
       "example": {
@@ -6382,139 +5619,6 @@
       }
     },
     {
-      "id": "query-priority",
-      "name": "lightsout/query-priority",
-      "set": "tests",
-      "documentPath": "tests/unit-testing-react-components",
-      "summary": "How a component test finds an element.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Query Priority\n\n1. **`getByRole`** — mirrors how users and assistive technology find elements\n2. **`getByLabelText`** — labeled form inputs\n3. **`getByText`** — visible text\n4. **`getByTestId`** — last resort (requires adding `data-testid` to source)\n\nUse `query*` variants to assert an element is **not** rendered (they return `null` instead of throwing). Use `findBy*`/`waitFor` for elements that appear after an async update — a synchronous `getBy*` throws before the DOM settles.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/notifications/DismissButton.unit.test.tsx",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { DismissButton } from './DismissButton';\n\nconst setupDismissButton = () => {\n\trender(<DismissButton />);\n};\n\ndescribe('DismissButton', () => {\n\ttest('renders a button users and assistive technology can find', () => {\n\t\tsetupDismissButton();\n\n\t\tconst button = screen.getByRole('button', { name: /dismiss/i });\n\n\t\texpect(button).toBeInTheDocument();\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/notifications/DismissButton.unit.test.tsx",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { DismissButton } from './DismissButton';\n\nconst setupDismissButton = () => {\n\trender(<DismissButton />);\n};\n\ndescribe('DismissButton', () => {\n\ttest('renders a button users and assistive technology can find', () => {\n\t\tsetupDismissButton();\n\n\t\t// a test id added to source for the test's convenience, where the button's\n\t\t// own role and label would have found it\n\t\tconst button = screen.getByTestId('dismiss-button');\n\n\t\texpect(button).toBeInTheDocument();\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
-      "id": "react-domain-folders",
-      "name": "lightsout/react-domain-folders",
-      "set": "code",
-      "documentPath": "code/architecture/react",
-      "summary": "Grouping helpers that return JSX.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## React Domain Folders\n\nGroup functions that return JSX by subject, like any other functions, as `ungrouped-domain-utils` says: `getDesignStepConfig.tsx` and `getInstallStepConfig.tsx` move from `utils/` into `stepConfigs/`.\n\nReturning JSX does not change what a function is about.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/common/stepConfigs/getDesignStepConfig.tsx",
-          "text": "export const getDesignStepConfig = () => ({ title: 'Design', body: <p>Pick a theme.</p> });\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/stepConfigs/getInstallStepConfig.tsx",
-          "text": "// Both builders graduated into a named domain folder beside `utils/`, so the\n// group is visible from the file tree rather than inferred from the names.\nexport const getInstallStepConfig = () => ({ title: 'Install', body: <p>Run the installer.</p> });\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/utils/getDesignStepConfig.tsx",
-          "text": "export const getDesignStepConfig = () => ({ title: 'Design', body: <p>Pick a theme.</p> });\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/utils/getInstallStepConfig.tsx",
-          "text": "// Two related JSX config builders sitting in the ungrouped `utils/` bucket —\n// the second one is the signal that they have a domain of their own.\nexport const getInstallStepConfig = () => ({ title: 'Install', body: <p>Run the installer.</p> });\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/common/utils/getDesignStepConfig.tsx",
-          "pass": "src/common/stepConfigs/getDesignStepConfig.tsx"
-        }
-      }
-    },
-    {
-      "id": "react-size-thresholds",
-      "name": "lightsout/react-size-thresholds",
-      "set": "code",
-      "documentPath": "code/style-guide/patterns/react-components",
-      "summary": "How a long component or hook is broken up.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 5,
-        "fail": 2
-      },
-      "prose": "## React Size Thresholds\n\nA hook composes; it does not compute. Move its pure logic into utility functions the hook calls.\n\nWhen a component passes its limit in `function-size`, extract sub-components.\n\nMove inline styles and repeated `className` logic into a shared class or component.\n\nLogic outside a component or hook can be read and tested without rendering anything.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/issues/buildIssueSummary.ts",
-          "text": "interface Issue {\n\tid: string;\n\tstate: string;\n\tamount: number;\n}\n\nexport const buildIssueSummary = ({ issues }: { issues: Issue[] }): Record<string, number> => {\n\tconst totals: Record<string, number> = {};\n\n\tfor (const issue of issues) {\n\t\ttotals[issue.state] = (totals[issue.state] ?? 0) + issue.amount;\n\t}\n\n\treturn totals;\n};\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/groupByAssignee.ts",
-          "text": "interface Issue {\n\tid: string;\n\ttitle: string;\n\tstate: string;\n\tassignee: string | null;\n}\n\nexport const groupByAssignee = ({ issues }: { issues: Issue[] }): Record<string, Issue[]> => {\n\tconst grouped: Record<string, Issue[]> = {};\n\n\tfor (const issue of issues) {\n\t\tconst key = issue.assignee ?? 'unassigned';\n\n\t\tgrouped[key] = [...(grouped[key] ?? []), issue];\n\t}\n\n\treturn grouped;\n};\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/IssueGroup.tsx",
-          "text": "interface Props {\n\tassignee: string;\n\tissues: Array<{ id: string; title: string; state: string }>;\n}\n\nexport const IssueGroup = ({ assignee, issues }: Props) => (\n\t<div>\n\t\t<h3>{assignee}</h3>\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>\n\t\t\t\t\t{issue.title} — {issue.state}\n\t\t\t\t</li>\n\t\t\t))}\n\t\t</ul>\n\t</div>\n);\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/IssuePanel.tsx",
-          "text": "import { IssueGroup } from './IssueGroup';\nimport { groupByAssignee } from './groupByAssignee';\n\ninterface Props {\n\tissues: Array<{ id: string; title: string; state: string; assignee: string | null }>;\n}\n\n// JSX composition with the grouping pulled out to a utility — short, and short\n// for the reason the table cares about.\nexport const IssuePanel = ({ issues }: Props) => (\n\t<section>\n\t\t{Object.entries(groupByAssignee({ issues })).map(([assignee, assigned]) => (\n\t\t\t<IssueGroup key={assignee} assignee={assignee} issues={assigned} />\n\t\t))}\n\t</section>\n);\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/useIssueSummary.ts",
-          "text": "import { buildIssueSummary } from './buildIssueSummary';\n\n// The hook composes: it holds the wiring, and the arithmetic lives in a utility\n// that can be tested without a renderer.\nexport const useIssueSummary = ({ issues }: { issues: Array<{ id: string; state: string; amount: number }> }) => buildIssueSummary({ issues });\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/issues/IssuePanel.tsx",
-          "text": "interface Issue {\n\tid: string;\n\ttitle: string;\n\tstate: string;\n\tassignee: string | null;\n}\n\ninterface Props {\n\tissues: Issue[];\n}\n\n// Past the threshold with inline logic rather than JSX composition: the header,\n// the filters and the row rendering are three sub-components waiting to be cut\n// out of it.\nexport const IssuePanel = ({ issues }: Props) => {\n\tconst open = issues.filter((issue) => issue.state === 'open');\n\tconst closed = issues.filter((issue) => issue.state === 'closed');\n\tconst unassigned = open.filter((issue) => issue.assignee === null);\n\tconst byAssignee: Record<string, Issue[]> = {};\n\n\tfor (const issue of open) {\n\t\tconst key = issue.assignee ?? 'unassigned';\n\n\t\tbyAssignee[key] = [...(byAssignee[key] ?? []), issue];\n\t}\n\n\treturn (\n\t\t<section>\n\t\t\t<header>\n\t\t\t\t<h2>Issues</h2>\n\t\t\t\t<p>\n\t\t\t\t\t{open.length} open, {closed.length} closed, {unassigned.length} unassigned\n\t\t\t\t</p>\n\t\t\t</header>\n\t\t\t{Object.entries(byAssignee).map(([assignee, assigned]) => (\n\t\t\t\t<div key={assignee}>\n\t\t\t\t\t<h3>{assignee}</h3>\n\t\t\t\t\t<ul>\n\t\t\t\t\t\t{assigned.map((issue) => (\n\t\t\t\t\t\t\t<li key={issue.id}>\n\t\t\t\t\t\t\t\t{issue.title} — {issue.state}\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t))}\n\t\t\t\t\t</ul>\n\t\t\t\t</div>\n\t\t\t))}\n\t\t</section>\n\t);\n};\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/issues/useIssueSummary.ts",
-          "text": "interface Issue {\n\tid: string;\n\tstate: string;\n\tamount: number;\n}\n\n// The hook computes instead of composing: the totals, the averages and the\n// ordering are pure logic that belongs in utilities the hook calls.\nexport const useIssueSummary = ({ issues }: { issues: Issue[] }) => {\n\tconst totals: Record<string, number> = {};\n\tconst counts: Record<string, number> = {};\n\n\tfor (const issue of issues) {\n\t\ttotals[issue.state] = (totals[issue.state] ?? 0) + issue.amount;\n\t\tcounts[issue.state] = (counts[issue.state] ?? 0) + 1;\n\t}\n\n\tconst averages: Record<string, number> = {};\n\n\tfor (const [state, total] of Object.entries(totals)) {\n\t\taverages[state] = total / (counts[state] ?? 1);\n\t}\n\n\tconst ordered = Object.entries(averages).sort(([, left], [, right]) => right - left);\n\n\treturn { totals, counts, averages, ordered };\n};\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/issues/IssuePanel.tsx",
-          "pass": "src/issues/IssueGroup.tsx"
-        }
-      }
-    },
-    {
       "id": "reuse-common-code",
       "name": "lightsout/reuse-common-code",
       "set": "code",
@@ -6608,36 +5712,6 @@
       }
     },
     {
-      "id": "setup-factories",
-      "name": "lightsout/setup-factories",
-      "set": "tests",
-      "documentPath": "tests/unit-testing",
-      "summary": "How a setup factory is written.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Setup Factories\n\nA setup factory takes the test's variants as parameters with defaults, wires the mocks, builds the fixtures, and returns the locals the test needs as `const`s:\n\n```typescript\nconst setupAvatar = ({\n\tprofile = null,\n\tgravatar = null,\n}: { profile?: string | null; gravatar?: string | null } = {}) => {\n\tmockGetAvatarFromProfile.mockReturnValue(profile);\n\tmockGetAvatarFromGravatar.mockReturnValue(gravatar);\n\n\tconst userProfile = new UserProfile({ profileData: { email: 'user@example.com' } });\n\tconst appSettings = new AppSettings({ defaultPreferences: {} });\n\n\treturn { userProfile, appSettings };\n};\n```\n\n- One factory configures any number of mocks, and one call is the whole arrangement.\n- A test may override the one value it varies with a single line after the call, such as one `mockReturnValue`.\n- For a class, the factory returns the constructor's collaborators, and the test's act constructs the instance.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/profile/getAvatarUrl.unit.test.ts",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport { getAvatarUrl } from './getAvatarUrl';\n\nconst setupAvatar = ({ profile = null }: { profile?: string | null } = {}) => {\n\tconst userProfile = { avatar: profile };\n\n\treturn { userProfile };\n};\n\nconst setupGuestAvatar = () => {\n\tconst userProfile = { avatar: null, isGuest: true };\n\n\treturn { userProfile };\n};\n\ndescribe('getAvatarUrl', () => {\n\ttest('returns the profile avatar when one exists', () => {\n\t\tconst { userProfile } = setupAvatar({ profile: 'p.png' });\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile });\n\n\t\texpect(avatarUrl).toBe('p.png');\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/profile/getAvatarUrl.unit.test.ts",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport { getAvatarUrl } from './getAvatarUrl';\n\n// The arrangement lives in module state the factory mutates, so what a test\n// gets depends on what ran before it.\nlet currentProfile: string | null = null;\n\nconst setupAvatar = () => {\n\treturn { userProfile: { avatar: currentProfile } };\n};\n\ndescribe('getAvatarUrl', () => {\n\ttest('returns the profile avatar when one exists', () => {\n\t\tcurrentProfile = 'p.png';\n\t\tconst { userProfile } = setupAvatar();\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile });\n\n\t\texpect(avatarUrl).toBe('p.png');\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
       "id": "shared-code-placement",
       "name": "lightsout/shared-code-placement",
       "set": "code",
@@ -6714,7 +5788,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Shared Package Criteria\n\nPut code in the shared package only when two or more packages need it, it has no framework dependencies, and it is a contract both sides agree on, such as constants, error codes or pure predicates. Never when:\n\n- One package needs it. Put it in that package's `common/`.\n- It imports a framework. Keep the pure part shared, and wrap it locally.\n- It is an implementation detail, such as a hook, guard or resolver.\n\nFor example, `packages/shared/src/permissions/hasPermission.ts` holds the pure function, and each package that needs a framework form wraps it locally, such as a React hook or a NestJS guard.\n\nThen every package can import everything in the shared package.",
+      "prose": "## Shared Package Criteria\n\nNever copy code from one package into another. Put it in the shared package instead, but only when two or more packages need it, it has no framework dependencies, and it is a contract both sides agree on, such as constants, error codes or pure predicates. Never when:\n\n- One package needs it. Put it in that package's `common/`.\n- It imports a framework. Keep the pure part shared, and wrap it locally.\n- It is an implementation detail, such as a hook, guard or resolver.\n\nFor example, `packages/shared/src/permissions/hasPermission.ts` holds the pure function, and each package that needs a framework form wraps it locally, such as a React hook or a NestJS guard.\n\nA shared package where everything is public is like a `common/`: its `src/` holds domain folders, not modules. Decide each folder as `module-out-of-common` does: a folder whose every file is something its users call directly is a domain folder.\n\nCopies in each package drift apart, and a fix then reaches only one of them. Then every package can import everything in the shared package.",
       "fixtures": [
         {
           "side": "pass",
@@ -6893,7 +5967,7 @@
       "name": "lightsout/synonym-export-name",
       "set": "code",
       "documentPath": "code/style-guide/conventions/naming",
-      "summary": "One concept under two names.",
+      "summary": "One naming pattern, and one name for each concept.",
       "checked": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -6901,7 +5975,7 @@
         "pass": 5,
         "fail": 2
       },
-      "prose": "## Synonym Export Name\n\nNever introduce a second verb for a concept that already has a name. Two export names that differ only by a synonym, or only in word order, name one concept:\n\n- `fetch`, `load`, `retrieve` and `read` mean `get`.\n- `make`, `generate` and `produce` mean `create`.\n- `remove` means `delete`, `modify` means `update`, and `verify` and `check` mean `validate`.\n\nA name on its own may use any verb, such as `readFile`, `loadConfig` or `checkArgs`: this rule is about two living names for one concept. Some pairs are deliberate: where a domain has standardized on another verb, `naming-consistency` outranks this rule.\n\nA search by name misses the synonym, so the concept gets written again, and `duplicate-function-body` and `duplicate-code-block` cannot catch the copy, because it was written separately and looks nothing like the first.",
+      "prose": "## Synonym Export Name\n\nUse one naming pattern for each kind of name within a domain. Follow the pattern the codebase already uses; never introduce a competing one.\n\n- Data fetching: beside `getUserData`, a new reader is `getUserSettings`, not `fetchUserSettings`.\n- Booleans: consistent prefixes, such as `is`, `has`, `should` and `can`.\n- Event handlers: one pattern, `onSubmit` or `handleSubmit`.\n\nNever introduce a second verb for a concept that already has a name. Two export names that differ only by a synonym, or only in word order, name one concept:\n\n- `fetch`, `load`, `retrieve` and `read` mean `get`.\n- `make`, `generate` and `produce` mean `create`.\n- `remove` means `delete`, `modify` means `update`, and `verify` and `check` mean `validate`.\n\nA name on its own may use any verb, such as `readFile`, `loadConfig` or `checkArgs`: this rule is about two living names for one concept. Where a domain has standardized on another verb, such as `fetch`, keep that verb.\n\nWhen names follow one pattern, a reader can guess a name and a search finds it. A synonym is missed by a search, so the concept gets written again, and `duplicate-function-body` and `duplicate-code-block` cannot catch the copy, because it was written separately and looks nothing like the first.",
       "fixtures": [
         {
           "side": "pass",
@@ -7538,7 +6612,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Test Structure: Arrange-Act-Assert with Setup Factories\n\nWrite every test as arrange, act, assert. Arrange in one named setup factory; the test body calls it, acts and asserts.\n\n```typescript\ndescribe('getAvatarUrl', () => {\n\ttest('returns the profile avatar when one exists', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar({ profile: 'p.png' });\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBe('p.png');\n\t});\n});\n```\n\n- Act once per test: two acts make two tests. Use several `expect`s only when they assert one behaviour's result, and prefer one `expect` for several properties of one result.\n- Assign each call in the act to a named `const`; never nest one call in another. The act sits inside the assertion only for an error, `expect(() => parse(bad)).toThrow()` or `await expect(load()).rejects.toThrow()`. A matcher may compose another, as in `toEqual(expect.objectContaining(...))`.\n- Separate arrange, act and assert with a blank line, and write no `// arrange`, `// act` or `// assert` comments.\n- Cover every code path: branches, error handling and boundary conditions. Give each path one test, and never add a test that only varies the input. Inputs that take one path to different outputs share one `test.each`.\n- To reach a branch that guards against input the types forbid, such as a `default` arm or an early return on an impossible discriminant, force the input with `as unknown as T`. That and the framework stub cast `test-mock-untyped` allows are the only casts a test writes.\n- Import the test functions first: `import { expect, describe, test, jest } from '@jest/globals';`. Import `jest` only when the file uses `jest.fn`, `jest.mock` or `jest.spyOn`, and `beforeEach`, `afterEach` or `afterAll` only when you need one; with setup factories and config-level mock cleanup, most files need none.",
+      "prose": "## Test Structure: Arrange-Act-Assert with Setup Factories\n\nWrite every test as arrange, act, assert. Arrange in one named setup factory; the test body calls it, acts and asserts.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { UserProfile } from '@/profiles/UserProfile';\nimport { AppSettings } from '@/settings/AppSettings';\nimport { getAvatarUrl } from '@/avatars/getAvatarUrl';\n\n// Mocked Imports\n// -------------------------\nconst mockGetAvatarFromProfile = jest.fn<(params: { profile: UserProfile }) => string | null>();\n\njest.mock('@/profiles/getAvatarFromProfile', () => ({\n\tgetAvatarFromProfile: (params: { profile: UserProfile }) => mockGetAvatarFromProfile(params),\n}));\n// -------------------------\n\nconst setupAvatar = ({ profile = null }: { profile?: string | null } = {}) => {\n\tmockGetAvatarFromProfile.mockReturnValue(profile);\n\tconst userProfile = new UserProfile({ profileData: { email: 'user@example.com' } });\n\tconst appSettings = new AppSettings({ defaultPreferences: {} });\n\n\treturn { userProfile, appSettings };\n};\n\ndescribe('getAvatarUrl', () => {\n\ttest('returns null when the user has no avatar', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar();\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBeNull();\n\t});\n\n\ttest('returns the profile avatar when one exists', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar({ profile: 'p.png' });\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBe('p.png');\n\t});\n});\n```\n\n- The setup factory takes the test's variants as parameters with defaults, wires the mocks, builds the fixtures, and returns the locals the test needs as `const`s. One factory configures any number of mocks, and one call is the whole arrangement.\n- A test may override the one value it varies with a single line after the call, such as one `mockReturnValue`.\n- For a class, the factory returns the constructor's collaborators, and the test's act constructs the instance.\n- Act once per test: two acts make two tests. Use several `expect`s only when they assert one behaviour's result, and prefer one `expect` for several properties of one result.\n- Assign each call in the act to a named `const`; never nest one call in another. The act sits inside the assertion only for an error, `expect(() => parse(bad)).toThrow()` or `await expect(load()).rejects.toThrow()`. A matcher may compose another, as in `toEqual(expect.objectContaining(...))`.\n- Separate arrange, act and assert with a blank line, and write no `// arrange`, `// act` or `// assert` comments.\n- Cover every code path: branches, error handling and boundary conditions. Give each path one test, and never add a test that only varies the input. Inputs that take one path to different outputs share one `test.each`.\n- To reach a branch that guards against input the types forbid, such as a `default` arm or an early return on an impossible discriminant, force the input with `as unknown as T`. That and the framework stub cast `test-mock-untyped` allows are the only casts a test writes.\n- Import the test functions first: `import { expect, describe, test, jest } from '@jest/globals';`. Import `jest` only when the file uses `jest.fn`, `jest.mock` or `jest.spyOn`, and `beforeEach`, `afterEach` or `afterAll` only when you need one; with setup factories and config-level mock cleanup, most files need none.",
       "fixtures": [
         {
           "side": "pass",
@@ -7600,66 +6674,6 @@
       }
     },
     {
-      "id": "testing-hooks-in-isolation",
-      "name": "lightsout/testing-hooks-in-isolation",
-      "set": "tests",
-      "documentPath": "tests/unit-testing-react-components",
-      "summary": "Testing a hook without rendering a component.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Testing Hooks in Isolation\n\nMock the framework's hook primitives with synchronous shims so the hook body executes without a render cycle; capture effect callbacks so tests can invoke them:\n\n```typescript\n// Mocked Imports\n// -------------------------\nlet mockEffectCallback: (() => undefined | (() => void)) | undefined;\n\njest.mock('preact/hooks', () => ({\n\tuseEffect: (cb: () => undefined | (() => void)) => {\n\t\tmockEffectCallback = cb;\n\t},\n\tuseCallback: <T>(cb: T) => cb,\n\tuseMemo: (factory: () => unknown) => factory(),\n}));\n// -------------------------\n\nconst setupEscapeKey = ({ isActive = true }: { isActive?: boolean } = {}) => {\n\tmockEffectCallback = undefined;\n\tconst addEventListenerSpy = jest.spyOn(document, 'addEventListener');\n\tconst onEscape = jest.fn<() => void>();\n\tuseEscapeKey({ isActive, onEscape });\n\n\treturn { addEventListenerSpy, onEscape };\n};\n\ndescribe('useEscapeKey', () => {\n\ttest('adds a keydown event listener', () => {\n\t\tconst { addEventListenerSpy } = setupEscapeKey({ isActive: true });\n\n\t\tmockEffectCallback!();\n\n\t\texpect(addEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));\n\t});\n});\n```\n\nOnly mock the hook primitives the hook under test actually uses.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/keyboard/useEscapeKey.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { useEscapeKey } from './useEscapeKey';\n\n// Mocked Imports\n// -------------------------\nlet mockEffectCallback: (() => undefined | (() => void)) | undefined;\n\njest.mock('react', () => ({\n\tuseEffect: (callback: () => undefined | (() => void)) => {\n\t\tmockEffectCallback = callback;\n\t},\n}));\n// -------------------------\n\nconst setupEscapeKey = ({ isActive = true }: { isActive?: boolean } = {}) => {\n\tmockEffectCallback = undefined;\n\tconst addEventListenerSpy = jest.spyOn(document, 'addEventListener');\n\tconst onEscape = jest.fn<() => void>();\n\tuseEscapeKey({ isActive, onEscape });\n\n\treturn { addEventListenerSpy, onEscape };\n};\n\ndescribe('useEscapeKey', () => {\n\ttest('adds a keydown event listener', () => {\n\t\tconst { addEventListenerSpy } = setupEscapeKey({ isActive: true });\n\n\t\tmockEffectCallback?.();\n\n\t\texpect(addEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/keyboard/useEscapeKey.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { useEscapeKey } from './useEscapeKey';\n\n// Every hook primitive stubbed, including the three this hook never calls —\n// each one a shim that can drift from the framework for no coverage in return.\njest.mock('react', () => ({\n\tuseEffect: (callback: () => void) => callback(),\n\tuseCallback: <T>(callback: T) => callback,\n\tuseMemo: (factory: () => unknown) => factory(),\n\tuseState: (initial: unknown) => [initial, () => undefined],\n\tuseRef: (initial: unknown) => ({ current: initial }),\n\tuseContext: () => ({}),\n}));\n\ndescribe('useEscapeKey', () => {\n\ttest('adds a keydown event listener', () => {\n\t\tconst addEventListenerSpy = jest.spyOn(document, 'addEventListener');\n\n\t\tuseEscapeKey({ isActive: true, onEscape: jest.fn<() => void>() });\n\n\t\texpect(addEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
-      "id": "testing-user-interactions",
-      "name": "lightsout/testing-user-interactions",
-      "set": "tests",
-      "documentPath": "tests/unit-testing-react-components",
-      "summary": "Testing what a user does.",
-      "checked": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Testing User Interactions\n\n`userEvent` is async — create the user in the test and `await` the interaction. The query that locates the interaction target groups with the act (the `userEvent` call), not with arrange:\n\n```typescript\ntest('calls the dismiss handler when the dismiss button is clicked', async () => {\n\tconst { onDismiss } = setupBanner();\n\tconst user = userEvent.setup();\n\n\tconst dismissButton = screen.getByRole('button', { name: /dismiss/i });\n\tawait user.click(dismissButton);\n\n\texpect(onDismiss).toHaveBeenCalledTimes(1);\n});\n```\n\nWith `fireEvent`, which is synchronous and has no setup object, the same grouping applies: `fireEvent.click(dismissButton);`.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/notifications/NotificationBanner.unit.test.tsx",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport userEvent from '@testing-library/user-event';\nimport { NotificationBanner } from './NotificationBanner';\n\nconst setupNotificationBanner = () => {\n\tconst onDismiss = jest.fn<() => void>();\n\trender(<NotificationBanner onDismiss={onDismiss} />);\n\n\treturn { onDismiss };\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('calls the dismiss handler when the dismiss button is clicked', async () => {\n\t\tconst { onDismiss } = setupNotificationBanner();\n\t\tconst user = userEvent.setup();\n\n\t\tconst dismissButton = screen.getByRole('button', { name: /dismiss/i });\n\t\tawait user.click(dismissButton);\n\n\t\texpect(onDismiss).toHaveBeenCalledTimes(1);\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/notifications/NotificationBanner.unit.test.tsx",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport userEvent from '@testing-library/user-event';\nimport { NotificationBanner } from './NotificationBanner';\n\nconst setupNotificationBanner = () => {\n\tconst onDismiss = jest.fn<() => void>();\n\trender(<NotificationBanner onDismiss={onDismiss} />);\n\n\treturn { onDismiss };\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('calls the dismiss handler when the dismiss button is clicked', async () => {\n\t\tconst { onDismiss } = setupNotificationBanner();\n\t\t// the target query grouped with arrange, and the interaction left unawaited\n\t\tconst dismissButton = screen.getByRole('button', { name: /dismiss/i });\n\t\tconst user = userEvent.setup();\n\n\t\tuser.click(dismissButton);\n\n\t\texpect(onDismiss).toHaveBeenCalledTimes(1);\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
       "id": "the-render-pattern",
       "name": "lightsout/the-render-pattern",
       "set": "tests",
@@ -7672,7 +6686,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## The Render Pattern\n\nRender inside the `setup()` factory; query and assert in the `test`. For a component, `render()` *is* the act, but by convention it lives in the arrange factory — the one accepted exception to \"the act lives in the `test`\". Query from `screen` — never destructure queries from `render()`.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/preact';\nimport { NotificationBanner } from './NotificationBanner';\n\n// Mocked Imports\n// -------------------------\nconst mockUseAppStore = jest.fn<(selector: (state: unknown) => unknown) => unknown>();\n\njest.mock('@store/appStore', () => ({\n\tuseAppStore: (selector: (state: unknown) => unknown) => mockUseAppStore(selector),\n}));\n// -------------------------\n\nconst setupNotificationBanner = ({ isVisible = true }: { isVisible?: boolean } = {}) => {\n\tconst onDismiss = jest.fn<() => void>();\n\tmockUseAppStore.mockReturnValue(isVisible);\n\trender(<NotificationBanner onDismiss={onDismiss} />);\n\n\treturn { onDismiss };\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('does not render the banner when not visible', () => {\n\t\tsetupNotificationBanner({ isVisible: false });\n\n\t\tconst banner = screen.queryByRole('alert');\n\n\t\texpect(banner).not.toBeInTheDocument();\n\t});\n\n\ttest('renders the notification message when visible', () => {\n\t\tsetupNotificationBanner({ isVisible: true });\n\n\t\tconst message = screen.getByText('Action required');\n\n\t\texpect(message).toBeInTheDocument();\n\t});\n});\n```",
+      "prose": "## The Render Pattern\n\nRender inside the `setup()` factory; query and assert in the `test`. For a component, `render()` *is* the act, but by convention it lives in the arrange factory — the one accepted exception to \"the act lives in the `test`\". Query from `screen` — never destructure queries from `render()`.\n\nIn a test of an interaction, the query that finds the element to act on groups with the act, the `userEvent` or `fireEvent` call, not with arrange.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/preact';\nimport { NotificationBanner } from './NotificationBanner';\n\n// Mocked Imports\n// -------------------------\nconst mockUseAppStore = jest.fn<(selector: (state: unknown) => unknown) => unknown>();\n\njest.mock('@store/appStore', () => ({\n\tuseAppStore: (selector: (state: unknown) => unknown) => mockUseAppStore(selector),\n}));\n// -------------------------\n\nconst setupNotificationBanner = ({ isVisible = true }: { isVisible?: boolean } = {}) => {\n\tconst onDismiss = jest.fn<() => void>();\n\tmockUseAppStore.mockReturnValue(isVisible);\n\trender(<NotificationBanner onDismiss={onDismiss} />);\n\n\treturn { onDismiss };\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('does not render the banner when not visible', () => {\n\t\tsetupNotificationBanner({ isVisible: false });\n\n\t\tconst banner = screen.queryByRole('alert');\n\n\t\texpect(banner).not.toBeInTheDocument();\n\t});\n\n\ttest('renders the notification message when visible', () => {\n\t\tsetupNotificationBanner({ isVisible: true });\n\n\t\tconst message = screen.getByText('Action required');\n\n\t\texpect(message).toBeInTheDocument();\n\t});\n});\n```",
       "fixtures": [
         {
           "side": "pass",
@@ -7844,7 +6858,7 @@
         "pass": 2,
         "fail": 1
       },
-      "prose": "## Type Assertion\n\nNever write an `as` cast in source code. A cast tells the compiler to trust you instead of proving the type. Narrow instead, with `typeof`, `instanceof` or a discriminated union. When a value cannot be narrowed where it is used, such as a value of type `unknown` from a library, write a type guard or a validation function for it.\n\n`as const` is not a cast: it fixes a literal's type, and it stays.\n\n```typescript\n// Incorrect: the compiler takes your word for it\nreturn (value as string).toUpperCase();\n\n// Correct: the check proves it\nif (typeof value === 'string') {\n\treturn value.toUpperCase();\n}\n```",
+      "prose": "## Type Assertion\n\nNever write an `as` cast in source code. A cast tells the compiler to trust you instead of proving the type. Narrow instead, with `typeof`, `instanceof` or a discriminated union. When a value cannot be narrowed where it is used, such as a value of type `unknown` from a library, write a type guard or a validation function for it.\n\nThis includes text arriving at a boundary, such as a JSON payload, a query parameter or a database value: a string is not yet a member of a named constant's union, so convert it with a small validation function, such as `parseAction`, never `as Action`.\n\n`as const` is not a cast: it fixes a literal's type, and it stays.\n\n```typescript\n// Incorrect: the compiler takes your word for it\nreturn (value as string).toUpperCase();\n\n// Correct: the check proves it\nif (typeof value === 'string') {\n\treturn value.toUpperCase();\n}\n```",
       "fixtures": [
         {
           "side": "pass",
@@ -7875,7 +6889,7 @@
       "name": "lightsout/types-and-interfaces",
       "set": "code",
       "documentPath": "code/style-guide/structure/type-placement",
-      "summary": "Where shared types go, and which keyword to use.",
+      "summary": "Where shared types and constants go, and which keyword a type uses.",
       "checked": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
@@ -7883,7 +6897,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Types and Interfaces\n\nPlace a type like any other code: in the `types/` folder of the lowest `common/` its users share, as `shared-code-placement` says. A type only one module uses stays in that module's own `common/types/`. The folder holds type-level declarations whatever the keyword.\n\n- Use `interface` for object shapes, and `type` for what an interface can't express: unions, intersections, mapped types, primitives, tuples and function signatures.\n- For an object shape either works, so stay consistent within a domain. Switching keyword is an edit in place: the file name and imports never change.\n- A union family lives in `types/` under the union's name.\n\n```typescript\n// copyFile/copyFile.ts: Params stays here, unexported\ninterface Params {\n\tsourcePath: string;\n\tdestPath: string;\n}\n\nexport const copyFile = ({ sourcePath, destPath }: Params) => { /* ... */ };\n\n// copyFile/common/types/CopyResult.ts: copyFile's exported return type\nexport interface CopyResult {\n\tsuccess: boolean;\n\tbytesWritten: number;\n}\n```\n\nPick the keyword by fit: the folder does not depend on it.",
+      "prose": "## Types and Interfaces\n\nPlace a type like any other code: in the `types/` folder of the lowest `common/` its users share, as `shared-code-placement` says. A type only one module uses stays in that module's own `common/types/`. The folder holds type-level declarations whatever the keyword.\n\n- Use `interface` for object shapes, and `type` for what an interface can't express: unions, intersections, mapped types, primitives, tuples and function signatures.\n- For an object shape either works, so stay consistent within a domain. Switching keyword is an edit in place: the file name and imports never change.\n- A union family lives in `types/` under the union's name.\n\n```typescript\n// copyFile/copyFile.ts: Params stays here, unexported\ninterface Params {\n\tsourcePath: string;\n\tdestPath: string;\n}\n\nexport const copyFile = ({ sourcePath, destPath }: Params) => { /* ... */ };\n\n// copyFile/common/types/CopyResult.ts: copyFile's exported return type\nexport interface CopyResult {\n\tsuccess: boolean;\n\tbytesWritten: number;\n}\n```\n\nPick the keyword by fit: the folder does not depend on it.\n\nPlace a constant the same way, in the `constants/` folder of the lowest `common/` its users share, never in `types/`. A `const` object with its derived union and lookup map lives in `constants/` under the object's name, as `bare-string-union` and `derived-lookup-map` say. A constant may keep its type in the same file, named for the value, under `multi-export`'s exception 5; when the type has any other consumer, it goes in `types/`. Constants are values, not types, so they get a folder of their own.",
       "fixtures": [
         {
           "side": "pass",
@@ -7927,7 +6941,7 @@
         "pass": 5,
         "fail": 5
       },
-      "prose": "## Ungrouped Domain Utils\n\nWhen two or more functions in a `common/utils/` folder share a subject, move them into a domain folder named for that subject, next to `utils/`: `formatting/`, `parsing/`, `validation/`.\n\n- Name the folder for the subject, never for the kind of function: never `getters/` or `predicates/`. Two `is*` functions stay in `utils/`.\n- A single function about a subject stays in `utils/`.\n- Classes that hold state stay in `services/`, never in a domain folder.\n\nThen all the code about one subject is in one place.",
+      "prose": "## Ungrouped Domain Utils\n\nWhen two or more functions in a `common/utils/` folder share a subject, move them into a domain folder named for that subject, next to `utils/`: `formatting/`, `parsing/`, `validation/`.\n\n- Name the folder for the subject, never for the kind of function: never `getters/` or `predicates/`. Two `is*` functions stay in `utils/`.\n- A single function about a subject stays in `utils/`.\n- Classes that hold state stay in `services/`, never in a domain folder.\n- Functions that return JSX are grouped the same way: returning JSX does not change what a function is about.\n\nThen all the code about one subject is in one place.",
       "fixtures": [
         {
           "side": "pass",

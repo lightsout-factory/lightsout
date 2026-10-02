@@ -1,5 +1,5 @@
 ---
-summary: "Where shared types go, and which keyword to use."
+summary: "Where shared types and constants go, and which keyword a type uses."
 checked: false
 severity: advisory
 ---
@@ -29,3 +29,5 @@ export interface CopyResult {
 ```
 
 Pick the keyword by fit: the folder does not depend on it.
+
+Place a constant the same way, in the `constants/` folder of the lowest `common/` its users share, never in `types/`. A `const` object with its derived union and lookup map lives in `constants/` under the object's name, as `bare-string-union` and `derived-lookup-map` say. A constant may keep its type in the same file, named for the value, under `multi-export`'s exception 5; when the type has any other consumer, it goes in `types/`. Constants are values, not types, so they get a folder of their own.

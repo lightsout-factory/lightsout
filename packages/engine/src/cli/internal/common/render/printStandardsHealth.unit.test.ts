@@ -48,10 +48,10 @@ describe('printStandardsHealth', () => {
 	test('a rule nobody has ever put to the test reads as dashes, never as zeroes', () => {
 		const { logged } = setupPrinter();
 
-		printStandardsHealth({ health: healthOf({ rules: [healthRule({ rule: 'path-aliases', checked: false })] }) });
+		printStandardsHealth({ health: healthOf({ rules: [healthRule({ rule: 'module-exports', checked: false })] }) });
 
 		// 0% would answer a question nobody asked
-		expect(cellsOf({ logged })[1]).toStrictEqual(['path-aliases', 'judgment', '—', '—', '—', '—', '—', '—', '—']);
+		expect(cellsOf({ logged })[1]).toStrictEqual(['module-exports', 'judgment', '—', '—', '—', '—', '—', '—', '—']);
 	});
 
 	test('the two accounts sit in their own columns, each with its own rate', () => {
@@ -165,7 +165,7 @@ describe('printStandardsHealth', () => {
 			health: healthOf({
 				rules: [
 					healthRule({ rule: 'multi-export', attempted: 2, resolved: 1, declined: 1 }),
-					healthRule({ rule: 'path-aliases', checked: false, adviceApplied: 1, adviceDeclined: 1 }),
+					healthRule({ rule: 'module-exports', checked: false, adviceApplied: 1, adviceDeclined: 1 }),
 				],
 			}),
 		});

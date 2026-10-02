@@ -319,12 +319,12 @@ describe('standardsCheckCommand', () => {
 		const { context, logged } = setupCheck({
 			args: [],
 			check: { findings: [finding({ rule: 'duplicate-code-block', severity: StandardsSeverity.Blocking, siteKey: 'duplicate-code-block:src/a.ts:1' })] },
-			review: { findings: [finding({ rule: 'path-aliases', siteKey: 'path-aliases:src/a.ts', detail: 'a relative import in an aliased package' })] },
+			review: { findings: [finding({ rule: 'module-exports', siteKey: 'module-exports:src/a.ts', detail: 'a relative import in an aliased package' })] },
 		});
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(headingsOf({ logged })).toStrictEqual(['⚠ duplicate-code-block · 1 blocking', 'ℹ path-aliases · 1 advisory']);
+		expect(headingsOf({ logged })).toStrictEqual(['⚠ duplicate-code-block · 1 blocking', 'ℹ module-exports · 1 advisory']);
 		// the fast half's answer is on screen before the slow half starts — a
 		// reader waiting on the agent already has the deterministic result
 		expect(logged.indexOf('⚠ duplicate-code-block · 1 blocking')).toBeLessThan(logged.indexOf('Agent review'));

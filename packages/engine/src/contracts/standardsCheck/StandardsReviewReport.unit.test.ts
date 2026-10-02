@@ -5,7 +5,7 @@ const setupReport = (overrides: Record<string, unknown> = {}) => {
 	const report = {
 		findings: [
 			{
-				rule: 'path-aliases',
+				rule: 'module-exports',
 				files: [{ path: 'src/a.ts', startLine: 3, endLine: 3 }],
 				detail: 'a relative import in an aliased package',
 				guidance: 'use the alias',
@@ -31,9 +31,13 @@ describe('StandardsReviewReport', () => {
 	});
 
 	test('guidance and line numbers are optional — a reviewer with none still reports the site', () => {
-		const { report } = setupReport({ findings: [{ rule: 'path-aliases', files: [{ path: 'src/a.ts' }], detail: 'a relative import' }] });
+		const { report } = setupReport({ findings: [{ rule: 'module-exports', files: [{ path: 'src/a.ts' }], detail: 'a relative import' }] });
 
-		expect(StandardsReviewReport.parse(report).findings[0]).toStrictEqual({ rule: 'path-aliases', files: [{ path: 'src/a.ts' }], detail: 'a relative import' });
+		expect(StandardsReviewReport.parse(report).findings[0]).toStrictEqual({
+			rule: 'module-exports',
+			files: [{ path: 'src/a.ts' }],
+			detail: 'a relative import',
+		});
 	});
 
 	test('rule is a free string — the ids belong to the loaded packages, which the contract cannot know', () => {
@@ -46,15 +50,21 @@ describe('StandardsReviewReport', () => {
 
 	test('a severity or site key the agent volunteered is stripped — both are the engine’s to stamp', () => {
 		const { report } = setupReport({
-			findings: [{ rule: 'path-aliases', severity: 'blocking', siteKey: 'invented', files: [{ path: 'src/a.ts' }], detail: 'a relative import' }],
+			findings: [{ rule: 'module-exports', severity: 'blocking', siteKey: 'invented', files: [{ path: 'src/a.ts' }], detail: 'a relative import' }],
 		});
 
-		expect(StandardsReviewReport.parse(report).findings[0]).toStrictEqual({ rule: 'path-aliases', files: [{ path: 'src/a.ts' }], detail: 'a relative import' });
+		expect(StandardsReviewReport.parse(report).findings[0]).toStrictEqual({
+			rule: 'module-exports',
+			files: [{ path: 'src/a.ts' }],
+			detail: 'a relative import',
+		});
 	});
 
 	test('every declared field is required — no default invents a rule, a site list, or a detail', () => {
 		for (const field of ['rule', 'files', 'detail']) {
-			const { report } = setupReport({ findings: [{ rule: 'path-aliases', files: [{ path: 'src/a.ts' }], detail: 'a relative import', [field]: undefined }] });
+			const { report } = setupReport({
+				findings: [{ rule: 'module-exports', files: [{ path: 'src/a.ts' }], detail: 'a relative import', [field]: undefined }],
+			});
 
 			// ${field} is required — a finding missing one of these cannot be sited or
 			// read, and a default would fabricate the missing half
@@ -63,7 +73,7 @@ describe('StandardsReviewReport', () => {
 	});
 
 	test('a site without a path is refused — a finding the engine cannot key is not reportable', () => {
-		const { report } = setupReport({ findings: [{ rule: 'path-aliases', files: [{ startLine: 3 }], detail: 'a relative import' }] });
+		const { report } = setupReport({ findings: [{ rule: 'module-exports', files: [{ startLine: 3 }], detail: 'a relative import' }] });
 
 		// the site key is derived from the first file's path, so a pathless site
 		// leaves the finding with no address
@@ -72,7 +82,7 @@ describe('StandardsReviewReport', () => {
 
 	test('line numbers must be numbers — a reviewer quoting them as text is refused', () => {
 		for (const field of ['startLine', 'endLine']) {
-			const { report } = setupReport({ findings: [{ rule: 'path-aliases', files: [{ path: 'src/a.ts', [field]: '3' }], detail: 'a relative import' }] });
+			const { report } = setupReport({ findings: [{ rule: 'module-exports', files: [{ path: 'src/a.ts', [field]: '3' }], detail: 'a relative import' }] });
 
 			expect(StandardsReviewReport.safeParse(report).success).toBe(false);
 		}

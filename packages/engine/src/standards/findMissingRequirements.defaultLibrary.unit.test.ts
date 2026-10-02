@@ -12,8 +12,6 @@ const listedRequires: Record<string, string[]> = {
 		'lightsout/single-file-domain-folder',
 		'lightsout/ungrouped-domain-utils',
 	],
-	'lightsout/react-domain-folders': ['lightsout/folder-index-file', 'lightsout/module-out-of-common', 'lightsout/ungrouped-domain-utils'],
-	'lightsout/file-naming-conventions': ['lightsout/filename-mismatch', 'lightsout/folder-casing'],
 	'lightsout/feature-structure': [
 		'lightsout/component-file-structure',
 		'lightsout/folder-index-file',
@@ -25,8 +23,6 @@ const listedRequires: Record<string, string[]> = {
 	'lightsout/server-functions': ['lightsout/ungrouped-domain-utils'],
 	'lightsout/file-naming-for-server-functions': ['lightsout/filename-mismatch'],
 	'lightsout/query-options': ['lightsout/module-out-of-common', 'lightsout/ungrouped-domain-utils'],
-	'lightsout/tanstack-hooks': ['lightsout/file-naming-conventions'],
-	'lightsout/class-graduation': ['lightsout/module-file-to-folder'],
 	'lightsout/discriminant-const-object': ['lightsout/bare-string-union'],
 	'lightsout/module-boundary-testing': ['lightsout/files-that-must-not-have-dedicated-tests'],
 	'lightsout/test-file-size': ['lightsout/module-boundary-testing'],
@@ -61,24 +57,19 @@ describe('findMissingRequirements on the shipped lightsout library', () => {
 			'lightsout/react-app': [],
 			'lightsout/tanstack-start-app': [],
 			'lightsout/nestjs-app': [],
-			// the react topic pack alone holds none of the structure and file-naming rules its rules point at
+			// the react topic pack alone holds none of the structure rules its rules point at
 			'lightsout/react': [
 				{ rule: 'lightsout/component-file-structure', required: 'lightsout/folder-index-file' },
 				{ rule: 'lightsout/component-file-structure', required: 'lightsout/module-folder-layout' },
 				{ rule: 'lightsout/component-file-structure', required: 'lightsout/single-file-domain-folder' },
 				{ rule: 'lightsout/component-file-structure', required: 'lightsout/ungrouped-domain-utils' },
-				{ rule: 'lightsout/file-naming-conventions', required: 'lightsout/filename-mismatch' },
-				{ rule: 'lightsout/file-naming-conventions', required: 'lightsout/folder-casing' },
-				{ rule: 'lightsout/react-domain-folders', required: 'lightsout/folder-index-file' },
-				{ rule: 'lightsout/react-domain-folders', required: 'lightsout/module-out-of-common' },
-				{ rule: 'lightsout/react-domain-folders', required: 'lightsout/ungrouped-domain-utils' },
 			],
 		});
 	});
 
 	test('the lightsout rules declare exactly the listed requires', async () => {
 		const { library } = await setupDefaultLibrary();
-		// every rule the library holds with an empty list, overlaid by the sixteen listed ones:
+		// every rule the library holds with an empty list, overlaid by the twelve listed ones:
 		// a listed rule the library lacks adds a key the loaded map cannot match
 		const everyRuleEmpty = Object.fromEntries(library.rules.map((rule) => [rule.name, []]));
 

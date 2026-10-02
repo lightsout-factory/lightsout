@@ -81,11 +81,6 @@ const reactMissingRequirements = [
 	{ rule: 'lightsout/component-file-structure', required: 'lightsout/module-folder-layout' },
 	{ rule: 'lightsout/component-file-structure', required: 'lightsout/single-file-domain-folder' },
 	{ rule: 'lightsout/component-file-structure', required: 'lightsout/ungrouped-domain-utils' },
-	{ rule: 'lightsout/react-domain-folders', required: 'lightsout/folder-index-file' },
-	{ rule: 'lightsout/react-domain-folders', required: 'lightsout/module-out-of-common' },
-	{ rule: 'lightsout/react-domain-folders', required: 'lightsout/ungrouped-domain-utils' },
-	{ rule: 'lightsout/file-naming-conventions', required: 'lightsout/filename-mismatch' },
-	{ rule: 'lightsout/file-naming-conventions', required: 'lightsout/folder-casing' },
 ];
 
 describe('checkRuleRequirements', () => {
@@ -130,7 +125,7 @@ describe('checkRuleRequirements', () => {
 			id: 'rule-requirements',
 			status: 'warn',
 			hasFix: true,
-			entryCount: 9,
+			entryCount: 4,
 			everyEntryNamesGroupAndPack: true,
 			coveredRequirements: reactMissingRequirements.map(() => true),
 		});
@@ -150,7 +145,7 @@ describe('checkRuleRequirements', () => {
 			entryCount: entries.length,
 			everyEntryNamesBothPackages: entries.every((entry) => entry.includes('admin') && entry.includes('web') && entry.includes('lightsout/react')),
 			anyEntryNamesRoot: entries.some((entry) => entry.includes('repo root (outside packages)')),
-		}).toStrictEqual({ id: 'rule-requirements', status: 'warn', entryCount: 9, everyEntryNamesBothPackages: true, anyEntryNamesRoot: false });
+		}).toStrictEqual({ id: 'rule-requirements', status: 'warn', entryCount: 4, everyEntryNamesBothPackages: true, anyEntryNamesRoot: false });
 	});
 
 	test('judges requirements after standards-rule-settings apply', async () => {

@@ -123,13 +123,13 @@ describe('standardsCheckCommand sections', () => {
 	test("the code checks' findings are on screen before the agent review starts — a reader waiting on the agent already has the deterministic answer", async () => {
 		const { context, logged } = setupCheck({
 			check: { findings: [finding({ rule: 'duplicate-code-block', severity: StandardsSeverity.Blocking, siteKey: 'duplicate-code-block:src/a.ts:1' })] },
-			review: { findings: [finding({ rule: 'path-aliases', siteKey: 'path-aliases:src/a.ts' })] },
+			review: { findings: [finding({ rule: 'module-exports', siteKey: 'module-exports:src/a.ts' })] },
 		});
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
 		expect(logged.indexOf('⚠ duplicate-code-block · 1 blocking')).toBeLessThan(logged.indexOf(agentReviewHeading));
-		expect(logged.indexOf(agentReviewHeading)).toBeLessThan(logged.indexOf('ℹ path-aliases · 1 advisory'));
+		expect(logged.indexOf(agentReviewHeading)).toBeLessThan(logged.indexOf('ℹ module-exports · 1 advisory'));
 	});
 
 	test("the check's notes print under their own marker, inside its section", async () => {

@@ -105,13 +105,13 @@ const setupLibraryLayout = async () => {
 };
 
 describe('readStandardsLibrary', () => {
-	test('carries all 24 shipped documents, split across the code and tests trees', async () => {
+	test('carries all 22 shipped documents, split across the code and tests trees', async () => {
 		const { pack } = await setupDefaultPack();
 
 		expect(pack.name).toBe('lightsout');
-		expect(pack.documents).toHaveLength(24);
-		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(21);
-		expect(pack.documents.filter((document) => document.set === StandardsSet.Tests)).toHaveLength(3);
+		expect(pack.documents).toHaveLength(22);
+		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(20);
+		expect(pack.documents.filter((document) => document.set === StandardsSet.Tests)).toHaveLength(2);
 	});
 
 	test('carries the line and the address the root file states about the pack itself', async () => {
@@ -144,7 +144,7 @@ describe('readStandardsLibrary', () => {
 		const { code, tests } = buildStandardsDocuments({ groups: [nodeGroupOf({ pack })] });
 
 		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(17);
-		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(2);
+		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(1);
 		// the prose itself rides along, not just the headers
 		expect(code ?? '').toContain('One Export Per File');
 		expect(tests ?? '').toContain('Module Boundary Testing');

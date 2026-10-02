@@ -45,7 +45,7 @@ The six topic packs:
   return types, type assertions and TSDoc.
 - `structure` — architecture decisions, folder structure, import paths, module
   boundaries, one export per file and type placement.
-- `unit-testing` — how unit tests are written, with worked examples.
+- `unit-testing` — how unit tests are written.
 - `react` — React architecture, component and hook patterns, and React
   component tests.
 - `tanstack-start` — how the base rules apply to a TanStack Start application.

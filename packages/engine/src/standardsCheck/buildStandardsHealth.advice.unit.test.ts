@@ -143,8 +143,8 @@ describe('buildStandardsHealth advice counting', () => {
 				'batch-01': report({
 					outcome: 'resolved',
 					advisoryOutcomes: [
-						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/a.ts', outcome: 'declined', reason: 'the package defines no alias' }),
-						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/b.ts', outcome: 'applied' }),
+						advice({ rule: 'acme/module-exports', siteKey: 'acme/module-exports:src/a.ts', outcome: 'declined', reason: 'the package defines no alias' }),
+						advice({ rule: 'acme/module-exports', siteKey: 'acme/module-exports:src/b.ts', outcome: 'applied' }),
 					],
 				}),
 			},
@@ -152,10 +152,10 @@ describe('buildStandardsHealth advice counting', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			groups: [groupOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'path-aliases' })] })],
+			groups: [groupOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'module-exports' })] })],
 		});
 
-		expect(rowFor({ rules: health.rules, id: 'path-aliases' })).toEqual(
+		expect(rowFor({ rules: health.rules, id: 'module-exports' })).toEqual(
 			expect.objectContaining({ attempted: 0, adviceApplied: 1, adviceDeclined: 1, reasons: ['the package defines no alias'] }),
 		);
 		// and the blocking account is untouched by them
@@ -169,18 +169,18 @@ describe('buildStandardsHealth advice counting', () => {
 				'batch-01': report({
 					outcome: 'resolved',
 					advisoryOutcomes: [
-						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/a.ts', outcome: 'already-met' }),
-						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/b.ts', outcome: 'applied' }),
+						advice({ rule: 'acme/module-exports', siteKey: 'acme/module-exports:src/a.ts', outcome: 'already-met' }),
+						advice({ rule: 'acme/module-exports', siteKey: 'acme/module-exports:src/b.ts', outcome: 'applied' }),
 					],
 				}),
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'path-aliases' })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'module-exports' })] })] });
 
 		// counting it as applied would credit the rule with advice nobody acted
 		// on; counting it as declined would blame it for a rejection nobody made
-		expect(rowFor({ rules: health.rules, id: 'path-aliases' })).toEqual(
+		expect(rowFor({ rules: health.rules, id: 'module-exports' })).toEqual(
 			expect.objectContaining({ adviceApplied: 1, adviceDeclined: 0, adviceAlreadyMet: 1, reasons: [] }),
 		);
 	});
@@ -191,13 +191,13 @@ describe('buildStandardsHealth advice counting', () => {
 			reports: {
 				'batch-01': report({
 					outcome: 'resolved',
-					advisoryOutcomes: [advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/a.ts', outcome: 'declined' })],
+					advisoryOutcomes: [advice({ rule: 'acme/module-exports', siteKey: 'acme/module-exports:src/a.ts', outcome: 'declined' })],
 				}),
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'path-aliases' })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'module-exports' })] })] });
 
-		expect(rowFor({ rules: health.rules, id: 'path-aliases' })).toEqual(expect.objectContaining({ adviceApplied: 0, adviceDeclined: 1, reasons: [] }));
+		expect(rowFor({ rules: health.rules, id: 'module-exports' })).toEqual(expect.objectContaining({ adviceApplied: 0, adviceDeclined: 1, reasons: [] }));
 	});
 });
