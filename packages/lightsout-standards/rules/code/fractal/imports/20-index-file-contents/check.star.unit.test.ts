@@ -70,20 +70,6 @@ describe('index-file-contents check: star re-exports', () => {
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['index-file-contents:src/index.ts']);
 	});
 
-	test('spares a route index file the framework loads, which is no index file', async () => {
-		const input = setupFileTextInput({
-			contents: [
-				['src/routes/index.tsx', "export * from './home';"],
-				['package.json', JSON.stringify({ dependencies: { '@tanstack/react-router': '1.0.0' } })],
-			],
-			files: ['src/routes/index.tsx'],
-		});
-
-		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
-
-		expect(findings).toStrictEqual([]);
-	});
-
 	test('reports a JavaScript-spelled barrel too — these rules judge paths, so a repo with no TypeScript is judged at full strength', async () => {
 		const input = setupFileTextInput({
 			contents: [

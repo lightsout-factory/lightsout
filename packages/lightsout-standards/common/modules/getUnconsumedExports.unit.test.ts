@@ -1,34 +1,12 @@
 import { describe, expect, test } from '@jest/globals';
-import type { FrameworkCarveOut } from '../types/FrameworkCarveOut.ts';
 import { getUnconsumedExports } from './getUnconsumedExports.ts';
 
 /** A repo as a file-text rule receives it: the files being judged, and text for everything that may reference them. */
-const setupRepo = ({
-	scope,
-	contents,
-	standardsLibraries = [],
-	carveOuts = [],
-}: {
-	scope?: string[];
-	contents: Array<[string, string]>;
-	standardsLibraries?: string[];
-	carveOuts?: FrameworkCarveOut[];
-}) => ({
+const setupRepo = ({ scope, contents, standardsLibraries = [] }: { scope?: string[]; contents: Array<[string, string]>; standardsLibraries?: string[] }) => ({
 	files: scope ?? contents.map(([path]) => path),
 	contents: new Map(contents),
 	standardsLibraries,
-	carveOuts,
 });
-
-/** The carve-outs a TanStack Start package earns — a `routes/` router root, and the entry files the plugin resolves for itself. */
-const startCarveOuts: FrameworkCarveOut[] = [
-	{
-		directory: '.',
-		entryFiles: ['router.tsx', 'server.ts', 'client.tsx'],
-		exemptFolderNames: [],
-		routerRoots: ['routes'],
-	},
-];
 
 describe('getUnconsumedExports', () => {
 	test('reports an export nothing else mentions, with nothing having reached it', () => {
@@ -181,43 +159,6 @@ describe('getUnconsumedExports', () => {
 					['src/ingestion/ingestRecords.ts', 'export const ingestRecords = (): number => 1;'],
 					['src/app.ts', '// ingestRecords is called by the scheduler\n'],
 				],
-			}),
-		);
-
-		expect(found).toStrictEqual([]);
-	});
-
-	test('a route file consuming a screen is a production consumer, though a folder barrel lists the screen too', () => {
-		const found = getUnconsumedExports(
-			setupRepo({
-				contents: [
-					['src/routes/index.tsx', "import { RunsIndex } from '../features/app/screens/RunsIndex';\n\nexport const Route = { component: RunsIndex };"],
-					['src/features/app/screens/RunsIndex/index.ts', "export { RunsIndex } from './RunsIndex';"],
-					['src/features/app/screens/RunsIndex/RunsIndex.tsx', 'export const RunsIndex = (): null => null;'],
-				],
-				carveOuts: startCarveOuts,
-			}),
-		);
-
-		// read as a barrel, that route file would leave the screen unconsumed —
-		// the framework rendering it is the consumer
-		expect(found).toStrictEqual([]);
-	});
-
-	test('an entry file the framework resolves declares nothing judged — its consumer is not a file', () => {
-		const found = getUnconsumedExports(setupRepo({ contents: [['src/router.tsx', 'export const getRouter = (): number => 1;']], carveOuts: startCarveOuts }));
-
-		expect(found).toStrictEqual([]);
-	});
-
-	test('a test co-located inside the router directory references what it mentions, like any other test', () => {
-		const found = getUnconsumedExports(
-			setupRepo({
-				contents: [
-					['src/features/runs/getRunDetails.ts', 'export const getRunDetails = (): number => 1;'],
-					['src/routes/runs.$runId.unit.test.tsx', 'getRunDetails();'],
-				],
-				carveOuts: startCarveOuts,
 			}),
 		);
 

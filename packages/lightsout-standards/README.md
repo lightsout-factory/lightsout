@@ -19,9 +19,6 @@ The library root holds:
 - `packs/` — one JSON file per pack.
 - `common/` — helpers the checks share. A check imports one through the
   `#common/*` entry of this package's `imports`.
-- `fixtures/framework-owned/` — one miniature repo per framework. Every
-  deterministic check must stay silent on each of them, so no rule judges code
-  its framework owns.
 
 A topic is a folder holding a `topic.md` and one folder per rule, each named
 `<NN>-<id>`. `rule.md` is required; `check.ts` and `fixtures/` are optional.
@@ -48,20 +45,16 @@ Packs are grouped by what the rules are for, and the rule tree mirrors them:
 
 - `fractal` — keeps the repo the same shape at every level: modules, shared
   code, size caps, duplication and imports, plus where tests sit.
-- `agent-corrections` — corrects mistakes current models make by default:
-  design, type safety, comments, and what a test asserts and mocks. A rule
-  stays only while models still make the mistake without it.
-- `code-style` — one way to write a function, a class, a set of named values
-  and a unit test.
+- `code-style` — one way to write a function, a class, a set of named values,
+  a type-safe value and a unit test.
 - `react`, `tanstack-start` — framework rules, under
   `rules/code/frameworks/` and `rules/tests/frameworks/`. Each declares
   `applies-when`, so it reaches only the packages that depend on the framework.
 - `standards` — every pack above. It is the pack the docs tell a repository to
   opt into, and the one this repo runs.
 
-`fractal` and `agent-corrections` each stand alone: no rule in them names, or
-`requires`, a rule in another pack. `code-style` and the framework packs may
-refer to `fractal` rules.
+`fractal` stands alone: no rule in it names, or `requires`, a rule in another
+pack. `code-style` and the framework packs may refer to `fractal` rules.
 
 The shipped packs carry no `rule-settings`, so every rule keeps the severity
 and options its `rule.md` gives it. A new rule in an existing topic reaches
@@ -78,7 +71,7 @@ holds only what is particular to this library and this repo.
 ## In This Library
 
 - **Prefixes this library uses:** `no-` (a ban), `prefer-` (a default), and
-  subject prefixes: `test-` (a rule about a test file), `barrel-`, `class-` and
+  subject prefixes: `test-` (a rule about a test file), `class-` and
   `duplicate-`. `path-` named how a check worked, and is retired.
 - **Shared words:** ids are also read in the `durableRuleIds` ledger, so
   `test-beside-subject` keeps its `test-`. Word order: `folder-size`, not

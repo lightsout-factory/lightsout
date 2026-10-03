@@ -1,5 +1,5 @@
 {
-	"description": "Gives a TanStack Start app one place for each feature, server function, query and hook, in each package that uses TanStack Start.",
+	"description": "Where a TanStack Start app declares its query options, in each package that uses TanStack Start.",
 	"include": {
 		"topics": ["lightsout/code/frameworks/tanstack-start"]
 	},

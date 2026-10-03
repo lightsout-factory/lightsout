@@ -205,8 +205,7 @@ for, so a repository can take one goal without the others:
 | Pack | What it is for |
 | --- | --- |
 | `lightsout/fractal` | Keeps the repo the same shape at every level, so any file's place is predictable and a duplicate is found by searching for its name. |
-| `lightsout/agent-corrections` | Corrects mistakes current models make by default. |
-| `lightsout/code-style` | Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values and a unit test. |
+| `lightsout/code-style` | Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values, a type-safe value and a unit test. |
 | `lightsout/react`, `lightsout/tanstack-start` | Framework rules. Each reaches only the packages whose `package.json` declares that framework. |
 | `lightsout/standards` | All of the above. |
 
@@ -479,7 +478,7 @@ Run `lightsout standards-check --list` to print every rule with the standards do
 
 #### What the default pack blocks
 
-The pack lightsout ships blocks only what is wrong on its own terms — code that lies about its types (`no-any`, `type-assertion`, `explicit-return-type`), code nothing uses (`dead-export`, `duplicate-function-body`), a tree that breaks across filesystems (`case-collision`), and tests that are silently weaker than they read (`no-test-state-in-hooks`, `test-mock-prefix`, `test-mock-untyped`, `test-mock-wrapper-untyped`, `test-strict-equal-matcher`). Every rule about where files go, what they are called, and how many exports they hold ships `advisory`: it is still reported and still handed to the refactor agent, but a repository adopting lightsout is not blocked on day one by a layout it has not yet agreed to.
+The pack lightsout ships blocks only what is wrong on its own terms — code that lies about its types (`no-any`, `type-assertion`, `explicit-return-type`), code nothing uses (`dead-export`, `duplicate-function-body`), a tree that breaks across filesystems (`case-collision`), and tests that are silently weaker than they read (`no-test-state-in-hooks`, `test-mock-prefix`, `test-mock-untyped`, `test-mock-wrapper-untyped`). Every rule about where files go, what they are called, and how many exports they hold ships `advisory`: it is still reported and still handed to the refactor agent, but a repository adopting lightsout is not blocked on day one by a layout it has not yet agreed to.
 
 A repository that wants the strict profile promotes those rules itself — an explicit, committed list of what it holds itself to. This is the block lightsout's own repository runs:
 

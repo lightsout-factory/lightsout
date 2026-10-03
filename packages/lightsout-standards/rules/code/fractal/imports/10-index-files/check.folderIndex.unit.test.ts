@@ -68,17 +68,6 @@ describe('index-files check: index files outside a package entry', () => {
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['index-files:tools/src/index.ts']);
 	});
 
-	test('leaves a route index file the framework loads alone', async () => {
-		const input = setupRepo({
-			paths: ['src/routes/index.tsx', 'src/routes/runs/index.tsx'],
-			manifests: [['package.json', { dependencies: { '@tanstack/react-router': '1.0.0' } }]],
-		});
-
-		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
-
-		expect(findings).toStrictEqual([]);
-	});
-
 	test('answers nothing when its input is missing', async () => {
 		const findings = await check.run({ inputs: {}, options: {} });
 

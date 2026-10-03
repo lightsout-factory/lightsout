@@ -5,103 +5,25 @@
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
-    "rules": 64,
-    "deterministic": 36,
-    "agent": 31,
-    "topics": 17,
-    "packs": 6,
-    "withFixtures": 64
+    "rules": 50,
+    "deterministic": 34,
+    "agent": 18,
+    "topics": 13,
+    "packs": 5,
+    "withFixtures": 50
   },
   "packs": [
     {
-      "name": "agent-corrections",
-      "address": "lightsout/agent-corrections",
-      "description": "Corrects mistakes current models make by default. A rule is retired when models stop making the mistake, so this pack changes more than any other.",
-      "include": {
-        "packs": [],
-        "topics": [
-          "lightsout/code/agent-corrections/design",
-          "lightsout/code/agent-corrections/type-safety",
-          "lightsout/code/agent-corrections/comments",
-          "lightsout/tests/agent-corrections"
-        ],
-        "rules": []
-      },
-      "topics": [
-        "lightsout/code/agent-corrections/comments",
-        "lightsout/code/agent-corrections/design",
-        "lightsout/code/agent-corrections/type-safety",
-        "lightsout/tests/agent-corrections"
-      ],
-      "rules": [
-        {
-          "name": "lightsout/assertions-pin-contracts",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/jest-spyon-vs-jest-mock",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/no-any",
-          "severity": "blocking",
-          "options": {}
-        },
-        {
-          "name": "lightsout/no-history-in-comments",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/no-thin-wrappers",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/per-folder-readmes",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/prefer-functions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/premature-abstraction",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/type-assertion",
-          "severity": "blocking",
-          "options": {}
-        },
-        {
-          "name": "lightsout/when-to-document",
-          "severity": "advisory",
-          "options": {}
-        }
-      ],
-      "totals": {
-        "rules": 10,
-        "deterministic": 4,
-        "agent": 8,
-        "topics": 4
-      }
-    },
-    {
       "name": "code-style",
       "address": "lightsout/code-style",
-      "description": "Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values and a unit test.",
+      "description": "Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values, a type-safe value and a unit test.",
       "include": {
         "packs": [],
         "topics": [
           "lightsout/code/code-style/functions",
           "lightsout/code/code-style/classes",
           "lightsout/code/code-style/named-constants",
+          "lightsout/code/code-style/type-safety",
           "lightsout/tests/code-style"
         ],
         "rules": []
@@ -110,16 +32,17 @@
         "lightsout/code/code-style/classes",
         "lightsout/code/code-style/functions",
         "lightsout/code/code-style/named-constants",
+        "lightsout/code/code-style/type-safety",
         "lightsout/tests/code-style"
       ],
       "rules": [
         {
-          "name": "lightsout/class-inheritance",
+          "name": "lightsout/assertions-pin-contracts",
           "severity": "advisory",
           "options": {}
         },
         {
-          "name": "lightsout/class-syntax",
+          "name": "lightsout/class-inheritance",
           "severity": "advisory",
           "options": {}
         },
@@ -129,8 +52,18 @@
           "options": {}
         },
         {
+          "name": "lightsout/jest-spyon-vs-jest-mock",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/named-string-values",
           "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-any",
+          "severity": "blocking",
           "options": {}
         },
         {
@@ -145,6 +78,11 @@
         },
         {
           "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/prefer-functions",
           "severity": "advisory",
           "options": {}
         },
@@ -179,21 +117,21 @@
           "options": {}
         },
         {
-          "name": "lightsout/test-strict-equal-matcher",
-          "severity": "blocking",
+          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+          "severity": "advisory",
           "options": {}
         },
         {
-          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
-          "severity": "advisory",
+          "name": "lightsout/type-assertion",
+          "severity": "blocking",
           "options": {}
         }
       ],
       "totals": {
-        "rules": 15,
-        "deterministic": 10,
-        "agent": 5,
-        "topics": 4
+        "rules": 18,
+        "deterministic": 12,
+        "agent": 7,
+        "topics": 5
       }
     },
     {
@@ -397,7 +335,7 @@
     {
       "name": "react",
       "address": "lightsout/react",
-      "description": "Keeps React components, hooks and their tests to one shape, in each package that uses React.",
+      "description": "How React component tests are written, in each package that uses React.",
       "appliesWhen": {
         "dependencies": [
           "react",
@@ -408,31 +346,14 @@
       "include": {
         "packs": [],
         "topics": [
-          "lightsout/code/frameworks/react",
           "lightsout/tests/frameworks/react"
         ],
         "rules": []
       },
       "topics": [
-        "lightsout/code/frameworks/react",
         "lightsout/tests/frameworks/react"
       ],
       "rules": [
-        {
-          "name": "lightsout/component-file-structure",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/framework-basics",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/mocking-component-dependencies",
-          "severity": "advisory",
-          "options": {}
-        },
         {
           "name": "lightsout/the-render-pattern",
           "severity": "advisory",
@@ -440,20 +361,19 @@
         }
       ],
       "totals": {
-        "rules": 4,
+        "rules": 1,
         "deterministic": 0,
-        "agent": 4,
-        "topics": 2
+        "agent": 1,
+        "topics": 1
       }
     },
     {
       "name": "standards",
       "address": "lightsout/standards",
-      "description": "Every bundled standard at once: a repo that keeps one shape at every level, free of the mistakes models make by default and written in one style, with each framework's rules reaching only the packages that use it.",
+      "description": "Every bundled standard at once: a repo that keeps one shape at every level and is written in one style, with each framework's rules reaching only the packages that use it.",
       "include": {
         "packs": [
           "lightsout/fractal",
-          "lightsout/agent-corrections",
           "lightsout/code-style",
           "lightsout/react",
           "lightsout/tanstack-start"
@@ -462,20 +382,16 @@
         "rules": []
       },
       "topics": [
-        "lightsout/code/agent-corrections/comments",
-        "lightsout/code/agent-corrections/design",
-        "lightsout/code/agent-corrections/type-safety",
         "lightsout/code/code-style/classes",
         "lightsout/code/code-style/functions",
         "lightsout/code/code-style/named-constants",
+        "lightsout/code/code-style/type-safety",
         "lightsout/code/fractal/duplication",
         "lightsout/code/fractal/imports",
         "lightsout/code/fractal/modules",
         "lightsout/code/fractal/shared-code",
         "lightsout/code/fractal/size",
-        "lightsout/code/frameworks/react",
         "lightsout/code/frameworks/tanstack-start",
-        "lightsout/tests/agent-corrections",
         "lightsout/tests/code-style",
         "lightsout/tests/fractal",
         "lightsout/tests/frameworks/react"
@@ -503,16 +419,6 @@
         },
         {
           "name": "lightsout/class-inheritance",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/class-syntax",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/component-file-structure",
           "severity": "advisory",
           "options": {}
         },
@@ -546,17 +452,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/feature-structure",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/file-directly-in-common",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/file-naming-for-server-functions",
           "severity": "advisory",
           "options": {}
         },
@@ -584,11 +480,6 @@
           "options": {
             "cap": 20
           }
-        },
-        {
-          "name": "lightsout/framework-basics",
-          "severity": "advisory",
-          "options": {}
         },
         {
           "name": "lightsout/function-size",
@@ -621,11 +512,6 @@
         },
         {
           "name": "lightsout/jest-spyon-vs-jest-mock",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/mocking-component-dependencies",
           "severity": "advisory",
           "options": {}
         },
@@ -665,27 +551,12 @@
           "options": {}
         },
         {
-          "name": "lightsout/no-history-in-comments",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/no-test-state-in-hooks",
           "severity": "blocking",
           "options": {}
         },
         {
-          "name": "lightsout/no-thin-wrappers",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/object-args",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/per-folder-readmes",
           "severity": "advisory",
           "options": {}
         },
@@ -696,11 +567,6 @@
         },
         {
           "name": "lightsout/prefer-functions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/premature-abstraction",
           "severity": "advisory",
           "options": {}
         },
@@ -716,11 +582,6 @@
         },
         {
           "name": "lightsout/reuse-common-code",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/server-functions",
           "severity": "advisory",
           "options": {}
         },
@@ -746,11 +607,6 @@
         },
         {
           "name": "lightsout/synonym-export-name",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/tanstack-hooks",
           "severity": "advisory",
           "options": {}
         },
@@ -787,11 +643,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/test-strict-equal-matcher",
-          "severity": "blocking",
-          "options": {}
-        },
-        {
           "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
           "severity": "advisory",
           "options": {}
@@ -810,24 +661,19 @@
           "name": "lightsout/type-assertion",
           "severity": "blocking",
           "options": {}
-        },
-        {
-          "name": "lightsout/when-to-document",
-          "severity": "advisory",
-          "options": {}
         }
       ],
       "totals": {
-        "rules": 64,
-        "deterministic": 36,
-        "agent": 31,
-        "topics": 17
+        "rules": 50,
+        "deterministic": 34,
+        "agent": 18,
+        "topics": 13
       }
     },
     {
       "name": "tanstack-start",
       "address": "lightsout/tanstack-start",
-      "description": "Gives a TanStack Start app one place for each feature, server function, query and hook, in each package that uses TanStack Start.",
+      "description": "Where a TanStack Start app declares its query options, in each package that uses TanStack Start.",
       "appliesWhen": {
         "dependencies": [
           "@tanstack/react-start",
@@ -846,35 +692,15 @@
       ],
       "rules": [
         {
-          "name": "lightsout/feature-structure",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/file-naming-for-server-functions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/query-options",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/server-functions",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/tanstack-hooks",
           "severity": "advisory",
           "options": {}
         }
       ],
       "totals": {
-        "rules": 5,
+        "rules": 1,
         "deterministic": 0,
-        "agent": 5,
+        "agent": 1,
         "topics": 1
       }
     }
@@ -882,39 +708,10 @@
   "topics": [
     {
       "set": "code",
-      "path": "code/agent-corrections/comments",
-      "intro": "# Comments\n\nWhen code needs a comment, and what one says. Nothing here mandates a doc comment on every export.",
-      "ruleIds": [
-        "when-to-document",
-        "no-history-in-comments",
-        "per-folder-readmes"
-      ]
-    },
-    {
-      "set": "code",
-      "path": "code/agent-corrections/design",
-      "intro": "# Design\n\nWhen a function, a type, an abstraction or a class earns its place.",
-      "ruleIds": [
-        "no-thin-wrappers",
-        "premature-abstraction",
-        "prefer-functions"
-      ]
-    },
-    {
-      "set": "code",
-      "path": "code/agent-corrections/type-safety",
-      "intro": "# Type Safety\n\nProving a value's type instead of switching the check off.",
-      "ruleIds": [
-        "type-assertion",
-        "no-any"
-      ]
-    },
-    {
-      "set": "code",
       "path": "code/code-style/classes",
-      "intro": "# Classes\n\nHow a class is written, and how classes share behaviour.",
+      "intro": "# Classes\n\nWhen to write a class, and how classes share behaviour.",
       "ruleIds": [
-        "class-syntax",
+        "prefer-functions",
         "class-inheritance"
       ]
     },
@@ -939,8 +736,17 @@
     },
     {
       "set": "code",
+      "path": "code/code-style/type-safety",
+      "intro": "# Type Safety\n\nProving a value's type instead of switching the check off.",
+      "ruleIds": [
+        "type-assertion",
+        "no-any"
+      ]
+    },
+    {
+      "set": "code",
       "path": "code/fractal/duplication",
-      "intro": "# Duplication\n\nHow code is kept free of copies and dead code, and named so that a search finds it.",
+      "intro": "# Duplication\n\nHow code is kept free of copies and dead code, and named so that a search finds it.\n\nA method that only passes a call on to a collaborator its class holds is never a copy, however many classes hold the same collaborator.",
       "ruleIds": [
         "dead-export",
         "duplicate-function-body",
@@ -953,7 +759,7 @@
     {
       "set": "code",
       "path": "code/fractal/imports",
-      "intro": "# Imports\n\nHow an import names the file it reads from, and what a package makes public.\n\n- An index file is `index.ts`, or the same name in any other dialect: `index.js`, `index.mjs`, `index.jsx`, `index.tsx`.\n- A package's entry is the index file its manifest publishes to other packages. It sits at the package root or its `src/`, or the manifest names it, as a subpath export such as `\"./contracts\": \"./src/contracts/index.ts\"` does. It is the package's public contract: it lists exactly what other packages may use.\n- A route file a file router loads, such as `src/routes/index.tsx`, is a route, not an index file, and importing it imports that route.",
+      "intro": "# Imports\n\nHow an import names the file it reads from, and what a package makes public.\n\n- An index file is `index.ts`, or the same name in any other dialect: `index.js`, `index.mjs`, `index.jsx`, `index.tsx`.\n- A package's entry is the index file its manifest publishes to other packages. It sits at the package root or its `src/`, or the manifest names it, as a subpath export such as `\"./contracts\": \"./src/contracts/index.ts\"` does. It is the package's public contract: it lists exactly what other packages may use.",
       "ruleIds": [
         "import-path-alias",
         "index-files",
@@ -999,31 +805,10 @@
     },
     {
       "set": "code",
-      "path": "code/frameworks/react",
-      "intro": "# React Architecture\n\nHow the base rules apply to React code: components, hooks and JSX. React mandates no file layout and no file names.",
-      "ruleIds": [
-        "component-file-structure"
-      ]
-    },
-    {
-      "set": "code",
       "path": "code/frameworks/tanstack-start",
-      "intro": "# TanStack Start Architecture\n\nHow the base rules and the React rules apply to a TanStack Start application. TanStack Start mandates only its route files under `routes/`, such as `__root.tsx` and the `/` route's `index.tsx`, and its entry files `router.tsx`, `server.ts` and `client.tsx`. It mandates no folders and no names for the rest of the code: the folders and names in these rules are this pack's own conventions.",
+      "intro": "# TanStack Start\n\nConventions for a TanStack Start application. TanStack Start mandates only its route files under `routes/` and its entry files `router.tsx`, `server.ts` and `client.tsx`: the folders and names in these rules are this pack's own conventions.",
       "ruleIds": [
-        "feature-structure",
-        "server-functions",
-        "file-naming-for-server-functions",
-        "query-options",
-        "tanstack-hooks"
-      ]
-    },
-    {
-      "set": "tests",
-      "path": "tests/agent-corrections",
-      "intro": "# Assertions and Mocks\n\nWhat a unit test asserts, and what it mocks.",
-      "ruleIds": [
-        "assertions-pin-contracts",
-        "jest-spyon-vs-jest-mock"
+        "query-options"
       ]
     },
     {
@@ -1034,11 +819,12 @@
         "precedence-in-repos-with-older-tests",
         "test-structure-arrange-act-assert-with-setup-factories",
         "no-test-state-in-hooks",
-        "test-strict-equal-matcher",
         "test-mock-prefix",
         "test-mock-untyped",
         "test-mock-wrapper-untyped",
-        "test-manual-mock-cleanup"
+        "test-manual-mock-cleanup",
+        "assertions-pin-contracts",
+        "jest-spyon-vs-jest-mock"
       ]
     },
     {
@@ -1058,9 +844,7 @@
       "path": "tests/frameworks/react",
       "intro": "# Unit Testing Components & Hooks\n\nHow React and Preact components and hooks are unit-tested.",
       "ruleIds": [
-        "framework-basics",
-        "the-render-pattern",
-        "mocking-component-dependencies"
+        "the-render-pattern"
       ]
     }
   ],
@@ -1069,7 +853,7 @@
       "id": "assertions-pin-contracts",
       "name": "lightsout/assertions-pin-contracts",
       "set": "tests",
-      "documentPath": "tests/agent-corrections",
+      "documentPath": "tests/code-style",
       "summary": "What a test asserts against.",
       "deterministic": false,
       "agent": true,
@@ -1302,82 +1086,6 @@
       }
     },
     {
-      "id": "class-syntax",
-      "name": "lightsout/class-syntax",
-      "set": "code",
-      "documentPath": "code/code-style/classes",
-      "summary": "How a class takes its arguments and declares its methods.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Class Syntax\n\n- The constructor takes one object argument, destructured, typed by a `ConstructorParams` interface.\n- An instance method types its argument with an inline object type, not a separate interface. The signature stays self-contained, and interface files don't pile up.\n- A public method of an exported class declares its return type. A `private` method infers it, as a non-exported function does (`explicit-return-type`).\n\n```typescript\ninterface ConstructorParams {\n\tname: string;\n\tisActive?: boolean;\n}\n\nexport class Person {\n\tprivate readonly name: string;\n\tprivate isActive: boolean;\n\n\tconstructor({ name, isActive = true }: ConstructorParams) {\n\t\tthis.name = name;\n\t\tthis.isActive = isActive;\n\t}\n\n\tsetActiveStatus({ status }: { status: boolean }): void {\n\t\tthis.isActive = status;\n\t}\n}\n```",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/people/Person.ts",
-          "text": "interface ConstructorParams {\n\tname: string;\n\tisActive?: boolean;\n}\n\nexport class Person {\n\tprivate readonly name: string;\n\n\tprivate isActive: boolean;\n\n\tconstructor({ name, isActive = true }: ConstructorParams) {\n\t\tthis.name = name;\n\t\tthis.isActive = isActive;\n\t}\n\n\tgreet({ greeting }: { greeting: string }): string {\n\t\treturn `${greeting}, my name is ${this.name}.`;\n\t}\n\n\tsetActiveStatus({ status }: { status: boolean }): void {\n\t\tthis.isActive = status;\n\t}\n\n\tisCurrentlyActive(): boolean {\n\t\treturn this.isActive;\n\t}\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/people/Person.ts",
-          "text": "interface GreetParams {\n\tgreeting: string;\n}\n\n// Positional constructor arguments, and a separate interface for a method that\n// takes one property — both of the shapes the section rules out.\nexport class Person {\n\tprivate readonly name: string;\n\n\tconstructor(name: string, isActive = true) {\n\t\tthis.name = isActive ? name : `${name} (inactive)`;\n\t}\n\n\tgreet(params: GreetParams) {\n\t\treturn `${params.greeting}, my name is ${this.name}.`;\n\t}\n}\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
-      "id": "component-file-structure",
-      "name": "lightsout/component-file-structure",
-      "set": "code",
-      "documentPath": "code/frameworks/react",
-      "summary": "What a component's file holds, and when it becomes a folder.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 3,
-        "fail": 1
-      },
-      "prose": "## Component File Structure\n\nA component is a module: one `.tsx` file until it needs files only it uses, as `module-file-to-folder` says.\n\nLeave a component's return type to inference, an exception to `explicit-return-type`. React's own types are a component's contract, so an annotation such as `JSX.Element` only adds noise.\n\nKeep components and hooks short:\n\n- When a component passes its limit in `function-size`, extract sub-components.\n- A hook composes; it does not compute. Move its pure logic into utility functions the hook calls.\n- Move inline styles and repeated `className` logic into a shared class or component.\n\nLogic outside a component or hook can be read and tested without rendering anything.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/components/InstallPanel/common/utils/getInstallStepLabel.ts",
-          "text": "export const getInstallStepLabel = ({ step }: { step: number }): string => `Step ${step} of 4`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/components/InstallPanel/InstallPanel.tsx",
-          "text": "import { getInstallStepLabel } from './common/utils/getInstallStepLabel';\n\ninterface Props {\n\tstep: number;\n}\n\n// A folder here earns itself: the component owns a helper nobody else may use.\nexport const InstallPanel = ({ step }: Props) => <p>{getInstallStepLabel({ step })}</p>;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/components/StatusBadge.tsx",
-          "text": "interface Props {\n\tstatus: 'connected' | 'notInstalled';\n}\n\nexport const StatusBadge = ({ status }: Props) => <span className={status}>{status}</span>;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/components/StatusBadge/StatusBadge.tsx",
-          "text": "interface Props {\n\tstatus: 'connected' | 'notInstalled';\n}\n\n// A folder and a barrel around a component that bundles no utilities, types or\n// constants — the folder is the default only once there is something to bundle.\nexport const StatusBadge = ({ status }: Props) => <span className={status}>{status}</span>;\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/components/StatusBadge/StatusBadge.tsx",
-          "pass": "src/components/InstallPanel/InstallPanel.tsx"
-        }
-      }
-    },
-    {
       "id": "dead-export",
       "name": "lightsout/dead-export",
       "set": "code",
@@ -1388,7 +1096,7 @@
       "defaultSeverity": "blocking",
       "defaultOptions": {},
       "fixtureCounts": {
-        "pass": 5,
+        "pass": 4,
         "fail": 3
       },
       "prose": "## Dead Export\n\nDelete an export that nothing references, not even a test, as soon as it becomes unused. This covers interfaces, types and functions as well as values.\n\n- Never keep code in case it is needed later: version history still has it.\n- When you are not sure whether something is used, search before you delete it.\n\nUnused code still has to be read, and kept compiling, by everyone who passes it.",
@@ -1396,7 +1104,7 @@
         {
           "side": "pass",
           "path": "package.json",
-          "text": "{\n\t\"name\": \"dead-export-pass-fixture\",\n\t\"private\": true,\n\t\"dependencies\": {\n\t\t\"@tanstack/react-router\": \"1.168.3\",\n\t\t\"@tanstack/react-start\": \"1.167.5\"\n\t}\n}\n"
+          "text": "{\n\t\"name\": \"dead-export-pass-fixture\",\n\t\"private\": true\n}\n"
         },
         {
           "side": "pass",
@@ -1412,11 +1120,6 @@
           "side": "pass",
           "path": "src/index.ts",
           "text": "// `renderGreeting` is published by the package entry and `buildGreeting` used\n// by it — every export in the package has something that consumes it.\nexport { renderGreeting } from './feature/renderGreeting';\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/router.tsx",
-          "text": "import { createRootRoute, createRouter } from '@tanstack/react-router';\n\nconst routeTree = createRootRoute();\n\n// The Start plugin resolves this file by convention. Nothing in the app imports\n// `getRouter` and no entry publishes it — which is exactly what makes it read\n// as dead to a check that does not know the framework named it.\nexport const getRouter = () => createRouter({ routeTree });\n"
         },
         {
           "side": "fail",
@@ -1458,7 +1161,7 @@
         "pass": 4,
         "fail": 2
       },
-      "prose": "## Duplicate Code Block\n\nWhen the same code appears in two or more files, such as loading and error handling, validation or a repeated transformation, write it once where `shared-code-placement` says, and import it.\n\nA class that holds a collaborator and passes calls to it through one-line methods repeats that shape in every class holding the same collaborator. That is never duplication, and this rule does not count it.\n\nCopies drift apart, and a fix then reaches only one of them.",
+      "prose": "## Duplicate Code Block\n\nWhen the same code appears in two or more files, such as loading and error handling, validation or a repeated transformation, write it once where `shared-code-placement` says, and import it.\n\nCopies drift apart, and a fix then reaches only one of them.",
       "fixtures": [
         {
           "side": "pass",
@@ -1560,7 +1263,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Duplicate Function Body\n\nNever write a function whose body is another function's with only the names or the literal values changed. Keep one, and pass the values that differed as arguments.\n\n- This covers every function, method and callback, in the same file or another.\n- Two functions that call different hooks are different: a hook cannot be passed in.\n- A method that only forwards to a collaborator its class holds is not a copy.\n\nRenaming a copy hides it from a search by name, so the two drift apart unseen.",
+      "prose": "## Duplicate Function Body\n\nNever write a function whose body is another function's with only the names or the literal values changed. Keep one, and pass the values that differed as arguments.\n\n- This covers every function, method and callback, in the same file or another.\n- Two functions that call different hooks are different: a hook cannot be passed in.\n\nRenaming a copy hides it from a search by name, so the two drift apart unseen.",
       "fixtures": [
         {
           "side": "pass",
@@ -1632,51 +1335,6 @@
       }
     },
     {
-      "id": "feature-structure",
-      "name": "lightsout/feature-structure",
-      "set": "code",
-      "documentPath": "code/frameworks/tanstack-start",
-      "summary": "How a feature folder grows.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## Feature Structure\n\nA feature is a module in `src/features/`, such as `src/features/issues/`. It grows only the folders its code needs, each made with its first file and never in advance:\n\n- `screens/`: components a route renders.\n- `queries/`: query-options factories, as `query-options` says.\n- `serverFns/`: server functions, as `server-functions` says.\n- `hooks/`: custom hooks, as `tanstack-hooks` says.\n- `components/`: components used across the feature.\n- `common/`: code shared inside the feature, placed as `shared-code-placement` says.\n\nThere is no fixed tree to stamp out: a folder made before its first file is a guess about code nobody has written.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/features/issues/common/utils/getIssueRows.ts",
-          "text": "export const getIssueRows = (): string[] => ['first', 'second'];\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/features/issues/screens/IssuesScreen.tsx",
-          "text": "import { getIssueRows } from '../common/utils/getIssueRows';\n\nexport const IssuesScreen = () => <ul>{getIssueRows().map((row) => <li key={row}>{row}</li>)}</ul>;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/features/issues/IssuesScreen.tsx",
-          "text": "import { getIssueRows } from './issuesUtils';\n\n// The feature is a flat pile: no `screens/`, no `queries/`, no barrel, and a\n// file named for the role of what it holds.\nexport const IssuesScreen = () => <ul>{getIssueRows().map((row) => <li key={row}>{row}</li>)}</ul>;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/features/issues/issuesUtils.ts",
-          "text": "export const getIssueRows = (): string[] => ['first', 'second'];\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/features/issues/IssuesScreen.tsx",
-          "pass": "src/features/issues/common/utils/getIssueRows.ts"
-        }
-      }
-    },
-    {
       "id": "file-directly-in-common",
       "name": "lightsout/file-directly-in-common",
       "set": "code",
@@ -1718,51 +1376,6 @@
         "focus": {
           "fail": "src/billing/common/formatRate.ts",
           "pass": "src/billing/common/utils/formatRate.ts"
-        }
-      }
-    },
-    {
-      "id": "file-naming-for-server-functions",
-      "name": "lightsout/file-naming-for-server-functions",
-      "set": "code",
-      "documentPath": "code/frameworks/tanstack-start",
-      "summary": "How server functions and their files are named.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## File Naming for Server Functions\n\nEnd a server function's name with `ServerFn`, such as `countIssuesServerFn`, in a file of the same name. A server function's folder takes its name without the suffix: `findIssues/`. A GraphQL document constant is PascalCase, in a file of its name: `FindIssuesDocument.ts`.\n\nThe suffix makes a call to the server recognisable where it is imported.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/features/issues/serverFns/countIssues/CountIssuesDocument.ts",
-          "text": "export const CountIssuesDocument = 'query CountIssues { issues { totalCount } }';\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/features/issues/serverFns/countIssues/countIssuesServerFn.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport { CountIssuesDocument } from './CountIssuesDocument';\n\n// camelCase folder, PascalCase document, camelCase function — the casing tells\n// you what each file is before you open it.\nexport const countIssuesServerFn = createServerFn().handler(async () => CountIssuesDocument.length);\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/features/issues/serverFns/count-issues/count-issues-document.ts",
-          "text": "// Kebab-case throughout: the folder should be camelCase and the document\n// PascalCase, so nothing in the tree says which file is which kind.\nexport const CountIssuesDocument = 'query CountIssues { issues { totalCount } }';\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/features/issues/serverFns/count-issues/count-issues-server-fn.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\n\nexport const countIssuesServerFn = createServerFn().handler(async () => 0);\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/features/issues/serverFns/count-issues/count-issues-document.ts",
-          "pass": "src/features/issues/serverFns/countIssues/CountIssuesDocument.ts"
         }
       }
     },
@@ -1820,15 +1433,15 @@
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
-        "pass": 5,
+        "pass": 4,
         "fail": 1
       },
-      "prose": "## Filename Mismatch\n\nA file is named after its export, as `multi-export` says. Choose how that name is cased in this order:\n\n1. Match the other files in the same folder.\n2. Follow the package's framework, such as NestJS, whose files are `kebab-case.{suffix}.ts`.\n3. Otherwise, in a new or empty folder with no framework convention, keep the export's own casing: `buildVersionedLabel.ts`, `UserProfile.ts`.\n\nA framework's naming overrides both the name and its casing:\n\n- A file router owns every name in its route folder, such as `__root.tsx` or `runs.$runId.tsx`, though each of those files exports `Route`. Files under a package's router folder are exempt: `routes/` for TanStack Router and Remix, `app/` and `pages/` for Next, and `app/` for Expo Router.\n- An entry file the framework finds by its name keeps that name: TanStack Start's `src/router.tsx`, `src/server.ts` and `src/client.tsx`, and NestJS's `src/main.ts`.\n- NestJS names a service's file `events.service.ts`, though its class is PascalCase.\n\nA file named like its export is found by searching for the export.",
+      "prose": "## Filename Mismatch\n\nA file is named after its export, as `multi-export` says. Choose how that name is cased in this order:\n\n1. Match the other files in the same folder.\n2. Otherwise, in a new or empty folder, keep the export's own casing: `buildVersionedLabel.ts`, `UserProfile.ts`.\n\nA file named like its export is found by searching for the export.",
       "fixtures": [
         {
           "side": "pass",
           "path": "package.json",
-          "text": "{\n\t\"name\": \"filename-mismatch-pass-fixture\",\n\t\"private\": true,\n\t\"dependencies\": {\n\t\t\"@tanstack/react-router\": \"1.168.3\",\n\t\t\"@tanstack/react-start\": \"1.167.5\"\n\t}\n}\n"
+          "text": "{\n\t\"name\": \"filename-mismatch-pass-fixture\",\n\t\"private\": true\n}\n"
         },
         {
           "side": "pass",
@@ -1844,11 +1457,6 @@
           "side": "pass",
           "path": "src/events/events.service.ts",
           "text": "// A framework dot-suffix is convention, not a mismatch.\nexport class EventsService {\n\thandle(): string {\n\t\treturn 'handled';\n\t}\n}\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/router.tsx",
-          "text": "import { createRootRoute, createRouter } from '@tanstack/react-router';\n\nconst routeTree = createRootRoute();\n\n// A framework's entry file is framework-named: the Start plugin decides both\n// that this file is called `router.tsx` and that its export is `getRouter`.\nexport const getRouter = () => createRouter({ routeTree });\n"
         },
         {
           "side": "fail",
@@ -1878,7 +1486,7 @@
         "pass": 5,
         "fail": 3
       },
-      "prose": "## Files That Must NOT Have Dedicated Tests\n\nNever create a test file for a source file with no runtime logic. The tests of the code that uses it cover it:\n\n- constants holding only literal values, with no computation or side effects\n- enums with no computed members, and string-union types\n- files holding only `type` and `interface` declarations\n- index files, which only re-export\n\nA file earns a test only when it holds executable logic. When a constants file does hold logic, such as an environment-variable fallback, test the logic, not the static value.\n\nThe one exception is a package's entry. Nothing in the repo uses it, so no other test covers it, and a name dropped from it in a rename or a merge breaks every downstream build while every test still passes. Its test pins only what no other test can reach: the exact set of exported names, and that each arrives as a value rather than `undefined`. It never re-proves what the exported things do; their own tests do that.",
+      "prose": "## Files That Must NOT Have Dedicated Tests\n\nNever create a test file for a source file with no runtime logic. The tests of the code that uses it cover it:\n\n- constants holding only literal values, with no computation or side effects\n- enums with no computed members, and string-union types\n- files holding only `type` and `interface` declarations\n- index files, which only re-export\n\nWhen a constants file does hold logic, such as an environment-variable fallback, test the logic, not the static value.\n\nThe one exception is a package's entry. Nothing in the repo uses it, so no other test covers it, and a name dropped from it in a rename or a merge breaks every downstream build while every test still passes. Its test pins only what no other test can reach: the exact set of exported names, and that each arrives as a value rather than `undefined`. It never re-proves what the exported things do; their own tests do that.",
       "fixtures": [
         {
           "side": "pass",
@@ -1942,15 +1550,15 @@
         "cap": 20
       },
       "fixtureCounts": {
-        "pass": 25,
+        "pass": 4,
         "fail": 21
       },
-      "prose": "## Folder Size\n\nWhen a folder holds more than 20 files, not counting tests, group related files under a domain folder named for what they share.\n\nA folder a file router owns is exempt: its file count is the number of routes, a fact about the product.\n\nA long flat folder reads like a listing instead of a description of the product.",
+      "prose": "## Folder Size\n\nWhen a folder holds more than 20 files, not counting tests, group related files under a domain folder named for what they share.\n\nA long flat folder reads like a listing instead of a description of the product.",
       "fixtures": [
         {
           "side": "pass",
           "path": "package.json",
-          "text": "{\n\t\"name\": \"folder-size-pass-fixture\",\n\t\"private\": true,\n\t\"dependencies\": {\n\t\t\"@tanstack/react-router\": \"^1.0.0\"\n\t}\n}\n"
+          "text": "{\n\t\"name\": \"folder-size-pass-fixture\",\n\t\"private\": true\n}\n"
         },
         {
           "side": "pass",
@@ -1966,111 +1574,6 @@
           "side": "pass",
           "path": "src/narrow/narrow2.ts",
           "text": "export const narrow2 = 2;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route0.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route0')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route1.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route1')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route10.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route10')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route11.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route11')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route12.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route12')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route13.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route13')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route14.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route14')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route15.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route15')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route16.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route16')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route17.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route17')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route18.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route18')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route19.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route19')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route2.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route2')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route20.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route20')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route3.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route3')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route4.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route4')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route5.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route5')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route6.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route6')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route7.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route7')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route8.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route8')({\n\tcomponent: () => null,\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/route9.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/route9')({\n\tcomponent: () => null,\n});\n"
         },
         {
           "side": "fail",
@@ -2187,37 +1690,6 @@
       }
     },
     {
-      "id": "framework-basics",
-      "name": "lightsout/framework-basics",
-      "set": "tests",
-      "documentPath": "tests/frameworks/react",
-      "summary": "The testing library, file name and interaction helper a component test uses.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Framework Basics\n\n- Import from `@testing-library/react` (React) or `@testing-library/preact` (Preact) — check the package's `package.json`; the API is identical.\n- Component test files use `.unit.test.tsx` (JSX requires `.tsx`).\n- **Framework route/page files never get co-located unit tests** — they are thin wiring (guards, layout, a screen render) verified through e2e tests and the screen component's own tests.\n- Interactions use `userEvent` **when the package depends on `@testing-library/user-event`** (check its `package.json`); otherwise use `fireEvent` from the testing-library package. Never add the dependency yourself — that is the repo owner's decision, so report it.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/notifications/NotificationBanner.unit.test.tsx",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { NotificationBanner } from './NotificationBanner';\n\nconst setupNotificationBanner = () => {\n\trender(<NotificationBanner message=\"Action required\" />);\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('renders the notification message', () => {\n\t\tsetupNotificationBanner();\n\n\t\tconst message = screen.getByText('Action required');\n\n\t\texpect(message).toBeInTheDocument();\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/routes/dashboard.route.unit.test.ts",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport { DashboardRoute } from './dashboard.route';\n\n// A route file is thin wiring covered by e2e tests and the screen component's\n// own tests, and a component test cannot live in a .ts file at all.\ndescribe('DashboardRoute', () => {\n\ttest('is defined', () => {\n\t\texpect(DashboardRoute).toBeDefined();\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
       "id": "function-size",
       "name": "lightsout/function-size",
       "set": "code",
@@ -2318,7 +1790,7 @@
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
-        "pass": 5,
+        "pass": 4,
         "fail": 2
       },
       "prose": "## Index File Contents\n\nAn index file holds only re-export lines, `export { Foo } from '<path>'` and `export type { Bar } from '<path>'`, and comments.\n\n- Re-export each name explicitly, never with `export *`. List what other packages need, and nothing only the package itself uses.\n- How re-export lines wrap or merge follows the project's formatter, not this rule.\n- Put executable code in an entry file with its own name, conventionally `main.ts`, which imports what it runs from the files that declare it.\n\nA package's entry is the list other packages build against. Code in it makes that list hard to read, and a star publishes whatever its target happens to export, so the contract stops being a decision.",
@@ -2326,7 +1798,7 @@
         {
           "side": "pass",
           "path": "package.json",
-          "text": "{\n\t\"name\": \"index-file-contents-pass-fixture\",\n\t\"private\": true,\n\t\"dependencies\": {\n\t\t\"@tanstack/react-router\": \"1.168.3\",\n\t\t\"@tanstack/react-start\": \"1.167.5\"\n\t}\n}\n"
+          "text": "{\n\t\"name\": \"index-file-contents-pass-fixture\",\n\t\"private\": true\n}\n"
         },
         {
           "side": "pass",
@@ -2342,11 +1814,6 @@
           "side": "pass",
           "path": "src/main.ts",
           "text": "import { renderGreeting } from './feature/renderGreeting';\n\nconsole.log(renderGreeting());\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/index.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/')({ component: () => <h1>Runs</h1> });\n"
         },
         {
           "side": "fail",
@@ -2378,7 +1845,7 @@
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
-        "pass": 6,
+        "pass": 5,
         "fail": 4
       },
       "prose": "## Index Files\n\nOnly a package's entry is an index file, and nothing imports through one. Every import names the file that declares what it imports: `@/ingestion/ingestRecords`, never `@/ingestion`.\n\n- Delete an index file in any other folder, and import each name from the file that declares it.\n- Import from another workspace package through its entry, such as `@acme/engine`, never a path into its `src/`.\n- Code inside a package never imports its own entry.\n- An index file may re-export from another index file, and an index file's own test imports the file it tests.\n- This rule judges only files that belong to a package. Where the repo's manifests declare workspace packages, a file outside all of them, such as a build script at the repo root, is not held to it. A repo that declares none is one package, and every file in it is judged.\n\nAn import through an index file loads every file it re-exports to reach one name, and a test runner, unlike a bundler, pays for all of them. A folder's index lists names nothing reads through it, and it drifts the first time someone adds a file and forgets it.",
@@ -2386,7 +1853,7 @@
         {
           "side": "pass",
           "path": "package.json",
-          "text": "{\n\t\"name\": \"index-files-pass-fixture\",\n\t\"exports\": { \".\": \"./src/index.ts\" },\n\t\"private\": true,\n\t\"dependencies\": {\n\t\t\"@tanstack/react-router\": \"1.168.3\",\n\t\t\"@tanstack/react-start\": \"1.167.5\"\n\t}\n}\n"
+          "text": "{\n\t\"name\": \"index-files-pass-fixture\",\n\t\"exports\": {\n\t\t\".\": \"./src/index.ts\"\n\t},\n\t\"private\": true\n}\n"
         },
         {
           "side": "pass",
@@ -2407,11 +1874,6 @@
           "side": "pass",
           "path": "src/reporting/buildReport.ts",
           "text": "import { ingestRecords } from '../ingestion/ingestRecords';\n\nexport const buildReport = (): number => ingestRecords();\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/index.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nconst RunsIndex = () => <section>runs</section>;\n\nexport const Route = createFileRoute('/')({ component: RunsIndex });\n"
         },
         {
           "side": "fail",
@@ -2456,7 +1918,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Internal Import From Outside\n\nPut a folder's private files in its `internal/` folder, and import them only from files inside that folder. Everything outside `internal/` is the folder's public API.\n\n```\nsrc/ingestion/\n├─ ingestRecords.ts        # public: anyone may import it\n└─ internal/\n   └─ parseRow.ts          # private to src/ingestion/\n```\n\n- Any file inside the folder, tests included, may import from its `internal/`.\n- From outside, import the public file that uses it instead, or move the file out of `internal/` when it is genuinely shared.\n- Nested folders nest the rule: `src/ingestion/parser/internal/tokenize.ts` is private to `src/ingestion/parser/`.\n- An `internal/` folder may sit in any folder, beside what `module-folder-layout` allows.\n- `internal/` marks privacy only. Inside it, place code as anywhere else: shared code in a `common/` as `shared-code-placement` says, and a module that needs files of its own in its own folder as `module-file-to-folder` says.\n\nThen privacy shows in the import line itself, with no list elsewhere to consult.",
+      "prose": "## Internal Import From Outside\n\nPut a folder's private files in its `internal/` folder, and import them only from files inside that folder. Everything outside `internal/` is the folder's public API.\n\n```\nsrc/ingestion/\n├─ ingestRecords.ts        # public: anyone may import it\n└─ internal/\n   └─ parseRow.ts          # private to src/ingestion/\n```\n\n- Any file inside the folder, tests included, may import from its `internal/`.\n- From outside, import the public file that uses it instead, or move the file out of `internal/` when it is genuinely shared.\n- Nested folders nest the rule: `src/ingestion/parser/internal/tokenize.ts` is private to `src/ingestion/parser/`.\n- An `internal/` folder may sit in any folder, beside what `module-folder-layout` allows.\n- `internal/` marks privacy only. Inside it, place code as anywhere else.\n\nThen privacy shows in the import line itself, with no list elsewhere to consult.",
       "fixtures": [
         {
           "side": "pass",
@@ -2501,7 +1963,7 @@
       "id": "jest-spyon-vs-jest-mock",
       "name": "lightsout/jest-spyon-vs-jest-mock",
       "set": "tests",
-      "documentPath": "tests/agent-corrections",
+      "documentPath": "tests/code-style",
       "summary": "What to mock, and with which tool.",
       "deterministic": false,
       "agent": true,
@@ -2522,37 +1984,6 @@
           "side": "fail",
           "path": "src/orders/placeOrder.unit.test.ts",
           "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { placeOrder } from './placeOrder';\n\n// The repository is an object the test already holds — replacing its whole\n// module hides every other method the unit may touch.\nconst mockSave = jest.fn<(order: { id: string }) => void>();\n\njest.mock('./orderRepository', () => ({\n\torderRepository: { save: (order: { id: string }) => mockSave(order) },\n}));\n\ndescribe('placeOrder', () => {\n\ttest('saves the order it was given', () => {\n\t\tplaceOrder({ order: { id: 'a' } });\n\n\t\texpect(mockSave).toHaveBeenCalledWith({ id: 'a' });\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
-      "id": "mocking-component-dependencies",
-      "name": "lightsout/mocking-component-dependencies",
-      "set": "tests",
-      "documentPath": "tests/frameworks/react",
-      "summary": "What a component test mocks.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Mocking Component Dependencies\n\n**Hooks** mock like any other function (`test-mock-untyped`, `test-mock-wrapper-untyped`):\n\n```typescript\nconst mockUseProjects = jest.fn<(params: { workspaceId: number }) => { data: Project[] }>();\n\njest.mock('@/features/projects/hooks/useProjects', () => ({\n\tuseProjects: (params: { workspaceId: number }) => mockUseProjects(params),\n}));\n```\n\n**Zustand-style stores**: `mockUseAppStore.mockReturnValue(value)` works only when the component calls the store **once**. When it reads multiple slices, run the real selectors against a mock state instead:\n\n```typescript\nconst setupFeaturePanel = ({ isActive = true, label = 'Panel' }: { isActive?: boolean; label?: string } = {}) => {\n\tmockUseAppStore.mockImplementation((selector) => selector({ isActive, label }));\n\trender(<FeaturePanel />);\n};\n```\n\n**Child components**: mock a child **only if it is itself a boundary** (its own module, or imported from another feature). Render **real** internal children (under this module's own `common/`) so they are covered through this boundary's tests — mocking an internal child leaves it with no coverage at all. When you do mock a boundary child, keep it minimal: just enough to verify props and conditional rendering.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/projects/ProjectPanel.unit.test.tsx",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { ProjectPanel } from './ProjectPanel';\n\n// Mocked Imports\n// -------------------------\nconst mockUseProjects = jest.fn<(params: { workspaceId: number }) => { data: Array<{ name: string }> }>();\n\njest.mock('@/features/projects/hooks/useProjects', () => ({\n\tuseProjects: (params: { workspaceId: number }) => mockUseProjects(params),\n}));\n// -------------------------\n\nconst setupProjectPanel = ({ names = ['Apollo'] }: { names?: string[] } = {}) => {\n\tmockUseProjects.mockReturnValue({ data: names.map((name) => ({ name })) });\n\trender(<ProjectPanel workspaceId={1} />);\n};\n\ndescribe('ProjectPanel', () => {\n\ttest('lists the projects the hook returned', () => {\n\t\tsetupProjectPanel({ names: ['Apollo'] });\n\n\t\tconst project = screen.getByText('Apollo');\n\n\t\texpect(project).toBeInTheDocument();\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/projects/ProjectPanel.unit.test.tsx",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { ProjectPanel } from './ProjectPanel';\n\n// An internal child under this module's own common/ — mocking it leaves it\n// with no coverage at all, and the wrapper drops the props it is handed.\njest.mock('./common/components/ProjectRow', () => ({\n\tProjectRow: () => <div />,\n}));\n\nconst setupProjectPanel = () => {\n\trender(<ProjectPanel workspaceId={1} />);\n};\n\ndescribe('ProjectPanel', () => {\n\ttest('lists the projects the hook returned', () => {\n\t\tsetupProjectPanel();\n\n\t\tconst panel = screen.getByRole('list');\n\n\t\texpect(panel).toBeInTheDocument();\n\t});\n});\n"
         }
       ],
       "example": {
@@ -2728,7 +2159,7 @@
         "pass": 4,
         "fail": 1
       },
-      "prose": "## Multi-Export\n\nGive each exported function, class, interface, type or constant its own file, named after the export. Non-exported items, such as private helpers and local types, may sit in the file of the export they serve.\n\nOnly these cases may put more than one item in a file:\n\n1. A `Params` or `ConstructorParams` interface stays in its function's or class's file, not exported.\n2. A private helper, as `private-helper-colocation` says.\n3. A union and its member types share one file when the members exist only as parts of that union.\n4. A lookup map keyed by a union (`Record<MyType, …>`) may sit in the file that declares the union: a change to one always changes the other.\n5. A type and the single value typed by it share one file, named for the value, such as `interface Config` beside `export const defaultConfig: Config`: the value has no consumer the type lacks.\n\n\"Closely related\", \"both config functions\", \"over-engineered to split\", \"just a small helper\" and \"one is a helper for the other\" are not exceptions. Make a helper non-exported and keep it in the file, or give each export its own file: `loadConfig` and `saveConfig` go in `loadConfig.ts` and `saveConfig.ts`.\n\nException 3:\n\n```typescript\n// common/types/SyncEvent.ts\nexport interface FileAddedEvent {\n\tkind: typeof SyncEventKind.FileAdded;\n\tpath: string;\n}\n\nexport interface RecordParsedEvent {\n\tkind: typeof SyncEventKind.RecordParsed;\n\trecordId: string;\n}\n\nexport type SyncEvent = FileAddedEvent | RecordParsedEvent;\n```\n\nWhen a member type starts being used on its own, it moves to its own file.\n\nWhen several values form one concept, such as a feature's thresholds, export one named object: `export const featureThresholds = { maxBatchSize: 20, maxRetries: 3 } as const;`. Never a bag, such as a `constants.ts` of loose exports.\n\nOne export per file gives each item one name at every use, and a search finds it.",
+      "prose": "## Multi-Export\n\nGive each exported function, class, interface, type or constant its own file, named after the export. Non-exported items, such as private helpers and local types, may sit in the file of the export they serve.\n\nOnly these cases may put more than one item in a file:\n\n1. A `Params` interface stays in its function's file, not exported.\n2. A private helper, as `private-helper-colocation` says.\n3. A union and its member types share one file when the members exist only as parts of that union.\n4. A lookup map keyed by a union (`Record<MyType, …>`) may sit in the file that declares the union: a change to one always changes the other.\n5. A type and the single value typed by it share one file, named for the value, such as `interface Config` beside `export const defaultConfig: Config`: the value has no consumer the type lacks.\n\n\"Closely related\", \"both config functions\", \"over-engineered to split\", \"just a small helper\" and \"one is a helper for the other\" are not exceptions. Make a helper non-exported and keep it in the file, or give each export its own file: `loadConfig` and `saveConfig` go in `loadConfig.ts` and `saveConfig.ts`.\n\nException 3:\n\n```typescript\n// common/types/SyncEvent.ts\nexport interface FileAddedEvent {\n\tkind: typeof SyncEventKind.FileAdded;\n\tpath: string;\n}\n\nexport interface RecordParsedEvent {\n\tkind: typeof SyncEventKind.RecordParsed;\n\trecordId: string;\n}\n\nexport type SyncEvent = FileAddedEvent | RecordParsedEvent;\n```\n\nWhen a member type starts being used on its own, it moves to its own file.\n\nWhen several values form one concept, such as a feature's thresholds, export one named object: `export const featureThresholds = { maxBatchSize: 20, maxRetries: 3 } as const;`. Never a bag, such as a `constants.ts` of loose exports.\n\nOne export per file gives each item one name at every use, and a search finds it.",
       "fixtures": [
         {
           "side": "pass",
@@ -2874,7 +2305,7 @@
       "id": "no-any",
       "name": "lightsout/no-any",
       "set": "code",
-      "documentPath": "code/agent-corrections/type-safety",
+      "documentPath": "code/code-style/type-safety",
       "summary": "Avoiding the type that switches type checking off.",
       "deterministic": true,
       "agent": false,
@@ -2911,37 +2342,6 @@
       }
     },
     {
-      "id": "no-history-in-comments",
-      "name": "lightsout/no-history-in-comments",
-      "set": "code",
-      "documentPath": "code/agent-corrections/comments",
-      "summary": "Where the history of the code belongs.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## No History In Comments\n\nA comment describes the code as it is now. Never record history in one: no dates of past events, no measurements or run counts, no ticket ids, and no account of an earlier design or why it changed. Put that in the commit message, the pull request or the ticket.\n\nA date or number the code depends on today is not history, and it stays: a vendor's retirement date for an API, or a limit an agreement sets.\n\nNothing updates a note about the past when the code changes, so it goes stale and misleads the next reader.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/billing/chargeInvoice.ts",
-          "text": "/**\n * Retries a declined charge twice: the card network treats a third attempt\n * within a day as suspected fraud and blocks the card.\n */\nexport const chargeInvoice = ({ attempt }: { attempt: number }): boolean => attempt < 3;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/chargeInvoice.ts",
-          "text": "/**\n * Retries a declined charge twice. Measured on 2026-03-02: a single retry\n * recovered 4 of 10 declines. This used to live in the checkout form until\n * PAY-212 moved it here.\n */\nexport const chargeInvoice = ({ attempt }: { attempt: number }): boolean => attempt < 3;\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
       "id": "no-test-state-in-hooks",
       "name": "lightsout/no-test-state-in-hooks",
       "set": "tests",
@@ -2973,81 +2373,6 @@
       }
     },
     {
-      "id": "no-thin-wrappers",
-      "name": "lightsout/no-thin-wrappers",
-      "set": "code",
-      "documentPath": "code/agent-corrections/design",
-      "summary": "Functions and files that add nothing but a second name.",
-      "deterministic": true,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 6,
-        "fail": 4
-      },
-      "prose": "## No Thin Wrappers\n\nNever write a function that only renames parameters or passes the call on to another function. Call the underlying function directly.\n\n```typescript\n// Incorrect: adds nothing but a second name\nexport const buildBrowserLabel = ({ browser, browserVersion }) =>\n\tbuildVersionedLabel({ name: browser, version: browserVersion });\n```\n\n- A wrapper is justified when it adds real validation or transformation, meaningfully simplifies a complex API, or handles errors or defaults.\n- A class that holds a collaborator instead of extending it reaches it through one-line methods that pass each call on unchanged. Those are not thin wrappers: deleting them would publish the held value, and callers could then step around a sibling method that adds a timer, a counter or a progress line to the same call.\n- That exception covers only a class passing calls to something it holds. A free function that only passes the call on to another free function is still a thin wrapper.\n\nNever create a file only to give another type a new name, such as `export type FilterOptions = TableFilterState`. Use the original type directly. When the difference in meaning matters, say so in a comment where the type is used.\n\nA wrapper that adds nothing is one more name to follow before reaching the code that does the work, and a comment states a difference in meaning without sending every reader through one more file.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/browsers/getBrowserBadge.ts",
-          "text": "import { buildVersionedLabel } from '../common/utils/buildVersionedLabel';\n\ninterface Params {\n\tbrowser: string;\n\tbrowserVersion: string;\n}\n\n// The call site does the renaming, so there is no second function to keep in\n// step with the first.\nexport const getBrowserBadge = ({ browser, browserVersion }: Params): string =>\n\t`<span>${buildVersionedLabel({ name: browser, version: browserVersion })}</span>`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/services/SessionState.ts",
-          "text": "/** What every kind of run owns, held by each run rather than inherited. */\nexport class SessionState {\n\tprivate readonly id: string;\n\tprivate readonly notes: string[] = [];\n\n\tconstructor({ id }: { id: string }) {\n\t\tthis.id = id;\n\t}\n\n\tnote({ message }: { message: string }): void {\n\t\tthis.notes.push(`${this.id}: ${message}`);\n\t}\n}\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/types/TableFilterState.ts",
-          "text": "export interface TableFilterState {\n\tquery: string;\n\tpage: number;\n}\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/utils/buildVersionedLabel.ts",
-          "text": "interface Params {\n\tname: string;\n\tversion: string;\n}\n\nexport const buildVersionedLabel = ({ name, version }: Params): string => `${name} ${version}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/getIssueQuery.ts",
-          "text": "import type { TableFilterState } from '../common/types/TableFilterState';\n\n// The original type used directly. Where the distinction matters, a comment at\n// the usage site says so — cheaper than a file that only renames it.\nexport const getIssueQuery = ({ filters }: { filters: TableFilterState }): string => `?q=${filters.query}&page=${filters.page}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/runs/SessionRun.ts",
-          "text": "import { SessionState } from '../common/services/SessionState';\n\n/**\n * A run that HOLDS its shared state rather than extending it — the remedy the\n * composition-over-inheritance rule requires. The one-line methods below are the\n * seam that rule asks for: they keep this class's surface the only way in, so a\n * caller cannot reach past `recordStep`, which adds this run's timer.\n */\nexport class SessionRun {\n\tprivate readonly state: SessionState;\n\tprivate readonly startedAt = Date.now();\n\n\tconstructor({ id }: { id: string }) {\n\t\tthis.state = new SessionState({ id });\n\t}\n\n\t// forwards unchanged — delegation, not a thin wrapper\n\tnote({ message }: { message: string }): void {\n\t\tthis.state.note({ message });\n\t}\n\n\t// the sibling that adds something, and the reason `state` stays private\n\trecordStep({ name }: { name: string }): void {\n\t\tthis.state.note({ message: `${name} at ${Date.now() - this.startedAt}ms` });\n\t}\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/types/FilterOptions.ts",
-          "text": "import type { TableFilterState } from './TableFilterState';\n\n// A whole file to give one type a second name. A reader now has to follow the\n// alias to learn nothing new.\nexport type FilterOptions = TableFilterState;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/types/TableFilterState.ts",
-          "text": "export interface TableFilterState {\n\tquery: string;\n\tpage: number;\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/utils/buildBrowserLabel.ts",
-          "text": "import { buildVersionedLabel } from './buildVersionedLabel';\n\ninterface Params {\n\tbrowser: string;\n\tbrowserVersion: string;\n}\n\n// Adds nothing but indirection: no validation, no defaults, no error handling —\n// only two parameters renamed on their way through.\nexport const buildBrowserLabel = ({ browser, browserVersion }: Params): string =>\n\tbuildVersionedLabel({ name: browser, version: browserVersion });\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/utils/buildVersionedLabel.ts",
-          "text": "interface Params {\n\tname: string;\n\tversion: string;\n}\n\nexport const buildVersionedLabel = ({ name, version }: Params): string => `${name} ${version}`;\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/common/utils/buildBrowserLabel.ts",
-          "pass": "src/browsers/getBrowserBadge.ts"
-        }
-      }
-    },
-    {
       "id": "object-args",
       "name": "lightsout/object-args",
       "set": "code",
@@ -3076,51 +2401,6 @@
       ],
       "example": {
         "kind": "snippet"
-      }
-    },
-    {
-      "id": "per-folder-readmes",
-      "name": "lightsout/per-folder-readmes",
-      "set": "code",
-      "documentPath": "code/agent-corrections/comments",
-      "summary": "When a folder gets its own README.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## Per-Folder READMEs\n\nGive a folder a `README.md` only for an invariant these rules don't already give, such as \"everything here runs in the widget sandbox, so no DOM globals\". Never write one that restates the structure.\n\nA README that restates the structure drifts from it.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/sandbox/README.md",
-          "text": "Everything here runs in the widget sandbox — no DOM globals.\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/sandbox/renderWidget.ts",
-          "text": "export const renderWidget = () => 'widget';\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/getCharge.ts",
-          "text": "export const getCharge = () => 1;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/README.md",
-          "text": "This folder holds the billing module. `common/` holds its shared code, `index.ts` is its public API.\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/billing/README.md",
-          "pass": "src/sandbox/README.md"
-        }
       }
     },
     {
@@ -3172,7 +2452,7 @@
       "id": "prefer-functions",
       "name": "lightsout/prefer-functions",
       "set": "code",
-      "documentPath": "code/agent-corrections/design",
+      "documentPath": "code/code-style/classes",
       "summary": "When to write a class instead of functions.",
       "deterministic": true,
       "agent": true,
@@ -3221,37 +2501,6 @@
           "fail": "src/pricing/PriceFormatter.ts",
           "pass": "src/rate/RateLimiter.ts"
         }
-      }
-    },
-    {
-      "id": "premature-abstraction",
-      "name": "lightsout/premature-abstraction",
-      "set": "code",
-      "documentPath": "code/agent-corrections/design",
-      "summary": "When to turn similar code into something general.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Premature Abstraction\n\nNever generalise code for a use that does not exist yet: no option, parameter or layer for an imagined case. Build it when a second real use needs it.\n\nThis covers code that is similar but not yet the same. Code that is already identical is shared from the second copy.\n\nThe right abstraction shows itself in real use, and a wrong one is worse than duplication.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/forms/renderEmailField.ts",
-          "text": "interface Params {\n\tlabel: string;\n\tvalue: string;\n}\n\n// The one case that actually exists, written plainly. When a second and a third\n// arrive, what they share will be visible instead of guessed.\nexport const renderEmailField = ({ label, value }: Params): string => `<label data-kind=\"email\">${label}: ${value}</label>`;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/forms/renderField.ts",
-          "text": "interface Params {\n\tkind: 'email' | 'phone' | 'address' | 'date';\n\tlabel: string;\n\tvalue: string;\n\trequired?: boolean;\n\thint?: string;\n}\n\n// Four shapes and five options, built for one caller. The right abstraction\n// shows up after two or three concrete uses; guessed early, it is a shape every\n// later use has to be bent to fit.\nexport const renderField = ({ kind, label, value, required = false, hint }: Params): string => {\n\tconst mark = required ? '*' : '';\n\tconst suffix = hint === undefined ? '' : ` (${hint})`;\n\n\treturn `<label data-kind=\"${kind}\">${label}${mark}: ${value}${suffix}</label>`;\n};\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
       }
     },
     {
@@ -3386,46 +2635,6 @@
         "focus": {
           "fail": "src/getInvoiceLabel.ts",
           "pass": "src/getInvoiceLabel.ts"
-        }
-      }
-    },
-    {
-      "id": "server-functions",
-      "name": "lightsout/server-functions",
-      "set": "code",
-      "documentPath": "code/frameworks/tanstack-start",
-      "summary": "Where server functions live.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 1
-      },
-      "prose": "## Server Functions\n\nPut server functions in a `serverFns/` folder, in a feature or at app level. A server function becomes a folder only as `module-file-to-folder` says, such as when a GraphQL document is used by it alone:\n\n```\nserverFns/\n├── countIssuesServerFn.ts        # one file\n└── findIssues/                   # a folder: it has a file of its own\n    ├── FindIssuesDocument.ts\n    └── findIssuesServerFn.ts\n```\n\nEvery call to the server is then in one place to find.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/features/issues/serverFns/countIssues/CountIssuesDocument.ts",
-          "text": "export const CountIssuesDocument = 'query CountIssues { issues { totalCount } }';\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/features/issues/serverFns/countIssues/countIssuesServerFn.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport { CountIssuesDocument } from './CountIssuesDocument';\n\nexport const countIssuesServerFn = createServerFn().handler(async () => CountIssuesDocument.length);\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/features/issues/countIssues.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\n\n// A server function loose in the feature root: nothing marks the server\n// boundary, and its GraphQL document has nowhere to sit beside it.\nexport const countIssues = createServerFn().handler(async () => 0);\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/features/issues/countIssues.ts",
-          "pass": "src/features/issues/serverFns/countIssues/CountIssuesDocument.ts"
         }
       }
     },
@@ -3681,37 +2890,6 @@
       }
     },
     {
-      "id": "tanstack-hooks",
-      "name": "lightsout/tanstack-hooks",
-      "set": "code",
-      "documentPath": "code/frameworks/tanstack-start",
-      "summary": "Where a feature's hooks live, and why a query hook infers its return type.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## TanStack Hooks\n\nPut a custom hook that wraps a query or manages state in the feature's `hooks/` folder.\n\nLeave a hook that wraps a TanStack query to infer its return type, an exception to `explicit-return-type`. That type is a deep generic instantiation, which can be impractical to write out or can even break the compiler.\n\n```typescript\n// features/issues/hooks/useIssues.ts\ninterface Params {\n\tsearchParams: IssuesSearchParams;\n}\n\nexport const useIssues = ({ searchParams }: Params) => {\n\treturn useSuspenseQuery(issuesQueryOptions({ searchParams }));\n};\n```",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/features/issues/hooks/useIssues.ts",
-          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../queries/issuesQueryOptions';\n\ninterface Params {\n\tsearch: string;\n}\n\n// Feature-level `hooks/`, wrapping the query options rather than restating\n// them, and inferring its return type — TanStack's generics are the contract.\nexport const useIssues = ({ search }: Params) => useSuspenseQuery(issuesQueryOptions({ search }));\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/features/issues/screens/IssuesScreen/useIssues.ts",
-          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../../queries/issuesQueryOptions';\n\n// A feature-level hook parked inside one screen's folder: the next screen that\n// needs it either deep-imports across the boundary or writes a second copy.\nexport const useIssues = ({ search }: { search: string }) => useSuspenseQuery(issuesQueryOptions({ search }));\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
       "id": "test-beside-subject",
       "name": "lightsout/test-beside-subject",
       "set": "tests",
@@ -3722,15 +2900,15 @@
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
-        "pass": 5,
+        "pass": 3,
         "fail": 3
       },
-      "prose": "## Test Beside Subject\n\nPut a unit test beside the one source file it tests, and name it after that file: `src/auth/AuthService.ts` is tested by `src/auth/AuthService.unit.test.ts`. The part of the test's name before the first dot names a real file in the same folder.\n\n- Never put a unit test in a `__tests__/`, `tests/` or `test/` folder under `src/`.\n- A test file whose subjects span several source files is a split candidate, not a naming exception.\n- When one subject genuinely needs more than one test file, such as a pipeline with distinct scenarios, add a camelCase scenario to the name: `<File>.<scenario>.unit.test.ts`, such as `runImplementPipeline.monorepo.unit.test.ts`.\n- Under a package's router folder the framework owns every dot in a file name, so the subject is the whole name before the test suffix: `runs.$runId.unit.test.tsx` tests `runs.$runId`, never `runs`.\n\nThen a file's test is found beside it, under its name.",
+      "prose": "## Test Beside Subject\n\nPut a unit test beside the one source file it tests, and name it after that file: `src/auth/AuthService.ts` is tested by `src/auth/AuthService.unit.test.ts`. The part of the test's name before the first dot names a real file in the same folder.\n\n- Never put a unit test in a `__tests__/`, `tests/` or `test/` folder under `src/`.\n- A test file whose subjects span several source files is a split candidate, not a naming exception.\n- When one subject genuinely needs more than one test file, such as a pipeline with distinct scenarios, add a camelCase scenario to the name: `<File>.<scenario>.unit.test.ts`, such as `runImplementPipeline.monorepo.unit.test.ts`.\n\nThen a file's test is found beside it, under its name.",
       "fixtures": [
         {
           "side": "pass",
           "path": "package.json",
-          "text": "{\n\t\"name\": \"test-beside-subject-pass-fixture\",\n\t\"private\": true,\n\t\"dependencies\": {\n\t\t\"@tanstack/react-router\": \"1.168.3\",\n\t\t\"@tanstack/react-start\": \"1.167.5\"\n\t}\n}\n"
+          "text": "{\n\t\"name\": \"test-beside-subject-pass-fixture\",\n\t\"private\": true\n}\n"
         },
         {
           "side": "pass",
@@ -3741,16 +2919,6 @@
           "side": "pass",
           "path": "src/feature/getLabel.unit.test.ts",
           "text": "import { expect, describe, test } from '@jest/globals';\nimport { getLabel } from './getLabel';\n\n// Correct: the test sits beside `getLabel.ts` and is named after it.\ndescribe('getLabel', () => {\n\ttest('trims the name it is given', () => {\n\t\tconst label = getLabel({ name: ' Ada ' });\n\n\t\texpect(label).toBe('Ada');\n\t});\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/runs.$runId.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\n\nexport const Route = createFileRoute('/runs/$runId')({ component: () => <h1>Run</h1> });\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/runs.$runId.unit.test.tsx",
-          "text": "import { describe, expect, test } from '@jest/globals';\nimport { Route } from './runs.$runId';\n\ndescribe('runs.$runId route', () => {\n\ttest('is a file route', () => {\n\t\texpect(Route).toBeDefined();\n\t});\n});\n"
         },
         {
           "side": "fail",
@@ -3934,37 +3102,6 @@
       }
     },
     {
-      "id": "test-strict-equal-matcher",
-      "name": "lightsout/test-strict-equal-matcher",
-      "set": "tests",
-      "documentPath": "tests/code-style",
-      "summary": "Comparing a whole object, or part of one.",
-      "deterministic": true,
-      "agent": false,
-      "defaultSeverity": "blocking",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Test Strict Equal Matcher\n\nCompare a whole object with `toStrictEqual` and a concrete expected object. For a partial match, use `toEqual` with an asymmetric matcher, such as `toEqual(expect.objectContaining({ ... }))`. Never pass an asymmetric matcher (`expect.objectContaining`, `arrayContaining`, `any`, `stringContaining` or `stringMatching`) to `toStrictEqual`: Jest then runs only the matcher, so the strict checks never fire, and the name claims a strictness the test does not have.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "subject.unit.test.ts",
-          "text": "import { expect, describe, test } from '@jest/globals';\n\n// A test whose subject reads code as text passes that code in as data. This is\n// a mention of the pairing the rule bans, not one — the rule reads what the\n// file does, not what it quotes.\nconst sampleLine = 'expect(result).toStrictEqual(expect.any(String));';\n\ndescribe('subject', () => {\n\ttest('matches the whole result', () => {\n\t\tconst result = { id: 'a', size: 2 };\n\n\t\texpect(result).toStrictEqual({ id: 'a', size: 2 });\n\t});\n\n\ttest('carries its sample line untouched', () => {\n\t\texpect(sampleLine).toContain('toStrictEqual');\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "subject.unit.test.ts",
-          "text": "import { expect, describe, test } from '@jest/globals';\n\ndescribe('subject', () => {\n\ttest('matches part of the result', () => {\n\t\tconst result = { id: 'a', size: 2 };\n\n\t\texpect(result).toStrictEqual(expect.objectContaining({ id: 'a' }));\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
       "id": "test-structure-arrange-act-assert-with-setup-factories",
       "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
       "set": "tests",
@@ -4075,7 +3212,7 @@
       "id": "type-assertion",
       "name": "lightsout/type-assertion",
       "set": "code",
-      "documentPath": "code/agent-corrections/type-safety",
+      "documentPath": "code/code-style/type-safety",
       "summary": "Telling the compiler a type instead of proving it.",
       "deterministic": true,
       "agent": false,
@@ -4109,37 +3246,6 @@
           "fail": "src/payloads/readLabel.ts",
           "pass": "src/payloads/common/constants/PayloadKind.ts"
         }
-      }
-    },
-    {
-      "id": "when-to-document",
-      "name": "lightsout/when-to-document",
-      "set": "code",
-      "documentPath": "code/agent-corrections/comments",
-      "summary": "When code needs a comment.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## When to Document\n\nDefault to self-documenting code. Add a doc comment whenever one of these holds:\n\n- The why is not obvious: business context, constraints, or gotchas a reader wouldn't guess from the code.\n- The function has a complex contract: parameters that interact in ways that aren't obvious, errors it throws on purpose, or usage worth an example.\n- The export is a public API that other packages or external callers use. They read the comment on hover, without the source beside it.\n\nWhen none holds, skip the comment if the name and types already say what it is for.\n\nIn a doc comment, leave out what the types already say:\n\n- `@param`: the name and its purpose only. TypeScript owns the type.\n- `@throws`: only for an error thrown on purpose and expected to be caught.\n- `@returns`: only when the value means more than its type shows, such as a `string` that is a JWT.\n\nWrite no inline `//` comments, except for a workaround that isn't obvious, a business rule inside the logic (`// 30-day window per billing agreement`), or a deliberate deviation and its reason. Never narrate what the next line does.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/billing/chargeInvoice.ts",
-          "text": "/**\n * Charges an invoice against the payer's default method.\n *\n * The 30-day window is a billing-agreement term, not a technical one — an\n * invoice older than that must be re-issued before it can be charged.\n */\nexport const chargeInvoice = ({ ageInDays }: { ageInDays: number }): boolean => ageInDays <= 30;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/getInvoiceLabel.ts",
-          "text": "/**\n * Gets the invoice label.\n *\n * @param label - the label\n */\nexport const getInvoiceLabel = ({ label }: { label: string }): string => {\n\t// return the label\n\treturn label;\n};\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
       }
     }
   ]

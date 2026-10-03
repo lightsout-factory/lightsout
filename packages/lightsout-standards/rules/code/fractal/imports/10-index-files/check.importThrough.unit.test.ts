@@ -161,18 +161,6 @@ describe('index-files check: imports through an index file', () => {
 		]);
 	});
 
-	test('a route index file the framework loads is no barrel, so importing it is not an import through one', async () => {
-		const input = setupRepo({
-			paths: ['src/router.tsx', 'src/routes/index.tsx', 'src/routes/__root.tsx'],
-			edges: [{ from: 'src/router.tsx', to: 'src/routes/index.tsx' }],
-			dependencies: [['.', ['@tanstack/react-router']]],
-		});
-
-		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
-
-		expect(findings).toStrictEqual([]);
-	});
-
 	test('reports an import through an index file of the importer’s own package, and leaves another package’s entry alone', async () => {
 		const input = setupRepo({
 			paths: [

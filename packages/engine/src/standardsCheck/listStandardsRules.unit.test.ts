@@ -67,9 +67,12 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  * `banned-class-shapes` and the unchecked `class-bright-line` became
  * `prefer-functions`; `type-alias-indirection` and the unchecked
  * `thin-wrapper-functions` became `no-thin-wrappers`.
+ *
+ * On 2026-10-03 the library was cut down to the fractal and code-style packs.
+ * `no-thin-wrappers` and `test-strict-equal-matcher` were retired with the
+ * rules they named, not renamed.
  */
 const durableRuleIds = [
-	'no-thin-wrappers',
 	'prefer-functions',
 	'type-assertion',
 	'no-any',
@@ -97,7 +100,6 @@ const durableRuleIds = [
 	'file-size',
 	'folder-size',
 	'no-test-state-in-hooks',
-	'test-strict-equal-matcher',
 	'test-mock-prefix',
 	'test-mock-untyped',
 	'test-mock-wrapper-untyped',
@@ -329,7 +331,6 @@ describe('listStandardsRules', () => {
 			'lightsout/test-mock-prefix',
 			'lightsout/test-mock-untyped',
 			'lightsout/test-mock-wrapper-untyped',
-			'lightsout/test-strict-equal-matcher',
 			'lightsout/test-support-in-src',
 		]);
 	});
@@ -356,7 +357,6 @@ describe('listStandardsRules', () => {
 			'lightsout/test-mock-prefix',
 			'lightsout/test-mock-untyped',
 			'lightsout/test-mock-wrapper-untyped',
-			'lightsout/test-strict-equal-matcher',
 			'lightsout/type-assertion',
 		]);
 	});

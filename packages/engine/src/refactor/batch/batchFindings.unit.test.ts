@@ -17,7 +17,6 @@ const mechanicalFirstOrder = [
 	'lightsout/test-mock-wrapper-untyped',
 	'lightsout/no-test-state-in-hooks',
 	'lightsout/test-manual-mock-cleanup',
-	'lightsout/test-strict-equal-matcher',
 	'lightsout/index-file-contents',
 	'lightsout/dead-export',
 	'lightsout/file-size',

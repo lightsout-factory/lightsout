@@ -12,8 +12,7 @@ const isExported = ({ statement, compiler }: { statement: ts.Statement; compiler
  * the rule is about the file's public contract.
  *
  * A generic signature is left alone, since its type parameters are the
- * contract, and an arrow whose variable is annotated is already pinned. The
- * document's other two exceptions are decided by the caller.
+ * contract, and an arrow whose variable is annotated is already pinned.
  */
 const getUnannotated = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; compiler: typeof ts }) => {
 	const missing: string[] = [];
@@ -46,19 +45,13 @@ const getUnannotated = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; c
 	return missing;
 };
 
-const isQueryOptionsFactory = ({ path }: { path: string }) => path.split('/').slice(0, -1).includes('queries');
-
 /**
- * An allow-list rather than extensions to skip. `.tsx` is the document's first
- * exception, framework components. JavaScript has no syntax for the annotation,
+ * An allow-list rather than extensions to skip. `.tsx` holds components, whose
+ * return type is left to inference. JavaScript has no syntax for the annotation,
  * so every hit would be a finding nobody could fix, and these standards run at
  * full strength on JavaScript-only repos.
- *
- * A `queries/` folder is the fourth exception, decided by path because a
- * query-options factory's contract is its inferred `queryOptions` type, which
- * the declaration's syntax does not show.
  */
-const isAnnotatable = ({ path }: { path: string }) => /\.(ts|mts|cts)$/.test(path) && !isQueryOptionsFactory({ path });
+const isAnnotatable = ({ path }: { path: string }) => /\.(ts|mts|cts)$/.test(path);
 
 /** One finding per file: annotating the exports of a file is one pass through it. */
 const buildFileFindings = ({ input }: { input: SyntaxTreeInput }) => {

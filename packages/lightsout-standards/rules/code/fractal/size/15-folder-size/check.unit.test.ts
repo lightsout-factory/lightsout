@@ -102,128 +102,6 @@ describe('folder-size check', () => {
 		expect(findings.map(({ detail }) => detail)).toStrictEqual(['21 files in one flat folder (cap ~20)']);
 	});
 
-	test('never counts a router root, whose population is the number of routes the app has', async () => {
-		const input = setupFileListInput({
-			files: ['src/routes/a.tsx', 'src/routes/b.tsx', 'src/routes/c.tsx', 'src/routes/d.tsx'],
-			dependencies: [['.', ['@tanstack/react-router']]],
-		});
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 3 } });
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('counts a routes/ folder that is not directly under the package’s src, so a domain folder of that name is still judged', async () => {
-		const input = setupFileListInput({
-			files: ['src/app/routes/a.ts', 'src/app/routes/b.ts', 'src/app/routes/c.ts', 'src/app/routes/d.ts'],
-			dependencies: [['.', ['@tanstack/react-router']]],
-		});
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 3 } });
-
-		expect(findings.map(({ detail }) => detail)).toStrictEqual(['4 files in one flat folder (cap ~3)']);
-	});
-
-	test('counts src/routes exactly as before in a package declaring no router, so the carve-out is earned by the dependency', async () => {
-		const input = setupFileListInput({ files: ['src/routes/a.tsx', 'src/routes/b.tsx', 'src/routes/c.tsx', 'src/routes/d.tsx'] });
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 3 } });
-
-		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-size:src/routes']);
-	});
-
-	test('never counts a folder beneath a router root either, since the router owns its whole subtree', async () => {
-		const input = setupFileListInput({
-			files: ['src/routes/dashboard/a.tsx', 'src/routes/dashboard/b.tsx', 'src/routes/dashboard/c.tsx', 'src/routes/dashboard/d.tsx'],
-			dependencies: [['.', ['@tanstack/react-router']]],
-		});
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 3 } });
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('keeps counting the folders beside a router root, so the carve-out drops those files rather than ending the count', async () => {
-		const input = setupFileListInput({
-			files: [
-				'src/routes/a.tsx',
-				'src/routes/b.tsx',
-				'src/routes/c.tsx',
-				'src/routes/d.tsx',
-				'src/wide/a.ts',
-				'src/wide/b.ts',
-				'src/wide/c.ts',
-				'src/wide/d.ts',
-			],
-			dependencies: [['.', ['@tanstack/react-router']]],
-		});
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 3 } });
-
-		expect(findings).toStrictEqual([
-			{
-				siteKey: 'folder-size:src/wide',
-				files: [{ path: 'src/wide' }],
-				detail: '4 files in one flat folder (cap ~3)',
-				guidance: 'Group them by domain, or graduate the concepts hiding in the pile.',
-				measure: 4,
-			},
-		]);
-	});
-
-	test('never counts an entry file the framework resolves by name, which is not the author’s listing growing', async () => {
-		const input = setupFileListInput({
-			files: ['src/a.ts', 'src/b.ts', 'src/c.ts', 'src/router.tsx', 'src/server.ts', 'src/client.tsx'],
-			dependencies: [['.', ['@tanstack/react-start']]],
-		});
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 3 } });
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('counts those same three files in a package whose framework resolves no entry files, so the dependency is what drops them', async () => {
-		const input = setupFileListInput({ files: ['src/a.ts', 'src/b.ts', 'src/c.ts', 'src/router.tsx', 'src/server.ts', 'src/client.tsx'] });
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 3 } });
-
-		expect(findings.map(({ detail }) => detail)).toStrictEqual(['6 files in one flat folder (cap ~3)']);
-	});
-
-	test('counts a file of an entry name deeper in the tree, the exemption being the framework’s anchor and not the base name', async () => {
-		const input = setupFileListInput({
-			files: ['src/features/runs/a.ts', 'src/features/runs/b.ts', 'src/features/runs/c.ts', 'src/features/runs/router.tsx'],
-			dependencies: [['.', ['@tanstack/react-start']]],
-		});
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 3 } });
-
-		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-size:src/features/runs']);
-	});
-
-	test('reads each folder against its own package’s carve-out, so one workspace’s router never exempts another’s', async () => {
-		const input = setupFileListInput({
-			files: [
-				'packages/web/src/routes/a.tsx',
-				'packages/web/src/routes/b.tsx',
-				'packages/web/src/routes/c.tsx',
-				'packages/web/src/routes/d.tsx',
-				'packages/api/src/routes/a.ts',
-				'packages/api/src/routes/b.ts',
-				'packages/api/src/routes/c.ts',
-				'packages/api/src/routes/d.ts',
-			],
-			dependencies: [
-				['packages/web', ['@tanstack/react-router']],
-				['packages/api', ['@nestjs/core']],
-			],
-		});
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 3 } });
-
-		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-size:packages/api/src/routes']);
-	});
-
 	test('measures each folder against the cap option', async () => {
 		const input = setupFileListInput({ files: ['src/wide/a.ts', 'src/wide/b.ts', 'src/wide/c.ts'] });
 
@@ -266,9 +144,7 @@ describe('folder-size check', () => {
 				'src/c.ts',
 				'src/d.ts',
 				'src/e.ts',
-				'src/router.tsx',
 			],
-			dependencies: [['.', ['@tanstack/react-start']]],
 		});
 
 		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 3 } });

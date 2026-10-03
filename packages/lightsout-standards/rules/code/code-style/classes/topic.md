@@ -1,3 +1,3 @@
 # Classes
 
-How a class is written, and how classes share behaviour.
+When to write a class, and how classes share behaviour.

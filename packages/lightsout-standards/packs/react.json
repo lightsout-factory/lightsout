@@ -1,7 +1,7 @@
 {
-	"description": "Keeps React components, hooks and their tests to one shape, in each package that uses React.",
+	"description": "How React component tests are written, in each package that uses React.",
 	"include": {
-		"topics": ["lightsout/code/frameworks/react", "lightsout/tests/frameworks/react"]
+		"topics": ["lightsout/tests/frameworks/react"]
 	},
 	"applies-when": {
 		"dependencies": ["react", "preact", "react-dom"]

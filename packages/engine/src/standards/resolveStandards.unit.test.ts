@@ -61,18 +61,18 @@ const codeOnlyPackageFiles = ({ at, name }: { at: string; name: string }) => ({
 
 describe('resolveStandards', () => {
 	test('resolveStandards: the prose comes from the pack the config names', async () => {
-		const { cwd } = setupRepo({ files: { 'package.json': JSON.stringify({ name: 'app', dependencies: { react: '^19.0.0' } }) } });
-		const fractalWithReactConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': ['lightsout/fractal', 'lightsout/react'] };
+		const { cwd } = setupRepo({ files: { 'package.json': JSON.stringify({ name: 'app', dependencies: { '@tanstack/react-start': '^1.0.0' } }) } });
+		const fractalWithTanstackStartConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': ['lightsout/fractal', 'lightsout/tanstack-start'] };
 		const fractalConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/fractal' };
 
-		const fractalWithReact = await resolveStandards({ cwd, config: fractalWithReactConfig });
+		const fractalWithTanstackStart = await resolveStandards({ cwd, config: fractalWithTanstackStartConfig });
 		const fractal = await resolveStandards({ cwd, config: fractalConfig });
 
-		// lightsout/react carries the react architecture topic
-		expect(fractalWithReact.standards ?? '').toContain('<!-- lightsout: code/frameworks/react -->');
-		expect(fractalWithReact.groups.map((group) => group.pack.name)).toStrictEqual(['lightsout/fractal + lightsout/react']);
-		// nothing is detected: the root manifest declares react, and the named fractal pack still leaves the react topic out
-		expect(fractal.standards ?? '').not.toContain('code/frameworks/react');
+		// lightsout/tanstack-start carries the TanStack Start topic
+		expect(fractalWithTanstackStart.standards ?? '').toContain('<!-- lightsout: code/frameworks/tanstack-start -->');
+		expect(fractalWithTanstackStart.groups.map((group) => group.pack.name)).toStrictEqual(['lightsout/fractal + lightsout/tanstack-start']);
+		// nothing is detected: the root manifest declares TanStack Start, and the named fractal pack still leaves its topic out
+		expect(fractal.standards ?? '').not.toContain('code/frameworks/tanstack-start');
 	});
 
 	test('resolveStandards: standards-pack false yields no prose and no group', async () => {

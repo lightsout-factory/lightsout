@@ -66,13 +66,13 @@ test('readPlanningStandards: with no config it loads nothing, whatever the consu
 	expect(logged).toStrictEqual([]);
 });
 
-test('readPlanningStandards: a config naming the shipped standards pack loads its code prose, without the react topic in a repo that declares no react', async () => {
+test('readPlanningStandards: a config naming the shipped standards pack loads its code prose, without the TanStack Start topic in a repo that declares no TanStack Start', async () => {
 	const { cwd, logged } = setupStandards();
 
 	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/standards' }) });
 
 	expect(standards ?? '').toMatch(/<!-- lightsout: code\/fractal\/modules -->/);
-	expect((standards ?? '').includes('code/frameworks/react')).toBeFalsy();
+	expect((standards ?? '').includes('code/frameworks/tanstack-start')).toBeFalsy();
 	expect(logged).toStrictEqual([]);
 });
 
@@ -123,15 +123,15 @@ test('readPlanningStandards: a declared standards pack that does not exist is no
 });
 
 test("readPlanningStandards: planning reads the selected pack's code prose", async () => {
-	const { cwd, logged } = setupStandards({ dependencies: { react: '^19.0.0' } });
+	const { cwd, logged } = setupStandards({ dependencies: { '@tanstack/react-start': '^1.0.0' } });
 
 	const switchedOff = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': false }) });
 	const named = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/standards' }) });
 
-	// standards-pack false selects no pack; lightsout/standards carries the react topic beside the fractal ones, for a package declaring react
+	// standards-pack false selects no pack; lightsout/standards carries the TanStack Start topic beside the fractal ones, for a package declaring TanStack Start
 	expect(switchedOff).toBe(undefined);
 	expect(named ?? '').toMatch(/<!-- lightsout: code\/fractal\/modules -->/);
-	expect(named ?? '').toMatch(/<!-- lightsout: code\/frameworks\/react -->/);
+	expect(named ?? '').toMatch(/<!-- lightsout: code\/frameworks\/tanstack-start -->/);
 	expect((named ?? '').includes('<!-- lightsout: tests/')).toBeFalsy();
 	expect(logged).toStrictEqual([]);
 });

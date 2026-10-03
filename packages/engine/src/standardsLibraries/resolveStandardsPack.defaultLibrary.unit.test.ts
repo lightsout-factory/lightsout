@@ -5,7 +5,7 @@ import type { ResolvedStandardsPack } from '#src/standardsLibraries/common/types
 import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary.ts';
 import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack.ts';
 
-/** The topics each of the six shipped topic packs lists, stated here as the contract the pack files must meet. */
+/** The topics each of the four shipped topic packs lists, stated here as the contract the pack files must meet. */
 const fractalTopics = [
 	'code/fractal/modules',
 	'code/fractal/shared-code',
@@ -14,16 +14,16 @@ const fractalTopics = [
 	'code/fractal/imports',
 	'tests/fractal',
 ];
-const agentCorrectionsTopics = [
-	'code/agent-corrections/design',
-	'code/agent-corrections/type-safety',
-	'code/agent-corrections/comments',
-	'tests/agent-corrections',
+const codeStyleTopics = [
+	'code/code-style/functions',
+	'code/code-style/classes',
+	'code/code-style/named-constants',
+	'code/code-style/type-safety',
+	'tests/code-style',
 ];
-const codeStyleTopics = ['code/code-style/functions', 'code/code-style/classes', 'code/code-style/named-constants', 'tests/code-style'];
-const reactTopics = ['code/frameworks/react', 'tests/frameworks/react'];
+const reactTopics = ['tests/frameworks/react'];
 const tanstackStartTopics = ['code/frameworks/tanstack-start'];
-const goalTopics = [...fractalTopics, ...agentCorrectionsTopics, ...codeStyleTopics];
+const goalTopics = [...fractalTopics, ...codeStyleTopics];
 const frameworkTopics = [...reactTopics, ...tanstackStartTopics];
 const frameworkPackNames = ['lightsout/react', 'lightsout/tanstack-start'];
 
@@ -56,7 +56,6 @@ const expectPackOf = ({ library, topicPaths }: { library: LoadedStandardsLibrary
 describe('resolveStandardsPack on the shipped lightsout library', () => {
 	test.each([
 		{ address: 'lightsout/fractal', topicPaths: fractalTopics },
-		{ address: 'lightsout/agent-corrections', topicPaths: agentCorrectionsTopics },
 		{ address: 'lightsout/code-style', topicPaths: codeStyleTopics },
 	])('$address is its own topics at rule defaults, whatever the package declares', async ({ address, topicPaths }) => {
 		const { library, libraries } = await setupDefaultLibrary();
@@ -100,7 +99,7 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 			conditionalPacks: frameworkPackNames,
 			...expectPackOf({ library, topicPaths: everyTopic }),
 		});
-		// the library's own topic list, read independently, is the three goal packs plus the three framework packs
+		// the library's own topic list, read independently, is the two goal packs plus the two framework packs
 		expect([...everyTopic].sort()).toStrictEqual([...goalTopics, ...frameworkTopics].sort());
 		expect({ conditionalPacks: frameworkFree.conditionalPacks, ...summarizePack({ pack: frameworkFree }) }).toStrictEqual({
 			conditionalPacks: [],
@@ -112,12 +111,12 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 		});
 	});
 
-	test('the lightsout library ships six packs and its five topic packs cover each topic once', async () => {
+	test('the lightsout library ships five packs and its four topic packs cover each topic once', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
 		const resolved = library.packs.map((packFile) => resolveStandardsPack({ addresses: [`lightsout/${packFile.name}`], libraries, dependencies: undefined }));
 
-		const topicPackNames = ['lightsout/agent-corrections', 'lightsout/code-style', 'lightsout/fractal', ...frameworkPackNames];
+		const topicPackNames = ['lightsout/code-style', 'lightsout/fractal', ...frameworkPackNames];
 		const topicsAcrossTopicPacks = resolved
 			.filter((pack) => topicPackNames.includes(pack.name))
 			.flatMap((pack) => pack.topics.map((topic) => topic.path))
@@ -127,15 +126,8 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 			resolved: resolved.map((pack) => pack.name).sort(),
 			topicsAcrossTopicPacks,
 		}).toStrictEqual({
-			packFiles: ['agent-corrections', 'code-style', 'fractal', 'react', 'standards', 'tanstack-start'],
-			resolved: [
-				'lightsout/agent-corrections',
-				'lightsout/code-style',
-				'lightsout/fractal',
-				'lightsout/react',
-				'lightsout/standards',
-				'lightsout/tanstack-start',
-			],
+			packFiles: ['code-style', 'fractal', 'react', 'standards', 'tanstack-start'],
+			resolved: ['lightsout/code-style', 'lightsout/fractal', 'lightsout/react', 'lightsout/standards', 'lightsout/tanstack-start'],
 			// every library topic exactly once: a topic missing, or listed by two topic packs, breaks the equality
 			topicsAcrossTopicPacks: library.documents.map((topic) => topic.path).sort(),
 		});

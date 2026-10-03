@@ -25,25 +25,6 @@ describe('buildFileExportCheck', () => {
 		]);
 	});
 
-	test("a rule's own exemption is asked once for the run, and the files it names go unjudged", async () => {
-		const exempting = buildFileExportCheck({
-			rule: 'demo-exports',
-			detail: ({ exports }) => (exports.length > 1 ? `${exports.length} exports` : undefined),
-			guidance: 'the remedy line',
-			getExempt: ({ files }) => new Set(files.filter((file) => file.startsWith('src/routes/'))),
-		});
-		const input = setupFileTextInput({
-			contents: [
-				['src/routes/pair.ts', 'export const one = 1;\nexport const two = 2;\n'],
-				['src/pair.ts', 'export const one = 1;\nexport const two = 2;\n'],
-			],
-		});
-
-		expect(await exempting.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([
-			{ siteKey: 'demo-exports:src/pair.ts', files: [{ path: 'src/pair.ts' }], detail: '2 exports', guidance: 'the remedy line' },
-		]);
-	});
-
 	test('inside a declared pack, a rule under tests/ is ordinary source and is judged like any other file', async () => {
 		const input = setupFileTextInput({
 			contents: [['standards/tests/code-style/10-rule/check.ts', 'export const one = 1;\nexport const two = 2;\n']],

@@ -1,7 +1,4 @@
 {
 	"name": "folder-size-pass-fixture",
-	"private": true,
-	"dependencies": {
-		"@tanstack/react-router": "^1.0.0"
-	}
+	"private": true
 }

@@ -85,9 +85,9 @@ describe('getConfigView', () => {
 			standardsGroups: view.standardsGroups,
 			packageSets: packageSets.map((entry) => JSON.parse(entry)).sort((left, right) => right.packages.length - left.packages.length),
 			fileSize: { packages: [...(findState('lightsout/file-size')?.packages ?? [])].sort(), appliesTo: findState('lightsout/file-size')?.appliesTo },
-			componentFileStructure: {
-				packages: findState('lightsout/component-file-structure')?.packages,
-				appliesTo: findState('lightsout/component-file-structure')?.appliesTo,
+			renderPattern: {
+				packages: findState('lightsout/the-render-pattern')?.packages,
+				appliesTo: findState('lightsout/the-render-pattern')?.appliesTo,
 			},
 		}).toStrictEqual({
 			standardsGroups: [
@@ -99,7 +99,7 @@ describe('getConfigView', () => {
 				{ packages: ['web-app'], appliesTo: 'web-app' },
 			],
 			fileSize: { packages: ['', 'engine', 'web-app'], appliesTo: 'repo root (outside packages), engine, web-app' },
-			componentFileStructure: { packages: ['web-app'], appliesTo: 'web-app' },
+			renderPattern: { packages: ['web-app'], appliesTo: 'web-app' },
 		});
 	});
 

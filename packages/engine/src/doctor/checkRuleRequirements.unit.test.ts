@@ -56,9 +56,9 @@ const setupRepo = ({ withHouseLibrary = false, dependencies = {} }: { withHouseL
 
 /**
  * A temp monorepo whose config names lightsout/standards as the repo pack, with
- * workspace packages `admin` and `web` both given lightsout/react through
+ * workspace packages `admin` and `web` both given lightsout/tanstack-start through
  * `package-standards-packs`, so they share one group apart from the root's.
- * Both declare react, which is what brings that conditional pack's rules in.
+ * Both declare TanStack Start, which is what brings that conditional pack's rules in.
  */
 const setupMonorepo = () => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-rule-requirements-monorepo-'));
@@ -67,25 +67,22 @@ const setupMonorepo = () => {
 		root: cwd,
 		files: {
 			'package.json': JSON.stringify({ name: 'repo' }),
-			'packages/admin/package.json': JSON.stringify({ name: 'admin', dependencies: { react: '19.0.0' } }),
-			'packages/web/package.json': JSON.stringify({ name: 'web', dependencies: { react: '19.0.0' } }),
+			'packages/admin/package.json': JSON.stringify({ name: 'admin', dependencies: { '@tanstack/react-start': '1.0.0' } }),
+			'packages/web/package.json': JSON.stringify({ name: 'web', dependencies: { '@tanstack/react-start': '1.0.0' } }),
 		},
 	});
 
 	const config: LightsoutConfig = {
 		...baseConfig,
 		'standards-pack': 'lightsout/standards',
-		'package-standards-packs': { admin: 'lightsout/react', web: 'lightsout/react' },
+		'package-standards-packs': { admin: 'lightsout/tanstack-start', web: 'lightsout/tanstack-start' },
 	};
 
 	return { cwd, config };
 };
 
-/** The requiring and required rules the lightsout/react pack leaves out, as full names. */
-const reactMissingRequirements = [
-	{ rule: 'lightsout/component-file-structure', required: 'lightsout/index-files' },
-	{ rule: 'lightsout/component-file-structure', required: 'lightsout/module-folder-layout' },
-];
+/** The requiring and required rules the lightsout/tanstack-start pack leaves out, as full names. */
+const tanstackStartMissingRequirements = [{ rule: 'lightsout/query-options', required: 'lightsout/module-folder-layout' }];
 
 describe('checkRuleRequirements', () => {
 	test('returns undefined when no standards group resolves', async () => {
@@ -112,8 +109,8 @@ describe('checkRuleRequirements', () => {
 	});
 
 	test('warns naming the group, the pack and each missing requirement, joined with semicolons', async () => {
-		const { cwd } = setupRepo({ dependencies: { react: '19.0.0' } });
-		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/react' };
+		const { cwd } = setupRepo({ dependencies: { '@tanstack/react-start': '1.0.0' } });
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/tanstack-start' };
 
 		const check = await checkRuleRequirements({ cwd, config });
 
@@ -124,15 +121,17 @@ describe('checkRuleRequirements', () => {
 			status: check?.status,
 			hasFix: typeof check?.fix === 'string' && check.fix.length > 0,
 			entryCount: entries.length,
-			everyEntryNamesGroupAndPack: entries.every((entry) => entry.includes('repo root (outside packages)') && entry.includes('lightsout/react')),
-			coveredRequirements: reactMissingRequirements.map(({ rule, required }) => entries.some((entry) => entry.includes(rule) && entry.includes(required))),
+			everyEntryNamesGroupAndPack: entries.every((entry) => entry.includes('repo root (outside packages)') && entry.includes('lightsout/tanstack-start')),
+			coveredRequirements: tanstackStartMissingRequirements.map(({ rule, required }) =>
+				entries.some((entry) => entry.includes(rule) && entry.includes(required)),
+			),
 		}).toStrictEqual({
 			id: 'rule-requirements',
 			status: 'warn',
 			hasFix: true,
-			entryCount: 2,
+			entryCount: 1,
 			everyEntryNamesGroupAndPack: true,
-			coveredRequirements: reactMissingRequirements.map(() => true),
+			coveredRequirements: tanstackStartMissingRequirements.map(() => true),
 		});
 	});
 
@@ -148,9 +147,9 @@ describe('checkRuleRequirements', () => {
 			id: check?.id,
 			status: check?.status,
 			entryCount: entries.length,
-			everyEntryNamesBothPackages: entries.every((entry) => entry.includes('admin') && entry.includes('web') && entry.includes('lightsout/react')),
+			everyEntryNamesBothPackages: entries.every((entry) => entry.includes('admin') && entry.includes('web') && entry.includes('lightsout/tanstack-start')),
 			anyEntryNamesRoot: entries.some((entry) => entry.includes('repo root (outside packages)')),
-		}).toStrictEqual({ id: 'rule-requirements', status: 'warn', entryCount: 2, everyEntryNamesBothPackages: true, anyEntryNamesRoot: false });
+		}).toStrictEqual({ id: 'rule-requirements', status: 'warn', entryCount: 1, everyEntryNamesBothPackages: true, anyEntryNamesRoot: false });
 	});
 
 	test('judges requirements after standards-rule-settings apply', async () => {

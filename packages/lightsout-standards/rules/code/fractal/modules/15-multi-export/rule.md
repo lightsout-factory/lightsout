@@ -10,7 +10,7 @@ Give each exported function, class, interface, type or constant its own file, na
 
 Only these cases may put more than one item in a file:
 
-1. A `Params` or `ConstructorParams` interface stays in its function's or class's file, not exported.
+1. A `Params` interface stays in its function's file, not exported.
 2. A private helper, as `private-helper-colocation` says.
 3. A union and its member types share one file when the members exist only as parts of that union.
 4. A lookup map keyed by a union (`Record<MyType, …>`) may sit in the file that declares the union: a change to one always changes the other.

@@ -53,47 +53,6 @@ describe('banned-folder-name check', () => {
 		]);
 	});
 
-	test('framework vocabulary is legal with no framework declared — the un-banning layer is gone', async () => {
-		const input = setupFileListInput({
-			files: [
-				'src/feature/components/Card.tsx',
-				'src/feature/hooks/useCard.ts',
-				'src/api/controllers/user.ts',
-				'src/api/models/user.ts',
-				'src/api/services/mailer.ts',
-			],
-		});
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('a package declaring frameworks keeps every banned name banned, since no framework in the table mandates one', async () => {
-		const input = setupFileListInput({
-			files: [
-				'packages/web/src/feature/components/Card.tsx',
-				'packages/web/src/feature/hooks/useCard.ts',
-				'packages/web/src/feature/helpers/format.ts',
-				'packages/api/src/user/services/mailer.ts',
-				'packages/api/src/user/utils/format.ts',
-			],
-			dependencies: [
-				['packages/web', ['react', 'react-dom', '@tanstack/react-router']],
-				['packages/api', ['@nestjs/core']],
-			],
-		});
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
-
-		// the framework vocabulary stays legal because it is off the banned list,
-		// not because a declared dependency un-bans it
-		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
-			'banned-folder-name:packages/api/src/user/utils',
-			'banned-folder-name:packages/web/src/feature/helpers',
-		]);
-	});
-
 	test('leaves the four type folders alone inside a common/, which is their own mandated vocabulary', async () => {
 		const input = setupFileListInput({
 			files: [

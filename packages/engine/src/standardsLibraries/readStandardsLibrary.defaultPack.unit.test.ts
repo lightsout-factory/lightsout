@@ -107,13 +107,13 @@ const setupLibraryLayout = async () => {
 };
 
 describe('readStandardsLibrary', () => {
-	test('carries all 17 shipped documents, split across the code and tests trees', async () => {
+	test('carries all 13 shipped documents, split across the code and tests trees', async () => {
 		const { pack } = await setupDefaultPack();
 
 		expect(pack.name).toBe('lightsout');
-		expect(pack.documents).toHaveLength(17);
-		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(13);
-		expect(pack.documents.filter((document) => document.set === StandardsSet.Tests)).toHaveLength(4);
+		expect(pack.documents).toHaveLength(13);
+		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(10);
+		expect(pack.documents.filter((document) => document.set === StandardsSet.Tests)).toHaveLength(3);
 	});
 
 	test('carries the line and the address the root file states about the pack itself', async () => {
@@ -145,8 +145,8 @@ describe('readStandardsLibrary', () => {
 
 		const { code, tests } = buildStandardsDocuments({ groups: [frameworkFreeGroupOf({ pack })] });
 
-		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(11);
-		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(3);
+		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(9);
+		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(2);
 		// the prose itself rides along, not just the headers
 		expect(code ?? '').toContain('Module Folder Layout');
 		expect(tests ?? '').toContain('Module Boundary Testing');

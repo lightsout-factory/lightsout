@@ -1,10 +1,11 @@
 {
-	"description": "Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values and a unit test.",
+	"description": "Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values, a type-safe value and a unit test.",
 	"include": {
 		"topics": [
 			"lightsout/code/code-style/functions",
 			"lightsout/code/code-style/classes",
 			"lightsout/code/code-style/named-constants",
+			"lightsout/code/code-style/type-safety",
 			"lightsout/tests/code-style"
 		]
 	}
