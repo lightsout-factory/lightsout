@@ -9,7 +9,6 @@ import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/L
 import type { LoadedStandardsTopic } from '#src/standardsLibraries/common/types/LoadedStandardsTopic.ts';
 import { parsePackFolder } from '#src/standardsLibraries/internal/common/parsing/parsePackFolder.ts';
 import { parseTopicFolder } from '#src/standardsLibraries/internal/common/parsing/parseTopicFolder.ts';
-import { hasFile } from '#src/standardsLibraries/internal/common/utils/hasFile.ts';
 import { resolveRuleRequirements } from '#src/standardsLibraries/internal/common/utils/resolveRuleRequirements.ts';
 
 interface Params {
@@ -142,11 +141,6 @@ export const readStandardsLibrary = async ({ packPath }: Params): Promise<Loaded
 		throw new Error(`standards pack failed to load (${packPath}):\n${problems.map((problem) => `- ${problem}`).join('\n')}`);
 	}
 
-	// Recorded, never required: a pack that does not ship one is told so by
-	// `standards-validate` rather than failed by it.
-	const frameworkOwnedFixturesPath = join(packPath, 'fixtures', 'framework-owned');
-	const hasFrameworkOwned = await hasFile({ path: frameworkOwnedFixturesPath });
-
 	return {
 		name: root.data.name,
 		formatVersion: root.data.formatVersion,
@@ -154,7 +148,6 @@ export const readStandardsLibrary = async ({ packPath }: Params): Promise<Loaded
 		description: root.data.description,
 		homepage: root.data.homepage,
 		rootPath: packPath,
-		...(hasFrameworkOwned ? { frameworkOwnedFixturesPath } : {}),
 		documents,
 		rules: requirements.rules,
 		packs,

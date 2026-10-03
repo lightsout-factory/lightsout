@@ -14,16 +14,14 @@ interface Params {
 	rule: LoadedStandardsRule;
 	inputKinds: StandardsInputKind[];
 	run: StandardsCheckFunction;
-	/** How a thrown message names the tree — `fixtures/pass/`, `fixtures/framework-owned/nestjs/`. */
+	/** How a thrown message names the tree, such as `fixtures/pass/`. */
 	label: string;
 	compiler?: typeof ts;
 }
 
 /**
- * The tree is named by the caller rather than derived here, because the two
- * callers name theirs differently: a rule's own pair is `fixtures/<side>/`
- * under the rule folder, and the pack-level framework-owned trees sit nowhere
- * near it.
+ * The tree is named by the caller rather than derived here: a rule's own pair
+ * is `fixtures/<side>/` under the rule folder.
  *
  * @throws {Error} When a type-checker rule's tree carries no tsconfig, or the check itself misbehaves.
  */

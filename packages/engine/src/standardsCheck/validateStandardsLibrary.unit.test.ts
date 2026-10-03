@@ -64,9 +64,6 @@ const setupTwoRuleFixtures = () => ({
 	blind: setupFixtures({ pass: ['allowed.ts'], fail: ['also-allowed.ts'] }).fixturesPath,
 });
 
-/** What a pack shipping no framework-owned tree is told — every verdict below that sets none up carries it. */
-const noFrameworkOwnedNote = 'acme: no fixtures/framework-owned/ — no rule was held to the framework-owned invariant';
-
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPath: string }): LoadedStandardsRule => ({
 	name: `acme/${overrides.id}`,
 	library: 'acme',
@@ -83,9 +80,6 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 });
 
 const validate = ({ rules, built }: { rules: LoadedStandardsRule[]; built?: true }) => {
-	// No framework-owned tree anywhere in this file: the invariant's own verdicts
-	// live in validateStandardsLibrary.frameworkOwned.unit.test.ts, and every test
-	// here is about the per-rule pass it runs beside.
 	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 2, built, rootPath: '/packages/acme', documents: [], rules, packs: [] };
 
 	return validateStandardsLibrary({ library: pack, libraries: [pack] });
@@ -100,7 +94,7 @@ describe('validateStandardsLibrary', () => {
 		});
 
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
+		expect(notes).toStrictEqual([]);
 	});
 
 	test('a fail fixture the check does not flag is a check that catches nothing', async () => {
@@ -164,7 +158,7 @@ describe('validateStandardsLibrary', () => {
 
 		// only the empty side is named — the populated one is a pair member already
 		expect(problems).toStrictEqual(['no-banned-file: fixtures/fail/ is missing or empty — every rule ships a fixture pair']);
-		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
+		expect(notes).toStrictEqual([]);
 	});
 
 	test('a agent-only rule must still ship the fixtures its accuracy is measured against', async () => {
@@ -177,7 +171,7 @@ describe('validateStandardsLibrary', () => {
 			'premature-abstraction: fixtures/pass/ is missing or empty — every rule ships a fixture pair',
 		]);
 		// the missing pair is the whole story — no agent-only note on top of it
-		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
+		expect(notes).toStrictEqual([]);
 	});
 
 	test('a agent-only rule is a note, never a problem — its fixtures measure the review agent instead', async () => {
@@ -186,7 +180,7 @@ describe('validateStandardsLibrary', () => {
 		const { problems, notes } = await validate({ rules: [rule({ id: 'premature-abstraction', fixturesPath })] });
 
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual(['premature-abstraction: agent check — fixtures reserved for agent accuracy', noFrameworkOwnedNote]);
+		expect(notes).toStrictEqual(['premature-abstraction: agent check — fixtures reserved for agent accuracy']);
 	});
 
 	test('a rule shipping a check but declaring no input kind is agent-only — there is no input to run it against', async () => {
@@ -197,7 +191,7 @@ describe('validateStandardsLibrary', () => {
 		});
 
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual(['premature-abstraction: agent check — fixtures reserved for agent accuracy', noFrameworkOwnedNote]);
+		expect(notes).toStrictEqual(['premature-abstraction: agent check — fixtures reserved for agent accuracy']);
 	});
 
 	test('a check that throws on a fixture is reported as a problem against that rule, not raised', async () => {

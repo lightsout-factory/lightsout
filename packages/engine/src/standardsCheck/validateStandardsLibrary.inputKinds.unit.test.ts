@@ -102,9 +102,6 @@ const setupDuplicatingFixtures = () => {
 	return { fixturesPath };
 };
 
-/** What a pack shipping no framework-owned tree is told — every verdict below that sets none up carries it. */
-const noFrameworkOwnedNote = 'acme: no fixtures/framework-owned/ — no rule was held to the framework-owned invariant';
-
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPath: string }): LoadedStandardsRule => ({
 	name: `acme/${overrides.id}`,
 	library: 'acme',
@@ -121,9 +118,6 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 });
 
 const validate = ({ rules, built }: { rules: LoadedStandardsRule[]; built?: true }) => {
-	// No framework-owned tree anywhere in this file: the invariant's own verdicts
-	// live in validateStandardsLibrary.frameworkOwned.unit.test.ts, and every test
-	// here is about the per-rule pass it runs beside.
 	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 2, built, rootPath: '/packages/acme', documents: [], rules, packs: [] };
 
 	return validateStandardsLibrary({ library: pack, libraries: [pack] });
@@ -147,7 +141,7 @@ describe('validateStandardsLibrary input kinds', () => {
 
 		// the fixtures live in the engine's own repo, so the compiler is right there
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
+		expect(notes).toStrictEqual([]);
 	});
 
 	test('validates a rule that needs a type checker against fixture sides that carry a tsconfig', async () => {
@@ -158,7 +152,7 @@ describe('validateStandardsLibrary input kinds', () => {
 		});
 
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
+		expect(notes).toStrictEqual([]);
 	});
 
 	test('a type-checker fixture side with no tsconfig is named as such, not reported as a check that catches nothing', async () => {
@@ -187,7 +181,7 @@ describe('validateStandardsLibrary input kinds', () => {
 		// is the declarations reaching the check — and the fixtures live in the
 		// engine's own repo, so the compiler the kind needs is right there
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
+		expect(notes).toStrictEqual([]);
 	});
 
 	test('validates a duplicate-block rule against the spans the engine detected for it', async () => {
@@ -210,6 +204,6 @@ describe('validateStandardsLibrary input kinds', () => {
 		// reaching the check, and the pass side's shared import list never being
 		// counted as one
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
+		expect(notes).toStrictEqual([]);
 	});
 });

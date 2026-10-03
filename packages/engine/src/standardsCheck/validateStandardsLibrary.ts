@@ -1,7 +1,6 @@
 import { readdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
-import type { RawStandardsFinding } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { findMissingRequirements } from '#src/standards/findMissingRequirements.ts';
@@ -59,79 +58,6 @@ const missingFixtureSides = async ({ fixturesPath }: { fixturesPath: string }) =
 	}
 
 	return missing;
-};
-
-const namePaths = ({ found }: { found: RawStandardsFinding[] }) => {
-	const paths = [...new Set(found.flatMap((finding) => finding.files.slice(0, 1).map((file) => file.path)))];
-
-	return paths.length > 3 ? `${paths.slice(0, 3).join(', ')}, …` : paths.join(', ');
-};
-
-/**
- * A rule's own pass fixture proves the false positive someone already found;
- * this holds every deterministic rule, including ones added later, to silence on
- * framework-owned code.
- *
- * Its own pass rather than inside the per-rule loop, which skips a rule whose
- * fixture pair is missing: the invariant is unconditional.
- */
-const checkFrameworkOwned = async ({ library, compiler }: { library: LoadedStandardsLibrary; compiler?: typeof ts }) => {
-	const { frameworkOwnedFixturesPath } = library;
-	// Recorded, never required — a library that holds no rule to the invariant is
-	// told so, the same way an agent-only rule is.
-	const heldNothing = { problems: [], notes: [`${library.name}: no fixtures/framework-owned/ — no rule was held to the framework-owned invariant`] };
-
-	if (frameworkOwnedFixturesPath === undefined) {
-		return heldNothing;
-	}
-
-	const entries = await readdir(frameworkOwnedFixturesPath, { withFileTypes: true }).catch(() => []);
-	// One framework per folder, in name order, so a list of problems reads the
-	// same way twice running.
-	const frameworks = entries
-		.filter((entry) => entry.isDirectory())
-		.map((entry) => entry.name)
-		.sort();
-
-	if (frameworks.length === 0) {
-		return heldNothing;
-	}
-
-	const problems: string[] = [];
-
-	for (const framework of frameworks) {
-		for (const rule of library.rules) {
-			const { run, inputKinds } = rule;
-
-			// Skipped without a word: the per-rule loop already noted an agent-only
-			// rule and a kind this install cannot parse, and saying it again per
-			// framework would bury the list it belongs in.
-			if (run === undefined || inputKinds === undefined || (compiler === undefined && inputKinds.some((kind) => typescriptInputKinds.has(kind)))) {
-				continue;
-			}
-
-			try {
-				const found = await checkFixtureTree({
-					cwd: join(frameworkOwnedFixturesPath, framework),
-					rule,
-					inputKinds,
-					run,
-					label: `fixtures/framework-owned/${framework}/`,
-					compiler,
-				});
-
-				if (found.length > 0) {
-					problems.push(
-						`${rule.id}: the ${framework} framework-owned tree produced ${found.length} finding(s) — a deterministic check stays silent on code its framework owns (${namePaths({ found })})`,
-					);
-				}
-			} catch (error) {
-				problems.push(`${rule.id}: the ${framework} framework-owned tree could not be checked — ${messageOf({ error })}`);
-			}
-		}
-	}
-
-	return { problems, notes: [] };
 };
 
 /**
@@ -229,11 +155,7 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 		}
 	}
 
-	const frameworkOwned = await checkFrameworkOwned({ library, compiler });
-
-	problems.push(...frameworkOwned.problems);
 	problems.push(...checkLibraryProse({ library }));
-	notes.push(...frameworkOwned.notes);
 	problems.push(...findUnresolvedRequirements({ libraries }));
 
 	const packFiles = checkPackFiles({ library, libraries });

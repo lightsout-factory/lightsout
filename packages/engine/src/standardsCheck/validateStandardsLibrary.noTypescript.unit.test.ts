@@ -40,19 +40,9 @@ const bansTheBannedFile: StandardsCheckFunction = ({ inputs }) =>
  * A pack holding one rule that needs parsed trees and one that does not,
  * both pointed at a real fixture pair: the fail side holds the banned file, the
  * pass side does not.
- *
- * Given `frameworkOwned`, the pack also ships one framework-owned tree holding
- * the banned file — the invariant's own view of a machine with no compiler.
  */
-const setupPack = ({ frameworkOwned = false }: { frameworkOwned?: boolean } = {}) => {
+const setupPack = () => {
 	const fixturesPath = join(mkdtempSync(join(tmpdir(), 'lightsout-validate-no-ts-')), 'fixtures');
-	const frameworkOwnedFixturesPath = frameworkOwned ? join(mkdtempSync(join(tmpdir(), 'lightsout-validate-no-ts-')), 'fixtures', 'framework-owned') : undefined;
-
-	if (frameworkOwnedFixturesPath !== undefined) {
-		mkdirSync(join(frameworkOwnedFixturesPath, 'nestjs', 'src'), { recursive: true });
-		writeFileSync(join(frameworkOwnedFixturesPath, 'nestjs', 'package.json'), '{ "name": "nestjs-tree" }\n');
-		writeFileSync(join(frameworkOwnedFixturesPath, 'nestjs', 'src', 'banned.ts'), 'export const value = 1;\n');
-	}
 
 	for (const [side, name] of [
 		['pass', 'allowed.ts'],
@@ -83,7 +73,6 @@ const setupPack = ({ frameworkOwned = false }: { frameworkOwned?: boolean } = {}
 		name: 'acme',
 		formatVersion: 2,
 		rootPath: '/packages/acme',
-		frameworkOwnedFixturesPath,
 		documents: [],
 		packs: [],
 		rules: [
@@ -101,26 +90,9 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems, notes } = await validateStandardsLibrary({ library: pack, libraries: [pack] });
 
-		expect(notes).toStrictEqual([
-			'dead-export: not validated — its syntax-tree input needs a typescript this install does not have',
-			// the pack ships no framework-owned tree, which is recorded and never required
-			'acme: no fixtures/framework-owned/ — no rule was held to the framework-owned invariant',
-		]);
+		expect(notes).toStrictEqual(['dead-export: not validated — its syntax-tree input needs a typescript this install does not have']);
 		// a missing compiler is this machine's shortcoming, not the pack's, so
 		// the rule that needs none is still held to its fixtures
 		expect(problems).toStrictEqual([]);
-	});
-
-	test('holds the rules it can run to the framework-owned invariant and passes silently over the ones it cannot', async () => {
-		const { pack } = setupPack({ frameworkOwned: true });
-
-		const { problems, notes } = await validateStandardsLibrary({ library: pack, libraries: [pack] });
-
-		// the syntax-tree rule is named once, by the per-rule loop, and not again
-		// per framework — a machine with no compiler would otherwise say it twice
-		expect(notes).toStrictEqual(['dead-export: not validated — its syntax-tree input needs a typescript this install does not have']);
-		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
-		]);
 	});
 });

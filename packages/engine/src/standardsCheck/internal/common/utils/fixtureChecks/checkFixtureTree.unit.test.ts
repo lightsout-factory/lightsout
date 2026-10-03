@@ -99,16 +99,14 @@ describe('checkFixtureTree', () => {
 				rule,
 				inputKinds: [StandardsInputKind.TypeChecker],
 				run: bansTheBannedTypedFile,
-				label: 'fixtures/framework-owned/nestjs/',
+				label: 'fixtures/pass/',
 				compiler: ts,
 			}),
 		});
 
 		// the temp folder the tree actually lives in never appears — the caller
 		// names it, because only the caller knows what it is to the reader
-		expect(error.message).toBe(
-			"no tsconfig.json in fixtures/framework-owned/nestjs/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one",
-		);
+		expect(error.message).toBe("no tsconfig.json in fixtures/pass/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one");
 	});
 
 	test('a tree holding no files at all is silence rather than a tsconfig the author forgot', async () => {

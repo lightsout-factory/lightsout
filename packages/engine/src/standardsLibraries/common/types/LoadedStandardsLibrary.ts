@@ -19,12 +19,6 @@ export interface LoadedStandardsLibrary {
 	homepage?: string;
 	/** Absolute library root. */
 	rootPath: string;
-	/**
-	 * Absolute path of `<library>/fixtures/framework-owned/`, present only when the
-	 * library ships one. Every deterministic check is held to silence on each framework's
-	 * miniature repo there, so no rule judges code its framework owns.
-	 */
-	frameworkOwnedFixturesPath?: string;
 	documents: LoadedStandardsTopic[];
 	rules: LoadedStandardsRule[];
 	/** The library's pack files, sorted by name; empty when it ships no `packs/` folder. */
