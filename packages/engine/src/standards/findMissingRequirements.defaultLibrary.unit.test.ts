@@ -6,7 +6,6 @@ import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPa
 
 /** The requires lists the lightsout rules declare, stated here as the contract their rule.md headers must meet. */
 const listedRequires: Record<string, string[]> = {
-	'lightsout/query-options': ['lightsout/module-folder-layout'],
 	'lightsout/module-boundary-testing': ['lightsout/files-that-must-not-have-dedicated-tests'],
 	'lightsout/test-file-size': ['lightsout/module-boundary-testing'],
 	'lightsout/reuse-common-code': ['lightsout/shared-code-placement'],
@@ -39,7 +38,7 @@ describe('findMissingRequirements on the shipped lightsout library', () => {
 			'lightsout/standards': [],
 			'lightsout/fractal': [],
 			'lightsout/code-style': [],
-			// a framework pack is a whole standard, so it holds the fractal rules its own rules point at
+			// a framework pack's own rules require nothing
 			'lightsout/react': [],
 			'lightsout/tanstack-start': [],
 		});

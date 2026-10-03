@@ -1,16 +1,6 @@
 {
-	"description": "The whole standard for a package that uses React: the general rules, with function size measured the React way and component tests written one way.",
+	"description": "The rules written for React: function size measured for hooks and components, and one way to write a component test.",
 	"include": {
-		"packs": ["lightsout/code-style"],
-		"topics": [
-			"lightsout/code/fractal/modules",
-			"lightsout/code/fractal/shared-code",
-			"lightsout/code/fractal/duplication",
-			"lightsout/code/fractal/imports",
-			"lightsout/tests/fractal",
-			"lightsout/code/frameworks/react",
-			"lightsout/tests/frameworks/react"
-		],
-		"rules": ["lightsout/file-size", "lightsout/folder-size"]
+		"topics": ["lightsout/code/frameworks/react", "lightsout/tests/frameworks/react"]
 	}
 }

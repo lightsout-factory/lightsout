@@ -1,7 +1,6 @@
 {
-	"description": "The whole standard for a package that uses TanStack Start: everything the React pack holds, plus where query options live and which files get tests.",
+	"description": "The rules written for TanStack Start: which of its files get unit tests.",
 	"include": {
-		"packs": ["lightsout/react"],
-		"topics": ["lightsout/code/frameworks/tanstack-start", "lightsout/tests/frameworks/tanstack-start"]
+		"topics": ["lightsout/tests/frameworks/tanstack-start"]
 	}
 }

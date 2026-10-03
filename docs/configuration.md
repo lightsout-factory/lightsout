@@ -207,8 +207,8 @@ for, so a repository can take one goal without the others:
 | `lightsout/fractal` | Keeps the repo the same shape at every level, so any file's place is predictable and a duplicate is found by searching for its name. |
 | `lightsout/code-style` | Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values, a type-safe value and a unit test. |
 | `lightsout/standards` | Both of the above: the standard for a package with no framework pack of its own. |
-| `lightsout/react` | The whole standard for a package that uses React: the general rules, with function size measured the React way and component tests written one way. |
-| `lightsout/tanstack-start` | The whole standard for a package that uses TanStack Start: everything the React pack holds, plus its own rules. |
+| `lightsout/react` | The rules written for React: function size measured for hooks and components, and one way to write a component test. |
+| `lightsout/tanstack-start` | The rules written for TanStack Start: which of its files get unit tests. |
 
 `standards-pack` takes one pack address or a list of them. Listed packs apply
 in order, and the last listed wins where two grade one rule differently:

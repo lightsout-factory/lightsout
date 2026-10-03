@@ -90,12 +90,12 @@ describe('explicit-return-type check', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('leaves every export of a `.tsx` file, where framework components live', async () => {
+	test('reports an export of a `.tsx` file like any other, since the rule knows nothing about a framework', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/ui/Badge.tsx', 'export const Badge = ({ label }: { label: string }) => label;\n']] });
 
 		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
-		expect(findings).toStrictEqual([]);
+		expect(findings.map(({ detail }) => detail)).toStrictEqual(["exported 'Badge' declares no return type"]);
 	});
 
 	test.each([

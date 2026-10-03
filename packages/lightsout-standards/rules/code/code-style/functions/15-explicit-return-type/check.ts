@@ -46,12 +46,11 @@ const getUnannotated = ({ sourceFile, compiler }: { sourceFile: ts.SourceFile; c
 };
 
 /**
- * An allow-list rather than extensions to skip. `.tsx` holds components, whose
- * return type is left to inference. JavaScript has no syntax for the annotation,
- * so every hit would be a finding nobody could fix, and these standards run at
- * full strength on JavaScript-only repos.
+ * An allow-list rather than extensions to skip. JavaScript has no syntax for the
+ * annotation, so every hit would be a finding nobody could fix, and these
+ * standards run at full strength on JavaScript-only repos.
  */
-const isAnnotatable = ({ path }: { path: string }) => /\.(ts|mts|cts)$/.test(path);
+const isAnnotatable = ({ path }: { path: string }) => /\.(ts|tsx|mts|cts)$/.test(path);
 
 /** One finding per file: annotating the exports of a file is one pass through it. */
 const buildFileFindings = ({ input }: { input: SyntaxTreeInput }) => {
