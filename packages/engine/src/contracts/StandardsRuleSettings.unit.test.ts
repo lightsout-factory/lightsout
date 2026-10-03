@@ -35,7 +35,7 @@ test('StandardsRuleSettings: an override object may carry severity alone, option
 	const overrides = {
 		'duplicate-code-block': { severity: 'advisory' },
 		'folder-size': { options: { cap: 30 } },
-		'barrel-star': {},
+		'index-file-contents': {},
 	};
 
 	// both fields are independently optional: severity without options keeps the

@@ -6,12 +6,11 @@ import {
 	type FileListInput,
 	type FileTextInput,
 	type StandardsCheckFunction,
-	type StandardsCheckInput,
+	type StandardsCheckInputs,
 	StandardsInputKind,
 	type SyntaxTreeInput,
 	type TypeCheckerInput,
 } from '@lightsout/standards-contracts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
@@ -20,10 +19,10 @@ import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/L
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 
 /** One group whose pack holds a single rule of the asked-for kind, plus the recorder of what it was handed. */
-const loadOneRule = ({ inputKind }: { inputKind: StandardsInputKind }) => {
-	const inputs: StandardsCheckInput[] = [];
-	const run: StandardsCheckFunction = ({ input }) => {
-		inputs.push(input);
+const loadOneRule = ({ inputKinds }: { inputKinds: StandardsInputKind[] }) => {
+	const handed: StandardsCheckInputs[] = [];
+	const run: StandardsCheckFunction = ({ inputs }) => {
+		handed.push(inputs);
 
 		return [];
 	};
@@ -35,12 +34,13 @@ const loadOneRule = ({ inputKind }: { inputKind: StandardsInputKind }) => {
 		documentPath: 'code/style-guide/structure/module-api',
 		summary: 'a rule',
 		prose: 'the argument for the rule',
-		checked: true,
+		deterministic: true,
+		agent: false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
 		requires: [],
 		fixturesPath: '/packages/acme/a-rule/fixtures',
-		inputKind,
+		inputKinds,
 		run,
 	};
 	const states = new Map<string, ResolvedRuleState>([
@@ -48,12 +48,11 @@ const loadOneRule = ({ inputKind }: { inputKind: StandardsInputKind }) => {
 	]);
 	const group: StandardsGroup = {
 		packages: [''],
-		pack: { name: 'acme/house', topics: [], rules: [{ rule, severity: StandardsSeverity.Advisory, options: {} }] },
-		source: StandardsPackSource.Named,
+		pack: { name: 'acme/house', topics: [], rules: [{ rule, severity: StandardsSeverity.Advisory, options: {} }], conditionalPacks: [], inactiveRules: [] },
 		states,
 	};
 
-	return { inputs, groups: [group] };
+	return { handed, groups: [group] };
 };
 
 /** A repo holding one source file and one test file, checked by a rule that declared the test-file kind. */
@@ -64,7 +63,7 @@ const setupTestFileRun = () => {
 	writeFileSync(join(cwd, 'src/alpha.ts'), 'export const alpha = 1;\n');
 	writeFileSync(join(cwd, 'src/alpha.unit.test.ts'), "test('alpha', () => {});\n");
 
-	return { cwd, ...loadOneRule({ inputKind: StandardsInputKind.TestFile }) };
+	return { cwd, ...loadOneRule({ inputKinds: [StandardsInputKind.TestFile] }) };
 };
 
 /** A repo where one file imports another, with a typescript to borrow, checked by a rule that declared the import-graph kind. */
@@ -76,7 +75,7 @@ const setupImportGraphRun = () => {
 	writeFileSync(join(cwd, 'src/consumer.ts'), "import { internal } from './feature/internal.ts';\n\nexport const consumer = () => internal;\n");
 	linkTypescript({ dir: cwd });
 
-	return { cwd, ...loadOneRule({ inputKind: StandardsInputKind.ImportGraph }) };
+	return { cwd, ...loadOneRule({ inputKinds: [StandardsInputKind.ImportGraph] }) };
 };
 
 /**
@@ -94,7 +93,7 @@ const setupImportGraphDependenciesRun = ({ packagesDir }: { packagesDir: string 
 	writeFileSync(join(cwd, packagesDir, 'web/package.json'), '{ "name": "web", "dependencies": { "@tanstack/react-router": "^1" } }\n');
 	linkTypescript({ dir: cwd });
 
-	return { cwd, packagesDir, ...loadOneRule({ inputKind: StandardsInputKind.ImportGraph }) };
+	return { cwd, packagesDir, ...loadOneRule({ inputKinds: [StandardsInputKind.ImportGraph] }) };
 };
 
 /** A repo whose root declares a framework, with a typescript to borrow, checked by a rule that declared the syntax-tree kind. */
@@ -107,7 +106,7 @@ const setupSyntaxTreeRun = () => {
 	writeFileSync(join(cwd, 'package.json'), '{ "name": "@acme/widgets", "dependencies": { "@tanstack/react-router": "^1" } }\n');
 	linkTypescript({ dir: cwd });
 
-	return { cwd, ...loadOneRule({ inputKind: StandardsInputKind.SyntaxTree }) };
+	return { cwd, ...loadOneRule({ inputKinds: [StandardsInputKind.SyntaxTree] }) };
 };
 
 /** A workspace package that declares its aliases in its manifest, under a repo whose root carries a tsconfig. */
@@ -119,7 +118,7 @@ const setupFileTextRun = () => {
 	writeFileSync(join(cwd, 'packages/engine/package.json'), '{ "name": "@acme/engine", "imports": { "#src/*": "./src/*" } }\n');
 	writeFileSync(join(cwd, 'tsconfig.json'), '{ "compilerOptions": { "strict": true } }\n');
 
-	return { cwd, ...loadOneRule({ inputKind: StandardsInputKind.FileText }) };
+	return { cwd, ...loadOneRule({ inputKinds: [StandardsInputKind.FileText] }) };
 };
 
 /** A repo carrying a standards pack of its own, checked by a rule that declared the file-list kind. */
@@ -132,7 +131,7 @@ const setupPackRun = () => {
 	writeFileSync(join(cwd, 'standards/rules/tests/unit-testing/05-rule/check.ts'), 'export const check = () => [];\n');
 	writeFileSync(join(cwd, 'standards/common/utils/scan.unit.test.ts'), "test('scan', () => {});\n");
 
-	return { cwd, ...loadOneRule({ inputKind: StandardsInputKind.FileList }) };
+	return { cwd, ...loadOneRule({ inputKinds: [StandardsInputKind.FileList] }) };
 };
 
 /** A repo whose tsconfig covers its source and its tests, with a typescript to borrow, checked by a rule that declared the type-checker kind. */
@@ -146,48 +145,48 @@ const setupTypeCheckerRun = () => {
 	writeFileSync(join(cwd, 'tsconfig.json'), '{ "compilerOptions": { "strict": true, "noEmit": true }, "include": ["src"] }\n');
 	linkTypescript({ dir: cwd });
 
-	return { cwd, ...loadOneRule({ inputKind: StandardsInputKind.TypeChecker }) };
+	return { cwd, ...loadOneRule({ inputKinds: [StandardsInputKind.TypeChecker] }) };
 };
 
-/** The one file-list input the run built, narrowed out of the closed kind union. */
-const fileListInput = ({ inputs }: { inputs: StandardsCheckInput[] }): FileListInput => {
-	const input = inputs[0];
+/** The one file-list input the run built, read off what the rule was handed. */
+const fileListInput = ({ handed }: { handed: StandardsCheckInputs[] }): FileListInput => {
+	const input = handed[0]?.[StandardsInputKind.FileList];
 
-	if (input?.kind !== StandardsInputKind.FileList) {
-		throw new Error(`expected a file-list input, got ${input?.kind ?? 'none'}`);
+	if (input === undefined) {
+		throw new Error(`expected a file-list input, got ${Object.keys(handed[0] ?? {}).join(',') || 'none'}`);
 	}
 
 	return input;
 };
 
-/** The one file-text input the run built, narrowed out of the closed kind union. */
-const fileTextInput = ({ inputs }: { inputs: StandardsCheckInput[] }): FileTextInput => {
-	const input = inputs[0];
+/** The one file-text input the run built, read off what the rule was handed. */
+const fileTextInput = ({ handed }: { handed: StandardsCheckInputs[] }): FileTextInput => {
+	const input = handed[0]?.[StandardsInputKind.FileText];
 
-	if (input?.kind !== StandardsInputKind.FileText) {
-		throw new Error(`expected a file-text input, got ${input?.kind ?? 'none'}`);
+	if (input === undefined) {
+		throw new Error(`expected a file-text input, got ${Object.keys(handed[0] ?? {}).join(',') || 'none'}`);
 	}
 
 	return input;
 };
 
-/** The one syntax-tree input the run built, narrowed out of the closed kind union. */
-const syntaxTreeInput = ({ inputs }: { inputs: StandardsCheckInput[] }): SyntaxTreeInput => {
-	const input = inputs[0];
+/** The one syntax-tree input the run built, read off what the rule was handed. */
+const syntaxTreeInput = ({ handed }: { handed: StandardsCheckInputs[] }): SyntaxTreeInput => {
+	const input = handed[0]?.[StandardsInputKind.SyntaxTree];
 
-	if (input?.kind !== StandardsInputKind.SyntaxTree) {
-		throw new Error(`expected a syntax-tree input, got ${input?.kind ?? 'none'}`);
+	if (input === undefined) {
+		throw new Error(`expected a syntax-tree input, got ${Object.keys(handed[0] ?? {}).join(',') || 'none'}`);
 	}
 
 	return input;
 };
 
-/** The one type-checker input the run built, narrowed out of the closed kind union. */
-const typeCheckerInput = ({ inputs }: { inputs: StandardsCheckInput[] }): TypeCheckerInput => {
-	const input = inputs[0];
+/** The one type-checker input the run built, read off what the rule was handed. */
+const typeCheckerInput = ({ handed }: { handed: StandardsCheckInputs[] }): TypeCheckerInput => {
+	const input = handed[0]?.[StandardsInputKind.TypeChecker];
 
-	if (input?.kind !== StandardsInputKind.TypeChecker) {
-		throw new Error(`expected a type-checker input, got ${input?.kind ?? 'none'}`);
+	if (input === undefined) {
+		throw new Error(`expected a type-checker input, got ${Object.keys(handed[0] ?? {}).join(',') || 'none'}`);
 	}
 
 	return input;
@@ -195,11 +194,11 @@ const typeCheckerInput = ({ inputs }: { inputs: StandardsCheckInput[] }): TypeCh
 
 describe('runPackageChecks', () => {
 	test('hands a file-text rule both alias sources above a file — the package manifest and the tsconfig', async () => {
-		const { cwd, inputs, groups } = setupFileTextRun();
+		const { cwd, handed, groups } = setupFileTextRun();
 
 		await runPackageChecks({ cwd, groups });
 
-		const input = fileTextInput({ inputs });
+		const input = fileTextInput({ handed });
 
 		// a package that declares `imports` instead of `compilerOptions.paths`
 		// reads as declaring no aliases at all when only the tsconfigs come over,
@@ -209,11 +208,11 @@ describe('runPackageChecks', () => {
 	});
 
 	test('probes for a manifest in every folder above a file, not the repo root alone', async () => {
-		const { cwd, inputs, groups } = setupFileTextRun();
+		const { cwd, handed, groups } = setupFileTextRun();
 
 		await runPackageChecks({ cwd, groups });
 
-		const input = fileTextInput({ inputs });
+		const input = fileTextInput({ handed });
 
 		// a folder holding neither alias source is simply absent — the "when
 		// present" the contract promises, and what makes probing every folder
@@ -224,26 +223,28 @@ describe('runPackageChecks', () => {
 	});
 
 	test('hands a test-file rule the test files and their text, and nothing the run read for another kind', async () => {
-		const { cwd, inputs, groups } = setupTestFileRun();
+		const { cwd, handed, groups } = setupTestFileRun();
 
 		await runPackageChecks({ cwd, groups });
 
 		// a test-shape rule reaching a source file would be checking something its
 		// declared kind does not claim
-		expect(inputs[0]).toStrictEqual({
-			kind: 'test-file',
-			cwd,
-			tests: ['src/alpha.unit.test.ts'],
-			contents: new Map([['src/alpha.unit.test.ts', "test('alpha', () => {});\n"]]),
+		expect(handed[0]).toStrictEqual({
+			'test-file': {
+				kind: 'test-file',
+				cwd,
+				tests: ['src/alpha.unit.test.ts'],
+				contents: new Map([['src/alpha.unit.test.ts', "test('alpha', () => {});\n"]]),
+			},
 		});
 	});
 
 	test('hands a rule the pack roots the walk found, and sorts a pack tests/ document set as source', async () => {
-		const { cwd, inputs, groups } = setupPackRun();
+		const { cwd, handed, groups } = setupPackRun();
 
 		await runPackageChecks({ cwd, groups });
 
-		const input = fileListInput({ inputs });
+		const input = fileListInput({ handed });
 
 		// the roots are the only thing that makes the test-file question
 		// answerable inside a pack: under one, `tests/` names a document set whose
@@ -259,11 +260,11 @@ describe('runPackageChecks', () => {
 	});
 
 	test('hands a syntax-tree rule one parsed tree per source file, and what each package declares alongside it', async () => {
-		const { cwd, inputs, groups } = setupSyntaxTreeRun();
+		const { cwd, handed, groups } = setupSyntaxTreeRun();
 
 		const { notes } = await runPackageChecks({ cwd, groups });
 
-		const input = syntaxTreeInput({ inputs });
+		const input = syntaxTreeInput({ handed });
 
 		// an empty note list is what says the compiler resolved: the kind needs one,
 		// and a run without it skips the rule instead of building this
@@ -284,11 +285,11 @@ describe('runPackageChecks', () => {
 	});
 
 	test('hands a type-checker rule a checker for every file a tsconfig covers, its tests and pack roots included', async () => {
-		const { cwd, inputs, groups } = setupTypeCheckerRun();
+		const { cwd, handed, groups } = setupTypeCheckerRun();
 
 		const { notes } = await runPackageChecks({ cwd, groups });
 
-		const input = typeCheckerInput({ inputs });
+		const input = typeCheckerInput({ handed });
 
 		// an empty note list is what says the compiler resolved: the kind needs one,
 		// and a run without it skips the rule instead of building this
@@ -309,7 +310,7 @@ describe('runPackageChecks', () => {
 	});
 
 	test('hands an import-graph rule what each package declares, so a boundary rule can tell a framework-mandated folder from one the repo chose', async () => {
-		const { cwd, inputs, groups } = setupImportGraphDependenciesRun({ packagesDir: 'packages' });
+		const { cwd, handed, groups } = setupImportGraphDependenciesRun({ packagesDir: 'packages' });
 
 		const { notes } = await runPackageChecks({ cwd, groups });
 
@@ -319,7 +320,7 @@ describe('runPackageChecks', () => {
 		// a carve-out is keyed on what a package DECLARES, and the graph cannot show
 		// it — a root that declares nothing still gets an entry, so a rule reading
 		// the map never has to tell "no manifest" from "no dependencies"
-		expect(inputs[0]).toEqual(
+		expect(handed[0]?.['import-graph']).toEqual(
 			expect.objectContaining({
 				kind: 'import-graph',
 				dependencies: new Map([
@@ -331,13 +332,13 @@ describe('runPackageChecks', () => {
 	});
 
 	test('reads those declarations from the package parent dir the run was configured with, not the default name', async () => {
-		const { cwd, packagesDir, inputs, groups } = setupImportGraphDependenciesRun({ packagesDir: 'modules' });
+		const { cwd, packagesDir, handed, groups } = setupImportGraphDependenciesRun({ packagesDir: 'modules' });
 
 		await runPackageChecks({ cwd, groups, packagesDir });
 
 		// a repo that keeps its packages under another name would otherwise have
 		// every workspace manifest fall out of the map, silently
-		expect(inputs[0]).toEqual(
+		expect(handed[0]?.['import-graph']).toEqual(
 			expect.objectContaining({
 				dependencies: new Map([
 					['.', []],
@@ -348,14 +349,14 @@ describe('runPackageChecks', () => {
 	});
 
 	test('hands an import-graph rule the edges resolved among the repo files', async () => {
-		const { cwd, inputs, groups } = setupImportGraphRun();
+		const { cwd, handed, groups } = setupImportGraphRun();
 
 		const { notes } = await runPackageChecks({ cwd, groups });
 
 		// an empty note list is what says the compiler resolved: the kind needs one,
 		// and a run without it skips the rule instead of building this
 		expect(notes).toStrictEqual([]);
-		expect(inputs[0]).toEqual(
+		expect(handed[0]?.['import-graph']).toEqual(
 			expect.objectContaining({
 				kind: 'import-graph',
 				files: ['src/consumer.ts', 'src/feature/internal.ts'],

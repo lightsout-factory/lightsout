@@ -16,7 +16,7 @@ import { toStandardsPackRuleListing } from '#src/views/internal/common/utils/toS
 const fixtureSideOrder = [FixtureSide.Pass, FixtureSide.Fail];
 
 const toRuleView = async ({ rule }: { rule: LoadedStandardsRule }) => {
-	// `run` and `inputKind` are deliberately dropped: a function cannot cross the
+	// `run` and `inputKinds` are deliberately dropped: a function cannot cross the
 	// wire, and no page shows a check's source code.
 	const fixtures = await readPackFixtures({ fixturesPath: rule.fixturesPath });
 	const fixtureCounts = {
@@ -34,16 +34,18 @@ const toRuleView = async ({ rule }: { rule: LoadedStandardsRule }) => {
 
 /** The pack file says what it includes; the resolved pack says what that brings in, at the grades the pack settles on. */
 const toPackListing = ({ packFile, resolved }: { packFile: LoadedStandardsPackFile; resolved: ResolvedStandardsPack }) => {
-	const checked = resolved.rules.filter((entry) => entry.rule.checked).length;
+	const deterministic = resolved.rules.filter((entry) => entry.rule.deterministic).length;
+	const agent = resolved.rules.filter((entry) => entry.rule.agent).length;
 
 	return {
 		name: packFile.name,
 		address: resolved.name,
 		description: packFile.description,
+		...(packFile.appliesWhen === undefined ? {} : { appliesWhen: packFile.appliesWhen }),
 		include: packFile.include,
 		topics: resolved.topics.map((topic) => `${topic.library}/${topic.path}`),
 		rules: resolved.rules.map((entry) => ({ name: entry.rule.name, severity: entry.severity, options: entry.options })),
-		totals: { rules: resolved.rules.length, checked, judgment: resolved.rules.length - checked, topics: resolved.topics.length },
+		totals: { rules: resolved.rules.length, deterministic, agent, topics: resolved.topics.length },
 	};
 };
 
@@ -95,9 +97,12 @@ export const getStandardsPackBundle = async ({ cwd }: Params): Promise<Standards
 	// Resolved against this library alone: the built-in library's packs name no
 	// other, so a pack that does fails here rather than being dropped.
 	const packs = library.packs.map((packFile) =>
-		toPackListing({ packFile, resolved: resolveStandardsPack({ address: `${library.name}/${packFile.name}`, libraries: [library] }) }),
+		toPackListing({
+			packFile,
+			resolved: resolveStandardsPack({ addresses: [`${library.name}/${packFile.name}`], libraries: [library], dependencies: undefined }),
+		}),
 	);
-	const checked = rules.filter((rule) => rule.checked).length;
+	const deterministic = rules.filter((rule) => rule.deterministic).length;
 
 	return sortBundle({
 		bundle: {
@@ -108,8 +113,8 @@ export const getStandardsPackBundle = async ({ cwd }: Params): Promise<Standards
 			built: library.built === true,
 			totals: {
 				rules: rules.length,
-				checked,
-				judgment: rules.length - checked,
+				deterministic,
+				agent: rules.filter((rule) => rule.agent).length,
 				topics: library.documents.length,
 				packs: packs.length,
 				withFixtures: rules.filter((rule) => rule.fixtureCounts.pass > 0 && rule.fixtureCounts.fail > 0).length,

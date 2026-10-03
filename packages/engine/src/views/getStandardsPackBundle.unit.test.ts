@@ -32,21 +32,22 @@ const setupThisRepo = () => ({ cwd: join(__dirname, '..', '..', '..', '..') });
  */
 const zebraCheckSource =
 	'export const check = {\n' +
-	"\tinputKind: 'file-list',\n" +
-	'\trun: ({ input }) => input.files.map((path) => ({ siteKey: `zebra-check:${path}`, files: [{ path }], detail: `${path} is striped` })),\n' +
+	"\tinputKinds: ['file-list'],\n" +
+	'\trun: ({ inputs }) => inputs["file-list"].files.map((path) => ({ siteKey: `zebra-check:${path}`, files: [{ path }], detail: `${path} is striped` })),\n' +
 	'};\n';
 
 /**
  * A temp library `house`, pointed at by LIGHTSOUT_DEFAULT_STANDARDS, with two
  * topics and two pack files: `base` brings in `code/alpha`, and `app` includes
  * `base` plus `tests/beta` and grades `zebra-check` blocking with `cap` raised.
+ * `baseAppliesWhen` makes `base` conditional on those dependencies.
  *
  * Every file is written in reverse name order — packs, topics, rule folders
  * and fixture files — and the rule ids run against their folder order, so any
  * order the bundle reports is one it decided, not one the disk handed back.
  * The environment is replaced outright; restoreMocks puts the real one back.
  */
-const setupLibraryRepo = async ({ appPacks = ['house/base'] }: { appPacks?: string[] } = {}) => {
+const setupLibraryRepo = async ({ appPacks = ['house/base'], baseAppliesWhen }: { appPacks?: string[]; baseAppliesWhen?: string[] } = {}) => {
 	const libraryPath = await mkdtemp(join(tmpdir(), 'lightsout-pack-bundle-library-'));
 	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-pack-bundle-repo-'));
 
@@ -54,18 +55,22 @@ const setupLibraryRepo = async ({ appPacks = ['house/base'] }: { appPacks?: stri
 		dir: libraryPath,
 		files: {
 			'lightsout-standards.json': JSON.stringify({ name: 'house', formatVersion: 2 }),
-			'packs/base.json': JSON.stringify({ description: 'The base pack.', include: { topics: ['house/code/alpha'] } }),
+			'packs/base.json': JSON.stringify({
+				description: 'The base pack.',
+				include: { topics: ['house/code/alpha'] },
+				...(baseAppliesWhen === undefined ? {} : { 'applies-when': { dependencies: baseAppliesWhen } }),
+			}),
 			'packs/app.json': JSON.stringify({
 				description: 'The app pack.',
 				include: { packs: appPacks, topics: ['house/tests/beta'] },
 				'rule-settings': { 'house/zebra-check': { severity: 'blocking', options: { cap: 9 } } },
 			}),
 			'rules/tests/beta/topic.md': '# Beta\n\nWhat the beta rules share.\n',
-			'rules/tests/beta/10-mango-note/rule.md': '---\nsummary: a judgment rule about tests\n---\n\nTests read as prose.\n',
+			'rules/tests/beta/10-mango-note/rule.md': '---\nsummary: a agent-checked rule about tests\nchecks: agent\n---\n\nTests read as prose.\n',
 			'rules/code/alpha/topic.md': '# Alpha\n\nWhat the alpha rules share.\n',
-			'rules/code/alpha/20-apple-note/rule.md': '---\nsummary: a judgment rule about code\n---\n\nCode reads as prose.\n',
+			'rules/code/alpha/20-apple-note/rule.md': '---\nsummary: a agent-checked rule about code\nchecks: agent\n---\n\nCode reads as prose.\n',
 			'rules/code/alpha/10-zebra-check/rule.md':
-				'---\nsummary: a checked rule\nchecked: true\nseverity: advisory\noptions:\n  cap: 5\n  width: 2\n---\n\nStripes are checked.\n',
+				'---\nsummary: a checked rule\nchecks: deterministic\nseverity: advisory\noptions:\n  cap: 5\n  width: 2\n---\n\nStripes are checked.\n',
 			'rules/code/alpha/10-zebra-check/check.ts': zebraCheckSource,
 			'rules/code/alpha/10-zebra-check/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
 			'rules/code/alpha/10-zebra-check/fixtures/pass/src/b.ts': 'export const b = 1;\n',
@@ -183,6 +188,32 @@ describe('getStandardsPackBundle', () => {
 		]);
 	});
 
+	test('lists a conditional pack, and a pack including it, with everything the conditional pack brings when it applies', async () => {
+		const { cwd } = await setupLibraryRepo({ baseAppliesWhen: ['react'] });
+
+		const bundle = await getStandardsPackBundle({ cwd });
+		const rulesByPack = Object.fromEntries(bundle.packs.map((pack) => [pack.name, pack.rules.map((rule) => rule.name)]));
+
+		// a pack page shows the whole pack: no package's dependencies are consulted, so the condition empties nothing
+		expect(rulesByPack).toStrictEqual({
+			app: ['house/apple-note', 'house/mango-note', 'house/zebra-check'],
+			base: ['house/apple-note', 'house/zebra-check'],
+		});
+	});
+
+	test('says which dependencies a conditional pack waits for, and nothing on a pack that applies everywhere', async () => {
+		const { cwd } = await setupLibraryRepo({ baseAppliesWhen: ['react', 'preact'] });
+
+		const bundle = await getStandardsPackBundle({ cwd });
+		const conditions = bundle.packs.map((pack) => ({ name: pack.name, conditional: 'appliesWhen' in pack, appliesWhen: pack.appliesWhen }));
+
+		// `app` includes the conditional pack but is not conditional itself
+		expect(conditions).toStrictEqual([
+			{ name: 'app', conditional: false, appliesWhen: undefined },
+			{ name: 'base', conditional: true, appliesWhen: { dependencies: ['react', 'preact'] } },
+		]);
+	});
+
 	test("records a pack's own severity and options on its rule entries without changing the rule's defaults", async () => {
 		const { cwd } = await setupLibraryRepo();
 
@@ -212,10 +243,10 @@ describe('getStandardsPackBundle', () => {
 		};
 
 		expect(totals).toStrictEqual({
-			library: { rules: 3, checked: 1, judgment: 2, topics: 2, packs: 2, withFixtures: 1 },
+			library: { rules: 3, deterministic: 1, agent: 2, topics: 2, packs: 2, withFixtures: 1 },
 			packs: {
-				app: { rules: 3, checked: 1, judgment: 2, topics: 2 },
-				base: { rules: 2, checked: 1, judgment: 1, topics: 1 },
+				app: { rules: 3, deterministic: 1, agent: 2, topics: 2 },
+				base: { rules: 2, deterministic: 1, agent: 1, topics: 1 },
 			},
 		});
 	});
@@ -284,24 +315,24 @@ describe('getStandardsPackBundle', () => {
 		expect(error.message).toMatch(/house\/app[\s\S]*acme/);
 	});
 
-	test('bundles the authored lightsout library with its ten packs', async () => {
+	test('bundles the authored lightsout library with its six packs', async () => {
 		const { cwd } = setupThisRepo();
 
 		const bundle = await getStandardsPackBundle({ cwd });
 		const documentPathByName = new Map(bundle.rules.map((rule) => [rule.name, rule.documentPath]));
-		const tanstackStartApp = bundle.packs.find((pack) => pack.address === 'lightsout/tanstack-start-app');
-		const tanstackStartAppTopics = new Set(tanstackStartApp?.rules.map((rule) => documentPathByName.get(rule.name)));
+		const standards = bundle.packs.find((pack) => pack.address === 'lightsout/standards');
+		const standardsTopics = new Set(standards?.rules.map((rule) => documentPathByName.get(rule.name)));
 
 		expect({
 			name: bundle.name,
 			built: bundle.built,
 			packs: bundle.packs.map((pack) => pack.name),
-			holdsReact: tanstackStartAppTopics.has('code/architecture/react'),
-			holdsTanstackStart: tanstackStartAppTopics.has('code/architecture/tanstack-start'),
+			holdsReact: standardsTopics.has('code/frameworks/react'),
+			holdsTanstackStart: standardsTopics.has('code/frameworks/tanstack-start'),
 		}).toStrictEqual({
 			name: 'lightsout',
 			built: false,
-			packs: ['nestjs', 'nestjs-app', 'node', 'react', 'react-app', 'structure', 'tanstack-start', 'tanstack-start-app', 'typescript', 'unit-testing'],
+			packs: ['agent-corrections', 'code-style', 'fractal', 'react', 'standards', 'tanstack-start'],
 			holdsReact: true,
 			holdsTanstackStart: true,
 		});

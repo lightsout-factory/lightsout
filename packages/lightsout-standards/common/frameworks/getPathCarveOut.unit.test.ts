@@ -8,7 +8,6 @@ const setupCarveOuts = ({ directories }: { directories: string[] }): FrameworkCa
 		directory,
 		entryFiles: [],
 		exemptFolderNames: ['components'],
-		kebabCase: false,
 		routerRoots: [],
 	}));
 
@@ -18,14 +17,12 @@ const setupEntryFileCarveOuts = (): FrameworkCarveOut[] => [
 		directory: 'packages/web-app',
 		entryFiles: ['router.tsx', 'server.ts', 'client.tsx'],
 		exemptFolderNames: [],
-		kebabCase: false,
 		routerRoots: ['routes'],
 	},
 	{
 		directory: '.',
 		entryFiles: [],
 		exemptFolderNames: [],
-		kebabCase: false,
 		routerRoots: [],
 	},
 ];
@@ -40,7 +37,6 @@ describe('getPathCarveOut', () => {
 			directory: 'packages/api',
 			entryFiles: [],
 			exemptFolderNames: ['components'],
-			kebabCase: false,
 			routerRoots: [],
 		});
 	});
@@ -74,6 +70,6 @@ describe('getPathCarveOut', () => {
 
 		const carveOut = getPathCarveOut({ carveOuts, path: 'src/billing/invoices' });
 
-		expect(carveOut).toStrictEqual({ directory: '.', entryFiles: [], exemptFolderNames: [], kebabCase: false, routerRoots: [] });
+		expect(carveOut).toStrictEqual({ directory: '.', entryFiles: [], exemptFolderNames: [], routerRoots: [] });
 	});
 });

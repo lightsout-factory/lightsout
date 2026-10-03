@@ -5,7 +5,6 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsHealthCommand } from '#src/cli/standardsHealthCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
@@ -42,8 +41,7 @@ jest.mock('#src/standards/resolveStandardsGroups.ts', () => ({
 
 const resolvedGroup: StandardsGroup = {
 	packages: [''],
-	pack: { name: 'acme/house', topics: [], rules: [] },
-	source: StandardsPackSource.Named,
+	pack: { name: 'acme/house', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
 	states: new Map(),
 };
 
@@ -59,8 +57,9 @@ const setupCommand = ({ health, config }: { health?: StandardsHealth; config?: R
 				{
 					rule: 'lightsout/multi-export',
 					set: 'code',
-					documentPath: 'code/style-guide/structure/one-export-per-file',
-					checked: true,
+					documentPath: 'code/fractal/modules',
+					deterministic: true,
+					agent: false,
 					attempted: 2,
 					resolved: 1,
 					declined: 1,
@@ -71,7 +70,7 @@ const setupCommand = ({ health, config }: { health?: StandardsHealth; config?: R
 					reasons: ['[plan] the barrel would break'],
 				},
 			],
-			totals: { rules: 1, checked: 1, judgment: 0 },
+			totals: { rules: 1, deterministic: 1, agent: 0 },
 		},
 	);
 
@@ -94,7 +93,7 @@ describe('standardsHealthCommand', () => {
 
 		await expect(standardsHealthCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(cellsOf({ logged })[1]).toStrictEqual(['lightsout/multi-export', 'code', '2', '1', '1', '—', '50%', '—', '—']);
+		expect(cellsOf({ logged })[1]).toStrictEqual(['lightsout/multi-export', 'deterministic', '2', '1', '1', '—', '50%', '—', '—']);
 		expect(errors).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([0]);
 	});
@@ -144,8 +143,9 @@ describe('standardsHealthCommand', () => {
 					{
 						rule: 'lightsout/file-size',
 						set: 'code',
-						documentPath: 'code/style-guide/structure/size',
-						checked: true,
+						documentPath: 'code/fractal/size',
+						deterministic: true,
+						agent: false,
 						attempted: 3,
 						resolved: 0,
 						declined: 3,
@@ -156,7 +156,7 @@ describe('standardsHealthCommand', () => {
 						reasons: ['  splitting   this file\n  would break the barrel  ', 'splitting this file would break the barrel', '', 'x'.repeat(120)],
 					},
 				],
-				totals: { rules: 1, checked: 1, judgment: 0 },
+				totals: { rules: 1, deterministic: 1, agent: 0 },
 			},
 		});
 

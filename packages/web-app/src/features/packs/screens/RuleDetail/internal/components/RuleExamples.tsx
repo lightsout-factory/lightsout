@@ -17,6 +17,12 @@ const sources: Record<CheckKind, string> = {
 	[CheckKind.Agent]: 'The agent flags code like the incorrect example and accepts code like the correct one.',
 };
 
+/** A rule with both kinds of check gets one sentence, since the check and the agent read the same pair. */
+const describeSources = ({ kinds }: { kinds: CheckKind[] }) =>
+	kinds.length > 1
+		? 'The check flags the incorrect code and passes the correct code; the agent judges what the check cannot see.'
+		: kinds.map((kind) => sources[kind]).join(' ');
+
 const SideFiles = ({ files, example, side, title }: { files: StandardsPackFixture[]; example: RuleExample; side: FixtureSide; title: string }) => {
 	if (example.kind === RuleExampleKind.Repo) {
 		return (
@@ -43,17 +49,17 @@ const SideFiles = ({ files, example, side, title }: { files: StandardsPackFixtur
 
 interface Props {
 	fixtures: StandardsPackFixture[];
-	kind: CheckKind;
+	kinds: CheckKind[];
 	example: RuleExample;
 }
 
-export const RuleExamples = ({ fixtures, kind, example }: Props) =>
+export const RuleExamples = ({ fixtures, kinds, example }: Props) =>
 	fixtures.length === 0 ? (
 		<p className="text-muted-foreground text-sm">This pack shipped without its examples.</p>
 	) : (
 		<div className="flex flex-col gap-8">
 			<p className="text-muted-foreground text-sm">
-				{sources[kind]}
+				{describeSources({ kinds })}
 				{/* Said once above a repo's two trees, so the extra files read as the setting the rule needs rather than as more examples. */}
 				{example.kind === RuleExampleKind.Repo
 					? ' Each example is a small repo, because this rule looks across files. It opens on the file that matters; the other files are the repo around it.'

@@ -13,6 +13,8 @@ from here and needs nothing else lightsout knows.
   given. A check never opens a file; it is handed what it asked for.
 - `StandardsLibraryRoot` — the shape of `lightsout-standards.json`.
 - `StandardsSet` — the two document trees, `code` and `tests`.
+- `StandardsRuleChecks` — the `checks` line of a rule's front matter: `deterministic`,
+  `agent` or `both`.
 
 ## Import types, never values
 
@@ -28,7 +30,7 @@ So write:
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 ```
 
-and give `inputKind` a plain string literal, which the `StandardsCheckModule`
+and give `inputKinds` plain string literals, which the `StandardsCheckModule`
 annotation narrows for you. Biome's `useImportType` rule produces the safe form
 and is what stands between this design and a broken install.
 

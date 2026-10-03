@@ -14,8 +14,8 @@ interface Params {
  * A minimal monorepo consumer in a temp dir: packages/api and packages/web
  * whose package.json names (@acme/*) deliberately differ from their
  * directory names, gate commands that log "<group> <kind>" to gates.log,
- * a git history, and the strict profile (`strictProfile`) so planted layout
- * defects are work rather than advice. The observation log is ignored so it
+ * a git history, and `lightsout/standards` under the strict profile
+ * (`strictProfile`) so planted layout defects are work rather than advice. The observation log is ignored so it
  * never becomes a fake root-level change in scope-classification tests.
  */
 export const setupMonorepo = ({ plan = '---\npackages:\n  - api\n---\n# Plan: api feature\n' }: Params = {}): string => {
@@ -46,6 +46,7 @@ export const setupMonorepo = ({ plan = '---\npackages:\n  - api\n---\n# Plan: ap
 				test: `${gateLogCommand({ kind: 'test' })} {package}`,
 				'test-coverage': `${gateLogCommand({ kind: 'coverage' })} {package}`,
 			},
+			'standards-pack': 'lightsout/standards',
 			'standards-rule-settings': strictProfile,
 		}),
 	);

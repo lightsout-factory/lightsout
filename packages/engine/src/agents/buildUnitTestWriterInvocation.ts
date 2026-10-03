@@ -1,4 +1,6 @@
+import { sharedPromptSections } from '#src/agents/internal/common/constants/sharedPromptSections.ts';
 import { acceptanceTestsSection } from '#src/agents/internal/common/utils/acceptanceTestsSection.ts';
+import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
 import unitTestWriterPrompt from '#src/agents/prompts/unitTestWriter.md';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 
@@ -29,7 +31,10 @@ export const buildUnitTestWriterInvocation = ({
 	errorContext,
 	acceptanceTests,
 }: Params): { systemPrompt: string; prompt: string } => {
-	const roleSections = [unitTestWriterPrompt, `# Plan (context for intended behavior)\n\n${planContent}`];
+	const roleSections = [
+		applyPromptTokens({ text: unitTestWriterPrompt, tokens: sharedPromptSections }),
+		`# Plan (context for intended behavior)\n\n${planContent}`,
+	];
 
 	if (standards) {
 		roleSections.push(`# Standards\n\nThese rules are binding for the tests you write:\n\n${standards}`);

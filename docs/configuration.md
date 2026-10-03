@@ -26,17 +26,11 @@ To run lightsout, define the commands it should use to verify the work:
 
 ### Use lightsout’s code standards
 
-The minimal configuration uses lightsout’s bundled JavaScript and TypeScript standards. With no `standards-pack` set, lightsout picks one of its own packs from the dependencies in your root `package.json` — and, in a monorepo, for each package from that package’s own `package.json` — checking in this order and taking the first match:
-
-1. TanStack Start (`@tanstack/react-start` or `@tanstack/start`) — `lightsout/tanstack-start-app`
-2. NestJS (`@nestjs/core`) — `lightsout/nestjs-app`
-3. React (`react`, `preact` or `react-dom`) — `lightsout/react-app`
-4. Anything else — `lightsout/node`
-
-The run header names the pack and says it was detected.
+Standards are opt-in. The minimal configuration above runs with none: agents get no rules, and no standards checks run. `lightsout doctor` says so. Turn on lightsout’s bundled JavaScript and TypeScript standards by naming their pack with `standards-pack`:
 
 ```json
 {
+  "standards-pack": "lightsout/standards",
   "gates": {
     "check": "pnpm check",
     "test": "pnpm test:unit",
@@ -44,6 +38,8 @@ The run header names the pack and says it was detected.
   }
 }
 ```
+
+`lightsout/standards` holds every bundled rule. Its framework rules are conditional: the React, TanStack Start and NestJS rules reach only a package whose own `package.json` declares that framework, so one pack fits the root and every package of a monorepo. The run header names the pack, and each framework pack that applied.
 
 ### Use your own standards
 
@@ -53,8 +49,8 @@ of its packs with `standards-pack`, written `<library>/<pack>`:
 
 ```json
 {
-  "standards-libraries": { "house": "./standards/house" },
-  "standards-pack": "house/house-rules",
+  "standards-libraries": { "acme": "./standards/acme" },
+  "standards-pack": "acme/standards",
   "gates": {
     "check": "pnpm check",
     "test": "pnpm test:unit",
@@ -84,18 +80,18 @@ Use `package-gates` to run gates only for packages affected by the current chang
 }
 ```
 
-Use `package-standards-packs` to give a package a standards pack of its own. Each key is the package’s folder name under `packages-dir`, as `--packages` uses it, and each value is a pack address:
+Use `package-standards-packs` to give a package standards of its own. Each key is the package’s folder name under `packages-dir`, as `--packages` uses it, and each value is a pack address or a list of them:
 
 ```json
 {
-  "standards-pack": "lightsout/node",
+  "standards-pack": "lightsout/standards",
   "package-standards-packs": {
-    "web-app": "lightsout/tanstack-start-app"
+    "web-app": "lightsout/react"
   }
 }
 ```
 
-A package the map does not name uses `standards-pack`, or, when that is unset, the pack lightsout detects from the package’s own `package.json`.
+A package the map does not name uses `standards-pack`, and has no standards when that is unset.
 
 See [Monorepos](monorepos.md) for package detection, gate resolution and how standards follow each package.
 
@@ -188,14 +184,13 @@ agent that writes tests. Every rule is a folder inside a topic: its prose, the
 check that enforces it when one is possible, and the example files that prove
 the check works.
 
-A repository selects one pack, and that pack brings in every rule it needs. In
-a monorepo a package may select a different one with `package-standards-packs`
-(see [Configure a monorepo](#configure-a-monorepo)). Name the repository's pack
-with `standards-pack`:
+A repository selects its packs with `standards-pack`, and each pack brings in
+every rule it needs. In a monorepo a package may select different ones with
+`package-standards-packs` (see [Configure a monorepo](#configure-a-monorepo)):
 
 ```json
 {
-  "standards-pack": "lightsout/node",
+  "standards-pack": "lightsout/standards",
   "gates": {
     "check": "pnpm check",
     "test": "pnpm test:unit",
@@ -204,17 +199,37 @@ with `standards-pack`:
 }
 ```
 
-The pack applies to the repository root and every package
-`package-standards-packs` does not name. With no `standards-pack` set, lightsout
-detects one of its own packs from the root `package.json` for the root, and from
-each package's own `package.json` for that package, as
-[Use lightsout’s code standards](#use-lightsouts-code-standards) describes. A pack that no registered library holds fails the run. Every rule is
-named `<library>/<rule>`, where the library is the `name` in its
-`lightsout-standards.json`, so two libraries may each hold a rule with the same
-short id.
+The built-in `lightsout` library groups its rules into packs by what each is
+for, so a repository can take one goal without the others:
 
-Set `standards-pack` to `false` to run with no standards for the root and every
-package `package-standards-packs` does not name.
+| Pack | What it is for |
+| --- | --- |
+| `lightsout/fractal` | Keeps the repo the same shape at every level, so any file's place is predictable and a duplicate is found by searching for its name. |
+| `lightsout/agent-corrections` | Corrects mistakes current models make by default. |
+| `lightsout/code-style` | Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values and a unit test. |
+| `lightsout/react`, `lightsout/tanstack-start` | Framework rules. Each reaches only the packages whose `package.json` declares that framework. |
+| `lightsout/standards` | All of the above. |
+
+`standards-pack` takes one pack address or a list of them. Listed packs apply
+in order, and the last listed wins where two grade one rule differently:
+
+```json
+{
+  "standards-libraries": { "acme": "./standards/acme" },
+  "standards-pack": ["lightsout/standards", "acme/standards"]
+}
+```
+
+The selection applies to the repository root and every package
+`package-standards-packs` does not name. A pack that no registered library holds
+fails the run. Every rule is named `<library>/<rule>`, where the library is the
+`name` in its `lightsout-standards.json`, so two libraries may each hold a rule
+with the same short id.
+
+Standards are opt-in. With no `standards-pack` set, the root and every package
+`package-standards-packs` does not name run with no standards, and
+`lightsout doctor` notes it. Setting `standards-pack` to `false` means the same
+and records the choice, so the doctor stays quiet.
 
 ### Register standards libraries
 
@@ -227,8 +242,8 @@ library lives:
 ```json
 {
   "standards-libraries": {
-    "house": "./standards/house",
-    "acme": "@acme/lightsout-standards"
+    "acme": "./standards/acme",
+    "acme-platform": "@acme/platform-standards"
   }
 }
 ```
@@ -244,9 +259,29 @@ a library that does not match, or will not load, is a hard error. `lightsout`
 is the built-in library's name and is reserved.
 
 Each pack is one `.json` file in a library's `packs/` folder, addressed
-`<library>/<file-stem>` — `lightsout/node` is `packs/node.json` in the built-in
-library. Only `.json` files there are packs; anything else in the folder is
-ignored.
+`<library>/<file-stem>` — `lightsout/standards` is `packs/standards.json` in the
+built-in library. Only `.json` files there are packs; anything else in the
+folder is ignored.
+
+A pack file holds a `description`, an `include` block listing the `packs`,
+`topics` and `rules` it brings in, and optional `rule-settings` for the rules it
+holds. A pack may also be conditional, by declaring `applies-when`:
+
+```json
+{
+  "description": "Keeps React components, hooks and their tests to one shape, in each package that uses React.",
+  "include": { "topics": ["lightsout/code/frameworks/react", "lightsout/tests/frameworks/react"] },
+  "applies-when": { "dependencies": ["react", "preact", "react-dom"] }
+}
+```
+
+A conditional pack brings its rules to a package only when that package's own
+`package.json` declares one of the listed dependencies, in `dependencies`,
+`devDependencies` or `peerDependencies`. The repository root is judged by the
+root `package.json`. This is how a single pack serves a monorepo: it includes a
+conditional pack for each framework, and each package gets the ones it uses. A
+`rule-settings` or `standards-rule-settings` entry naming a rule that only a
+pack which did not apply would bring is accepted and does nothing.
 
 A rule that lightsout checks with code ships exactly one check file: `check.ts`
 or `check.js`. A library published to npm ships `check.js`, because Node will
@@ -284,28 +319,28 @@ group. Runs never warn.
 A pack may also ship one `fixtures/framework-owned/<framework>/` tree per
 framework — a miniature repo whose `package.json` declares that framework, so
 the same carve-outs a real package earns apply. `standards-validate` runs every
-checked rule against every such tree and expects silence: a rule that fires
+deterministic check against every such tree and expects silence: a rule that fires
 there is judging code its framework owns, and it is named as that. The tree is
 found by convention, never declared, and a pack that ships none gets a note
 rather than a problem.
 
 `lightsout standards-health` reports on the rules rather than on your code: per
-rule, whether code checks it or an agent has to judge it, and how often agents
+rule, whether it has a deterministic check or an agent check, and how often agents
 declined its findings, with the reasons they gave. The coverage half is counted
 from the package's own folders, so it lands even in a repository that has never
 run anything. The decline half is aggregated from the refactor runs recorded
 under `.lightsout`, and reads `—` until you have some.
 
 `lightsout standards-check` reports what your code breaks today. It runs both
-halves of the check by default — the checks your rules ship as code, and an
-agent reading the rules no code can check. Pass `--code-checks` for only the
-first, or `--agent-review` for only the second. The agent's findings are always
-advisory: they join the same reported stream, and they never fail a run. A run
-that includes the code checks writes `.lightsout/standards-check.json`; a
-review-only run prints and writes nothing, because that file is the machine
-half's evidence and a judgment call must not overwrite it. A repository whose
-harness is not installed gets a plain "agent review skipped" note rather than a
-failure.
+halves of the check by default — the deterministic checks your rules ship as
+code, and an agent review reading the rules with an agent check. Pass
+`--deterministic-checks` for only the first, or `--agent-review` for only the
+second. The agent's findings are always advisory: they join the same reported
+stream, and they never fail a run. A run that includes the deterministic checks
+writes `.lightsout/standards-check.json`; a review-only run prints and writes
+nothing, because that file is the deterministic half's evidence and an agent's
+reading must not overwrite it. A repository whose harness is not installed gets
+a plain "agent review skipped" note rather than a failure.
 
 ## Field reference
 
@@ -340,8 +375,8 @@ is overwritten the next time `pnpm build:config-reference` runs.
 | `packages-dir` | no | Directory holding workspace packages, for monorepo scoped gates. Defaults to `packages`. |
 | `package-gates` | no | Monorepo scoped gate templates — the per-package commands `{package}` is substituted into. Each template runs once per affected package, so a gate runs only for the packages a change touched. |
 | `gate-overrides` | no | Opt-in per-checkpoint gate schedules, keyed by the four verification checkpoints — `clean-slate`, `verify-implement`, `verify-tests` and `verify-refactor`. A checkpoint listed with an array runs exactly those gates, in that order, with no tiering, and a red one stops the rest of the list; `"off"` runs no gates at all there, `gates.generate` included. A checkpoint the block does not list keeps the engine’s default: the cheap gates first — check, then the unit suite — and the expensive ones, each custom `test-*` suite and the build, only once every package group’s cheap gates are green. A name must be a gate this repo configures under `gates` or `package-gates`; `generate` and `format` may not be named. |
-| `standards-pack` | no | The standards pack for the repo root and every package `package-standards-packs` does not name, written `<library>/<pack>`, such as `lightsout/node`. Unset = lightsout detects one of its own packs from the dependencies in the root `package.json` for the root, and in each package’s own `package.json` for that package: `lightsout/tanstack-start-app` for TanStack Start, `lightsout/nestjs-app` for NestJS, `lightsout/react-app` for React, and `lightsout/node` otherwise. `false` = no standards for the root and every package the map does not name. |
-| `package-standards-packs` | no | A standards pack of its own for each package that differs from `standards-pack`. Each key is a package folder name under `packages-dir`, as `--packages` uses it, and each value is a pack address, `<library>/<pack>`. A package the map does not name uses `standards-pack`, or the pack detected from its own `package.json` when that is unset. `false` is accepted only by `standards-pack`, never here. A key naming no workspace package is an error. |
+| `standards-pack` | no | The standards for the repo root and every package `package-standards-packs` does not name: one pack address, written `<library>/<pack>`, or a list of them applied in order, the last listed winning where two grade one rule differently. Standards are opt-in: unset and `false` both mean no standards for the root and every package the map does not name. A pack that declares `applies-when` reaches only the packages whose own `package.json` declares one of the dependencies it names. |
+| `package-standards-packs` | no | Standards of its own for each package that differs from `standards-pack`. Each key is a package folder name under `packages-dir`, as `--packages` uses it, and each value is a pack address, `<library>/<pack>`, or a list of them. A package the map does not name uses `standards-pack`, and has no standards when that is unset. `false` is accepted only by `standards-pack`, never here. A key naming no workspace package is an error. |
 | `standards-libraries` | no | Standards libraries the repo registers beside the built-in one, each a folder of topics, rules and pack files. Each key is a library name and each value is either a folder — a value starting with `./` or `../`, or an absolute path, read against the repo root — or an npm package name, looked up in the repo’s `node_modules`. A library’s manifest `name` must equal its key, and `lightsout` is built in and reserved. Versions are fixed the way the rest of the repo’s are: by git for a folder, by the lockfile for a package, and by the plugin version for the built-in library. |
 | `standards-rule-settings` | no | Per-rule severity and options settings, applied over the selected pack as the last layer and keyed by full rule name (`<library>/<rule>`), or by short rule id where only one rule in the pack has it. `off` stops a rule running but keeps its prose for agents; `blocking` or `advisory` turns on a rule the pack ships off. An entry naming no rule in the pack is an error. A rule not named here keeps its pack’s setting — silence is never a change. |
 | `ship` | no | Opt-in `lightsout ship` settings: the branch ticket pattern whose `ticket` capture group becomes the result’s ticket reference, the pull request body template, the merge method, whether a passed implement run chains into ship, an optional pre-ship command that prepares the release candidate before it is verified, and the explicit exception for a repository that intentionally has no CI. |
@@ -444,41 +479,31 @@ Run `lightsout standards-check --list` to print every rule with the standards do
 
 #### What the default pack blocks
 
-The pack lightsout ships blocks only what is wrong on its own terms — code that lies about its types (`no-any`, `type-assertion`, `import-type-only`, `explicit-return-type`), code nothing uses (`dead-export`, `duplicate-function-body`), a tree that breaks across filesystems (`case-collision`), doc tags git or the compiler already own (`brittle-doc-tags`), and tests that are silently weaker than they read (`test-shared-let`, `test-assert-in-hook`, `test-mock-prefix`, `test-mock-untyped`, `test-mock-wrapper-untyped`, `test-strict-equal-matcher`) or can never pass at all (`test-never-passing-assertion`). Every rule about where files go, what they are called, and how many exports they hold ships `advisory`: it is still reported and still handed to the refactor agent, but a repository adopting lightsout is not blocked on day one by a layout it has not yet agreed to.
+The pack lightsout ships blocks only what is wrong on its own terms — code that lies about its types (`no-any`, `type-assertion`, `explicit-return-type`), code nothing uses (`dead-export`, `duplicate-function-body`), a tree that breaks across filesystems (`case-collision`), and tests that are silently weaker than they read (`no-test-state-in-hooks`, `test-mock-prefix`, `test-mock-untyped`, `test-mock-wrapper-untyped`, `test-strict-equal-matcher`). Every rule about where files go, what they are called, and how many exports they hold ships `advisory`: it is still reported and still handed to the refactor agent, but a repository adopting lightsout is not blocked on day one by a layout it has not yet agreed to.
 
 A repository that wants the strict profile promotes those rules itself — an explicit, committed list of what it holds itself to. This is the block lightsout's own repository runs:
 
 ```jsonc
 {
   "standards-rule-settings": {
-    "banned-class-shapes": "blocking",
+    "prefer-functions": "blocking",
     "banned-folder-name": "blocking",
-    "bare-string-union": "blocking",
-    "barrel-star": "blocking",
-    "casing": "blocking",
+    "named-string-values": "blocking",
+    "index-file-contents": "blocking",
     "class-inheritance": "blocking",
-    "code-in-index-file": "blocking",
-    "folder-size": "blocking",
     "file-directly-in-common": "blocking",
-    "folder-casing": "blocking",
-    "folder-index-file": "blocking",
+    "file-size": "blocking",
+    "index-files": "blocking",
+    "folder-size": "blocking",
+    "function-size": "blocking",
     "import-path-alias": "blocking",
-    "import-through-index": "blocking",
     "internal-import-from-outside": "blocking",
     "multi-export": "blocking",
-    "oversized-setup-factory": "blocking",
-    "params-interface-docs": "blocking",
-    "single-file-domain-folder": "blocking",
     "single-use-scalar": "blocking",
-    "file-size": "blocking",
-    "function-size": "blocking",
-    "test-in-tests-folder": "blocking",
-    "test-manual-mock-cleanup": "blocking",
-    "test-mock-return-in-hook": "blocking",
-    "test-nested-describe": "blocking",
-    "test-not-beside-subject": "blocking",
+    "test-beside-subject": "blocking",
     "test-file-size": "blocking",
-    "test-support-in-src": "blocking",
+    "test-manual-mock-cleanup": "blocking",
+    "test-support-in-src": "blocking"
   },
 }
 ```
@@ -770,7 +795,7 @@ the agent — a run that leaves the code clean spends no rounds however high thi
 number is. What may spend a round is narrow: a deterministic blocking finding
 that this run's own edits introduced, or one whose measured size this run made
 worse. Debt the run inherited, a finding whose provenance cannot be established,
-and the judgment reviewer's opinions are all recorded and handed forward without
+and the agent review's opinions are all recorded and handed forward without
 buying an attempt.
 
 Whatever cleanup leaves behind never stops the run. Remaining findings are
@@ -920,12 +945,13 @@ The following example shows how the optional configuration fields fit together:
     },
   },
 
-  // The standards pack for the repository root and every package not named below
-  "standards-pack": "lightsout/node",
+  // The standards for the repository root and every package not named below;
+  // without this key lightsout runs with no standards
+  "standards-pack": "lightsout/standards",
 
   // A package whose standards differ, keyed by its folder under packages-dir
   "package-standards-packs": {
-    "web-app": "lightsout/tanstack-start-app",
+    "docs-site": "lightsout/code-style",
   },
 
   // Repository-wide gates

@@ -42,7 +42,7 @@ export const StandardsHeader = ({ view }: Props) => {
 				<span className="text-muted-foreground-strong">{formatCount({ count: totals.advisory, noun: 'advisory finding' })}</span>
 				<span className="text-muted-foreground">·</span>
 				<span className="text-muted-foreground">
-					{formatCount({ count: totals.rules, noun: 'rule' })}, {totals.checked} {checkKindLabels[CheckKind.Deterministic].plural} and {totals.judgment}{' '}
+					{formatCount({ count: totals.rules, noun: 'rule' })}, {totals.deterministic} {checkKindLabels[CheckKind.Deterministic].plural} and {totals.agent}{' '}
 					{checkKindLabels[CheckKind.Agent].plural}
 				</span>
 			</div>

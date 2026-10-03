@@ -1,7 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { createBatchTools } from '#src/refactor/batch/internal/createBatchTools.ts';
@@ -76,8 +75,7 @@ const setupBatchTools = ({ packagesDir }: { packagesDir: string }) => {
 	const batch: RefactorBatch = { id: 'batch-01:multi-export:apps/web', rule: 'lightsout/multi-export', folder: 'apps/web', blocking: [], advisories: [] };
 	const group: StandardsGroup = {
 		packages: ['', 'web'],
-		pack: { name: 'lightsout/node', topics: [], rules: [] },
-		source: StandardsPackSource.Detected,
+		pack: { name: 'lightsout/standards', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
 		states: new Map(),
 	};
 	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': packagesDir };

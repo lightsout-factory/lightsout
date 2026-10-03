@@ -6,7 +6,7 @@ const setupModule = ({ omit, extra = {} }: { omit?: string; extra?: Record<strin
 	const run = () => [];
 
 	const checkModule: Record<string, unknown> = {
-		inputKind: 'file-list',
+		inputKinds: ['file-list'],
 		run,
 		...extra,
 	};
@@ -19,25 +19,25 @@ const setupModule = ({ omit, extra = {} }: { omit?: string; extra?: Record<strin
 };
 
 describe('StandardsCheckModule', () => {
-	test('a check module parses with its declared input kind and the function the package shipped', () => {
+	test('a check module parses with its declared input kinds and the function the package shipped', () => {
 		const { checkModule, run } = setupModule();
 
 		const parsed = StandardsCheckModule.parse(checkModule);
 
 		// the engine calls `run` itself, so the parsed value must be the very
 		// function the package exported — not a copy or a wrapper
-		expect(parsed).toStrictEqual({ inputKind: 'file-list', run });
+		expect(parsed).toStrictEqual({ inputKinds: ['file-list'], run });
 	});
 
 	test('every input the engine builds is a kind a check may declare', () => {
 		for (const inputKind of ['file-list', 'file-text', 'syntax-tree', 'test-file', 'import-graph', 'clone-spans']) {
-			const { checkModule } = setupModule({ extra: { inputKind } });
+			const { checkModule } = setupModule({ extra: { inputKinds: [inputKind] } });
 
 			const parsed = StandardsCheckModule.parse(checkModule);
 
 			// ${inputKind} is the wire value a rule folder writes in its check file, and
-			// the key the engine reads to decide which input to hand the check
-			expect(parsed.inputKind).toBe(inputKind);
+			// a key the engine reads to decide which inputs to hand the check
+			expect(parsed.inputKinds).toStrictEqual([inputKind]);
 		}
 	});
 
@@ -52,7 +52,7 @@ describe('StandardsCheckModule', () => {
 
 	test('rejects an input kind outside the closed set', () => {
 		for (const inputKind of ['file-lists', 'FileList', 'files', '']) {
-			const { checkModule } = setupModule({ extra: { inputKind } });
+			const { checkModule } = setupModule({ extra: { inputKinds: [inputKind] } });
 
 			const result = StandardsCheckModule.safeParse(checkModule);
 
@@ -62,13 +62,26 @@ describe('StandardsCheckModule', () => {
 		}
 	});
 
-	test('rejects a check module that declares no input kind', () => {
-		const { checkModule } = setupModule({ omit: 'inputKind' });
+	test('rejects a check module that declares no input kind, by leaving the list out or leaving it empty', () => {
+		const omitted = setupModule({ omit: 'inputKinds' });
+		const empty = setupModule({ extra: { inputKinds: [] } });
 
-		const result = StandardsCheckModule.safeParse(checkModule);
+		const results = [omitted, empty].map(({ checkModule }) => StandardsCheckModule.safeParse(checkModule).success);
 
 		// without a kind the engine cannot know which input to build, so there is no
 		// default to fall back to
+		expect(results).toStrictEqual([false, false]);
+	});
+
+	test('a check declares several kinds, each once', () => {
+		const several = setupModule({ extra: { inputKinds: ['import-graph', 'file-text'] } });
+		const repeated = setupModule({ extra: { inputKinds: ['file-text', 'file-text'] } });
+
+		const parsed = StandardsCheckModule.parse(several.checkModule);
+		const result = StandardsCheckModule.safeParse(repeated.checkModule);
+
+		// the engine builds one input per kind; a kind named twice asks for nothing more
+		expect(parsed.inputKinds).toStrictEqual(['import-graph', 'file-text']);
 		expect(result.success).toBe(false);
 	});
 
@@ -83,7 +96,7 @@ describe('StandardsCheckModule', () => {
 	});
 
 	test('rejects a run that is not callable', () => {
-		for (const run of [{ inputKind: 'file-list' }, 'run', 42, null, [], undefined]) {
+		for (const run of [{ inputKinds: ['file-list'] }, 'run', 42, null, [], undefined]) {
 			const { checkModule } = setupModule({ extra: { run } });
 
 			const result = StandardsCheckModule.safeParse(checkModule);
@@ -100,7 +113,7 @@ describe('StandardsCheckModule', () => {
 		const result = StandardsCheckModule.safeParse(checkModule);
 
 		// a check file that declares a kind but ships no function is a half-written
-		// rule, not a judgment-only one
+		// rule, not a agent-only one
 		expect(result.success).toBe(false);
 	});
 
@@ -120,6 +133,6 @@ describe('StandardsCheckModule', () => {
 		// severity and options come from the rule's front matter, never from the
 		// check file — anything extra a package ships is dropped rather than
 		// silently honored
-		expect(parsed).toStrictEqual({ inputKind: 'file-list', run });
+		expect(parsed).toStrictEqual({ inputKinds: ['file-list'], run });
 	});
 });

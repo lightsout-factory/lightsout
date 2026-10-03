@@ -1,6 +1,9 @@
 {
-	"description": "React code and React component tests: React architecture, component and hook patterns, and component unit tests.",
+	"description": "Keeps React components, hooks and their tests to one shape, in each package that uses React.",
 	"include": {
-		"topics": ["lightsout/code/architecture/react", "lightsout/code/style-guide/patterns/react-components", "lightsout/tests/unit-testing-react-components"]
+		"topics": ["lightsout/code/frameworks/react", "lightsout/tests/frameworks/react"]
+	},
+	"applies-when": {
+		"dependencies": ["react", "preact", "react-dom"]
 	}
 }

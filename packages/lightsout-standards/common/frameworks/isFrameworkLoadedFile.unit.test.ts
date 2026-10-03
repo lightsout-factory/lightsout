@@ -14,7 +14,6 @@ const setupCarveOut = ({
 	directory,
 	entryFiles,
 	exemptFolderNames: [],
-	kebabCase: false,
 	routerRoots,
 });
 

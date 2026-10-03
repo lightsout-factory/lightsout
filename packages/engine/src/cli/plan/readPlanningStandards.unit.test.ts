@@ -22,7 +22,7 @@ const writeStandardsPackage = ({ cwd, at, name, ruleId, prose, set = 'code' }: S
 		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 2 }\n`,
 		'packs/demo.json': JSON.stringify({ description: 'The demo topic and its one rule.', include: { topics: [`${name}/${set}/demo`] } }),
 		[`rules/${set}/demo/topic.md`]: '# Demo\n\nThe document the rule argues under.\n',
-		[`${rulePath}/rule.md`]: `---\nsummary: a rule the package declares\n---\n\n${prose}\n`,
+		[`${rulePath}/rule.md`]: `---\nsummary: a rule the package declares\nchecks: agent\n---\n\n${prose}\n`,
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 		[`${rulePath}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',
 	};
@@ -36,8 +36,8 @@ const writeStandardsPackage = ({ cwd, at, name, ruleId, prose, set = 'code' }: S
 };
 
 /**
- * A consumer repo whose manifest carries the given dependencies — the signal
- * the standards pack is detected from — holding the declared standards
+ * A consumer repo whose manifest carries the given dependencies — which select
+ * no standards, since only the config does — holding the declared standards
  * libraries.
  */
 const setupStandards = ({ dependencies, packages = [] }: { dependencies?: Record<string, string>; packages?: StandardsPackage[] } = {}) => {
@@ -56,14 +56,23 @@ const setupStandards = ({ dependencies, packages = [] }: { dependencies?: Record
 /** The gate config every LightsoutConfig needs, so each case only states the standards keys it is about. */
 const configWith = (fields: Partial<LightsoutConfig>): LightsoutConfig => ({ gates: { check: 'true', test: 'true', 'test-coverage': false }, ...fields });
 
-test('readPlanningStandards: with no config it loads the shipped default package, base channel only', async () => {
-	const { cwd, logged } = setupStandards();
+test('readPlanningStandards: with no config it loads nothing, whatever the consumer manifest declares', async () => {
+	const { cwd, logged } = setupStandards({ dependencies: { react: '^19.0.0' } });
 
 	const standards = await readPlanningStandards({ cwd, config: undefined });
 
-	expect(standards ?? '').toMatch(/<!-- lightsout: code\/architecture\/folder-structure -->/);
-	// with no signal dependency the node pack is detected, and it carries no react topic
-	expect((standards ?? '').includes('code/architecture/react')).toBeFalsy();
+	// standards are opt-in: a react dependency selects no pack
+	expect(standards).toBe(undefined);
+	expect(logged).toStrictEqual([]);
+});
+
+test('readPlanningStandards: a config naming the shipped standards pack loads its code prose, without the react topic in a repo that declares no react', async () => {
+	const { cwd, logged } = setupStandards();
+
+	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/standards' }) });
+
+	expect(standards ?? '').toMatch(/<!-- lightsout: code\/fractal\/modules -->/);
+	expect((standards ?? '').includes('code/frameworks/react')).toBeFalsy();
 	expect(logged).toStrictEqual([]);
 });
 
@@ -79,17 +88,11 @@ test('readPlanningStandards: standards turned off explicitly loads nothing at al
 test('readPlanningStandards: planning gets the code set only — the test tree is not its business', async () => {
 	const { cwd } = setupStandards();
 
-	const standards = await readPlanningStandards({ cwd, config: configWith({}) });
+	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/standards' }) });
 
+	// the code set did load, so a missing tests marker is the set left out and not standards switched off
+	expect(standards ?? '').toMatch(/<!-- lightsout: code\//);
 	expect((standards ?? '').includes('<!-- lightsout: tests/')).toBeFalsy();
-});
-
-test('readPlanningStandards: a react dependency in the consumer manifest activates the react channel', async () => {
-	const { cwd } = setupStandards({ dependencies: { react: '^19.0.0' } });
-
-	const standards = await readPlanningStandards({ cwd, config: configWith({}) });
-
-	expect(standards ?? '').toMatch(/<!-- lightsout: code\/architecture\/react -->/);
 });
 
 test('readPlanningStandards: a package carrying only a test tree contributes nothing, and that is not a failure', async () => {
@@ -123,12 +126,12 @@ test("readPlanningStandards: planning reads the selected pack's code prose", asy
 	const { cwd, logged } = setupStandards({ dependencies: { react: '^19.0.0' } });
 
 	const switchedOff = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': false }) });
-	const detected = await readPlanningStandards({ cwd, config: configWith({}) });
+	const named = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/standards' }) });
 
-	// standards-pack false selects no pack; with no standards keys the react dependency selects lightsout/react-app
+	// standards-pack false selects no pack; lightsout/standards carries the react topic beside the fractal ones, for a package declaring react
 	expect(switchedOff).toBe(undefined);
-	expect(detected ?? '').toMatch(/<!-- lightsout: code\/architecture\/folder-structure -->/);
-	expect(detected ?? '').toMatch(/<!-- lightsout: code\/architecture\/react -->/);
-	expect((detected ?? '').includes('<!-- lightsout: tests/')).toBeFalsy();
+	expect(named ?? '').toMatch(/<!-- lightsout: code\/fractal\/modules -->/);
+	expect(named ?? '').toMatch(/<!-- lightsout: code\/frameworks\/react -->/);
+	expect((named ?? '').includes('<!-- lightsout: tests/')).toBeFalsy();
 	expect(logged).toStrictEqual([]);
 });

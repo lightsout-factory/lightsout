@@ -26,8 +26,8 @@ the engine as deterministic code. Do not add workflow steps to this file.
    ```
 
    Pass through when provided: `--path <subdir>`, `--all` (include baselined
-   findings — burn-down mode), `--max-batches <n>`, `--code-checks` (skip each
-   batch's agent review — deterministic checks only), `--allow-dirty` (accept
+   findings — burn-down mode), `--max-batches <n>`, `--deterministic-checks` (skip
+   each batch's agent review — deterministic checks only), `--allow-dirty` (accept
    uncommitted changes as baseline instead of demanding a clean tree),
    `--cwd <path>`. To resume a parked run: `refactor --run <id>`.
 3. Read the exit code before anything else. `0` finished. `2` stopped with

@@ -2,7 +2,6 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
@@ -30,24 +29,30 @@ const batch = ({ paths }: { paths: string[] }): RefactorBatch => ({
 });
 
 const judgmentRule: LoadedStandardsRule = {
-	id: 'path-aliases',
-	name: 'acme/path-aliases',
+	id: 'object-args',
+	name: 'acme/object-args',
 	library: 'acme',
 	set: 'code',
-	documentPath: 'code/style-guide/structure/import-paths',
-	summary: 'a relative import in an aliased package',
+	documentPath: 'code/code-style/functions',
+	summary: 'three positional arguments on an exported function',
 	prose: 'the argument for the rule',
-	checked: false,
+	deterministic: false,
+	agent: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
-	fixturesPath: '/packages/acme/path-aliases/fixtures',
+	fixturesPath: '/packages/acme/object-args/fixtures',
 };
 
 const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup => ({
 	packages: [''],
-	pack: { name: 'acme/house', topics: [], rules: rules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })) },
-	source: StandardsPackSource.Named,
+	pack: {
+		name: 'acme/house',
+		topics: [],
+		rules: rules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })),
+		conditionalPacks: [],
+		inactiveRules: [],
+	},
 	states: new Map<string, ResolvedRuleState>(
 		rules.map((rule) => [rule.name, { severity: rule.defaultSeverity, options: rule.defaultOptions, fromConfig: false, reachesAgents: true }]),
 	),
@@ -66,7 +71,7 @@ const setupAppsWorkspace = async () => {
 	await mkdir(join(cwd, 'apps', 'web-app'), { recursive: true });
 	await writeFile(join(cwd, 'apps', 'web-app', 'package.json'), '{}');
 	const { driver, onProgress } = setupDriver({
-		text: JSON.stringify({ findings: [{ rule: 'path-aliases', files: [{ path: 'apps/web-app/src/a.ts' }], detail: 'a relative import' }] }),
+		text: JSON.stringify({ findings: [{ rule: 'object-args', files: [{ path: 'apps/web-app/src/a.ts' }], detail: 'three positional arguments' }] }),
 	});
 	const webAppGroup: StandardsGroup = { ...groupOf({ rules: [judgmentRule] }), packages: ['web-app'] };
 
@@ -100,9 +105,9 @@ describe('collectBatchAdvisories', () => {
 		expect(advisories.map((entry) => entry.siteKey)).toStrictEqual(['function-size:src/a.ts', 'dead-export:src/a.ts']);
 	});
 
-	test('the agent’s read of the judgment rules joins the same list, after the machine’s', async () => {
+	test('the agent’s read of the agent-checked rules joins the same list, after the deterministic checks’', async () => {
 		const { driver, onProgress } = setupDriver({
-			text: JSON.stringify({ findings: [{ rule: 'path-aliases', files: [{ path: 'src/a.ts' }], detail: 'a relative import' }] }),
+			text: JSON.stringify({ findings: [{ rule: 'object-args', files: [{ path: 'src/a.ts' }], detail: 'three positional arguments' }] }),
 		});
 
 		const advisories = await collectBatchAdvisories({
@@ -118,12 +123,12 @@ describe('collectBatchAdvisories', () => {
 			onProgress,
 		});
 
-		expect(advisories.map((entry) => entry.rule)).toStrictEqual(['function-size', 'acme/path-aliases']);
+		expect(advisories.map((entry) => entry.rule)).toStrictEqual(['function-size', 'acme/object-args']);
 		// and it arrives as advice, like everything else in this list
 		expect(advisories[1]?.severity).toBe(StandardsSeverity.Advisory);
 	});
 
-	test('code-checks-only mode keeps the machine advisories and never spends an agent', async () => {
+	test('deterministic-checks-only mode keeps the machine advisories and never spends an agent', async () => {
 		const driver: Driver = {
 			name: 'stub',
 			invoke: async () => {
@@ -185,6 +190,6 @@ describe('collectBatchAdvisories', () => {
 		});
 
 		// the finding survives only when the review places apps/web-app in the web-app group
-		expect(advisories.map((entry) => entry.siteKey)).toStrictEqual(['acme/path-aliases:apps/web-app/src/a.ts']);
+		expect(advisories.map((entry) => entry.siteKey)).toStrictEqual(['acme/object-args:apps/web-app/src/a.ts']);
 	});
 });

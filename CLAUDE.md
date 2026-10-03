@@ -15,6 +15,8 @@ Prefer correctness over speed of response.
 
 To write or review a rule in a standards library, follow `plugin/skills/standards-rule/SKILL.md`. For the built-in `lightsout` library, also read `packages/lightsout-standards/README.md`.
 
+Keep the engine and the standards libraries separate, in both directions. Standards are generic: any team writes its own library, and the agents code against it. So nothing standard-specific is hardcoded into the engine: its code and prompts never name a rule or a pack, never depend on a convention a rule defines (a folder name, a file layout), and never state standards policy of their own. A rule, in turn, never names an engine feature. Engine code that already breaks this is a defect (LO-199), not a precedent to follow. Before proposing any engine change during standards work, say plainly that it is an engine change and wait for a yes.
+
 ## Linear Tickets and Git Branches
 One ticket = one branch = one PR, and a work order holds its plans — follow the `ticket-workflow` skill, with `linear-ticket` for the Linear mechanics.
 

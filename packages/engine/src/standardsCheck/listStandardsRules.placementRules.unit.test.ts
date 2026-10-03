@@ -1,31 +1,25 @@
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 
 /**
  * The repo the listing is read for — the shipped library answers regardless,
- * since it travels with the engine, and with no config the repo gets the pack
- * its root manifest detects. The workspace root rather than the working
+ * since it travels with the engine. The workspace root rather than the working
  * directory, as the main suite reads it.
  */
 const cwd = join(__dirname, '..', '..', '..', '..');
 
-/** The listing a repo with no config of its own gets: the groups it resolves to, listed. */
-const listDefaults = async () => listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config: undefined }) });
+/** Standards are opt-in, so the config names the shipped standards pack — and sets no rule, so every row is the pack's default. */
+const standardsPackConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/standards' };
 
-/** The eight file-placement rules code checks — listed rather than derived, because an id no longer says which kind it is. */
-const durablePathRules = [
-	'banned-folder-name',
-	'file-directly-in-common',
-	'folder-index-file',
-	'test-in-tests-folder',
-	'test-not-beside-subject',
-	'test-support-in-src',
-	'folder-casing',
-	'single-file-domain-folder',
-];
+/** The listing a repo on the standards pack gets with no rule settings of its own: the groups it resolves to, listed. */
+const listDefaults = async () => listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config: standardsPackConfig }) });
+
+/** The five file-placement rules with a deterministic check — listed rather than derived, because an id no longer says which kind it is. */
+const durablePathRules = ['banned-folder-name', 'file-directly-in-common', 'index-files', 'test-beside-subject', 'test-support-in-src'];
 
 /** The shipped library's rules are listed by full name, the name a finding and a baseline key carry. */
 const builtInNameOf = ({ id }: { id: string }) => `lightsout/${id}`;
@@ -47,17 +41,14 @@ describe('listStandardsRules file-placement rules', () => {
 		);
 
 		// the main suite proves a document is there, not that it is the right one:
-		// the folder-index-file rule comes from module-api, the four
-		// test-location rules from unit-testing, and the rest from folder-structure
+		// the index-files rule comes from imports, the two test-location
+		// rules from the tests tree's fractal topic, and the rest from shared-code
 		expect(docs).toStrictEqual({
-			'lightsout/banned-folder-name': 'code/architecture/folder-structure',
-			'lightsout/file-directly-in-common': 'code/architecture/folder-structure',
-			'lightsout/folder-index-file': 'code/style-guide/structure/module-api',
-			'lightsout/test-in-tests-folder': 'tests/unit-testing',
-			'lightsout/test-not-beside-subject': 'tests/unit-testing',
-			'lightsout/test-support-in-src': 'tests/unit-testing',
-			'lightsout/folder-casing': 'code/architecture/folder-structure',
-			'lightsout/single-file-domain-folder': 'code/architecture/folder-structure',
+			'lightsout/banned-folder-name': 'code/fractal/shared-code',
+			'lightsout/file-directly-in-common': 'code/fractal/shared-code',
+			'lightsout/index-files': 'code/fractal/imports',
+			'lightsout/test-beside-subject': 'tests/fractal',
+			'lightsout/test-support-in-src': 'tests/fractal',
 		});
 	});
 
@@ -73,12 +64,9 @@ describe('listStandardsRules file-placement rules', () => {
 		expect(severities).toStrictEqual({
 			'lightsout/banned-folder-name': StandardsSeverity.Advisory,
 			'lightsout/file-directly-in-common': StandardsSeverity.Advisory,
-			'lightsout/folder-index-file': StandardsSeverity.Advisory,
-			'lightsout/test-in-tests-folder': StandardsSeverity.Advisory,
-			'lightsout/test-not-beside-subject': StandardsSeverity.Advisory,
+			'lightsout/index-files': StandardsSeverity.Advisory,
+			'lightsout/test-beside-subject': StandardsSeverity.Advisory,
 			'lightsout/test-support-in-src': StandardsSeverity.Advisory,
-			'lightsout/folder-casing': StandardsSeverity.Advisory,
-			'lightsout/single-file-domain-folder': StandardsSeverity.Advisory,
 		});
 	});
 

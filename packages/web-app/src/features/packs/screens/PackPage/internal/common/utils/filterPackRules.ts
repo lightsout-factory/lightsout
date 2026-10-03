@@ -1,5 +1,5 @@
 import type { StandardsPackRuleListing } from '@lightsout/engine';
-import { toCheckKind } from '#src/common/utils/toCheckKind.ts';
+import { toCheckKinds } from '#src/common/utils/toCheckKinds.ts';
 import type { PackRuleFilters } from '#src/features/packs/screens/PackPage/internal/common/types/PackRuleFilters.ts';
 
 interface Params {
@@ -14,7 +14,7 @@ export const filterPackRules = ({ rules, filters }: Params): StandardsPackRuleLi
 	return rules.filter(
 		(rule) =>
 			(filters.set === undefined || rule.set === filters.set) &&
-			(filters.check === undefined || toCheckKind({ checked: rule.checked }) === filters.check) &&
+			(filters.check === undefined || toCheckKinds({ deterministic: rule.deterministic, agent: rule.agent }).includes(filters.check)) &&
 			(filters.severity === undefined || rule.defaultSeverity === filters.severity) &&
 			(text === '' || rule.id.toLowerCase().includes(text) || rule.summary.toLowerCase().includes(text)),
 	);

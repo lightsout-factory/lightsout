@@ -1,8 +1,8 @@
 import type { ConfigView } from '@lightsout/engine';
-import { StandardsPackSource, StandardsSeverity } from '@lightsout/engine/contracts';
+import { StandardsSeverity } from '@lightsout/engine/contracts';
 
 interface Params {
-	/** Only what a test varies, over a repo whose config states a harness and whose pack is detected. */
+	/** Only what a test varies, over a repo whose config states a harness and names the bundled pack. */
 	overrides?: Partial<ConfigView>;
 }
 
@@ -20,7 +20,7 @@ export const buildConfigView = ({ overrides = {} }: Params = {}): ConfigView => 
 			],
 		},
 	],
-	standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: StandardsPackSource.Detected }],
+	standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/standards', conditionalPacks: [] }],
 	ruleStates: [
 		{
 			rule: 'lightsout/file-size',

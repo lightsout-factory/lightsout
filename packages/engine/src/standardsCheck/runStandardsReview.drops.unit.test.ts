@@ -1,5 +1,4 @@
 import { describe, expect, test } from '@jest/globals';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
@@ -20,7 +19,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: false,
+	deterministic: false,
+	agent: overrides.deterministic !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -31,8 +31,13 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 /** One group whose pack holds `rules`, each at its rule.md default. */
 const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup => ({
 	packages: [''],
-	pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
-	source: StandardsPackSource.Named,
+	pack: {
+		name: 'acme/house',
+		topics: [],
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+		conditionalPacks: [],
+		inactiveRules: [],
+	},
 	states: new Map<string, ResolvedRuleState>(
 		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
 	),
@@ -78,7 +83,7 @@ describe('runStandardsReview dropped findings', () => {
 		});
 
 		expect(findings.map((finding) => finding.rule)).toStrictEqual(['acme/common-placement']);
-		expect(notes).toStrictEqual(['agent review: 1 finding(s) dropped — no judgment rule is named invented-rule']);
+		expect(notes).toStrictEqual(['agent review: 1 finding(s) dropped — no agent-checked rule is named invented-rule']);
 	});
 
 	test('a finding with no file to point at is dropped — a site key needs a site', async () => {
@@ -117,7 +122,7 @@ describe('runStandardsReview dropped findings', () => {
 		});
 
 		expect(findings).toStrictEqual([]);
-		expect(notes).toStrictEqual(['agent review: 3 finding(s) dropped — no judgment rule is named alpha-rule, zeta-rule']);
+		expect(notes).toStrictEqual(['agent review: 3 finding(s) dropped — no agent-checked rule is named alpha-rule, zeta-rule']);
 	});
 
 	test('both kinds of drop are stated separately when one review does both', async () => {
@@ -142,7 +147,7 @@ describe('runStandardsReview dropped findings', () => {
 
 		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['acme/common-placement:src/b.ts']);
 		expect(notes).toStrictEqual([
-			'agent review: 1 finding(s) dropped — no judgment rule is named invented-rule',
+			'agent review: 1 finding(s) dropped — no agent-checked rule is named invented-rule',
 			'agent review: 1 finding(s) dropped — reported with no file to point at',
 		]);
 	});

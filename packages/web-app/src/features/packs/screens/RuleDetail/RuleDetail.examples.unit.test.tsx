@@ -47,7 +47,7 @@ jest.mock('@tanstack/react-router', () => ({
 const packRules = [
 	buildStandardsPackRuleListing({ id: 'no-any' }),
 	buildStandardsPackRuleListing({ id: 'type-assertion' }),
-	buildStandardsPackRuleListing({ id: 'import-type-only' }),
+	buildStandardsPackRuleListing({ id: 'explicit-return-type' }),
 ];
 
 const setupRuleDetail = ({ rule = buildStandardsPackRuleView() }: { rule?: StandardsPackRuleView } = {}) => {
@@ -96,7 +96,7 @@ describe('RuleDetail examples', () => {
 	});
 
 	test('says the agent judges code like the examples, rather than exactly these files', () => {
-		setupRuleDetail({ rule: buildStandardsPackRuleView({ overrides: { checked: false } }) });
+		setupRuleDetail({ rule: buildStandardsPackRuleView({ overrides: { deterministic: false, agent: true } }) });
 
 		const source = screen.getByText('The agent flags code like the incorrect example and accepts code like the correct one.');
 

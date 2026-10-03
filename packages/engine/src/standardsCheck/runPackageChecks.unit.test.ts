@@ -2,8 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { type FileListInput, type StandardsCheckFunction, type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
+import { type FileListInput, type StandardsCheckFunction, type StandardsCheckInputs, StandardsInputKind } from '@lightsout/standards-contracts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
@@ -35,7 +34,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: overrides.run !== undefined,
+	deterministic: overrides.run !== undefined,
+	agent: overrides.run === undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -44,20 +44,26 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 });
 
 /** A check for the rule `id` that reports one finding and records what it was handed. */
-const recordingRun = ({ id, calls }: { id: string; calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> }): StandardsCheckFunction => {
-	return ({ input, options }) => {
-		calls.push({ input, options });
+const recordingRun = ({
+	id,
+	calls,
+}: {
+	id: string;
+	calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }>;
+}): StandardsCheckFunction => {
+	return ({ inputs, options }) => {
+		calls.push({ inputs, options });
 
-		return [{ siteKey: `${id}:${input.kind}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
+		return [{ siteKey: `${id}:${Object.keys(inputs).join(',')}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
 	};
 };
 
 /** The first input a check was handed, narrowed to the kind whose path lists the test reads. */
-const fileListInput = ({ calls }: { calls: Array<{ input: StandardsCheckInput }> }): FileListInput => {
-	const input = calls[0]?.input;
+const fileListInput = ({ calls }: { calls: Array<{ inputs: StandardsCheckInputs }> }): FileListInput => {
+	const input = calls[0]?.inputs[StandardsInputKind.FileList];
 
-	if (input?.kind !== StandardsInputKind.FileList) {
-		throw new Error(`expected a file-list input, got ${String(input?.kind)}`);
+	if (input === undefined) {
+		throw new Error(`expected a file-list input, got ${Object.keys(calls[0]?.inputs ?? {}).join(',') || 'none'}`);
 	}
 
 	return input;
@@ -66,8 +72,13 @@ const fileListInput = ({ calls }: { calls: Array<{ input: StandardsCheckInput }>
 /** One group whose pack holds `rules` at their rule.md defaults, each rule at the state `states` resolved for it. */
 const groupOf = ({ rules, states }: { rules: LoadedStandardsRule[]; states: Map<string, ResolvedRuleState> }): StandardsGroup => ({
 	packages: [''],
-	pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
-	source: StandardsPackSource.Named,
+	pack: {
+		name: 'acme/house',
+		topics: [],
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+		conditionalPacks: [],
+		inactiveRules: [],
+	},
 	states,
 });
 
@@ -114,8 +125,8 @@ const setupConfiguredRun = () => {
 			return [];
 		};
 	const rules = [
-		rule({ id: 'folder-size', inputKind: StandardsInputKind.FileList, run: recordOptions({ id: 'folder-size' }), defaultOptions: { cap: 20 } }),
-		rule({ id: 'file-size', inputKind: StandardsInputKind.FileList, run: recordOptions({ id: 'file-size' }), defaultOptions: { file: 250, tsxFile: 300 } }),
+		rule({ id: 'folder-size', inputKinds: [StandardsInputKind.FileList], run: recordOptions({ id: 'folder-size' }), defaultOptions: { cap: 20 } }),
+		rule({ id: 'file-size', inputKinds: [StandardsInputKind.FileList], run: recordOptions({ id: 'file-size' }), defaultOptions: { file: 250, tsxFile: 300 } }),
 	];
 	const states = new Map<string, ResolvedRuleState>([
 		['acme/folder-size', { severity: StandardsSeverity.Advisory, options: { cap: 2 }, fromConfig: true, reachesAgents: true }],
@@ -129,7 +140,7 @@ const setupConfiguredRun = () => {
 const setupFullNameRun = () => {
 	const { cwd } = setupRepo();
 	const sizeRun: StandardsCheckFunction = () => [{ siteKey: 'size:src/alpha.ts', files: [{ path: 'src/alpha.ts' }], detail: 'too big' }];
-	const rules = [rule({ id: 'size', name: 'acme/size', library: 'acme', inputKind: StandardsInputKind.FileText, run: sizeRun })];
+	const rules = [rule({ id: 'size', name: 'acme/size', library: 'acme', inputKinds: [StandardsInputKind.FileText], run: sizeRun })];
 	const states = new Map<string, ResolvedRuleState>([
 		['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
 	]);
@@ -152,9 +163,9 @@ const setupGroupRun = () => {
 
 			return [{ siteKey: `${id}:src/alpha.ts`, files: [{ path: 'src/alpha.ts' }], detail: `${id} site` }];
 		};
-	const size = rule({ id: 'size', inputKind: StandardsInputKind.FileText, run: reportingRun({ id: 'size' }) });
-	const muted = rule({ id: 'muted', inputKind: StandardsInputKind.FileText, run: reportingRun({ id: 'muted' }) });
-	const outside = rule({ id: 'outside', inputKind: StandardsInputKind.FileText, run: reportingRun({ id: 'outside' }) });
+	const size = rule({ id: 'size', inputKinds: [StandardsInputKind.FileText], run: reportingRun({ id: 'size' }) });
+	const muted = rule({ id: 'muted', inputKinds: [StandardsInputKind.FileText], run: reportingRun({ id: 'muted' }) });
+	const outside = rule({ id: 'outside', inputKinds: [StandardsInputKind.FileText], run: reportingRun({ id: 'outside' }) });
 	const topic: LoadedStandardsTopic = {
 		set: 'code',
 		library: 'acme',
@@ -171,8 +182,9 @@ const setupGroupRun = () => {
 				{ rule: size, severity: StandardsSeverity.Advisory, options: {} },
 				{ rule: muted, severity: StandardsSeverity.Blocking, options: {} },
 			],
+			conditionalPacks: [],
+			inactiveRules: [],
 		},
-		source: StandardsPackSource.Named,
 		states: new Map([
 			['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
 			['acme/muted', { severity: StandardsSeverity.Off, options: {}, fromConfig: true, reachesAgents: true }],
@@ -185,14 +197,14 @@ const setupGroupRun = () => {
 describe('runPackageChecks', () => {
 	test('stamps each finding with the rule id it came from and the severity the repo resolved', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 
 		const { findings } = await runChecks({
 			cwd,
 			rules: [
 				rule({
 					id: 'multi-export',
-					inputKind: StandardsInputKind.FileText,
+					inputKinds: [StandardsInputKind.FileText],
 					run: recordingRun({ id: 'multi-export', calls }),
 					defaultSeverity: StandardsSeverity.Advisory,
 				}),
@@ -212,57 +224,72 @@ describe('runPackageChecks', () => {
 		]);
 	});
 
+	test('hands a check declaring several kinds every one of them, in a single call', async () => {
+		const { cwd } = setupRepo();
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
+
+		await runChecks({
+			cwd,
+			rules: [rule({ id: 'both', inputKinds: [StandardsInputKind.FileList, StandardsInputKind.FileText], run: recordingRun({ id: 'both', calls }) })],
+		});
+
+		// one call, both shapes, and nothing the rule did not ask for
+		expect(calls).toHaveLength(1);
+		expect(Object.keys(calls[0]?.inputs ?? {}).sort()).toStrictEqual(['file-list', 'file-text']);
+		expect(calls[0]?.inputs['file-text']?.contents.get('src/alpha.ts')).toBe('export const alpha = 1;\n');
+	});
+
 	test('builds one input per kind and hands the very same one to every rule that asked for it', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 
 		await runChecks({
 			cwd,
 			rules: [
-				rule({ id: 'first', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'first', calls }) }),
-				rule({ id: 'second', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'second', calls }) }),
+				rule({ id: 'first', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'first', calls }) }),
+				rule({ id: 'second', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'second', calls }) }),
 			],
 		});
 
 		expect(calls).toHaveLength(2);
 		// one build, one read of every file, however many rules want the text
-		expect(calls[0]?.input).toBe(calls[1]?.input);
+		expect(calls[0]?.inputs['file-text']).toBe(calls[1]?.inputs['file-text']);
 	});
 
 	test('gives each duplicate-block rule its own detection, because the detector runs on the options of that rule', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 
 		await runChecks({
 			cwd,
 			rules: [
 				rule({
 					id: 'duplicate-code-block',
-					inputKind: StandardsInputKind.CloneSpans,
+					inputKinds: [StandardsInputKind.CloneSpans],
 					run: recordingRun({ id: 'duplicate-code-block', calls }),
 					defaultOptions: { minTokens: 50 },
 				}),
 				rule({
 					id: 'duplicate-code-block-strict',
-					inputKind: StandardsInputKind.CloneSpans,
+					inputKinds: [StandardsInputKind.CloneSpans],
 					run: recordingRun({ id: 'duplicate-code-block-strict', calls }),
 					defaultOptions: { minTokens: 200 },
 				}),
 			],
 		});
 
-		expect(calls[0]?.input).not.toBe(calls[1]?.input);
+		expect(calls[0]?.inputs['clone-spans']).not.toBe(calls[1]?.inputs['clone-spans']);
 		expect(calls[0]?.options).toStrictEqual({ minTokens: 50 });
 		expect(calls[1]?.options).toStrictEqual({ minTokens: 200 });
 	});
 
 	test('runs nothing for a rule the repo switched off', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 
 		const { findings } = await runChecks({
 			cwd,
-			rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'multi-export', calls }) })],
+			rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'multi-export', calls }) })],
 			severities: { 'multi-export': StandardsSeverity.Off },
 		});
 
@@ -271,7 +298,7 @@ describe('runPackageChecks', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('ignores a judgment-only rule, which ships no check to run', async () => {
+	test('ignores a agent-only rule, which ships no check to run', async () => {
 		const { cwd } = setupRepo();
 
 		const { findings, notes } = await runChecks({ cwd, rules: [rule({ id: 'premature-abstraction' })] });
@@ -282,11 +309,11 @@ describe('runPackageChecks', () => {
 
 	test('scopes the checked files to --path while keeping the whole repo as reference', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 
 		await runChecks({
 			cwd,
-			rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileList, run: recordingRun({ id: 'multi-export', calls }) })],
+			rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileList], run: recordingRun({ id: 'multi-export', calls }) })],
 			path: 'src/feature',
 		});
 
@@ -299,29 +326,29 @@ describe('runPackageChecks', () => {
 
 	test('drops the excluded paths a repo declared generated', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 
 		await runChecks({
 			cwd,
-			rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileList, run: recordingRun({ id: 'multi-export', calls }) })],
+			rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileList], run: recordingRun({ id: 'multi-export', calls }) })],
 			exclude: ['src/feature'],
 		});
 
 		expect(fileListInput({ calls }).referenceFiles).not.toContain('src/feature/internal.ts');
 	});
 
-	test('reports progress as the file count first and then each input kind it ran', async () => {
+	test('reports progress as the file count first and then each input kind it built', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 		const messages: string[] = [];
 
 		await runChecks({
 			cwd,
-			rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'multi-export', calls }) })],
+			rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'multi-export', calls }) })],
 			onProgress: (message) => messages.push(message),
 		});
 
-		expect(messages).toStrictEqual(['checking 2 source file(s) and 1 test file(s)', 'file-text: done']);
+		expect(messages).toStrictEqual(['checking 2 source file(s) and 1 test file(s)', 'file-text: built']);
 	});
 
 	test('names the rule when its check returns something that is not a list of findings', async () => {
@@ -329,7 +356,7 @@ describe('runPackageChecks', () => {
 		const brokenRun = (() => 'not findings at all') as unknown as StandardsCheckFunction;
 
 		const error = await getRejectionError({
-			promise: runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText, run: brokenRun })] }),
+			promise: runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText], run: brokenRun })] }),
 		});
 
 		// a broken check is a package bug, not a finding
@@ -341,7 +368,7 @@ describe('runPackageChecks', () => {
 		const shortRun = (() => [{ siteKey: 'a-site', files: [{ path: 'src/alpha.ts' }] }]) as unknown as StandardsCheckFunction;
 
 		const error = await getRejectionError({
-			promise: runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText, run: shortRun })] }),
+			promise: runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText], run: shortRun })] }),
 		});
 
 		// the author has to be told which finding and which field, not just "invalid"
@@ -356,7 +383,7 @@ describe('runPackageChecks', () => {
 		};
 
 		const error = await getRejectionError({
-			promise: runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText, run: throwingRun })] }),
+			promise: runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText], run: throwingRun })] }),
 		});
 
 		expect(error.message).toBe('standards rule "acme/multi-export" threw while checking: cannot parse that');
@@ -364,8 +391,8 @@ describe('runPackageChecks', () => {
 
 	test('leaves a rule out when the run was handed no resolved state for it', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
-		const rules = [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'multi-export', calls }) })];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
+		const rules = [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'multi-export', calls }) })];
 
 		const { findings } = await runPackageChecks({ cwd, groups: [groupOf({ rules, states: new Map() })] });
 
@@ -406,8 +433,8 @@ describe('runPackageChecks', () => {
 
 	test('a checked rule two groups hold runs once, by full name', async () => {
 		const { cwd } = setupRepo();
-		const calls: Array<{ input: StandardsCheckInput; options: Record<string, number> }> = [];
-		const rules = [rule({ id: 'size', inputKind: StandardsInputKind.FileText, run: recordingRun({ id: 'size', calls }) })];
+		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
+		const rules = [rule({ id: 'size', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'size', calls }) })];
 		const states = new Map<string, ResolvedRuleState>([
 			['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
 		]);

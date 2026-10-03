@@ -4,7 +4,7 @@ import { readCommandFlags } from '#src/cli/common/args/readCommandFlags.ts';
 test('readCommandFlags: reads a command flags from the usage text, unioned across the lines that describe it', () => {
 	const flags = readCommandFlags({ command: 'refactor' });
 
-	expect([...flags].sort()).toStrictEqual(['all', 'allow-dirty', 'code-checks', 'cwd', 'max-batches', 'path', 'run']);
+	expect([...flags].sort()).toStrictEqual(['all', 'allow-dirty', 'cwd', 'deterministic-checks', 'max-batches', 'path', 'run']);
 });
 
 test('readCommandFlags: allows --cwd everywhere, since the dispatcher reads it before it knows the command', () => {

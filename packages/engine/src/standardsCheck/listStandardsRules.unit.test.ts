@@ -3,7 +3,6 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
@@ -13,12 +12,13 @@ import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/L
 import type { ResolvedPackRule } from '#src/standardsLibraries/common/types/ResolvedPackRule.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 
-const baseConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false as const } };
+/** Standards are opt-in, so the config a case starts from names the shipped standards pack; a case on another pack, or none, overrides it. */
+const baseConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false as const }, 'standards-pack': 'lightsout/standards' };
 
 /**
  * The repo the listing is read for — the shipped library answers regardless,
- * since it travels with the engine, and the repo's root manifest names no
- * framework, so the pack it gets is lightsout/node.
+ * since it travels with the engine, and the pack it gets is the one the config
+ * names, lightsout/standards.
  *
  * The workspace root rather than the working directory: this suite runs from
  * inside the engine package, and one case below looks up a document inside the
@@ -27,8 +27,8 @@ const baseConfig = { gates: { check: 'true', test: 'true', 'test-coverage': fals
 const cwd = join(__dirname, '..', '..', '..', '..');
 
 /**
- * The rule ids that predate the pack format. A repo's baseline keys, its
- * config overrides and its frozen refactor work-lists are all written in these
+ * The ids of the rules with a deterministic check. A repo's baseline keys, its config
+ * overrides and its frozen refactor work-lists are all written in these
  * strings, so one of them going missing is a silent break in persisted data —
  * which is why they are restated here rather than read back off the pack.
  *
@@ -41,39 +41,70 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  * 2026-09-24 the rules that read a folder's `index.ts` as its public API were
  * retired with the model itself: `barrel-dead-entry`, `barrel-is-only-consumer`,
  * `barrel-under-common`, `module-boundary`, and the check behind `placement`.
+ *
+ * On 2026-10-02 the library was pruned from 93 rules to 69 and regrouped by
+ * goal. Twenty-one ids were retired with no replacement:
+ * `ungrouped-domain-utils`, `single-file-domain-folder`,
+ * `top-level-domain-nouns`, `casing`, `verbose-names`, `import-type-only`,
+ * `module-exports`, `brittle-doc-tags`, `params-interface-docs`,
+ * `types-and-interfaces`, `test-multiple-setups`,
+ * `test-never-passing-assertion`, `test-only-export`,
+ * `oversized-setup-factory`, `test-nested-describe`, `module-out-of-common`,
+ * `folder-casing`, `doc-elements`, `named-constant-casing`,
+ * `derived-lookup-map` and `props-union-exemption`. Five more were merged into
+ * two new ids, and are gone under their old spellings: `test-shared-let`,
+ * `test-assert-in-hook` and `test-mock-return-in-hook` became
+ * `no-test-state-in-hooks`; `test-in-tests-folder` and
+ * `test-not-beside-subject` became `test-beside-subject`. From that date the
+ * list holds every deterministic rule, not only the ones that predate the pack format.
+ *
+ * Later the same day, once a check could read several inputs and a rule could
+ * have both kinds of check, ten rules merged into five, each with one check, and
+ * are gone under their old spellings: `import-through-index` and
+ * `folder-index-file` became `index-files`; `barrel-star` and
+ * `code-in-index-file` became `index-file-contents`; `bare-string-union` and
+ * `discriminant-const-object` became `named-string-values`;
+ * `banned-class-shapes` and the unchecked `class-bright-line` became
+ * `prefer-functions`; `type-alias-indirection` and the unchecked
+ * `thin-wrapper-functions` became `no-thin-wrappers`.
  */
 const durableRuleIds = [
-	'banned-folder-name',
-	'barrel-star',
-	'folder-size',
+	'no-thin-wrappers',
+	'prefer-functions',
+	'type-assertion',
+	'no-any',
+	'class-inheritance',
+	'explicit-return-type',
+	'single-use-scalar',
+	'named-string-values',
 	'dead-export',
+	'duplicate-function-body',
 	'duplicate-code-block',
 	'duplicate-export-name',
-	'duplicate-function-body',
-	'file-directly-in-common',
-	'filename-mismatch',
-	'folder-casing',
-	'multi-export',
-	'oversized-setup-factory',
-	'single-file-domain-folder',
-	'file-size',
-	'function-size',
 	'synonym-export-name',
-	'test-assert-in-hook',
-	'test-in-tests-folder',
-	'test-manual-mock-cleanup',
+	'import-path-alias',
+	'index-files',
+	'index-file-contents',
+	'internal-import-from-outside',
+	'circular-dependencies',
+	'multi-export',
+	'filename-mismatch',
+	'shared-code-placement',
+	'file-directly-in-common',
+	'banned-folder-name',
+	'case-collision',
+	'function-size',
+	'file-size',
+	'folder-size',
+	'no-test-state-in-hooks',
+	'test-strict-equal-matcher',
 	'test-mock-prefix',
-	'test-mock-return-in-hook',
 	'test-mock-untyped',
 	'test-mock-wrapper-untyped',
-	'test-multiple-setups',
-	'test-nested-describe',
-	'test-not-beside-subject',
-	'test-only-export',
-	'test-shared-let',
-	'test-strict-equal-matcher',
+	'test-manual-mock-cleanup',
+	'test-beside-subject',
 	'test-support-in-src',
-	'ungrouped-domain-utils',
+	'test-file-size',
 ];
 
 /** The shipped library's rules are listed by full name, the name a finding and a baseline key carry. */
@@ -100,7 +131,7 @@ interface LibrarySpec {
 }
 
 /**
- * A judgment-only standards library written under `at`, holding one rule that
+ * A agent-only standards library written under `at`, holding one rule that
  * declares whatever the caller passes and one pack named after the library.
  * Nothing here is shipped by the engine, so a row read back off it proves the
  * listing carries the library author's own words rather than the defaults.
@@ -122,7 +153,7 @@ const writeLibrary = ({
 		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 2 }\n`,
 		[`packs/${name}.json`]: JSON.stringify({ description: `the ${name} pack`, include: { topics } }),
 		'rules/code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
-		[`${rulePath}/rule.md`]: `---\nsummary: what ${ruleId} catches\nseverity: ${severity}\n${optionsBlock}---\n\nThe rule prose.\n`,
+		[`${rulePath}/rule.md`]: `---\nsummary: what ${ruleId} catches\nchecks: agent\nseverity: ${severity}\n${optionsBlock}---\n\nThe rule prose.\n`,
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 		[`${rulePath}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',
 	};
@@ -146,8 +177,8 @@ const setupRepo = ({ libraries = [] }: { libraries?: LibrarySpec[] } = {}) => {
 	return { cwd: repoCwd };
 };
 
-/** The listing a repo gets: the groups its config resolves to, listed. */
-const listFor = async ({ cwd, config }: { cwd: string; config?: LightsoutConfig }) =>
+/** The listing a repo gets: the groups its config resolves to, listed. The config names lightsout/standards and nothing else unless the case passes its own. */
+const listFor = async ({ cwd, config = LightsoutConfig.parse(baseConfig) }: { cwd: string; config?: LightsoutConfig }) =>
 	listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config }) });
 
 /** A loaded rule held in memory — the group listing reads rules the pack already resolved, never a folder. */
@@ -157,7 +188,8 @@ const loadedRule = (overrides: Partial<LoadedStandardsRule> & { id: string; libr
 	documentPath: 'code/demo',
 	summary: `what ${overrides.id} catches`,
 	prose: 'The rule prose.',
-	checked: false,
+	deterministic: false,
+	agent: overrides.deterministic !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -175,7 +207,8 @@ const setupGroup = () => {
 	const zebra = loadedRule({
 		id: 'zebra-rule',
 		library: 'acme',
-		checked: true,
+		deterministic: true,
+		agent: false,
 		defaultSeverity: StandardsSeverity.Off,
 		defaultOptions: { maxLines: 10 },
 	});
@@ -187,7 +220,9 @@ const setupGroup = () => {
 		['team/aardvark-rule', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
 		['acme/zebra-rule', { severity: StandardsSeverity.Blocking, options: { maxLines: 60 }, fromConfig: true, reachesAgents: true }],
 	]);
-	const groups: StandardsGroup[] = [{ packages: [''], pack: { name: 'acme/house', topics: [], rules: packRules }, source: StandardsPackSource.Named, states }];
+	const groups: StandardsGroup[] = [
+		{ packages: [''], pack: { name: 'acme/house', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states },
+	];
 
 	return { groups };
 };
@@ -200,7 +235,7 @@ const setupGroup = () => {
  */
 const setupSplitGroups = () => {
 	const alpha = loadedRule({ id: 'alpha-rule', library: 'acme' });
-	const beta = loadedRule({ id: 'beta-rule', library: 'acme', checked: true });
+	const beta = loadedRule({ id: 'beta-rule', library: 'acme', deterministic: true });
 	const packRules: ResolvedPackRule[] = [
 		{ rule: alpha, severity: StandardsSeverity.Advisory, options: {} },
 		{ rule: beta, severity: StandardsSeverity.Advisory, options: { maxLines: 40 } },
@@ -215,8 +250,8 @@ const setupSplitGroups = () => {
 		['acme/beta-rule', { severity: StandardsSeverity.Advisory, options: { maxLines: 40 }, fromConfig: false, reachesAgents: true }],
 	]);
 	const groups: StandardsGroup[] = [
-		{ packages: ['', 'engine'], pack: { name: 'acme/node', topics: [], rules: packRules }, source: StandardsPackSource.Detected, states: rootStates },
-		{ packages: ['web-app'], pack: { name: 'acme/react-app', topics: [], rules: packRules }, source: StandardsPackSource.Named, states: webAppStates },
+		{ packages: ['', 'engine'], pack: { name: 'acme/base', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states: rootStates },
+		{ packages: ['web-app'], pack: { name: 'acme/web', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states: webAppStates },
 	];
 
 	return { groups };
@@ -242,16 +277,16 @@ describe('listStandardsRules', () => {
 		expect(durableRuleIds.filter((id) => !ids.has(builtInNameOf({ id })))).toStrictEqual([]);
 	});
 
-	test('judgment-only rules are listed beside the machine-checked ones, each marked for which it is', async () => {
+	test('agent-only rules are listed beside the deterministic ones, each marked for which it is', async () => {
 		const rules = await listFor({ cwd });
 
 		// the ledger has to admit which of its rules no code run will ever catch,
 		// or it reads as though every listed rule were enforced
-		expect(rules.some((rule) => rule.checked)).toBe(true);
-		expect(rules.some((rule) => !rule.checked)).toBe(true);
-		// and every one of the durable ids is a rule code checks — they are the
-		// rules that had a check before the pack format existed
-		expect(rules.filter((rule) => durableRuleNames.includes(rule.rule) && !rule.checked).map((rule) => rule.rule)).toStrictEqual([]);
+		expect(rules.some((rule) => rule.deterministic)).toBe(true);
+		expect(rules.some((rule) => !rule.deterministic)).toBe(true);
+		// and every one of the durable ids is a rule with a deterministic check — a finding, and so
+		// a baseline key, can only ever carry one of those
+		expect(rules.filter((rule) => durableRuleNames.includes(rule.rule) && !rule.deterministic).map((rule) => rule.rule)).toStrictEqual([]);
 	});
 
 	test('every rule names the pack that states it and a document folder inside that pack', async () => {
@@ -284,60 +319,49 @@ describe('listStandardsRules', () => {
 		const checkedFromTests = fromTests.filter((rule) => durableRuleNames.includes(rule.rule)).map((rule) => rule.rule);
 
 		// which half of the ledger holds a rule is read off the document it comes
-		// from — which is why `test-only-export` and the four test-location rules
-		// sit here, away from the passes they used to share
+		// from — which is why the test-location rules and `test-file-size` sit
+		// here, away from the code rules that check placement and size
 		expect(checkedFromTests.sort()).toStrictEqual([
-			'lightsout/oversized-setup-factory',
-			'lightsout/test-assert-in-hook',
-			'lightsout/test-in-tests-folder',
+			'lightsout/no-test-state-in-hooks',
+			'lightsout/test-beside-subject',
+			'lightsout/test-file-size',
 			'lightsout/test-manual-mock-cleanup',
 			'lightsout/test-mock-prefix',
-			'lightsout/test-mock-return-in-hook',
 			'lightsout/test-mock-untyped',
 			'lightsout/test-mock-wrapper-untyped',
-			'lightsout/test-multiple-setups',
-			'lightsout/test-nested-describe',
-			'lightsout/test-not-beside-subject',
-			'lightsout/test-only-export',
-			'lightsout/test-shared-let',
 			'lightsout/test-strict-equal-matcher',
 			'lightsout/test-support-in-src',
 		]);
 	});
 
 	test('the default pack blocks exactly the rules that are wrong on their own terms', async () => {
-		// a repo with no config of its own, so the listing is the pack's defaults
-		// rather than this repository's promotions
+		// a repo whose config names the pack and sets no rule, so the listing is the
+		// pack's defaults rather than this repository's promotions
 		const rules = await listFor({ cwd: setupRepo().cwd });
 		const blocking = rules
 			.filter((rule) => rule.severity === StandardsSeverity.Blocking)
 			.map((rule) => rule.rule)
 			.sort();
 
-		// types that lie, code nothing uses, a tree that breaks across
-		// filesystems, doc tags another tool owns, and tests that are silently
-		// weaker than they read or can never pass at all. Everything about
-		// layout ships advisory.
+		// types that lie, code nothing uses or that copies other code under a new
+		// name, a tree that breaks across filesystems, and tests that are silently
+		// weaker than they read. Everything about layout ships advisory.
 		expect(blocking).toStrictEqual([
-			'lightsout/brittle-doc-tags',
 			'lightsout/case-collision',
 			'lightsout/dead-export',
 			'lightsout/duplicate-function-body',
 			'lightsout/explicit-return-type',
-			'lightsout/import-type-only',
 			'lightsout/no-any',
-			'lightsout/test-assert-in-hook',
+			'lightsout/no-test-state-in-hooks',
 			'lightsout/test-mock-prefix',
 			'lightsout/test-mock-untyped',
 			'lightsout/test-mock-wrapper-untyped',
-			'lightsout/test-never-passing-assertion',
-			'lightsout/test-shared-let',
 			'lightsout/test-strict-equal-matcher',
 			'lightsout/type-assertion',
 		]);
 	});
 
-	test('a repo that says nothing sees the defaults, unmarked', async () => {
+	test('a repo that names the pack and sets no rule sees the defaults, unmarked', async () => {
 		const rules = await listFor({ cwd, config: LightsoutConfig.parse(baseConfig) });
 		const duplicateBlock = rules.find((rule) => rule.rule === 'lightsout/duplicate-code-block');
 
@@ -390,13 +414,14 @@ describe('listStandardsRules', () => {
 		});
 
 		// nothing in this pack ships with the engine, so the row can only have
-		// come from the rule's own front matter — including that no code checks it
+		// come from the rule's own front matter — including that it has no deterministic check
 		expect(rules).toStrictEqual([
 			{
 				rule: 'house/house-rule',
 				doc: 'house: code/demo',
 				summary: 'what house-rule catches',
-				checked: false,
+				deterministic: false,
+				agent: true,
 				severity: StandardsSeverity.Blocking,
 				fromConfig: false,
 				options: { maxLines: 40 },
@@ -472,7 +497,8 @@ describe('listStandardsRules', () => {
 				rule: 'acme/size',
 				doc: 'acme: code/demo',
 				summary: 'what size catches',
-				checked: false,
+				deterministic: false,
+				agent: true,
 				severity: StandardsSeverity.Blocking,
 				fromConfig: false,
 				options: { maxLines: 40 },
@@ -517,7 +543,8 @@ describe('listStandardsRules', () => {
 					rule: 'acme/zebra-rule',
 					doc: 'acme: code/demo',
 					summary: 'what zebra-rule catches',
-					checked: true,
+					deterministic: true,
+					agent: false,
 					severity: StandardsSeverity.Blocking,
 					fromConfig: true,
 					options: { maxLines: 60 },
@@ -527,7 +554,8 @@ describe('listStandardsRules', () => {
 					rule: 'team/aardvark-rule',
 					doc: 'team: tests/demo',
 					summary: 'what aardvark-rule catches',
-					checked: false,
+					deterministic: false,
+					agent: true,
 					severity: StandardsSeverity.Advisory,
 					fromConfig: false,
 					options: {},
@@ -558,7 +586,8 @@ describe('listStandardsRules', () => {
 				rule: 'acme/alpha-rule',
 				doc: 'acme: code/demo',
 				summary: 'what alpha-rule catches',
-				checked: false,
+				deterministic: false,
+				agent: true,
 				severity: StandardsSeverity.Advisory,
 				fromConfig: false,
 				options: {},
@@ -568,7 +597,8 @@ describe('listStandardsRules', () => {
 				rule: 'acme/beta-rule',
 				doc: 'acme: code/demo',
 				summary: 'what beta-rule catches',
-				checked: true,
+				deterministic: true,
+				agent: false,
 				severity: StandardsSeverity.Blocking,
 				fromConfig: false,
 				options: { maxLines: 40 },
@@ -578,7 +608,8 @@ describe('listStandardsRules', () => {
 				rule: 'acme/beta-rule',
 				doc: 'acme: code/demo',
 				summary: 'what beta-rule catches',
-				checked: true,
+				deterministic: true,
+				agent: false,
 				severity: StandardsSeverity.Advisory,
 				fromConfig: false,
 				options: { maxLines: 40 },

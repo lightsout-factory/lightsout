@@ -72,9 +72,10 @@ const writeThrowingPack = () => {
 	const files = {
 		'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
 		'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
-		'rules/code/house/05-house-broken/rule.md': '---\nsummary: a rule whose check throws\nchecked: true\nseverity: blocking\n---\n\nEvery file is checked.\n',
+		'rules/code/house/05-house-broken/rule.md':
+			'---\nsummary: a rule whose check throws\nchecks: deterministic\nseverity: blocking\n---\n\nEvery file is checked.\n',
 		'rules/code/house/05-house-broken/check.ts':
-			"export const check = {\n\tinputKind: 'file-list',\n\trun: () => {\n\t\tthrow new Error('CHECK-SENTINEL');\n\t},\n};\n",
+			"export const check = {\n\tinputKinds: ['file-list'],\n\trun: () => {\n\t\tthrow new Error('CHECK-SENTINEL');\n\t},\n};\n",
 		'rules/code/house/05-house-broken/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
 		'rules/code/house/05-house-broken/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
 		'packs/house.json': JSON.stringify({ description: 'the house pack', include: { topics: ['acme/code/house'] } }),

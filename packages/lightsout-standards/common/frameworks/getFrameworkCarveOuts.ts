@@ -5,7 +5,7 @@ import type { FrameworkCarveOut } from '../types/FrameworkCarveOut.ts';
  * declares it depends on, never a guess from what its folders hold.
  *
  * A row carries ONLY what the framework's own documents mandate: the folder a
- * router owns, the casing it imposes, the files it resolves by name. A layout
+ * router owns and the files it resolves by name. A layout
  * this repo prefers is never a row, however widely it is followed — React
  * mandates no folder structure, and NestJS wires by decorators rather than by
  * directory, so neither one's familiar vocabulary is a fact either of them
@@ -13,7 +13,7 @@ import type { FrameworkCarveOut } from '../types/FrameworkCarveOut.ts';
  * something no framework ever asked for.
  */
 const carveOutSignals: Record<string, Partial<Omit<FrameworkCarveOut, 'directory'>>> = {
-	'@nestjs/core': { kebabCase: true, entryFiles: ['main.ts'] },
+	'@nestjs/core': { entryFiles: ['main.ts'] },
 	next: { routerRoots: ['app', 'pages'] },
 	'@tanstack/react-router': { routerRoots: ['routes'] },
 	'@tanstack/react-start': { routerRoots: ['routes'], entryFiles: ['router.tsx', 'server.ts', 'client.tsx'] },
@@ -46,7 +46,6 @@ export const getFrameworkCarveOuts = ({ dependencies }: Params): FrameworkCarveO
 				directory,
 				entryFiles: [...new Set(signals.flatMap((signal) => signal.entryFiles ?? []))],
 				exemptFolderNames: [...new Set(signals.flatMap((signal) => signal.exemptFolderNames ?? []))],
-				kebabCase: signals.some((signal) => signal.kebabCase === true),
 				routerRoots: [...new Set(signals.flatMap((signal) => signal.routerRoots ?? []))],
 			};
 		});

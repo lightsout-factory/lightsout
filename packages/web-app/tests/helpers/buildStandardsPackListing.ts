@@ -3,6 +3,8 @@ import type { StandardsPackListing } from '@lightsout/engine';
 interface Params {
 	name?: string;
 	description?: string;
+	/** Left out, the pack applies to every package. */
+	appliesWhen?: StandardsPackListing['appliesWhen'];
 	include?: StandardsPackListing['include'];
 	/** Topic addresses the resolved pack brings in. */
 	topics?: string[];
@@ -14,8 +16,9 @@ interface Params {
 
 /** One pack file of the lightsout library, resolved, as the library's view lists it. */
 export const buildStandardsPackListing = ({
-	name = 'node',
-	description = 'Every Node package.',
+	name = 'standards',
+	description = 'Every bundled standard at once.',
+	appliesWhen,
 	include = { packs: [], topics: [], rules: [] },
 	topics = [],
 	rules = [],
@@ -25,9 +28,10 @@ export const buildStandardsPackListing = ({
 	name,
 	address: `lightsout/${name}`,
 	description,
+	...(appliesWhen === undefined ? {} : { appliesWhen }),
 	include,
 	topics,
 	rules,
-	totals: { rules: rules.length, checked: rules.length, judgment: 0, topics: topics.length, ...totals },
+	totals: { rules: rules.length, deterministic: rules.length, agent: 0, topics: topics.length, ...totals },
 	...overrides,
 });

@@ -6,8 +6,10 @@ export interface StandardsRuleListing {
 	/** '<library name>: <topic folder>' — which library states the rule, and where in it. */
 	doc: string;
 	summary: string;
-	/** True when the rule ships a check code runs; false when it is judgment an agent has to read. */
-	checked: boolean;
+	/** True when the rule has a deterministic check — code that decides, with the same answer every run. */
+	deterministic: boolean;
+	/** True when the rule has an agent check — an agent reviews the change against it, because it ships no deterministic check or that check decides only part of it. */
+	agent: boolean;
 	severity: StandardsSeverity;
 	/** True when this repo's config set the severity or the options. */
 	fromConfig: boolean;

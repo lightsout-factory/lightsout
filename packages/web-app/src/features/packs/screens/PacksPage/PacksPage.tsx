@@ -21,13 +21,7 @@ export const PacksPage = () => {
 				</p>
 				<CheckKindKey />
 			</header>
-			<section aria-labelledby="library-title" className="flex flex-col gap-6">
-				<div className="flex flex-col gap-2">
-					<h2 id="library-title" className="font-bold font-mono text-2xl text-drop-navy">
-						{library.name}
-					</h2>
-					{library.description === undefined ? null : <p className="max-w-2xl text-muted-foreground">{library.description}</p>}
-				</div>
+			<section aria-label="Packs" className="flex flex-col gap-6">
 				<div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
 					{library.packs.map((pack) => (
 						<PackCard key={pack.name} library={library.name} pack={pack} />

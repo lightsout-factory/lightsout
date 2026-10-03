@@ -3,7 +3,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type StandardsCheckFunction, StandardsInputKind } from '@lightsout/standards-contracts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
@@ -42,9 +41,9 @@ const setupWorkspaceRepo = () => {
 /** A check for the rule `id` that reports one finding, so an empty note list can be told apart from a rule that never ran. */
 const reportingRun =
 	({ id }: { id: string }): StandardsCheckFunction =>
-	({ input }) => [{ siteKey: `${id}:${input.kind}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
+	({ inputs }) => [{ siteKey: `${id}:${Object.keys(inputs).join(',')}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
 
-const rule = ({ id, inputKind }: { id: string; inputKind: StandardsInputKind }): LoadedStandardsRule => ({
+const rule = ({ id, inputKinds }: { id: string; inputKinds: StandardsInputKind[] }): LoadedStandardsRule => ({
 	id,
 	name: `acme/${id}`,
 	library: 'acme',
@@ -52,12 +51,13 @@ const rule = ({ id, inputKind }: { id: string; inputKind: StandardsInputKind }):
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: true,
+	deterministic: true,
+	agent: false,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
 	fixturesPath: `/packages/acme/${id}/fixtures`,
-	inputKind,
+	inputKinds,
 	run: reportingRun({ id }),
 });
 
@@ -68,8 +68,13 @@ const runChecks = ({ rules, cwd }: { rules: LoadedStandardsRule[]; cwd: string }
 	);
 	const group: StandardsGroup = {
 		packages: [''],
-		pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
-		source: StandardsPackSource.Named,
+		pack: {
+			name: 'acme/house',
+			topics: [],
+			rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+			conditionalPacks: [],
+			inactiveRules: [],
+		},
 		states,
 	};
 
@@ -80,7 +85,7 @@ describe('runPackageChecks', () => {
 	test('names the folders no alias declaration sits above, so a rule that stayed silent is never read as a clean one', async () => {
 		const { cwd } = setupUndeclaredRepo();
 
-		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText })] });
+		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText] })] });
 
 		expect(notes).toStrictEqual([
 			'no package.json with imports and no tsconfig above 2 folder(s) — path aliases are unknown there, so the barrel and import rules stayed silent rather than guess: src, src/feature',
@@ -90,7 +95,7 @@ describe('runPackageChecks', () => {
 	test('says nothing about aliases when a manifest declares them, since imports answers the question paths does', async () => {
 		const { cwd } = setupUndeclaredRepo({ manifest: JSON.stringify({ name: 'acme-repo', imports: { '#src/*': './src/*' } }) });
 
-		const { findings, notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText })] });
+		const { findings, notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText] })] });
 
 		expect(notes).toStrictEqual([]);
 		// the rule really did run — an empty note list means answered, not skipped
@@ -100,7 +105,7 @@ describe('runPackageChecks', () => {
 	test('names the folders anyway when the manifest declares no imports, since every package ships a manifest', async () => {
 		const { cwd } = setupUndeclaredRepo({ manifest: JSON.stringify({ name: 'acme-repo', dependencies: {} }) });
 
-		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText })] });
+		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText] })] });
 
 		// counting a manifest's mere presence as an answer would report the whole
 		// repo covered and this note would never fire again
@@ -119,7 +124,7 @@ describe('runPackageChecks', () => {
 	])('names the folders anyway for a manifest carrying $shape, which no alias can be read from', async ({ manifest }) => {
 		const { cwd } = setupUndeclaredRepo({ manifest });
 
-		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText })] });
+		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText] })] });
 
 		// only a manifest whose `imports` is an actual map of alias to target has
 		// answered the question; anything else is credited to nobody, so the
@@ -132,7 +137,7 @@ describe('runPackageChecks', () => {
 	test('names only the folders outside the package whose manifest answered, not every folder in the repo', async () => {
 		const { cwd } = setupWorkspaceRepo();
 
-		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText })] });
+		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText] })] });
 
 		// the manifest sits at the package root, not the repo root, so the answer
 		// has to be found by walking up from the file rather than read once
@@ -144,7 +149,7 @@ describe('runPackageChecks', () => {
 	test('leaves the alias question unasked when no file-text rule ran, since no other pass depends on the answer', async () => {
 		const { cwd } = setupUndeclaredRepo();
 
-		const { findings, notes } = await runChecks({ cwd, rules: [rule({ id: 'dependency-drift', inputKind: StandardsInputKind.FileList })] });
+		const { findings, notes } = await runChecks({ cwd, rules: [rule({ id: 'dependency-drift', inputKinds: [StandardsInputKind.FileList] })] });
 
 		expect(notes).toStrictEqual([]);
 		expect(findings.map((finding) => finding.rule)).toStrictEqual(['acme/dependency-drift']);
@@ -153,7 +158,7 @@ describe('runPackageChecks', () => {
 	test('names only the first five uncovered folders, because a note carrying every one of them is a note nobody reads', async () => {
 		const { cwd } = setupUndeclaredRepo({ folders: ['src/f1', 'src/f2', 'src/f3', 'src/f4', 'src/f5', 'src/f6'] });
 
-		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKind: StandardsInputKind.FileText })] });
+		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText] })] });
 
 		expect(notes).toStrictEqual([
 			'no package.json with imports and no tsconfig above 6 folder(s) — path aliases are unknown there, so the barrel and import rules stayed silent rather than guess: src/f1, src/f2, src/f3, src/f4, src/f5, …',

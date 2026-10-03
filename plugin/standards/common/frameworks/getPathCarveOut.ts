@@ -1,6 +1,6 @@
 import type { FrameworkCarveOut } from '../types/FrameworkCarveOut.ts';
 
-const noCarveOut: FrameworkCarveOut = { directory: '.', entryFiles: [], exemptFolderNames: [], kebabCase: false, routerRoots: [] };
+const noCarveOut: FrameworkCarveOut = { directory: '.', entryFiles: [], exemptFolderNames: [], routerRoots: [] };
 
 interface Params {
 	/** Every package's carve-outs, longest directory first — the order `getFrameworkCarveOuts` returns them in. */

@@ -10,8 +10,8 @@ import type { LoadedStandardsPackFile } from '#src/standardsLibraries/common/typ
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 /** A check that objects to any file named `banned.ts` — its fail fixture below holds none, so the rule reports a problem of its own. */
-const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.FileList ? input.files : [])
+const bansTheBannedFile: StandardsCheckFunction = ({ inputs }) =>
+	(inputs[StandardsInputKind.FileList]?.files ?? [])
 		.filter((file) => file.endsWith('banned.ts'))
 		.map((path) => ({
 			siteKey: `blind-rule:${path}`,
@@ -37,6 +37,7 @@ const packFile = ({ name, packs = [], topics = [] }: { name: string; packs?: str
 	description: `the ${name} pack`,
 	include: { packs, topics, rules: [] },
 	ruleSettings: {},
+	appliesWhen: undefined,
 });
 
 const library = ({ name, packs, rules = [] }: { name: string; packs: LoadedStandardsPackFile[]; rules?: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
@@ -59,11 +60,12 @@ const setupBrokenPacks = () => {
 		documentPath: 'code/style-guide/structure/module-api',
 		summary: 'a rule',
 		prose: 'the argument for the rule',
-		checked: true,
+		deterministic: true,
+		agent: false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
 		requires: [],
-		inputKind: StandardsInputKind.FileList,
+		inputKinds: [StandardsInputKind.FileList],
 		run: bansTheBannedFile,
 		fixturesPath,
 	};
@@ -82,9 +84,9 @@ const setupBrokenPacks = () => {
 
 /** house's one pack includes a pack from the built-in library and one from acme; acme is registered only when asked. */
 const setupCrossLibraryPack = ({ acmeRegistered }: { acmeRegistered: boolean }) => {
-	const builtIn = library({ name: 'lightsout', packs: [packFile({ name: 'node' })] });
+	const builtIn = library({ name: 'lightsout', packs: [packFile({ name: 'standards' })] });
 	const acme = library({ name: 'acme', packs: [packFile({ name: 'extras' })] });
-	const house = library({ name: 'house', packs: [packFile({ name: 'combined', packs: ['lightsout/node', 'acme/extras'] })] });
+	const house = library({ name: 'house', packs: [packFile({ name: 'combined', packs: ['lightsout/standards', 'acme/extras'] })] });
 	const libraries = acmeRegistered ? [builtIn, acme, house] : [builtIn, house];
 
 	return { house, libraries };

@@ -20,13 +20,17 @@ const bigBody = `
 	return total * 100;
 `;
 
-/** A consumer repo with one planted defect per rule. */
+/** Standards are opt-in, so a repo checked against the bundled rules names the standards pack. */
+const standardsPackConfig = JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/standards' });
+
+/** A consumer repo on the standards pack with one planted defect per rule. */
 const setupCheckRepo = () => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-test-'));
 
-	mkdirSync(join(dir, 'src/a/utils'), { recursive: true });
+	mkdirSync(join(dir, 'src/a/common'), { recursive: true });
 	mkdirSync(join(dir, 'src/b'), { recursive: true });
 	mkdirSync(join(dir, 'node_modules'), { recursive: true });
+	writeFileSync(join(dir, 'lightsout.config.json'), standardsPackConfig);
 	// The AST tier borrows the consumer's TypeScript — hand the fixture ours.
 	symlinkSync(join(process.cwd(), 'node_modules/typescript'), join(dir, 'node_modules/typescript'), 'dir');
 
@@ -46,11 +50,10 @@ const setupCheckRepo = () => {
 	writeFileSync(join(dir, 'src/a/normalizeRecord.ts'), 'export const normalizeRecord = () => 1;\n');
 	writeFileSync(join(dir, 'src/b/normalizeRecord.ts'), 'export const normalizeRecord = () => 2;\n');
 
-	// structure: multi-export violation, misnamed file, domain-folder candidates
+	// structure: multi-export violation, misnamed file, a file directly in common
 	writeFileSync(join(dir, 'src/a/config.ts'), 'export const readConfig = () => 1;\nexport const saveConfig = () => 2;\n');
 	writeFileSync(join(dir, 'src/a/helpers.ts'), 'export const buildLabel = () => 1;\n');
-	writeFileSync(join(dir, 'src/a/utils/formatDate.ts'), 'export const formatDate = () => 1;\n');
-	writeFileSync(join(dir, 'src/a/utils/formatCurrency.ts'), 'export const formatCurrency = () => 1;\n');
+	writeFileSync(join(dir, 'src/a/common/formatDate.ts'), 'export const formatDate = () => 1;\n');
 
 	// size: oversized .ts file; a 280-line .tsx rides the larger JSX cap (~300)
 	writeFileSync(join(dir, 'src/b/huge.ts'), `export const huge = () => 1;\n${'// filler\n'.repeat(300)}`);
@@ -96,7 +99,7 @@ test('the standards check finds each planted defect and respects the exceptions'
 	const structure = [
 		...byRule('lightsout/multi-export'),
 		...byRule('lightsout/filename-mismatch'),
-		...byRule('lightsout/ungrouped-domain-utils'),
+		...byRule('lightsout/file-directly-in-common'),
 		...byRule('lightsout/folder-size'),
 	];
 
@@ -104,10 +107,8 @@ test('the standards check finds each planted defect and respects the exceptions'
 	expect(structure.some((finding) => finding.siteKey === 'lightsout/multi-export:src/a/config.ts')).toBeTruthy();
 	// misnamed file flagged
 	expect(structure.some((finding) => finding.siteKey === 'lightsout/filename-mismatch:src/a/helpers.ts')).toBeTruthy();
-	const domainFolderSite = 'lightsout/ungrouped-domain-utils:src/a/utils/formatCurrency.ts|src/a/utils/formatDate.ts';
-
-	// domain-folder candidate
-	expect(structure.some((finding) => finding.siteKey === domainFolderSite)).toBeTruthy();
+	// file directly in common flagged
+	expect(structure.some((finding) => finding.siteKey === 'lightsout/file-directly-in-common:src/a/common/formatDate.ts')).toBeTruthy();
 
 	// oversized file flagged
 	expect(byRule('lightsout/file-size').some((finding) => finding.files[0]?.path === 'src/b/huge.ts')).toBeTruthy();
@@ -176,11 +177,12 @@ test('baseline ratchet: --baseline accepts debt explicitly; later runs report on
 	expect(everything.findings.length > third.findings.length).toBeTruthy();
 });
 
-/** The smallest repo that still yields one known, stable finding site. */
+/** The smallest repo on the standards pack that still yields one known, stable finding site. */
 const setupLedgerRepo = ({ ledger }: { ledger?: string } = {}) => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-ledger-'));
 
 	mkdirSync(join(dir, 'src/a'), { recursive: true });
+	writeFileSync(join(dir, 'lightsout.config.json'), standardsPackConfig);
 	writeFileSync(join(dir, 'src/a/config.ts'), 'export const readConfig = () => 1;\nexport const saveConfig = () => 2;\n');
 
 	if (ledger !== undefined) {
@@ -203,9 +205,9 @@ test('runStandardsCheck reports stage progress and leaves the evidence file alon
 
 	// the opening progress line counts the scope: ${messages[0]}
 	expect(messages[0]?.includes('1 source file(s)')).toBeTruthy();
-	// progress is reported per input kind, through the last one that had rules
+	// progress is reported per input kind, as each one is built for the rules
 	// to run:\n${messages.join('\n')}
-	expect(messages).toContain('file-text: done');
+	expect(messages).toContain('file-text: built');
 	// the check still reports its findings
 	expect(findings.length > 0).toBeTruthy();
 	// persist: false never clobbers the standalone report
@@ -263,11 +265,11 @@ const writeOwnPack = () => {
 			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
 			'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 			'rules/code/house/05-house-no-loose-files/rule.md':
-				'---\nsummary: a source file outside a module\nchecked: true\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
+				'---\nsummary: a source file outside a module\nchecks: deterministic\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
 			'rules/code/house/05-house-no-loose-files/check.ts':
 				'export const check = {\n' +
-				"\tinputKind: 'file-list',\n" +
-				'\trun: ({ input }) => input.files.map((path) => ({ siteKey: `house-no-loose-files:${path}`, files: [{ path }], detail: `${path} sits outside a module` })),\n' +
+				"\tinputKinds: ['file-list'],\n" +
+				'\trun: ({ inputs }) => inputs["file-list"].files.map((path) => ({ siteKey: `house-no-loose-files:${path}`, files: [{ path }], detail: `${path} sits outside a module` })),\n' +
 				'};\n',
 			'rules/code/house/05-house-no-loose-files/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
 			'rules/code/house/05-house-no-loose-files/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
@@ -377,11 +379,11 @@ test('checks with the config it is handed even when the lightsout.config.json on
 	expect(findings.map((finding) => finding.siteKey).sort()).toStrictEqual(['acme/house-no-loose-files:src/alpha.ts', 'acme/house-no-loose-files:src/beta.ts']);
 });
 
-test('handed no config, never falls back to the pack the lightsout.config.json on disk names', async () => {
+test('handed no config, checks nothing and never falls back to the pack the lightsout.config.json on disk names', async () => {
 	const dir = setupOwnPackRepo();
 
 	const { findings } = await runStandardsCheck({ cwd: dir, config: undefined, persist: false });
 
-	// the file on disk names acme/house, but only the handed config counts
-	expect(findings.filter((finding) => finding.rule.startsWith('acme/house'))).toStrictEqual([]);
+	// the file on disk names acme/house, but only the handed config counts — and no config selects no standards
+	expect(findings).toStrictEqual([]);
 });

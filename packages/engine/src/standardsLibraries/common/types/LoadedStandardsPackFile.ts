@@ -11,4 +11,6 @@ export interface LoadedStandardsPackFile {
 	include: { packs: string[]; topics: string[]; rules: string[] };
 	/** The file's `rule-settings`, defaulted to empty. */
 	ruleSettings: StandardsRuleSettings;
+	/** The file's `applies-when`; undefined on a pack that applies to every package. */
+	appliesWhen: { dependencies: string[] } | undefined;
 }

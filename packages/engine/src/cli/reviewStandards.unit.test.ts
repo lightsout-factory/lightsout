@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { reviewStandards } from '#src/cli/reviewStandards.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
@@ -50,15 +49,14 @@ const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-cov
 /** A resolved group as the resolver hands one back — only the fields a caller carrying it through can see. */
 const resolvedGroup = (): StandardsGroup => ({
 	packages: [''],
-	pack: { name: 'acme/house', topics: [], rules: [] },
-	source: StandardsPackSource.Named,
+	pack: { name: 'acme/house', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
 	states: new Map(),
 });
 
 /**
- * A repo the review reads its own answers off: source files, and a manifest
- * the pack is detected from. Groups given here stand in for the resolver's
- * answer; without them the real resolver reads the repo's own config.
+ * A repo the review reads its own answers off: source files and a plain
+ * manifest. Groups given here stand in for the resolver's answer; without them
+ * the real resolver reads the config the review is handed.
  */
 const setupRepo = ({ groups, sources = ['src/index.ts'] }: { groups?: StandardsGroup[]; sources?: string[] } = {}) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-review-'));
@@ -137,13 +135,13 @@ describe('reviewStandards', () => {
 
 	test("the review is bounded and scoped by the repo's own config, over the files the path filter leaves", async () => {
 		const cwd = setupRepo({ sources: ['src/index.ts', 'scripts/build.ts'] });
-		const config: LightsoutConfig = { gates, harness: 'codex', 'standards-pack': 'lightsout/react-app', timeouts: { 'agent-minutes': 5 } };
+		const config: LightsoutConfig = { gates, harness: 'codex', 'standards-pack': 'lightsout/fractal', timeouts: { 'agent-minutes': 5 } };
 
 		await reviewStandards({ cwd, config, path: 'src' });
 
 		expect(reviewParams()?.driver.name).toBe('codex');
 		// the configured pack is taken as given — the same answer the machine half gets
-		expect(reviewParams()?.groups.map(({ pack, source }) => ({ pack: pack.name, source }))).toStrictEqual([{ pack: 'lightsout/react-app', source: 'named' }]);
+		expect(reviewParams()?.groups.map(({ pack }) => pack.name)).toStrictEqual(['lightsout/fractal']);
 		expect(reviewParams()?.timeoutMs).toBe(5 * 60_000);
 		// and the scope is the subtree the caller named
 		expect(reviewParams()?.files).toStrictEqual(['src/index.ts']);
@@ -155,14 +153,14 @@ describe('reviewStandards', () => {
 		const progress: string[] = [];
 
 		mockRunStandardsReview.mockImplementation(async ({ onProgress }) => {
-			onProgress?.('reading 4 judgment rule(s) against 12 file(s)');
+			onProgress?.('reading 4 agent-checked rule(s) against 12 file(s)');
 
 			return { findings: [], notes: [] };
 		});
 
 		await reviewStandards({ cwd, onProgress: (message) => progress.push(message) });
 
-		expect(progress).toStrictEqual(['reading 4 judgment rule(s) against 12 file(s)']);
+		expect(progress).toStrictEqual(['reading 4 agent-checked rule(s) against 12 file(s)']);
 		// nothing is printed here: presentation belongs to the command
 		expect(logged).toStrictEqual([]);
 	});
@@ -192,7 +190,7 @@ describe('reviewStandards', () => {
 
 		const result = await reviewStandards({ cwd, config });
 
-		// no group means no judgment rule to read the source file against, so no agent is spent
+		// no group means no agent-checked rule to read the source file against, so no agent is spent
 		expect({ result, spawned: invoke.mock.calls.length }).toStrictEqual({ result: { findings: [], notes: [] }, spawned: 0 });
 	});
 });

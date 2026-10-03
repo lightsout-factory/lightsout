@@ -118,7 +118,7 @@ export const StandardsPacksSection = () => {
 								</li>
 							</ul>
 							<p className="text-muted-foreground text-sm leading-relaxed">
-								lightsout picks the ready-made pack that matches each package’s framework. Or build your own pack from our rules and yours.
+								Turn on the ready-made pack, and each framework’s rules reach only the packages that use it. Or build your own pack from our rules and yours.
 							</p>
 							<Link
 								to="/standards-packs"

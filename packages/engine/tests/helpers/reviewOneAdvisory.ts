@@ -1,7 +1,7 @@
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 
 interface Params {
-	/** The standards reviewer's system prompt — it lists every judgment rule the loaded packs declare. */
+	/** The standards reviewer's system prompt — it lists every agent-checked rule the loaded packs declare. */
 	systemPrompt?: string;
 	/** Repo-relative file the advisory is sited on. */
 	path: string;

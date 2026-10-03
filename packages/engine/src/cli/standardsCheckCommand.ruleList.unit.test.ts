@@ -46,7 +46,8 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	rule: 'multi-export',
 	doc: 'lightsout-defaults: code/style-guide/structure/one-export-per-file',
 	summary: 'more than one export in a file',
-	checked: true,
+	deterministic: true,
+	agent: overrides.deterministic === false,
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
 	options: {},
@@ -89,20 +90,21 @@ describe('standardsCheckCommand --list', () => {
 		expect(cellsOf({ logged })[1]).toStrictEqual([
 			'size',
 			'blocking (config)',
-			'code',
+			'deterministic',
 			'lightsout-defaults: code/style-guide/structure/size',
 			'repo root (outside packages)',
 		]);
 	});
 
-	test('a rule no code run will ever catch is listed as judgment — a ledger hiding that would read as though every rule were enforced', async () => {
+	test('a rule no deterministic check will ever catch is listed as agent — a ledger hiding that would read as though every rule were enforced', async () => {
 		const { context, logged } = setupRuleList({
 			rules: [
 				listing({
 					rule: 'plan-shape',
 					doc: 'lightsout-defaults: plans/plan-shape',
 					summary: 'a plan that states no decision log',
-					checked: false,
+					deterministic: false,
+					agent: true,
 					severity: StandardsSeverity.Advisory,
 				}),
 			],
@@ -110,13 +112,7 @@ describe('standardsCheckCommand --list', () => {
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(cellsOf({ logged })[1]).toStrictEqual([
-			'plan-shape',
-			'advisory',
-			'judgment',
-			'lightsout-defaults: plans/plan-shape',
-			'repo root (outside packages)',
-		]);
+		expect(cellsOf({ logged })[1]).toStrictEqual(['plan-shape', 'advisory', 'agent', 'lightsout-defaults: plans/plan-shape', 'repo root (outside packages)']);
 	});
 
 	test('a rule’s live numbers ride its summary line, so a retuned knob is visible without opening the config', async () => {
@@ -141,7 +137,7 @@ describe('standardsCheckCommand --list', () => {
 		const { context, logged } = setupRuleList({
 			rules: [
 				listing({ rule: 'size', severity: StandardsSeverity.Blocking }),
-				listing({ rule: 'plan-shape', severity: StandardsSeverity.Advisory, checked: false }),
+				listing({ rule: 'plan-shape', severity: StandardsSeverity.Advisory, deterministic: false }),
 				listing({ rule: 'multi-export', severity: StandardsSeverity.Off, fromConfig: true }),
 			],
 		});
@@ -151,6 +147,6 @@ describe('standardsCheckCommand --list', () => {
 		const rows = cellsOf({ logged });
 
 		// the honest half of a coverage claim: 3 rules, but only 2 a code run catches
-		expect(rows[rows.length - 1]).toStrictEqual(['3 rule(s)', '1 blocking', '1 advisory, 1 off', '2 by code, 1 by judgment', '']);
+		expect(rows[rows.length - 1]).toStrictEqual(['3 rule(s)', '1 blocking', '1 advisory, 1 off', '2 deterministic, 1 agent', '']);
 	});
 });

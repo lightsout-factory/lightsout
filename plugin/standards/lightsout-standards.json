@@ -1,7 +1,7 @@
 {
 	"name": "lightsout",
 	"formatVersion": 2,
-	"description": "The default TypeScript pack: architecture, style, documentation and unit-testing rules, 51 of them enforced by code.",
+	"description": "The built-in TypeScript standards: rules that keep a repo the same shape at every level, correct what models get wrong by default and settle code style, 36 of them with a deterministic check.",
 	"homepage": "https://github.com/lightsout-factory/lightsout/tree/main/packages/lightsout-standards",
 	"built": true
 }

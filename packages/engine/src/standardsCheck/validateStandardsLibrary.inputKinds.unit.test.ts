@@ -10,18 +10,18 @@ import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/L
 import { duplicatedSources, sharedImportSources, writeSampleSources } from '#tests/helpers/duplicationSamples.ts';
 
 /** A ban on any file named `banned.ts`, asked of the files the engine could type rather than of the path list. */
-const bansTheBannedTypedFile: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.TypeChecker ? [...input.typedFiles.keys()] : [])
+const bansTheBannedTypedFile: StandardsCheckFunction = ({ inputs }) =>
+	[...(inputs[StandardsInputKind.TypeChecker]?.typedFiles.keys() ?? [])]
 		.filter((path) => path.endsWith('banned.ts'))
 		.map((path) => ({
-			siteKey: `discriminant-const-object:${path}`,
+			siteKey: `named-string-values:${path}`,
 			files: [{ path }],
 			detail: 'a file the rule bans',
 		}));
 
 /** A ban asked of what a fixture side declares — the facts a framework carve-out is keyed on, which the graph itself cannot show. */
-const bansTheDeclaredFramework: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.ImportGraph ? (input.dependencies.get('.') ?? []) : [])
+const bansTheDeclaredFramework: StandardsCheckFunction = ({ inputs }) =>
+	(inputs[StandardsInputKind.ImportGraph]?.dependencies.get('.') ?? [])
 		.filter((name) => name === '@nestjs/core')
 		.map((name) => ({
 			siteKey: `module-boundary:${name}`,
@@ -30,8 +30,8 @@ const bansTheDeclaredFramework: StandardsCheckFunction = ({ input }) =>
 		}));
 
 /** Every duplicated span the engine's detector found — the duplication tier reads spans it never built itself. */
-const reportsEveryDuplicateSpan: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.CloneSpans ? input.spans : []).map((span) => ({
+const reportsEveryDuplicateSpan: StandardsCheckFunction = ({ inputs }) =>
+	(inputs[StandardsInputKind.CloneSpans]?.spans ?? []).map((span) => ({
 		siteKey: `duplicate-code-block:${span.files.map((file) => file.path).join(':')}`,
 		files: span.files,
 		detail: 'the same block of code written out twice',
@@ -112,7 +112,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: overrides.run !== undefined,
+	deterministic: overrides.run !== undefined,
+	agent: overrides.run === undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -131,8 +132,8 @@ const validate = ({ rules, built }: { rules: LoadedStandardsRule[]; built?: true
 describe('validateStandardsLibrary input kinds', () => {
 	test('validates a rule that needs parsed trees with the engine own typescript', async () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
-		const bansTheBannedTree: StandardsCheckFunction = ({ input }) =>
-			(input.kind === StandardsInputKind.SyntaxTree ? [...input.trees.keys()] : [])
+		const bansTheBannedTree: StandardsCheckFunction = ({ inputs }) =>
+			[...(inputs[StandardsInputKind.SyntaxTree]?.trees.keys() ?? [])]
 				.filter((path) => path.endsWith('banned.ts'))
 				.map((path) => ({
 					siteKey: `dead-export:${path}`,
@@ -141,7 +142,7 @@ describe('validateStandardsLibrary input kinds', () => {
 				}));
 
 		const { problems, notes } = await validate({
-			rules: [rule({ id: 'dead-export', fixturesPath, inputKind: StandardsInputKind.SyntaxTree, run: bansTheBannedTree })],
+			rules: [rule({ id: 'dead-export', fixturesPath, inputKinds: [StandardsInputKind.SyntaxTree], run: bansTheBannedTree })],
 		});
 
 		// the fixtures live in the engine's own repo, so the compiler is right there
@@ -153,7 +154,7 @@ describe('validateStandardsLibrary input kinds', () => {
 		const { fixturesPath } = setupTypedFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 
 		const { problems, notes } = await validate({
-			rules: [rule({ id: 'discriminant-const-object', fixturesPath, inputKind: StandardsInputKind.TypeChecker, run: bansTheBannedTypedFile })],
+			rules: [rule({ id: 'named-string-values', fixturesPath, inputKinds: [StandardsInputKind.TypeChecker], run: bansTheBannedTypedFile })],
 		});
 
 		expect(problems).toStrictEqual([]);
@@ -164,14 +165,14 @@ describe('validateStandardsLibrary input kinds', () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 
 		const { problems } = await validate({
-			rules: [rule({ id: 'discriminant-const-object', fixturesPath, inputKind: StandardsInputKind.TypeChecker, run: bansTheBannedTypedFile })],
+			rules: [rule({ id: 'named-string-values', fixturesPath, inputKinds: [StandardsInputKind.TypeChecker], run: bansTheBannedTypedFile })],
 		});
 
 		// a side the engine could type nothing in hands the check nothing, and the
 		// silence that follows would otherwise send the author to the check
 		expect(problems).toStrictEqual([
-			"discriminant-const-object: the fail fixture could not be checked — no tsconfig.json in fixtures/fail/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one",
-			"discriminant-const-object: the pass fixture could not be checked — no tsconfig.json in fixtures/pass/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one",
+			"named-string-values: the fail fixture could not be checked — no tsconfig.json in fixtures/fail/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one",
+			"named-string-values: the pass fixture could not be checked — no tsconfig.json in fixtures/pass/, so none of its 1 file(s) could be typed — a type-checker rule's fixtures need one",
 		]);
 	});
 
@@ -179,7 +180,7 @@ describe('validateStandardsLibrary input kinds', () => {
 		const { fixturesPath } = setupDeclaringFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 
 		const { problems, notes } = await validate({
-			rules: [rule({ id: 'module-boundary', fixturesPath, inputKind: StandardsInputKind.ImportGraph, run: bansTheDeclaredFramework })],
+			rules: [rule({ id: 'module-boundary', fixturesPath, inputKinds: [StandardsInputKind.ImportGraph], run: bansTheDeclaredFramework })],
 		});
 
 		// the two sides differ only in what their manifests declare, so a pass here
@@ -197,7 +198,7 @@ describe('validateStandardsLibrary input kinds', () => {
 				rule({
 					id: 'duplicate-code-block',
 					fixturesPath,
-					inputKind: StandardsInputKind.CloneSpans,
+					inputKinds: [StandardsInputKind.CloneSpans],
 					run: reportsEveryDuplicateSpan,
 					defaultOptions: { minTokens: 50 },
 				}),

@@ -21,7 +21,7 @@ const parsePackFile = async ({ folderPath, name, problems }: { folderPath: strin
 		const parsed = StandardsPackFile.safeParse(JSON.parse(await readFile(join(folderPath, fileName), 'utf8')));
 
 		if (parsed.success) {
-			const { description, include, 'rule-settings': ruleSettings } = parsed.data;
+			const { description, include, 'rule-settings': ruleSettings, 'applies-when': appliesWhen } = parsed.data;
 
 			pack = {
 				name,
@@ -29,6 +29,7 @@ const parsePackFile = async ({ folderPath, name, problems }: { folderPath: strin
 				description,
 				include: { packs: include?.packs ?? [], topics: include?.topics ?? [], rules: include?.rules ?? [] },
 				ruleSettings: ruleSettings ?? {},
+				appliesWhen,
 			};
 		} else {
 			problems.push(`${filePath}: ${formatSchemaIssues({ issues: parsed.error.issues, subject: 'pack file' })}`);
@@ -49,8 +50,8 @@ const parsePackFile = async ({ folderPath, name, problems }: { folderPath: strin
  */
 export const parsePackFolder = async ({ folderPath, problems }: Params): Promise<LoadedStandardsPackFile[]> => {
 	const entries = await readdir(folderPath, { withFileTypes: true }).catch(() => []);
-	// Sorted by stem, not file name: `.` sorts after `-`, so `node-app.json` would
-	// otherwise come before `node.json`.
+	// Sorted by stem, not file name: `.` sorts after `-`, so `react-native.json` would
+	// otherwise come before `react.json`.
 	const names = entries
 		.filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
 		.map((entry) => entry.name.slice(0, -'.json'.length))

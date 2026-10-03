@@ -3,7 +3,8 @@ import { StandardsSet, StandardsSeverity } from '@lightsout/engine/contracts';
 
 interface Params {
 	rule?: string;
-	checked?: boolean;
+	deterministic?: boolean;
+	agent?: boolean;
 	severity?: StandardsRuleView['severity'];
 	fromConfig?: boolean;
 	options?: Record<string, number>;
@@ -15,7 +16,8 @@ interface Params {
 /** One rule's row, joined as `getStandardsView` joins it, over a rule nothing remarkable has happened to. */
 export const buildStandardsRuleView = ({
 	rule = 'file-size',
-	checked = true,
+	deterministic = true,
+	agent = !deterministic,
 	severity = StandardsSeverity.Blocking,
 	fromConfig = false,
 	options = { file: 250 },
@@ -24,12 +26,13 @@ export const buildStandardsRuleView = ({
 	history = {},
 }: Params = {}): StandardsRuleView => ({
 	rule,
-	doc: '@lightsout/lightsout-standards: code/style-guide/patterns/functions',
-	documentPath: 'code/style-guide/patterns/functions',
+	doc: '@lightsout/lightsout-standards: code/fractal/size',
+	documentPath: 'code/fractal/size',
 	set: StandardsSet.Code,
 	summary: 'a file over the standards line cap',
 	prose,
-	checked,
+	deterministic,
+	agent,
 	severity,
 	fromConfig,
 	options,

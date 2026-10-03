@@ -21,8 +21,7 @@ describe('buildDirectWorkerInvocation', () => {
 	test('inlines the standards verbatim, because a rule the agent cannot read binds nothing', () => {
 		const { systemPrompt } = buildDirectWorkerInvocation({ ...base, standards: 'Never use `any`.' });
 
-		expect(systemPrompt).toContain('# Standards');
-		expect(systemPrompt).toContain('Never use `any`.');
+		expect(systemPrompt).toContain('# Standards\n\nThese rules are binding for every line you write:\n\nNever use `any`.');
 	});
 
 	test('states granted commands as a grant, and says the engine runs the gates itself', () => {
@@ -56,7 +55,8 @@ describe('buildDirectWorkerInvocation', () => {
 	test('says nothing about standards when the repo publishes none', () => {
 		const { systemPrompt } = buildDirectWorkerInvocation(base);
 
-		expect(systemPrompt).not.toContain('# Standards');
+		// the section is omitted, not emptied; the role prompt's own mentions of standards stay
+		expect(systemPrompt).not.toContain('# Standards\n\nThese rules are binding');
 	});
 
 	test('omits the changed-files section when the list is present but empty', () => {

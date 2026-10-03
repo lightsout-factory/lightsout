@@ -8,7 +8,6 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { BatchReport } from '#src/contracts/refactor/BatchReport.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutcome.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
@@ -25,7 +24,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: false,
+	deterministic: false,
+	agent: overrides.deterministic !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -36,8 +36,13 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 /** One group whose pack brings in exactly `rules`, each at its rule.md default. */
 const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup => ({
 	packages: [''],
-	pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
-	source: StandardsPackSource.Named,
+	pack: {
+		name: 'acme/house',
+		topics: [],
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+		conditionalPacks: [],
+		inactiveRules: [],
+	},
 	states: new Map<string, ResolvedRuleState>(
 		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
 	),
@@ -143,8 +148,8 @@ describe('buildStandardsHealth advice counting', () => {
 				'batch-01': report({
 					outcome: 'resolved',
 					advisoryOutcomes: [
-						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/a.ts', outcome: 'declined', reason: 'the package defines no alias' }),
-						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/b.ts', outcome: 'applied' }),
+						advice({ rule: 'acme/object-args', siteKey: 'acme/object-args:src/a.ts', outcome: 'declined', reason: 'a callback type fixes the signature' }),
+						advice({ rule: 'acme/object-args', siteKey: 'acme/object-args:src/b.ts', outcome: 'applied' }),
 					],
 				}),
 			},
@@ -152,11 +157,11 @@ describe('buildStandardsHealth advice counting', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			groups: [groupOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'path-aliases' })] })],
+			groups: [groupOf({ rules: [rule({ id: 'multi-export', deterministic: true }), rule({ id: 'object-args' })] })],
 		});
 
-		expect(rowFor({ rules: health.rules, id: 'path-aliases' })).toEqual(
-			expect.objectContaining({ attempted: 0, adviceApplied: 1, adviceDeclined: 1, reasons: ['the package defines no alias'] }),
+		expect(rowFor({ rules: health.rules, id: 'object-args' })).toEqual(
+			expect.objectContaining({ attempted: 0, adviceApplied: 1, adviceDeclined: 1, reasons: ['a callback type fixes the signature'] }),
 		);
 		// and the blocking account is untouched by them
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, adviceApplied: 0, adviceDeclined: 0 }));
@@ -169,18 +174,18 @@ describe('buildStandardsHealth advice counting', () => {
 				'batch-01': report({
 					outcome: 'resolved',
 					advisoryOutcomes: [
-						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/a.ts', outcome: 'already-met' }),
-						advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/b.ts', outcome: 'applied' }),
+						advice({ rule: 'acme/object-args', siteKey: 'acme/object-args:src/a.ts', outcome: 'already-met' }),
+						advice({ rule: 'acme/object-args', siteKey: 'acme/object-args:src/b.ts', outcome: 'applied' }),
 					],
 				}),
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'path-aliases' })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'object-args' })] })] });
 
 		// counting it as applied would credit the rule with advice nobody acted
 		// on; counting it as declined would blame it for a rejection nobody made
-		expect(rowFor({ rules: health.rules, id: 'path-aliases' })).toEqual(
+		expect(rowFor({ rules: health.rules, id: 'object-args' })).toEqual(
 			expect.objectContaining({ adviceApplied: 1, adviceDeclined: 0, adviceAlreadyMet: 1, reasons: [] }),
 		);
 	});
@@ -191,13 +196,13 @@ describe('buildStandardsHealth advice counting', () => {
 			reports: {
 				'batch-01': report({
 					outcome: 'resolved',
-					advisoryOutcomes: [advice({ rule: 'acme/path-aliases', siteKey: 'acme/path-aliases:src/a.ts', outcome: 'declined' })],
+					advisoryOutcomes: [advice({ rule: 'acme/object-args', siteKey: 'acme/object-args:src/a.ts', outcome: 'declined' })],
 				}),
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'path-aliases' })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'object-args' })] })] });
 
-		expect(rowFor({ rules: health.rules, id: 'path-aliases' })).toEqual(expect.objectContaining({ adviceApplied: 0, adviceDeclined: 1, reasons: [] }));
+		expect(rowFor({ rules: health.rules, id: 'object-args' })).toEqual(expect.objectContaining({ adviceApplied: 0, adviceDeclined: 1, reasons: [] }));
 	});
 });

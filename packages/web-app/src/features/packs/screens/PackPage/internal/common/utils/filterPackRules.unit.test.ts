@@ -6,18 +6,18 @@ import { filterPackRules } from '#src/features/packs/screens/PackPage/internal/c
 import { buildStandardsPackRuleListing } from '#tests/helpers/buildStandardsPackRuleListing.ts';
 
 const rules = [
-	buildStandardsPackRuleListing({ id: 'type-assertion', set: StandardsSet.Code, checked: true, defaultSeverity: StandardsSeverity.Blocking }),
+	buildStandardsPackRuleListing({ id: 'type-assertion', set: StandardsSet.Code, deterministic: true, defaultSeverity: StandardsSeverity.Blocking }),
 	buildStandardsPackRuleListing({
-		id: 'test-shared-let',
+		id: 'no-test-state-in-hooks',
 		set: StandardsSet.Tests,
-		checked: true,
+		deterministic: true,
 		defaultSeverity: StandardsSeverity.Advisory,
-		summary: 'a let shared between tests',
+		summary: 'test state built in a hook',
 	}),
 	buildStandardsPackRuleListing({
 		id: 'component-file-structure',
 		set: StandardsSet.Code,
-		checked: false,
+		deterministic: false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		summary: 'a component folder that bundles nothing',
 	}),
@@ -29,19 +29,27 @@ describe('filterPackRules', () => {
 	test('narrows nothing when nothing was asked for, so an untouched page shows the whole pack', () => {
 		const { ids } = setupFilterPackRules();
 
-		expect(ids).toStrictEqual(['type-assertion', 'test-shared-let', 'component-file-structure']);
+		expect(ids).toStrictEqual(['type-assertion', 'no-test-state-in-hooks', 'component-file-structure']);
+	});
+
+	test('a rule code decides only part of shows under both kinds, since it has both', () => {
+		const bothKinds = buildStandardsPackRuleListing({ id: 'shared-code-placement', deterministic: true, agent: true, summary: 'where shared code sits' });
+		const idsOf = ({ check }: { check: CheckKind }) => filterPackRules({ rules: [...rules, bothKinds], filters: { check } }).map((rule) => rule.id);
+
+		expect(idsOf({ check: CheckKind.Deterministic })).toStrictEqual(['type-assertion', 'no-test-state-in-hooks', 'shared-code-placement']);
+		expect(idsOf({ check: CheckKind.Agent })).toStrictEqual(['component-file-structure', 'shared-code-placement']);
 	});
 
 	test('keeps only the rules of the set asked for', () => {
 		const { ids } = setupFilterPackRules({ filters: { set: StandardsSet.Tests } });
 
-		expect(ids).toStrictEqual(['test-shared-let']);
+		expect(ids).toStrictEqual(['no-test-state-in-hooks']);
 	});
 
 	test('keeps only the deterministic checks when the reader asked for those', () => {
 		const { ids } = setupFilterPackRules({ filters: { check: CheckKind.Deterministic } });
 
-		expect(ids).toStrictEqual(['type-assertion', 'test-shared-let']);
+		expect(ids).toStrictEqual(['type-assertion', 'no-test-state-in-hooks']);
 	});
 
 	test('keeps only the agent checks when the reader asked for those', () => {
@@ -77,7 +85,7 @@ describe('filterPackRules', () => {
 	test('treats a box holding only spaces as an empty box rather than as text nothing matches', () => {
 		const { ids } = setupFilterPackRules({ filters: { text: '   ' } });
 
-		expect(ids).toStrictEqual(['type-assertion', 'test-shared-let', 'component-file-structure']);
+		expect(ids).toStrictEqual(['type-assertion', 'no-test-state-in-hooks', 'component-file-structure']);
 	});
 
 	test('applies every filter at once, so two narrowings are an intersection rather than a union', () => {

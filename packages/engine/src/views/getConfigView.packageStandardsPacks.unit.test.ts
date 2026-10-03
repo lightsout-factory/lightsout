@@ -3,28 +3,76 @@ import { getConfigView } from '#src/views/getConfigView.ts';
 import { seedConfiguredCwd } from '#tests/helpers/seedConfiguredCwd.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
-/**
- * A monorepo of `engine` and `web-app` whose manifests, like the root's, declare
- * no framework — so detection can only pick the node pack, and web-app's react
- * pack can only have come from `package-standards-packs`.
- */
-const setupPackagePacks = async () => {
-	const cwd = await seedConfiguredCwd({ config: { 'package-standards-packs': { 'web-app': 'lightsout/react-app' } } });
+/** The root's manifest and one per workspace package, each declaring `dependencies[name]` — '' is the root — and no framework otherwise. */
+const writeManifests = ({ cwd, dependencies = {} }: { cwd: string; dependencies?: Record<string, Record<string, string>> }) => {
 	const manifests = [
-		{ path: 'package.json', name: 'root' },
-		{ path: 'packages/engine/package.json', name: '@acme/engine' },
-		{ path: 'packages/web-app/package.json', name: '@acme/web-app' },
+		{ path: 'package.json', name: '' },
+		{ path: 'packages/engine/package.json', name: 'engine' },
+		{ path: 'packages/web-app/package.json', name: 'web-app' },
 	];
 
 	for (const { path, name } of manifests) {
-		writeRepoFile({ cwd, path, content: JSON.stringify({ name, dependencies: { zod: '^4.0.0' } }) });
+		writeRepoFile({ cwd, path, content: JSON.stringify({ name: `@acme/${name || 'root'}`, dependencies: { zod: '^4.0.0', ...dependencies[name] } }) });
 	}
+};
+
+/**
+ * A monorepo of `engine` and `web-app` on the repo's fractal pack, where web-app
+ * alone is given the react pack beside it through `package-standards-packs` and
+ * declares react, which is what that conditional pack's rules need to apply.
+ */
+const setupPackagePacks = async () => {
+	const cwd = await seedConfiguredCwd({
+		config: { 'standards-pack': 'lightsout/fractal', 'package-standards-packs': { 'web-app': ['lightsout/fractal', 'lightsout/react'] } },
+	});
+
+	writeManifests({ cwd, dependencies: { 'web-app': { react: '^19.0.0' } } });
+
+	return { cwd };
+};
+
+/** One rule folder's files: its markdown plus the fixture pair every rule ships. */
+const ruleFiles = ({ path, summary }: { path: string; summary: string }) => ({
+	[`${path}/rule.md`]: `---\nsummary: ${summary}\nchecks: agent\n---\n\n${summary} — the rule's prose.\n`,
+	[`${path}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
+	[`${path}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',
+});
+
+/** A `house` library whose `base` pack applies everywhere and whose `react` pack applies only to a package declaring react. */
+const houseLibraryFiles = {
+	'standards/house/lightsout-standards.json': '{ "name": "house", "formatVersion": 2 }\n',
+	'standards/house/rules/code/base/topic.md': '# Base\n\nHow every package writes code.\n',
+	...ruleFiles({ path: 'standards/house/rules/code/base/01-tabs', summary: 'indent with tabs' }),
+	'standards/house/rules/code/react/topic.md': '# React\n\nHow components are written.\n',
+	...ruleFiles({ path: 'standards/house/rules/code/react/01-hooks-first', summary: 'hooks come before handlers' }),
+	'standards/house/packs/base.json': JSON.stringify({ description: 'The base pack.', include: { topics: ['house/code/base'] } }),
+	'standards/house/packs/react.json': JSON.stringify({
+		description: 'The react pack.',
+		include: { topics: ['house/code/react'] },
+		'applies-when': { dependencies: ['react'] },
+	}),
+};
+
+/**
+ * The same monorepo with every package on `house/base` plus the conditional
+ * `house/react`, where only web-app's manifest declares react.
+ */
+const setupConditionalPacks = async () => {
+	const cwd = await seedConfiguredCwd({
+		config: { 'standards-libraries': { house: './standards/house' }, 'standards-pack': ['house/base', 'house/react'] },
+	});
+
+	for (const [path, content] of Object.entries(houseLibraryFiles)) {
+		writeRepoFile({ cwd, path, content });
+	}
+
+	writeManifests({ cwd, dependencies: { 'web-app': { react: '^19.0.0' } } });
 
 	return { cwd };
 };
 
 describe('getConfigView', () => {
-	test("states each group's pack, source and packages, and each rule state's packages", async () => {
+	test("states each group's pack, conditional packs and packages, and each rule state's packages", async () => {
 		const { cwd } = await setupPackagePacks();
 
 		const view = await getConfigView({ cwd });
@@ -43,8 +91,8 @@ describe('getConfigView', () => {
 			},
 		}).toStrictEqual({
 			standardsGroups: [
-				{ packages: ['', 'engine'], appliesTo: 'repo root (outside packages), engine', pack: 'lightsout/node', source: 'detected' },
-				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/react-app', source: 'named' },
+				{ packages: ['', 'engine'], appliesTo: 'repo root (outside packages), engine', pack: 'lightsout/fractal', conditionalPacks: [] },
+				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/fractal + lightsout/react', conditionalPacks: ['lightsout/react'] },
 			],
 			packageSets: [
 				{ packages: ['', 'engine', 'web-app'], appliesTo: 'repo root (outside packages), engine, web-app' },
@@ -52,6 +100,27 @@ describe('getConfigView', () => {
 			],
 			fileSize: { packages: ['', 'engine', 'web-app'], appliesTo: 'repo root (outside packages), engine, web-app' },
 			componentFileStructure: { packages: ['web-app'], appliesTo: 'web-app' },
+		});
+	});
+
+	test('names a list of packs joined in listed order, and the conditional packs that applied to each group', async () => {
+		const { cwd } = await setupConditionalPacks();
+
+		const view = await getConfigView({ cwd });
+
+		// only web-app declares react, so house/react applied there alone and its rule holds for no other package
+		expect({
+			standardsGroups: view.standardsGroups,
+			ruleStates: view.ruleStates.map(({ rule, packages }) => ({ rule, packages: [...packages].sort() })),
+		}).toStrictEqual({
+			standardsGroups: [
+				{ packages: ['', 'engine'], appliesTo: 'repo root (outside packages), engine', pack: 'house/base + house/react', conditionalPacks: [] },
+				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'house/base + house/react', conditionalPacks: ['house/react'] },
+			],
+			ruleStates: [
+				{ rule: 'house/hooks-first', packages: ['web-app'] },
+				{ rule: 'house/tabs', packages: ['', 'engine', 'web-app'] },
+			],
 		});
 	});
 });

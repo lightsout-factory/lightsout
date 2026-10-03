@@ -108,15 +108,15 @@ test('selectStandardsFindings forwards each finding whole, not a projection of i
 test('selectStandardsFindings matches against every changed file, not only the first', () => {
 	const findings: StandardsFinding[] = [
 		finding({ siteKey: 'multi-export:src/first.ts', files: [{ path: 'src/first.ts' }] }),
-		finding({ rule: 'barrel-star', siteKey: 'barrel-star:src/second/index.ts', files: [{ path: 'src/second/index.ts' }] }),
+		finding({ rule: 'index-file-contents', siteKey: 'index-file-contents:src/second/index.ts', files: [{ path: 'src/second/index.ts' }] }),
 		finding({ siteKey: 'multi-export:src/third.ts', files: [{ path: 'src/third.ts' }] }),
 	];
 
 	const selected = selectStandardsFindings({ findings, changedFiles: ['src/first.ts', 'src/second/index.ts'] });
 
-	// a later changed file selects just as a first one does, and barrel-star now
+	// a later changed file selects just as a first one does, and index-file-contents now
 	// blocks like every other finding-severity rule
-	expect(selected.workList.map((entry) => entry.siteKey)).toStrictEqual(['multi-export:src/first.ts', 'barrel-star:src/second/index.ts']);
+	expect(selected.workList.map((entry) => entry.siteKey)).toStrictEqual(['multi-export:src/first.ts', 'index-file-contents:src/second/index.ts']);
 });
 
 test('selectStandardsFindings selects nothing when the run changed no files', () => {

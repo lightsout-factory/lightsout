@@ -40,8 +40,8 @@ const ruleFiles = ({ path, markdown }: { path: string; markdown: string }) => ({
  */
 const _checkSource =
 	'export const check = {\n' +
-	"\tinputKind: 'file-list',\n" +
-	'\trun: ({ input }) => input.files.map((path) => ({ siteKey: `loose-file:${path}`, files: [{ path }], detail: `${path} sits outside a module` })),\n' +
+	"\tinputKinds: ['file-list'],\n" +
+	'\trun: ({ inputs }) => inputs["file-list"].files.map((path) => ({ siteKey: `loose-file:${path}`, files: [{ path }], detail: `${path} sits outside a module` })),\n' +
 	'};\n';
 
 /** The engine-built input a file-list check reads — only `files` is what the check above looks at. */
@@ -62,7 +62,7 @@ describe('readStandardsLibrary — the framework-owned fixtures path', () => {
 			files: {
 				...rootFile,
 				'rules/code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\nchecks: agent\n---\n\nProse.\n' }),
 				'fixtures/framework-owned/nestjs/src/main.ts': 'export const value = 1;\n',
 			},
 		});
@@ -78,7 +78,7 @@ describe('readStandardsLibrary — the framework-owned fixtures path', () => {
 			files: {
 				...rootFile,
 				'rules/code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\nchecks: agent\n---\n\nProse.\n' }),
 			},
 		});
 

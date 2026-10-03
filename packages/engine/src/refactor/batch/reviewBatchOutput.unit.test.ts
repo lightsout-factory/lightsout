@@ -2,7 +2,6 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
@@ -39,7 +38,8 @@ const judgmentRules: LoadedStandardsRule[] = ['function-size', 'single-return'].
 	documentPath: `code/style-guide/patterns/${id}`,
 	summary: `the ${id} rule`,
 	prose: 'the argument for the rule',
-	checked: false,
+	deterministic: false,
+	agent: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -49,8 +49,13 @@ const judgmentRules: LoadedStandardsRule[] = ['function-size', 'single-return'].
 const groups: StandardsGroup[] = [
 	{
 		packages: [''],
-		pack: { name: 'acme/house', topics: [], rules: judgmentRules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })) },
-		source: StandardsPackSource.Named,
+		pack: {
+			name: 'acme/house',
+			topics: [],
+			rules: judgmentRules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })),
+			conditionalPacks: [],
+			inactiveRules: [],
+		},
 		states: new Map<string, ResolvedRuleState>(
 			judgmentRules.map((rule) => [rule.name, { severity: rule.defaultSeverity, options: rule.defaultOptions, fromConfig: false, reachesAgents: true }]),
 		),
@@ -156,12 +161,12 @@ describe('reviewBatchOutput', () => {
 
 		await call({ baseline: [], changedFiles: ['src/a.ts'] });
 
-		// a judgment finding has no second witness — no code check can rediscover
+		// an agent-check finding has no second witness — no deterministic check can rediscover
 		// it — so an unwritten one is simply gone
 		expect((await readReviewFindings({ cwd })).map((entry) => entry.siteKey)).toStrictEqual(['acme/single-return:src/a.ts']);
 	});
 
-	test('code-checks-only mode spends no agent and writes no ledger line', async () => {
+	test('deterministic-checks-only mode spends no agent and writes no ledger line', async () => {
 		const cwd = await freshCwd();
 		const driver: Driver = {
 			name: 'stub',

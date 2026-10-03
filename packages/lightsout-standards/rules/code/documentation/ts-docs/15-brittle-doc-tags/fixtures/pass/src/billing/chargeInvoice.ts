@@ -1,8 +1,0 @@
-/**
- * Charges an invoice against the payer's default method.
- *
- * @param invoiceId - the invoice to charge
- * @throws {PaymentDeclinedError} When the payment method refuses the charge
- * @see {@link Invoice}
- */
-export const chargeInvoice = ({ invoiceId }: { invoiceId: string }): string => invoiceId;

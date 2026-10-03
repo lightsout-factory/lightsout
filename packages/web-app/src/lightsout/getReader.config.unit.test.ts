@@ -6,7 +6,6 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, test } from '@jest/globals';
 import { ConfigNotFoundError } from '@lightsout/engine';
-import { StandardsPackSource } from '@lightsout/engine/contracts';
 import type { LightsoutReader } from '#src/lightsout/common/types/LightsoutReader.ts';
 import { getReader } from '#src/lightsout/getReader.ts';
 
@@ -24,8 +23,9 @@ const packFiles: Record<string, string> = {
 	'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 2, description: 'what this shop agrees on' }),
 	'house/rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 	'house/rules/code/house/05-house-loose-file/rule.md':
-		'---\nsummary: a source file outside a module\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
-	'house/rules/code/house/10-house-name-things-well/rule.md': '---\nsummary: a name that hides what it does\n---\n\nNames are the cheapest documentation.\n',
+		'---\nsummary: a source file outside a module\nchecks: agent\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
+	'house/rules/code/house/10-house-name-things-well/rule.md':
+		'---\nsummary: a name that hides what it does\nchecks: agent\n---\n\nNames are the cheapest documentation.\n',
 	'house/packs/house.json': JSON.stringify({ description: 'what this shop agrees on', include: { topics: ['acme/code/house'] } }),
 };
 
@@ -219,7 +219,7 @@ describe('getReader config', () => {
 		const view = await reader.getConfig();
 
 		expect({ standardsGroups: view.standardsGroups, carriesChannels: Object.hasOwn(view, 'channels') }).toStrictEqual({
-			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', source: StandardsPackSource.Named }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'acme/house', conditionalPacks: [] }],
 			carriesChannels: false,
 		});
 	});

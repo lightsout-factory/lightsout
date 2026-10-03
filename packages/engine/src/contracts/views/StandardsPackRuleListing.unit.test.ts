@@ -5,10 +5,11 @@ const setupListings = () => {
 	const baseListing = {
 		id: 'file-size',
 		set: 'code',
-		documentPath: 'code/style-guide/patterns/functions',
+		documentPath: 'code/fractal/size',
 		summary: 'A source file stays under its line cap.',
 		name: 'lightsout/file-size',
-		checked: true,
+		deterministic: true,
+		agent: false,
 		defaultSeverity: 'blocking',
 		fixtureCounts: { pass: 1, fail: 1 },
 	};
@@ -29,10 +30,11 @@ describe('StandardsPackRuleListing', () => {
 			parsed: {
 				id: 'file-size',
 				set: 'code',
-				documentPath: 'code/style-guide/patterns/functions',
+				documentPath: 'code/fractal/size',
 				summary: 'A source file stays under its line cap.',
 				name: 'lightsout/file-size',
-				checked: true,
+				deterministic: true,
+				agent: false,
 				defaultSeverity: 'blocking',
 				defaultOptions: { file: 250, tsxFile: 300 },
 				fixtureCounts: { pass: 1, fail: 1 },

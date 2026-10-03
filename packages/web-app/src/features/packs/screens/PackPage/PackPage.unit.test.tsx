@@ -29,30 +29,30 @@ jest.mock('@tanstack/react-router', () => ({
 const topics: StandardsTopicView[] = [
 	{
 		set: StandardsSet.Code,
-		path: 'code/architecture/folder-structure',
-		intro: '# Folder Structure\n\nWhere things live.',
+		path: 'code/fractal/size',
+		intro: '# Size Limits\n\nHow large things grow.',
 		ruleIds: ['folder-size', 'folder-depth'],
 	},
-	{ set: StandardsSet.Code, path: 'code/style-guide/conventions/casing', intro: '# Casing Conventions', ruleIds: ['casing'] },
-	{ set: StandardsSet.Code, path: 'code/architecture/react', intro: '# React Architecture', ruleIds: ['component-file-structure'] },
+	{ set: StandardsSet.Code, path: 'code/fractal/modules', intro: '# Module Conventions', ruleIds: ['filename-mismatch'] },
+	{ set: StandardsSet.Code, path: 'code/frameworks/react', intro: '# React Architecture', ruleIds: ['component-file-structure'] },
 	{ set: StandardsSet.Tests, path: 'tests/test-files', intro: '# Test Files', ruleIds: ['test-file-location'] },
 ];
 
 const rules = [
-	buildStandardsPackRuleListing({ id: 'folder-size', documentPath: 'code/architecture/folder-structure', summary: 'a folder holding too many things' }),
-	buildStandardsPackRuleListing({ id: 'folder-depth', documentPath: 'code/architecture/folder-structure', summary: 'a folder tree spelled out too deep' }),
+	buildStandardsPackRuleListing({ id: 'folder-size', documentPath: 'code/fractal/size', summary: 'a folder holding too many things' }),
+	buildStandardsPackRuleListing({ id: 'folder-depth', documentPath: 'code/fractal/size', summary: 'a folder tree spelled out too deep' }),
 	buildStandardsPackRuleListing({
-		id: 'casing',
-		documentPath: 'code/style-guide/conventions/casing',
-		summary: 'a name spelled in the wrong case',
-		checked: false,
+		id: 'filename-mismatch',
+		documentPath: 'code/fractal/modules',
+		summary: 'a file name spelled differently from its export',
+		deterministic: false,
 		defaultSeverity: StandardsSeverity.Advisory,
 	}),
 	buildStandardsPackRuleListing({
 		id: 'component-file-structure',
-		documentPath: 'code/architecture/react',
+		documentPath: 'code/frameworks/react',
 		summary: 'a component file laid out of order',
-		checked: false,
+		deterministic: false,
 	}),
 	buildStandardsPackRuleListing({
 		id: 'test-file-location',
@@ -63,34 +63,35 @@ const rules = [
 ];
 
 /**
- * Pack `app` holds one rule from each of two topics, raises `casing` above its
- * advisory default, and brings in the react topic with its one rule removed —
- * a topic left empty. Pack `base` holds only the folder-structure topic, and
- * pack `unit-testing` only the tests topic.
+ * Pack `app` holds one rule from each of two topics, raises `filename-mismatch`
+ * above its advisory default, and brings in the react topic with its one rule
+ * removed — a topic left empty. Pack `base` holds only the size topic and is the
+ * one conditional pack, and pack `tests` holds only the tests topic.
  */
 const packs = [
 	buildStandardsPackListing({
 		name: 'app',
 		description: 'The rules an app package runs.',
-		include: { packs: ['lightsout/base', 'acme/house'], topics: ['lightsout/code/style-guide/conventions/casing'], rules: [] },
-		topics: ['lightsout/code/architecture/folder-structure', 'lightsout/code/architecture/react', 'lightsout/code/style-guide/conventions/casing'],
+		include: { packs: ['lightsout/base', 'acme/house'], topics: ['lightsout/code/fractal/modules'], rules: [] },
+		topics: ['lightsout/code/fractal/modules', 'lightsout/code/fractal/size', 'lightsout/code/frameworks/react'],
 		rules: [
-			{ name: 'lightsout/casing', severity: StandardsSeverity.Blocking, options: {} },
+			{ name: 'lightsout/filename-mismatch', severity: StandardsSeverity.Blocking, options: {} },
 			{ name: 'lightsout/folder-size', severity: StandardsSeverity.Blocking, options: {} },
 		],
-		totals: { checked: 1, judgment: 1 },
+		totals: { deterministic: 1, agent: 1 },
 	}),
 	buildStandardsPackListing({
 		name: 'base',
-		include: { packs: [], topics: ['lightsout/code/architecture/folder-structure'], rules: [] },
-		topics: ['lightsout/code/architecture/folder-structure'],
+		appliesWhen: { dependencies: ['react', 'preact'] },
+		include: { packs: [], topics: ['lightsout/code/fractal/size'], rules: [] },
+		topics: ['lightsout/code/fractal/size'],
 		rules: [
 			{ name: 'lightsout/folder-depth', severity: StandardsSeverity.Blocking, options: {} },
 			{ name: 'lightsout/folder-size', severity: StandardsSeverity.Blocking, options: {} },
 		],
 	}),
 	buildStandardsPackListing({
-		name: 'unit-testing',
+		name: 'tests',
 		include: { packs: [], topics: ['lightsout/tests/test-files'], rules: [] },
 		topics: ['lightsout/tests/test-files'],
 		rules: [{ name: 'lightsout/test-file-location', severity: StandardsSeverity.Blocking, options: {} }],
@@ -152,6 +153,22 @@ describe('PackPage', () => {
 		expect({ heading: heading.textContent, hasDescription: description !== null }).toStrictEqual({ heading: 'lightsout/app', hasDescription: true });
 	});
 
+	test('says which packages a conditional pack reaches', () => {
+		setupPackPage({ pack: 'base' });
+
+		const condition = screen.getByText(/^Applies only/);
+
+		expect(condition.textContent).toBe('Applies only to packages that depend on react or preact.');
+	});
+
+	test('says nothing about reach on a pack that applies to every package, even one including a conditional pack', () => {
+		setupPackPage();
+
+		const condition = screen.queryByText(/^Applies only/);
+
+		expect(condition).toBeNull();
+	});
+
 	test('counts the pack’s own rules, and how many are deterministic checks and how many agent checks', () => {
 		setupPackPage();
 
@@ -164,22 +181,22 @@ describe('PackPage', () => {
 		setupPackPage();
 
 		const titles = readGroupTitles();
-		const folderStructure = readSectionRuleLinks({ title: /^Folder Structure/ });
-		const casing = readSectionRuleLinks({ title: /^Casing Conventions/ });
+		const size = readSectionRuleLinks({ title: /^Size Limits/ });
+		const modules = readSectionRuleLinks({ title: /^Module Conventions/ });
 		const everyRule = readRuleLinks();
 
-		expect({ titles, folderStructure, casing, everyRule }).toStrictEqual({
-			titles: ['Folder Structure', 'Casing Conventions'],
-			folderStructure: ['/standards-packs/lightsout/rules/folder-size'],
-			casing: ['/standards-packs/lightsout/rules/casing'],
-			everyRule: ['/standards-packs/lightsout/rules/folder-size', '/standards-packs/lightsout/rules/casing'],
+		expect({ titles, size, modules, everyRule }).toStrictEqual({
+			titles: ['Size Limits', 'Module Conventions'],
+			size: ['/standards-packs/lightsout/rules/folder-size'],
+			modules: ['/standards-packs/lightsout/rules/filename-mismatch'],
+			everyRule: ['/standards-packs/lightsout/rules/folder-size', '/standards-packs/lightsout/rules/filename-mismatch'],
 		});
 	});
 
 	test('says each rule’s kind of check', () => {
 		setupPackPage();
 
-		const row = screen.getByRole('link', { name: /^casing/ });
+		const row = screen.getByRole('link', { name: /^filename-mismatch/ });
 
 		expect(within(row).queryByText('Agent')).not.toBeNull();
 	});
@@ -187,7 +204,7 @@ describe('PackPage', () => {
 	test('shows each rule at the severity the pack sets', () => {
 		setupPackPage();
 
-		const row = screen.getByRole('link', { name: /^casing/ });
+		const row = screen.getByRole('link', { name: /^filename-mismatch/ });
 
 		expect({ blocks: within(row).queryByText('Blocks') !== null, advises: within(row).queryByText('Advises') !== null }).toStrictEqual({
 			blocks: true,
@@ -211,7 +228,7 @@ describe('PackPage', () => {
 
 	// `folder-depth` also matches "spelled", but pack `app` does not hold it.
 	test.each([
-		{ text: 'spelled', expected: { rules: ['/standards-packs/lightsout/rules/casing'], saysNoMatch: false } },
+		{ text: 'spelled', expected: { rules: ['/standards-packs/lightsout/rules/filename-mismatch'], saysNoMatch: false } },
 		{ text: 'nothing like this', expected: { rules: [], saysNoMatch: true } },
 	])("narrows the pack's rules by the search text", ({ text, expected }) => {
 		setupPackPage({ filters: { text } });
@@ -228,18 +245,18 @@ describe('PackPage', () => {
 		const titles = readGroupTitles();
 		const figures = readFigures();
 
-		expect({ titles, rules: figures[0] }).toStrictEqual({ titles: ['Folder Structure'], rules: 'Rules: 2' });
+		expect({ titles, rules: figures[0] }).toStrictEqual({ titles: ['Size Limits'], rules: 'Rules: 2' });
 	});
 
 	test("links every rule row to the rule's page under its library", () => {
 		setupPackPage();
 
 		const folderSize = screen.getByRole('link', { name: /^folder-size/ });
-		const casing = screen.getByRole('link', { name: /^casing/ });
+		const filenameMismatch = screen.getByRole('link', { name: /^filename-mismatch/ });
 
-		expect([folderSize.getAttribute('href'), casing.getAttribute('href')]).toStrictEqual([
+		expect([folderSize.getAttribute('href'), filenameMismatch.getAttribute('href')]).toStrictEqual([
 			'/standards-packs/lightsout/rules/folder-size',
-			'/standards-packs/lightsout/rules/casing',
+			'/standards-packs/lightsout/rules/filename-mismatch',
 		]);
 	});
 
@@ -247,8 +264,8 @@ describe('PackPage', () => {
 		setupPackPage({ pack: 'base' });
 
 		const nav = screen.getByRole('navigation', { name: 'Rule groups' });
-		const area = within(nav).queryByText('Architecture');
-		const outsideTopic = within(nav).queryByText(/Casing Conventions/);
+		const area = within(nav).queryByText('Fractal');
+		const outsideTopic = within(nav).queryByText(/Module Conventions/);
 		const entries = within(nav)
 			.getAllByRole('link')
 			.map((link) => link.textContent);
@@ -256,12 +273,12 @@ describe('PackPage', () => {
 		expect({ area: area !== null, outsideTopic: outsideTopic !== null, entries }).toEqual({
 			area: true,
 			outsideTopic: false,
-			entries: [expect.stringMatching(/^Folder Structure\s*2$/)],
+			entries: [expect.stringMatching(/^Size Limits\s*2$/)],
 		});
 	});
 
 	test('files a topic of the tests set under unit testing in the side navigation', () => {
-		setupPackPage({ pack: 'unit-testing' });
+		setupPackPage({ pack: 'tests' });
 
 		const nav = screen.getByRole('navigation', { name: 'Rule groups' });
 		const area = within(nav).queryByText('Unit testing');
@@ -273,8 +290,8 @@ describe('PackPage', () => {
 	});
 
 	test.each([
-		{ typed: 'cas', filters: {}, expected: { text: 'cas' } },
-		{ typed: '', filters: { text: 'cas' }, expected: { text: undefined } },
+		{ typed: 'file', filters: {}, expected: { text: 'file' } },
+		{ typed: '', filters: { text: 'file' }, expected: { text: undefined } },
 	])('hands the search text typed into the box to the filter change, cleared to no text', ({ typed, filters, expected }) => {
 		const { onFiltersChange } = setupPackPage({ filters });
 

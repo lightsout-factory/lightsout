@@ -31,8 +31,8 @@ const ruleFiles = ({ path, markdown }: { path: string; markdown: string }) => ({
 const setupSiblingRequires = () => {
 	const packPath = writeLibrary({
 		files: {
-			...ruleFiles({ path: 'rules/code/style/01-a', markdown: '---\nsummary: rule a\nrequires:\n  - b\n---\n\nFollow b.\n' }),
-			...ruleFiles({ path: 'rules/code/style/02-b', markdown: '---\nsummary: rule b\n---\n\nProse.\n' }),
+			...ruleFiles({ path: 'rules/code/style/01-a', markdown: '---\nsummary: rule a\nchecks: agent\nrequires:\n  - b\n---\n\nFollow b.\n' }),
+			...ruleFiles({ path: 'rules/code/style/02-b', markdown: '---\nsummary: rule b\nchecks: agent\n---\n\nProse.\n' }),
 		},
 	});
 
@@ -43,8 +43,8 @@ const setupSiblingRequires = () => {
 const setupUnknownRequires = () => {
 	const packPath = writeLibrary({
 		files: {
-			...ruleFiles({ path: 'rules/code/style/01-a', markdown: '---\nsummary: rule a\nrequires:\n  - no-such-first\n---\n\nProse.\n' }),
-			...ruleFiles({ path: 'rules/code/style/02-b', markdown: '---\nsummary: rule b\nrequires:\n  - no-such-second\n---\n\nProse.\n' }),
+			...ruleFiles({ path: 'rules/code/style/01-a', markdown: '---\nsummary: rule a\nchecks: agent\nrequires:\n  - no-such-first\n---\n\nProse.\n' }),
+			...ruleFiles({ path: 'rules/code/style/02-b', markdown: '---\nsummary: rule b\nchecks: agent\nrequires:\n  - no-such-second\n---\n\nProse.\n' }),
 		},
 	});
 

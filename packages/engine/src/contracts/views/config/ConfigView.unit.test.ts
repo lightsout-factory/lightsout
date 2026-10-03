@@ -1,7 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
 import { ConfigView } from '#src/contracts/views/config/ConfigView.ts';
 
-const setupConfigView = ({ ruleNumbers, source = 'detected' }: { ruleNumbers: Record<string, unknown>; source?: string }) => {
+/** A one-group view; `group` is spread over the group, so a case can replace or add a field of it. */
+const setupConfigView = ({ ruleNumbers, group = {} }: { ruleNumbers: Record<string, unknown>; group?: Record<string, unknown> }) => {
 	const ruleState = {
 		rule: 'lightsout/folder-size',
 		id: 'folder-size',
@@ -17,7 +18,7 @@ const setupConfigView = ({ ruleNumbers, source = 'detected' }: { ruleNumbers: Re
 		harness: 'claude-code',
 		model: null,
 		sections: [],
-		standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source }],
+		standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/standards', conditionalPacks: [], ...group }],
 		ruleStates: [ruleState],
 	};
 
@@ -28,10 +29,10 @@ const setupPerPackageConfigView = () => {
 	const rootGroup = {
 		packages: ['', 'engine'],
 		appliesTo: 'repo root (outside packages), engine',
-		pack: 'lightsout/node',
-		source: 'detected',
+		pack: 'lightsout/standards + lightsout/react',
+		conditionalPacks: [],
 	};
-	const webAppGroup = { packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/react-app', source: 'named' };
+	const webAppGroup = { packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/standards + lightsout/react', conditionalPacks: ['lightsout/react'] };
 	const ruleState = {
 		rule: 'lightsout/folder-size',
 		id: 'folder-size',
@@ -50,40 +51,41 @@ const setupPerPackageConfigView = () => {
 		standardsGroups,
 		ruleStates: [ruleState],
 	});
-	const webAppGroupWithoutAppliesTo = { packages: ['web-app'], pack: 'lightsout/react-app', source: 'named' };
+	const webAppGroupWithoutAppliesTo = { packages: ['web-app'], pack: 'lightsout/standards + lightsout/react', conditionalPacks: ['lightsout/react'] };
+	const webAppGroupWithoutConditionalPacks = { packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/standards + lightsout/react' };
 	const perPackageView = buildView([rootGroup, webAppGroup]);
 	const withoutAppliesToView = buildView([rootGroup, webAppGroupWithoutAppliesTo]);
-	const unknownSourceView = buildView([rootGroup, { ...webAppGroup, source: 'configured' }]);
+	const withoutConditionalPacksView = buildView([rootGroup, webAppGroupWithoutConditionalPacks]);
 
-	return { perPackageView, withoutAppliesToView, unknownSourceView };
+	return { perPackageView, withoutAppliesToView, withoutConditionalPacksView };
 };
 
 describe('ConfigView', () => {
-	test('accepts per-package standards groups and rule-state packages and refuses a group without appliesTo or with an unknown pack source', () => {
-		const { perPackageView, withoutAppliesToView, unknownSourceView } = setupPerPackageConfigView();
+	test('accepts per-package standards groups and rule-state packages and refuses a group without appliesTo or without conditionalPacks', () => {
+		const { perPackageView, withoutAppliesToView, withoutConditionalPacksView } = setupPerPackageConfigView();
 
 		const parsed = ConfigView.parse(perPackageView);
 		const withoutAppliesTo = ConfigView.safeParse(withoutAppliesToView);
-		const unknownSource = ConfigView.safeParse(unknownSourceView);
+		const withoutConditionalPacks = ConfigView.safeParse(withoutConditionalPacksView);
 
 		expect({
 			standardsGroups: parsed.standardsGroups,
 			ruleStateScopes: parsed.ruleStates.map(({ packages, appliesTo }) => ({ packages, appliesTo })),
 			withoutAppliesToParsed: withoutAppliesTo.success,
-			unknownSourceParsed: unknownSource.success,
+			withoutConditionalPacksParsed: withoutConditionalPacks.success,
 		}).toStrictEqual({
 			standardsGroups: [
 				{
 					packages: ['', 'engine'],
 					appliesTo: 'repo root (outside packages), engine',
-					pack: 'lightsout/node',
-					source: 'detected',
+					pack: 'lightsout/standards + lightsout/react',
+					conditionalPacks: [],
 				},
-				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/react-app', source: 'named' },
+				{ packages: ['web-app'], appliesTo: 'web-app', pack: 'lightsout/standards + lightsout/react', conditionalPacks: ['lightsout/react'] },
 			],
 			ruleStateScopes: [{ packages: ['', 'engine', 'web-app'], appliesTo: 'repo root (outside packages), engine, web-app' }],
 			withoutAppliesToParsed: false,
-			unknownSourceParsed: false,
+			withoutConditionalPacksParsed: false,
 		});
 	});
 
@@ -112,19 +114,20 @@ describe('ConfigView', () => {
 	});
 
 	test.each([
-		{ source: 'named', parses: true },
-		{ source: 'detected', parses: true },
-		{ source: 'configured', parses: false },
-	])('ConfigView: a standards group source of $source parses: $parses', ({ source, parses }) => {
-		const { configView } = setupConfigView({ ruleNumbers: { options: {} }, source });
+		{ conditionalPacks: [], parses: true },
+		{ conditionalPacks: ['lightsout/react', 'lightsout/tanstack-start'], parses: true },
+		{ conditionalPacks: 'lightsout/react', parses: false },
+		{ conditionalPacks: [7], parses: false },
+	])('ConfigView: a standards group whose conditionalPacks is $conditionalPacks parses: $parses', ({ conditionalPacks, parses }) => {
+		const { configView } = setupConfigView({ ruleNumbers: { options: {} }, group: { conditionalPacks } });
 
 		const parsed = ConfigView.safeParse(configView);
 
 		expect(parsed.success).toBe(parses);
 	});
 
-	test('ConfigView: a view without standardsGroups is refused, and the deleted packs and channels fields are not carried', () => {
-		const { configView } = setupConfigView({ ruleNumbers: { options: {} } });
+	test('ConfigView: a view without standardsGroups is refused, and the deleted packs, channels and group source fields are not carried', () => {
+		const { configView } = setupConfigView({ ruleNumbers: { options: {} }, group: { source: 'detected' } });
 		const withoutGroups = Object.fromEntries(Object.entries(configView).filter(([key]) => key !== 'standardsGroups'));
 
 		const missingGroups = ConfigView.safeParse(withoutGroups);
@@ -139,7 +142,7 @@ describe('ConfigView', () => {
 			missingGroupsParsed: false,
 			carriesPacks: false,
 			carriesChannels: false,
-			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/node', source: 'detected' }],
+			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/standards', conditionalPacks: [] }],
 		});
 	});
 

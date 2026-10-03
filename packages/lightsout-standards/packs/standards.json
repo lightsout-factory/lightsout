@@ -1,0 +1,6 @@
+{
+	"description": "Every bundled standard at once: a repo that keeps one shape at every level, free of the mistakes models make by default and written in one style, with each framework's rules reaching only the packages that use it.",
+	"include": {
+		"packs": ["lightsout/fractal", "lightsout/agent-corrections", "lightsout/code-style", "lightsout/react", "lightsout/tanstack-start"]
+	}
+}

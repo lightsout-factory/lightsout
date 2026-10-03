@@ -105,7 +105,7 @@ Completing the task is not enough. Agents should leave the repository better tha
 
 2. **Define your standards and gate commands.**
 
-Add a `lightsout.config.json` to the repository with your code standards and validation commands. Only the `gates` commands are mandatory — everything else is optional with sensible defaults. Without `standards-pack`, lightsout detects one of its own standards packs from the repository's dependencies. See [docs/configuration.md](docs/configuration.md) for all available options.
+Add a `lightsout.config.json` to the repository with your code standards and validation commands. Only the `gates` commands are mandatory — everything else is optional with sensible defaults. Code standards are opt-in: set `"standards-pack": "lightsout/standards"` to turn on the bundled ones, and without it lightsout runs with none. See [docs/configuration.md](docs/configuration.md) for all available options.
 
 The factory runs the work on your own installed, logged-in coding agent.
 Claude Code is the default; set `"harness"` to `"codex"`, `"omp"` (Oh My Pi)
@@ -666,7 +666,7 @@ Turn existing technical debt into a gated refactoring run. `/refactor` runs the 
 
 By default, it checks the entire repository. Use --path to target a specific directory and --max-batches to limit how many refactoring batches it completes. Agents fix each batch, and your deterministic gates verify the changes before the run continues.
 
-Before each batch, an agent also reads the judgment-only rules against that batch's files and hands its findings to the fixing agent as advice. Use --code-checks to skip that review and run against the deterministic checks alone — faster and cheaper when the findings are mechanical.
+Before each batch, an agent also reads the rules with an agent check against that batch's files and hands its findings to the fixing agent as advice. Use --deterministic-checks to skip that review and run against the deterministic checks alone — faster and cheaper when the findings are mechanical.
 
 A run normally demands a clean tree, so the ending diff is entirely the run's. Use --allow-dirty to accept uncommitted changes instead: they are recorded in the manifest as baseline and never attributed to a batch, which lets runs stack while you hold off committing. The pre-flight gates still have to pass either way.
 
@@ -680,14 +680,14 @@ Verified changes remain in your worktree for review and commit, and the complete
 
 Three commands answer questions about the standards themselves, rather than about your code.
 
-`lightsout standards-check` reports what your repository breaks today. It has two halves and runs both by default: the checks your rules ship as code, and an agent reading the rules no code can check. `--code-checks` runs only the first, `--agent-review` only the second. The agent's findings are always advice — they never fail a run. A run including the code checks writes its report to `.lightsout/standards-check.json`; a review-only run prints and writes nothing, leaving that file as the last real check left it.
+`lightsout standards-check` reports what your repository breaks today. It has two halves and runs both by default: the deterministic checks your rules ship as code, and an agent review reading the rules with an agent check. `--deterministic-checks` runs only the first, `--agent-review` only the second. The agent's findings are always advice — they never fail a run. A run including the deterministic checks writes its report to `.lightsout/standards-check.json`; a review-only run prints and writes nothing, leaving that file as the last real check left it.
 
 `lightsout standards-validate` validates a standards library: it runs every rule's check against its own pass and fail fixtures, and checks that every pack file in the library resolves. It is the gate to run while writing a rule: a check that lets its fail fixture through catches nothing, and one that flags its pass fixture cries wolf. It also warns, per pack in the library, about required rules the pack leaves out, and a warning never fails it.
 
-`lightsout standards-health` reports on the rules themselves — which are checked by code, which are left to judgment, and how often agents declined each one's findings, with the reasons they gave. The counts come from the refactor runs recorded in `.lightsout/runs/`, so a repository with no history still gets the coverage half.
+`lightsout standards-health` reports on the rules themselves — which have a deterministic check, which an agent check, and how often agents declined each one's findings, with the reasons they gave. The counts come from the refactor runs recorded in `.lightsout/runs/`, so a repository with no history still gets the coverage half.
 
 ```text
-lightsout standards-check --code-checks
+lightsout standards-check --deterministic-checks
 lightsout standards-validate
 lightsout standards-health
 ```

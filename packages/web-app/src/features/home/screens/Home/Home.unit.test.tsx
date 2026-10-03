@@ -34,7 +34,7 @@ const setupHome = ({ isPackLoaded = false }: { isPackLoaded?: boolean } = {}) =>
 			? [
 					{
 						queryKey: [QueryKey.DefaultPack],
-						data: buildStandardsPackView({ overrides: { totals: { rules: 137, checked: 61, judgment: 76, topics: 26, packs: 10, withFixtures: 137 } } }),
+						data: buildStandardsPackView({ overrides: { totals: { rules: 137, deterministic: 61, agent: 76, topics: 26, packs: 10, withFixtures: 137 } } }),
 					},
 				]
 			: [],

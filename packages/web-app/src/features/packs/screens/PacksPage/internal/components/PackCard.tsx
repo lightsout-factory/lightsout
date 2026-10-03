@@ -6,6 +6,7 @@ import { checkKindIcons } from '#src/common/constants/checkKindIcons.ts';
 import { checkKindLabels } from '#src/common/constants/checkKindLabels.ts';
 import { checkKindTones } from '#src/common/constants/checkKindTones.ts';
 import { cn } from '#src/common/utils/cn.ts';
+import { PackCondition } from '#src/features/packs/components/PackCondition.tsx';
 
 interface Props {
 	/** The library the pack belongs to — the first half of its address and of its page link. */
@@ -15,8 +16,8 @@ interface Props {
 
 export const PackCard = ({ library, pack }: Props) => {
 	const kinds = [
-		{ kind: CheckKind.Deterministic, count: pack.totals.checked },
-		{ kind: CheckKind.Agent, count: pack.totals.judgment },
+		{ kind: CheckKind.Deterministic, count: pack.totals.deterministic },
+		{ kind: CheckKind.Agent, count: pack.totals.agent },
 	];
 
 	return (
@@ -31,6 +32,7 @@ export const PackCard = ({ library, pack }: Props) => {
 			<div className="flex flex-col gap-1">
 				<h3 className="break-all font-bold font-mono text-drop-navy text-lg">{pack.address}</h3>
 				{pack.description === undefined ? null : <p className="text-muted-foreground text-sm">{pack.description}</p>}
+				{pack.appliesWhen === undefined ? null : <PackCondition dependencies={pack.appliesWhen.dependencies} className="text-xs" />}
 				{pack.include.packs.length === 0 ? null : <p className="text-muted-foreground text-xs">Includes {pack.include.packs.join(', ')}</p>}
 				<p className="text-muted-foreground text-sm">
 					<span className="font-semibold text-drop-navy">{pack.totals.rules}</span> rules

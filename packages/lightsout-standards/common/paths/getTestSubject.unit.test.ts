@@ -7,7 +7,6 @@ const routerCarveOut: FrameworkCarveOut = {
 	directory: '.',
 	entryFiles: [],
 	exemptFolderNames: [],
-	kebabCase: false,
 	routerRoots: ['routes'],
 };
 

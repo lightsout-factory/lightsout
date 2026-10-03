@@ -14459,8 +14459,8 @@ var error17 = () => {
       case "invalid_union":
         return "\u05E7\u05DC\u05D8 \u05DC\u05D0 \u05EA\u05E7\u05D9\u05DF";
       case "invalid_element": {
-        const place = withDefinite(issue2.origin ?? "array");
-        return `\u05E2\u05E8\u05DA \u05DC\u05D0 \u05EA\u05E7\u05D9\u05DF \u05D1${place}`;
+        const place2 = withDefinite(issue2.origin ?? "array");
+        return `\u05E2\u05E8\u05DA \u05DC\u05D0 \u05EA\u05E7\u05D9\u05DF \u05D1${place2}`;
       }
       default:
         return `\u05E7\u05DC\u05D8 \u05DC\u05D0 \u05EA\u05E7\u05D9\u05DF`;
@@ -122312,7 +122312,12 @@ var refactorCatalogEntry = {
       shape: "refactor",
       required: false
     },
-    { name: "code-checks", meaning: "Build the work-list from the mechanical checks alone, with no agent review.", shape: "refactor", required: false },
+    {
+      name: "deterministic-checks",
+      meaning: "Build the work-list from the deterministic checks alone, with no agent review.",
+      shape: "refactor",
+      required: false
+    },
     { name: "allow-dirty", meaning: "Start even though the git tree has uncommitted changes.", shape: "refactor", required: false }
   ],
   steps: refactorSteps,
@@ -122544,7 +122549,7 @@ var standardsCheckCatalogEntry = {
     { name: "path", value: "<subdir>", meaning: "Check only this subdirectory.", fallback: "The whole repository.", shape: "standards-check", required: false },
     { name: "all", meaning: "Include findings the baseline has already accepted as known debt.", shape: "standards-check", required: false },
     { name: "baseline", meaning: "Write the findings to the baseline file as accepted debt.", shape: "standards-check", required: false },
-    { name: "code-checks", meaning: "Run the mechanical checks only.", shape: "standards-check", required: false, exclusiveWith: "half" },
+    { name: "deterministic-checks", meaning: "Run the deterministic checks only.", shape: "standards-check", required: false, exclusiveWith: "half" },
     { name: "agent-review", meaning: "Run the agent review only.", shape: "standards-check", required: false, exclusiveWith: "half" }
   ],
   steps: [],
@@ -123189,6 +123194,7 @@ var StandardsRuleSettings = external_exports.record(
 var standardsPackAddress = external_exports.string().refine((value) => /^[^/]+\/[^/]+$/.test(value), {
   message: "a standards pack is named <library>/<pack> \u2014 exactly one slash, the library before it and the pack after it"
 });
+var standardsPackSelection = external_exports.union([standardsPackAddress, external_exports.array(standardsPackAddress).min(1)]);
 var LightsoutConfig = external_exports.object({
   /** Harness name. Defaults to 'claude-code'. */
   harness: external_exports.string().optional(),
@@ -123277,21 +123283,21 @@ var LightsoutConfig = external_exports.object({
    */
   "gate-overrides": GateOverrides.optional(),
   /**
-   * The standards pack for the repo root and every package
-   * `package-standards-packs` does not name, as `<library>/<pack>`. Unset =
-   * detected, for the root from the root `package.json` and for each package
-   * from its own; `false` = no standards for the root and every unnamed package.
+   * The standards for the repo root and every package
+   * `package-standards-packs` does not name: one pack address,
+   * `<library>/<pack>`, or a list of them. Standards are opt-in, so unset
+   * and `false` both mean no standards for the root and every unnamed package.
    */
-  "standards-pack": external_exports.union([standardsPackAddress, external_exports.literal(false)]).optional(),
+  "standards-pack": external_exports.union([standardsPackSelection, external_exports.literal(false)]).optional(),
   /**
-   * A pack of its own for each package that differs from `standards-pack`.
+   * Standards of its own for each package that differs from `standards-pack`.
    * Keys are package folder names under `packages-dir`, as `--packages` uses
-   * them; values are pack addresses (`<library>/<pack>`). `false` is not
-   * accepted here: only `standards-pack` takes it. Parsing never reads the
-   * disk, so a key naming no workspace package is refused when the groups
-   * resolve, by `resolveStandardsGroups`.
+   * them; values are one pack address (`<library>/<pack>`) or a list of them.
+   * `false` is not accepted here: only `standards-pack` takes it. Parsing
+   * never reads the disk, so a key naming no workspace package is refused when
+   * the groups resolve, by `resolveStandardsGroups`.
    */
-  "package-standards-packs": external_exports.record(external_exports.string().min(1), standardsPackAddress).optional(),
+  "package-standards-packs": external_exports.record(external_exports.string().min(1), standardsPackSelection).optional(),
   /**
    * Standards libraries registered beside the built-in one. Each key is a
    * library name; each value is a repo-relative folder (starting `./` or
@@ -124259,7 +124265,10 @@ import { readdir as readdir2, readFile as readFile6 } from "node:fs/promises";
 import { join as join13 } from "node:path";
 
 // src/common/config/selectsNoStandards.ts
-var selectsNoStandards = ({ config: config2 }) => config2?.["standards-pack"] === false && Object.keys(config2["package-standards-packs"] ?? {}).length === 0;
+var selectsNoStandards = ({ config: config2 }) => {
+  const repo = config2?.["standards-pack"];
+  return (repo === void 0 || repo === false) && Object.keys(config2?.["package-standards-packs"] ?? {}).length === 0;
+};
 
 // src/doctor/checkLintRules.ts
 var checkLintRules = async ({ config: config2, packageDirs }) => {
@@ -124330,14 +124339,6 @@ var listWorkspacePackages = async ({ cwd, packagesDir }) => {
   return directories.filter((_, index) => hasManifest[index]).map(({ name }) => name);
 };
 
-// src/contracts/standards/StandardsPackSource.ts
-var StandardsPackSource = {
-  /** The config named the pack. */
-  Named: "named",
-  /** Nothing named a pack, so lightsout picked one of its own from the package's dependencies. */
-  Detected: "detected"
-};
-
 // src/common/workspace/readDependencyNames.ts
 import { readFile as readFile7 } from "node:fs/promises";
 var Manifest = external_exports.object({
@@ -124361,18 +124362,6 @@ var readDependencyNames = async ({ manifestPath }) => {
     return [];
   }
   return [parsed.data.dependencies, parsed.data.devDependencies, parsed.data.peerDependencies].flatMap((record3) => Object.keys(record3 ?? {}));
-};
-
-// src/standards/detectStandardsPack.ts
-var packSignals = [
-  { address: "lightsout/tanstack-start-app", signals: ["@tanstack/react-start", "@tanstack/start"] },
-  { address: "lightsout/nestjs-app", signals: ["@nestjs/core"] },
-  { address: "lightsout/react-app", signals: ["react", "preact", "react-dom"] }
-];
-var detectStandardsPack = async ({ manifestPath }) => {
-  const dependencies = new Set(await readDependencyNames({ manifestPath }));
-  const match = packSignals.find(({ signals }) => signals.some((signal) => dependencies.has(signal)));
-  return match?.address ?? "lightsout/node";
 };
 
 // src/standardsLibraries/mapPackRules.ts
@@ -124402,7 +124391,7 @@ var resolveRuleName = ({ name, rules }) => {
 
 // src/standards/internal/resolveRuleStates.ts
 var resolveEntries = ({ packs, ruleSettings }) => {
-  const rules = [...mapPackRules({ packs }).values()];
+  const rules = [...new Map([...packs.flatMap((pack) => pack.inactiveRules), ...mapPackRules({ packs }).values()].map((rule) => [rule.name, rule])).values()];
   const settings = /* @__PURE__ */ new Map();
   const keyFor = /* @__PURE__ */ new Map();
   for (const [key, entry] of Object.entries(ruleSettings)) {
@@ -124515,7 +124504,8 @@ var StandardsInputKind = {
 
 // ../standards-contracts/src/StandardsCheckModule.ts
 var StandardsCheckModule = external_exports.object({
-  inputKind: external_exports.enum(StandardsInputKind),
+  /** Every kind the check reads; the engine builds each and hands all of them to `run`. */
+  inputKinds: external_exports.array(external_exports.enum(StandardsInputKind)).min(1).refine((kinds) => new Set(kinds).size === kinds.length, { message: "each input kind is declared once" }),
   run: external_exports.custom((value) => typeof value === "function")
 });
 
@@ -124540,6 +124530,16 @@ var StandardsLibraryRoot = external_exports.object({
   /** Absolute URL for the pack's own page or repository. */
   homepage: external_exports.url().optional()
 });
+
+// ../standards-contracts/src/StandardsRuleChecks.ts
+var StandardsRuleChecks = {
+  /** The rule ships a check file, and the check decides the whole rule. */
+  Deterministic: "deterministic",
+  /** The rule ships no check file; an agent reads the whole rule. */
+  Agent: "agent",
+  /** The rule ships a check file that decides part of the rule; an agent reads the rest. */
+  Both: "both"
+};
 
 // ../standards-contracts/src/StandardsSet.ts
 var StandardsSet = {
@@ -124573,7 +124573,16 @@ var StandardsPackFile = external_exports.object({
     rules: external_exports.array(external_exports.string()).optional()
   }).strict().optional(),
   /** Severity and options for rules already in the pack, applied after every include. */
-  "rule-settings": StandardsRuleSettings.optional()
+  "rule-settings": StandardsRuleSettings.optional(),
+  /**
+   * Makes the pack conditional: it brings its rules to a package only when
+   * that package's `package.json` declares one of these dependencies. A pack
+   * without it applies everywhere.
+   */
+  "applies-when": external_exports.object({
+    /** npm package names; declaring any one of them is enough. */
+    dependencies: external_exports.array(external_exports.string().min(1)).min(1)
+  }).strict().optional()
 }).strict();
 
 // src/standardsLibraries/internal/common/parsing/parsePackFolder.ts
@@ -124584,13 +124593,14 @@ var parsePackFile = async ({ folderPath, name, problems }) => {
   try {
     const parsed = StandardsPackFile.safeParse(JSON.parse(await readFile8(join15(folderPath, fileName), "utf8")));
     if (parsed.success) {
-      const { description, include, "rule-settings": ruleSettings } = parsed.data;
+      const { description, include, "rule-settings": ruleSettings, "applies-when": appliesWhen } = parsed.data;
       pack = {
         name,
         filePath,
         description,
         include: { packs: include?.packs ?? [], topics: include?.topics ?? [], rules: include?.rules ?? [] },
-        ruleSettings: ruleSettings ?? {}
+        ruleSettings: ruleSettings ?? {},
+        appliesWhen
       };
     } else {
       problems.push(`${filePath}: ${formatSchemaIssues({ issues: parsed.error.issues, subject: "pack file" })}`);
@@ -124697,7 +124707,7 @@ var importCheckModule = async ({ checkPath }) => {
   const parsed = StandardsCheckModule.safeParse(imported.check);
   if (!parsed.success) {
     throw new Error(
-      `${basename(checkPath)} must export \`check\` as { inputKind, run } (${checkPath}): ${formatSchemaIssues({ issues: parsed.error.issues, subject: "check" })}`
+      `${basename(checkPath)} must export \`check\` as { inputKinds, run } (${checkPath}): ${formatSchemaIssues({ issues: parsed.error.issues, subject: "check" })}`
     );
   }
   return parsed.data;
@@ -124706,7 +124716,7 @@ var importCheckModule = async ({ checkPath }) => {
 // src/standardsLibraries/internal/common/parsing/parseRuleFolder.ts
 var ruleDeclaration = external_exports.object({
   summary: external_exports.string().min(1),
-  checked: external_exports.boolean().default(false),
+  checks: external_exports.enum(StandardsRuleChecks),
   severity: external_exports.enum(StandardsSeverity).default(StandardsSeverity.Advisory),
   options: external_exports.record(external_exports.string(), external_exports.number()).default({}),
   example: RuleExample.optional(),
@@ -124721,7 +124731,12 @@ var getRuleDeclaration = async ({ folderPath, rulePath, found }) => {
   const parsed = text === void 0 ? void 0 : parseDeclaration({ text, schema: ruleDeclaration, filePath, problems: found });
   return { declaration: parsed?.declaration, prose: parsed?.body ?? "" };
 };
-var findCheckFile = async ({ folderPath, rulePath, checked, found }) => {
+var findCheckFile = async ({
+  folderPath,
+  rulePath,
+  checks,
+  found
+}) => {
   const shipped = [];
   for (const fileName of ["check.ts", "check.js"]) {
     if (await hasFile({ path: join16(folderPath, fileName) })) {
@@ -124733,11 +124748,11 @@ var findCheckFile = async ({ folderPath, rulePath, checked, found }) => {
     found.push(`${rulePath}: ships both check.ts and check.js \u2014 a rule ships one`);
   } else if (shipped.length === 1) {
     checkFileName = shipped[0];
-  } else if (checked === true) {
-    found.push(`${rulePath}: declares checked: true but ships no check.ts or check.js`);
+  } else if (checks === StandardsRuleChecks.Deterministic || checks === StandardsRuleChecks.Both) {
+    found.push(`${rulePath}: declares checks: ${checks} but ships no check.ts or check.js`);
   }
-  if (checked === false && checkFileName !== void 0) {
-    found.push(`${rulePath}: ships a ${checkFileName} but does not declare checked: true`);
+  if (checks === StandardsRuleChecks.Agent && checkFileName !== void 0) {
+    found.push(`${rulePath}: ships a ${checkFileName} but declares checks: agent`);
   }
   return checkFileName === void 0 ? void 0 : join16(folderPath, checkFileName);
 };
@@ -124765,8 +124780,9 @@ var parseRuleFolder = async ({ folderPath, set: set2, documentPath, library, pro
     found.push(`${rulePath}: rule folder must be named <NN>-<rule-id>, e.g. 01-${folderName}`);
   }
   const { declaration, prose } = await getRuleDeclaration({ folderPath, rulePath, found });
-  const checkPath = await findCheckFile({ folderPath, rulePath, checked: declaration?.checked, found });
-  const check2 = declaration?.checked === true && checkPath !== void 0 ? await loadCheck({ checkPath, rulePath, found }) : void 0;
+  const checkPath = await findCheckFile({ folderPath, rulePath, checks: declaration?.checks, found });
+  const deterministic = declaration !== void 0 && declaration.checks !== StandardsRuleChecks.Agent;
+  const check2 = deterministic && checkPath !== void 0 ? await loadCheck({ checkPath, rulePath, found }) : void 0;
   const fixturesPath = join16(folderPath, "fixtures");
   problems.push(...found);
   let rule;
@@ -124779,13 +124795,14 @@ var parseRuleFolder = async ({ folderPath, set: set2, documentPath, library, pro
       documentPath,
       summary: declaration.summary,
       prose,
-      checked: declaration.checked,
+      deterministic,
+      agent: declaration.checks !== StandardsRuleChecks.Deterministic,
       defaultSeverity: declaration.severity,
       defaultOptions: declaration.options,
       // As written: readStandardsLibrary resolves the names once every rule of the library is loaded.
       requires: declaration.requires,
       ...declaration.example === void 0 ? {} : { example: declaration.example },
-      ...check2 === void 0 ? {} : { inputKind: check2.inputKind, run: check2.run },
+      ...check2 === void 0 ? {} : { inputKinds: check2.inputKinds, run: check2.run },
       fixturesPath
     };
   }
@@ -125050,11 +125067,30 @@ ${unresolved.map((line) => `- ${line}`).join("\n")}`);
   return libraries;
 };
 
-// src/standardsLibraries/internal/expandPack.ts
-var splitAddress = ({ address }) => {
+// src/standardsLibraries/internal/common/utils/applyPackCondition.ts
+var applyPackCondition = ({ address, packFile, expansion, dependencies }) => {
+  const { appliesWhen } = packFile;
+  let result = expansion;
+  if (appliesWhen !== void 0) {
+    const applies = dependencies === void 0 || appliesWhen.dependencies.some((name) => dependencies.has(name));
+    result = applies ? { ...expansion, conditionalPacks: /* @__PURE__ */ new Set([...expansion.conditionalPacks, address]) } : {
+      topics: /* @__PURE__ */ new Map(),
+      rules: /* @__PURE__ */ new Map(),
+      settings: /* @__PURE__ */ new Map(),
+      conditionalPacks: /* @__PURE__ */ new Set(),
+      inactiveRules: new Map([...expansion.inactiveRules, ...expansion.rules])
+    };
+  }
+  return result;
+};
+
+// src/standardsLibraries/internal/common/utils/splitPackAddress.ts
+var splitPackAddress = ({ address }) => {
   const slash = address.indexOf("/");
   return slash === -1 ? void 0 : { libraryName: address.slice(0, slash), path: address.slice(slash + 1) };
 };
+
+// src/standardsLibraries/internal/common/utils/findPackFile.ts
 var findPackFile = ({ address, libraries, chain }) => {
   const includedBy = chain.at(-1);
   const fail = ({ reason }) => new Error(includedBy === void 0 ? `pack ${address}: ${reason}` : `pack ${includedBy}: include.packs entry "${address}" ${reason}`);
@@ -125062,7 +125098,7 @@ var findPackFile = ({ address, libraries, chain }) => {
   if (cycleStart !== -1) {
     throw fail({ reason: `closes an include cycle: ${[...chain.slice(cycleStart), address].join(" \u2192 ")}` });
   }
-  const parts = splitAddress({ address });
+  const parts = splitPackAddress({ address });
   const library = libraries.find((candidate) => candidate.name === parts?.libraryName);
   if (parts === void 0 || library === void 0) {
     throw fail({
@@ -125075,6 +125111,8 @@ var findPackFile = ({ address, libraries, chain }) => {
   }
   return { library, packFile };
 };
+
+// src/standardsLibraries/internal/expandPacks.ts
 var findVisibleLibraries = ({
   address,
   library,
@@ -125088,7 +125126,7 @@ var findVisibleLibraries = ({
     ...include.rules.filter((entry) => entry.includes("/")).map((entry) => ({ list: "include.rules", entry }))
   ];
   for (const { list, entry } of entries) {
-    const libraryName = splitAddress({ address: entry })?.libraryName;
+    const libraryName = splitPackAddress({ address: entry })?.libraryName;
     const named = libraries.find((candidate) => candidate.name === libraryName);
     if (libraryName === void 0) {
       throw new Error(`pack ${address}: ${list} entry "${entry}" is not an address of the form <library>/<name>`);
@@ -125131,9 +125169,15 @@ var mergeExpansion = ({ into, from }) => {
   for (const [name, setting] of from.settings) {
     mergeSetting({ settings: into.settings, name, setting });
   }
+  for (const conditionalPack of from.conditionalPacks) {
+    into.conditionalPacks.add(conditionalPack);
+  }
+  for (const [name, rule] of from.inactiveRules) {
+    into.inactiveRules.set(name, rule);
+  }
 };
 var addWholeTopic = ({ address, entry, expansion, libraries }) => {
-  const parts = splitAddress({ address: entry });
+  const parts = splitPackAddress({ address: entry });
   const library = libraries.find((candidate) => candidate.name === parts?.libraryName);
   const topic = library?.documents.find((candidate) => candidate.path === parts?.path);
   if (library === void 0 || topic === void 0) {
@@ -125166,19 +125210,29 @@ var applyRuleSettings = ({ address, expansion, ruleSettings, libraries }) => {
     if ("problem" in resolved) {
       throw new Error(`pack ${address}: rule-settings entry "${key}" \u2014 ${resolved.problem}`);
     }
-    if (!expansion.rules.has(resolved.rule.name)) {
-      throw new Error(`pack ${address}: rule-settings entry "${key}" names ${resolved.rule.name}, which the pack does not include`);
+    const { name } = resolved.rule;
+    if (!expansion.rules.has(name) && !expansion.inactiveRules.has(name)) {
+      throw new Error(`pack ${address}: rule-settings entry "${key}" names ${name}, which the pack does not include`);
     }
-    const setting = typeof value === "string" ? { severity: value, options: {} } : { severity: value.severity, options: value.options ?? {} };
-    mergeSetting({ settings: expansion.settings, name: resolved.rule.name, setting });
+    if (expansion.rules.has(name)) {
+      const setting = typeof value === "string" ? { severity: value, options: {} } : { severity: value.severity, options: value.options ?? {} };
+      mergeSetting({ settings: expansion.settings, name, setting });
+    }
   }
 };
-var expandPack = ({ address, libraries, chain }) => {
+var emptyExpansion = () => ({
+  topics: /* @__PURE__ */ new Map(),
+  rules: /* @__PURE__ */ new Map(),
+  settings: /* @__PURE__ */ new Map(),
+  conditionalPacks: /* @__PURE__ */ new Set(),
+  inactiveRules: /* @__PURE__ */ new Map()
+});
+var expandPack = ({ address, libraries, chain, dependencies }) => {
   const { library, packFile } = findPackFile({ address, libraries, chain });
   const visible = findVisibleLibraries({ address, library, include: packFile.include, libraries });
-  const expansion = { topics: /* @__PURE__ */ new Map(), rules: /* @__PURE__ */ new Map(), settings: /* @__PURE__ */ new Map() };
+  const expansion = emptyExpansion();
   for (const entry of packFile.include.packs) {
-    mergeExpansion({ into: expansion, from: expandPack({ address: entry, libraries, chain: [...chain, address] }) });
+    mergeExpansion({ into: expansion, from: expandPack({ address: entry, libraries, chain: [...chain, address], dependencies }) });
   }
   for (const entry of packFile.include.topics) {
     addWholeTopic({ address, entry, expansion, libraries: visible });
@@ -125187,19 +125241,28 @@ var expandPack = ({ address, libraries, chain }) => {
     addSingleRule({ address, entry, expansion, libraries: visible });
   }
   applyRuleSettings({ address, expansion, ruleSettings: packFile.ruleSettings, libraries: visible });
+  return applyPackCondition({ address, packFile, expansion, dependencies });
+};
+var expandPacks = ({ addresses, libraries, dependencies }) => {
+  const expansion = emptyExpansion();
+  for (const address of addresses) {
+    mergeExpansion({ into: expansion, from: expandPack({ address, libraries, chain: [], dependencies }) });
+  }
   return expansion;
 };
 
 // src/standardsLibraries/resolveStandardsPack.ts
-var resolveStandardsPack = ({ address, libraries }) => {
-  const expansion = expandPack({ address, libraries, chain: [] });
+var resolveStandardsPack = ({ addresses, libraries, dependencies }) => {
+  const expansion = expandPacks({ addresses, libraries, dependencies });
   return {
-    name: address,
+    name: addresses.join(" + "),
     topics: [...expansion.topics.values()],
     rules: [...expansion.rules.values()].map((rule) => {
       const setting = expansion.settings.get(rule.name);
       return { rule, severity: setting?.severity ?? rule.defaultSeverity, options: { ...rule.defaultOptions, ...setting?.options } };
-    })
+    }),
+    conditionalPacks: [...expansion.conditionalPacks],
+    inactiveRules: [...expansion.inactiveRules.values()].filter((rule) => !expansion.rules.has(rule.name))
   };
 };
 
@@ -125218,29 +125281,33 @@ var refuseUnknownPackages = ({
     );
   }
 };
-var choosePack = async ({ name, manifestPath, config: config2 }) => {
+var refuseSettingsWithoutPack = ({ config: config2 }) => {
+  if (config2?.["standards-pack"] === void 0 && Object.keys(config2?.["standards-rule-settings"] ?? {}).length > 0) {
+    throw new Error(
+      'standards-rule-settings is set but standards-pack is not, so its settings apply to nothing \u2014 standards are opt-in: set "standards-pack" to a pack address, "<library>/<pack>", to turn standards on, or to false to run with none'
+    );
+  }
+};
+var choosePack = ({ name, manifestPath, config: config2 }) => {
   const own = name === "" ? void 0 : config2?.["package-standards-packs"]?.[name];
   const repo = config2?.["standards-pack"];
-  let choice;
-  if (own !== void 0) {
-    choice = { name, address: own, source: StandardsPackSource.Named };
-  } else if (typeof repo === "string") {
-    choice = { name, address: repo, source: StandardsPackSource.Named };
-  } else if (repo === void 0) {
-    choice = { name, address: await detectStandardsPack({ manifestPath }), source: StandardsPackSource.Detected };
-  }
-  return choice;
+  const selection = own ?? (repo === false ? void 0 : repo);
+  return selection === void 0 ? void 0 : { name, addresses: [selection].flat(), manifestPath };
 };
-var formGroups = ({ choices }) => {
+var resolvePackagePack = async ({ choice, libraries }) => {
+  const dependencies = new Set(await readDependencyNames({ manifestPath: choice.manifestPath }) ?? []);
+  return { name: choice.name, pack: resolveStandardsPack({ addresses: choice.addresses, libraries, dependencies }) };
+};
+var formGroups = ({ packagePacks }) => {
   const byKey = /* @__PURE__ */ new Map();
-  for (const { name, address, source } of choices) {
-    const key = `${address}\0${source}`;
-    const entry = byKey.get(key) ?? { address, source, packages: [] };
+  for (const { name, pack } of packagePacks) {
+    const key = [pack.name, ...pack.conditionalPacks].join("\0");
+    const entry = byKey.get(key) ?? { pack, packages: [] };
     entry.packages.push(name);
     byKey.set(key, entry);
   }
   return [...byKey.values()].map((entry) => ({ ...entry, packages: [...entry.packages].sort(byName) })).sort(
-    (first, second) => Number(second.packages.includes("")) - Number(first.packages.includes("")) || byName(first.address, second.address) || byName(first.source, second.source)
+    (first, second) => Number(second.packages.includes("")) - Number(first.packages.includes("")) || byName(first.pack.name, second.pack.name) || byName(first.pack.conditionalPacks.join(), second.pack.conditionalPacks.join())
   );
 };
 var keepScope = ({ groups, packages }) => {
@@ -125251,26 +125318,21 @@ var keepScope = ({ groups, packages }) => {
 };
 var resolveStandardsGroups = async ({ cwd, config: config2, packages }) => {
   if (selectsNoStandards({ config: config2 })) {
+    refuseSettingsWithoutPack({ config: config2 });
     return [];
   }
-  const packagePacks = config2?.["package-standards-packs"] ?? {};
   const packagesDir = config2?.["packages-dir"] ?? defaultPackagesDir;
   const workspace = (await listWorkspacePackages({ cwd, packagesDir })).sort(byName);
-  refuseUnknownPackages({ packagePacks, workspace, packagesDir });
-  const choices = await Promise.all([
+  refuseUnknownPackages({ packagePacks: config2?.["package-standards-packs"] ?? {}, workspace, packagesDir });
+  const choices = [
     choosePack({ name: "", manifestPath: join21(cwd, "package.json"), config: config2 }),
     ...workspace.map((name) => choosePack({ name, manifestPath: join21(cwd, packagesDir, name, "package.json"), config: config2 }))
-  ]);
-  const formed = formGroups({ choices: choices.filter((choice) => choice !== void 0) });
+  ].filter((choice) => choice !== void 0);
   const libraries = await resolveStandardsLibraries({ cwd, config: config2 });
-  const packs = /* @__PURE__ */ new Map();
-  const resolved = formed.map((entry) => {
-    const pack = packs.get(entry.address) ?? resolveStandardsPack({ address: entry.address, libraries });
-    packs.set(entry.address, pack);
-    return { ...entry, pack };
-  });
-  const statesPerPack = resolveRuleStates({ packs: resolved.map(({ pack }) => pack), ruleSettings: config2?.["standards-rule-settings"] });
-  const groups = resolved.map(({ packages: covered, pack, source }, index) => ({ packages: covered, pack, source, states: statesPerPack[index] }));
+  const packagePacks = await Promise.all(choices.map((choice) => resolvePackagePack({ choice, libraries })));
+  const formed = formGroups({ packagePacks });
+  const statesPerPack = resolveRuleStates({ packs: formed.map(({ pack }) => pack), ruleSettings: config2?.["standards-rule-settings"] });
+  const groups = formed.map(({ packages: covered, pack }, index) => ({ packages: covered, pack, states: statesPerPack[index] }));
   return keepScope({ groups, packages });
 };
 
@@ -125410,6 +125472,19 @@ var checkSourceWalk = async ({ cwd, generated = [] }) => {
     status: "fail",
     detail: `${unexplained.length} tracked source file(s) the walk never reads: ${shown.join(", ")}${unexplained.length > shown.length ? ", \u2026" : ""}`,
     fix: "no rule reads these \u2014 either the walk is skipping a directory it should not, or the path belongs in the config's `generated` list"
+  };
+};
+
+// src/doctor/checkStandardsPack.ts
+var checkStandardsPack = ({ config: config2 }) => {
+  const namesPackagePack = Object.keys(config2["package-standards-packs"] ?? {}).length > 0;
+  if (config2["standards-pack"] !== void 0 || namesPackagePack) {
+    return void 0;
+  }
+  return {
+    id: "standards-pack",
+    status: "note",
+    detail: 'no `standards-pack` is set, so runs use no code standards: agents get no rules and no standards checks run. Set `"standards-pack"` to a pack address, `"<library>/<pack>"`, to turn standards on, or to `false` to record that none are wanted.'
   };
 };
 
@@ -125564,6 +125639,7 @@ var runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }) => {
   pushOptional({ checks, check: await checkJestMocks({ cwd, packageDirs }) });
   pushOptional({ checks, check: await checkJestReporter({ cwd, packageDirs }) });
   pushOptional({ checks, check: await checkUserEvent({ packageDirs }) });
+  pushOptional({ checks, check: checkStandardsPack({ config: config2 }) });
   pushOptional({ checks, check: await checkLintRules({ config: config2, packageDirs }) });
   pushOptional({ checks, check: await checkRuleRequirements({ cwd, config: config2 }) });
   for (const audit of configuredPathAudits({ config: config2 })) {
@@ -131798,16 +131874,18 @@ var printConfigSource = ({ configPath }) => {
 var defaultSupervisorTimeoutMinutes = 15;
 
 // src/cli/internal/common/render/printRunHeader.ts
-var standardsLinesOf = ({ groups }) => {
+var describePack = ({ group }) => group.pack.conditionalPacks.length === 0 ? group.pack.name : `${group.pack.name} (with ${group.pack.conditionalPacks.join(", ")})`;
+var standardsLinesOf = ({ groups, config: config2 }) => {
   const root = groups.find((group) => group.packages.includes(""));
-  const packageLines = groups.filter((group) => group !== root && (root === void 0 || group.pack.name !== root.pack.name || group.source !== root.source)).flatMap((group) => group.packages.filter((name) => name !== "").map((name) => ({ name, description: `${group.pack.name} (${group.source})` }))).sort((first, second) => first.name.localeCompare(second.name)).map(({ name, description }) => `    ${name}: ${description}`);
-  const rootLine = root === void 0 ? "  repo root: none (standards-pack false)" : `  repo root: ${root.pack.name} (${root.source})`;
+  const packageLines = groups.filter((group) => group !== root).flatMap((group) => group.packages.filter((name) => name !== "").map((name) => ({ name, description: describePack({ group }) }))).sort((first, second) => first.name.localeCompare(second.name)).map(({ name, description }) => `    ${name}: ${description}`);
+  const noneReason = config2["standards-pack"] === false ? "standards-pack false" : "no standards-pack";
+  const rootLine = root === void 0 ? `  repo root: none (${noneReason})` : `  repo root: ${describePack({ group: root })}`;
   return [rootLine, ...packageLines];
 };
 var describeStandards = async ({ config: config2, cwd }) => {
   let lines;
   try {
-    lines = standardsLinesOf({ groups: await resolveStandardsGroups({ cwd, config: config2 }) });
+    lines = standardsLinesOf({ groups: await resolveStandardsGroups({ cwd, config: config2 }), config: config2 });
   } catch (error51) {
     lines = [`  standards: will not load \u2014 ${messageOf({ error: error51 })}`];
   }
@@ -146399,6 +146477,40 @@ var buildCheckInput = async ({
   }
 };
 
+// src/standardsCheck/internal/common/checkInputs/buildCheckInputs.ts
+var place = ({ inputs, input }) => {
+  switch (input.kind) {
+    case StandardsInputKind.FileList:
+      inputs[StandardsInputKind.FileList] = input;
+      break;
+    case StandardsInputKind.FileText:
+      inputs[StandardsInputKind.FileText] = input;
+      break;
+    case StandardsInputKind.SyntaxTree:
+      inputs[StandardsInputKind.SyntaxTree] = input;
+      break;
+    case StandardsInputKind.TypeChecker:
+      inputs[StandardsInputKind.TypeChecker] = input;
+      break;
+    case StandardsInputKind.TestFile:
+      inputs[StandardsInputKind.TestFile] = input;
+      break;
+    case StandardsInputKind.ImportGraph:
+      inputs[StandardsInputKind.ImportGraph] = input;
+      break;
+    case StandardsInputKind.CloneSpans:
+      inputs[StandardsInputKind.CloneSpans] = input;
+      break;
+  }
+};
+var buildCheckInputs = async ({ kinds, inputFor }) => {
+  const inputs = {};
+  for (const kind of kinds) {
+    place({ inputs, input: await inputFor({ kind }) });
+  }
+  return inputs;
+};
+
 // src/standardsCheck/internal/common/constants/typescriptInputKinds.ts
 var typescriptInputKinds = /* @__PURE__ */ new Set([
   StandardsInputKind.SyntaxTree,
@@ -146459,10 +146571,10 @@ var findFoldersWithoutAliasSource = ({ files, contents }) => {
 
 // src/standardsCheck/internal/common/utils/runRuleCheck.ts
 var rawFindings = external_exports.array(RawStandardsFinding);
-var runRuleCheck = async ({ rule, run, input, options }) => {
+var runRuleCheck = async ({ rule, run, inputs, options }) => {
   let returned;
   try {
-    returned = await run({ input, options });
+    returned = await run({ inputs, options });
   } catch (error51) {
     throw new Error(`standards rule "${rule.name}" threw while checking: ${messageOf({ error: error51 })}`);
   }
@@ -146485,11 +146597,11 @@ var selectLiveRules = ({ groups }) => {
   for (const group of groups) {
     for (const { rule } of group.pack.rules) {
       const state = group.states.get(rule.name);
-      if (rule.run === void 0 || rule.inputKind === void 0 || state === void 0 || state.severity === StandardsSeverity.Off) {
+      if (rule.run === void 0 || rule.inputKinds === void 0 || state === void 0 || state.severity === StandardsSeverity.Off) {
         continue;
       }
       const key = canonicalJson({ value: [rule.name, state.options] });
-      const entry = live2.get(key) ?? { id: rule.id, name: rule.name, inputKind: rule.inputKind, run: rule.run, options: state.options, graders: [] };
+      const entry = live2.get(key) ?? { id: rule.id, name: rule.name, inputKinds: rule.inputKinds, run: rule.run, options: state.options, graders: [] };
       entry.graders.push({ group, severity: state.severity });
       live2.set(key, entry);
     }
@@ -146509,33 +146621,31 @@ var runLiveRules = async ({
   progress
 }) => {
   const findings = [];
-  const skipped = /* @__PURE__ */ new Set();
-  for (const kind of Object.values(StandardsInputKind)) {
-    const rules = live2.filter((rule) => rule.inputKind === kind);
-    if (rules.length === 0) {
+  const skipped = [];
+  const shared = /* @__PURE__ */ new Map();
+  const inputFor = async ({ kind, options }) => {
+    if (kind === StandardsInputKind.CloneSpans) {
+      const built2 = await buildInput({ kind, options });
+      progress(`${kind}: built`);
+      return built2;
+    }
+    const built = shared.get(kind) ?? await buildInput({ kind, options });
+    if (!shared.has(kind)) {
+      shared.set(kind, built);
+      progress(`${kind}: built`);
+    }
+    return built;
+  };
+  for (const rule of live2) {
+    if (compiler === void 0 && rule.inputKinds.some((kind) => typescriptInputKinds.has(kind))) {
+      skipped.push(rule.name);
       continue;
     }
-    if (compiler === void 0 && typescriptInputKinds.has(kind)) {
-      for (const rule of rules) {
-        skipped.add(rule.name);
-      }
-      continue;
-    }
-    let shared;
-    for (const rule of rules) {
-      let input;
-      if (kind === StandardsInputKind.CloneSpans) {
-        input = await buildInput({ kind, options: rule.options });
-      } else {
-        shared ??= await buildInput({ kind, options: rule.options });
-        input = shared;
-      }
-      const raw = await runRuleCheck({ rule, run: rule.run, input, options: rule.options });
-      findings.push(...gradeFindings({ rule, raw, groupOfFile }));
-    }
-    progress(`${kind}: done`);
+    const inputs = await buildCheckInputs({ kinds: rule.inputKinds, inputFor: ({ kind }) => inputFor({ kind, options: rule.options }) });
+    const raw = await runRuleCheck({ rule, run: rule.run, inputs, options: rule.options });
+    findings.push(...gradeFindings({ rule, raw, groupOfFile }));
   }
-  return { findings, skipped: [...skipped] };
+  return { findings, skipped: [...new Set(skipped)] };
 };
 var runPackageChecks = async ({
   cwd,
@@ -146562,7 +146672,7 @@ var runPackageChecks = async ({
   if (skipped.length > 0) {
     notes.push(`${skipped.join(", ")} skipped \u2014 no typescript resolvable from the target repo`);
   }
-  const uncovered = live2.some((rule) => rule.inputKind === StandardsInputKind.FileText) ? findFoldersWithoutAliasSource({ files: allFiles, contents: cache }) : [];
+  const uncovered = live2.some((rule) => rule.inputKinds.includes(StandardsInputKind.FileText)) ? findFoldersWithoutAliasSource({ files: allFiles, contents: cache }) : [];
   if (uncovered.length > 0) {
     notes.push(
       `no package.json with imports and no tsconfig above ${uncovered.length} folder(s) \u2014 path aliases are unknown there, so the barrel and import rules stayed silent rather than guess: ${uncovered.slice(0, 5).join(", ")}${uncovered.length > 5 ? ", \u2026" : ""}`
@@ -146680,8 +146790,25 @@ ${error51}` });
   };
 };
 
+// src/agents/prompts/frictionSection.md
+var frictionSection_default = '## Friction \u2014 help the pipeline improve itself\n\nIf anything fought you during this task \u2014 the plan or ticket was ambiguous\nsomewhere, your role instructions were contradictory or unclear, standards\nconflicted, or the environment surprised you \u2014 record it in the optional\n`friction` array of your report with `kind: "friction"`. If the input was\nsilent and you had to choose between reasonable options to keep moving \u2014 a\nguess, a judgment call the plan or ticket should have made \u2014 record it with\n`kind: "decision"`. Both use `area`: `"plan"` (the plan or ticket you were\ngiven) | `"prompt"` | `"standards"` | `"environment"` | `"other"`.\n\nWhen a Standards rule tells you to report something, or leaves a decision to\nthe repo owner, this array is where you report it: one `kind: "friction"`\nentry naming the rule and what the owner has to decide. Use\n`area: "environment"` when what is missing is configuration or a dependency,\nand `area: "standards"` otherwise. Then carry on as the rule says \u2014 a decision\nleft to the owner is not yours to make.\n\nReport entries even when your status is complete; omit the field entirely\nwhen the run was clean.\n';
+
+// src/agents/internal/common/constants/sharedPromptSections.ts
+var sharedPromptSections = {
+  frictionSection: frictionSection_default.trimEnd()
+};
+
+// src/agents/internal/common/utils/applyPromptTokens.ts
+var applyPromptTokens = ({ text, tokens }) => {
+  let applied = text;
+  for (const [name, value] of Object.entries(tokens)) {
+    applied = applied.split(`{{${name}}}`).join(String(value));
+  }
+  return applied;
+};
+
 // src/agents/prompts/unitTestWriter.md
-var unitTestWriter_default = '# Role: Unit Test Writer\n\nYou are a principal software engineer writing unit tests for recently changed\nsource files. You work autonomously: the plan and any standards are appended\nto these instructions, and your assignment arrives in your task message as two\nlists \u2014 test subjects (public surfaces to test through) and changed internals\n(files your tests must execute through those surfaces). Your final message is\nmachine-parsed \u2014 it is a data payload, not prose for a human.\n\n## Study before you write\n\n1. Read both lists in your task \u2014 the subjects, to learn each surface\'s\n   observable behavior, and the changed internals, tracing how each is\n   reached from a subject \u2014 plus the plan for context on intended behavior.\n2. Read the repository\'s existing tests first and mirror their mechanics:\n   framework, assertion style, file placement, naming. Never introduce a new\n   test framework or runner.\n3. When provided Standards and existing tests disagree on STYLE (structure,\n   setup patterns, hooks), precedence is by what you are writing:\n   - **Extending an existing test file** \u2192 match that file\'s local style,\n     even where it predates the Standards. One file, one style; do not mix.\n   - **Creating a new test file** \u2192 the Standards win, even when the file\n     the plan names as your mirror uses an older style. Mirror the target\'s\n     COVERAGE (what it tests), not its structure.\n   Applying this precedence is normal operation, NOT friction \u2014 do not record\n   a friction entry for each legacy-style file you encounter. Record ONE\n   `friction` entry (`area: "standards"`) only if the rule itself failed you:\n   the conflict was not stylistic, or it was ambiguous which case applied.\n   Legacy-style cleanup is tracked by the repo owner; your run is not that\n   cleanup.\n\n## Write\n\n- Tests target ONLY files in the subjects list: test observable behavior\n  through each subject\'s public surface, covering the changed code\'s branches\n  and edge cases \u2014 an internal file is covered through the subject that owns\n  it, and you never create a test file for a non-subject. The engine\'s\n  coverage gate, when configured, holds your work to the consumer\'s threshold\n  after you report.\n- The engine verifies, from the coverage report, that every changed file\n  listed in your task executed under the tests. A listed internal your tests\n  never reach is a missing test path through its subject \u2014 not an excuse for\n  a direct internal test.\n- If a target file already has tests, add only what is missing to cover its\n  changed behavior; if nothing is missing, report `complete` with an empty\n  `changedFiles` \u2014 do not rewrite healthy tests. Coverage-complete is not\n  the same as tested: audit the existing assertions against the changed\n  code paths, and where a path asserts no OUTPUT VALUE or SIDE EFFECT\n  (`toBeDefined()` or `not.toThrow()` alone where a return value or mutation\n  is meaningful), strengthen that assertion; name audited files in `summary`.\n- Before writing any mock or fixture, check the package\'s existing test\n  support (`test/mocks/`, `test/fixtures/`, co-located `__mocks__/`) and\n  reuse what exists \u2014 a second copy of a mock drifts from the first.\n- If a Standards section is appended to these instructions, every rule in it is\n  binding for the tests you write.\n- Skip files that are not testable source (config, type-only files, barrels,\n  and test files themselves) \u2014 note each skip and why in `summary`.\n- Do not modify source files. If a changed file\'s behavior appears defective\n  against the plan\'s intent, do not write a test that pins the defect and do\n  not fix the source \u2014 report status `failed` naming the suspected defect in\n  `failures`. A defect report is the correct output; a papered-over test is\n  not.\n- Do not delete or weaken existing tests or assertions.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command \u2014 the engine runs verification after you\n  report, against gates you cannot influence. Use the harness\'s file tools to\n  read and edit files. If the harness exposes the filesystem only through a\n  shell, use the shell solely to inspect and edit files \u2014 never for\n  repository commands.\n- Do not create commits or branches.\n- Tests listed under an `# Acceptance tests` section in your task state the\n  plan\'s acceptance criteria: every one of them must execute and pass. You may\n  edit a test file when the plan\'s own changes make it stale \u2014 an import, a\n  mock, a fixture, setup, or a move. Every edit to a test file is reviewed\n  against the plan before any gate runs, and the review refuses a weakened or\n  removed assertion, an acceptance test deleted, renamed, skipped or replaced\n  without a disposition the plan backs, a mock that neuters the subject under\n  test, a snapshot rewrite that hides a behaviour change the plan did not\n  authorise, and configuration that stops a test from being collected. A moved\n  test file carries every case its source held.\n\n## Ledger assignment\n\nWhen your task carries a `# Ledger tests to write` section, there is no\nsubjects list and no changed-internals list: the rules of that section replace\nthe subject rules above. Write exactly the named tests, in exactly the named\nfile, from the signatures the plan states. The source under test may not exist\non disk yet \u2014 import what the plan declares it will export, at the path the\nplan declares, and do not run anything to check. A row you cannot write from\nthe plan\'s signatures is a plan defect: report `failed` naming the row. The\nreport shape below is unchanged.\n\n## If re-invoked with a verification failure\n\nFix your tests only. If the failure traces to a source defect rather than\nyour tests, report status `failed` with the diagnosis in `failures` instead of\nadjusting a test to pass.\n\n## Friction \u2014 help the pipeline improve itself\n\nIf anything fought you during this task \u2014 the plan was ambiguous somewhere,\nyour role instructions were contradictory or unclear, standards conflicted,\nor the environment surprised you \u2014 record it in the optional `friction` array\nof your report with `kind: "friction"`. If the input was silent and you had\nto choose between reasonable options to keep moving \u2014 a guess, a judgment\ncall the plan should have made \u2014 record it with `kind: "decision"`. Both use\n`area`: `"plan"` | `"prompt"` | `"standards"` | `"environment"` | `"other"`.\nReport entries even when your status is complete; omit the field entirely\nwhen the run was clean.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "test/example.test.ts", "summary": "one clause on what was added" }],\n	"summary": "one line: what was tested, plus any skipped files and why",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 see Friction section; omit when clean" }]\n}\n```\n';
+var unitTestWriter_default = '# Role: Unit Test Writer\n\nYou are a principal software engineer writing unit tests for recently changed\nsource files. You work autonomously: the plan and any standards are appended\nto these instructions, and your assignment arrives in your task message as two\nlists \u2014 test subjects (public surfaces to test through) and changed internals\n(files your tests must execute through those surfaces). Your final message is\nmachine-parsed \u2014 it is a data payload, not prose for a human.\n\n## Study before you write\n\n1. Read both lists in your task \u2014 the subjects, to learn each surface\'s\n   observable behavior, and the changed internals, tracing how each is\n   reached from a subject \u2014 plus the plan for context on intended behavior.\n2. Read the repository\'s existing tests first and mirror their mechanics:\n   framework, assertion style, file placement, naming. Never introduce a new\n   test framework or runner.\n\n## Write\n\n- Tests target ONLY files in the subjects list: test observable behavior\n  through each subject\'s public surface, covering the changed code\'s branches\n  and edge cases \u2014 an internal file is covered through the subject that owns\n  it, and you never create a test file for a non-subject. The engine\'s\n  coverage gate, when configured, holds your work to the consumer\'s threshold\n  after you report.\n- The engine verifies, from the coverage report, that every changed file\n  listed in your task executed under the tests. A listed internal your tests\n  never reach is a missing test path through its subject \u2014 not an excuse for\n  a direct internal test.\n- If a target file already has tests, add only what is missing to cover its\n  changed behavior; if nothing is missing, report `complete` with an empty\n  `changedFiles` \u2014 do not rewrite healthy tests. Coverage-complete is not\n  the same as tested: audit the existing assertions against the changed\n  code paths, and where a path asserts no OUTPUT VALUE or SIDE EFFECT\n  (`toBeDefined()` or `not.toThrow()` alone where a return value or mutation\n  is meaningful), strengthen that assertion; name audited files in `summary`.\n- Before writing any mock or fixture, check the package\'s existing test\n  support (`test/mocks/`, `test/fixtures/`, co-located `__mocks__/`) and\n  reuse what exists \u2014 a second copy of a mock drifts from the first.\n- If a Standards section is appended to these instructions, every rule in it is\n  binding for the tests you write.\n- Skip files that are not testable source (config, type-only files, barrels,\n  and test files themselves) \u2014 note each skip and why in `summary`.\n- Do not modify source files. If a changed file\'s behavior appears defective\n  against the plan\'s intent, do not write a test that pins the defect and do\n  not fix the source \u2014 report status `failed` naming the suspected defect in\n  `failures`. A defect report is the correct output; a papered-over test is\n  not.\n- Do not delete or weaken existing tests or assertions.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command \u2014 the engine runs verification after you\n  report, against gates you cannot influence. Use the harness\'s file tools to\n  read and edit files. If the harness exposes the filesystem only through a\n  shell, use the shell solely to inspect and edit files \u2014 never for\n  repository commands.\n- Do not create commits or branches.\n- Tests listed under an `# Acceptance tests` section in your task state the\n  plan\'s acceptance criteria: every one of them must execute and pass. You may\n  edit a test file when the plan\'s own changes make it stale \u2014 an import, a\n  mock, a fixture, setup, or a move. Every edit to a test file is reviewed\n  against the plan before any gate runs, and the review refuses a weakened or\n  removed assertion, an acceptance test deleted, renamed, skipped or replaced\n  without a disposition the plan backs, a mock that neuters the subject under\n  test, a snapshot rewrite that hides a behaviour change the plan did not\n  authorise, and configuration that stops a test from being collected. A moved\n  test file carries every case its source held.\n\n## Ledger assignment\n\nWhen your task carries a `# Ledger tests to write` section, there is no\nsubjects list and no changed-internals list: the rules of that section replace\nthe subject rules above. Write exactly the named tests, in exactly the named\nfile, from the signatures the plan states. The source under test may not exist\non disk yet \u2014 import what the plan declares it will export, at the path the\nplan declares, and do not run anything to check. A row you cannot write from\nthe plan\'s signatures is a plan defect: report `failed` naming the row. The\nreport shape below is unchanged.\n\n## If re-invoked with a verification failure\n\nFix your tests only. If the failure traces to a source defect rather than\nyour tests, report status `failed` with the diagnosis in `failures` instead of\nadjusting a test to pass.\n\n{{frictionSection}}\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "test/example.test.ts", "summary": "one clause on what was added" }],\n	"summary": "one line: what was tested, plus any skipped files and why",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 see Friction section; omit when clean" }]\n}\n```\n';
 
 // src/agents/buildLedgerTestWriterInvocation.ts
 var buildLedgerTestWriterInvocation = ({
@@ -146694,7 +146821,7 @@ var buildLedgerTestWriterInvocation = ({
   deletePaths = [],
   errorContext
 }) => {
-  const roleSections = [unitTestWriter_default];
+  const roleSections = [applyPromptTokens({ text: unitTestWriter_default, tokens: sharedPromptSections })];
   if (overviewContent) {
     roleSections.push(
       `# Overview (high-level context)
@@ -147250,15 +147377,6 @@ var acceptanceTestsSection = ({ acceptanceTests = [] }) => listSection({
   ]
 });
 
-// src/agents/internal/common/utils/applyPromptTokens.ts
-var applyPromptTokens = ({ text, tokens }) => {
-  let applied = text;
-  for (const [name, value] of Object.entries(tokens)) {
-    applied = applied.split(`{{${name}}}`).join(String(value));
-  }
-  return applied;
-};
-
 // src/agents/internal/common/utils/changedFilesSection.ts
 var changedFilesSection = ({ changedFiles }) => changedFiles === void 0 || changedFiles.length === 0 ? void 0 : `# Previously changed files
 
@@ -147324,7 +147442,7 @@ var selfCheckSection = ({ command }) => {
 };
 
 // src/agents/prompts/featureExecutor.md
-var featureExecutor_default = '# Role: Feature Executor\n\nYou are a principal software engineer implementing a feature in the current\nrepository. You work autonomously from the plan appended to these instructions,\nand your final message is machine-parsed \u2014 it is a data payload, not prose for\na human.\n\n## Validate before you code\n\n1. Read the plan, then read every existing file it references \u2014 files to\n   modify, integration points, adjacent types. Build full understanding of the\n   current state before changing anything.\n2. If any file, module, or API the plan references does not exist on disk,\n   stop. Report status `terminated:stale-references`, listing each missing\n   reference in `failures`. Do not improvise around a stale plan.\n3. If the plan is ambiguous or leaves implementation-critical decisions\n   unspecified, stop. Report status `terminated:ambiguity`, naming each\n   ambiguity in `failures`. Do not guess \u2014 a wrong guess costs more than a\n   re-run.\n4. If the plan requires creating or modifying more than {{fileLimit}} source files\n   (excluding tests, barrels, and type-only files), stop. Report status\n   `terminated:scope` \u2014 the plan must be split upstream.\n\n## Implement\n\n- The plan is authoritative \u2014 do not reinterpret or second-guess its\n  decisions. If the repo\'s own CLAUDE.md conflicts with the plan, CLAUDE.md\n  wins; comply with it and note the conflict in `failures`.\n- An Overview section, when present, is high-level context from a multi-phase\n  effort \u2014 use it to understand intent, but implement only what the Plan\n  section specifies.\n- If a Standards section is appended to these instructions, every rule in it is\n  binding for every line you write.\n- Read every file before modifying it. Read independent files in parallel.\n- Implement the feature completely \u2014 no stubs, no partial code, no TODOs.\n- Do not add functionality the plan doesn\'t ask for, and do not touch files\n  outside the plan\'s scope.\n- Do not delete existing tests. If a test fails because the plan intentionally\n  changed behavior, update it to pin the new behavior and list it in\n  `changedFiles`. Never weaken or remove an assertion to make a failure go\n  away \u2014 fix the source instead.\n- Write tests whenever the plan explicitly requires them \u2014 create every\n  plan-named test file and cover its specified cases before reporting.\n  \u201CDo not run verification\u201D below prohibits executing tests and gates; it\n  never permits omitting required test code. Otherwise, a dedicated test-writer\n  role covers your changes after you report.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command \u2014 the engine runs verification after you\n  report, against gates you cannot influence. Use the harness\'s file tools to\n  read and edit files. If the harness exposes the filesystem only through a\n  shell, use the shell solely to inspect and edit files \u2014 never for\n  repository commands. Sole exception: commands listed under a\n  `# Granted commands` section in your task, and the engine\'s own self-check\n  command where an `# Engine self-check` section hands it to you. A granted\n  command is only for producing the deliverables the grant text describes \u2014\n  never for verifying, installing, or anything that text doesn\'t cover; the\n  engine\'s self-check is the one verification command you may run, and only as\n  its own section describes.\n- Do not create commits or branches.\n- Tests listed under an `# Acceptance tests` section in your task are what the\n  plan means by done: every one of them must execute and pass. You may edit a\n  test file when the plan\'s own changes make it stale \u2014 an import, a mock, a\n  fixture, setup, or a move. Every edit to a test file is reviewed against the\n  plan before any gate runs, and the review refuses a weakened or removed\n  assertion, an acceptance test deleted, renamed, skipped or replaced without a\n  disposition the plan backs, a mock that neuters the subject under test, a\n  snapshot rewrite that hides a behaviour change the plan did not authorise, and\n  configuration that stops a test from being collected. A moved test file\n  carries every case its source held. An acceptance test that cannot pass\n  against a correct implementation is a plan defect: report `failed` naming the\n  test and why, rather than changing it.\n- Do not read or write any agent memory, and do not edit CLAUDE.md or other\n  standing instructions \u2014 anything worth persisting belongs in your report\n  (friction included), which the engine records.\n\n## Prior art before new symbols\n\nBefore creating any NEW exported symbol the plan does not explicitly name,\nsearch the repository for an existing implementation \u2014 the exact name, its\nsynonyms (fetch/load/retrieve \u2248 get, make/generate \u2248 create, remove \u2248\ndelete), and the domain words. If a match exists, use it instead of\nduplicating it \u2014 or report the conflict in `failures` if it can\'t serve.\nRecord every such symbol in the `priorArt` array of your report: the terms\nyou searched and what they surfaced. An empty `matches` is a legitimate\nentry \u2014 "searched, found nothing" is evidence the pipeline records. Symbols\nthe plan names explicitly need no entry.\n\n## Self-review\n\nBefore reporting, re-read the plan once more and diff it mentally against what\nyou changed: every requirement covered, nothing extra added, every changed\nfile tracked.\n\nThen, if a Standards section was provided, re-read it top to bottom and audit\nevery file you changed against every rule \u2014 the full set, not the subset you\nremember from before you started coding. Fix each deviation in source before\nreporting: the refactor role should find clean code, not do your conformance\npass for you.\n\n## Friction \u2014 help the pipeline improve itself\n\nIf anything fought you during this task \u2014 the plan was ambiguous somewhere,\nyour role instructions were contradictory or unclear, standards conflicted,\nor the environment surprised you \u2014 record it in the optional `friction` array\nof your report with `kind: "friction"`. If the input was silent and you had\nto choose between reasonable options to keep moving \u2014 a guess, a judgment\ncall the plan should have made \u2014 record it with `kind: "decision"`. Both use\n`area`: `"plan"` | `"prompt"` | `"standards"` | `"environment"` | `"other"`.\nReport entries even when your status is complete; omit the field entirely\nwhen the run was clean.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was implemented, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 see Friction section; omit when clean" }],\n	"priorArt": [{ "symbol": "formatDate", "searches": ["formatDate", "format.*date", "dateToString"], "matches": [] }]\n}\n```\n\nReport `complete` only if you implemented everything the plan requires. Never\nclaim changes you did not make \u2014 the engine diffs the worktree and a false\nreport is worse than a failed one.\n';
+var featureExecutor_default = '# Role: Feature Executor\n\nYou are a principal software engineer implementing a feature in the current\nrepository. You work autonomously from the plan appended to these instructions,\nand your final message is machine-parsed \u2014 it is a data payload, not prose for\na human.\n\n## Validate before you code\n\n1. Read the plan, then read every existing file it references \u2014 files to\n   modify, integration points, adjacent types. Build full understanding of the\n   current state before changing anything.\n2. If any file, module, or API the plan references does not exist on disk,\n   stop. Report status `terminated:stale-references`, listing each missing\n   reference in `failures`. Do not improvise around a stale plan.\n3. If the plan is ambiguous or leaves implementation-critical decisions\n   unspecified, stop. Report status `terminated:ambiguity`, naming each\n   ambiguity in `failures`. Do not guess \u2014 a wrong guess costs more than a\n   re-run.\n4. If the plan requires creating or modifying more than {{fileLimit}} source files\n   (excluding tests, barrels, and type-only files), stop. Report status\n   `terminated:scope` \u2014 the plan must be split upstream.\n\n## Implement\n\n- The plan is authoritative \u2014 do not reinterpret or second-guess its\n  decisions. If the repo\'s own CLAUDE.md conflicts with the plan, CLAUDE.md\n  wins; comply with it and note the conflict in `failures`.\n- An Overview section, when present, is high-level context from a multi-phase\n  effort \u2014 use it to understand intent, but implement only what the Plan\n  section specifies.\n- If a Standards section is appended to these instructions, every rule in it is\n  binding for every line you write.\n- Read every file before modifying it. Read independent files in parallel.\n- Implement the feature completely \u2014 no stubs, no partial code, no TODOs.\n- Do not add functionality the plan doesn\'t ask for, and do not touch files\n  outside the plan\'s scope.\n- Do not delete existing tests. If a test fails because the plan intentionally\n  changed behavior, update it to pin the new behavior and list it in\n  `changedFiles`. Never weaken or remove an assertion to make a failure go\n  away \u2014 fix the source instead.\n- Write tests whenever the plan explicitly requires them \u2014 create every\n  plan-named test file and cover its specified cases before reporting.\n  \u201CDo not run verification\u201D below prohibits executing tests and gates; it\n  never permits omitting required test code. Otherwise, a dedicated test-writer\n  role covers your changes after you report.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command \u2014 the engine runs verification after you\n  report, against gates you cannot influence. Use the harness\'s file tools to\n  read and edit files. If the harness exposes the filesystem only through a\n  shell, use the shell solely to inspect and edit files \u2014 never for\n  repository commands. Sole exception: commands listed under a\n  `# Granted commands` section in your task, and the engine\'s own self-check\n  command where an `# Engine self-check` section hands it to you. A granted\n  command is only for producing the deliverables the grant text describes \u2014\n  never for verifying, installing, or anything that text doesn\'t cover; the\n  engine\'s self-check is the one verification command you may run, and only as\n  its own section describes.\n- Do not create commits or branches.\n- Tests listed under an `# Acceptance tests` section in your task are what the\n  plan means by done: every one of them must execute and pass. You may edit a\n  test file when the plan\'s own changes make it stale \u2014 an import, a mock, a\n  fixture, setup, or a move. Every edit to a test file is reviewed against the\n  plan before any gate runs, and the review refuses a weakened or removed\n  assertion, an acceptance test deleted, renamed, skipped or replaced without a\n  disposition the plan backs, a mock that neuters the subject under test, a\n  snapshot rewrite that hides a behaviour change the plan did not authorise, and\n  configuration that stops a test from being collected. A moved test file\n  carries every case its source held. An acceptance test that cannot pass\n  against a correct implementation is a plan defect: report `failed` naming the\n  test and why, rather than changing it.\n- Do not read or write any agent memory, and do not edit CLAUDE.md or other\n  standing instructions \u2014 anything worth persisting belongs in your report\n  (friction included), which the engine records.\n\n## Prior art before new symbols\n\nBefore creating any NEW exported symbol the plan does not explicitly name,\nsearch the repository for an existing implementation \u2014 the exact name, its\nsynonyms (fetch/load/retrieve \u2248 get, make/generate \u2248 create, remove \u2248\ndelete), and the domain words. If a match exists, use it instead of\nduplicating it \u2014 or report the conflict in `failures` if it can\'t serve.\nRecord every such symbol in the `priorArt` array of your report: the terms\nyou searched and what they surfaced. An empty `matches` is a legitimate\nentry \u2014 "searched, found nothing" is evidence the pipeline records. Symbols\nthe plan names explicitly need no entry.\n\n## Self-review\n\nBefore reporting, re-read the plan once more and diff it mentally against what\nyou changed: every requirement covered, nothing extra added, every changed\nfile tracked.\n\nThen, if a Standards section was provided, re-read it top to bottom and audit\nevery file you changed against every rule \u2014 the full set, not the subset you\nremember from before you started coding. Fix each deviation in source before\nreporting: the refactor role should find clean code, not do your conformance\npass for you.\n\n{{frictionSection}}\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was implemented, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 see Friction section; omit when clean" }],\n	"priorArt": [{ "symbol": "formatDate", "searches": ["formatDate", "format.*date", "dateToString"], "matches": [] }]\n}\n```\n\nReport `complete` only if you implemented everything the plan requires. Never\nclaim changes you did not make \u2014 the engine diffs the worktree and a false\nreport is worse than a failed one.\n';
 
 // src/common/constants/defaultExecutorFileLimit.ts
 var defaultExecutorFileLimit = 50;
@@ -147351,7 +147469,9 @@ var buildFeatureExecutorInvocation = ({
   selfCheckCommand: selfCheckCommand2,
   planBuildMode
 }) => {
-  const roleSections = [applyPromptTokens({ text: featureExecutor_default, tokens: { fileLimit: fileLimit ?? defaultExecutorFileLimit } })];
+  const roleSections = [
+    applyPromptTokens({ text: featureExecutor_default, tokens: { ...sharedPromptSections, fileLimit: fileLimit ?? defaultExecutorFileLimit } })
+  ];
   if (overviewContent) {
     roleSections.push(
       `# Overview (high-level context)
@@ -148588,10 +148708,10 @@ var buildLedgerLintSteps = ({ run, malformedLines }) => malformedLines.length ==
 ];
 
 // src/agents/prompts/refactorExecutor.md
-var refactorExecutor_default = '# Role: Refactor Executor\n\nYou are a principal software engineer improving code that already works. You\nwork autonomously: your scope section, the plan, and any standards are appended\nto these instructions, while the files to work on, the standards findings, and\nany verification failure arrive in the task message. Your final message is\nmachine-parsed \u2014 it is a data payload, not prose for a human.\n\nThe scope section appended below says which files you may write. It differs by\nwho invoked you, and it is the only part of these instructions that does.\n\n## What to improve\n\nRead the files in your task, plus enough surrounding code to judge the\nconventions around them, then apply improvements that are high-confidence and\nbehavior-preserving:\n\n- Duplication across the files you may write (extract it if the repo has a place)\n- Dead code, unused exports, scaffolding nothing reaches any more\n- Naming, structure, and placement inconsistent with the surrounding codebase\n- If a Standards section is provided, any deviation from it\n- If a Standards findings section is provided, those are deterministic\n  standards-check results on the changed files \u2014 address them FIRST; the engine\n  re-runs the checks after you report. Only a blocking finding that this run\'s\n  own edits introduced or measurably worsened can re-invoke you, and only within\n  a bounded round budget.\n- Entries under its Advisory subsection are per-rule JUDGMENT CALLS, and each\n  carries its own `guidance` line. Apply that guidance \u2014 there is no single\n  blanket rule covering every advisory, because they come from different rules\n  asking for different things. Never block on an advisory.\n- The hard limits below still govern an advisory: never change behavior, and\n  never write a file your scope section does not allow. An advisory whose only\n  available fix would do either is REPORTED as a noted exemption with your\n  reason, never applied.\n\n## Hard limits\n\n- Never change behavior or add functionality.\n- A test that passed before your refactor and fails after is a PRESUMED\n  REGRESSION: restore the behavior in the SOURCE \u2014 never make a test agree\n  with new behavior. You may edit a test ONLY for mechanical wiring that\n  follows directly from a refactor you made (an import path for a moved file,\n  a renamed symbol, a mock signature for a changed signature) \u2014 never author\n  new tests, never change, weaken, or delete an assertion to get green. A\n  test needing more than mechanical wiring is out of scope: leave your\n  refactor unapplied or report the file in `failures` as needing\n  re-authoring. List every test file you touch in `changedFiles`, each with\n  its wiring reason. Every edit to a test file is reviewed against the plan\n  before the gates run; a refused edit comes back to you as a verification\n  failure naming the file and the reason.\n- If two items in your work-list conflict (one says extract X, another says\n  delete X), apply the one producing fewer downstream changes and name the\n  skipped item in your summary.\n- Prefer doing nothing over a speculative improvement: zero changes is a\n  successful outcome (`complete` with an empty `changedFiles` and a summary\n  saying the code is clean). An empty pass ends the loop. Further rounds are\n  bought only by qualifying deterministic blocking findings, the budget for them\n  is finite, and whatever you leave behind is recorded and handed to the next\n  step rather than stopping the run.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command \u2014 the engine runs verification after you\n  report. Use the harness\'s file tools to read and edit files. If the harness\n  exposes the filesystem only through a shell, use the shell solely to inspect\n  and edit files \u2014 never for repository commands. Sole exception: commands\n  listed under a `# Granted commands` section in your task, and the engine\'s own\n  self-check command where an `# Engine self-check` section hands it to you. A\n  granted command is only for producing what the grant text describes; the\n  engine\'s self-check is the one verification command you may run, and only as\n  its own section describes.\n- Do not reproduce house formatting by hand. The engine runs the repo\'s own\n  formatter over your edits before it verifies them, so import order, line\n  wrapping, quoting and indentation are settled for you. Copying those details\n  off a neighbouring file is guesswork you are not being asked for, and it is\n  wrong often enough to turn a finished batch into a failed lint.\n- Do not create commits or branches.\n\n## Friction \u2014 help the pipeline improve itself\n\nIf anything fought you during this task \u2014 the plan was ambiguous somewhere,\nyour role instructions were contradictory or unclear, standards conflicted,\nor the environment surprised you \u2014 record it in the optional `friction` array\nof your report with `kind: "friction"`. If the input was silent and you had\nto choose between reasonable options to keep moving \u2014 a guess, a judgment\ncall the plan should have made \u2014 record it with `kind: "decision"`. Both use\n`area`: `"plan"` | `"prompt"` | `"standards"` | `"environment"` | `"other"`.\nReport entries even when your status is complete; omit the field entirely\nwhen the run was clean.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what was refactored" }],\n	"summary": "one line: what was improved, or that no changes were warranted",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 see Friction section; omit when clean" }]\n}\n```\n';
+var refactorExecutor_default = '# Role: Refactor Executor\n\nYou are a principal software engineer improving code that already works. You\nwork autonomously: your scope section, the plan, and any standards are appended\nto these instructions, while the files to work on, the standards findings, and\nany verification failure arrive in the task message. Your final message is\nmachine-parsed \u2014 it is a data payload, not prose for a human.\n\nThe scope section appended below says which files you may write. It differs by\nwho invoked you, and it is the only part of these instructions that does.\n\n## What to improve\n\nRead the files in your task, plus enough surrounding code to judge the\nconventions around them, then apply improvements that are high-confidence and\nbehavior-preserving:\n\n- Duplication across the files you may write (extract it if the repo has a place)\n- Dead code, unused exports, scaffolding nothing reaches any more\n- Naming, structure, and placement inconsistent with the surrounding codebase\n- If a Standards section is provided, any deviation from it\n- If a Standards findings section is provided, those are deterministic\n  standards-check results on the changed files \u2014 address them FIRST; the engine\n  re-runs the checks after you report. Only a blocking finding that this run\'s\n  own edits introduced or measurably worsened can re-invoke you, and only within\n  a bounded round budget.\n- Entries under its Advisory subsection are per-rule JUDGMENT CALLS, and each\n  carries its own `guidance` line. Apply that guidance \u2014 there is no single\n  blanket rule covering every advisory, because they come from different rules\n  asking for different things. Never block on an advisory.\n- The hard limits below still govern an advisory: never change behavior, and\n  never write a file your scope section does not allow. An advisory whose only\n  available fix would do either is REPORTED as a noted exemption with your\n  reason, never applied.\n\n## Hard limits\n\n- Never change behavior or add functionality.\n- A test that passed before your refactor and fails after is a PRESUMED\n  REGRESSION: restore the behavior in the SOURCE \u2014 never make a test agree\n  with new behavior. You may edit a test ONLY for mechanical wiring that\n  follows directly from a refactor you made (an import path for a moved file,\n  a renamed symbol, a mock signature for a changed signature) \u2014 never author\n  new tests, never change, weaken, or delete an assertion to get green. A\n  test needing more than mechanical wiring is out of scope: leave your\n  refactor unapplied or report the file in `failures` as needing\n  re-authoring. List every test file you touch in `changedFiles`, each with\n  its wiring reason. Every edit to a test file is reviewed against the plan\n  before the gates run; a refused edit comes back to you as a verification\n  failure naming the file and the reason.\n- If two items in your work-list conflict (one says extract X, another says\n  delete X), apply the one producing fewer downstream changes and name the\n  skipped item in your summary.\n- Prefer doing nothing over a speculative improvement: zero changes is a\n  successful outcome (`complete` with an empty `changedFiles` and a summary\n  saying the code is clean). An empty pass ends the loop. Further rounds are\n  bought only by qualifying deterministic blocking findings, the budget for them\n  is finite, and whatever you leave behind is recorded and handed to the next\n  step rather than stopping the run.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command \u2014 the engine runs verification after you\n  report. Use the harness\'s file tools to read and edit files. If the harness\n  exposes the filesystem only through a shell, use the shell solely to inspect\n  and edit files \u2014 never for repository commands. Sole exception: commands\n  listed under a `# Granted commands` section in your task, and the engine\'s own\n  self-check command where an `# Engine self-check` section hands it to you. A\n  granted command is only for producing what the grant text describes; the\n  engine\'s self-check is the one verification command you may run, and only as\n  its own section describes.\n- Do not reproduce house formatting by hand. The engine runs the repo\'s own\n  formatter over your edits before it verifies them, so import order, line\n  wrapping, quoting and indentation are settled for you. Copying those details\n  off a neighbouring file is guesswork you are not being asked for, and it is\n  wrong often enough to turn a finished batch into a failed lint.\n- Do not create commits or branches.\n\n{{frictionSection}}\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what was refactored" }],\n	"summary": "one line: what was improved, or that no changes were warranted",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 see Friction section; omit when clean" }]\n}\n```\n';
 
 // src/agents/prompts/refactorScopeFeature.md
-var refactorScopeFeature_default = "## Scope \u2014 the files one feature changed\n\nYou are reviewing files a feature change just touched. Review ONLY the changed\nfiles listed in your task. Read them, plus enough surrounding code to judge the\nconventions around them.\n\n- The listed files are the work. You may write a file outside them only where a\n  listed finding's repair cannot be finished without it: a helper an extraction\n  produces, an importer it breaks, a barrel that publishes what you moved. New\n  files a fix creates count here and are allowed on the same terms. Nothing\n  else \u2014 a file you could improve, but that no listed finding needs, stays\n  untouched.\n- Every file you write goes in `changedFiles` with its reason, new files\n  included. The engine verifies all of it, and an unreported edit is the one\n  thing that can make a green gate a lie.\n- A folder-level finding (`folder-size`) is REPORTED, never acted on. Its\n  only real remedy is regrouping files this feature never touched, and a home\n  you invent for your own file to duck the count is worse than the finding: the\n  finding is visible, a bad placement is not. A standalone reorganization run is\n  what clears it.\n- Never change a public API. Moving an export is not a public-API change while\n  the repo still offers the same names to the same importers \u2014 update every\n  importer you break, in the same pass. Deleting one is. A dead-export-family\n  advisory (`dead-export`, `test-only-export`) is\n  therefore REPORTED rather than acted on, unless the finding itself proves\n  nothing consumes the export.\n- An advisory whose only available fix would change a public API is REPORTED as\n  a noted exemption with your reason, never applied.\n\nWhy the limit: this work rides on a branch someone will review as a feature. A\nreorganization spreading out from it is not what that reviewer agreed to read,\nhowever much the code deserves one. Finishing one listed finding across the\nfiles it actually touches is not that reorganization \u2014 leaving half a fix\nbehind is, because the engine re-checks the flagged file, sees it clean, and\nnothing ever comes back for the other half.\n";
+var refactorScopeFeature_default = "## Scope \u2014 the files one feature changed\n\nYou are reviewing files a feature change just touched. Review ONLY the changed\nfiles listed in your task. Read them, plus enough surrounding code to judge the\nconventions around them.\n\n- The listed files are the work. You may write a file outside them only where a\n  listed finding's repair cannot be finished without it: a helper an extraction\n  produces, an importer it breaks, a barrel that publishes what you moved. New\n  files a fix creates count here and are allowed on the same terms. Nothing\n  else \u2014 a file you could improve, but that no listed finding needs, stays\n  untouched.\n- Every file you write goes in `changedFiles` with its reason, new files\n  included. The engine verifies all of it, and an unreported edit is the one\n  thing that can make a green gate a lie.\n- A folder-level finding (`folder-size`) is REPORTED, never acted on. Its\n  only real remedy is regrouping files this feature never touched, and a home\n  you invent for your own file to duck the count is worse than the finding: the\n  finding is visible, a bad placement is not. A standalone reorganization run is\n  what clears it.\n- Never change a public API. Moving an export is not a public-API change while\n  the repo still offers the same names to the same importers \u2014 update every\n  importer you break, in the same pass. Deleting one is. A `dead-export`\n  advisory is therefore REPORTED rather than acted on, unless the finding\n  itself proves nothing consumes the export.\n- An advisory whose only available fix would change a public API is REPORTED as\n  a noted exemption with your reason, never applied.\n\nWhy the limit: this work rides on a branch someone will review as a feature. A\nreorganization spreading out from it is not what that reviewer agreed to read,\nhowever much the code deserves one. Finishing one listed finding across the\nfiles it actually touches is not that reorganization \u2014 leaving half a fix\nbehind is, because the engine re-checks the flagged file, sees it clean, and\nnothing ever comes back for the other half.\n";
 
 // src/agents/prompts/refactorScopeStandalone.md
 var refactorScopeStandalone_default = "## Scope \u2014 a standalone reorganization\n\nThere is no feature plan. The standards findings in your task ARE the entire\nwork-list, and reorganizing the code they name is the reason this run exists \u2014\nnot a side effect to keep small.\n\nThe listed files are where the findings are. They are not a fence. You may also\nwrite:\n\n- Any new file a fix creates. The files a split produces are in scope, always.\n- Any file a listed fix cannot be finished without: the counterpart a\n  duplication finding names, the type a discriminant finding asks you to back\n  with a `const` object, the sibling that should import a constant you promoted.\n- Any barrel that must change because you moved what it publishes.\n\nMoving an export between files is expected here, and so is extracting a piece\ntwo callers share. Neither is a public-API change while the repo still offers\nthe same names to the same importers \u2014 so update every importer you break, in\nthe same pass.\n\nTwo things this does NOT widen:\n\n- **Behavior.** Every hard limit below still holds without exception. A\n  reorganization that changes what the code DOES is a failed run, not a bonus.\n- **Silence.** Every file you write goes in `changedFiles` with its reason. The\n  engine verifies all of it, and an unreported edit is the one thing that can\n  make a green gate a lie.\n\nFinish one finding across every file it touches before starting the next.\nHalf of a fix, reported as applied because the flagged file's half is done,\nis worse than the same fix reported as skipped: the engine re-checks the\nflagged file, sees it clean, and nothing ever comes back for the other half.\n";
@@ -148613,7 +148733,7 @@ var formatFindingText = ({ finding: finding6 }) => finding6.guidance ? `${findin
 // src/agents/buildRefactorExecutorInvocation.ts
 var advisoryOutcomesSection = [
   "# Report what you did about each advisory",
-  "For every advisory listed above \u2014 machine-checked or agent-reviewed \u2014 add one entry to the `advisoryOutcomes` array of your report: the finding's `rule` and `siteKey` copied exactly as given, an `outcome`, and for a decline a short `reason`.",
+  "For every advisory listed above \u2014 from a deterministic check or an agent check \u2014 add one entry to the `advisoryOutcomes` array of your report: the finding's `rule` and `siteKey` copied exactly as given, an `outcome`, and for a decline a short `reason`.",
   'The three outcomes: "applied" when you made the change; "declined" when you judged the advice wrong here; "already-met" when the end-state it asks for was already true and you edited nothing. Do not report "applied" for a change you did not have to make, and do not report "declined" for advice you did not actually reject \u2014 each reads as the opposite of what happened.',
   "This is an account, never a gate: it is what tells a human which rules keep being declined and why. Reporting a decline honestly is always better than an entry that claims work you did not do.",
   '```\n"advisoryOutcomes": [{ "rule": "lightsout/function-size", "siteKey": "lightsout/function-size:src/example.ts", "outcome": "declined", "reason": "orchestration exemption applies \u2014 every step delegates" }]\n```'
@@ -148637,7 +148757,7 @@ var buildRefactorExecutorInvocation = ({
   errorContext,
   selfCheckCommand: selfCheckCommand2
 }) => {
-  const roleSections = [refactorExecutor_default, scopePrompt({ scope })];
+  const roleSections = [applyPromptTokens({ text: refactorExecutor_default, tokens: sharedPromptSections }), scopePrompt({ scope })];
   if (overviewContent) {
     roleSections.push(
       `# Overview (high-level context)
@@ -148755,12 +148875,13 @@ var readPriorCleanup = ({ run }) => {
 };
 
 // src/agents/prompts/standardsReviewer.md
-var standardsReviewer_default = '# Role: Standards Reviewer\n\nYou read a set of standards rules against a set of files and report where the\nfiles break them. The rules are the ones no code can check \u2014 they are judgment,\nwhich is why a reader is doing this instead of a check. Their full text is\nappended to these instructions; the files in scope arrive in the task message.\nYour final message is machine-parsed \u2014 it is a data payload, not prose for a\nhuman.\n\n## What you are for\n\nEvery rule you are given was written out in full on purpose: its argument is\nwhat lets you recognise a violation the author never anticipated. Read the\nargument, not just the headline, and apply it to what the files actually do.\n\n## How to work\n\n- Read the files in scope. Read enough surrounding code to judge conventions \u2014\n  reading outside the scope is fine, reporting outside it is not.\n- Report a violation only when you can point at a specific file and say, in the\n  rule\'s own terms, what is wrong there. "This file could be cleaner" is not a\n  finding.\n- Quote the rule\'s reasoning in your `detail`, so a reader can disagree with you\n  on the merits rather than guessing what you had in mind.\n- Prefer silence to speculation. An empty `findings` list is a correct and\n  common answer, and a report full of weak findings makes the whole review\n  ignorable.\n- Report each violation once, at the site where it lives. Do not re-report the\n  same problem under several rules.\n\n## Your findings are advice\n\nEverything you report is advisory. It never blocks a run, never fails a gate,\nand never obliges anyone to act \u2014 a human or another agent weighs it in context\nand may decline it with a reason. Write accordingly: state what you saw, why the\nrule cares, and what you would do about it. Do not escalate, do not insist, and\ndo not pad the list to look thorough.\n\n## Hard limits\n\n- Change nothing. You read and report; you never edit, create, or delete files.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command. Use the harness\'s file tools to read. If the\n  harness exposes the filesystem only through a shell, use the shell solely\n  to read files \u2014 never for repository commands.\n- `rule` must be one of the rule names given to you, copied exactly as given,\n  library prefix included. A finding naming any other rule is dropped.\n- Every finding needs at least one file, with a repo-relative path as it was\n  listed to you. Line numbers are welcome when you have them.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"findings": [\n		{\n			"rule": "library/rule-name-exactly-as-given",\n			"files": [{ "path": "src/example.ts", "startLine": 12, "endLine": 30 }],\n			"detail": "what is true of this site, in the rule\'s own terms",\n			"guidance": "optional \u2014 what to do about findings of this kind"\n		}\n	]\n}\n```\n\nAn empty list is written as `{ "findings": [] }`.\n';
+var standardsReviewer_default = '# Role: Standards Reviewer\n\nYou read a set of standards rules against a set of files and report where the\nfiles break them. These are the rules with an agent check: no deterministic\ncheck can decide them in full, which is why a reader is doing this. Where a\ndeterministic check already decides part of a rule, the rule says so, and that\npart is not yours to report. Their full text is appended to these instructions; the files\nin scope arrive in the task message.\nYour final message is machine-parsed \u2014 it is a data payload, not prose for a\nhuman.\n\n## What you are for\n\nEvery rule you are given was written out in full on purpose: its argument is\nwhat lets you recognise a violation the author never anticipated. Read the\nargument, not just the headline, and apply it to what the files actually do.\n\n## How to work\n\n- Read the files in scope. Read enough surrounding code to judge conventions \u2014\n  reading outside the scope is fine, reporting outside it is not.\n- Report a violation only when you can point at a specific file and say, in the\n  rule\'s own terms, what is wrong there. "This file could be cleaner" is not a\n  finding.\n- Quote the rule\'s reasoning in your `detail`, so a reader can disagree with you\n  on the merits rather than guessing what you had in mind.\n- Prefer silence to speculation. An empty `findings` list is a correct and\n  common answer, and a report full of weak findings makes the whole review\n  ignorable.\n- Report each violation once, at the site where it lives. Do not re-report the\n  same problem under several rules.\n\n## Your findings are advice\n\nEverything you report is advisory. It never blocks a run, never fails a gate,\nand never obliges anyone to act \u2014 a human or another agent weighs it in context\nand may decline it with a reason. Write accordingly: state what you saw, why the\nrule cares, and what you would do about it. Do not escalate, do not insist, and\ndo not pad the list to look thorough.\n\n## Hard limits\n\n- Change nothing. You read and report; you never edit, create, or delete files.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command. Use the harness\'s file tools to read. If the\n  harness exposes the filesystem only through a shell, use the shell solely\n  to read files \u2014 never for repository commands.\n- `rule` must be one of the rule names given to you, copied exactly as given,\n  library prefix included. A finding naming any other rule is dropped.\n- Every finding needs at least one file, with a repo-relative path as it was\n  listed to you. Line numbers are welcome when you have them.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"findings": [\n		{\n			"rule": "library/rule-name-exactly-as-given",\n			"files": [{ "path": "src/example.ts", "startLine": 12, "endLine": 30 }],\n			"detail": "what is true of this site, in the rule\'s own terms",\n			"guidance": "optional \u2014 what to do about findings of this kind"\n		}\n	]\n}\n```\n\nAn empty list is written as `{ "findings": [] }`.\n';
 
 // src/agents/buildStandardsReviewInvocation.ts
 var ruleSection = ({ rule }) => {
   const scope = rule.appliesTo === void 0 ? [] : [`Applies only to: ${rule.appliesTo} \u2014 judge this rule only in files of those packages.`];
-  return [`**Rule: \`${rule.name}\`**`, ...scope, rule.prose].join("\n\n");
+  const deterministic = rule.deterministic ? ["A deterministic check already reports part of this rule. Report only what that check could not have found."] : [];
+  return [`**Rule: \`${rule.name}\`**`, ...scope, ...deterministic, rule.prose].join("\n\n");
 };
 var buildStandardsReviewInvocation = ({ rules, files }) => {
   const byDocument = /* @__PURE__ */ new Map();
@@ -148787,7 +148908,7 @@ ${files.map((file2) => `- ${file2}`).join("\n")}`,
 var StandardsReviewReport = external_exports.object({
   findings: external_exports.array(
     external_exports.object({
-      /** A judgment rule's id — validated against the loaded packages after parsing. */
+      /** An agent-checked rule's name — validated against the loaded packages after parsing. */
       rule: external_exports.string(),
       files: external_exports.array(external_exports.object({ path: external_exports.string(), startLine: external_exports.number().optional(), endLine: external_exports.number().optional() })),
       detail: external_exports.string(),
@@ -148842,23 +148963,23 @@ var runsRule = ({ group, name }) => {
   const severity = group.states.get(name)?.severity;
   return severity !== void 0 && severity !== StandardsSeverity.Off;
 };
-var collectJudgmentRules = ({ groups }) => [
+var collectAgentRules = ({ groups }) => [
   ...collectGroupItems({
     groups,
-    itemsOf: ({ group }) => group.pack.rules.map(({ rule }) => rule).filter((rule) => !rule.checked && runsRule({ group, name: rule.name })),
+    itemsOf: ({ group }) => group.pack.rules.map(({ rule }) => rule).filter((rule) => rule.agent && runsRule({ group, name: rule.name })),
     keyOf: ({ item }) => item.name
   }).values()
 ].map(({ item, packages }) => ({ rule: item, packages }));
-var toReviewRules = ({ judgmentRules, groups }) => {
+var toReviewRules = ({ agentRules, groups }) => {
   const covered = new Set(groups.flatMap((group) => group.packages));
-  return judgmentRules.map(
+  return agentRules.map(
     ({ rule, packages }) => packages.size === covered.size ? rule : { ...rule, appliesTo: describePackageSet({ packages: [...packages] }) }
   );
 };
 var dropNotes = ({ unknownRules, unsited, ungrouped, notRun }) => {
   const notes = [];
   if (unknownRules.length > 0) {
-    notes.push(`agent review: ${unknownRules.length} finding(s) dropped \u2014 no judgment rule is named ${[...new Set(unknownRules)].sort().join(", ")}`);
+    notes.push(`agent review: ${unknownRules.length} finding(s) dropped \u2014 no agent-checked rule is named ${[...new Set(unknownRules)].sort().join(", ")}`);
   }
   if (unsited > 0) {
     notes.push(`agent review: ${unsited} finding(s) dropped \u2014 reported with no file to point at`);
@@ -148921,20 +149042,20 @@ var runStandardsReview = async ({
   timeoutMs,
   onProgress
 }) => {
-  const judgmentRules = collectJudgmentRules({ groups });
-  const rules = judgmentRules.map(({ rule }) => rule);
+  const agentRules = collectAgentRules({ groups });
+  const rules = agentRules.map(({ rule }) => rule);
   if (rules.length === 0 || files.length === 0) {
     return { findings: [], notes: [] };
   }
   const ruleCount = `${rules.length} rule${rules.length === 1 ? "" : "s"}`;
   onProgress?.(
-    `The agent review is now running. ${driver.name} is reading your code against the ${ruleCount} no automated check can judge. This usually takes a few minutes.`
+    `The agent review is now running. ${driver.name} is reading your code against the ${ruleCount} with an agent check. This usually takes a few minutes.`
   );
   const heartbeat = createAgentHeartbeat({ label: "agent review", onProgress: (message) => onProgress?.(message) });
   const outcome = await invokeAgentWithContract({
     driver,
     cwd,
-    invocation: buildStandardsReviewInvocation({ rules: toReviewRules({ judgmentRules, groups }), files }),
+    invocation: buildStandardsReviewInvocation({ rules: toReviewRules({ agentRules, groups }), files }),
     contract: StandardsReviewReport,
     permissions: Permissions.ReadOnly,
     timeoutMs,
@@ -149263,9 +149384,12 @@ var buildUnitTestWriterInvocation = ({
   errorContext,
   acceptanceTests
 }) => {
-  const roleSections = [unitTestWriter_default, `# Plan (context for intended behavior)
+  const roleSections = [
+    applyPromptTokens({ text: unitTestWriter_default, tokens: sharedPromptSections }),
+    `# Plan (context for intended behavior)
 
-${planContent}`];
+${planContent}`
+  ];
   if (standards) {
     roleSections.push(`# Standards
 
@@ -151171,7 +151295,7 @@ var finishDirectRun = async ({ run, driver, ticketRef, ticketBody, resumed }) =>
 };
 
 // src/agents/prompts/directWorker.md
-var directWorker_default = '# Role: Direct Worker\n\nYou are a principal software engineer building one ticket in the current\nrepository. You work autonomously from the ticket body appended to these\ninstructions, and your final message is machine-parsed \u2014 it is a data payload,\nnot prose for a human.\n\n## The ticket is the whole brief\n\n- Build what the ticket asks for and nothing adjacent. A ticket is smaller than\n  a plan on purpose: the repo\'s own gates, not a plan, are what make this run\n  trustworthy.\n- There is no plan and there will not be one. Do not write one, do not ask for\n  one, and do not stop because none exists.\n- Read every file before modifying it. Read independent files in parallel.\n- Implement the ticket completely \u2014 no stubs, no partial code, no TODOs.\n- Do not add functionality the ticket doesn\'t ask for.\n- If a Standards section is appended to these instructions, every rule in it is\n  binding for every line you write. If the repo\'s own CLAUDE.md conflicts with\n  the ticket, CLAUDE.md wins; comply with it and say so in `failures`.\n- Do not delete existing tests. If a test fails because the ticket\n  intentionally changed behavior, update it to pin the new behavior and list it\n  in `changedFiles`. Never weaken or remove an assertion to make a failure go\n  away \u2014 fix the source instead.\n\n## Continuing your own earlier attempt\n\nWhen an answered question is present in the task message, the tree already\nholds your own earlier attempt \u2014 the run that stopped to ask it. Continue that\nwork in place: keep what the answer confirms, rework what it corrects, and\nnever start over from scratch. Nothing you wrote is lost; the engine commits\nthe whole tree when the gates go green.\n\n## The gates are the bar\n\n- Do not run builds, tests, linters, formatters, package-manager commands, Git\n  commands, network commands, or any other verification or environment-changing\n  command \u2014 the engine runs every gate after you report and hands you the\n  output. Use the harness\'s file tools to read and edit files. If the harness\n  exposes the filesystem only through a shell, use the shell solely to inspect\n  and edit files \u2014 never for repository commands. Sole exception: commands\n  listed under a `# Granted commands` section in your task, and the engine\'s own\n  self-check command where an `# Engine self-check` section hands it to you. A\n  granted command is only for producing what the grant text describes; the\n  engine\'s self-check is the one verification command you may run, and only as\n  its own section describes.\n- Do not create commits or branches. The engine commits your work.\n- Do not read or write any agent memory, and do not edit CLAUDE.md or other\n  standing instructions.\n\n## Stop rather than guess\n\nWhen the ticket is genuinely ambiguous \u2014 two reasonable engineers would build\ndifferent things, and the difference is visible to the user \u2014 stop and report\n`terminated:ambiguity` with the question as the FIRST entry of `failures`.\nNever guess past it, and never ask more than one question at a time: the\nengine relays exactly one question to the person watching and re-invokes you\nwith their answer.\n\nIf the ticket references a file, module or API that does not exist on disk,\nreport `terminated:stale-references` listing each missing reference.\n\n## Prior art before new symbols\n\nBefore creating any NEW exported symbol, search the repository for an existing\nimplementation \u2014 the exact name, its synonyms (fetch/load/retrieve \u2248 get,\nmake/generate \u2248 create, remove \u2248 delete), and the domain words. If a match\nexists, use it instead of duplicating it. Record every such symbol in the\n`priorArt` array of your report: the terms you searched and what they\nsurfaced. An empty `matches` is a legitimate entry \u2014 "searched, found nothing"\nis evidence the pipeline records.\n\n## Friction\n\nIf anything fought you \u2014 the ticket was ambiguous somewhere, the standards\nconflicted, the environment surprised you \u2014 record it in the optional\n`friction` array with `kind: "friction"`. A judgment call the ticket left to\nyou is `kind: "decision"`. Omit the field entirely when the run was clean.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. Your\nmessage starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was built, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 omit when clean" }],\n	"priorArt": [{ "symbol": "formatDate", "searches": ["formatDate", "dateToString"], "matches": [] }]\n}\n```\n\nReport `complete` only if you built everything the ticket asks for. Never\nclaim changes you did not make \u2014 the engine diffs the tree, and a false report\nis worse than a failed one.\n';
+var directWorker_default = '# Role: Direct Worker\n\nYou are a principal software engineer building one ticket in the current\nrepository. You work autonomously from the ticket body appended to these\ninstructions, and your final message is machine-parsed \u2014 it is a data payload,\nnot prose for a human.\n\n## The ticket is the whole brief\n\n- Build what the ticket asks for and nothing adjacent. A ticket is smaller than\n  a plan on purpose: the repo\'s own gates, not a plan, are what make this run\n  trustworthy.\n- There is no plan and there will not be one. Do not write one, do not ask for\n  one, and do not stop because none exists.\n- Read every file before modifying it. Read independent files in parallel.\n- Implement the ticket completely \u2014 no stubs, no partial code, no TODOs.\n- Do not add functionality the ticket doesn\'t ask for.\n- If a Standards section is appended to these instructions, every rule in it is\n  binding for every line you write. If the repo\'s own CLAUDE.md conflicts with\n  the ticket, CLAUDE.md wins; comply with it and say so in `failures`.\n- Do not delete existing tests. If a test fails because the ticket\n  intentionally changed behavior, update it to pin the new behavior and list it\n  in `changedFiles`. Never weaken or remove an assertion to make a failure go\n  away \u2014 fix the source instead.\n\n## Continuing your own earlier attempt\n\nWhen an answered question is present in the task message, the tree already\nholds your own earlier attempt \u2014 the run that stopped to ask it. Continue that\nwork in place: keep what the answer confirms, rework what it corrects, and\nnever start over from scratch. Nothing you wrote is lost; the engine commits\nthe whole tree when the gates go green.\n\n## The gates are the bar\n\n- Do not run builds, tests, linters, formatters, package-manager commands, Git\n  commands, network commands, or any other verification or environment-changing\n  command \u2014 the engine runs every gate after you report and hands you the\n  output. Use the harness\'s file tools to read and edit files. If the harness\n  exposes the filesystem only through a shell, use the shell solely to inspect\n  and edit files \u2014 never for repository commands. Sole exception: commands\n  listed under a `# Granted commands` section in your task, and the engine\'s own\n  self-check command where an `# Engine self-check` section hands it to you. A\n  granted command is only for producing what the grant text describes; the\n  engine\'s self-check is the one verification command you may run, and only as\n  its own section describes.\n- Do not create commits or branches. The engine commits your work.\n- Do not read or write any agent memory, and do not edit CLAUDE.md or other\n  standing instructions.\n\n## Stop rather than guess\n\nWhen the ticket is genuinely ambiguous \u2014 two reasonable engineers would build\ndifferent things, and the difference is visible to the user \u2014 stop and report\n`terminated:ambiguity` with the question as the FIRST entry of `failures`.\nNever guess past it, and never ask more than one question at a time: the\nengine relays exactly one question to the person watching and re-invokes you\nwith their answer.\n\nIf the ticket references a file, module or API that does not exist on disk,\nreport `terminated:stale-references` listing each missing reference.\n\n## Prior art before new symbols\n\nBefore creating any NEW exported symbol, search the repository for an existing\nimplementation \u2014 the exact name, its synonyms (fetch/load/retrieve \u2248 get,\nmake/generate \u2248 create, remove \u2248 delete), and the domain words. If a match\nexists, use it instead of duplicating it. Record every such symbol in the\n`priorArt` array of your report: the terms you searched and what they\nsurfaced. An empty `matches` is a legitimate entry \u2014 "searched, found nothing"\nis evidence the pipeline records.\n\n{{frictionSection}}\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. Your\nmessage starts with `{` and ends with `}`.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "src/example.ts", "summary": "one clause on what changed" }],\n	"summary": "one line: what was built, or why it wasn\'t",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional \u2014 see Friction section; omit when clean" }],\n	"priorArt": [{ "symbol": "formatDate", "searches": ["formatDate", "dateToString"], "matches": [] }]\n}\n```\n\nReport `complete` only if you built everything the ticket asks for. Never\nclaim changes you did not make \u2014 the engine diffs the tree, and a false report\nis worse than a failed one.\n';
 
 // src/agents/buildDirectWorkerInvocation.ts
 var buildDirectWorkerInvocation = ({
@@ -151184,7 +151308,7 @@ var buildDirectWorkerInvocation = ({
   answeredQuestion,
   selfCheckCommand: selfCheckCommand2
 }) => {
-  const roleSections = [directWorker_default, `# Ticket ${ticketRef}
+  const roleSections = [applyPromptTokens({ text: directWorker_default, tokens: sharedPromptSections }), `# Ticket ${ticketRef}
 
 ${ticketBody}`];
   if (standards) {
@@ -151620,7 +151744,7 @@ import { readdir as readdir20 } from "node:fs/promises";
 import { join as join106 } from "node:path";
 
 // src/agents/prompts/promptImprover.md
-var promptImprover_default = '# Role: Prompt Improver\n\nYou maintain the agent role prompts of a deterministic coding pipeline.\nFriction reports from past runs \u2014 moments where an agent was confused,\nguessed, or fought its instructions \u2014 are your only input signal. Your job is\nto turn *systemic* friction into the smallest possible prompt improvements.\n\n## Judge before editing\n\n- Look for **systemic patterns**: the same confusion appearing across multiple\n  entries or runs. A single one-off entry is signal to note in `summary`, not\n  a reason to edit.\n- Entries are tagged `friction` (something fought the agent) or `decision`\n  (the input was silent and the agent had to choose). A recurring decision is\n  prime signal: something upstream \u2014 the plan template, a prompt, a standard \u2014\n  should have settled it.\n- Only friction with area `prompt` \u2014 or friction clearly traceable to prompt\n  wording \u2014 justifies editing a prompt file. Friction about plans, standards,\n  or environment is outside your control: summarize it as recommendations in\n  `summary`, change nothing for it.\n- Read the affected prompt file in full before judging: the confusion may\n  already be addressed and the agent missed it \u2014 in that case, consider\n  whether the existing wording buries the rule, and sharpen placement rather\n  than adding repetition.\n\n## Edit rules\n\n- Edit ONLY the prompt files listed in your task. Nothing else, ever \u2014 no\n  source code, no contracts, no docs.\n- Make the **smallest change that removes the confusion**: sharpen a sentence,\n  resolve a contradiction, add one clarifying clause. Do not restructure,\n  re-voice, or grow a prompt beyond what the fix requires.\n- Preserve every prompt\'s report-contract section: the JSON shape is\n  load-bearing. Never alter field names, statuses, or the output-format rules.\n- Zero edits is a valid, common outcome (`complete` with empty `changedFiles`)\n  when friction is one-off, already addressed, or out of scope.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "packages/agents/prompts/example.md", "summary": "one clause on what was clarified and which friction drove it" }],\n	"summary": "patterns found, edits made, and recommendations for out-of-scope friction (plan/standards/environment)",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "prompt", "detail": "optional \u2014 friction with your own instructions; omit when clean" }]\n}\n```\n';
+var promptImprover_default = '# Role: Prompt Improver\n\nYou maintain the agent role prompts of a deterministic coding pipeline.\nFriction reports from past runs \u2014 moments where an agent was confused,\nguessed, or fought its instructions \u2014 are your only input signal. Your job is\nto turn *systemic* friction into the smallest possible prompt improvements.\n\n## Judge before editing\n\n- Look for **systemic patterns**: the same confusion appearing across multiple\n  entries or runs. A single one-off entry is signal to note in `summary`, not\n  a reason to edit.\n- Entries are tagged `friction` (something fought the agent) or `decision`\n  (the input was silent and the agent had to choose). A recurring decision is\n  prime signal: something upstream \u2014 the plan template, a prompt, a standard \u2014\n  should have settled it.\n- Only friction with area `prompt` \u2014 or friction clearly traceable to prompt\n  wording \u2014 justifies editing a prompt file. Friction about plans, standards,\n  or environment is outside your control: summarize it as recommendations in\n  `summary`, change nothing for it.\n- Read the affected prompt file in full before judging: the confusion may\n  already be addressed and the agent missed it \u2014 in that case, consider\n  whether the existing wording buries the rule, and sharpen placement rather\n  than adding repetition.\n\n## Edit rules\n\n- Edit ONLY the prompt files listed in your task. Nothing else, ever \u2014 no\n  source code, no contracts, no docs.\n- Make the **smallest change that removes the confusion**: sharpen a sentence,\n  resolve a contradiction, add one clarifying clause. Do not restructure,\n  re-voice, or grow a prompt beyond what the fix requires.\n- A `{{name}}` marker stands for text the engine fills in. Never remove,\n  rename or reword one. `{{frictionSection}}` is filled from\n  `frictionSection.md`, which several roles share: to change that text, edit\n  the shared file, not a role prompt.\n- Preserve every prompt\'s report-contract section: the JSON shape is\n  load-bearing. Never alter field names, statuses, or the output-format rules.\n- Zero edits is a valid, common outcome (`complete` with empty `changedFiles`)\n  when friction is one-off, already addressed, or out of scope.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation.\n\n```\n{\n	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",\n	"changedFiles": [{ "path": "packages/agents/prompts/example.md", "summary": "one clause on what was clarified and which friction drove it" }],\n	"summary": "patterns found, edits made, and recommendations for out-of-scope friction (plan/standards/environment)",\n	"failures": ["required non-empty for any status other than complete"],\n	"friction": [{ "kind": "friction" | "decision", "area": "prompt", "detail": "optional \u2014 friction with your own instructions; omit when clean" }]\n}\n```\n';
 
 // src/agents/buildPromptImproverInvocation.ts
 var buildPromptImproverInvocation = ({ friction, promptFiles }) => {
@@ -162649,33 +162773,22 @@ var RefactorWorklist = external_exports.object({
 var rulePriority = [
   "lightsout/banned-folder-name",
   "lightsout/file-directly-in-common",
-  "lightsout/folder-index-file",
-  "lightsout/test-in-tests-folder",
-  "lightsout/test-not-beside-subject",
+  "lightsout/index-files",
+  "lightsout/test-beside-subject",
   "lightsout/test-support-in-src",
-  "lightsout/import-through-index",
   "lightsout/internal-import-from-outside",
   "lightsout/multi-export",
   "lightsout/filename-mismatch",
   "lightsout/test-mock-prefix",
-  "lightsout/test-mock-return-in-hook",
   "lightsout/test-mock-untyped",
   "lightsout/test-mock-wrapper-untyped",
-  "lightsout/test-shared-let",
-  "lightsout/test-assert-in-hook",
-  "lightsout/test-nested-describe",
+  "lightsout/no-test-state-in-hooks",
   "lightsout/test-manual-mock-cleanup",
   "lightsout/test-strict-equal-matcher",
-  "lightsout/barrel-star",
+  "lightsout/index-file-contents",
   "lightsout/dead-export",
-  "lightsout/test-only-export",
   "lightsout/file-size",
   "lightsout/function-size",
-  "lightsout/ungrouped-domain-utils",
-  "lightsout/single-file-domain-folder",
-  "lightsout/folder-casing",
-  "lightsout/test-multiple-setups",
-  "lightsout/oversized-setup-factory",
   "lightsout/folder-size",
   "lightsout/duplicate-function-body",
   "lightsout/duplicate-code-block",
@@ -163741,7 +163854,7 @@ var executeRefactor = async ({
   }
   const { standards, testStandards, groups } = await resolveStandards({ cwd, config: config2 });
   if (!agentReview) {
-    run.progress("code checks only \u2014 the per-batch agent review is off for this run");
+    run.progress("deterministic checks only \u2014 the per-batch agent review is off for this run");
   }
   const halted = await runWorklistBatches({
     run,
@@ -163774,7 +163887,7 @@ var refactorCommand = ({ flags, cwd }) => runBatchedCommand({
     maxBatches,
     // The same flag the standards check takes: run against the deterministic
     // checks alone, skipping each batch's agent review.
-    agentReview: flags.get("code-checks") !== true,
+    agentReview: flags.get("deterministic-checks") !== true,
     allowDirty: flags.get("allow-dirty") === true,
     existing,
     onProgress: createProgressPrinter()
@@ -164966,6 +165079,14 @@ var printFindingGroups = ({ findings }) => {
   }
 };
 
+// src/cli/internal/common/render/common/utils/describeCheckKinds.ts
+var describeCheckKinds = ({ rule }) => {
+  if (rule.deterministic && rule.agent) {
+    return "deterministic and agent";
+  }
+  return rule.deterministic ? "deterministic" : "agent";
+};
+
 // src/cli/internal/common/render/printStandardsRuleList.ts
 var countRules = ({ rules, where }) => new Set(rules.filter(where).map((rule) => rule.rule)).size;
 var describeOptions = ({ options }) => Object.entries(options).map(([name, value]) => `${name} ${value}`).join(", ");
@@ -164977,7 +165098,7 @@ var printStandardsRuleList = ({ rules }) => {
         cells: [
           rule.rule,
           rule.fromConfig ? `${rule.severity} (config)` : rule.severity,
-          rule.checked ? "code" : "judgment",
+          describeCheckKinds({ rule }),
           rule.doc,
           describePackageSet({ packages: rule.packages })
         ]
@@ -164990,19 +165111,19 @@ var printStandardsRuleList = ({ rules }) => {
     ];
   });
   const atSeverity = (severity) => countRules({ rules, where: (rule) => rule.severity === severity });
-  const checked = countRules({ rules, where: (rule) => rule.checked });
-  const judged = countRules({ rules, where: (rule) => !rule.checked });
+  const deterministic = countRules({ rules, where: (rule) => rule.deterministic });
+  const agent = countRules({ rules, where: (rule) => rule.agent });
   const totals = {
     cells: [
       `${countRules({ rules, where: () => true })} rule(s)`,
       `${atSeverity(StandardsSeverity.Blocking)} blocking`,
       `${atSeverity(StandardsSeverity.Advisory)} advisory, ${atSeverity(StandardsSeverity.Off)} off`,
-      `${checked} by code, ${judged} by judgment`,
+      `${deterministic} deterministic, ${agent} agent`,
       ""
     ],
     emphasis: bold
   };
-  for (const line of renderTable({ headers: ["rule", "state", "checked by", "standards doc", "applies to"], rows: [...rows, totals] })) {
+  for (const line of renderTable({ headers: ["rule", "state", "check", "standards doc", "applies to"], rows: [...rows, totals] })) {
     console.log(line);
   }
 };
@@ -165067,7 +165188,8 @@ var listStandardsRules = ({ groups }) => {
         rule: rule.name,
         doc: `${rule.library}: ${rule.documentPath}`,
         summary: rule.summary,
-        checked: rule.checked,
+        deterministic: rule.deterministic,
+        agent: rule.agent,
         severity: state.severity,
         fromConfig: state.fromConfig,
         options: state.options,
@@ -165109,7 +165231,7 @@ var orderBySeverity = ({ findings }) => [
   ...findings.filter((entry) => entry.severity === StandardsSeverity.Blocking),
   ...findings.filter((entry) => entry.severity === StandardsSeverity.Advisory)
 ];
-var describeCodeFindings = ({ findings }) => {
+var describeDeterministicFindings = ({ findings }) => {
   const blocking = findings.filter((entry) => entry.severity === StandardsSeverity.Blocking).length;
   const advisories = findings.length - blocking;
   if (findings.length === 0) {
@@ -165134,15 +165256,15 @@ var standardsCheckCommand = async ({ flags, cwd }) => {
     printStandardsRuleList({ rules });
     return exitCli({ code: 0 });
   }
-  const codeChecksOnly = flags.get("code-checks") === true;
+  const deterministicOnly = flags.get("deterministic-checks") === true;
   const agentReviewOnly = flags.get("agent-review") === true;
-  const runCodeChecks = codeChecksOnly || !agentReviewOnly;
-  const runAgentReview = agentReviewOnly || !codeChecksOnly;
+  const runDeterministicChecks = deterministicOnly || !agentReviewOnly;
+  const runAgentReview = agentReviewOnly || !deterministicOnly;
   const checkPath = getStringFlag({ flags, name: "path" });
   const findings = [];
   const notes = [];
-  if (runCodeChecks) {
-    printSectionHeading({ title: "Code checks", subtitle: "deterministic \u2014 the same answer every run" });
+  if (runDeterministicChecks) {
+    printSectionHeading({ title: "Deterministic checks", subtitle: "code decides, with the same answer every run" });
     const startedAt = Date.now();
     const checked = await runStandardsCheck({
       cwd,
@@ -165154,7 +165276,9 @@ var standardsCheckCommand = async ({ flags, cwd }) => {
       onProgress: printProgress
     });
     const ordered = orderBySeverity({ findings: checked.findings });
-    printProgress(`\u2713 Code checks finished in ${formatDuration({ ms: Date.now() - startedAt })} \u2014 ${describeCodeFindings({ findings: ordered })}`);
+    printProgress(
+      `\u2713 Deterministic checks finished in ${formatDuration({ ms: Date.now() - startedAt })} \u2014 ${describeDeterministicFindings({ findings: ordered })}`
+    );
     printSectionResult({ findings: ordered, notes: checked.notes });
     findings.push(...ordered);
     notes.push(...checked.notes);
@@ -165166,10 +165290,10 @@ var standardsCheckCommand = async ({ flags, cwd }) => {
     findings.push(...reviewed.findings);
     notes.push(...reviewed.notes);
   }
-  if (runCodeChecks) {
+  if (runDeterministicChecks) {
     await writeStandardsSnapshot({ cwd, snapshot: { at: (/* @__PURE__ */ new Date()).toISOString(), path: checkPath ?? ".", findings, notes } });
   }
-  printStandardsSummary({ findings, rules, reportPath: runCodeChecks ? ".lightsout/standards-check.json" : void 0 });
+  printStandardsSummary({ findings, rules, reportPath: runDeterministicChecks ? ".lightsout/standards-check.json" : void 0 });
   return exitCli({ code: 0 });
 };
 
@@ -165185,7 +165309,7 @@ var ruleRows = ({ rule }) => {
     {
       cells: [
         rule.rule,
-        rule.checked ? "code" : "judgment",
+        describeCheckKinds({ rule }),
         count({ value: rule.attempted }),
         count({ value: rule.resolved }),
         count({ value: rule.declined }),
@@ -165211,7 +165335,7 @@ var printStandardsHealth = ({ health }) => {
   const totalsRow = {
     cells: [
       `${totals.rules} rule(s)`,
-      `${totals.checked} by code, ${totals.judgment} by judgment`,
+      `${totals.deterministic} deterministic, ${totals.agent} agent`,
       count({ value: attempted }),
       count({ value: sum({ rules, of: (rule) => rule.resolved }) }),
       count({ value: sum({ rules, of: (rule) => rule.declined }) }),
@@ -165223,7 +165347,7 @@ var printStandardsHealth = ({ health }) => {
     emphasis: bold
   };
   for (const line of renderTable({
-    headers: ["rule", "checked by", "sites", "resolved", "declined", "untracked", "declined %", "advice", "advice declined %"],
+    headers: ["rule", "check", "sites", "resolved", "declined", "untracked", "declined %", "advice", "advice declined %"],
     rows: [...rows, totalsRow]
   })) {
     console.log(line);
@@ -165322,12 +165446,15 @@ var buildStandardsHealth = async ({ cwd, groups }) => {
     rule: rule.name,
     set: rule.set,
     documentPath: rule.documentPath,
-    checked: rule.checked,
+    deterministic: rule.deterministic,
+    agent: rule.agent,
     ...tallies.get(rule.name) ?? emptyTally()
   }));
   rules.sort((first, second) => first.rule.localeCompare(second.rule));
-  const checked = rules.filter((rule) => rule.checked).length;
-  return { rules, totals: { rules: rules.length, checked, judgment: rules.length - checked } };
+  return {
+    rules,
+    totals: { rules: rules.length, deterministic: rules.filter((rule) => rule.deterministic).length, agent: rules.filter((rule) => rule.agent).length }
+  };
 };
 
 // src/cli/standardsHealthCommand.ts
@@ -165348,26 +165475,30 @@ import { createRequire as createRequire5 } from "node:module";
 import { join as join158 } from "node:path";
 
 // src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts
-var checkFixtureTree = async ({ cwd, rule, inputKind, run, label: label2, compiler }) => {
+var checkFixtureTree = async ({ cwd, rule, inputKinds, run, label: label2, compiler }) => {
   const { files } = await listSourceFiles({ cwd });
-  const input = await buildCheckInput({
-    kind: inputKind,
-    cwd,
-    source: files.filter((file2) => !isTestFile({ path: file2 })),
-    tests: files.filter((file2) => isTestFile({ path: file2 })),
-    files,
-    referenceFiles: files,
-    // A fixture tree is a miniature repo of its own; it declares no pack.
-    standardsLibraries: [],
-    packagesDir: defaultPackagesDir,
-    options: rule.defaultOptions,
-    cache: /* @__PURE__ */ new Map(),
-    compiler
+  const cache = /* @__PURE__ */ new Map();
+  const inputs = await buildCheckInputs({
+    kinds: inputKinds,
+    inputFor: ({ kind }) => buildCheckInput({
+      kind,
+      cwd,
+      source: files.filter((file2) => !isTestFile({ path: file2 })),
+      tests: files.filter((file2) => isTestFile({ path: file2 })),
+      files,
+      referenceFiles: files,
+      // A fixture tree is a miniature repo of its own; it declares no pack.
+      standardsLibraries: [],
+      packagesDir: defaultPackagesDir,
+      options: rule.defaultOptions,
+      cache,
+      compiler
+    })
   });
-  if (input.kind === StandardsInputKind.TypeChecker && input.typedFiles.size === 0 && files.length > 0) {
+  if (inputs["type-checker"]?.typedFiles.size === 0 && files.length > 0) {
     throw new Error(`no tsconfig.json in ${label2}, so none of its ${files.length} file(s) could be typed \u2014 a type-checker rule's fixtures need one`);
   }
-  return runRuleCheck({ rule, run, input, options: rule.defaultOptions });
+  return runRuleCheck({ rule, run, inputs, options: rule.defaultOptions });
 };
 
 // src/standardsCheck/internal/common/utils/fixtureChecks/checkRuleExample.ts
@@ -165498,22 +165629,22 @@ var checkFrameworkOwned = async ({ library, compiler }) => {
   const problems = [];
   for (const framework of frameworks) {
     for (const rule of library.rules) {
-      const { run, inputKind } = rule;
-      if (run === void 0 || inputKind === void 0 || compiler === void 0 && typescriptInputKinds.has(inputKind)) {
+      const { run, inputKinds } = rule;
+      if (run === void 0 || inputKinds === void 0 || compiler === void 0 && inputKinds.some((kind) => typescriptInputKinds.has(kind))) {
         continue;
       }
       try {
         const found = await checkFixtureTree({
           cwd: join158(frameworkOwnedFixturesPath, framework),
           rule,
-          inputKind,
+          inputKinds,
           run,
           label: `fixtures/framework-owned/${framework}/`,
           compiler
         });
         if (found.length > 0) {
           problems.push(
-            `${rule.id}: the ${framework} framework-owned tree produced ${found.length} finding(s) \u2014 a checked rule stays silent on code its framework owns (${namePaths({ found })})`
+            `${rule.id}: the ${framework} framework-owned tree produced ${found.length} finding(s) \u2014 a deterministic check stays silent on code its framework owns (${namePaths({ found })})`
           );
         }
       } catch (error51) {
@@ -165529,7 +165660,7 @@ var checkPackFiles = ({ library, libraries }) => {
   for (const packFile of library.packs) {
     const address = `${library.name}/${packFile.name}`;
     try {
-      const pack = resolveStandardsPack({ address, libraries });
+      const pack = resolveStandardsPack({ addresses: [address], libraries, dependencies: void 0 });
       for (const { rule, required: required2 } of findMissingRequirements({ rules: pack.rules })) {
         warnings.push(`${pack.name}: ${rule} requires ${required2}, which the pack does not send to agents`);
       }
@@ -165549,29 +165680,30 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
       warnings: []
     };
   }
-  const hasParsingRule = library.rules.some((rule) => rule.inputKind !== void 0 && typescriptInputKinds.has(rule.inputKind));
+  const hasParsingRule = library.rules.some((rule) => rule.inputKinds?.some((kind) => typescriptInputKinds.has(kind)) === true);
   const compiler = hasParsingRule ? getEngineTypescript() : void 0;
   const problems = [];
   const notes = [];
   for (const rule of library.rules) {
-    const { run, inputKind } = rule;
+    const { run, inputKinds } = rule;
     const missing = await missingFixtureSides({ fixturesPath: rule.fixturesPath });
     if (missing.length > 0) {
       problems.push(...missing.map((side) => `${rule.id}: fixtures/${side}/ is missing or empty \u2014 every rule ships a fixture pair`));
       continue;
     }
     problems.push(...await checkRuleExample({ rule }));
-    if (run === void 0 || inputKind === void 0) {
-      notes.push(`${rule.id}: judgment-only \u2014 fixtures reserved for agent accuracy`);
+    if (run === void 0 || inputKinds === void 0) {
+      notes.push(`${rule.id}: agent check \u2014 fixtures reserved for agent accuracy`);
       continue;
     }
-    if (compiler === void 0 && typescriptInputKinds.has(inputKind)) {
-      notes.push(`${rule.id}: not validated \u2014 its ${inputKind} input needs a typescript this install does not have`);
+    const needingTypescript = inputKinds.filter((kind) => typescriptInputKinds.has(kind));
+    if (compiler === void 0 && needingTypescript.length > 0) {
+      notes.push(`${rule.id}: not validated \u2014 its ${needingTypescript.join(" and ")} input needs a typescript this install does not have`);
       continue;
     }
     for (const side of Object.values(FixtureSide2)) {
       try {
-        const found = await checkFixtureTree({ cwd: join158(rule.fixturesPath, side), rule, inputKind, run, label: `fixtures/${side}/`, compiler });
+        const found = await checkFixtureTree({ cwd: join158(rule.fixturesPath, side), rule, inputKinds, run, label: `fixtures/${side}/`, compiler });
         if (side === FixtureSide2.Fail && found.length === 0) {
           problems.push(`${rule.id}: the fail fixture produced no finding \u2014 the check does not catch what the rule describes`);
         }
@@ -165623,15 +165755,15 @@ var standardsValidateCommand = async ({ flags, cwd }) => {
   for (const problem of problems) {
     console.log(`${red("\u2717")} ${problem}`);
   }
-  const checked = library.rules.filter((rule) => rule.checked).length;
-  const judgment = library.rules.length - checked;
+  const deterministic = library.rules.filter((rule) => rule.deterministic).length;
+  const agent = library.rules.filter((rule) => rule.agent).length;
   const packFiles = library.packs.length;
   console.log("");
   if (problems.length > 0) {
-    console.log(`${library.name} \u2014 ${problems.length} problem(s) across ${checked} checked rule(s) and ${packFiles} pack file(s)`);
+    console.log(`${library.name} \u2014 ${problems.length} problem(s) across ${deterministic} deterministic rule(s) and ${packFiles} pack file(s)`);
     return exitCli({ code: 1 });
   }
-  console.log(green(`${library.name} \u2014 ${checked} checked rule(s) validated, ${judgment} judgment-only rule(s), ${packFiles} pack file(s)`));
+  console.log(green(`${library.name} \u2014 ${deterministic} deterministic rule(s) validated, ${agent} agent rule(s), ${packFiles} pack file(s)`));
   return exitCli({ code: 0 });
 };
 

@@ -27,8 +27,8 @@ jest.mock('node:module', () => {
 // -------------------------
 
 /** A check that objects to any file named `banned.ts` — small enough to reason about, real enough to fail. */
-const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.FileList ? input.files : [])
+const bansTheBannedFile: StandardsCheckFunction = ({ inputs }) =>
+	(inputs[StandardsInputKind.FileList]?.files ?? [])
 		.filter((file) => file.endsWith('banned.ts'))
 		.map((path) => ({
 			siteKey: `no-banned-file:${path}`,
@@ -69,7 +69,8 @@ const setupPack = ({ frameworkOwned = false }: { frameworkOwned?: boolean } = {}
 		documentPath: 'code/style-guide/structure/module-api',
 		summary: 'a rule',
 		prose: 'the argument for the rule',
-		checked: true,
+		deterministic: true,
+		agent: overrides.deterministic === false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
 		requires: [],
@@ -85,7 +86,10 @@ const setupPack = ({ frameworkOwned = false }: { frameworkOwned?: boolean } = {}
 		frameworkOwnedFixturesPath,
 		documents: [],
 		packs: [],
-		rules: [rule({ id: 'dead-export', inputKind: StandardsInputKind.SyntaxTree }), rule({ id: 'no-banned-file', inputKind: StandardsInputKind.FileList })],
+		rules: [
+			rule({ id: 'dead-export', inputKinds: [StandardsInputKind.SyntaxTree] }),
+			rule({ id: 'no-banned-file', inputKinds: [StandardsInputKind.FileList] }),
+		],
 	};
 
 	return { pack };
@@ -116,7 +120,7 @@ describe('validateStandardsLibrary', () => {
 		// per framework — a machine with no compiler would otherwise say it twice
 		expect(notes).toStrictEqual(['dead-export: not validated — its syntax-tree input needs a typescript this install does not have']);
 		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
 		]);
 	});
 });

@@ -26,25 +26,26 @@ const writeFiles = ({ root, files }: { root: string; files: Record<string, strin
 const houseLibraryFiles = {
 	'lightsout-standards.json': '{ "name": "house", "formatVersion": 2 }\n',
 	'rules/code/demo/topic.md': '# Demo\n\nThe topic both rules argue under.\n',
-	'rules/code/demo/01-a/rule.md': '---\nsummary: rule a\nseverity: advisory\nrequires:\n  - b\n---\n\nRule a follows rule b.\n',
+	'rules/code/demo/01-a/rule.md': '---\nsummary: rule a\nchecks: agent\nseverity: advisory\nrequires:\n  - b\n---\n\nRule a follows rule b.\n',
 	'rules/code/demo/01-a/fixtures/pass/src/example.ts': 'export const example = 1;\n',
 	'rules/code/demo/01-a/fixtures/fail/src/example.ts': 'export const example = 2;\n',
-	'rules/code/demo/02-b/rule.md': '---\nsummary: rule b\nseverity: off\n---\n\nRule b states what rule a points at.\n',
+	'rules/code/demo/02-b/rule.md': '---\nsummary: rule b\nchecks: agent\nseverity: off\n---\n\nRule b states what rule a points at.\n',
 	'rules/code/demo/02-b/fixtures/pass/src/example.ts': 'export const example = 1;\n',
 	'rules/code/demo/02-b/fixtures/fail/src/example.ts': 'export const example = 2;\n',
 	'packs/team.json': JSON.stringify({ description: 'The team pack.', include: { topics: ['house/code/demo'] } }),
 };
 
 /**
- * A temp repo with a plain root package.json and no packages folder, so the
- * root group is the only group. The built-in library is the authored lightsout
+ * A temp repo with a root package.json and no packages folder, so the root
+ * group is the only group. The built-in library is the authored lightsout
  * library the test environment points LIGHTSOUT_DEFAULT_STANDARDS at. With
  * `withHouseLibrary`, the `house` library is written under standards/house.
+ * `dependencies` are what the root declares, which decide a conditional pack.
  */
-const setupRepo = ({ withHouseLibrary = false }: { withHouseLibrary?: boolean } = {}) => {
+const setupRepo = ({ withHouseLibrary = false, dependencies = {} }: { withHouseLibrary?: boolean; dependencies?: Record<string, string> } = {}) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-rule-requirements-'));
 
-	writeFiles({ root: cwd, files: { 'package.json': JSON.stringify({ name: 'repo' }) } });
+	writeFiles({ root: cwd, files: { 'package.json': JSON.stringify({ name: 'repo', dependencies }) } });
 
 	if (withHouseLibrary) {
 		writeFiles({ root: join(cwd, 'standards', 'house'), files: houseLibraryFiles });
@@ -54,9 +55,10 @@ const setupRepo = ({ withHouseLibrary = false }: { withHouseLibrary?: boolean } 
 };
 
 /**
- * A temp monorepo whose plain root manifest detects lightsout/node, with
+ * A temp monorepo whose config names lightsout/standards as the repo pack, with
  * workspace packages `admin` and `web` both given lightsout/react through
  * `package-standards-packs`, so they share one group apart from the root's.
+ * Both declare react, which is what brings that conditional pack's rules in.
  */
 const setupMonorepo = () => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-rule-requirements-monorepo-'));
@@ -65,27 +67,24 @@ const setupMonorepo = () => {
 		root: cwd,
 		files: {
 			'package.json': JSON.stringify({ name: 'repo' }),
-			'packages/admin/package.json': JSON.stringify({ name: 'admin' }),
-			'packages/web/package.json': JSON.stringify({ name: 'web' }),
+			'packages/admin/package.json': JSON.stringify({ name: 'admin', dependencies: { react: '19.0.0' } }),
+			'packages/web/package.json': JSON.stringify({ name: 'web', dependencies: { react: '19.0.0' } }),
 		},
 	});
 
-	const config: LightsoutConfig = { ...baseConfig, 'package-standards-packs': { admin: 'lightsout/react', web: 'lightsout/react' } };
+	const config: LightsoutConfig = {
+		...baseConfig,
+		'standards-pack': 'lightsout/standards',
+		'package-standards-packs': { admin: 'lightsout/react', web: 'lightsout/react' },
+	};
 
 	return { cwd, config };
 };
 
 /** The requiring and required rules the lightsout/react pack leaves out, as full names. */
 const reactMissingRequirements = [
-	{ rule: 'lightsout/component-file-structure', required: 'lightsout/folder-index-file' },
+	{ rule: 'lightsout/component-file-structure', required: 'lightsout/index-files' },
 	{ rule: 'lightsout/component-file-structure', required: 'lightsout/module-folder-layout' },
-	{ rule: 'lightsout/component-file-structure', required: 'lightsout/single-file-domain-folder' },
-	{ rule: 'lightsout/component-file-structure', required: 'lightsout/ungrouped-domain-utils' },
-	{ rule: 'lightsout/react-domain-folders', required: 'lightsout/folder-index-file' },
-	{ rule: 'lightsout/react-domain-folders', required: 'lightsout/module-out-of-common' },
-	{ rule: 'lightsout/react-domain-folders', required: 'lightsout/ungrouped-domain-utils' },
-	{ rule: 'lightsout/file-naming-conventions', required: 'lightsout/filename-mismatch' },
-	{ rule: 'lightsout/file-naming-conventions', required: 'lightsout/folder-casing' },
 ];
 
 describe('checkRuleRequirements', () => {
@@ -100,10 +99,11 @@ describe('checkRuleRequirements', () => {
 
 	test("passes when every group's pack sends each required rule", async () => {
 		const { cwd } = setupRepo();
+		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/standards' };
 
-		const check = await checkRuleRequirements({ cwd, config: baseConfig });
+		const check = await checkRuleRequirements({ cwd, config });
 
-		// the plain root manifest detects lightsout/node, which holds every rule its rules require
+		// lightsout/standards sends every rule its rules require
 		expect({ id: check?.id, status: check?.status, namesOneGroup: /\b1\b/.test(check?.detail ?? '') }).toStrictEqual({
 			id: 'rule-requirements',
 			status: 'pass',
@@ -112,7 +112,7 @@ describe('checkRuleRequirements', () => {
 	});
 
 	test('warns naming the group, the pack and each missing requirement, joined with semicolons', async () => {
-		const { cwd } = setupRepo();
+		const { cwd } = setupRepo({ dependencies: { react: '19.0.0' } });
 		const config: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/react' };
 
 		const check = await checkRuleRequirements({ cwd, config });
@@ -130,7 +130,7 @@ describe('checkRuleRequirements', () => {
 			id: 'rule-requirements',
 			status: 'warn',
 			hasFix: true,
-			entryCount: 9,
+			entryCount: 2,
 			everyEntryNamesGroupAndPack: true,
 			coveredRequirements: reactMissingRequirements.map(() => true),
 		});
@@ -143,14 +143,14 @@ describe('checkRuleRequirements', () => {
 
 		const entries = (check?.detail ?? '').split('; ');
 
-		// the root group's lightsout/node sends every requirement, so every entry is the admin and web group's
+		// the root group's lightsout/standards sends every requirement, so every entry is the admin and web group's
 		expect({
 			id: check?.id,
 			status: check?.status,
 			entryCount: entries.length,
 			everyEntryNamesBothPackages: entries.every((entry) => entry.includes('admin') && entry.includes('web') && entry.includes('lightsout/react')),
 			anyEntryNamesRoot: entries.some((entry) => entry.includes('repo root (outside packages)')),
-		}).toStrictEqual({ id: 'rule-requirements', status: 'warn', entryCount: 9, everyEntryNamesBothPackages: true, anyEntryNamesRoot: false });
+		}).toStrictEqual({ id: 'rule-requirements', status: 'warn', entryCount: 2, everyEntryNamesBothPackages: true, anyEntryNamesRoot: false });
 	});
 
 	test('judges requirements after standards-rule-settings apply', async () => {

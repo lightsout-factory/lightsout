@@ -5,7 +5,7 @@ const messageFor = ({ command, names }: { command: string; names: string[] }) =>
 	getUnknownFlagsMessage({ command, flags: new Map(names.map((name) => [name, true as const])) });
 
 test('getUnknownFlagsMessage: says nothing when every flag belongs to the command', () => {
-	expect(messageFor({ command: 'standards-check', names: ['code-checks', 'all', 'cwd'] })).toBeUndefined();
+	expect(messageFor({ command: 'standards-check', names: ['all', 'cwd', 'deterministic-checks'] })).toBeUndefined();
 	expect(messageFor({ command: 'refactor', names: [] })).toBeUndefined();
 });
 

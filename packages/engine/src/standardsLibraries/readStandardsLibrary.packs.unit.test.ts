@@ -27,9 +27,10 @@ const ruleFiles = ({ path, markdown }: { path: string; markdown: string }) => ({
 });
 
 /**
- * Two libraries: one whose topic and two pack files are all valid, and one
- * holding a pack file that is not JSON beside a rule with no summary — a
- * pack problem and a topic problem the loader must report together.
+ * Two libraries: one whose topic and three pack files are all valid, one of
+ * them conditional, and one holding a pack file that is not JSON and a pack
+ * file conditional on nothing beside a rule with no summary — pack problems
+ * and a topic problem the loader must report together.
  */
 const setupLibraries = () => {
 	const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n' };
@@ -37,17 +38,19 @@ const setupLibraries = () => {
 		files: {
 			...rootFile,
 			'rules/code/style/topic.md': '# Style\n',
-			...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+			...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\nchecks: agent\n---\n\nProse.\n' }),
 			'packs/node.json': JSON.stringify({ description: 'Node pack.', include: { packs: ['acme/base'] } }),
 			'packs/base.json': JSON.stringify({ description: 'Base pack.', include: { topics: ['acme/code/style'] }, 'rule-settings': { functions: 'blocking' } }),
+			'packs/react.json': JSON.stringify({ description: 'React pack.', include: { packs: ['acme/base'] }, 'applies-when': { dependencies: ['react'] } }),
 		},
 	});
 	const brokenPackPath = writeLibrary({
 		files: {
 			...rootFile,
 			'rules/code/style/topic.md': '# Style\n',
-			...ruleFiles({ path: 'rules/code/style/01-no-summary', markdown: '---\nchecked: false\n---\n\nProse.\n' }),
+			...ruleFiles({ path: 'rules/code/style/01-no-summary', markdown: '---\nchecks: agent\n---\n\nProse.\n' }),
 			'packs/broken.json': '{ "description": ',
+			'packs/unconditional.json': JSON.stringify({ description: 'Conditional on nothing.', 'applies-when': { dependencies: [] } }),
 			'packs/valid.json': JSON.stringify({ description: 'Valid pack.' }),
 		},
 	});
@@ -62,7 +65,8 @@ describe('readStandardsLibrary packs', () => {
 		const library = await readStandardsLibrary({ packPath: validPackPath });
 		const error = await getRejectionError({ promise: readStandardsLibrary({ packPath: brokenPackPath }) });
 
-		// the packs/ folder loads sorted by name, each list and the settings map defaulted when the file omits them
+		// the packs/ folder loads sorted by name, each list and the settings map defaulted when the file omits them,
+		// and only the pack that wrote applies-when carries a condition
 		expect(library.packs).toStrictEqual([
 			{
 				name: 'base',
@@ -70,6 +74,7 @@ describe('readStandardsLibrary packs', () => {
 				description: 'Base pack.',
 				include: { packs: [], topics: ['acme/code/style'], rules: [] },
 				ruleSettings: { functions: 'blocking' },
+				appliesWhen: undefined,
 			},
 			{
 				name: 'node',
@@ -77,14 +82,30 @@ describe('readStandardsLibrary packs', () => {
 				description: 'Node pack.',
 				include: { packs: ['acme/base'], topics: [], rules: [] },
 				ruleSettings: {},
+				appliesWhen: undefined,
+			},
+			{
+				name: 'react',
+				filePath: 'packs/react.json',
+				description: 'React pack.',
+				include: { packs: ['acme/base'], topics: [], rules: [] },
+				ruleSettings: {},
+				appliesWhen: { dependencies: ['react'] },
 			},
 		]);
-		// one error for the whole load, listing the bad pack file beside the topic's rule problem: ${error.message}
+		// one error for the whole load, listing both bad pack files beside the topic's rule problem: ${error.message}
 		expect({
 			startsWithLoadFailure: error.message.startsWith(`standards pack failed to load (${brokenPackPath}):`),
 			namesBadPackFile: error.message.includes('- packs/broken.json'),
+			namesEmptyCondition: /- packs\/unconditional\.json: .*applies-when/.test(error.message),
 			namesTopicProblem: error.message.includes('code/style/01-no-summary/rule.md: summary'),
 			namesValidPackFile: error.message.includes('packs/valid.json'),
-		}).toStrictEqual({ startsWithLoadFailure: true, namesBadPackFile: true, namesTopicProblem: true, namesValidPackFile: false });
+		}).toStrictEqual({
+			startsWithLoadFailure: true,
+			namesBadPackFile: true,
+			namesEmptyCondition: true,
+			namesTopicProblem: true,
+			namesValidPackFile: false,
+		});
 	});
 });

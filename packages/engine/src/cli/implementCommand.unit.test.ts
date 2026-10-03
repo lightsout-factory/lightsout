@@ -255,10 +255,10 @@ test('implementCommand: a repo that declared no opt-ins gets no lines for them �
 
 	await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
 
-	// an unset coverage gate and an unset standards pack read as two different
-	// silences, and the banner says which is which
+	// a coverage gate switched off is announced as explicit, and the pack the
+	// config names is printed as the repo root's
 	expect(logged).toContain('  gates (root): check=[true] test=[true] coverage=[off (explicit)]');
-	expect(logged).toContain('  repo root: lightsout/node (detected)');
+	expect(logged).toContain('  repo root: lightsout/standards');
 	expect(logged).toContain('  timeouts: agent 60m · supervisor 15m · gate 15m');
 	expect(logged.some((line) => /^ {2}(generate|agent commands|generated|format|gates \((root, opt-in|per package)\))/.test(line))).toBe(false);
 	expect(exitCodes).toStrictEqual([1]);
@@ -291,7 +291,7 @@ test('implementCommand: a command entry that only names a model keeps the global
 	expect(logged).toContain('  harness: claude-code · model: implement-model · effort: harness default · permissions: write');
 });
 
-test('implementCommand: standards packs turned off explicitly say so, rather than reading as the unconfigured default', async () => {
+test('implementCommand: standards packs turned off are announced as the repo root having none', async () => {
 	const { context, logged } = setupImplement({ args: ['--plan', 'ghost.md'], config: { 'standards-pack': false } });
 
 	await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);

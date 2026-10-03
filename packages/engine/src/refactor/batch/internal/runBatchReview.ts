@@ -16,15 +16,15 @@ interface Params {
 	files: string[];
 	/** Monorepo package parent dir, so each finding is graded by its file's package group. */
 	packagesDir: string;
-	/** false skips the agent entirely — code-checks-only mode. */
+	/** false skips the agent entirely — deterministic-checks-only mode. */
 	agentReview: boolean;
 	timeoutMs: number;
 	onProgress: (message: string) => void;
 }
 
 /**
- * Findings go to the judgment ledger before any caller acts: no code check can
- * rediscover a judgment finding, so a run that parks or escalates first would
+ * Findings go to the review ledger before any caller acts: no deterministic check
+ * can rediscover an agent-check finding, so a run that parks or escalates first would
  * otherwise lose the only account of it.
  */
 export const runBatchReview = async ({

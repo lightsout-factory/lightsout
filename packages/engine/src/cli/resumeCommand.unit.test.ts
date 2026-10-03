@@ -316,7 +316,7 @@ describe('resumeCommand', () => {
 		expect(exitCodes).toStrictEqual([1]);
 	});
 
-	test('standards turned off explicitly are announced as such on the resume banner', async () => {
+	test('standards turned off are announced on the resume banner as the repo root having none', async () => {
 		const { context, logged } = setupResume({
 			args: ['--run', runId],
 			manifest: manifestOf({ pipeline: 'implement' }),

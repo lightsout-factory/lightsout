@@ -2,8 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { type RawStandardsFinding, type StandardsCheckFunction, type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
+import { type RawStandardsFinding, type StandardsCheckFunction, type StandardsCheckInputs, StandardsInputKind } from '@lightsout/standards-contracts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
@@ -20,7 +19,7 @@ const siteFiles = {
 type Site = keyof typeof siteFiles;
 
 interface CheckCall {
-	input: StandardsCheckInput;
+	inputs: StandardsCheckInputs;
 	options: Record<string, number>;
 }
 
@@ -48,8 +47,8 @@ const setupMonorepo = () => {
  */
 const sizeRule = ({ sites }: { sites: Site[] }) => {
 	const calls: CheckCall[] = [];
-	const run: StandardsCheckFunction = ({ input, options }) => {
-		calls.push({ input, options });
+	const run: StandardsCheckFunction = ({ inputs, options }) => {
+		calls.push({ inputs, options });
 
 		return sites.map((site): RawStandardsFinding => ({ siteKey: `size:${site}`, files: [{ path: siteFiles[site] }], detail: `cap ${options.cap ?? 'none'}` }));
 	};
@@ -61,12 +60,13 @@ const sizeRule = ({ sites }: { sites: Site[] }) => {
 		documentPath: 'code/style-guide/structure/module-api',
 		summary: 'a file too big to read',
 		prose: 'the argument for the rule',
-		checked: true,
+		deterministic: true,
+		agent: false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
 		requires: [],
 		fixturesPath: '/packages/acme/size/fixtures',
-		inputKind: StandardsInputKind.FileList,
+		inputKinds: [StandardsInputKind.FileList],
 		run,
 	};
 
@@ -80,8 +80,9 @@ const groupOf = ({ packages, rule, state }: { packages: string[]; rule: LoadedSt
 		name: `acme/${packages.join('-') || 'root'}`,
 		topics: [],
 		rules: state === undefined ? [] : [{ rule, severity: state.severity, options: state.options }],
+		conditionalPacks: [],
+		inactiveRules: [],
 	},
-	source: StandardsPackSource.Named,
 	states: state === undefined ? new Map() : new Map([[rule.name, state]]),
 });
 
@@ -189,8 +190,7 @@ describe('runPackageChecks', () => {
 
 		const { findings } = await runPackageChecks({ cwd, groups, path: 'packages/web-app' });
 
-		const input = calls[0]?.input;
-		const referenceFiles = input?.kind === StandardsInputKind.FileList ? input.referenceFiles : [];
+		const referenceFiles = calls[0]?.inputs[StandardsInputKind.FileList]?.referenceFiles ?? [];
 
 		expect({ referenceFiles, findings: summarize({ findings }) }).toStrictEqual({
 			referenceFiles: expect.arrayContaining([siteFiles.root, siteFiles.engine, siteFiles['web-app']]),

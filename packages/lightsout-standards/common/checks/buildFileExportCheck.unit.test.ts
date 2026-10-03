@@ -11,7 +11,7 @@ const check = buildFileExportCheck({
 
 describe('buildFileExportCheck', () => {
 	test('asks for file text, and reports one finding per violating file in the rule’s own words', async () => {
-		expect(check.inputKind).toBe('file-text');
+		expect(check.inputKinds).toStrictEqual(['file-text']);
 
 		const input = setupFileTextInput({
 			contents: [
@@ -20,7 +20,7 @@ describe('buildFileExportCheck', () => {
 			],
 		});
 
-		expect(await check.run({ input, options: {} })).toStrictEqual([
+		expect(await check.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([
 			{ siteKey: 'demo-exports:src/pair.ts', files: [{ path: 'src/pair.ts' }], detail: '2 exports', guidance: 'the remedy line' },
 		]);
 	});
@@ -39,21 +39,21 @@ describe('buildFileExportCheck', () => {
 			],
 		});
 
-		expect(await exempting.run({ input, options: {} })).toStrictEqual([
+		expect(await exempting.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([
 			{ siteKey: 'demo-exports:src/pair.ts', files: [{ path: 'src/pair.ts' }], detail: '2 exports', guidance: 'the remedy line' },
 		]);
 	});
 
 	test('inside a declared pack, a rule under tests/ is ordinary source and is judged like any other file', async () => {
 		const input = setupFileTextInput({
-			contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const one = 1;\nexport const two = 2;\n']],
+			contents: [['standards/tests/code-style/10-rule/check.ts', 'export const one = 1;\nexport const two = 2;\n']],
 			standardsLibraries: ['standards'],
 		});
 
-		expect(await check.run({ input, options: {} })).toStrictEqual([
+		expect(await check.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([
 			{
-				siteKey: 'demo-exports:standards/tests/unit-testing/10-rule/check.ts',
-				files: [{ path: 'standards/tests/unit-testing/10-rule/check.ts' }],
+				siteKey: 'demo-exports:standards/tests/code-style/10-rule/check.ts',
+				files: [{ path: 'standards/tests/code-style/10-rule/check.ts' }],
 				detail: '2 exports',
 				guidance: 'the remedy line',
 			},
@@ -62,10 +62,10 @@ describe('buildFileExportCheck', () => {
 
 	test('the same path with no pack declared above it is a tests/ directory, and goes unjudged', async () => {
 		const input = setupFileTextInput({
-			contents: [['standards/tests/unit-testing/10-rule/check.ts', 'export const one = 1;\nexport const two = 2;\n']],
+			contents: [['standards/tests/code-style/10-rule/check.ts', 'export const one = 1;\nexport const two = 2;\n']],
 		});
 
-		expect(await check.run({ input, options: {} })).toStrictEqual([]);
+		expect(await check.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([]);
 	});
 
 	test('a barrel and a test file are exempt — one declares nothing of its own, the other belongs to the test standards', async () => {
@@ -76,6 +76,6 @@ describe('buildFileExportCheck', () => {
 			],
 		});
 
-		expect(await check.run({ input, options: {} })).toStrictEqual([]);
+		expect(await check.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([]);
 	});
 });

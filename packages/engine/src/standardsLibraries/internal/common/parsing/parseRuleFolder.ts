@@ -1,6 +1,6 @@
 import { readFile, realpath } from 'node:fs/promises';
 import { basename, join, sep } from 'node:path';
-import type { StandardsCheckModule, StandardsSet } from '@lightsout/standards-contracts';
+import { type StandardsCheckModule, StandardsRuleChecks, type StandardsSet } from '@lightsout/standards-contracts';
 import { z } from 'zod';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
@@ -23,7 +23,7 @@ interface Params {
 
 const ruleDeclaration = z.object({
 	summary: z.string().min(1),
-	checked: z.boolean().default(false),
+	checks: z.enum(StandardsRuleChecks),
 	severity: z.enum(StandardsSeverity).default(StandardsSeverity.Advisory),
 	options: z.record(z.string(), z.number()).default({}),
 	example: RuleExample.optional(),
@@ -43,11 +43,22 @@ const getRuleDeclaration = async ({ folderPath, rulePath, found }: { folderPath:
 };
 
 /**
- * A checked rule ships exactly one check file: `check.ts`, or `check.js` for a
- * library published to npm. Returns the absolute path of the one it ships, or
- * nothing when it ships none or both.
+ * A rule with a deterministic check (`checks: deterministic` or `checks: both`)
+ * ships exactly one check file: `check.ts`, or `check.js` for a library
+ * published to npm. Returns the absolute path of the one it ships, or nothing
+ * when it ships none or both.
  */
-const findCheckFile = async ({ folderPath, rulePath, checked, found }: { folderPath: string; rulePath: string; checked?: boolean; found: string[] }) => {
+const findCheckFile = async ({
+	folderPath,
+	rulePath,
+	checks,
+	found,
+}: {
+	folderPath: string;
+	rulePath: string;
+	checks?: StandardsRuleChecks;
+	found: string[];
+}) => {
 	const shipped: string[] = [];
 
 	for (const fileName of ['check.ts', 'check.js']) {
@@ -62,12 +73,12 @@ const findCheckFile = async ({ folderPath, rulePath, checked, found }: { folderP
 		found.push(`${rulePath}: ships both check.ts and check.js — a rule ships one`);
 	} else if (shipped.length === 1) {
 		checkFileName = shipped[0];
-	} else if (checked === true) {
-		found.push(`${rulePath}: declares checked: true but ships no check.ts or check.js`);
+	} else if (checks === StandardsRuleChecks.Deterministic || checks === StandardsRuleChecks.Both) {
+		found.push(`${rulePath}: declares checks: ${checks} but ships no check.ts or check.js`);
 	}
 
-	if (checked === false && checkFileName !== undefined) {
-		found.push(`${rulePath}: ships a ${checkFileName} but does not declare checked: true`);
+	if (checks === StandardsRuleChecks.Agent && checkFileName !== undefined) {
+		found.push(`${rulePath}: ships a ${checkFileName} but declares checks: agent`);
 	}
 
 	return checkFileName === undefined ? undefined : join(folderPath, checkFileName);
@@ -99,8 +110,8 @@ const loadCheck = async ({ checkPath, rulePath, found }: { checkPath: string; ru
 
 /**
  * Problems are collected rather than thrown so one load reports every fault. A
- * rule with any problem is dropped whole: a partial rule would be a check or
- * prose that silently stopped applying.
+ * rule with any problem is dropped whole: a half-loaded rule would be a check
+ * or prose that silently stopped applying.
  */
 export const parseRuleFolder = async ({ folderPath, set, documentPath, library, problems }: Params): Promise<LoadedStandardsRule | undefined> => {
 	const folderName = basename(folderPath);
@@ -113,8 +124,9 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, library, 
 	}
 
 	const { declaration, prose } = await getRuleDeclaration({ folderPath, rulePath, found });
-	const checkPath = await findCheckFile({ folderPath, rulePath, checked: declaration?.checked, found });
-	const check = declaration?.checked === true && checkPath !== undefined ? await loadCheck({ checkPath, rulePath, found }) : undefined;
+	const checkPath = await findCheckFile({ folderPath, rulePath, checks: declaration?.checks, found });
+	const deterministic = declaration !== undefined && declaration.checks !== StandardsRuleChecks.Agent;
+	const check = deterministic && checkPath !== undefined ? await loadCheck({ checkPath, rulePath, found }) : undefined;
 
 	// Not required here: a shipped pack may omit fixtures. `standards-validate` demands them.
 	const fixturesPath = join(folderPath, 'fixtures');
@@ -132,13 +144,14 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, library, 
 			documentPath,
 			summary: declaration.summary,
 			prose,
-			checked: declaration.checked,
+			deterministic,
+			agent: declaration.checks !== StandardsRuleChecks.Deterministic,
 			defaultSeverity: declaration.severity,
 			defaultOptions: declaration.options,
 			// As written: readStandardsLibrary resolves the names once every rule of the library is loaded.
 			requires: declaration.requires,
 			...(declaration.example === undefined ? {} : { example: declaration.example }),
-			...(check === undefined ? {} : { inputKind: check.inputKind, run: check.run }),
+			...(check === undefined ? {} : { inputKinds: check.inputKinds, run: check.run }),
 			fixturesPath,
 		};
 	}

@@ -55,14 +55,14 @@ describe('PacksPage', () => {
 
 	test("shows one card per pack of the library, each linking to that pack's page", () => {
 		setupPacksPage({
-			pack: buildStandardsPackView({ packs: [buildStandardsPackListing({ name: 'node' }), buildStandardsPackListing({ name: 'react' })] }),
+			pack: buildStandardsPackView({ packs: [buildStandardsPackListing({ name: 'standards' }), buildStandardsPackListing({ name: 'react' })] }),
 		});
 
 		const headings = screen
 			.getAllByRole('heading')
 			.map((heading) => heading.textContent)
 			.filter((text) => text !== 'Standards Packs');
-		const nodeCard = screen.getByRole('link', { name: /lightsout\/node/ });
+		const standardsCard = screen.getByRole('link', { name: /lightsout\/standards/ });
 		const reactCard = screen.getByRole('link', { name: /lightsout\/react/ });
 		const ruleSetLinks = screen
 			.getAllByRole('link')
@@ -71,67 +71,72 @@ describe('PacksPage', () => {
 
 		expect({
 			headings,
-			nodeHref: nodeCard.getAttribute('href'),
+			standardsHref: standardsCard.getAttribute('href'),
 			reactHref: reactCard.getAttribute('href'),
 			ruleSetLinks,
 		}).toStrictEqual({
-			headings: ['lightsout', 'lightsout/node', 'lightsout/react', 'Your team’s pack'],
-			nodeHref: '/standards-packs/lightsout/packs/node',
+			headings: ['lightsout/standards', 'lightsout/react', 'Your team’s pack'],
+			standardsHref: '/standards-packs/lightsout/packs/standards',
 			reactHref: '/standards-packs/lightsout/packs/react',
 			ruleSetLinks: [],
 		});
 	});
 
-	// The library's own totals (1 rule, 1 checked, 0 judgment) differ from the pack's, so the counts shown prove they are the pack's.
+	// The library's own totals (1 rule, 1 deterministic, 0 agent) differ from the pack's, so the counts shown prove they are the pack's.
 	test('names the packs a pack includes and counts its rules by kind of check', () => {
 		setupPacksPage({
 			pack: buildStandardsPackView({
 				packs: [
 					buildStandardsPackListing({
-						name: 'react-app',
-						include: { packs: ['lightsout/node'], topics: [], rules: [] },
-						totals: { rules: 5, checked: 3, judgment: 2 },
+						name: 'standards',
+						include: { packs: ['lightsout/fractal'], topics: [], rules: [] },
+						totals: { rules: 5, deterministic: 3, agent: 2 },
 					}),
 				],
 			}),
 		});
 
-		const card = screen.getByRole('link', { name: /lightsout\/react-app/ });
+		const card = screen.getByRole('link', { name: /lightsout\/standards/ });
 
 		expect([
 			within(card).getByText(/^Includes/).textContent,
 			within(card).queryByText('3 deterministic checks') !== null,
 			within(card).queryByText('2 agent checks') !== null,
-		]).toStrictEqual(['Includes lightsout/node', true, true]);
+		]).toStrictEqual(['Includes lightsout/fractal', true, true]);
 	});
 
-	test('leaves out the description and included packs of a pack that has neither', () => {
+	test('leaves out the description, included packs and condition of a pack that has none of them', () => {
 		setupPacksPage({
-			pack: buildStandardsPackView({ packs: [buildStandardsPackListing({ name: 'node', overrides: { description: undefined } })] }),
+			pack: buildStandardsPackView({ packs: [buildStandardsPackListing({ name: 'standards', overrides: { description: undefined } })] }),
 		});
 
-		const card = screen.getByRole('link', { name: /lightsout\/node/ });
+		const card = screen.getByRole('link', { name: /lightsout\/standards/ });
 
 		expect({
-			description: within(card).queryByText('Every Node package.'),
+			description: within(card).queryByText('Every bundled standard at once.'),
 			includes: within(card).queryByText(/^Includes/),
-		}).toStrictEqual({ description: null, includes: null });
+			condition: within(card).queryByText(/^Applies only/),
+		}).toStrictEqual({ description: null, includes: null, condition: null });
 	});
 
-	test('describes the library under its name when it has a description', () => {
+	test('says on a conditional pack’s card which packages it reaches', () => {
+		setupPacksPage({
+			pack: buildStandardsPackView({
+				packs: [buildStandardsPackListing({ name: 'react', appliesWhen: { dependencies: ['react', 'preact', 'react-dom'] } })],
+			}),
+		});
+
+		const card = screen.getByRole('link', { name: /lightsout\/react/ });
+
+		expect(within(card).getByText(/^Applies only/).textContent).toBe('Applies only to packages that depend on react, preact or react-dom.');
+	});
+
+	test('shows the packs alone, with no library heading or blurb above them', () => {
 		setupPacksPage();
 
-		const section = screen.getByRole('region', { name: 'lightsout' });
-
-		expect(within(section).queryByText('The rules lightsout ships.')).not.toBeNull();
-	});
-
-	test('shows only the library name when the library has no description', () => {
-		setupPacksPage({ pack: buildStandardsPackView({ overrides: { description: undefined } }) });
-
-		const section = screen.getByRole('region', { name: 'lightsout' });
-
-		expect(within(section).queryByText('The rules lightsout ships.')).toBeNull();
+		// the page is about the packs; the library's own description belongs to the home page
+		expect(screen.queryByText('The rules lightsout ships.')).toBeNull();
+		expect(screen.queryByRole('heading', { name: 'lightsout' })).toBeNull();
 	});
 
 	test('points a team at the docs for writing its own pack', () => {

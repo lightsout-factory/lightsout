@@ -33,9 +33,9 @@ describe('isTestFile', () => {
 
 		// a rule about how to write tests — its implementation is ordinary source,
 		// and must answer to the source rules like any other file
-		expect(isTestFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts', standardsLibraries })).toBe(false);
+		expect(isTestFile({ path: 'standards/tests/code-style/25-test-mock-untyped/check.ts', standardsLibraries })).toBe(false);
 		// the same path with no package declared above it is test code
-		expect(isTestFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts' })).toBe(true);
+		expect(isTestFile({ path: 'standards/tests/code-style/25-test-mock-untyped/check.ts' })).toBe(true);
 	});
 
 	test('a real test inside a standards pack is still test code, by its name', () => {

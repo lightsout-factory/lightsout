@@ -8,7 +8,8 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	rule: 'multi-export',
 	doc: 'lightsout-defaults: code/style-guide/structure/one-export-per-file',
 	summary: 'more than one export in a file',
-	checked: true,
+	deterministic: true,
+	agent: overrides.deterministic === false,
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
 	options: {},
@@ -44,21 +45,32 @@ describe('printStandardsRuleList', () => {
 		printStandardsRuleList({ rules: [listing()] });
 
 		expect(cellsOf({ logged })).toStrictEqual([
-			['rule', 'state', 'checked by', 'standards doc', 'applies to'],
-			['multi-export', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file', 'repo root (outside packages)'],
+			['rule', 'state', 'check', 'standards doc', 'applies to'],
+			['multi-export', 'blocking', 'deterministic', 'lightsout-defaults: code/style-guide/structure/one-export-per-file', 'repo root (outside packages)'],
 			['more than one export in a file', '', '', '', ''],
-			['1 rule(s)', '1 blocking', '0 advisory, 0 off', '1 by code, 0 by judgment', ''],
+			['1 rule(s)', '1 blocking', '0 advisory, 0 off', '1 deterministic, 0 agent', ''],
 		]);
 	});
 
 	test('a rule no check covers says so on its own row', () => {
 		const { logged } = setupPrinter();
 
-		printStandardsRuleList({ rules: [listing({ rule: 'premature-abstraction', summary: 'abstracting before the third use', checked: false })] });
+		printStandardsRuleList({ rules: [listing({ rule: 'premature-abstraction', summary: 'abstracting before the third use', deterministic: false })] });
 
 		// real policy nothing mechanical will ever catch — a ledger that hid it
 		// would read as though every listed rule were enforced
-		expect(cellsOf({ logged })[1]?.[2]).toBe('judgment');
+		expect(cellsOf({ logged })[1]?.[2]).toBe('agent');
+	});
+
+	test('a rule whose check covers only part of it names both, and counts under both', () => {
+		const { logged } = setupPrinter();
+
+		printStandardsRuleList({ rules: [listing({ rule: 'shared-code', agent: true }), listing({ rule: 'multi-export' })] });
+
+		const cells = cellsOf({ logged });
+
+		expect(cells[1]?.[2]).toBe('deterministic and agent');
+		expect(cells.at(-1)?.[3]).toBe('2 deterministic, 1 agent');
 	});
 
 	test('a row the repo configured is marked, so policy reads apart from default', () => {
@@ -92,9 +104,15 @@ describe('printStandardsRuleList', () => {
 		});
 
 		expect(cellsOf({ logged }).slice(1, 5)).toStrictEqual([
-			['duplicate-code-block', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file', 'repo root (outside packages)'],
+			[
+				'duplicate-code-block',
+				'blocking',
+				'deterministic',
+				'lightsout-defaults: code/style-guide/structure/one-export-per-file',
+				'repo root (outside packages)',
+			],
 			['the same block of code written out in two or more files — minTokens 90', '', '', '', ''],
-			['multi-export', 'blocking', 'code', 'lightsout-defaults: code/style-guide/structure/one-export-per-file', 'repo root (outside packages)'],
+			['multi-export', 'blocking', 'deterministic', 'lightsout-defaults: code/style-guide/structure/one-export-per-file', 'repo root (outside packages)'],
 			['more than one export in a file', '', '', '', ''],
 		]);
 	});
@@ -108,11 +126,11 @@ describe('printStandardsRuleList', () => {
 				listing({ rule: 'duplicate-code-block', severity: StandardsSeverity.Advisory }),
 				listing({ rule: 'filename-mismatch', severity: StandardsSeverity.Advisory }),
 				listing({ rule: 'folder-size', severity: StandardsSeverity.Off }),
-				listing({ rule: 'premature-abstraction', severity: StandardsSeverity.Advisory, checked: false }),
+				listing({ rule: 'premature-abstraction', severity: StandardsSeverity.Advisory, deterministic: false }),
 			],
 		});
 
-		expect(cellsOf({ logged }).at(-1)).toStrictEqual(['5 rule(s)', '1 blocking', '3 advisory, 1 off', '4 by code, 1 by judgment', '']);
+		expect(cellsOf({ logged }).at(-1)).toStrictEqual(['5 rule(s)', '1 blocking', '3 advisory, 1 off', '4 deterministic, 1 agent', '']);
 	});
 
 	test('a ledger holding no rules at all still prints its headings and a totals row of zeroes', () => {
@@ -122,8 +140,8 @@ describe('printStandardsRuleList', () => {
 
 		// a package that states no rules is an empty ledger, not a broken one
 		expect(cellsOf({ logged })).toStrictEqual([
-			['rule', 'state', 'checked by', 'standards doc', 'applies to'],
-			['0 rule(s)', '0 blocking', '0 advisory, 0 off', '0 by code, 0 by judgment', ''],
+			['rule', 'state', 'check', 'standards doc', 'applies to'],
+			['0 rule(s)', '0 blocking', '0 advisory, 0 off', '0 deterministic, 0 agent', ''],
 		]);
 	});
 
@@ -163,6 +181,6 @@ describe('printStandardsRuleList', () => {
 			.at(-1)
 			?.filter((cell) => cell !== '');
 
-		expect(totals).toStrictEqual(['2 rule(s)', '1 blocking', '2 advisory, 0 off', '2 by code, 0 by judgment']);
+		expect(totals).toStrictEqual(['2 rule(s)', '1 blocking', '2 advisory, 0 off', '2 deterministic, 0 agent']);
 	});
 });

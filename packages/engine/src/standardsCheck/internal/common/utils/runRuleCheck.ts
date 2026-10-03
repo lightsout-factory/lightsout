@@ -1,4 +1,4 @@
-import { RawStandardsFinding, type StandardsCheckFunction, type StandardsCheckInput } from '@lightsout/standards-contracts';
+import { RawStandardsFinding, type StandardsCheckFunction, type StandardsCheckInputs } from '@lightsout/standards-contracts';
 import { z } from 'zod';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
@@ -9,7 +9,7 @@ interface Params {
 	/** Named in any failure; its id and full name decide the site-key prefix. */
 	rule: Pick<LoadedStandardsRule, 'id' | 'name'>;
 	run: StandardsCheckFunction;
-	input: StandardsCheckInput;
+	inputs: StandardsCheckInputs;
 	options: Record<string, number>;
 }
 
@@ -24,11 +24,11 @@ interface Params {
  *
  * @throws {Error} When the check throws, returns something that is not a list of raw findings, or writes a site key that does not start with its rule id.
  */
-export const runRuleCheck = async ({ rule, run, input, options }: Params): Promise<RawStandardsFinding[]> => {
+export const runRuleCheck = async ({ rule, run, inputs, options }: Params): Promise<RawStandardsFinding[]> => {
 	let returned: unknown;
 
 	try {
-		returned = await run({ input, options });
+		returned = await run({ inputs, options });
 	} catch (error) {
 		throw new Error(`standards rule "${rule.name}" threw while checking: ${messageOf({ error })}`);
 	}

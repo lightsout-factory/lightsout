@@ -1,6 +1,0 @@
-{
-	"description": "Unit testing: how unit tests are written, with worked examples.",
-	"include": {
-		"topics": ["lightsout/tests/unit-testing", "lightsout/tests/unit-test-examples"]
-	}
-}

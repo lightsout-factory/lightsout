@@ -2,7 +2,6 @@ import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { StandardsSet } from '@lightsout/standards-contracts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
@@ -29,14 +28,17 @@ const setupDefaultPack = async () => {
 	return { pack: await readStandardsLibrary({ packPath }) };
 };
 
-/** The one group a repo whose manifest names no framework gets: the shipped library's node pack, every rule at the pack's own grade. */
-const nodeGroupOf = ({ pack }: { pack: LoadedStandardsLibrary }): StandardsGroup => {
-	const resolved = resolveStandardsPack({ address: 'lightsout/node', libraries: [pack] });
+/**
+ * The one group a repo whose manifest names no framework gets: the shipped
+ * library's standards pack with none of its framework packs applied, every
+ * rule at the pack's own grade.
+ */
+const frameworkFreeGroupOf = ({ pack }: { pack: LoadedStandardsLibrary }): StandardsGroup => {
+	const resolved = resolveStandardsPack({ addresses: ['lightsout/standards'], libraries: [pack], dependencies: new Set() });
 
 	return {
 		packages: [''],
 		pack: resolved,
-		source: StandardsPackSource.Detected,
 		states: new Map<string, ResolvedRuleState>(
 			resolved.rules.map(({ rule, severity, options }) => [
 				rule.name,
@@ -105,13 +107,13 @@ const setupLibraryLayout = async () => {
 };
 
 describe('readStandardsLibrary', () => {
-	test('carries all 24 shipped documents, split across the code and tests trees', async () => {
+	test('carries all 17 shipped documents, split across the code and tests trees', async () => {
 		const { pack } = await setupDefaultPack();
 
 		expect(pack.name).toBe('lightsout');
-		expect(pack.documents).toHaveLength(24);
-		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(21);
-		expect(pack.documents.filter((document) => document.set === StandardsSet.Tests)).toHaveLength(3);
+		expect(pack.documents).toHaveLength(17);
+		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(13);
+		expect(pack.documents.filter((document) => document.set === StandardsSet.Tests)).toHaveLength(4);
 	});
 
 	test('carries the line and the address the root file states about the pack itself', async () => {
@@ -120,7 +122,7 @@ describe('readStandardsLibrary', () => {
 		// what a pack page shows under the name — read from the root file rather
 		// than from any folder, so this is the only place they can come from
 		expect({ description: pack.description, homepage: pack.homepage }).toEqual({
-			description: expect.stringContaining('TypeScript pack'),
+			description: expect.stringContaining('TypeScript standards'),
 			homepage: 'https://github.com/lightsout-factory/lightsout/tree/main/packages/lightsout-standards',
 		});
 	});
@@ -128,25 +130,25 @@ describe('readStandardsLibrary', () => {
 	test('every rule declaring a check ships one that can be run', async () => {
 		const { pack } = await setupDefaultPack();
 
-		const checked = pack.rules.filter((rule) => rule.checked);
-		const runnable = checked.filter((rule) => typeof rule.run === 'function' && rule.inputKind !== undefined);
+		const checked = pack.rules.filter((rule) => rule.deterministic);
+		const runnable = checked.filter((rule) => typeof rule.run === 'function' && rule.inputKinds !== undefined);
 
 		// the honesty rule at load time is what makes this hold — this pins that it holds for the shipped pack
 		expect(checked.length).toBeGreaterThan(0);
 		expect(runnable).toHaveLength(checked.length);
-		// a judgment-only rule declares no check and carries none
-		expect(pack.rules.filter((rule) => !rule.checked).every((rule) => rule.run === undefined)).toBe(true);
+		// a agent-only rule declares no check and carries none
+		expect(pack.rules.filter((rule) => !rule.deterministic).every((rule) => rule.run === undefined)).toBe(true);
 	});
 
 	test('assembles both sets for a repo running no framework, each document headed by where it came from', async () => {
 		const { pack } = await setupDefaultPack();
 
-		const { code, tests } = buildStandardsDocuments({ groups: [nodeGroupOf({ pack })] });
+		const { code, tests } = buildStandardsDocuments({ groups: [frameworkFreeGroupOf({ pack })] });
 
-		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(17);
-		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(2);
+		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(11);
+		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(3);
 		// the prose itself rides along, not just the headers
-		expect(code ?? '').toContain('One Export Per File');
+		expect(code ?? '').toContain('Module Folder Layout');
 		expect(tests ?? '').toContain('Module Boundary Testing');
 	});
 
@@ -170,8 +172,8 @@ describe('readStandardsLibrary', () => {
 				.map((specifier) => `${file}: ${specifier}`),
 		);
 		const importsThroughAlias = checks.some(({ specifiers }) => specifiers.some((specifier) => specifier.startsWith('#common/')));
-		const checked = pack.rules.filter((rule) => rule.checked);
-		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKind === undefined).map((rule) => rule.name);
+		const checked = pack.rules.filter((rule) => rule.deterministic);
+		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKinds === undefined).map((rule) => rule.name);
 
 		// an empty check list would make "every check" hold vacuously
 		expect({ checkFiles: checks.length > 0, checkedRules: checked.length > 0 }).toStrictEqual({
@@ -189,8 +191,8 @@ describe('readStandardsLibrary', () => {
 	test('the built-in library keeps every topic under rules and loads the check of every checked rule', async () => {
 		const { pack, rootFolders, rulesFolders } = await setupLibraryLayout();
 
-		const checked = pack.rules.filter((rule) => rule.checked);
-		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKind === undefined).map((rule) => rule.name);
+		const checked = pack.rules.filter((rule) => rule.deterministic);
+		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKinds === undefined).map((rule) => rule.name);
 
 		// an empty checked-rule list would make "every checked rule" hold vacuously
 		expect(checked.length).toBeGreaterThan(0);

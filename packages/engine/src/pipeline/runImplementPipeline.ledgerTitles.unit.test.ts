@@ -42,7 +42,7 @@ const ledgerTestGate = gateResultsCommand({ tests: [{ file: ledgerFile, name: le
  * stopped on the fixture's shape never reaches the question this suite asks.
  */
 const ledgerRepoConfig = {
-	'standards-rule-settings': { ...reachabilityRulesOff['standards-rule-settings'], 'test-in-tests-folder': 'off', 'test-not-beside-subject': 'off' },
+	'standards-rule-settings': { ...reachabilityRulesOff['standards-rule-settings'], 'test-beside-subject': 'off' },
 };
 
 /** A plan whose one-row ledger names the test file the repository already carries. */

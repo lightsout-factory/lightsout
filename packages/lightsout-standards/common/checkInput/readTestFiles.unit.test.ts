@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupOtherKindInput, setupTestFileInput } from '@lightsout/standards-testkit';
+import { setupTestFileInput } from '@lightsout/standards-testkit';
 import { readTestFiles } from './readTestFiles.ts';
 
 describe('readTestFiles', () => {
@@ -27,8 +27,8 @@ describe('readTestFiles', () => {
 		expect(files).toStrictEqual([]);
 	});
 
-	test('returns nothing for an input of any other kind rather than refusing', () => {
-		const files = readTestFiles({ input: setupOtherKindInput() });
+	test('returns nothing when the input is missing rather than refusing', () => {
+		const files = readTestFiles({ input: undefined });
 
 		expect(files).toStrictEqual([]);
 	});

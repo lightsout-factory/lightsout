@@ -22,7 +22,7 @@ const orderBySeverity = ({ findings }: { findings: StandardsFinding[] }) => [
 	...findings.filter((entry) => entry.severity === StandardsSeverity.Advisory),
 ];
 
-const describeCodeFindings = ({ findings }: { findings: StandardsFinding[] }) => {
+const describeDeterministicFindings = ({ findings }: { findings: StandardsFinding[] }) => {
 	const blocking = findings.filter((entry) => entry.severity === StandardsSeverity.Blocking).length;
 	const advisories = findings.length - blocking;
 
@@ -60,17 +60,17 @@ export const standardsCheckCommand = async ({ flags, cwd }: CommandContext): Pro
 		return exitCli({ code: 0 });
 	}
 
-	const codeChecksOnly = flags.get('code-checks') === true;
+	const deterministicOnly = flags.get('deterministic-checks') === true;
 	const agentReviewOnly = flags.get('agent-review') === true;
-	const runCodeChecks = codeChecksOnly || !agentReviewOnly;
-	const runAgentReview = agentReviewOnly || !codeChecksOnly;
+	const runDeterministicChecks = deterministicOnly || !agentReviewOnly;
+	const runAgentReview = agentReviewOnly || !deterministicOnly;
 
 	const checkPath = getStringFlag({ flags, name: 'path' });
 	const findings: StandardsFinding[] = [];
 	const notes: string[] = [];
 
-	if (runCodeChecks) {
-		printSectionHeading({ title: 'Code checks', subtitle: 'deterministic — the same answer every run' });
+	if (runDeterministicChecks) {
+		printSectionHeading({ title: 'Deterministic checks', subtitle: 'code decides, with the same answer every run' });
 
 		const startedAt = Date.now();
 		// Persistence is this command's job, not the check's: the merged stream is
@@ -86,7 +86,9 @@ export const standardsCheckCommand = async ({ flags, cwd }: CommandContext): Pro
 		});
 		const ordered = orderBySeverity({ findings: checked.findings });
 
-		printProgress(`✓ Code checks finished in ${formatDuration({ ms: Date.now() - startedAt })} — ${describeCodeFindings({ findings: ordered })}`);
+		printProgress(
+			`✓ Deterministic checks finished in ${formatDuration({ ms: Date.now() - startedAt })} — ${describeDeterministicFindings({ findings: ordered })}`,
+		);
 		printSectionResult({ findings: ordered, notes: checked.notes });
 		findings.push(...ordered);
 		notes.push(...checked.notes);
@@ -104,12 +106,12 @@ export const standardsCheckCommand = async ({ flags, cwd }: CommandContext): Pro
 		notes.push(...reviewed.notes);
 	}
 
-	// The evidence file is the code checks' work-list, so a review-only run leaves
+	// The evidence file is the deterministic checks' work-list, so a review-only run leaves
 	// it as the last real check left it.
-	if (runCodeChecks) {
+	if (runDeterministicChecks) {
 		await writeStandardsSnapshot({ cwd, snapshot: { at: new Date().toISOString(), path: checkPath ?? '.', findings, notes } });
 	}
 
-	printStandardsSummary({ findings, rules, reportPath: runCodeChecks ? '.lightsout/standards-check.json' : undefined });
+	printStandardsSummary({ findings, rules, reportPath: runDeterministicChecks ? '.lightsout/standards-check.json' : undefined });
 	return exitCli({ code: 0 });
 };

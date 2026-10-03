@@ -20,8 +20,8 @@ export const StandardsPackBundle = z.object({
 	built: z.boolean(),
 	totals: z.object({
 		rules: z.number(),
-		checked: z.number(),
-		judgment: z.number(),
+		deterministic: z.number(),
+		agent: z.number(),
 		topics: z.number(),
 		packs: z.number(),
 		/** Rules with at least one pass and one fail fixture file. */

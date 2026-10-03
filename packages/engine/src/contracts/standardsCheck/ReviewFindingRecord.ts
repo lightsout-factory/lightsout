@@ -3,8 +3,8 @@ import { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding
 
 /**
  * Written the moment an agent review reports it, because a run that parks or
- * escalates never builds its batch report, and no code check can rediscover a
- * judgment finding.
+ * escalates never builds its batch report, and no deterministic check can
+ * rediscover an agent-check finding.
  *
  * What was done about a finding is not here: the batch report's
  * `advisoryOutcomes` answers that, and two records of one answer can disagree.

@@ -40,7 +40,7 @@ describe('parsePackFolder', () => {
 			files: {
 				'zeta.json': JSON.stringify({
 					description: 'Zeta pack.',
-					include: { packs: ['lightsout/node'] },
+					include: { packs: ['lightsout/standards'] },
 					'rule-settings': { size: 'blocking', 'function-length': { options: { cap: 40 } } },
 				}),
 				'alpha.json': JSON.stringify({ description: 'Alpha pack.' }),
@@ -58,16 +58,61 @@ describe('parsePackFolder', () => {
 					description: 'Alpha pack.',
 					include: { packs: [], topics: [], rules: [] },
 					ruleSettings: {},
+					appliesWhen: undefined,
 				},
 				{
 					name: 'zeta',
 					filePath: 'packs/zeta.json',
 					description: 'Zeta pack.',
-					include: { packs: ['lightsout/node'], topics: [], rules: [] },
+					include: { packs: ['lightsout/standards'], topics: [], rules: [] },
 					ruleSettings: { size: 'blocking', 'function-length': { options: { cap: 40 } } },
+					appliesWhen: undefined,
 				},
 			],
 			problems: [],
+		});
+	});
+
+	test("parsePackFolder reads a pack file's applies-when as the dependencies the pack is conditional on", async () => {
+		const { folderPath } = setupPackFolder({
+			files: {
+				'react.json': JSON.stringify({ description: 'React pack.', 'applies-when': { dependencies: ['react', 'preact'] } }),
+			},
+		});
+		const problems: string[] = [];
+
+		const packs = await parsePackFolder({ folderPath, problems });
+
+		expect({ packs, problems }).toStrictEqual({
+			packs: [
+				{
+					name: 'react',
+					filePath: 'packs/react.json',
+					description: 'React pack.',
+					include: { packs: [], topics: [], rules: [] },
+					ruleSettings: {},
+					appliesWhen: { dependencies: ['react', 'preact'] },
+				},
+			],
+			problems: [],
+		});
+	});
+
+	test('parsePackFolder reports an applies-when with no dependency or an unknown key, each by path, and keeps the valid sibling', async () => {
+		const { folderPath } = setupPackFolder({
+			files: {
+				'empty.json': JSON.stringify({ description: 'Conditional on nothing.', 'applies-when': { dependencies: [] } }),
+				'unknown.json': JSON.stringify({ description: 'Has an unknown condition.', 'applies-when': { dependencies: ['react'], files: ['vite.config.ts'] } }),
+				'valid.json': JSON.stringify({ description: 'Valid pack.', 'applies-when': { dependencies: ['react'] } }),
+			},
+		});
+		const problems: string[] = [];
+
+		const packs = await parsePackFolder({ folderPath, problems });
+
+		expect({ names: packs.map((pack) => pack.name), problems: [...problems].sort() }).toEqual({
+			names: ['valid'],
+			problems: [expect.stringMatching(/^packs\/empty\.json: .*applies-when/), expect.stringMatching(/^packs\/unknown\.json: .*applies-when/)],
 		});
 	});
 
@@ -75,8 +120,8 @@ describe('parsePackFolder', () => {
 		const { folderPath } = setupPackFolder({
 			files: {
 				'broken.json': '{ "description": ',
-				'shapeless.json': JSON.stringify({ description: 'Has an unknown key.', extends: ['lightsout/node'] }),
-				'valid.json': JSON.stringify({ description: 'Valid pack.', include: { topics: ['lightsout/tests/unit-testing'] } }),
+				'shapeless.json': JSON.stringify({ description: 'Has an unknown key.', extends: ['lightsout/standards'] }),
+				'valid.json': JSON.stringify({ description: 'Valid pack.', include: { topics: ['lightsout/tests/code-style'] } }),
 			},
 		});
 		const problems: string[] = [];
@@ -94,7 +139,7 @@ describe('parsePackFolder', () => {
 			files: {
 				'.DS_Store': '\u0000\u0001not json',
 				'README.md': '# Packs\n\nOne file per pack.\n',
-				'node.json': JSON.stringify({ description: 'Node pack.' }),
+				'standards.json': JSON.stringify({ description: 'Standards pack.' }),
 			},
 			folders: ['drafts'],
 		});
@@ -102,6 +147,6 @@ describe('parsePackFolder', () => {
 
 		const packs = await parsePackFolder({ folderPath, problems });
 
-		expect({ names: packs.map((pack) => pack.name), problems }).toStrictEqual({ names: ['node'], problems: [] });
+		expect({ names: packs.map((pack) => pack.name), problems }).toStrictEqual({ names: ['standards'], problems: [] });
 	});
 });

@@ -3,7 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { Markdown } from '#src/appUI/Markdown.tsx';
-import { toCheckKind } from '#src/common/utils/toCheckKind.ts';
+import { toCheckKinds } from '#src/common/utils/toCheckKinds.ts';
 import { PackPageFrame } from '#src/features/packs/components/PackPageFrame.tsx';
 import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
 import { defaultPackRuleQueryOptions } from '#src/features/packs/queries/defaultPackRuleQueryOptions.ts';
@@ -68,7 +68,7 @@ export const RuleDetail = ({ ruleId }: Props) => {
 				)}
 			</Section>
 			<Section title="Examples">
-				<RuleExamples fixtures={rule.fixtures} kind={toCheckKind({ checked: rule.checked })} example={rule.example} />
+				<RuleExamples fixtures={rule.fixtures} kinds={toCheckKinds({ deterministic: rule.deterministic, agent: rule.agent })} example={rule.example} />
 			</Section>
 			<Section title="Configure">
 				<RuleConfiguration rule={rule} />

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { ConfigFieldView } from '#src/contracts/views/config/ConfigFieldView.ts';
 
@@ -21,7 +20,7 @@ export const ConfigView = z.object({
 	),
 	/**
 	 * The groups this repo's standards resolve to, with no package scope: one per
-	 * pack and source. Empty only when standards-pack is false and
+	 * distinct set of packs. Empty when standards-pack is unset or false and
 	 * package-standards-packs names no package.
 	 */
 	standardsGroups: z.array(
@@ -30,8 +29,10 @@ export const ConfigView = z.object({
 			packages: z.array(z.string()),
 			/** The packages as one label, the root group named first. */
 			appliesTo: z.string(),
+			/** The pack address the config names; several are joined with ` + `. */
 			pack: z.string(),
-			source: z.enum(StandardsPackSource),
+			/** Addresses of the conditional packs that applied to these packages; empty when none did. */
+			conditionalPacks: z.array(z.string()),
 		}),
 	),
 	/** Every rule in the groups' packs, once per distinct state, with its effective severity, whether config set it and where it holds. */

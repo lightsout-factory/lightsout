@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import { readStandardsLedger } from '#src/cli/readStandardsLedger.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
@@ -40,11 +39,10 @@ jest.mock('#src/standardsCheck/listStandardsRules.ts', () => ({
 const resolveParams = () => mockResolveStandardsGroups.mock.calls[0]?.[0];
 const listParams = () => mockListStandardsRules.mock.calls[0]?.[0];
 
-/** One root group holding the detected node pack — its contents are the listing's business, not this loader's. */
+/** One root group holding the standards pack — its contents are the listing's business, not this loader's. */
 const nodeGroup = (): StandardsGroup => ({
 	packages: [''],
-	pack: { name: 'lightsout/node', topics: [], rules: [] },
-	source: StandardsPackSource.Detected,
+	pack: { name: 'lightsout/standards', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
 	states: new Map(),
 });
 

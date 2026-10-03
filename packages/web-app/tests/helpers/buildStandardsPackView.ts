@@ -16,13 +16,11 @@ const buildTopics = ({ rules }: { rules: StandardsPackRuleListing[] }) =>
 
 /** One pack holding every rule and topic, each rule at its default severity and options. */
 const buildPacks = ({ rules, topics }: { rules: StandardsPackRuleListing[]; topics: StandardsTopicView[] }) => {
-	const checked = rules.filter((rule) => rule.checked).length;
-
 	return [
 		buildStandardsPackListing({
 			topics: topics.map((topic) => `lightsout/${topic.path}`),
 			rules: rules.map((rule) => ({ name: rule.name, severity: rule.defaultSeverity, options: rule.defaultOptions })),
-			totals: { checked, judgment: rules.length - checked },
+			totals: { deterministic: rules.filter((rule) => rule.deterministic).length, agent: rules.filter((rule) => rule.agent).length },
 		}),
 	];
 };
@@ -31,7 +29,7 @@ interface Params {
 	rules?: StandardsPackRuleListing[];
 	/** Left out, one topic per distinct `documentPath` across the rules. */
 	topics?: StandardsTopicView[];
-	/** Left out, one `node` pack holding every rule. */
+	/** Left out, one `standards` pack holding every rule. */
 	packs?: StandardsPackListing[];
 	/** Applied last, so a test can drop an optional field the defaults fill. */
 	overrides?: Partial<StandardsPackView>;
@@ -44,8 +42,6 @@ export const buildStandardsPackView = ({
 	packs = buildPacks({ rules, topics }),
 	overrides = {},
 }: Params = {}): StandardsPackView => {
-	const checked = rules.filter((rule) => rule.checked).length;
-
 	return {
 		name: 'lightsout',
 		description: 'The rules lightsout ships.',
@@ -53,8 +49,8 @@ export const buildStandardsPackView = ({
 		built: false,
 		totals: {
 			rules: rules.length,
-			checked,
-			judgment: rules.length - checked,
+			deterministic: rules.filter((rule) => rule.deterministic).length,
+			agent: rules.filter((rule) => rule.agent).length,
 			topics: topics.length,
 			packs: packs.length,
 			withFixtures: rules.filter((rule) => rule.fixtureCounts.pass > 0 && rule.fixtureCounts.fail > 0).length,

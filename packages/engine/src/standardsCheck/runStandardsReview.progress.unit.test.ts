@@ -1,5 +1,4 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverResult } from '#src/drivers/common/types/DriverResult.ts';
@@ -21,21 +20,27 @@ const judgmentRule = ({ id }: { id: string }): LoadedStandardsRule => ({
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: false,
+	deterministic: false,
+	agent: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
 	fixturesPath: `/packages/acme/${id}/fixtures`,
 });
 
-/** One group whose pack holds a judgment rule for each of `ruleIds`, every one at advisory. */
+/** One group whose pack holds a agent-checked rule for each of `ruleIds`, every one at advisory. */
 const groupOf = ({ ruleIds }: { ruleIds: string[] }): StandardsGroup => {
 	const rules = ruleIds.map((id) => judgmentRule({ id }));
 
 	return {
 		packages: [''],
-		pack: { name: 'acme/house', topics: [], rules: rules.map((rule) => ({ rule, severity: StandardsSeverity.Advisory, options: {} })) },
-		source: StandardsPackSource.Named,
+		pack: {
+			name: 'acme/house',
+			topics: [],
+			rules: rules.map((rule) => ({ rule, severity: StandardsSeverity.Advisory, options: {} })),
+			conditionalPacks: [],
+			inactiveRules: [],
+		},
 		states: new Map<string, ResolvedRuleState>(
 			rules.map((rule) => [rule.name, { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }]),
 		),
@@ -85,7 +90,7 @@ describe('runStandardsReview progress', () => {
 		});
 
 		expect(progress[0]).toBe(
-			'The agent review is now running. stub is reading your code against the 2 rules no automated check can judge. This usually takes a few minutes.',
+			'The agent review is now running. stub is reading your code against the 2 rules with an agent check. This usually takes a few minutes.',
 		);
 	});
 
@@ -160,7 +165,7 @@ describe('runStandardsReview progress', () => {
 		// started → still running, with proof of life → finished: each line says
 		// what is happening to the reader right now
 		expect(progress).toStrictEqual([
-			'The agent review is now running. stub is reading your code against the 1 rule no automated check can judge. This usually takes a few minutes.',
+			'The agent review is now running. stub is reading your code against the 1 rule with an agent check. This usually takes a few minutes.',
 			'⏳ agent review still running · 30s · 2 files read so far',
 			'✓ Agent review finished in 30s — nothing to report',
 		]);

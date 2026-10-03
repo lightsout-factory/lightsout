@@ -41,16 +41,17 @@ describe('readStandardsLibrary', () => {
 				'rules/code/architecture/decisions/topic.md': '# Architecture Decisions\n\nUniversal decisions.\n',
 				...ruleFiles({
 					path: 'rules/code/architecture/decisions/02-graduation-rule',
-					markdown: '---\nsummary: a concept earns its folder\nseverity: blocking\noptions:\n  maxFiles: 20\n---\n\nEvery concept starts as a file.\n',
+					markdown:
+						'---\nsummary: a concept earns its folder\nchecks: agent\nseverity: blocking\noptions:\n  maxFiles: 20\n---\n\nEvery concept starts as a file.\n',
 				}),
 				...ruleFiles({
 					path: 'rules/code/architecture/decisions/01-module-boundaries',
-					markdown: '---\nsummary: cross-module imports go through index.ts\n---\n\nA folder-module has a public API.\n',
+					markdown: '---\nsummary: cross-module imports go through index.ts\nchecks: agent\n---\n\nA folder-module has a public API.\n',
 				}),
 				'rules/tests/unit-testing/topic.md': '# Unit Testing\n\nHow to write tests.\n',
 				...ruleFiles({
 					path: 'rules/tests/unit-testing/01-mock-prefix',
-					markdown: '---\nsummary: mock variables carry a mock prefix\n---\n\nName mocks so they read as mocks.\n',
+					markdown: '---\nsummary: mock variables carry a mock prefix\nchecks: agent\n---\n\nName mocks so they read as mocks.\n',
 				}),
 			},
 		});
@@ -79,12 +80,12 @@ describe('readStandardsLibrary', () => {
 		expect(graduation?.defaultSeverity).toBe('blocking');
 		expect(graduation?.defaultOptions).toStrictEqual({ maxFiles: 20 });
 		expect(graduation?.fixturesPath).toBe(join(packPath, 'rules/code/architecture/decisions/02-graduation-rule/fixtures'));
-		// silence means judgment-only and advisory — the two defaults a rule need not restate
-		expect(boundaries?.checked).toBe(false);
+		// silence means advisory — the one default a rule need not restate
+		expect(boundaries?.deterministic).toBe(false);
 		expect(boundaries?.defaultSeverity).toBe('advisory');
 		expect(boundaries?.defaultOptions).toStrictEqual({});
 		// no check declared, so no check loaded
-		expect(boundaries?.inputKind).toBe(undefined);
+		expect(boundaries?.inputKinds).toBe(undefined);
 		expect(boundaries?.run).toBe(undefined);
 	});
 
@@ -95,11 +96,17 @@ describe('readStandardsLibrary', () => {
 				'rules/code/architecture/decisions/topic.md': '# Architecture Decisions\n',
 				...ruleFiles({
 					path: 'rules/code/architecture/decisions/01-module-boundaries',
-					markdown: '---\nsummary: cross-module imports go through index.ts\n---\n\nProse.\n',
+					markdown: '---\nsummary: cross-module imports go through index.ts\nchecks: agent\n---\n\nProse.\n',
 				}),
-				...ruleFiles({ path: 'rules/code/architecture/decisions/02-graduation-rule', markdown: '---\nsummary: a concept earns its folder\n---\n\nProse.\n' }),
+				...ruleFiles({
+					path: 'rules/code/architecture/decisions/02-graduation-rule',
+					markdown: '---\nsummary: a concept earns its folder\nchecks: agent\n---\n\nProse.\n',
+				}),
 				'rules/tests/unit-testing/topic.md': '# Unit Testing\n',
-				...ruleFiles({ path: 'rules/tests/unit-testing/01-mock-prefix', markdown: '---\nsummary: mock variables carry a mock prefix\n---\n\nProse.\n' }),
+				...ruleFiles({
+					path: 'rules/tests/unit-testing/01-mock-prefix',
+					markdown: '---\nsummary: mock variables carry a mock prefix\nchecks: agent\n---\n\nProse.\n',
+				}),
 			},
 		});
 
@@ -129,7 +136,7 @@ describe('readStandardsLibrary', () => {
 				'rules/code/style/topic.md': '# Style\r\n',
 				...ruleFiles({
 					path: 'rules/code/style/01-functions',
-					markdown: '---\r\nsummary: one export per file\r\nseverity: blocking\r\n---\r\n\r\nProse.\r\n',
+					markdown: '---\r\nsummary: one export per file\r\nchecks: agent\r\nseverity: blocking\r\n---\r\n\r\nProse.\r\n',
 				}),
 			},
 		});
@@ -150,15 +157,18 @@ describe('readStandardsLibrary', () => {
 			files: {
 				...rootFile,
 				'rules/code/style/patterns/topic.md': '# Patterns\n',
-				...ruleFiles({ path: 'rules/code/style/patterns/no-prefix', markdown: '---\nsummary: unordered\n---\n\nProse.\n' }),
-				...ruleFiles({ path: 'rules/code/style/patterns/01-checked-without-check', markdown: '---\nsummary: claims a check\nchecked: true\n---\n\nProse.\n' }),
-				...ruleFiles({ path: 'rules/code/style/patterns/02-stray-check', markdown: '---\nsummary: ships an undeclared check\n---\n\nProse.\n' }),
-				'rules/code/style/patterns/02-stray-check/check.ts': 'export const check = { inputKind: "file-list", run: () => [] };\n',
-				...ruleFiles({ path: 'rules/code/style/patterns/03-no-summary', markdown: '---\nchecked: false\n---\n\nProse.\n' }),
-				'rules/code/style/patterns/04-empty-fixtures/rule.md': '---\nsummary: ships no fixtures\n---\n\nProse.\n',
-				...ruleFiles({ path: 'rules/code/style/patterns/05-shared-id', markdown: '---\nsummary: first claimant\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/patterns/no-prefix', markdown: '---\nsummary: unordered\nchecks: agent\n---\n\nProse.\n' }),
+				...ruleFiles({
+					path: 'rules/code/style/patterns/01-checked-without-check',
+					markdown: '---\nsummary: claims a check\nchecks: deterministic\n---\n\nProse.\n',
+				}),
+				...ruleFiles({ path: 'rules/code/style/patterns/02-stray-check', markdown: '---\nsummary: ships an undeclared check\nchecks: agent\n---\n\nProse.\n' }),
+				'rules/code/style/patterns/02-stray-check/check.ts': 'export const check = { inputKinds: ["file-list"], run: () => [] };\n',
+				...ruleFiles({ path: 'rules/code/style/patterns/03-no-summary', markdown: '---\nchecks: agent\n---\n\nProse.\n' }),
+				'rules/code/style/patterns/04-empty-fixtures/rule.md': '---\nsummary: ships no fixtures\nchecks: agent\n---\n\nProse.\n',
+				...ruleFiles({ path: 'rules/code/style/patterns/05-shared-id', markdown: '---\nsummary: first claimant\nchecks: agent\n---\n\nProse.\n' }),
 				'rules/tests/unit-testing/topic.md': '# Unit Testing\n',
-				...ruleFiles({ path: 'rules/tests/unit-testing/06-shared-id', markdown: '---\nsummary: second claimant\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/tests/unit-testing/06-shared-id', markdown: '---\nsummary: second claimant\nchecks: agent\n---\n\nProse.\n' }),
 			},
 		});
 
@@ -167,8 +177,8 @@ describe('readStandardsLibrary', () => {
 		// one error, naming the pack and listing every fault: ${error.message}
 		expect(error.message.startsWith(`standards pack failed to load (${packPath}):`)).toBeTruthy();
 		expect(error.message).toContain('code/style/patterns/no-prefix: rule folder must be named <NN>-<rule-id>');
-		expect(error.message).toContain('code/style/patterns/01-checked-without-check: declares checked: true but ships no check.ts');
-		expect(error.message).toContain('code/style/patterns/02-stray-check: ships a check.ts but does not declare checked: true');
+		expect(error.message).toContain('code/style/patterns/01-checked-without-check: declares checks: deterministic but ships no check.ts');
+		expect(error.message).toContain('code/style/patterns/02-stray-check: ships a check.ts but declares checks: agent');
 		expect(error.message).toContain('code/style/patterns/03-no-summary/rule.md: summary');
 		expect(error.message).toContain('duplicate rule id "shared-id"');
 		// 04-empty-fixtures ships none, and loading does not care: whether a check
@@ -240,7 +250,7 @@ describe('readStandardsLibrary', () => {
 			files: {
 				...rootFile,
 				'rules/code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'rules/code/style/01-broken-front-matter', markdown: '---\nsummary: {unclosed\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/01-broken-front-matter', markdown: '---\nsummary: {unclosed\nchecks: agent\n---\n\nProse.\n' }),
 			},
 		});
 
@@ -257,7 +267,7 @@ describe('readStandardsLibrary', () => {
 			files: {
 				...rootFile,
 				'rules/code/style/topic.md': '---\ntitle: {unclosed\n---\n\n# Style\n',
-				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\nchecks: agent\n---\n\nProse.\n' }),
 			},
 		});
 
@@ -272,7 +282,7 @@ describe('readStandardsLibrary', () => {
 			files: {
 				...rootFile,
 				'rules/code/style/topic.md': '---\ntitle: Style\n---\n\n# Style\n',
-				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\nchecks: agent\n---\n\nProse.\n' }),
 			},
 		});
 
@@ -326,7 +336,7 @@ describe('readStandardsLibrary', () => {
 				'rules/code/style/topic.md': '# Style\n',
 				'rules/code/style/common/helper.ts': 'export const helper = 1;\n',
 				'rules/code/style/nested/topic.md': '# Nested\n',
-				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\nchecks: agent\n---\n\nProse.\n' }),
 			},
 		});
 

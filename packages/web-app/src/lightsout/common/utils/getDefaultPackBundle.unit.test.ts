@@ -36,7 +36,7 @@ describe('getDefaultPackBundle', () => {
 		expect(bundle.rootPath).toBe('packages/lightsout-standards');
 	});
 
-	test('parses the committed library bundle with its ten packs and a repo-relative root', () => {
+	test('parses the committed library bundle with its six packs and a repo-relative root', () => {
 		const bundle = getDefaultPackBundle();
 
 		expect({
@@ -49,16 +49,12 @@ describe('getDefaultPackBundle', () => {
 			name: 'lightsout',
 			rootPath: 'packages/lightsout-standards',
 			packAddresses: [
-				'lightsout/nestjs',
-				'lightsout/nestjs-app',
-				'lightsout/node',
+				'lightsout/agent-corrections',
+				'lightsout/code-style',
+				'lightsout/fractal',
 				'lightsout/react',
-				'lightsout/react-app',
-				'lightsout/structure',
+				'lightsout/standards',
 				'lightsout/tanstack-start',
-				'lightsout/tanstack-start-app',
-				'lightsout/typescript',
-				'lightsout/unit-testing',
 			],
 			carriesPath: false,
 			carriesIsDefault: false,

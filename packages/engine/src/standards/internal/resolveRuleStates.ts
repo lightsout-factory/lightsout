@@ -13,7 +13,8 @@ interface RuleSetting {
 
 /** Each entry keyed by the full name it resolves to, so a short name and a full name reach one rule alike. */
 const resolveEntries = ({ packs, ruleSettings }: { packs: ResolvedStandardsPack[]; ruleSettings: StandardsRuleSettings }) => {
-	const rules = [...mapPackRules({ packs }).values()];
+	// An inactive rule resolves too, so a setting for a framework a repo does not use yet is inert, not an error.
+	const rules = [...new Map([...packs.flatMap((pack) => pack.inactiveRules), ...mapPackRules({ packs }).values()].map((rule) => [rule.name, rule])).values()];
 	const settings = new Map<string, RuleSetting>();
 	const keyFor = new Map<string, string>();
 
@@ -56,7 +57,8 @@ interface Params {
  * The repo's layer over packs that already applied every rule.md default and
  * every pack setting, so a state starts from the pack's grade. Severity
  * replaces; options merge key by key. An entry applies to every pack holding
- * its rule and leaves the others alone.
+ * its rule and leaves the others alone, and does nothing when only a
+ * conditional pack that did not apply holds it.
  *
  * @returns One map per pack, in `packs` order, keyed by full rule name.
  * @throws {Error} When an entry names no rule in any of the packs, a short name is ambiguous, or two entries name one rule.

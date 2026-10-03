@@ -9,9 +9,10 @@ const setupRule = ({ defaultOptions }: { defaultOptions: Record<string, number> 
 		id: 'file-size',
 		name: 'lightsout/file-size',
 		set: StandardsSet.Code,
-		documentPath: 'code/style-guide/patterns/functions',
+		documentPath: 'code/fractal/size',
 		summary: 'Keep each file under its line cap.',
-		checked: true,
+		deterministic: true,
+		agent: false,
 		defaultSeverity: StandardsSeverity.Blocking,
 		defaultOptions,
 	};

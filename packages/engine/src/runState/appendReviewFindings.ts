@@ -15,7 +15,7 @@ interface Params {
 /**
  * Called the moment a review reports them, before anything is spent acting on
  * them: a run that parks or escalates never builds its batch report, and no
- * code check can rediscover a judgment finding, so an unwritten one is gone.
+ * deterministic check can rediscover an agent-check finding, so an unwritten one is gone.
  */
 export const appendReviewFindings = async ({ cwd, runId, step, findings }: Params): Promise<void> =>
 	appendJsonlRecords({ path: await getReviewFindingsPath({ cwd }), schema: ReviewFindingRecord, entries: findings, runId, step });

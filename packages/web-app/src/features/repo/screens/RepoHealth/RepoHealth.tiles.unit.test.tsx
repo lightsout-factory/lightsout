@@ -185,7 +185,7 @@ describe('RepoHealth tiles', () => {
 
 	test('reports the findings the engine counted once a check has run', () => {
 		setupRepoHealth({
-			standards: buildStandardsView({ overrides: { totals: { rules: 4, checked: 4, judgment: 0, blocking: 7, advisory: 2, orphans: 0 } } }),
+			standards: buildStandardsView({ overrides: { totals: { rules: 4, deterministic: 4, agent: 0, blocking: 7, advisory: 2, orphans: 0 } } }),
 		});
 
 		expect(readTile({ label: 'blocking findings' }).getByText('7')).toBeInTheDocument();

@@ -2,8 +2,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { type CloneSpansInput, type StandardsCheckFunction, type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
+import { type CloneSpansInput, type StandardsCheckFunction, type StandardsCheckInputs, StandardsInputKind } from '@lightsout/standards-contracts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
@@ -15,8 +14,13 @@ import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 /** One group whose pack holds `rules` at their rule.md defaults, each rule at the state `states` resolved for it. */
 const groupOf = ({ rules, states }: { rules: LoadedStandardsRule[]; states: Map<string, ResolvedRuleState> }): StandardsGroup => ({
 	packages: [''],
-	pack: { name: 'acme/house', topics: [], rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })) },
-	source: StandardsPackSource.Named,
+	pack: {
+		name: 'acme/house',
+		topics: [],
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+		conditionalPacks: [],
+		inactiveRules: [],
+	},
 	states,
 });
 
@@ -28,9 +32,9 @@ const groupOf = ({ rules, states }: { rules: LoadedStandardsRule[]; states: Map<
  */
 const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<string, string>; typescript?: boolean }) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-package-checks-duplication-'));
-	const inputs: StandardsCheckInput[] = [];
-	const run: StandardsCheckFunction = ({ input }) => {
-		inputs.push(input);
+	const handed: StandardsCheckInputs[] = [];
+	const run: StandardsCheckFunction = ({ inputs }) => {
+		handed.push(inputs);
 
 		return [];
 	};
@@ -50,19 +54,20 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
 		documentPath: 'code/architecture/architecture-decisions',
 		summary: 'the same block of code written out in two or more files',
 		prose: 'the argument for the rule',
-		checked: true,
+		deterministic: true,
+		agent: false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: options,
 		requires: [],
 		fixturesPath: '/packages/acme/duplicate-code-block/fixtures',
-		inputKind: StandardsInputKind.CloneSpans,
+		inputKinds: [StandardsInputKind.CloneSpans],
 		run,
 	};
 	const states = new Map<string, ResolvedRuleState>([
 		['acme/duplicate-code-block', { severity: StandardsSeverity.Advisory, options, fromConfig: false, reachesAgents: true }],
 	]);
 
-	return { cwd, inputs, groups: [groupOf({ rules: [rule], states })] };
+	return { cwd, handed, groups: [groupOf({ rules: [rule], states })] };
 };
 
 /**
@@ -72,12 +77,12 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
  */
 const setupThresholdRun = ({ lowMinTokens, highMinTokens }: { lowMinTokens: number; highMinTokens: number }) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-package-checks-thresholds-'));
-	const lowInputs: StandardsCheckInput[] = [];
-	const highInputs: StandardsCheckInput[] = [];
+	const lowHanded: StandardsCheckInputs[] = [];
+	const highHanded: StandardsCheckInputs[] = [];
 
 	writeSampleSources({ dir: cwd, sources: duplicatedSources });
 
-	const buildRule = ({ id, minTokens, inputs }: { id: string; minTokens: number; inputs: StandardsCheckInput[] }): LoadedStandardsRule => ({
+	const buildRule = ({ id, minTokens, handed }: { id: string; minTokens: number; handed: StandardsCheckInputs[] }): LoadedStandardsRule => ({
 		id,
 		name: `acme/${id}`,
 		library: 'acme',
@@ -85,36 +90,37 @@ const setupThresholdRun = ({ lowMinTokens, highMinTokens }: { lowMinTokens: numb
 		documentPath: 'code/architecture/architecture-decisions',
 		summary: 'the same block of code written out in two or more files',
 		prose: 'the argument for the rule',
-		checked: true,
+		deterministic: true,
+		agent: false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: { minTokens },
 		requires: [],
 		fixturesPath: `/packages/acme/${id}/fixtures`,
-		inputKind: StandardsInputKind.CloneSpans,
-		run: ({ input }) => {
-			inputs.push(input);
+		inputKinds: [StandardsInputKind.CloneSpans],
+		run: ({ inputs }) => {
+			handed.push(inputs);
 
 			return [];
 		},
 	});
 	const rules = [
-		buildRule({ id: 'duplicate-code-block-low', minTokens: lowMinTokens, inputs: lowInputs }),
-		buildRule({ id: 'duplicate-code-block-high', minTokens: highMinTokens, inputs: highInputs }),
+		buildRule({ id: 'duplicate-code-block-low', minTokens: lowMinTokens, handed: lowHanded }),
+		buildRule({ id: 'duplicate-code-block-high', minTokens: highMinTokens, handed: highHanded }),
 	];
 	const states = new Map<string, ResolvedRuleState>([
 		['acme/duplicate-code-block-low', { severity: StandardsSeverity.Advisory, options: { minTokens: lowMinTokens }, fromConfig: false, reachesAgents: true }],
 		['acme/duplicate-code-block-high', { severity: StandardsSeverity.Advisory, options: { minTokens: highMinTokens }, fromConfig: false, reachesAgents: true }],
 	]);
 
-	return { cwd, groups: [groupOf({ rules, states })], lowInputs, highInputs };
+	return { cwd, groups: [groupOf({ rules, states })], lowHanded, highHanded };
 };
 
-/** The one clone-spans input the run built, narrowed out of the closed kind union. */
-const cloneSpansInput = ({ inputs }: { inputs: StandardsCheckInput[] }): CloneSpansInput => {
-	const input = inputs[0];
+/** The one clone-spans input the run built, read off what the rule was handed. */
+const cloneSpansInput = ({ handed }: { handed: StandardsCheckInputs[] }): CloneSpansInput => {
+	const input = handed[0]?.[StandardsInputKind.CloneSpans];
 
-	if (input?.kind !== StandardsInputKind.CloneSpans) {
-		throw new Error(`expected a clone-spans input, got ${input?.kind ?? 'none'}`);
+	if (input === undefined) {
+		throw new Error(`expected a clone-spans input, got ${Object.keys(handed[0] ?? {}).join(',') || 'none'}`);
 	}
 
 	return input;
@@ -128,11 +134,11 @@ const startLineOf = ({ input, path }: { input: CloneSpansInput; path: string }) 
 
 describe('runPackageChecks', () => {
 	test('hands a duplicate-block rule both sites of a duplicated span and the tokens it spans', async () => {
-		const { cwd, inputs, groups } = setupDuplicationRun({ sources: duplicatedSources });
+		const { cwd, handed, groups } = setupDuplicationRun({ sources: duplicatedSources });
 
 		await runPackageChecks({ cwd, groups });
 
-		const input = cloneSpansInput({ inputs });
+		const input = cloneSpansInput({ handed });
 
 		// the rule opens no file of its own: the engine runs the detector, so the
 		// two sites and the size of the span arrive on the input it was handed
@@ -142,11 +148,11 @@ describe('runPackageChecks', () => {
 	});
 
 	test('reports the line numbers of the file as written, not of the blanked copy the detector read', async () => {
-		const { cwd, inputs, groups } = setupDuplicationRun({ sources: offsetImportSources });
+		const { cwd, handed, groups } = setupDuplicationRun({ sources: offsetImportSources });
 
 		await runPackageChecks({ cwd, groups });
 
-		const input = cloneSpansInput({ inputs });
+		const input = cloneSpansInput({ handed });
 		const alphaLine = startLineOf({ input, path: 'src/alpha.ts' });
 		const betaLine = startLineOf({ input, path: 'src/beta.ts' });
 
@@ -158,11 +164,11 @@ describe('runPackageChecks', () => {
 	});
 
 	test('never counts a shared import list as duplication, because nobody can deduplicate one', async () => {
-		const { cwd, inputs, groups } = setupDuplicationRun({ sources: sharedImportSources });
+		const { cwd, handed, groups } = setupDuplicationRun({ sources: sharedImportSources });
 
 		await runPackageChecks({ cwd, groups });
 
-		const input = cloneSpansInput({ inputs });
+		const input = cloneSpansInput({ handed });
 
 		// on its own the shared list clears the detector's floor, so silence here
 		// is the blanking rather than a fixture too small to trip anything
@@ -170,11 +176,11 @@ describe('runPackageChecks', () => {
 	});
 
 	test('blanks the composition remedy out of the detection when the repo has a typescript to parse with', async () => {
-		const { cwd, inputs, groups } = setupDuplicationRun({ sources: delegatingSources, typescript: true });
+		const { cwd, handed, groups } = setupDuplicationRun({ sources: delegatingSources, typescript: true });
 
 		await runPackageChecks({ cwd, groups });
 
-		const input = cloneSpansInput({ inputs });
+		const input = cloneSpansInput({ handed });
 
 		// two classes holding the same collaborator repeat the forwarding shape BY
 		// DESIGN — the standards mandate it in place of `extends`, so reporting it
@@ -183,11 +189,11 @@ describe('runPackageChecks', () => {
 	});
 
 	test('leaves the composition remedy in the detection rather than guessing at it when the repo has no typescript', async () => {
-		const { cwd, inputs, groups } = setupDuplicationRun({ sources: delegatingSources });
+		const { cwd, handed, groups } = setupDuplicationRun({ sources: delegatingSources });
 
 		await runPackageChecks({ cwd, groups });
 
-		const input = cloneSpansInput({ inputs });
+		const input = cloneSpansInput({ handed });
 
 		// the blanking needs a parsed tree; without one the run reports what the
 		// tokens say rather than pretending to know the shape
@@ -195,12 +201,12 @@ describe('runPackageChecks', () => {
 	});
 
 	test('builds a separate clone detection for each rule from its own minTokens option', async () => {
-		const { cwd, groups, lowInputs, highInputs } = setupThresholdRun({ lowMinTokens: 20, highMinTokens: 200 });
+		const { cwd, groups, lowHanded, highHanded } = setupThresholdRun({ lowMinTokens: 20, highMinTokens: 200 });
 
 		await runPackageChecks({ cwd, groups });
 
-		const lowInput = cloneSpansInput({ inputs: lowInputs });
-		const highInput = cloneSpansInput({ inputs: highInputs });
+		const lowInput = cloneSpansInput({ handed: lowHanded });
+		const highInput = cloneSpansInput({ handed: highHanded });
 
 		// the duplicated block clears 20 tokens but not 200, so a single shared
 		// detection would hand both rules the same spans

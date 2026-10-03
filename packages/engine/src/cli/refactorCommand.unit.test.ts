@@ -120,8 +120,8 @@ describe('refactorCommand', () => {
 		expect(logged[0]).toBe('lightsout: refactor starting run');
 	});
 
-	test('--code-checks turns each batch’s agent review off, the same flag the standards check takes', async () => {
-		const { context } = setupRefactor({ args: ['--code-checks'] });
+	test('--deterministic-checks turns each batch’s agent review off, the same flag the standards check takes', async () => {
+		const { context } = setupRefactor({ args: ['--deterministic-checks'] });
 
 		await expect(refactorCommand(context)).rejects.toThrow(/process\.exit/);
 

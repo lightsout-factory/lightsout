@@ -9,8 +9,8 @@ import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/type
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 /** A check that objects to any file named `banned.ts` — small enough to reason about, real enough to fail. */
-const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.FileList ? input.files : [])
+const bansTheBannedFile: StandardsCheckFunction = ({ inputs }) =>
+	(inputs[StandardsInputKind.FileList]?.files ?? [])
 		.filter((file) => file.endsWith('banned.ts'))
 		.map((path) => ({
 			siteKey: `no-banned-file:${path}`,
@@ -19,8 +19,8 @@ const bansTheBannedFile: StandardsCheckFunction = ({ input }) =>
 		}));
 
 /** The same ban, plus a file it cannot cope with — so the throw lands on the framework-owned tree alone and the rule's own pair stays clean. */
-const bansTheBannedButChokes: StandardsCheckFunction = ({ input }) => {
-	const files = input.kind === StandardsInputKind.FileList ? input.files : [];
+const bansTheBannedButChokes: StandardsCheckFunction = ({ inputs }) => {
+	const files = inputs[StandardsInputKind.FileList]?.files ?? [];
 
 	if (files.some((file) => file.endsWith('explodes.ts'))) {
 		throw new Error('cannot parse that');
@@ -32,16 +32,16 @@ const bansTheBannedButChokes: StandardsCheckFunction = ({ input }) => {
 };
 
 /** A check that objects to every file it is handed — the way to watch one problem line name more paths than it has room for. */
-const bansEveryFile: StandardsCheckFunction = ({ input }) =>
-	(input.kind === StandardsInputKind.FileList ? input.files : []).map((path) => ({
+const bansEveryFile: StandardsCheckFunction = ({ inputs }) =>
+	(inputs[StandardsInputKind.FileList]?.files ?? []).map((path) => ({
 		siteKey: `no-banned-file:${path}`,
 		files: [{ path }],
 		detail: 'a file the rule bans',
 	}));
 
 /** A check that objects to the shape of the tree rather than to any file in it — a finding with nowhere to point. */
-const bansTheWholeTree: StandardsCheckFunction = ({ input }) =>
-	input.kind === StandardsInputKind.FileList && input.files.length > 0 ? [{ siteKey: 'no-banned-file:tree', files: [], detail: 'a shape the rule bans' }] : [];
+const bansTheWholeTree: StandardsCheckFunction = ({ inputs }) =>
+	(inputs[StandardsInputKind.FileList]?.files.length ?? 0) > 0 ? [{ siteKey: 'no-banned-file:tree', files: [], detail: 'a shape the rule bans' }] : [];
 
 /**
  * A rule folder's fixture pair on disk. Each side is a miniature repo the check
@@ -110,7 +110,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: overrides.run !== undefined,
+	deterministic: overrides.run !== undefined,
+	agent: overrides.run === undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -139,7 +140,7 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems, notes } = await validate({
 			frameworkOwnedFixturesPath,
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile })],
 		});
 
 		expect(problems).toStrictEqual([]);
@@ -152,11 +153,11 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems } = await validate({
 			frameworkOwnedFixturesPath,
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile })],
 		});
 
 		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
 		]);
 	});
 
@@ -166,12 +167,12 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems, notes } = await validate({
 			frameworkOwnedFixturesPath,
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile })],
 		});
 
 		// both trees were checked — the silent one simply had nothing to say
 		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
 		]);
 		expect(notes).toStrictEqual([]);
 	});
@@ -182,14 +183,14 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems } = await validate({
 			frameworkOwnedFixturesPath,
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile })],
 		});
 
 		// written nestjs-first and reported angular-first: the list reads the same
 		// way twice running, whatever order the filesystem hands its entries back
 		expect(problems).toStrictEqual([
-			'no-banned-file: the angular framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the angular framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
 		]);
 	});
 
@@ -199,12 +200,12 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems } = await validate({
 			frameworkOwnedFixturesPath,
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansEveryFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansEveryFile })],
 		});
 
 		// the count is the whole truth; the paths are enough to go looking with
 		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree produced 4 finding(s) — a checked rule stays silent on code its framework owns (src/a.ts, src/b.ts, src/c.ts, …)',
+			'no-banned-file: the nestjs framework-owned tree produced 4 finding(s) — a deterministic check stays silent on code its framework owns (src/a.ts, src/b.ts, src/c.ts, …)',
 		]);
 	});
 
@@ -214,13 +215,13 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems } = await validate({
 			frameworkOwnedFixturesPath,
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheWholeTree })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheWholeTree })],
 		});
 
 		// a finding pointing at the tree rather than a file still counts, and the
 		// empty list is what says the rule would not name one
 		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns ()',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns ()',
 		]);
 	});
 
@@ -230,7 +231,7 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems, notes } = await validate({
 			frameworkOwnedFixturesPath,
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedButChokes })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedButChokes })],
 		});
 
 		// the rule's own pair went through cleanly, so the tree is the only thing
@@ -245,7 +246,7 @@ describe('validateStandardsLibrary', () => {
 		const { fixturesPath } = setupFixtures({ pass: ['banned.ts'], fail: ['banned.ts'] });
 
 		const { problems, notes } = await validate({
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile })],
 		});
 
 		expect(problems).toStrictEqual(['no-banned-file: the pass fixture produced 1 finding(s) — the check flags code the rule allows']);
@@ -258,7 +259,7 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems, notes } = await validate({
 			frameworkOwnedFixturesPath,
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile })],
 		});
 
 		// an unreadable folder is a pack that holds nothing to the invariant, which
@@ -273,7 +274,7 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems, notes } = await validate({
 			frameworkOwnedFixturesPath,
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile })],
 		});
 
 		// a loose file beside the frameworks is not one: a framework is a folder
@@ -281,15 +282,15 @@ describe('validateStandardsLibrary', () => {
 		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
 	});
 
-	test('a judgment-only rule is skipped by the invariant rather than reported against it', async () => {
+	test('a agent-only rule is skipped by the invariant rather than reported against it', async () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 		const { frameworkOwnedFixturesPath } = setupFrameworkOwned({ frameworks: { nestjs: ['banned.ts'] } });
 
 		const { problems, notes } = await validate({ frameworkOwnedFixturesPath, rules: [rule({ id: 'premature-abstraction', fixturesPath })] });
 
-		// there is no check to hold to silence, and the judgment-only note already said so once
+		// there is no check to hold to silence, and the agent-only note already said so once
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual(['premature-abstraction: judgment-only — fixtures reserved for agent accuracy']);
+		expect(notes).toStrictEqual(['premature-abstraction: agent check — fixtures reserved for agent accuracy']);
 	});
 
 	test('a rule shipping a check but declaring no input kind is skipped too — there is no input to run it against', async () => {
@@ -302,7 +303,7 @@ describe('validateStandardsLibrary', () => {
 		});
 
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual(['premature-abstraction: judgment-only — fixtures reserved for agent accuracy']);
+		expect(notes).toStrictEqual(['premature-abstraction: agent check — fixtures reserved for agent accuracy']);
 	});
 
 	test('a rule owing its author a fixture pair still owes framework-owned code silence', async () => {
@@ -311,14 +312,14 @@ describe('validateStandardsLibrary', () => {
 
 		const { problems } = await validate({
 			frameworkOwnedFixturesPath,
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile })],
 		});
 
 		// the per-rule loop gave up on this rule; the invariant is not gated on it
 		expect(problems).toStrictEqual([
 			'no-banned-file: fixtures/fail/ is missing or empty — every rule ships a fixture pair',
 			'no-banned-file: fixtures/pass/ is missing or empty — every rule ships a fixture pair',
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
 		]);
 	});
 
@@ -329,7 +330,7 @@ describe('validateStandardsLibrary', () => {
 		const { problems, notes } = await validate({
 			built: true,
 			frameworkOwnedFixturesPath,
-			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKind: StandardsInputKind.FileList, run: bansTheBannedFile })],
+			rules: [rule({ id: 'no-banned-file', fixturesPath, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile })],
 		});
 
 		expect(problems).toStrictEqual([

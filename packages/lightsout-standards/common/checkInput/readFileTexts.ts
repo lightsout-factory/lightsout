@@ -1,17 +1,13 @@
-import type { StandardsCheckInput } from '@lightsout/standards-contracts';
+import type { FileTextInput } from '@lightsout/standards-contracts';
 import type { FileTexts } from '../types/FileTexts.ts';
 
 interface Params {
-	/** Whatever the engine built for this run — only a file-text input carries contents. */
-	input: StandardsCheckInput;
+	/** The file-text input the engine built for this run, when the rule declared that kind. */
+	input: FileTextInput | undefined;
 }
 
-/**
- * An input of any other kind yields an empty scope, for the same reason
- * `readPathLists` does: a rule that declared `file-text` is never handed
- * another kind.
- */
+/** A missing input yields an empty scope, for the same reason `readPathLists` does: a rule that declared `file-text` is always handed it. */
 export const readFileTexts = ({ input }: Params): FileTexts =>
-	input.kind === 'file-text'
-		? { files: input.files, tests: input.tests, referenceFiles: input.referenceFiles, contents: input.contents, standardsLibraries: input.standardsLibraries }
-		: { files: [], tests: [], referenceFiles: [], contents: new Map<string, string>(), standardsLibraries: [] };
+	input === undefined
+		? { files: [], tests: [], referenceFiles: [], contents: new Map<string, string>(), standardsLibraries: [] }
+		: { files: input.files, tests: input.tests, referenceFiles: input.referenceFiles, contents: input.contents, standardsLibraries: input.standardsLibraries };

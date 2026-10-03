@@ -10,7 +10,7 @@ const rootFile = { 'lightsout-standards.json': '{ "name": "acme", "formatVersion
 /** One topic folder holding one rule folder, with the fixture pair every rule ships. */
 const topicFiles = ({ path, rule }: { path: string; rule: string }) => ({
 	[`${path}/topic.md`]: '# Topic\n',
-	[`${path}/01-${rule}/rule.md`]: `---\nsummary: ${rule} summary\n---\n\nProse.\n`,
+	[`${path}/01-${rule}/rule.md`]: `---\nsummary: ${rule} summary\nchecks: agent\n---\n\nProse.\n`,
 	[`${path}/01-${rule}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 	[`${path}/01-${rule}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',
 });

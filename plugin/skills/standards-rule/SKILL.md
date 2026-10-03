@@ -26,13 +26,18 @@ or reviews one, so every rule in every library has the same shape.
   handling or naming. Its `topic.md` is a title and the background every rule
   in it shares, said once. Folders without a `topic.md` only group topics. A
   topic is addressed as `<library>/<path under rules/>`, such as
-  `lightsout/code/architecture/react`.
+  `lightsout/code/frameworks/react`.
 - **Rule:** a folder named `<NN>-<id>`. `<NN>` sets only the reading order. The
   `<id>` is the rule's key, and its full name is `<library>/<id>`. Findings are
   written with the full name. A short id is accepted wherever it is unique.
   - `rule.md` — required: front matter, then the prose.
-  - `check.ts` — optional: code that finds breaks. Declare `checked: true` when
-    it exists, and only then.
+  - `check.ts` — optional: the deterministic check, code that finds breaks
+    with the same answer every run. `checks:` in the front matter says which
+    kind of check the rule has: `deterministic` when the check finds every
+    break the rule names, `both` when it finds only some of them and an agent
+    must still read the rule for the rest, `agent` when there is no check and
+    an agent reads the whole rule. A rule declaring `deterministic` or `both`
+    ships a check; a rule declaring `agent` ships none.
   - `fixtures/fail/` and `fixtures/pass/` — the Incorrect and Correct examples.
 - **Pack:** one JSON file in `packs/`, addressed as
   `<library>/<file name without .json>`. It holds a `description`;
@@ -40,24 +45,27 @@ or reviews one, so every rule in every library has the same shape.
   `rule-settings`, which gives a rule in the pack a severity, or a `severity`
   and `options` (`off` removes the rule). A pack changes which rules apply and
   how they are graded, never a rule's text or check. When two included packs
-  disagree about a rule, the last one listed wins.
-- **How a repository picks standards:** `standards-pack` names the pack for the
-  repository, `package-standards-packs` names one for each package that
-  differs, and `standards-rule-settings` is the final layer over both. With no
-  pack named, lightsout detects one of its own packs.
+  disagree about a rule, the last one listed wins. A pack may declare
+  `applies-when` with a list of `dependencies`: it then reaches only the
+  packages whose own `package.json` declares one of them, which is how a
+  framework's rules stay out of packages that do not use it.
+- **How a repository picks standards:** `standards-pack` names the pack, or a
+  list of packs, for the repository, `package-standards-packs` names them for
+  each package that differs, and `standards-rule-settings` is the final layer
+  over both. Standards are opt-in: with no pack named, a repository has none.
 
 `rule.md` front matter:
 
 ```yaml
 summary: "One short sentence for people."   # required
-checked: false                              # true only with a check.ts
+checks: agent                               # deterministic | agent | both; deterministic and both need a check.ts
 severity: advisory                          # blocking | advisory | off (off = a repo opts in)
 options:                                    # numbers the check reads, if any
   cap: 20
 example:
   kind: snippet                             # or repo, with focus
 requires:                                   # rules this rule depends on: a short id in this library, the full name for another
-  - folder-index-file
+  - index-files
 ```
 
 A `requires` name that matches no rule fails loading. `standards-validate`
@@ -67,7 +75,9 @@ doctor` warns a repository the same way.
 **Who reads what.** An agent reads one topic at a time: the `topic.md`
 background, then the prose of every rule in it, in folder order. It never sees
 the summary or the examples. People see the summary, the prose and the
-examples on the rule's page.
+examples on the rule's page. The reviewing agent reads only the rules with an
+agent check — `checks: agent` and `checks: both`; a rule whose deterministic
+check decides all of it is never reviewed.
 
 ## Steps
 
@@ -78,7 +88,7 @@ examples on the rule's page.
      a `rules/` folder holding `code/` or `tests/`:
 
      ```json
-     { "name": "house-rules", "formatVersion": 2, "description": "What this team agrees on." }
+     { "name": "acme", "formatVersion": 2, "description": "What the Acme team agrees on." }
      ```
 
      Then register the folder in `standards-libraries` in the repository's
@@ -135,7 +145,8 @@ examples on the rule's page.
    - A topic name when the rule is a set of instructions, such as
      `module-file-to-folder`.
 
-   A rule that gains or loses a code check keeps its name.
+   A rule that gains or loses a deterministic check keeps its name, and so does
+   one whose `checks` goes from `both` to `deterministic`.
 3. **Kebab-case, two to five words, no term a reader outside the project would
    have to look up.** Words like `ast` or `census` fail this.
 4. **Use words engineers already know**, not labels a reader must learn:
@@ -190,24 +201,30 @@ with.
 - **Cover both directions where they exist:** when to split something, and when
   to merge it back.
 - **One rule, one job:** leave out anything another rule already covers.
+- **A decision that belongs to the repo owner:** say what the agent must not
+  do, what to do instead, and "report it". Never explain how to report. The
+  engine tells every agent that reporting means a friction entry in its own
+  report.
 - **Every link resolves** to a file that exists.
 
 ## Examples
 
 `fixtures/fail/` and `fixtures/pass/` are the rule's Incorrect and Correct
 examples. Agents never see them: their job is to make a person agree with the
-rule in a few seconds. For a checked rule they are also its tests —
-`standards-validate` fails when the check misses its fail example or flags its
-pass example.
+rule in a few seconds. For a rule with a deterministic check they are also its
+tests — `standards-validate` fails when the check misses its fail example or
+flags its pass example.
 
 - **Show the whole rule, not half of it.** One example can show both halves.
+  For a rule with both kinds of check, the incorrect example holds at least
+  one break the deterministic check finds, since validation runs the check on it.
 - **Follow every other rule in the library**, so the correct side is correct
   everywhere.
 - **Every file a reader might open has a short, accurate comment** saying what
   is wrong or right, and why.
 - **Mind what a comment names:** a check that counts mentions reads a comment's
-  words as uses. An edit to a checked rule's example, even to a comment, can
-  break validation.
+  words as uses. An edit to the example of a rule with a deterministic check,
+  even to a comment, can break validation.
 
 Declare the shape that shows the mistake in the front matter:
 

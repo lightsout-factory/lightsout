@@ -1,7 +1,7 @@
 import type { StandardsPackRuleView } from '@lightsout/engine';
 import { severityDisplays } from '#src/common/constants/severityDisplays.ts';
 import { cn } from '#src/common/utils/cn.ts';
-import { toCheckKind } from '#src/common/utils/toCheckKind.ts';
+import { toCheckKinds } from '#src/common/utils/toCheckKinds.ts';
 import { CheckKindTag } from '#src/features/packs/components/CheckKindTag.tsx';
 import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
 
@@ -20,7 +20,9 @@ export const RuleHeader = ({ rule }: Props) => {
 				<CodeSpans text={rule.summary} />
 			</p>
 			<div className="flex flex-wrap items-center gap-2">
-				<CheckKindTag kind={toCheckKind({ checked: rule.checked })} />
+				{toCheckKinds({ deterministic: rule.deterministic, agent: rule.agent }).map((kind) => (
+					<CheckKindTag key={kind} kind={kind} />
+				))}
 				<span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 font-semibold text-muted-foreground-strong text-xs">
 					<severity.Icon aria-hidden="true" className={cn('size-3.5', severity.iconClass)} />
 					{severity.verb} by default

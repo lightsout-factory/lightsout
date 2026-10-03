@@ -1,18 +1,16 @@
 import { describe, expect, test } from '@jest/globals';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { findFileStandardsGroup } from '#src/standardsCheck/internal/common/utils/findFileStandardsGroup.ts';
 
 const buildGroup = ({ packages, pack }: { packages: string[]; pack: string }): StandardsGroup => ({
 	packages,
-	pack: { name: pack, topics: [], rules: [] },
-	source: StandardsPackSource.Named,
+	pack: { name: pack, topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
 	states: new Map(),
 });
 
 const setupGroups = ({ rootPackages }: { rootPackages: string[] }) => {
-	const rootGroup = buildGroup({ packages: rootPackages, pack: 'lightsout/node' });
-	const webAppGroup = buildGroup({ packages: ['web-app'], pack: 'lightsout/react-app' });
+	const rootGroup = buildGroup({ packages: rootPackages, pack: 'lightsout/standards' });
+	const webAppGroup = buildGroup({ packages: ['web-app'], pack: 'lightsout/fractal' });
 
 	return { rootGroup, webAppGroup, groups: [rootGroup, webAppGroup] };
 };

@@ -1,6 +1,0 @@
-{
-	"description": "NestJS: how the base rules apply to a NestJS application.",
-	"include": {
-		"topics": ["lightsout/code/architecture/nestjs"]
-	}
-}

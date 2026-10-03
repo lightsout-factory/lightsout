@@ -7,7 +7,6 @@ const setupCarveOut = ({ directory }: { directory: string }): FrameworkCarveOut 
 	directory,
 	entryFiles: [],
 	exemptFolderNames: [],
-	kebabCase: false,
 	routerRoots: [],
 });
 

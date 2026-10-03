@@ -13,7 +13,7 @@ const setupTopicFolder = ({ topicMarkdown, ruleFolders = [] }: { topicMarkdown: 
 
 	for (const name of [...ruleFolders].reverse()) {
 		mkdirSync(join(folderPath, name), { recursive: true });
-		writeFileSync(join(folderPath, name, 'rule.md'), `---\nsummary: a rule named ${name}\n---\n\nKeep it tidy.\n`);
+		writeFileSync(join(folderPath, name, 'rule.md'), `---\nsummary: a rule named ${name}\nchecks: agent\n---\n\nKeep it tidy.\n`);
 	}
 
 	return { folderPath };

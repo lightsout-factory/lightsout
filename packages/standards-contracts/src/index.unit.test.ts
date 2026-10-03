@@ -20,6 +20,7 @@ describe('the package entry', () => {
 			'StandardsCheckModule',
 			'StandardsInputKind',
 			'StandardsLibraryRoot',
+			'StandardsRuleChecks',
 			'StandardsSet',
 		]);
 	});

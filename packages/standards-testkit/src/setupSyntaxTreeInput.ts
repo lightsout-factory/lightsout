@@ -1,4 +1,4 @@
-import type { StandardsCheckInput, SyntaxTreeInput } from '@lightsout/standards-contracts';
+import type { SyntaxTreeInput } from '@lightsout/standards-contracts';
 import { StandardsInputKind } from '@lightsout/standards-contracts';
 import ts from 'typescript';
 
@@ -14,7 +14,7 @@ interface Params extends Partial<Omit<SyntaxTreeInput, 'kind' | 'trees' | 'compi
  * Parsed with parent pointers set: checks walk upward from a node, and a tree
  * without them fails in ways that look like the rule is wrong.
  */
-export const setupSyntaxTreeInput = ({ sources = [], dependencies = [], ...overrides }: Params = {}): StandardsCheckInput => {
+export const setupSyntaxTreeInput = ({ sources = [], dependencies = [], ...overrides }: Params = {}): SyntaxTreeInput => {
 	const paths = sources.map(([path]) => path);
 	const trees = new Map(sources.map(([path, text]) => [path, ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true)]));
 

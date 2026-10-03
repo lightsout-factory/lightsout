@@ -20,8 +20,7 @@ test('write-tests fan-out: files under __tests__/ are test files, never writer t
 		config: {
 			'standards-rule-settings': {
 				...reachabilityRulesOff['standards-rule-settings'],
-				'test-in-tests-folder': 'off',
-				'test-not-beside-subject': 'off',
+				'test-beside-subject': 'off',
 			},
 		},
 	});

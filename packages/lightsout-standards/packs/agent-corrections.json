@@ -1,0 +1,11 @@
+{
+	"description": "Corrects mistakes current models make by default. A rule is retired when models stop making the mistake, so this pack changes more than any other.",
+	"include": {
+		"topics": [
+			"lightsout/code/agent-corrections/design",
+			"lightsout/code/agent-corrections/type-safety",
+			"lightsout/code/agent-corrections/comments",
+			"lightsout/tests/agent-corrections"
+		]
+	}
+}

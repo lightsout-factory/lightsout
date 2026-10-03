@@ -19,7 +19,7 @@ interface Params {
 	changedFiles: string[];
 	/** Monorepo package parent dir, handed to the review so it grades each finding by its file's package group. */
 	packagesDir: string;
-	/** false skips this read entirely — code-checks-only mode. */
+	/** false skips this read entirely — deterministic-checks-only mode. */
 	agentReview: boolean;
 	timeoutMs: number;
 	onProgress: (message: string) => void;

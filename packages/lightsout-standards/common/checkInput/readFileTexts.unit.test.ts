@@ -1,7 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
-import type { StandardsCheckInput } from '@lightsout/standards-contracts';
+import type { FileTextInput } from '@lightsout/standards-contracts';
 import { StandardsInputKind } from '@lightsout/standards-contracts';
-import { setupOtherKindInput } from '@lightsout/standards-testkit';
 import { readFileTexts } from './readFileTexts.ts';
 
 /** The file-text input as the engine builds it: what is in scope, what may reference it, and the text of both. */
@@ -21,7 +20,7 @@ const setupFileTextInput = ({
 	referenceFiles?: string[];
 	contents?: Array<[string, string]>;
 	standardsLibraries?: string[];
-} = {}): StandardsCheckInput => ({
+} = {}): FileTextInput => ({
 	kind: StandardsInputKind.FileText,
 	cwd: '/repo',
 	source: files,
@@ -67,8 +66,8 @@ describe('readFileTexts', () => {
 		expect(texts.standardsLibraries).toStrictEqual(['standards', 'vendor/acme-standards']);
 	});
 
-	test('an input of any other kind yields an empty scope rather than refusing', () => {
-		const texts = readFileTexts({ input: setupOtherKindInput() });
+	test('a missing input yields an empty scope rather than refusing', () => {
+		const texts = readFileTexts({ input: undefined });
 
 		expect(texts).toStrictEqual({ files: [], tests: [], referenceFiles: [], contents: new Map(), standardsLibraries: [] });
 	});

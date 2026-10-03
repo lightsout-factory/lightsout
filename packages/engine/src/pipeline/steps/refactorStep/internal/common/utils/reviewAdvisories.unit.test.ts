@@ -1,6 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { StandardsPackSource } from '#src/contracts/standards/StandardsPackSource.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
@@ -42,7 +41,7 @@ const setupRun = ({ packagesDir }: { packagesDir: string }) => {
 		progress: jest.fn<(message: string) => void>(),
 	} as unknown as PipelineRun;
 	const groups: StandardsGroup[] = [
-		{ packages: [''], pack: { name: 'lightsout/node', topics: [], rules: [] }, source: StandardsPackSource.Detected, states: new Map() },
+		{ packages: [''], pack: { name: 'lightsout/standards', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] }, states: new Map() },
 	];
 
 	return { run, groups };

@@ -28,9 +28,9 @@ interface Params {
  * says".
  */
 export const buildFileExportCheck = ({ rule, detail, guidance, getExempt }: Params): StandardsCheckModule => ({
-	inputKind: 'file-text',
-	run: ({ input }): RawStandardsFinding[] => {
-		const { files, contents, standardsLibraries } = readFileTexts({ input });
+	inputKinds: ['file-text'],
+	run: ({ inputs }): RawStandardsFinding[] => {
+		const { files, contents, standardsLibraries } = readFileTexts({ input: inputs['file-text'] });
 		const exempt = getExempt?.({ files, contents }) ?? new Set<string>();
 
 		return files

@@ -27,7 +27,7 @@ const writeLibrary = ({ cwd, at, name, ruleFolder, requires }: LibrarySpec & { c
 	const files: Record<string, string> = {
 		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 2 }\n`,
 		'rules/code/demo/topic.md': '# Demo\n\nThe topic the rule argues under.\n',
-		[`${rulePath}/rule.md`]: `---\nsummary: a rule the library declares\n${requiresLines}---\n\nThe rule prose.\n`,
+		[`${rulePath}/rule.md`]: `---\nsummary: a rule the library declares\nchecks: agent\n${requiresLines}---\n\nThe rule prose.\n`,
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 		[`${rulePath}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',
 	};

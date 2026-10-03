@@ -65,7 +65,7 @@ const finding = (overrides: Partial<StandardsFinding> = {}): StandardsFinding =>
 });
 
 const setupCheck = ({
-	args = ['--code-checks'],
+	args = ['--deterministic-checks'],
 	check = {},
 	review = {},
 	rules,
@@ -104,7 +104,8 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	rule: 'multi-export',
 	doc: 'lightsout-defaults: code/style-guide/structure/one-export-per-file',
 	summary: 'more than one export in a file',
-	checked: true,
+	deterministic: true,
+	agent: overrides.deterministic === false,
 	severity: StandardsSeverity.Blocking,
 	fromConfig: false,
 	options: {},
@@ -185,7 +186,7 @@ describe('standardsCheckCommand', () => {
 	});
 
 	test('hands the check the repo, the subpath, and both switches when the flags ask for them', async () => {
-		const { context, cwd } = setupCheck({ args: ['--code-checks', '--path', 'src/cli', '--all', '--baseline'] });
+		const { context, cwd } = setupCheck({ args: ['--deterministic-checks', '--path', 'src/cli', '--all', '--baseline'] });
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
@@ -195,7 +196,7 @@ describe('standardsCheckCommand', () => {
 	test.each([
 		{ config: { 'packages-dir': 'apps' }, expected: expect.objectContaining({ 'packages-dir': 'apps' }) },
 		{ config: undefined, expected: undefined },
-	])('hands the code checks the config the standards ledger read, and none when the repo has none', async ({ config, expected }) => {
+	])('hands the deterministic checks the config the standards ledger read, and none when the repo has none', async ({ config, expected }) => {
 		const { context } = setupCheck({ config });
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
@@ -214,7 +215,7 @@ describe('standardsCheckCommand', () => {
 	});
 
 	test('a --path flag given without a value is no subpath at all', async () => {
-		const { context } = setupCheck({ args: ['--code-checks', '--path'] });
+		const { context } = setupCheck({ args: ['--deterministic-checks', '--path'] });
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
@@ -234,17 +235,17 @@ describe('standardsCheckCommand', () => {
 	test('--list prints the resolved ledger and answers without running a single check', async () => {
 		// the table's full shape is printStandardsRuleList's own test's to pin —
 		// what the command owns is that the resolved rules reach it, and that
-		// listing is a read, never a run. The bare directory is also the no-config
-		// case: every rule still answers, at its default.
-		const { context, logged, exitCodes } = setupRuleList({ cwd: mkdtempSync(join(tmpdir(), 'lightsout-test-')) });
+		// listing is a read, never a run. The repo's config names lightsout/standards,
+		// so that is the one group the ledger is built from.
+		const { context, logged, exitCodes } = setupRuleList({ cwd: setupConsumerRepo({ git: false }) });
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(listParams()?.groups.map(({ pack, source }) => ({ pack: pack.name, source }))).toStrictEqual([{ pack: 'lightsout/node', source: 'detected' }]);
+		expect(listParams()?.groups.map(({ pack }) => pack.name)).toStrictEqual(['lightsout/standards']);
 		expect(cellsOf({ logged })).toContainEqual([
 			'multi-export',
 			'blocking',
-			'code',
+			'deterministic',
 			'lightsout-defaults: code/style-guide/structure/one-export-per-file',
 			'repo root (outside packages)',
 		]);
@@ -273,8 +274,8 @@ describe('standardsCheckCommand', () => {
 		expect(mockReviewStandards).toHaveBeenCalled();
 	});
 
-	test('--code-checks runs only the half code does', async () => {
-		const { context } = setupCheck({ args: ['--code-checks'] });
+	test('--deterministic-checks runs only the half code does', async () => {
+		const { context } = setupCheck({ args: ['--deterministic-checks'] });
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
@@ -292,7 +293,7 @@ describe('standardsCheckCommand', () => {
 	});
 
 	test('naming both halves runs both, exactly as naming neither does', async () => {
-		const { context } = setupCheck({ args: ['--code-checks', '--agent-review'] });
+		const { context } = setupCheck({ args: ['--deterministic-checks', '--agent-review'] });
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
@@ -315,16 +316,16 @@ describe('standardsCheckCommand', () => {
 		expect(params?.path).toBe('src');
 	});
 
-	test('review findings join the same stream, printed under their own section after the code checks have already reported', async () => {
+	test('review findings join the same stream, printed under their own section after the deterministic checks have already reported', async () => {
 		const { context, logged } = setupCheck({
 			args: [],
 			check: { findings: [finding({ rule: 'duplicate-code-block', severity: StandardsSeverity.Blocking, siteKey: 'duplicate-code-block:src/a.ts:1' })] },
-			review: { findings: [finding({ rule: 'path-aliases', siteKey: 'path-aliases:src/a.ts', detail: 'a relative import in an aliased package' })] },
+			review: { findings: [finding({ rule: 'object-args', siteKey: 'object-args:src/a.ts', detail: 'three positional arguments on an exported function' })] },
 		});
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(headingsOf({ logged })).toStrictEqual(['⚠ duplicate-code-block · 1 blocking', 'ℹ path-aliases · 1 advisory']);
+		expect(headingsOf({ logged })).toStrictEqual(['⚠ duplicate-code-block · 1 blocking', 'ℹ object-args · 1 advisory']);
 		// the fast half's answer is on screen before the slow half starts — a
 		// reader waiting on the agent already has the deterministic result
 		expect(logged.indexOf('⚠ duplicate-code-block · 1 blocking')).toBeLessThan(logged.indexOf('Agent review'));

@@ -1,6 +1,9 @@
 {
-	"description": "TanStack Start: how the base rules apply to a TanStack Start application.",
+	"description": "Gives a TanStack Start app one place for each feature, server function, query and hook, in each package that uses TanStack Start.",
 	"include": {
-		"topics": ["lightsout/code/architecture/tanstack-start"]
+		"topics": ["lightsout/code/frameworks/tanstack-start"]
+	},
+	"applies-when": {
+		"dependencies": ["@tanstack/react-start", "@tanstack/start"]
 	}
 }

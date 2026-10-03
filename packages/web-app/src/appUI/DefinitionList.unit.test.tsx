@@ -35,13 +35,13 @@ describe('DefinitionList', () => {
 				[
 					'document',
 					<span key="document" className="font-mono">
-						code/style-guide
+						code/code-style
 					</span>,
 				],
 			],
 		});
 
-		const value = screen.getByText('code/style-guide');
+		const value = screen.getByText('code/code-style');
 
 		expect(value).toHaveClass('font-mono');
 	});

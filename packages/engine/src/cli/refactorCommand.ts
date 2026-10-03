@@ -22,7 +22,7 @@ export const refactorCommand = ({ flags, cwd }: CommandContext): Promise<void> =
 				maxBatches,
 				// The same flag the standards check takes: run against the deterministic
 				// checks alone, skipping each batch's agent review.
-				agentReview: flags.get('code-checks') !== true,
+				agentReview: flags.get('deterministic-checks') !== true,
 				allowDirty: flags.get('allow-dirty') === true,
 				existing,
 				onProgress: createProgressPrinter(),

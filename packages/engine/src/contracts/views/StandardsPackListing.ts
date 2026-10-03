@@ -8,6 +8,8 @@ export const StandardsPackListing = z.object({
 	/** `<library>/<name>`, as a config key or another pack file names it. */
 	address: z.string(),
 	description: z.string().optional(),
+	/** Set on a conditional pack only: it reaches a package when that package's `package.json` declares one of these dependencies. */
+	appliesWhen: z.object({ dependencies: z.array(z.string()) }).optional(),
 	/** The pack file's include lists as written; a list the file leaves out is empty. */
 	include: z.object({
 		packs: z.array(z.string()),
@@ -26,8 +28,8 @@ export const StandardsPackListing = z.object({
 	),
 	totals: z.object({
 		rules: z.number(),
-		checked: z.number(),
-		judgment: z.number(),
+		deterministic: z.number(),
+		agent: z.number(),
 		topics: z.number(),
 	}),
 });
