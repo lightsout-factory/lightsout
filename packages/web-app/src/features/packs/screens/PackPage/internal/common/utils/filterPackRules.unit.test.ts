@@ -32,13 +32,12 @@ describe('filterPackRules', () => {
 		expect(ids).toStrictEqual(['type-assertion', 'no-test-state-in-hooks', 'component-file-structure']);
 	});
 
-	test('a rule code decides only part of is its own kind, shown under neither of the others', () => {
+	test('a rule code decides only part of shows under both kinds, since it has both', () => {
 		const partlyChecked = buildStandardsPackRuleListing({ id: 'shared-code-placement', checked: true, reviewed: true, summary: 'where shared code sits' });
 		const idsOf = ({ check }: { check: CheckKind }) => filterPackRules({ rules: [...rules, partlyChecked], filters: { check } }).map((rule) => rule.id);
 
-		expect(idsOf({ check: CheckKind.Both })).toStrictEqual(['shared-code-placement']);
-		expect(idsOf({ check: CheckKind.Deterministic })).toStrictEqual(['type-assertion', 'no-test-state-in-hooks']);
-		expect(idsOf({ check: CheckKind.Agent })).toStrictEqual(['component-file-structure']);
+		expect(idsOf({ check: CheckKind.Deterministic })).toStrictEqual(['type-assertion', 'no-test-state-in-hooks', 'shared-code-placement']);
+		expect(idsOf({ check: CheckKind.Agent })).toStrictEqual(['component-file-structure', 'shared-code-placement']);
 	});
 
 	test('keeps only the rules of the set asked for', () => {

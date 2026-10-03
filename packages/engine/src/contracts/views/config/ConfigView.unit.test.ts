@@ -115,7 +115,7 @@ describe('ConfigView', () => {
 
 	test.each([
 		{ conditionalPacks: [], parses: true },
-		{ conditionalPacks: ['lightsout/react', 'lightsout/nestjs'], parses: true },
+		{ conditionalPacks: ['lightsout/react', 'lightsout/tanstack-start'], parses: true },
 		{ conditionalPacks: 'lightsout/react', parses: false },
 		{ conditionalPacks: [7], parses: false },
 	])('ConfigView: a standards group whose conditionalPacks is $conditionalPacks parses: $parses', ({ conditionalPacks, parses }) => {

@@ -73,9 +73,9 @@ describe('ConfigPage standards card', () => {
 	test.each([
 		{
 			standardsGroups: [
-				{ packages: ['', 'api'], appliesTo: 'repo root (outside packages), api', pack: 'lightsout/standards', conditionalPacks: ['lightsout/nestjs'] },
+				{ packages: ['', 'api'], appliesTo: 'repo root (outside packages), api', pack: 'lightsout/standards', conditionalPacks: ['lightsout/tanstack-start'] },
 			],
-			expected: { href: '/standards-packs', badge: 'with lightsout/nestjs', coversRepoRoot: true, coversApi: true, announcesNone: false },
+			expected: { href: '/standards-packs', badge: 'with lightsout/tanstack-start', coversRepoRoot: true, coversApi: true, announcesNone: false },
 		},
 		{
 			standardsGroups: [{ packages: [''], appliesTo: 'repo root (outside packages)', pack: 'lightsout/standards', conditionalPacks: [] }],

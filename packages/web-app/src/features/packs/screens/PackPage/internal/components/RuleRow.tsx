@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router';
 import { ChevronRight } from 'lucide-react';
 import { severityDisplays } from '#src/common/constants/severityDisplays.ts';
 import { cn } from '#src/common/utils/cn.ts';
-import { toCheckKind } from '#src/common/utils/toCheckKind.ts';
+import { toCheckKinds } from '#src/common/utils/toCheckKinds.ts';
 import { CheckKindTag } from '#src/features/packs/components/CheckKindTag.tsx';
 import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
 
@@ -33,7 +33,9 @@ export const RuleRow = ({ rule, library, severity }: Props) => {
 					</span>
 				</div>
 				<div className="hidden shrink-0 items-center gap-2 sm:flex">
-					<CheckKindTag kind={toCheckKind({ checked: rule.checked, reviewed: rule.reviewed })} isShort />
+					{toCheckKinds({ checked: rule.checked, reviewed: rule.reviewed }).map((kind) => (
+						<CheckKindTag key={kind} kind={kind} isShort />
+					))}
 					<span className="inline-flex w-20 items-center gap-1.5 font-medium text-muted-foreground text-xs">
 						<display.Icon aria-hidden="true" className={cn('size-3.5', display.iconClass)} />
 						{display.verb}

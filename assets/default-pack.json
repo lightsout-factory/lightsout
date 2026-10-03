@@ -8,8 +8,8 @@
     "rules": 64,
     "checked": 36,
     "judgment": 31,
-    "topics": 18,
-    "packs": 7,
+    "topics": 17,
+    "packs": 6,
     "withFixtures": 64
   },
   "packs": [
@@ -395,33 +395,6 @@
       }
     },
     {
-      "name": "nestjs",
-      "address": "lightsout/nestjs",
-      "description": "Stops the other rules from fighting what NestJS mandates, in each package that uses NestJS.",
-      "appliesWhen": {
-        "dependencies": [
-          "@nestjs/core"
-        ]
-      },
-      "include": {
-        "packs": [],
-        "topics": [
-          "lightsout/code/frameworks/nestjs"
-        ],
-        "rules": []
-      },
-      "topics": [
-        "lightsout/code/frameworks/nestjs"
-      ],
-      "rules": [],
-      "totals": {
-        "rules": 0,
-        "checked": 0,
-        "judgment": 0,
-        "topics": 1
-      }
-    },
-    {
       "name": "react",
       "address": "lightsout/react",
       "description": "Keeps React components, hooks and their tests to one shape, in each package that uses React.",
@@ -483,8 +456,7 @@
           "lightsout/agent-corrections",
           "lightsout/code-style",
           "lightsout/react",
-          "lightsout/tanstack-start",
-          "lightsout/nestjs"
+          "lightsout/tanstack-start"
         ],
         "topics": [],
         "rules": []
@@ -501,7 +473,6 @@
         "lightsout/code/fractal/modules",
         "lightsout/code/fractal/shared-code",
         "lightsout/code/fractal/size",
-        "lightsout/code/frameworks/nestjs",
         "lightsout/code/frameworks/react",
         "lightsout/code/frameworks/tanstack-start",
         "lightsout/tests/agent-corrections",
@@ -850,7 +821,7 @@
         "rules": 64,
         "checked": 36,
         "judgment": 31,
-        "topics": 18
+        "topics": 17
       }
     },
     {
@@ -1025,12 +996,6 @@
         "file-size",
         "folder-size"
       ]
-    },
-    {
-      "set": "code",
-      "path": "code/frameworks/nestjs",
-      "intro": "# NestJS Architecture\n\nHow the base rules apply to a NestJS application. NestJS names files in kebab-case with a suffix for their kind, as its CLI generates them: `events.service.ts`, `create-event.dto.ts`, `*.controller.ts`, `*.module.ts`, `*.guard.ts`. It finds its bootstrap at `src/main.ts`. Its dependency injection needs classes for services, controllers, resolvers, guards, pipes and interceptors, and reads constructor parameter types from decorator metadata at runtime, so on a decorated declaration, import the names it references as values, never with `import type`. A Nest module is wired by decorators (`@Module`), not by folders, so NestJS mandates no folder layout.",
-      "ruleIds": []
     },
     {
       "set": "code",

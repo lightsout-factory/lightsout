@@ -75,7 +75,7 @@ describe('PacksPage', () => {
 			reactHref: reactCard.getAttribute('href'),
 			ruleSetLinks,
 		}).toStrictEqual({
-			headings: ['lightsout', 'lightsout/standards', 'lightsout/react', 'Your team’s pack'],
+			headings: ['lightsout/standards', 'lightsout/react', 'Your team’s pack'],
 			standardsHref: '/standards-packs/lightsout/packs/standards',
 			reactHref: '/standards-packs/lightsout/packs/react',
 			ruleSetLinks: [],
@@ -131,20 +131,12 @@ describe('PacksPage', () => {
 		expect(within(card).getByText(/^Applies only/).textContent).toBe('Applies only to packages that depend on react, preact or react-dom.');
 	});
 
-	test('describes the library under its name when it has a description', () => {
+	test('shows the packs alone, with no library heading or blurb above them', () => {
 		setupPacksPage();
 
-		const section = screen.getByRole('region', { name: 'lightsout' });
-
-		expect(within(section).queryByText('The rules lightsout ships.')).not.toBeNull();
-	});
-
-	test('shows only the library name when the library has no description', () => {
-		setupPacksPage({ pack: buildStandardsPackView({ overrides: { description: undefined } }) });
-
-		const section = screen.getByRole('region', { name: 'lightsout' });
-
-		expect(within(section).queryByText('The rules lightsout ships.')).toBeNull();
+		// the page is about the packs; the library's own description belongs to the home page
+		expect(screen.queryByText('The rules lightsout ships.')).toBeNull();
+		expect(screen.queryByRole('heading', { name: 'lightsout' })).toBeNull();
 	});
 
 	test('points a team at the docs for writing its own pack', () => {

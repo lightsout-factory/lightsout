@@ -40,7 +40,6 @@ describe('findMissingRequirements on the shipped lightsout library', () => {
 			'lightsout/fractal',
 			'lightsout/agent-corrections',
 			'lightsout/code-style',
-			'lightsout/nestjs',
 			'lightsout/react',
 			'lightsout/tanstack-start',
 		];
@@ -58,7 +57,6 @@ describe('findMissingRequirements on the shipped lightsout library', () => {
 			'lightsout/agent-corrections': [],
 			'lightsout/code-style': [],
 			// the nestjs pack holds a topic and no rule, so nothing in it requires anything
-			'lightsout/nestjs': [],
 			// the react pack alone holds none of the fractal rules its rule points at
 			'lightsout/react': [
 				{ rule: 'lightsout/component-file-structure', required: 'lightsout/index-files' },

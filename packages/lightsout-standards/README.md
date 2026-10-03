@@ -51,7 +51,7 @@ Packs are grouped by what the rules are for, and the rule tree mirrors them:
   stays only while models still make the mistake without it.
 - `code-style` — one way to write a function, a class, a set of named values
   and a unit test.
-- `react`, `tanstack-start`, `nestjs` — framework rules, under
+- `react`, `tanstack-start` — framework rules, under
   `rules/code/frameworks/` and `rules/tests/frameworks/`. Each declares
   `applies-when`, so it reaches only the packages that depend on the framework.
 - `standards` — every pack above. It is the pack the docs tell a repository to

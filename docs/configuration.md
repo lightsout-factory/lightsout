@@ -207,7 +207,7 @@ for, so a repository can take one goal without the others:
 | `lightsout/fractal` | Keeps the repo the same shape at every level, so any file's place is predictable and a duplicate is found by searching for its name. |
 | `lightsout/agent-corrections` | Corrects mistakes current models make by default. |
 | `lightsout/code-style` | Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values and a unit test. |
-| `lightsout/react`, `lightsout/tanstack-start`, `lightsout/nestjs` | Framework rules. Each reaches only the packages whose `package.json` declares that framework. |
+| `lightsout/react`, `lightsout/tanstack-start` | Framework rules. Each reaches only the packages whose `package.json` declares that framework. |
 | `lightsout/standards` | All of the above. |
 
 `standards-pack` takes one pack address or a list of them. Listed packs apply
@@ -269,9 +269,9 @@ holds. A pack may also be conditional, by declaring `applies-when`:
 
 ```json
 {
-  "description": "Stops the other rules from fighting what NestJS mandates, in each package that uses NestJS.",
-  "include": { "topics": ["lightsout/code/frameworks/nestjs"] },
-  "applies-when": { "dependencies": ["@nestjs/core"] }
+  "description": "Keeps React components, hooks and their tests to one shape, in each package that uses React.",
+  "include": { "topics": ["lightsout/code/frameworks/react", "lightsout/tests/frameworks/react"] },
+  "applies-when": { "dependencies": ["react", "preact", "react-dom"] }
 }
 ```
 

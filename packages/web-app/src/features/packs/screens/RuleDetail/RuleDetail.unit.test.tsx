@@ -150,7 +150,7 @@ describe('RuleDetail', () => {
 	});
 
 	test('calls an agent check an agent check, and says it only advises', () => {
-		setupRuleDetail({ rule: buildStandardsPackRuleView({ overrides: { checked: false, defaultSeverity: StandardsSeverity.Advisory } }) });
+		setupRuleDetail({ rule: buildStandardsPackRuleView({ overrides: { checked: false, reviewed: true, defaultSeverity: StandardsSeverity.Advisory } }) });
 
 		expect([screen.getByText('Agent check'), screen.getByText('Advises by default')]).toHaveLength(2);
 	});

@@ -23,10 +23,9 @@ const agentCorrectionsTopics = [
 const codeStyleTopics = ['code/code-style/functions', 'code/code-style/classes', 'code/code-style/named-constants', 'tests/code-style'];
 const reactTopics = ['code/frameworks/react', 'tests/frameworks/react'];
 const tanstackStartTopics = ['code/frameworks/tanstack-start'];
-const nestjsTopics = ['code/frameworks/nestjs'];
 const goalTopics = [...fractalTopics, ...agentCorrectionsTopics, ...codeStyleTopics];
-const frameworkTopics = [...reactTopics, ...tanstackStartTopics, ...nestjsTopics];
-const frameworkPackNames = ['lightsout/react', 'lightsout/tanstack-start', 'lightsout/nestjs'];
+const frameworkTopics = [...reactTopics, ...tanstackStartTopics];
+const frameworkPackNames = ['lightsout/react', 'lightsout/tanstack-start'];
 
 /**
  * The shipped built-in library, loaded from its authored folder — not the copy
@@ -77,7 +76,6 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 	test.each([
 		{ address: 'lightsout/react', topicPaths: reactTopics, dependencies: ['react', 'preact', 'react-dom'] },
 		{ address: 'lightsout/tanstack-start', topicPaths: tanstackStartTopics, dependencies: ['@tanstack/react-start', '@tanstack/start'] },
-		{ address: 'lightsout/nestjs', topicPaths: nestjsTopics, dependencies: ['@nestjs/core'] },
 	])('$address is its own topics at rule defaults, for a package declaring one of its dependencies', async ({ address, topicPaths, dependencies }) => {
 		const { library, libraries } = await setupDefaultLibrary();
 
@@ -114,7 +112,7 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 		});
 	});
 
-	test('the lightsout library ships seven packs and its six topic packs cover each topic once', async () => {
+	test('the lightsout library ships six packs and its five topic packs cover each topic once', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
 		const resolved = library.packs.map((packFile) => resolveStandardsPack({ addresses: [`lightsout/${packFile.name}`], libraries, dependencies: undefined }));
@@ -129,12 +127,11 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 			resolved: resolved.map((pack) => pack.name).sort(),
 			topicsAcrossTopicPacks,
 		}).toStrictEqual({
-			packFiles: ['agent-corrections', 'code-style', 'fractal', 'nestjs', 'react', 'standards', 'tanstack-start'],
+			packFiles: ['agent-corrections', 'code-style', 'fractal', 'react', 'standards', 'tanstack-start'],
 			resolved: [
 				'lightsout/agent-corrections',
 				'lightsout/code-style',
 				'lightsout/fractal',
-				'lightsout/nestjs',
 				'lightsout/react',
 				'lightsout/standards',
 				'lightsout/tanstack-start',

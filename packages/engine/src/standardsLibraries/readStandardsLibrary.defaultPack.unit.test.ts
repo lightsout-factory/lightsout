@@ -107,12 +107,12 @@ const setupLibraryLayout = async () => {
 };
 
 describe('readStandardsLibrary', () => {
-	test('carries all 18 shipped documents, split across the code and tests trees', async () => {
+	test('carries all 17 shipped documents, split across the code and tests trees', async () => {
 		const { pack } = await setupDefaultPack();
 
 		expect(pack.name).toBe('lightsout');
-		expect(pack.documents).toHaveLength(18);
-		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(14);
+		expect(pack.documents).toHaveLength(17);
+		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(13);
 		expect(pack.documents.filter((document) => document.set === StandardsSet.Tests)).toHaveLength(4);
 	});
 

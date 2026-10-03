@@ -315,7 +315,7 @@ describe('getStandardsPackBundle', () => {
 		expect(error.message).toMatch(/house\/app[\s\S]*acme/);
 	});
 
-	test('bundles the authored lightsout library with its seven packs', async () => {
+	test('bundles the authored lightsout library with its six packs', async () => {
 		const { cwd } = setupThisRepo();
 
 		const bundle = await getStandardsPackBundle({ cwd });
@@ -332,7 +332,7 @@ describe('getStandardsPackBundle', () => {
 		}).toStrictEqual({
 			name: 'lightsout',
 			built: false,
-			packs: ['agent-corrections', 'code-style', 'fractal', 'nestjs', 'react', 'standards', 'tanstack-start'],
+			packs: ['agent-corrections', 'code-style', 'fractal', 'react', 'standards', 'tanstack-start'],
 			holdsReact: true,
 			holdsTanstackStart: true,
 		});

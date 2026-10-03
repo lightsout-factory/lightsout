@@ -36,7 +36,7 @@ describe('getDefaultPackBundle', () => {
 		expect(bundle.rootPath).toBe('packages/lightsout-standards');
 	});
 
-	test('parses the committed library bundle with its seven packs and a repo-relative root', () => {
+	test('parses the committed library bundle with its six packs and a repo-relative root', () => {
 		const bundle = getDefaultPackBundle();
 
 		expect({
@@ -52,7 +52,6 @@ describe('getDefaultPackBundle', () => {
 				'lightsout/agent-corrections',
 				'lightsout/code-style',
 				'lightsout/fractal',
-				'lightsout/nestjs',
 				'lightsout/react',
 				'lightsout/standards',
 				'lightsout/tanstack-start',

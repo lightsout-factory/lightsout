@@ -1,9 +1,0 @@
-{
-	"description": "Stops the other rules from fighting what NestJS mandates, in each package that uses NestJS.",
-	"include": {
-		"topics": ["lightsout/code/frameworks/nestjs"]
-	},
-	"applies-when": {
-		"dependencies": ["@nestjs/core"]
-	}
-}
