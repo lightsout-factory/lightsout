@@ -85,7 +85,7 @@ reviewed.
      a `rules/` folder holding `code/` or `tests/`:
 
      ```json
-     { "name": "house-rules", "formatVersion": 2, "description": "What this team agrees on." }
+     { "name": "acme", "formatVersion": 2, "description": "What the Acme team agrees on." }
      ```
 
      Then register the folder in `standards-libraries` in the repository's

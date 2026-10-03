@@ -60,7 +60,7 @@ If your workspace packages do not live in `packages/`, set `packages-dir`:
 {
   "standards-pack": "lightsout/standards",
   "package-standards-packs": {
-    "docs-site": "house/docs"
+    "docs-site": "lightsout/code-style"
   }
 }
 ```

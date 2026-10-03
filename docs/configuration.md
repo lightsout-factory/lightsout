@@ -49,8 +49,8 @@ of its packs with `standards-pack`, written `<library>/<pack>`:
 
 ```json
 {
-  "standards-libraries": { "house": "./standards/house" },
-  "standards-pack": "house/house-rules",
+  "standards-libraries": { "acme": "./standards/acme" },
+  "standards-pack": "acme/standards",
   "gates": {
     "check": "pnpm check",
     "test": "pnpm test:unit",
@@ -86,7 +86,7 @@ Use `package-standards-packs` to give a package standards of its own. Each key i
 {
   "standards-pack": "lightsout/standards",
   "package-standards-packs": {
-    "web-app": "house/web"
+    "web-app": "lightsout/react"
   }
 }
 ```
@@ -215,8 +215,8 @@ in order, and the last listed wins where two grade one rule differently:
 
 ```json
 {
-  "standards-libraries": { "house": "./standards/house" },
-  "standards-pack": ["lightsout/standards", "house/house-rules"]
+  "standards-libraries": { "acme": "./standards/acme" },
+  "standards-pack": ["lightsout/standards", "acme/standards"]
 }
 ```
 
@@ -242,8 +242,8 @@ library lives:
 ```json
 {
   "standards-libraries": {
-    "house": "./standards/house",
-    "acme": "@acme/lightsout-standards"
+    "acme": "./standards/acme",
+    "acme-platform": "@acme/platform-standards"
   }
 }
 ```
@@ -269,8 +269,8 @@ holds. A pack may also be conditional, by declaring `applies-when`:
 
 ```json
 {
-  "description": "NestJS: how the base rules apply to a NestJS application.",
-  "include": { "topics": ["house/code/nestjs"] },
+  "description": "Stops the other rules from fighting what NestJS mandates, in each package that uses NestJS.",
+  "include": { "topics": ["lightsout/code/frameworks/nestjs"] },
   "applies-when": { "dependencies": ["@nestjs/core"] }
 }
 ```
@@ -951,7 +951,7 @@ The following example shows how the optional configuration fields fit together:
 
   // A package whose standards differ, keyed by its folder under packages-dir
   "package-standards-packs": {
-    "docs-site": ["lightsout/standards", "house/docs"],
+    "docs-site": "lightsout/code-style",
   },
 
   // Repository-wide gates
