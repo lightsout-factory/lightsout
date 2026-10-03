@@ -1,6 +1,6 @@
 ---
 summary: "When to write a class instead of functions."
-checked: partial
+checks: both
 severity: advisory
 example:
   kind: repo

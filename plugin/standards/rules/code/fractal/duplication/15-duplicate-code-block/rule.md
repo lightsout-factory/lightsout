@@ -1,6 +1,6 @@
 ---
 summary: "The same code written out in more than one place."
-checked: true
+checks: deterministic
 severity: advisory
 options:
   minTokens: 50

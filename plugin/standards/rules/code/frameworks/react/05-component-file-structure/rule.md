@@ -1,6 +1,6 @@
 ---
 summary: "What a component's file holds, and when it becomes a folder."
-checked: false
+checks: agent
 severity: advisory
 requires:
   - index-files

@@ -1,6 +1,6 @@
 ---
 summary: "Where the history of the code belongs."
-checked: false
+checks: agent
 severity: advisory
 ---
 

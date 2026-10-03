@@ -1,6 +1,6 @@
 ---
 summary: "The shape of a single test."
-checked: false
+checks: agent
 severity: advisory
 ---
 

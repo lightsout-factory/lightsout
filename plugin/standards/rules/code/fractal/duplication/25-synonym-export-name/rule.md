@@ -1,6 +1,6 @@
 ---
 summary: "One naming pattern, and one name for each concept."
-checked: true
+checks: deterministic
 severity: advisory
 ---
 

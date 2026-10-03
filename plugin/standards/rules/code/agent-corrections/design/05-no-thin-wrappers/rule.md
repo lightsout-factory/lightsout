@@ -1,6 +1,6 @@
 ---
 summary: "Functions and files that add nothing but a second name."
-checked: partial
+checks: both
 severity: advisory
 example:
   kind: repo

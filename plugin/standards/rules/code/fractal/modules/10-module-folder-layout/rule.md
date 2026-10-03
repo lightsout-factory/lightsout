@@ -1,6 +1,6 @@
 ---
 summary: "What goes inside a module folder."
-checked: false
+checks: agent
 severity: advisory
 example:
   kind: repo

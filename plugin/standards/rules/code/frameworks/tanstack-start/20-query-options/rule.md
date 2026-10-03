@@ -1,6 +1,6 @@
 ---
 summary: "Where query options are declared, and how their type is written."
-checked: false
+checks: agent
 severity: advisory
 requires:
   - module-folder-layout

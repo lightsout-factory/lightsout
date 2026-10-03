@@ -1,6 +1,6 @@
 ---
 summary: "Code that nothing uses any more."
-checked: true
+checks: deterministic
 severity: blocking
 example:
   kind: repo

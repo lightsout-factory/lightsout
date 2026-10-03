@@ -1,6 +1,6 @@
 ---
 summary: "Comparing a whole object, or part of one."
-checked: true
+checks: deterministic
 severity: blocking
 ---
 

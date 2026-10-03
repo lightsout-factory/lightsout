@@ -1,6 +1,6 @@
 ---
 summary: "What a test asserts against."
-checked: false
+checks: agent
 severity: advisory
 ---
 

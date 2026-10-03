@@ -1,6 +1,6 @@
 ---
 summary: "What a component test mocks."
-checked: false
+checks: agent
 severity: advisory
 ---
 

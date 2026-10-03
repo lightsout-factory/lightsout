@@ -1,6 +1,6 @@
 ---
 summary: "How long a function may grow."
-checked: true
+checks: deterministic
 severity: advisory
 options:
   function: 80

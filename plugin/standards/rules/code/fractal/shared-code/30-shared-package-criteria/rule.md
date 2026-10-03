@@ -1,6 +1,6 @@
 ---
 summary: "What belongs in the shared package."
-checked: false
+checks: agent
 severity: advisory
 ---
 

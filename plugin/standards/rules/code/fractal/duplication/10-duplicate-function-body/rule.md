@@ -1,6 +1,6 @@
 ---
 summary: "Functions that are copies of each other under new names."
-checked: true
+checks: deterministic
 severity: blocking
 options:
   minBodyTokens: 40

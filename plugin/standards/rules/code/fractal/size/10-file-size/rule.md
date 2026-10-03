@@ -1,6 +1,6 @@
 ---
 summary: "How long a file may grow."
-checked: true
+checks: deterministic
 severity: advisory
 options:
   file: 250

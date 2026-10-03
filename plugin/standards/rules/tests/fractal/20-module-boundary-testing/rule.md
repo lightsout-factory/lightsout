@@ -1,6 +1,6 @@
 ---
 summary: "Testing a module through what it makes public."
-checked: false
+checks: agent
 severity: advisory
 requires:
   - files-that-must-not-have-dedicated-tests

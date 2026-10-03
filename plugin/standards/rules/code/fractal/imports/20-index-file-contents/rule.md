@@ -1,6 +1,6 @@
 ---
 summary: "What an index file may hold."
-checked: true
+checks: deterministic
 severity: advisory
 example:
   kind: repo

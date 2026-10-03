@@ -51,7 +51,7 @@ export const check: StandardsCheckModule = {
 	 * Only the two banned shapes are facts of the declaration itself — what its
 	 * members are and which of them bind state — so the tree answers them.
 	 * Whether any other class meets one of the four criteria is the agent's to
-	 * judge, which is why the rule is checked in part.
+	 * judge, which is why the rule has both kinds of check.
 	 */
 	run: ({ inputs }): RawStandardsFinding[] => {
 		const input = inputs['syntax-tree'];

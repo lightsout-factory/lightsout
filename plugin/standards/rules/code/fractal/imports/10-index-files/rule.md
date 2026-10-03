@@ -1,6 +1,6 @@
 ---
 summary: "Which folders have an index file, and where an import points."
-checked: true
+checks: deterministic
 severity: advisory
 example:
   kind: repo

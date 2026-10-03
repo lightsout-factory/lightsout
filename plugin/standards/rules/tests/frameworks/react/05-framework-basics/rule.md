@@ -1,6 +1,6 @@
 ---
 summary: "The testing library, file name and interaction helper a component test uses."
-checked: false
+checks: agent
 severity: advisory
 ---
 

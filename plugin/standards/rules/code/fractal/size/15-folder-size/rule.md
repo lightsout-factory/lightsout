@@ -1,6 +1,6 @@
 ---
 summary: "When a folder holds too many files."
-checked: true
+checks: deterministic
 severity: advisory
 options:
   cap: 20

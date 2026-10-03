@@ -1,6 +1,6 @@
 ---
 summary: "When a module should stay one file, and when it should become a folder."
-checked: false
+checks: agent
 severity: advisory
 example:
   kind: repo

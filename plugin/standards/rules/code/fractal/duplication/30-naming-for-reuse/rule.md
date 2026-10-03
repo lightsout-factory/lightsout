@@ -1,6 +1,6 @@
 ---
 summary: "Naming things for what they are, not where they are used."
-checked: false
+checks: agent
 severity: advisory
 ---
 

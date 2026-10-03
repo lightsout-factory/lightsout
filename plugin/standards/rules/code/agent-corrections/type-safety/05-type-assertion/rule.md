@@ -1,6 +1,6 @@
 ---
 summary: "Telling the compiler a type instead of proving it."
-checked: true
+checks: deterministic
 severity: blocking
 ---
 

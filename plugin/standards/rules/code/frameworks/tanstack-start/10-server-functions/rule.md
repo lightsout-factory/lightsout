@@ -1,6 +1,6 @@
 ---
 summary: "Where server functions live."
-checked: false
+checks: agent
 severity: advisory
 ---
 

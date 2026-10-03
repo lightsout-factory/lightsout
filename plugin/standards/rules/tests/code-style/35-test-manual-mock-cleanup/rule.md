@@ -1,6 +1,6 @@
 ---
 summary: "Resetting mocks between tests."
-checked: true
+checks: deterministic
 severity: advisory
 ---
 

@@ -29,7 +29,7 @@ const getIndirectionLines = ({ sourceFile, compiler }: { sourceFile: ts.SourceFi
 // The tree, not the text: `export type A = B` and `export type A = B<C>` differ
 // by two characters and only one of them is a rename. Only the renaming file is
 // a fact of the tree; whether a function adds anything is the agent's to judge,
-// which is why the rule is checked in part.
+// which is why the rule has both kinds of check.
 export const check: StandardsCheckModule = buildTreeLineCheck({
 	rule: 'no-thin-wrappers',
 	findLines: getIndirectionLines,

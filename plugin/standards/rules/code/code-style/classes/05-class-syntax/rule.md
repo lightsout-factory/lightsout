@@ -1,6 +1,6 @@
 ---
 summary: "How a class takes its arguments and declares its methods."
-checked: false
+checks: agent
 severity: advisory
 ---
 

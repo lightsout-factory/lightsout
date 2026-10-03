@@ -122312,7 +122312,12 @@ var refactorCatalogEntry = {
       shape: "refactor",
       required: false
     },
-    { name: "code-checks", meaning: "Build the work-list from the mechanical checks alone, with no agent review.", shape: "refactor", required: false },
+    {
+      name: "deterministic-checks",
+      meaning: "Build the work-list from the deterministic checks alone, with no agent review.",
+      shape: "refactor",
+      required: false
+    },
     { name: "allow-dirty", meaning: "Start even though the git tree has uncommitted changes.", shape: "refactor", required: false }
   ],
   steps: refactorSteps,
@@ -122544,7 +122549,7 @@ var standardsCheckCatalogEntry = {
     { name: "path", value: "<subdir>", meaning: "Check only this subdirectory.", fallback: "The whole repository.", shape: "standards-check", required: false },
     { name: "all", meaning: "Include findings the baseline has already accepted as known debt.", shape: "standards-check", required: false },
     { name: "baseline", meaning: "Write the findings to the baseline file as accepted debt.", shape: "standards-check", required: false },
-    { name: "code-checks", meaning: "Run the mechanical checks only.", shape: "standards-check", required: false, exclusiveWith: "half" },
+    { name: "deterministic-checks", meaning: "Run the deterministic checks only.", shape: "standards-check", required: false, exclusiveWith: "half" },
     { name: "agent-review", meaning: "Run the agent review only.", shape: "standards-check", required: false, exclusiveWith: "half" }
   ],
   steps: [],
@@ -124526,6 +124531,16 @@ var StandardsLibraryRoot = external_exports.object({
   homepage: external_exports.url().optional()
 });
 
+// ../standards-contracts/src/StandardsRuleChecks.ts
+var StandardsRuleChecks = {
+  /** The rule ships a check file, and the check decides the whole rule. */
+  Deterministic: "deterministic",
+  /** The rule ships no check file; an agent reads the whole rule. */
+  Agent: "agent",
+  /** The rule ships a check file that decides part of the rule; an agent reads the rest. */
+  Both: "both"
+};
+
 // ../standards-contracts/src/StandardsSet.ts
 var StandardsSet = {
   /** The document tree handed to code-writing roles. */
@@ -124701,7 +124716,7 @@ var importCheckModule = async ({ checkPath }) => {
 // src/standardsLibraries/internal/common/parsing/parseRuleFolder.ts
 var ruleDeclaration = external_exports.object({
   summary: external_exports.string().min(1),
-  checked: external_exports.union([external_exports.boolean(), external_exports.literal("partial")]).default(false),
+  checks: external_exports.enum(StandardsRuleChecks),
   severity: external_exports.enum(StandardsSeverity).default(StandardsSeverity.Advisory),
   options: external_exports.record(external_exports.string(), external_exports.number()).default({}),
   example: RuleExample.optional(),
@@ -124719,7 +124734,7 @@ var getRuleDeclaration = async ({ folderPath, rulePath, found }) => {
 var findCheckFile = async ({
   folderPath,
   rulePath,
-  checked,
+  checks,
   found
 }) => {
   const shipped = [];
@@ -124733,11 +124748,11 @@ var findCheckFile = async ({
     found.push(`${rulePath}: ships both check.ts and check.js \u2014 a rule ships one`);
   } else if (shipped.length === 1) {
     checkFileName = shipped[0];
-  } else if (checked === true || checked === "partial") {
-    found.push(`${rulePath}: declares checked: ${checked} but ships no check.ts or check.js`);
+  } else if (checks === StandardsRuleChecks.Deterministic || checks === StandardsRuleChecks.Both) {
+    found.push(`${rulePath}: declares checks: ${checks} but ships no check.ts or check.js`);
   }
-  if (checked === false && checkFileName !== void 0) {
-    found.push(`${rulePath}: ships a ${checkFileName} but declares neither checked: true nor checked: partial`);
+  if (checks === StandardsRuleChecks.Agent && checkFileName !== void 0) {
+    found.push(`${rulePath}: ships a ${checkFileName} but declares checks: agent`);
   }
   return checkFileName === void 0 ? void 0 : join16(folderPath, checkFileName);
 };
@@ -124765,9 +124780,9 @@ var parseRuleFolder = async ({ folderPath, set: set2, documentPath, library, pro
     found.push(`${rulePath}: rule folder must be named <NN>-<rule-id>, e.g. 01-${folderName}`);
   }
   const { declaration, prose } = await getRuleDeclaration({ folderPath, rulePath, found });
-  const checkPath = await findCheckFile({ folderPath, rulePath, checked: declaration?.checked, found });
-  const declaresCheck = declaration !== void 0 && declaration.checked !== false;
-  const check2 = declaresCheck && checkPath !== void 0 ? await loadCheck({ checkPath, rulePath, found }) : void 0;
+  const checkPath = await findCheckFile({ folderPath, rulePath, checks: declaration?.checks, found });
+  const deterministic = declaration !== void 0 && declaration.checks !== StandardsRuleChecks.Agent;
+  const check2 = deterministic && checkPath !== void 0 ? await loadCheck({ checkPath, rulePath, found }) : void 0;
   const fixturesPath = join16(folderPath, "fixtures");
   problems.push(...found);
   let rule;
@@ -124780,8 +124795,8 @@ var parseRuleFolder = async ({ folderPath, set: set2, documentPath, library, pro
       documentPath,
       summary: declaration.summary,
       prose,
-      checked: declaration.checked !== false,
-      reviewed: declaration.checked !== true,
+      deterministic,
+      agent: declaration.checks !== StandardsRuleChecks.Deterministic,
       defaultSeverity: declaration.severity,
       defaultOptions: declaration.options,
       // As written: readStandardsLibrary resolves the names once every rule of the library is loaded.
@@ -148718,7 +148733,7 @@ var formatFindingText = ({ finding: finding6 }) => finding6.guidance ? `${findin
 // src/agents/buildRefactorExecutorInvocation.ts
 var advisoryOutcomesSection = [
   "# Report what you did about each advisory",
-  "For every advisory listed above \u2014 machine-checked or agent-reviewed \u2014 add one entry to the `advisoryOutcomes` array of your report: the finding's `rule` and `siteKey` copied exactly as given, an `outcome`, and for a decline a short `reason`.",
+  "For every advisory listed above \u2014 from a deterministic check or an agent check \u2014 add one entry to the `advisoryOutcomes` array of your report: the finding's `rule` and `siteKey` copied exactly as given, an `outcome`, and for a decline a short `reason`.",
   'The three outcomes: "applied" when you made the change; "declined" when you judged the advice wrong here; "already-met" when the end-state it asks for was already true and you edited nothing. Do not report "applied" for a change you did not have to make, and do not report "declined" for advice you did not actually reject \u2014 each reads as the opposite of what happened.',
   "This is an account, never a gate: it is what tells a human which rules keep being declined and why. Reporting a decline honestly is always better than an entry that claims work you did not do.",
   '```\n"advisoryOutcomes": [{ "rule": "lightsout/function-size", "siteKey": "lightsout/function-size:src/example.ts", "outcome": "declined", "reason": "orchestration exemption applies \u2014 every step delegates" }]\n```'
@@ -148860,13 +148875,13 @@ var readPriorCleanup = ({ run }) => {
 };
 
 // src/agents/prompts/standardsReviewer.md
-var standardsReviewer_default = '# Role: Standards Reviewer\n\nYou read a set of standards rules against a set of files and report where the\nfiles break them. The rules are the ones code cannot check in full \u2014 they take\njudgment, which is why a reader is doing this instead of a check. Where a code\ncheck already covers part of a rule, the rule says so, and that part is not\nyours to report. Their full text is appended to these instructions; the files\nin scope arrive in the task message.\nYour final message is machine-parsed \u2014 it is a data payload, not prose for a\nhuman.\n\n## What you are for\n\nEvery rule you are given was written out in full on purpose: its argument is\nwhat lets you recognise a violation the author never anticipated. Read the\nargument, not just the headline, and apply it to what the files actually do.\n\n## How to work\n\n- Read the files in scope. Read enough surrounding code to judge conventions \u2014\n  reading outside the scope is fine, reporting outside it is not.\n- Report a violation only when you can point at a specific file and say, in the\n  rule\'s own terms, what is wrong there. "This file could be cleaner" is not a\n  finding.\n- Quote the rule\'s reasoning in your `detail`, so a reader can disagree with you\n  on the merits rather than guessing what you had in mind.\n- Prefer silence to speculation. An empty `findings` list is a correct and\n  common answer, and a report full of weak findings makes the whole review\n  ignorable.\n- Report each violation once, at the site where it lives. Do not re-report the\n  same problem under several rules.\n\n## Your findings are advice\n\nEverything you report is advisory. It never blocks a run, never fails a gate,\nand never obliges anyone to act \u2014 a human or another agent weighs it in context\nand may decline it with a reason. Write accordingly: state what you saw, why the\nrule cares, and what you would do about it. Do not escalate, do not insist, and\ndo not pad the list to look thorough.\n\n## Hard limits\n\n- Change nothing. You read and report; you never edit, create, or delete files.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command. Use the harness\'s file tools to read. If the\n  harness exposes the filesystem only through a shell, use the shell solely\n  to read files \u2014 never for repository commands.\n- `rule` must be one of the rule names given to you, copied exactly as given,\n  library prefix included. A finding naming any other rule is dropped.\n- Every finding needs at least one file, with a repo-relative path as it was\n  listed to you. Line numbers are welcome when you have them.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"findings": [\n		{\n			"rule": "library/rule-name-exactly-as-given",\n			"files": [{ "path": "src/example.ts", "startLine": 12, "endLine": 30 }],\n			"detail": "what is true of this site, in the rule\'s own terms",\n			"guidance": "optional \u2014 what to do about findings of this kind"\n		}\n	]\n}\n```\n\nAn empty list is written as `{ "findings": [] }`.\n';
+var standardsReviewer_default = '# Role: Standards Reviewer\n\nYou read a set of standards rules against a set of files and report where the\nfiles break them. These are the rules with an agent check: no deterministic\ncheck can decide them in full, which is why a reader is doing this. Where a\ndeterministic check already decides part of a rule, the rule says so, and that\npart is not yours to report. Their full text is appended to these instructions; the files\nin scope arrive in the task message.\nYour final message is machine-parsed \u2014 it is a data payload, not prose for a\nhuman.\n\n## What you are for\n\nEvery rule you are given was written out in full on purpose: its argument is\nwhat lets you recognise a violation the author never anticipated. Read the\nargument, not just the headline, and apply it to what the files actually do.\n\n## How to work\n\n- Read the files in scope. Read enough surrounding code to judge conventions \u2014\n  reading outside the scope is fine, reporting outside it is not.\n- Report a violation only when you can point at a specific file and say, in the\n  rule\'s own terms, what is wrong there. "This file could be cleaner" is not a\n  finding.\n- Quote the rule\'s reasoning in your `detail`, so a reader can disagree with you\n  on the merits rather than guessing what you had in mind.\n- Prefer silence to speculation. An empty `findings` list is a correct and\n  common answer, and a report full of weak findings makes the whole review\n  ignorable.\n- Report each violation once, at the site where it lives. Do not re-report the\n  same problem under several rules.\n\n## Your findings are advice\n\nEverything you report is advisory. It never blocks a run, never fails a gate,\nand never obliges anyone to act \u2014 a human or another agent weighs it in context\nand may decline it with a reason. Write accordingly: state what you saw, why the\nrule cares, and what you would do about it. Do not escalate, do not insist, and\ndo not pad the list to look thorough.\n\n## Hard limits\n\n- Change nothing. You read and report; you never edit, create, or delete files.\n- Do not run builds, tests, linters, formatters, package-manager commands,\n  Git commands, network commands, or any other verification or\n  environment-changing command. Use the harness\'s file tools to read. If the\n  harness exposes the filesystem only through a shell, use the shell solely\n  to read files \u2014 never for repository commands.\n- `rule` must be one of the rule names given to you, copied exactly as given,\n  library prefix included. A finding naming any other rule is dropped.\n- Every finding needs at least one file, with a repo-relative path as it was\n  listed to you. Line numbers are welcome when you have them.\n\n## Report \u2014 your entire final message is one JSON object\n\nOutput ONLY the JSON \u2014 no fences, no surrounding text, no explanation. The\nfences around the example below are display formatting only, not part of the\noutput: your actual message starts with `{` and ends with `}`.\n\n```\n{\n	"findings": [\n		{\n			"rule": "library/rule-name-exactly-as-given",\n			"files": [{ "path": "src/example.ts", "startLine": 12, "endLine": 30 }],\n			"detail": "what is true of this site, in the rule\'s own terms",\n			"guidance": "optional \u2014 what to do about findings of this kind"\n		}\n	]\n}\n```\n\nAn empty list is written as `{ "findings": [] }`.\n';
 
 // src/agents/buildStandardsReviewInvocation.ts
 var ruleSection = ({ rule }) => {
   const scope = rule.appliesTo === void 0 ? [] : [`Applies only to: ${rule.appliesTo} \u2014 judge this rule only in files of those packages.`];
-  const checked = rule.checked ? ["A code check already reports part of this rule. Report only what that check could not have found."] : [];
-  return [`**Rule: \`${rule.name}\`**`, ...scope, ...checked, rule.prose].join("\n\n");
+  const deterministic = rule.deterministic ? ["A deterministic check already reports part of this rule. Report only what that check could not have found."] : [];
+  return [`**Rule: \`${rule.name}\`**`, ...scope, ...deterministic, rule.prose].join("\n\n");
 };
 var buildStandardsReviewInvocation = ({ rules, files }) => {
   const byDocument = /* @__PURE__ */ new Map();
@@ -148893,7 +148908,7 @@ ${files.map((file2) => `- ${file2}`).join("\n")}`,
 var StandardsReviewReport = external_exports.object({
   findings: external_exports.array(
     external_exports.object({
-      /** A judgment rule's id — validated against the loaded packages after parsing. */
+      /** An agent-checked rule's name — validated against the loaded packages after parsing. */
       rule: external_exports.string(),
       files: external_exports.array(external_exports.object({ path: external_exports.string(), startLine: external_exports.number().optional(), endLine: external_exports.number().optional() })),
       detail: external_exports.string(),
@@ -148948,23 +148963,23 @@ var runsRule = ({ group, name }) => {
   const severity = group.states.get(name)?.severity;
   return severity !== void 0 && severity !== StandardsSeverity.Off;
 };
-var collectJudgmentRules = ({ groups }) => [
+var collectAgentRules = ({ groups }) => [
   ...collectGroupItems({
     groups,
-    itemsOf: ({ group }) => group.pack.rules.map(({ rule }) => rule).filter((rule) => rule.reviewed && runsRule({ group, name: rule.name })),
+    itemsOf: ({ group }) => group.pack.rules.map(({ rule }) => rule).filter((rule) => rule.agent && runsRule({ group, name: rule.name })),
     keyOf: ({ item }) => item.name
   }).values()
 ].map(({ item, packages }) => ({ rule: item, packages }));
-var toReviewRules = ({ judgmentRules, groups }) => {
+var toReviewRules = ({ agentRules, groups }) => {
   const covered = new Set(groups.flatMap((group) => group.packages));
-  return judgmentRules.map(
+  return agentRules.map(
     ({ rule, packages }) => packages.size === covered.size ? rule : { ...rule, appliesTo: describePackageSet({ packages: [...packages] }) }
   );
 };
 var dropNotes = ({ unknownRules, unsited, ungrouped, notRun }) => {
   const notes = [];
   if (unknownRules.length > 0) {
-    notes.push(`agent review: ${unknownRules.length} finding(s) dropped \u2014 no judgment rule is named ${[...new Set(unknownRules)].sort().join(", ")}`);
+    notes.push(`agent review: ${unknownRules.length} finding(s) dropped \u2014 no agent-checked rule is named ${[...new Set(unknownRules)].sort().join(", ")}`);
   }
   if (unsited > 0) {
     notes.push(`agent review: ${unsited} finding(s) dropped \u2014 reported with no file to point at`);
@@ -149027,20 +149042,20 @@ var runStandardsReview = async ({
   timeoutMs,
   onProgress
 }) => {
-  const judgmentRules = collectJudgmentRules({ groups });
-  const rules = judgmentRules.map(({ rule }) => rule);
+  const agentRules = collectAgentRules({ groups });
+  const rules = agentRules.map(({ rule }) => rule);
   if (rules.length === 0 || files.length === 0) {
     return { findings: [], notes: [] };
   }
   const ruleCount = `${rules.length} rule${rules.length === 1 ? "" : "s"}`;
   onProgress?.(
-    `The agent review is now running. ${driver.name} is reading your code against the ${ruleCount} that take judgment. This usually takes a few minutes.`
+    `The agent review is now running. ${driver.name} is reading your code against the ${ruleCount} with an agent check. This usually takes a few minutes.`
   );
   const heartbeat = createAgentHeartbeat({ label: "agent review", onProgress: (message) => onProgress?.(message) });
   const outcome = await invokeAgentWithContract({
     driver,
     cwd,
-    invocation: buildStandardsReviewInvocation({ rules: toReviewRules({ judgmentRules, groups }), files }),
+    invocation: buildStandardsReviewInvocation({ rules: toReviewRules({ agentRules, groups }), files }),
     contract: StandardsReviewReport,
     permissions: Permissions.ReadOnly,
     timeoutMs,
@@ -163839,7 +163854,7 @@ var executeRefactor = async ({
   }
   const { standards, testStandards, groups } = await resolveStandards({ cwd, config: config2 });
   if (!agentReview) {
-    run.progress("code checks only \u2014 the per-batch agent review is off for this run");
+    run.progress("deterministic checks only \u2014 the per-batch agent review is off for this run");
   }
   const halted = await runWorklistBatches({
     run,
@@ -163872,7 +163887,7 @@ var refactorCommand = ({ flags, cwd }) => runBatchedCommand({
     maxBatches,
     // The same flag the standards check takes: run against the deterministic
     // checks alone, skipping each batch's agent review.
-    agentReview: flags.get("code-checks") !== true,
+    agentReview: flags.get("deterministic-checks") !== true,
     allowDirty: flags.get("allow-dirty") === true,
     existing,
     onProgress: createProgressPrinter()
@@ -165064,12 +165079,12 @@ var printFindingGroups = ({ findings }) => {
   }
 };
 
-// src/cli/internal/common/render/common/utils/describeCheckedBy.ts
-var describeCheckedBy = ({ rule }) => {
-  if (rule.checked && rule.reviewed) {
-    return "code and judgment";
+// src/cli/internal/common/render/common/utils/describeCheckKinds.ts
+var describeCheckKinds = ({ rule }) => {
+  if (rule.deterministic && rule.agent) {
+    return "deterministic and agent";
   }
-  return rule.checked ? "code" : "judgment";
+  return rule.deterministic ? "deterministic" : "agent";
 };
 
 // src/cli/internal/common/render/printStandardsRuleList.ts
@@ -165083,7 +165098,7 @@ var printStandardsRuleList = ({ rules }) => {
         cells: [
           rule.rule,
           rule.fromConfig ? `${rule.severity} (config)` : rule.severity,
-          describeCheckedBy({ rule }),
+          describeCheckKinds({ rule }),
           rule.doc,
           describePackageSet({ packages: rule.packages })
         ]
@@ -165096,19 +165111,19 @@ var printStandardsRuleList = ({ rules }) => {
     ];
   });
   const atSeverity = (severity) => countRules({ rules, where: (rule) => rule.severity === severity });
-  const checked = countRules({ rules, where: (rule) => rule.checked });
-  const judged = countRules({ rules, where: (rule) => rule.reviewed });
+  const deterministic = countRules({ rules, where: (rule) => rule.deterministic });
+  const agent = countRules({ rules, where: (rule) => rule.agent });
   const totals = {
     cells: [
       `${countRules({ rules, where: () => true })} rule(s)`,
       `${atSeverity(StandardsSeverity.Blocking)} blocking`,
       `${atSeverity(StandardsSeverity.Advisory)} advisory, ${atSeverity(StandardsSeverity.Off)} off`,
-      `${checked} by code, ${judged} by judgment`,
+      `${deterministic} deterministic, ${agent} agent`,
       ""
     ],
     emphasis: bold
   };
-  for (const line of renderTable({ headers: ["rule", "state", "checked by", "standards doc", "applies to"], rows: [...rows, totals] })) {
+  for (const line of renderTable({ headers: ["rule", "state", "check", "standards doc", "applies to"], rows: [...rows, totals] })) {
     console.log(line);
   }
 };
@@ -165173,8 +165188,8 @@ var listStandardsRules = ({ groups }) => {
         rule: rule.name,
         doc: `${rule.library}: ${rule.documentPath}`,
         summary: rule.summary,
-        checked: rule.checked,
-        reviewed: rule.reviewed,
+        deterministic: rule.deterministic,
+        agent: rule.agent,
         severity: state.severity,
         fromConfig: state.fromConfig,
         options: state.options,
@@ -165216,7 +165231,7 @@ var orderBySeverity = ({ findings }) => [
   ...findings.filter((entry) => entry.severity === StandardsSeverity.Blocking),
   ...findings.filter((entry) => entry.severity === StandardsSeverity.Advisory)
 ];
-var describeCodeFindings = ({ findings }) => {
+var describeDeterministicFindings = ({ findings }) => {
   const blocking = findings.filter((entry) => entry.severity === StandardsSeverity.Blocking).length;
   const advisories = findings.length - blocking;
   if (findings.length === 0) {
@@ -165241,15 +165256,15 @@ var standardsCheckCommand = async ({ flags, cwd }) => {
     printStandardsRuleList({ rules });
     return exitCli({ code: 0 });
   }
-  const codeChecksOnly = flags.get("code-checks") === true;
+  const deterministicOnly = flags.get("deterministic-checks") === true;
   const agentReviewOnly = flags.get("agent-review") === true;
-  const runCodeChecks = codeChecksOnly || !agentReviewOnly;
-  const runAgentReview = agentReviewOnly || !codeChecksOnly;
+  const runDeterministicChecks = deterministicOnly || !agentReviewOnly;
+  const runAgentReview = agentReviewOnly || !deterministicOnly;
   const checkPath = getStringFlag({ flags, name: "path" });
   const findings = [];
   const notes = [];
-  if (runCodeChecks) {
-    printSectionHeading({ title: "Code checks", subtitle: "deterministic \u2014 the same answer every run" });
+  if (runDeterministicChecks) {
+    printSectionHeading({ title: "Deterministic checks", subtitle: "code decides, with the same answer every run" });
     const startedAt = Date.now();
     const checked = await runStandardsCheck({
       cwd,
@@ -165261,7 +165276,9 @@ var standardsCheckCommand = async ({ flags, cwd }) => {
       onProgress: printProgress
     });
     const ordered = orderBySeverity({ findings: checked.findings });
-    printProgress(`\u2713 Code checks finished in ${formatDuration({ ms: Date.now() - startedAt })} \u2014 ${describeCodeFindings({ findings: ordered })}`);
+    printProgress(
+      `\u2713 Deterministic checks finished in ${formatDuration({ ms: Date.now() - startedAt })} \u2014 ${describeDeterministicFindings({ findings: ordered })}`
+    );
     printSectionResult({ findings: ordered, notes: checked.notes });
     findings.push(...ordered);
     notes.push(...checked.notes);
@@ -165273,10 +165290,10 @@ var standardsCheckCommand = async ({ flags, cwd }) => {
     findings.push(...reviewed.findings);
     notes.push(...reviewed.notes);
   }
-  if (runCodeChecks) {
+  if (runDeterministicChecks) {
     await writeStandardsSnapshot({ cwd, snapshot: { at: (/* @__PURE__ */ new Date()).toISOString(), path: checkPath ?? ".", findings, notes } });
   }
-  printStandardsSummary({ findings, rules, reportPath: runCodeChecks ? ".lightsout/standards-check.json" : void 0 });
+  printStandardsSummary({ findings, rules, reportPath: runDeterministicChecks ? ".lightsout/standards-check.json" : void 0 });
   return exitCli({ code: 0 });
 };
 
@@ -165292,7 +165309,7 @@ var ruleRows = ({ rule }) => {
     {
       cells: [
         rule.rule,
-        describeCheckedBy({ rule }),
+        describeCheckKinds({ rule }),
         count({ value: rule.attempted }),
         count({ value: rule.resolved }),
         count({ value: rule.declined }),
@@ -165318,7 +165335,7 @@ var printStandardsHealth = ({ health }) => {
   const totalsRow = {
     cells: [
       `${totals.rules} rule(s)`,
-      `${totals.checked} by code, ${totals.judgment} by judgment`,
+      `${totals.deterministic} deterministic, ${totals.agent} agent`,
       count({ value: attempted }),
       count({ value: sum({ rules, of: (rule) => rule.resolved }) }),
       count({ value: sum({ rules, of: (rule) => rule.declined }) }),
@@ -165330,7 +165347,7 @@ var printStandardsHealth = ({ health }) => {
     emphasis: bold
   };
   for (const line of renderTable({
-    headers: ["rule", "checked by", "sites", "resolved", "declined", "untracked", "declined %", "advice", "advice declined %"],
+    headers: ["rule", "check", "sites", "resolved", "declined", "untracked", "declined %", "advice", "advice declined %"],
     rows: [...rows, totalsRow]
   })) {
     console.log(line);
@@ -165429,14 +165446,14 @@ var buildStandardsHealth = async ({ cwd, groups }) => {
     rule: rule.name,
     set: rule.set,
     documentPath: rule.documentPath,
-    checked: rule.checked,
-    reviewed: rule.reviewed,
+    deterministic: rule.deterministic,
+    agent: rule.agent,
     ...tallies.get(rule.name) ?? emptyTally()
   }));
   rules.sort((first, second) => first.rule.localeCompare(second.rule));
   return {
     rules,
-    totals: { rules: rules.length, checked: rules.filter((rule) => rule.checked).length, judgment: rules.filter((rule) => rule.reviewed).length }
+    totals: { rules: rules.length, deterministic: rules.filter((rule) => rule.deterministic).length, agent: rules.filter((rule) => rule.agent).length }
   };
 };
 
@@ -165627,7 +165644,7 @@ var checkFrameworkOwned = async ({ library, compiler }) => {
         });
         if (found.length > 0) {
           problems.push(
-            `${rule.id}: the ${framework} framework-owned tree produced ${found.length} finding(s) \u2014 a checked rule stays silent on code its framework owns (${namePaths({ found })})`
+            `${rule.id}: the ${framework} framework-owned tree produced ${found.length} finding(s) \u2014 a deterministic check stays silent on code its framework owns (${namePaths({ found })})`
           );
         }
       } catch (error51) {
@@ -165676,7 +165693,7 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
     }
     problems.push(...await checkRuleExample({ rule }));
     if (run === void 0 || inputKinds === void 0) {
-      notes.push(`${rule.id}: judgment-only \u2014 fixtures reserved for agent accuracy`);
+      notes.push(`${rule.id}: agent check \u2014 fixtures reserved for agent accuracy`);
       continue;
     }
     const needingTypescript = inputKinds.filter((kind) => typescriptInputKinds.has(kind));
@@ -165738,15 +165755,15 @@ var standardsValidateCommand = async ({ flags, cwd }) => {
   for (const problem of problems) {
     console.log(`${red("\u2717")} ${problem}`);
   }
-  const checked = library.rules.filter((rule) => rule.checked).length;
-  const reviewed = library.rules.filter((rule) => rule.reviewed).length;
+  const deterministic = library.rules.filter((rule) => rule.deterministic).length;
+  const agent = library.rules.filter((rule) => rule.agent).length;
   const packFiles = library.packs.length;
   console.log("");
   if (problems.length > 0) {
-    console.log(`${library.name} \u2014 ${problems.length} problem(s) across ${checked} checked rule(s) and ${packFiles} pack file(s)`);
+    console.log(`${library.name} \u2014 ${problems.length} problem(s) across ${deterministic} deterministic rule(s) and ${packFiles} pack file(s)`);
     return exitCli({ code: 1 });
   }
-  console.log(green(`${library.name} \u2014 ${checked} checked rule(s) validated, ${reviewed} agent-reviewed rule(s), ${packFiles} pack file(s)`));
+  console.log(green(`${library.name} \u2014 ${deterministic} deterministic rule(s) validated, ${agent} agent rule(s), ${packFiles} pack file(s)`));
   return exitCli({ code: 0 });
 };
 

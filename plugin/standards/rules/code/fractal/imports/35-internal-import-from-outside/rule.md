@@ -1,6 +1,6 @@
 ---
 summary: "Keeping a folder's private files private."
-checked: true
+checks: deterministic
 severity: off
 ---
 

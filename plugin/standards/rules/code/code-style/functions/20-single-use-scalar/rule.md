@@ -1,6 +1,6 @@
 ---
 summary: "Where a value used in only one place is declared."
-checked: true
+checks: deterministic
 severity: advisory
 ---
 
