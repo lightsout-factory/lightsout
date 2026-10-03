@@ -15,14 +15,11 @@ import { expect, describe, test, jest } from '@jest/globals';
 import { render, screen } from '@testing-library/preact';
 import { NotificationBanner } from './NotificationBanner';
 
-// Mocked Imports
-// -------------------------
 const mockUseAppStore = jest.fn<(selector: (state: unknown) => unknown) => unknown>();
 
 jest.mock('@store/appStore', () => ({
 	useAppStore: (selector: (state: unknown) => unknown) => mockUseAppStore(selector),
 }));
-// -------------------------
 
 const setupNotificationBanner = ({ isVisible = true }: { isVisible?: boolean } = {}) => {
 	const onDismiss = jest.fn<() => void>();

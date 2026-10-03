@@ -35,7 +35,7 @@ const twoFactoriesSource = [
 	'}));',
 ].join('\n');
 
-describe('test-mock-wrapper-untyped check', () => {
+describe('test-mock-untyped check, on jest.mock wrappers', () => {
 	test('asks for test files, the one input kind that carries test text alone', () => {
 		expect(check.inputKinds).toStrictEqual(['test-file']);
 	});
@@ -49,10 +49,11 @@ describe('test-mock-wrapper-untyped check', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'test-mock-wrapper-untyped:src/feature/getLabel.unit.test.ts',
+				siteKey: 'test-mock-untyped:src/feature/getLabel.unit.test.ts',
 				files: [{ path: 'src/feature/getLabel.unit.test.ts', startLine: 3, endLine: 5 }],
 				detail: 'a `(...args: unknown[])` wrapper (line 3)',
-				guidance: 'Type the factory wrapper to the real parameters — a discarded argument makes `toHaveBeenCalledWith` fail on a call that was correct.',
+				guidance:
+					'Type every `jest.fn()` and every `jest.mock()` wrapper to the real signature: read the source first, include the Promise for an async function, and forward every argument.',
 			},
 		]);
 	});
@@ -102,13 +103,14 @@ describe('test-mock-wrapper-untyped check', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'test-mock-wrapper-untyped:src/feature/getLabel.unit.test.ts',
+				siteKey: 'test-mock-untyped:src/feature/getLabel.unit.test.ts',
 				files: [
 					{ path: 'src/feature/getLabel.unit.test.ts', startLine: 3, endLine: 5 },
 					{ path: 'src/feature/getLabel.unit.test.ts', startLine: 7, endLine: 9 },
 				],
 				detail: 'a `(...args: unknown[])` wrapper (line 3), a `(...args: unknown[])` wrapper (line 7)',
-				guidance: 'Type the factory wrapper to the real parameters — a discarded argument makes `toHaveBeenCalledWith` fail on a call that was correct.',
+				guidance:
+					'Type every `jest.fn()` and every `jest.mock()` wrapper to the real signature: read the source first, include the Promise for an async function, and forward every argument.',
 			},
 		]);
 	});

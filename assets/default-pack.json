@@ -5,12 +5,12 @@
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
-    "rules": 54,
-    "deterministic": 36,
-    "agent": 20,
+    "rules": 55,
+    "deterministic": 35,
+    "agent": 22,
     "topics": 15,
     "packs": 5,
-    "withFixtures": 54
+    "withFixtures": 55
   },
   "packs": [
     {
@@ -107,6 +107,16 @@
           "options": {}
         },
         {
+          "name": "lightsout/test-code-path-coverage",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-jest-imports",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/test-manual-mock-cleanup",
           "severity": "advisory",
           "options": {}
@@ -122,11 +132,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/test-mock-wrapper-untyped",
-          "severity": "blocking",
-          "options": {}
-        },
-        {
           "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
           "severity": "advisory",
           "options": {}
@@ -138,9 +143,9 @@
         }
       ],
       "totals": {
-        "rules": 20,
-        "deterministic": 13,
-        "agent": 8,
+        "rules": 21,
+        "deterministic": 12,
+        "agent": 10,
         "topics": 5
       }
     },
@@ -600,11 +605,21 @@
           "options": {}
         },
         {
+          "name": "lightsout/test-code-path-coverage",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/test-file-size",
           "severity": "advisory",
           "options": {
             "testFile": 400
           }
+        },
+        {
+          "name": "lightsout/test-jest-imports",
+          "severity": "advisory",
+          "options": {}
         },
         {
           "name": "lightsout/test-manual-mock-cleanup",
@@ -618,11 +633,6 @@
         },
         {
           "name": "lightsout/test-mock-untyped",
-          "severity": "blocking",
-          "options": {}
-        },
-        {
-          "name": "lightsout/test-mock-wrapper-untyped",
           "severity": "blocking",
           "options": {}
         },
@@ -648,9 +658,9 @@
         }
       ],
       "totals": {
-        "rules": 51,
-        "deterministic": 35,
-        "agent": 18,
+        "rules": 52,
+        "deterministic": 34,
+        "agent": 20,
         "topics": 13
       }
     },
@@ -901,11 +911,21 @@
           "options": {}
         },
         {
+          "name": "lightsout/test-code-path-coverage",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/test-file-size",
           "severity": "advisory",
           "options": {
             "testFile": 400
           }
+        },
+        {
+          "name": "lightsout/test-jest-imports",
+          "severity": "advisory",
+          "options": {}
         },
         {
           "name": "lightsout/test-manual-mock-cleanup",
@@ -919,11 +939,6 @@
         },
         {
           "name": "lightsout/test-mock-untyped",
-          "severity": "blocking",
-          "options": {}
-        },
-        {
-          "name": "lightsout/test-mock-wrapper-untyped",
           "severity": "blocking",
           "options": {}
         },
@@ -944,9 +959,9 @@
         }
       ],
       "totals": {
-        "rules": 50,
-        "deterministic": 35,
-        "agent": 17,
+        "rules": 51,
+        "deterministic": 34,
+        "agent": 19,
         "topics": 11
       }
     },
@@ -1215,11 +1230,21 @@
           "options": {}
         },
         {
+          "name": "lightsout/test-code-path-coverage",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/test-file-size",
           "severity": "advisory",
           "options": {
             "testFile": 400
           }
+        },
+        {
+          "name": "lightsout/test-jest-imports",
+          "severity": "advisory",
+          "options": {}
         },
         {
           "name": "lightsout/test-manual-mock-cleanup",
@@ -1233,11 +1258,6 @@
         },
         {
           "name": "lightsout/test-mock-untyped",
-          "severity": "blocking",
-          "options": {}
-        },
-        {
-          "name": "lightsout/test-mock-wrapper-untyped",
           "severity": "blocking",
           "options": {}
         },
@@ -1263,9 +1283,9 @@
         }
       ],
       "totals": {
-        "rules": 53,
-        "deterministic": 35,
-        "agent": 20,
+        "rules": 54,
+        "deterministic": 34,
+        "agent": 22,
         "topics": 15
       }
     }
@@ -1393,10 +1413,11 @@
       "ruleIds": [
         "precedence-in-repos-with-older-tests",
         "test-structure-arrange-act-assert-with-setup-factories",
+        "test-code-path-coverage",
+        "test-jest-imports",
         "no-test-state-in-hooks",
         "test-mock-prefix",
         "test-mock-untyped",
-        "test-mock-wrapper-untyped",
         "test-manual-mock-cleanup",
         "assertions-pin-contracts",
         "jest-spyon-vs-jest-mock"
@@ -3667,6 +3688,51 @@
       }
     },
     {
+      "id": "test-code-path-coverage",
+      "name": "lightsout/test-code-path-coverage",
+      "set": "tests",
+      "documentPath": "tests/code-style",
+      "summary": "Which tests a unit needs.",
+      "deterministic": false,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 2,
+        "fail": 2
+      },
+      "prose": "## Test Code Path Coverage\n\nCover every code path: branches, error handling and boundary conditions. Give each path one test, and never add a test that only varies the input. Inputs that take one path to different outputs share one `test.each`.\n\nTo reach a branch that guards against input the types forbid, such as a `default` arm or an early return on an impossible discriminant, force the input with `as unknown as T`. That and the stub cast `test-mock-untyped` allows are the only casts a test writes.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/billing/getDiscount.ts",
+          "text": "interface Params {\n\ttotal: number;\n}\n\nexport const getDiscount = ({ total }: Params): number => {\n\tlet discount = 0;\n\n\tif (total >= 100) {\n\t\tdiscount = total / 10;\n\t}\n\n\treturn discount;\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/billing/getDiscount.unit.test.ts",
+          "text": "import { expect, describe, test } from '@jest/globals';\nimport { getDiscount } from './getDiscount';\n\n// Correct: one test per path, and the inputs that share a path share one test.\ndescribe('getDiscount', () => {\n\ttest.each([\n\t\t{ total: 200, expected: 20 },\n\t\t{ total: 300, expected: 30 },\n\t])('discounts an order of $total', ({ total, expected }) => {\n\t\tconst discount = getDiscount({ total });\n\n\t\texpect(discount).toBe(expected);\n\t});\n\n\ttest('gives no discount under the threshold', () => {\n\t\tconst discount = getDiscount({ total: 99 });\n\n\t\texpect(discount).toBe(0);\n\t});\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/getDiscount.ts",
+          "text": "interface Params {\n\ttotal: number;\n}\n\nexport const getDiscount = ({ total }: Params): number => {\n\tlet discount = 0;\n\n\tif (total >= 100) {\n\t\tdiscount = total / 10;\n\t}\n\n\treturn discount;\n};\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/getDiscount.unit.test.ts",
+          "text": "import { expect, describe, test } from '@jest/globals';\nimport { getDiscount } from './getDiscount';\n\n// Incorrect: two tests take the same path with different inputs, and the\n// branch for an order under the threshold has no test at all.\ndescribe('getDiscount', () => {\n\ttest('discounts an order of 200', () => {\n\t\tconst discount = getDiscount({ total: 200 });\n\n\t\texpect(discount).toBe(20);\n\t});\n\n\ttest('discounts an order of 300', () => {\n\t\tconst discount = getDiscount({ total: 300 });\n\n\t\texpect(discount).toBe(30);\n\t});\n});\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/getDiscount.ts",
+          "pass": "src/billing/getDiscount.ts"
+        }
+      }
+    },
+    {
       "id": "test-file-size",
       "name": "lightsout/test-file-size",
       "set": "tests",
@@ -3700,6 +3766,51 @@
       }
     },
     {
+      "id": "test-jest-imports",
+      "name": "lightsout/test-jest-imports",
+      "set": "tests",
+      "documentPath": "tests/code-style",
+      "summary": "What a test file imports from Jest.",
+      "deterministic": false,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 2,
+        "fail": 2
+      },
+      "prose": "## Test Jest Imports\n\nImport the test functions first: `import { expect, describe, test, jest } from '@jest/globals';`. Import `jest` only when the file uses `jest.fn`, `jest.mock` or `jest.spyOn`, and `beforeEach`, `afterEach` or `afterAll` only when you need one; with setup factories and config-level mock cleanup, most files need none.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/billing/formatRate.ts",
+          "text": "interface Params {\n\tvalue: number;\n}\n\nexport const formatRate = ({ value }: Params): string => `${value * 100}%`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/billing/formatRate.unit.test.ts",
+          "text": "import { expect, describe, test } from '@jest/globals';\nimport { formatRate } from './formatRate';\n\n// Correct: the Jest import is first, and names only what the file uses.\ndescribe('formatRate', () => {\n\ttest('formats a rate as a percentage', () => {\n\t\tconst rate = formatRate({ value: 0.2 });\n\n\t\texpect(rate).toBe('20%');\n\t});\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/formatRate.ts",
+          "text": "interface Params {\n\tvalue: number;\n}\n\nexport const formatRate = ({ value }: Params): string => `${value * 100}%`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/formatRate.unit.test.ts",
+          "text": "import { formatRate } from './formatRate';\nimport { expect, describe, test, jest, beforeEach } from '@jest/globals';\n\n// Incorrect: the Jest import is not first, and it brings in `jest` and\n// `beforeEach`, which this file never uses.\ndescribe('formatRate', () => {\n\ttest('formats a rate as a percentage', () => {\n\t\tconst rate = formatRate({ value: 0.2 });\n\n\t\texpect(rate).toBe('20%');\n\t});\n});\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/formatRate.ts",
+          "pass": "src/billing/formatRate.ts"
+        }
+      }
+    },
+    {
       "id": "test-manual-mock-cleanup",
       "name": "lightsout/test-manual-mock-cleanup",
       "set": "tests",
@@ -3713,7 +3824,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Test Manual Mock Cleanup\n\nLeave mock cleanup to the package's Jest config, `clearMocks: true` and `restoreMocks: true`. Never clean mocks by hand in a `beforeEach`, `beforeAll`, `afterEach` or `afterAll`: no `jest.clearAllMocks()`, `jest.resetAllMocks()`, `jest.restoreAllMocks()`, `mockClear()` or `mockReset()` there.\n\n- `clearMocks` clears each mock's calls, instances, contexts and results before each test, but not its return value or implementation (that is `resetMocks`). Each setup factory sets those afresh, so `clearMocks` is enough. Use `resetMocks` only when a package genuinely needs return values cleared too.\n- `restoreMocks` also restores every `jest.spyOn` original before each test. It does not touch a standalone `jest.fn()`'s return value.\n\nWhen the package's config lacks them, never add them. `clearMocks` changes every existing test in the package, and breaks any that relies on a mock set once at module scope or in `beforeAll`. A repo-wide change is the repo owner's decision, not a test task's side effect. Instead:\n\n- Build fresh `jest.fn()` mocks, and a fresh subject, inside each setup factory call.\n- Reset a module-level mock that must persist, such as one a `jest.mock` factory reads, at the top of the setup factory with `.mockReset()`, and wire it again. Or assert on it only with `toHaveBeenCalledWith`, which earlier calls cannot fool, and never with `not.toHaveBeenCalled`.\n- Report the missing config, so the repo owner can adopt it on purpose.",
+      "prose": "## Test Manual Mock Cleanup\n\nLeave mock cleanup to the package's Jest config, `clearMocks: true` and `restoreMocks: true`. Never clean mocks by hand in a `beforeEach`, `beforeAll`, `afterEach` or `afterAll`: no `jest.clearAllMocks()`, `jest.resetAllMocks()`, `jest.restoreAllMocks()`, `mockClear()` or `mockReset()` there.\n\nWhen the package's config lacks them, never add them. That changes every existing test in the package, so it is the repo owner's decision, not a test task's side effect. Instead:\n\n- Build fresh `jest.fn()` mocks, and a fresh subject, inside each setup factory call.\n- Reset a module-level mock that must persist, such as one a `jest.mock` factory reads, at the top of the setup factory with `.mockReset()`, and wire it again. Or assert on it only with `toHaveBeenCalledWith`, which earlier calls cannot fool, and never with `not.toHaveBeenCalled`.\n- Report the missing config.",
       "fixtures": [
         {
           "side": "pass",
@@ -3735,7 +3846,7 @@
       "name": "lightsout/test-mock-prefix",
       "set": "tests",
       "documentPath": "tests/code-style",
-      "summary": "How mocks are named and laid out.",
+      "summary": "How mocks are named.",
       "deterministic": true,
       "agent": false,
       "defaultSeverity": "blocking",
@@ -3744,7 +3855,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Test Mock Prefix\n\nStart the name of every mock declared at module scope with `mock`, such as `mockGetProfile`. Jest hoists `jest.mock()` calls to the top of the file, and only `mock`-prefixed variables are reachable inside the factory.\n\nPut mock declarations and `jest.mock()` blocks after the imports, under a `// Mocked Imports` comment, with a `// -------------------------` line between groups.",
+      "prose": "## Test Mock Prefix\n\nStart the name of every mock declared at module scope with `mock`, such as `mockGetProfile`. Jest hoists `jest.mock()` calls to the top of the file, and only `mock`-prefixed variables are reachable inside the factory.",
       "fixtures": [
         {
           "side": "pass",
@@ -3766,7 +3877,7 @@
       "name": "lightsout/test-mock-untyped",
       "set": "tests",
       "documentPath": "tests/code-style",
-      "summary": "Typing a mock function.",
+      "summary": "Typing a mock function and the wrapper that forwards to it.",
       "deterministic": true,
       "agent": false,
       "defaultSeverity": "blocking",
@@ -3775,48 +3886,17 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Test Mock Untyped\n\nType every `jest.fn()` to the real function's signature; read its source first. For an async function, include the `Promise`.\n\n```typescript\nconst mockGetProfile = jest.fn<(params: { userId: string }) => Profile | null>();\n```\n\nA stub for a framework's heavily generic result type, such as TanStack's `UseMutationResult` or `UseQueryResult`, is exempt: stub only the fields the unit reads, and cast loosely, `as Record<string, unknown>`, or `as unknown as UseMutationResult<…>` where the full type is demanded. These rules pin your contracts, not the framework's, and copying its generics adds noise, not safety.",
+      "prose": "## Test Mock Untyped\n\nType every `jest.fn()` to the real function's signature; read its source first. For an async function, include the `Promise`. In a `jest.mock()` factory, type the wrapper's parameters as the real function's, and forward them all:\n\n```typescript\nconst mockGetProfile = jest.fn<(params: { userId: string }) => Profile | null>();\n\njest.mock('@/common/utils/getProfile', () => ({\n\tgetProfile: (params: { userId: string }) => mockGetProfile(params),\n}));\n```\n\nNever write `(...args: unknown[])` in a wrapper, which fails to compile (TS2556), even in a file that already does. Never write `() => mockGetProfile()` for a function that takes arguments: the spy records calls with none, and `toHaveBeenCalledWith` fails on a call that was correct.\n\nA stub for a library's heavily generic result type, such as a query or mutation result, is exempt: stub only the fields the unit reads, and cast loosely, `as Record<string, unknown>`, or `as unknown as` the full type where it is demanded. These rules pin your contracts, not the library's, and copying its generics adds noise, not safety.",
       "fixtures": [
         {
           "side": "pass",
           "path": "subject.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\n\nconst mockGetLocale = jest.fn<() => string>();\n\nconst mockQueryResult = {\n\tdata: 'p.png',\n\tisLoading: false,\n\trefetch: jest.fn(),\n} as unknown as Record<string, unknown>;\n\n// A test whose subject reads code as text passes that code in as data. This is\n// a mention of an untyped spy, not one — the rule reads what the file does, not\n// what it quotes.\nconst sampleLine = 'const getAvatar = jest.fn();';\n\ndescribe('subject', () => {\n\ttest('reads the locale and the stubbed field', () => {\n\t\tmockGetLocale.mockReturnValue('en-GB');\n\n\t\texpect(mockGetLocale() + mockQueryResult.data).toBe('en-GBp.png');\n\t});\n\n\ttest('carries its sample line untouched', () => {\n\t\texpect(sampleLine).toContain('getAvatar');\n\t});\n});\n"
+          "text": "import { expect, describe, test, jest } from '@jest/globals';\n\nconst mockGetLocale = jest.fn<() => string>();\n\nconst mockSaveOrder = jest.fn<(params: { id: string }) => string>();\n\n// The wrapper takes the real function's parameters and forwards them all.\njest.mock('@/orders/saveOrder', () => ({\n\tsaveOrder: (params: { id: string }) => mockSaveOrder(params),\n}));\n\nconst mockQueryResult = {\n\tdata: 'p.png',\n\tisLoading: false,\n\trefetch: jest.fn(),\n} as unknown as Record<string, unknown>;\n\n// A test whose subject reads code as text passes that code in as data. This is\n// a mention of an untyped spy, not one — the rule reads what the file does, not\n// what it quotes.\nconst sampleLine = 'const getAvatar = jest.fn();';\n\ndescribe('subject', () => {\n\ttest('reads the locale and the stubbed field', () => {\n\t\tmockGetLocale.mockReturnValue('en-GB');\n\n\t\texpect(mockGetLocale() + mockQueryResult.data).toBe('en-GBp.png');\n\t});\n\n\ttest('carries its sample line untouched', () => {\n\t\texpect(sampleLine).toContain('getAvatar');\n\t});\n});\n"
         },
         {
           "side": "fail",
           "path": "subject.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\n\nconst mockGetLocale = jest.fn();\n\ndescribe('subject', () => {\n\ttest('reads the locale', () => {\n\t\tmockGetLocale.mockReturnValue('en-GB');\n\n\t\texpect(mockGetLocale()).toBe('en-GB');\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
-      "id": "test-mock-wrapper-untyped",
-      "name": "lightsout/test-mock-wrapper-untyped",
-      "set": "tests",
-      "documentPath": "tests/code-style",
-      "summary": "How a module mock forwards its arguments.",
-      "deterministic": true,
-      "agent": false,
-      "defaultSeverity": "blocking",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Test Mock Wrapper Untyped\n\nIn a `jest.mock()` factory, type the wrapper's parameters as the real function's, and forward them all:\n\n```typescript\njest.mock('@/common/utils/getProfile', () => ({\n\tgetProfile: (params: { userId: string }) => mockGetProfile(params),\n}));\n```\n\nNever write `(...args: unknown[])`, which fails to compile (TS2556), even in a file that already does. Never write `() => mockGetProfile()` for a function that takes arguments: the spy records calls with none, and `toHaveBeenCalledWith` fails on a call that was correct.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "subject.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\n\nconst mockSaveOrder = jest.fn<(params: { id: string }) => string>();\n\njest.mock('@/orders/saveOrder', () => ({\n\tsaveOrder: (params: { id: string }) => mockSaveOrder(params),\n}));\n\ndescribe('subject', () => {\n\ttest('forwards the order id', () => {\n\t\tmockSaveOrder.mockReturnValue('ok');\n\n\t\texpect(mockSaveOrder).toHaveBeenCalledWith({ id: 'a' });\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "subject.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\n\nconst mockSaveOrder = jest.fn<(params: { id: string }) => string>();\n\njest.mock('@/orders/saveOrder', () => ({\n\tsaveOrder: (...args: unknown[]) => mockSaveOrder(args[0] as { id: string }),\n}));\n\ndescribe('subject', () => {\n\ttest('saves the order', () => {\n\t\tmockSaveOrder.mockReturnValue('ok');\n\n\t\texpect(mockSaveOrder({ id: 'a' })).toBe('ok');\n\t});\n});\n"
+          "text": "import { expect, describe, test, jest } from '@jest/globals';\n\n// Incorrect: no generic, so the mock accepts and returns anything.\nconst mockGetLocale = jest.fn();\n\nconst mockSaveOrder = jest.fn<(params: { id: string }) => string>();\n\n// Incorrect: the wrapper is typed to discard what the real function takes.\njest.mock('@/orders/saveOrder', () => ({\n\tsaveOrder: (...args: unknown[]) => mockSaveOrder(args[0] as { id: string }),\n}));\n\ndescribe('subject', () => {\n\ttest('reads the locale and saves the order', () => {\n\t\tmockGetLocale.mockReturnValue('en-GB');\n\t\tmockSaveOrder.mockReturnValue('ok');\n\n\t\texpect(mockGetLocale() + mockSaveOrder({ id: 'a' })).toBe('en-GBok');\n\t});\n});\n"
         }
       ],
       "example": {
@@ -3837,7 +3917,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Test Structure: Arrange-Act-Assert with Setup Factories\n\nWrite every test as arrange, act, assert. Arrange in one named setup factory; the test body calls it, acts and asserts.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { UserProfile } from '@/profiles/UserProfile';\nimport { AppSettings } from '@/settings/AppSettings';\nimport { getAvatarUrl } from '@/avatars/getAvatarUrl';\n\n// Mocked Imports\n// -------------------------\nconst mockGetAvatarFromProfile = jest.fn<(params: { profile: UserProfile }) => string | null>();\n\njest.mock('@/profiles/getAvatarFromProfile', () => ({\n\tgetAvatarFromProfile: (params: { profile: UserProfile }) => mockGetAvatarFromProfile(params),\n}));\n// -------------------------\n\nconst setupAvatar = ({ profile = null }: { profile?: string | null } = {}) => {\n\tmockGetAvatarFromProfile.mockReturnValue(profile);\n\tconst userProfile = new UserProfile({ profileData: { email: 'user@example.com' } });\n\tconst appSettings = new AppSettings({ defaultPreferences: {} });\n\n\treturn { userProfile, appSettings };\n};\n\ndescribe('getAvatarUrl', () => {\n\ttest('returns null when the user has no avatar', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar();\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBeNull();\n\t});\n\n\ttest('returns the profile avatar when one exists', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar({ profile: 'p.png' });\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBe('p.png');\n\t});\n});\n```\n\n- The setup factory takes the test's variants as parameters with defaults, wires the mocks, builds the fixtures, and returns the locals the test needs as `const`s. One factory configures any number of mocks, and one call is the whole arrangement.\n- A test may override the one value it varies with a single line after the call, such as one `mockReturnValue`.\n- For a class, the factory returns the constructor's collaborators, and the test's act constructs the instance.\n- Act once per test: two acts make two tests. Use several `expect`s only when they assert one behaviour's result, and prefer one `expect` for several properties of one result.\n- Assign each call in the act to a named `const`; never nest one call in another. The act sits inside the assertion only for an error, `expect(() => parse(bad)).toThrow()` or `await expect(load()).rejects.toThrow()`. A matcher may compose another, as in `toEqual(expect.objectContaining(...))`.\n- Separate arrange, act and assert with a blank line, and write no `// arrange`, `// act` or `// assert` comments.\n- Cover every code path: branches, error handling and boundary conditions. Give each path one test, and never add a test that only varies the input. Inputs that take one path to different outputs share one `test.each`.\n- To reach a branch that guards against input the types forbid, such as a `default` arm or an early return on an impossible discriminant, force the input with `as unknown as T`. That and the framework stub cast `test-mock-untyped` allows are the only casts a test writes.\n- Import the test functions first: `import { expect, describe, test, jest } from '@jest/globals';`. Import `jest` only when the file uses `jest.fn`, `jest.mock` or `jest.spyOn`, and `beforeEach`, `afterEach` or `afterAll` only when you need one; with setup factories and config-level mock cleanup, most files need none.",
+      "prose": "## Test Structure: Arrange-Act-Assert with Setup Factories\n\nWrite every test as arrange, act, assert. Arrange in one named setup factory; the test body calls it, acts and asserts.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { UserProfile } from '@/profiles/UserProfile';\nimport { AppSettings } from '@/settings/AppSettings';\nimport { getAvatarUrl } from '@/avatars/getAvatarUrl';\n\nconst mockGetAvatarFromProfile = jest.fn<(params: { profile: UserProfile }) => string | null>();\n\njest.mock('@/profiles/getAvatarFromProfile', () => ({\n\tgetAvatarFromProfile: (params: { profile: UserProfile }) => mockGetAvatarFromProfile(params),\n}));\n\nconst setupAvatar = ({ profile = null }: { profile?: string | null } = {}) => {\n\tmockGetAvatarFromProfile.mockReturnValue(profile);\n\tconst userProfile = new UserProfile({ profileData: { email: 'user@example.com' } });\n\tconst appSettings = new AppSettings({ defaultPreferences: {} });\n\n\treturn { userProfile, appSettings };\n};\n\ndescribe('getAvatarUrl', () => {\n\ttest('returns the profile avatar when one exists', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar({ profile: 'p.png' });\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBe('p.png');\n\t});\n});\n```\n\n- The setup factory takes the test's variants as parameters with defaults, wires the mocks, builds the fixtures, and returns the locals the test needs as `const`s. One factory configures any number of mocks, and one call is the whole arrangement.\n- A test may override the one value it varies with a single line after the call, such as one `mockReturnValue`.\n- For a class, the factory returns the constructor's collaborators, and the test's act constructs the instance.\n- Act once per test: two acts make two tests. Use several `expect`s only when they assert one behaviour's result, and prefer one `expect` for several properties of one result.\n- Assign each call in the act to a named `const`; never nest one call in another. The act sits inside the assertion only for an error, `expect(() => parse(bad)).toThrow()` or `await expect(load()).rejects.toThrow()`. A matcher may compose another, as in `toEqual(expect.objectContaining(...))`.\n- Separate arrange, act and assert with a blank line, and write no `// arrange`, `// act` or `// assert` comments.",
       "fixtures": [
         {
           "side": "pass",
@@ -3913,7 +3993,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## The Render Pattern\n\nRender inside the `setup()` factory; query and assert in the `test`. For a component, `render()` *is* the act, but by convention it lives in the arrange factory — the one accepted exception to \"the act lives in the `test`\". Query from `screen` — never destructure queries from `render()`.\n\nIn a test of an interaction, the query that finds the element to act on groups with the act, the `userEvent` or `fireEvent` call, not with arrange.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/preact';\nimport { NotificationBanner } from './NotificationBanner';\n\n// Mocked Imports\n// -------------------------\nconst mockUseAppStore = jest.fn<(selector: (state: unknown) => unknown) => unknown>();\n\njest.mock('@store/appStore', () => ({\n\tuseAppStore: (selector: (state: unknown) => unknown) => mockUseAppStore(selector),\n}));\n// -------------------------\n\nconst setupNotificationBanner = ({ isVisible = true }: { isVisible?: boolean } = {}) => {\n\tconst onDismiss = jest.fn<() => void>();\n\tmockUseAppStore.mockReturnValue(isVisible);\n\trender(<NotificationBanner onDismiss={onDismiss} />);\n\n\treturn { onDismiss };\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('does not render the banner when not visible', () => {\n\t\tsetupNotificationBanner({ isVisible: false });\n\n\t\tconst banner = screen.queryByRole('alert');\n\n\t\texpect(banner).not.toBeInTheDocument();\n\t});\n\n\ttest('renders the notification message when visible', () => {\n\t\tsetupNotificationBanner({ isVisible: true });\n\n\t\tconst message = screen.getByText('Action required');\n\n\t\texpect(message).toBeInTheDocument();\n\t});\n});\n```",
+      "prose": "## The Render Pattern\n\nRender inside the `setup()` factory; query and assert in the `test`. For a component, `render()` *is* the act, but by convention it lives in the arrange factory — the one accepted exception to \"the act lives in the `test`\". Query from `screen` — never destructure queries from `render()`.\n\nIn a test of an interaction, the query that finds the element to act on groups with the act, the `userEvent` or `fireEvent` call, not with arrange.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/preact';\nimport { NotificationBanner } from './NotificationBanner';\n\nconst mockUseAppStore = jest.fn<(selector: (state: unknown) => unknown) => unknown>();\n\njest.mock('@store/appStore', () => ({\n\tuseAppStore: (selector: (state: unknown) => unknown) => mockUseAppStore(selector),\n}));\n\nconst setupNotificationBanner = ({ isVisible = true }: { isVisible?: boolean } = {}) => {\n\tconst onDismiss = jest.fn<() => void>();\n\tmockUseAppStore.mockReturnValue(isVisible);\n\trender(<NotificationBanner onDismiss={onDismiss} />);\n\n\treturn { onDismiss };\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('does not render the banner when not visible', () => {\n\t\tsetupNotificationBanner({ isVisible: false });\n\n\t\tconst banner = screen.queryByRole('alert');\n\n\t\texpect(banner).not.toBeInTheDocument();\n\t});\n\n\ttest('renders the notification message when visible', () => {\n\t\tsetupNotificationBanner({ isVisible: true });\n\n\t\tconst message = screen.getByText('Action required');\n\n\t\texpect(message).toBeInTheDocument();\n\t});\n});\n```",
       "fixtures": [
         {
           "side": "pass",

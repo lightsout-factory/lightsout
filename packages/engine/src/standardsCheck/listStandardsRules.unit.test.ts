@@ -70,7 +70,8 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  *
  * On 2026-10-03 the library was cut down to the fractal and code-style packs.
  * `no-thin-wrappers` and `test-strict-equal-matcher` were retired with the
- * rules they named, not renamed. `single-return` gained a check. The hook
+ * rules they named, not renamed, and `test-mock-wrapper-untyped` merged into
+ * `test-mock-untyped`. `single-return` gained a check. The hook
  * and component caps left `function-size` for `react-function-size`, which the
  * framework packs hold and `lightsout/standards` does not, so it is not listed here.
  */
@@ -105,7 +106,6 @@ const durableRuleIds = [
 	'no-test-state-in-hooks',
 	'test-mock-prefix',
 	'test-mock-untyped',
-	'test-mock-wrapper-untyped',
 	'test-manual-mock-cleanup',
 	'test-beside-subject',
 	'test-support-in-src',
@@ -333,7 +333,6 @@ describe('listStandardsRules', () => {
 			'lightsout/test-manual-mock-cleanup',
 			'lightsout/test-mock-prefix',
 			'lightsout/test-mock-untyped',
-			'lightsout/test-mock-wrapper-untyped',
 			'lightsout/test-support-in-src',
 		]);
 	});
@@ -359,7 +358,6 @@ describe('listStandardsRules', () => {
 			'lightsout/no-test-state-in-hooks',
 			'lightsout/test-mock-prefix',
 			'lightsout/test-mock-untyped',
-			'lightsout/test-mock-wrapper-untyped',
 			'lightsout/type-assertion',
 		]);
 	});

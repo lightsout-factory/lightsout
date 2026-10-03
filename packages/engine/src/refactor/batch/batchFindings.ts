@@ -20,7 +20,6 @@ const rulePriority: string[] = [
 	'lightsout/filename-mismatch',
 	'lightsout/test-mock-prefix',
 	'lightsout/test-mock-untyped',
-	'lightsout/test-mock-wrapper-untyped',
 	'lightsout/no-test-state-in-hooks',
 	'lightsout/test-manual-mock-cleanup',
 	'lightsout/index-file-contents',

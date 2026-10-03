@@ -40,7 +40,8 @@ describe('test-mock-untyped check', () => {
 				siteKey: 'test-mock-untyped:src/feature/getLabel.unit.test.ts',
 				files: [{ path: 'src/feature/getLabel.unit.test.ts', startLine: 3, endLine: 3 }],
 				detail: 'jest.fn() with no generic at line(s) 3',
-				guidance: 'Type every `jest.fn()` to the real signature — read the source first, and include the Promise wrapper for an async one.',
+				guidance:
+					'Type every `jest.fn()` and every `jest.mock()` wrapper to the real signature: read the source first, include the Promise for an async function, and forward every argument.',
 			},
 		]);
 	});
@@ -85,7 +86,8 @@ describe('test-mock-untyped check', () => {
 					{ path: 'src/feature/getLabel.unit.test.ts', startLine: 4, endLine: 4 },
 				],
 				detail: 'jest.fn() with no generic at line(s) 3, 4',
-				guidance: 'Type every `jest.fn()` to the real signature — read the source first, and include the Promise wrapper for an async one.',
+				guidance:
+					'Type every `jest.fn()` and every `jest.mock()` wrapper to the real signature: read the source first, include the Promise for an async function, and forward every argument.',
 			},
 		]);
 	});
