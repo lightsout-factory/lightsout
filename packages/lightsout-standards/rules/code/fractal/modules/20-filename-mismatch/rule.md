@@ -1,6 +1,6 @@
 ---
 summary: "How a file's name follows what it exports."
-checked: true
+checks: deterministic
 severity: advisory
 ---
 

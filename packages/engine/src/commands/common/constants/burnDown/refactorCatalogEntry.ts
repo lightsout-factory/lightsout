@@ -27,7 +27,12 @@ export const refactorCatalogEntry: CommandCatalogEntry = {
 			shape: 'refactor',
 			required: false,
 		},
-		{ name: 'code-checks', meaning: 'Build the work-list from the mechanical checks alone, with no agent review.', shape: 'refactor', required: false },
+		{
+			name: 'deterministic-checks',
+			meaning: 'Build the work-list from the deterministic checks alone, with no agent review.',
+			shape: 'refactor',
+			required: false,
+		},
 		{ name: 'allow-dirty', meaning: 'Start even though the git tree has uncommitted changes.', shape: 'refactor', required: false },
 	],
 	steps: refactorSteps,

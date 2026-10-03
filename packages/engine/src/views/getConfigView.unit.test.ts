@@ -43,9 +43,9 @@ const setupDeclaredPack = async () => {
 		'lightsout-standards.json': '{ "name": "house", "formatVersion": 2 }\n',
 		'packs/house.json': JSON.stringify({ description: 'the house rules', include: { topics: ['house/code/demo', 'house/code/react-demo'] } }),
 		'rules/code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
-		'rules/code/demo/01-house-rule/rule.md': '---\nsummary: what house-rule catches\n---\n\nThe rule prose.\n',
+		'rules/code/demo/01-house-rule/rule.md': '---\nsummary: what house-rule catches\nchecks: agent\n---\n\nThe rule prose.\n',
 		'rules/code/react-demo/topic.md': '# React demo\n\nProse about react code.\n',
-		'rules/code/react-demo/01-react-rule/rule.md': '---\nsummary: what react-rule catches\n---\n\nThe react rule prose.\n',
+		'rules/code/react-demo/01-react-rule/rule.md': '---\nsummary: what react-rule catches\nchecks: agent\n---\n\nThe react rule prose.\n',
 	};
 
 	for (const [path, content] of Object.entries(files)) {

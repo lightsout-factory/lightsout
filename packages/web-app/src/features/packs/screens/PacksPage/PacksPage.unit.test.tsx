@@ -82,7 +82,7 @@ describe('PacksPage', () => {
 		});
 	});
 
-	// The library's own totals (1 rule, 1 checked, 0 judgment) differ from the pack's, so the counts shown prove they are the pack's.
+	// The library's own totals (1 rule, 1 deterministic, 0 agent) differ from the pack's, so the counts shown prove they are the pack's.
 	test('names the packs a pack includes and counts its rules by kind of check', () => {
 		setupPacksPage({
 			pack: buildStandardsPackView({
@@ -90,7 +90,7 @@ describe('PacksPage', () => {
 					buildStandardsPackListing({
 						name: 'standards',
 						include: { packs: ['lightsout/fractal'], topics: [], rules: [] },
-						totals: { rules: 5, checked: 3, judgment: 2 },
+						totals: { rules: 5, deterministic: 3, agent: 2 },
 					}),
 				],
 			}),

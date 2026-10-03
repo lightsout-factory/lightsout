@@ -113,7 +113,7 @@ describe('StandardsCheckModule', () => {
 		const result = StandardsCheckModule.safeParse(checkModule);
 
 		// a check file that declares a kind but ships no function is a half-written
-		// rule, not a judgment-only one
+		// rule, not a agent-only one
 		expect(result.success).toBe(false);
 	});
 

@@ -1,6 +1,6 @@
 ---
 summary: "What to mock, and with which tool."
-checked: false
+checks: agent
 severity: advisory
 ---
 

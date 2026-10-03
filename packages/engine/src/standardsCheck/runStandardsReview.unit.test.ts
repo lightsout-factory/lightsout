@@ -15,8 +15,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: false,
-	reviewed: overrides.checked !== true,
+	deterministic: false,
+	agent: overrides.deterministic !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -59,9 +59,9 @@ const setupDriver = ({ result }: { result: DriverResult | (() => DriverResult) }
 const reviewText = (findings: Record<string, unknown>[]) => JSON.stringify({ findings });
 
 /**
- * One group whose pack holds two judgment rules the review must skip — one the
+ * One group whose pack holds two agent-checked rules the review must skip — one the
  * repo turned off, one the pack ships off — while its topic names a third
- * judgment rule of the library that the pack leaves out altogether.
+ * agent-checked rule of the library that the pack leaves out altogether.
  */
 const setupExcludedJudgmentRules = () => {
 	const repoOff = rule({ id: 'repo-off-judgment' });
@@ -185,24 +185,24 @@ describe('runStandardsReview', () => {
 		const { findings } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			groups: [groupOf({ rules: [rule({ id: 'shared-code', checked: true, reviewed: true }), rule({ id: 'multi-export', checked: true })] })],
+			groups: [groupOf({ rules: [rule({ id: 'shared-code', deterministic: true, agent: true }), rule({ id: 'multi-export', deterministic: true })] })],
 			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
 
-		// the partly checked rule is read, the fully checked one is not
+		// the rule with both kinds of check is read, the deterministic-only one is not
 		expect(invocations[0]?.systemPrompt).toContain('**Rule: `acme/shared-code`**');
 		expect(invocations[0]?.systemPrompt).not.toContain('acme/multi-export');
 		expect(findings.map((finding) => finding.rule)).toStrictEqual(['acme/shared-code']);
 	});
 
-	test('no judgment rules means no agent is spent saying so', async () => {
+	test('no agent-checked rules means no agent is spent saying so', async () => {
 		const { driver, prompts } = setupDriver({ result: { text: reviewText([]), exitCode: 0 } });
 
 		const { findings, notes } = await runStandardsReview({
 			cwd: '/repo',
 			driver,
-			groups: [groupOf({ rules: [rule({ id: 'multi-export', checked: true })] })],
+			groups: [groupOf({ rules: [rule({ id: 'multi-export', deterministic: true })] })],
 			packagesDir: 'packages',
 			files: ['src/a.ts'],
 		});
@@ -262,7 +262,7 @@ describe('runStandardsReview', () => {
 		expect({ findings, notes, spawned: prompts.length }).toStrictEqual({ findings: [], notes: [], spawned: 1 });
 	});
 
-	test('judgment rules from every loaded package are put in front of the reviewer', async () => {
+	test('agent-checked rules from every loaded package are put in front of the reviewer', async () => {
 		const { driver, invocations } = setupDriver({ result: { text: reviewText([]), exitCode: 0 } });
 
 		await runStandardsReview({
@@ -321,7 +321,7 @@ describe('runStandardsReview', () => {
 		});
 	});
 
-	test('a reported rule that resolves to no single judgment rule is dropped and named in a note', async () => {
+	test('a reported rule that resolves to no single agent-checked rule is dropped and named in a note', async () => {
 		const { driver } = setupDriver({
 			result: {
 				text: reviewText([
@@ -366,7 +366,7 @@ describe('runStandardsReview', () => {
 		expect(notes).toStrictEqual(['agent review skipped — agent invocation failed: spawn claude ENOENT']);
 	});
 
-	test('a judgment rule two groups hold is reviewed once, so its short id still names one rule', async () => {
+	test('a agent-checked rule two groups hold is reviewed once, so its short id still names one rule', async () => {
 		const judge = rule({ id: 'judge' });
 		const { driver } = setupDriver({
 			result: { text: reviewText([{ rule: 'judge', files: [{ path: 'src/a.ts' }], detail: 'named by short id' }]), exitCode: 0 },
@@ -384,7 +384,7 @@ describe('runStandardsReview', () => {
 		expect({ notes, keys: findings.map((finding) => finding.siteKey) }).toStrictEqual({ notes: [], keys: ['acme/judge:src/a.ts'] });
 	});
 
-	test('runStandardsReview: judgment rules the groups turn off or leave out are never reviewed', async () => {
+	test('runStandardsReview: agent-checked rules the groups turn off or leave out are never reviewed', async () => {
 		const { groups, driver, prompts } = setupExcludedJudgmentRules();
 
 		const result = await runStandardsReview({ cwd: '/repo', driver, groups, packagesDir: 'packages', files: ['src/a.ts'] });

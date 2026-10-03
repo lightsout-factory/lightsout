@@ -35,7 +35,7 @@ test('renderUsage: gives every command exactly as many lines as it has invocatio
 test('renderUsage: renders a mutually exclusive pair inside one bracket rather than two', () => {
 	const { lines } = setupRenderUsage();
 
-	expect(lines.some((line) => line.includes('[--code-checks | --agent-review]'))).toBe(true);
+	expect(lines.some((line) => line.includes('[--deterministic-checks | --agent-review]'))).toBe(true);
 });
 
 test('renderUsage: aligns a note that fits to column 55, and leaves three spaces before one that does not', () => {

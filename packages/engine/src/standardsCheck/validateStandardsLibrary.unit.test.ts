@@ -74,8 +74,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: overrides.run !== undefined,
-	reviewed: overrides.run === undefined,
+	deterministic: overrides.run !== undefined,
+	agent: overrides.run === undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -167,7 +167,7 @@ describe('validateStandardsLibrary', () => {
 		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
 	});
 
-	test('a judgment-only rule must still ship the fixtures its accuracy is measured against', async () => {
+	test('a agent-only rule must still ship the fixtures its accuracy is measured against', async () => {
 		const { fixturesPath } = setupWithoutFixtures();
 
 		const { problems, notes } = await validate({ rules: [rule({ id: 'premature-abstraction', fixturesPath })] });
@@ -176,20 +176,20 @@ describe('validateStandardsLibrary', () => {
 			'premature-abstraction: fixtures/fail/ is missing or empty — every rule ships a fixture pair',
 			'premature-abstraction: fixtures/pass/ is missing or empty — every rule ships a fixture pair',
 		]);
-		// the missing pair is the whole story — no judgment-only note on top of it
+		// the missing pair is the whole story — no agent-only note on top of it
 		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
 	});
 
-	test('a judgment-only rule is a note, never a problem — its fixtures measure the review agent instead', async () => {
+	test('a agent-only rule is a note, never a problem — its fixtures measure the review agent instead', async () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 
 		const { problems, notes } = await validate({ rules: [rule({ id: 'premature-abstraction', fixturesPath })] });
 
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual(['premature-abstraction: judgment-only — fixtures reserved for agent accuracy', noFrameworkOwnedNote]);
+		expect(notes).toStrictEqual(['premature-abstraction: agent check — fixtures reserved for agent accuracy', noFrameworkOwnedNote]);
 	});
 
-	test('a rule shipping a check but declaring no input kind is judgment-only — there is no input to run it against', async () => {
+	test('a rule shipping a check but declaring no input kind is agent-only — there is no input to run it against', async () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 
 		const { problems, notes } = await validate({
@@ -197,7 +197,7 @@ describe('validateStandardsLibrary', () => {
 		});
 
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual(['premature-abstraction: judgment-only — fixtures reserved for agent accuracy', noFrameworkOwnedNote]);
+		expect(notes).toStrictEqual(['premature-abstraction: agent check — fixtures reserved for agent accuracy', noFrameworkOwnedNote]);
 	});
 
 	test('a check that throws on a fixture is reported as a problem against that rule, not raised', async () => {

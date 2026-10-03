@@ -9,8 +9,8 @@ const setupRuleView = ({ omit, extra = {} }: { omit?: string; extra?: Record<str
 		set: 'code',
 		summary: 'A source file stays under its line cap.',
 		prose: '# Size, File\n\nA file past the cap is several modules sharing one name.',
-		checked: true,
-		reviewed: extra.checked === false,
+		deterministic: true,
+		agent: extra.deterministic === false,
 		severity: 'blocking',
 		fromConfig: false,
 		options: { maxLines: 400 },
@@ -68,8 +68,8 @@ describe('StandardsRuleView', () => {
 			set: 'code',
 			summary: 'A source file stays under its line cap.',
 			prose: '# Size, File\n\nA file past the cap is several modules sharing one name.',
-			checked: true,
-			reviewed: false,
+			deterministic: true,
+			agent: false,
 			severity: 'blocking',
 			fromConfig: false,
 			options: { maxLines: 400 },
@@ -165,13 +165,13 @@ describe('StandardsRuleView', () => {
 	});
 
 	test('rejects the two flags given as strings rather than coercing them', () => {
-		for (const extra of [{ checked: 'true' }, { fromConfig: 'false' }]) {
+		for (const extra of [{ deterministic: 'true' }, { fromConfig: 'false' }]) {
 			const { ruleView } = setupRuleView({ extra });
 
 			const result = StandardsRuleView.safeParse(ruleView);
 
-			// 'false' is truthy — coercing here would report an unchecked rule as
-			// checked and a package default as a repo override
+			// 'false' is truthy — coercing here would report a rule with no deterministic
+			// check as having one, and a package default as a repo override
 			expect(result.success).toBe(false);
 		}
 	});
@@ -216,7 +216,7 @@ describe('StandardsRuleView', () => {
 	});
 
 	test('the rule identity and document fields are each required', () => {
-		for (const field of ['rule', 'doc', 'documentPath', 'set', 'summary', 'prose', 'checked', 'severity', 'fromConfig', 'options']) {
+		for (const field of ['rule', 'doc', 'documentPath', 'set', 'summary', 'prose', 'deterministic', 'severity', 'fromConfig', 'options']) {
 			const { ruleView } = setupRuleView({ omit: field });
 
 			const result = StandardsRuleView.safeParse(ruleView);

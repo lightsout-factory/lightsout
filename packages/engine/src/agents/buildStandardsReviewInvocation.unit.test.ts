@@ -5,17 +5,17 @@ const rule = ({
 	name,
 	documentPath = 'code/architecture/folder-structure',
 	prose,
-	checked = false,
+	deterministic = false,
 }: {
 	name: string;
 	documentPath?: string;
 	prose: string;
-	checked?: boolean;
+	deterministic?: boolean;
 }) => ({
 	name,
 	documentPath,
 	prose,
-	checked,
+	deterministic,
 });
 
 describe('buildStandardsReviewInvocation', () => {
@@ -37,22 +37,22 @@ describe('buildStandardsReviewInvocation', () => {
 		expect(systemPrompt).toContain('**Rule: `lightsout/common-placement`**');
 	});
 
-	test('a rule a code check already half covers says so, and a rule no check covers says nothing of checks', () => {
+	test('a rule a deterministic check already half decides says so, and a rule no check covers says nothing of checks', () => {
 		const { systemPrompt } = buildStandardsReviewInvocation({
-			rules: [rule({ name: 'acme/shared-code', prose: 'the placement argument', checked: true }), rule({ name: 'acme/judge', prose: 'the argument' })],
+			rules: [rule({ name: 'acme/shared-code', prose: 'the placement argument', deterministic: true }), rule({ name: 'acme/judge', prose: 'the argument' })],
 			files: ['src/a.ts'],
 		});
 
 		// told per rule, so the reviewer never reports what the check already did
 		expect(systemPrompt).toContain(
-			'**Rule: `acme/shared-code`**\n\nA code check already reports part of this rule. Report only what that check could not have found.\n\nthe placement argument',
+			'**Rule: `acme/shared-code`**\n\nA deterministic check already reports part of this rule. Report only what that check could not have found.\n\nthe placement argument',
 		);
 		expect(systemPrompt).toContain('**Rule: `acme/judge`**\n\nthe argument');
 	});
 
 	test('each rule to review is introduced by its full name', () => {
 		const { systemPrompt } = buildStandardsReviewInvocation({
-			rules: [{ name: 'acme/judge', documentPath: 'code/architecture/folder-structure', prose: 'the argument', checked: false }],
+			rules: [{ name: 'acme/judge', documentPath: 'code/architecture/folder-structure', prose: 'the argument', deterministic: false }],
 			files: ['src/a.ts'],
 		});
 
@@ -158,8 +158,8 @@ describe('buildStandardsReviewInvocation', () => {
 	test("states a rule's applies-to packages beside its id only when the entry carries them", () => {
 		const { systemPrompt } = buildStandardsReviewInvocation({
 			rules: [
-				{ name: 'lightsout/web-only', documentPath: 'code/frameworks/react', prose: 'the web argument', checked: false, appliesTo: 'web-app' },
-				{ name: 'lightsout/everywhere', documentPath: 'code/frameworks/react', prose: 'the shared argument', checked: false },
+				{ name: 'lightsout/web-only', documentPath: 'code/frameworks/react', prose: 'the web argument', deterministic: false, appliesTo: 'web-app' },
+				{ name: 'lightsout/everywhere', documentPath: 'code/frameworks/react', prose: 'the shared argument', deterministic: false },
 			],
 			files: ['src/a.ts'],
 		});

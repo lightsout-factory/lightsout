@@ -1,6 +1,6 @@
 ---
 summary: "How server functions and their files are named."
-checked: false
+checks: agent
 severity: advisory
 requires:
   - filename-mismatch

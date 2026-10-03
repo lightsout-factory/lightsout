@@ -20,7 +20,7 @@ export const RuleHeader = ({ rule }: Props) => {
 				<CodeSpans text={rule.summary} />
 			</p>
 			<div className="flex flex-wrap items-center gap-2">
-				{toCheckKinds({ checked: rule.checked, reviewed: rule.reviewed }).map((kind) => (
+				{toCheckKinds({ deterministic: rule.deterministic, agent: rule.agent }).map((kind) => (
 					<CheckKindTag key={kind} kind={kind} />
 				))}
 				<span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 font-semibold text-muted-foreground-strong text-xs">

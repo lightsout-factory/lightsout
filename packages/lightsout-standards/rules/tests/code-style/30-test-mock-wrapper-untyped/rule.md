@@ -1,6 +1,6 @@
 ---
 summary: "How a module mock forwards its arguments."
-checked: true
+checks: deterministic
 severity: blocking
 ---
 

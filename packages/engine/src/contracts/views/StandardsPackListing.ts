@@ -28,8 +28,8 @@ export const StandardsPackListing = z.object({
 	),
 	totals: z.object({
 		rules: z.number(),
-		checked: z.number(),
-		judgment: z.number(),
+		deterministic: z.number(),
+		agent: z.number(),
 		topics: z.number(),
 	}),
 });

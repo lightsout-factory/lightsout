@@ -28,7 +28,7 @@ const filesOffered = ({ prompt }: { prompt: string }) =>
 /**
  * A one-rule standards library under `standards/house`, with a `house/house`
  * pack, so a run can be pointed at a pack the plugin does not ship. Its only
- * rule is judgment-only (no `check.ts`), which is the half of a pack the batch
+ * rule is agent-only (no `check.ts`), which is the half of a pack the batch
  * review reads — and a rule that declares no check contributes no findings, so
  * the pack includes the bundled `lightsout/standards` pack beside its own topic:
  * something has to raise the finding the batch under review is built from.
@@ -37,7 +37,7 @@ const writeHousePack = ({ dir }: { dir: string }) => {
 	const files: Record<string, string> = {
 		'lightsout-standards.json': '{ "name": "house", "formatVersion": 2 }\n',
 		'rules/code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
-		'rules/code/demo/01-house-rule/rule.md': '---\nsummary: a rule only the house pack declares\n---\n\nThe rule prose.\n',
+		'rules/code/demo/01-house-rule/rule.md': '---\nsummary: a rule only the house pack declares\nchecks: agent\n---\n\nThe rule prose.\n',
 		'packs/house.json':
 			'{ "description": "The standards pack and the house rule.", "include": { "packs": ["lightsout/standards"], "topics": ["house/code/demo"] } }\n',
 	};
@@ -217,7 +217,7 @@ describe('runRefactorPipeline agent review', () => {
 		expect(executorPrompts[1] ?? '').toMatch(/Advisory —[\s\S]*src\/betaThing\.ts — SHAPE-SENTINEL/);
 	});
 
-	test('every batch reads the same judgment rules — the run resolves them once', async () => {
+	test('every batch reads the same agent-checked rules — the run resolves them once', async () => {
 		const { dir, driver, config, reviewRuleIds } = await setupReviewedRun({ folders: ['alpha', 'beta'] });
 
 		await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
@@ -227,7 +227,7 @@ describe('runRefactorPipeline agent review', () => {
 		expect(reviewRuleIds[2]).toStrictEqual(reviewRuleIds[0]);
 	});
 
-	test('the judgment rules come from every pack the config names, not the bundled one alone', async () => {
+	test('the agent-checked rules come from every pack the config names, not the bundled one alone', async () => {
 		const { dir, driver, config, reviewRuleIds } = await setupReviewedRun({ housePack: true });
 
 		await runRefactorPipeline({ cwd: dir, driver, config, loadedConfig: { config } });
@@ -249,7 +249,7 @@ describe('runRefactorPipeline agent review', () => {
 
 		expect(result.ok).toBe(true);
 		expect(reviewScopes).toStrictEqual([]);
-		expect(progress).toContain('code checks only — the per-batch agent review is off for this run');
+		expect(progress).toContain('deterministic checks only — the per-batch agent review is off for this run');
 	});
 
 	test('a review that could not run is narrated against its batch and the batch is still worked', async () => {

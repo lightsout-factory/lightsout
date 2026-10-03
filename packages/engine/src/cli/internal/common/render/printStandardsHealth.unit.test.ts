@@ -6,8 +6,8 @@ import type { StandardsHealthRule } from '#src/standardsCheck/common/types/Stand
 const healthRule = (overrides: Partial<StandardsHealthRule> & { rule: string }): StandardsHealthRule => ({
 	set: 'code',
 	documentPath: 'code/architecture/folder-structure',
-	checked: true,
-	reviewed: overrides.checked === false,
+	deterministic: true,
+	agent: overrides.deterministic === false,
 	attempted: 0,
 	resolved: 0,
 	declined: 0,
@@ -21,7 +21,7 @@ const healthRule = (overrides: Partial<StandardsHealthRule> & { rule: string }):
 
 const healthOf = ({ rules }: { rules: StandardsHealthRule[] }): StandardsHealth => ({
 	rules,
-	totals: { rules: rules.length, checked: rules.filter((rule) => rule.checked).length, judgment: rules.filter((rule) => rule.reviewed).length },
+	totals: { rules: rules.length, deterministic: rules.filter((rule) => rule.deterministic).length, agent: rules.filter((rule) => rule.agent).length },
 });
 
 const setupPrinter = () => {
@@ -49,10 +49,10 @@ describe('printStandardsHealth', () => {
 	test('a rule nobody has ever put to the test reads as dashes, never as zeroes', () => {
 		const { logged } = setupPrinter();
 
-		printStandardsHealth({ health: healthOf({ rules: [healthRule({ rule: 'object-args', checked: false })] }) });
+		printStandardsHealth({ health: healthOf({ rules: [healthRule({ rule: 'object-args', deterministic: false })] }) });
 
 		// 0% would answer a question nobody asked
-		expect(cellsOf({ logged })[1]).toStrictEqual(['object-args', 'judgment', '—', '—', '—', '—', '—', '—', '—']);
+		expect(cellsOf({ logged })[1]).toStrictEqual(['object-args', 'agent', '—', '—', '—', '—', '—', '—', '—']);
 	});
 
 	test('the two accounts sit in their own columns, each with its own rate', () => {
@@ -64,7 +64,7 @@ describe('printStandardsHealth', () => {
 			}),
 		});
 
-		expect(cellsOf({ logged })[1]).toStrictEqual(['multi-export', 'code', '4', '2', '1', '1', '25%', '4', '25%']);
+		expect(cellsOf({ logged })[1]).toStrictEqual(['multi-export', 'deterministic', '4', '2', '1', '1', '25%', '4', '25%']);
 	});
 
 	test('advice the code already met is shown in the count but kept out of the decline rate', () => {
@@ -79,7 +79,7 @@ describe('printStandardsHealth', () => {
 		// 4 pieces of advice were read; 2 of them asked for nothing, so the rate
 		// is 1 of 2 rather than 1 of 4 — otherwise redundant advice would read as
 		// advice that keeps being agreed with
-		expect(cellsOf({ logged })[1]).toStrictEqual(['multi-export', 'code', '—', '—', '—', '—', '—', '4', '50%']);
+		expect(cellsOf({ logged })[1]).toStrictEqual(['multi-export', 'deterministic', '—', '—', '—', '—', '—', '4', '50%']);
 	});
 
 	test('each recorded reason prints once beneath its rule', () => {
@@ -142,8 +142,8 @@ describe('printStandardsHealth', () => {
 			rule: 'lightsout/function-size',
 			set: 'code',
 			documentPath: 'code/fractal/size',
-			checked: true,
-			reviewed: false,
+			deterministic: true,
+			agent: false,
 			attempted: 1,
 			resolved: 1,
 			declined: 0,
@@ -167,13 +167,13 @@ describe('printStandardsHealth', () => {
 			health: healthOf({
 				rules: [
 					healthRule({ rule: 'multi-export', attempted: 2, resolved: 1, declined: 1 }),
-					healthRule({ rule: 'object-args', checked: false, adviceApplied: 1, adviceDeclined: 1 }),
+					healthRule({ rule: 'object-args', deterministic: false, adviceApplied: 1, adviceDeclined: 1 }),
 				],
 			}),
 		});
 
 		const rows = cellsOf({ logged });
 
-		expect(rows[rows.length - 1]).toStrictEqual(['2 rule(s)', '1 by code, 1 by judgment', '2', '1', '1', '—', '50%', '2', '50%']);
+		expect(rows[rows.length - 1]).toStrictEqual(['2 rule(s)', '1 deterministic, 1 agent', '2', '1', '1', '—', '50%', '2', '50%']);
 	});
 });

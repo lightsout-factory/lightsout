@@ -12,10 +12,10 @@ export const StandardsRuleView = z.object({
 	summary: z.string(),
 	/** The rule.md body — its full prose argument. */
 	prose: z.string(),
-	/** True when the rule ships a check code runs. */
-	checked: z.boolean(),
-	/** True when an agent reviews the rule: it ships no check, or its check covers only part of it. */
-	reviewed: z.boolean(),
+	/** True when the rule has a deterministic check — code that decides, with the same answer every run. */
+	deterministic: z.boolean(),
+	/** True when the rule has an agent check — an agent reviews the change against it, because it ships no deterministic check or that check decides only part of it. */
+	agent: z.boolean(),
 	severity: z.enum([StandardsSeverity.Blocking, StandardsSeverity.Advisory, StandardsSeverity.Off]),
 	/** True when this repo's config set the severity or the options. */
 	fromConfig: z.boolean(),

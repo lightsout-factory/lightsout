@@ -34,8 +34,8 @@ const toRuleView = async ({ rule }: { rule: LoadedStandardsRule }) => {
 
 /** The pack file says what it includes; the resolved pack says what that brings in, at the grades the pack settles on. */
 const toPackListing = ({ packFile, resolved }: { packFile: LoadedStandardsPackFile; resolved: ResolvedStandardsPack }) => {
-	const checked = resolved.rules.filter((entry) => entry.rule.checked).length;
-	const judgment = resolved.rules.filter((entry) => entry.rule.reviewed).length;
+	const deterministic = resolved.rules.filter((entry) => entry.rule.deterministic).length;
+	const agent = resolved.rules.filter((entry) => entry.rule.agent).length;
 
 	return {
 		name: packFile.name,
@@ -45,7 +45,7 @@ const toPackListing = ({ packFile, resolved }: { packFile: LoadedStandardsPackFi
 		include: packFile.include,
 		topics: resolved.topics.map((topic) => `${topic.library}/${topic.path}`),
 		rules: resolved.rules.map((entry) => ({ name: entry.rule.name, severity: entry.severity, options: entry.options })),
-		totals: { rules: resolved.rules.length, checked, judgment, topics: resolved.topics.length },
+		totals: { rules: resolved.rules.length, deterministic, agent, topics: resolved.topics.length },
 	};
 };
 
@@ -102,7 +102,7 @@ export const getStandardsPackBundle = async ({ cwd }: Params): Promise<Standards
 			resolved: resolveStandardsPack({ addresses: [`${library.name}/${packFile.name}`], libraries: [library], dependencies: undefined }),
 		}),
 	);
-	const checked = rules.filter((rule) => rule.checked).length;
+	const deterministic = rules.filter((rule) => rule.deterministic).length;
 
 	return sortBundle({
 		bundle: {
@@ -113,8 +113,8 @@ export const getStandardsPackBundle = async ({ cwd }: Params): Promise<Standards
 			built: library.built === true,
 			totals: {
 				rules: rules.length,
-				checked,
-				judgment: rules.filter((rule) => rule.reviewed).length,
+				deterministic,
+				agent: rules.filter((rule) => rule.agent).length,
 				topics: library.documents.length,
 				packs: packs.length,
 				withFixtures: rules.filter((rule) => rule.fixtureCounts.pass > 0 && rule.fixtureCounts.fail > 0).length,

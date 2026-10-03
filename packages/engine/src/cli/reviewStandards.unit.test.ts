@@ -153,14 +153,14 @@ describe('reviewStandards', () => {
 		const progress: string[] = [];
 
 		mockRunStandardsReview.mockImplementation(async ({ onProgress }) => {
-			onProgress?.('reading 4 judgment rule(s) against 12 file(s)');
+			onProgress?.('reading 4 agent-checked rule(s) against 12 file(s)');
 
 			return { findings: [], notes: [] };
 		});
 
 		await reviewStandards({ cwd, onProgress: (message) => progress.push(message) });
 
-		expect(progress).toStrictEqual(['reading 4 judgment rule(s) against 12 file(s)']);
+		expect(progress).toStrictEqual(['reading 4 agent-checked rule(s) against 12 file(s)']);
 		// nothing is printed here: presentation belongs to the command
 		expect(logged).toStrictEqual([]);
 	});
@@ -190,7 +190,7 @@ describe('reviewStandards', () => {
 
 		const result = await reviewStandards({ cwd, config });
 
-		// no group means no judgment rule to read the source file against, so no agent is spent
+		// no group means no agent-checked rule to read the source file against, so no agent is spent
 		expect({ result, spawned: invoke.mock.calls.length }).toStrictEqual({ result: { findings: [], notes: [] }, spawned: 0 });
 	});
 });

@@ -1,6 +1,6 @@
 ---
 summary: "How mocks are named and laid out."
-checked: true
+checks: deterministic
 severity: blocking
 ---
 

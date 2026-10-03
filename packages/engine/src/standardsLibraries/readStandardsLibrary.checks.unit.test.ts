@@ -63,7 +63,10 @@ describe('readStandardsLibrary checks', () => {
 			files: {
 				...rootFile,
 				'rules/code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'rules/code/style/01-loose-file', markdown: '---\nsummary: a source file outside a module\nchecked: true\n---\n\nProse.\n' }),
+				...ruleFiles({
+					path: 'rules/code/style/01-loose-file',
+					markdown: '---\nsummary: a source file outside a module\nchecks: deterministic\n---\n\nProse.\n',
+				}),
 				'rules/code/style/01-loose-file/check.ts': checkSource,
 			},
 		});
@@ -73,7 +76,7 @@ describe('readStandardsLibrary checks', () => {
 		const findings = await looseFile?.run?.({ inputs: { 'file-list': fileListInput({ files: ['src/alpha.ts'] }) }, options: {} });
 
 		// the declaration is honest, so the rule carries the kind its check asked for
-		expect(looseFile?.checked).toBe(true);
+		expect(looseFile?.deterministic).toBe(true);
 		expect(looseFile?.inputKinds).toStrictEqual(['file-list']);
 		// the function on the rule is the pack's own — what it returns is what a run would see
 		expect(findings).toStrictEqual([{ siteKey: 'loose-file:src/alpha.ts', files: [{ path: 'src/alpha.ts' }], detail: 'src/alpha.ts sits outside a module' }]);
@@ -84,7 +87,7 @@ describe('readStandardsLibrary checks', () => {
 			files: {
 				...rootFile,
 				'rules/code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'rules/code/style/01-bad-check', markdown: '---\nsummary: ships a check it cannot load\nchecked: true\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/01-bad-check', markdown: '---\nsummary: ships a check it cannot load\nchecks: deterministic\n---\n\nProse.\n' }),
 				'rules/code/style/01-bad-check/check.ts': 'export const check = 5;\n',
 			},
 		});
@@ -103,7 +106,7 @@ describe('readStandardsLibrary checks', () => {
 				'rules/code/style/topic.md': '# Style\n',
 				...ruleFiles({
 					path: 'rules/code/style/01-throwing-check',
-					markdown: '---\nsummary: ships a check that fails on import\nchecked: true\n---\n\nProse.\n',
+					markdown: '---\nsummary: ships a check that fails on import\nchecks: deterministic\n---\n\nProse.\n',
 				}),
 				'rules/code/style/01-throwing-check/check.ts': "throw new Error('this check cannot initialise');\n",
 			},

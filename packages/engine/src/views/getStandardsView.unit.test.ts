@@ -19,7 +19,7 @@ const writeTree = async ({ dir, files }: { dir: string; files: Record<string, st
 /** The pack file that selects the house topic whole, which every library below ships as its `house` pack. */
 const housePackFile = JSON.stringify({ description: 'what this shop agrees on', include: { topics: ['acme/code/house'] } });
 
-/** A standards library of somebody's own, whose house pack holds one checked rule and one judgment-only rule. */
+/** A standards library of somebody's own, whose house pack holds one deterministic rule and one agent-only rule. */
 const writeStandardsPack = async () => {
 	const packPath = await mkdtemp(join(tmpdir(), 'lightsout-view-standards-'));
 
@@ -30,13 +30,13 @@ const writeStandardsPack = async () => {
 			'packs/house.json': housePackFile,
 			'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 			'rules/code/house/05-house-loose-file/rule.md':
-				'---\nsummary: a source file outside a module\nchecked: true\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
+				'---\nsummary: a source file outside a module\nchecks: deterministic\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
 			'rules/code/house/05-house-loose-file/check.ts':
 				"export const check = {\n\tinputKinds: ['file-list'],\n\trun: ({ inputs }) => input.files.map((path) => ({ siteKey: `house-loose-file:${path}`, files: [{ path }], detail: 'loose' })),\n};\n",
 			'rules/code/house/05-house-loose-file/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
 			'rules/code/house/05-house-loose-file/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
 			'rules/code/house/10-house-name-things-well/rule.md':
-				'---\nsummary: a name that hides what it does\nchecked: false\nseverity: advisory\n---\n\nNames are the cheapest documentation.\n',
+				'---\nsummary: a name that hides what it does\nchecks: agent\nseverity: advisory\n---\n\nNames are the cheapest documentation.\n',
 		},
 	});
 
@@ -91,8 +91,8 @@ test('a repo that has never run a check still describes what it enforces', async
 	expect(view.notes).toStrictEqual([]);
 	expect(view.trend).toStrictEqual([]);
 	expect(view.rules.map((rule) => rule.rule)).toStrictEqual(['acme/house-loose-file', 'acme/house-name-things-well']);
-	// a judgment-only rule is listed beside the machine-checked one
-	expect(view.totals).toStrictEqual({ rules: 2, checked: 1, judgment: 1, blocking: 0, advisory: 0, orphans: 0 });
+	// a agent-only rule is listed beside the deterministic one
+	expect(view.totals).toStrictEqual({ rules: 2, deterministic: 1, agent: 1, blocking: 0, advisory: 0, orphans: 0 });
 });
 
 test('a repo with no config at all is held to no standards', async () => {
@@ -102,7 +102,7 @@ test('a repo with no config at all is held to no standards', async () => {
 
 	// standards are opt-in: a repo that has configured nothing names no pack, so no rule is listed
 	expect(view.rules).toStrictEqual([]);
-	expect(view.totals).toStrictEqual({ rules: 0, checked: 0, judgment: 0, blocking: 0, advisory: 0, orphans: 0 });
+	expect(view.totals).toStrictEqual({ rules: 0, deterministic: 0, agent: 0, blocking: 0, advisory: 0, orphans: 0 });
 	expect(view.at).toBe(undefined);
 });
 
@@ -124,21 +124,21 @@ test('a rule row carries what the rule says, how this repo runs it, and how many
 	});
 
 	const view = await getStandardsView({ cwd });
-	const [checked, judgment] = view.rules;
+	const [deterministic, agent] = view.rules;
 
 	expect(view.at).toBe('2026-08-19T12:00:00.000Z');
 	// a scoped snapshot says what it covered, so nobody reads it as the whole repo
 	expect(view.path).toBe('src');
 	expect(view.notes).toStrictEqual(['2 source file(s) scanned']);
-	expect(checked).toStrictEqual({
+	expect(deterministic).toStrictEqual({
 		rule: 'acme/house-loose-file',
 		doc: 'acme: code/house',
 		documentPath: 'code/house',
 		set: 'code',
 		summary: 'a source file outside a module',
 		prose: 'Every file belongs to a module.',
-		checked: true,
-		reviewed: false,
+		deterministic: true,
+		agent: false,
 		severity: StandardsSeverity.Blocking,
 		fromConfig: false,
 		options: {},
@@ -146,10 +146,10 @@ test('a rule row carries what the rule says, how this repo runs it, and how many
 		// no refactor run has met this rule yet
 		history: { attempted: 0, resolved: 0, declined: 0, untracked: 0, adviceApplied: 0, adviceDeclined: 0, adviceAlreadyMet: 0, reasons: [] },
 	});
-	expect(judgment?.findingCount).toBe(1);
-	expect(judgment?.checked).toBe(false);
+	expect(agent?.findingCount).toBe(1);
+	expect(agent?.deterministic).toBe(false);
 	// the header's counts come from here, so no consumer ever tallies findings itself
-	expect(view.totals).toStrictEqual({ rules: 2, checked: 1, judgment: 1, blocking: 2, advisory: 1, orphans: 0 });
+	expect(view.totals).toStrictEqual({ rules: 2, deterministic: 1, agent: 1, blocking: 2, advisory: 1, orphans: 0 });
 });
 
 test('a finding whose rule no pack loads is counted as an orphan, and lands on no rule row', async () => {
@@ -208,7 +208,7 @@ test('a rule the config overrode says so, and carries the options this repo runs
 	expect(view.rules[1]?.fromConfig).toBe(false);
 });
 
-/** A library whose house pack holds two judgment-only rules that both declare default options in their rule.md headers. */
+/** A library whose house pack holds two agent-only rules that both declare default options in their rule.md headers. */
 const writeOptionsPack = async () => {
 	const packPath = await mkdtemp(join(tmpdir(), 'lightsout-view-options-'));
 
@@ -219,9 +219,9 @@ const writeOptionsPack = async () => {
 			'packs/house.json': housePackFile,
 			'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 			'rules/code/house/05-house-file-size/rule.md':
-				'---\nsummary: a file over the house line cap\nchecked: false\nseverity: advisory\noptions:\n  file: 250\n  tsxFile: 300\n---\n\nFiles stay short.\n',
+				'---\nsummary: a file over the house line cap\nchecks: agent\nseverity: advisory\noptions:\n  file: 250\n  tsxFile: 300\n---\n\nFiles stay short.\n',
 			'rules/code/house/10-house-folder-size/rule.md':
-				'---\nsummary: a folder over the house file cap\nchecked: false\nseverity: advisory\noptions:\n  cap: 20\n---\n\nFolders stay small.\n',
+				'---\nsummary: a folder over the house file cap\nchecks: agent\nseverity: advisory\noptions:\n  cap: 20\n---\n\nFolders stay small.\n',
 		},
 	});
 
@@ -392,7 +392,7 @@ test('a repo that declares no standards packs still reports the findings its las
 
 	// nothing states the rules any more, so every finding is one nothing explains
 	expect(view.rules).toStrictEqual([]);
-	expect(view.totals).toStrictEqual({ rules: 0, checked: 0, judgment: 0, blocking: 1, advisory: 1, orphans: 2 });
+	expect(view.totals).toStrictEqual({ rules: 0, deterministic: 0, agent: 0, blocking: 1, advisory: 1, orphans: 2 });
 	expect(view.findings.map((entry) => entry.siteKey)).toStrictEqual(['acme/house-loose-file:src/loose.ts', 'name:src/loose.ts']);
 });
 
@@ -492,6 +492,6 @@ test('keeps one row per rule when the rule list splits a rule across package gro
 			{ rule: 'acme/house-loose-file', severity: StandardsSeverity.Blocking },
 			{ rule: 'acme/house-name-things-well', severity: StandardsSeverity.Advisory },
 		],
-		totals: { rules: 2, checked: 1, judgment: 1, blocking: 0, advisory: 0, orphans: 0 },
+		totals: { rules: 2, deterministic: 1, agent: 1, blocking: 0, advisory: 0, orphans: 0 },
 	});
 });

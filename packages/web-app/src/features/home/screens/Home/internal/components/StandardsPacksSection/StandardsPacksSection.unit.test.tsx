@@ -45,7 +45,7 @@ describe('StandardsPacksSection', () => {
 
 	test('counts the pack’s deterministic checks and agent checks, from the pack itself', () => {
 		setupSection({
-			pack: { ...buildStandardsPackView(), totals: { rules: 112, checked: 53, judgment: 59, topics: 24, packs: 10, withFixtures: 112 } },
+			pack: { ...buildStandardsPackView(), totals: { rules: 112, deterministic: 53, agent: 59, topics: 24, packs: 10, withFixtures: 112 } },
 		});
 
 		expect([screen.getByText('112'), screen.getByText('53'), screen.getByText('59')]).toHaveLength(3);
@@ -70,7 +70,7 @@ describe('StandardsPacksSection', () => {
 
 	test('reads its numbers from the bundled library once it answers', () => {
 		setupSection({
-			pack: { ...buildStandardsPackView(), totals: { rules: 137, checked: 61, judgment: 76, topics: 26, packs: 10, withFixtures: 137 } },
+			pack: { ...buildStandardsPackView(), totals: { rules: 137, deterministic: 61, agent: 76, topics: 26, packs: 10, withFixtures: 137 } },
 		});
 
 		const ruleTotal = screen.queryByText('137');

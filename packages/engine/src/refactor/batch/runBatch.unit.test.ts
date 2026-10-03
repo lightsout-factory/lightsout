@@ -28,8 +28,8 @@ const singleReturn: LoadedStandardsRule = {
 	documentPath: 'code/style-guide/patterns/single-return',
 	summary: 'more than one exit from a function',
 	prose: 'the argument for the rule',
-	checked: false,
-	reviewed: true,
+	deterministic: false,
+	agent: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -37,7 +37,7 @@ const singleReturn: LoadedStandardsRule = {
 };
 
 /**
- * One judgment-only rule in one group — the run's groups, which runBatch owns the
+ * One agent-only rule in one group — the run's groups, which runBatch owns the
  * threading of: they reach the pre-edit read through collectBatchAdvisories and
  * the read of what the batch wrote through the tools it builds.
  */
@@ -221,7 +221,7 @@ const setupRedGateBatch = async ({ ruling, healOnGuidance = false }: { ruling: R
 /**
  * The two-site batch in a repo whose packages live under `apps/`, with one
  * workspace package `web`, and a group that covers only `web` and holds the
- * judgment rule.
+ * agent-checked rule.
  *
  * On every read the reviewer reports that rule against a `web` file. The file
  * belongs to the `web` group only when the review places it with `apps` as the
@@ -340,7 +340,7 @@ describe('runBatch', () => {
 
 		await run();
 
-		// the same judgment rules on both sides of the edits — a batch reviewed
+		// the same agent-checked rules on both sides of the edits — a batch reviewed
 		// against a different set afterwards could report its own baseline as new
 		expect(reviewSystemPrompts.map((systemPrompt) => systemPrompt.includes('Rule: `acme/single-return`'))).toStrictEqual([true, true]);
 	});

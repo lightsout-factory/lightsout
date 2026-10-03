@@ -19,7 +19,7 @@ describe('PackStats', () => {
 	test('counts each kind of rule from the pack', () => {
 		render(
 			<PackStats
-				library={buildStandardsPackView({ overrides: { totals: { rules: 112, checked: 53, judgment: 59, topics: 24, packs: 10, withFixtures: 112 } } })}
+				library={buildStandardsPackView({ overrides: { totals: { rules: 112, deterministic: 53, agent: 59, topics: 24, packs: 10, withFixtures: 112 } } })}
 			/>,
 		);
 
@@ -33,7 +33,7 @@ describe('PackStats', () => {
 	});
 
 	test('counts the rules of the whole library', () => {
-		render(<PackStats library={buildLibraryView({ totals: { rules: 112, checked: 53, judgment: 59, topics: 24, packs: 10, withFixtures: 112 } })} />);
+		render(<PackStats library={buildLibraryView({ totals: { rules: 112, deterministic: 53, agent: 59, topics: 24, packs: 10, withFixtures: 112 } })} />);
 
 		const headline = screen.getByText('112');
 		const deterministic = screen.getByText('53').parentElement;

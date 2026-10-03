@@ -1,6 +1,6 @@
 ---
 summary: "Where a component test renders and queries."
-checked: false
+checks: agent
 severity: advisory
 ---
 

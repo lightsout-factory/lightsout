@@ -49,14 +49,14 @@ describe('StandardsPage header', () => {
 	});
 
 	test('reports the finding counts the engine supplied rather than counting for itself', () => {
-		setupStandardsPage({ overrides: { totals: { rules: 12, checked: 9, judgment: 3, blocking: 4, advisory: 7, orphans: 0 } } });
+		setupStandardsPage({ overrides: { totals: { rules: 12, deterministic: 9, agent: 3, blocking: 4, advisory: 7, orphans: 0 } } });
 
 		expect(screen.getByText('4 blocking findings')).toBeInTheDocument();
 		expect(screen.getByText('7 advisory findings')).toBeInTheDocument();
 	});
 
 	test('says how many rules the repo loads and how they are enforced', () => {
-		setupStandardsPage({ overrides: { totals: { rules: 12, checked: 9, judgment: 3, blocking: 0, advisory: 0, orphans: 0 } } });
+		setupStandardsPage({ overrides: { totals: { rules: 12, deterministic: 9, agent: 3, blocking: 0, advisory: 0, orphans: 0 } } });
 
 		const enforcement = screen.getByText('12 rules, 9 deterministic checks and 3 agent checks');
 
@@ -64,7 +64,7 @@ describe('StandardsPage header', () => {
 	});
 
 	test('states how many findings belong to rules no package loads any more', () => {
-		setupStandardsPage({ overrides: { totals: { rules: 1, checked: 1, judgment: 0, blocking: 0, advisory: 0, orphans: 2 } } });
+		setupStandardsPage({ overrides: { totals: { rules: 1, deterministic: 1, agent: 0, blocking: 0, advisory: 0, orphans: 2 } } });
 
 		const orphans = screen.getByText(/2 findings belong to rules no package loads/);
 
@@ -96,7 +96,7 @@ describe('StandardsPage header', () => {
 	});
 
 	test('still says how many rules are loaded on a repo that has never run a check', () => {
-		setupStandardsPage({ overrides: { at: undefined, totals: { rules: 12, checked: 9, judgment: 3, blocking: 0, advisory: 0, orphans: 0 } } });
+		setupStandardsPage({ overrides: { at: undefined, totals: { rules: 12, deterministic: 9, agent: 3, blocking: 0, advisory: 0, orphans: 0 } } });
 
 		const loaded = screen.getByText(/^12 rules loaded/);
 

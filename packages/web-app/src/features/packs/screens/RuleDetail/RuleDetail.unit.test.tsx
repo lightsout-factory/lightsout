@@ -69,7 +69,7 @@ const buildPack = ({ name, rules }: { name: string; rules: string[] }): Standard
 	include: { packs: [], topics: [], rules: [] },
 	topics: ['lightsout/code/agent-corrections/type-safety'],
 	rules: rules.map((rule) => ({ name: rule, severity: StandardsSeverity.Blocking, options: {} })),
-	totals: { rules: rules.length, checked: rules.length, judgment: 0, topics: 1 },
+	totals: { rules: rules.length, deterministic: rules.length, agent: 0, topics: 1 },
 });
 
 /** The page's rule, `lightsout/type-assertion`, in a library whose packs are given. */
@@ -150,7 +150,7 @@ describe('RuleDetail', () => {
 	});
 
 	test('calls an agent check an agent check, and says it only advises', () => {
-		setupRuleDetail({ rule: buildStandardsPackRuleView({ overrides: { checked: false, reviewed: true, defaultSeverity: StandardsSeverity.Advisory } }) });
+		setupRuleDetail({ rule: buildStandardsPackRuleView({ overrides: { deterministic: false, agent: true, defaultSeverity: StandardsSeverity.Advisory } }) });
 
 		expect([screen.getByText('Agent check'), screen.getByText('Advises by default')]).toHaveLength(2);
 	});

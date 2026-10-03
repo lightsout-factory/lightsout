@@ -21,7 +21,7 @@ const writeFiles = ({ root, files }: { root: string; files: Record<string, strin
 
 /** One rule folder's files: its markdown plus the fixture pair every rule ships. */
 const ruleFiles = ({ path, summary }: { path: string; summary: string }) => ({
-	[`${path}/rule.md`]: `---\nsummary: ${summary}\n---\n\n${summary} — the rule's prose.\n`,
+	[`${path}/rule.md`]: `---\nsummary: ${summary}\nchecks: agent\n---\n\n${summary} — the rule's prose.\n`,
 	[`${path}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 	[`${path}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',
 });

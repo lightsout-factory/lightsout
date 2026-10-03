@@ -45,14 +45,14 @@ const rules = [
 		id: 'filename-mismatch',
 		documentPath: 'code/fractal/modules',
 		summary: 'a file name spelled differently from its export',
-		checked: false,
+		deterministic: false,
 		defaultSeverity: StandardsSeverity.Advisory,
 	}),
 	buildStandardsPackRuleListing({
 		id: 'component-file-structure',
 		documentPath: 'code/frameworks/react',
 		summary: 'a component file laid out of order',
-		checked: false,
+		deterministic: false,
 	}),
 	buildStandardsPackRuleListing({
 		id: 'test-file-location',
@@ -78,7 +78,7 @@ const packs = [
 			{ name: 'lightsout/filename-mismatch', severity: StandardsSeverity.Blocking, options: {} },
 			{ name: 'lightsout/folder-size', severity: StandardsSeverity.Blocking, options: {} },
 		],
-		totals: { checked: 1, judgment: 1 },
+		totals: { deterministic: 1, agent: 1 },
 	}),
 	buildStandardsPackListing({
 		name: 'base',

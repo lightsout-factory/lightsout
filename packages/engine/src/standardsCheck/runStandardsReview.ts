@@ -27,7 +27,7 @@ interface Params {
 	onProgress?: (message: string) => void;
 }
 
-interface JudgmentRule {
+interface AgentRule {
 	rule: LoadedStandardsRule;
 	/** The packages of every group running the rule at a reporting severity. */
 	packages: Set<string>;
@@ -40,21 +40,21 @@ const runsRule = ({ group, name }: { group: StandardsGroup; name: string }) => {
 	return severity !== undefined && severity !== StandardsSeverity.Off;
 };
 
-/** A judgment rule several groups hold is reviewed once, by full name, with the packages it applies to. */
-const collectJudgmentRules = ({ groups }: { groups: StandardsGroup[] }) =>
+/** An agent-checked rule several groups hold is reviewed once, by full name, with the packages it applies to. */
+const collectAgentRules = ({ groups }: { groups: StandardsGroup[] }) =>
 	[
 		...collectGroupItems({
 			groups,
-			itemsOf: ({ group }) => group.pack.rules.map(({ rule }) => rule).filter((rule) => rule.reviewed && runsRule({ group, name: rule.name })),
+			itemsOf: ({ group }) => group.pack.rules.map(({ rule }) => rule).filter((rule) => rule.agent && runsRule({ group, name: rule.name })),
 			keyOf: ({ item }) => item.name,
 		}).values(),
 	].map(({ item, packages }) => ({ rule: item, packages }));
 
 /** Only a rule that does not apply to every package the groups cover is scoped for the reviewer. */
-const toReviewRules = ({ judgmentRules, groups }: { judgmentRules: JudgmentRule[]; groups: StandardsGroup[] }) => {
+const toReviewRules = ({ agentRules, groups }: { agentRules: AgentRule[]; groups: StandardsGroup[] }) => {
 	const covered = new Set(groups.flatMap((group) => group.packages));
 
-	return judgmentRules.map(({ rule, packages }) =>
+	return agentRules.map(({ rule, packages }) =>
 		packages.size === covered.size ? rule : { ...rule, appliesTo: describePackageSet({ packages: [...packages] }) },
 	);
 };
@@ -63,7 +63,7 @@ const dropNotes = ({ unknownRules, unsited, ungrouped, notRun }: { unknownRules:
 	const notes: string[] = [];
 
 	if (unknownRules.length > 0) {
-		notes.push(`agent review: ${unknownRules.length} finding(s) dropped — no judgment rule is named ${[...new Set(unknownRules)].sort().join(', ')}`);
+		notes.push(`agent review: ${unknownRules.length} finding(s) dropped — no agent-checked rule is named ${[...new Set(unknownRules)].sort().join(', ')}`);
 	}
 
 	if (unsited > 0) {
@@ -142,15 +142,15 @@ const toFindings = ({
 };
 
 /**
- * Its findings are always advisory and never gate, because a judgment call is
- * not evidence.
+ * Its findings are always advisory and never gate, because an agent's reading
+ * is not evidence.
  *
  * Nothing here throws: every failure comes back as a skipped review with a
  * plain note, because the machine half is real evidence and must still be
  * reported, and a repo whose harness is absent is not a repo in violation.
  *
  * Site keys are derived here rather than asked for, and a finding naming a rule
- * no single loaded judgment rule answers to is dropped — a name an agent
+ * no single loaded agent-checked rule answers to is dropped — a name an agent
  * invented must not be able to enter the findings stream.
  */
 export const runStandardsReview = async ({
@@ -162,8 +162,8 @@ export const runStandardsReview = async ({
 	timeoutMs,
 	onProgress,
 }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
-	const judgmentRules = collectJudgmentRules({ groups });
-	const rules = judgmentRules.map(({ rule }) => rule);
+	const agentRules = collectAgentRules({ groups });
+	const rules = agentRules.map(({ rule }) => rule);
 
 	// Nothing to read, or nothing to read it against: no agent is spent saying so.
 	if (rules.length === 0 || files.length === 0) {
@@ -175,7 +175,7 @@ export const runStandardsReview = async ({
 	const ruleCount = `${rules.length} rule${rules.length === 1 ? '' : 's'}`;
 
 	onProgress?.(
-		`The agent review is now running. ${driver.name} is reading your code against the ${ruleCount} that take judgment. This usually takes a few minutes.`,
+		`The agent review is now running. ${driver.name} is reading your code against the ${ruleCount} with an agent check. This usually takes a few minutes.`,
 	);
 
 	const heartbeat = createAgentHeartbeat({ label: 'agent review', onProgress: (message) => onProgress?.(message) });
@@ -184,7 +184,7 @@ export const runStandardsReview = async ({
 	const outcome = await invokeAgentWithContract({
 		driver,
 		cwd,
-		invocation: buildStandardsReviewInvocation({ rules: toReviewRules({ judgmentRules, groups }), files }),
+		invocation: buildStandardsReviewInvocation({ rules: toReviewRules({ agentRules, groups }), files }),
 		contract: StandardsReviewReport,
 		permissions: Permissions.ReadOnly,
 		timeoutMs,

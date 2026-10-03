@@ -1,6 +1,6 @@
 ---
 summary: "Sharing behaviour between classes."
-checked: true
+checks: deterministic
 severity: advisory
 ---
 

@@ -1,6 +1,6 @@
 ---
 summary: "Where shared test helpers, mocks and fixtures live."
-checked: true
+checks: deterministic
 severity: advisory
 ---
 

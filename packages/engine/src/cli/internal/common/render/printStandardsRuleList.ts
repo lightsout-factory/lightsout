@@ -1,4 +1,4 @@
-import { describeCheckedBy } from '#src/cli/internal/common/render/common/utils/describeCheckedBy.ts';
+import { describeCheckKinds } from '#src/cli/internal/common/render/common/utils/describeCheckKinds.ts';
 import { renderTable } from '#src/cli/internal/common/render/renderTable.ts';
 import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { dim } from '#src/cli/internal/common/terminal/dim.ts';
@@ -22,9 +22,9 @@ interface Params {
 
 /**
  * A row the repo's config set is marked, because "this is our policy" and "this
- * is the default" are different answers. The checker column shows which rules
- * no code run will ever catch, so the ledger does not read as though every rule
- * were enforced. The applies-to column names the packages each row's state
+ * is the default" are different answers. The check column shows which rules
+ * no deterministic check will ever catch, so the ledger does not read as though
+ * every rule were enforced. The applies-to column names the packages each row's state
  * holds in, and the totals count rules, not rows.
  */
 export const printStandardsRuleList = ({ rules }: Params): void => {
@@ -36,7 +36,7 @@ export const printStandardsRuleList = ({ rules }: Params): void => {
 				cells: [
 					rule.rule,
 					rule.fromConfig ? `${rule.severity} (config)` : rule.severity,
-					describeCheckedBy({ rule }),
+					describeCheckKinds({ rule }),
 					rule.doc,
 					describePackageSet({ packages: rule.packages }),
 				],
@@ -49,20 +49,20 @@ export const printStandardsRuleList = ({ rules }: Params): void => {
 		];
 	});
 	const atSeverity = (severity: StandardsSeverity) => countRules({ rules, where: (rule) => rule.severity === severity });
-	const checked = countRules({ rules, where: (rule) => rule.checked });
-	const judged = countRules({ rules, where: (rule) => rule.reviewed });
+	const deterministic = countRules({ rules, where: (rule) => rule.deterministic });
+	const agent = countRules({ rules, where: (rule) => rule.agent });
 	const totals = {
 		cells: [
 			`${countRules({ rules, where: () => true })} rule(s)`,
 			`${atSeverity(StandardsSeverity.Blocking)} blocking`,
 			`${atSeverity(StandardsSeverity.Advisory)} advisory, ${atSeverity(StandardsSeverity.Off)} off`,
-			`${checked} by code, ${judged} by judgment`,
+			`${deterministic} deterministic, ${agent} agent`,
 			'',
 		],
 		emphasis: bold,
 	};
 
-	for (const line of renderTable({ headers: ['rule', 'state', 'checked by', 'standards doc', 'applies to'], rows: [...rows, totals] })) {
+	for (const line of renderTable({ headers: ['rule', 'state', 'check', 'standards doc', 'applies to'], rows: [...rows, totals] })) {
 		console.log(line);
 	}
 };

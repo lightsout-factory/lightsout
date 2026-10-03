@@ -1,13 +1,13 @@
 {
   "name": "lightsout",
-  "description": "The built-in TypeScript standards: rules that keep a repo the same shape at every level, correct what models get wrong by default and settle code style, 36 of them enforced by code.",
+  "description": "The built-in TypeScript standards: rules that keep a repo the same shape at every level, correct what models get wrong by default and settle code style, 36 of them with a deterministic check.",
   "homepage": "https://github.com/lightsout-factory/lightsout/tree/main/packages/lightsout-standards",
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
     "rules": 64,
-    "checked": 36,
-    "judgment": 31,
+    "deterministic": 36,
+    "agent": 31,
     "topics": 17,
     "packs": 6,
     "withFixtures": 64
@@ -87,8 +87,8 @@
       ],
       "totals": {
         "rules": 10,
-        "checked": 4,
-        "judgment": 8,
+        "deterministic": 4,
+        "agent": 8,
         "topics": 4
       }
     },
@@ -191,8 +191,8 @@
       ],
       "totals": {
         "rules": 15,
-        "checked": 10,
-        "judgment": 5,
+        "deterministic": 10,
+        "agent": 5,
         "topics": 4
       }
     },
@@ -389,8 +389,8 @@
       ],
       "totals": {
         "rules": 30,
-        "checked": 22,
-        "judgment": 9,
+        "deterministic": 22,
+        "agent": 9,
         "topics": 6
       }
     },
@@ -441,8 +441,8 @@
       ],
       "totals": {
         "rules": 4,
-        "checked": 0,
-        "judgment": 4,
+        "deterministic": 0,
+        "agent": 4,
         "topics": 2
       }
     },
@@ -819,8 +819,8 @@
       ],
       "totals": {
         "rules": 64,
-        "checked": 36,
-        "judgment": 31,
+        "deterministic": 36,
+        "agent": 31,
         "topics": 17
       }
     },
@@ -873,8 +873,8 @@
       ],
       "totals": {
         "rules": 5,
-        "checked": 0,
-        "judgment": 5,
+        "deterministic": 0,
+        "agent": 5,
         "topics": 1
       }
     }
@@ -1071,8 +1071,8 @@
       "set": "tests",
       "documentPath": "tests/agent-corrections",
       "summary": "What a test asserts against.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1102,8 +1102,8 @@
       "set": "code",
       "documentPath": "code/fractal/shared-code",
       "summary": "Folder names that say nothing about what the folder holds.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1152,8 +1152,8 @@
       "set": "code",
       "documentPath": "code/fractal/shared-code",
       "summary": "Names that differ only in upper and lower case.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1217,8 +1217,8 @@
       "set": "code",
       "documentPath": "code/fractal/imports",
       "summary": "Modules that depend on each other.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1267,8 +1267,8 @@
       "set": "code",
       "documentPath": "code/code-style/classes",
       "summary": "Sharing behaviour between classes.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1307,8 +1307,8 @@
       "set": "code",
       "documentPath": "code/code-style/classes",
       "summary": "How a class takes its arguments and declares its methods.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1338,8 +1338,8 @@
       "set": "code",
       "documentPath": "code/frameworks/react",
       "summary": "What a component's file holds, and when it becomes a folder.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1383,8 +1383,8 @@
       "set": "code",
       "documentPath": "code/fractal/duplication",
       "summary": "Code that nothing uses any more.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1448,8 +1448,8 @@
       "set": "code",
       "documentPath": "code/fractal/duplication",
       "summary": "The same code written out in more than one place.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {
         "minTokens": 50
@@ -1505,8 +1505,8 @@
       "set": "code",
       "documentPath": "code/fractal/duplication",
       "summary": "Exports in different places that share one name.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1550,8 +1550,8 @@
       "set": "code",
       "documentPath": "code/fractal/duplication",
       "summary": "Functions that are copies of each other under new names.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "blocking",
       "defaultOptions": {
         "minBodyTokens": 40
@@ -1597,8 +1597,8 @@
       "set": "code",
       "documentPath": "code/code-style/functions",
       "summary": "When a function's return type is written out.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1637,8 +1637,8 @@
       "set": "code",
       "documentPath": "code/frameworks/tanstack-start",
       "summary": "How a feature folder grows.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1682,8 +1682,8 @@
       "set": "code",
       "documentPath": "code/fractal/shared-code",
       "summary": "Shared files go in a folder for their kind of code.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1727,8 +1727,8 @@
       "set": "code",
       "documentPath": "code/frameworks/tanstack-start",
       "summary": "How server functions and their files are named.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1772,8 +1772,8 @@
       "set": "code",
       "documentPath": "code/fractal/size",
       "summary": "How long a file may grow.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {
         "file": 250,
@@ -1815,8 +1815,8 @@
       "set": "code",
       "documentPath": "code/fractal/modules",
       "summary": "How a file's name follows what it exports.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1870,8 +1870,8 @@
       "set": "tests",
       "documentPath": "tests/fractal",
       "summary": "Files that need no tests of their own.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1935,8 +1935,8 @@
       "set": "code",
       "documentPath": "code/fractal/size",
       "summary": "When a folder holds too many files.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {
         "cap": 20
@@ -2192,8 +2192,8 @@
       "set": "tests",
       "documentPath": "tests/frameworks/react",
       "summary": "The testing library, file name and interaction helper a component test uses.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2223,8 +2223,8 @@
       "set": "code",
       "documentPath": "code/fractal/size",
       "summary": "How long a function may grow.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {
         "function": 80,
@@ -2258,8 +2258,8 @@
       "set": "code",
       "documentPath": "code/fractal/imports",
       "summary": "When imports use the package's path aliases.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2313,8 +2313,8 @@
       "set": "code",
       "documentPath": "code/fractal/imports",
       "summary": "What an index file may hold.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2373,8 +2373,8 @@
       "set": "code",
       "documentPath": "code/fractal/imports",
       "summary": "Which folders have an index file, and where an import points.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2448,8 +2448,8 @@
       "set": "code",
       "documentPath": "code/fractal/imports",
       "summary": "Keeping a folder's private files private.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "off",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2503,8 +2503,8 @@
       "set": "tests",
       "documentPath": "tests/agent-corrections",
       "summary": "What to mock, and with which tool.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2534,8 +2534,8 @@
       "set": "tests",
       "documentPath": "tests/frameworks/react",
       "summary": "What a component test mocks.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2565,8 +2565,8 @@
       "set": "tests",
       "documentPath": "tests/fractal",
       "summary": "Testing a module through what it makes public.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2620,8 +2620,8 @@
       "set": "code",
       "documentPath": "code/fractal/modules",
       "summary": "When a module should stay one file, and when it should become a folder.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2675,8 +2675,8 @@
       "set": "code",
       "documentPath": "code/fractal/modules",
       "summary": "What goes inside a module folder.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2720,8 +2720,8 @@
       "set": "code",
       "documentPath": "code/fractal/modules",
       "summary": "How many things one file may export.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2770,8 +2770,8 @@
       "set": "code",
       "documentPath": "code/code-style/named-constants",
       "summary": "How a set of named string values is declared, and how the field that tells union members apart is typed and checked.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2845,8 +2845,8 @@
       "set": "code",
       "documentPath": "code/fractal/duplication",
       "summary": "Naming things for what they are, not where they are used.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2876,8 +2876,8 @@
       "set": "code",
       "documentPath": "code/agent-corrections/type-safety",
       "summary": "Avoiding the type that switches type checking off.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2916,8 +2916,8 @@
       "set": "code",
       "documentPath": "code/agent-corrections/comments",
       "summary": "Where the history of the code belongs.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2947,8 +2947,8 @@
       "set": "tests",
       "documentPath": "tests/code-style",
       "summary": "Where a test's state is built.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -2978,8 +2978,8 @@
       "set": "code",
       "documentPath": "code/agent-corrections/design",
       "summary": "Functions and files that add nothing but a second name.",
-      "checked": true,
-      "reviewed": true,
+      "deterministic": true,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3053,8 +3053,8 @@
       "set": "code",
       "documentPath": "code/code-style/functions",
       "summary": "How a function takes its arguments.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3084,8 +3084,8 @@
       "set": "code",
       "documentPath": "code/agent-corrections/comments",
       "summary": "When a folder gets its own README.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3129,8 +3129,8 @@
       "set": "tests",
       "documentPath": "tests/code-style",
       "summary": "How these rules apply to a repo's existing tests.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3174,8 +3174,8 @@
       "set": "code",
       "documentPath": "code/agent-corrections/design",
       "summary": "When to write a class instead of functions.",
-      "checked": true,
-      "reviewed": true,
+      "deterministic": true,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3229,8 +3229,8 @@
       "set": "code",
       "documentPath": "code/agent-corrections/design",
       "summary": "When to turn similar code into something general.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3260,8 +3260,8 @@
       "set": "code",
       "documentPath": "code/fractal/modules",
       "summary": "When a helper may share its caller's file.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3300,8 +3300,8 @@
       "set": "code",
       "documentPath": "code/frameworks/tanstack-start",
       "summary": "Where query options are declared, and how their type is written.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3340,8 +3340,8 @@
       "set": "code",
       "documentPath": "code/fractal/shared-code",
       "summary": "Look for existing shared code before writing new code.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3395,8 +3395,8 @@
       "set": "code",
       "documentPath": "code/frameworks/tanstack-start",
       "summary": "Where server functions live.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3435,8 +3435,8 @@
       "set": "code",
       "documentPath": "code/fractal/shared-code",
       "summary": "Where code that several modules use belongs.",
-      "checked": true,
-      "reviewed": true,
+      "deterministic": true,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3500,8 +3500,8 @@
       "set": "code",
       "documentPath": "code/fractal/shared-code",
       "summary": "What belongs in the shared package.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3545,8 +3545,8 @@
       "set": "code",
       "documentPath": "code/code-style/functions",
       "summary": "Where a function returns its result.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3576,8 +3576,8 @@
       "set": "code",
       "documentPath": "code/code-style/functions",
       "summary": "Where a value used in only one place is declared.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3626,8 +3626,8 @@
       "set": "code",
       "documentPath": "code/fractal/duplication",
       "summary": "One naming pattern, and one name for each concept.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3686,8 +3686,8 @@
       "set": "code",
       "documentPath": "code/frameworks/tanstack-start",
       "summary": "Where a feature's hooks live, and why a query hook infers its return type.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3717,8 +3717,8 @@
       "set": "tests",
       "documentPath": "tests/fractal",
       "summary": "Where a unit test file sits, and what it is named.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3782,8 +3782,8 @@
       "set": "tests",
       "documentPath": "tests/fractal",
       "summary": "When a test file is too long.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {
         "testFile": 400
@@ -3815,8 +3815,8 @@
       "set": "tests",
       "documentPath": "tests/code-style",
       "summary": "Resetting mocks between tests.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3846,8 +3846,8 @@
       "set": "tests",
       "documentPath": "tests/code-style",
       "summary": "How mocks are named and laid out.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3877,8 +3877,8 @@
       "set": "tests",
       "documentPath": "tests/code-style",
       "summary": "Typing a mock function.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3908,8 +3908,8 @@
       "set": "tests",
       "documentPath": "tests/code-style",
       "summary": "How a module mock forwards its arguments.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3939,8 +3939,8 @@
       "set": "tests",
       "documentPath": "tests/code-style",
       "summary": "Comparing a whole object, or part of one.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -3970,8 +3970,8 @@
       "set": "tests",
       "documentPath": "tests/code-style",
       "summary": "The shape of a single test.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -4001,8 +4001,8 @@
       "set": "tests",
       "documentPath": "tests/fractal",
       "summary": "Where shared test helpers, mocks and fixtures live.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -4046,8 +4046,8 @@
       "set": "tests",
       "documentPath": "tests/frameworks/react",
       "summary": "Where a component test renders and queries.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -4077,8 +4077,8 @@
       "set": "code",
       "documentPath": "code/agent-corrections/type-safety",
       "summary": "Telling the compiler a type instead of proving it.",
-      "checked": true,
-      "reviewed": false,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "blocking",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -4117,8 +4117,8 @@
       "set": "code",
       "documentPath": "code/agent-corrections/comments",
       "summary": "When code needs a comment.",
-      "checked": false,
-      "reviewed": true,
+      "deterministic": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {

@@ -28,7 +28,7 @@ interface Params {
  * judgment would reject.
  *
  * One pass, deliberately: these findings are advisory, and an unbounded
- * review-fix loop would let a judgment rule spend the run arguing with itself.
+ * review-fix loop would let an agent-checked rule spend the run arguing with itself.
  * A polish that revives a cleared site is a decline, not a pass.
  */
 export const polishBatchOutput = async ({ tools, batch, baseline, workFindings, standards, testStandards, onProgress }: Params): Promise<BatchStop> => {

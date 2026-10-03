@@ -16,7 +16,7 @@ export const standardsCheckCatalogEntry: CommandCatalogEntry = {
 		{ name: 'path', value: '<subdir>', meaning: 'Check only this subdirectory.', fallback: 'The whole repository.', shape: 'standards-check', required: false },
 		{ name: 'all', meaning: 'Include findings the baseline has already accepted as known debt.', shape: 'standards-check', required: false },
 		{ name: 'baseline', meaning: 'Write the findings to the baseline file as accepted debt.', shape: 'standards-check', required: false },
-		{ name: 'code-checks', meaning: 'Run the mechanical checks only.', shape: 'standards-check', required: false, exclusiveWith: 'half' },
+		{ name: 'deterministic-checks', meaning: 'Run the deterministic checks only.', shape: 'standards-check', required: false, exclusiveWith: 'half' },
 		{ name: 'agent-review', meaning: 'Run the agent review only.', shape: 'standards-check', required: false, exclusiveWith: 'half' },
 	],
 	steps: [],

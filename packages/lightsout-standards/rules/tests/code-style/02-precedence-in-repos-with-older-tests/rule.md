@@ -1,6 +1,6 @@
 ---
 summary: "How these rules apply to a repo's existing tests."
-checked: false
+checks: agent
 severity: advisory
 example:
   kind: repo

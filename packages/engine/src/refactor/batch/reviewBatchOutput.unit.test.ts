@@ -38,8 +38,8 @@ const judgmentRules: LoadedStandardsRule[] = ['function-size', 'single-return'].
 	documentPath: `code/style-guide/patterns/${id}`,
 	summary: `the ${id} rule`,
 	prose: 'the argument for the rule',
-	checked: false,
-	reviewed: true,
+	deterministic: false,
+	agent: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -161,12 +161,12 @@ describe('reviewBatchOutput', () => {
 
 		await call({ baseline: [], changedFiles: ['src/a.ts'] });
 
-		// a judgment finding has no second witness — no code check can rediscover
+		// an agent-check finding has no second witness — no deterministic check can rediscover
 		// it — so an unwritten one is simply gone
 		expect((await readReviewFindings({ cwd })).map((entry) => entry.siteKey)).toStrictEqual(['acme/single-return:src/a.ts']);
 	});
 
-	test('code-checks-only mode spends no agent and writes no ledger line', async () => {
+	test('deterministic-checks-only mode spends no agent and writes no ledger line', async () => {
 		const cwd = await freshCwd();
 		const driver: Driver = {
 			name: 'stub',

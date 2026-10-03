@@ -69,7 +69,7 @@ const namePaths = ({ found }: { found: RawStandardsFinding[] }) => {
 
 /**
  * A rule's own pass fixture proves the false positive someone already found;
- * this holds every checked rule, including ones added later, to silence on
+ * this holds every deterministic rule, including ones added later, to silence on
  * framework-owned code.
  *
  * Its own pass rather than inside the per-rule loop, which skips a rule whose
@@ -78,7 +78,7 @@ const namePaths = ({ found }: { found: RawStandardsFinding[] }) => {
 const checkFrameworkOwned = async ({ library, compiler }: { library: LoadedStandardsLibrary; compiler?: typeof ts }) => {
 	const { frameworkOwnedFixturesPath } = library;
 	// Recorded, never required — a library that holds no rule to the invariant is
-	// told so, the same way a judgment-only rule is.
+	// told so, the same way an agent-only rule is.
 	const heldNothing = { problems: [], notes: [`${library.name}: no fixtures/framework-owned/ — no rule was held to the framework-owned invariant`] };
 
 	if (frameworkOwnedFixturesPath === undefined) {
@@ -103,7 +103,7 @@ const checkFrameworkOwned = async ({ library, compiler }: { library: LoadedStand
 		for (const rule of library.rules) {
 			const { run, inputKinds } = rule;
 
-			// Skipped without a word: the per-rule loop already noted a judgment-only
+			// Skipped without a word: the per-rule loop already noted an agent-only
 			// rule and a kind this install cannot parse, and saying it again per
 			// framework would bury the list it belongs in.
 			if (run === undefined || inputKinds === undefined || (compiler === undefined && inputKinds.some((kind) => typescriptInputKinds.has(kind)))) {
@@ -122,7 +122,7 @@ const checkFrameworkOwned = async ({ library, compiler }: { library: LoadedStand
 
 				if (found.length > 0) {
 					problems.push(
-						`${rule.id}: the ${framework} framework-owned tree produced ${found.length} finding(s) — a checked rule stays silent on code its framework owns (${namePaths({ found })})`,
+						`${rule.id}: the ${framework} framework-owned tree produced ${found.length} finding(s) — a deterministic check stays silent on code its framework owns (${namePaths({ found })})`,
 					);
 				}
 			} catch (error) {
@@ -192,7 +192,7 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 		const missing = await missingFixtureSides({ fixturesPath: rule.fixturesPath });
 
 		if (missing.length > 0) {
-			// Asked of every rule, judgment-only included: their pair is what the
+			// Asked of every rule, agent-only included: their pair is what the
 			// review agent's accuracy is measured against.
 			problems.push(...missing.map((side) => `${rule.id}: fixtures/${side}/ is missing or empty — every rule ships a fixture pair`));
 			continue;
@@ -201,7 +201,7 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 		problems.push(...(await checkRuleExample({ rule })));
 
 		if (run === undefined || inputKinds === undefined) {
-			notes.push(`${rule.id}: judgment-only — fixtures reserved for agent accuracy`);
+			notes.push(`${rule.id}: agent check — fixtures reserved for agent accuracy`);
 			continue;
 		}
 

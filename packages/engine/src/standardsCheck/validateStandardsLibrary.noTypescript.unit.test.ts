@@ -69,8 +69,8 @@ const setupPack = ({ frameworkOwned = false }: { frameworkOwned?: boolean } = {}
 		documentPath: 'code/style-guide/structure/module-api',
 		summary: 'a rule',
 		prose: 'the argument for the rule',
-		checked: true,
-		reviewed: overrides.checked === false,
+		deterministic: true,
+		agent: overrides.deterministic === false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		defaultOptions: {},
 		requires: [],
@@ -120,7 +120,7 @@ describe('validateStandardsLibrary', () => {
 		// per framework — a machine with no compiler would otherwise say it twice
 		expect(notes).toStrictEqual(['dead-export: not validated — its syntax-tree input needs a typescript this install does not have']);
 		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
 		]);
 	});
 });

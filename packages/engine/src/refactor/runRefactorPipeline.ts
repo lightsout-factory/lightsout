@@ -26,7 +26,7 @@ interface Params {
 	all?: boolean;
 	/** Stop (parked, resumable) after this many batches — budget control. */
 	maxBatches?: number;
-	/** false skips each batch's agent review of the judgment rules — code-checks-only mode. */
+	/** false skips each batch's agent review of the agent-checked rules — deterministic-checks-only mode. */
 	agentReview?: boolean;
 	/** Accept a dirty tree: the standing dirt is recorded as baseline, never attributed to a batch. */
 	allowDirty?: boolean;
@@ -82,12 +82,12 @@ const executeRefactor = async ({
 	}
 
 	// Resolved once for the whole run: every batch's agent review reads the same
-	// judgment rules, and re-walking the pack tree per batch would only invite
+	// agent-checked rules, and re-walking the pack tree per batch would only invite
 	// two batches to disagree about what the standards are.
 	const { standards, testStandards, groups } = await resolveStandards({ cwd, config });
 
 	if (!agentReview) {
-		run.progress('code checks only — the per-batch agent review is off for this run');
+		run.progress('deterministic checks only — the per-batch agent review is off for this run');
 	}
 
 	const halted = await runWorklistBatches({

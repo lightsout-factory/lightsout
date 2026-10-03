@@ -58,8 +58,8 @@ const setupCommand = ({ health, config }: { health?: StandardsHealth; config?: R
 					rule: 'lightsout/multi-export',
 					set: 'code',
 					documentPath: 'code/fractal/modules',
-					checked: true,
-					reviewed: false,
+					deterministic: true,
+					agent: false,
 					attempted: 2,
 					resolved: 1,
 					declined: 1,
@@ -70,7 +70,7 @@ const setupCommand = ({ health, config }: { health?: StandardsHealth; config?: R
 					reasons: ['[plan] the barrel would break'],
 				},
 			],
-			totals: { rules: 1, checked: 1, judgment: 0 },
+			totals: { rules: 1, deterministic: 1, agent: 0 },
 		},
 	);
 
@@ -93,7 +93,7 @@ describe('standardsHealthCommand', () => {
 
 		await expect(standardsHealthCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(cellsOf({ logged })[1]).toStrictEqual(['lightsout/multi-export', 'code', '2', '1', '1', '—', '50%', '—', '—']);
+		expect(cellsOf({ logged })[1]).toStrictEqual(['lightsout/multi-export', 'deterministic', '2', '1', '1', '—', '50%', '—', '—']);
 		expect(errors).toStrictEqual([]);
 		expect(exitCodes).toStrictEqual([0]);
 	});
@@ -144,8 +144,8 @@ describe('standardsHealthCommand', () => {
 						rule: 'lightsout/file-size',
 						set: 'code',
 						documentPath: 'code/fractal/size',
-						checked: true,
-						reviewed: false,
+						deterministic: true,
+						agent: false,
 						attempted: 3,
 						resolved: 0,
 						declined: 3,
@@ -156,7 +156,7 @@ describe('standardsHealthCommand', () => {
 						reasons: ['  splitting   this file\n  would break the barrel  ', 'splitting this file would break the barrel', '', 'x'.repeat(120)],
 					},
 				],
-				totals: { rules: 1, checked: 1, judgment: 0 },
+				totals: { rules: 1, deterministic: 1, agent: 0 },
 			},
 		});
 

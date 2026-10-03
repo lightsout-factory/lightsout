@@ -86,11 +86,11 @@ const setupCheck = ({
 	return { context: { flags: parseFlags({ args }), rest: [], cwd }, ...captured };
 };
 
-const codeChecksHeading = 'Code checks  ·  deterministic — the same answer every run';
+const codeChecksHeading = 'Deterministic checks  ·  code decides, with the same answer every run';
 const agentReviewHeading = 'Agent review';
 
 /** The section headings, in the order they were printed. */
-const sectionsOf = ({ logged }: { logged: string[] }) => logged.filter((line) => line.startsWith('Code checks') || line.startsWith('Agent review'));
+const sectionsOf = ({ logged }: { logged: string[] }) => logged.filter((line) => line.startsWith('Deterministic checks') || line.startsWith('Agent review'));
 
 describe('standardsCheckCommand sections', () => {
 	test('each half runs under its own heading, in the order they run', async () => {
@@ -102,7 +102,7 @@ describe('standardsCheckCommand sections', () => {
 	});
 
 	test('a half that is switched off prints no heading either', async () => {
-		const { context, logged } = setupCheck({ args: ['--code-checks'] });
+		const { context, logged } = setupCheck({ args: ['--deterministic-checks'] });
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
@@ -111,7 +111,7 @@ describe('standardsCheckCommand sections', () => {
 
 	test("the check's progress prints under its heading as the check reports it, ahead of any result", async () => {
 		const { context, logged } = setupCheck({
-			args: ['--code-checks'],
+			args: ['--deterministic-checks'],
 			check: { progress: ['checking 12 source file(s)', 'tier 0 (names): done'], findings: [finding()] },
 		});
 
@@ -120,7 +120,7 @@ describe('standardsCheckCommand sections', () => {
 		expect(logged.slice(0, 4)).toStrictEqual(['', codeChecksHeading, '  checking 12 source file(s)', '  tier 0 (names): done']);
 	});
 
-	test("the code checks' findings are on screen before the agent review starts — a reader waiting on the agent already has the deterministic answer", async () => {
+	test("the deterministic checks' findings are on screen before the agent review starts — a reader waiting on the agent already has the deterministic answer", async () => {
 		const { context, logged } = setupCheck({
 			check: { findings: [finding({ rule: 'duplicate-code-block', severity: StandardsSeverity.Blocking, siteKey: 'duplicate-code-block:src/a.ts:1' })] },
 			review: { findings: [finding({ rule: 'object-args', siteKey: 'object-args:src/a.ts' })] },
@@ -133,7 +133,10 @@ describe('standardsCheckCommand sections', () => {
 	});
 
 	test("the check's notes print under their own marker, inside its section", async () => {
-		const { context, logged } = setupCheck({ args: ['--code-checks'], check: { findings: [finding()], notes: ['3 site(s) held back by the baseline'] } });
+		const { context, logged } = setupCheck({
+			args: ['--deterministic-checks'],
+			check: { findings: [finding()], notes: ['3 site(s) held back by the baseline'] },
+		});
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
@@ -150,12 +153,14 @@ describe('standardsCheckCommand sections', () => {
 			expected: '1 blocking, 1 advisory',
 		},
 	]) {
-		test(`the code checks close with a finish line saying how long they took and what they found: ${expected}`, async () => {
-			const { context, logged } = setupCheck({ args: ['--code-checks'], check: { findings } });
+		test(`the deterministic checks close with a finish line saying how long they took and what they found: ${expected}`, async () => {
+			const { context, logged } = setupCheck({ args: ['--deterministic-checks'], check: { findings } });
 
 			await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 
-			expect(logged.find((line) => line.includes('Code checks finished'))).toMatch(new RegExp(`^  ✓ Code checks finished in \\d+s — ${expected}$`));
+			expect(logged.find((line) => line.includes('Deterministic checks finished'))).toMatch(
+				new RegExp(`^  ✓ Deterministic checks finished in \\d+s — ${expected}$`),
+			);
 		});
 	}
 
@@ -164,7 +169,7 @@ describe('standardsCheckCommand sections', () => {
 			args: ['--agent-review'],
 			review: {
 				progress: [
-					'The agent review is now running. claude-code is reading your code against the 62 rules that take judgment. This usually takes a few minutes.',
+					'The agent review is now running. claude-code is reading your code against the 62 rules with an agent check. This usually takes a few minutes.',
 					'⏳ agent review still running · 30s · 12 files read so far',
 					'✓ Agent review finished in 4m 12s — nothing to report',
 				],
@@ -177,7 +182,7 @@ describe('standardsCheckCommand sections', () => {
 
 		expect(heading).toBeGreaterThan(-1);
 		expect(logged.slice(heading + 1, heading + 4)).toStrictEqual([
-			'  The agent review is now running. claude-code is reading your code against the 62 rules that take judgment. This usually takes a few minutes.',
+			'  The agent review is now running. claude-code is reading your code against the 62 rules with an agent check. This usually takes a few minutes.',
 			'  ⏳ agent review still running · 30s · 12 files read so far',
 			'  ✓ Agent review finished in 4m 12s — nothing to report',
 		]);

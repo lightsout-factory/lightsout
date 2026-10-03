@@ -13,6 +13,8 @@ from here and needs nothing else lightsout knows.
   given. A check never opens a file; it is handed what it asked for.
 - `StandardsLibraryRoot` — the shape of `lightsout-standards.json`.
 - `StandardsSet` — the two document trees, `code` and `tests`.
+- `StandardsRuleChecks` — the `checks` line of a rule's front matter: `deterministic`,
+  `agent` or `both`.
 
 ## Import types, never values
 

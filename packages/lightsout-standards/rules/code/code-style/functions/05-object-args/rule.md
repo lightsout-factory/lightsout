@@ -1,6 +1,6 @@
 ---
 summary: "How a function takes its arguments."
-checked: false
+checks: agent
 severity: advisory
 ---
 

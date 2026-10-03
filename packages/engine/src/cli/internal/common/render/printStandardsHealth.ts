@@ -1,4 +1,4 @@
-import { describeCheckedBy } from '#src/cli/internal/common/render/common/utils/describeCheckedBy.ts';
+import { describeCheckKinds } from '#src/cli/internal/common/render/common/utils/describeCheckKinds.ts';
 import { renderTable } from '#src/cli/internal/common/render/renderTable.ts';
 import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { dim } from '#src/cli/internal/common/terminal/dim.ts';
@@ -33,7 +33,7 @@ const ruleRows = ({ rule }: { rule: StandardsHealthRule }) => {
 		{
 			cells: [
 				rule.rule,
-				describeCheckedBy({ rule }),
+				describeCheckKinds({ rule }),
 				count({ value: rule.attempted }),
 				count({ value: rule.resolved }),
 				count({ value: rule.declined }),
@@ -73,7 +73,7 @@ export const printStandardsHealth = ({ health }: Params): void => {
 	const totalsRow = {
 		cells: [
 			`${totals.rules} rule(s)`,
-			`${totals.checked} by code, ${totals.judgment} by judgment`,
+			`${totals.deterministic} deterministic, ${totals.agent} agent`,
 			count({ value: attempted }),
 			count({ value: sum({ rules, of: (rule) => rule.resolved }) }),
 			count({ value: sum({ rules, of: (rule) => rule.declined }) }),
@@ -86,7 +86,7 @@ export const printStandardsHealth = ({ health }: Params): void => {
 	};
 
 	for (const line of renderTable({
-		headers: ['rule', 'checked by', 'sites', 'resolved', 'declined', 'untracked', 'declined %', 'advice', 'advice declined %'],
+		headers: ['rule', 'check', 'sites', 'resolved', 'declined', 'untracked', 'declined %', 'advice', 'advice declined %'],
 		rows: [...rows, totalsRow],
 	})) {
 		console.log(line);

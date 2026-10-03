@@ -15,7 +15,7 @@ import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { withTestChangeReview } from '#tests/helpers/withTestChangeReview.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
 
-/** The judgment rule ids the standards reviewer was handed, so a stub finding can name one a loaded pack actually declares. */
+/** The agent-checked rule ids the standards reviewer was handed, so a stub finding can name one a loaded pack actually declares. */
 const ruleIdsOffered = ({ systemPrompt }: { systemPrompt: string }) => [...systemPrompt.matchAll(/Rule: `([^`]+)`/g)].map(([, id]) => id ?? '');
 
 /**

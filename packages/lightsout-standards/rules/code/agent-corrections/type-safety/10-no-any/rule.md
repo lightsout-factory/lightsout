@@ -1,6 +1,6 @@
 ---
 summary: "Avoiding the type that switches type checking off."
-checked: true
+checks: deterministic
 severity: blocking
 ---
 

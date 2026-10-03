@@ -14,7 +14,7 @@ import type { StandardsHealth } from '#src/standardsCheck/common/types/Standards
 import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
 import { mapPackRules } from '#src/standardsLibraries/mapPackRules.ts';
 
-type Tally = Omit<StandardsHealthRule, 'rule' | 'set' | 'documentPath' | 'checked' | 'reviewed'>;
+type Tally = Omit<StandardsHealthRule, 'rule' | 'set' | 'documentPath' | 'deterministic' | 'agent'>;
 
 const emptyTally = (): Tally => ({
 	attempted: 0,
@@ -92,7 +92,7 @@ const countBatchSites = ({ tallies, blocking, report }: { tallies: Map<string, T
 	}
 };
 
-/** The only record judgment-only rules ever get. */
+/** The only record agent-only rules ever get. */
 const countAdvice = ({ tallies, outcomes }: { tallies: Map<string, Tally>; outcomes: AdvisoryOutcome[] }) => {
 	for (const entry of outcomes) {
 		const tally = tallyFor({ tallies, rule: entry.rule });
@@ -147,8 +147,8 @@ export const buildStandardsHealth = async ({ cwd, groups }: Params): Promise<Sta
 		rule: rule.name,
 		set: rule.set,
 		documentPath: rule.documentPath,
-		checked: rule.checked,
-		reviewed: rule.reviewed,
+		deterministic: rule.deterministic,
+		agent: rule.agent,
 		...(tallies.get(rule.name) ?? emptyTally()),
 	}));
 
@@ -156,6 +156,6 @@ export const buildStandardsHealth = async ({ cwd, groups }: Params): Promise<Sta
 
 	return {
 		rules,
-		totals: { rules: rules.length, checked: rules.filter((rule) => rule.checked).length, judgment: rules.filter((rule) => rule.reviewed).length },
+		totals: { rules: rules.length, deterministic: rules.filter((rule) => rule.deterministic).length, agent: rules.filter((rule) => rule.agent).length },
 	};
 };

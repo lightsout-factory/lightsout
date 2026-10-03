@@ -10,8 +10,8 @@ interface Props {
 
 export const PackStats = ({ library }: Props) => {
 	const kinds = [
-		{ Icon: checkKindIcons[CheckKind.Deterministic], count: library?.totals.checked, label: checkKindLabels[CheckKind.Deterministic].plural },
-		{ Icon: checkKindIcons[CheckKind.Agent], count: library?.totals.judgment, label: checkKindLabels[CheckKind.Agent].plural },
+		{ Icon: checkKindIcons[CheckKind.Deterministic], count: library?.totals.deterministic, label: checkKindLabels[CheckKind.Deterministic].plural },
+		{ Icon: checkKindIcons[CheckKind.Agent], count: library?.totals.agent, label: checkKindLabels[CheckKind.Agent].plural },
 	];
 
 	return (

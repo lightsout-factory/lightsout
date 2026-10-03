@@ -49,8 +49,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: false,
-	reviewed: overrides.checked !== true,
+	deterministic: false,
+	agent: overrides.deterministic !== true,
 	defaultSeverity: 'advisory',
 	defaultOptions: {},
 	requires: [],
@@ -60,7 +60,7 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 
 const setupValidate = ({
 	args = [],
-	rules = [rule({ id: 'multi-export', checked: true }), rule({ id: 'premature-abstraction' })],
+	rules = [rule({ id: 'multi-export', deterministic: true }), rule({ id: 'premature-abstraction' })],
 	problems = [],
 	notes = [],
 }: {
@@ -113,7 +113,7 @@ const flaggedLightsout = library({ name: 'lightsout', rootPath: '/repo/my-lights
 const tally = library({
 	name: 'tally',
 	rootPath: '/repo/libs/tally',
-	rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'dead-export', checked: true }), rule({ id: 'premature-abstraction' })],
+	rules: [rule({ id: 'multi-export', deterministic: true }), rule({ id: 'dead-export', deterministic: true }), rule({ id: 'premature-abstraction' })],
 	packs: [packFile({ name: 'base' }), packFile({ name: 'node' }), packFile({ name: 'web' })],
 });
 
@@ -178,7 +178,7 @@ describe('standardsValidateCommand', () => {
 		// the pack that was loaded is the one validated — not a second read
 		expect(mockValidateStandardsPack).toHaveBeenCalledWith({ library: pack, libraries: [pack] });
 		// the tally separates what was validated from what nothing could validate
-		expect(logged).toContain('acme — 1 checked rule(s) validated, 1 agent-reviewed rule(s), 0 pack file(s)');
+		expect(logged).toContain('acme — 1 deterministic rule(s) validated, 1 agent rule(s), 0 pack file(s)');
 		expect(exitCodes).toStrictEqual([0]);
 	});
 
@@ -200,15 +200,15 @@ describe('standardsValidateCommand', () => {
 
 	test('prints the notes and then the problems, and ends red when any problem remains', async () => {
 		const { context, logged, exitCodes } = setupValidate({
-			notes: ['premature-abstraction: judgment-only — fixtures reserved for agent accuracy'],
+			notes: ['premature-abstraction: agent check — fixtures reserved for agent accuracy'],
 			problems: ['multi-export: the fail fixture produced no finding — the check does not catch what the rule describes'],
 		});
 
 		await expect(standardsValidateCommand(context)).rejects.toThrow(/process\.exit/);
 
-		expect(logged[0]).toBe('ℹ premature-abstraction: judgment-only — fixtures reserved for agent accuracy');
+		expect(logged[0]).toBe('ℹ premature-abstraction: agent check — fixtures reserved for agent accuracy');
 		expect(logged[1]).toBe('✗ multi-export: the fail fixture produced no finding — the check does not catch what the rule describes');
-		expect(logged).toContain('acme — 1 problem(s) across 1 checked rule(s) and 0 pack file(s)');
+		expect(logged).toContain('acme — 1 problem(s) across 1 deterministic rule(s) and 0 pack file(s)');
 		expect(exitCodes).toStrictEqual([1]);
 	});
 
@@ -221,7 +221,7 @@ describe('standardsValidateCommand', () => {
 
 		// a rule nothing could validate is reported, not counted against the pack
 		expect(logged[0]).toBe('ℹ multi-export: fixtures skipped — no typescript resolvable');
-		expect(logged).toContain('acme — 1 checked rule(s) validated, 1 agent-reviewed rule(s), 0 pack file(s)');
+		expect(logged).toContain('acme — 1 deterministic rule(s) validated, 1 agent rule(s), 0 pack file(s)');
 		expect(exitCodes).toStrictEqual([0]);
 	});
 
@@ -281,7 +281,7 @@ describe('standardsValidateCommand', () => {
 		const finalLine = logged.at(-1);
 
 		expect({ finalLine, exitCodes }).toEqual({
-			finalLine: expect.stringMatching(/2 checked rule.*1 agent-reviewed rule.*3 pack file/),
+			finalLine: expect.stringMatching(/2 deterministic rule.*1 agent rule.*3 pack file/),
 			exitCodes: [0],
 		});
 	});

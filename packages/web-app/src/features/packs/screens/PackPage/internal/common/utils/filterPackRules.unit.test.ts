@@ -6,18 +6,18 @@ import { filterPackRules } from '#src/features/packs/screens/PackPage/internal/c
 import { buildStandardsPackRuleListing } from '#tests/helpers/buildStandardsPackRuleListing.ts';
 
 const rules = [
-	buildStandardsPackRuleListing({ id: 'type-assertion', set: StandardsSet.Code, checked: true, defaultSeverity: StandardsSeverity.Blocking }),
+	buildStandardsPackRuleListing({ id: 'type-assertion', set: StandardsSet.Code, deterministic: true, defaultSeverity: StandardsSeverity.Blocking }),
 	buildStandardsPackRuleListing({
 		id: 'no-test-state-in-hooks',
 		set: StandardsSet.Tests,
-		checked: true,
+		deterministic: true,
 		defaultSeverity: StandardsSeverity.Advisory,
 		summary: 'test state built in a hook',
 	}),
 	buildStandardsPackRuleListing({
 		id: 'component-file-structure',
 		set: StandardsSet.Code,
-		checked: false,
+		deterministic: false,
 		defaultSeverity: StandardsSeverity.Advisory,
 		summary: 'a component folder that bundles nothing',
 	}),
@@ -33,8 +33,8 @@ describe('filterPackRules', () => {
 	});
 
 	test('a rule code decides only part of shows under both kinds, since it has both', () => {
-		const partlyChecked = buildStandardsPackRuleListing({ id: 'shared-code-placement', checked: true, reviewed: true, summary: 'where shared code sits' });
-		const idsOf = ({ check }: { check: CheckKind }) => filterPackRules({ rules: [...rules, partlyChecked], filters: { check } }).map((rule) => rule.id);
+		const bothKinds = buildStandardsPackRuleListing({ id: 'shared-code-placement', deterministic: true, agent: true, summary: 'where shared code sits' });
+		const idsOf = ({ check }: { check: CheckKind }) => filterPackRules({ rules: [...rules, bothKinds], filters: { check } }).map((rule) => rule.id);
 
 		expect(idsOf({ check: CheckKind.Deterministic })).toStrictEqual(['type-assertion', 'no-test-state-in-hooks', 'shared-code-placement']);
 		expect(idsOf({ check: CheckKind.Agent })).toStrictEqual(['component-file-structure', 'shared-code-placement']);

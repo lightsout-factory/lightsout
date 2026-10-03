@@ -18,7 +18,7 @@ export const CommandFlag = z.object({
 	shape: z.string().optional(),
 	/** Rendered bare on the usage line; optional flags render in `[ ]`. */
 	required: z.boolean().default(false),
-	/** Flags sharing a key render together in one bracket joined by ` | ` — `[--code-checks | --agent-review]`. */
+	/** Flags sharing a key render together in one bracket joined by ` | ` — `[--deterministic-checks | --agent-review]`. */
 	exclusiveWith: z.string().optional(),
 });
 

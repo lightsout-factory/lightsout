@@ -36,7 +36,7 @@ export const seedStandardsFixture = async ({ baseline = false, config }: Params 
 	);
 
 	if (baseline) {
-		await runCli({ args: ['standards-check', '--code-checks', '--baseline', '--cwd', cwd] });
+		await runCli({ args: ['standards-check', '--deterministic-checks', '--baseline', '--cwd', cwd] });
 	}
 
 	return { cwd };

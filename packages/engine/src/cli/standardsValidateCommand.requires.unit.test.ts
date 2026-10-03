@@ -38,7 +38,7 @@ jest.mock('#src/standardsLibraries/resolveStandardsLibraries.ts', () => ({
 }));
 // -------------------------
 
-const rule = ({ id, checked, requires }: { id: string; checked: boolean; requires: string[] }): LoadedStandardsRule => ({
+const rule = ({ id, deterministic, requires }: { id: string; deterministic: boolean; requires: string[] }): LoadedStandardsRule => ({
 	id,
 	name: `house/${id}`,
 	library: 'house',
@@ -46,8 +46,8 @@ const rule = ({ id, checked, requires }: { id: string; checked: boolean; require
 	documentPath: 'code/architecture/react',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked,
-	reviewed: !checked,
+	deterministic,
+	agent: !deterministic,
 	defaultSeverity: 'advisory',
 	defaultOptions: {},
 	fixturesPath: `/repo/libs/house/${id}/fixtures`,
@@ -62,8 +62,8 @@ const setupWarningsOnly = ({ warnings }: { warnings: string[] }) => {
 		rootPath: '/repo/libs/house',
 		documents: [],
 		rules: [
-			rule({ id: 'component-file-structure', checked: false, requires: ['house/index-files'] }),
-			rule({ id: 'index-files', checked: true, requires: [] }),
+			rule({ id: 'component-file-structure', deterministic: false, requires: ['house/index-files'] }),
+			rule({ id: 'index-files', deterministic: true, requires: [] }),
 		],
 		packs: [],
 	};
@@ -101,14 +101,14 @@ describe('standardsValidateCommand', () => {
 				'⚠ house/react: house/component-file-structure requires house/index-files, which the pack does not send to agents',
 				'⚠ house/react: house/component-file-structure requires house/module-folder-layout, which the pack does not send to agents',
 			],
-			finalLine: 'house — 1 checked rule(s) validated, 1 agent-reviewed rule(s), 0 pack file(s)',
+			finalLine: 'house — 1 deterministic rule(s) validated, 1 agent rule(s), 0 pack file(s)',
 			exitCodes: [0],
 		});
 	});
 
 	test('prints warnings after the notes and before the problems, and a problem still exits 1', async () => {
 		const { context, logged, exitCodes } = setupEveryFinding({
-			note: 'house/index-files: judgment-only — fixtures reserved for agent accuracy',
+			note: 'house/index-files: agent check — fixtures reserved for agent accuracy',
 			warning: 'house/react: house/component-file-structure requires house/index-files, which the pack does not send to agents',
 			problem: 'house/index-files: the fail fixture produced no finding — the check does not catch what the rule describes',
 		});
@@ -118,11 +118,11 @@ describe('standardsValidateCommand', () => {
 		// the warning is not counted: the summary names one problem, the one the validator returned
 		expect({ logged, exitCodes }).toStrictEqual({
 			logged: [
-				'ℹ house/index-files: judgment-only — fixtures reserved for agent accuracy',
+				'ℹ house/index-files: agent check — fixtures reserved for agent accuracy',
 				'⚠ house/react: house/component-file-structure requires house/index-files, which the pack does not send to agents',
 				'✗ house/index-files: the fail fixture produced no finding — the check does not catch what the rule describes',
 				'',
-				'house — 1 problem(s) across 1 checked rule(s) and 0 pack file(s)',
+				'house — 1 problem(s) across 1 deterministic rule(s) and 0 pack file(s)',
 			],
 			exitCodes: [1],
 		});

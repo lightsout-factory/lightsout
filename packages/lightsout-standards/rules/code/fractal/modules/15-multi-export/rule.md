@@ -1,6 +1,6 @@
 ---
 summary: "How many things one file may export."
-checked: true
+checks: deterministic
 severity: advisory
 ---
 

@@ -19,8 +19,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: false,
-	reviewed: overrides.checked !== true,
+	deterministic: false,
+	agent: overrides.deterministic !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -83,7 +83,7 @@ describe('runStandardsReview dropped findings', () => {
 		});
 
 		expect(findings.map((finding) => finding.rule)).toStrictEqual(['acme/common-placement']);
-		expect(notes).toStrictEqual(['agent review: 1 finding(s) dropped — no judgment rule is named invented-rule']);
+		expect(notes).toStrictEqual(['agent review: 1 finding(s) dropped — no agent-checked rule is named invented-rule']);
 	});
 
 	test('a finding with no file to point at is dropped — a site key needs a site', async () => {
@@ -122,7 +122,7 @@ describe('runStandardsReview dropped findings', () => {
 		});
 
 		expect(findings).toStrictEqual([]);
-		expect(notes).toStrictEqual(['agent review: 3 finding(s) dropped — no judgment rule is named alpha-rule, zeta-rule']);
+		expect(notes).toStrictEqual(['agent review: 3 finding(s) dropped — no agent-checked rule is named alpha-rule, zeta-rule']);
 	});
 
 	test('both kinds of drop are stated separately when one review does both', async () => {
@@ -147,7 +147,7 @@ describe('runStandardsReview dropped findings', () => {
 
 		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['acme/common-placement:src/b.ts']);
 		expect(notes).toStrictEqual([
-			'agent review: 1 finding(s) dropped — no judgment rule is named invented-rule',
+			'agent review: 1 finding(s) dropped — no agent-checked rule is named invented-rule',
 			'agent review: 1 finding(s) dropped — reported with no file to point at',
 		]);
 	});

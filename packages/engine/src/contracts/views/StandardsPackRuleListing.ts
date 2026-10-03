@@ -15,10 +15,10 @@ export const StandardsPackRuleListing = z.object({
 	/** Pack-relative document folder path, e.g. 'code/code-style/functions'. */
 	documentPath: z.string(),
 	summary: z.string(),
-	/** True when the rule ships a check code runs. */
-	checked: z.boolean(),
-	/** True when an agent reviews the rule: it ships no check, or its check covers only part of it. */
-	reviewed: z.boolean(),
+	/** True when the rule has a deterministic check — code that decides, with the same answer every run. */
+	deterministic: z.boolean(),
+	/** True when the rule has an agent check — an agent reviews the change against it, because it ships no deterministic check or that check decides only part of it. */
+	agent: z.boolean(),
 	/** `off` for a rule a repo opts into. */
 	defaultSeverity: z.enum(StandardsSeverity),
 	/** The numbers the rule.md header declares under `options`. */

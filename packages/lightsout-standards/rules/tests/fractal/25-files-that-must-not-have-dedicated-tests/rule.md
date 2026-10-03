@@ -1,6 +1,6 @@
 ---
 summary: "Files that need no tests of their own."
-checked: false
+checks: agent
 severity: advisory
 ---
 

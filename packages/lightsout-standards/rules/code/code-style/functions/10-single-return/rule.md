@@ -1,6 +1,6 @@
 ---
 summary: "Where a function returns its result."
-checked: false
+checks: agent
 severity: advisory
 ---
 

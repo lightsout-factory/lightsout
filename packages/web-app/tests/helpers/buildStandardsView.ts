@@ -14,6 +14,6 @@ export const buildStandardsView = ({ overrides = {} }: Params = {}): StandardsVi
 	findings: [],
 	rules: [buildStandardsRuleView()],
 	trend: [],
-	totals: { rules: 1, checked: 1, judgment: 0, blocking: 0, advisory: 0, orphans: 0 },
+	totals: { rules: 1, deterministic: 1, agent: 0, blocking: 0, advisory: 0, orphans: 0 },
 	...overrides,
 });

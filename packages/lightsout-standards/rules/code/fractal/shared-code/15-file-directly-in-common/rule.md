@@ -1,6 +1,6 @@
 ---
 summary: "Shared files go in a folder for their kind of code."
-checked: true
+checks: deterministic
 severity: advisory
 example:
   kind: repo

@@ -1,6 +1,6 @@
 ---
 summary: "Where code that several modules use belongs."
-checked: partial
+checks: both
 severity: advisory
 example:
   kind: repo

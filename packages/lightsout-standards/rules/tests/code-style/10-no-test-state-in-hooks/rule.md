@@ -1,6 +1,6 @@
 ---
 summary: "Where a test's state is built."
-checked: true
+checks: deterministic
 severity: blocking
 ---
 

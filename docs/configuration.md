@@ -319,28 +319,28 @@ group. Runs never warn.
 A pack may also ship one `fixtures/framework-owned/<framework>/` tree per
 framework — a miniature repo whose `package.json` declares that framework, so
 the same carve-outs a real package earns apply. `standards-validate` runs every
-checked rule against every such tree and expects silence: a rule that fires
+deterministic check against every such tree and expects silence: a rule that fires
 there is judging code its framework owns, and it is named as that. The tree is
 found by convention, never declared, and a pack that ships none gets a note
 rather than a problem.
 
 `lightsout standards-health` reports on the rules rather than on your code: per
-rule, whether code checks it or an agent has to judge it, and how often agents
+rule, whether it has a deterministic check or an agent check, and how often agents
 declined its findings, with the reasons they gave. The coverage half is counted
 from the package's own folders, so it lands even in a repository that has never
 run anything. The decline half is aggregated from the refactor runs recorded
 under `.lightsout`, and reads `—` until you have some.
 
 `lightsout standards-check` reports what your code breaks today. It runs both
-halves of the check by default — the checks your rules ship as code, and an
-agent reading the rules no code can check. Pass `--code-checks` for only the
-first, or `--agent-review` for only the second. The agent's findings are always
-advisory: they join the same reported stream, and they never fail a run. A run
-that includes the code checks writes `.lightsout/standards-check.json`; a
-review-only run prints and writes nothing, because that file is the machine
-half's evidence and a judgment call must not overwrite it. A repository whose
-harness is not installed gets a plain "agent review skipped" note rather than a
-failure.
+halves of the check by default — the deterministic checks your rules ship as
+code, and an agent review reading the rules with an agent check. Pass
+`--deterministic-checks` for only the first, or `--agent-review` for only the
+second. The agent's findings are always advisory: they join the same reported
+stream, and they never fail a run. A run that includes the deterministic checks
+writes `.lightsout/standards-check.json`; a review-only run prints and writes
+nothing, because that file is the deterministic half's evidence and an agent's
+reading must not overwrite it. A repository whose harness is not installed gets
+a plain "agent review skipped" note rather than a failure.
 
 ## Field reference
 
@@ -795,7 +795,7 @@ the agent — a run that leaves the code clean spends no rounds however high thi
 number is. What may spend a round is narrow: a deterministic blocking finding
 that this run's own edits introduced, or one whose measured size this run made
 worse. Debt the run inherited, a finding whose provenance cannot be established,
-and the judgment reviewer's opinions are all recorded and handed forward without
+and the agent review's opinions are all recorded and handed forward without
 buying an attempt.
 
 Whatever cleanup leaves behind never stops the run. Remaining findings are

@@ -26,10 +26,10 @@ const writeFiles = ({ root, files }: { root: string; files: Record<string, strin
 const houseLibraryFiles = {
 	'lightsout-standards.json': '{ "name": "house", "formatVersion": 2 }\n',
 	'rules/code/demo/topic.md': '# Demo\n\nThe topic both rules argue under.\n',
-	'rules/code/demo/01-a/rule.md': '---\nsummary: rule a\nseverity: advisory\nrequires:\n  - b\n---\n\nRule a follows rule b.\n',
+	'rules/code/demo/01-a/rule.md': '---\nsummary: rule a\nchecks: agent\nseverity: advisory\nrequires:\n  - b\n---\n\nRule a follows rule b.\n',
 	'rules/code/demo/01-a/fixtures/pass/src/example.ts': 'export const example = 1;\n',
 	'rules/code/demo/01-a/fixtures/fail/src/example.ts': 'export const example = 2;\n',
-	'rules/code/demo/02-b/rule.md': '---\nsummary: rule b\nseverity: off\n---\n\nRule b states what rule a points at.\n',
+	'rules/code/demo/02-b/rule.md': '---\nsummary: rule b\nchecks: agent\nseverity: off\n---\n\nRule b states what rule a points at.\n',
 	'rules/code/demo/02-b/fixtures/pass/src/example.ts': 'export const example = 1;\n',
 	'rules/code/demo/02-b/fixtures/fail/src/example.ts': 'export const example = 2;\n',
 	'packs/team.json': JSON.stringify({ description: 'The team pack.', include: { topics: ['house/code/demo'] } }),

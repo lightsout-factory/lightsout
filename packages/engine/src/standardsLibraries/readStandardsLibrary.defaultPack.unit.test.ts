@@ -130,14 +130,14 @@ describe('readStandardsLibrary', () => {
 	test('every rule declaring a check ships one that can be run', async () => {
 		const { pack } = await setupDefaultPack();
 
-		const checked = pack.rules.filter((rule) => rule.checked);
+		const checked = pack.rules.filter((rule) => rule.deterministic);
 		const runnable = checked.filter((rule) => typeof rule.run === 'function' && rule.inputKinds !== undefined);
 
 		// the honesty rule at load time is what makes this hold — this pins that it holds for the shipped pack
 		expect(checked.length).toBeGreaterThan(0);
 		expect(runnable).toHaveLength(checked.length);
-		// a judgment-only rule declares no check and carries none
-		expect(pack.rules.filter((rule) => !rule.checked).every((rule) => rule.run === undefined)).toBe(true);
+		// a agent-only rule declares no check and carries none
+		expect(pack.rules.filter((rule) => !rule.deterministic).every((rule) => rule.run === undefined)).toBe(true);
 	});
 
 	test('assembles both sets for a repo running no framework, each document headed by where it came from', async () => {
@@ -172,7 +172,7 @@ describe('readStandardsLibrary', () => {
 				.map((specifier) => `${file}: ${specifier}`),
 		);
 		const importsThroughAlias = checks.some(({ specifiers }) => specifiers.some((specifier) => specifier.startsWith('#common/')));
-		const checked = pack.rules.filter((rule) => rule.checked);
+		const checked = pack.rules.filter((rule) => rule.deterministic);
 		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKinds === undefined).map((rule) => rule.name);
 
 		// an empty check list would make "every check" hold vacuously
@@ -191,7 +191,7 @@ describe('readStandardsLibrary', () => {
 	test('the built-in library keeps every topic under rules and loads the check of every checked rule', async () => {
 		const { pack, rootFolders, rulesFolders } = await setupLibraryLayout();
 
-		const checked = pack.rules.filter((rule) => rule.checked);
+		const checked = pack.rules.filter((rule) => rule.deterministic);
 		const unloadable = checked.filter((rule) => typeof rule.run !== 'function' || rule.inputKinds === undefined).map((rule) => rule.name);
 
 		// an empty checked-rule list would make "every checked rule" hold vacuously

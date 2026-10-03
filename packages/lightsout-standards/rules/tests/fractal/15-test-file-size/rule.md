@@ -1,6 +1,6 @@
 ---
 summary: "When a test file is too long."
-checked: true
+checks: deterministic
 severity: advisory
 options:
   testFile: 400

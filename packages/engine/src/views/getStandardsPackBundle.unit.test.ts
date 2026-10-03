@@ -66,11 +66,11 @@ const setupLibraryRepo = async ({ appPacks = ['house/base'], baseAppliesWhen }: 
 				'rule-settings': { 'house/zebra-check': { severity: 'blocking', options: { cap: 9 } } },
 			}),
 			'rules/tests/beta/topic.md': '# Beta\n\nWhat the beta rules share.\n',
-			'rules/tests/beta/10-mango-note/rule.md': '---\nsummary: a judgment rule about tests\n---\n\nTests read as prose.\n',
+			'rules/tests/beta/10-mango-note/rule.md': '---\nsummary: a agent-checked rule about tests\nchecks: agent\n---\n\nTests read as prose.\n',
 			'rules/code/alpha/topic.md': '# Alpha\n\nWhat the alpha rules share.\n',
-			'rules/code/alpha/20-apple-note/rule.md': '---\nsummary: a judgment rule about code\n---\n\nCode reads as prose.\n',
+			'rules/code/alpha/20-apple-note/rule.md': '---\nsummary: a agent-checked rule about code\nchecks: agent\n---\n\nCode reads as prose.\n',
 			'rules/code/alpha/10-zebra-check/rule.md':
-				'---\nsummary: a checked rule\nchecked: true\nseverity: advisory\noptions:\n  cap: 5\n  width: 2\n---\n\nStripes are checked.\n',
+				'---\nsummary: a checked rule\nchecks: deterministic\nseverity: advisory\noptions:\n  cap: 5\n  width: 2\n---\n\nStripes are checked.\n',
 			'rules/code/alpha/10-zebra-check/check.ts': zebraCheckSource,
 			'rules/code/alpha/10-zebra-check/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
 			'rules/code/alpha/10-zebra-check/fixtures/pass/src/b.ts': 'export const b = 1;\n',
@@ -243,10 +243,10 @@ describe('getStandardsPackBundle', () => {
 		};
 
 		expect(totals).toStrictEqual({
-			library: { rules: 3, checked: 1, judgment: 2, topics: 2, packs: 2, withFixtures: 1 },
+			library: { rules: 3, deterministic: 1, agent: 2, topics: 2, packs: 2, withFixtures: 1 },
 			packs: {
-				app: { rules: 3, checked: 1, judgment: 2, topics: 2 },
-				base: { rules: 2, checked: 1, judgment: 1, topics: 1 },
+				app: { rules: 3, deterministic: 1, agent: 2, topics: 2 },
+				base: { rules: 2, deterministic: 1, agent: 1, topics: 1 },
 			},
 		});
 	});

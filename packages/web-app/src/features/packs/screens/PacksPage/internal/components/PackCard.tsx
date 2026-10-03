@@ -16,8 +16,8 @@ interface Props {
 
 export const PackCard = ({ library, pack }: Props) => {
 	const kinds = [
-		{ kind: CheckKind.Deterministic, count: pack.totals.checked },
-		{ kind: CheckKind.Agent, count: pack.totals.judgment },
+		{ kind: CheckKind.Deterministic, count: pack.totals.deterministic },
+		{ kind: CheckKind.Agent, count: pack.totals.agent },
 	];
 
 	return (

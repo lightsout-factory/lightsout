@@ -16,7 +16,7 @@ interface Params {
 	findings: StandardsFinding[];
 	/** Monorepo package parent dir, handed to the review so it grades each finding by its file's package group. */
 	packagesDir: string;
-	/** false skips the agent's read entirely — code-checks-only mode. */
+	/** false skips the agent's read entirely — deterministic-checks-only mode. */
 	agentReview: boolean;
 	timeoutMs: number;
 	onProgress: (message: string) => void;

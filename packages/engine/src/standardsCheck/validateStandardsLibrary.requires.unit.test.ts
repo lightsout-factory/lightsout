@@ -20,7 +20,7 @@ const writeFixturePair = () => {
 	return fixturesPath;
 };
 
-/** A judgment-only house rule; `requires` holds full names, as loading leaves them. */
+/** A agent-only house rule; `requires` holds full names, as loading leaves them. */
 const houseRule = ({ id, requires = [] }: { id: string; requires?: string[] }): LoadedStandardsRule => ({
 	id,
 	name: `house/${id}`,
@@ -29,8 +29,8 @@ const houseRule = ({ id, requires = [] }: { id: string; requires?: string[] }): 
 	documentPath: 'code/demo',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: false,
-	reviewed: true,
+	deterministic: false,
+	agent: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	fixturesPath: writeFixturePair(),

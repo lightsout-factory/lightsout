@@ -14,7 +14,7 @@ export const filterPackRules = ({ rules, filters }: Params): StandardsPackRuleLi
 	return rules.filter(
 		(rule) =>
 			(filters.set === undefined || rule.set === filters.set) &&
-			(filters.check === undefined || toCheckKinds({ checked: rule.checked, reviewed: rule.reviewed }).includes(filters.check)) &&
+			(filters.check === undefined || toCheckKinds({ deterministic: rule.deterministic, agent: rule.agent }).includes(filters.check)) &&
 			(filters.severity === undefined || rule.defaultSeverity === filters.severity) &&
 			(text === '' || rule.id.toLowerCase().includes(text) || rule.summary.toLowerCase().includes(text)),
 	);

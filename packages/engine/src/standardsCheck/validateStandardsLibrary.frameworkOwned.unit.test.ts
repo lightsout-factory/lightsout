@@ -110,8 +110,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: overrides.run !== undefined,
-	reviewed: overrides.run === undefined,
+	deterministic: overrides.run !== undefined,
+	agent: overrides.run === undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -157,7 +157,7 @@ describe('validateStandardsLibrary', () => {
 		});
 
 		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
 		]);
 	});
 
@@ -172,7 +172,7 @@ describe('validateStandardsLibrary', () => {
 
 		// both trees were checked — the silent one simply had nothing to say
 		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
 		]);
 		expect(notes).toStrictEqual([]);
 	});
@@ -189,8 +189,8 @@ describe('validateStandardsLibrary', () => {
 		// written nestjs-first and reported angular-first: the list reads the same
 		// way twice running, whatever order the filesystem hands its entries back
 		expect(problems).toStrictEqual([
-			'no-banned-file: the angular framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the angular framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
 		]);
 	});
 
@@ -205,7 +205,7 @@ describe('validateStandardsLibrary', () => {
 
 		// the count is the whole truth; the paths are enough to go looking with
 		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree produced 4 finding(s) — a checked rule stays silent on code its framework owns (src/a.ts, src/b.ts, src/c.ts, …)',
+			'no-banned-file: the nestjs framework-owned tree produced 4 finding(s) — a deterministic check stays silent on code its framework owns (src/a.ts, src/b.ts, src/c.ts, …)',
 		]);
 	});
 
@@ -221,7 +221,7 @@ describe('validateStandardsLibrary', () => {
 		// a finding pointing at the tree rather than a file still counts, and the
 		// empty list is what says the rule would not name one
 		expect(problems).toStrictEqual([
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns ()',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns ()',
 		]);
 	});
 
@@ -282,15 +282,15 @@ describe('validateStandardsLibrary', () => {
 		expect(notes).toStrictEqual([noFrameworkOwnedNote]);
 	});
 
-	test('a judgment-only rule is skipped by the invariant rather than reported against it', async () => {
+	test('a agent-only rule is skipped by the invariant rather than reported against it', async () => {
 		const { fixturesPath } = setupFixtures({ pass: ['allowed.ts'], fail: ['banned.ts'] });
 		const { frameworkOwnedFixturesPath } = setupFrameworkOwned({ frameworks: { nestjs: ['banned.ts'] } });
 
 		const { problems, notes } = await validate({ frameworkOwnedFixturesPath, rules: [rule({ id: 'premature-abstraction', fixturesPath })] });
 
-		// there is no check to hold to silence, and the judgment-only note already said so once
+		// there is no check to hold to silence, and the agent-only note already said so once
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual(['premature-abstraction: judgment-only — fixtures reserved for agent accuracy']);
+		expect(notes).toStrictEqual(['premature-abstraction: agent check — fixtures reserved for agent accuracy']);
 	});
 
 	test('a rule shipping a check but declaring no input kind is skipped too — there is no input to run it against', async () => {
@@ -303,7 +303,7 @@ describe('validateStandardsLibrary', () => {
 		});
 
 		expect(problems).toStrictEqual([]);
-		expect(notes).toStrictEqual(['premature-abstraction: judgment-only — fixtures reserved for agent accuracy']);
+		expect(notes).toStrictEqual(['premature-abstraction: agent check — fixtures reserved for agent accuracy']);
 	});
 
 	test('a rule owing its author a fixture pair still owes framework-owned code silence', async () => {
@@ -319,7 +319,7 @@ describe('validateStandardsLibrary', () => {
 		expect(problems).toStrictEqual([
 			'no-banned-file: fixtures/fail/ is missing or empty — every rule ships a fixture pair',
 			'no-banned-file: fixtures/pass/ is missing or empty — every rule ships a fixture pair',
-			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a checked rule stays silent on code its framework owns (src/banned.ts)',
+			'no-banned-file: the nestjs framework-owned tree produced 1 finding(s) — a deterministic check stays silent on code its framework owns (src/banned.ts)',
 		]);
 	});
 

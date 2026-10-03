@@ -128,7 +128,7 @@ describe('standardsCheckCommand persistence', () => {
 	});
 
 	test('a run scoped to a subpath records that scope, so partial evidence is never read as a whole-repo check', async () => {
-		const { context, cwd } = setupCheck({ args: ['--code-checks', '--path', 'src/cli'] });
+		const { context, cwd } = setupCheck({ args: ['--deterministic-checks', '--path', 'src/cli'] });
 
 		await expect(standardsCheckCommand(context)).rejects.toThrow(/process\.exit/);
 

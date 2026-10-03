@@ -31,10 +31,13 @@ or reviews one, so every rule in every library has the same shape.
   `<id>` is the rule's key, and its full name is `<library>/<id>`. Findings are
   written with the full name. A short id is accepted wherever it is unique.
   - `rule.md` — required: front matter, then the prose.
-  - `check.ts` — optional: code that finds breaks. Declare `checked: true` when
-    it finds every break the rule names, and `checked: partial` when it finds
-    only some of them and an agent must still read the rule for the rest. A
-    rule declaring either ships a check; a rule declaring neither ships none.
+  - `check.ts` — optional: the deterministic check, code that finds breaks
+    with the same answer every run. `checks:` in the front matter says which
+    kind of check the rule has: `deterministic` when the check finds every
+    break the rule names, `both` when it finds only some of them and an agent
+    must still read the rule for the rest, `agent` when there is no check and
+    an agent reads the whole rule. A rule declaring `deterministic` or `both`
+    ships a check; a rule declaring `agent` ships none.
   - `fixtures/fail/` and `fixtures/pass/` — the Incorrect and Correct examples.
 - **Pack:** one JSON file in `packs/`, addressed as
   `<library>/<file name without .json>`. It holds a `description`;
@@ -55,7 +58,7 @@ or reviews one, so every rule in every library has the same shape.
 
 ```yaml
 summary: "One short sentence for people."   # required
-checked: false                              # true or partial only with a check.ts; partial keeps the agent review
+checks: agent                               # deterministic | agent | both; deterministic and both need a check.ts
 severity: advisory                          # blocking | advisory | off (off = a repo opts in)
 options:                                    # numbers the check reads, if any
   cap: 20
@@ -72,9 +75,9 @@ doctor` warns a repository the same way.
 **Who reads what.** An agent reads one topic at a time: the `topic.md`
 background, then the prose of every rule in it, in folder order. It never sees
 the summary or the examples. People see the summary, the prose and the
-examples on the rule's page. The reviewing agent reads only the rules without a
-check and the rules whose check is `partial`; a rule checked in full is never
-reviewed.
+examples on the rule's page. The reviewing agent reads only the rules with an
+agent check — `checks: agent` and `checks: both`; a rule whose deterministic
+check decides all of it is never reviewed.
 
 ## Steps
 
@@ -142,8 +145,8 @@ reviewed.
    - A topic name when the rule is a set of instructions, such as
      `module-file-to-folder`.
 
-   A rule that gains or loses a code check keeps its name, and so does one whose
-   check goes from `partial` to full.
+   A rule that gains or loses a deterministic check keeps its name, and so does
+   one whose `checks` goes from `both` to `deterministic`.
 3. **Kebab-case, two to five words, no term a reader outside the project would
    have to look up.** Words like `ast` or `census` fail this.
 4. **Use words engineers already know**, not labels a reader must learn:
@@ -208,20 +211,20 @@ with.
 
 `fixtures/fail/` and `fixtures/pass/` are the rule's Incorrect and Correct
 examples. Agents never see them: their job is to make a person agree with the
-rule in a few seconds. For a checked rule they are also its tests —
-`standards-validate` fails when the check misses its fail example or flags its
-pass example.
+rule in a few seconds. For a rule with a deterministic check they are also its
+tests — `standards-validate` fails when the check misses its fail example or
+flags its pass example.
 
 - **Show the whole rule, not half of it.** One example can show both halves.
-  For a `partial` check, the incorrect example holds at least one break the
-  check finds, since validation runs the check on it.
+  For a rule with both kinds of check, the incorrect example holds at least
+  one break the deterministic check finds, since validation runs the check on it.
 - **Follow every other rule in the library**, so the correct side is correct
   everywhere.
 - **Every file a reader might open has a short, accurate comment** saying what
   is wrong or right, and why.
 - **Mind what a comment names:** a check that counts mentions reads a comment's
-  words as uses. An edit to a checked rule's example, even to a comment, can
-  break validation.
+  words as uses. An edit to the example of a rule with a deterministic check,
+  even to a comment, can break validation.
 
 Declare the shape that shows the mistake in the front matter:
 

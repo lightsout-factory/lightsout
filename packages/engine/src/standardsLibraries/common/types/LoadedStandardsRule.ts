@@ -16,19 +16,19 @@ export interface LoadedStandardsRule {
 	summary: string;
 	/** rule.md body — the rule's full prose argument. */
 	prose: string;
-	/** True when the folder declares (and ships) a machine check: `checked: true` or `checked: partial`. */
-	checked: boolean;
-	/** True when an agent reviews the rule: it has no check, or declares `checked: partial` because its check covers only part of what it says. */
-	reviewed: boolean;
+	/** True when the rule has a deterministic check — it declares `checks: deterministic` or `checks: both` and ships the check file. */
+	deterministic: boolean;
+	/** True when the rule has an agent check — it declares `checks: agent`, or `checks: both` because its deterministic check decides only part of what it says. */
+	agent: boolean;
 	/** `off` marks a rule a repo opts into: it runs, and its prose reaches agents, only once the repo's config names it. */
 	defaultSeverity: StandardsSeverity;
 	/** The numbers the rule.md header declares under `options`. */
 	defaultOptions: Record<string, number>;
 	/** Full names of the rules this rule's text depends on — the rule.md `requires` list, resolved when the library is read. */
 	requires: string[];
-	/** Every input kind the check declared; present iff checked. */
+	/** Every input kind the deterministic check declared; present iff deterministic. */
 	inputKinds?: StandardsInputKind[];
-	/** The validated check, present iff checked. */
+	/** The validated deterministic check, present iff deterministic. */
 	run?: StandardsCheckFunction;
 	/** How rule.md says its examples are shaped; absent when it declares none, and a page reads the shape off the files. */
 	example?: RuleExample;

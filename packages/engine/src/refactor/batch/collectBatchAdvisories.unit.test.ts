@@ -36,8 +36,8 @@ const judgmentRule: LoadedStandardsRule = {
 	documentPath: 'code/code-style/functions',
 	summary: 'three positional arguments on an exported function',
 	prose: 'the argument for the rule',
-	checked: false,
-	reviewed: true,
+	deterministic: false,
+	agent: true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -105,7 +105,7 @@ describe('collectBatchAdvisories', () => {
 		expect(advisories.map((entry) => entry.siteKey)).toStrictEqual(['function-size:src/a.ts', 'dead-export:src/a.ts']);
 	});
 
-	test('the agent’s read of the judgment rules joins the same list, after the machine’s', async () => {
+	test('the agent’s read of the agent-checked rules joins the same list, after the deterministic checks’', async () => {
 		const { driver, onProgress } = setupDriver({
 			text: JSON.stringify({ findings: [{ rule: 'object-args', files: [{ path: 'src/a.ts' }], detail: 'three positional arguments' }] }),
 		});
@@ -128,7 +128,7 @@ describe('collectBatchAdvisories', () => {
 		expect(advisories[1]?.severity).toBe(StandardsSeverity.Advisory);
 	});
 
-	test('code-checks-only mode keeps the machine advisories and never spends an agent', async () => {
+	test('deterministic-checks-only mode keeps the machine advisories and never spends an agent', async () => {
 		const driver: Driver = {
 			name: 'stub',
 			invoke: async () => {

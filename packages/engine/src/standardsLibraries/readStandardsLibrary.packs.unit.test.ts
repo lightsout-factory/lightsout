@@ -38,7 +38,7 @@ const setupLibraries = () => {
 		files: {
 			...rootFile,
 			'rules/code/style/topic.md': '# Style\n',
-			...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+			...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\nchecks: agent\n---\n\nProse.\n' }),
 			'packs/node.json': JSON.stringify({ description: 'Node pack.', include: { packs: ['acme/base'] } }),
 			'packs/base.json': JSON.stringify({ description: 'Base pack.', include: { topics: ['acme/code/style'] }, 'rule-settings': { functions: 'blocking' } }),
 			'packs/react.json': JSON.stringify({ description: 'React pack.', include: { packs: ['acme/base'] }, 'applies-when': { dependencies: ['react'] } }),
@@ -48,7 +48,7 @@ const setupLibraries = () => {
 		files: {
 			...rootFile,
 			'rules/code/style/topic.md': '# Style\n',
-			...ruleFiles({ path: 'rules/code/style/01-no-summary', markdown: '---\nchecked: false\n---\n\nProse.\n' }),
+			...ruleFiles({ path: 'rules/code/style/01-no-summary', markdown: '---\nchecks: agent\n---\n\nProse.\n' }),
 			'packs/broken.json': '{ "description": ',
 			'packs/unconditional.json': JSON.stringify({ description: 'Conditional on nothing.', 'applies-when': { dependencies: [] } }),
 			'packs/valid.json': JSON.stringify({ description: 'Valid pack.' }),

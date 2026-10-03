@@ -1,6 +1,6 @@
 ---
 summary: "When imports use the package's path aliases."
-checked: true
+checks: deterministic
 severity: advisory
 ---
 

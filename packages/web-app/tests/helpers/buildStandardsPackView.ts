@@ -20,7 +20,7 @@ const buildPacks = ({ rules, topics }: { rules: StandardsPackRuleListing[]; topi
 		buildStandardsPackListing({
 			topics: topics.map((topic) => `lightsout/${topic.path}`),
 			rules: rules.map((rule) => ({ name: rule.name, severity: rule.defaultSeverity, options: rule.defaultOptions })),
-			totals: { checked: rules.filter((rule) => rule.checked).length, judgment: rules.filter((rule) => rule.reviewed).length },
+			totals: { deterministic: rules.filter((rule) => rule.deterministic).length, agent: rules.filter((rule) => rule.agent).length },
 		}),
 	];
 };
@@ -49,8 +49,8 @@ export const buildStandardsPackView = ({
 		built: false,
 		totals: {
 			rules: rules.length,
-			checked: rules.filter((rule) => rule.checked).length,
-			judgment: rules.filter((rule) => rule.reviewed).length,
+			deterministic: rules.filter((rule) => rule.deterministic).length,
+			agent: rules.filter((rule) => rule.agent).length,
 			topics: topics.length,
 			packs: packs.length,
 			withFixtures: rules.filter((rule) => rule.fixtureCounts.pass > 0 && rule.fixtureCounts.fail > 0).length,

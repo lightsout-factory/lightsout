@@ -1,6 +1,6 @@
 ---
 summary: "Exports in different places that share one name."
-checked: true
+checks: deterministic
 severity: advisory
 ---
 

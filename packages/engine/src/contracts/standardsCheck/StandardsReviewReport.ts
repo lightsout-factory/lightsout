@@ -5,7 +5,7 @@ import { z } from 'zod';
 export const StandardsReviewReport = z.object({
 	findings: z.array(
 		z.object({
-			/** A judgment rule's id — validated against the loaded packages after parsing. */
+			/** An agent-checked rule's name — validated against the loaded packages after parsing. */
 			rule: z.string(),
 			files: z.array(z.object({ path: z.string(), startLine: z.number().optional(), endLine: z.number().optional() })),
 			detail: z.string(),

@@ -10,7 +10,7 @@ interface Params {
 const byRootThenName = (first: string, second: string) => Number(second === '') - Number(first === '') || first.localeCompare(second);
 
 /**
- * Judgment-only rules are listed beside the machine-checked ones: a rule nobody
+ * Agent-only rules are listed beside the deterministic ones: a rule nobody
  * can find out about is a rule nobody follows. A rule is listed once for each
  * distinct state the groups resolve it to, naming the packages that state
  * applies to, so a rule graded alike everywhere is one row.
@@ -34,8 +34,8 @@ export const listStandardsRules = ({ groups }: Params): StandardsRuleListing[] =
 				rule: rule.name,
 				doc: `${rule.library}: ${rule.documentPath}`,
 				summary: rule.summary,
-				checked: rule.checked,
-				reviewed: rule.reviewed,
+				deterministic: rule.deterministic,
+				agent: rule.agent,
 				severity: state.severity,
 				fromConfig: state.fromConfig,
 				options: state.options,

@@ -258,7 +258,7 @@ test('standards packs off: the refactor gate loads no pack, spends no reviewer, 
 
 	const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
 
-	// no pack means no judgment rule to read, so no agent is spent saying so —
+	// no pack means no agent-checked rule to read, so no agent is spent saying so —
 	// and the machine half having nothing to report is what lets the loop finish
 	expect(reviewSystemPrompts).toStrictEqual([]);
 	expect(result.ok).toBe(true);

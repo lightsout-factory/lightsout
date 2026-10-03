@@ -1,6 +1,6 @@
 ---
 summary: "Where a feature's hooks live, and why a query hook infers its return type."
-checked: false
+checks: agent
 severity: advisory
 ---
 

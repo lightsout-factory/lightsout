@@ -20,8 +20,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: false,
-	reviewed: overrides.checked !== true,
+	deterministic: false,
+	agent: overrides.deterministic !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -157,17 +157,17 @@ const rowFor = ({ rules, id }: { rules: Awaited<ReturnType<typeof buildStandards
 	rules.find((entry) => entry.rule === `acme/${id}`);
 
 describe('buildStandardsHealth', () => {
-	test('a rule whose check covers only part of it counts both as checked and as judgment', async () => {
+	test('a rule with both kinds of check counts both as deterministic and as agent', async () => {
 		const cwd = mkdtempSync(join(tmpdir(), 'lightsout-health-partial-'));
 
 		const health = await buildStandardsHealth({
 			cwd,
-			groups: groupsOf({ rules: [rule({ id: 'shared-code', checked: true, reviewed: true }), rule({ id: 'multi-export', checked: true })] }),
+			groups: groupsOf({ rules: [rule({ id: 'shared-code', deterministic: true, agent: true }), rule({ id: 'multi-export', deterministic: true })] }),
 		});
 
 		// code runs both; an agent still reads one — so the two counts pass the rule total
-		expect(health.totals).toStrictEqual({ rules: 2, checked: 2, judgment: 1 });
-		expect(rowFor({ rules: health.rules, id: 'shared-code' })).toEqual(expect.objectContaining({ checked: true, reviewed: true }));
+		expect(health.totals).toStrictEqual({ rules: 2, deterministic: 2, agent: 1 });
+		expect(rowFor({ rules: health.rules, id: 'shared-code' })).toEqual(expect.objectContaining({ deterministic: true, agent: true }));
 	});
 
 	test('coverage is counted off the package folders, so it lands with no run history at all', async () => {
@@ -175,10 +175,10 @@ describe('buildStandardsHealth', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'module-folder-layout' })] }),
+			groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true }), rule({ id: 'module-folder-layout' })] }),
 		});
 
-		expect(health.totals).toStrictEqual({ rules: 2, checked: 1, judgment: 1 });
+		expect(health.totals).toStrictEqual({ rules: 2, deterministic: 1, agent: 1 });
 		// sorted by id, so the report diffs cleanly between runs
 		expect(health.rules.map((entry) => entry.rule)).toStrictEqual(['acme/module-folder-layout', 'acme/multi-export']);
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(
@@ -199,7 +199,7 @@ describe('buildStandardsHealth', () => {
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(
 			expect.objectContaining({ attempted: 2, resolved: 1, declined: 1, untracked: 0, reasons: ['[plan] splitting would break the barrel'] }),
@@ -212,7 +212,7 @@ describe('buildStandardsHealth', () => {
 			reports: { 'batch-01': report({ outcome: 'resolved', remainingSiteKeys: ['acme/multi-export:src/a.ts'], rationale: [] }) },
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 0, declined: 0, untracked: 1 }));
 	});
@@ -220,7 +220,7 @@ describe('buildStandardsHealth', () => {
 	test('a batch with no parseable report is attempted only — a failed batch is not a decline', async () => {
 		const cwd = setupRun({ batches: [batch({ id: 'batch-01', blocking: [finding({ rule: 'acme/multi-export', path: 'src/a.ts' })] })] });
 
-		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 0, declined: 0, untracked: 1 }));
 	});
@@ -244,7 +244,7 @@ describe('buildStandardsHealth', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'module-boundary', checked: true })] }),
+			groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true }), rule({ id: 'module-boundary', deterministic: true })] }),
 		});
 
 		// the rationale is recorded per batch, so both rules carry it
@@ -259,7 +259,7 @@ describe('buildStandardsHealth', () => {
 			reports: { 'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['acme/multi-export:src/a.ts'] }) },
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 0, declined: 0 }));
 	});
@@ -271,7 +271,7 @@ describe('buildStandardsHealth', () => {
 			reports: { 'batch-01': report({ outcome: 'declined', remainingSiteKeys: ['acme/multi-export:src/a.ts'] }) },
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 0, declined: 0, untracked: 0 }));
 	});
@@ -288,10 +288,10 @@ describe('buildStandardsHealth', () => {
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true })] }) });
 
 		expect(health.rules.map((entry) => entry.rule)).toStrictEqual(['acme/multi-export']);
-		expect(health.totals).toStrictEqual({ rules: 1, checked: 1, judgment: 0 });
+		expect(health.totals).toStrictEqual({ rules: 1, deterministic: 1, agent: 0 });
 	});
 
 	test('a run whose work-list will not parse is skipped, and the readable runs still count', async () => {
@@ -310,7 +310,7 @@ describe('buildStandardsHealth', () => {
 			],
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true })] }) });
 
 		// one corrupt run directory must not take the whole account down with it
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, declined: 1 }));
@@ -332,7 +332,7 @@ describe('buildStandardsHealth', () => {
 			],
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 1, declined: 0, untracked: 0 }));
 	});
@@ -343,7 +343,7 @@ describe('buildStandardsHealth', () => {
 			unrecordedBatchIds: ['batch-01'],
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 0, declined: 0, untracked: 1 }));
 	});
@@ -366,7 +366,7 @@ describe('buildStandardsHealth', () => {
 			],
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true })] }) });
+		const health = await buildStandardsHealth({ cwd, groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true })] }) });
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(
 			expect.objectContaining({ attempted: 2, resolved: 1, declined: 1, untracked: 0, reasons: ['[other] deliberate'] }),
@@ -380,12 +380,12 @@ describe('buildStandardsHealth', () => {
 			cwd,
 			groups: [
 				...groupsOf({ pack: 'zeta/house', rules: [rule({ id: 'module-folder-layout', name: 'zeta/module-folder-layout', library: 'zeta' })] }),
-				...groupsOf({ pack: 'alpha/house', rules: [rule({ id: 'multi-export', name: 'alpha/multi-export', library: 'alpha', checked: true })] }),
+				...groupsOf({ pack: 'alpha/house', rules: [rule({ id: 'multi-export', name: 'alpha/multi-export', library: 'alpha', deterministic: true })] }),
 			],
 		});
 
 		expect(health.rules.map((entry) => entry.rule)).toStrictEqual(['alpha/multi-export', 'zeta/module-folder-layout']);
-		expect(health.totals).toStrictEqual({ rules: 2, checked: 1, judgment: 1 });
+		expect(health.totals).toStrictEqual({ rules: 2, deterministic: 1, agent: 1 });
 	});
 
 	test('each batch is answered by the step record carrying its own id, not by position', async () => {
@@ -400,7 +400,7 @@ describe('buildStandardsHealth', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			groups: groupsOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'module-boundary', checked: true })] }),
+			groups: groupsOf({ rules: [rule({ id: 'multi-export', deterministic: true }), rule({ id: 'module-boundary', deterministic: true })] }),
 		});
 
 		expect(rowFor({ rules: health.rules, id: 'multi-export' })).toEqual(expect.objectContaining({ attempted: 1, resolved: 0, untracked: 1 }));
@@ -422,7 +422,7 @@ describe('buildStandardsHealth', () => {
 			cwd,
 			groups: groupsOf({
 				pack: 'lightsout/standards',
-				rules: [rule({ id: 'function-size', library: 'lightsout', name: 'lightsout/function-size', checked: true })],
+				rules: [rule({ id: 'function-size', library: 'lightsout', name: 'lightsout/function-size', deterministic: true })],
 			}),
 		});
 
@@ -434,7 +434,7 @@ describe('buildStandardsHealth', () => {
 
 	test("buildStandardsHealth: rows follow the groups' packs, not the whole library", async () => {
 		const cwd = mkdtempSync(join(tmpdir(), 'lightsout-health-groups-'));
-		const multiExport = rule({ id: 'multi-export', checked: true });
+		const multiExport = rule({ id: 'multi-export', deterministic: true });
 		const moduleFolderLayout = rule({ id: 'module-folder-layout' });
 		const groups = [
 			groupOf({ pack: 'acme/structure', rules: [multiExport], topicRuleIds: ['multi-export', 'left-out'] }),
@@ -446,7 +446,7 @@ describe('buildStandardsHealth', () => {
 		// a rule in both packs is one row; left-out sits in the topic, but neither pack brings it in, so it has none
 		expect({ rules: health.rules.map((entry) => entry.rule), totals: health.totals }).toStrictEqual({
 			rules: ['acme/module-folder-layout', 'acme/multi-export'],
-			totals: { rules: 2, checked: 1, judgment: 1 },
+			totals: { rules: 2, deterministic: 1, agent: 1 },
 		});
 	});
 });

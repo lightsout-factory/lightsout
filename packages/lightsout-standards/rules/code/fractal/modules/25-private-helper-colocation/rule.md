@@ -1,6 +1,6 @@
 ---
 summary: "When a helper may share its caller's file."
-checked: false
+checks: agent
 severity: advisory
 ---
 

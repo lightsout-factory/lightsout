@@ -11,8 +11,8 @@ const setupRule = ({ defaultOptions }: { defaultOptions: Record<string, number> 
 		set: StandardsSet.Code,
 		documentPath: 'code/fractal/size',
 		summary: 'Keep each file under its line cap.',
-		checked: true,
-		reviewed: false,
+		deterministic: true,
+		agent: false,
 		defaultSeverity: StandardsSeverity.Blocking,
 		defaultOptions,
 	};

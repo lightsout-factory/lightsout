@@ -1,6 +1,6 @@
 ---
 summary: "When code needs a comment."
-checked: false
+checks: agent
 severity: advisory
 ---
 

@@ -15,6 +15,6 @@ export interface CleanupContext {
 	budget: number;
 	/** Fingerprints of the standards-scope changed files as cleanup began. */
 	before: Record<string, string>;
-	/** The judgment reviewer's read before the first round, reused as-is across a resume. */
+	/** The agent review's read before the first round, reused as-is across a resume. */
 	initialReview: StandardsFinding[];
 }

@@ -1,6 +1,6 @@
 ---
 summary: "Look for existing shared code before writing new code."
-checked: false
+checks: agent
 severity: advisory
 example:
   kind: repo

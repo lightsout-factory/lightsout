@@ -1,6 +1,6 @@
 ---
 summary: "Typing a mock function."
-checked: true
+checks: deterministic
 severity: blocking
 ---
 

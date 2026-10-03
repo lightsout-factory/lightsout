@@ -21,11 +21,11 @@ const writeRuleFolder = ({ folderName, frontMatter }: { folderName: string; fron
 const setupRequiresFolders = () => {
 	const listFolderPath = writeRuleFolder({
 		folderName: '10-component-file-structure',
-		frontMatter: 'summary: a component file laid out outside its folder\nrequires:\n  - index-files\n  - house/module-folder-layout',
+		frontMatter: 'summary: a component file laid out outside its folder\nchecks: agent\nrequires:\n  - index-files\n  - house/module-folder-layout',
 	});
 	const bareStringFolderPath = writeRuleFolder({
 		folderName: '20-shared-folder-layout',
-		frontMatter: 'summary: a domain folder holding loose files\nrequires: index-files',
+		frontMatter: 'summary: a domain folder holding loose files\nchecks: agent\nrequires: index-files',
 	});
 
 	return { listFolderPath, bareStringFolderPath };

@@ -1,6 +1,6 @@
 ---
 summary: "When to turn similar code into something general."
-checked: false
+checks: agent
 severity: advisory
 ---
 

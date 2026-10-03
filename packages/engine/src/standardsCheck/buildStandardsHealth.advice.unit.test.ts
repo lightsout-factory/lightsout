@@ -24,8 +24,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: false,
-	reviewed: overrides.checked !== true,
+	deterministic: false,
+	agent: overrides.deterministic !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -157,7 +157,7 @@ describe('buildStandardsHealth advice counting', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			groups: [groupOf({ rules: [rule({ id: 'multi-export', checked: true }), rule({ id: 'object-args' })] })],
+			groups: [groupOf({ rules: [rule({ id: 'multi-export', deterministic: true }), rule({ id: 'object-args' })] })],
 		});
 
 		expect(rowFor({ rules: health.rules, id: 'object-args' })).toEqual(

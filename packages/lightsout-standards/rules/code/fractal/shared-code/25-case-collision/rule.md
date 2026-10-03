@@ -1,6 +1,6 @@
 ---
 summary: "Names that differ only in upper and lower case."
-checked: true
+checks: deterministic
 severity: blocking
 ---
 

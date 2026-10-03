@@ -18,7 +18,7 @@ const standardsPackConfig: LightsoutConfig = { gates: { check: 'true', test: 'tr
 /** The listing a repo on the standards pack gets with no rule settings of its own: the groups it resolves to, listed. */
 const listDefaults = async () => listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config: standardsPackConfig }) });
 
-/** The five file-placement rules code checks — listed rather than derived, because an id no longer says which kind it is. */
+/** The five file-placement rules with a deterministic check — listed rather than derived, because an id no longer says which kind it is. */
 const durablePathRules = ['banned-folder-name', 'file-directly-in-common', 'index-files', 'test-beside-subject', 'test-support-in-src'];
 
 /** The shipped library's rules are listed by full name, the name a finding and a baseline key carry. */

@@ -8,8 +8,8 @@ const buildRuleView = (extra: Record<string, unknown> = {}) => ({
 	set: 'code',
 	summary: 'A source file stays under its line cap.',
 	prose: '# Size, File\n\nA file past the cap is several modules sharing one name.',
-	checked: true,
-	reviewed: extra.checked === false,
+	deterministic: true,
+	agent: extra.deterministic === false,
 	severity: 'blocking',
 	fromConfig: false,
 	options: { maxLines: 400 },
@@ -45,7 +45,7 @@ const setupView = ({ omit, extra = {} }: { omit?: string; extra?: Record<string,
 		findings: [buildFinding()],
 		rules: [buildRuleView()],
 		trend: [buildTrendPoint()],
-		totals: { rules: 37, checked: 34, judgment: 3, blocking: 1, advisory: 0, orphans: 0 },
+		totals: { rules: 37, deterministic: 34, agent: 3, blocking: 1, advisory: 0, orphans: 0 },
 		...extra,
 	};
 
@@ -69,7 +69,7 @@ describe('StandardsView', () => {
 			findings: [buildFinding()],
 			rules: [buildRuleView()],
 			trend: [buildTrendPoint()],
-			totals: { rules: 37, checked: 34, judgment: 3, blocking: 1, advisory: 0, orphans: 0 },
+			totals: { rules: 37, deterministic: 34, agent: 3, blocking: 1, advisory: 0, orphans: 0 },
 		});
 	});
 
@@ -81,7 +81,7 @@ describe('StandardsView', () => {
 				findings: [],
 				rules: [],
 				trend: [],
-				totals: { rules: 0, checked: 0, judgment: 0, blocking: 0, advisory: 0, orphans: 0 },
+				totals: { rules: 0, deterministic: 0, agent: 0, blocking: 0, advisory: 0, orphans: 0 },
 			},
 		});
 
@@ -95,7 +95,7 @@ describe('StandardsView', () => {
 			findings: [],
 			rules: [],
 			trend: [],
-			totals: { rules: 0, checked: 0, judgment: 0, blocking: 0, advisory: 0, orphans: 0 },
+			totals: { rules: 0, deterministic: 0, agent: 0, blocking: 0, advisory: 0, orphans: 0 },
 		});
 	});
 
@@ -112,7 +112,7 @@ describe('StandardsView', () => {
 						findingCount: 0,
 					}),
 				],
-				totals: { rules: 2, checked: 2, judgment: 0, blocking: 0, advisory: 0, orphans: 0 },
+				totals: { rules: 2, deterministic: 2, agent: 0, blocking: 0, advisory: 0, orphans: 0 },
 			},
 		});
 
@@ -127,7 +127,7 @@ describe('StandardsView', () => {
 			extra: {
 				findings: [buildFinding({ rule: 'retired-rule', siteKey: 'retired-rule:src/index.ts' })],
 				rules: [buildRuleView({ findingCount: 0 })],
-				totals: { rules: 1, checked: 1, judgment: 0, blocking: 1, advisory: 0, orphans: 1 },
+				totals: { rules: 1, deterministic: 1, agent: 0, blocking: 1, advisory: 0, orphans: 1 },
 			},
 		});
 
@@ -186,7 +186,7 @@ describe('StandardsView', () => {
 	});
 
 	test('every total is required', () => {
-		for (const field of ['rules', 'checked', 'judgment', 'blocking', 'advisory', 'orphans']) {
+		for (const field of ['rules', 'deterministic', 'agent', 'blocking', 'advisory', 'orphans']) {
 			const { view } = setupView();
 			const totals = { ...(view.totals as Record<string, unknown>) };
 			delete totals[field];
@@ -201,7 +201,7 @@ describe('StandardsView', () => {
 	});
 
 	test('rejects a total given as a numeric string rather than coercing it', () => {
-		const { view } = setupView({ extra: { totals: { rules: '37', checked: 34, judgment: 3, blocking: 1, advisory: 0, orphans: 0 } } });
+		const { view } = setupView({ extra: { totals: { rules: '37', deterministic: 34, agent: 3, blocking: 1, advisory: 0, orphans: 0 } } });
 
 		const result = StandardsView.safeParse(view);
 
@@ -277,7 +277,7 @@ describe('StandardsView', () => {
 		const { view } = setupView({
 			extra: {
 				baseline: { 'file-size:src/views/getStandardsView.ts': true },
-				totals: { rules: 37, checked: 34, judgment: 3, blocking: 1, advisory: 0, orphans: 0, off: 2 },
+				totals: { rules: 37, deterministic: 34, agent: 3, blocking: 1, advisory: 0, orphans: 0, off: 2 },
 			},
 		});
 
@@ -286,7 +286,7 @@ describe('StandardsView', () => {
 		// the view is the whole payload a reader renders — anything else it happened
 		// to be handed stays out, so the shape a consumer types against is the shape
 		// it gets
-		expect(parsed).toEqual(expect.objectContaining({ totals: { rules: 37, checked: 34, judgment: 3, blocking: 1, advisory: 0, orphans: 0 } }));
+		expect(parsed).toEqual(expect.objectContaining({ totals: { rules: 37, deterministic: 34, agent: 3, blocking: 1, advisory: 0, orphans: 0 } }));
 		expect(parsed).not.toHaveProperty('baseline');
 	});
 
@@ -303,7 +303,7 @@ describe('StandardsView', () => {
 						severity: 'advisory',
 					}),
 				],
-				totals: { rules: 2, checked: 2, judgment: 0, blocking: 1, advisory: 1, orphans: 0 },
+				totals: { rules: 2, deterministic: 2, agent: 0, blocking: 1, advisory: 1, orphans: 0 },
 			},
 		});
 

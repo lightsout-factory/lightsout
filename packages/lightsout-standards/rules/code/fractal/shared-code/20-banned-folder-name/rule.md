@@ -1,6 +1,6 @@
 ---
 summary: "Folder names that say nothing about what the folder holds."
-checked: true
+checks: deterministic
 severity: advisory
 ---
 

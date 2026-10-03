@@ -23,8 +23,9 @@ const packFiles: Record<string, string> = {
 	'house/lightsout-standards.json': JSON.stringify({ name: 'acme', formatVersion: 2, description: 'what this shop agrees on' }),
 	'house/rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 	'house/rules/code/house/05-house-loose-file/rule.md':
-		'---\nsummary: a source file outside a module\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
-	'house/rules/code/house/10-house-name-things-well/rule.md': '---\nsummary: a name that hides what it does\n---\n\nNames are the cheapest documentation.\n',
+		'---\nsummary: a source file outside a module\nchecks: agent\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
+	'house/rules/code/house/10-house-name-things-well/rule.md':
+		'---\nsummary: a name that hides what it does\nchecks: agent\n---\n\nNames are the cheapest documentation.\n',
 	'house/packs/house.json': JSON.stringify({ description: 'what this shop agrees on', include: { topics: ['acme/code/house'] } }),
 };
 

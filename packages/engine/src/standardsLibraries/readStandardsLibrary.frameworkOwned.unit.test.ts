@@ -62,7 +62,7 @@ describe('readStandardsLibrary — the framework-owned fixtures path', () => {
 			files: {
 				...rootFile,
 				'rules/code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\nchecks: agent\n---\n\nProse.\n' }),
 				'fixtures/framework-owned/nestjs/src/main.ts': 'export const value = 1;\n',
 			},
 		});
@@ -78,7 +78,7 @@ describe('readStandardsLibrary — the framework-owned fixtures path', () => {
 			files: {
 				...rootFile,
 				'rules/code/style/topic.md': '# Style\n',
-				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\n---\n\nProse.\n' }),
+				...ruleFiles({ path: 'rules/code/style/01-functions', markdown: '---\nsummary: one export per file\nchecks: agent\n---\n\nProse.\n' }),
 			},
 		});
 

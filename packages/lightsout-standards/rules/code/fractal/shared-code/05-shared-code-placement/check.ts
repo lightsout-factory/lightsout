@@ -49,7 +49,7 @@ export const check: StandardsCheckModule = {
 	 * and every importer under one child of that folder means it sits too high.
 	 * Importers inside the file's own `common/` are its peers, wherever in it.
 	 * Whether a file belongs in a `common/` at all, or is a module's own API, is
-	 * the agent's to judge, which is why the rule is checked in part.
+	 * the agent's to judge, which is why the rule has both kinds of check.
 	 *
 	 * A test is not a user: it tests the file where it is. An importer in
 	 * another workspace package is that package's business, not a placement

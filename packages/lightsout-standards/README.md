@@ -20,13 +20,15 @@ The library root holds:
 - `common/` — helpers the checks share. A check imports one through the
   `#common/*` entry of this package's `imports`.
 - `fixtures/framework-owned/` — one miniature repo per framework. Every
-  checked rule must stay silent on each of them, so no rule judges code its
-  framework owns.
+  deterministic check must stay silent on each of them, so no rule judges code
+  its framework owns.
 
 A topic is a folder holding a `topic.md` and one folder per rule, each named
-`<NN>-<id>`. `rule.md` is required; `check.ts` and `fixtures/` are optional. A
-rule with a `check.ts` declares `checked: true`, or `checked: partial` when the
-check finds only some of what the rule names and an agent still reviews the rest.
+`<NN>-<id>`. `rule.md` is required; `check.ts` and `fixtures/` are optional.
+`checks:` names the rule's kind of check: `deterministic` when its `check.ts`
+decides the whole rule, `agent` when it ships no `check.ts` and an agent reads
+it, or `both` when the check finds only some of what the rule names and an
+agent reads the rest.
 
 ## Names
 

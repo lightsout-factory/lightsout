@@ -22,7 +22,7 @@ interface Params {
 	groups: StandardsGroup[];
 	/** Monorepo package parent dir, handed to the output review so it grades each finding by its file's package group. */
 	packagesDir: string;
-	/** false skips the review of what the batch wrote — code-checks-only mode. */
+	/** false skips the review of what the batch wrote — deterministic-checks-only mode. */
 	agentReview: boolean;
 	/** Check scope of the run's worklist, threaded into the per-batch re-check. */
 	checkPath?: string;

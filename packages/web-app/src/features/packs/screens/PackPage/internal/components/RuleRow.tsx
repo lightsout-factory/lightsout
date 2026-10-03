@@ -33,7 +33,7 @@ export const RuleRow = ({ rule, library, severity }: Props) => {
 					</span>
 				</div>
 				<div className="hidden shrink-0 items-center gap-2 sm:flex">
-					{toCheckKinds({ checked: rule.checked, reviewed: rule.reviewed }).map((kind) => (
+					{toCheckKinds({ deterministic: rule.deterministic, agent: rule.agent }).map((kind) => (
 						<CheckKindTag key={kind} kind={kind} isShort />
 					))}
 					<span className="inline-flex w-20 items-center gap-1.5 font-medium text-muted-foreground text-xs">

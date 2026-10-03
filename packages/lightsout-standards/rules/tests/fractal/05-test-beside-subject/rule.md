@@ -1,6 +1,6 @@
 ---
 summary: "Where a unit test file sits, and what it is named."
-checked: true
+checks: deterministic
 severity: advisory
 example:
   kind: repo

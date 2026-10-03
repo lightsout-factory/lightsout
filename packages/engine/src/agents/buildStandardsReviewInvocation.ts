@@ -3,21 +3,23 @@ import standardsReviewerPrompt from '#src/agents/prompts/standardsReviewer.md';
 interface Params {
 	/**
 	 * The rules an agent reviews, in scope: full `<library>/<rule-id>` name,
-	 * document path, full prose, whether a code check already covers part of
-	 * the rule, and — when the rule does not apply to every package the review
+	 * document path, full prose, whether a deterministic check already decides
+	 * part of the rule, and — when the rule does not apply to every package the review
 	 * covers — the label of the packages it applies to.
 	 */
-	rules: { name: string; documentPath: string; prose: string; checked: boolean; appliesTo?: string }[];
+	rules: { name: string; documentPath: string; prose: string; deterministic: boolean; appliesTo?: string }[];
 	/** Repo-relative files the review covers. */
 	files: string[];
 }
 
-/** Said per rule rather than once, so the reviewer never has to guess which rules a check already half covers. */
+/** Said per rule rather than once, so the reviewer never has to guess which rules a deterministic check already half decides. */
 const ruleSection = ({ rule }: { rule: Params['rules'][number] }) => {
 	const scope = rule.appliesTo === undefined ? [] : [`Applies only to: ${rule.appliesTo} — judge this rule only in files of those packages.`];
-	const checked = rule.checked ? ['A code check already reports part of this rule. Report only what that check could not have found.'] : [];
+	const deterministic = rule.deterministic
+		? ['A deterministic check already reports part of this rule. Report only what that check could not have found.']
+		: [];
 
-	return [`**Rule: \`${rule.name}\`**`, ...scope, ...checked, rule.prose].join('\n\n');
+	return [`**Rule: \`${rule.name}\`**`, ...scope, ...deterministic, rule.prose].join('\n\n');
 };
 
 /**

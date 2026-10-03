@@ -71,6 +71,6 @@ If your workspace packages do not live in `packages/`, set `packages-dir`:
 
 **An agent working across packages reads each topic once.** When the packs differ, the standards an agent receives are grouped under `Applies to:` headings, one for each set of packages, widest first. A rule that holds in fewer packages than its topic carries an `Applies only to:` line. When every topic and rule applies everywhere, there are no headings at all.
 
-**Code checks and the agent review follow the package a file lives in.** A finding is graded with the pack of the package that holds its first file, so one rule can block in one package and only advise in another. Checks that compare packages, such as duplicate-code detection, still read the whole repository.
+**Deterministic checks and the agent review follow the package a file lives in.** A finding is graded with the pack of the package that holds its first file, so one rule can block in one package and only advise in another. Checks that compare packages, such as duplicate-code detection, still read the whole repository.
 
 **The run header and `lightsout standards-check --list` show each package's pack.** The header prints the repository root's pack, then one line for each package whose pack differs from it. The rule list adds an `applies to` column naming the packages each row covers.

@@ -1,6 +1,6 @@
 ---
 summary: "When a function's return type is written out."
-checked: true
+checks: deterministic
 severity: blocking
 ---
 

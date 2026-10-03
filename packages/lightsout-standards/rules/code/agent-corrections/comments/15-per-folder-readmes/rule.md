@@ -1,6 +1,6 @@
 ---
 summary: "When a folder gets its own README."
-checked: false
+checks: agent
 severity: advisory
 ---
 

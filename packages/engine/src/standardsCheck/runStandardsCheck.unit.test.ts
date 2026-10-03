@@ -265,7 +265,7 @@ const writeOwnPack = () => {
 			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
 			'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
 			'rules/code/house/05-house-no-loose-files/rule.md':
-				'---\nsummary: a source file outside a module\nchecked: true\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
+				'---\nsummary: a source file outside a module\nchecks: deterministic\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
 			'rules/code/house/05-house-no-loose-files/check.ts':
 				'export const check = {\n' +
 				"\tinputKinds: ['file-list'],\n" +

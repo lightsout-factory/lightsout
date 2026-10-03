@@ -22,7 +22,7 @@ const writeStandardsPackage = ({ cwd, at, name, ruleId, prose, set = 'code' }: S
 		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 2 }\n`,
 		'packs/demo.json': JSON.stringify({ description: 'The demo topic and its one rule.', include: { topics: [`${name}/${set}/demo`] } }),
 		[`rules/${set}/demo/topic.md`]: '# Demo\n\nThe document the rule argues under.\n',
-		[`${rulePath}/rule.md`]: `---\nsummary: a rule the package declares\n---\n\n${prose}\n`,
+		[`${rulePath}/rule.md`]: `---\nsummary: a rule the package declares\nchecks: agent\n---\n\n${prose}\n`,
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 		[`${rulePath}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',
 	};

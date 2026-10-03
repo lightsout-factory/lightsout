@@ -10,7 +10,7 @@ import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 // How the review follows the package a file lives in when the packs split per
-// package: which packages each judgment rule is put to the reviewer for, and
+// package: which packages each agent-checked rule is put to the reviewer for, and
 // which reported findings a file's own group refuses.
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
@@ -20,8 +20,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/architecture/folder-structure',
 	summary: 'a rule',
 	prose: `the argument for ${overrides.id}`,
-	checked: false,
-	reviewed: overrides.checked !== true,
+	deterministic: false,
+	agent: overrides.deterministic !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -95,7 +95,7 @@ const lineUnderRule = ({ systemPrompt, name }: { systemPrompt: string; name: str
 };
 
 describe('runStandardsReview across package groups', () => {
-	test('tells the reviewer which packages a judgment rule applies to when it does not apply everywhere', async () => {
+	test('tells the reviewer which packages a agent-checked rule applies to when it does not apply everywhere', async () => {
 		const { cwd, driver, groups, invocations } = await setupSplitPacks();
 
 		await runStandardsReview({ cwd, driver, groups, files, packagesDir: 'packages' });

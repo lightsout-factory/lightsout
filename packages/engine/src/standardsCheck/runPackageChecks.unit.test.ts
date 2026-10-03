@@ -34,8 +34,8 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	documentPath: 'code/style-guide/structure/module-api',
 	summary: 'a rule',
 	prose: 'the argument for the rule',
-	checked: overrides.run !== undefined,
-	reviewed: overrides.run === undefined,
+	deterministic: overrides.run !== undefined,
+	agent: overrides.run === undefined,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -298,7 +298,7 @@ describe('runPackageChecks', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('ignores a judgment-only rule, which ships no check to run', async () => {
+	test('ignores a agent-only rule, which ships no check to run', async () => {
 		const { cwd } = setupRepo();
 
 		const { findings, notes } = await runChecks({ cwd, rules: [rule({ id: 'premature-abstraction' })] });

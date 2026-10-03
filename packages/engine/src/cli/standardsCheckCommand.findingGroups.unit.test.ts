@@ -56,8 +56,8 @@ const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleLi
 	rule: 'function-size',
 	doc: 'lightsout-defaults: code/style-guide/structure/size',
 	summary: 'a function longer than the size cap',
-	checked: true,
-	reviewed: overrides.checked === false,
+	deterministic: true,
+	agent: overrides.deterministic === false,
 	severity: StandardsSeverity.Advisory,
 	fromConfig: false,
 	options: {},
@@ -77,7 +77,7 @@ const setupFindings = ({ findings }: { findings: StandardsFinding[] }) => {
 	mockListStandardsRules.mockReturnValue([listing()]);
 	mockRunStandardsCheck.mockResolvedValue({ findings, notes: [] });
 
-	return { context: { flags: parseFlags({ args: ['--code-checks'] }), rest: [], cwd }, ...captured };
+	return { context: { flags: parseFlags({ args: ['--deterministic-checks'] }), rest: [], cwd }, ...captured };
 };
 
 /** The group headings the renderer printed, in the order they were printed. */

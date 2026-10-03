@@ -68,7 +68,7 @@ export const RuleDetail = ({ ruleId }: Props) => {
 				)}
 			</Section>
 			<Section title="Examples">
-				<RuleExamples fixtures={rule.fixtures} kinds={toCheckKinds({ checked: rule.checked, reviewed: rule.reviewed })} example={rule.example} />
+				<RuleExamples fixtures={rule.fixtures} kinds={toCheckKinds({ deterministic: rule.deterministic, agent: rule.agent })} example={rule.example} />
 			</Section>
 			<Section title="Configure">
 				<RuleConfiguration rule={rule} />

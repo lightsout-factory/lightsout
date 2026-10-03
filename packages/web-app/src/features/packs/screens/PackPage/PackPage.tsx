@@ -35,8 +35,8 @@ const IncludedPack = ({ library, address }: { library: string; address: string }
 const PackHeader = ({ library, pack }: { library: string; pack: StandardsPackListing }) => {
 	const figures = [
 		{ label: 'Rules', value: pack.totals.rules },
-		{ label: `${checkKindLabels[CheckKind.Deterministic].label}s`, value: pack.totals.checked },
-		{ label: `${checkKindLabels[CheckKind.Agent].label}s`, value: pack.totals.judgment },
+		{ label: `${checkKindLabels[CheckKind.Deterministic].label}s`, value: pack.totals.deterministic },
+		{ label: `${checkKindLabels[CheckKind.Agent].label}s`, value: pack.totals.agent },
 	];
 
 	return (

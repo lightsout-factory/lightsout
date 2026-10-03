@@ -1,6 +1,6 @@
 ---
 summary: "How a feature folder grows."
-checked: false
+checks: agent
 severity: advisory
 requires:
   - component-file-structure

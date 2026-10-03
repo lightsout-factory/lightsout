@@ -27,7 +27,7 @@ const baseConfig = { gates: { check: 'true', test: 'true', 'test-coverage': fals
 const cwd = join(__dirname, '..', '..', '..', '..');
 
 /**
- * The ids of the rules code checks. A repo's baseline keys, its config
+ * The ids of the rules with a deterministic check. A repo's baseline keys, its config
  * overrides and its frozen refactor work-lists are all written in these
  * strings, so one of them going missing is a silent break in persisted data —
  * which is why they are restated here rather than read back off the pack.
@@ -56,10 +56,10 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  * `test-assert-in-hook` and `test-mock-return-in-hook` became
  * `no-test-state-in-hooks`; `test-in-tests-folder` and
  * `test-not-beside-subject` became `test-beside-subject`. From that date the
- * list holds every checked rule, not only the ones that predate the pack format.
+ * list holds every deterministic rule, not only the ones that predate the pack format.
  *
  * Later the same day, once a check could read several inputs and a rule could
- * be checked in part, ten rules merged into five, each with one check, and
+ * have both kinds of check, ten rules merged into five, each with one check, and
  * are gone under their old spellings: `import-through-index` and
  * `folder-index-file` became `index-files`; `barrel-star` and
  * `code-in-index-file` became `index-file-contents`; `bare-string-union` and
@@ -131,7 +131,7 @@ interface LibrarySpec {
 }
 
 /**
- * A judgment-only standards library written under `at`, holding one rule that
+ * A agent-only standards library written under `at`, holding one rule that
  * declares whatever the caller passes and one pack named after the library.
  * Nothing here is shipped by the engine, so a row read back off it proves the
  * listing carries the library author's own words rather than the defaults.
@@ -153,7 +153,7 @@ const writeLibrary = ({
 		'lightsout-standards.json': `{ "name": "${name}", "formatVersion": 2 }\n`,
 		[`packs/${name}.json`]: JSON.stringify({ description: `the ${name} pack`, include: { topics } }),
 		'rules/code/demo/topic.md': '# Demo\n\nThe document the rule argues under.\n',
-		[`${rulePath}/rule.md`]: `---\nsummary: what ${ruleId} catches\nseverity: ${severity}\n${optionsBlock}---\n\nThe rule prose.\n`,
+		[`${rulePath}/rule.md`]: `---\nsummary: what ${ruleId} catches\nchecks: agent\nseverity: ${severity}\n${optionsBlock}---\n\nThe rule prose.\n`,
 		[`${rulePath}/fixtures/pass/src/example.ts`]: 'export const example = 1;\n',
 		[`${rulePath}/fixtures/fail/src/example.ts`]: 'export const example = 2;\n',
 	};
@@ -188,8 +188,8 @@ const loadedRule = (overrides: Partial<LoadedStandardsRule> & { id: string; libr
 	documentPath: 'code/demo',
 	summary: `what ${overrides.id} catches`,
 	prose: 'The rule prose.',
-	checked: false,
-	reviewed: overrides.checked !== true,
+	deterministic: false,
+	agent: overrides.deterministic !== true,
 	defaultSeverity: StandardsSeverity.Advisory,
 	defaultOptions: {},
 	requires: [],
@@ -207,8 +207,8 @@ const setupGroup = () => {
 	const zebra = loadedRule({
 		id: 'zebra-rule',
 		library: 'acme',
-		checked: true,
-		reviewed: false,
+		deterministic: true,
+		agent: false,
 		defaultSeverity: StandardsSeverity.Off,
 		defaultOptions: { maxLines: 10 },
 	});
@@ -235,7 +235,7 @@ const setupGroup = () => {
  */
 const setupSplitGroups = () => {
 	const alpha = loadedRule({ id: 'alpha-rule', library: 'acme' });
-	const beta = loadedRule({ id: 'beta-rule', library: 'acme', checked: true });
+	const beta = loadedRule({ id: 'beta-rule', library: 'acme', deterministic: true });
 	const packRules: ResolvedPackRule[] = [
 		{ rule: alpha, severity: StandardsSeverity.Advisory, options: {} },
 		{ rule: beta, severity: StandardsSeverity.Advisory, options: { maxLines: 40 } },
@@ -277,16 +277,16 @@ describe('listStandardsRules', () => {
 		expect(durableRuleIds.filter((id) => !ids.has(builtInNameOf({ id })))).toStrictEqual([]);
 	});
 
-	test('judgment-only rules are listed beside the machine-checked ones, each marked for which it is', async () => {
+	test('agent-only rules are listed beside the deterministic ones, each marked for which it is', async () => {
 		const rules = await listFor({ cwd });
 
 		// the ledger has to admit which of its rules no code run will ever catch,
 		// or it reads as though every listed rule were enforced
-		expect(rules.some((rule) => rule.checked)).toBe(true);
-		expect(rules.some((rule) => !rule.checked)).toBe(true);
-		// and every one of the durable ids is a rule code checks — a finding, and so
+		expect(rules.some((rule) => rule.deterministic)).toBe(true);
+		expect(rules.some((rule) => !rule.deterministic)).toBe(true);
+		// and every one of the durable ids is a rule with a deterministic check — a finding, and so
 		// a baseline key, can only ever carry one of those
-		expect(rules.filter((rule) => durableRuleNames.includes(rule.rule) && !rule.checked).map((rule) => rule.rule)).toStrictEqual([]);
+		expect(rules.filter((rule) => durableRuleNames.includes(rule.rule) && !rule.deterministic).map((rule) => rule.rule)).toStrictEqual([]);
 	});
 
 	test('every rule names the pack that states it and a document folder inside that pack', async () => {
@@ -414,14 +414,14 @@ describe('listStandardsRules', () => {
 		});
 
 		// nothing in this pack ships with the engine, so the row can only have
-		// come from the rule's own front matter — including that no code checks it
+		// come from the rule's own front matter — including that it has no deterministic check
 		expect(rules).toStrictEqual([
 			{
 				rule: 'house/house-rule',
 				doc: 'house: code/demo',
 				summary: 'what house-rule catches',
-				checked: false,
-				reviewed: true,
+				deterministic: false,
+				agent: true,
 				severity: StandardsSeverity.Blocking,
 				fromConfig: false,
 				options: { maxLines: 40 },
@@ -497,8 +497,8 @@ describe('listStandardsRules', () => {
 				rule: 'acme/size',
 				doc: 'acme: code/demo',
 				summary: 'what size catches',
-				checked: false,
-				reviewed: true,
+				deterministic: false,
+				agent: true,
 				severity: StandardsSeverity.Blocking,
 				fromConfig: false,
 				options: { maxLines: 40 },
@@ -543,8 +543,8 @@ describe('listStandardsRules', () => {
 					rule: 'acme/zebra-rule',
 					doc: 'acme: code/demo',
 					summary: 'what zebra-rule catches',
-					checked: true,
-					reviewed: false,
+					deterministic: true,
+					agent: false,
 					severity: StandardsSeverity.Blocking,
 					fromConfig: true,
 					options: { maxLines: 60 },
@@ -554,8 +554,8 @@ describe('listStandardsRules', () => {
 					rule: 'team/aardvark-rule',
 					doc: 'team: tests/demo',
 					summary: 'what aardvark-rule catches',
-					checked: false,
-					reviewed: true,
+					deterministic: false,
+					agent: true,
 					severity: StandardsSeverity.Advisory,
 					fromConfig: false,
 					options: {},
@@ -586,8 +586,8 @@ describe('listStandardsRules', () => {
 				rule: 'acme/alpha-rule',
 				doc: 'acme: code/demo',
 				summary: 'what alpha-rule catches',
-				checked: false,
-				reviewed: true,
+				deterministic: false,
+				agent: true,
 				severity: StandardsSeverity.Advisory,
 				fromConfig: false,
 				options: {},
@@ -597,8 +597,8 @@ describe('listStandardsRules', () => {
 				rule: 'acme/beta-rule',
 				doc: 'acme: code/demo',
 				summary: 'what beta-rule catches',
-				checked: true,
-				reviewed: false,
+				deterministic: true,
+				agent: false,
 				severity: StandardsSeverity.Blocking,
 				fromConfig: false,
 				options: { maxLines: 40 },
@@ -608,8 +608,8 @@ describe('listStandardsRules', () => {
 				rule: 'acme/beta-rule',
 				doc: 'acme: code/demo',
 				summary: 'what beta-rule catches',
-				checked: true,
-				reviewed: false,
+				deterministic: true,
+				agent: false,
 				severity: StandardsSeverity.Advisory,
 				fromConfig: false,
 				options: { maxLines: 40 },

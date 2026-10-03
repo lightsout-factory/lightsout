@@ -58,17 +58,17 @@ export const standardsValidateCommand = async ({ flags, cwd }: CommandContext): 
 		console.log(`${red('✗')} ${problem}`);
 	}
 
-	const checked = library.rules.filter((rule) => rule.checked).length;
-	const reviewed = library.rules.filter((rule) => rule.reviewed).length;
+	const deterministic = library.rules.filter((rule) => rule.deterministic).length;
+	const agent = library.rules.filter((rule) => rule.agent).length;
 	const packFiles = library.packs.length;
 
 	console.log('');
 
 	if (problems.length > 0) {
-		console.log(`${library.name} — ${problems.length} problem(s) across ${checked} checked rule(s) and ${packFiles} pack file(s)`);
+		console.log(`${library.name} — ${problems.length} problem(s) across ${deterministic} deterministic rule(s) and ${packFiles} pack file(s)`);
 		return exitCli({ code: 1 });
 	}
 
-	console.log(green(`${library.name} — ${checked} checked rule(s) validated, ${reviewed} agent-reviewed rule(s), ${packFiles} pack file(s)`));
+	console.log(green(`${library.name} — ${deterministic} deterministic rule(s) validated, ${agent} agent rule(s), ${packFiles} pack file(s)`));
 	return exitCli({ code: 0 });
 };

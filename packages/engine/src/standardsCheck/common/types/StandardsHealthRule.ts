@@ -9,10 +9,10 @@ export interface StandardsHealthRule {
 	rule: string;
 	set: StandardsSet;
 	documentPath: string;
-	/** True when the rule ships a check code runs. */
-	checked: boolean;
-	/** True when an agent reviews the rule: it ships no check, or its check covers only part of it. */
-	reviewed: boolean;
+	/** True when the rule has a deterministic check — code that decides, with the same answer every run. */
+	deterministic: boolean;
+	/** True when the rule has an agent check — an agent reviews the change against it, because it ships no deterministic check or that check decides only part of it. */
+	agent: boolean;
 	/** Blocking sites frozen into refactor worklists that named this rule. */
 	attempted: number;
 	/** Frozen sites a batch report shows gone afterwards. */

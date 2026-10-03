@@ -17,8 +17,8 @@ export const StandardsView = z.object({
 	/** Rule counts from the health report, plus the latest snapshot's finding counts — so no consumer ever counts for itself. */
 	totals: z.object({
 		rules: z.number(),
-		checked: z.number(),
-		judgment: z.number(),
+		deterministic: z.number(),
+		agent: z.number(),
 		blocking: z.number(),
 		advisory: z.number(),
 		/** Findings in the latest snapshot whose `rule` matches no loaded rule — a package removed or renamed since the scan, or a rule since switched off. */

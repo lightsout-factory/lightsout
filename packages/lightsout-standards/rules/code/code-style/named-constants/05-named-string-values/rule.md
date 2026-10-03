@@ -1,6 +1,6 @@
 ---
 summary: "How a set of named string values is declared, and how the field that tells union members apart is typed and checked."
-checked: true
+checks: deterministic
 severity: advisory
 example:
   kind: repo
