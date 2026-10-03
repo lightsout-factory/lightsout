@@ -1,11 +1,7 @@
 import type { FileTextInput, ImportGraphInput, RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
 import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
-import { readManifestDependencies } from '#common/checkInput/readManifestDependencies.ts';
 import { readPackageEntries } from '#common/checkInput/readPackageEntries.ts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { getFrameworkCarveOuts } from '#common/frameworks/getFrameworkCarveOuts.ts';
-import { getPathCarveOut } from '#common/frameworks/getPathCarveOut.ts';
-import { isFrameworkLoadedFile } from '#common/frameworks/isFrameworkLoadedFile.ts';
 import { isPackageEntry } from '#common/modules/isPackageEntry.ts';
 import { getDirectory } from '#common/paths/getDirectory.ts';
 import { getTestSubject } from '#common/paths/getTestSubject.ts';
@@ -31,7 +27,6 @@ const findImportsThroughIndex = ({ input }: { input: ImportGraphInput | undefine
 	}
 
 	const { files, referenceFiles, edges, dependencies } = input;
-	const carveOuts = getFrameworkCarveOuts({ dependencies });
 	const packageDirectories = [...dependencies.keys()];
 	const referenceSet = new Set(referenceFiles);
 	const scope = new Set(files);
@@ -43,7 +38,6 @@ const findImportsThroughIndex = ({ input }: { input: ImportGraphInput | undefine
 			!isOutsideEveryPackage({ path: from, packageDirectories }) &&
 			isBarrelFile({ path: to }) &&
 			!isBarrelFile({ path: from }) &&
-			!isFrameworkLoadedFile({ path: to, carveOut: getPathCarveOut({ carveOuts, path: to }) }) &&
 			getTestSubject({ test: from, files: referenceSet }) !== to &&
 			getOwningPackage({ path: from, packageDirectories }) === getOwningPackage({ path: to, packageDirectories })
 		) {
@@ -73,14 +67,10 @@ const findImportsThroughIndex = ({ input }: { input: ImportGraphInput | undefine
  */
 const findFolderIndexFiles = ({ input }: { input: FileTextInput | undefined }): RawStandardsFinding[] => {
 	const { files, contents } = readFileTexts({ input });
-	const carveOuts = getFrameworkCarveOuts({ dependencies: readManifestDependencies({ contents }) });
 	const entries = readPackageEntries({ contents });
 
 	return files
-		.filter(
-			(path) =>
-				isBarrelFile({ path }) && !isPackageEntry({ path, entries }) && !isFrameworkLoadedFile({ path, carveOut: getPathCarveOut({ carveOuts, path }) }),
-		)
+		.filter((path) => isBarrelFile({ path }) && !isPackageEntry({ path, entries }))
 		.map((path) =>
 			buildRawFinding({
 				rule: 'index-files',

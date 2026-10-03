@@ -124954,8 +124954,6 @@ var readStandardsLibrary = async ({ packPath }) => {
     throw new Error(`standards pack failed to load (${packPath}):
 ${problems.map((problem) => `- ${problem}`).join("\n")}`);
   }
-  const frameworkOwnedFixturesPath = join18(packPath, "fixtures", "framework-owned");
-  const hasFrameworkOwned = await hasFile({ path: frameworkOwnedFixturesPath });
   return {
     name: root.data.name,
     formatVersion: root.data.formatVersion,
@@ -124963,7 +124961,6 @@ ${problems.map((problem) => `- ${problem}`).join("\n")}`);
     description: root.data.description,
     homepage: root.data.homepage,
     rootPath: packPath,
-    ...hasFrameworkOwned ? { frameworkOwnedFixturesPath } : {},
     documents,
     rules: requirements.rules,
     packs
@@ -162781,10 +162778,8 @@ var rulePriority = [
   "lightsout/filename-mismatch",
   "lightsout/test-mock-prefix",
   "lightsout/test-mock-untyped",
-  "lightsout/test-mock-wrapper-untyped",
   "lightsout/no-test-state-in-hooks",
   "lightsout/test-manual-mock-cleanup",
-  "lightsout/test-strict-equal-matcher",
   "lightsout/index-file-contents",
   "lightsout/dead-export",
   "lightsout/file-size",
@@ -165611,49 +165606,6 @@ var missingFixtureSides = async ({ fixturesPath }) => {
   }
   return missing;
 };
-var namePaths = ({ found }) => {
-  const paths = [...new Set(found.flatMap((finding6) => finding6.files.slice(0, 1).map((file2) => file2.path)))];
-  return paths.length > 3 ? `${paths.slice(0, 3).join(", ")}, \u2026` : paths.join(", ");
-};
-var checkFrameworkOwned = async ({ library, compiler }) => {
-  const { frameworkOwnedFixturesPath } = library;
-  const heldNothing = { problems: [], notes: [`${library.name}: no fixtures/framework-owned/ \u2014 no rule was held to the framework-owned invariant`] };
-  if (frameworkOwnedFixturesPath === void 0) {
-    return heldNothing;
-  }
-  const entries = await readdir26(frameworkOwnedFixturesPath, { withFileTypes: true }).catch(() => []);
-  const frameworks = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
-  if (frameworks.length === 0) {
-    return heldNothing;
-  }
-  const problems = [];
-  for (const framework of frameworks) {
-    for (const rule of library.rules) {
-      const { run, inputKinds } = rule;
-      if (run === void 0 || inputKinds === void 0 || compiler === void 0 && inputKinds.some((kind) => typescriptInputKinds.has(kind))) {
-        continue;
-      }
-      try {
-        const found = await checkFixtureTree({
-          cwd: join158(frameworkOwnedFixturesPath, framework),
-          rule,
-          inputKinds,
-          run,
-          label: `fixtures/framework-owned/${framework}/`,
-          compiler
-        });
-        if (found.length > 0) {
-          problems.push(
-            `${rule.id}: the ${framework} framework-owned tree produced ${found.length} finding(s) \u2014 a deterministic check stays silent on code its framework owns (${namePaths({ found })})`
-          );
-        }
-      } catch (error51) {
-        problems.push(`${rule.id}: the ${framework} framework-owned tree could not be checked \u2014 ${messageOf({ error: error51 })}`);
-      }
-    }
-  }
-  return { problems, notes: [] };
-};
 var checkPackFiles = ({ library, libraries }) => {
   const problems = [];
   const warnings = [];
@@ -165715,10 +165667,7 @@ var validateStandardsLibrary = async ({ library, libraries }) => {
       }
     }
   }
-  const frameworkOwned = await checkFrameworkOwned({ library, compiler });
-  problems.push(...frameworkOwned.problems);
   problems.push(...checkLibraryProse({ library }));
-  notes.push(...frameworkOwned.notes);
   problems.push(...findUnresolvedRequirements({ libraries }));
   const packFiles = checkPackFiles({ library, libraries });
   problems.push(...packFiles.problems);

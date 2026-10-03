@@ -1,11 +1,7 @@
 import type { FileTextInput, RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
 import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
-import { readManifestDependencies } from '#common/checkInput/readManifestDependencies.ts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { getFrameworkCarveOuts } from '#common/frameworks/getFrameworkCarveOuts.ts';
-import { getPathCarveOut } from '#common/frameworks/getPathCarveOut.ts';
-import { isFrameworkLoadedFile } from '#common/frameworks/isFrameworkLoadedFile.ts';
 import { readBarrelExports } from '#common/modules/readBarrelExports.ts';
 import { getBaseName } from '#common/paths/getBaseName.ts';
 import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
@@ -28,17 +24,8 @@ const findCodeInIndexFiles = ({ input }: { input: SyntaxTreeInput | undefined })
 	}
 
 	const findings: RawStandardsFinding[] = [];
-	const carveOuts = getFrameworkCarveOuts({ dependencies: input.dependencies });
 
 	for (const [path, tree] of input.trees) {
-		// A file-based router MANDATES an index route file whose content is a route
-		// definition, and a convention-resolved entry file is code by definition;
-		// demanding re-export lines of either asks for a file the framework could
-		// not use.
-		if (isFrameworkLoadedFile({ path, carveOut: getPathCarveOut({ carveOuts, path }) })) {
-			continue;
-		}
-
 		if (isIndexFile({ path })) {
 			const offending = tree.statements.filter((statement) => !isReExport({ statement, compiler: input.compiler }));
 			const [first] = offending;
@@ -69,10 +56,9 @@ const findCodeInIndexFiles = ({ input }: { input: SyntaxTreeInput | undefined })
 const findStarReExports = ({ input }: { input: FileTextInput | undefined }): RawStandardsFinding[] => {
 	const { files, contents } = readFileTexts({ input });
 	const fileSet = new Set(files);
-	const carveOuts = getFrameworkCarveOuts({ dependencies: readManifestDependencies({ contents }) });
 
 	return files
-		.filter((path) => isBarrelFile({ path }) && !isFrameworkLoadedFile({ path, carveOut: getPathCarveOut({ carveOuts, path }) }))
+		.filter((path) => isBarrelFile({ path }))
 		.flatMap((barrelPath) => {
 			const stars = readBarrelExports({ barrelPath, contents, files: fileSet }).filter(({ star }) => star);
 

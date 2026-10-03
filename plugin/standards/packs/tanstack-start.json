@@ -1,9 +1,7 @@
 {
-	"description": "Gives a TanStack Start app one place for each feature, server function, query and hook, in each package that uses TanStack Start.",
+	"description": "The whole standard for a package that uses TanStack Start: everything the React pack holds, plus where query options live and which files get tests.",
 	"include": {
-		"topics": ["lightsout/code/frameworks/tanstack-start"]
-	},
-	"applies-when": {
-		"dependencies": ["@tanstack/react-start", "@tanstack/start"]
+		"packs": ["lightsout/react"],
+		"topics": ["lightsout/code/frameworks/tanstack-start", "lightsout/tests/frameworks/tanstack-start"]
 	}
 }

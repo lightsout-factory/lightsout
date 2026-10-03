@@ -19,6 +19,6 @@ src/ingestion/
 - From outside, import the public file that uses it instead, or move the file out of `internal/` when it is genuinely shared.
 - Nested folders nest the rule: `src/ingestion/parser/internal/tokenize.ts` is private to `src/ingestion/parser/`.
 - An `internal/` folder may sit in any folder, beside what `module-folder-layout` allows.
-- `internal/` marks privacy only. Inside it, place code as anywhere else: shared code in a `common/` as `shared-code-placement` says, and a module that needs files of its own in its own folder as `module-file-to-folder` says.
+- `internal/` marks privacy only. Inside it, place code as anywhere else.
 
 Then privacy shows in the import line itself, with no list elsewhere to consult.
