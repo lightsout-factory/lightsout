@@ -47,18 +47,23 @@ Packs are grouped by what the rules are for, and the rule tree mirrors them:
   code, size caps, duplication and imports, plus where tests sit.
 - `code-style` — one way to write a function, a class, a set of named values,
   a type-safe value and a unit test.
-- `react`, `tanstack-start` — framework rules, under
-  `rules/code/frameworks/` and `rules/tests/frameworks/`. Each declares
-  `applies-when`, so it reaches only the packages that depend on the framework.
-- `standards` — every pack above. It is the pack the docs tell a repository to
-  opt into, and the one this repo runs.
+- `standards` — both packs above. It is the pack the docs tell a repository to
+  opt into, and the one this repo runs for every package but the web app.
+- `react`, `tanstack-start` — one whole standard per framework. Each holds its
+  own rules, under `rules/code/frameworks/` and `rules/tests/frameworks/`, and
+  hand-picks the general rules it keeps: `react` takes every general rule but
+  `function-size`, which `react-function-size` replaces, and `tanstack-start`
+  includes `react`. A package selects one through `package-standards-packs`.
+  The general rules know nothing about a framework, so a framework pack is
+  where a framework's differences live.
 
 `fractal` stands alone: no rule in it names, or `requires`, a rule in another
 pack. `code-style` and the framework packs may refer to `fractal` rules.
 
 The shipped packs carry no `rule-settings`, so every rule keeps the severity
 and options its `rule.md` gives it. A new rule in an existing topic reaches
-every pack that includes the topic. A new topic reaches no pack until a pack
+every pack that includes the topic, except a new `size` rule, which `react`
+lists rule by rule. A new topic reaches no pack until a pack
 file's `include.topics` names it.
 
 ## Writing and Reviewing Rules

@@ -11,7 +11,7 @@ const buildFileFindings = ({ input, options }: { input: SyntaxTreeInput; options
 
 	for (const [path, tree] of input.trees) {
 		const lineCount = tree.getFullText().split('\n').length;
-		const cap = path.endsWith('.tsx') ? options.tsxFile : options.file;
+		const cap = options.file;
 
 		if (lineCount > cap && !isBarrelFile({ path })) {
 			findings.push(

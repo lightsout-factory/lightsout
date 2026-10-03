@@ -38,8 +38,9 @@ describe('validateStandardsLibrary on the shipped default pack', () => {
 		const optionsByRule = Object.fromEntries(rulesWithOptions.map((rule) => [rule.id, rule.defaultOptions]));
 
 		expect(optionsByRule).toStrictEqual({
-			'file-size': { file: 250, tsxFile: 300 },
-			'function-size': { function: 80, hook: 160, component: 200 },
+			'file-size': { file: 250 },
+			'function-size': { function: 80 },
+			'react-function-size': { function: 80, hook: 160, component: 200 },
 			'folder-size': { cap: 20 },
 			'test-file-size': { testFile: 400 },
 			'duplicate-code-block': { minTokens: 50 },

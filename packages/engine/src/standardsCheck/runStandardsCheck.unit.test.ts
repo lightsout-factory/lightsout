@@ -55,7 +55,7 @@ const setupCheckRepo = () => {
 	writeFileSync(join(dir, 'src/a/helpers.ts'), 'export const buildLabel = () => 1;\n');
 	writeFileSync(join(dir, 'src/a/common/formatDate.ts'), 'export const formatDate = () => 1;\n');
 
-	// size: oversized .ts file; a 280-line .tsx rides the larger JSX cap (~300)
+	// size: an oversized .ts file, and a 280-line .tsx measured on the same cap
 	writeFileSync(join(dir, 'src/b/huge.ts'), `export const huge = () => 1;\n${'// filler\n'.repeat(300)}`);
 	writeFileSync(join(dir, 'src/b/BigView.tsx'), `export const BigView = () => 1;\n${'// filler\n'.repeat(278)}`);
 
@@ -115,8 +115,8 @@ test('the standards check finds each planted defect and respects the exceptions'
 	// a cap is a layout opinion: the pack ships it advisory, and a repo that wants
 	// it to block promotes it in standards-rule-settings (this one has none)
 	expect(byRule('lightsout/file-size').find((finding) => finding.siteKey === 'lightsout/file-size:src/b/huge.ts')?.severity).toBe('advisory');
-	// .tsx under its larger cap not flagged
-	expect(byRule('lightsout/file-size').some((finding) => finding.files[0]?.path === 'src/b/BigView.tsx')).toBeFalsy();
+	// a .tsx file is measured on the same cap as any other
+	expect(byRule('lightsout/file-size').some((finding) => finding.files[0]?.path === 'src/b/BigView.tsx')).toBeTruthy();
 
 	const dead = byRule('lightsout/dead-export');
 

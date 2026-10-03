@@ -320,15 +320,15 @@ describe('getStandardsPackBundle', () => {
 
 		const bundle = await getStandardsPackBundle({ cwd });
 		const documentPathByName = new Map(bundle.rules.map((rule) => [rule.name, rule.documentPath]));
-		const standards = bundle.packs.find((pack) => pack.address === 'lightsout/standards');
-		const standardsTopics = new Set(standards?.rules.map((rule) => documentPathByName.get(rule.name)));
+		const tanstackStart = bundle.packs.find((pack) => pack.address === 'lightsout/tanstack-start');
+		const tanstackStartTopics = new Set(tanstackStart?.rules.map((rule) => documentPathByName.get(rule.name)));
 
 		expect({
 			name: bundle.name,
 			built: bundle.built,
 			packs: bundle.packs.map((pack) => pack.name),
-			holdsReact: standardsTopics.has('tests/frameworks/react'),
-			holdsTanstackStart: standardsTopics.has('code/frameworks/tanstack-start'),
+			holdsReact: tanstackStartTopics.has('code/frameworks/react'),
+			holdsTanstackStart: tanstackStartTopics.has('code/frameworks/tanstack-start'),
 		}).toStrictEqual({
 			name: 'lightsout',
 			built: false,

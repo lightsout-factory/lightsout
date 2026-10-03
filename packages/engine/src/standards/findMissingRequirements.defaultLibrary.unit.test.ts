@@ -24,7 +24,7 @@ const setupDefaultLibrary = async () => {
 };
 
 describe('findMissingRequirements on the shipped lightsout library', () => {
-	test('lightsout/standards and each goal pack send every rule their rules require, and a framework pack selected alone does not', async () => {
+	test('lightsout/standards, each goal pack and each framework pack send every rule their rules require', async () => {
 		const { libraries } = await setupDefaultLibrary();
 		const addresses = ['lightsout/standards', 'lightsout/fractal', 'lightsout/code-style', 'lightsout/react', 'lightsout/tanstack-start'];
 
@@ -39,10 +39,9 @@ describe('findMissingRequirements on the shipped lightsout library', () => {
 			'lightsout/standards': [],
 			'lightsout/fractal': [],
 			'lightsout/code-style': [],
-			// the react pack's one rule requires nothing
+			// a framework pack is a whole standard, so it holds the fractal rules its own rules point at
 			'lightsout/react': [],
-			// the tanstack-start pack alone holds none of the fractal rules its rule points at
-			'lightsout/tanstack-start': [{ rule: 'lightsout/query-options', required: 'lightsout/module-folder-layout' }],
+			'lightsout/tanstack-start': [],
 		});
 	});
 

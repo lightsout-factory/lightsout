@@ -102,7 +102,7 @@ describe('getConfigView', () => {
 		const view = await getConfigView({ cwd: repoRoot });
 
 		expect(findField({ sections: view.sections, key: 'package-gates' })?.fromConfig).toBe(true);
-		expect(findField({ sections: view.sections, key: 'package-standards-packs' })?.value).toBeNull();
+		expect(findField({ sections: view.sections, key: 'standards-libraries' })?.value).toBeNull();
 	});
 
 	test("carries the schema's own sentence for every row, so the page and the contract cannot disagree", async () => {

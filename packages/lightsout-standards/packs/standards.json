@@ -1,6 +1,6 @@
 {
-	"description": "Every bundled standard at once: a repo that keeps one shape at every level and is written in one style, with each framework's rules reaching only the packages that use it.",
+	"description": "The standard for a package with no framework pack of its own: a repo that keeps one shape at every level and is written in one style.",
 	"include": {
-		"packs": ["lightsout/fractal", "lightsout/code-style", "lightsout/react", "lightsout/tanstack-start"]
+		"packs": ["lightsout/fractal", "lightsout/code-style"]
 	}
 }

@@ -21,11 +21,12 @@ const codeStyleTopics = [
 	'code/code-style/type-safety',
 	'tests/code-style',
 ];
-const reactTopics = ['tests/frameworks/react'];
-const tanstackStartTopics = ['code/frameworks/tanstack-start'];
+const reactOwnTopics = ['code/frameworks/react', 'tests/frameworks/react'];
+const tanstackStartOwnTopics = ['code/frameworks/tanstack-start', 'tests/frameworks/tanstack-start'];
 const goalTopics = [...fractalTopics, ...codeStyleTopics];
-const frameworkTopics = [...reactTopics, ...tanstackStartTopics];
-const frameworkPackNames = ['lightsout/react', 'lightsout/tanstack-start'];
+const frameworkTopics = [...reactOwnTopics, ...tanstackStartOwnTopics];
+/** The one general rule a React package swaps for its own: react-function-size measures what function-size would. */
+const replacedByReact = 'lightsout/function-size';
 
 /**
  * The shipped built-in library, loaded from its authored folder — not the copy
@@ -73,63 +74,56 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 	});
 
 	test.each([
-		{ address: 'lightsout/react', topicPaths: reactTopics, dependencies: ['react', 'preact', 'react-dom'] },
-		{ address: 'lightsout/tanstack-start', topicPaths: tanstackStartTopics, dependencies: ['@tanstack/react-start', '@tanstack/start'] },
-	])('$address is its own topics at rule defaults, for a package declaring one of its dependencies', async ({ address, topicPaths, dependencies }) => {
+		{ address: 'lightsout/react', ownTopics: reactOwnTopics },
+		{ address: 'lightsout/tanstack-start', ownTopics: [...reactOwnTopics, ...tanstackStartOwnTopics] },
+	])('$address is a whole standard: every general rule but the one React replaces, plus its own topics', async ({ address, ownTopics }) => {
 		const { library, libraries } = await setupDefaultLibrary();
 
-		const applied = dependencies.map((dependency) => resolveStandardsPack({ addresses: [address], libraries, dependencies: new Set([dependency]) }));
-		const skipped = resolveStandardsPack({ addresses: [address], libraries, dependencies: new Set() });
+		const pack = resolveStandardsPack({ addresses: [address], libraries, dependencies: new Set() });
 
-		const expected = { conditionalPacks: [address], ...expectPackOf({ library, topicPaths }) };
-		expect(applied.map((pack) => ({ conditionalPacks: pack.conditionalPacks, ...summarizePack({ pack }) }))).toStrictEqual(dependencies.map(() => expected));
-		// a package declaring none of them gets nothing from the pack
-		expect({ conditionalPacks: skipped.conditionalPacks, ...summarizePack({ pack: skipped }) }).toStrictEqual({ conditionalPacks: [], topics: [], rules: [] });
+		const everyRule = expectPackOf({ library, topicPaths: [...goalTopics, ...ownTopics] });
+		expect({ conditionalPacks: pack.conditionalPacks, ...summarizePack({ pack }) }).toStrictEqual({
+			conditionalPacks: [],
+			topics: everyRule.topics,
+			rules: everyRule.rules.filter((rule) => rule.name !== replacedByReact),
+		});
 	});
 
-	test('lightsout/standards is every topic, with each framework pack reaching only a package that declares its framework', async () => {
+	test('lightsout/standards is the two goal packs, and holds no framework topic', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
-		const whole = resolveStandardsPack({ addresses: ['lightsout/standards'], libraries, dependencies: undefined });
-		const frameworkFree = resolveStandardsPack({ addresses: ['lightsout/standards'], libraries, dependencies: new Set() });
-		const reactPackage = resolveStandardsPack({ addresses: ['lightsout/standards'], libraries, dependencies: new Set(['react']) });
+		const standards = resolveStandardsPack({ addresses: ['lightsout/standards'], libraries, dependencies: undefined });
 
 		const everyTopic = library.documents.map((topic) => topic.path);
-		expect({ conditionalPacks: whole.conditionalPacks, ...summarizePack({ pack: whole }) }).toStrictEqual({
-			conditionalPacks: frameworkPackNames,
-			...expectPackOf({ library, topicPaths: everyTopic }),
-		});
-		// the library's own topic list, read independently, is the two goal packs plus the two framework packs
+		// the library's own topic list, read independently, is the two goal packs plus the two framework packs' own topics
 		expect([...everyTopic].sort()).toStrictEqual([...goalTopics, ...frameworkTopics].sort());
-		expect({ conditionalPacks: frameworkFree.conditionalPacks, ...summarizePack({ pack: frameworkFree }) }).toStrictEqual({
+		expect({ conditionalPacks: standards.conditionalPacks, ...summarizePack({ pack: standards }) }).toStrictEqual({
 			conditionalPacks: [],
 			...expectPackOf({ library, topicPaths: goalTopics }),
 		});
-		expect({ conditionalPacks: reactPackage.conditionalPacks, ...summarizePack({ pack: reactPackage }) }).toStrictEqual({
-			conditionalPacks: ['lightsout/react'],
-			...expectPackOf({ library, topicPaths: [...goalTopics, ...reactTopics] }),
-		});
 	});
 
-	test('the lightsout library ships five packs and its four topic packs cover each topic once', async () => {
+	test('the lightsout library ships five packs, and its goal packs and the TanStack Start pack between them reach every topic', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
 		const resolved = library.packs.map((packFile) => resolveStandardsPack({ addresses: [`lightsout/${packFile.name}`], libraries, dependencies: undefined }));
 
-		const topicPackNames = ['lightsout/code-style', 'lightsout/fractal', ...frameworkPackNames];
-		const topicsAcrossTopicPacks = resolved
-			.filter((pack) => topicPackNames.includes(pack.name))
-			.flatMap((pack) => pack.topics.map((topic) => topic.path))
-			.sort();
+		const topicsAcrossPacks = [
+			...new Set(
+				resolved
+					.filter((pack) => ['lightsout/standards', 'lightsout/tanstack-start'].includes(pack.name))
+					.flatMap((pack) => pack.topics.map((topic) => topic.path)),
+			),
+		].sort();
 		expect({
 			packFiles: library.packs.map((packFile) => packFile.name),
 			resolved: resolved.map((pack) => pack.name).sort(),
-			topicsAcrossTopicPacks,
+			topicsAcrossPacks,
 		}).toStrictEqual({
 			packFiles: ['code-style', 'fractal', 'react', 'standards', 'tanstack-start'],
 			resolved: ['lightsout/code-style', 'lightsout/fractal', 'lightsout/react', 'lightsout/standards', 'lightsout/tanstack-start'],
-			// every library topic exactly once: a topic missing, or listed by two topic packs, breaks the equality
-			topicsAcrossTopicPacks: library.documents.map((topic) => topic.path).sort(),
+			// every library topic is reached: a topic no pack lists breaks the equality
+			topicsAcrossPacks: library.documents.map((topic) => topic.path).sort(),
 		});
 	});
 });

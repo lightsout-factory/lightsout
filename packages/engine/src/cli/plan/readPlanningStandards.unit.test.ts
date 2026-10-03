@@ -126,9 +126,9 @@ test("readPlanningStandards: planning reads the selected pack's code prose", asy
 	const { cwd, logged } = setupStandards({ dependencies: { '@tanstack/react-start': '^1.0.0' } });
 
 	const switchedOff = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': false }) });
-	const named = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/standards' }) });
+	const named = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/tanstack-start' }) });
 
-	// standards-pack false selects no pack; lightsout/standards carries the TanStack Start topic beside the fractal ones, for a package declaring TanStack Start
+	// standards-pack false selects no pack; lightsout/tanstack-start carries its own topic beside the fractal ones
 	expect(switchedOff).toBe(undefined);
 	expect(named ?? '').toMatch(/<!-- lightsout: code\/fractal\/modules -->/);
 	expect(named ?? '').toMatch(/<!-- lightsout: code\/frameworks\/tanstack-start -->/);

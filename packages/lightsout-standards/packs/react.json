@@ -1,9 +1,16 @@
 {
-	"description": "How React component tests are written, in each package that uses React.",
+	"description": "The whole standard for a package that uses React: the general rules, with function size measured the React way and component tests written one way.",
 	"include": {
-		"topics": ["lightsout/tests/frameworks/react"]
-	},
-	"applies-when": {
-		"dependencies": ["react", "preact", "react-dom"]
+		"packs": ["lightsout/code-style"],
+		"topics": [
+			"lightsout/code/fractal/modules",
+			"lightsout/code/fractal/shared-code",
+			"lightsout/code/fractal/duplication",
+			"lightsout/code/fractal/imports",
+			"lightsout/tests/fractal",
+			"lightsout/code/frameworks/react",
+			"lightsout/tests/frameworks/react"
+		],
+		"rules": ["lightsout/file-size", "lightsout/folder-size"]
 	}
 }

@@ -5,12 +5,12 @@
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
-    "rules": 50,
-    "deterministic": 34,
-    "agent": 18,
-    "topics": 13,
+    "rules": 52,
+    "deterministic": 35,
+    "agent": 19,
+    "topics": 15,
     "packs": 5,
-    "withFixtures": 50
+    "withFixtures": 52
   },
   "packs": [
     {
@@ -207,8 +207,7 @@
           "name": "lightsout/file-size",
           "severity": "advisory",
           "options": {
-            "file": 250,
-            "tsxFile": 300
+            "file": 250
           }
         },
         {
@@ -232,9 +231,7 @@
           "name": "lightsout/function-size",
           "severity": "advisory",
           "options": {
-            "function": 80,
-            "hook": 160,
-            "component": 200
+            "function": 80
           }
         },
         {
@@ -335,51 +332,24 @@
     {
       "name": "react",
       "address": "lightsout/react",
-      "description": "How React component tests are written, in each package that uses React.",
-      "appliesWhen": {
-        "dependencies": [
-          "react",
-          "preact",
-          "react-dom"
-        ]
-      },
-      "include": {
-        "packs": [],
-        "topics": [
-          "lightsout/tests/frameworks/react"
-        ],
-        "rules": []
-      },
-      "topics": [
-        "lightsout/tests/frameworks/react"
-      ],
-      "rules": [
-        {
-          "name": "lightsout/the-render-pattern",
-          "severity": "advisory",
-          "options": {}
-        }
-      ],
-      "totals": {
-        "rules": 1,
-        "deterministic": 0,
-        "agent": 1,
-        "topics": 1
-      }
-    },
-    {
-      "name": "standards",
-      "address": "lightsout/standards",
-      "description": "Every bundled standard at once: a repo that keeps one shape at every level and is written in one style, with each framework's rules reaching only the packages that use it.",
+      "description": "The whole standard for a package that uses React: the general rules, with function size measured the React way and component tests written one way.",
       "include": {
         "packs": [
-          "lightsout/fractal",
-          "lightsout/code-style",
-          "lightsout/react",
-          "lightsout/tanstack-start"
+          "lightsout/code-style"
         ],
-        "topics": [],
-        "rules": []
+        "topics": [
+          "lightsout/code/fractal/modules",
+          "lightsout/code/fractal/shared-code",
+          "lightsout/code/fractal/duplication",
+          "lightsout/code/fractal/imports",
+          "lightsout/tests/fractal",
+          "lightsout/code/frameworks/react",
+          "lightsout/tests/frameworks/react"
+        ],
+        "rules": [
+          "lightsout/file-size",
+          "lightsout/folder-size"
+        ]
       },
       "topics": [
         "lightsout/code/code-style/classes",
@@ -391,7 +361,7 @@
         "lightsout/code/fractal/modules",
         "lightsout/code/fractal/shared-code",
         "lightsout/code/fractal/size",
-        "lightsout/code/frameworks/tanstack-start",
+        "lightsout/code/frameworks/react",
         "lightsout/tests/code-style",
         "lightsout/tests/fractal",
         "lightsout/tests/frameworks/react"
@@ -460,8 +430,7 @@
           "name": "lightsout/file-size",
           "severity": "advisory",
           "options": {
-            "file": 250,
-            "tsxFile": 300
+            "file": 250
           }
         },
         {
@@ -479,15 +448,6 @@
           "severity": "advisory",
           "options": {
             "cap": 20
-          }
-        },
-        {
-          "name": "lightsout/function-size",
-          "severity": "advisory",
-          "options": {
-            "function": 80,
-            "hook": 160,
-            "component": 200
           }
         },
         {
@@ -576,9 +536,13 @@
           "options": {}
         },
         {
-          "name": "lightsout/query-options",
+          "name": "lightsout/react-function-size",
           "severity": "advisory",
-          "options": {}
+          "options": {
+            "function": 80,
+            "hook": 160,
+            "component": 200
+          }
         },
         {
           "name": "lightsout/reuse-common-code",
@@ -664,44 +628,605 @@
         }
       ],
       "totals": {
-        "rules": 50,
+        "rules": 49,
         "deterministic": 34,
-        "agent": 18,
+        "agent": 17,
         "topics": 13
+      }
+    },
+    {
+      "name": "standards",
+      "address": "lightsout/standards",
+      "description": "The standard for a package with no framework pack of its own: a repo that keeps one shape at every level and is written in one style.",
+      "include": {
+        "packs": [
+          "lightsout/fractal",
+          "lightsout/code-style"
+        ],
+        "topics": [],
+        "rules": []
+      },
+      "topics": [
+        "lightsout/code/code-style/classes",
+        "lightsout/code/code-style/functions",
+        "lightsout/code/code-style/named-constants",
+        "lightsout/code/code-style/type-safety",
+        "lightsout/code/fractal/duplication",
+        "lightsout/code/fractal/imports",
+        "lightsout/code/fractal/modules",
+        "lightsout/code/fractal/shared-code",
+        "lightsout/code/fractal/size",
+        "lightsout/tests/code-style",
+        "lightsout/tests/fractal"
+      ],
+      "rules": [
+        {
+          "name": "lightsout/assertions-pin-contracts",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-folder-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/case-collision",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/circular-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-inheritance",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/dead-export",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-code-block",
+          "severity": "advisory",
+          "options": {
+            "minTokens": 50
+          }
+        },
+        {
+          "name": "lightsout/duplicate-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-function-body",
+          "severity": "blocking",
+          "options": {
+            "minBodyTokens": 40
+          }
+        },
+        {
+          "name": "lightsout/explicit-return-type",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-directly-in-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-size",
+          "severity": "advisory",
+          "options": {
+            "file": 250
+          }
+        },
+        {
+          "name": "lightsout/filename-mismatch",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/files-that-must-not-have-dedicated-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-size",
+          "severity": "advisory",
+          "options": {
+            "cap": 20
+          }
+        },
+        {
+          "name": "lightsout/function-size",
+          "severity": "advisory",
+          "options": {
+            "function": 80
+          }
+        },
+        {
+          "name": "lightsout/import-path-alias",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/index-file-contents",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/index-files",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/internal-import-from-outside",
+          "severity": "off",
+          "options": {}
+        },
+        {
+          "name": "lightsout/jest-spyon-vs-jest-mock",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-boundary-testing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-file-to-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-folder-layout",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/multi-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-string-values",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-for-reuse",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-any",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-test-state-in-hooks",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/object-args",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/prefer-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/private-helper-colocation",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/reuse-common-code",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-code-placement",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-package-criteria",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-return",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-use-scalar",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/synonym-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-beside-subject",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-file-size",
+          "severity": "advisory",
+          "options": {
+            "testFile": 400
+          }
+        },
+        {
+          "name": "lightsout/test-manual-mock-cleanup",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-prefix",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-wrapper-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-support-in-src",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-assertion",
+          "severity": "blocking",
+          "options": {}
+        }
+      ],
+      "totals": {
+        "rules": 48,
+        "deterministic": 34,
+        "agent": 16,
+        "topics": 11
       }
     },
     {
       "name": "tanstack-start",
       "address": "lightsout/tanstack-start",
-      "description": "Where a TanStack Start app declares its query options, in each package that uses TanStack Start.",
-      "appliesWhen": {
-        "dependencies": [
-          "@tanstack/react-start",
-          "@tanstack/start"
-        ]
-      },
+      "description": "The whole standard for a package that uses TanStack Start: everything the React pack holds, plus where query options live and which files get tests.",
       "include": {
-        "packs": [],
+        "packs": [
+          "lightsout/react"
+        ],
         "topics": [
-          "lightsout/code/frameworks/tanstack-start"
+          "lightsout/code/frameworks/tanstack-start",
+          "lightsout/tests/frameworks/tanstack-start"
         ],
         "rules": []
       },
       "topics": [
-        "lightsout/code/frameworks/tanstack-start"
+        "lightsout/code/code-style/classes",
+        "lightsout/code/code-style/functions",
+        "lightsout/code/code-style/named-constants",
+        "lightsout/code/code-style/type-safety",
+        "lightsout/code/fractal/duplication",
+        "lightsout/code/fractal/imports",
+        "lightsout/code/fractal/modules",
+        "lightsout/code/fractal/shared-code",
+        "lightsout/code/fractal/size",
+        "lightsout/code/frameworks/react",
+        "lightsout/code/frameworks/tanstack-start",
+        "lightsout/tests/code-style",
+        "lightsout/tests/fractal",
+        "lightsout/tests/frameworks/react",
+        "lightsout/tests/frameworks/tanstack-start"
       ],
       "rules": [
+        {
+          "name": "lightsout/assertions-pin-contracts",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-folder-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/case-collision",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/circular-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-inheritance",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/dead-export",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-code-block",
+          "severity": "advisory",
+          "options": {
+            "minTokens": 50
+          }
+        },
+        {
+          "name": "lightsout/duplicate-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-function-body",
+          "severity": "blocking",
+          "options": {
+            "minBodyTokens": 40
+          }
+        },
+        {
+          "name": "lightsout/explicit-return-type",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-directly-in-common",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-size",
+          "severity": "advisory",
+          "options": {
+            "file": 250
+          }
+        },
+        {
+          "name": "lightsout/filename-mismatch",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/files-that-must-not-have-dedicated-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-size",
+          "severity": "advisory",
+          "options": {
+            "cap": 20
+          }
+        },
+        {
+          "name": "lightsout/import-path-alias",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/index-file-contents",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/index-files",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/internal-import-from-outside",
+          "severity": "off",
+          "options": {}
+        },
+        {
+          "name": "lightsout/jest-spyon-vs-jest-mock",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-boundary-testing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-file-to-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-folder-layout",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/multi-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-string-values",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/naming-for-reuse",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-any",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-route-file-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-test-state-in-hooks",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/object-args",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/prefer-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/private-helper-colocation",
+          "severity": "advisory",
+          "options": {}
+        },
         {
           "name": "lightsout/query-options",
           "severity": "advisory",
           "options": {}
+        },
+        {
+          "name": "lightsout/react-function-size",
+          "severity": "advisory",
+          "options": {
+            "function": 80,
+            "hook": 160,
+            "component": 200
+          }
+        },
+        {
+          "name": "lightsout/reuse-common-code",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-code-placement",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-package-criteria",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-return",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-use-scalar",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/synonym-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-beside-subject",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-file-size",
+          "severity": "advisory",
+          "options": {
+            "testFile": 400
+          }
+        },
+        {
+          "name": "lightsout/test-manual-mock-cleanup",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-prefix",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-wrapper-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-support-in-src",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/the-render-pattern",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-assertion",
+          "severity": "blocking",
+          "options": {}
         }
       ],
       "totals": {
-        "rules": 1,
-        "deterministic": 0,
-        "agent": 1,
-        "topics": 1
+        "rules": 51,
+        "deterministic": 34,
+        "agent": 19,
+        "topics": 15
       }
     }
   ],
@@ -805,6 +1330,14 @@
     },
     {
       "set": "code",
+      "path": "code/frameworks/react",
+      "intro": "# React\n\nHow React code is written: components, hooks and JSX.",
+      "ruleIds": [
+        "react-function-size"
+      ]
+    },
+    {
+      "set": "code",
       "path": "code/frameworks/tanstack-start",
       "intro": "# TanStack Start\n\nConventions for a TanStack Start application. TanStack Start mandates only its route files under `routes/` and its entry files `router.tsx`, `server.ts` and `client.tsx`: the folders and names in these rules are this pack's own conventions.",
       "ruleIds": [
@@ -845,6 +1378,14 @@
       "intro": "# Unit Testing Components & Hooks\n\nHow React and Preact components and hooks are unit-tested.",
       "ruleIds": [
         "the-render-pattern"
+      ]
+    },
+    {
+      "set": "tests",
+      "path": "tests/frameworks/tanstack-start",
+      "intro": "# Testing a TanStack Start App\n\nWhich files of a TanStack Start application get unit tests.",
+      "ruleIds": [
+        "no-route-file-tests"
       ]
     }
   ],
@@ -1389,14 +1930,13 @@
       "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {
-        "file": 250,
-        "tsxFile": 300
+        "file": 250
       },
       "fixtureCounts": {
         "pass": 2,
         "fail": 1
       },
-      "prose": "## File Size\n\nKeep a file to 250 lines or fewer, or 300 for a `.tsx` file, where JSX and props interfaces earn the room. At the cap, split the file, or turn its module into a folder as `module-file-to-folder` says.\n\nAn index file in any dialect, `index.tsx` included, is exempt: a package's entry is its public API, and it cannot take the remedy a size finding asks for.",
+      "prose": "## File Size\n\nKeep a file to 250 lines or fewer. At the cap, split the file, or turn its module into a folder as `module-file-to-folder` says.\n\nAn index file is exempt: a package's entry is its public API, and it cannot take the remedy a size finding asks for.",
       "fixtures": [
         {
           "side": "pass",
@@ -1699,15 +2239,13 @@
       "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {
-        "function": 80,
-        "hook": 160,
-        "component": 200
+        "function": 80
       },
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Function Size\n\nSplit a function longer than 80 lines. A hook, a function whose name starts with `use`, may run to 160 lines, and a component, a capitalised function in a `.tsx` file, may run to 200. Lines run from the signature to the closing brace, and a callback with no name counts toward the function that holds it.\n\nA function is exempt when every statement calls a named step, or assigns that call's result, and the flow is linear. One inline loop, branch or transformation ends the exemption: a 150-line `start()` that calls eight steps is fine, but one with an inline loop is not. It has nothing to extract, and splitting it would scatter the sequence.\n\nReach for the exemption last. Extract the work into named pieces first, then look again: what remains is short, or plainly a sequence.\n\nEach piece you extract is a new name to read, and perhaps a new file. Extract a piece because it deserves a name, not to win back lines.",
+      "prose": "## Function Size\n\nSplit a function longer than 80 lines. Lines run from the signature to the closing brace, and a callback with no name counts toward the function that holds it.\n\nA function is exempt when every statement calls a named step, or assigns that call's result, and the flow is linear. One inline loop, branch or transformation ends the exemption: a 150-line `start()` that calls eight steps is fine, but one with an inline loop is not. It has nothing to extract, and splitting it would scatter the sequence.\n\nReach for the exemption last. Extract the work into named pieces first, then look again: what remains is short, or plainly a sequence.\n\nEach piece you extract is a new name to read, and perhaps a new file. Extract a piece because it deserves a name, not to win back lines.",
       "fixtures": [
         {
           "side": "pass",
@@ -2342,6 +2880,51 @@
       }
     },
     {
+      "id": "no-route-file-tests",
+      "name": "lightsout/no-route-file-tests",
+      "set": "tests",
+      "documentPath": "tests/frameworks/tanstack-start",
+      "summary": "Whether a route file gets a unit test.",
+      "deterministic": false,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 2,
+        "fail": 2
+      },
+      "prose": "## No Route File Tests\n\nNever write a unit test for a route file under `routes/`. Test the screen the route renders instead.\n\nA route file is thin wiring: guards, layout and one screen render. The screen's own tests and the end-to-end tests cover it.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/features/issues/screens/IssuesScreen.tsx",
+          "text": "// The screen the `/issues` route renders.\nexport const IssuesScreen = () => <h1>Issues</h1>;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/screens/IssuesScreen.unit.test.tsx",
+          "text": "import { describe, expect, test } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { IssuesScreen } from './IssuesScreen';\n\nconst setupIssuesScreen = () => {\n\trender(<IssuesScreen />);\n};\n\n// Correct: the screen is tested, and the route that renders it is not.\ndescribe('IssuesScreen', () => {\n\ttest('renders the heading', () => {\n\t\tsetupIssuesScreen();\n\n\t\tconst heading = screen.getByRole('heading', { name: 'Issues' });\n\n\t\texpect(heading).toBeInTheDocument();\n\t});\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/routes/issues.tsx",
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../features/issues/screens/IssuesScreen';\n\n// The route only wires the screen to its path.\nexport const Route = createFileRoute('/issues')({ component: IssuesScreen });\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/routes/issues.unit.test.tsx",
+          "text": "import { describe, expect, test } from '@jest/globals';\nimport { Route } from './issues';\n\n// Incorrect: a unit test for a route file, which holds nothing but wiring.\ndescribe('issues route', () => {\n\ttest('renders the issues screen', () => {\n\t\tconst component = Route.options.component;\n\n\t\texpect(component).toBeDefined();\n\t});\n});\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/routes/issues.unit.test.tsx",
+          "pass": "src/features/issues/screens/IssuesScreen.unit.test.tsx"
+        }
+      }
+    },
+    {
       "id": "no-test-state-in-hooks",
       "name": "lightsout/no-test-state-in-hooks",
       "set": "tests",
@@ -2581,6 +3164,41 @@
           "fail": "src/features/issues/screens/IssuesScreen/IssuesScreen.tsx",
           "pass": "src/common/constants/QueryKey.ts"
         }
+      }
+    },
+    {
+      "id": "react-function-size",
+      "name": "lightsout/react-function-size",
+      "set": "code",
+      "documentPath": "code/frameworks/react",
+      "summary": "How long a function, a hook and a component may grow.",
+      "deterministic": true,
+      "agent": false,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {
+        "function": 80,
+        "hook": 160,
+        "component": 200
+      },
+      "fixtureCounts": {
+        "pass": 1,
+        "fail": 1
+      },
+      "prose": "## React Function Size\n\nSplit a function longer than 80 lines. A hook, a function whose name starts with `use`, may run to 160 lines, and a component, a capitalised function in a `.tsx` file, may run to 200. Lines run from the signature to the closing brace, and a callback with no name counts toward the function that holds it.\n\nA function is exempt when every statement calls a named step, or assigns that call's result, and the flow is linear. One inline loop, branch or transformation ends the exemption: a 150-line `start()` that calls eight steps is fine, but one with an inline loop is not. It has nothing to extract, and splitting it would scatter the sequence.\n\nReach for the exemption last. Extract the work into named pieces first, then look again: what remains is short, or plainly a sequence.\n\nEach piece you extract is a new name to read, and perhaps a new file. Extract a piece because it deserves a name, not to win back lines.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/reporting/buildReportSummary.ts",
+          "text": "interface Row {\n\tregion: string;\n\tproduct: string;\n\tcurrency: string;\n\tamount: number;\n\trefunded: boolean;\n}\n\ninterface Params {\n\trows: Row[];\n\trates: Record<string, number>;\n}\n\n// One grouping helper the export reuses three times — the same report, with the\n// body under the cap because the repeated work was named once.\nconst sumBy = ({ rows, rates, key }: { rows: Row[]; rates: Record<string, number>; key: keyof Row }) => {\n\tconst totals: Record<string, number> = {};\n\n\tfor (const row of rows) {\n\t\tconst group = String(row[key]);\n\n\t\ttotals[group] = (totals[group] ?? 0) + row.amount * (rates[row.currency] ?? 1);\n\t}\n\n\treturn totals;\n};\n\nexport const buildReportSummary = ({ rows, rates }: Params): Record<string, number> => {\n\tconst summary: Record<string, number> = {};\n\n\tfor (const key of ['region', 'product', 'currency'] as const) {\n\t\tfor (const [group, total] of Object.entries(sumBy({ rows, rates, key }))) {\n\t\t\tsummary[`${key}.${group}.total`] = total;\n\t\t}\n\t}\n\n\tsummary['rows.counted'] = rows.length;\n\n\treturn summary;\n};\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/reporting/buildReportSummary.ts",
+          "text": "interface Row {\n\tregion: string;\n\tproduct: string;\n\tcurrency: string;\n\tamount: number;\n\trefunded: boolean;\n}\n\ninterface Params {\n\trows: Row[];\n\trates: Record<string, number>;\n}\n\n// Every step of the summary inlined into one body — not a linear flow of step\n// calls, just a long function, which is the shape the table calls \"needs\n// splitting\".\nexport const buildReportSummary = ({ rows, rates }: Params): Record<string, number> => {\n\tconst regionTotals: Record<string, number> = {};\n\tconst regionRefunds: Record<string, number> = {};\n\tconst regionCounts: Record<string, number> = {};\n\n\tfor (const row of rows) {\n\t\tconst converted = row.amount * (rates[row.currency] ?? 1);\n\n\t\tif (row.refunded) {\n\t\t\tregionRefunds[row.region] = (regionRefunds[row.region] ?? 0) + converted;\n\t\t} else {\n\t\t\tregionTotals[row.region] = (regionTotals[row.region] ?? 0) + converted;\n\t\t}\n\n\t\tregionCounts[row.region] = (regionCounts[row.region] ?? 0) + 1;\n\t}\n\n\tconst productTotals: Record<string, number> = {};\n\tconst productRefunds: Record<string, number> = {};\n\tconst productCounts: Record<string, number> = {};\n\n\tfor (const row of rows) {\n\t\tconst converted = row.amount * (rates[row.currency] ?? 1);\n\n\t\tif (row.refunded) {\n\t\t\tproductRefunds[row.product] = (productRefunds[row.product] ?? 0) + converted;\n\t\t} else {\n\t\t\tproductTotals[row.product] = (productTotals[row.product] ?? 0) + converted;\n\t\t}\n\n\t\tproductCounts[row.product] = (productCounts[row.product] ?? 0) + 1;\n\t}\n\n\tconst currencyTotals: Record<string, number> = {};\n\tconst currencyRefunds: Record<string, number> = {};\n\tconst currencyCounts: Record<string, number> = {};\n\n\tfor (const row of rows) {\n\t\tconst converted = row.amount * (rates[row.currency] ?? 1);\n\n\t\tif (row.refunded) {\n\t\t\tcurrencyRefunds[row.currency] = (currencyRefunds[row.currency] ?? 0) + converted;\n\t\t} else {\n\t\t\tcurrencyTotals[row.currency] = (currencyTotals[row.currency] ?? 0) + converted;\n\t\t}\n\n\t\tcurrencyCounts[row.currency] = (currencyCounts[row.currency] ?? 0) + 1;\n\t}\n\n\tconst summary: Record<string, number> = {};\n\n\tfor (const [region, total] of Object.entries(regionTotals)) {\n\t\tsummary[`region.${region}.total`] = total;\n\t\tsummary[`region.${region}.refunded`] = regionRefunds[region] ?? 0;\n\t\tsummary[`region.${region}.count`] = regionCounts[region] ?? 0;\n\t\tsummary[`region.${region}.average`] = total / (regionCounts[region] ?? 1);\n\t}\n\n\tfor (const [product, total] of Object.entries(productTotals)) {\n\t\tsummary[`product.${product}.total`] = total;\n\t\tsummary[`product.${product}.refunded`] = productRefunds[product] ?? 0;\n\t\tsummary[`product.${product}.count`] = productCounts[product] ?? 0;\n\t\tsummary[`product.${product}.average`] = total / (productCounts[product] ?? 1);\n\t}\n\n\tfor (const [currency, total] of Object.entries(currencyTotals)) {\n\t\tsummary[`currency.${currency}.total`] = total;\n\t\tsummary[`currency.${currency}.refunded`] = currencyRefunds[currency] ?? 0;\n\t\tsummary[`currency.${currency}.count`] = currencyCounts[currency] ?? 0;\n\t\tsummary[`currency.${currency}.average`] = total / (currencyCounts[currency] ?? 1);\n\t}\n\n\tsummary['rows.counted'] = rows.length;\n\tsummary['rows.refunded'] = rows.filter((row) => row.refunded).length;\n\tsummary['rows.settled'] = rows.filter((row) => !row.refunded).length;\n\tsummary['regions.counted'] = Object.keys(regionTotals).length;\n\tsummary['products.counted'] = Object.keys(productTotals).length;\n\tsummary['currencies.counted'] = Object.keys(currencyTotals).length;\n\n\tfor (const [region, count] of Object.entries(regionCounts)) {\n\t\tsummary[`region.${region}.share`] = count / rows.length;\n\t}\n\n\tfor (const [product, count] of Object.entries(productCounts)) {\n\t\tsummary[`product.${product}.share`] = count / rows.length;\n\t}\n\n\tfor (const [currency, count] of Object.entries(currencyCounts)) {\n\t\tsummary[`currency.${currency}.share`] = count / rows.length;\n\t}\n\n\treturn summary;\n};\n"
+        }
+      ],
+      "example": {
+        "kind": "snippet"
       }
     },
     {

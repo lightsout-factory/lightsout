@@ -2,8 +2,8 @@ import { describe, expect, test } from '@jest/globals';
 import { setupSyntaxTreeInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
-/** The caps this suite measures against — small enough that a fixture stays readable, and far enough apart that the two extensions cannot be confused. */
-const caps = { file: 6, tsxFile: 9 };
+/** The cap this suite measures against — small enough that a fixture stays readable. */
+const caps = { file: 6 };
 
 /** A file spanning exactly `lines` lines, its body statements nothing else depends on and no terminating newline. */
 const buildSource = ({ lines }: { lines: number }) => Array.from({ length: lines }, (_, index) => `export const step${index} = ${index};`).join('\n');
@@ -33,7 +33,7 @@ describe('file-size check', () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/buildReportSummary.ts', buildSource({ lines: 7 })]] });
 
 		const againstSix = await check.run({ inputs: { 'syntax-tree': input }, options: caps });
-		const againstARetunedCap = await check.run({ inputs: { 'syntax-tree': input }, options: { file: 3, tsxFile: 9 } });
+		const againstARetunedCap = await check.run({ inputs: { 'syntax-tree': input }, options: { file: 3 } });
 
 		expect([againstSix[0]?.measure, againstARetunedCap[0]?.measure]).toStrictEqual([7, 7]);
 	});
@@ -44,30 +44,6 @@ describe('file-size check', () => {
 		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: caps });
 
 		expect(findings).toStrictEqual([]);
-	});
-
-	test('a .tsx earns the roomier cap, so a file too long for a .ts still passes', async () => {
-		const input = setupSyntaxTreeInput({ sources: [['src/reporting/ReportPanel.tsx', buildSource({ lines: 9 })]] });
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: caps });
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('reports a .tsx past the .tsx cap against that roomier number', async () => {
-		const input = setupSyntaxTreeInput({ sources: [['src/reporting/ReportPanel.tsx', buildSource({ lines: 10 })]] });
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: caps });
-
-		expect(findings).toStrictEqual([
-			{
-				siteKey: 'file-size:src/reporting/ReportPanel.tsx',
-				files: [{ path: 'src/reporting/ReportPanel.tsx' }],
-				detail: '10 lines (cap ~9)',
-				guidance: 'Split the file, or graduate the concept it has grown into.',
-				measure: 10,
-			},
-		]);
 	});
 
 	test('a barrel is exempt at any length, since a public API cannot take the split the finding would ask for', async () => {
@@ -145,21 +121,6 @@ describe('file-size check', () => {
 		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: caps });
 
 		expect(findings).toStrictEqual([]);
-	});
-
-	test('measures ts files against the file option and tsx files against tsxFile', async () => {
-		const input = setupSyntaxTreeInput({
-			sources: [
-				['src/reporting/buildReportSummary.ts', buildSource({ lines: 5 })],
-				['src/reporting/ReportPanel.tsx', buildSource({ lines: 5 })],
-			],
-		});
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: { file: 4, tsxFile: 5 } });
-
-		expect(findings.map(({ siteKey, detail }) => ({ siteKey, detail }))).toStrictEqual([
-			{ siteKey: 'file-size:src/reporting/buildReportSummary.ts', detail: '5 lines (cap ~4)' },
-		]);
 	});
 
 	test('reports nothing when its input is missing rather than refusing', async () => {

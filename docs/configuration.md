@@ -206,8 +206,9 @@ for, so a repository can take one goal without the others:
 | --- | --- |
 | `lightsout/fractal` | Keeps the repo the same shape at every level, so any file's place is predictable and a duplicate is found by searching for its name. |
 | `lightsout/code-style` | Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values, a type-safe value and a unit test. |
-| `lightsout/react`, `lightsout/tanstack-start` | Framework rules. Each reaches only the packages whose `package.json` declares that framework. |
-| `lightsout/standards` | All of the above. |
+| `lightsout/standards` | Both of the above: the standard for a package with no framework pack of its own. |
+| `lightsout/react` | The whole standard for a package that uses React: the general rules, with function size measured the React way and component tests written one way. |
+| `lightsout/tanstack-start` | The whole standard for a package that uses TanStack Start: everything the React pack holds, plus its own rules. |
 
 `standards-pack` takes one pack address or a list of them. Listed packs apply
 in order, and the last listed wins where two grade one rule differently:
@@ -487,6 +488,7 @@ A repository that wants the strict profile promotes those rules itself — an ex
     "index-files": "blocking",
     "folder-size": "blocking",
     "function-size": "blocking",
+    "react-function-size": "blocking",
     "import-path-alias": "blocking",
     "internal-import-from-outside": "blocking",
     "multi-export": "blocking",
