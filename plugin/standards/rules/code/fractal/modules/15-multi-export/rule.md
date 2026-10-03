@@ -11,7 +11,7 @@ Give each exported function, class, interface, type or constant its own file, na
 Only these cases may put more than one item in a file:
 
 1. A `Params` interface stays in its function's file, not exported.
-2. A private helper, as `private-helper-colocation` says.
+2. A private helper stays in the file of the export it serves, not exported, while only that file calls it. When covering it through the export is impractical, because its inputs are combinatorial, give it its own file and its own tests.
 3. A union and its member types share one file when the members exist only as parts of that union.
 4. A lookup map keyed by a union (`Record<MyType, …>`) may sit in the file that declares the union: a change to one always changes the other.
 5. A type and the single value typed by it share one file, named for the value, such as `interface Config` beside `export const defaultConfig: Config`: the value has no consumer the type lacks.
