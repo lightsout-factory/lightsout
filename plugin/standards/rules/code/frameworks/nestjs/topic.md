@@ -1,3 +1,0 @@
-# NestJS Architecture
-
-How the base rules apply to a NestJS application. NestJS names files in kebab-case with a suffix for their kind, as its CLI generates them: `events.service.ts`, `create-event.dto.ts`, `*.controller.ts`, `*.module.ts`, `*.guard.ts`. It finds its bootstrap at `src/main.ts`. Its dependency injection needs classes for services, controllers, resolvers, guards, pipes and interceptors, and reads constructor parameter types from decorator metadata at runtime, so on a decorated declaration, import the names it references as values, never with `import type`. A Nest module is wired by decorators (`@Module`), not by folders, so NestJS mandates no folder layout.
