@@ -1,12 +1,14 @@
 import type { StandardsPackListing } from '@lightsout/engine';
 import { Link } from '@tanstack/react-router';
 import { ArrowRight, Blocks } from 'lucide-react';
+import { FrameworkMark } from '#src/appUI/icons/FrameworkMark.tsx';
 import { CheckKind } from '#src/common/constants/CheckKind.ts';
 import { checkKindIcons } from '#src/common/constants/checkKindIcons.ts';
 import { checkKindLabels } from '#src/common/constants/checkKindLabels.ts';
 import { checkKindTones } from '#src/common/constants/checkKindTones.ts';
 import { cn } from '#src/common/utils/cn.ts';
 import { PackCondition } from '#src/features/packs/components/PackCondition.tsx';
+import { packFrameworks } from '#src/features/packs/internal/common/constants/packFrameworks.ts';
 
 interface Props {
 	/** The library the pack belongs to — the first half of its address and of its page link. */
@@ -19,6 +21,7 @@ export const PackCard = ({ library, pack }: Props) => {
 		{ kind: CheckKind.Deterministic, count: pack.totals.deterministic },
 		{ kind: CheckKind.Agent, count: pack.totals.agent },
 	];
+	const framework = packFrameworks[pack.address];
 
 	return (
 		<Link
@@ -27,7 +30,11 @@ export const PackCard = ({ library, pack }: Props) => {
 			className="group flex flex-col gap-6 rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary-tint-border hover:shadow-md"
 		>
 			<span className="flex size-11 items-center justify-center rounded-xl border border-border bg-muted/40">
-				<Blocks aria-hidden="true" className="size-5 text-muted-foreground" />
+				{framework === undefined ? (
+					<Blocks aria-hidden="true" className="size-5 text-muted-foreground" />
+				) : (
+					<FrameworkMark framework={framework} className="size-5" />
+				)}
 			</span>
 			<div className="flex flex-col gap-1">
 				<h3 className="break-all font-bold font-mono text-drop-navy text-lg">{pack.address}</h3>

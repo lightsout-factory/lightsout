@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { PackPageFrame } from '#src/features/packs/components/PackPageFrame.tsx';
+import { sortPacksForDisplay } from '#src/features/packs/internal/common/utils/sortPacksForDisplay.ts';
 import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
 import { CheckKindKey } from '#src/features/packs/screens/PacksPage/internal/components/CheckKindKey.tsx';
 import { PackCard } from '#src/features/packs/screens/PacksPage/internal/components/PackCard.tsx';
@@ -23,7 +24,7 @@ export const PacksPage = () => {
 			</header>
 			<section aria-label="Packs" className="flex flex-col gap-6">
 				<div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-					{library.packs.map((pack) => (
+					{sortPacksForDisplay({ packs: library.packs }).map((pack) => (
 						<PackCard key={pack.name} library={library.name} pack={pack} />
 					))}
 					<YourPackCard />

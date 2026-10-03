@@ -53,6 +53,25 @@ describe('PacksPage', () => {
 		expect(screen.getByRole('heading', { level: 1, name: 'Standards Packs' })).toBeInTheDocument();
 	});
 
+	test('lists the general packs before the framework packs, each under the mark of what it is written for', () => {
+		const names = ['code-style', 'fractal', 'react', 'standards', 'tanstack-start'];
+		setupPacksPage({ pack: buildStandardsPackView({ packs: names.map((name) => buildStandardsPackListing({ name })) }) });
+
+		const cards = screen.getAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith('/standards-packs/lightsout/packs/'));
+		const marks = cards.map((card) => ({
+			address: within(card).getByRole('heading').textContent,
+			fill: card.querySelector('svg[viewBox="0 0 24 24"][fill]')?.getAttribute('fill'),
+		}));
+
+		expect(marks).toStrictEqual([
+			{ address: 'lightsout/fractal', fill: '#3178C6' },
+			{ address: 'lightsout/code-style', fill: '#3178C6' },
+			{ address: 'lightsout/standards', fill: '#3178C6' },
+			{ address: 'lightsout/react', fill: '#61DAFB' },
+			{ address: 'lightsout/tanstack-start', fill: 'currentColor' },
+		]);
+	});
+
 	test("shows one card per pack of the library, each linking to that pack's page", () => {
 		setupPacksPage({
 			pack: buildStandardsPackView({ packs: [buildStandardsPackListing({ name: 'standards' }), buildStandardsPackListing({ name: 'react' })] }),
