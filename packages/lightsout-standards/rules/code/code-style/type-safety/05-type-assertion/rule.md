@@ -10,6 +10,8 @@ Never write an `as` cast in source code. A cast tells the compiler to trust you 
 
 This includes text arriving at a boundary, such as a JSON payload, a query parameter or a database value: a string is not yet a member of a named constant's union, so convert it with a small validation function, such as `parseAction`, never `as Action`.
 
+A type guard must test the value. One that returns `true` without checking is a cast under another name.
+
 `as const` is not a cast: it fixes a literal's type, and it stays.
 
 ```typescript

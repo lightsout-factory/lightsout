@@ -24,7 +24,7 @@ describe('type-assertion check', () => {
 				siteKey: 'type-assertion:src/payloads/readLabel.ts',
 				files: [{ path: 'src/payloads/readLabel.ts' }],
 				detail: '`as` cast at line 1',
-				guidance: 'Narrow with `typeof`, `instanceof` or a discriminated union — an assertion that is genuinely unavoidable needs a comment saying why.',
+				guidance: 'Narrow with `typeof`, `instanceof` or a discriminated union, or write a type guard that tests the value.',
 			},
 		]);
 	});
@@ -102,7 +102,7 @@ describe('type-assertion check', () => {
 				siteKey: 'type-assertion:src/payloads/readLabel.ts',
 				files: [{ path: 'src/payloads/readLabel.ts' }],
 				detail: '`as` cast at lines 1, 3',
-				guidance: 'Narrow with `typeof`, `instanceof` or a discriminated union — an assertion that is genuinely unavoidable needs a comment saying why.',
+				guidance: 'Narrow with `typeof`, `instanceof` or a discriminated union, or write a type guard that tests the value.',
 			},
 		]);
 	});
@@ -211,9 +211,46 @@ describe('type-assertion check', () => {
 				siteKey: 'type-assertion:src/payloads/readLabel.ts',
 				files: [{ path: 'src/payloads/readLabel.ts' }],
 				detail: '`as` cast at line 1',
-				guidance: 'Narrow with `typeof`, `instanceof` or a discriminated union — an assertion that is genuinely unavoidable needs a comment saying why.',
+				guidance: 'Narrow with `typeof`, `instanceof` or a discriminated union, or write a type guard that tests the value.',
 			},
 		]);
+	});
+
+	test.each([
+		{ shape: 'an arrow whose expression is true', source: 'export const isUser = (value: unknown): value is User => true;\n' },
+		{ shape: 'a body that only returns true', source: 'export const isUser = (value: unknown): value is User => {\n\treturn true;\n};\n' },
+		{ shape: 'a function declaration that only returns true', source: 'export function isUser(value: unknown): value is User {\n\treturn true;\n}\n' },
+	])('reports a type guard that tests nothing: $shape', async ({ source }) => {
+		const input = setupSyntaxTreeInput({ sources: [['src/users/isUser.ts', source]] });
+
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
+
+		expect(findings.map(({ detail }) => detail)).toStrictEqual(['a type guard that tests nothing at line 1']);
+	});
+
+	test('leaves a type guard that tests the value', async () => {
+		const input = setupSyntaxTreeInput({
+			sources: [['src/users/isLabel.ts', "export const isLabel = (value: unknown): value is string => typeof value === 'string';\n"]],
+		});
+
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
+
+		expect(findings).toStrictEqual([]);
+	});
+
+	test('names a cast and an untested guard apart in the one finding a file gets', async () => {
+		const input = setupSyntaxTreeInput({
+			sources: [
+				[
+					'src/users/readUser.ts',
+					'export const isUser = (value: unknown): value is User => true;\nexport const readName = (value: unknown): string => (value as User).name;\n',
+				],
+			],
+		});
+
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
+
+		expect(findings.map(({ detail }) => detail)).toStrictEqual(['`as` cast at line 2; a type guard that tests nothing at line 1']);
 	});
 
 	test('reports nothing when its input is missing rather than refusing', async () => {

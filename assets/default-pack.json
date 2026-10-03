@@ -5,12 +5,12 @@
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
-    "rules": 52,
-    "deterministic": 35,
-    "agent": 19,
+    "rules": 54,
+    "deterministic": 36,
+    "agent": 20,
     "topics": 15,
     "packs": 5,
-    "withFixtures": 52
+    "withFixtures": 54
   },
   "packs": [
     {
@@ -47,6 +47,11 @@
           "options": {}
         },
         {
+          "name": "lightsout/constant-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/explicit-return-type",
           "severity": "blocking",
           "options": {}
@@ -78,6 +83,11 @@
         },
         {
           "name": "lightsout/precedence-in-repos-with-older-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/prefer-arrow-functions",
           "severity": "advisory",
           "options": {}
         },
@@ -128,9 +138,9 @@
         }
       ],
       "totals": {
-        "rules": 18,
-        "deterministic": 12,
-        "agent": 7,
+        "rules": 20,
+        "deterministic": 13,
+        "agent": 8,
         "topics": 5
       }
     },
@@ -393,6 +403,11 @@
           "options": {}
         },
         {
+          "name": "lightsout/constant-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/dead-export",
           "severity": "blocking",
           "options": {}
@@ -526,6 +541,11 @@
           "options": {}
         },
         {
+          "name": "lightsout/prefer-arrow-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/prefer-functions",
           "severity": "advisory",
           "options": {}
@@ -628,9 +648,9 @@
         }
       ],
       "totals": {
-        "rules": 49,
-        "deterministic": 34,
-        "agent": 17,
+        "rules": 51,
+        "deterministic": 35,
+        "agent": 18,
         "topics": 13
       }
     },
@@ -682,6 +702,11 @@
         },
         {
           "name": "lightsout/class-inheritance",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/constant-casing",
           "severity": "advisory",
           "options": {}
         },
@@ -826,6 +851,11 @@
           "options": {}
         },
         {
+          "name": "lightsout/prefer-arrow-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/prefer-functions",
           "severity": "advisory",
           "options": {}
@@ -914,9 +944,9 @@
         }
       ],
       "totals": {
-        "rules": 48,
-        "deterministic": 34,
-        "agent": 16,
+        "rules": 50,
+        "deterministic": 35,
+        "agent": 17,
         "topics": 11
       }
     },
@@ -974,6 +1004,11 @@
         },
         {
           "name": "lightsout/class-inheritance",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/constant-casing",
           "severity": "advisory",
           "options": {}
         },
@@ -1116,6 +1151,11 @@
           "options": {}
         },
         {
+          "name": "lightsout/prefer-arrow-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/prefer-functions",
           "severity": "advisory",
           "options": {}
@@ -1223,9 +1263,9 @@
         }
       ],
       "totals": {
-        "rules": 51,
-        "deterministic": 34,
-        "agent": 19,
+        "rules": 53,
+        "deterministic": 35,
+        "agent": 20,
         "topics": 15
       }
     }
@@ -1245,6 +1285,7 @@
       "path": "code/code-style/functions",
       "intro": "# Functions\n\nHow a function takes its arguments, returns, and declares its values.",
       "ruleIds": [
+        "prefer-arrow-functions",
         "object-args",
         "single-return",
         "explicit-return-type",
@@ -1256,7 +1297,8 @@
       "path": "code/code-style/named-constants",
       "intro": "# Named Constants\n\nA set of named string values, written as a `const` object with a union type derived from it. A named constant is that object. A value constant is any other constant.",
       "ruleIds": [
-        "named-string-values"
+        "named-string-values",
+        "constant-casing"
       ]
     },
     {
@@ -1600,7 +1642,7 @@
         "pass": 2,
         "fail": 1
       },
-      "prose": "## Class Inheritance\n\nNever share behaviour through `extends`. Share by composition: hold the common part as a value the composer creates and passes in. State contracts as interfaces; `implements` is not inheritance, and it is welcome.\n\n- `Error` is the one base you may extend, including an error family such as `extends HttpError`, because subclassing is the only way to make a typed error that `instanceof` can check.\n- When a framework's contract is a base class, extending it is allowed; judge each case rather than contorting the code. Treat a decorated class as framework-owned.\n\nTo remove a base class, turn it into a plain value or factory, and have each former subclass hold it and delegate to it: `this.runState.update(...)`. What was `protected` becomes an explicit parameter or a method on the held value.\n\nA base class couples every subclass to its internals: a change or an override acts at a distance, and what is shared hides in a second file.",
+      "prose": "## Class Inheritance\n\nNever share behaviour through `extends`. Share by composition: hold the common part as a value the composer creates and passes in, and delegate to it. State contracts as interfaces; `implements` is not inheritance.\n\n- `Error` is the one base you may extend, including an error family such as `extends HttpError`, because subclassing is the only way to make a typed error that `instanceof` can check.\n- When a framework's contract is a base class, extending it is allowed. Treat a decorated class as framework-owned.\n\nA base class couples every subclass to its internals: a change or an override acts at a distance, and what is shared hides in a second file.",
       "fixtures": [
         {
           "side": "pass",
@@ -1624,6 +1666,37 @@
           "fail": "src/runs/RefactorRun.ts",
           "pass": "src/runs/RefactorRun.ts"
         }
+      }
+    },
+    {
+      "id": "constant-casing",
+      "name": "lightsout/constant-casing",
+      "set": "code",
+      "documentPath": "code/code-style/named-constants",
+      "summary": "How a constant's name is cased.",
+      "deterministic": false,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 1,
+        "fail": 1
+      },
+      "prose": "## Constant Casing\n\nName a `const` object that shares its name with its type in PascalCase, such as `Action`. Name every other constant in camelCase: a single value such as `maxRetries`, or an object that groups related values such as `featureThresholds`.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/sync/retrySync.ts",
+          "text": "// Correct: a single value is camelCase.\nexport const retrySync = (): number => {\n\tconst maxRetries = 3;\n\n\treturn maxRetries;\n};\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/sync/retrySync.ts",
+          "text": "// Incorrect: a single value named in upper case.\nexport const retrySync = (): number => {\n\tconst MAX_RETRIES = 3;\n\n\treturn MAX_RETRIES;\n};\n"
+        }
+      ],
+      "example": {
+        "kind": "snippet"
       }
     },
     {
@@ -2738,7 +2811,7 @@
       "name": "lightsout/named-string-values",
       "set": "code",
       "documentPath": "code/code-style/named-constants",
-      "summary": "How a set of named string values is declared, and how the field that tells union members apart is typed and checked.",
+      "summary": "How a set of named string values is declared and used.",
       "deterministic": true,
       "agent": false,
       "defaultSeverity": "advisory",
@@ -2747,7 +2820,7 @@
         "pass": 5,
         "fail": 5
       },
-      "prose": "## Named String Values\n\nDeclare a set of named string values as a `const` object, and derive the union type from it, so the object is the single source of truth. Consumers reference the object's members, such as `Action.Add`, never raw string literals.\n\n```typescript\n// common/constants/Action.ts\nexport const Action = {\n\tAdd: 'add',\n\tRemove: 'remove',\n\tList: 'list',\n\tUpdate: 'update',\n} as const;\n\nexport type Action = (typeof Action)[keyof typeof Action];\n```\n\n```typescript\ndoThing(Action.Add);\n```\n\nName the object in PascalCase, because it shares its name with its type. Every other constant is camelCase: a single value such as `maxRetries`, or an object that groups related values such as `featureThresholds`.\n\nA lookup map keyed by the union, `Record<Action, string>`, has an entry for every member and may share the object's file, because a change to one always changes the other. A constant that only uses the union, such as a default value or a subset of members, gets its own file.\n\nType the discriminant field of a union family with the `const` object's member, not a raw literal: `kind: typeof SyncEventKind.FileAdded`, not `kind: 'file-added'`. Narrow with the member too, in `===` comparisons and `switch` cases.\n\n```typescript\nexport interface FileAddedEvent {\n\tkind: typeof SyncEventKind.FileAdded;\n\tpath: string;\n}\n\nif (event.kind === SyncEventKind.FileAdded) { /* ... */ }\n```\n\nA narrowing site is at fault only when there is a member to use instead:\n\n- A union with no `const` object, such as `type Mode = 'fast' | 'slow'`, has no member yet. Declare the object first, as above.\n- When the file cannot import the constant, because its package does not depend on the one declaring it or a build deliberately isolates its folder, the literal stands.\n- `typeof value === 'string'` is not a discriminant.\n\nA UI component's discriminated `Props` union may use raw string literals as discriminants, such as `status: 'notInstalled' | 'connected'`, because the caller writes the literal once, as a JSX attribute. When the same values also appear in domain logic, use the `const` object everywhere, props included.\n\nWith a bare union, every call site types the raw string again, so the values are defined everywhere. TypeScript narrows on the member just as it does on the literal, and consumers no longer type the literal again at every narrowing site.",
+      "prose": "## Named String Values\n\nDeclare a set of named string values as a `const` object, and derive the union type from it, so the object is the single source of truth. Consumers reference the object's members, such as `Action.Add`, never raw string literals.\n\n```typescript\n// common/constants/Action.ts\nexport const Action = {\n\tAdd: 'add',\n\tRemove: 'remove',\n} as const;\n\nexport type Action = (typeof Action)[keyof typeof Action];\n```\n\nA lookup map keyed by the union, `Record<Action, string>`, may share the object's file, because a change to one always changes the other. A constant that only uses the union, such as a default value or a subset of members, gets its own file.\n\nType the discriminant field of a union family with the object's member, and narrow with the member too, in `===` comparisons and `switch` cases:\n\n```typescript\nexport interface FileAddedEvent {\n\tkind: typeof SyncEventKind.FileAdded;\n\tpath: string;\n}\n\nif (event.kind === SyncEventKind.FileAdded) { /* ... */ }\n```\n\nA raw literal stands only where there is no member to use:\n\n- A union with no `const` object yet, such as `type Mode = 'fast' | 'slow'`. Declare the object first.\n- A file that cannot import the constant, because its package does not depend on the one declaring it or a build deliberately isolates its folder.\n\nWith a bare union, every call site types the raw string again, so the values are defined everywhere.",
       "fixtures": [
         {
           "side": "pass",
@@ -2969,7 +3042,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Object Args\n\nWrite functions as arrow functions, unless the codebase already uses another form.\n\nGive a function that takes arguments one object argument, and destructure it:\n\n- An exported function declares an interface named `Params` for it.\n- A private helper uses an inline object type, since one file cannot declare two `Params`.\n- A function with no arguments takes no object and has no `Params`.\n\nThe one exception is a signature another contract imposes. Write it as that contract demands, and never declare it again locally:\n\n- A callback: one passed to `map`, `reduce` or `sort`, an event handler, or a framework hook. The caller sets its shape.\n- A wrapper that passes its params object on unchanged to a single function. Type it `Parameters<typeof callee>[0]`, because a copied `Params` drifts from the original.\n\nWhen callers need to name the argument type, for example to build the object ahead of the call, it is public: export it as a named type in place of `Params`.\n\nPositional arguments decay as a function grows: new ones are added out of order, middle ones can never be removed, and two of one type swap silently (`copyFile(dest, src)` compiles). A named argument says what it is at every call.",
+      "prose": "## Object Args\n\nGive a function that takes arguments one object argument, and destructure it:\n\n- An exported function declares an interface named `Params` for it.\n- A private helper uses an inline object type, since one file cannot declare two `Params`.\n- A function with no arguments takes no object and has no `Params`.\n\nTwo signatures follow a contract set elsewhere, and are never declared again locally: a callback, whose caller sets its shape, and a wrapper that passes its params object on unchanged, typed `Parameters<typeof callee>[0]`.\n\nWhen callers need to name the argument type, export it as a named type in place of `Params`.\n\nPositional arguments decay as a function grows: new ones are added out of order, and two of one type swap silently (`copyFile(dest, src)` compiles). A named argument says what it is at every call.",
       "fixtures": [
         {
           "side": "pass",
@@ -3029,6 +3102,37 @@
           "fail": "src/feature/getLabel.unit.test.ts",
           "pass": "src/feature/getLabel.unit.test.ts"
         }
+      }
+    },
+    {
+      "id": "prefer-arrow-functions",
+      "name": "lightsout/prefer-arrow-functions",
+      "set": "code",
+      "documentPath": "code/code-style/functions",
+      "summary": "Which form a function is written in.",
+      "deterministic": false,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 1,
+        "fail": 1
+      },
+      "prose": "## Prefer Arrow Functions\n\nWrite functions as arrow functions, unless the codebase already uses another form.\n\nThen every function in a codebase is declared the same way.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/users/getDisplayName.ts",
+          "text": "interface Params {\n\tfirstName: string;\n\tlastName: string;\n}\n\n// Correct: an arrow function, like every other function in the codebase.\nexport const getDisplayName = ({ firstName, lastName }: Params): string => {\n\treturn `${firstName} ${lastName}`;\n};\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/users/getDisplayName.ts",
+          "text": "interface Params {\n\tfirstName: string;\n\tlastName: string;\n}\n\n// Incorrect: a `function` declaration, in a codebase whose functions are arrows.\nexport function getDisplayName({ firstName, lastName }: Params): string {\n\treturn `${firstName} ${lastName}`;\n}\n"
+        }
+      ],
+      "example": {
+        "kind": "snippet"
       }
     },
     {
@@ -3372,15 +3476,15 @@
       "set": "code",
       "documentPath": "code/code-style/functions",
       "summary": "Where a function returns its result.",
-      "deterministic": false,
-      "agent": true,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Single Return\n\nIn business logic, return once, at the end. Guard clauses at the top may return early for validation and null checks.\n\n```typescript\nexport const calculateShippingCost = ({ weightKg, isExpress, destination }: Params): number => {\n\tlet cost = weightKg * destination.ratePerKg;\n\n\tif (isExpress) {\n\t\tcost += destination.expressSurcharge;\n\t}\n\n\t// The minimum-charge floor applies to every path, so it is written once.\n\tif (cost < destination.minimumCharge) {\n\t\tcost = destination.minimumCharge;\n\t}\n\n\treturn cost;\n};\n```\n\nOne return gives the result one place to be found, and a step every path shares, such as a floor, a wrapper or a log, is written once instead of forgotten in one branch.",
+      "prose": "## Single Return\n\nReturn once, at the end of the function. Guard clauses at the top may return early for validation and null checks.\n\n```typescript\nexport const calculateShippingCost = ({ weightKg, isExpress, destination }: Params): number => {\n\tlet cost = weightKg * destination.ratePerKg;\n\n\tif (isExpress) {\n\t\tcost += destination.expressSurcharge;\n\t}\n\n\t// The minimum-charge floor applies to every path, so it is written once.\n\tif (cost < destination.minimumCharge) {\n\t\tcost = destination.minimumCharge;\n\t}\n\n\treturn cost;\n};\n```\n\nA `switch` assigns in each case, and the function returns after it. When a `switch` only maps one value to another, use a lookup map instead.\n\nOne return gives the result one place to be found, and a step every path shares, such as a floor, a wrapper or a log, is written once instead of forgotten in one branch.",
       "fixtures": [
         {
           "side": "pass",
@@ -3411,7 +3515,7 @@
         "pass": 4,
         "fail": 1
       },
-      "prose": "## Single-Use Scalar\n\nDeclare a scalar that is read in only one place where it is read, not at module scope or in a constants file: `const maxRetries = 10;` inside the function, not `const MAX_RETRIES = 10;` at the top of the module. Hoist it to module scope only when two or more places read it, or when it is a lookup map or structured config.\n\nA value declared beside its only reader is read without a jump to find it.",
+      "prose": "## Single-Use Scalar\n\nDeclare a scalar that is read in only one place where it is read, not at module scope: `const maxRetries = 10;` inside the function, not `const MAX_RETRIES = 10;` at the top of the module. Hoist it to module scope only when two or more places read it, or when it is a lookup map or structured config.\n\nA value declared beside its only reader is read without a jump to find it.",
       "fixtures": [
         {
           "side": "pass",
@@ -3840,7 +3944,7 @@
         "pass": 2,
         "fail": 1
       },
-      "prose": "## Type Assertion\n\nNever write an `as` cast in source code. A cast tells the compiler to trust you instead of proving the type. Narrow instead, with `typeof`, `instanceof` or a discriminated union. When a value cannot be narrowed where it is used, such as a value of type `unknown` from a library, write a type guard or a validation function for it.\n\nThis includes text arriving at a boundary, such as a JSON payload, a query parameter or a database value: a string is not yet a member of a named constant's union, so convert it with a small validation function, such as `parseAction`, never `as Action`.\n\n`as const` is not a cast: it fixes a literal's type, and it stays.\n\n```typescript\n// Incorrect: the compiler takes your word for it\nreturn (value as string).toUpperCase();\n\n// Correct: the check proves it\nif (typeof value === 'string') {\n\treturn value.toUpperCase();\n}\n```",
+      "prose": "## Type Assertion\n\nNever write an `as` cast in source code. A cast tells the compiler to trust you instead of proving the type. Narrow instead, with `typeof`, `instanceof` or a discriminated union. When a value cannot be narrowed where it is used, such as a value of type `unknown` from a library, write a type guard or a validation function for it.\n\nThis includes text arriving at a boundary, such as a JSON payload, a query parameter or a database value: a string is not yet a member of a named constant's union, so convert it with a small validation function, such as `parseAction`, never `as Action`.\n\nA type guard must test the value. One that returns `true` without checking is a cast under another name.\n\n`as const` is not a cast: it fixes a literal's type, and it stays.\n\n```typescript\n// Incorrect: the compiler takes your word for it\nreturn (value as string).toUpperCase();\n\n// Correct: the check proves it\nif (typeof value === 'string') {\n\treturn value.toUpperCase();\n}\n```",
       "fixtures": [
         {
           "side": "pass",

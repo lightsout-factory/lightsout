@@ -70,7 +70,9 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  *
  * On 2026-10-03 the library was cut down to the fractal and code-style packs.
  * `no-thin-wrappers` and `test-strict-equal-matcher` were retired with the
- * rules they named, not renamed.
+ * rules they named, not renamed. `single-return` gained a check. The hook
+ * and component caps left `function-size` for `react-function-size`, which the
+ * framework packs hold and `lightsout/standards` does not, so it is not listed here.
  */
 const durableRuleIds = [
 	'prefer-functions',
@@ -78,6 +80,7 @@ const durableRuleIds = [
 	'no-any',
 	'class-inheritance',
 	'explicit-return-type',
+	'single-return',
 	'single-use-scalar',
 	'named-string-values',
 	'dead-export',
