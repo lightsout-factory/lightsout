@@ -32,7 +32,7 @@ describe('getUnconsumedExports', () => {
 		const found = getUnconsumedExports(
 			setupRepo({
 				contents: [
-					['packages/engine/src/queue/runQueue/runQueue.ts', 'export const runQueue = (): number => 1;'],
+					['packages/engine/src/queue/runQueue.ts', 'export const runQueue = (): number => 1;'],
 					['packages/engine/src/contracts/RunStatus.ts', 'export const RunStatus = 1;'],
 					['packages/engine/src/index.ts', "export { runQueue } from './queue/runQueue';"],
 					['packages/engine/src/contracts/index.ts', "export { RunStatus } from './RunStatus';"],
