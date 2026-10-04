@@ -1,9 +1,9 @@
 import { jestCrashCause } from '#src/common/constants/jestCrashCause.ts';
 import { maxCheapFixRetries } from '#src/common/constants/maxCheapFixRetries.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { ShipIntegration } from '#src/common/types/ShipIntegration.ts';
 import { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
-import { runGates } from '#src/gates/runGates.ts';
+import { runGates } from '#src/gates/runGates/runGates.ts';
 import { appendCommandOutput } from '#src/ship/common/appendCommandOutput.ts';
 import { invokeShipIntegrator } from '#src/ship/integration/integrateDefaultBranch/common/invokeShipIntegrator.ts';
 import type { IntegrationFailure } from '#src/ship/integration/integrateDefaultBranch/common/types/IntegrationFailure.ts';

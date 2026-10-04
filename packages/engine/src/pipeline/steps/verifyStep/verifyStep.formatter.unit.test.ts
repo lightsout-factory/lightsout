@@ -139,7 +139,7 @@ const setupFormatterRun = ({ formatterAnswers = [undefined] }: SetupParams = {})
 
 describe('verifyStep', () => {
 	test('verifyStep: a formatter that fails is the verdict, and nothing is judged or gated on the tree it could not settle', async () => {
-		const formatError = 'prettier exited 2: packages/engine/src/gates/runGates.ts — unterminated string literal';
+		const formatError = 'prettier exited 2: packages/engine/src/gates/runGates/runGates.ts — unterminated string literal';
 		const { run, manifest, buildFix, stopped } = setupFormatterRun({ formatterAnswers: [formatError] });
 
 		const escalation = await verifyStep({
@@ -164,7 +164,7 @@ describe('verifyStep', () => {
 	});
 
 	test("verifyStep: the formatter's own error is what the checkpoint's fix role is handed to repair", async () => {
-		const formatError = 'biome exited 1: packages/engine/src/gates/runGates.ts — expected `)` but found `;`';
+		const formatError = 'biome exited 1: packages/engine/src/gates/runGates/runGates.ts — expected `)` but found `;`';
 		const { run, buildFix, fixErrorContexts } = setupFormatterRun({ formatterAnswers: [formatError] });
 
 		await verifyStep({ run, planContent: '# Plan', id: checkpoint, acceptanceTests: () => [], planBuildMode: { buildMode: BuildMode.Standard }, buildFix })();
@@ -176,7 +176,7 @@ describe('verifyStep', () => {
 	});
 
 	test('verifyStep: a format red the fix role clears lets the review and the gates run on the settled tree', async () => {
-		const formatError = 'prettier exited 2: packages/engine/src/gates/runGates.ts — unterminated string literal';
+		const formatError = 'prettier exited 2: packages/engine/src/gates/runGates/runGates.ts — unterminated string literal';
 		const { run, buildFix } = setupFormatterRun({ formatterAnswers: [formatError, undefined] });
 
 		const escalation = await verifyStep({

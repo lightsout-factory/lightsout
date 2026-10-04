@@ -1,7 +1,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { ShipStepFailure } from '#src/ship/common/types/ShipStepFailure.ts';
 import { repairIntegratedGates } from '#src/ship/integration/integrateDefaultBranch/repairIntegratedGates.ts';
 import { createRateLimitedDriver } from '#tests/helpers/createRateLimitedDriver.ts';
@@ -15,7 +15,7 @@ import { shipIntegrationFixture } from '#tests/helpers/shipIntegrationFixture.ts
 // The harness is not mocked: a scripted driver records what the repair attempt was handed.
 const mockRunGates = jest.fn<(params: { cwd: string }) => Promise<GateRunResult>>();
 
-jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
+jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
 // -------------------------
 const mockRunPreShip = jest.fn<(params: { cwd: string; command: string; baseCommit?: string }) => Promise<ShipStepFailure | undefined>>();
 

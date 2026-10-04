@@ -4,6 +4,7 @@ import { basename, dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { ShipIntegration } from '#src/common/types/ShipIntegration.ts';
 import type { ShipSettings } from '#src/common/types/ShipSettings.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
@@ -14,7 +15,6 @@ import { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
 import { ShipMergeMethod } from '#src/contracts/ship/ShipMergeMethod.ts';
 import type { ShipResult } from '#src/contracts/ship/ShipResult.ts';
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import { readBranchState } from '#src/queue/branchState/readBranchState.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
@@ -76,7 +76,7 @@ jest.mock('#src/queue/worktrees/scanParkedWorktrees.ts', () => ({
 // -------------------------
 const mockRunGates = jest.fn<(params: RunGatesParams) => Promise<GateRunResult>>();
 
-jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: RunGatesParams) => mockRunGates(params) }));
+jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: RunGatesParams) => mockRunGates(params) }));
 // -------------------------
 // The forge merge is the one thing here that would leave the machine. Git, the
 // worktree and the branch-state record all stay real, because what this file

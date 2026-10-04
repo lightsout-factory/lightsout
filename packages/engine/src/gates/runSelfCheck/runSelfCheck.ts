@@ -1,22 +1,22 @@
+import { collectGateObservations } from '#src/common/collectGateObservations.ts';
 import { resolveGateOverride } from '#src/common/config/resolveGateOverride.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
+import { GateScheduleKind } from '#src/common/constants/GateScheduleKind.ts';
+import { SelfCheckReason } from '#src/common/constants/SelfCheckReason.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import { resolveGateSchedule } from '#src/common/resolveGateSchedule.ts';
+import type { GateSchedule } from '#src/common/types/GateSchedule.ts';
+import type { SelfCheckResult } from '#src/common/types/SelfCheckResult.ts';
 import { packageOf } from '#src/common/workspace/packageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { GateScheduleKind } from '#src/gates/common/constants/GateScheduleKind.ts';
-import { SelfCheckReason } from '#src/gates/common/constants/SelfCheckReason.ts';
+import { buildGateEntries } from '#src/gates/common/buildGateEntries.ts';
 import { resolveGates } from '#src/gates/common/resolveGates.ts';
 import { resolvePackageGatesConfig } from '#src/gates/common/resolvePackageGatesConfig.ts';
-import type { GateSchedule } from '#src/gates/common/types/GateSchedule.ts';
-import type { SelfCheckResult } from '#src/gates/common/types/SelfCheckResult.ts';
-import { collectGateObservations } from '#src/gates/common/utils/collectGateObservations.ts';
-import { resolveGateSchedule } from '#src/gates/common/utils/resolveGateSchedule.ts';
-import type { GateCommands } from '#src/gates/internal/common/types/GateCommands.ts';
-import { buildGateEntries } from '#src/gates/internal/common/utils/buildGateEntries.ts';
-import { rootGateCommands } from '#src/gates/internal/common/utils/rootGateCommands.ts';
-import { selfCheckGateNames } from '#src/gates/internal/common/utils/selfCheckGateNames.ts';
-import { runGates } from '#src/gates/runGates.ts';
+import { rootGateCommands } from '#src/gates/common/rootGateCommands.ts';
+import type { GateCommands } from '#src/gates/common/types/GateCommands.ts';
+import { runGates } from '#src/gates/runGates/runGates.ts';
 import { buildSelfCheckStep } from '#src/gates/runSelfCheck/buildSelfCheckStep.ts';
+import { selfCheckGateNames } from '#src/gates/runSelfCheck/selfCheckGateNames.ts';
 
 /**
  * Names read off the root block alone would never schedule a build that only

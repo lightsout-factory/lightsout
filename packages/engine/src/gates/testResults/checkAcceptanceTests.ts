@@ -5,8 +5,8 @@ import { packageOf } from '#src/common/workspace/packageOf.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import { TestCaseStatus } from '#src/contracts/gates/TestCaseStatus.ts';
 import type { TestResultsFile } from '#src/contracts/gates/TestResultsFile.ts';
-import { satisfiesGateKey } from '#src/gates/testResults/internal/satisfiesGateKey.ts';
-import { readTestResults } from '#src/gates/testResults/readTestResults.ts';
+import { readTestResults } from '#src/gates/testResults/common/readTestResults.ts';
+import { satisfiesGateKey } from '#src/gates/testResults/common/satisfiesGateKey.ts';
 
 /**
  * Only a green gate counts, so a red gate reaches the fix role as gate output instead. Only

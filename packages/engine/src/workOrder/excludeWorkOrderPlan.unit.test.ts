@@ -2,6 +2,7 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunLock } from '#src/contracts/run/RunLock.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
@@ -9,7 +10,6 @@ import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import { excludeWorkOrderPlan } from '#src/workOrder/excludeWorkOrderPlan.ts';
 import { setWorkOrderMode } from '#src/workOrder/setWorkOrderMode.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
@@ -32,7 +32,7 @@ interface GateParams {
 
 const mockRunGates = jest.fn<(params: GateParams) => Promise<GateRunResult>>();
 
-jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: GateParams) => mockRunGates(params) }));
+jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: GateParams) => mockRunGates(params) }));
 // -------------------------
 const mockReadBranchWorktree = jest.fn<(params: { cwd: string; branch: string }) => Promise<string | undefined>>();
 

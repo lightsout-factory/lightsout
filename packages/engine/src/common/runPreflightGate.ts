@@ -3,7 +3,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
-import { runGates } from '#src/gates/runGates.ts';
+import { runGates } from '#src/gates/runGates/runGates.ts';
 
 /**
  * The slice of a run this gate touches, structural on purpose: a coverage run

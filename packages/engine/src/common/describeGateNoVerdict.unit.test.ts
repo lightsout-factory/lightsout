@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { describeGateNoVerdict } from '#src/common/describeGateNoVerdict.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 
 const crashLine = 'test crashed: on every attempt Jest died without reporting a failing test, so this gate never returned a verdict.';
 const timeoutLine = 'test-e2e timed out: every attempt ran past the 15-minute gate ceiling (timeouts.gate-minutes), so this gate never returned a verdict.';

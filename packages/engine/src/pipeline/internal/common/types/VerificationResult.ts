@@ -1,5 +1,5 @@
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 
 /**
  * Declared here rather than derived from `runVerificationGates`' return type: a

@@ -1,11 +1,11 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import { verifyStep } from '#src/pipeline/steps/verifyStep/verifyStep.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';

@@ -1,5 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { CoverageBatchReport } from '#src/contracts/coverage/CoverageBatchReport.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
@@ -7,7 +8,6 @@ import { getCoverageAttemptStop } from '#src/coverage/batch/runCoverageBatch/get
 import { CoverageBatchStopKind } from '#src/coverage/common/constants/CoverageBatchStopKind.ts';
 import type { CoverageBatch } from '#src/coverage/common/types/CoverageBatch.ts';
 import type { CoverageBatchStop } from '#src/coverage/common/types/CoverageBatchStop.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 
 const batch: CoverageBatch = {
 	id: 'batch-01:root',

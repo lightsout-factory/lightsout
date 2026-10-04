@@ -2,8 +2,8 @@ import { execSync } from 'node:child_process';
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { ShipWorkOrderGuard } from '#src/common/types/ShipWorkOrderGuard.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import { ShippingProgressRecorder } from '#src/ship/progress/ShippingProgressRecorder.ts';
 import { runShipAttempt } from '#src/ship/runShip/runShipAttempt/runShipAttempt.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
@@ -19,7 +19,7 @@ import { stubForgeOnPath } from '#tests/helpers/stubForgeOnPath.ts';
 // rather than by whichever commands the shared integration fixture configures.
 const mockRunGates = jest.fn<(params: { cwd: string }) => Promise<GateRunResult>>();
 
-jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
+jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
 // -------------------------
 
 /**

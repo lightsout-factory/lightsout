@@ -1,10 +1,10 @@
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { GateHolds } from '#src/common/types/GateHolds.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { ShipSettings } from '#src/common/types/ShipSettings.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
-import { syncGateHolds } from '#src/gates/gateHolds/syncGateHolds.ts';
+import { syncGateHolds } from '#src/gates/gateHolds/syncGateHolds/syncGateHolds.ts';
 import { BoardQuestionRelay } from '#src/queue/board/BoardQuestionRelay.ts';
 import { QueueBoardRecorder } from '#src/queue/board/QueueBoardRecorder.ts';
 import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';

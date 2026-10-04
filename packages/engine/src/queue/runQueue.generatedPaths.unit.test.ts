@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process';
 import { basename, dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { PullRequestSummary } from '#src/common/types/PullRequestSummary.ts';
 import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
@@ -10,7 +11,6 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
 import type { ShipResult } from '#src/contracts/ship/ShipResult.ts';
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import type { nameWaveWorkOrders } from '#src/queue/nameWaveWorkOrders.ts';
 import { runQueue } from '#src/queue/runQueue.ts';
@@ -66,7 +66,7 @@ jest.mock('#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts
 // -------------------------
 const mockRunGates = jest.fn<(params: { cwd: string }) => Promise<GateRunResult>>();
 
-jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
+jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
 // -------------------------
 type FindPullRequestParams = { branch: string; cwd: string; state: string };
 

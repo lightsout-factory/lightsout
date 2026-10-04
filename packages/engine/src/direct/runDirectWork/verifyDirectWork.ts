@@ -2,7 +2,7 @@ import type { RunState } from '#src/common/RunState.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { nextStepRecord } from '#src/direct/runDirectWork/common/nextStepRecord.ts';
-import { runGates } from '#src/gates/runGates.ts';
+import { runGates } from '#src/gates/runGates/runGates.ts';
 
 const verifyStep = 'verify';
 

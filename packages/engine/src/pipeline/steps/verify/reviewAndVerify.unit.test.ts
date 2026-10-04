@@ -1,10 +1,10 @@
 import { expect, jest, test } from '@jest/globals';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import type { RenameRule } from '#src/contracts/plan/renames/RenameRule.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import { reviewAndVerify } from '#src/pipeline/steps/verify/reviewAndVerify.ts';
 

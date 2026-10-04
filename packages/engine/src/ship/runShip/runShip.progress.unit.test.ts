@@ -12,7 +12,7 @@ import { shipScenarioFixtures } from '#tests/helpers/shipScenarioFixtures.ts';
 // progress record is filed inside the real checkout the ship stands on. What is
 // stubbed is everything that would leave the machine or take half an hour: the
 // repository's own gates, the forge, and the check wait.
-jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: Parameters<typeof mockShip.runGates>[0]) => mockShip.runGates(params) }));
+jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: Parameters<typeof mockShip.runGates>[0]) => mockShip.runGates(params) }));
 jest.mock('#src/ship/readCheckStop/waitForChecks.ts', () => ({
 	waitForChecks: (params: Parameters<typeof mockShip.waitForChecks>[0]) => mockShip.waitForChecks(params),
 }));

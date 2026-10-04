@@ -1,5 +1,5 @@
+import type { GateHolds } from '#src/common/types/GateHolds.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import type { WaveSelection } from '#src/queue/internal/common/types/WaveSelection.ts';

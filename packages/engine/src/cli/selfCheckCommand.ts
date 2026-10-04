@@ -6,10 +6,10 @@ import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { green } from '#src/cli/internal/common/terminal/green.ts';
 import { red } from '#src/cli/internal/common/terminal/red.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
+import { SelfCheckReason } from '#src/common/constants/SelfCheckReason.ts';
 import { messageOf } from '#src/common/messageOf.ts';
+import type { SelfCheckResult } from '#src/common/types/SelfCheckResult.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
-import { SelfCheckReason } from '#src/gates/common/constants/SelfCheckReason.ts';
-import type { SelfCheckResult } from '#src/gates/common/types/SelfCheckResult.ts';
 import { runSelfCheck } from '#src/gates/runSelfCheck/runSelfCheck.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 

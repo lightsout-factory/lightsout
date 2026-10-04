@@ -1,8 +1,8 @@
 import { join } from 'node:path';
 import { testReporterEnv } from '#src/common/constants/testReporterEnv.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
-import { satisfiesGateKey } from '#src/gates/testResults/internal/satisfiesGateKey.ts';
-import { readTestResults } from '#src/gates/testResults/readTestResults.ts';
+import { readTestResults } from '#src/gates/testResults/common/readTestResults.ts';
+import { satisfiesGateKey } from '#src/gates/testResults/common/satisfiesGateKey.ts';
 
 const setupAdvice = [
 	'',

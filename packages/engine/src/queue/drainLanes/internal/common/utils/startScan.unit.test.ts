@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, jest, test } from '@jest/globals';
-import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
+import type { GateHolds } from '#src/common/types/GateHolds.ts';
 import { startScan } from '#src/queue/drainLanes/internal/common/utils/startScan.ts';
 import type { nameWaveWorkOrders } from '#src/queue/nameWaveWorkOrders.ts';
 import type { listNextWave } from '#src/queue/ticketSelection/listNextWave.ts';

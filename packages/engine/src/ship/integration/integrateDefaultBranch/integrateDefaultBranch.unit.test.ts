@@ -5,8 +5,8 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import { integrateDefaultBranch } from '#src/ship/integration/integrateDefaultBranch/integrateDefaultBranch.ts';
 import type { ResolvedStandards } from '#src/standards/ResolvedStandards.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
@@ -21,7 +21,7 @@ import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 // Git is not stubbed: these tests check the branch's real state after a merge and a rollback.
 const mockRunGates = jest.fn<(params: { cwd: string }) => Promise<GateRunResult>>();
 
-jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
+jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
 // -------------------------
 const mockResolveStandards = jest.fn<(params: { cwd: string; config: LightsoutConfig | undefined; packages?: string[] }) => Promise<ResolvedStandards>>();
 

@@ -2,12 +2,12 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { PullRequestSummary } from '#src/common/types/PullRequestSummary.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { ShipResult } from '#src/contracts/ship/ShipResult.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import { readBranchState } from '#src/queue/branchState/readBranchState.ts';
 import { writeBranchState } from '#src/queue/branchState/writeBranchState.ts';
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
@@ -57,7 +57,7 @@ jest.mock('#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts
 	reconcileShippedTicket: (params: ReconcileShippedParams) => mockReconcileShippedTicket(params),
 }));
 // -------------------------
-jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
+jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
 // The two ends of the drain, stubbed on one barrel. Everything else stays real:
 // `PullRequestState` is a plain constant nothing gains from doubling.
 jest.mock('#src/ship/forge/findPullRequest.ts', () => ({ findPullRequest: (params: FindPullRequestParams) => mockFindPullRequest(params) }));

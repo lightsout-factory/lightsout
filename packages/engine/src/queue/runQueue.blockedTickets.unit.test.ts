@@ -2,10 +2,10 @@ import { existsSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import type { GateHolds } from '#src/common/types/GateHolds.ts';
 import type { ShipSettings } from '#src/common/types/ShipSettings.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { GateHold } from '#src/contracts/gates/GateHold.ts';
-import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
@@ -61,7 +61,7 @@ jest.mock('#src/ticketTracker/setTicketLabel.ts', () => ({ setTicketLabel: (para
 jest.mock('#src/queue/worktrees/scanParkedWorktrees.ts', () => ({ scanParkedWorktrees: (params: ScanParams) => mockScanParkedWorktrees(params) }));
 jest.mock('#src/queue/internal/runQueueWorkOrder.ts', () => ({ runQueueWorkOrder: (params: { workOrder: NamedWorkOrder }) => mockRunQueueTicket(params) }));
 jest.mock('#src/queue/internal/shipOneBranch.ts', () => ({ shipOneBranch: (params: { outcome: WorkOrderRunOutcome }) => mockShipOneBranch(params) }));
-jest.mock('#src/gates/gateHolds/syncGateHolds.ts', () => ({
+jest.mock('#src/gates/gateHolds/syncGateHolds/syncGateHolds.ts', () => ({
 	syncGateHolds: (params: { cwd: string; settings: TrackerSettings; onProgress?: (message: string) => void }) => mockSyncGateHolds(params),
 }));
 // -------------------------

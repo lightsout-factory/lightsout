@@ -1,8 +1,8 @@
 import { messageOf } from '#src/common/messageOf.ts';
 import type { GateHold } from '#src/contracts/gates/GateHold.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { writeGateBlockedLabel } from '#src/gates/gateHolds/internal/common/utils/writeGateBlockedLabel.ts';
-import { writeGateHold } from '#src/gates/gateHolds/internal/common/utils/writeGateHold.ts';
+import { writeGateBlockedLabel } from '#src/gates/gateHolds/common/writeGateBlockedLabel.ts';
+import { writeGateHold } from '#src/gates/gateHolds/common/writeGateHold.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';
 
 interface Params {

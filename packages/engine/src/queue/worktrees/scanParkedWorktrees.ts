@@ -1,13 +1,13 @@
 import { realpath } from 'node:fs/promises';
 import { join } from 'node:path';
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
+import { describeGateHold } from '#src/common/describeGateHold.ts';
+import { isTicketGateHeld } from '#src/common/isTicketGateHeld.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
+import type { GateHolds } from '#src/common/types/GateHolds.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { findWorkOrderForBranch } from '#src/common/workspace/findWorkOrderForBranch.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
-import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
-import { describeGateHold } from '#src/gates/gateHolds/common/utils/describeGateHold.ts';
-import { isTicketGateHeld } from '#src/gates/gateHolds/common/utils/isTicketGateHeld.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';

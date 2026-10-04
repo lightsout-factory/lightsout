@@ -1,7 +1,7 @@
 import { readConfig } from '#src/common/config/readConfig.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { readGitHeadCommit } from '#src/common/git/readGitHeadCommit.ts';
-import { runGates } from '#src/gates/runGates.ts';
+import { runGates } from '#src/gates/runGates/runGates.ts';
 import { readLiveRunLock } from '#src/runState/lock/readLiveRunLock.ts';
 import { readBranchWorktree } from '#src/worktree/readBranchWorktree.ts';
 

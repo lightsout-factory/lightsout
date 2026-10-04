@@ -1,9 +1,9 @@
 import { describe, expect, test } from '@jest/globals';
+import { gateBlockedLabel } from '#src/common/constants/gateBlockedLabel.ts';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import { describeGateHold } from '#src/common/describeGateHold.ts';
+import type { GateHolds } from '#src/common/types/GateHolds.ts';
 import type { GateHold } from '#src/contracts/gates/GateHold.ts';
-import { gateBlockedLabel } from '#src/gates/gateHolds/common/constants/gateBlockedLabel.ts';
-import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
-import { describeGateHold } from '#src/gates/gateHolds/common/utils/describeGateHold.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import { selectWaveTickets } from '#src/queue/ticketSelection/selectWaveTickets.ts';

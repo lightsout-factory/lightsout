@@ -63,7 +63,7 @@ describe('TestChangeReview', () => {
 			acceptanceTests: [
 				{ testName: 'runGates: a failing gate stops the batch', disposition: 'kept' },
 				{ testName: 'runGates: a green gate records its evidence', disposition: 'renamed', newTestName: 'runGates: a green gate writes its evidence' },
-				{ testName: 'runGates: a timeout is a failure', disposition: 'moved', testFile: 'packages/engine/src/gates/runGates.timeout.unit.test.ts' },
+				{ testName: 'runGates: a timeout is a failure', disposition: 'moved', testFile: 'packages/engine/src/gates/runGates/runGates.timeout.unit.test.ts' },
 				{
 					testName: 'runGates: an override drops a gate',
 					disposition: 'replaced',
@@ -80,7 +80,7 @@ describe('TestChangeReview', () => {
 		expect(parsed.verdicts[0].acceptanceTests).toStrictEqual([
 			{ testName: 'runGates: a failing gate stops the batch', disposition: 'kept' },
 			{ testName: 'runGates: a green gate records its evidence', disposition: 'renamed', newTestName: 'runGates: a green gate writes its evidence' },
-			{ testName: 'runGates: a timeout is a failure', disposition: 'moved', testFile: 'packages/engine/src/gates/runGates.timeout.unit.test.ts' },
+			{ testName: 'runGates: a timeout is a failure', disposition: 'moved', testFile: 'packages/engine/src/gates/runGates/runGates.timeout.unit.test.ts' },
 			{
 				testName: 'runGates: an override drops a gate',
 				disposition: 'replaced',

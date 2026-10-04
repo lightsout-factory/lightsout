@@ -20,7 +20,7 @@ import { shipScenarioGit } from '#tests/helpers/shipScenarioGit.ts';
 // bring closer. The harness is NOT stubbed away: a scripted driver answers the
 // real contract invoker, so what a recovery attempt was handed is read off the
 // invocation it received.
-jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: Parameters<typeof mockShip.runGates>[0]) => mockShip.runGates(params) }));
+jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: Parameters<typeof mockShip.runGates>[0]) => mockShip.runGates(params) }));
 jest.mock('#src/ship/readCheckStop/waitForChecks.ts', () => ({
 	waitForChecks: (params: Parameters<typeof mockShip.waitForChecks>[0]) => mockShip.waitForChecks(params),
 }));

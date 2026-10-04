@@ -4,13 +4,13 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
@@ -32,7 +32,7 @@ jest.mock('#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts', () =
 	invokeAgentWithContract: (params: { invocation: { prompt: string; systemPrompt: string }; allowedCommands?: string[] }) =>
 		mockInvokeAgentWithContract(params),
 }));
-jest.mock('#src/gates/runGates.ts', () => ({
+jest.mock('#src/gates/runGates/runGates.ts', () => ({
 	runGates: (params: { step?: string; onProgress?: (message: string) => void }) => mockRunGates(params),
 }));
 // -------------------------

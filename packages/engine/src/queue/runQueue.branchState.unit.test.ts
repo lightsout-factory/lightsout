@@ -3,6 +3,7 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { PullRequestSummary } from '#src/common/types/PullRequestSummary.ts';
 import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
@@ -12,7 +13,6 @@ import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
 import type { ShipResult } from '#src/contracts/ship/ShipResult.ts';
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import { readBranchState } from '#src/queue/branchState/readBranchState.ts';
 import { writeBranchState } from '#src/queue/branchState/writeBranchState.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
@@ -69,7 +69,7 @@ jest.mock('#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts
 // -------------------------
 const mockRunGates = jest.fn<(params: { cwd: string }) => Promise<GateRunResult>>();
 
-jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
+jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
 // -------------------------
 type FindPullRequestParams = { branch: string; cwd: string; state: string };
 

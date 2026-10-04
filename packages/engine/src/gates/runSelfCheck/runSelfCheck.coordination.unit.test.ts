@@ -1,8 +1,8 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
+import type { GateSchedule } from '#src/common/types/GateSchedule.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
-import type { GateSchedule } from '#src/gates/common/types/GateSchedule.ts';
 import { runSelfCheck } from '#src/gates/runSelfCheck/runSelfCheck.ts';
 
 // Mocked Imports
@@ -27,7 +27,7 @@ interface GateParams {
 
 const mockRunGates = jest.fn<(params: GateParams) => Promise<GateRunResult>>();
 
-jest.mock('#src/gates/runGates.ts', () => ({
+jest.mock('#src/gates/runGates/runGates.ts', () => ({
 	runGates: (params: GateParams) => mockRunGates(params),
 }));
 // -------------------------

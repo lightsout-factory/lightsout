@@ -6,10 +6,10 @@ import { describeGateNoVerdict } from '#src/common/describeGateNoVerdict.ts';
 import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { SupervisorDecision } from '#src/contracts/work/SupervisorDecision.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import { SettleKind } from '#src/refactor/batch/common/constants/SettleKind.ts';
 import type { SettleOutcome } from '#src/refactor/batch/common/types/SettleOutcome.ts';
 
