@@ -3,13 +3,13 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
+import type { ResolvedRuleState } from '#src/common/types/ResolvedRuleState.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { reviewBatchOutput } from '#src/refactor/batch/runBatch/common/reviewBatchOutput.ts';
 import { readReviewFindings } from '#src/runState/readReviewFindings.ts';
-import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 
 const advisory = (overrides: Partial<StandardsFinding> & { siteKey: string }): StandardsFinding => ({

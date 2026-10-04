@@ -6,7 +6,7 @@ import { findIntroducedFindings } from '#src/refactor/common/findIntroducedFindi
 import type { RefactorRun } from '#src/refactor/common/RefactorRun.ts';
 import type { RefactorResult } from '#src/refactor/RefactorResult.ts';
 import { countByRule } from '#src/refactor/runRefactorPipeline/common/countByRule.ts';
-import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
+import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts';
 
 interface Params {
 	run: RefactorRun;

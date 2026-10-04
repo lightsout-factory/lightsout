@@ -1,8 +1,8 @@
 import type { ResolvedPackRule } from '#src/common/types/ResolvedPackRule.ts';
+import type { ResolvedRuleState } from '#src/common/types/ResolvedRuleState.ts';
 import type { ResolvedStandardsPack } from '#src/common/types/ResolvedStandardsPack.ts';
 import type { StandardsRuleSettings } from '#src/contracts/StandardsRuleSettings.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { mapPackRules } from '#src/standardsLibraries/mapPackRules.ts';
 import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
 

@@ -93,7 +93,7 @@ holds only what is particular to this library and this repo.
 - **Finding text:** a measured value stays in it, such as
   `${lineCount} lines (cap ~${cap})`.
 - **Examples are tested here too:**
-  `packages/engine/src/standardsCheck/validateStandardsLibrary.defaultPack.unit.test.ts`
+  `packages/engine/src/standardsCheck/validateStandardsLibrary/validateStandardsLibrary.defaultPack.unit.test.ts`
   runs every check against its examples and checks each rule's declared shape.
 
 ## After Changing a Rule

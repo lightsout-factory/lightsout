@@ -1,6 +1,6 @@
 import { canonicalJson } from '#src/common/canonicalJson.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
-import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
+import type { StandardsRuleListing } from '#src/common/types/StandardsRuleListing.ts';
 
 interface Params {
 	groups: StandardsGroup[];

@@ -1,5 +1,5 @@
+import type { ResolvedRuleState } from '#src/common/types/ResolvedRuleState.ts';
 import type { ResolvedStandardsPack } from '#src/common/types/ResolvedStandardsPack.ts';
-import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 
 /** One group of packages whose standards resolve to the same packs. */
 export interface StandardsGroup {

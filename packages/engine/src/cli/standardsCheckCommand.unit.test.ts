@@ -5,10 +5,10 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsCheckCommand } from '#src/cli/standardsCheckCommand.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
+import type { StandardsRuleListing } from '#src/common/types/StandardsRuleListing.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
@@ -49,7 +49,7 @@ const mockReviewStandards = jest.fn<(params: ReviewStandardsParams) => Promise<{
 jest.mock('#src/standardsCheck/listStandardsRules.ts', () => ({
 	listStandardsRules: (params: ListStandardsRulesParams) => mockListStandardsRules(params),
 }));
-jest.mock('#src/standardsCheck/runStandardsCheck.ts', () => ({
+jest.mock('#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', () => ({
 	runStandardsCheck: (params: RunStandardsCheckParams) => mockRunStandardsCheck(params),
 }));
 jest.mock('#src/cli/reviewStandards.ts', () => ({ reviewStandards: (params: ReviewStandardsParams) => mockReviewStandards(params) }));

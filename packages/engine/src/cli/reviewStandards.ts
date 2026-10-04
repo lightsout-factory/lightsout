@@ -6,7 +6,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { getDriver } from '#src/drivers/getDriver/getDriver.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
-import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
+import { runStandardsReview } from '#src/standardsCheck/runStandardsReview/runStandardsReview.ts';
 
 interface Params {
 	cwd: string;

@@ -10,7 +10,7 @@ import { stopOnGateCoordination } from '#src/pipeline/internal/common/utils/stop
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import type { PipelineStep } from '#src/pipeline/internal/PipelineStep.ts';
 import { writeRunStandardsBaseline } from '#src/runState/standardsBaseline/writeRunStandardsBaseline.ts';
-import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
+import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts';
 
 /**
  * The whole repository and `all` rather than the debt ledger's suppression,

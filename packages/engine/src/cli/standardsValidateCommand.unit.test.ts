@@ -26,7 +26,7 @@ jest.mock('#src/standardsLibraries/readStandardsLibrary/readStandardsLibrary.ts'
 }));
 jest.mock('#src/standardsLibraries/resolveDefaultStandardsLibrary.ts', () => ({ resolveDefaultStandardsLibrary: () => mockResolveDefaultStandardsLibrary() }));
 
-jest.mock('#src/standardsCheck/validateStandardsLibrary.ts', () => ({
+jest.mock('#src/standardsCheck/validateStandardsLibrary/validateStandardsLibrary.ts', () => ({
 	validateStandardsLibrary: (params: { library: LoadedStandardsLibrary; libraries: LoadedStandardsLibrary[] }) => mockValidateStandardsPack(params),
 }));
 // -------------------------

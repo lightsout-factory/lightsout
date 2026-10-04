@@ -3,7 +3,7 @@ import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { appendReviewFindings } from '#src/runState/appendReviewFindings.ts';
-import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
+import { runStandardsReview } from '#src/standardsCheck/runStandardsReview/runStandardsReview.ts';
 
 interface Params {
 	cwd: string;

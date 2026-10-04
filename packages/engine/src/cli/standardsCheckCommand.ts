@@ -11,7 +11,7 @@ import { readStandardsLedger } from '#src/cli/readStandardsLedger.ts';
 import { reviewStandards } from '#src/cli/reviewStandards.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
+import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts';
 import { writeStandardsSnapshot } from '#src/standardsCheck/writeStandardsSnapshot.ts';
 
 const printProgress = (message: string) => console.log(dim(`  ${message}`));

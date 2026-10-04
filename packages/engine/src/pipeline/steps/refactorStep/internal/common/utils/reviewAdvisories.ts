@@ -2,7 +2,7 @@ import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts'
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
-import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
+import { runStandardsReview } from '#src/standardsCheck/runStandardsReview/runStandardsReview.ts';
 
 interface Params {
 	run: PipelineRun;

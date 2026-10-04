@@ -1,6 +1,6 @@
 import type { ResolvedPackRule } from '#src/common/types/ResolvedPackRule.ts';
+import type { ResolvedRuleState } from '#src/common/types/ResolvedRuleState.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 
 interface Params {
 	/** The rules a resolved pack holds, each at the severity the pack gives it. */

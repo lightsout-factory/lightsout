@@ -10,7 +10,7 @@ import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { messageOf } from '#src/common/messageOf.ts';
 import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
 import { builtInStandardsLibraryName } from '#src/contracts/standards/builtInStandardsLibraryName.ts';
-import { validateStandardsLibrary } from '#src/standardsCheck/validateStandardsLibrary.ts';
+import { validateStandardsLibrary } from '#src/standardsCheck/validateStandardsLibrary/validateStandardsLibrary.ts';
 import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary/readStandardsLibrary.ts';
 import { resolveDefaultStandardsLibrary } from '#src/standardsLibraries/resolveDefaultStandardsLibrary.ts';
 import { resolveStandardsLibraries } from '#src/standardsLibraries/resolveStandardsLibraries/resolveStandardsLibraries.ts';

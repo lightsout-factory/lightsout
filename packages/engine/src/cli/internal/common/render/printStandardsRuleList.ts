@@ -2,9 +2,9 @@ import { describeCheckKinds } from '#src/cli/internal/common/render/common/utils
 import { renderTable } from '#src/cli/internal/common/render/renderTable.ts';
 import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { dim } from '#src/cli/internal/common/terminal/dim.ts';
+import type { StandardsRuleListing } from '#src/common/types/StandardsRuleListing.ts';
 import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 
 /** Distinct rule names: a rule graded differently per package has several listings but is one rule. */
 const countRules = ({ rules, where }: { rules: StandardsRuleListing[]; where: (rule: StandardsRuleListing) => boolean }) =>

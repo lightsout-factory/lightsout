@@ -22,7 +22,7 @@ const mockValidateStandardsLibrary =
 		(params: { library: LoadedStandardsLibrary; libraries: LoadedStandardsLibrary[] }) => Promise<{ problems: string[]; notes: string[]; warnings: string[] }>
 	>();
 
-jest.mock('#src/standardsCheck/validateStandardsLibrary.ts', () => ({
+jest.mock('#src/standardsCheck/validateStandardsLibrary/validateStandardsLibrary.ts', () => ({
 	validateStandardsLibrary: (params: { library: LoadedStandardsLibrary; libraries: LoadedStandardsLibrary[] }) => mockValidateStandardsLibrary(params),
 }));
 // -------------------------

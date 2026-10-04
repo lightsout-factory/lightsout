@@ -20,7 +20,7 @@ interface RunStandardsCheckParams {
 
 const mockRunStandardsCheck = jest.fn<(params: RunStandardsCheckParams) => Promise<{ findings: StandardsFinding[]; notes: string[] }>>();
 
-jest.mock('#src/standardsCheck/runStandardsCheck.ts', () => ({
+jest.mock('#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', () => ({
 	runStandardsCheck: (params: RunStandardsCheckParams) => mockRunStandardsCheck(params),
 }));
 // -------------------------

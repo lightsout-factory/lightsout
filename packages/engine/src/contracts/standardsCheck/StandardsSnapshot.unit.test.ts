@@ -9,8 +9,8 @@ const setupSnapshot = ({ omit, extra = {} }: { omit?: string; extra?: Record<str
 			{
 				rule: 'duplicate-code-block',
 				severity: 'blocking',
-				siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck.ts:12',
-				files: [{ path: 'src/standardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
+				siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck/runStandardsCheck.ts:12',
+				files: [{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
 				detail: 'a 36-line span repeated across two files',
 			},
 		],
@@ -51,8 +51,8 @@ describe('StandardsSnapshot', () => {
 				{
 					rule: 'duplicate-code-block',
 					severity: 'blocking',
-					siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck.ts:12',
-					files: [{ path: 'src/standardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
+					siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck/runStandardsCheck.ts:12',
+					files: [{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
 					detail: 'a 36-line span repeated across two files',
 				},
 			],

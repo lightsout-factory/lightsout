@@ -7,7 +7,7 @@ import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import { StandardsSnapshot } from '#src/contracts/standardsCheck/StandardsSnapshot.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
-import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
+import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts';
 import { report } from '#tests/helpers/report.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';

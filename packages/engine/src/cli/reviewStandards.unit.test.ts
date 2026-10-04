@@ -27,7 +27,7 @@ interface RunStandardsReviewParams {
 
 const mockRunStandardsReview = jest.fn<(params: RunStandardsReviewParams) => Promise<{ findings: StandardsFinding[]; notes: string[] }>>();
 
-jest.mock('#src/standardsCheck/runStandardsReview.ts', () => ({
+jest.mock('#src/standardsCheck/runStandardsReview/runStandardsReview.ts', () => ({
 	runStandardsReview: (params: RunStandardsReviewParams) => mockRunStandardsReview(params),
 }));
 // -------------------------
@@ -98,7 +98,9 @@ const setupSwitchedOffReview = () => {
 		exitCode: 0,
 	});
 	const harness: Driver = { name: 'claude-code', invoke };
-	const actual = jest.requireActual<typeof import('#src/standardsCheck/runStandardsReview.ts')>('#src/standardsCheck/runStandardsReview.ts');
+	const actual = jest.requireActual<typeof import('#src/standardsCheck/runStandardsReview/runStandardsReview.ts')>(
+		'#src/standardsCheck/runStandardsReview/runStandardsReview.ts',
+	);
 
 	mockRunStandardsReview.mockImplementation((params) => actual.runStandardsReview({ ...params, driver: harness }));
 

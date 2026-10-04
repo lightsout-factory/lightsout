@@ -6,8 +6,8 @@ const setupFinding = ({ omit, extra = {} }: { omit?: string; extra?: Record<stri
 	const finding: Record<string, unknown> = {
 		rule: 'duplicate-code-block',
 		severity: 'blocking',
-		siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck.ts:12',
-		files: [{ path: 'src/standardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
+		siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck/runStandardsCheck.ts:12',
+		files: [{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
 		detail: 'a 36-line span repeated across two files',
 		...extra,
 	};
@@ -28,8 +28,8 @@ describe('StandardsFinding', () => {
 		expect(parsed).toStrictEqual({
 			rule: 'duplicate-code-block',
 			severity: 'blocking',
-			siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck.ts:12',
-			files: [{ path: 'src/standardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
+			siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck/runStandardsCheck.ts:12',
+			files: [{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
 			detail: 'a 36-line span repeated across two files',
 		});
 	});
@@ -147,20 +147,20 @@ describe('StandardsFinding', () => {
 	});
 
 	test('a whole-file finding parses with no line span', () => {
-		const { finding } = setupFinding({ extra: { rule: 'dead-export', files: [{ path: 'src/standardsCheck/runStandardsCheck.ts' }] } });
+		const { finding } = setupFinding({ extra: { rule: 'dead-export', files: [{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts' }] } });
 
 		const parsed = StandardsFinding.parse(finding);
 
 		// startLine and endLine stay absent rather than defaulting to zero — a
 		// structure or dead-export finding names a file, not a span
-		expect(parsed.files).toStrictEqual([{ path: 'src/standardsCheck/runStandardsCheck.ts' }]);
+		expect(parsed.files).toStrictEqual([{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts' }]);
 	});
 
 	test('a finding spanning several files keeps every site in order', () => {
 		const { finding } = setupFinding({
 			extra: {
 				files: [
-					{ path: 'src/standardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 },
+					{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 },
 					{ path: 'src/refactor/runBatch.ts', startLine: 90, endLine: 126 },
 				],
 			},
@@ -171,7 +171,7 @@ describe('StandardsFinding', () => {
 		// a duplicate block is only actionable with every site it appears at — the agent is
 		// handed all of them
 		expect(parsed.files).toStrictEqual([
-			{ path: 'src/standardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 },
+			{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 },
 			{ path: 'src/refactor/runBatch.ts', startLine: 90, endLine: 126 },
 		]);
 	});
@@ -197,8 +197,8 @@ describe('StandardsFinding', () => {
 
 	test('rejects line numbers given as numeric strings rather than coercing them', () => {
 		for (const files of [
-			[{ path: 'src/standardsCheck/runStandardsCheck.ts', startLine: '12' }],
-			[{ path: 'src/standardsCheck/runStandardsCheck.ts', endLine: '48' }],
+			[{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', startLine: '12' }],
+			[{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', endLine: '48' }],
 		]) {
 			const { finding } = setupFinding({ extra: { files } });
 
@@ -211,7 +211,7 @@ describe('StandardsFinding', () => {
 	});
 
 	test('rejects a files value that is not an array', () => {
-		const { finding } = setupFinding({ extra: { files: { path: 'src/standardsCheck/runStandardsCheck.ts' } } });
+		const { finding } = setupFinding({ extra: { files: { path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts' } } });
 
 		const result = StandardsFinding.safeParse(finding);
 
@@ -288,7 +288,7 @@ describe('StandardsFinding', () => {
 
 	test('keys the contract does not declare are stripped from the finding and from each site', () => {
 		const { finding } = setupFinding({
-			extra: { tier: 1, files: [{ path: 'src/standardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48, tokens: 180 }] },
+			extra: { tier: 1, files: [{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48, tokens: 180 }] },
 		});
 
 		const parsed = StandardsFinding.parse(finding);
@@ -299,8 +299,8 @@ describe('StandardsFinding', () => {
 		expect(parsed).toStrictEqual({
 			rule: 'duplicate-code-block',
 			severity: 'blocking',
-			siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck.ts:12',
-			files: [{ path: 'src/standardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
+			siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck/runStandardsCheck.ts:12',
+			files: [{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
 			detail: 'a 36-line span repeated across two files',
 		});
 	});

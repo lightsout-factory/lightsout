@@ -2,8 +2,8 @@ import { describeCheckKinds } from '#src/cli/internal/common/render/common/utils
 import { renderTable } from '#src/cli/internal/common/render/renderTable.ts';
 import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { dim } from '#src/cli/internal/common/terminal/dim.ts';
-import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
-import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
+import type { StandardsHealth } from '#src/common/types/StandardsHealth.ts';
+import type { StandardsHealthRule } from '#src/common/types/StandardsHealthRule.ts';
 
 /** One long rationale must not stretch the whole table. */
 const reasonWidth = 96;

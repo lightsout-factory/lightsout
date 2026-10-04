@@ -1,8 +1,8 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { printStandardsRuleList } from '#src/cli/internal/common/render/printStandardsRuleList.ts';
+import type { StandardsRuleListing } from '#src/common/types/StandardsRuleListing.ts';
 import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 
 const listing = (overrides: Partial<StandardsRuleListing> = {}): StandardsRuleListing => ({
 	rule: 'multi-export',

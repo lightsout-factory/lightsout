@@ -2,6 +2,8 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
+import type { StandardsHealth } from '#src/common/types/StandardsHealth.ts';
+import type { StandardsHealthRule } from '#src/common/types/StandardsHealthRule.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import { BatchReport } from '#src/contracts/refactor/BatchReport.ts';
 import { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
@@ -10,8 +12,6 @@ import { AdvisoryResponse } from '#src/contracts/standardsCheck/AdvisoryResponse
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
-import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
-import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
 import { mapPackRules } from '#src/standardsLibraries/mapPackRules.ts';
 
 type Tally = Omit<StandardsHealthRule, 'rule' | 'set' | 'documentPath' | 'deterministic' | 'agent'>;

@@ -2,7 +2,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { matchRemainingFindings } from '#src/refactor/batch/runBatch/common/matchRemainingFindings.ts';
 import type { BatchSiteChecker } from '#src/refactor/batch/runBatch/common/types/BatchSiteChecker.ts';
-import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
+import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts';
 
 interface Params {
 	cwd: string;

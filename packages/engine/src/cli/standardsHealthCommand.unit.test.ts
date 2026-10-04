@@ -5,8 +5,8 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsHealthCommand } from '#src/cli/standardsHealthCommand.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
+import type { StandardsHealth } from '#src/common/types/StandardsHealth.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 

@@ -34,7 +34,7 @@ interface ReviewStandardsParams {
 const mockReviewStandards = jest.fn<(params: ReviewStandardsParams) => Promise<{ findings: StandardsFinding[]; notes: string[] }>>();
 
 jest.mock('#src/standardsCheck/listStandardsRules.ts', () => ({ listStandardsRules: () => [] }));
-jest.mock('#src/standardsCheck/runStandardsCheck.ts', () => ({
+jest.mock('#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', () => ({
 	runStandardsCheck: (params: RunStandardsCheckParams) => mockRunStandardsCheck(params),
 }));
 jest.mock('#src/standardsCheck/writeStandardsSnapshot.ts', () => ({ writeStandardsSnapshot: () => Promise.resolve() }));
