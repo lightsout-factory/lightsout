@@ -1,9 +1,9 @@
 import { readFile } from 'node:fs/promises';
-import { getArrayField } from '#src/voice/internal/common/fields/getArrayField.ts';
-import { getField } from '#src/voice/internal/common/fields/getField.ts';
-import { getStringField } from '#src/voice/internal/common/fields/getStringField.ts';
-import { formatSpeakable } from '#src/voice/internal/common/utils/formatSpeakable.ts';
-import { isQuestionText } from '#src/voice/internal/common/utils/isQuestionText.ts';
+import { formatSpeakable } from '#src/voice/common/formatSpeakable.ts';
+import { getArrayField } from '#src/voice/common/getArrayField.ts';
+import { getField } from '#src/voice/common/getField.ts';
+import { getStringField } from '#src/voice/common/getStringField.ts';
+import { isQuestionText } from '#src/voice/common/isQuestionText.ts';
 
 interface Params {
 	transcriptPath: string;

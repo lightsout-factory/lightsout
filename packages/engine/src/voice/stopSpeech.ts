@@ -1,5 +1,5 @@
 import { readFile, rm } from 'node:fs/promises';
-import { getVoicePidPath } from '#src/voice/internal/common/paths/getVoicePidPath.ts';
+import { getVoicePidPath } from '#src/voice/common/getVoicePidPath.ts';
 
 interface Params {
 	cwd: string;

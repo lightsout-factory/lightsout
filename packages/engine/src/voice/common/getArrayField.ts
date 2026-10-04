@@ -1,4 +1,4 @@
-import { getField } from '#src/voice/internal/common/fields/getField.ts';
+import { getField } from '#src/voice/common/getField.ts';
 
 interface Params {
 	value: unknown;
