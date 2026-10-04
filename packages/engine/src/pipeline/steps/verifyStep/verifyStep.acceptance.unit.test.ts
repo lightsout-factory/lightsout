@@ -85,7 +85,7 @@ describe('verifyStep', () => {
 			},
 			{
 				criterion: 'a repository with no jest config is reported on rather than crashed on',
-				testFile: 'packages/engine/src/doctor/checkJestReporter.unit.test.ts',
+				testFile: 'packages/engine/src/doctor/runDoctor/checkJestReporter.unit.test.ts',
 				testName: 'checkJestReporter: reports nothing when the repository has no jest config',
 				gate: 'test-coverage',
 			},
