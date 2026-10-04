@@ -5,7 +5,7 @@ import { createProgressPrinter } from '#src/cli/internal/common/utils/createProg
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import { runDirectWork } from '#src/direct/runDirectWork.ts';
+import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 

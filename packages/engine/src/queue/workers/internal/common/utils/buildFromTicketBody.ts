@@ -1,6 +1,6 @@
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
-import { runDirectWork } from '#src/direct/runDirectWork.ts';
+import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import type { WorkOrderPlanStep } from '#src/queue/workers/internal/common/types/WorkOrderPlanStep.ts';
 import { toWorkerOutcome } from '#src/queue/workers/internal/common/utils/toWorkerOutcome.ts';

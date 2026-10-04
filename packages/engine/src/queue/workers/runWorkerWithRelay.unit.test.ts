@@ -37,7 +37,7 @@ const mockAppendTicketNote = jest.fn<() => Promise<undefined>>();
 jest.mock('#src/queue/workers/internal/runAutoPlanWorker.ts', () => ({
 	runAutoPlanWorker: (params: { answeredQuestion?: { question: string; answer: string } }) => mockRunAutoPlanWorker(params),
 }));
-jest.mock('#src/direct/runDirectWork.ts', () => ({
+jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({
 	runDirectWork: (params: { answeredQuestion?: { question: string; answer: string } }) => mockRunDirectWork(params),
 }));
 jest.mock('#src/ticketTracker/appendTicketNote.ts', () => ({ appendTicketNote: () => mockAppendTicketNote() }));

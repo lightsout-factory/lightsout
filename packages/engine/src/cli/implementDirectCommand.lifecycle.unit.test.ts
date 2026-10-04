@@ -21,7 +21,7 @@ import { stubForgeOnPath } from '#tests/helpers/stubForgeOnPath.ts';
 // merge at its exit.
 const mockRunDirectWork = jest.fn<(params: { ticketBody: string; ticketRef: string; willShip?: boolean }) => Promise<PipelineResult>>();
 
-jest.mock('#src/direct/runDirectWork.ts', () => ({
+jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({
 	runDirectWork: (params: { ticketBody: string; ticketRef: string; willShip?: boolean }) => mockRunDirectWork(params),
 }));
 // -------------------------

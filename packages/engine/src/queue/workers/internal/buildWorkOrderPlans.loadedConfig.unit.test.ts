@@ -32,7 +32,7 @@ jest.mock('#src/pipeline/runImplementPipeline.ts', () => ({
 // -------------------------
 const mockRunDirectWork = jest.fn<(params: DirectCall) => Promise<PipelineResult>>();
 
-jest.mock('#src/direct/runDirectWork.ts', () => ({ runDirectWork: (params: DirectCall) => mockRunDirectWork(params) }));
+jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({ runDirectWork: (params: DirectCall) => mockRunDirectWork(params) }));
 // -------------------------
 const mockCommitTicketWork =
 	jest.fn<

@@ -3,7 +3,7 @@ import { RunState } from '#src/common/services/RunState.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { finishDirectRun } from '#src/direct/internal/common/utils/finishDirectRun.ts';
+import { finishDirectRun } from '#src/direct/runDirectWork/finishDirectRun.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';

@@ -4,7 +4,7 @@ import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
-import { runDirectWork } from '#src/direct/runDirectWork.ts';
+import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';

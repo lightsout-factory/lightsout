@@ -51,7 +51,7 @@ type ShipAfterImplementParams = {
 
 const mockRunDirectWork = jest.fn<(params: DirectWorkParams) => Promise<PipelineResult>>();
 
-jest.mock('#src/direct/runDirectWork.ts', () => ({ runDirectWork: (params: DirectWorkParams) => mockRunDirectWork(params) }));
+jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({ runDirectWork: (params: DirectWorkParams) => mockRunDirectWork(params) }));
 // -------------------------
 const mockCommitRunWork = jest.fn<(params: CommitRunWorkParams) => Promise<string | undefined>>();
 const mockCommitTicketWork = jest.fn<(params: CommitParams) => Promise<{ committed: false } | { committed: true; message: string } | { error: string }>>();

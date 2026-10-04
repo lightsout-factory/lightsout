@@ -6,7 +6,7 @@ import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { implementDirectCommand } from '#src/cli/implementDirectCommand.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { runDirectWork } from '#src/direct/runDirectWork.ts';
+import type { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
@@ -20,7 +20,7 @@ import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 // the value it hands the run, which the stub records.
 const mockRunDirectWork = jest.fn<(params: Parameters<typeof runDirectWork>[0]) => Promise<PipelineResult>>();
 
-jest.mock('#src/direct/runDirectWork.ts', () => ({
+jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({
 	runDirectWork: (params: Parameters<typeof runDirectWork>[0]) => mockRunDirectWork(params),
 }));
 // -------------------------

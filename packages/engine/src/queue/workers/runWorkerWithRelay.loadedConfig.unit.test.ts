@@ -7,7 +7,7 @@ import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import type { runDirectWork } from '#src/direct/runDirectWork.ts';
+import type { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
@@ -35,7 +35,7 @@ import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 // each covered by its own tests. What this file owns is the hand-off to them.
 const mockRunDirectWork = jest.fn<typeof runDirectWork>();
 
-jest.mock('#src/direct/runDirectWork.ts', () => ({
+jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({
 	runDirectWork: (params: Parameters<typeof runDirectWork>[0]) => mockRunDirectWork(params),
 }));
 // -------------------------

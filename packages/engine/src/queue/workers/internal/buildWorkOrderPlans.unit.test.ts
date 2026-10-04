@@ -29,7 +29,7 @@ jest.mock('#src/pipeline/runImplementPipeline.ts', () => ({
 // -------------------------
 const mockRunDirectWork = jest.fn<(params: DirectCall) => Promise<PipelineResult>>();
 
-jest.mock('#src/direct/runDirectWork.ts', () => ({ runDirectWork: (params: DirectCall) => mockRunDirectWork(params) }));
+jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({ runDirectWork: (params: DirectCall) => mockRunDirectWork(params) }));
 // -------------------------
 // The commit is stubbed rather than run: a refused commit is one of the cases
 // stated here, and git refuses on its own terms rather than on demand.
