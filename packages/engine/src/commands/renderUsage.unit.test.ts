@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { commandCatalog } from '#src/commands/commandCatalog.ts';
+import { commandCatalog } from '#src/commands/commandCatalog/commandCatalog.ts';
 import { renderUsage } from '#src/commands/renderUsage.ts';
 import { usageFixture } from '#tests/helpers/usageFixture.ts';
 

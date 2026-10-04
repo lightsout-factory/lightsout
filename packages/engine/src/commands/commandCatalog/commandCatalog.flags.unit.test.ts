@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { readCommandFlags } from '#src/cli/common/args/readCommandFlags.ts';
-import { commandCatalog } from '#src/commands/commandCatalog.ts';
+import { commandCatalog } from '#src/commands/commandCatalog/commandCatalog.ts';
 import { renderUsage } from '#src/commands/renderUsage.ts';
 
 const setupCatalog = () => {

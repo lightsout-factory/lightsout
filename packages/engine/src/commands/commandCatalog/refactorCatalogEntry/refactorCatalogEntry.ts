@@ -1,4 +1,4 @@
-import { refactorSteps } from '#src/commands/common/constants/burnDown/refactorSteps.ts';
+import { refactorSteps } from '#src/commands/commandCatalog/refactorCatalogEntry/refactorSteps.ts';
 import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalogEntry.ts';
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';

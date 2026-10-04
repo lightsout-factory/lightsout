@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { getUnknownFlagsMessage } from '#src/cli/common/args/getUnknownFlagsMessage.ts';
-import { commandCatalog } from '#src/commands/commandCatalog.ts';
+import { commandCatalog } from '#src/commands/commandCatalog/commandCatalog.ts';
 
 const setupCatalog = () => {
 	const ids = commandCatalog.map((entry) => entry.id);

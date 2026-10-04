@@ -1,4 +1,4 @@
-import { implementSteps } from '#src/commands/common/constants/build/implementSteps.ts';
+import { implementSteps } from '#src/commands/commandCatalog/implementCatalogEntry/implementSteps.ts';
 import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalogEntry.ts';
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';

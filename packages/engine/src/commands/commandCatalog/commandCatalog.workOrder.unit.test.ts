@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { commandCatalog } from '#src/commands/commandCatalog.ts';
+import { commandCatalog } from '#src/commands/commandCatalog/commandCatalog.ts';
 
 /** Every word `lightsout work-order` answers to, paired with its invocation id, in the order the usage prints them. */
 const workOrderInvocationShapes = [
