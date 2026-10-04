@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
+import { parseFlags } from '#src/cli/common/parseFlags.ts';
 import { standardsValidateCommand } from '#src/cli/standardsValidateCommand.ts';
 import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
 import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';

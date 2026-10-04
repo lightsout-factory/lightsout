@@ -1,10 +1,10 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
-import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
+import { parseFlags } from '#src/cli/common/parseFlags.ts';
 import { selfCheckCommand } from '#src/cli/selfCheckCommand.ts';
 import { SelfCheckReason } from '#src/common/constants/SelfCheckReason.ts';
+import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';

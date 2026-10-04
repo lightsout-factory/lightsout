@@ -1,0 +1,300 @@
+import { execSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, expect, jest, test } from '@jest/globals';
+import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { implementDirectCommand } from '#src/cli/implementDirectCommand/implementDirectCommand.ts';
+import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
+import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
+import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { runDirFor } from '#tests/helpers/runDirFor.ts';
+import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
+import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+
+// Mocked Imports
+// -------------------------
+// The direct run spawns a harness and makes the commit itself — both covered by
+// their own tests. What this command owns is the flags it reads, the dirty tree
+// it refuses, the reference it derives, and the code it exits on. The staging
+// primitive is stubbed too, so a commit made anywhere at this edge would be
+// seen rather than silently succeed.
+type CommitParams = {
+	composeMessage: ({ cwd }: { cwd: string }) => Promise<string>;
+	runDir: string;
+	generated: string[] | undefined;
+	onProgress: (message: string) => void;
+};
+
+const mockRunDirectWork = jest.fn<(params: { ticketBody: string; ticketRef: string; willShip?: boolean }) => Promise<PipelineResult>>();
+const mockCommitTicketWork = jest.fn<(params: CommitParams) => Promise<{ committed: false } | { committed: true; message: string } | { error: string }>>();
+
+jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({
+	runDirectWork: (params: { ticketBody: string; ticketRef: string; willShip?: boolean }) => mockRunDirectWork(params),
+}));
+jest.mock('#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts', () => ({ commitWorkOrderWork: (params: CommitParams) => mockCommitTicketWork(params) }));
+// -------------------------
+
+const manifestOf = (status: RunStatus): RunManifest => ({
+	runId: 'run-1234-abcd',
+	createdAt: '2026-01-01T00:00:00.000Z',
+	updatedAt: '2026-01-01T00:00:03.000Z',
+	plan: '.lightsout/runs/run-1234-abcd/ticket.md',
+	harness: 'claude-code',
+	status,
+	currentStep: null,
+	steps: [],
+	changedFiles: [],
+	commits: [],
+	packages: [],
+	baselineDirtyFiles: [],
+	testSubjects: [],
+	acceptanceTests: [],
+	approvedTests: [],
+	unreachableChangedFiles: [],
+	coverageExcludedChangedFiles: [],
+});
+
+/** A committed branch with a ticket file on it, and both collaborators stubbed green. */
+const setupImplementDirect = ({
+	args,
+	branch = 'lo-70-drain',
+	ticket = '# Drain the backlog\n\nBuild the thing.\n',
+	dirty,
+	config = {},
+	detached = false,
+	isolated = false,
+}: {
+	args: string[];
+	branch?: string;
+	/** The ticket file's contents, or undefined to leave the path pointing at nothing. */
+	ticket?: string;
+	/** A file left uncommitted after the ticket file is committed. */
+	dirty?: string;
+	/** The config keys this case turns on, written into the repo's `lightsout.config.json` beside the gates every case needs. */
+	config?: {
+		/** The config's `ship` block — a broken ticket pattern is how "no usable ship settings" is arranged. */
+		ship?: unknown;
+		/** The config's `generated` list, or omitted to write a config that names no generated paths at all. */
+		generated?: string[];
+	};
+	/** Leave the checkout on a detached HEAD, which is a commit rather than a branch anything can be named after. */
+	detached?: boolean;
+	/** Let the run ask for a worktree of its own, rather than typing the `--no-worktree` every other case here types. */
+	isolated?: boolean;
+}) => {
+	const captured = captureCommandOutput();
+	const { cwd } = setupBranchRepo({ branch });
+
+	writeFileSync(
+		join(cwd, 'lightsout.config.json'),
+		JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, ship: config.ship, generated: config.generated }),
+	);
+
+	if (ticket !== undefined) {
+		writeFileSync(join(cwd, 'ticket.md'), ticket);
+	}
+
+	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm setup', { cwd, stdio: 'ignore' });
+
+	if (detached) {
+		execSync('git checkout -q --detach', { cwd, stdio: 'ignore' });
+	}
+
+	if (dirty !== undefined) {
+		writeFileSync(join(cwd, 'stray.ts'), dirty);
+	}
+
+	// The build is stubbed, so the run folder a real `createRun` would have made
+	// is planted here — the command resolves the run's directory by id.
+	seedRunFolder({ cwd, runId: manifestOf(RunStatus.Passed).runId });
+	mockRunDirectWork.mockResolvedValue({ ok: true, manifest: manifestOf(RunStatus.Passed) });
+	mockCommitTicketWork.mockResolvedValue({ committed: true, message: 'LO-70: stub subject\n\nlightsout run stub\n' });
+
+	return { context: { flags: parseFlags({ args: isolated ? args : [...args, '--no-worktree'] }), rest: [], cwd }, cwd, ...captured };
+};
+
+describe('implementDirectCommand', () => {
+	test('builds from the ticket file and labels the run with the branch’s ticket', async () => {
+		const { context, exitCodes } = setupImplementDirect({ args: ['--ticket', 'ticket.md'] });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(mockRunDirectWork).toHaveBeenCalledWith(expect.objectContaining({ ticketRef: 'lo-70', ticketBody: '# Drain the backlog\n\nBuild the thing.\n' }));
+		expect(exitCodes).toStrictEqual([0]);
+	});
+
+	test('takes the reference from --ref when one is typed, rather than deriving it', async () => {
+		const { context } = setupImplementDirect({ args: ['--ticket', 'ticket.md', '--ref', 'LO-99'] });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(mockRunDirectWork).toHaveBeenCalledWith(expect.objectContaining({ ticketRef: 'LO-99' }));
+	});
+
+	test('falls back to the branch name when the branch’s work order belongs to no ticket', async () => {
+		const { context } = setupImplementDirect({ args: ['--ticket', 'ticket.md'], branch: 'scratch' });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(mockRunDirectWork).toHaveBeenCalledWith(expect.objectContaining({ ticketRef: 'scratch' }));
+	});
+
+	test('takes the reference from the record even when the repo’s ticket pattern cannot be compiled at all', async () => {
+		const { context } = setupImplementDirect({ args: ['--ticket', 'ticket.md'], config: { ship: { 'ticket-pattern': '^(?<broken>' } } });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// which ticket the branch belongs to is the work order record's answer, so
+		// a pattern that cannot be compiled no longer reaches the label at all
+		expect(mockRunDirectWork).toHaveBeenCalledWith(expect.objectContaining({ ticketRef: 'lo-70' }));
+	});
+
+	test('labels the run `work` on a detached HEAD, where there is no branch name to fall back to', async () => {
+		const { context } = setupImplementDirect({ args: ['--ticket', 'ticket.md'], detached: true });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// `work` rather than `ticket`: most repositories have no tracker at all
+		expect(mockRunDirectWork).toHaveBeenCalledWith(expect.objectContaining({ ticketRef: 'work' }));
+	});
+
+	test('refuses an isolated run whose --ticket names no work order, rather than slugging the file’s stem into a branch', async () => {
+		const { context, errors, exitCodes } = setupImplementDirect({ args: ['--ticket', 'ticket.md'], isolated: true });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// An isolated direct run needs a `--ref` whose work order exists: only a
+		// record says which branch work implements on, and a stem turned into a
+		// branch would be the second author of one.
+		expect(errors.join('\n')).toContain("no branch could be resolved from 'ticket.md'");
+		expect(errors.join('\n')).toContain('--no-worktree');
+		expect(mockRunDirectWork).not.toHaveBeenCalled();
+		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test('refuses --ship and --no-ship together before the run starts, in the one sentence both ways into ship say', async () => {
+		const { context, logged, errors, exitCodes } = setupImplementDirect({ args: ['--ticket', 'ticket.md', '--ship', '--no-ship'] });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(errors).toStrictEqual(['--ship and --no-ship contradict each other — pass at most one']);
+		expect(logged).toStrictEqual([]);
+		expect(mockRunDirectWork).not.toHaveBeenCalled();
+		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test.each([
+		{ label: '--ship was typed', args: ['--ship'], ship: undefined, willShip: true },
+		{ label: 'nobody asked at all', args: [] as string[], ship: undefined, willShip: false },
+		{ label: 'the config says after-implement', args: [] as string[], ship: { 'after-implement': true }, willShip: true },
+		{ label: '--no-ship beats the config', args: ['--no-ship'], ship: { 'after-implement': true }, willShip: false },
+	])('hands the run its ship intent when $label, so the manifest can carry a ship row', async ({ args, ship, willShip }) => {
+		const { context } = setupImplementDirect({ args: ['--ticket', 'ticket.md', ...args], config: { ship } });
+
+		// the run fails, which is what keeps the exit path from chaining into a
+		// real ship — the intent this case is about is handed over before any of
+		// that, and is handed over the same either way
+		mockRunDirectWork.mockResolvedValue({ ok: false, manifest: manifestOf(RunStatus.Failed), error: 'tsc: 3 errors' });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// resolved once before the run rather than at its exit, exactly as
+		// `implement` does it — a direct run ships the same way and must draw the
+		// same row
+		expect(mockRunDirectWork).toHaveBeenCalledWith(expect.objectContaining({ willShip }));
+	});
+
+	test('names a ticket file that is not there, rather than building from nothing', async () => {
+		const { context, errors, exitCodes } = setupImplementDirect({ args: ['--ticket', 'missing.md'], ticket: undefined });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(errors).toStrictEqual(['ticket file not found: missing.md']);
+		expect(mockRunDirectWork).not.toHaveBeenCalled();
+		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test('refuses a dirty tree, because the run ends by committing everything in it', async () => {
+		const { context, errors, exitCodes } = setupImplementDirect({ args: ['--ticket', 'ticket.md'], dirty: 'export const stray = 1;\n' });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(errors).toStrictEqual([
+			`the run commits everything in the tree at ${context.cwd}, which holds uncommitted changes: stray.ts — commit or stash them first`,
+		]);
+		expect(mockRunDirectWork).not.toHaveBeenCalled();
+		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test('refuses a tree git cannot read at all, for the same reason', async () => {
+		const captured = captureCommandOutput();
+		const { cwd } = setupBranchRepo();
+
+		writeFileSync(join(cwd, 'ticket.md'), '# ticket\n');
+		// The config is read before the tree is guarded, because the workspace this
+		// run builds in is resolved from it — so a repo with no config never reaches
+		// the guard this case is about.
+		writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false } }));
+		execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm setup && rm -rf .git', { cwd, stdio: 'ignore' });
+
+		await expect(implementDirectCommand({ flags: parseFlags({ args: ['--ticket', 'ticket.md', '--no-worktree'] }), rest: [], cwd })).rejects.toThrow(
+			/process\.exit/,
+		);
+
+		expect(captured.errors[0]).toContain('needs a readable git worktree');
+		expect(captured.exitCodes).toStrictEqual([1]);
+	});
+
+	test('exits 1 on a run that did not pass, so a failed build leaves the tree for a human', async () => {
+		const { context, exitCodes } = setupImplementDirect({ args: ['--ticket', 'ticket.md'] });
+
+		mockRunDirectWork.mockResolvedValue({ ok: false, manifest: manifestOf(RunStatus.Failed), error: 'tsc: 3 errors' });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(mockCommitTicketWork).not.toHaveBeenCalled();
+		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test('exits 2 on a parked run, the code that means work remains and a re-run picks it up', async () => {
+		const { context, exitCodes } = setupImplementDirect({ args: ['--ticket', 'ticket.md'] });
+
+		mockRunDirectWork.mockResolvedValue({ ok: false, manifest: manifestOf(RunStatus.PausedRateLimit), error: 'rate limited' });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(exitCodes).toStrictEqual([2]);
+	});
+
+	test('saves the report it printed in the run folder, with the code it then exits with', async () => {
+		const { context, cwd, logged, exitCodes } = setupImplementDirect({ args: ['--ticket', 'ticket.md'] });
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const saved = JSON.parse(readFileSync(join(runDirFor({ cwd, runId: 'run-1234-abcd' }), 'report.json'), 'utf8'));
+
+		// the report is the last thing the command printed, so it is the tail of stdout
+		expect({ exitCode: saved.exitCode, printed: logged.slice(-saved.lines.length) }).toStrictEqual({ exitCode: 0, printed: saved.lines });
+		expect(saved.lines.length).toBeGreaterThan(0);
+		expect(exitCodes).toStrictEqual([0]);
+	});
+
+	// The commit now happens inside the run itself, one per unit of work that
+	// passed its own gates, so the command edge has none of its own left to make:
+	// it runs the build and exits on whatever the run answered.
+	test("leaves the commit to the pipeline and exits on the run's result", async () => {
+		const { context, cwd, exitCodes } = setupImplementDirect({ args: ['--ticket', 'ticket.md'] });
+		const before = execSync('git rev-parse HEAD', { cwd, encoding: 'utf8' }).trim();
+
+		await expect(implementDirectCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// git itself is the witness: whichever primitive a command-edge commit
+		// reached for, a new commit would move HEAD — and none was made.
+		const after = execSync('git rev-parse HEAD', { cwd, encoding: 'utf8' }).trim();
+
+		expect(mockCommitTicketWork).not.toHaveBeenCalled();
+		expect(after).toBe(before);
+		expect(exitCodes).toStrictEqual([0]);
+	});
+});

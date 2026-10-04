@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
+import { parseFlags } from '#src/cli/common/parseFlags.ts';
 import { ticketStateCommand } from '#src/cli/ticketStateCommand.ts';
 import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';

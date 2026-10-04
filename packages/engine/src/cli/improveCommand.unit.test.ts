@@ -2,7 +2,7 @@ import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from '
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
+import { parseFlags } from '#src/cli/common/parseFlags.ts';
 import { improveCommand } from '#src/cli/improveCommand.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 

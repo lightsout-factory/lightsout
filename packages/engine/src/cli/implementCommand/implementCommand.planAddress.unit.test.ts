@@ -1,0 +1,199 @@
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, relative } from 'node:path';
+import { describe, expect, jest, test } from '@jest/globals';
+import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { implementCommand } from '#src/cli/implementCommand/implementCommand.ts';
+import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
+import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
+import { readWorktreeRecord } from '#src/worktree/records/readWorktreeRecord.ts';
+import { writeWorktreeRecord } from '#src/worktree/records/writeWorktreeRecord.ts';
+import { resolveWorktreePath } from '#src/worktree/resolveWorktreePath.ts';
+import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
+import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+
+// Mocked Imports
+// -------------------------
+// The same seams the sibling worktree suite doubles, and only those: the temp
+// repo has no remote, and git cannot cut a tree for it. The branch derivation,
+// the workspace resolution, the ticket-branch preparation, the ownership
+// records, the run lock and the input copy all run for real — which branch a
+// plan address lands on and which plan folder reaches the workspace are the
+// claims here.
+interface CreateWorktreeParams {
+	cwd: string;
+	branch: string;
+	startPoint: string;
+	setup?: string;
+	owner: WorktreeOwner;
+	reuseExisting: boolean;
+	onProgress?: (message: string) => void;
+}
+
+const mockCreateWorktree = jest.fn<(params: CreateWorktreeParams) => Promise<string | { error: string }>>();
+const mockFetchDefaultBranch = jest.fn<(params: { cwd: string }) => Promise<string | { error: string }>>();
+const mockReadBranchWorktree = jest.fn<(params: { cwd: string; branch: string }) => Promise<string | undefined>>();
+
+jest.mock('#src/worktree/createWorktree.ts', () => ({ createWorktree: (params: CreateWorktreeParams) => mockCreateWorktree(params) }));
+jest.mock('#src/worktree/fetchDefaultBranch.ts', () => ({ fetchDefaultBranch: (params: { cwd: string }) => mockFetchDefaultBranch(params) }));
+jest.mock('#src/worktree/readBranchWorktree.ts', () => ({
+	readBranchWorktree: (params: { cwd: string; branch: string }) => mockReadBranchWorktree(params),
+}));
+// -------------------------
+const mockRequireImplementLifecycle = jest.fn<(params: { cwd: string }) => Promise<string | undefined>>();
+
+jest.mock('#src/ticketLifecycle/requireImplementLifecycle.ts', () => ({
+	requireImplementLifecycle: (params: { cwd: string }) => mockRequireImplementLifecycle(params),
+}));
+// -------------------------
+const mockRunPipelineOrFailFast = jest.fn<(params: { cwd: string; planPath: string }) => Promise<PipelineResult>>();
+
+jest.mock('#src/cli/common/runPipelineOrFailFast.ts', () => ({
+	runPipelineOrFailFast: (params: { cwd: string; planPath: string }) => mockRunPipelineOrFailFast(params),
+}));
+// -------------------------
+// The ship tail and the report card both read a run directory no mocked
+// pipeline ever wrote, and neither is what these cases are about.
+const mockRenderResult = jest.fn<(params: { result: PipelineResult; cwd: string }) => Promise<string[]>>();
+
+jest.mock('#src/cli/common/implementRun/finishImplementRun/renderResult/renderResult.ts', () => ({
+	renderResult: (params: { result: PipelineResult; cwd: string }) => mockRenderResult(params),
+}));
+// -------------------------
+const mockShipAfterImplement = jest.fn<(params: { cwd: string }) => Promise<number>>();
+
+jest.mock('#src/cli/common/implementRun/finishImplementRun/shipAfterImplement/shipAfterImplement.ts', () => ({
+	shipAfterImplement: (params: { cwd: string }) => mockShipAfterImplement(params),
+}));
+// -------------------------
+// The report is saved under the run's folder, and the run here is a result no
+// pipeline wrote to disk, so the save is doubled rather than refused.
+jest.mock('#src/runState/finalReport/writeRunFinalReport.ts', () => ({
+	writeRunFinalReport: () => Promise.resolve(),
+}));
+// -------------------------
+
+/** The ticket folder two plans of one ticket share, and the branch its name yields. */
+const workOrderName = 'lo-7-search';
+const workOrderFolder = join('.lightsout', 'work-orders', workOrderName);
+const laterPlanFolder = join(workOrderFolder, 'plans', '002-ranking');
+
+const planBody = '# Plan: rank the results\n';
+const pinnedCommit = '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d';
+
+/** A run that passed. Nothing downstream of the pipeline is real here, so the result only has to be the same object each step is handed. */
+const passedResult = { ok: true, manifest: { runId: 'aaaaaaaa-1111-2222-3333-444444444444' } } as unknown as PipelineResult;
+
+/**
+ * A real consumer repo holding one plan folder of a ticket, run against the
+ * tree standing — or not standing — at the ticket branch's own worktree path.
+ *
+ * `standing` writes the ownership record a tree at that path carries and makes
+ * the directory, so the branch is held; `heldBy` plants a live run lock in it,
+ * this process's own pid being the one lock a test can prove alive. With
+ * neither, nothing holds the branch and the run cuts a tree of its own.
+ */
+const setupTicketRun = async ({
+	planFolder = laterPlanFolder,
+	branch = workOrderName,
+	standing,
+	heldBy,
+}: {
+	planFolder?: string;
+	branch?: string;
+	standing?: WorktreeOwner;
+	heldBy?: string;
+} = {}) => {
+	const captured = captureCommandOutput();
+	const cwd = setupConsumerRepo();
+
+	// The record is what says which branch a plan's work order implements on, and
+	// which folder the tree's ownership record is filed in, so it comes first —
+	// holding the very plan the run addresses, which is what the run asks it for.
+	const addressedPlanId = relative(join('.lightsout', 'work-orders', branch, 'plans'), planFolder);
+
+	seedWorkOrderRecord({
+		cwd,
+		name: branch,
+		// Multiple-plan, because the addressed plan here is 002 and single-plan
+		// mode is the one where plan 001 alone supplies the implementation.
+		mode: 'multiple-plan',
+		plans: addressedPlanId === '' ? [] : [{ id: addressedPlanId, title: 'Rank the results', progress: 'ready', createdAt: '2026-01-01T00:00:00.000Z' }],
+	});
+
+	const treePath = await resolveWorktreePath({ cwd, branch });
+	const workspace = mkdtempSync(join(tmpdir(), 'lightsout-workspace-'));
+
+	mkdirSync(join(cwd, planFolder), { recursive: true });
+	writeFileSync(join(cwd, planFolder, 'plan.md'), planBody);
+
+	if (standing !== undefined) {
+		mkdirSync(treePath, { recursive: true });
+		await writeWorktreeRecord({ cwd, branch, owner: standing, worktreePath: treePath, startPoint: pinnedCommit });
+	}
+
+	if (heldBy !== undefined) {
+		mkdirSync(join(treePath, '.lightsout'), { recursive: true });
+		writeFileSync(join(treePath, '.lightsout', 'lock.json'), JSON.stringify({ pid: process.pid, runId: heldBy, startedAt: '2026-09-11T09:00:00.000Z' }));
+	}
+
+	mockFetchDefaultBranch.mockResolvedValue('main');
+	mockReadBranchWorktree.mockResolvedValue(standing === undefined ? undefined : treePath);
+	mockCreateWorktree.mockResolvedValue(workspace);
+	mockRequireImplementLifecycle.mockResolvedValue(undefined);
+	mockRunPipelineOrFailFast.mockResolvedValue(passedResult);
+	mockRenderResult.mockResolvedValue([]);
+	mockShipAfterImplement.mockResolvedValue(0);
+
+	const args = ['--plan', join(planFolder, 'plan.md')];
+
+	return { context: { flags: parseFlags({ args }), rest: [], cwd }, cwd, treePath, workspace, ...captured };
+};
+
+describe('implementCommand plan addresses', () => {
+	test('cuts the tree on the ticket branch and leaves the addressed plan where it is', async () => {
+		const { context, cwd, workspace, logged } = await setupTicketRun();
+
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
+
+		// the branch, and every worktree call that composed it, is the ticket
+		// folder — a tree named for the address would put each plan of one ticket
+		// on a branch of its own
+		expect(mockCreateWorktree).toHaveBeenCalledWith(expect.objectContaining({ branch: workOrderName, owner: 'implement' }));
+		expect(logged.join('\n')).toContain(`branch: ${workOrderName}`);
+		// the tree holds code work only: the plan folder stays in the checkout the
+		// command was launched from, and the run is still handed its path
+		expect(existsSync(join(workspace, workOrderFolder))).toBe(false);
+		expect(readFileSync(join(cwd, laterPlanFolder, 'plan.md'), 'utf8')).toBe(planBody);
+		expect(mockRunPipelineOrFailFast).toHaveBeenCalledWith(expect.objectContaining({ cwd: workspace, planPath: join(laterPlanFolder, 'plan.md') }));
+	});
+
+	test('continues a plan address in the ticket tree an implementation run already owns', async () => {
+		const { context, cwd, treePath } = await setupTicketRun({ standing: WorktreeOwner.Implement });
+
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const record = await readWorktreeRecord({ cwd, branch: workOrderName });
+		expect(mockCreateWorktree).not.toHaveBeenCalled();
+		expect(mockRunPipelineOrFailFast).toHaveBeenCalledWith(expect.objectContaining({ cwd: treePath, planPath: join(laterPlanFolder, 'plan.md') }));
+		// the adoption leaves the tree recorded as an implementation run's, still
+		// pointing at itself and still carrying the commit it was cut at
+		expect(record).toEqual(expect.objectContaining({ owner: 'implement', worktreePath: treePath, startPoint: pinnedCommit }));
+	});
+
+	test('refuses a plan address while a live run holds the ticket tree, naming the run', async () => {
+		const { context, cwd, treePath, errors, exitCodes } = await setupTicketRun({ standing: WorktreeOwner.Plan, heldBy: 'run-ranking-in-flight' });
+
+		await expect(implementCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const record = await readWorktreeRecord({ cwd, branch: workOrderName });
+		expect(errors.join('\n')).toContain(treePath);
+		expect(errors.join('\n')).toContain('run-ranking-in-flight');
+		expect(errors.join('\n')).toContain('--no-worktree');
+		// nothing was adopted, so the tree still belongs to the session that cut it
+		expect(record).toEqual(expect.objectContaining({ owner: 'plan' }));
+		expect(mockRunPipelineOrFailFast).not.toHaveBeenCalled();
+		expect(exitCodes).toStrictEqual([1]);
+	});
+});

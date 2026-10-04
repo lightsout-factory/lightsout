@@ -26,10 +26,10 @@ import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts
 // The detached launch spawns a real engine and waits on its records — covered by
 // its own tests. What this command owns is what it hands that launch, and that
 // the parent touches nothing the child will own.
-type LaunchDetachedParams = Parameters<typeof import('#src/cli/internal/common/detach/launchDetached.ts').launchDetached>[0];
+type LaunchDetachedParams = Parameters<typeof import('#src/cli/common/detach/launchDetached.ts').launchDetached>[0];
 const mockLaunchDetached = jest.fn<(params: LaunchDetachedParams) => Promise<number>>();
 
-jest.mock('#src/cli/internal/common/detach/launchDetached.ts', () => ({
+jest.mock('#src/cli/common/detach/launchDetached.ts', () => ({
 	launchDetached: (params: LaunchDetachedParams) => mockLaunchDetached(params),
 }));
 // -------------------------

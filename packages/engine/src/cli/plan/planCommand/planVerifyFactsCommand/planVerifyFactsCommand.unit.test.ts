@@ -1,0 +1,238 @@
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { expect, jest, test } from '@jest/globals';
+import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
+import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
+import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { planVerifyFactsCommand } from '#src/cli/plan/planCommand/planVerifyFactsCommand/planVerifyFactsCommand.ts';
+import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+
+// Mocked Imports
+// -------------------------
+// The brainstorm fetch is the one seam mocked here: it reaches a ticket tracker,
+// and what this file has to pin is not what it fetched but that it ran before
+// anything asked the plan folder what it holds. Every other case in this file
+// leaves it as the no-op default.
+const mockEnsureBrainstormFiles = jest.fn<(params: { cwd: string; name: string }) => Promise<void>>();
+
+jest.mock('#src/cli/plan/planCommand/planVerifyFactsCommand/ensureBrainstormFiles.ts', () => ({
+	ensureBrainstormFiles: (params: { cwd: string; name: string }) => mockEnsureBrainstormFiles(params),
+}));
+// -------------------------
+
+// verify-facts is deterministic — no agent — so the arrangement is a real
+// consumer repo whose authored facts claim one real and one missing path plus
+// one real and one missing script: the mixed case the command must warn about
+// while still exiting 0.
+const setupVerifyFacts = ({ args, authored }: { args: string[]; authored?: Record<string, unknown> }) => {
+	const captured = captureCommandOutput();
+	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-verify-facts-command-'));
+	const workspaceDir = join(cwd, '.lightsout', 'work-orders', 'demo', 'plans');
+
+	mkdirSync(join(cwd, 'src'), { recursive: true });
+	writeFileSync(join(cwd, 'package.json'), JSON.stringify({ name: 'consumer', scripts: { check: 'tsc --noEmit' } }));
+	writeFileSync(join(cwd, 'src', 'real.ts'), 'export const real = true;\n');
+
+	if (authored) {
+		mkdirSync(workspaceDir, { recursive: true });
+		writeFileSync(join(workspaceDir, 'facts.json'), JSON.stringify(authored));
+	}
+
+	return { context: { flags: parseFlags({ args }), rest: [], cwd }, factsPath: join(workspaceDir, 'facts.json'), ...captured };
+};
+
+const mixedFacts = {
+	request: 'add a widget',
+	areas: [
+		{
+			area: 'cli',
+			affectedPackages: [],
+			filesToModify: [
+				{ path: 'src/real.ts', role: 'the file that exists' },
+				{ path: 'src/missing.ts', role: 'the file that does not' },
+			],
+			patternsToMirror: [],
+			integrationPoints: [],
+			scripts: [
+				{ key: 'check', command: 'tsc --noEmit' },
+				{ key: 'nope', command: 'does not exist' },
+			],
+			namingConvention: 'camelCase',
+		},
+	],
+};
+
+test('planVerifyFactsCommand: a verified fact set prints the area count, both tallies, one ⚠ per miss, the facts path, and exits 0', async () => {
+	const { context, factsPath, logged, errors, exitCodes } = setupVerifyFacts({ args: ['--name', 'demo'], authored: mixedFacts });
+
+	await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
+
+	expect(logged[1] ?? '').toMatch(/^\nplan verify-facts demo — 1 area\(s\), verified \d{4}-\d\d-\d\dT/);
+	expect(logged[2]).toBe('  paths:   2 checked · 1 missing');
+	expect(logged[3]).toBe('  scripts: 2 checked · 1 missing');
+	expect(logged[4]).toBe('⚠ path not found: src/missing.ts');
+	expect(logged[5]).toBe('⚠ script not found: nope');
+	expect(logged[6]).toBe(`\nfacts: ${factsPath}`);
+	expect(errors).toStrictEqual([]);
+	expect(exitCodes).toStrictEqual([0]);
+});
+
+test('planVerifyFactsCommand: without --name it prints the usage text on stderr and exits 1 before reading any workspace', async () => {
+	const { context, logged, errors, exitCodes } = setupVerifyFacts({ args: [] });
+
+	await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
+
+	expect(logged).toStrictEqual([]);
+	expect(errors[0] ?? '').toMatch(/^lightsout — deterministic engine for coding agents/);
+	expect(exitCodes).toStrictEqual([1]);
+});
+
+test('planVerifyFactsCommand: no authored facts reports the workspace error on stderr and exits 1', async () => {
+	const { context, errors, exitCodes } = setupVerifyFacts({ args: ['--name', 'demo'] });
+
+	await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
+
+	expect(errors[0] ?? '').toMatch(/no authored facts for plan demo/);
+	expect(exitCodes).toStrictEqual([1]);
+});
+
+test('planVerifyFactsCommand: a --notes path that does not exist fails before verification and exits 1', async () => {
+	const { context, errors, exitCodes } = setupVerifyFacts({ args: ['--name', 'demo', '--notes', 'nowhere/brainstorm-notes.md'], authored: mixedFacts });
+
+	await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
+
+	expect(errors[0] ?? '').toMatch(/notes file not found: .*nowhere\/brainstorm-notes\.md/);
+	expect(exitCodes).toStrictEqual([1]);
+});
+
+// The ordering proof: the repo starts with no facts.json, and the fetch writes
+// it. verify-facts can only report an area count if the fetch had already run
+// when it read the folder — a fetch placed after it would find nothing.
+const setupBrainstormFetch = () => {
+	const arranged = setupVerifyFacts({ args: ['--name', 'demo'] });
+	const workspaceDir = join(arranged.context.cwd, '.lightsout', 'work-orders', 'demo', 'plans');
+
+	mockEnsureBrainstormFiles.mockImplementationOnce(async () => {
+		mkdirSync(workspaceDir, { recursive: true });
+		writeFileSync(join(workspaceDir, 'facts.json'), JSON.stringify(mixedFacts));
+	});
+
+	return arranged;
+};
+
+test("planVerifyFactsCommand: fetches the ticket's brainstorm before running verify-facts", async () => {
+	const { context, logged, errors, exitCodes } = setupBrainstormFetch();
+
+	await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
+
+	expect(mockEnsureBrainstormFiles).toHaveBeenCalledWith({ cwd: context.cwd, name: 'demo' });
+	expect(logged[1] ?? '').toMatch(/^\nplan verify-facts demo — 1 area\(s\), verified \d{4}-\d\d-\d\dT/);
+	expect(errors).toStrictEqual([]);
+	expect(exitCodes).toStrictEqual([0]);
+});
+
+// The mocked process.exit throws, so nothing after exitCli runs: a record on
+// disk once the command has rejected was written before it exited.
+test('records the verify-facts step as passed in the planning record before it exits 0', async () => {
+	const { context, exitCodes } = setupVerifyFacts({ args: ['--name', 'demo'], authored: mixedFacts });
+
+	await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
+
+	const recordText = readFileSync(join(context.cwd, '.lightsout', 'work-orders', 'demo', 'plans', 'planning-progress.json'), 'utf8');
+	const record = JSON.parse(recordText) as unknown;
+	expect(exitCodes).toStrictEqual([0]);
+	expect(record).toEqual(
+		expect.objectContaining({
+			name: 'demo',
+			steps: [expect.objectContaining({ step: 'verify-facts', status: 'passed', attempts: 1, pid: process.pid })],
+		}),
+	);
+});
+
+test('records the verify-facts step as failed in the planning record when the authored facts cannot be read and it exits 1', async () => {
+	const { context, errors, exitCodes } = setupVerifyFacts({ args: ['--name', 'demo'], authored: { areas: [] } });
+
+	await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
+
+	const recordText = readFileSync(join(context.cwd, '.lightsout', 'work-orders', 'demo', 'plans', 'planning-progress.json'), 'utf8');
+	const record = JSON.parse(recordText) as { steps: unknown[] };
+
+	// facts with no request fail the authored contract, so the run stops before it verifies anything
+	expect(errors).toHaveLength(1);
+	expect(record.steps).toEqual([expect.objectContaining({ step: 'verify-facts', status: 'failed', attempts: 1 })]);
+	expect(exitCodes).toStrictEqual([1]);
+});
+
+// The activity record is written into the same plan folder as the planning
+// record. verify-facts spawns no agent, so its command run is a leaf: the
+// level's own time is the whole of what it records, and a child level under it
+// would be a step that never ran.
+test('a deterministic subcommand records a childless command run beside the planning record', async () => {
+	const { context, exitCodes } = setupVerifyFacts({ args: ['--name', 'demo'], authored: mixedFacts });
+
+	await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
+
+	const planDir = join(context.cwd, '.lightsout', 'work-orders', 'demo', 'plans');
+	const report = buildActivityTree({ plan: 'demo', marks: await readActivityMarks({ dir: planDir }) });
+	const planning = JSON.parse(readFileSync(join(planDir, 'planning-progress.json'), 'utf8')) as unknown;
+
+	expect(report.roots).toEqual([
+		expect.objectContaining({
+			level: 'plan',
+			processes: [],
+			children: [
+				expect.objectContaining({
+					level: 'command-run',
+					label: expect.stringMatching(/verify-facts/),
+					startedAt: expect.any(String),
+					endedAt: expect.any(String),
+					outcome: 'passed',
+					processes: [],
+					children: [],
+				}),
+			],
+		}),
+	]);
+	expect(planning).toEqual(
+		expect.objectContaining({
+			name: 'demo',
+			steps: [expect.objectContaining({ step: 'verify-facts', status: 'passed', attempts: 1, pid: process.pid })],
+		}),
+	);
+	expect(exitCodes).toStrictEqual([0]);
+});
+
+// The outcome the command run's end mark carries is the one that agrees with
+// the exit code: a run that exits 1 must not read as passed in the activity
+// record, and the plan level above it closes on the same outcome.
+test('records the failed outcome on the command run and the plan level when the run exits 1', async () => {
+	const { context, exitCodes } = setupVerifyFacts({ args: ['--name', 'demo'], authored: { areas: [] } });
+
+	await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
+
+	const planDir = join(context.cwd, '.lightsout', 'work-orders', 'demo', 'plans');
+	const report = buildActivityTree({ plan: 'demo', marks: await readActivityMarks({ dir: planDir }) });
+
+	expect(report.roots).toEqual([
+		expect.objectContaining({
+			level: 'plan',
+			outcome: 'failed',
+			children: [expect.objectContaining({ level: 'command-run', label: expect.stringMatching(/verify-facts/), outcome: 'failed', children: [] })],
+		}),
+	]);
+	expect(exitCodes).toStrictEqual([1]);
+});
+
+// The wrapper sits inside the missing-`--name` refusal, so a command that spent
+// nothing leaves the plan folder without an activity record at all.
+test('a run that refuses for a missing --name writes no activity record', async () => {
+	const { context, exitCodes } = setupVerifyFacts({ args: [] });
+
+	await expect(planVerifyFactsCommand(context)).rejects.toThrow(/process\.exit/);
+
+	const marks = await readActivityMarks({ dir: join(context.cwd, '.lightsout', 'work-orders', 'demo', 'plans') });
+
+	expect(marks).toStrictEqual([]);
+	expect(exitCodes).toStrictEqual([1]);
+});
