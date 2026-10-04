@@ -4,7 +4,7 @@ import { expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline/runImplementPipeline.ts';
-import { readFriction } from '#src/runState/readFriction.ts';
+import { readFriction } from '#src/runState/friction/readFriction.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { report } from '#tests/helpers/report.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';

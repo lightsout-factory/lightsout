@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { selfCheckCommand } from '#src/cli/selfCheckCommand.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';

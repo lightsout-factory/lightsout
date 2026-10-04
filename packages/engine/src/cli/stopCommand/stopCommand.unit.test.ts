@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { stopCommand } from '#src/cli/stopCommand/stopCommand.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';

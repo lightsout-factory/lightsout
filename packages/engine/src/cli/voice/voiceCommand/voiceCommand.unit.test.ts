@@ -2,7 +2,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { voiceCommand } from '#src/cli/voice/voiceCommand/voiceCommand.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 

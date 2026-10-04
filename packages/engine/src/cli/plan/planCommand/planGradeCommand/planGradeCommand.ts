@@ -7,7 +7,7 @@ import { printStructuralFinding } from '#src/cli/plan/planCommand/common/printSt
 import { printGradedGap } from '#src/cli/plan/planCommand/planGradeCommand/printGradedGap.ts';
 import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { exitCli } from '#src/common/exitCli.ts';
-import { getBlockingGaps } from '#src/common/getBlockingGaps.ts';
+import { getBlockingGaps } from '#src/common/findings/getBlockingGaps.ts';
 import { gradeMemoryPath } from '#src/common/gradeMemoryPath.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';

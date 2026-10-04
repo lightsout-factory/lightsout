@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { gradeMemoryPath } from '#src/common/gradeMemoryPath.ts';
 import { messageOf } from '#src/common/messageOf.ts';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
 
 interface Params {

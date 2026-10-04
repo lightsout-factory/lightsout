@@ -14,7 +14,7 @@ import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatu
 import { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
 import { GradeScope } from '#src/contracts/plan/memory/GradeScope.ts';
 import type { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { getPlanDetectionPass } from '#src/plan/common/getPlanDetectionPass.ts';
+import { getPlanDetectionPass } from '#src/plan/common/detection/getPlanDetectionPass.ts';
 import { runGradePass } from '#src/plan/runPlanGrade/runGradePass/runGradePass.ts';
 import { cleanOverviewBody } from '#tests/helpers/cleanOverviewBody.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';

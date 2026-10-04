@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { RunState } from '#src/common/RunState.ts';
+import { RunState } from '#src/common/runs/RunState.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';

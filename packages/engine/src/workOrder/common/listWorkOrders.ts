@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import type { WorkOrderListing } from '#src/common/types/WorkOrderListing.ts';
 import { workOrdersDir } from '#src/common/workspace/workOrdersDir.ts';
 import { workOrderFileNames } from '#src/workOrder/common/constants/workOrderFileNames.ts';
-import { readWorkOrderStateFile } from '#src/workOrder/common/readWorkOrderStateFile.ts';
+import { readWorkOrderStateFile } from '#src/workOrder/common/state/readWorkOrderStateFile.ts';
 
 interface Params {
 	/** Any checkout of the repository: the records this machine holds are found from it. */

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { planCommand } from '#src/cli/plan/planCommand/planCommand.ts';
 import { planGradeCommand } from '#src/cli/plan/planCommand/planGradeCommand/planGradeCommand.ts';
 import type { Driver } from '#src/common/types/Driver.ts';

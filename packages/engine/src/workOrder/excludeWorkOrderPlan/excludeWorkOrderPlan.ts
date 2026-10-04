@@ -1,9 +1,9 @@
 import type { WorkOrderStateChange } from '#src/common/types/WorkOrderStateChange.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { changeExistingWorkOrderState } from '#src/workOrder/common/changeExistingWorkOrderState.ts';
 import { isPlanImplementationStarted } from '#src/workOrder/common/isPlanImplementationStarted.ts';
-import { requireWorkOrderState } from '#src/workOrder/common/requireWorkOrderState.ts';
 import { resolveWorkOrderPlan } from '#src/workOrder/common/resolveWorkOrderPlan.ts';
+import { changeExistingWorkOrderState } from '#src/workOrder/common/state/changeExistingWorkOrderState.ts';
+import { requireWorkOrderState } from '#src/workOrder/common/state/requireWorkOrderState.ts';
 import { applyExclusion } from '#src/workOrder/excludeWorkOrderPlan/applyExclusion.ts';
 import { findExclusionRefusal } from '#src/workOrder/excludeWorkOrderPlan/findExclusionRefusal.ts';
 import { verifyWorkOrderBranch } from '#src/workOrder/excludeWorkOrderPlan/verifyWorkOrderBranch.ts';

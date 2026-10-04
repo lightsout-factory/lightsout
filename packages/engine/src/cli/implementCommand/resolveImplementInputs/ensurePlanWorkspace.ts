@@ -1,5 +1,5 @@
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';

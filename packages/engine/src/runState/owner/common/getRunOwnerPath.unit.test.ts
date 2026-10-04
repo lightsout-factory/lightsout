@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { resolveRunDir } from '#src/common/resolveRunDir.ts';
+import { resolveRunDir } from '#src/common/runs/resolveRunDir.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';

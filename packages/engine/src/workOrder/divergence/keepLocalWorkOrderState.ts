@@ -1,5 +1,5 @@
 import { WorkOrderSyncKeep } from '#src/common/constants/WorkOrderSyncKeep.ts';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
 import { sha256 } from '#src/common/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
@@ -7,16 +7,16 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { publishPlan } from '#src/plan/publish/publishPlan/publishPlan.ts';
-import { attachWorkOrderStateIfUnmoved } from '#src/workOrder/common/attachWorkOrderStateIfUnmoved.ts';
 import { publishedButUnrecorded } from '#src/workOrder/common/constants/publishedButUnrecorded.ts';
 import { workOrderFileNames } from '#src/workOrder/common/constants/workOrderFileNames.ts';
 import { findDivergentPlanIds } from '#src/workOrder/common/findDivergentPlanIds.ts';
-import { readPublishedWorkOrderState } from '#src/workOrder/common/readPublishedWorkOrderState.ts';
-import { readWorkOrderSyncState } from '#src/workOrder/common/readWorkOrderSyncState.ts';
-import { recordWorkOrderSyncState } from '#src/workOrder/common/recordWorkOrderSyncState.ts';
+import { attachWorkOrderStateIfUnmoved } from '#src/workOrder/common/state/attachWorkOrderStateIfUnmoved.ts';
+import { readPublishedWorkOrderState } from '#src/workOrder/common/state/readPublishedWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
+import { readWorkOrderSyncState } from '#src/workOrder/common/sync/readWorkOrderSyncState.ts';
+import { recordWorkOrderSyncState } from '#src/workOrder/common/sync/recordWorkOrderSyncState.ts';
 import type { PublishedWorkOrderState } from '#src/workOrder/common/types/PublishedWorkOrderState.ts';
 import type { TicketTrackerTarget } from '#src/workOrder/common/types/TicketTrackerTarget.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
 import { mergeOneSidedPlans } from '#src/workOrder/divergence/common/mergeOneSidedPlans.ts';
 import { resolvePlanWorkingCheckout } from '#src/workOrder/divergence/common/resolvePlanWorkingCheckout.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';

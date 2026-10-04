@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
 import { implementCommand } from '#src/cli/implementCommand/implementCommand.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { serializeAttachmentManifest } from '#src/common/attachmentManifest/serializeAttachmentManifest.ts';
 import { planAttachmentManifestName } from '#src/common/constants/planAttachmentManifestName.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';

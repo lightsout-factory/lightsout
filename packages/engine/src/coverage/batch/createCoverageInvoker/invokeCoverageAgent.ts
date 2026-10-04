@@ -1,14 +1,14 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createEventFileSink } from '#src/common/createEventFileSink.ts';
-import { resolveRunDir } from '#src/common/resolveRunDir.ts';
+import { resolveRunDir } from '#src/common/runs/resolveRunDir.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
-import { appendFriction } from '#src/runState/appendFriction.ts';
+import { appendFriction } from '#src/runState/friction/appendFriction.ts';
 
 interface Params {
 	cwd: string;

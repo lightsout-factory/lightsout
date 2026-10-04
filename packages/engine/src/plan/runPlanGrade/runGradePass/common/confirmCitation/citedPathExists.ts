@@ -1,5 +1,5 @@
 import { isAbsolute, join } from 'node:path';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 
 interface Params {
 	cwd: string;

@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
 import { implementCommand } from '#src/cli/implementCommand/implementCommand.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { ShipResult } from '#src/contracts/ship/ShipResult.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';

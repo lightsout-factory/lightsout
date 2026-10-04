@@ -1,7 +1,7 @@
 import { formatShortRunId } from '@lightsout/shared';
 import { exitCli } from '#src/common/exitCli.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
-import { readFriction } from '#src/runState/readFriction.ts';
+import { readFriction } from '#src/runState/friction/readFriction.ts';
 
 export const frictionCommand = async ({ cwd }: CommandContext): Promise<void> => {
 	const entries = await readFriction({ cwd });

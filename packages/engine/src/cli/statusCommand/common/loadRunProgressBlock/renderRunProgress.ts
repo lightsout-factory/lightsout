@@ -1,6 +1,6 @@
 import { formatCost } from '@lightsout/shared';
-import { formatClockDuration } from '#src/cli/common/formatClockDuration.ts';
 import { plural } from '#src/cli/common/plural.ts';
+import { formatClockDuration } from '#src/cli/statusCommand/common/formatClockDuration.ts';
 import { renderProgressBlock } from '#src/cli/statusCommand/common/renderProgressBlock.ts';
 import type { RunProgress } from '#src/common/types/RunProgress.ts';
 import type { RunProgressRow } from '#src/common/types/RunProgressRow.ts';

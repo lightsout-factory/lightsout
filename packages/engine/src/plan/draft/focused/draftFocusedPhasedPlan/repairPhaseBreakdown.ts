@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
-import { buildPlanReshapeInvocation } from '#src/agents/buildPlanReshapeInvocation.ts';
+import { buildPlanReshapeInvocation } from '#src/agents/plan/buildPlanReshapeInvocation.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';

@@ -1,6 +1,6 @@
 import { pausedExitCode } from '#src/cli/common/constants/pausedExitCode.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import { isRunPaused } from '#src/runState/isRunPaused.ts';
+import { isRunPaused } from '#src/runState/liveness/isRunPaused.ts';
 
 interface Params {
 	/** Whether the run finished the work it set out to do. */

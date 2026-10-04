@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';

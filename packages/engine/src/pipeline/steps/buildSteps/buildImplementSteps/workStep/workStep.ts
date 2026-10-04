@@ -5,7 +5,7 @@ import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
 import { invokeRoleOrStop } from '#src/pipeline/steps/buildSteps/buildImplementSteps/workStep/invokeRoleOrStop.ts';
 import { collectChanged } from '#src/pipeline/steps/common/collectChanged.ts';
 import { withStepFiles } from '#src/pipeline/steps/common/withStepFiles.ts';
-import { appendFriction } from '#src/runState/appendFriction.ts';
+import { appendFriction } from '#src/runState/friction/appendFriction.ts';
 
 interface Params {
 	run: PipelineRun;

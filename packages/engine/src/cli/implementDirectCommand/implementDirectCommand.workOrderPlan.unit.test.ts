@@ -2,8 +2,8 @@ import { execSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
 import { implementDirectCommand } from '#src/cli/implementDirectCommand/implementDirectCommand.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
@@ -11,7 +11,7 @@ import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';

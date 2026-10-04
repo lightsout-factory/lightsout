@@ -1,5 +1,5 @@
 import { buildDirectWorkerInvocation } from '#src/agents/buildDirectWorkerInvocation.ts';
-import type { RunState } from '#src/common/RunState.ts';
+import type { RunState } from '#src/common/runs/RunState.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
 import type { Driver } from '#src/common/types/Driver.ts';

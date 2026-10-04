@@ -1,5 +1,5 @@
 import { basename } from 'node:path';
-import { buildPlanDocsCheckInvocation } from '#src/agents/buildPlanDocsCheckInvocation.ts';
+import { buildPlanDocsCheckInvocation } from '#src/agents/plan/buildPlanDocsCheckInvocation.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { ConfigDocs } from '#src/contracts/ConfigDocs.ts';

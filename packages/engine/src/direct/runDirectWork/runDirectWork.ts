@@ -1,8 +1,8 @@
 import { maxCheapFixRetries } from '#src/common/constants/maxCheapFixRetries.ts';
-import { describeGateCoordinationStop } from '#src/common/describeGateCoordinationStop.ts';
-import { describeGateNoVerdictStop } from '#src/common/describeGateNoVerdictStop.ts';
-import { RunState } from '#src/common/RunState.ts';
-import { runPreflightGate } from '#src/common/runPreflightGate.ts';
+import { describeGateCoordinationStop } from '#src/common/gates/describeGateCoordinationStop.ts';
+import { describeGateNoVerdictStop } from '#src/common/gates/describeGateNoVerdictStop.ts';
+import { runPreflightGate } from '#src/common/gates/runPreflightGate.ts';
+import { RunState } from '#src/common/runs/RunState.ts';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';

@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import { BrainstormDecisions } from '#src/contracts/plan/decisions/BrainstormDecisions.ts';
 import { readPlanWorkspaceFile } from '#src/plan/common/readPlanWorkspaceFile.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';

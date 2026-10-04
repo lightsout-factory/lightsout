@@ -1,5 +1,5 @@
 import { basename } from 'node:path';
-import { parsePhaseDeclarations } from '#src/plan/common/parsePhaseDeclarations.ts';
+import { parsePhaseDeclarations } from '#src/plan/common/phases/parsePhaseDeclarations.ts';
 import type { DeliverableFile } from '#src/plan/common/types/DeliverableFile.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';

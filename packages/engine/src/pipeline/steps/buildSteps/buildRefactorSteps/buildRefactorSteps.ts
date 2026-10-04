@@ -7,7 +7,7 @@ import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
 import { refactorStep } from '#src/pipeline/steps/buildSteps/buildRefactorSteps/refactorStep/refactorStep.ts';
 import { formatStep } from '#src/pipeline/steps/buildSteps/common/formatStep.ts';
-import { verifyStep } from '#src/pipeline/steps/buildSteps/common/verifyStep/verifyStep.ts';
+import { verifyStep } from '#src/pipeline/steps/buildSteps/common/verifyStep.ts';
 import { standardsScopeFiles } from '#src/pipeline/steps/common/standardsScopeFiles.ts';
 
 interface Params {

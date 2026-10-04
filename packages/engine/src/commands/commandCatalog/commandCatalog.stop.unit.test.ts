@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { getUnknownFlagsMessage } from '#src/cli/common/getUnknownFlagsMessage/getUnknownFlagsMessage.ts';
+import { getUnknownFlagsMessage } from '#src/cli/getUnknownFlagsMessage/getUnknownFlagsMessage.ts';
 import { commandCatalog } from '#src/commands/commandCatalog/commandCatalog.ts';
 
 const setupCatalog = () => {

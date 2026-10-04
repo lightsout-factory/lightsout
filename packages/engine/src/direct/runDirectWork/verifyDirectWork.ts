@@ -1,4 +1,4 @@
-import type { RunState } from '#src/common/RunState.ts';
+import type { RunState } from '#src/common/runs/RunState.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { nextStepRecord } from '#src/direct/runDirectWork/common/nextStepRecord.ts';

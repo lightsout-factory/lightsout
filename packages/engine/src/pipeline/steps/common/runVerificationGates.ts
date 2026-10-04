@@ -1,7 +1,7 @@
-import { collectGateObservations } from '#src/common/collectGateObservations.ts';
 import { resolveGateOverride } from '#src/common/config/resolveGateOverride.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
-import { resolveGateSchedule } from '#src/common/resolveGateSchedule.ts';
+import { collectGateObservations } from '#src/common/gates/collectGateObservations.ts';
+import { resolveGateSchedule } from '#src/common/gates/resolveGateSchedule.ts';
 import type { AcceptanceRow } from '#src/common/types/AcceptanceRow.ts';
 import { packageOf } from '#src/common/workspace/packageOf.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';

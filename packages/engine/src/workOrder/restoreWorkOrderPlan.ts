@@ -4,7 +4,7 @@ import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts'
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { restorePlanWorkspace } from '#src/plan/restore/restorePlanWorkspace/restorePlanWorkspace.ts';
 import { readWorkOrderWithTrackerTarget } from '#src/workOrder/common/readWorkOrderWithTrackerTarget.ts';
-import { recordWorkOrderSyncState } from '#src/workOrder/common/recordWorkOrderSyncState.ts';
+import { recordWorkOrderSyncState } from '#src/workOrder/common/sync/recordWorkOrderSyncState.ts';
 
 interface Params {
 	/** The checkout the plan's own folder is written into. */

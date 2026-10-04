@@ -9,7 +9,7 @@ import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan/addWorkOrderPlan.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 
 // Mocked Imports

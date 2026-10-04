@@ -1,5 +1,5 @@
 import { maxCheapFixRetries } from '#src/common/constants/maxCheapFixRetries.ts';
-import { describeGateNoVerdict } from '#src/common/describeGateNoVerdict.ts';
+import { describeGateNoVerdict } from '#src/common/gates/describeGateNoVerdict.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { GateRunResult } from '#src/common/types/GateRunResult.ts';

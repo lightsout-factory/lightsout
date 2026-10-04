@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { listFixtureFiles } from '#src/common/listFixtureFiles.ts';
+import { listFixtureFiles } from '#src/common/paths/listFixtureFiles.ts';
 import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import { FixtureSide } from '#src/contracts/views/FixtureSide.ts';
 import { RuleExampleKind } from '#src/contracts/views/RuleExampleKind.ts';

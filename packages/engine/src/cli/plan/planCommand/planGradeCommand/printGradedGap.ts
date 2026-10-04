@@ -1,7 +1,7 @@
 import { dim } from '#src/cli/common/terminal/dim.ts';
 import { yellow } from '#src/cli/common/terminal/yellow.ts';
-import { findingLocations } from '#src/common/findingLocations.ts';
-import { isBlockingGap } from '#src/common/isBlockingGap.ts';
+import { findingLocations } from '#src/common/findings/findingLocations.ts';
+import { isBlockingGap } from '#src/common/findings/isBlockingGap.ts';
 import { GapOutcome } from '#src/contracts/plan/grade/GapOutcome.ts';
 import type { GradedGap } from '#src/contracts/plan/grade/GradedGap.ts';
 

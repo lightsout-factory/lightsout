@@ -10,7 +10,7 @@ import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { excludeWorkOrderPlan } from '#src/workOrder/excludeWorkOrderPlan/excludeWorkOrderPlan.ts';
 import { setWorkOrderMode } from '#src/workOrder/setWorkOrderMode.ts';
 

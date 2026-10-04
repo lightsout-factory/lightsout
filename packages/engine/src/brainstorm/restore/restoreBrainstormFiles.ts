@@ -7,7 +7,7 @@ import { brainstormAttachmentFileNames } from '#src/common/constants/brainstormA
 import { brainstormAttachmentManifestName } from '#src/common/constants/brainstormAttachmentManifestName.ts';
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
 import { messageOf } from '#src/common/messageOf.ts';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import { sha256 } from '#src/common/sha256.ts';
 import type { AttachmentManifest } from '#src/common/types/AttachmentManifest.ts';
 import type { TrackerAttachment } from '#src/common/types/TrackerAttachment.ts';

@@ -3,8 +3,8 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
 import { implementCommand } from '#src/cli/implementCommand/implementCommand.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';

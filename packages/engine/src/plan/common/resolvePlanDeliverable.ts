@@ -1,6 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import type { DeliverableFile } from '#src/plan/common/types/DeliverableFile.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 

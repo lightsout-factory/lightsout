@@ -5,7 +5,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { activityRecordPath } from '#src/activity/activityRecordPath/activityRecordPath.ts';
 import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { planCommand } from '#src/cli/plan/planCommand/planCommand.ts';
 import { planPublishCommand } from '#src/cli/plan/planCommand/planPublishCommand.ts';
 import { planAttachmentManifestName } from '#src/common/constants/planAttachmentManifestName.ts';

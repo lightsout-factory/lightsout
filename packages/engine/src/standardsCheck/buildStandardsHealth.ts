@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { resolveRunDir } from '#src/common/resolveRunDir.ts';
+import { resolveRunDir } from '#src/common/runs/resolveRunDir.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { StandardsHealth } from '#src/common/types/StandardsHealth.ts';
 import type { StandardsHealthRule } from '#src/common/types/StandardsHealthRule.ts';

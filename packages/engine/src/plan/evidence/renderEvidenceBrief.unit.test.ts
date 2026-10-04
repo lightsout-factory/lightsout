@@ -58,7 +58,7 @@ describe('renderEvidenceBrief', () => {
 			entries: [
 				{ path: 'packages/engine/src/plan/draft/runPlanDraft/runPlanDraft.ts', roles: ['the dispatcher the focused flow is selected from'] },
 				{
-					path: 'packages/engine/src/plan/common/detectPriorArtCandidates.ts',
+					path: 'packages/engine/src/plan/common/detection/detectPriorArtCandidates.ts',
 					roles: ['the census this phase extracts', 'integration point: detectPriorArtCandidates'],
 				},
 				{ path: 'packages/engine/src/agents/buildPlanWriterInvocation/buildPlanWriterInvocation.ts', roles: ["legacy's invocation builder"] },
@@ -67,13 +67,13 @@ describe('renderEvidenceBrief', () => {
 
 		const brief = renderEvidenceBrief({
 			index,
-			paths: ['packages/engine/src/plan/common/detectPriorArtCandidates.ts', 'packages/engine/src/plan/draft/runPlanDraft/runPlanDraft.ts'],
+			paths: ['packages/engine/src/plan/common/detection/detectPriorArtCandidates.ts', 'packages/engine/src/plan/draft/runPlanDraft/runPlanDraft.ts'],
 		});
 
 		// the requested order is the order the assignment wants to read them in,
 		// and the third entry belongs to another assignment: handing it over is the
 		// per-phase re-reading this whole module exists to stop
-		expect(brief.indexOf('packages/engine/src/plan/common/detectPriorArtCandidates.ts')).toBeLessThan(
+		expect(brief.indexOf('packages/engine/src/plan/common/detection/detectPriorArtCandidates.ts')).toBeLessThan(
 			brief.indexOf('packages/engine/src/plan/draft/runPlanDraft/runPlanDraft.ts'),
 		);
 		expect(brief).not.toContain('buildPlanWriterInvocation');
@@ -81,7 +81,7 @@ describe('renderEvidenceBrief', () => {
 		// that drops them hands over source with no reason to read it
 		const [census, dispatcher] = briefBlocks({
 			brief,
-			paths: ['packages/engine/src/plan/common/detectPriorArtCandidates.ts', 'packages/engine/src/plan/draft/runPlanDraft/runPlanDraft.ts'],
+			paths: ['packages/engine/src/plan/common/detection/detectPriorArtCandidates.ts', 'packages/engine/src/plan/draft/runPlanDraft/runPlanDraft.ts'],
 		});
 		expect(census).toContain('the census this phase extracts');
 		expect(census).toContain('integration point: detectPriorArtCandidates');
@@ -115,7 +115,7 @@ describe('renderEvidenceBrief', () => {
 		const { index } = setupIndex({
 			entries: [
 				{
-					path: 'packages/engine/src/plan/common/detectPriorArtCandidates.ts',
+					path: 'packages/engine/src/plan/common/detection/detectPriorArtCandidates.ts',
 					kind: SourceEvidenceKind.Definitions,
 					bytes: 19004,
 					text: 'export const detectPriorArtCandidates = async () => [];\nconst getNameKey = () => "";\n',
@@ -124,7 +124,7 @@ describe('renderEvidenceBrief', () => {
 			],
 		});
 
-		const brief = renderEvidenceBrief({ index, paths: ['packages/engine/src/plan/common/detectPriorArtCandidates.ts'] });
+		const brief = renderEvidenceBrief({ index, paths: ['packages/engine/src/plan/common/detection/detectPriorArtCandidates.ts'] });
 
 		// a writer that reads a reduced block as the whole file will plan against a
 		// file it has only seen part of, so the block has to say the size limit it

@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { workOrderFileNames } from '#src/workOrder/common/constants/workOrderFileNames.ts';
-import { readWorkOrderStateFile } from '#src/workOrder/common/readWorkOrderStateFile.ts';
+import { readWorkOrderStateFile } from '#src/workOrder/common/state/readWorkOrderStateFile.ts';
 
 interface Params {
 	/** Any checkout of the repository — the primary one, or a linked worktree. */

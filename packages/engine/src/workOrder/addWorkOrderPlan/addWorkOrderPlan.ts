@@ -12,8 +12,8 @@ import { composePlanId } from '#src/workOrder/addWorkOrderPlan/composePlanId.ts'
 import { appendWorkOrderEvent } from '#src/workOrder/common/appendWorkOrderEvent.ts';
 import { recordHandBuiltShipAuthorizationWithdrawal } from '#src/workOrder/common/recordHandBuiltShipAuthorizationWithdrawal.ts';
 import { recordShipRequestWithdrawal } from '#src/workOrder/common/recordShipRequestWithdrawal.ts';
-import { requireWorkOrderState } from '#src/workOrder/common/requireWorkOrderState.ts';
-import { updateSyncedWorkOrderState } from '#src/workOrder/common/updateSyncedWorkOrderState.ts';
+import { requireWorkOrderState } from '#src/workOrder/common/state/requireWorkOrderState.ts';
+import { updateSyncedWorkOrderState } from '#src/workOrder/common/state/updateSyncedWorkOrderState.ts';
 
 interface Params {
 	/** Any checkout of the repository: the one record this machine holds is found from it, and the plan folder is made here. */

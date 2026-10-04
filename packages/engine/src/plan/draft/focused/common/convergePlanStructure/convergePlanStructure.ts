@@ -1,5 +1,5 @@
 import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
-import { getBlockingFindings } from '#src/common/getBlockingFindings.ts';
+import { getBlockingFindings } from '#src/common/findings/getBlockingFindings.ts';
 import type { PlanDraftReport } from '#src/contracts/plan/draft/PlanDraftReport.ts';
 import type { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';

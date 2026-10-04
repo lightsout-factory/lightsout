@@ -11,7 +11,7 @@ import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { planWorkspacePath } from '#src/plan/planWorkspacePath.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 
 /** What a test file's `jest.mock` of the git module hands this fixture to answer HEAD with. */

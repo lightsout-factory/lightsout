@@ -20,7 +20,7 @@ import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import { readBranchState } from '#src/queue/branchState/readBranchState.ts';
 import { writeBranchState } from '#src/queue/branchState/writeBranchState.ts';
 import { shipOneBranch } from '#src/queue/drainLanes/runDrainLanes/startShip/shipOneBranch.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { createWorktree } from '#src/worktree/createWorktree.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';

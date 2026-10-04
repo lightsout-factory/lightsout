@@ -1,4 +1,4 @@
-import { isBlockingGap } from '#src/common/isBlockingGap.ts';
+import { isBlockingGap } from '#src/common/findings/isBlockingGap.ts';
 import { GapOutcome } from '#src/contracts/plan/grade/GapOutcome.ts';
 import type { GradedGap } from '#src/contracts/plan/grade/GradedGap.ts';
 import type { GradeFindingRecord } from '#src/contracts/plan/memory/GradeFindingRecord.ts';

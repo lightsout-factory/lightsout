@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { buildFocusedPlanWriterInvocation } from '#src/agents/buildFocusedPlanWriterInvocation/buildFocusedPlanWriterInvocation.ts';
+import { buildFocusedPlanWriterInvocation } from '#src/agents/plan/buildFocusedPlanWriterInvocation/buildFocusedPlanWriterInvocation.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';

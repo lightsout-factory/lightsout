@@ -1,5 +1,5 @@
-import { describeGateHold } from '#src/common/describeGateHold.ts';
-import { isTicketGateHeld } from '#src/common/isTicketGateHeld.ts';
+import { describeGateHold } from '#src/common/gates/describeGateHold.ts';
+import { isTicketGateHeld } from '#src/common/gates/isTicketGateHeld.ts';
 import type { GateHolds } from '#src/common/types/GateHolds.ts';
 import type { LeftBehindTicket } from '#src/common/types/LeftBehindTicket.ts';
 import type { QueueSettings } from '#src/common/types/QueueSettings.ts';

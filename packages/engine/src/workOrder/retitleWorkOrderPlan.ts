@@ -2,8 +2,8 @@ import type { WorkOrderStateChange } from '#src/common/types/WorkOrderStateChang
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.ts';
 import { appendWorkOrderEvent } from '#src/workOrder/common/appendWorkOrderEvent.ts';
-import { changeExistingWorkOrderState } from '#src/workOrder/common/changeExistingWorkOrderState.ts';
 import { resolveWorkOrderPlan } from '#src/workOrder/common/resolveWorkOrderPlan.ts';
+import { changeExistingWorkOrderState } from '#src/workOrder/common/state/changeExistingWorkOrderState.ts';
 
 interface Params {
 	/** Any checkout of the repository: the one record this machine holds is found from it. */

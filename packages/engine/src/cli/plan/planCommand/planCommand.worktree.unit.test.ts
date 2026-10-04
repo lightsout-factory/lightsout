@@ -3,7 +3,7 @@ import { existsSync, realpathSync } from 'node:fs';
 import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { planCommand } from '#src/cli/plan/planCommand/planCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';

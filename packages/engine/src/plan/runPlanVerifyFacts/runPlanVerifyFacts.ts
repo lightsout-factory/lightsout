@@ -2,7 +2,7 @@ import { copyFile, mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { messageOf } from '#src/common/messageOf.ts';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import { AuthoredFacts } from '#src/contracts/plan/facts/AuthoredFacts.ts';
 import type { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
 import { readPlanWorkspaceFile } from '#src/plan/common/readPlanWorkspaceFile.ts';

@@ -1,4 +1,4 @@
-import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
+import { formatResumeCommand } from '#src/common/runs/formatResumeCommand.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';

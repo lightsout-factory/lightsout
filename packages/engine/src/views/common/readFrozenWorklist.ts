@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { resolveRunDir } from '#src/common/resolveRunDir.ts';
+import { resolveRunDir } from '#src/common/runs/resolveRunDir.ts';
 import { CoverageWorklist } from '#src/contracts/coverage/CoverageWorklist.ts';
 import { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';

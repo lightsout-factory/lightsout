@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { planSyncPhasesCommand } from '#src/cli/plan/planCommand/planSyncPhasesCommand.ts';
 import { syncPlanPhases } from '#src/plan/sections/syncPlanPhases.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';

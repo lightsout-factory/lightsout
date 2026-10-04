@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { gradeMemoryPath } from '#src/common/gradeMemoryPath.ts';
-import { readJsonlRecords } from '#src/common/readJsonlRecords.ts';
+import { readJsonlRecords } from '#src/common/json/readJsonlRecords.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import { Effort } from '#src/contracts/Effort.ts';

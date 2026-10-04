@@ -1,8 +1,8 @@
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { isPidAlive } from '#src/runState/isPidAlive.ts';
-import { isRecordedProcessAlive } from '#src/runState/isRecordedProcessAlive.ts';
-import { isRunLive } from '#src/runState/isRunLive.ts';
+import { isPidAlive } from '#src/runState/liveness/isPidAlive.ts';
+import { isRecordedProcessAlive } from '#src/runState/liveness/isRecordedProcessAlive.ts';
+import { isRunLive } from '#src/runState/liveness/isRunLive.ts';
 import { readRunProcessLock } from '#src/runState/lock/readRunProcessLock.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { resolveOwnerProcess } from '#src/runState/owner/resolveOwnerProcess.ts';

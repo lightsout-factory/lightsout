@@ -1,6 +1,6 @@
 import { expect, jest, test } from '@jest/globals';
 import { getRequiredFlag } from '#src/cli/common/args/getRequiredFlag.ts';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 
 // A missing required flag ends the process, so the arrangement captures both
 // halves of that response: the usage text on stderr and the exit itself. The

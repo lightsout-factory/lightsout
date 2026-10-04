@@ -1,10 +1,10 @@
-import { collectGateObservations } from '#src/common/collectGateObservations.ts';
 import { resolveGateOverride } from '#src/common/config/resolveGateOverride.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { GateScheduleKind } from '#src/common/constants/GateScheduleKind.ts';
 import { SelfCheckReason } from '#src/common/constants/SelfCheckReason.ts';
+import { collectGateObservations } from '#src/common/gates/collectGateObservations.ts';
+import { resolveGateSchedule } from '#src/common/gates/resolveGateSchedule.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
-import { resolveGateSchedule } from '#src/common/resolveGateSchedule.ts';
 import type { GateSchedule } from '#src/common/types/GateSchedule.ts';
 import type { SelfCheckResult } from '#src/common/types/SelfCheckResult.ts';
 import { packageOf } from '#src/common/workspace/packageOf.ts';

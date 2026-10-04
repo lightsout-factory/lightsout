@@ -1,5 +1,5 @@
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
 import { planNumberOf } from '#src/common/planAddress/planNumberOf.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';

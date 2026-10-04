@@ -1,7 +1,7 @@
 import { resolveWorktreeIsolation } from '#src/cli/common/args/resolveWorktreeIsolation/resolveWorktreeIsolation.ts';
 import type { PlanWorktree } from '#src/cli/plan/planCommand/common/types/PlanWorktree.ts';
 import { readGitHeadCommit } from '#src/common/git/readGitHeadCommit.ts';
-import { isSamePath } from '#src/common/isSamePath.ts';
+import { isSamePath } from '#src/common/paths/isSamePath.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import { readWorkOrderRecordFile } from '#src/common/workspace/readWorkOrderRecordFile.ts';

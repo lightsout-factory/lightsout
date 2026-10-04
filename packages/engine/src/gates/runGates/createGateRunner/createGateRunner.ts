@@ -13,7 +13,7 @@ import { classifyGateEnding } from '#src/gates/runGates/createGateRunner/classif
 import { testResultsDir } from '#src/gates/testResults/testResultsDir.ts';
 import { writeJestReporter } from '#src/gates/testResults/writeJestReporter/writeJestReporter.ts';
 import { appendCommandLog } from '#src/runState/appendCommandLog.ts';
-import { appendFriction } from '#src/runState/appendFriction.ts';
+import { appendFriction } from '#src/runState/friction/appendFriction.ts';
 
 interface Params {
 	cwd: string;

@@ -8,7 +8,7 @@ import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRec
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
-import { parsePhaseDeclarations } from '#src/plan/common/parsePhaseDeclarations.ts';
+import { parsePhaseDeclarations } from '#src/plan/common/phases/parsePhaseDeclarations.ts';
 import { repairMechanicalFindings } from '#src/plan/draft/focused/common/convergePlanStructure/repairPlanStructure/repairMechanicalFindings.ts';
 import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure/lintPlanStructure.ts';
 import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';

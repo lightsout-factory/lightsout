@@ -1,5 +1,5 @@
 import { basename, relative } from 'node:path';
-import { buildPlanGapCheckInvocation } from '#src/agents/buildPlanGapCheckInvocation.ts';
+import { buildPlanGapCheckInvocation } from '#src/agents/plan/buildPlanGapCheckInvocation.ts';
 import type { GapCheckLens } from '#src/contracts/plan/grade/GapCheckLens.ts';
 import { GapCheckReport } from '#src/contracts/plan/grade/GapCheckReport.ts';
 import type { GradedGap } from '#src/contracts/plan/grade/GradedGap.ts';

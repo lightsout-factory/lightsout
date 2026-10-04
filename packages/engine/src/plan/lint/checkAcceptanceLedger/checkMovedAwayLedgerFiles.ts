@@ -1,5 +1,5 @@
 import { MoveDirection } from '#src/common/constants/MoveDirection.ts';
-import { mapPathThroughMoves } from '#src/common/mapPathThroughMoves.ts';
+import { mapPathThroughMoves } from '#src/common/paths/mapPathThroughMoves.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';

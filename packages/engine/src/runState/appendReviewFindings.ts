@@ -1,4 +1,4 @@
-import { appendJsonlRecords } from '#src/common/appendJsonlRecords.ts';
+import { appendJsonlRecords } from '#src/common/json/appendJsonlRecords.ts';
 import { ReviewFindingRecord } from '#src/contracts/standardsCheck/ReviewFindingRecord.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { getReviewFindingsPath } from '#src/runState/common/getReviewFindingsPath.ts';

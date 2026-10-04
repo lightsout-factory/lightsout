@@ -1,5 +1,5 @@
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import { isRecordedProcessAlive } from '#src/runState/isRecordedProcessAlive.ts';
+import { isRecordedProcessAlive } from '#src/runState/liveness/isRecordedProcessAlive.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { resolveOwnerProcess } from '#src/runState/owner/resolveOwnerProcess.ts';
 

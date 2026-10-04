@@ -1,10 +1,10 @@
 import { basename, join } from 'node:path';
-import { buildPlanDedupInvocation } from '#src/agents/buildPlanDedupInvocation.ts';
+import { buildPlanDedupInvocation } from '#src/agents/plan/buildPlanDedupInvocation.ts';
 import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
+import { writeJsonFile } from '#src/common/json/writeJsonFile.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
-import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { DedupFinding } from '#src/contracts/dedup/DedupFinding.ts';
 import { DedupJudgment } from '#src/contracts/dedup/DedupJudgment.ts';
@@ -16,9 +16,9 @@ import { getPlanRunStatus } from '#src/plan/common/activity/getPlanRunStatus.ts'
 import { planAgentConcurrency } from '#src/plan/common/constants/planAgentConcurrency.ts';
 import { planAgentTimeouts } from '#src/plan/common/constants/planAgentTimeouts.ts';
 import { createPlanAgentRunner } from '#src/plan/common/createPlanAgentRunner.ts';
-import { detectPriorArtCandidates } from '#src/plan/common/detectPriorArtCandidates.ts';
+import { detectPriorArtCandidates } from '#src/plan/common/detection/detectPriorArtCandidates.ts';
+import { getPlanDetectionPass } from '#src/plan/common/detection/getPlanDetectionPass.ts';
 import { drainTasks } from '#src/plan/common/drainTasks.ts';
-import { getPlanDetectionPass } from '#src/plan/common/getPlanDetectionPass.ts';
 import { isRateLimited } from '#src/plan/common/isRateLimited.ts';
 import type { DeliverableFile } from '#src/plan/common/types/DeliverableFile.ts';
 import type { PriorArtCandidate } from '#src/plan/common/types/PriorArtCandidate.ts';

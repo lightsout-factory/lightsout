@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
-import { getPhaseProvenance } from '#src/plan/common/getPhaseProvenance.ts';
+import { getPhaseProvenance } from '#src/plan/common/phases/getPhaseProvenance.ts';
 import { lintPlanCrossPhase } from '#src/plan/lint/lintPlanStructure/lintPlanCrossPhase/lintPlanCrossPhase.ts';
 import { type DeclarationSpec, overviewBody, type PhaseSpec, phaseBody, phaseFile } from '#tests/helpers/phasePlan.ts';
 

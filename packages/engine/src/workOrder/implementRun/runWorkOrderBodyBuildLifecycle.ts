@@ -5,7 +5,7 @@ import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { recordHandBuiltShipAuthorizationWithdrawal } from '#src/workOrder/common/recordHandBuiltShipAuthorizationWithdrawal.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { isPlanlessWorkOrder } from '#src/workOrder/isPlanlessWorkOrder.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
 

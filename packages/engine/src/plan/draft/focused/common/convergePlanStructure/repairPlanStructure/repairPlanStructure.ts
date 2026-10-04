@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { buildPlanRepairInvocation } from '#src/agents/buildPlanRepairInvocation.ts';
+import { buildPlanRepairInvocation } from '#src/agents/plan/buildPlanRepairInvocation.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';

@@ -2,7 +2,7 @@ import { loadPlanningProgressBlock } from '#src/cli/statusCommand/common/loadPla
 import { loadRunFamilyProgressBlock } from '#src/cli/statusCommand/common/loadRunFamilyProgressBlock.ts';
 import { loadShippingProgressBlock } from '#src/cli/statusCommand/common/loadShippingProgressBlock.ts';
 import { QueueWorker } from '#src/common/constants/QueueWorker.ts';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
 import type { QueueBoardTicket } from '#src/contracts/queue/QueueBoardTicket.ts';
 import { QueueLane } from '#src/contracts/queue/QueueLane.ts';

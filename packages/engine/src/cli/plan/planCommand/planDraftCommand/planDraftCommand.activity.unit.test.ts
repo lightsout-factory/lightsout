@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { planDraftCommand } from '#src/cli/plan/planCommand/planDraftCommand/planDraftCommand.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { ActivityNode } from '#src/contracts/activity/ActivityNode.ts';

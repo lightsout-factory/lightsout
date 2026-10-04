@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import type ts from 'typescript';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { coverageScopeOf } from '#src/coverage/common/coverageScopeOf.ts';
-import { loadScopeJestConfig } from '#src/coverage/common/loadScopeJestConfig/loadScopeJestConfig.ts';
+import { loadScopeJestConfig } from '#src/coverage/common/loadScopeJestConfig.ts';
 import { resolveScopeContext } from '#src/coverage/common/resolveScopeContext.ts';
 import { scopeRootOf } from '#src/coverage/common/scopeRootOf.ts';
 import type { JestModuleMode } from '#src/coverage/selectUnloadableFiles/common/types/JestModuleMode.ts';

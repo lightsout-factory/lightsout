@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { planDraftCommand } from '#src/cli/plan/planCommand/planDraftCommand/planDraftCommand.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import { PlanDraftStatus } from '#src/contracts/plan/draft/PlanDraftStatus.ts';

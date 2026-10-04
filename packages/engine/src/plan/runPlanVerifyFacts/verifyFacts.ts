@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import type { AuthoredFacts } from '#src/contracts/plan/facts/AuthoredFacts.ts';
 import type { PathVerification } from '#src/contracts/plan/facts/PathVerification.ts';
 import { getManifestScriptKeys } from '#src/plan/common/getManifestScriptKeys.ts';

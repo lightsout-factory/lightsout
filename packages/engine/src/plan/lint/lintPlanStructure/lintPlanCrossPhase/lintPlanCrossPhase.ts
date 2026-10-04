@@ -1,4 +1,4 @@
-import { parsePhaseDeclarations } from '#src/plan/common/parsePhaseDeclarations.ts';
+import { parsePhaseDeclarations } from '#src/plan/common/phases/parsePhaseDeclarations.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import type { PhaseProvenance } from '#src/plan/common/types/PhaseProvenance.ts';
 import type { PhaseSizeCounts } from '#src/plan/common/types/PhaseSizeCounts.ts';

@@ -1,6 +1,6 @@
 import { basename, relative } from 'node:path';
-import { buildPlanFindingRecheckInvocation } from '#src/agents/buildPlanFindingRecheckInvocation.ts';
-import { findingLocations } from '#src/common/findingLocations.ts';
+import { buildPlanFindingRecheckInvocation } from '#src/agents/plan/buildPlanFindingRecheckInvocation.ts';
+import { findingLocations } from '#src/common/findings/findingLocations.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { Effort } from '#src/contracts/Effort.ts';

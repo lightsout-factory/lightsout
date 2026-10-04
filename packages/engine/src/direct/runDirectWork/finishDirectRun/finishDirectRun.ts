@@ -1,5 +1,5 @@
 import { commitRunWork } from '#src/commit/commitRunWork/commitRunWork.ts';
-import type { RunState } from '#src/common/RunState.ts';
+import type { RunState } from '#src/common/runs/RunState.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { nextStepRecord } from '#src/direct/runDirectWork/common/nextStepRecord.ts';

@@ -1,5 +1,5 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
-import { runPreflightGate } from '#src/common/runPreflightGate.ts';
+import { runPreflightGate } from '#src/common/gates/runPreflightGate.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';

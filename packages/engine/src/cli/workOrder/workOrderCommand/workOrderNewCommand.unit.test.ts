@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { workOrderCommand } from '#src/cli/workOrder/workOrderCommand/workOrderCommand.ts';
 import { workOrderNewCommand } from '#src/cli/workOrder/workOrderCommand/workOrderNewCommand.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';

@@ -1,6 +1,6 @@
 import { setTimeout as delay } from 'node:timers/promises';
 import { StopProcessOutcome } from '#src/cli/stopCommand/common/constants/StopProcessOutcome.ts';
-import { isRecordedProcessAlive } from '#src/runState/isRecordedProcessAlive.ts';
+import { isRecordedProcessAlive } from '#src/runState/liveness/isRecordedProcessAlive.ts';
 
 interface Params {
 	pid: number;

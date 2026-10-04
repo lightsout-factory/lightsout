@@ -6,7 +6,7 @@ import { red } from '#src/cli/common/terminal/red.ts';
 import { printStructuralFinding } from '#src/cli/plan/planCommand/common/printStructuralFinding.ts';
 import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { exitCli } from '#src/common/exitCli.ts';
-import { getBlockingFindings } from '#src/common/getBlockingFindings.ts';
+import { getBlockingFindings } from '#src/common/findings/getBlockingFindings.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import { runPlanLint } from '#src/plan/runPlanLint.ts';
 

@@ -14,7 +14,7 @@ import { readBodyBuildTarget } from '#src/cli/implementDirectCommand/readBodyBui
 import { exitCli } from '#src/common/exitCli.ts';
 import { getStringFlag } from '#src/common/getStringFlag.ts';
 import { readGitCurrentBranch } from '#src/common/git/readGitCurrentBranch.ts';
-import { readRunLabel } from '#src/common/readRunLabel.ts';
+import { readRunLabel } from '#src/common/runs/readRunLabel.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';

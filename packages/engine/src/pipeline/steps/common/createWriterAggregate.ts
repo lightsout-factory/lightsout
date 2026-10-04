@@ -2,7 +2,7 @@ import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import type { WriterResult } from '#src/pipeline/steps/common/types/WriterResult.ts';
-import { appendFriction } from '#src/runState/appendFriction.ts';
+import { appendFriction } from '#src/runState/friction/appendFriction.ts';
 
 interface Params<TGroup> {
 	run: PipelineRun;

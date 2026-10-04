@@ -41,10 +41,10 @@ jest.mock('#src/ticketTracker/getTicketsByIdentifiers.ts', () => ({
 jest.mock('#src/ticketLifecycle/updateTicketLifecycle.ts', () => ({
 	updateTicketLifecycle: (params: LifecycleParams) => mockUpdateTicketLifecycle(params),
 }));
-jest.mock('#src/common/describeGateHold.ts', () => ({
+jest.mock('#src/common/gates/describeGateHold.ts', () => ({
 	describeGateHold: (params: { hold: GateHold | undefined; identifier: string }) => mockDescribeGateHold(params),
 }));
-jest.mock('#src/common/isTicketGateHeld.ts', () => ({
+jest.mock('#src/common/gates/isTicketGateHeld.ts', () => ({
 	isTicketGateHeld: (params: { holds: GateHolds; identifier: string; labels: string[] }) => mockIsTicketGateHeld(params),
 }));
 jest.mock('#src/gates/gateHolds/syncGateHolds/syncGateHolds.ts', () => ({

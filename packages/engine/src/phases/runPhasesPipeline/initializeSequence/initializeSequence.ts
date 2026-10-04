@@ -1,8 +1,8 @@
 import { access, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
+import { toRepoRelativePath } from '#src/common/paths/toRepoRelativePath.ts';
 import { resolveRecordedPlanPath } from '#src/common/resolveRecordedPlanPath.ts';
-import { toRepoRelativePath } from '#src/common/toRepoRelativePath.ts';
+import { formatResumeCommand } from '#src/common/runs/formatResumeCommand.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';

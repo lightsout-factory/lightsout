@@ -1,11 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
-import { getBlockingFindings } from '#src/common/getBlockingFindings.ts';
+import { getBlockingFindings } from '#src/common/findings/getBlockingFindings.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
-import { parsePhaseDeclarations } from '#src/plan/common/parsePhaseDeclarations.ts';
+import { parsePhaseDeclarations } from '#src/plan/common/phases/parsePhaseDeclarations.ts';
 import { syncPlanDecisions } from '#src/plan/decisionLog/syncPlanDecisions/syncPlanDecisions.ts';
 import type { DraftContext } from '#src/plan/draft/common/types/DraftContext.ts';
 import type { RunPlanDraftResult } from '#src/plan/draft/common/types/RunPlanDraftResult.ts';

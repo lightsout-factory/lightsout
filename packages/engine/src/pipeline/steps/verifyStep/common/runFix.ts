@@ -6,7 +6,7 @@ import { formatAndVerify } from '#src/pipeline/steps/common/formatAndVerify.ts';
 import type { RepairOutcome } from '#src/pipeline/steps/common/types/RepairOutcome.ts';
 import type { VerifyContext } from '#src/pipeline/steps/common/types/VerifyContext.ts';
 import { withStepFiles } from '#src/pipeline/steps/common/withStepFiles.ts';
-import { appendFriction } from '#src/runState/appendFriction.ts';
+import { appendFriction } from '#src/runState/friction/appendFriction.ts';
 
 interface Params {
 	context: VerifyContext;

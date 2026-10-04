@@ -1,4 +1,4 @@
-import { runPreflightGate } from '#src/common/runPreflightGate.ts';
+import { runPreflightGate } from '#src/common/gates/runPreflightGate.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';

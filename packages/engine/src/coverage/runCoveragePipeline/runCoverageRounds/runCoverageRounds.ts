@@ -1,5 +1,5 @@
 import type ts from 'typescript';
-import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
+import { formatResumeCommand } from '#src/common/runs/formatResumeCommand.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';

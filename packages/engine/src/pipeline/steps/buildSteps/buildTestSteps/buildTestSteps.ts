@@ -6,7 +6,7 @@ import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
 import { writeTestsStep } from '#src/pipeline/steps/buildSteps/buildTestSteps/writeTestsStep/writeTestsStep.ts';
 import { formatStep } from '#src/pipeline/steps/buildSteps/common/formatStep.ts';
-import { verifyStep } from '#src/pipeline/steps/buildSteps/common/verifyStep/verifyStep.ts';
+import { verifyStep } from '#src/pipeline/steps/buildSteps/common/verifyStep.ts';
 import { sourceFiles } from '#src/pipeline/steps/common/sourceFiles.ts';
 import type { FixBuilder } from '#src/pipeline/steps/common/types/FixBuilder.ts';
 

@@ -4,7 +4,7 @@ import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachment
 import { planAttachmentManifestName } from '#src/common/constants/planAttachmentManifestName.ts';
 import { WorkOrderSyncKeep } from '#src/common/constants/WorkOrderSyncKeep.ts';
 import { messageOf } from '#src/common/messageOf.ts';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
 import { sha256 } from '#src/common/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
@@ -15,12 +15,12 @@ import { getTicketAttachments } from '#src/ticketTracker/getTicketAttachments.ts
 import { readTicketAsset } from '#src/ticketTracker/readTicketAsset.ts';
 import { workOrderFileNames } from '#src/workOrder/common/constants/workOrderFileNames.ts';
 import { findDivergentPlanIds } from '#src/workOrder/common/findDivergentPlanIds.ts';
-import { readPublishedWorkOrderState } from '#src/workOrder/common/readPublishedWorkOrderState.ts';
-import { readWorkOrderSyncState } from '#src/workOrder/common/readWorkOrderSyncState.ts';
-import { serializeWorkOrderState } from '#src/workOrder/common/serializeWorkOrderState.ts';
+import { readPublishedWorkOrderState } from '#src/workOrder/common/state/readPublishedWorkOrderState.ts';
+import { serializeWorkOrderState } from '#src/workOrder/common/state/serializeWorkOrderState.ts';
+import { withWorkOrderStateLock } from '#src/workOrder/common/state/withWorkOrderStateLock.ts';
+import { readWorkOrderSyncState } from '#src/workOrder/common/sync/readWorkOrderSyncState.ts';
+import { updateWorkOrderSyncState } from '#src/workOrder/common/sync/updateWorkOrderSyncState.ts';
 import type { TicketTrackerTarget } from '#src/workOrder/common/types/TicketTrackerTarget.ts';
-import { updateWorkOrderSyncState } from '#src/workOrder/common/updateWorkOrderSyncState.ts';
-import { withWorkOrderStateLock } from '#src/workOrder/common/withWorkOrderStateLock.ts';
 import { writeWorkOrderFolderFile } from '#src/workOrder/common/writeWorkOrderFolderFile.ts';
 import { mergeOneSidedPlans } from '#src/workOrder/divergence/common/mergeOneSidedPlans.ts';
 import { resolvePlanWorkingCheckout } from '#src/workOrder/divergence/common/resolvePlanWorkingCheckout.ts';

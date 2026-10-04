@@ -8,10 +8,10 @@ import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { resolveShipSettings } from '#src/ship/resolveShipSettings.ts';
 import { appendWorkOrderEvent } from '#src/workOrder/common/appendWorkOrderEvent.ts';
-import { changeExistingWorkOrderState } from '#src/workOrder/common/changeExistingWorkOrderState.ts';
 import { isPlanImplementationStarted } from '#src/workOrder/common/isPlanImplementationStarted.ts';
 import { recordHandBuiltShipAuthorizationWithdrawal } from '#src/workOrder/common/recordHandBuiltShipAuthorizationWithdrawal.ts';
 import { recordShipRequestWithdrawal } from '#src/workOrder/common/recordShipRequestWithdrawal.ts';
+import { changeExistingWorkOrderState } from '#src/workOrder/common/state/changeExistingWorkOrderState.ts';
 
 interface Params {
 	/** Any checkout of the repository: the one record this machine holds is found from it. */

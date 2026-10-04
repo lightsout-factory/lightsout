@@ -1,5 +1,5 @@
 import { gradeMemoryPath } from '#src/common/gradeMemoryPath.ts';
-import { writeJsonFile } from '#src/common/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/json/writeJsonFile.ts';
 import { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
 
 interface Params {

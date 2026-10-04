@@ -1,6 +1,6 @@
 import { MoveDirection } from '#src/common/constants/MoveDirection.ts';
-import { findCoveringMove } from '#src/common/findCoveringMove.ts';
-import { mapPathThroughMoves } from '#src/common/mapPathThroughMoves.ts';
+import { findCoveringMove } from '#src/common/paths/findCoveringMove.ts';
+import { mapPathThroughMoves } from '#src/common/paths/mapPathThroughMoves.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
 import { countTokens } from '#src/pipeline/common/countTokens.ts';
 import { describeTokenSurplus } from '#src/pipeline/common/describeTokenSurplus.ts';

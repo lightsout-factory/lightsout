@@ -1,6 +1,6 @@
 import { mkdir, rename, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { writeJsonFile } from '#src/common/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/json/writeJsonFile.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { ShippingProgress } from '#src/contracts/ship/ShippingProgress.ts';
 import { ShippingStepId } from '#src/contracts/ship/ShippingStepId.ts';

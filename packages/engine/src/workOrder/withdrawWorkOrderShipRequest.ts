@@ -1,7 +1,7 @@
 import type { WorkOrderStateChange } from '#src/common/types/WorkOrderStateChange.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { changeExistingWorkOrderState } from '#src/workOrder/common/changeExistingWorkOrderState.ts';
 import { recordShipRequestWithdrawal } from '#src/workOrder/common/recordShipRequestWithdrawal.ts';
+import { changeExistingWorkOrderState } from '#src/workOrder/common/state/changeExistingWorkOrderState.ts';
 
 interface Params {
 	/** Any checkout of the repository: the one record this machine holds is found from it. */

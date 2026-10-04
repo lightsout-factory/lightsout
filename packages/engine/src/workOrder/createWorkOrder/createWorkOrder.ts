@@ -5,7 +5,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { listWorkOrders } from '#src/workOrder/common/listWorkOrders.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { buildWorkOrderState } from '#src/workOrder/createWorkOrder/buildWorkOrderState.ts';
 import { composeWorkOrderName } from '#src/workOrder/createWorkOrder/composeWorkOrderName.ts';
 import { readTicketTitle } from '#src/workOrder/createWorkOrder/readTicketTitle.ts';

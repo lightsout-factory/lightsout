@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import type { PlanWorktree } from '#src/cli/plan/planCommand/common/types/PlanWorktree.ts';
 import { planCommand } from '#src/cli/plan/planCommand/planCommand.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
-import { getBlockingGaps } from '#src/common/getBlockingGaps.ts';
+import { getBlockingGaps } from '#src/common/findings/getBlockingGaps.ts';
 import { gradeMemoryPath } from '#src/common/gradeMemoryPath.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';

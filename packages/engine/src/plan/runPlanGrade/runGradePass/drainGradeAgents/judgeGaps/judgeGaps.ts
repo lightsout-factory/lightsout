@@ -1,5 +1,5 @@
 import { relative } from 'node:path';
-import { buildPlanGapJudgeInvocation } from '#src/agents/buildPlanGapJudgeInvocation.ts';
+import { buildPlanGapJudgeInvocation } from '#src/agents/plan/buildPlanGapJudgeInvocation.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { Effort } from '#src/contracts/Effort.ts';

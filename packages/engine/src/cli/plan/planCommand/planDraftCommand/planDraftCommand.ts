@@ -7,7 +7,7 @@ import { printStructuralFinding } from '#src/cli/plan/planCommand/common/printSt
 import { exitOnPlanFailure } from '#src/cli/plan/planCommand/planDraftCommand/exitOnPlanFailure.ts';
 import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { exitCli } from '#src/common/exitCli.ts';
-import { getBlockingFindings } from '#src/common/getBlockingFindings.ts';
+import { getBlockingFindings } from '#src/common/findings/getBlockingFindings.ts';
 import { getStringFlag } from '#src/common/getStringFlag.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';

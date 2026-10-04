@@ -1,6 +1,6 @@
 import { basename } from 'node:path';
 import { groupConnectedFiles } from '#src/common/fileGroups/groupConnectedFiles.ts';
-import { findingLocations } from '#src/common/findingLocations.ts';
+import { findingLocations } from '#src/common/findings/findingLocations.ts';
 import type { GradedGap } from '#src/contracts/plan/grade/GradedGap.ts';
 import type { DeliverableFile } from '#src/plan/common/types/DeliverableFile.ts';
 import type { GapBatch } from '#src/plan/runPlanGrade/runGradePass/drainGradeAgents/judgeGaps/common/types/GapBatch.ts';

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { expect, jest, test } from '@jest/globals';
 import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { planVerifyFactsCommand } from '#src/cli/plan/planCommand/planVerifyFactsCommand/planVerifyFactsCommand.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 

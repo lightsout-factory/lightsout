@@ -1,4 +1,4 @@
-import { isParkedOutcome } from '#src/common/isParkedOutcome.ts';
+import { isParkedOutcome } from '#src/common/runs/isParkedOutcome.ts';
 import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { WorkOrderRunOutcome } from '#src/common/types/WorkOrderRunOutcome.ts';

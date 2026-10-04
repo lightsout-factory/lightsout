@@ -6,7 +6,7 @@ import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { writeRunFinalReport } from '#src/runState/finalReport/writeRunFinalReport.ts';
-import { isRunPaused } from '#src/runState/isRunPaused.ts';
+import { isRunPaused } from '#src/runState/liveness/isRunPaused.ts';
 
 interface Params {
 	/** The config as it was read from disk, before the command stamped its harness on it. */

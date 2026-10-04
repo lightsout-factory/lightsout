@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { z } from 'zod';
-import { appendJsonlRecords } from '#src/common/appendJsonlRecords.ts';
+import { appendJsonlRecords } from '#src/common/json/appendJsonlRecords.ts';
 import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
 import type { TicketSummary } from '#src/common/types/TicketSummary.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';

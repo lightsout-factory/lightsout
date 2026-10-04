@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { MoveDirection } from '#src/common/constants/MoveDirection.ts';
-import { mapPathThroughMoves } from '#src/common/mapPathThroughMoves.ts';
+import { mapPathThroughMoves } from '#src/common/paths/mapPathThroughMoves.ts';
 import { holdsTestTitle } from '#src/common/sourceFiles/holdsTestTitle/holdsTestTitle.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';

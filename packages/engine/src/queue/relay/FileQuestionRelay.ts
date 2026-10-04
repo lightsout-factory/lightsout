@@ -1,10 +1,10 @@
 import { readFile, rename, rm } from 'node:fs/promises';
 import { join } from 'node:path';
+import { writeJsonFile } from '#src/common/json/writeJsonFile.ts';
 import type { QuestionRelay } from '#src/common/types/QuestionRelay.ts';
 import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
 import type { TicketSummary } from '#src/common/types/TicketSummary.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import { RelayAnswer } from '#src/contracts/queue/RelayAnswer.ts';
 import { RelayQuestion } from '#src/contracts/queue/RelayQuestion.ts';
 import { recordRelayedAnswer } from '#src/queue/relay/common/recordRelayedAnswer.ts';

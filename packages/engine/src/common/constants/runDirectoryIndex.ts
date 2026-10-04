@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { listRunLocations } from '#src/runState/common/listRunLocations.ts';
+import { listRunLocations } from '#src/common/runs/listRunLocations.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 
 const scanLocations = async ({ cwd }: { cwd: string }) => {

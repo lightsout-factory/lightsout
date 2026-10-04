@@ -1,4 +1,4 @@
-import { isParkedOutcome } from '#src/common/isParkedOutcome.ts';
+import { isParkedOutcome } from '#src/common/runs/isParkedOutcome.ts';
 import type { QueueDrainReport } from '#src/common/types/QueueDrainReport.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 

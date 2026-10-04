@@ -1,4 +1,4 @@
-import { describeGateCoordinationStop } from '#src/common/describeGateCoordinationStop.ts';
+import { describeGateCoordinationStop } from '#src/common/gates/describeGateCoordinationStop.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { takeGateHold } from '#src/gates/gateHolds/takeGateHold.ts';

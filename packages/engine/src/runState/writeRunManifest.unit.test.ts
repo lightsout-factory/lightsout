@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { expect, test } from '@jest/globals';
-import { resolveRunDir } from '#src/common/resolveRunDir.ts';
+import { resolveRunDir } from '#src/common/runs/resolveRunDir.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';

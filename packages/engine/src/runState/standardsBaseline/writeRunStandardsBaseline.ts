@@ -1,6 +1,6 @@
 import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { writeJsonFile } from '#src/common/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/json/writeJsonFile.ts';
 import type { StandardsSnapshot } from '#src/contracts/standardsCheck/StandardsSnapshot.ts';
 import { getRunStandardsBaselinePath } from '#src/runState/standardsBaseline/common/getRunStandardsBaselinePath.ts';
 

@@ -1,5 +1,5 @@
 import { activityRecordPath } from '#src/activity/activityRecordPath/activityRecordPath.ts';
-import { readJsonlRecords } from '#src/common/readJsonlRecords.ts';
+import { readJsonlRecords } from '#src/common/json/readJsonlRecords.ts';
 import { ActivityMark } from '#src/contracts/activity/ActivityMark.ts';
 
 interface Params {

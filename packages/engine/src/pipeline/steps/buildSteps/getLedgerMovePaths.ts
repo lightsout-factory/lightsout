@@ -1,5 +1,5 @@
 import { MoveDirection } from '#src/common/constants/MoveDirection.ts';
-import { mapPathThroughMoves } from '#src/common/mapPathThroughMoves.ts';
+import { mapPathThroughMoves } from '#src/common/paths/mapPathThroughMoves.ts';
 import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
 
 interface Params {

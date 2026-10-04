@@ -1,4 +1,4 @@
-import { canonicalJson } from '#src/common/canonicalJson.ts';
+import { canonicalJson } from '#src/common/json/canonicalJson.ts';
 import { sha256 } from '#src/common/sha256.ts';
 import type { ParsedPlan } from '#src/plan/common/types/ParsedPlan.ts';
 

@@ -1,5 +1,5 @@
 import { rm } from 'node:fs/promises';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 
 /**
  * Not tidiness: `resolvePlanDeliverable` short-circuits on `plan.md` existing,

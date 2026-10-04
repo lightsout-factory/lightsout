@@ -1,9 +1,9 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
-import { resolveNewRunDir } from '#src/common/resolveNewRunDir.ts';
-import { resolveRunDir } from '#src/common/resolveRunDir.ts';
+import { formatResumeCommand } from '#src/common/runs/formatResumeCommand.ts';
+import { resolveNewRunDir } from '#src/common/runs/resolveNewRunDir.ts';
+import { resolveRunDir } from '#src/common/runs/resolveRunDir.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { CoverageWorklist } from '#src/contracts/coverage/CoverageWorklist.ts';

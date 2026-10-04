@@ -1,10 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
-import { readJsonFile } from '#src/common/readJsonFile.ts';
+import { readJsonFile } from '#src/common/json/readJsonFile.ts';
+import { writeJsonFile } from '#src/common/json/writeJsonFile.ts';
 import { sha256 } from '#src/common/sha256.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
-import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { SourceEvidenceEntry } from '#src/contracts/plan/evidence/SourceEvidenceEntry.ts';
 import { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvidenceIndex.ts';

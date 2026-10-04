@@ -55,11 +55,11 @@ export {
 	WorkReport,
 	WritersReport,
 } from '#src/contracts/index.ts';
-export { isRunLive } from '#src/runState/isRunLive.ts';
-export { isRunResumable } from '#src/runState/isRunResumable.ts';
+export { readFriction } from '#src/runState/friction/readFriction.ts';
 export { listRunIds } from '#src/runState/listRunIds.ts';
+export { isRunLive } from '#src/runState/liveness/isRunLive.ts';
+export { isRunResumable } from '#src/runState/liveness/isRunResumable.ts';
 export { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
-export { readFriction } from '#src/runState/readFriction.ts';
 export { readRunManifest } from '#src/runState/readRunManifest.ts';
 export { summarizeRun } from '#src/runState/summarizeRun/summarizeRun.ts';
 export { listStandardsSnapshots } from '#src/standardsCheck/listStandardsSnapshots.ts';

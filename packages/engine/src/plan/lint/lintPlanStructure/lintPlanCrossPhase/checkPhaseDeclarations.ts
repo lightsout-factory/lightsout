@@ -6,7 +6,7 @@ import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFind
 import { buildModeBulletLabels } from '#src/plan/common/constants/buildModeBulletLabels.ts';
 import { getCodeSpans } from '#src/plan/common/getCodeSpans.ts';
 import { getExportName } from '#src/plan/common/getExportName.ts';
-import { getPhaseSetDefects } from '#src/plan/common/getPhaseSetDefects.ts';
+import { getPhaseSetDefects } from '#src/plan/common/phases/getPhaseSetDefects.ts';
 import type { PhaseDefect } from '#src/plan/common/types/PhaseDefect.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import type { PhaseSizeCounts } from '#src/plan/common/types/PhaseSizeCounts.ts';

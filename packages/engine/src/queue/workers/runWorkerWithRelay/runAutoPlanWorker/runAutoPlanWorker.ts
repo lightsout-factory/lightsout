@@ -1,6 +1,6 @@
 import { buildQueueAutoPlanInvocation } from '#src/agents/buildQueueAutoPlanInvocation.ts';
-import { getDirsOutsideCwd } from '#src/common/getDirsOutsideCwd.ts';
-import { pathExists } from '#src/common/pathExists.ts';
+import { getDirsOutsideCwd } from '#src/common/paths/getDirsOutsideCwd.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
@@ -17,7 +17,7 @@ import { readPlanningProgress } from '#src/plan/progress/readPlanningProgress.ts
 import type { WorkerOutcome } from '#src/queue/common/types/WorkerOutcome.ts';
 import { buildWorkOrderPlans } from '#src/queue/workers/runWorkerWithRelay/common/buildWorkOrderPlans/buildWorkOrderPlans.ts';
 import { chooseAutoPlanTarget } from '#src/queue/workers/runWorkerWithRelay/runAutoPlanWorker/chooseAutoPlanTarget.ts';
-import { isPidAlive } from '#src/runState/isPidAlive.ts';
+import { isPidAlive } from '#src/runState/liveness/isPidAlive.ts';
 import { pullWorkOrderState } from '#src/workOrder/pullWorkOrderState.ts';
 
 interface Params {

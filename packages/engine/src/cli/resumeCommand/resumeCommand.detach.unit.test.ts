@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { resumeCommand } from '#src/cli/resumeCommand/resumeCommand.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';

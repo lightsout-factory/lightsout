@@ -12,7 +12,7 @@ import type { GradedGap } from '#src/contracts/plan/grade/GradedGap.ts';
 import type { GradeFindingRecord } from '#src/contracts/plan/memory/GradeFindingRecord.ts';
 import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatus.ts';
 import type { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
-import type { getPlanDetectionPass } from '#src/plan/common/getPlanDetectionPass.ts';
+import type { getPlanDetectionPass } from '#src/plan/common/detection/getPlanDetectionPass.ts';
 import { drainGradeAgents } from '#src/plan/runPlanGrade/runGradePass/drainGradeAgents/drainGradeAgents.ts';
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';

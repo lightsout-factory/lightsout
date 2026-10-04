@@ -12,7 +12,7 @@ import { collectChanged } from '#src/pipeline/steps/common/collectChanged.ts';
 import { fingerprintScopeFiles } from '#src/pipeline/steps/common/fingerprintScopeFiles.ts';
 import { standardsScopeFiles } from '#src/pipeline/steps/common/standardsScopeFiles.ts';
 import { withStepFiles } from '#src/pipeline/steps/common/withStepFiles.ts';
-import { appendFriction } from '#src/runState/appendFriction.ts';
+import { appendFriction } from '#src/runState/friction/appendFriction.ts';
 
 interface Params {
 	run: PipelineRun;

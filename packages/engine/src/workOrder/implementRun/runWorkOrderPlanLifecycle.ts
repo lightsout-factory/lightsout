@@ -12,8 +12,8 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { durablePlanFiles } from '#src/plan/publish/durablePlanFiles.ts';
 import { findDivergentPlanIds } from '#src/workOrder/common/findDivergentPlanIds.ts';
-import { readWorkOrderSyncState } from '#src/workOrder/common/readWorkOrderSyncState.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
+import { readWorkOrderSyncState } from '#src/workOrder/common/sync/readWorkOrderSyncState.ts';
 import { findPlanImplementationBlocker } from '#src/workOrder/implementRun/common/findPlanImplementationBlocker.ts';
 import { isWholePlanRun } from '#src/workOrder/implementRun/common/isWholePlanRun.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';

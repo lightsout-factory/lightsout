@@ -1,6 +1,6 @@
 import { discardGeneratedChanges } from '#src/commit/discardGeneratedChanges.ts';
-import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import { formatResumeCommand } from '#src/common/runs/formatResumeCommand.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';

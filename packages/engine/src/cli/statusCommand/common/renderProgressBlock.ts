@@ -1,7 +1,7 @@
 import { statusIcons } from '#src/cli/common/constants/statusIcons.ts';
-import { formatClockDuration } from '#src/cli/common/formatClockDuration.ts';
 import { dim } from '#src/cli/common/terminal/dim.ts';
 import { paintStatus } from '#src/cli/common/terminal/paintStatus.ts';
+import { formatClockDuration } from '#src/cli/statusCommand/common/formatClockDuration.ts';
 import type { RunProgressRow } from '#src/common/types/RunProgressRow.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 

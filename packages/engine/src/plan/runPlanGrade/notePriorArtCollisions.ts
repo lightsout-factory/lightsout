@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { DedupReport } from '#src/contracts/dedup/DedupReport.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { detectPriorArtCandidates } from '#src/plan/common/detectPriorArtCandidates.ts';
+import { detectPriorArtCandidates } from '#src/plan/common/detection/detectPriorArtCandidates.ts';
 import type { PriorArtCandidate } from '#src/plan/common/types/PriorArtCandidate.ts';
 
 interface Params {

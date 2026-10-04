@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterAll, expect, test } from '@jest/globals';
-import { isPidAlive } from '#src/runState/isPidAlive.ts';
+import { isPidAlive } from '#src/runState/liveness/isPidAlive.ts';
 import { fakeHarnessOnPath } from '#tests/helpers/fakeHarnessOnPath.ts';
 import { runCli } from '#tests/helpers/runCli.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';

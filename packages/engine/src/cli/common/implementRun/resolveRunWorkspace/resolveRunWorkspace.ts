@@ -1,7 +1,7 @@
 import { resolveWorktreeIsolation } from '#src/cli/common/args/resolveWorktreeIsolation/resolveWorktreeIsolation.ts';
 import { resolveRunBranch } from '#src/cli/common/implementRun/resolveRunWorkspace/resolveRunBranch.ts';
 import type { RunWorkspace } from '#src/cli/common/types/RunWorkspace.ts';
-import { isSamePath } from '#src/common/isSamePath.ts';
+import { isSamePath } from '#src/common/paths/isSamePath.ts';
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import type { WorktreeFailure } from '#src/common/types/WorktreeFailure.ts';

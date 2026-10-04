@@ -1,7 +1,7 @@
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
-import { describeGateHold } from '#src/common/describeGateHold.ts';
-import { isTicketGateHeld } from '#src/common/isTicketGateHeld.ts';
+import { describeGateHold } from '#src/common/gates/describeGateHold.ts';
+import { isTicketGateHeld } from '#src/common/gates/isTicketGateHeld.ts';
 import type { LifecycleSettings } from '#src/common/types/LifecycleSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { syncGateHolds } from '#src/gates/gateHolds/syncGateHolds/syncGateHolds.ts';

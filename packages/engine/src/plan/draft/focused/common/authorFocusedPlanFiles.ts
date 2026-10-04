@@ -1,4 +1,4 @@
-import { buildFocusedPlanWriterInvocation } from '#src/agents/buildFocusedPlanWriterInvocation/buildFocusedPlanWriterInvocation.ts';
+import { buildFocusedPlanWriterInvocation } from '#src/agents/plan/buildFocusedPlanWriterInvocation/buildFocusedPlanWriterInvocation.ts';
 import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 import { PlanDraftReport } from '#src/contracts/plan/draft/PlanDraftReport.ts';

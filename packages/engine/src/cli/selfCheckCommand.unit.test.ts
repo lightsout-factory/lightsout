@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { selfCheckCommand } from '#src/cli/selfCheckCommand.ts';
 import { SelfCheckReason } from '#src/common/constants/SelfCheckReason.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';

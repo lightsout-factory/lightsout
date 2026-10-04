@@ -1,5 +1,5 @@
-import { getBlockingFindings } from '#src/common/getBlockingFindings.ts';
-import { getBlockingGaps } from '#src/common/getBlockingGaps.ts';
+import { getBlockingFindings } from '#src/common/findings/getBlockingFindings.ts';
+import { getBlockingGaps } from '#src/common/findings/getBlockingGaps.ts';
 import { GapOutcome } from '#src/contracts/plan/grade/GapOutcome.ts';
 import type { GradedGap } from '#src/contracts/plan/grade/GradedGap.ts';
 import type { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';

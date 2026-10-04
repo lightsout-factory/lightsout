@@ -1,4 +1,4 @@
-import { findingLocations } from '#src/common/findingLocations.ts';
+import { findingLocations } from '#src/common/findings/findingLocations.ts';
 import type { GapObservation } from '#src/contracts/plan/grade/GapObservation.ts';
 import type { GradeFindingRecord } from '#src/contracts/plan/memory/GradeFindingRecord.ts';
 import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatus.ts';

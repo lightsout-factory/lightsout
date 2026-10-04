@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { gateBlockedLabel } from '#src/common/constants/gateBlockedLabel.ts';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import { QueueWorker } from '#src/common/constants/QueueWorker.ts';
-import { describeGateHold } from '#src/common/describeGateHold.ts';
+import { describeGateHold } from '#src/common/gates/describeGateHold.ts';
 import type { GateHolds } from '#src/common/types/GateHolds.ts';
 import type { TicketSummary } from '#src/common/types/TicketSummary.ts';
 import type { GateHold } from '#src/contracts/gates/GateHold.ts';

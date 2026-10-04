@@ -5,7 +5,7 @@ import { readConfig } from '#src/common/config/readConfig.ts';
 import { jestCrashCause } from '#src/common/constants/jestCrashCause.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline/runImplementPipeline.ts';
-import { readFriction } from '#src/runState/readFriction.ts';
+import { readFriction } from '#src/runState/friction/readFriction.ts';
 import { report } from '#tests/helpers/report.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';

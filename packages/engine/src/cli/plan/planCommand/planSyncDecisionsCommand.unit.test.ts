@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/parseFlags.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { planSyncDecisionsCommand } from '#src/cli/plan/planCommand/planSyncDecisionsCommand.ts';
 import { DecisionSource } from '#src/contracts/plan/decisions/DecisionSource.ts';
 import { syncPlanDecisions } from '#src/plan/decisionLog/syncPlanDecisions/syncPlanDecisions.ts';

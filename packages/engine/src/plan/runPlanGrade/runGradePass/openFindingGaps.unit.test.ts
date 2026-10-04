@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { isBlockingGap } from '#src/common/isBlockingGap.ts';
+import { isBlockingGap } from '#src/common/findings/isBlockingGap.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import { GapArea } from '#src/contracts/plan/grade/GapArea.ts';

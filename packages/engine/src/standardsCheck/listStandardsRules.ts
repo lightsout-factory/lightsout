@@ -1,4 +1,4 @@
-import { canonicalJson } from '#src/common/canonicalJson.ts';
+import { canonicalJson } from '#src/common/json/canonicalJson.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { StandardsRuleListing } from '#src/common/types/StandardsRuleListing.ts';
 

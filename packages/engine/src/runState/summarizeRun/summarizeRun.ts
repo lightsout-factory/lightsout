@@ -2,12 +2,12 @@ import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { buildCleanupSummary } from '#src/common/buildCleanupSummary.ts';
-import { readJsonlRecords } from '#src/common/readJsonlRecords.ts';
-import { resolveRunDir } from '#src/common/resolveRunDir.ts';
+import { readJsonlRecords } from '#src/common/json/readJsonlRecords.ts';
+import { resolveRunDir } from '#src/common/runs/resolveRunDir.ts';
 import type { CleanupSummary } from '#src/common/types/CleanupSummary.ts';
 import type { RunSummary } from '#src/common/types/RunSummary.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import { readFriction } from '#src/runState/readFriction.ts';
+import { readFriction } from '#src/runState/friction/readFriction.ts';
 import { isSelfCheckStep } from '#src/runState/summarizeRun/isSelfCheckStep.ts';
 
 const LedgerRecord = z.object({

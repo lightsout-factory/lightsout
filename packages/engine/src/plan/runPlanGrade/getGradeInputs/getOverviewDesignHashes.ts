@@ -1,5 +1,5 @@
 import { generatedPlanRegions } from '#src/plan/common/constants/generatedPlanRegions.ts';
-import { parsePhaseDeclarations } from '#src/plan/common/parsePhaseDeclarations.ts';
+import { parsePhaseDeclarations } from '#src/plan/common/phases/parsePhaseDeclarations.ts';
 import type { ParsedPlan } from '#src/plan/common/types/ParsedPlan.ts';
 import { getPlanDesignHash } from '#src/plan/runPlanGrade/getGradeInputs/common/getPlanDesignHash.ts';
 

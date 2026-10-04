@@ -1,4 +1,4 @@
-import { readJsonFile } from '#src/common/readJsonFile.ts';
+import { readJsonFile } from '#src/common/json/readJsonFile.ts';
 import { WorktreeRecord } from '#src/contracts/worktree/WorktreeRecord.ts';
 import { getWorktreeRecordPath } from '#src/worktree/records/common/getWorktreeRecordPath.ts';
 

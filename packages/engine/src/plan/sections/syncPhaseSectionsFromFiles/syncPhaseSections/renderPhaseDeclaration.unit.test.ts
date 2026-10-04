@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
-import { parsePhaseDeclarations } from '#src/plan/common/parsePhaseDeclarations.ts';
+import { parsePhaseDeclarations } from '#src/plan/common/phases/parsePhaseDeclarations.ts';
 import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
 import { renderPhaseDeclaration } from '#src/plan/sections/syncPhaseSectionsFromFiles/syncPhaseSections/renderPhaseDeclaration.ts';
 

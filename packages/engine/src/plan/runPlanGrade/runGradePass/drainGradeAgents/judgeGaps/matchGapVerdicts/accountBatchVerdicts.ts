@@ -1,4 +1,4 @@
-import { findingLocations } from '#src/common/findingLocations.ts';
+import { findingLocations } from '#src/common/findings/findingLocations.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { GapBatchVerdict } from '#src/contracts/plan/grade/GapBatchVerdict.ts';
 import type { GapGroupVerdict } from '#src/contracts/plan/grade/GapGroupVerdict.ts';

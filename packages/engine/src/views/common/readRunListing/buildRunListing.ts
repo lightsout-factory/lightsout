@@ -3,7 +3,7 @@ import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunListing } from '#src/contracts/views/RunListing.ts';
-import { isRunResumable } from '#src/runState/isRunResumable.ts';
+import { isRunResumable } from '#src/runState/liveness/isRunResumable.ts';
 import { getRunTitle } from '#src/views/common/getRunTitle.ts';
 import type { FrozenWorklist } from '#src/views/common/types/FrozenWorklist.ts';
 

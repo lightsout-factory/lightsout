@@ -1,5 +1,5 @@
 import { basename, join } from 'node:path';
-import { pathExists } from '#src/common/pathExists.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
 import { durablePlanFileNames } from '#src/plan/common/constants/durablePlanFileNames.ts';
 import { resolvePlanDeliverable } from '#src/plan/common/resolvePlanDeliverable.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';

@@ -1,4 +1,4 @@
-import { RunState } from '#src/common/RunState.ts';
+import { RunState } from '#src/common/runs/RunState.ts';
 import type { CoverageTotal } from '#src/contracts/coverage/CoverageTotal.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';

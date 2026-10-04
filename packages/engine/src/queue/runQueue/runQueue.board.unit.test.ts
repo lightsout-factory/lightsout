@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { resolveRunDir } from '#src/common/resolveRunDir.ts';
+import { resolveRunDir } from '#src/common/runs/resolveRunDir.ts';
 import type { QuestionRelay } from '#src/common/types/QuestionRelay.ts';
 import type { TicketSummary } from '#src/common/types/TicketSummary.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';

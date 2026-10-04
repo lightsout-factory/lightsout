@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { resolveNewRunDir } from '#src/common/resolveNewRunDir.ts';
+import { resolveNewRunDir } from '#src/common/runs/resolveNewRunDir.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';

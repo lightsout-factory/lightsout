@@ -1,6 +1,6 @@
 import { getRunFamilyRoot } from '#src/cli/statusCommand/common/getRunFamilyRoot.ts';
 import { loadRunProgressBlock } from '#src/cli/statusCommand/common/loadRunProgressBlock/loadRunProgressBlock.ts';
-import { findRunningChildRunId } from '#src/common/findRunningChildRunId.ts';
+import { findRunningChildRunId } from '#src/common/runs/findRunningChildRunId.ts';
 import type { RunProgress } from '#src/common/types/RunProgress.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunListing } from '#src/contracts/views/RunListing.ts';
