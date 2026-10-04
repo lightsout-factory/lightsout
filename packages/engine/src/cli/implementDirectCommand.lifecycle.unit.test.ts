@@ -43,7 +43,7 @@ interface ReconcileParams {
 const mockRequireImplementLifecycle = jest.fn<(params: GuardParams) => Promise<string | undefined>>();
 const mockReconcileShippedTicket = jest.fn<(params: ReconcileParams) => Promise<string | undefined>>();
 
-jest.mock('#src/ticketLifecycle/reconcileShippedTicket.ts', () => ({
+jest.mock('#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts', () => ({
 	reconcileShippedTicket: (params: ReconcileParams) => mockReconcileShippedTicket(params),
 }));
 jest.mock('#src/ticketLifecycle/requireImplementLifecycle.ts', () => ({

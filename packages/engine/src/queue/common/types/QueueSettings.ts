@@ -1,4 +1,4 @@
-import type { LifecycleSettings } from '#src/ticketLifecycle/common/types/LifecycleSettings.ts';
+import type { LifecycleSettings } from '#src/common/types/LifecycleSettings.ts';
 
 /**
  * The `queue` config block with every default already applied, resolved once at

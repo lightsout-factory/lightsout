@@ -1,5 +1,5 @@
 import type { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
-import type { TrackerStatusRole } from '#src/ticketLifecycle/common/constants/TrackerStatusRole.ts';
+import type { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
 
 /**
  * The lifecycle half of the `queue` config block, defaults applied. It lives

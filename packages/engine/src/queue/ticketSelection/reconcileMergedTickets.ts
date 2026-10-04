@@ -3,7 +3,7 @@ import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
 import type { LeftBehindTicket } from '#src/queue/internal/common/types/LeftBehindTicket.ts';
 import { establishBranchMerge } from '#src/queue/internal/common/utils/establishBranchMerge.ts';
 import { settleReconciledWorktree } from '#src/queue/internal/common/utils/settleReconciledWorktree.ts';
-import { reconcileShippedTicket } from '#src/ticketLifecycle/reconcileShippedTicket.ts';
+import { reconcileShippedTicket } from '#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts';
 import { resolveWorktreePath } from '#src/worktree/resolveWorktreePath.ts';
 
 interface Params {

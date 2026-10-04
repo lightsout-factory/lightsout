@@ -8,7 +8,7 @@ import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOu
 import type { ShipIntegration } from '#src/ship/common/types/ShipIntegration.ts';
 import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
 import { runShip } from '#src/ship/runShip.ts';
-import { reconcileShippedTicket } from '#src/ticketLifecycle/reconcileShippedTicket.ts';
+import { reconcileShippedTicket } from '#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts';
 import { createWorkOrderShipGuard } from '#src/workOrder/implementRun/createWorkOrderShipGuard.ts';
 import { deleteWorktreeRecord } from '#src/worktree/records/deleteWorktreeRecord.ts';
 import { removeWorktree } from '#src/worktree/removeWorktree.ts';

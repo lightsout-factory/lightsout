@@ -26,7 +26,7 @@ const mockReadGitPrimaryCheckout = jest.fn<(params: { cwd: string }) => Promise<
 jest.mock('#src/ship/forge/findPullRequest.ts', () => ({
 	findPullRequest: (params: { branch: string; cwd: string; state: string }) => mockFindPullRequest(params),
 }));
-jest.mock('#src/ticketLifecycle/reconcileShippedTicket.ts', () => ({
+jest.mock('#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts', () => ({
 	reconcileShippedTicket: (params: { ticketRef: string | undefined }) => mockReconcileShippedTicket(params),
 }));
 jest.mock('#src/common/git/readGitChangedFiles.ts', () => ({ readGitChangedFiles: (params: { cwd: string }) => mockReadGitChangedFiles(params) }));

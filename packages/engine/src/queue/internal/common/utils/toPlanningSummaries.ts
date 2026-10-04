@@ -1,8 +1,8 @@
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
+import type { LifecycleSettings } from '#src/common/types/LifecycleSettings.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import { selectQueueWorker } from '#src/queue/internal/common/utils/selectQueueWorker.ts';
-import { TrackerStatusRole } from '#src/ticketLifecycle/common/constants/TrackerStatusRole.ts';
-import type { LifecycleSettings } from '#src/ticketLifecycle/common/types/LifecycleSettings.ts';
 import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
 
 interface Params {

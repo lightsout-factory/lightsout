@@ -20,7 +20,7 @@ const mockRemoveWorktree = jest.fn<(params: { cwd: string; worktreePath: string;
 const mockSetTicketLabel =
 	jest.fn<(params: { settings: TrackerSettings; ticketId: string; label: string | undefined; present: boolean }) => Promise<TrackerFailure | undefined>>();
 
-jest.mock('#src/ticketLifecycle/reconcileShippedTicket.ts', () => ({
+jest.mock('#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts', () => ({
 	reconcileShippedTicket: (params: { ticketRef: string | undefined }) => mockReconcileShippedTicket(params),
 }));
 jest.mock('#src/common/git/readGitChangedFiles.ts', () => ({ readGitChangedFiles: (params: { cwd: string }) => mockReadGitChangedFiles(params) }));

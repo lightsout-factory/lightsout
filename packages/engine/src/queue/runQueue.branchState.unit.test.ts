@@ -63,7 +63,7 @@ const mockReconcileShippedTicket = jest.fn<(params: ReconcileShippedParams) => P
 // The lifecycle barrel keeps every other member real: the startup check reads
 // `TrackerStatusRole` through it and the pickup writes the ticket's status
 // through it, so only the Done write is doubled.
-jest.mock('#src/ticketLifecycle/reconcileShippedTicket.ts', () => ({
+jest.mock('#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts', () => ({
 	reconcileShippedTicket: (params: ReconcileShippedParams) => mockReconcileShippedTicket(params),
 }));
 // -------------------------

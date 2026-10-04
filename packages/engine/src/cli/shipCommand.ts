@@ -11,7 +11,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
 import { resolveShipSettings } from '#src/ship/resolveShipSettings.ts';
 import { runShip } from '#src/ship/runShip.ts';
-import { reconcileShippedTicket } from '#src/ticketLifecycle/reconcileShippedTicket.ts';
+import { reconcileShippedTicket } from '#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts';
 import { createWorkOrderShipGuard } from '#src/workOrder/implementRun/createWorkOrderShipGuard.ts';
 import { authorizeHandBuiltShip } from '#src/workOrder/shipping/authorizeHandBuiltShip.ts';
 

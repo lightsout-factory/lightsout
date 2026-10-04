@@ -1,6 +1,6 @@
+import { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { TrackerStatusRole } from '#src/ticketLifecycle/common/constants/TrackerStatusRole.ts';
-import { writeDoneStatus } from '#src/ticketLifecycle/internal/writeDoneStatus.ts';
+import { writeDoneStatus } from '#src/ticketLifecycle/reconcileShippedTicket/writeDoneStatus.ts';
 import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings.ts';
 import { getTicketsByIdentifiers } from '#src/ticketTracker/getTicketsByIdentifiers.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';

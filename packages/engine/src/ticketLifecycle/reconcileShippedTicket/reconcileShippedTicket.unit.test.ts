@@ -1,6 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { reconcileShippedTicket } from '#src/ticketLifecycle/reconcileShippedTicket.ts';
+import { reconcileShippedTicket } from '#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts';
 import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
 import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';

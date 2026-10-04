@@ -1,5 +1,6 @@
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
 import { readGitDefaultBranch } from '#src/common/git/readGitDefaultBranch.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
@@ -10,7 +11,6 @@ import { renderWorkOrderBranch } from '#src/queue/internal/renderWorkOrderBranch
 import { checkPlanningStatusLabels } from '#src/queue/startup/internal/checkPlanningStatusLabels.ts';
 import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
 import { matchesTicketPattern } from '#src/ship/matchesTicketPattern.ts';
-import { TrackerStatusRole } from '#src/ticketLifecycle/common/constants/TrackerStatusRole.ts';
 import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 
 interface Params {

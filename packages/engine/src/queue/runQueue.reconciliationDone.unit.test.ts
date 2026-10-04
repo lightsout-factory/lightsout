@@ -61,7 +61,7 @@ jest.mock('#src/ticketTracker/setTicketLabel.ts', () => ({ setTicketLabel: () =>
 // -------------------------
 // The lifecycle barrel keeps every other member real: the queue's startup check
 // reads `TrackerStatusRole` through it.
-jest.mock('#src/ticketLifecycle/reconcileShippedTicket.ts', () => ({
+jest.mock('#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts', () => ({
 	reconcileShippedTicket: (params: ReconcileShippedParams) => mockReconcileShippedTicket(params),
 }));
 // -------------------------
