@@ -3,7 +3,7 @@ import { readProcessStartTime } from '#src/common/processes/readProcessStartTime
 import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
 import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
 import { getRunFinalReportPath } from '#src/runState/finalReport/getRunFinalReportPath.ts';
-import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
 
 interface Params {
 	cwd: string;

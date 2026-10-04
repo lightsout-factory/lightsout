@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
+import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 
 interface Params {
 	cwd: string;

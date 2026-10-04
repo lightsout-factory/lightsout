@@ -2,10 +2,10 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { readGitCurrentBranch } from '#src/common/git/readGitCurrentBranch.ts';
+import { resolveNewRunDir } from '#src/common/resolveNewRunDir.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import { resolveNewRunDir } from '#src/runState/common/paths/resolveNewRunDir.ts';
 import { createRun } from '#src/runState/createRun.ts';
 
 interface Params {

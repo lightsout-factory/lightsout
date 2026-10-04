@@ -11,7 +11,7 @@ import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { initializeCoverageRun } from '#src/coverage/initializeCoverageRun.ts';
-import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';

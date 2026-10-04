@@ -11,7 +11,7 @@ import { countByRule } from '#src/refactor/runRefactorPipeline/common/countByRul
 import { initializeRun } from '#src/refactor/runRefactorPipeline/initializeRun/initializeRun.ts';
 import { runWorklistBatches } from '#src/refactor/runRefactorPipeline/runWorklistBatches.ts';
 import { seedResumeState } from '#src/refactor/runRefactorPipeline/seedResumeState.ts';
-import { withRunLock } from '#src/runState/lock/withRunLock.ts';
+import { withRunLock } from '#src/runState/lock/withRunLock/withRunLock.ts';
 import { resolveStandards } from '#src/standards/resolveStandards.ts';
 
 interface Params {

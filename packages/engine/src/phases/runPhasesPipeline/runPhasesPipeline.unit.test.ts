@@ -11,7 +11,7 @@ import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeli
 import { listRunIds } from '#src/runState/listRunIds.ts';
 import { describeRunLockHolder } from '#src/runState/lock/describeRunLockHolder.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
-import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { createPhaseDriver } from '#tests/helpers/createPhaseDriver.ts';

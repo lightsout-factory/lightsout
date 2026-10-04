@@ -1,6 +1,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import { resolveNewRunDir } from '#src/common/resolveNewRunDir.ts';
+import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
@@ -9,8 +11,6 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { runCoverageCheck } from '#src/coverage/runCoverageCheck.ts';
-import { resolveNewRunDir } from '#src/runState/common/paths/resolveNewRunDir.ts';
-import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 

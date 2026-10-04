@@ -6,7 +6,7 @@ import { resolveWatchTarget } from '#src/cli/internal/common/utils/resolveWatchT
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
 import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 

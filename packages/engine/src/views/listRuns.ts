@@ -1,6 +1,6 @@
 import type { RunListing } from '#src/contracts/views/RunListing.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
-import { readRunLiveness } from '#src/runState/readRunLiveness.ts';
+import { readRunLiveness } from '#src/runState/readRunLiveness/readRunLiveness.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { readRunListing } from '#src/views/common/readRunListing/readRunListing.ts';
 

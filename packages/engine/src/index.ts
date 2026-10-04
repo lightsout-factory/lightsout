@@ -1,5 +1,7 @@
 export { commandCatalog, getCommandCatalogEntry, spellFlag } from '#src/commands/index.ts';
 export { readConfig } from '#src/common/config/readConfig.ts';
+export type { RunSummary } from '#src/common/types/RunSummary.ts';
+export type { StepSummary } from '#src/common/types/StepSummary.ts';
 export {
 	AgentInvocation,
 	AgentUsage,
@@ -53,8 +55,6 @@ export {
 	WorkReport,
 	WritersReport,
 } from '#src/contracts/index.ts';
-export type { RunSummary } from '#src/runState/common/types/RunSummary.ts';
-export type { StepSummary } from '#src/runState/common/types/StepSummary.ts';
 export { isRunLive } from '#src/runState/isRunLive.ts';
 export { isRunResumable } from '#src/runState/isRunResumable.ts';
 export { listRunIds } from '#src/runState/listRunIds.ts';

@@ -1,7 +1,7 @@
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { getRequiredFlag } from '#src/cli/internal/common/args/getRequiredFlag.ts';
-import { resolveTypedRunId } from '#src/cli/internal/common/utils/resolveTypedRunId.ts';
+import { resolveTypedRunId } from '#src/cli/internal/common/utils/resolveTypedRunId/resolveTypedRunId.ts';
 import { StopProcessOutcome } from '#src/common/constants/StopProcessOutcome.ts';
 import { readProcessStartTime } from '#src/common/processes/readProcessStartTime.ts';
 import { stopProcess } from '#src/common/processes/stopProcess.ts';

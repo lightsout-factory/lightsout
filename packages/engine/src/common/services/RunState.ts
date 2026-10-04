@@ -6,7 +6,7 @@ import type { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunUsage } from '#src/contracts/run/RunUsage.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { createProgressSink } from '#src/runState/progress/createProgressSink.ts';
-import { recordAgentUsage } from '#src/runState/recordAgentUsage.ts';
+import { recordAgentUsage } from '#src/runState/recordAgentUsage/recordAgentUsage.ts';
 import { seedUsageTotals } from '#src/runState/seedUsageTotals.ts';
 import { writeManifestWithUsage } from '#src/runState/writeManifestWithUsage.ts';
 

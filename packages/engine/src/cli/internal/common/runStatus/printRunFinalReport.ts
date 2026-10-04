@@ -3,7 +3,7 @@ import { getLaunchLogPath } from '#src/cli/internal/common/detach/getLaunchLogPa
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { readRunFinalReport } from '#src/runState/finalReport/readRunFinalReport.ts';
-import { readRunLiveness } from '#src/runState/readRunLiveness.ts';
+import { readRunLiveness } from '#src/runState/readRunLiveness/readRunLiveness.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 
 interface Params {

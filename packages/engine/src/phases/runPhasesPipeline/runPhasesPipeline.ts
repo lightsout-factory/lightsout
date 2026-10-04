@@ -15,7 +15,7 @@ import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { describeRunLockHolder } from '#src/runState/lock/describeRunLockHolder.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 import { readLiveRunLock } from '#src/runState/lock/readLiveRunLock.ts';
-import { withRunLock } from '#src/runState/lock/withRunLock.ts';
+import { withRunLock } from '#src/runState/lock/withRunLock/withRunLock.ts';
 import { createProgressSink } from '#src/runState/progress/createProgressSink.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 

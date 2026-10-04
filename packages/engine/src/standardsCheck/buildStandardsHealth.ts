@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import { BatchReport } from '#src/contracts/refactor/BatchReport.ts';
@@ -7,7 +8,6 @@ import { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import type { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutcome.ts';
 import { AdvisoryResponse } from '#src/contracts/standardsCheck/AdvisoryResponse.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
-import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';

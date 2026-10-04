@@ -1,6 +1,6 @@
+import { findRunningChildRunId } from '#src/common/findRunningChildRunId.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { findRunningChildRunId } from '#src/runState/common/utils/findRunningChildRunId.ts';
 
 interface Params {
 	/** The run being asked about. */

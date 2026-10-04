@@ -12,7 +12,7 @@ import { initializeCoverageRun } from '#src/coverage/initializeCoverageRun.ts';
 import { CoverageRun } from '#src/coverage/internal/CoverageRun.ts';
 import { runCoverageRounds } from '#src/coverage/internal/runCoverageRounds.ts';
 import { seedCoverageResumeState } from '#src/coverage/seedCoverageResumeState.ts';
-import { withRunLock } from '#src/runState/lock/withRunLock.ts';
+import { withRunLock } from '#src/runState/lock/withRunLock/withRunLock.ts';
 import { resolveStandards } from '#src/standards/resolveStandards.ts';
 
 interface Params {

@@ -1,6 +1,6 @@
+import type { CleanupSummary } from '#src/common/types/CleanupSummary.ts';
 import type { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
-import type { CleanupSummary } from '#src/runState/common/types/CleanupSummary.ts';
 
 export interface RunProgressRow {
 	/** The step id, exactly as the pipeline names it; the literal `ship` on the ship row. */

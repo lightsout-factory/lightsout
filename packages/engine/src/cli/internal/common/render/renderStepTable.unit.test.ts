@@ -1,7 +1,7 @@
 import { expect, jest, test } from '@jest/globals';
 import { renderStepTable } from '#src/cli/internal/common/render/renderStepTable.ts';
+import type { StepSummary } from '#src/common/types/StepSummary.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { StepSummary } from '#src/runState/common/types/StepSummary.ts';
 
 // The table's whole output IS its returned lines. isTTY is pinned off so the
 // ANSI paint helpers stay no-ops and the assertions read the plain text a

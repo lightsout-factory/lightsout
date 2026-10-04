@@ -10,13 +10,13 @@ import { printGoingRunStatus } from '#src/cli/internal/common/runStatus/printGoi
 import { printNewestRun } from '#src/cli/internal/common/runStatus/printNewestRun.ts';
 import { printRunFamilyScreen } from '#src/cli/internal/common/runStatus/printRunFamilyScreen.ts';
 import { printRunFinalReport } from '#src/cli/internal/common/runStatus/printRunFinalReport.ts';
-import { resolveTypedRunId } from '#src/cli/internal/common/utils/resolveTypedRunId.ts';
+import { resolveTypedRunId } from '#src/cli/internal/common/utils/resolveTypedRunId/resolveTypedRunId.ts';
 import { resolveWatchTarget } from '#src/cli/internal/common/utils/resolveWatchTarget.ts';
 import { watchRunProgress } from '#src/cli/internal/common/utils/watchRunProgress.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
-import { readRunLiveness } from '#src/runState/readRunLiveness.ts';
+import { readRunLiveness } from '#src/runState/readRunLiveness/readRunLiveness.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 
 // Scripts read this listing, so its format must not change.

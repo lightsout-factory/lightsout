@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { formatCost, formatTokenCount } from '@lightsout/shared';
+import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
 import { RunState } from '#src/common/services/RunState.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
@@ -19,7 +20,6 @@ import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { getAgentOutcomeStatus } from '#src/invoke/getAgentOutcomeStatus.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
-import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 
 const formatUsage = ({ usage }: { usage: AgentUsage }) =>
 	`in ${formatTokenCount({ count: usage.inputTokens })} · out ${formatTokenCount({ count: usage.outputTokens })} · cache-read ${formatTokenCount({ count: usage.cacheReadTokens })} · ${formatCost({ usd: usage.costUsd })}`;

@@ -1,7 +1,7 @@
 import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
-import { getProgressLogPath } from '#src/runState/progress/getProgressLogPath.ts';
+import { getProgressLogPath } from '#src/runState/progress/common/getProgressLogPath.ts';
 
 interface Params {
 	cwd: string;

@@ -1,9 +1,9 @@
 import { join } from 'node:path';
+import { resolveNewRunDir } from '#src/common/resolveNewRunDir.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { resolveNewRunDir } from '#src/runState/common/paths/resolveNewRunDir.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { seedUsageTotals } from '#src/runState/seedUsageTotals.ts';
 import { writeManifestWithUsage } from '#src/runState/writeManifestWithUsage.ts';

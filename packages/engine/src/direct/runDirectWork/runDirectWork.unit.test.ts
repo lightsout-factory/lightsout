@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
@@ -10,9 +11,8 @@ import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
-import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 import { createRun } from '#src/runState/createRun.ts';
-import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { getRunProgress } from '#src/views/getRunProgress.ts';

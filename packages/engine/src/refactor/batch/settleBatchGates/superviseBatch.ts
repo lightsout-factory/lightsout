@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import { consultSupervisor } from '#src/common/utils/consultSupervisor.ts';
@@ -11,7 +12,6 @@ import { SupervisorDecision } from '#src/contracts/work/SupervisorDecision.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import { SettleKind } from '#src/refactor/batch/common/constants/SettleKind.ts';
 import type { SettleOutcome } from '#src/refactor/batch/common/types/SettleOutcome.ts';
-import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 
 interface Params {
 	cwd: string;

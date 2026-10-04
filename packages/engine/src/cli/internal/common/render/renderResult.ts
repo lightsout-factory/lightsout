@@ -4,10 +4,10 @@ import { renderStepTable } from '#src/cli/internal/common/render/renderStepTable
 import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { paintStatus } from '#src/cli/internal/common/terminal/paintStatus.ts';
 import { plural } from '#src/cli/internal/common/utils/plural.ts';
+import type { CleanupSummary } from '#src/common/types/CleanupSummary.ts';
+import type { RunSummary } from '#src/common/types/RunSummary.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
-import type { CleanupSummary } from '#src/runState/common/types/CleanupSummary.ts';
-import type { RunSummary } from '#src/runState/common/types/RunSummary.ts';
 import { summarizeRun } from '#src/runState/summarizeRun.ts';
 
 const label = ({ name, value }: { name: string; value: string }) => `${name.padEnd(10)}${value}`;

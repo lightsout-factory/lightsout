@@ -1,6 +1,6 @@
 import { readJsonFile } from '#src/common/utils/readJsonFile.ts';
 import { RunOwner } from '#src/contracts/run/RunOwner.ts';
-import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
 
 interface Params {
 	cwd: string;

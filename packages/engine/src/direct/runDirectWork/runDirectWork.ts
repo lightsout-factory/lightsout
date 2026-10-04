@@ -16,7 +16,7 @@ import { finishDirectRun } from '#src/direct/runDirectWork/finishDirectRun.ts';
 import { invokeDirectWorker } from '#src/direct/runDirectWork/invokeDirectWorker.ts';
 import { verifyDirectWork } from '#src/direct/runDirectWork/verifyDirectWork.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
-import { withRunLock } from '#src/runState/lock/withRunLock.ts';
+import { withRunLock } from '#src/runState/lock/withRunLock/withRunLock.ts';
 import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { resolveStandards } from '#src/standards/resolveStandards.ts';
 

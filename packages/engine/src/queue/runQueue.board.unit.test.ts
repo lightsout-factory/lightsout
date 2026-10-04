@@ -1,6 +1,7 @@
 import { readdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { QueueBoard } from '#src/contracts/queue/QueueBoard.ts';
 import { readQueueBoard } from '#src/queue/board/readQueueBoard.ts';
@@ -11,7 +12,6 @@ import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
 import type { ParkedWork } from '#src/queue/internal/common/types/ParkedWork.ts';
 import type { nameWaveWorkOrders } from '#src/queue/nameWaveWorkOrders.ts';
-import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 import { nameWaveLikeTemplate } from '#tests/helpers/nameWaveLikeTemplate.ts';
 import { queueOutcomeFixture as outcomeOf } from '#tests/helpers/queueOutcomeFixture.ts';
 import { queueTicketFixture as ticketOf } from '#tests/helpers/queueTicketFixture.ts';

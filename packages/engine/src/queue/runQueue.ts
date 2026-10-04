@@ -24,7 +24,7 @@ import { listEligibleTickets } from '#src/queue/ticketSelection/listEligibleTick
 import { orderTickets } from '#src/queue/ticketSelection/orderTickets.ts';
 import { selectWaveTickets } from '#src/queue/ticketSelection/selectWaveTickets.ts';
 import { scanParkedWorktrees } from '#src/queue/worktrees/scanParkedWorktrees.ts';
-import { withRunLock } from '#src/runState/lock/withRunLock.ts';
+import { withRunLock } from '#src/runState/lock/withRunLock/withRunLock.ts';
 import { seedUsageTotals } from '#src/runState/seedUsageTotals.ts';
 import { writeManifestWithUsage } from '#src/runState/writeManifestWithUsage.ts';
 import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';

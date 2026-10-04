@@ -4,7 +4,7 @@ import type { ParkedWork } from '#src/queue/internal/common/types/ParkedWork.ts'
 import type { WaveSelection } from '#src/queue/internal/common/types/WaveSelection.ts';
 import { startCoordinatorRun } from '#src/queue/internal/common/utils/startCoordinatorRun.ts';
 import { toCoordinatorStatus } from '#src/queue/internal/common/utils/toCoordinatorStatus.ts';
-import { withRunLock } from '#src/runState/lock/withRunLock.ts';
+import { withRunLock } from '#src/runState/lock/withRunLock/withRunLock.ts';
 import { seedUsageTotals } from '#src/runState/seedUsageTotals.ts';
 import { writeManifestWithUsage } from '#src/runState/writeManifestWithUsage.ts';
 

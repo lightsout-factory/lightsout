@@ -4,12 +4,12 @@ import { commitWorkOrderWork } from '#src/commit/commitWorkOrderWork/commitWorkO
 import type { CommitAddress } from '#src/commit/common/types/CommitAddress.ts';
 import { composeCommitMessage } from '#src/commit/composeCommitMessage/composeCommitMessage.ts';
 import { readGitHeadCommit } from '#src/common/git/readGitHeadCommit.ts';
+import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 
 /**
  * Structural on purpose: the implement pipeline's `PipelineRun` and the direct

@@ -20,7 +20,7 @@ import { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { buildSteps } from '#src/pipeline/steps/buildSteps/buildSteps.ts';
 import { createRun } from '#src/runState/createRun.ts';
-import { withRunLock } from '#src/runState/lock/withRunLock.ts';
+import { withRunLock } from '#src/runState/lock/withRunLock/withRunLock.ts';
 import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 
 // Later steps may have connected a file write-tests skipped to a public surface,

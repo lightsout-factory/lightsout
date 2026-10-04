@@ -10,7 +10,7 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { initializeSequence } from '#src/phases/runPhasesPipeline/initializeSequence/initializeSequence.ts';
 import { createRun } from '#src/runState/createRun.ts';
-import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
