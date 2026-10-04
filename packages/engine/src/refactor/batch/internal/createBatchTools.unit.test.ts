@@ -1,10 +1,10 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { createBatchTools } from '#src/refactor/batch/internal/createBatchTools.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
 
 // Mocked Imports

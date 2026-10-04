@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { findFileStandardsGroup } from '#src/standardsCheck/internal/common/utils/findFileStandardsGroup.ts';
 
 const buildGroup = ({ packages, pack }: { packages: string[]; pack: string }): StandardsGroup => ({

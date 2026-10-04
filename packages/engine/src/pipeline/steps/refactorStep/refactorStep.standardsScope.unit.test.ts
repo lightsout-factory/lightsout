@@ -1,4 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
@@ -7,7 +8,6 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import type { StandardsSnapshot } from '#src/contracts/standardsCheck/StandardsSnapshot.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import { refactorStep } from '#src/pipeline/steps/refactorStep/refactorStep.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
 
 // Mocked Imports
@@ -22,7 +22,7 @@ interface ResolveStandardsGroupsParams {
 
 const mockResolveStandardsGroups = jest.fn<(params: ResolveStandardsGroupsParams) => Promise<StandardsGroup[]>>();
 
-jest.mock('#src/standards/resolveStandardsGroups.ts', () => ({
+jest.mock('#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts', () => ({
 	resolveStandardsGroups: (params: ResolveStandardsGroupsParams) => mockResolveStandardsGroups(params),
 }));
 // -------------------------

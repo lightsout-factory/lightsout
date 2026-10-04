@@ -1,6 +1,6 @@
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { ResolvedStandards } from '#src/standards/ResolvedStandards.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { buildStandardsDocuments } from '#src/standardsLibraries/buildStandardsDocuments.ts';
 
 interface Params {

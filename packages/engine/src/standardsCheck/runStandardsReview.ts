@@ -1,5 +1,6 @@
 import { formatDuration } from '@lightsout/shared';
 import { buildStandardsReviewInvocation } from '#src/agents/buildStandardsReviewInvocation.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { collectGroupItems } from '#src/common/utils/collectGroupItems.ts';
 import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
 import { listWorkspacePackages } from '#src/common/workspace/listWorkspacePackages.ts';
@@ -9,7 +10,6 @@ import { StandardsReviewReport } from '#src/contracts/standardsCheck/StandardsRe
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { createAgentHeartbeat } from '#src/standardsCheck/internal/common/utils/createAgentHeartbeat.ts';
 import { findFileStandardsGroup } from '#src/standardsCheck/internal/common/utils/findFileStandardsGroup.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';

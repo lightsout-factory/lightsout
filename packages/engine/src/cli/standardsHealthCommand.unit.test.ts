@@ -4,8 +4,8 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsHealthCommand } from '#src/cli/standardsHealthCommand.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { StandardsHealth } from '#src/standardsCheck/common/types/StandardsHealth.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
@@ -34,7 +34,7 @@ const mockResolveStandardsGroups = jest.fn<(params: ResolveStandardsGroupsParams
 jest.mock('#src/standardsCheck/buildStandardsHealth.ts', () => ({
 	buildStandardsHealth: (params: BuildStandardsHealthParams) => mockBuildStandardsHealth(params),
 }));
-jest.mock('#src/standards/resolveStandardsGroups.ts', () => ({
+jest.mock('#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts', () => ({
 	resolveStandardsGroups: (params: ResolveStandardsGroupsParams) => mockResolveStandardsGroups(params),
 }));
 // -------------------------

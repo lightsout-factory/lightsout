@@ -3,10 +3,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { reviewStandards } from '#src/cli/reviewStandards.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 
 // Mocked Imports
@@ -39,7 +39,7 @@ interface ResolveStandardsGroupsParams {
 
 const mockResolveStandardsGroups = jest.fn<(params: ResolveStandardsGroupsParams) => Promise<StandardsGroup[]>>();
 
-jest.mock('#src/standards/resolveStandardsGroups.ts', () => ({
+jest.mock('#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts', () => ({
 	resolveStandardsGroups: (params: ResolveStandardsGroupsParams) => mockResolveStandardsGroups(params),
 }));
 // -------------------------
@@ -70,7 +70,9 @@ const setupRepo = ({ groups, sources = ['src/index.ts'] }: { groups?: StandardsG
 
 	if (groups === undefined) {
 		mockResolveStandardsGroups.mockImplementation(
-			jest.requireActual<typeof import('#src/standards/resolveStandardsGroups.ts')>('#src/standards/resolveStandardsGroups.ts').resolveStandardsGroups,
+			jest.requireActual<typeof import('#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts')>(
+				'#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts',
+			).resolveStandardsGroups,
 		);
 	} else {
 		mockResolveStandardsGroups.mockResolvedValue(groups);

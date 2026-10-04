@@ -2,12 +2,12 @@ import { type RawStandardsFinding, type StandardsCheckFunction, type StandardsCh
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { canonicalJson } from '#src/common/utils/canonicalJson.ts';
 import { listWorkspacePackages } from '#src/common/workspace/listWorkspacePackages.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { buildCheckInput } from '#src/standardsCheck/internal/common/checkInputs/buildCheckInput.ts';
 import { buildCheckInputs } from '#src/standardsCheck/internal/common/checkInputs/buildCheckInputs.ts';
 import { typescriptInputKinds } from '#src/standardsCheck/internal/common/constants/typescriptInputKinds.ts';

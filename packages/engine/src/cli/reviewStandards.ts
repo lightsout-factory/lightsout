@@ -5,7 +5,7 @@ import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { getDriver } from '#src/drivers/getDriver.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
 
 interface Params {

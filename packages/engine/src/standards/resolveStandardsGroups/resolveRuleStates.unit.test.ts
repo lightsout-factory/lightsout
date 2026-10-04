@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { StandardsRuleSettings } from '#src/contracts/StandardsRuleSettings.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import { resolveRuleStates } from '#src/standards/internal/resolveRuleStates.ts';
+import { resolveRuleStates } from '#src/standards/resolveStandardsGroups/resolveRuleStates.ts';
 import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import type { ResolvedStandardsPack } from '#src/standardsLibraries/common/types/ResolvedStandardsPack.ts';
 import { setupStandardsLibraries } from '#tests/helpers/setupStandardsLibraries.ts';

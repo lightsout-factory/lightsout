@@ -1,6 +1,6 @@
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 
 export interface CleanupContext {
 	run: PipelineRun;

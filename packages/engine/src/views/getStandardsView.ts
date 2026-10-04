@@ -3,7 +3,7 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsRuleView } from '#src/contracts/views/StandardsRuleView.ts';
 import type { StandardsView } from '#src/contracts/views/StandardsView.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { buildStandardsHealth } from '#src/standardsCheck/buildStandardsHealth.ts';
 import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
 import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';

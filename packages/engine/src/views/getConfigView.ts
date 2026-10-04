@@ -4,7 +4,7 @@ import { readConfigFile } from '#src/common/config/readConfigFile.ts';
 import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
 import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
 import type { ConfigView } from '#src/contracts/views/config/ConfigView.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 import { mapPackRules } from '#src/standardsLibraries/mapPackRules.ts';
 import { ConfigNotFoundError } from '#src/views/ConfigNotFoundError.ts';

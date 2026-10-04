@@ -1,4 +1,4 @@
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 
 export interface ResolvedStandards {
 	standards?: string;

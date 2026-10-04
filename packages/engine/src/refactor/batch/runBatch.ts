@@ -1,4 +1,5 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
@@ -11,7 +12,6 @@ import { runBatchPass } from '#src/refactor/batch/internal/runBatchPass.ts';
 import { readStandingWork } from '#src/refactor/batch/readStandingWork.ts';
 import { BatchStopKind } from '#src/refactor/internal/common/constants/BatchStopKind.ts';
 import type { BatchStop } from '#src/refactor/internal/common/types/BatchStop.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 
 interface Params {
 	cwd: string;

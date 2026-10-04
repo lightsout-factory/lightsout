@@ -1,8 +1,8 @@
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { appendReviewFindings } from '#src/runState/appendReviewFindings.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
 
 interface Params {

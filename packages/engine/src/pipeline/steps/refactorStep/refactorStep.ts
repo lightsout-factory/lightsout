@@ -17,7 +17,7 @@ import { reviewAdvisories } from '#src/pipeline/steps/refactorStep/internal/comm
 import { runCleanupRound } from '#src/pipeline/steps/refactorStep/internal/common/utils/runCleanupRound.ts';
 import { standardsWorkList } from '#src/pipeline/steps/refactorStep/internal/common/utils/standardsWorkList.ts';
 import { readRunStandardsBaseline } from '#src/runState/standardsBaseline/readRunStandardsBaseline.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 
 interface Params {
 	run: PipelineRun;

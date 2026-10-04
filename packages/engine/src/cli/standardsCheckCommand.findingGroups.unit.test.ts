@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsCheckCommand } from '#src/cli/standardsCheckCommand.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 

@@ -3,8 +3,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import { readStandardsLedger } from '#src/cli/readStandardsLedger.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
@@ -28,7 +28,7 @@ interface ListStandardsRulesParams {
 const mockResolveStandardsGroups = jest.fn<(params: ResolveStandardsGroupsParams) => Promise<StandardsGroup[]>>();
 const mockListStandardsRules = jest.fn<(params: ListStandardsRulesParams) => StandardsRuleListing[]>();
 
-jest.mock('#src/standards/resolveStandardsGroups.ts', () => ({
+jest.mock('#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts', () => ({
 	resolveStandardsGroups: (params: ResolveStandardsGroupsParams) => mockResolveStandardsGroups(params),
 }));
 jest.mock('#src/standardsCheck/listStandardsRules.ts', () => ({
@@ -49,7 +49,9 @@ const nodeGroup = (): StandardsGroup => ({
 // A case that states nothing about the groups resolves them for real, from the repo's own config.
 beforeEach(() => {
 	mockResolveStandardsGroups.mockImplementation(
-		jest.requireActual<typeof import('#src/standards/resolveStandardsGroups.ts')>('#src/standards/resolveStandardsGroups.ts').resolveStandardsGroups,
+		jest.requireActual<typeof import('#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts')>(
+			'#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts',
+		).resolveStandardsGroups,
 	);
 });
 

@@ -1,5 +1,5 @@
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { packageOf } from '#src/common/workspace/packageOf.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 
 interface Params {
 	/** The repo-relative first file of a finding; undefined when the finding names no file. */

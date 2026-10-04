@@ -1,7 +1,7 @@
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { applyStandardsBaseline } from '#src/standardsCheck/applyStandardsBaseline.ts';
 import { buildDominantPathNote } from '#src/standardsCheck/buildDominantPathNote.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';

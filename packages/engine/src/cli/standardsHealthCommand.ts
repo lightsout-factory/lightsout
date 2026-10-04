@@ -2,7 +2,7 @@ import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { printStandardsHealth } from '#src/cli/internal/common/render/printStandardsHealth.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { buildStandardsHealth } from '#src/standardsCheck/buildStandardsHealth.ts';
 
 // Always exits 0: it reports on the rules, not the code, so there is nothing to gate on.

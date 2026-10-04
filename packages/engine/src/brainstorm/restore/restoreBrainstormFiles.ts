@@ -1,10 +1,10 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { brainstormAttachmentFileNames } from '#src/brainstorm/common/constants/brainstormAttachmentFileNames.ts';
-import { brainstormAttachmentManifestName } from '#src/brainstorm/common/constants/brainstormAttachmentManifestName.ts';
 import { attachmentTitle } from '#src/common/attachmentManifest/attachmentTitle.ts';
 import { parseAttachmentManifest } from '#src/common/attachmentManifest/parseAttachmentManifest.ts';
 import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachments.ts';
+import { brainstormAttachmentFileNames } from '#src/common/constants/brainstormAttachmentFileNames.ts';
+import { brainstormAttachmentManifestName } from '#src/common/constants/brainstormAttachmentManifestName.ts';
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
 import type { AttachmentManifest } from '#src/common/types/AttachmentManifest.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';

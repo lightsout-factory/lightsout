@@ -1,3 +1,4 @@
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
@@ -11,7 +12,6 @@ import { createSiteChecker } from '#src/refactor/batch/internal/createSiteChecke
 import { invokeBatchAgent } from '#src/refactor/batch/internal/invokeBatchAgent.ts';
 import { settleBatchGates } from '#src/refactor/batch/internal/settleBatchGates.ts';
 import { reviewBatchOutput } from '#src/refactor/batch/reviewBatchOutput.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 
 interface Params {
 	cwd: string;

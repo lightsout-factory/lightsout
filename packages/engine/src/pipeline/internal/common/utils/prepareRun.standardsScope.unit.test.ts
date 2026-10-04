@@ -2,12 +2,12 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { prepareRun } from '#src/pipeline/internal/common/utils/prepareRun.ts';
 import { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import { createRun } from '#src/runState/createRun.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 
 // Mocked Imports
 // -------------------------
@@ -19,7 +19,7 @@ interface ResolveStandardsGroupsParams {
 
 const mockResolveStandardsGroups = jest.fn<(params: ResolveStandardsGroupsParams) => Promise<StandardsGroup[]>>();
 
-jest.mock('#src/standards/resolveStandardsGroups.ts', () => ({
+jest.mock('#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts', () => ({
 	resolveStandardsGroups: (params: ResolveStandardsGroupsParams) => mockResolveStandardsGroups(params),
 }));
 // -------------------------

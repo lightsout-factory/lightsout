@@ -1,11 +1,11 @@
 import { join } from 'node:path';
 import { selectsNoStandards } from '#src/common/config/selectsNoStandards.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { listWorkspacePackages } from '#src/common/workspace/listWorkspacePackages.ts';
 import { readDependencyNames } from '#src/common/workspace/readDependencyNames.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
-import { resolveRuleStates } from '#src/standards/internal/resolveRuleStates.ts';
+import { resolveRuleStates } from '#src/standards/resolveStandardsGroups/resolveRuleStates.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { ResolvedStandardsPack } from '#src/standardsLibraries/common/types/ResolvedStandardsPack.ts';
 import { resolveStandardsLibraries } from '#src/standardsLibraries/resolveStandardsLibraries.ts';

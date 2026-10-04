@@ -2,12 +2,12 @@ import { printConfigSource } from '#src/cli/internal/common/render/printConfigSo
 import { defaultAgentTimeoutMinutes } from '#src/common/constants/defaultAgentTimeoutMinutes.ts';
 import { defaultGateTimeoutMinutes } from '#src/common/constants/defaultGateTimeoutMinutes.ts';
 import { defaultSupervisorTimeoutMinutes } from '#src/common/constants/defaultSupervisorTimeoutMinutes.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 
 interface Params {
 	config: LightsoutConfig;

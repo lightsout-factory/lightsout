@@ -1,6 +1,6 @@
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 

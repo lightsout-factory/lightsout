@@ -1,10 +1,10 @@
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
 import type { DoctorCheck } from '#src/doctor/internal/common/types/DoctorCheck.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { findMissingRequirements } from '#src/standards/findMissingRequirements.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 
 interface Params {
 	cwd: string;
