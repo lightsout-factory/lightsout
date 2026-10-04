@@ -13,7 +13,7 @@ const runCheck = async ({ contents, tests = [], cap = 20 }: { contents: Array<[s
 const setupFunctions = ({ folder, count }: { folder: string; count: number }): Array<[string, string]> =>
 	Array.from({ length: count }, (_, index) => [`${folder}/formatRate${index}.ts`, functionText]);
 
-describe('file-directly-in-common check', () => {
+describe('common-folder-layout check', () => {
 	test('asks for file text, since the folder a shared file goes in is decided by what it exports', () => {
 		expect(check.inputKinds).toStrictEqual(['file-text']);
 	});
@@ -49,7 +49,7 @@ describe('file-directly-in-common check', () => {
 	])('reports $shape sitting directly in common/', async ({ path, text, detail, guidance }) => {
 		const findings = await runCheck({ contents: [[path, text]] });
 
-		expect(findings).toStrictEqual([{ siteKey: `file-directly-in-common:${path}`, files: [{ path }], detail, guidance }]);
+		expect(findings).toStrictEqual([{ siteKey: `common-folder-layout:${path}`, files: [{ path }], detail, guidance }]);
 	});
 
 	test.each([
@@ -93,7 +93,7 @@ describe('file-directly-in-common check', () => {
 			],
 		});
 
-		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['file-directly-in-common:src/common/types/SyncState.ts']);
+		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['common-folder-layout:src/common/types/SyncState.ts']);
 	});
 
 	test('files a const built by a call as a constant, since what the call returns cannot be read from the line', async () => {
@@ -105,7 +105,7 @@ describe('file-directly-in-common check', () => {
 		});
 
 		expect(findings.map(({ siteKey, guidance }) => ({ siteKey, guidance }))).toStrictEqual([
-			{ siteKey: 'file-directly-in-common:src/common/sendRate.ts', guidance: 'Move it to `common/constants/`.' },
+			{ siteKey: 'common-folder-layout:src/common/sendRate.ts', guidance: 'Move it to `common/constants/`.' },
 		]);
 	});
 
@@ -123,7 +123,7 @@ describe('file-directly-in-common check', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'file-directly-in-common:src/common/formatting',
+				siteKey: 'common-folder-layout:src/common/formatting',
 				files: [{ path: 'src/common/formatting' }],
 				detail: "folder 'formatting' groups files in a common/ that holds 3 (cap 4)",
 				guidance: 'Move its files directly into `common/`. A `common/` is grouped by subject only once it holds more files than the cap.',
@@ -152,7 +152,7 @@ describe('file-directly-in-common check', () => {
 		});
 
 		// one module folder plus one file in formatting/ is two, which is not past the cap
-		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['file-directly-in-common:src/common/formatting']);
+		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['common-folder-layout:src/common/formatting']);
 	});
 
 	test('judges each common/ on its own count', async () => {
@@ -161,7 +161,7 @@ describe('file-directly-in-common check', () => {
 			cap: 4,
 		});
 
-		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['file-directly-in-common:src/billing/common/formatting']);
+		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['common-folder-layout:src/billing/common/formatting']);
 	});
 
 	test('leaves alone files that sit nowhere near a common/ folder', async () => {

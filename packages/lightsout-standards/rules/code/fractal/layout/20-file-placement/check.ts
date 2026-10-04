@@ -50,7 +50,7 @@ export const check: StandardsCheckModule = {
 
 			const verdict = judgePlacement({ path, importers, moduleFolders, sourceRoot: getPackageSourceRoot({ path, packageDirectories }) });
 
-			return verdict === undefined ? [] : [buildRawFinding({ rule: 'shared-code-placement', files: [{ path }], ...verdict })];
+			return verdict === undefined ? [] : [buildRawFinding({ rule: 'file-placement', files: [{ path }], ...verdict })];
 		});
 	},
 };

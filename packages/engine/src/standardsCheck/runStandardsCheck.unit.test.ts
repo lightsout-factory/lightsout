@@ -97,7 +97,7 @@ test('the standards check finds each planted defect and respects the exceptions'
 	const structure = [
 		...byRule('lightsout/multi-export'),
 		...byRule('lightsout/filename-mismatch'),
-		...byRule('lightsout/file-directly-in-common'),
+		...byRule('lightsout/common-folder-layout'),
 		...byRule('lightsout/folder-size'),
 	];
 
@@ -106,7 +106,7 @@ test('the standards check finds each planted defect and respects the exceptions'
 	// misnamed file flagged
 	expect(structure.some((finding) => finding.siteKey === 'lightsout/filename-mismatch:src/a/helpers.ts')).toBeTruthy();
 	// a type directly in common flagged
-	expect(structure.some((finding) => finding.siteKey === 'lightsout/file-directly-in-common:src/a/common/DateParts.ts')).toBeTruthy();
+	expect(structure.some((finding) => finding.siteKey === 'lightsout/common-folder-layout:src/a/common/DateParts.ts')).toBeTruthy();
 
 	// oversized file flagged
 	expect(byRule('lightsout/file-size').some((finding) => finding.files[0]?.path === 'src/b/huge.ts')).toBeTruthy();

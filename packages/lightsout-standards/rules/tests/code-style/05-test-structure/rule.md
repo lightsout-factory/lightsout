@@ -4,7 +4,7 @@ checks: agent
 severity: advisory
 ---
 
-## Test Structure: Arrange-Act-Assert with Setup Factories
+## Test Structure
 
 Write every test as arrange, act, assert. Arrange in one named setup factory; the test body calls it, acts and asserts.
 

@@ -41,7 +41,7 @@ export const findMisfiledFiles = ({ files, contents }: Params): RawStandardsFind
 
 		return [
 			buildRawFinding({
-				rule: 'file-directly-in-common',
+				rule: 'common-folder-layout',
 				files: [{ path: file }],
 				detail: `'${getBaseName({ path: file })}' holds a ${kind} and sits ${slot === 'common' ? 'directly in' : 'in'} ${getDirectory({ path: file })}`,
 				guidance: guidanceByKind[kind],

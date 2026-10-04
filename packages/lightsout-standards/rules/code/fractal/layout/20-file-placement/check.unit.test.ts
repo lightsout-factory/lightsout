@@ -27,7 +27,7 @@ const roundCents = 'src/common/roundCents.ts';
 const sharedHome = ({ home }: { home: string }) =>
 	`Move it to the common/ of '${home}', the lowest folder that holds every file using it, and update the imports.`;
 
-describe('shared-code-placement check', () => {
+describe('file-placement check', () => {
 	test('asks for the import graph, since placement is decided by who imports a file', () => {
 		expect(check.inputKinds).toStrictEqual(['import-graph']);
 	});
@@ -44,7 +44,7 @@ describe('shared-code-placement check', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: `shared-code-placement:${formatMoney}`,
+				siteKey: `file-placement:${formatMoney}`,
 				files: [{ path: formatMoney }],
 				detail: "sits too low: 'src/invoices/sendInvoice.ts' uses it from outside 'src/billing', and the lowest folder holding every user is 'src'",
 				guidance: sharedHome({ home: 'src' }),
@@ -64,7 +64,7 @@ describe('shared-code-placement check', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: `shared-code-placement:${roundCents}`,
+				siteKey: `file-placement:${roundCents}`,
 				files: [{ path: roundCents }],
 				detail: "sits too high: every user ('src/billing/chargeCustomer.ts', 'src/billing/refundCustomer.ts') is under 'src/billing'",
 				guidance: sharedHome({ home: 'src/billing' }),
@@ -94,7 +94,7 @@ describe('shared-code-placement check', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'shared-code-placement:src/billing/common/roundCents.ts',
+				siteKey: 'file-placement:src/billing/common/roundCents.ts',
 				files: [{ path: 'src/billing/common/roundCents.ts' }],
 				detail: "only 'src/billing/chargeCustomer.ts' uses it",
 				guidance: "Move it beside 'src/billing/chargeCustomer.ts', inside that file's module folder, and update the imports.",
@@ -177,7 +177,7 @@ describe('shared-code-placement check', () => {
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'shared-code-placement:src/billing/taxRate.ts',
+				siteKey: 'file-placement:src/billing/taxRate.ts',
 				files: [{ path: 'src/billing/taxRate.ts' }],
 				detail: "is shared by 'src/billing/chargeCustomer.ts', 'src/billing/refunds/refundCustomer.ts' and sits outside a common/",
 				guidance: sharedHome({ home: 'src/billing' }),
@@ -197,7 +197,7 @@ describe('shared-code-placement check', () => {
 		const findings = await check.run({ inputs, options: {} });
 
 		expect(findings.map(({ siteKey, guidance }) => ({ siteKey, guidance }))).toStrictEqual([
-			{ siteKey: 'shared-code-placement:src/billing/chargeCustomer/buildReceipt.ts', guidance: sharedHome({ home: 'src' }) },
+			{ siteKey: 'file-placement:src/billing/chargeCustomer/buildReceipt.ts', guidance: sharedHome({ home: 'src' }) },
 		]);
 	});
 
@@ -309,7 +309,7 @@ describe('shared-code-placement check', () => {
 		const importerInScope = await check.run({ inputs: setupImports({ imports, scope: ['src/invoices/sendInvoice.ts'] }), options: {} });
 		const nothingInScope = await check.run({ inputs: setupImports({ imports, scope: ['src/other.ts'] }), options: {} });
 
-		expect(importerInScope.map((finding) => finding.siteKey)).toStrictEqual([`shared-code-placement:${formatMoney}`]);
+		expect(importerInScope.map((finding) => finding.siteKey)).toStrictEqual([`file-placement:${formatMoney}`]);
 		expect(nothingInScope).toStrictEqual([]);
 	});
 

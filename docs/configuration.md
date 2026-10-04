@@ -483,7 +483,7 @@ A repository that wants the strict profile promotes those rules itself — an ex
     "named-string-values": "blocking",
     "index-file-contents": "blocking",
     "class-inheritance": "blocking",
-    "file-directly-in-common": "blocking",
+    "common-folder-layout": "blocking",
     "file-size": "blocking",
     "index-files": "blocking",
     "folder-size": "blocking",

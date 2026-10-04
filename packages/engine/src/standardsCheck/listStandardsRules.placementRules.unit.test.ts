@@ -19,7 +19,7 @@ const standardsPackConfig: LightsoutConfig = { gates: { check: 'true', test: 'tr
 const listDefaults = async () => listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config: standardsPackConfig }) });
 
 /** The five file-placement rules with a deterministic check — listed rather than derived, because an id no longer says which kind it is. */
-const durablePathRules = ['banned-folder-name', 'file-directly-in-common', 'index-files', 'test-beside-subject', 'test-support-in-src'];
+const durablePathRules = ['banned-folder-name', 'common-folder-layout', 'index-files', 'test-beside-subject', 'test-support-in-src'];
 
 /** The shipped library's rules are listed by full name, the name a finding and a baseline key carry. */
 const builtInNameOf = ({ id }: { id: string }) => `lightsout/${id}`;
@@ -45,7 +45,7 @@ describe('listStandardsRules file-placement rules', () => {
 		// rules from the tests tree's fractal topic, and the rest from layout
 		expect(docs).toStrictEqual({
 			'lightsout/banned-folder-name': 'code/fractal/layout',
-			'lightsout/file-directly-in-common': 'code/fractal/layout',
+			'lightsout/common-folder-layout': 'code/fractal/layout',
 			'lightsout/index-files': 'code/fractal/imports',
 			'lightsout/test-beside-subject': 'tests/fractal',
 			'lightsout/test-support-in-src': 'tests/fractal',
@@ -63,7 +63,7 @@ describe('listStandardsRules file-placement rules', () => {
 		// standards-rule-settings, as this repository does
 		expect(severities).toStrictEqual({
 			'lightsout/banned-folder-name': StandardsSeverity.Advisory,
-			'lightsout/file-directly-in-common': StandardsSeverity.Advisory,
+			'lightsout/common-folder-layout': StandardsSeverity.Advisory,
 			'lightsout/index-files': StandardsSeverity.Advisory,
 			'lightsout/test-beside-subject': StandardsSeverity.Advisory,
 			'lightsout/test-support-in-src': StandardsSeverity.Advisory,
@@ -79,7 +79,7 @@ describe('listStandardsRules file-placement rules', () => {
 		// until it stops firing. This one mirrors the folder size cap, which is a
 		// count a repo already tunes
 		expect(tunable.map((rule) => ({ rule: rule.rule, options: rule.options }))).toStrictEqual([
-			{ rule: 'lightsout/file-directly-in-common', options: { cap: 20 } },
+			{ rule: 'lightsout/common-folder-layout', options: { cap: 20 } },
 		]);
 	});
 });

@@ -14,7 +14,7 @@ export const strictProfile: Record<string, 'blocking'> = {
 	'named-string-values': 'blocking',
 	'index-file-contents': 'blocking',
 	'class-inheritance': 'blocking',
-	'file-directly-in-common': 'blocking',
+	'common-folder-layout': 'blocking',
 	'file-size': 'blocking',
 	'index-files': 'blocking',
 	'import-path-alias': 'blocking',

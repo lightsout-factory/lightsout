@@ -5,7 +5,7 @@ import { batchFindings } from '#src/refactor/batch/batchFindings.ts';
 /** Every rule the shipped standards library names, by full name, in the order batching is meant to hand them to an agent. */
 const mechanicalFirstOrder = [
 	'lightsout/banned-folder-name',
-	'lightsout/file-directly-in-common',
+	'lightsout/common-folder-layout',
 	'lightsout/index-files',
 	'lightsout/test-beside-subject',
 	'lightsout/test-support-in-src',
@@ -80,7 +80,7 @@ test('batchFindings: every rule batches in the documented mechanical-first order
 	// one batch per rule, numbered in that order — the ids an agent is handed
 	expect(batches.map((batch) => batch.id).slice(0, 2)).toStrictEqual([
 		'batch-01:lightsout/banned-folder-name:src',
-		'batch-02:lightsout/file-directly-in-common:src',
+		'batch-02:lightsout/common-folder-layout:src',
 	]);
 });
 

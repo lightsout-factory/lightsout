@@ -4,7 +4,7 @@ checks: agent
 severity: advisory
 ---
 
-## The Render Pattern
+## Component Test Rendering
 
 Render inside the `setup()` factory; query and assert in the `test`. For a component, `render()` *is* the act, but by convention it lives in the arrange factory — the one accepted exception to "the act lives in the `test`". Query from `screen` — never destructure queries from `render()`.
 

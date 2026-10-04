@@ -166,7 +166,7 @@ test('the pack the config names reaches the implement prompt; false switches sta
 	// the helper's config names lightsout/standards → standards section present
 	expect(named.includes('# Standards\n\nThese rules are binding')).toBeTruthy();
 	// the pack's rules are inlined
-	expect(named.includes('Shared Code Placement')).toBeTruthy();
+	expect(named.includes('File Placement')).toBeTruthy();
 
 	const disabled = await run({ config: { 'standards-pack': false } });
 

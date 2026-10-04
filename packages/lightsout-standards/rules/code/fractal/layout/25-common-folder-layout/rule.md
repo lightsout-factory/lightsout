@@ -11,7 +11,7 @@ example:
     pass: src/billing/common/formatRate.ts
 ---
 
-## File Directly in Common
+## Common Folder Layout
 
 Inside `common/`:
 

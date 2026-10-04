@@ -56,7 +56,7 @@ describe('StandardsFinding', () => {
 			'test-manual-mock-cleanup',
 			'test-strict-equal-matcher',
 			'banned-folder-name',
-			'file-directly-in-common',
+			'common-folder-layout',
 			'index-files',
 			'test-beside-subject',
 			'test-support-in-src',

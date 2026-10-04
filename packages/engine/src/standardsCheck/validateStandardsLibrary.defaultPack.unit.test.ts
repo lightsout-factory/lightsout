@@ -42,7 +42,7 @@ describe('validateStandardsLibrary on the shipped default pack', () => {
 			'function-size': { function: 80 },
 			'react-function-size': { function: 80, hook: 160, component: 200 },
 			'folder-size': { cap: 20 },
-			'file-directly-in-common': { cap: 20 },
+			'common-folder-layout': { cap: 20 },
 			'test-file-size': { testFile: 400 },
 			'duplicate-code-block': { minTokens: 50 },
 			'duplicate-function-body': { minBodyTokens: 40 },

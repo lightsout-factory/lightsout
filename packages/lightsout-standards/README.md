@@ -106,6 +106,14 @@ holds only what is particular to this library and this repo.
 3. Note every other rule that still uses the rule's old name or words, and fix
    each when its own review reaches it.
 
+## Naming a Rule
+
+An id is short and says what the rule is about. It may name the mistake
+(`multi-export`, `dead-export`, `case-collision`) or the instruction
+(`object-args`, `prefer-functions`): an id named for the mistake reads well in
+a list of findings, which is where ids are seen most. Rename an id only when it
+is too long, unclear, or no longer true of the rule.
+
 ## Renaming a Rule
 
 The skill's "Renaming a rule" applies. In this repo, baselines, snapshots and

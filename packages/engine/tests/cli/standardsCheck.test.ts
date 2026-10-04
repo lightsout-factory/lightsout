@@ -153,7 +153,7 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 	// the test-shape rules name the document they enforce
 	expect(stdout).toMatch(/│ lightsout\/test-manual-mock-cleanup\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: tests\/code-style\s+│/);
 	// and so do the file-placement rules, across the three docs they come from
-	expect(stdout).toMatch(/│ lightsout\/file-directly-in-common\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: code\/fractal\/layout\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/common-folder-layout\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: code\/fractal\/layout\s+│/);
 	expect(stdout).toMatch(/│ lightsout\/index-files\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: code\/fractal\/imports\s+│/);
 	expect(stdout).toMatch(/│ lightsout\/test-beside-subject\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: tests\/fractal\s+│/);
 	// --list answers a question about configuration — it never checks the tree

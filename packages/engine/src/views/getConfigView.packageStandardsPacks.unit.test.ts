@@ -85,8 +85,8 @@ describe('getConfigView', () => {
 			packageSets: packageSets.map((entry) => JSON.parse(entry)).sort((left, right) => right.packages.length - left.packages.length),
 			fileSize: { packages: [...(findState('lightsout/file-size')?.packages ?? [])].sort(), appliesTo: findState('lightsout/file-size')?.appliesTo },
 			renderPattern: {
-				packages: findState('lightsout/the-render-pattern')?.packages,
-				appliesTo: findState('lightsout/the-render-pattern')?.appliesTo,
+				packages: findState('lightsout/component-test-rendering')?.packages,
+				appliesTo: findState('lightsout/component-test-rendering')?.appliesTo,
 			},
 		}).toStrictEqual({
 			standardsGroups: [

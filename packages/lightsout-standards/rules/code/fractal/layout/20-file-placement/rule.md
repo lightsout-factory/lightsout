@@ -9,7 +9,7 @@ example:
     pass: src/common/formatMoney.ts
 ---
 
-## Shared Code Placement
+## File Placement
 
 Put a file where its users are.
 

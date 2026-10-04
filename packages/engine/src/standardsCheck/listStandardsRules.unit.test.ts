@@ -78,6 +78,9 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  * On 2026-10-04 the fractal rules were judged one by one against the layout
  * model. `synonym-export-name` and `internal-import-from-outside` were retired
  * with the rules they named, and `module-file-to-folder` gained a check.
+ * `file-directly-in-common` became `common-folder-layout` and
+ * `shared-code-placement` became `file-placement`, each now asking for more
+ * than its old name said.
  */
 const durableRuleIds = [
 	'prefer-functions',
@@ -99,8 +102,8 @@ const durableRuleIds = [
 	'multi-export',
 	'filename-mismatch',
 	'module-file-to-folder',
-	'shared-code-placement',
-	'file-directly-in-common',
+	'file-placement',
+	'common-folder-layout',
 	'banned-folder-name',
 	'case-collision',
 	'function-size',

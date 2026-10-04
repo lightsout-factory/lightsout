@@ -9,7 +9,7 @@ example:
     pass: src/feature/getLabel.unit.test.ts
 ---
 
-## Precedence in Repos with Older Tests
+## Existing Tests
 
 These rules describe the tests you write, not a mandate to rewrite the ones already there. When a repo's tests use an older style, such as `beforeEach` with a shared `let`, or nested `describe` blocks:
 

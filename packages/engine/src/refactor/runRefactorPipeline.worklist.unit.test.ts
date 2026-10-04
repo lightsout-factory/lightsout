@@ -244,8 +244,8 @@ describe('runRefactorPipeline work-list', () => {
 		// guidance, and one the agent never sees is one it can never judge
 		expect([...new Set(advisories.map((advisory) => advisory.rule))].sort()).toStrictEqual([
 			'lightsout/duplicate-code-block',
+			'lightsout/file-placement',
 			'lightsout/function-size',
-			'lightsout/shared-code-placement',
 		]);
 		// advisories are never batched as work
 		expect([...new Set(worklist.batches.flatMap((batch) => batch.blocking.map((finding) => finding.severity)))]).toStrictEqual(['blocking']);

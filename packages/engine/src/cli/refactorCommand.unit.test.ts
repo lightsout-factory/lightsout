@@ -314,8 +314,8 @@ describe('refactorCommand', () => {
 	test('the burn-down keeps its counts in one column, and an id that fills the column still gets a space before its count', async () => {
 		const { context, logged } = setupRefactor({
 			result: {
-				before: { 'file-size': 4, 'duplicate-code-block': 3, 'test-structure-arrange-act-assert-with-setup-factories': 2 },
-				after: { 'file-size': 1, 'duplicate-code-block': 0, 'test-structure-arrange-act-assert-with-setup-factories': 2 },
+				before: { 'file-size': 4, 'duplicate-code-block': 3, 'a-rule-id-long-enough-to-fill-the-whole-column-by-itse': 2 },
+				after: { 'file-size': 1, 'duplicate-code-block': 0, 'a-rule-id-long-enough-to-fill-the-whole-column-by-itse': 2 },
 			},
 		});
 
@@ -326,7 +326,7 @@ describe('refactorCommand', () => {
 		// an id exactly as wide as the column takes no padding, and one wider
 		// overruns it — both still read as a rule and a count, not one token
 		expect(logged).toContain('  duplicate-code-block 3 → 0');
-		expect(logged).toContain('  test-structure-arrange-act-assert-with-setup-factories 2 → 2');
+		expect(logged).toContain('  a-rule-id-long-enough-to-fill-the-whole-column-by-itse 2 → 2');
 	});
 
 	test('a run that left work in the tree says so, because the engine writes code and never commits it', async () => {

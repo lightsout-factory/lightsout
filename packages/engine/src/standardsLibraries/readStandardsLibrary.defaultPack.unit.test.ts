@@ -148,7 +148,7 @@ describe('readStandardsLibrary', () => {
 		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(8);
 		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(2);
 		// the prose itself rides along, not just the headers
-		expect(code ?? '').toContain('Shared Code Placement');
+		expect(code ?? '').toContain('File Placement');
 		expect(tests ?? '').toContain('Module Boundary Testing');
 	});
 

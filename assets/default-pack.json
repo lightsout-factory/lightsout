@@ -52,13 +52,13 @@
           "options": {}
         },
         {
-          "name": "lightsout/explicit-return-type",
-          "severity": "blocking",
+          "name": "lightsout/existing-tests",
+          "severity": "advisory",
           "options": {}
         },
         {
-          "name": "lightsout/jest-spyon-vs-jest-mock",
-          "severity": "advisory",
+          "name": "lightsout/explicit-return-type",
+          "severity": "blocking",
           "options": {}
         },
         {
@@ -78,11 +78,6 @@
         },
         {
           "name": "lightsout/object-args",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/precedence-in-repos-with-older-tests",
           "severity": "advisory",
           "options": {}
         },
@@ -132,13 +127,18 @@
           "options": {}
         },
         {
-          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+          "name": "lightsout/test-structure",
           "severity": "advisory",
           "options": {}
         },
         {
           "name": "lightsout/type-assertion",
           "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/what-to-mock",
+          "severity": "advisory",
           "options": {}
         }
       ],
@@ -147,7 +147,7 @@
         "deterministic": 12,
         "agent": 10,
         "topics": 5,
-        "tokens": 4301
+        "tokens": 4281
       }
     },
     {
@@ -189,6 +189,13 @@
           "options": {}
         },
         {
+          "name": "lightsout/common-folder-layout",
+          "severity": "advisory",
+          "options": {
+            "cap": 20
+          }
+        },
+        {
           "name": "lightsout/dead-export",
           "severity": "blocking",
           "options": {}
@@ -213,11 +220,9 @@
           }
         },
         {
-          "name": "lightsout/file-directly-in-common",
+          "name": "lightsout/file-placement",
           "severity": "advisory",
-          "options": {
-            "cap": 20
-          }
+          "options": {}
         },
         {
           "name": "lightsout/file-size",
@@ -281,11 +286,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/shared-code-placement",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/shared-package-criteria",
           "severity": "advisory",
           "options": {}
@@ -313,7 +313,7 @@
         "deterministic": 21,
         "agent": 5,
         "topics": 5,
-        "tokens": 3616
+        "tokens": 3606
       }
     },
     {
@@ -334,6 +334,11 @@
       ],
       "rules": [
         {
+          "name": "lightsout/component-test-rendering",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/react-function-size",
           "severity": "advisory",
           "options": {
@@ -341,11 +346,6 @@
             "hook": 160,
             "component": 200
           }
-        },
-        {
-          "name": "lightsout/the-render-pattern",
-          "severity": "advisory",
-          "options": {}
         }
       ],
       "totals": {
@@ -353,7 +353,7 @@
         "deterministic": 1,
         "agent": 1,
         "topics": 2,
-        "tokens": 539
+        "tokens": 540
       }
     },
     {
@@ -407,6 +407,13 @@
           "options": {}
         },
         {
+          "name": "lightsout/common-folder-layout",
+          "severity": "advisory",
+          "options": {
+            "cap": 20
+          }
+        },
+        {
           "name": "lightsout/constant-casing",
           "severity": "advisory",
           "options": {}
@@ -436,16 +443,19 @@
           }
         },
         {
+          "name": "lightsout/existing-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/explicit-return-type",
           "severity": "blocking",
           "options": {}
         },
         {
-          "name": "lightsout/file-directly-in-common",
+          "name": "lightsout/file-placement",
           "severity": "advisory",
-          "options": {
-            "cap": 20
-          }
+          "options": {}
         },
         {
           "name": "lightsout/file-size",
@@ -489,11 +499,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/jest-spyon-vs-jest-mock",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/module-boundary-testing",
           "severity": "advisory",
           "options": {}
@@ -529,11 +534,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/precedence-in-repos-with-older-tests",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/prefer-arrow-functions",
           "severity": "advisory",
           "options": {}
@@ -545,11 +545,6 @@
         },
         {
           "name": "lightsout/reuse-common-code",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/shared-code-placement",
           "severity": "advisory",
           "options": {}
         },
@@ -606,7 +601,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+          "name": "lightsout/test-structure",
           "severity": "advisory",
           "options": {}
         },
@@ -619,6 +614,11 @@
           "name": "lightsout/type-assertion",
           "severity": "blocking",
           "options": {}
+        },
+        {
+          "name": "lightsout/what-to-mock",
+          "severity": "advisory",
+          "options": {}
         }
       ],
       "totals": {
@@ -626,7 +626,7 @@
         "deterministic": 33,
         "agent": 15,
         "topics": 10,
-        "tokens": 7917
+        "tokens": 7888
       }
     },
     {
@@ -729,8 +729,8 @@
         "multi-export",
         "filename-mismatch",
         "module-file-to-folder",
-        "shared-code-placement",
-        "file-directly-in-common",
+        "file-placement",
+        "common-folder-layout",
         "banned-folder-name",
         "reuse-common-code",
         "case-collision",
@@ -760,8 +760,8 @@
       "path": "tests/code-style",
       "intro": "# Test Style\n\nHow unit tests are arranged, asserted and mocked.\n\n- A setup factory is a function named `setup…` that arranges one test and returns what the test needs.",
       "ruleIds": [
-        "precedence-in-repos-with-older-tests",
-        "test-structure-arrange-act-assert-with-setup-factories",
+        "existing-tests",
+        "test-structure",
         "test-code-path-coverage",
         "test-jest-imports",
         "no-test-state-in-hooks",
@@ -769,7 +769,7 @@
         "test-mock-untyped",
         "test-manual-mock-cleanup",
         "assertions-pin-contracts",
-        "jest-spyon-vs-jest-mock"
+        "what-to-mock"
       ]
     },
     {
@@ -788,7 +788,7 @@
       "path": "tests/frameworks/react",
       "intro": "# Unit Testing Components & Hooks\n\nHow React and Preact components and hooks are unit-tested.",
       "ruleIds": [
-        "the-render-pattern"
+        "component-test-rendering"
       ]
     },
     {
@@ -956,7 +956,7 @@
         "pass": 3,
         "fail": 2
       },
-      "prose": "## Circular Dependencies\n\nNever let two modules import each other. Move the piece they share, usually a type, into a third module both import, or move code as `shared-code-placement` says.\n\nA cycle makes load order fragile and breaks tree-shaking.",
+      "prose": "## Circular Dependencies\n\nNever let two modules import each other. Move the piece they share, usually a type, into a third module both import, or move code as `file-placement` says.\n\nA cycle makes load order fragile and breaks tree-shaking.",
       "fixtures": [
         {
           "side": "pass",
@@ -1030,6 +1030,104 @@
           "fail": "src/runs/RefactorRun.ts",
           "pass": "src/runs/RefactorRun.ts"
         }
+      }
+    },
+    {
+      "id": "common-folder-layout",
+      "name": "lightsout/common-folder-layout",
+      "set": "code",
+      "documentPath": "code/fractal/layout",
+      "summary": "What the inside of a common folder looks like.",
+      "deterministic": true,
+      "agent": false,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {
+        "cap": 20
+      },
+      "fixtureCounts": {
+        "pass": 4,
+        "fail": 4
+      },
+      "prose": "## Common Folder Layout\n\nInside `common/`:\n\n- A function or class sits directly in `common/`.\n- A type goes in `common/types/`, a constant in `common/constants/`. A value not written as a function or class is a constant, one built by a call included.\n- Make no other folder until `common/` holds more than 20 files. Then group its functions into subject folders, such as `formatting/`.\n\nThen where a shared file goes is never a choice, and a reader knows where to look.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/billing/chargeCustomer.ts",
+          "text": "import { rateLimits } from './common/constants/rateLimits.ts';\nimport { formatRate } from './common/formatRate.ts';\nimport type { Rate } from './common/types/Rate.ts';\n\nexport const chargeCustomer = ({ rate }: { rate: Rate }): string => `Rate ${formatRate({ rate })} of ${rateLimits.max}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/billing/common/constants/rateLimits.ts",
+          "text": "// Correct: a constant, so it goes in common/constants/.\nexport const rateLimits = { min: 0, max: 1 } as const;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/billing/common/formatRate.ts",
+          "text": "import type { Rate } from './types/Rate.ts';\n\n// Correct: a function, so it sits directly in common/.\nexport const formatRate = ({ rate }: { rate: Rate }): string => `${(rate.value * 100).toFixed(1)}%`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/billing/common/types/Rate.ts",
+          "text": "// Correct: a type, so it goes in common/types/.\nexport interface Rate {\n\tvalue: number;\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/chargeCustomer.ts",
+          "text": "import { rateLimits } from './common/rateLimits.ts';\nimport type { Rate } from './common/Rate.ts';\nimport { formatRate } from './common/formatting/formatRate.ts';\n\nexport const chargeCustomer = ({ rate }: { rate: Rate }): string => `Rate ${formatRate({ rate })} of ${rateLimits.max}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/formatting/formatRate.ts",
+          "text": "import type { Rate } from '../Rate.ts';\n\n// Incorrect: common/ holds three files, so it has no folder but types/ and\n// constants/. A function sits directly in common/.\nexport const formatRate = ({ rate }: { rate: Rate }): string => `${(rate.value * 100).toFixed(1)}%`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/Rate.ts",
+          "text": "// Incorrect: a type sitting directly in common/. It belongs in common/types/.\nexport interface Rate {\n\tvalue: number;\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/rateLimits.ts",
+          "text": "// Incorrect: a constant sitting directly in common/. It belongs in\n// common/constants/.\nexport const rateLimits = { min: 0, max: 1 } as const;\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/billing/common/formatting/formatRate.ts",
+          "pass": "src/billing/common/formatRate.ts"
+        }
+      }
+    },
+    {
+      "id": "component-test-rendering",
+      "name": "lightsout/component-test-rendering",
+      "set": "tests",
+      "documentPath": "tests/frameworks/react",
+      "summary": "Where a component test renders and queries.",
+      "deterministic": false,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 1,
+        "fail": 1
+      },
+      "prose": "## Component Test Rendering\n\nRender inside the `setup()` factory; query and assert in the `test`. For a component, `render()` *is* the act, but by convention it lives in the arrange factory — the one accepted exception to \"the act lives in the `test`\". Query from `screen` — never destructure queries from `render()`.\n\nIn a test of an interaction, the query that finds the element to act on groups with the act, the `userEvent` or `fireEvent` call, not with arrange.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/preact';\nimport { NotificationBanner } from './NotificationBanner';\n\nconst mockUseAppStore = jest.fn<(selector: (state: unknown) => unknown) => unknown>();\n\njest.mock('@store/appStore', () => ({\n\tuseAppStore: (selector: (state: unknown) => unknown) => mockUseAppStore(selector),\n}));\n\nconst setupNotificationBanner = ({ isVisible = true }: { isVisible?: boolean } = {}) => {\n\tconst onDismiss = jest.fn<() => void>();\n\tmockUseAppStore.mockReturnValue(isVisible);\n\trender(<NotificationBanner onDismiss={onDismiss} />);\n\n\treturn { onDismiss };\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('does not render the banner when not visible', () => {\n\t\tsetupNotificationBanner({ isVisible: false });\n\n\t\tconst banner = screen.queryByRole('alert');\n\n\t\texpect(banner).not.toBeInTheDocument();\n\t});\n\n\ttest('renders the notification message when visible', () => {\n\t\tsetupNotificationBanner({ isVisible: true });\n\n\t\tconst message = screen.getByText('Action required');\n\n\t\texpect(message).toBeInTheDocument();\n\t});\n});\n```",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/notifications/NotificationBanner.unit.test.tsx",
+          "text": "import { expect, describe, test } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { NotificationBanner } from './NotificationBanner';\n\nconst setupNotificationBanner = ({ isVisible = true }: { isVisible?: boolean } = {}) => {\n\trender(<NotificationBanner isVisible={isVisible} message=\"Action required\" />);\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('renders the notification message when visible', () => {\n\t\tsetupNotificationBanner({ isVisible: true });\n\n\t\tconst message = screen.getByText('Action required');\n\n\t\texpect(message).toBeInTheDocument();\n\t});\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/notifications/NotificationBanner.unit.test.tsx",
+          "text": "import { expect, describe, test } from '@jest/globals';\nimport { render } from '@testing-library/react';\nimport { NotificationBanner } from './NotificationBanner';\n\ndescribe('NotificationBanner', () => {\n\ttest('renders the notification message when visible', () => {\n\t\t// render in the test body, and queries destructured from its result\n\t\tconst { getByText } = render(<NotificationBanner isVisible message=\"Action required\" />);\n\n\t\texpect(getByText('Action required')).toBeInTheDocument();\n\t});\n});\n"
+        }
+      ],
+      "example": {
+        "kind": "snippet"
       }
     },
     {
@@ -1139,7 +1237,7 @@
         "pass": 4,
         "fail": 2
       },
-      "prose": "## Duplicate Code Block\n\nWhen the same code appears in two or more files, such as loading and error handling, validation or a repeated transformation, write it once where `shared-code-placement` says, and import it.\n\nCopies drift apart, and a fix then reaches only one of them.",
+      "prose": "## Duplicate Code Block\n\nWhen the same code appears in two or more files, such as loading and error handling, validation or a repeated transformation, write it once where `file-placement` says, and import it.\n\nCopies drift apart, and a fix then reaches only one of them.",
       "fixtures": [
         {
           "side": "pass",
@@ -1194,7 +1292,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Duplicate Export Name\n\nWithin a package, give every export a name no other export has. Before you add an export, search the package for that name.\n\n- The same thing written twice: keep one, and move it where `shared-code-placement` says.\n- Two different things: rename one, so each name says what it is.\n\nThen a search by name finds the one place a concept lives.",
+      "prose": "## Duplicate Export Name\n\nWithin a package, give every export a name no other export has. Before you add an export, search the package for that name.\n\n- The same thing written twice: keep one, and move it where `file-placement` says.\n- Two different things: rename one, so each name says what it is.\n\nThen a search by name finds the one place a concept lives.",
       "fixtures": [
         {
           "side": "pass",
@@ -1273,6 +1371,51 @@
       }
     },
     {
+      "id": "existing-tests",
+      "name": "lightsout/existing-tests",
+      "set": "tests",
+      "documentPath": "tests/code-style",
+      "summary": "How these rules apply to a repo's existing tests.",
+      "deterministic": false,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 2,
+        "fail": 2
+      },
+      "prose": "## Existing Tests\n\nThese rules describe the tests you write, not a mandate to rewrite the ones already there. When a repo's tests use an older style, such as `beforeEach` with a shared `let`, or nested `describe` blocks:\n\n- When you extend an existing test file, match its style, and never mix a second style into it. A blocking rule still holds in every test you add or change.\n- When you create a test file, follow these rules, even when the test you mirror uses the older style. Mirror its coverage, not its structure.\n- Never rewrite passing older tests to these rules during a feature task. That is cleanup with its own review.\n\nFollowing this order is normal work, with nothing to report. Report it only when this rule failed you, because the conflict was not about style, or it was unclear which case applied.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/feature/getLabel.ts",
+          "text": "export const getLabel = ({ name }: { name: string }): string => name.trim();\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/feature/getLabel.unit.test.ts",
+          "text": "import { expect, describe, test } from '@jest/globals';\nimport { getLabel } from './getLabel';\n\n// Right: a new test file follows the rules. It covers what the older test it\n// mirrors covers, and takes none of that test's structure.\nconst setupLabel = ({ name = ' Ada ' }: { name?: string } = {}) => {\n\treturn { name };\n};\n\ndescribe('getLabel', () => {\n\ttest('trims the name it is given', () => {\n\t\tconst { name } = setupLabel();\n\n\t\tconst label = getLabel({ name });\n\n\t\texpect(label).toBe('Ada');\n\t});\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/feature/getLabel.ts",
+          "text": "export const getLabel = ({ name }: { name: string }): string => name.trim();\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/feature/getLabel.unit.test.ts",
+          "text": "import { expect, describe, test, beforeEach } from '@jest/globals';\nimport { getLabel } from './getLabel';\n\n// Wrong: a new test file written in the older style of the test it mirrors. A\n// file you create follows the rules, whatever style the mirrored test uses.\nlet name: string;\n\ndescribe('getLabel', () => {\n\tbeforeEach(() => {\n\t\tname = ' Ada ';\n\t});\n\n\ttest('trims the name it is given', () => {\n\t\texpect(getLabel({ name })).toBe('Ada');\n\t});\n});\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/feature/getLabel.unit.test.ts",
+          "pass": "src/feature/getLabel.unit.test.ts"
+        }
+      }
+    },
+    {
       "id": "explicit-return-type",
       "name": "lightsout/explicit-return-type",
       "set": "code",
@@ -1313,69 +1456,87 @@
       }
     },
     {
-      "id": "file-directly-in-common",
-      "name": "lightsout/file-directly-in-common",
+      "id": "file-placement",
+      "name": "lightsout/file-placement",
       "set": "code",
       "documentPath": "code/fractal/layout",
-      "summary": "What the inside of a common folder looks like.",
+      "summary": "Where a file belongs, from who uses it.",
       "deterministic": true,
-      "agent": false,
+      "agent": true,
       "defaultSeverity": "advisory",
-      "defaultOptions": {
-        "cap": 20
-      },
+      "defaultOptions": {},
       "fixtureCounts": {
-        "pass": 4,
-        "fail": 4
+        "pass": 5,
+        "fail": 7
       },
-      "prose": "## File Directly in Common\n\nInside `common/`:\n\n- A function or class sits directly in `common/`.\n- A type goes in `common/types/`, a constant in `common/constants/`. A value not written as a function or class is a constant, one built by a call included.\n- Make no other folder until `common/` holds more than 20 files. Then group its functions into subject folders, such as `formatting/`.\n\nThen where a shared file goes is never a choice, and a reader knows where to look.",
+      "prose": "## File Placement\n\nPut a file where its users are.\n\n- Used by one file: beside that file, in its module folder.\n- Used by two or more files: in the `common/` of the lowest folder that holds them all.\n- Used from outside its subject folder: at the top level of that subject folder.\n\nWhen a file gains a user, move it, update the imports, and check the move made no circular imports.\n\nThen where a file sits shows who uses it.",
       "fixtures": [
         {
           "side": "pass",
+          "path": "src/billing/chargeCustomer/buildReceipt.ts",
+          "text": "import { roundCents } from './common/roundCents.ts';\n\n// Correct: only chargeCustomer.ts uses this, so it sits beside it.\nexport const buildReceipt = ({ cents }: { cents: number }): string => `Receipt ${roundCents({ cents })}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/billing/chargeCustomer/chargeCustomer.ts",
+          "text": "import { formatMoney } from '../../common/formatMoney.ts';\nimport { buildReceipt } from './buildReceipt.ts';\nimport { roundCents } from './common/roundCents.ts';\n\nexport const chargeCustomer = ({ cents }: { cents: number }): string => `${buildReceipt({ cents })} ${formatMoney({ cents: roundCents({ cents }) })}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/billing/chargeCustomer/common/roundCents.ts",
+          "text": "// Correct: both files of the chargeCustomer module use this, and no file outside it.\nexport const roundCents = ({ cents }: { cents: number }): number => Math.round(cents);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/common/formatMoney.ts",
+          "text": "// Correct: billing and invoices both use this, and src/ is the lowest folder\n// that holds both.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/invoices/sendInvoice.ts",
+          "text": "import { chargeCustomer } from '../billing/chargeCustomer/chargeCustomer.ts';\nimport { formatMoney } from '../common/formatMoney.ts';\n\nexport const sendInvoice = ({ cents }: { cents: number }): string => `${chargeCustomer({ cents })} ${formatMoney({ cents })}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/buildReceipt.ts",
+          "text": "// Incorrect: only chargeCustomer.ts uses this, yet it sits at the top of\n// billing as if other folders used it. It belongs in chargeCustomer's folder.\nexport const buildReceipt = ({ cents }: { cents: number }): string => `Receipt ${cents}`;\n"
+        },
+        {
+          "side": "fail",
           "path": "src/billing/chargeCustomer.ts",
-          "text": "import { rateLimits } from './common/constants/rateLimits.ts';\nimport { formatRate } from './common/formatRate.ts';\nimport type { Rate } from './common/types/Rate.ts';\n\nexport const chargeCustomer = ({ rate }: { rate: Rate }): string => `Rate ${formatRate({ rate })} of ${rateLimits.max}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/billing/common/constants/rateLimits.ts",
-          "text": "// Correct: a constant, so it goes in common/constants/.\nexport const rateLimits = { min: 0, max: 1 } as const;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/billing/common/formatRate.ts",
-          "text": "import type { Rate } from './types/Rate.ts';\n\n// Correct: a function, so it sits directly in common/.\nexport const formatRate = ({ rate }: { rate: Rate }): string => `${(rate.value * 100).toFixed(1)}%`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/billing/common/types/Rate.ts",
-          "text": "// Correct: a type, so it goes in common/types/.\nexport interface Rate {\n\tvalue: number;\n}\n"
+          "text": "import { buildReceipt } from './buildReceipt.ts';\nimport { formatMoney } from './common/formatMoney.ts';\nimport { roundCents } from './common/roundCents.ts';\nimport { taxRate } from './taxRate.ts';\n\nexport const chargeCustomer = ({ cents }: { cents: number }): string => `${buildReceipt({ cents })} ${formatMoney({ cents: roundCents({ cents }) * taxRate })}`;\n"
         },
         {
           "side": "fail",
-          "path": "src/billing/chargeCustomer.ts",
-          "text": "import { rateLimits } from './common/rateLimits.ts';\nimport type { Rate } from './common/Rate.ts';\nimport { formatRate } from './common/formatting/formatRate.ts';\n\nexport const chargeCustomer = ({ rate }: { rate: Rate }): string => `Rate ${formatRate({ rate })} of ${rateLimits.max}`;\n"
+          "path": "src/billing/common/formatMoney.ts",
+          "text": "// Incorrect: sendInvoice.ts uses this too, so it sits too low. It belongs in\n// src/common/, the lowest folder that holds both users.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
         },
         {
           "side": "fail",
-          "path": "src/billing/common/formatting/formatRate.ts",
-          "text": "import type { Rate } from '../Rate.ts';\n\n// Incorrect: common/ holds three files, so it has no folder but types/ and\n// constants/. A function sits directly in common/.\nexport const formatRate = ({ rate }: { rate: Rate }): string => `${(rate.value * 100).toFixed(1)}%`;\n"
+          "path": "src/billing/common/roundCents.ts",
+          "text": "// Incorrect: one file uses this, so it is not shared. It belongs beside\n// chargeCustomer.ts.\nexport const roundCents = ({ cents }: { cents: number }): number => Math.round(cents);\n"
         },
         {
           "side": "fail",
-          "path": "src/billing/common/Rate.ts",
-          "text": "// Incorrect: a type sitting directly in common/. It belongs in common/types/.\nexport interface Rate {\n\tvalue: number;\n}\n"
+          "path": "src/billing/refundCustomer.ts",
+          "text": "import { taxRate } from './taxRate.ts';\n\nexport const refundCustomer = ({ cents }: { cents: number }): number => cents * taxRate;\n"
         },
         {
           "side": "fail",
-          "path": "src/billing/common/rateLimits.ts",
-          "text": "// Incorrect: a constant sitting directly in common/. It belongs in\n// common/constants/.\nexport const rateLimits = { min: 0, max: 1 } as const;\n"
+          "path": "src/billing/taxRate.ts",
+          "text": "// Incorrect: two billing files share this and nothing outside billing uses\n// it. It belongs in src/billing/common/.\nexport const taxRate = 1.2;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/invoices/sendInvoice.ts",
+          "text": "import { chargeCustomer } from '../billing/chargeCustomer.ts';\nimport { formatMoney } from '../billing/common/formatMoney.ts';\nimport { refundCustomer } from '../billing/refundCustomer.ts';\n\nexport const sendInvoice = ({ cents }: { cents: number }): string => `${chargeCustomer({ cents })} ${refundCustomer({ cents })} ${formatMoney({ cents })}`;\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/billing/common/formatting/formatRate.ts",
-          "pass": "src/billing/common/formatRate.ts"
+          "fail": "src/billing/common/formatMoney.ts",
+          "pass": "src/common/formatMoney.ts"
         }
       }
     },
@@ -1842,37 +2003,6 @@
       }
     },
     {
-      "id": "jest-spyon-vs-jest-mock",
-      "name": "lightsout/jest-spyon-vs-jest-mock",
-      "set": "tests",
-      "documentPath": "tests/code-style",
-      "summary": "What to mock, and with which tool.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## `jest.spyOn` vs `jest.mock`\n\nConstruct the subject under test directly, and stub only the boundaries you do not own: the network, the filesystem, other modules' services. Never mock what you own and could simply build.\n\n- Use `jest.spyOn` for one method on an object you already hold, such as an injected service or repository; the rest stays real.\n- Use `jest.mock` for a standalone function exported from another module.\n- Never mock a module that only exports plain constants; import the real one, since mocking it blocks coverage and adds no isolation. Mock one only when it has import-time side effects, or when the test needs a different value, and then prefer `jest.replaceProperty` or injection.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/orders/placeOrder.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { placeOrder } from './placeOrder';\n\nconst setupOrder = () => {\n\tconst repository = { save: () => undefined };\n\tconst saveSpy = jest.spyOn(repository, 'save');\n\n\treturn { repository, saveSpy };\n};\n\ndescribe('placeOrder', () => {\n\ttest('saves the order it was given', () => {\n\t\tconst { repository, saveSpy } = setupOrder();\n\n\t\tplaceOrder({ repository, order: { id: 'a' } });\n\n\t\texpect(saveSpy).toHaveBeenCalledWith({ id: 'a' });\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/orders/placeOrder.unit.test.ts",
-          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { placeOrder } from './placeOrder';\n\n// The repository is an object the test already holds — replacing its whole\n// module hides every other method the unit may touch.\nconst mockSave = jest.fn<(order: { id: string }) => void>();\n\njest.mock('./orderRepository', () => ({\n\torderRepository: { save: (order: { id: string }) => mockSave(order) },\n}));\n\ndescribe('placeOrder', () => {\n\ttest('saves the order it was given', () => {\n\t\tplaceOrder({ order: { id: 'a' } });\n\n\t\texpect(mockSave).toHaveBeenCalledWith({ id: 'a' });\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
       "id": "module-boundary-testing",
       "name": "lightsout/module-boundary-testing",
       "set": "tests",
@@ -2250,51 +2380,6 @@
       }
     },
     {
-      "id": "precedence-in-repos-with-older-tests",
-      "name": "lightsout/precedence-in-repos-with-older-tests",
-      "set": "tests",
-      "documentPath": "tests/code-style",
-      "summary": "How these rules apply to a repo's existing tests.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## Precedence in Repos with Older Tests\n\nThese rules describe the tests you write, not a mandate to rewrite the ones already there. When a repo's tests use an older style, such as `beforeEach` with a shared `let`, or nested `describe` blocks:\n\n- When you extend an existing test file, match its style, and never mix a second style into it. A blocking rule still holds in every test you add or change.\n- When you create a test file, follow these rules, even when the test you mirror uses the older style. Mirror its coverage, not its structure.\n- Never rewrite passing older tests to these rules during a feature task. That is cleanup with its own review.\n\nFollowing this order is normal work, with nothing to report. Report it only when this rule failed you, because the conflict was not about style, or it was unclear which case applied.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/feature/getLabel.ts",
-          "text": "export const getLabel = ({ name }: { name: string }): string => name.trim();\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/feature/getLabel.unit.test.ts",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport { getLabel } from './getLabel';\n\n// Right: a new test file follows the rules. It covers what the older test it\n// mirrors covers, and takes none of that test's structure.\nconst setupLabel = ({ name = ' Ada ' }: { name?: string } = {}) => {\n\treturn { name };\n};\n\ndescribe('getLabel', () => {\n\ttest('trims the name it is given', () => {\n\t\tconst { name } = setupLabel();\n\n\t\tconst label = getLabel({ name });\n\n\t\texpect(label).toBe('Ada');\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/feature/getLabel.ts",
-          "text": "export const getLabel = ({ name }: { name: string }): string => name.trim();\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/feature/getLabel.unit.test.ts",
-          "text": "import { expect, describe, test, beforeEach } from '@jest/globals';\nimport { getLabel } from './getLabel';\n\n// Wrong: a new test file written in the older style of the test it mirrors. A\n// file you create follows the rules, whatever style the mirrored test uses.\nlet name: string;\n\ndescribe('getLabel', () => {\n\tbeforeEach(() => {\n\t\tname = ' Ada ';\n\t});\n\n\ttest('trims the name it is given', () => {\n\t\texpect(getLabel({ name })).toBe('Ada');\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/feature/getLabel.unit.test.ts",
-          "pass": "src/feature/getLabel.unit.test.ts"
-        }
-      }
-    },
-    {
       "id": "prefer-arrow-functions",
       "name": "lightsout/prefer-arrow-functions",
       "set": "code",
@@ -2429,7 +2514,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Reuse Common Code\n\nBefore you write a helper, type or constant, look for one in every `common/` folder in the package.\n\n- If one does what you need, import it. Never write a second copy.\n- If it sits in another module's `common/`, move it up as `shared-code-placement` says, then import it.\n- If one nearly does, extend it rather than write a near copy, as long as its current callers keep working.\n\nTwo copies drift apart, and a fix then reaches only one of them.",
+      "prose": "## Reuse Common Code\n\nBefore you write a helper, type or constant, look for one in every `common/` folder in the package.\n\n- If one does what you need, import it. Never write a second copy.\n- If it sits in another module's `common/`, move it up as `file-placement` says, then import it.\n- If one nearly does, extend it rather than write a near copy, as long as its current callers keep working.\n\nTwo copies drift apart, and a fix then reaches only one of them.",
       "fixtures": [
         {
           "side": "pass",
@@ -2467,91 +2552,6 @@
         "focus": {
           "fail": "src/getInvoiceLabel.ts",
           "pass": "src/getInvoiceLabel.ts"
-        }
-      }
-    },
-    {
-      "id": "shared-code-placement",
-      "name": "lightsout/shared-code-placement",
-      "set": "code",
-      "documentPath": "code/fractal/layout",
-      "summary": "Where a file belongs, from who uses it.",
-      "deterministic": true,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 5,
-        "fail": 7
-      },
-      "prose": "## Shared Code Placement\n\nPut a file where its users are.\n\n- Used by one file: beside that file, in its module folder.\n- Used by two or more files: in the `common/` of the lowest folder that holds them all.\n- Used from outside its subject folder: at the top level of that subject folder.\n\nWhen a file gains a user, move it, update the imports, and check the move made no circular imports.\n\nThen where a file sits shows who uses it.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/billing/chargeCustomer/buildReceipt.ts",
-          "text": "import { roundCents } from './common/roundCents.ts';\n\n// Correct: only chargeCustomer.ts uses this, so it sits beside it.\nexport const buildReceipt = ({ cents }: { cents: number }): string => `Receipt ${roundCents({ cents })}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/billing/chargeCustomer/chargeCustomer.ts",
-          "text": "import { formatMoney } from '../../common/formatMoney.ts';\nimport { buildReceipt } from './buildReceipt.ts';\nimport { roundCents } from './common/roundCents.ts';\n\nexport const chargeCustomer = ({ cents }: { cents: number }): string => `${buildReceipt({ cents })} ${formatMoney({ cents: roundCents({ cents }) })}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/billing/chargeCustomer/common/roundCents.ts",
-          "text": "// Correct: both files of the chargeCustomer module use this, and no file outside it.\nexport const roundCents = ({ cents }: { cents: number }): number => Math.round(cents);\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/formatMoney.ts",
-          "text": "// Correct: billing and invoices both use this, and src/ is the lowest folder\n// that holds both.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/invoices/sendInvoice.ts",
-          "text": "import { chargeCustomer } from '../billing/chargeCustomer/chargeCustomer.ts';\nimport { formatMoney } from '../common/formatMoney.ts';\n\nexport const sendInvoice = ({ cents }: { cents: number }): string => `${chargeCustomer({ cents })} ${formatMoney({ cents })}`;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/buildReceipt.ts",
-          "text": "// Incorrect: only chargeCustomer.ts uses this, yet it sits at the top of\n// billing as if other folders used it. It belongs in chargeCustomer's folder.\nexport const buildReceipt = ({ cents }: { cents: number }): string => `Receipt ${cents}`;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/chargeCustomer.ts",
-          "text": "import { buildReceipt } from './buildReceipt.ts';\nimport { formatMoney } from './common/formatMoney.ts';\nimport { roundCents } from './common/roundCents.ts';\nimport { taxRate } from './taxRate.ts';\n\nexport const chargeCustomer = ({ cents }: { cents: number }): string => `${buildReceipt({ cents })} ${formatMoney({ cents: roundCents({ cents }) * taxRate })}`;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/common/formatMoney.ts",
-          "text": "// Incorrect: sendInvoice.ts uses this too, so it sits too low. It belongs in\n// src/common/, the lowest folder that holds both users.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/common/roundCents.ts",
-          "text": "// Incorrect: one file uses this, so it is not shared. It belongs beside\n// chargeCustomer.ts.\nexport const roundCents = ({ cents }: { cents: number }): number => Math.round(cents);\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/refundCustomer.ts",
-          "text": "import { taxRate } from './taxRate.ts';\n\nexport const refundCustomer = ({ cents }: { cents: number }): number => cents * taxRate;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/billing/taxRate.ts",
-          "text": "// Incorrect: two billing files share this and nothing outside billing uses\n// it. It belongs in src/billing/common/.\nexport const taxRate = 1.2;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/invoices/sendInvoice.ts",
-          "text": "import { chargeCustomer } from '../billing/chargeCustomer.ts';\nimport { formatMoney } from '../billing/common/formatMoney.ts';\nimport { refundCustomer } from '../billing/refundCustomer.ts';\n\nexport const sendInvoice = ({ cents }: { cents: number }): string => `${chargeCustomer({ cents })} ${refundCustomer({ cents })} ${formatMoney({ cents })}`;\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/billing/common/formatMoney.ts",
-          "pass": "src/common/formatMoney.ts"
         }
       }
     },
@@ -2953,8 +2953,8 @@
       }
     },
     {
-      "id": "test-structure-arrange-act-assert-with-setup-factories",
-      "name": "lightsout/test-structure-arrange-act-assert-with-setup-factories",
+      "id": "test-structure",
+      "name": "lightsout/test-structure",
       "set": "tests",
       "documentPath": "tests/code-style",
       "summary": "The shape of a single test.",
@@ -2966,7 +2966,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Test Structure: Arrange-Act-Assert with Setup Factories\n\nWrite every test as arrange, act, assert. Arrange in one named setup factory; the test body calls it, acts and asserts.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { UserProfile } from '@/profiles/UserProfile';\nimport { AppSettings } from '@/settings/AppSettings';\nimport { getAvatarUrl } from '@/avatars/getAvatarUrl';\n\nconst mockGetAvatarFromProfile = jest.fn<(params: { profile: UserProfile }) => string | null>();\n\njest.mock('@/profiles/getAvatarFromProfile', () => ({\n\tgetAvatarFromProfile: (params: { profile: UserProfile }) => mockGetAvatarFromProfile(params),\n}));\n\nconst setupAvatar = ({ profile = null }: { profile?: string | null } = {}) => {\n\tmockGetAvatarFromProfile.mockReturnValue(profile);\n\tconst userProfile = new UserProfile({ profileData: { email: 'user@example.com' } });\n\tconst appSettings = new AppSettings({ defaultPreferences: {} });\n\n\treturn { userProfile, appSettings };\n};\n\ndescribe('getAvatarUrl', () => {\n\ttest('returns the profile avatar when one exists', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar({ profile: 'p.png' });\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBe('p.png');\n\t});\n});\n```\n\n- The setup factory takes the test's variants as parameters with defaults, wires the mocks, builds the fixtures, and returns the locals the test needs as `const`s. One factory configures any number of mocks, and one call is the whole arrangement.\n- A test may override the one value it varies with a single line after the call, such as one `mockReturnValue`.\n- For a class, the factory returns the constructor's collaborators, and the test's act constructs the instance.\n- Act once per test: two acts make two tests. Use several `expect`s only when they assert one behaviour's result, and prefer one `expect` for several properties of one result.\n- Assign each call in the act to a named `const`; never nest one call in another. The act sits inside the assertion only for an error, `expect(() => parse(bad)).toThrow()` or `await expect(load()).rejects.toThrow()`. A matcher may compose another, as in `toEqual(expect.objectContaining(...))`.\n- Separate arrange, act and assert with a blank line, and write no `// arrange`, `// act` or `// assert` comments.",
+      "prose": "## Test Structure\n\nWrite every test as arrange, act, assert. Arrange in one named setup factory; the test body calls it, acts and asserts.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { UserProfile } from '@/profiles/UserProfile';\nimport { AppSettings } from '@/settings/AppSettings';\nimport { getAvatarUrl } from '@/avatars/getAvatarUrl';\n\nconst mockGetAvatarFromProfile = jest.fn<(params: { profile: UserProfile }) => string | null>();\n\njest.mock('@/profiles/getAvatarFromProfile', () => ({\n\tgetAvatarFromProfile: (params: { profile: UserProfile }) => mockGetAvatarFromProfile(params),\n}));\n\nconst setupAvatar = ({ profile = null }: { profile?: string | null } = {}) => {\n\tmockGetAvatarFromProfile.mockReturnValue(profile);\n\tconst userProfile = new UserProfile({ profileData: { email: 'user@example.com' } });\n\tconst appSettings = new AppSettings({ defaultPreferences: {} });\n\n\treturn { userProfile, appSettings };\n};\n\ndescribe('getAvatarUrl', () => {\n\ttest('returns the profile avatar when one exists', () => {\n\t\tconst { userProfile, appSettings } = setupAvatar({ profile: 'p.png' });\n\n\t\tconst avatarUrl = getAvatarUrl({ userProfile, appSettings });\n\n\t\texpect(avatarUrl).toBe('p.png');\n\t});\n});\n```\n\n- The setup factory takes the test's variants as parameters with defaults, wires the mocks, builds the fixtures, and returns the locals the test needs as `const`s. One factory configures any number of mocks, and one call is the whole arrangement.\n- A test may override the one value it varies with a single line after the call, such as one `mockReturnValue`.\n- For a class, the factory returns the constructor's collaborators, and the test's act constructs the instance.\n- Act once per test: two acts make two tests. Use several `expect`s only when they assert one behaviour's result, and prefer one `expect` for several properties of one result.\n- Assign each call in the act to a named `const`; never nest one call in another. The act sits inside the assertion only for an error, `expect(() => parse(bad)).toThrow()` or `await expect(load()).rejects.toThrow()`. A matcher may compose another, as in `toEqual(expect.objectContaining(...))`.\n- Separate arrange, act and assert with a blank line, and write no `// arrange`, `// act` or `// assert` comments.",
       "fixtures": [
         {
           "side": "pass",
@@ -3029,37 +3029,6 @@
       }
     },
     {
-      "id": "the-render-pattern",
-      "name": "lightsout/the-render-pattern",
-      "set": "tests",
-      "documentPath": "tests/frameworks/react",
-      "summary": "Where a component test renders and queries.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## The Render Pattern\n\nRender inside the `setup()` factory; query and assert in the `test`. For a component, `render()` *is* the act, but by convention it lives in the arrange factory — the one accepted exception to \"the act lives in the `test`\". Query from `screen` — never destructure queries from `render()`.\n\nIn a test of an interaction, the query that finds the element to act on groups with the act, the `userEvent` or `fireEvent` call, not with arrange.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/preact';\nimport { NotificationBanner } from './NotificationBanner';\n\nconst mockUseAppStore = jest.fn<(selector: (state: unknown) => unknown) => unknown>();\n\njest.mock('@store/appStore', () => ({\n\tuseAppStore: (selector: (state: unknown) => unknown) => mockUseAppStore(selector),\n}));\n\nconst setupNotificationBanner = ({ isVisible = true }: { isVisible?: boolean } = {}) => {\n\tconst onDismiss = jest.fn<() => void>();\n\tmockUseAppStore.mockReturnValue(isVisible);\n\trender(<NotificationBanner onDismiss={onDismiss} />);\n\n\treturn { onDismiss };\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('does not render the banner when not visible', () => {\n\t\tsetupNotificationBanner({ isVisible: false });\n\n\t\tconst banner = screen.queryByRole('alert');\n\n\t\texpect(banner).not.toBeInTheDocument();\n\t});\n\n\ttest('renders the notification message when visible', () => {\n\t\tsetupNotificationBanner({ isVisible: true });\n\n\t\tconst message = screen.getByText('Action required');\n\n\t\texpect(message).toBeInTheDocument();\n\t});\n});\n```",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/notifications/NotificationBanner.unit.test.tsx",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { NotificationBanner } from './NotificationBanner';\n\nconst setupNotificationBanner = ({ isVisible = true }: { isVisible?: boolean } = {}) => {\n\trender(<NotificationBanner isVisible={isVisible} message=\"Action required\" />);\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('renders the notification message when visible', () => {\n\t\tsetupNotificationBanner({ isVisible: true });\n\n\t\tconst message = screen.getByText('Action required');\n\n\t\texpect(message).toBeInTheDocument();\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/notifications/NotificationBanner.unit.test.tsx",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport { render } from '@testing-library/react';\nimport { NotificationBanner } from './NotificationBanner';\n\ndescribe('NotificationBanner', () => {\n\ttest('renders the notification message when visible', () => {\n\t\t// render in the test body, and queries destructured from its result\n\t\tconst { getByText } = render(<NotificationBanner isVisible message=\"Action required\" />);\n\n\t\texpect(getByText('Action required')).toBeInTheDocument();\n\t});\n});\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
-      }
-    },
-    {
       "id": "type-assertion",
       "name": "lightsout/type-assertion",
       "set": "code",
@@ -3097,6 +3066,37 @@
           "fail": "src/payloads/readLabel.ts",
           "pass": "src/payloads/common/constants/PayloadKind.ts"
         }
+      }
+    },
+    {
+      "id": "what-to-mock",
+      "name": "lightsout/what-to-mock",
+      "set": "tests",
+      "documentPath": "tests/code-style",
+      "summary": "What to mock, and with which tool.",
+      "deterministic": false,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 1,
+        "fail": 1
+      },
+      "prose": "## What to Mock\n\nConstruct the subject under test directly, and stub only the boundaries you do not own: the network, the filesystem, other modules' services. Never mock what you own and could simply build.\n\n- Use `jest.spyOn` for one method on an object you already hold, such as an injected service or repository; the rest stays real.\n- Use `jest.mock` for a standalone function exported from another module.\n- Never mock a module that only exports plain constants; import the real one, since mocking it blocks coverage and adds no isolation. Mock one only when it has import-time side effects, or when the test needs a different value, and then prefer `jest.replaceProperty` or injection.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/orders/placeOrder.unit.test.ts",
+          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { placeOrder } from './placeOrder';\n\nconst setupOrder = () => {\n\tconst repository = { save: () => undefined };\n\tconst saveSpy = jest.spyOn(repository, 'save');\n\n\treturn { repository, saveSpy };\n};\n\ndescribe('placeOrder', () => {\n\ttest('saves the order it was given', () => {\n\t\tconst { repository, saveSpy } = setupOrder();\n\n\t\tplaceOrder({ repository, order: { id: 'a' } });\n\n\t\texpect(saveSpy).toHaveBeenCalledWith({ id: 'a' });\n\t});\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/orders/placeOrder.unit.test.ts",
+          "text": "import { expect, describe, test, jest } from '@jest/globals';\nimport { placeOrder } from './placeOrder';\n\n// The repository is an object the test already holds — replacing its whole\n// module hides every other method the unit may touch.\nconst mockSave = jest.fn<(order: { id: string }) => void>();\n\njest.mock('./orderRepository', () => ({\n\torderRepository: { save: (order: { id: string }) => mockSave(order) },\n}));\n\ndescribe('placeOrder', () => {\n\ttest('saves the order it was given', () => {\n\t\tplaceOrder({ order: { id: 'a' } });\n\n\t\texpect(mockSave).toHaveBeenCalledWith({ id: 'a' });\n\t});\n});\n"
+        }
+      ],
+      "example": {
+        "kind": "snippet"
       }
     }
   ]
