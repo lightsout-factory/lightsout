@@ -9,7 +9,6 @@ const mechanicalFirstOrder = [
 	'lightsout/index-files',
 	'lightsout/test-beside-subject',
 	'lightsout/test-support-in-src',
-	'lightsout/internal-import-from-outside',
 	'lightsout/multi-export',
 	'lightsout/filename-mismatch',
 	'lightsout/test-mock-prefix',
@@ -24,7 +23,6 @@ const mechanicalFirstOrder = [
 	'lightsout/duplicate-function-body',
 	'lightsout/duplicate-code-block',
 	'lightsout/duplicate-export-name',
-	'lightsout/synonym-export-name',
 ];
 
 const finding = ({ rule, path, siteKey }: { rule: StandardsFinding['rule']; path: string; siteKey: string }): StandardsFinding => ({
@@ -239,7 +237,7 @@ test('batch priority follows the built-in rules by full name and puts any other 
 		// Fed with the lowest-priority built-in rule first, beside a bare short id
 		// that once held the top rank and a full name from another library.
 		blocking: [
-			finding({ rule: 'lightsout/synonym-export-name', path: 'src/a.ts', siteKey: 'lightsout/synonym-export-name:src/a.ts' }),
+			finding({ rule: 'lightsout/duplicate-export-name', path: 'src/a.ts', siteKey: 'lightsout/duplicate-export-name:src/a.ts' }),
 			finding({ rule: 'banned-folder-name', path: 'src/b.ts', siteKey: 'banned-folder-name:src/b.ts' }),
 			finding({ rule: 'acme/size', path: 'src/c.ts', siteKey: 'acme/size:src/c.ts' }),
 			finding({ rule: 'lightsout/banned-folder-name', path: 'src/d.ts', siteKey: 'lightsout/banned-folder-name:src/d.ts' }),
@@ -251,7 +249,7 @@ test('batch priority follows the built-in rules by full name and puts any other 
 	// the built-in rules in priority order, then every other name in name order
 	expect(batches.map((batch) => batch.rule)).toStrictEqual([
 		'lightsout/banned-folder-name',
-		'lightsout/synonym-export-name',
+		'lightsout/duplicate-export-name',
 		'acme/size',
 		'banned-folder-name',
 	]);

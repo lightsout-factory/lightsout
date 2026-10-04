@@ -125,7 +125,7 @@ describe('duplicate-function-body check', () => {
 					{ path: 'src/invoices/formatTotal.ts', startLine: 1, endLine: 6 },
 				],
 				detail: expect.stringMatching(/^'formatAmount', 'formatTotal' \(\d+ tokens\) have the same body under different names$/),
-				guidance: 'Renaming the identifiers did not make these different functions.',
+				guidance: 'Keep one function and pass what differs as arguments.',
 			},
 		]);
 	});
@@ -209,7 +209,7 @@ describe('duplicate-function-body check', () => {
 				detail: expect.stringMatching(
 					/^'formatAmount', 'formatTotal' \(\d+ tokens\); 'buildLabel', 'buildTag' \(\d+ tokens\) have the same body under different names$/,
 				),
-				guidance: 'Renaming the identifiers did not make these different functions.',
+				guidance: 'Keep one function and pass what differs as arguments.',
 			},
 		]);
 	});
@@ -366,7 +366,7 @@ describe('duplicate-function-body check', () => {
 					{ path: 'src/reports/formatGross.ts', startLine: 1, endLine: 6 },
 				],
 				detail: expect.stringMatching(/^'formatAmount', 'formatTotal', 'formatGross' \(\d+ tokens\) have the same body under different names$/),
-				guidance: 'Renaming the identifiers did not make these different functions.',
+				guidance: 'Keep one function and pass what differs as arguments.',
 			},
 		]);
 	});

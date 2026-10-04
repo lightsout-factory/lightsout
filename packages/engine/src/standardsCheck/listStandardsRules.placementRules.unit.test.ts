@@ -42,10 +42,10 @@ describe('listStandardsRules file-placement rules', () => {
 
 		// the main suite proves a document is there, not that it is the right one:
 		// the index-files rule comes from imports, the two test-location
-		// rules from the tests tree's fractal topic, and the rest from shared-code
+		// rules from the tests tree's fractal topic, and the rest from layout
 		expect(docs).toStrictEqual({
-			'lightsout/banned-folder-name': 'code/fractal/shared-code',
-			'lightsout/file-directly-in-common': 'code/fractal/shared-code',
+			'lightsout/banned-folder-name': 'code/fractal/layout',
+			'lightsout/file-directly-in-common': 'code/fractal/layout',
 			'lightsout/index-files': 'code/fractal/imports',
 			'lightsout/test-beside-subject': 'tests/fractal',
 			'lightsout/test-support-in-src': 'tests/fractal',
@@ -70,13 +70,16 @@ describe('listStandardsRules file-placement rules', () => {
 		});
 	});
 
-	test('no file-placement rule carries a number a repo could tune', async () => {
+	test('the one number a repo can tune among the file-placement rules is the size at which a common/ is grouped', async () => {
 		const rules = await listDefaults();
 		const tunable = rules.filter((rule) => durablePathRuleNames.includes(rule.rule) && Object.keys(rule.options).length > 0);
 
-		// every threshold in this group is a closed list of names from a doc, never a
-		// count — a knob here would be a rule that can be quietly widened until it
-		// stops firing
-		expect(tunable.map((rule) => rule.rule)).toStrictEqual([]);
+		// every other threshold in this group is a closed list of names from a doc,
+		// never a count — a knob there would be a rule that can be quietly widened
+		// until it stops firing. This one mirrors the folder size cap, which is a
+		// count a repo already tunes
+		expect(tunable.map((rule) => ({ rule: rule.rule, options: rule.options }))).toStrictEqual([
+			{ rule: 'lightsout/file-directly-in-common', options: { cap: 20 } },
+		]);
 	});
 });

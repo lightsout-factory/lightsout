@@ -6,14 +6,7 @@ import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibra
 import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack.ts';
 
 /** The topics each of the four shipped topic packs lists, stated here as the contract the pack files must meet. */
-const fractalTopics = [
-	'code/fractal/modules',
-	'code/fractal/shared-code',
-	'code/fractal/size',
-	'code/fractal/duplication',
-	'code/fractal/imports',
-	'tests/fractal',
-];
+const fractalTopics = ['code/fractal/layout', 'code/fractal/size', 'code/fractal/duplication', 'code/fractal/imports', 'tests/fractal'];
 const codeStyleTopics = [
 	'code/code-style/functions',
 	'code/code-style/classes',

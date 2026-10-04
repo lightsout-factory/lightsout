@@ -6,8 +6,7 @@ import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPa
 
 /** The requires lists the lightsout rules declare, stated here as the contract their rule.md headers must meet. */
 const listedRequires: Record<string, string[]> = {
-	'lightsout/module-boundary-testing': ['lightsout/files-that-must-not-have-dedicated-tests'],
-	'lightsout/test-file-size': ['lightsout/module-boundary-testing'],
+	'lightsout/duplicate-export-name': ['lightsout/multi-export', 'lightsout/filename-mismatch'],
 	'lightsout/reuse-common-code': ['lightsout/shared-code-placement'],
 };
 

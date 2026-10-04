@@ -107,12 +107,12 @@ const setupLibraryLayout = async () => {
 };
 
 describe('readStandardsLibrary', () => {
-	test('carries all 14 shipped documents, split across the code and tests trees', async () => {
+	test('carries all 13 shipped documents, split across the code and tests trees', async () => {
 		const { pack } = await setupDefaultPack();
 
 		expect(pack.name).toBe('lightsout');
-		expect(pack.documents).toHaveLength(14);
-		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(10);
+		expect(pack.documents).toHaveLength(13);
+		expect(pack.documents.filter((document) => document.set === StandardsSet.Code)).toHaveLength(9);
 		expect(pack.documents.filter((document) => document.set === StandardsSet.Tests)).toHaveLength(4);
 	});
 
@@ -145,10 +145,10 @@ describe('readStandardsLibrary', () => {
 
 		const { code, tests } = buildStandardsDocuments({ groups: [frameworkFreeGroupOf({ pack })] });
 
-		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(9);
+		expect(code?.match(/^<!-- lightsout: code\/.+ -->$/gm)).toHaveLength(8);
 		expect(tests?.match(/^<!-- lightsout: tests\/.+ -->$/gm)).toHaveLength(2);
 		// the prose itself rides along, not just the headers
-		expect(code ?? '').toContain('Module Folder Layout');
+		expect(code ?? '').toContain('Shared Code Placement');
 		expect(tests ?? '').toContain('Module Boundary Testing');
 	});
 

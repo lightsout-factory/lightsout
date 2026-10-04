@@ -53,7 +53,7 @@ const setupCheckRepo = () => {
 	// structure: multi-export violation, misnamed file, a file directly in common
 	writeFileSync(join(dir, 'src/a/config.ts'), 'export const readConfig = () => 1;\nexport const saveConfig = () => 2;\n');
 	writeFileSync(join(dir, 'src/a/helpers.ts'), 'export const buildLabel = () => 1;\n');
-	writeFileSync(join(dir, 'src/a/common/formatDate.ts'), 'export const formatDate = () => 1;\n');
+	writeFileSync(join(dir, 'src/a/common/DateParts.ts'), 'export interface DateParts {\n\tyear: number;\n}\n');
 
 	// size: an oversized .ts file, and a 280-line .tsx measured on the same cap
 	writeFileSync(join(dir, 'src/b/huge.ts'), `export const huge = () => 1;\n${'// filler\n'.repeat(300)}`);
@@ -90,12 +90,10 @@ test('the standards check finds each planted defect and respects the exceptions'
 	// test files never appear in findings
 	expect(findings.every((finding) => finding.files.every((file) => !file.path.includes('.test.')))).toBeTruthy();
 
-	const names = [...byRule('lightsout/duplicate-export-name'), ...byRule('lightsout/synonym-export-name')];
+	const names = byRule('lightsout/duplicate-export-name');
 
 	// same-name pair
 	expect(names.some((finding) => finding.siteKey === 'lightsout/duplicate-export-name:src/a/normalizeRecord.ts|src/b/normalizeRecord.ts')).toBeTruthy();
-	// synonym pair collapses to one concept
-	expect(names.some((finding) => finding.detail.includes("'fetchUserData'") && finding.detail.includes("'getUserData'"))).toBeTruthy();
 	const structure = [
 		...byRule('lightsout/multi-export'),
 		...byRule('lightsout/filename-mismatch'),
@@ -107,8 +105,8 @@ test('the standards check finds each planted defect and respects the exceptions'
 	expect(structure.some((finding) => finding.siteKey === 'lightsout/multi-export:src/a/config.ts')).toBeTruthy();
 	// misnamed file flagged
 	expect(structure.some((finding) => finding.siteKey === 'lightsout/filename-mismatch:src/a/helpers.ts')).toBeTruthy();
-	// file directly in common flagged
-	expect(structure.some((finding) => finding.siteKey === 'lightsout/file-directly-in-common:src/a/common/formatDate.ts')).toBeTruthy();
+	// a type directly in common flagged
+	expect(structure.some((finding) => finding.siteKey === 'lightsout/file-directly-in-common:src/a/common/DateParts.ts')).toBeTruthy();
 
 	// oversized file flagged
 	expect(byRule('lightsout/file-size').some((finding) => finding.files[0]?.path === 'src/b/huge.ts')).toBeTruthy();

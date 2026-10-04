@@ -82,7 +82,7 @@ holds only what is particular to this library and this repo.
   `folder-census`.
 - **Framework topics:** a framework topic states what the framework mandates as fact, and this library's own conventions as conventions.
 - **The model rule:**
-  `rules/code/fractal/modules/05-module-file-to-folder/rule.md`
+  `rules/code/fractal/layout/15-module-file-to-folder/rule.md`
   sets the register for prose.
 - **Shared helpers:** a check imports a helper from `common/` through
   `#common/*`, never by a relative path into `common/`.

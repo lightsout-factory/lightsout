@@ -20,8 +20,7 @@ describe('test-file-size check', () => {
 				siteKey: 'test-file-size:src/doctor/runDoctor.unit.test.ts',
 				files: [{ path: 'src/doctor/runDoctor.unit.test.ts' }],
 				detail: '6 lines (cap ~5)',
-				guidance:
-					'A test file this long is a module asking for promotion — give each internal unit a direct test beside it, export the unit from the module’s barrel, and leave the boundary file its orchestration.',
+				guidance: 'Split it by named scenario, one concern per file.',
 				measure: 6,
 			},
 		]);
@@ -50,8 +49,7 @@ describe('test-file-size check', () => {
 				siteKey: 'test-file-size:src/doctor/runDoctor.unit.test.ts',
 				files: [{ path: 'src/doctor/runDoctor.unit.test.ts' }],
 				detail: '4 lines (cap ~3)',
-				guidance:
-					'A test file this long is a module asking for promotion — give each internal unit a direct test beside it, export the unit from the module’s barrel, and leave the boundary file its orchestration.',
+				guidance: 'Split it by named scenario, one concern per file.',
 				measure: 4,
 			},
 		]);
@@ -86,8 +84,7 @@ describe('test-file-size check', () => {
 				siteKey: 'test-file-size:src/over/runOver.unit.test.ts',
 				files: [{ path: 'src/over/runOver.unit.test.ts' }],
 				detail: '5 lines (cap ~4)',
-				guidance:
-					'A test file this long is a module asking for promotion — give each internal unit a direct test beside it, export the unit from the module’s barrel, and leave the boundary file its orchestration.',
+				guidance: 'Split it by named scenario, one concern per file.',
 				measure: 5,
 			},
 		]);

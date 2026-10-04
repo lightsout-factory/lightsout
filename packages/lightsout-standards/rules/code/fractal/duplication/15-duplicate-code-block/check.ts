@@ -40,7 +40,7 @@ export const check: StandardsCheckModule = {
 				rule: 'duplicate-code-block',
 				files,
 				detail: `${count} duplicated block(s), the longest ${longest} lines`,
-				guidance: 'The same code is written out in both files. Extract the shared block, or say why the copies have to differ.',
+				guidance: 'The same code is written out in both files. Write it once where both can import it.',
 			}),
 		);
 	},

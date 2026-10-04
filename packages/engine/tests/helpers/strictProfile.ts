@@ -18,7 +18,6 @@ export const strictProfile: Record<string, 'blocking'> = {
 	'file-size': 'blocking',
 	'index-files': 'blocking',
 	'import-path-alias': 'blocking',
-	'internal-import-from-outside': 'blocking',
 	'multi-export': 'blocking',
 	'single-use-scalar': 'blocking',
 	'test-beside-subject': 'blocking',

@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupImportGraphInput } from '@lightsout/standards-testkit';
+import { setupFileTextInput, setupImportGraphInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 /**
@@ -194,6 +194,59 @@ describe('index-files check: imports through an index file', () => {
 				guidance: throughIndexGuidance,
 			},
 		]);
+	});
+
+	test('reports an import that reaches a file inside another package, and accepts its entry and a file its manifest publishes', async () => {
+		const input = setupRepo({
+			paths: [
+				'packages/web/src/app.ts',
+				'packages/engine/src/index.ts',
+				'packages/engine/src/testkit.ts',
+				'packages/engine/src/runs/startRun.ts',
+				'packages/engine/src/runs/stopRun.ts',
+			],
+			edges: [
+				{ from: 'packages/web/src/app.ts', to: 'packages/engine/src/index.ts' },
+				{ from: 'packages/web/src/app.ts', to: 'packages/engine/src/testkit.ts' },
+				{ from: 'packages/web/src/app.ts', to: 'packages/engine/src/runs/startRun.ts' },
+				{ from: 'packages/web/src/app.ts', to: 'packages/engine/src/runs/stopRun.ts' },
+			],
+			dependencies: [
+				['.', []],
+				['packages/engine', []],
+				['packages/web', []],
+			],
+		});
+		const manifests = setupFileTextInput({
+			contents: [['packages/engine/package.json', JSON.stringify({ exports: { '.': './src/index.ts', './testkit': './src/testkit.ts' } })]],
+			files: [],
+		});
+
+		const findings = await check.run({ inputs: { 'import-graph': input, 'file-text': manifests }, options: {} });
+
+		expect(findings).toStrictEqual([
+			{
+				siteKey: 'index-files:packages/engine/src/runs/startRun.ts|packages/engine/src/runs/stopRun.ts|packages/web/src/app.ts',
+				files: [{ path: 'packages/web/src/app.ts' }, { path: 'packages/engine/src/runs/startRun.ts' }, { path: 'packages/engine/src/runs/stopRun.ts' }],
+				detail: "imports 'packages/engine/src/runs/startRun.ts', 'packages/engine/src/runs/stopRun.ts' from inside another package",
+				guidance: "Import it from that package's entry, never by a path into its files.",
+			},
+		]);
+	});
+
+	test('leaves an import of a file that belongs to no workspace package alone', async () => {
+		const input = setupRepo({
+			paths: ['packages/web/src/app.ts', 'tooling/readVersion.ts'],
+			edges: [{ from: 'packages/web/src/app.ts', to: 'tooling/readVersion.ts' }],
+			dependencies: [
+				['.', []],
+				['packages/web', []],
+			],
+		});
+
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
+
+		expect(findings).toStrictEqual([]);
 	});
 
 	test('says nothing about an importer that belongs to no workspace package', async () => {

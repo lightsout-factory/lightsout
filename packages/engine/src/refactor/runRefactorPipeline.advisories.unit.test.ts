@@ -130,7 +130,7 @@ test('refactor: every advisory on the batch’s files rides the executor prompt,
 	expect(advisorySection.includes('[lightsout/duplicate-code-block] alpha/widget.ts')).toBeTruthy();
 	// its own guidance rides with it — each advisory rule asks for something
 	// different, so a blanket instruction cannot stand in for it
-	expect(advisorySection.includes('Extract the shared block, or say why the copies have to differ.')).toBeTruthy();
+	expect(advisorySection.includes('Write it once where both can import it.')).toBeTruthy();
 	// and only the batch's own files: beta's advisory belongs to beta's batch
 	expect(advisorySection.includes('beta/gadget.ts')).toBeFalsy();
 });

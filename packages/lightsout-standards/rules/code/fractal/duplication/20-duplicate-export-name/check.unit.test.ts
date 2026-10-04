@@ -19,7 +19,7 @@ describe('duplicate-export-name check', () => {
 				siteKey: 'duplicate-export-name:src/billing/formatAmount.ts|src/invoices/formatAmount.ts',
 				files: [{ path: 'src/billing/formatAmount.ts' }, { path: 'src/invoices/formatAmount.ts' }],
 				detail: "'formatAmount' is declared in 2 places",
-				guidance: 'One concept implemented twice, or a promotion candidate.',
+				guidance: 'Keep one and share it, or rename the one that is a different thing.',
 			},
 		]);
 	});
@@ -36,7 +36,7 @@ describe('duplicate-export-name check', () => {
 				siteKey: 'duplicate-export-name:src/billing/formatAmount.ts|src/invoices/formatAmount.ts|src/reports/formatAmount.ts',
 				files: [{ path: 'src/invoices/formatAmount.ts' }, { path: 'src/billing/formatAmount.ts' }, { path: 'src/reports/formatAmount.ts' }],
 				detail: "'formatAmount' is declared in 3 places",
-				guidance: 'One concept implemented twice, or a promotion candidate.',
+				guidance: 'Keep one and share it, or rename the one that is a different thing.',
 			},
 		]);
 	});
@@ -53,13 +53,13 @@ describe('duplicate-export-name check', () => {
 				siteKey: 'duplicate-export-name:src/billing/formatAmount.ts|src/invoices/formatAmount.ts',
 				files: [{ path: 'src/billing/formatAmount.ts' }, { path: 'src/invoices/formatAmount.ts' }],
 				detail: "'formatAmount' is declared in 2 places",
-				guidance: 'One concept implemented twice, or a promotion candidate.',
+				guidance: 'Keep one and share it, or rename the one that is a different thing.',
 			},
 			{
 				siteKey: 'duplicate-export-name:src/billing/getTotal.ts|src/reports/getTotal.ts',
 				files: [{ path: 'src/billing/getTotal.ts' }, { path: 'src/reports/getTotal.ts' }],
 				detail: "'getTotal' is declared in 2 places",
-				guidance: 'One concept implemented twice, or a promotion candidate.',
+				guidance: 'Keep one and share it, or rename the one that is a different thing.',
 			},
 		]);
 	});
@@ -76,8 +76,25 @@ describe('duplicate-export-name check', () => {
 				siteKey: 'duplicate-export-name:src/billing/formatAmount.ts|src/invoices/formatAmount.tsx|src/reports/formatAmount.mts',
 				files: [{ path: 'src/billing/formatAmount.ts' }, { path: 'src/invoices/formatAmount.tsx' }, { path: 'src/reports/formatAmount.mts' }],
 				detail: "'formatAmount' is declared in 3 places",
-				guidance: 'One concept implemented twice, or a promotion candidate.',
+				guidance: 'Keep one and share it, or rename the one that is a different thing.',
 			},
+		]);
+	});
+
+	test('compares names within one package, so two packages may each declare the same name', async () => {
+		const input = setupFileListInput({
+			files: ['packages/api/src/formatRate.ts', 'packages/web/src/formatRate.ts', 'packages/web/src/billing/formatRate.ts'],
+			dependencies: [
+				['.', []],
+				['packages/api', []],
+				['packages/web', []],
+			],
+		});
+
+		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
+
+		expect(findings.map(({ files }) => files)).toStrictEqual([
+			[{ path: 'packages/web/src/formatRate.ts' }, { path: 'packages/web/src/billing/formatRate.ts' }],
 		]);
 	});
 
@@ -109,7 +126,7 @@ describe('duplicate-export-name check', () => {
 				siteKey: 'duplicate-export-name:src/billing/formatAmount.ts|src/invoices/formatAmount.ts',
 				files: [{ path: 'src/billing/formatAmount.ts' }, { path: 'src/invoices/formatAmount.ts' }],
 				detail: "'formatAmount' is declared in 2 places",
-				guidance: 'One concept implemented twice, or a promotion candidate.',
+				guidance: 'Keep one and share it, or rename the one that is a different thing.',
 			},
 		]);
 	});

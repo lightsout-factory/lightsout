@@ -15,7 +15,6 @@ const rulePriority: string[] = [
 	'lightsout/index-files',
 	'lightsout/test-beside-subject',
 	'lightsout/test-support-in-src',
-	'lightsout/internal-import-from-outside',
 	'lightsout/multi-export',
 	'lightsout/filename-mismatch',
 	'lightsout/test-mock-prefix',
@@ -30,7 +29,6 @@ const rulePriority: string[] = [
 	'lightsout/duplicate-function-body',
 	'lightsout/duplicate-code-block',
 	'lightsout/duplicate-export-name',
-	'lightsout/synonym-export-name',
 ];
 
 /** Keeps one agent job readable. */

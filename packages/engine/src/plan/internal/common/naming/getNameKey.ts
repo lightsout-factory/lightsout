@@ -30,12 +30,6 @@ interface Params {
  * Conversion names are order-sensitive — `hexToRgb` and `rgbToHex` are
  * opposites, not one concept — so a `to`/`from` token pins word order instead of
  * sorting.
- *
- * Mirrored rather than imported: a standards library ships as a bare directory
- * with no `node_modules`, and the engine runs against whatever library
- * `standards-libraries` registers, so neither copy can import the other.
- *
- * @mirrors packages/lightsout-standards/common/naming/getNameKey.ts
  */
 export const getNameKey = ({ name }: Params): string => {
 	const tokens = getTokens({ name });

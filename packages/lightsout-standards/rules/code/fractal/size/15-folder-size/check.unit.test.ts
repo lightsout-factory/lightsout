@@ -17,7 +17,7 @@ describe('folder-size check', () => {
 				siteKey: 'folder-size:src/wide',
 				files: [{ path: 'src/wide' }],
 				detail: '4 files in one flat folder (cap ~3)',
-				guidance: 'Group them by domain, or graduate the concepts hiding in the pile.',
+				guidance: 'Group them into folders named for their subject.',
 				measure: 4,
 			},
 		]);
@@ -62,10 +62,49 @@ describe('folder-size check', () => {
 				siteKey: 'folder-size:src/wide',
 				files: [{ path: 'src/wide' }],
 				detail: '4 files in one flat folder (cap ~3)',
-				guidance: 'Group them by domain, or graduate the concepts hiding in the pile.',
+				guidance: 'Group them into folders named for their subject.',
 				measure: 4,
 			},
 		]);
+	});
+
+	test('counts a module folder as one in the folder that holds it, by its main file', async () => {
+		const input = setupFileListInput({
+			files: [
+				'src/wide/a.ts',
+				'src/wide/b.ts',
+				'src/wide/chargeCustomer/chargeCustomer.ts',
+				'src/wide/chargeCustomer/buildReceipt.ts',
+				'src/wide/refunds/c.ts',
+			],
+		});
+
+		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 2 } });
+
+		// two files and one module folder; refunds/ has no main file, so it is a subject folder and counts for nothing
+		expect(findings.map(({ siteKey, detail }) => ({ siteKey, detail }))).toStrictEqual([
+			{ siteKey: 'folder-size:src/wide', detail: '3 files in one flat folder (cap ~2)' },
+		]);
+	});
+
+	test('exempts types/ and constants/ at the top of a common/, which have no folder to group into', async () => {
+		const input = setupFileListInput({
+			files: [
+				'src/common/types/A.ts',
+				'src/common/types/B.ts',
+				'src/common/types/C.ts',
+				'src/common/constants/d.ts',
+				'src/common/constants/e.ts',
+				'src/common/constants/f.ts',
+				'src/billing/types/G.ts',
+				'src/billing/types/H.ts',
+				'src/billing/types/I.ts',
+			],
+		});
+
+		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 2 } });
+
+		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['folder-size:src/billing/types']);
 	});
 
 	test('reports every oversized folder separately, so each one carries its own site key', async () => {
@@ -88,7 +127,7 @@ describe('folder-size check', () => {
 				siteKey: 'folder-size:.',
 				files: [{ path: '.' }],
 				detail: '3 files in one flat folder (cap ~2)',
-				guidance: 'Group them by domain, or graduate the concepts hiding in the pile.',
+				guidance: 'Group them into folders named for their subject.',
 				measure: 3,
 			},
 		]);
@@ -116,7 +155,7 @@ describe('folder-size check', () => {
 					siteKey: 'folder-size:src/wide',
 					files: [{ path: 'src/wide' }],
 					detail: '3 files in one flat folder (cap ~2)',
-					guidance: 'Group them by domain, or graduate the concepts hiding in the pile.',
+					guidance: 'Group them into folders named for their subject.',
 					measure: 3,
 				},
 			],

@@ -41,13 +41,13 @@ test('cli: standards-check prints each finding, the rule breakdown, and exits 0'
 
 	expect(stderr).toBe('');
 	// each rule gets a heading carrying its severity and count
-	expect(stdout).toMatch(/ℹ lightsout\/synonym-export-name · 1 advisory/);
+	expect(stdout).toMatch(/ℹ lightsout\/duplicate-export-name · 1 advisory/);
 	// the shared guidance is stated once, under the rows it covers
-	expect(stdout).toContain('Likely one concept living under two names.');
+	expect(stdout).toContain('Keep one and share it, or rename the one that is a different thing.');
 	// and the tally is a table, closed off by the report path
-	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+—\s+│\s+1\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/duplicate-export-name\s+│\s+—\s+│\s+1\s+│/);
 	// the rule's summary rides under its own row — a rule id alone says nothing
-	expect(stdout).toMatch(/│ One naming pattern, and one name for each concept\.\s*│/);
+	expect(stdout).toMatch(/│ Exports in different places that share one name\.\s*│/);
 	expect(stdout).toMatch(/report: \.lightsout\/standards-check\.json\n$/);
 	// the standards check reports; it never fails the caller
 	expect(code).toBe(0);
@@ -75,7 +75,7 @@ test('cli: standards-check writes its typed report to .lightsout/standards-check
 	const report = JSON.parse(await readFile(join(cwd, '.lightsout', 'standards-check.json'), 'utf8'));
 	expect(report.path).toBe('.');
 	// the evidence file carries the findings, not just the printed summary
-	expect(report.findings.some((finding: { rule: string }) => finding.rule === 'lightsout/synonym-export-name')).toBeTruthy();
+	expect(report.findings.some((finding: { rule: string }) => finding.rule === 'lightsout/duplicate-export-name')).toBeTruthy();
 	expect(code).toBe(0);
 });
 
@@ -109,7 +109,7 @@ test('cli: standards-check reports nothing new once the findings are baselined',
 	const { stdout, stderr, code } = await runCli({ args: ['standards-check', '--deterministic-checks', '--cwd', cwd] });
 
 	// a baselined finding is accepted debt, not news
-	expect(stdout.includes('synonym-export-name')).toBeFalsy();
+	expect(stdout.includes('duplicate-export-name')).toBeFalsy();
 	// nothing left to report reads as a sentence, not an empty table
 	expect(stdout).toContain('clean — nothing blocking, no advisories');
 	expect(stdout.includes('┌')).toBeFalsy();
@@ -123,7 +123,7 @@ test('cli: standards-check --all reports the findings the baseline already accep
 	const { stdout, stderr, code } = await runCli({ args: ['standards-check', '--deterministic-checks', '--all', '--cwd', cwd] });
 
 	// a baselined site is printed again under --all
-	expect(stdout).toMatch(/ℹ lightsout\/synonym-export-name · 1 advisory/);
+	expect(stdout).toMatch(/ℹ lightsout\/duplicate-export-name · 1 advisory/);
 	expect(stderr).toBe('');
 	expect(code).toBe(0);
 });
@@ -134,7 +134,7 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 	const { stdout, stderr, code } = await runCli({ args: ['standards-check', '--list', '--cwd', cwd] });
 
 	// every rule is listed with the state it runs at, who checks it, and the doc it enforces
-	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: code\/fractal\/duplication\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/duplicate-export-name\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: code\/fractal\/duplication\s+│/);
 	expect(stdout).toMatch(/│ lightsout\/type-assertion\s+│\s+blocking\s+│\s+deterministic\s+│/);
 	// a rule no check covers is listed too, and says so
 	expect(stdout).toMatch(/│ lightsout\/object-args\s+│\s+advisory\s+│\s+agent\s+│\s+lightsout: code\/code-style\/functions\s+│/);
@@ -153,7 +153,7 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 	// the test-shape rules name the document they enforce
 	expect(stdout).toMatch(/│ lightsout\/test-manual-mock-cleanup\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: tests\/code-style\s+│/);
 	// and so do the file-placement rules, across the three docs they come from
-	expect(stdout).toMatch(/│ lightsout\/banned-folder-name\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: code\/fractal\/shared-code\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/file-directly-in-common\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: code\/fractal\/layout\s+│/);
 	expect(stdout).toMatch(/│ lightsout\/index-files\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: code\/fractal\/imports\s+│/);
 	expect(stdout).toMatch(/│ lightsout\/test-beside-subject\s+│\s+advisory\s+│\s+deterministic\s+│\s+lightsout: tests\/fractal\s+│/);
 	// --list answers a question about configuration — it never checks the tree
@@ -163,14 +163,14 @@ test('cli: standards-check --list prints the enforcement ledger and runs no chec
 });
 
 test('cli: standards-check --list marks the rules this repo configured', async () => {
-	const { cwd } = await seedStandardsFixture({ config: { 'standards-rule-settings': { 'synonym-export-name': 'off' } } });
+	const { cwd } = await seedStandardsFixture({ config: { 'standards-rule-settings': { 'duplicate-export-name': 'off' } } });
 	const { cwd: defaultCwd } = await seedStandardsFixture();
 
 	const { stdout, code } = await runCli({ args: ['standards-check', '--list', '--cwd', cwd] });
 	const { stdout: defaultStdout } = await runCli({ args: ['standards-check', '--list', '--cwd', defaultCwd] });
 
 	// "this is our policy" reads apart from "this is the default"
-	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+off \(config\)\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/duplicate-export-name\s+│\s+off \(config\)\s+│/);
 	// and the totals move by exactly that one advisory rule turned off
 	const totals = readRuleTotals({ stdout: defaultStdout });
 	expect(readRuleTotals({ stdout })).toStrictEqual({ ...totals, advisory: (totals.advisory ?? 0) - 1, off: (totals.off ?? 0) + 1 });
@@ -182,9 +182,9 @@ test('cli: standards-check --path narrows the run to one subtree', async () => {
 
 	const { stdout, stderr, code } = await runCli({ args: ['standards-check', '--deterministic-checks', '--path', 'src/a', '--cwd', cwd] });
 
-	// the synonym pair is split by the narrowed scope, so tier 0 has nothing to
+	// the same-name pair is split by the narrowed scope, so tier 0 has nothing to
 	// pair
-	expect(stdout.includes('synonym-export-name')).toBeFalsy();
+	expect(stdout.includes('duplicate-export-name')).toBeFalsy();
 	const report = JSON.parse(await readFile(join(cwd, '.lightsout', 'standards-check.json'), 'utf8'));
 	// the flag reaches the engine as the checked subpath
 	expect(report.path).toBe('src/a');

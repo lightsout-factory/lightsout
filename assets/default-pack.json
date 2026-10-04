@@ -5,12 +5,12 @@
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
-    "rules": 53,
-    "deterministic": 35,
-    "agent": 20,
-    "topics": 14,
+    "rules": 48,
+    "deterministic": 34,
+    "agent": 17,
+    "topics": 13,
     "packs": 5,
-    "withFixtures": 53
+    "withFixtures": 48
   },
   "packs": [
     {
@@ -156,8 +156,7 @@
       "include": {
         "packs": [],
         "topics": [
-          "lightsout/code/fractal/modules",
-          "lightsout/code/fractal/shared-code",
+          "lightsout/code/fractal/layout",
           "lightsout/code/fractal/size",
           "lightsout/code/fractal/duplication",
           "lightsout/code/fractal/imports",
@@ -168,8 +167,7 @@
       "topics": [
         "lightsout/code/fractal/duplication",
         "lightsout/code/fractal/imports",
-        "lightsout/code/fractal/modules",
-        "lightsout/code/fractal/shared-code",
+        "lightsout/code/fractal/layout",
         "lightsout/code/fractal/size",
         "lightsout/tests/fractal"
       ],
@@ -216,7 +214,9 @@
         {
           "name": "lightsout/file-directly-in-common",
           "severity": "advisory",
-          "options": {}
+          "options": {
+            "cap": 20
+          }
         },
         {
           "name": "lightsout/file-size",
@@ -227,11 +227,6 @@
         },
         {
           "name": "lightsout/filename-mismatch",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/files-that-must-not-have-dedicated-tests",
           "severity": "advisory",
           "options": {}
         },
@@ -265,11 +260,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/internal-import-from-outside",
-          "severity": "off",
-          "options": {}
-        },
-        {
           "name": "lightsout/module-boundary-testing",
           "severity": "advisory",
           "options": {}
@@ -280,17 +270,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/module-folder-layout",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/multi-export",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/naming-for-reuse",
           "severity": "advisory",
           "options": {}
         },
@@ -306,11 +286,6 @@
         },
         {
           "name": "lightsout/shared-package-criteria",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/synonym-export-name",
           "severity": "advisory",
           "options": {}
         },
@@ -333,10 +308,10 @@
         }
       ],
       "totals": {
-        "rules": 29,
-        "deterministic": 22,
-        "agent": 8,
-        "topics": 6
+        "rules": 24,
+        "deterministic": 21,
+        "agent": 5,
+        "topics": 5
       }
     },
     {
@@ -397,8 +372,7 @@
         "lightsout/code/code-style/type-safety",
         "lightsout/code/fractal/duplication",
         "lightsout/code/fractal/imports",
-        "lightsout/code/fractal/modules",
-        "lightsout/code/fractal/shared-code",
+        "lightsout/code/fractal/layout",
         "lightsout/code/fractal/size",
         "lightsout/tests/code-style",
         "lightsout/tests/fractal"
@@ -466,7 +440,9 @@
         {
           "name": "lightsout/file-directly-in-common",
           "severity": "advisory",
-          "options": {}
+          "options": {
+            "cap": 20
+          }
         },
         {
           "name": "lightsout/file-size",
@@ -477,11 +453,6 @@
         },
         {
           "name": "lightsout/filename-mismatch",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/files-that-must-not-have-dedicated-tests",
           "severity": "advisory",
           "options": {}
         },
@@ -515,11 +486,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/internal-import-from-outside",
-          "severity": "off",
-          "options": {}
-        },
-        {
           "name": "lightsout/jest-spyon-vs-jest-mock",
           "severity": "advisory",
           "options": {}
@@ -535,22 +501,12 @@
           "options": {}
         },
         {
-          "name": "lightsout/module-folder-layout",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/multi-export",
           "severity": "advisory",
           "options": {}
         },
         {
           "name": "lightsout/named-string-values",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/naming-for-reuse",
           "severity": "advisory",
           "options": {}
         },
@@ -610,11 +566,6 @@
           "options": {}
         },
         {
-          "name": "lightsout/synonym-export-name",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/test-beside-subject",
           "severity": "advisory",
           "options": {}
@@ -668,10 +619,10 @@
         }
       ],
       "totals": {
-        "rules": 50,
-        "deterministic": 34,
-        "agent": 18,
-        "topics": 11
+        "rules": 45,
+        "deterministic": 33,
+        "agent": 15,
+        "topics": 10
       }
     },
     {
@@ -751,9 +702,7 @@
         "dead-export",
         "duplicate-function-body",
         "duplicate-code-block",
-        "duplicate-export-name",
-        "synonym-export-name",
-        "naming-for-reuse"
+        "duplicate-export-name"
       ]
     },
     {
@@ -764,30 +713,21 @@
         "import-path-alias",
         "index-files",
         "index-file-contents",
-        "circular-dependencies",
-        "internal-import-from-outside"
+        "circular-dependencies"
       ]
     },
     {
       "set": "code",
-      "path": "code/fractal/modules",
-      "intro": "# Modules\n\nHow code is split into modules: one export per file, the file named after it, and a folder only when a module needs files of its own.",
+      "path": "code/fractal/layout",
+      "intro": "# Layout\n\nEvery folder under `src/` is one of three kinds.\n\n**A module** is one export and the code only it uses. It is one file, named after its export. It becomes a folder, with a main file of the same name, only when it needs files of its own, and goes back to a file when the folder is down to one. The folder takes its export's name and casing, so a class folder is PascalCase: `HttpClient/HttpClient.ts`. Everything in the folder except the main file is private to the module.\n\n**A subject folder** groups modules about one subject, such as `billing/` or `git/`, and has no main file. Everything at its top level is public. The top folders of `src/` are subject folders.\n\n**`common/`** holds what a folder's contents share. It sits in the lowest folder that contains every file using it, and is private to that folder. Functions and classes sit directly in it, types in `common/types/`, constants in `common/constants/`. A file with both a type and a value goes by its value.\n\nNever make any other kind of folder.",
       "ruleIds": [
-        "module-file-to-folder",
-        "module-folder-layout",
         "multi-export",
-        "filename-mismatch"
-      ]
-    },
-    {
-      "set": "code",
-      "path": "code/fractal/shared-code",
-      "intro": "# Shared Code\n\nShared code lives in `common/` folders. A `common/` folder sits inside the folder whose code shares it: `src/common/` serves all of `src/`, and `src/billing/common/` serves only `src/billing/`.\n\nThe folders for each kind of code in `common/`:\n\n| Folder | Holds |\n| --- | --- |\n| `utils/` | Stateless functions, pure or doing I/O (`formatDate`, `loadConfig`) |\n| `types/` | Types (`CopyResult`) |\n| `constants/` | Constants (`defaultConfig`, `Action`) |\n| `services/` | Classes that hold state (`ApiClient`) |\n\nA domain folder is named for one subject. Inside `common/`, it holds two or more functions about that subject, such as `formatting/` or `parsing/`. Outside `common/`, a domain folder groups related modules under the subject's name and has no main file. The top-level folders of `src/` are domain folders, named for the capabilities the product has, such as `billing/`, `issues/` or `git/`.",
-      "ruleIds": [
+        "filename-mismatch",
+        "module-file-to-folder",
         "shared-code-placement",
-        "reuse-common-code",
         "file-directly-in-common",
         "banned-folder-name",
+        "reuse-common-code",
         "case-collision",
         "shared-package-criteria"
       ]
@@ -830,13 +770,12 @@
     {
       "set": "tests",
       "path": "tests/fractal",
-      "intro": "# Test Placement\n\nWhere unit tests sit, what they cover and how large they grow.\n\n- A module is one exported item and the code only it uses: a file, or a folder whose main file is named after it. Its public API is the files code outside the module calls.\n- An index file is `index.ts`, or the same name in another dialect such as `index.tsx`. A package's entry is the index file its manifest publishes to other packages.",
+      "intro": "# Test Placement\n\nWhere unit tests sit, what they cover and how large they grow.\n\n- A module is one export and the code only it uses: a file, or a folder whose main file is named after it.\n- A public file is a top-level file of a subject folder, or a module folder's main file. A file in a `common/`, and every other file in a module folder, is private.\n- An index file is `index.ts`, or the same name in another dialect such as `index.tsx`. A package's entry is the index file its manifest publishes to other packages.",
       "ruleIds": [
         "test-beside-subject",
         "test-support-in-src",
         "test-file-size",
-        "module-boundary-testing",
-        "files-that-must-not-have-dedicated-tests"
+        "module-boundary-testing"
       ]
     },
     {
@@ -892,32 +831,22 @@
       "id": "banned-folder-name",
       "name": "lightsout/banned-folder-name",
       "set": "code",
-      "documentPath": "code/fractal/shared-code",
+      "documentPath": "code/fractal/layout",
       "summary": "Folder names that say nothing about what the folder holds.",
       "deterministic": true,
-      "agent": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
-        "pass": 4,
-        "fail": 1
+        "pass": 2,
+        "fail": 2
       },
-      "prose": "## Banned Folder Name\n\nNever name a folder `helpers/`, `lib/`, `core/`, `misc/` or `shared/` anywhere inside a package's `src/`, `common/` included. Name a folder `utils/`, `types/` or `constants/` only inside `common/`.\n\n- `components/`, `hooks/`, `services/`, `controllers/` and `models/` are allowed everywhere, with no framework to declare.\n- Name the folder for the domain it serves instead, such as `billing/` or `formatting/`, or move its files into the module that owns them.\n\nA name that says nothing about what a folder holds draws code nobody placed, and `common/` is the only folder name with a meaning of its own.",
+      "prose": "## Banned Folder Name\n\nName a folder for its subject, such as `billing/` or `formatting/`, never for the kind of code it holds.\n\n- `utils/`, `services/`, `helpers/`, `lib/`, `core/`, `misc/`, `shared/` and `internal/` are never folder names.\n- `types/` and `constants/` are folder names only at the top of a `common/`.\n\nA name that says nothing about what a folder holds draws code nobody placed, and `common/` is the only folder name with a meaning of its own.",
       "fixtures": [
         {
           "side": "pass",
           "path": "src/billing/common/types/Invoice.ts",
           "text": "export interface Invoice {\n\tid: string;\n}\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/billing/common/utils/formatRate.ts",
-          "text": "export const formatRate = () => 2;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/billing/components/InvoiceCard.tsx",
-          "text": "// Framework vocabulary is legal without any framework declared.\nexport const InvoiceCard = () => <section>invoice</section>;\n"
         },
         {
           "side": "pass",
@@ -928,6 +857,11 @@
           "side": "fail",
           "path": "src/billing/helpers/formatAmount.ts",
           "text": "export const formatAmount = () => 1;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/invoices/types/Invoice.ts",
+          "text": "// Incorrect: a types/ folder outside the top of a common/.\nexport interface Invoice {\n\tid: string;\n}\n"
         }
       ],
       "example": {
@@ -942,7 +876,7 @@
       "id": "case-collision",
       "name": "lightsout/case-collision",
       "set": "code",
-      "documentPath": "code/fractal/shared-code",
+      "documentPath": "code/fractal/layout",
       "summary": "Names that differ only in upper and lower case.",
       "deterministic": true,
       "agent": false,
@@ -1255,7 +1189,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Duplicate Export Name\n\nBefore you add an export, search the repository for one with the same name. Two exports with one name are usually one thing written twice: keep one, and move it to the `common/` both users share, as `shared-code-placement` says.\n\nTwo may share a name only when they are different things, or the same idea built separately for packages that cannot share code.\n\nThen a search by name finds the one place a concept lives.",
+      "prose": "## Duplicate Export Name\n\nWithin a package, give every export a name no other export has. Before you add an export, search the package for that name.\n\n- The same thing written twice: keep one, and move it where `shared-code-placement` says.\n- Two different things: rename one, so each name says what it is.\n\nThen a search by name finds the one place a concept lives.",
       "fixtures": [
         {
           "side": "pass",
@@ -1302,7 +1236,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Duplicate Function Body\n\nNever write a function whose body is another function's with only the names or the literal values changed. Keep one, and pass the values that differed as arguments.\n\n- This covers every function, method and callback, in the same file or another.\n- Two functions that call different hooks are different: a hook cannot be passed in.\n\nRenaming a copy hides it from a search by name, so the two drift apart unseen.",
+      "prose": "## Duplicate Function Body\n\nNever write a function whose body is another function's with only the names or the literal values changed. Keep one, and pass the values that differed as arguments.\n\n- This covers every function, method and callback, in the same file or another.\n\nRenaming a copy hides it from a search by name, so the two drift apart unseen.",
       "fixtures": [
         {
           "side": "pass",
@@ -1377,44 +1311,66 @@
       "id": "file-directly-in-common",
       "name": "lightsout/file-directly-in-common",
       "set": "code",
-      "documentPath": "code/fractal/shared-code",
-      "summary": "Shared files go in a folder for their kind of code.",
+      "documentPath": "code/fractal/layout",
+      "summary": "What the inside of a common folder looks like.",
       "deterministic": true,
       "agent": false,
       "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
+      "defaultOptions": {
+        "cap": 20
       },
-      "prose": "## File Directly in Common\n\nNever put a file directly in `common/`. Put it in the folder for its kind of code, `utils/`, `types/`, `constants/` or `services/`, or in a domain folder.\n\n- Make that folder with its first file. A type folder with one file is fine.\n- Never invent a new type folder.\n\nThen where a file goes is never a choice, and a reader knows where to look.",
+      "fixtureCounts": {
+        "pass": 4,
+        "fail": 4
+      },
+      "prose": "## File Directly in Common\n\nInside `common/`:\n\n- A function or class sits directly in `common/`.\n- A type goes in `common/types/`, a constant in `common/constants/`. A value not written as a function or class is a constant, one built by a call included.\n- Make no other folder until `common/` holds more than 20 files. Then group its functions into subject folders, such as `formatting/`.\n\nThen where a shared file goes is never a choice, and a reader knows where to look.",
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/billing/billing.ts",
-          "text": "import { formatRate } from './common/utils/formatRate.ts';\n\nexport const billing = ({ rate }: { rate: number }): string => `Rate ${formatRate({ rate })}`;\n"
+          "path": "src/billing/chargeCustomer.ts",
+          "text": "import { rateLimits } from './common/constants/rateLimits.ts';\nimport { formatRate } from './common/formatRate.ts';\nimport type { Rate } from './common/types/Rate.ts';\n\nexport const chargeCustomer = ({ rate }: { rate: Rate }): string => `Rate ${formatRate({ rate })} of ${rateLimits.max}`;\n"
         },
         {
           "side": "pass",
-          "path": "src/billing/common/utils/formatRate.ts",
-          "text": "// Correct: a function, so it goes in common/utils/.\nexport const formatRate = ({ rate }: { rate: number }): string => `${(rate * 100).toFixed(1)}%`;\n"
+          "path": "src/billing/common/constants/rateLimits.ts",
+          "text": "// Correct: a constant, so it goes in common/constants/.\nexport const rateLimits = { min: 0, max: 1 } as const;\n"
         },
         {
-          "side": "fail",
-          "path": "src/billing/billing.ts",
-          "text": "import { formatRate } from './common/formatRate.ts';\n\nexport const billing = ({ rate }: { rate: number }): string => `Rate ${formatRate({ rate })}`;\n"
-        },
-        {
-          "side": "fail",
+          "side": "pass",
           "path": "src/billing/common/formatRate.ts",
-          "text": "// Incorrect: sits directly in common/. A function belongs in common/utils/.\nexport const formatRate = ({ rate }: { rate: number }): string => `${(rate * 100).toFixed(1)}%`;\n"
+          "text": "import type { Rate } from './types/Rate.ts';\n\n// Correct: a function, so it sits directly in common/.\nexport const formatRate = ({ rate }: { rate: Rate }): string => `${(rate.value * 100).toFixed(1)}%`;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/billing/common/types/Rate.ts",
+          "text": "// Correct: a type, so it goes in common/types/.\nexport interface Rate {\n\tvalue: number;\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/chargeCustomer.ts",
+          "text": "import { rateLimits } from './common/rateLimits.ts';\nimport type { Rate } from './common/Rate.ts';\nimport { formatRate } from './common/formatting/formatRate.ts';\n\nexport const chargeCustomer = ({ rate }: { rate: Rate }): string => `Rate ${formatRate({ rate })} of ${rateLimits.max}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/formatting/formatRate.ts",
+          "text": "import type { Rate } from '../Rate.ts';\n\n// Incorrect: common/ holds three files, so it has no folder but types/ and\n// constants/. A function sits directly in common/.\nexport const formatRate = ({ rate }: { rate: Rate }): string => `${(rate.value * 100).toFixed(1)}%`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/Rate.ts",
+          "text": "// Incorrect: a type sitting directly in common/. It belongs in common/types/.\nexport interface Rate {\n\tvalue: number;\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/rateLimits.ts",
+          "text": "// Incorrect: a constant sitting directly in common/. It belongs in\n// common/constants/.\nexport const rateLimits = { min: 0, max: 1 } as const;\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/billing/common/formatRate.ts",
-          "pass": "src/billing/common/utils/formatRate.ts"
+          "fail": "src/billing/common/formatting/formatRate.ts",
+          "pass": "src/billing/common/formatRate.ts"
         }
       }
     },
@@ -1444,7 +1400,7 @@
         {
           "side": "pass",
           "path": "src/index.ts",
-          "text": "// A package entry past the cap, and exempt at any length: the remedy a size finding\n// asks for — split the file, or graduate the concept — is the one thing a\n// package's public API cannot do.\nexport { getCatalogEntry001 } from './catalog/entries/getCatalogEntry001';\nexport { getCatalogEntry002 } from './catalog/entries/getCatalogEntry002';\nexport { getCatalogEntry003 } from './catalog/entries/getCatalogEntry003';\nexport { getCatalogEntry004 } from './catalog/entries/getCatalogEntry004';\nexport { getCatalogEntry005 } from './catalog/entries/getCatalogEntry005';\nexport { getCatalogEntry006 } from './catalog/entries/getCatalogEntry006';\nexport { getCatalogEntry007 } from './catalog/entries/getCatalogEntry007';\nexport { getCatalogEntry008 } from './catalog/entries/getCatalogEntry008';\nexport { getCatalogEntry009 } from './catalog/entries/getCatalogEntry009';\nexport { getCatalogEntry010 } from './catalog/entries/getCatalogEntry010';\nexport { getCatalogEntry011 } from './catalog/entries/getCatalogEntry011';\nexport { getCatalogEntry012 } from './catalog/entries/getCatalogEntry012';\nexport { getCatalogEntry013 } from './catalog/entries/getCatalogEntry013';\nexport { getCatalogEntry014 } from './catalog/entries/getCatalogEntry014';\nexport { getCatalogEntry015 } from './catalog/entries/getCatalogEntry015';\nexport { getCatalogEntry016 } from './catalog/entries/getCatalogEntry016';\nexport { getCatalogEntry017 } from './catalog/entries/getCatalogEntry017';\nexport { getCatalogEntry018 } from './catalog/entries/getCatalogEntry018';\nexport { getCatalogEntry019 } from './catalog/entries/getCatalogEntry019';\nexport { getCatalogEntry020 } from './catalog/entries/getCatalogEntry020';\nexport { getCatalogEntry021 } from './catalog/entries/getCatalogEntry021';\nexport { getCatalogEntry022 } from './catalog/entries/getCatalogEntry022';\nexport { getCatalogEntry023 } from './catalog/entries/getCatalogEntry023';\nexport { getCatalogEntry024 } from './catalog/entries/getCatalogEntry024';\nexport { getCatalogEntry025 } from './catalog/entries/getCatalogEntry025';\nexport { getCatalogEntry026 } from './catalog/entries/getCatalogEntry026';\nexport { getCatalogEntry027 } from './catalog/entries/getCatalogEntry027';\nexport { getCatalogEntry028 } from './catalog/entries/getCatalogEntry028';\nexport { getCatalogEntry029 } from './catalog/entries/getCatalogEntry029';\nexport { getCatalogEntry030 } from './catalog/entries/getCatalogEntry030';\nexport { getCatalogEntry031 } from './catalog/entries/getCatalogEntry031';\nexport { getCatalogEntry032 } from './catalog/entries/getCatalogEntry032';\nexport { getCatalogEntry033 } from './catalog/entries/getCatalogEntry033';\nexport { getCatalogEntry034 } from './catalog/entries/getCatalogEntry034';\nexport { getCatalogEntry035 } from './catalog/entries/getCatalogEntry035';\nexport { getCatalogEntry036 } from './catalog/entries/getCatalogEntry036';\nexport { getCatalogEntry037 } from './catalog/entries/getCatalogEntry037';\nexport { getCatalogEntry038 } from './catalog/entries/getCatalogEntry038';\nexport { getCatalogEntry039 } from './catalog/entries/getCatalogEntry039';\nexport { getCatalogEntry040 } from './catalog/entries/getCatalogEntry040';\nexport { getCatalogEntry041 } from './catalog/entries/getCatalogEntry041';\nexport { getCatalogEntry042 } from './catalog/entries/getCatalogEntry042';\nexport { getCatalogEntry043 } from './catalog/entries/getCatalogEntry043';\nexport { getCatalogEntry044 } from './catalog/entries/getCatalogEntry044';\nexport { getCatalogEntry045 } from './catalog/entries/getCatalogEntry045';\nexport { getCatalogEntry046 } from './catalog/entries/getCatalogEntry046';\nexport { getCatalogEntry047 } from './catalog/entries/getCatalogEntry047';\nexport { getCatalogEntry048 } from './catalog/entries/getCatalogEntry048';\nexport { getCatalogEntry049 } from './catalog/entries/getCatalogEntry049';\nexport { getCatalogEntry050 } from './catalog/entries/getCatalogEntry050';\nexport { getCatalogEntry051 } from './catalog/entries/getCatalogEntry051';\nexport { getCatalogEntry052 } from './catalog/entries/getCatalogEntry052';\nexport { getCatalogEntry053 } from './catalog/entries/getCatalogEntry053';\nexport { getCatalogEntry054 } from './catalog/entries/getCatalogEntry054';\nexport { getCatalogEntry055 } from './catalog/entries/getCatalogEntry055';\nexport { getCatalogEntry056 } from './catalog/entries/getCatalogEntry056';\nexport { getCatalogEntry057 } from './catalog/entries/getCatalogEntry057';\nexport { getCatalogEntry058 } from './catalog/entries/getCatalogEntry058';\nexport { getCatalogEntry059 } from './catalog/entries/getCatalogEntry059';\nexport { getCatalogEntry060 } from './catalog/entries/getCatalogEntry060';\nexport { getCatalogEntry061 } from './catalog/entries/getCatalogEntry061';\nexport { getCatalogEntry062 } from './catalog/entries/getCatalogEntry062';\nexport { getCatalogEntry063 } from './catalog/entries/getCatalogEntry063';\nexport { getCatalogEntry064 } from './catalog/entries/getCatalogEntry064';\nexport { getCatalogEntry065 } from './catalog/entries/getCatalogEntry065';\nexport { getCatalogEntry066 } from './catalog/entries/getCatalogEntry066';\nexport { getCatalogEntry067 } from './catalog/entries/getCatalogEntry067';\nexport { getCatalogEntry068 } from './catalog/entries/getCatalogEntry068';\nexport { getCatalogEntry069 } from './catalog/entries/getCatalogEntry069';\nexport { getCatalogEntry070 } from './catalog/entries/getCatalogEntry070';\nexport { getCatalogEntry071 } from './catalog/entries/getCatalogEntry071';\nexport { getCatalogEntry072 } from './catalog/entries/getCatalogEntry072';\nexport { getCatalogEntry073 } from './catalog/entries/getCatalogEntry073';\nexport { getCatalogEntry074 } from './catalog/entries/getCatalogEntry074';\nexport { getCatalogEntry075 } from './catalog/entries/getCatalogEntry075';\nexport { getCatalogEntry076 } from './catalog/entries/getCatalogEntry076';\nexport { getCatalogEntry077 } from './catalog/entries/getCatalogEntry077';\nexport { getCatalogEntry078 } from './catalog/entries/getCatalogEntry078';\nexport { getCatalogEntry079 } from './catalog/entries/getCatalogEntry079';\nexport { getCatalogEntry080 } from './catalog/entries/getCatalogEntry080';\nexport { getCatalogEntry081 } from './catalog/entries/getCatalogEntry081';\nexport { getCatalogEntry082 } from './catalog/entries/getCatalogEntry082';\nexport { getCatalogEntry083 } from './catalog/entries/getCatalogEntry083';\nexport { getCatalogEntry084 } from './catalog/entries/getCatalogEntry084';\nexport { getCatalogEntry085 } from './catalog/entries/getCatalogEntry085';\nexport { getCatalogEntry086 } from './catalog/entries/getCatalogEntry086';\nexport { getCatalogEntry087 } from './catalog/entries/getCatalogEntry087';\nexport { getCatalogEntry088 } from './catalog/entries/getCatalogEntry088';\nexport { getCatalogEntry089 } from './catalog/entries/getCatalogEntry089';\nexport { getCatalogEntry090 } from './catalog/entries/getCatalogEntry090';\nexport { getCatalogEntry091 } from './catalog/entries/getCatalogEntry091';\nexport { getCatalogEntry092 } from './catalog/entries/getCatalogEntry092';\nexport { getCatalogEntry093 } from './catalog/entries/getCatalogEntry093';\nexport { getCatalogEntry094 } from './catalog/entries/getCatalogEntry094';\nexport { getCatalogEntry095 } from './catalog/entries/getCatalogEntry095';\nexport { getCatalogEntry096 } from './catalog/entries/getCatalogEntry096';\nexport { getCatalogEntry097 } from './catalog/entries/getCatalogEntry097';\nexport { getCatalogEntry098 } from './catalog/entries/getCatalogEntry098';\nexport { getCatalogEntry099 } from './catalog/entries/getCatalogEntry099';\nexport { getCatalogEntry100 } from './catalog/entries/getCatalogEntry100';\nexport { getCatalogEntry101 } from './catalog/entries/getCatalogEntry101';\nexport { getCatalogEntry102 } from './catalog/entries/getCatalogEntry102';\nexport { getCatalogEntry103 } from './catalog/entries/getCatalogEntry103';\nexport { getCatalogEntry104 } from './catalog/entries/getCatalogEntry104';\nexport { getCatalogEntry105 } from './catalog/entries/getCatalogEntry105';\nexport { getCatalogEntry106 } from './catalog/entries/getCatalogEntry106';\nexport { getCatalogEntry107 } from './catalog/entries/getCatalogEntry107';\nexport { getCatalogEntry108 } from './catalog/entries/getCatalogEntry108';\nexport { getCatalogEntry109 } from './catalog/entries/getCatalogEntry109';\nexport { getCatalogEntry110 } from './catalog/entries/getCatalogEntry110';\nexport { getCatalogEntry111 } from './catalog/entries/getCatalogEntry111';\nexport { getCatalogEntry112 } from './catalog/entries/getCatalogEntry112';\nexport { getCatalogEntry113 } from './catalog/entries/getCatalogEntry113';\nexport { getCatalogEntry114 } from './catalog/entries/getCatalogEntry114';\nexport { getCatalogEntry115 } from './catalog/entries/getCatalogEntry115';\nexport { getCatalogEntry116 } from './catalog/entries/getCatalogEntry116';\nexport { getCatalogEntry117 } from './catalog/entries/getCatalogEntry117';\nexport { getCatalogEntry118 } from './catalog/entries/getCatalogEntry118';\nexport { getCatalogEntry119 } from './catalog/entries/getCatalogEntry119';\nexport { getCatalogEntry120 } from './catalog/entries/getCatalogEntry120';\nexport { getCatalogEntry121 } from './catalog/entries/getCatalogEntry121';\nexport { getCatalogEntry122 } from './catalog/entries/getCatalogEntry122';\nexport { getCatalogEntry123 } from './catalog/entries/getCatalogEntry123';\nexport { getCatalogEntry124 } from './catalog/entries/getCatalogEntry124';\nexport { getCatalogEntry125 } from './catalog/entries/getCatalogEntry125';\nexport { getCatalogEntry126 } from './catalog/entries/getCatalogEntry126';\nexport { getCatalogEntry127 } from './catalog/entries/getCatalogEntry127';\nexport { getCatalogEntry128 } from './catalog/entries/getCatalogEntry128';\nexport { getCatalogEntry129 } from './catalog/entries/getCatalogEntry129';\nexport { getCatalogEntry130 } from './catalog/entries/getCatalogEntry130';\nexport { getCatalogEntry131 } from './catalog/entries/getCatalogEntry131';\nexport { getCatalogEntry132 } from './catalog/entries/getCatalogEntry132';\nexport { getCatalogEntry133 } from './catalog/entries/getCatalogEntry133';\nexport { getCatalogEntry134 } from './catalog/entries/getCatalogEntry134';\nexport { getCatalogEntry135 } from './catalog/entries/getCatalogEntry135';\nexport { getCatalogEntry136 } from './catalog/entries/getCatalogEntry136';\nexport { getCatalogEntry137 } from './catalog/entries/getCatalogEntry137';\nexport { getCatalogEntry138 } from './catalog/entries/getCatalogEntry138';\nexport { getCatalogEntry139 } from './catalog/entries/getCatalogEntry139';\nexport { getCatalogEntry140 } from './catalog/entries/getCatalogEntry140';\nexport { getCatalogEntry141 } from './catalog/entries/getCatalogEntry141';\nexport { getCatalogEntry142 } from './catalog/entries/getCatalogEntry142';\nexport { getCatalogEntry143 } from './catalog/entries/getCatalogEntry143';\nexport { getCatalogEntry144 } from './catalog/entries/getCatalogEntry144';\nexport { getCatalogEntry145 } from './catalog/entries/getCatalogEntry145';\nexport { getCatalogEntry146 } from './catalog/entries/getCatalogEntry146';\nexport { getCatalogEntry147 } from './catalog/entries/getCatalogEntry147';\nexport { getCatalogEntry148 } from './catalog/entries/getCatalogEntry148';\nexport { getCatalogEntry149 } from './catalog/entries/getCatalogEntry149';\nexport { getCatalogEntry150 } from './catalog/entries/getCatalogEntry150';\nexport { getCatalogEntry151 } from './catalog/entries/getCatalogEntry151';\nexport { getCatalogEntry152 } from './catalog/entries/getCatalogEntry152';\nexport { getCatalogEntry153 } from './catalog/entries/getCatalogEntry153';\nexport { getCatalogEntry154 } from './catalog/entries/getCatalogEntry154';\nexport { getCatalogEntry155 } from './catalog/entries/getCatalogEntry155';\nexport { getCatalogEntry156 } from './catalog/entries/getCatalogEntry156';\nexport { getCatalogEntry157 } from './catalog/entries/getCatalogEntry157';\nexport { getCatalogEntry158 } from './catalog/entries/getCatalogEntry158';\nexport { getCatalogEntry159 } from './catalog/entries/getCatalogEntry159';\nexport { getCatalogEntry160 } from './catalog/entries/getCatalogEntry160';\nexport { getCatalogEntry161 } from './catalog/entries/getCatalogEntry161';\nexport { getCatalogEntry162 } from './catalog/entries/getCatalogEntry162';\nexport { getCatalogEntry163 } from './catalog/entries/getCatalogEntry163';\nexport { getCatalogEntry164 } from './catalog/entries/getCatalogEntry164';\nexport { getCatalogEntry165 } from './catalog/entries/getCatalogEntry165';\nexport { getCatalogEntry166 } from './catalog/entries/getCatalogEntry166';\nexport { getCatalogEntry167 } from './catalog/entries/getCatalogEntry167';\nexport { getCatalogEntry168 } from './catalog/entries/getCatalogEntry168';\nexport { getCatalogEntry169 } from './catalog/entries/getCatalogEntry169';\nexport { getCatalogEntry170 } from './catalog/entries/getCatalogEntry170';\nexport { getCatalogEntry171 } from './catalog/entries/getCatalogEntry171';\nexport { getCatalogEntry172 } from './catalog/entries/getCatalogEntry172';\nexport { getCatalogEntry173 } from './catalog/entries/getCatalogEntry173';\nexport { getCatalogEntry174 } from './catalog/entries/getCatalogEntry174';\nexport { getCatalogEntry175 } from './catalog/entries/getCatalogEntry175';\nexport { getCatalogEntry176 } from './catalog/entries/getCatalogEntry176';\nexport { getCatalogEntry177 } from './catalog/entries/getCatalogEntry177';\nexport { getCatalogEntry178 } from './catalog/entries/getCatalogEntry178';\nexport { getCatalogEntry179 } from './catalog/entries/getCatalogEntry179';\nexport { getCatalogEntry180 } from './catalog/entries/getCatalogEntry180';\nexport { getCatalogEntry181 } from './catalog/entries/getCatalogEntry181';\nexport { getCatalogEntry182 } from './catalog/entries/getCatalogEntry182';\nexport { getCatalogEntry183 } from './catalog/entries/getCatalogEntry183';\nexport { getCatalogEntry184 } from './catalog/entries/getCatalogEntry184';\nexport { getCatalogEntry185 } from './catalog/entries/getCatalogEntry185';\nexport { getCatalogEntry186 } from './catalog/entries/getCatalogEntry186';\nexport { getCatalogEntry187 } from './catalog/entries/getCatalogEntry187';\nexport { getCatalogEntry188 } from './catalog/entries/getCatalogEntry188';\nexport { getCatalogEntry189 } from './catalog/entries/getCatalogEntry189';\nexport { getCatalogEntry190 } from './catalog/entries/getCatalogEntry190';\nexport { getCatalogEntry191 } from './catalog/entries/getCatalogEntry191';\nexport { getCatalogEntry192 } from './catalog/entries/getCatalogEntry192';\nexport { getCatalogEntry193 } from './catalog/entries/getCatalogEntry193';\nexport { getCatalogEntry194 } from './catalog/entries/getCatalogEntry194';\nexport { getCatalogEntry195 } from './catalog/entries/getCatalogEntry195';\nexport { getCatalogEntry196 } from './catalog/entries/getCatalogEntry196';\nexport { getCatalogEntry197 } from './catalog/entries/getCatalogEntry197';\nexport { getCatalogEntry198 } from './catalog/entries/getCatalogEntry198';\nexport { getCatalogEntry199 } from './catalog/entries/getCatalogEntry199';\nexport { getCatalogEntry200 } from './catalog/entries/getCatalogEntry200';\nexport { getCatalogEntry201 } from './catalog/entries/getCatalogEntry201';\nexport { getCatalogEntry202 } from './catalog/entries/getCatalogEntry202';\nexport { getCatalogEntry203 } from './catalog/entries/getCatalogEntry203';\nexport { getCatalogEntry204 } from './catalog/entries/getCatalogEntry204';\nexport { getCatalogEntry205 } from './catalog/entries/getCatalogEntry205';\nexport { getCatalogEntry206 } from './catalog/entries/getCatalogEntry206';\nexport { getCatalogEntry207 } from './catalog/entries/getCatalogEntry207';\nexport { getCatalogEntry208 } from './catalog/entries/getCatalogEntry208';\nexport { getCatalogEntry209 } from './catalog/entries/getCatalogEntry209';\nexport { getCatalogEntry210 } from './catalog/entries/getCatalogEntry210';\nexport { getCatalogEntry211 } from './catalog/entries/getCatalogEntry211';\nexport { getCatalogEntry212 } from './catalog/entries/getCatalogEntry212';\nexport { getCatalogEntry213 } from './catalog/entries/getCatalogEntry213';\nexport { getCatalogEntry214 } from './catalog/entries/getCatalogEntry214';\nexport { getCatalogEntry215 } from './catalog/entries/getCatalogEntry215';\nexport { getCatalogEntry216 } from './catalog/entries/getCatalogEntry216';\nexport { getCatalogEntry217 } from './catalog/entries/getCatalogEntry217';\nexport { getCatalogEntry218 } from './catalog/entries/getCatalogEntry218';\nexport { getCatalogEntry219 } from './catalog/entries/getCatalogEntry219';\nexport { getCatalogEntry220 } from './catalog/entries/getCatalogEntry220';\nexport { getCatalogEntry221 } from './catalog/entries/getCatalogEntry221';\nexport { getCatalogEntry222 } from './catalog/entries/getCatalogEntry222';\nexport { getCatalogEntry223 } from './catalog/entries/getCatalogEntry223';\nexport { getCatalogEntry224 } from './catalog/entries/getCatalogEntry224';\nexport { getCatalogEntry225 } from './catalog/entries/getCatalogEntry225';\nexport { getCatalogEntry226 } from './catalog/entries/getCatalogEntry226';\nexport { getCatalogEntry227 } from './catalog/entries/getCatalogEntry227';\nexport { getCatalogEntry228 } from './catalog/entries/getCatalogEntry228';\nexport { getCatalogEntry229 } from './catalog/entries/getCatalogEntry229';\nexport { getCatalogEntry230 } from './catalog/entries/getCatalogEntry230';\nexport { getCatalogEntry231 } from './catalog/entries/getCatalogEntry231';\nexport { getCatalogEntry232 } from './catalog/entries/getCatalogEntry232';\nexport { getCatalogEntry233 } from './catalog/entries/getCatalogEntry233';\nexport { getCatalogEntry234 } from './catalog/entries/getCatalogEntry234';\nexport { getCatalogEntry235 } from './catalog/entries/getCatalogEntry235';\nexport { getCatalogEntry236 } from './catalog/entries/getCatalogEntry236';\nexport { getCatalogEntry237 } from './catalog/entries/getCatalogEntry237';\nexport { getCatalogEntry238 } from './catalog/entries/getCatalogEntry238';\nexport { getCatalogEntry239 } from './catalog/entries/getCatalogEntry239';\nexport { getCatalogEntry240 } from './catalog/entries/getCatalogEntry240';\nexport { getCatalogEntry241 } from './catalog/entries/getCatalogEntry241';\nexport { getCatalogEntry242 } from './catalog/entries/getCatalogEntry242';\nexport { getCatalogEntry243 } from './catalog/entries/getCatalogEntry243';\nexport { getCatalogEntry244 } from './catalog/entries/getCatalogEntry244';\nexport { getCatalogEntry245 } from './catalog/entries/getCatalogEntry245';\nexport { getCatalogEntry246 } from './catalog/entries/getCatalogEntry246';\nexport { getCatalogEntry247 } from './catalog/entries/getCatalogEntry247';\nexport { getCatalogEntry248 } from './catalog/entries/getCatalogEntry248';\nexport { getCatalogEntry249 } from './catalog/entries/getCatalogEntry249';\nexport { getCatalogEntry250 } from './catalog/entries/getCatalogEntry250';\nexport { getCatalogEntry251 } from './catalog/entries/getCatalogEntry251';\nexport { getCatalogEntry252 } from './catalog/entries/getCatalogEntry252';\nexport { getCatalogEntry253 } from './catalog/entries/getCatalogEntry253';\nexport { getCatalogEntry254 } from './catalog/entries/getCatalogEntry254';\nexport { getCatalogEntry255 } from './catalog/entries/getCatalogEntry255';\nexport { getCatalogEntry256 } from './catalog/entries/getCatalogEntry256';\nexport { getCatalogEntry257 } from './catalog/entries/getCatalogEntry257';\nexport { getCatalogEntry258 } from './catalog/entries/getCatalogEntry258';\nexport { getCatalogEntry259 } from './catalog/entries/getCatalogEntry259';\nexport { getCatalogEntry260 } from './catalog/entries/getCatalogEntry260';\n"
+          "text": "// A package entry past the cap, and exempt at any length: the remedy a size finding\n// asks for, split the file or turn its module into a folder, is the one thing a\n// package's public API cannot do.\nexport { getCatalogEntry001 } from './catalog/entries/getCatalogEntry001';\nexport { getCatalogEntry002 } from './catalog/entries/getCatalogEntry002';\nexport { getCatalogEntry003 } from './catalog/entries/getCatalogEntry003';\nexport { getCatalogEntry004 } from './catalog/entries/getCatalogEntry004';\nexport { getCatalogEntry005 } from './catalog/entries/getCatalogEntry005';\nexport { getCatalogEntry006 } from './catalog/entries/getCatalogEntry006';\nexport { getCatalogEntry007 } from './catalog/entries/getCatalogEntry007';\nexport { getCatalogEntry008 } from './catalog/entries/getCatalogEntry008';\nexport { getCatalogEntry009 } from './catalog/entries/getCatalogEntry009';\nexport { getCatalogEntry010 } from './catalog/entries/getCatalogEntry010';\nexport { getCatalogEntry011 } from './catalog/entries/getCatalogEntry011';\nexport { getCatalogEntry012 } from './catalog/entries/getCatalogEntry012';\nexport { getCatalogEntry013 } from './catalog/entries/getCatalogEntry013';\nexport { getCatalogEntry014 } from './catalog/entries/getCatalogEntry014';\nexport { getCatalogEntry015 } from './catalog/entries/getCatalogEntry015';\nexport { getCatalogEntry016 } from './catalog/entries/getCatalogEntry016';\nexport { getCatalogEntry017 } from './catalog/entries/getCatalogEntry017';\nexport { getCatalogEntry018 } from './catalog/entries/getCatalogEntry018';\nexport { getCatalogEntry019 } from './catalog/entries/getCatalogEntry019';\nexport { getCatalogEntry020 } from './catalog/entries/getCatalogEntry020';\nexport { getCatalogEntry021 } from './catalog/entries/getCatalogEntry021';\nexport { getCatalogEntry022 } from './catalog/entries/getCatalogEntry022';\nexport { getCatalogEntry023 } from './catalog/entries/getCatalogEntry023';\nexport { getCatalogEntry024 } from './catalog/entries/getCatalogEntry024';\nexport { getCatalogEntry025 } from './catalog/entries/getCatalogEntry025';\nexport { getCatalogEntry026 } from './catalog/entries/getCatalogEntry026';\nexport { getCatalogEntry027 } from './catalog/entries/getCatalogEntry027';\nexport { getCatalogEntry028 } from './catalog/entries/getCatalogEntry028';\nexport { getCatalogEntry029 } from './catalog/entries/getCatalogEntry029';\nexport { getCatalogEntry030 } from './catalog/entries/getCatalogEntry030';\nexport { getCatalogEntry031 } from './catalog/entries/getCatalogEntry031';\nexport { getCatalogEntry032 } from './catalog/entries/getCatalogEntry032';\nexport { getCatalogEntry033 } from './catalog/entries/getCatalogEntry033';\nexport { getCatalogEntry034 } from './catalog/entries/getCatalogEntry034';\nexport { getCatalogEntry035 } from './catalog/entries/getCatalogEntry035';\nexport { getCatalogEntry036 } from './catalog/entries/getCatalogEntry036';\nexport { getCatalogEntry037 } from './catalog/entries/getCatalogEntry037';\nexport { getCatalogEntry038 } from './catalog/entries/getCatalogEntry038';\nexport { getCatalogEntry039 } from './catalog/entries/getCatalogEntry039';\nexport { getCatalogEntry040 } from './catalog/entries/getCatalogEntry040';\nexport { getCatalogEntry041 } from './catalog/entries/getCatalogEntry041';\nexport { getCatalogEntry042 } from './catalog/entries/getCatalogEntry042';\nexport { getCatalogEntry043 } from './catalog/entries/getCatalogEntry043';\nexport { getCatalogEntry044 } from './catalog/entries/getCatalogEntry044';\nexport { getCatalogEntry045 } from './catalog/entries/getCatalogEntry045';\nexport { getCatalogEntry046 } from './catalog/entries/getCatalogEntry046';\nexport { getCatalogEntry047 } from './catalog/entries/getCatalogEntry047';\nexport { getCatalogEntry048 } from './catalog/entries/getCatalogEntry048';\nexport { getCatalogEntry049 } from './catalog/entries/getCatalogEntry049';\nexport { getCatalogEntry050 } from './catalog/entries/getCatalogEntry050';\nexport { getCatalogEntry051 } from './catalog/entries/getCatalogEntry051';\nexport { getCatalogEntry052 } from './catalog/entries/getCatalogEntry052';\nexport { getCatalogEntry053 } from './catalog/entries/getCatalogEntry053';\nexport { getCatalogEntry054 } from './catalog/entries/getCatalogEntry054';\nexport { getCatalogEntry055 } from './catalog/entries/getCatalogEntry055';\nexport { getCatalogEntry056 } from './catalog/entries/getCatalogEntry056';\nexport { getCatalogEntry057 } from './catalog/entries/getCatalogEntry057';\nexport { getCatalogEntry058 } from './catalog/entries/getCatalogEntry058';\nexport { getCatalogEntry059 } from './catalog/entries/getCatalogEntry059';\nexport { getCatalogEntry060 } from './catalog/entries/getCatalogEntry060';\nexport { getCatalogEntry061 } from './catalog/entries/getCatalogEntry061';\nexport { getCatalogEntry062 } from './catalog/entries/getCatalogEntry062';\nexport { getCatalogEntry063 } from './catalog/entries/getCatalogEntry063';\nexport { getCatalogEntry064 } from './catalog/entries/getCatalogEntry064';\nexport { getCatalogEntry065 } from './catalog/entries/getCatalogEntry065';\nexport { getCatalogEntry066 } from './catalog/entries/getCatalogEntry066';\nexport { getCatalogEntry067 } from './catalog/entries/getCatalogEntry067';\nexport { getCatalogEntry068 } from './catalog/entries/getCatalogEntry068';\nexport { getCatalogEntry069 } from './catalog/entries/getCatalogEntry069';\nexport { getCatalogEntry070 } from './catalog/entries/getCatalogEntry070';\nexport { getCatalogEntry071 } from './catalog/entries/getCatalogEntry071';\nexport { getCatalogEntry072 } from './catalog/entries/getCatalogEntry072';\nexport { getCatalogEntry073 } from './catalog/entries/getCatalogEntry073';\nexport { getCatalogEntry074 } from './catalog/entries/getCatalogEntry074';\nexport { getCatalogEntry075 } from './catalog/entries/getCatalogEntry075';\nexport { getCatalogEntry076 } from './catalog/entries/getCatalogEntry076';\nexport { getCatalogEntry077 } from './catalog/entries/getCatalogEntry077';\nexport { getCatalogEntry078 } from './catalog/entries/getCatalogEntry078';\nexport { getCatalogEntry079 } from './catalog/entries/getCatalogEntry079';\nexport { getCatalogEntry080 } from './catalog/entries/getCatalogEntry080';\nexport { getCatalogEntry081 } from './catalog/entries/getCatalogEntry081';\nexport { getCatalogEntry082 } from './catalog/entries/getCatalogEntry082';\nexport { getCatalogEntry083 } from './catalog/entries/getCatalogEntry083';\nexport { getCatalogEntry084 } from './catalog/entries/getCatalogEntry084';\nexport { getCatalogEntry085 } from './catalog/entries/getCatalogEntry085';\nexport { getCatalogEntry086 } from './catalog/entries/getCatalogEntry086';\nexport { getCatalogEntry087 } from './catalog/entries/getCatalogEntry087';\nexport { getCatalogEntry088 } from './catalog/entries/getCatalogEntry088';\nexport { getCatalogEntry089 } from './catalog/entries/getCatalogEntry089';\nexport { getCatalogEntry090 } from './catalog/entries/getCatalogEntry090';\nexport { getCatalogEntry091 } from './catalog/entries/getCatalogEntry091';\nexport { getCatalogEntry092 } from './catalog/entries/getCatalogEntry092';\nexport { getCatalogEntry093 } from './catalog/entries/getCatalogEntry093';\nexport { getCatalogEntry094 } from './catalog/entries/getCatalogEntry094';\nexport { getCatalogEntry095 } from './catalog/entries/getCatalogEntry095';\nexport { getCatalogEntry096 } from './catalog/entries/getCatalogEntry096';\nexport { getCatalogEntry097 } from './catalog/entries/getCatalogEntry097';\nexport { getCatalogEntry098 } from './catalog/entries/getCatalogEntry098';\nexport { getCatalogEntry099 } from './catalog/entries/getCatalogEntry099';\nexport { getCatalogEntry100 } from './catalog/entries/getCatalogEntry100';\nexport { getCatalogEntry101 } from './catalog/entries/getCatalogEntry101';\nexport { getCatalogEntry102 } from './catalog/entries/getCatalogEntry102';\nexport { getCatalogEntry103 } from './catalog/entries/getCatalogEntry103';\nexport { getCatalogEntry104 } from './catalog/entries/getCatalogEntry104';\nexport { getCatalogEntry105 } from './catalog/entries/getCatalogEntry105';\nexport { getCatalogEntry106 } from './catalog/entries/getCatalogEntry106';\nexport { getCatalogEntry107 } from './catalog/entries/getCatalogEntry107';\nexport { getCatalogEntry108 } from './catalog/entries/getCatalogEntry108';\nexport { getCatalogEntry109 } from './catalog/entries/getCatalogEntry109';\nexport { getCatalogEntry110 } from './catalog/entries/getCatalogEntry110';\nexport { getCatalogEntry111 } from './catalog/entries/getCatalogEntry111';\nexport { getCatalogEntry112 } from './catalog/entries/getCatalogEntry112';\nexport { getCatalogEntry113 } from './catalog/entries/getCatalogEntry113';\nexport { getCatalogEntry114 } from './catalog/entries/getCatalogEntry114';\nexport { getCatalogEntry115 } from './catalog/entries/getCatalogEntry115';\nexport { getCatalogEntry116 } from './catalog/entries/getCatalogEntry116';\nexport { getCatalogEntry117 } from './catalog/entries/getCatalogEntry117';\nexport { getCatalogEntry118 } from './catalog/entries/getCatalogEntry118';\nexport { getCatalogEntry119 } from './catalog/entries/getCatalogEntry119';\nexport { getCatalogEntry120 } from './catalog/entries/getCatalogEntry120';\nexport { getCatalogEntry121 } from './catalog/entries/getCatalogEntry121';\nexport { getCatalogEntry122 } from './catalog/entries/getCatalogEntry122';\nexport { getCatalogEntry123 } from './catalog/entries/getCatalogEntry123';\nexport { getCatalogEntry124 } from './catalog/entries/getCatalogEntry124';\nexport { getCatalogEntry125 } from './catalog/entries/getCatalogEntry125';\nexport { getCatalogEntry126 } from './catalog/entries/getCatalogEntry126';\nexport { getCatalogEntry127 } from './catalog/entries/getCatalogEntry127';\nexport { getCatalogEntry128 } from './catalog/entries/getCatalogEntry128';\nexport { getCatalogEntry129 } from './catalog/entries/getCatalogEntry129';\nexport { getCatalogEntry130 } from './catalog/entries/getCatalogEntry130';\nexport { getCatalogEntry131 } from './catalog/entries/getCatalogEntry131';\nexport { getCatalogEntry132 } from './catalog/entries/getCatalogEntry132';\nexport { getCatalogEntry133 } from './catalog/entries/getCatalogEntry133';\nexport { getCatalogEntry134 } from './catalog/entries/getCatalogEntry134';\nexport { getCatalogEntry135 } from './catalog/entries/getCatalogEntry135';\nexport { getCatalogEntry136 } from './catalog/entries/getCatalogEntry136';\nexport { getCatalogEntry137 } from './catalog/entries/getCatalogEntry137';\nexport { getCatalogEntry138 } from './catalog/entries/getCatalogEntry138';\nexport { getCatalogEntry139 } from './catalog/entries/getCatalogEntry139';\nexport { getCatalogEntry140 } from './catalog/entries/getCatalogEntry140';\nexport { getCatalogEntry141 } from './catalog/entries/getCatalogEntry141';\nexport { getCatalogEntry142 } from './catalog/entries/getCatalogEntry142';\nexport { getCatalogEntry143 } from './catalog/entries/getCatalogEntry143';\nexport { getCatalogEntry144 } from './catalog/entries/getCatalogEntry144';\nexport { getCatalogEntry145 } from './catalog/entries/getCatalogEntry145';\nexport { getCatalogEntry146 } from './catalog/entries/getCatalogEntry146';\nexport { getCatalogEntry147 } from './catalog/entries/getCatalogEntry147';\nexport { getCatalogEntry148 } from './catalog/entries/getCatalogEntry148';\nexport { getCatalogEntry149 } from './catalog/entries/getCatalogEntry149';\nexport { getCatalogEntry150 } from './catalog/entries/getCatalogEntry150';\nexport { getCatalogEntry151 } from './catalog/entries/getCatalogEntry151';\nexport { getCatalogEntry152 } from './catalog/entries/getCatalogEntry152';\nexport { getCatalogEntry153 } from './catalog/entries/getCatalogEntry153';\nexport { getCatalogEntry154 } from './catalog/entries/getCatalogEntry154';\nexport { getCatalogEntry155 } from './catalog/entries/getCatalogEntry155';\nexport { getCatalogEntry156 } from './catalog/entries/getCatalogEntry156';\nexport { getCatalogEntry157 } from './catalog/entries/getCatalogEntry157';\nexport { getCatalogEntry158 } from './catalog/entries/getCatalogEntry158';\nexport { getCatalogEntry159 } from './catalog/entries/getCatalogEntry159';\nexport { getCatalogEntry160 } from './catalog/entries/getCatalogEntry160';\nexport { getCatalogEntry161 } from './catalog/entries/getCatalogEntry161';\nexport { getCatalogEntry162 } from './catalog/entries/getCatalogEntry162';\nexport { getCatalogEntry163 } from './catalog/entries/getCatalogEntry163';\nexport { getCatalogEntry164 } from './catalog/entries/getCatalogEntry164';\nexport { getCatalogEntry165 } from './catalog/entries/getCatalogEntry165';\nexport { getCatalogEntry166 } from './catalog/entries/getCatalogEntry166';\nexport { getCatalogEntry167 } from './catalog/entries/getCatalogEntry167';\nexport { getCatalogEntry168 } from './catalog/entries/getCatalogEntry168';\nexport { getCatalogEntry169 } from './catalog/entries/getCatalogEntry169';\nexport { getCatalogEntry170 } from './catalog/entries/getCatalogEntry170';\nexport { getCatalogEntry171 } from './catalog/entries/getCatalogEntry171';\nexport { getCatalogEntry172 } from './catalog/entries/getCatalogEntry172';\nexport { getCatalogEntry173 } from './catalog/entries/getCatalogEntry173';\nexport { getCatalogEntry174 } from './catalog/entries/getCatalogEntry174';\nexport { getCatalogEntry175 } from './catalog/entries/getCatalogEntry175';\nexport { getCatalogEntry176 } from './catalog/entries/getCatalogEntry176';\nexport { getCatalogEntry177 } from './catalog/entries/getCatalogEntry177';\nexport { getCatalogEntry178 } from './catalog/entries/getCatalogEntry178';\nexport { getCatalogEntry179 } from './catalog/entries/getCatalogEntry179';\nexport { getCatalogEntry180 } from './catalog/entries/getCatalogEntry180';\nexport { getCatalogEntry181 } from './catalog/entries/getCatalogEntry181';\nexport { getCatalogEntry182 } from './catalog/entries/getCatalogEntry182';\nexport { getCatalogEntry183 } from './catalog/entries/getCatalogEntry183';\nexport { getCatalogEntry184 } from './catalog/entries/getCatalogEntry184';\nexport { getCatalogEntry185 } from './catalog/entries/getCatalogEntry185';\nexport { getCatalogEntry186 } from './catalog/entries/getCatalogEntry186';\nexport { getCatalogEntry187 } from './catalog/entries/getCatalogEntry187';\nexport { getCatalogEntry188 } from './catalog/entries/getCatalogEntry188';\nexport { getCatalogEntry189 } from './catalog/entries/getCatalogEntry189';\nexport { getCatalogEntry190 } from './catalog/entries/getCatalogEntry190';\nexport { getCatalogEntry191 } from './catalog/entries/getCatalogEntry191';\nexport { getCatalogEntry192 } from './catalog/entries/getCatalogEntry192';\nexport { getCatalogEntry193 } from './catalog/entries/getCatalogEntry193';\nexport { getCatalogEntry194 } from './catalog/entries/getCatalogEntry194';\nexport { getCatalogEntry195 } from './catalog/entries/getCatalogEntry195';\nexport { getCatalogEntry196 } from './catalog/entries/getCatalogEntry196';\nexport { getCatalogEntry197 } from './catalog/entries/getCatalogEntry197';\nexport { getCatalogEntry198 } from './catalog/entries/getCatalogEntry198';\nexport { getCatalogEntry199 } from './catalog/entries/getCatalogEntry199';\nexport { getCatalogEntry200 } from './catalog/entries/getCatalogEntry200';\nexport { getCatalogEntry201 } from './catalog/entries/getCatalogEntry201';\nexport { getCatalogEntry202 } from './catalog/entries/getCatalogEntry202';\nexport { getCatalogEntry203 } from './catalog/entries/getCatalogEntry203';\nexport { getCatalogEntry204 } from './catalog/entries/getCatalogEntry204';\nexport { getCatalogEntry205 } from './catalog/entries/getCatalogEntry205';\nexport { getCatalogEntry206 } from './catalog/entries/getCatalogEntry206';\nexport { getCatalogEntry207 } from './catalog/entries/getCatalogEntry207';\nexport { getCatalogEntry208 } from './catalog/entries/getCatalogEntry208';\nexport { getCatalogEntry209 } from './catalog/entries/getCatalogEntry209';\nexport { getCatalogEntry210 } from './catalog/entries/getCatalogEntry210';\nexport { getCatalogEntry211 } from './catalog/entries/getCatalogEntry211';\nexport { getCatalogEntry212 } from './catalog/entries/getCatalogEntry212';\nexport { getCatalogEntry213 } from './catalog/entries/getCatalogEntry213';\nexport { getCatalogEntry214 } from './catalog/entries/getCatalogEntry214';\nexport { getCatalogEntry215 } from './catalog/entries/getCatalogEntry215';\nexport { getCatalogEntry216 } from './catalog/entries/getCatalogEntry216';\nexport { getCatalogEntry217 } from './catalog/entries/getCatalogEntry217';\nexport { getCatalogEntry218 } from './catalog/entries/getCatalogEntry218';\nexport { getCatalogEntry219 } from './catalog/entries/getCatalogEntry219';\nexport { getCatalogEntry220 } from './catalog/entries/getCatalogEntry220';\nexport { getCatalogEntry221 } from './catalog/entries/getCatalogEntry221';\nexport { getCatalogEntry222 } from './catalog/entries/getCatalogEntry222';\nexport { getCatalogEntry223 } from './catalog/entries/getCatalogEntry223';\nexport { getCatalogEntry224 } from './catalog/entries/getCatalogEntry224';\nexport { getCatalogEntry225 } from './catalog/entries/getCatalogEntry225';\nexport { getCatalogEntry226 } from './catalog/entries/getCatalogEntry226';\nexport { getCatalogEntry227 } from './catalog/entries/getCatalogEntry227';\nexport { getCatalogEntry228 } from './catalog/entries/getCatalogEntry228';\nexport { getCatalogEntry229 } from './catalog/entries/getCatalogEntry229';\nexport { getCatalogEntry230 } from './catalog/entries/getCatalogEntry230';\nexport { getCatalogEntry231 } from './catalog/entries/getCatalogEntry231';\nexport { getCatalogEntry232 } from './catalog/entries/getCatalogEntry232';\nexport { getCatalogEntry233 } from './catalog/entries/getCatalogEntry233';\nexport { getCatalogEntry234 } from './catalog/entries/getCatalogEntry234';\nexport { getCatalogEntry235 } from './catalog/entries/getCatalogEntry235';\nexport { getCatalogEntry236 } from './catalog/entries/getCatalogEntry236';\nexport { getCatalogEntry237 } from './catalog/entries/getCatalogEntry237';\nexport { getCatalogEntry238 } from './catalog/entries/getCatalogEntry238';\nexport { getCatalogEntry239 } from './catalog/entries/getCatalogEntry239';\nexport { getCatalogEntry240 } from './catalog/entries/getCatalogEntry240';\nexport { getCatalogEntry241 } from './catalog/entries/getCatalogEntry241';\nexport { getCatalogEntry242 } from './catalog/entries/getCatalogEntry242';\nexport { getCatalogEntry243 } from './catalog/entries/getCatalogEntry243';\nexport { getCatalogEntry244 } from './catalog/entries/getCatalogEntry244';\nexport { getCatalogEntry245 } from './catalog/entries/getCatalogEntry245';\nexport { getCatalogEntry246 } from './catalog/entries/getCatalogEntry246';\nexport { getCatalogEntry247 } from './catalog/entries/getCatalogEntry247';\nexport { getCatalogEntry248 } from './catalog/entries/getCatalogEntry248';\nexport { getCatalogEntry249 } from './catalog/entries/getCatalogEntry249';\nexport { getCatalogEntry250 } from './catalog/entries/getCatalogEntry250';\nexport { getCatalogEntry251 } from './catalog/entries/getCatalogEntry251';\nexport { getCatalogEntry252 } from './catalog/entries/getCatalogEntry252';\nexport { getCatalogEntry253 } from './catalog/entries/getCatalogEntry253';\nexport { getCatalogEntry254 } from './catalog/entries/getCatalogEntry254';\nexport { getCatalogEntry255 } from './catalog/entries/getCatalogEntry255';\nexport { getCatalogEntry256 } from './catalog/entries/getCatalogEntry256';\nexport { getCatalogEntry257 } from './catalog/entries/getCatalogEntry257';\nexport { getCatalogEntry258 } from './catalog/entries/getCatalogEntry258';\nexport { getCatalogEntry259 } from './catalog/entries/getCatalogEntry259';\nexport { getCatalogEntry260 } from './catalog/entries/getCatalogEntry260';\n"
         },
         {
           "side": "fail",
@@ -1464,7 +1420,7 @@
       "id": "filename-mismatch",
       "name": "lightsout/filename-mismatch",
       "set": "code",
-      "documentPath": "code/fractal/modules",
+      "documentPath": "code/fractal/layout",
       "summary": "How a file's name follows what it exports.",
       "deterministic": true,
       "agent": false,
@@ -1472,9 +1428,9 @@
       "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
-        "fail": 1
+        "fail": 2
       },
-      "prose": "## Filename Mismatch\n\nA file is named after its export, as `multi-export` says. Choose how that name is cased in this order:\n\n1. Match the other files in the same folder.\n2. Otherwise, in a new or empty folder, keep the export's own casing: `buildVersionedLabel.ts`, `UserProfile.ts`.\n\nA file named like its export is found by searching for the export.",
+      "prose": "## Filename Mismatch\n\nName a file exactly as its export, casing included: `buildVersionedLabel.ts`, `UserProfile.ts`. A file with a union and its member types takes the union's name.\n\nA file named like its export is found by searching for the export.",
       "fixtures": [
         {
           "side": "pass",
@@ -1489,17 +1445,22 @@
         {
           "side": "pass",
           "path": "src/config/config.ts",
-          "text": "// Two exports, so the file has no single export for its name to match — the\n// one-export-per-file rule owns this file.\nexport interface Config {\n\tname: string;\n}\n\nexport const defaultConfig: Config = { name: 'default' };\n"
+          "text": "// Two unrelated exports, so the file has no single export for its name to\n// match — the one-export-per-file rule owns this file.\nexport interface Config {\n\tname: string;\n}\n\nexport const defaultConfig = { name: 'default' };\n"
         },
         {
           "side": "pass",
-          "path": "src/events/events.service.ts",
-          "text": "// A framework dot-suffix is convention, not a mismatch.\nexport class EventsService {\n\thandle(): string {\n\t\treturn 'handled';\n\t}\n}\n"
+          "path": "src/sync/SyncEvent.ts",
+          "text": "export interface FileAddedEvent {\n\tkind: 'file-added';\n}\n\nexport interface RecordParsedEvent {\n\tkind: 'record-parsed';\n}\n\nexport type SyncEvent = FileAddedEvent | RecordParsedEvent;\n"
         },
         {
           "side": "fail",
           "path": "src/billing/chargeLabel.ts",
           "text": "export const getChargeLabel = ({ amount }: { amount: number }): string => `${amount}`;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/getchargetotal.ts",
+          "text": "export const getChargeTotal = ({ amount }: { amount: number }): number => amount;\n"
         }
       ],
       "example": {
@@ -1507,71 +1468,6 @@
         "focus": {
           "fail": "src/billing/chargeLabel.ts",
           "pass": "package.json"
-        }
-      }
-    },
-    {
-      "id": "files-that-must-not-have-dedicated-tests",
-      "name": "lightsout/files-that-must-not-have-dedicated-tests",
-      "set": "tests",
-      "documentPath": "tests/fractal",
-      "summary": "Files that need no tests of their own.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 5,
-        "fail": 3
-      },
-      "prose": "## Files That Must NOT Have Dedicated Tests\n\nNever create a test file for a source file with no runtime logic. The tests of the code that uses it cover it:\n\n- constants holding only literal values, with no computation or side effects\n- enums with no computed members, and string-union types\n- files holding only `type` and `interface` declarations\n- index files, which only re-export\n\nWhen a constants file does hold logic, such as an environment-variable fallback, test the logic, not the static value.\n\nThe one exception is a package's entry. Nothing in the repo uses it, so no other test covers it, and a name dropped from it in a rename or a merge breaks every downstream build while every test still passes. Its test pins only what no other test can reach: the exact set of exported names, and that each arrives as a value rather than `undefined`. It never re-proves what the exported things do; their own tests do that.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/common/constants/defaultTimeout.ts",
-          "text": "export const defaultTimeout = 30_000;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/utils/getTimeout.ts",
-          "text": "import { defaultTimeout } from '../constants/defaultTimeout';\n\nexport const getTimeout = ({ override }: { override?: number }): number => override ?? defaultTimeout;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/common/utils/getTimeout.unit.test.ts",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport { getTimeout } from './getTimeout';\n\ndescribe('getTimeout', () => {\n\ttest('falls back to the default when no override is given', () => {\n\t\tconst timeout = getTimeout({});\n\n\t\texpect(timeout).toBe(30_000);\n\t});\n});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/index.ts",
-          "text": "export { defaultTimeout } from './common/constants/defaultTimeout';\nexport { getTimeout } from './common/utils/getTimeout';\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/index.unit.test.ts",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport * as library from './index';\n\n// The published entry — the file this package names in its `exports` map. No\n// test inside this package imports through it, so nothing else here would\n// notice a name dropped in a rename or a merge; a consumer's build would.\ndescribe('the package entry', () => {\n\ttest('hands out exactly the surface it publishes', () => {\n\t\texpect(Object.keys(library).sort()).toStrictEqual(['defaultTimeout', 'getTimeout']);\n\t});\n\n\t// what each of them DOES is proven by its own test file, not here\n\ttest('every name arrived as a value rather than erasing to undefined', () => {\n\t\texpect(Object.values(library).some((entry) => entry === undefined)).toBe(false);\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/constants/defaultTimeout.ts",
-          "text": "export const defaultTimeout = 30_000;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/constants/defaultTimeout.unit.test.ts",
-          "text": "import { expect, describe, test } from '@jest/globals';\nimport { defaultTimeout } from './defaultTimeout';\n\n// A literal value with no runtime logic — this test restates the constant and\n// pins nothing a consumer could break.\ndescribe('defaultTimeout', () => {\n\ttest('is thirty seconds', () => {\n\t\texpect(defaultTimeout).toBe(30_000);\n\t});\n});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/utils/getTimeout.ts",
-          "text": "import { defaultTimeout } from '../constants/defaultTimeout';\n\nexport const getTimeout = (raw?: string): number => (raw === undefined ? defaultTimeout : Number(raw));\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/common/constants/defaultTimeout.ts",
-          "pass": "src/common/constants/defaultTimeout.ts"
         }
       }
     },
@@ -1591,7 +1487,7 @@
         "pass": 4,
         "fail": 21
       },
-      "prose": "## Folder Size\n\nWhen a folder holds more than 20 files, not counting tests, group related files under a domain folder named for what they share.\n\nA long flat folder reads like a listing instead of a description of the product.",
+      "prose": "## Folder Size\n\nWhen a folder holds more than 20 files, not counting tests, group related files into subject folders named for what they share.\n\n- A module folder counts as one file.\n- `types/` and `constants/` are exempt: they hold files only.\n\nA long flat folder reads like a listing instead of a description of the product.",
       "fixtures": [
         {
           "side": "pass",
@@ -1743,7 +1639,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Function Size\n\nSplit a function longer than 80 lines. Lines run from the signature to the closing brace, and a callback with no name counts toward the function that holds it.\n\nA function is exempt when every statement calls a named step, or assigns that call's result, and the flow is linear. One inline loop, branch or transformation ends the exemption: a 150-line `start()` that calls eight steps is fine, but one with an inline loop is not. It has nothing to extract, and splitting it would scatter the sequence.\n\nReach for the exemption last. Extract the work into named pieces first, then look again: what remains is short, or plainly a sequence.\n\nEach piece you extract is a new name to read, and perhaps a new file. Extract a piece because it deserves a name, not to win back lines.",
+      "prose": "## Function Size\n\nSplit a function longer than 80 lines. Lines run from the signature to the closing brace, and a callback with no name counts toward the function that holds it.\n\nExtract a piece because it deserves a name, not to win back lines.",
       "fixtures": [
         {
           "side": "pass",
@@ -1774,7 +1670,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Import Path Alias\n\nUse the package's configured path alias for every import. A package has aliases when it declares `imports` in `package.json` or `compilerOptions.paths` in `tsconfig.json`, and then never uses a relative path (`./`, `../`), not even for a sibling file, a `common/` subfolder or a package entry's re-exports.\n\nWhen a package declares no aliases, use relative paths consistently, and consider adding aliases.\n\nRead the alias from the package's own declaration; never write one from memory, because packages differ. An `imports` alias resolves literally, so the specifier carries the extension of the file it names: `#src/cli/shipCommand.ts`, never `#src/cli/shipCommand`. A `paths` alias is resolved the usual way, so it takes no extension.\n\n```typescript\n// Correct: an imports alias, then a paths alias\nimport { features } from '#src/features/home/common/constants/features.ts';\nimport { features } from '@/features/home/common/constants/features';\n\n// Incorrect in a package with aliases\nimport { features } from './common/constants/features';\n```\n\nThen every import of a file reads the same, wherever it is written.",
+      "prose": "## Import Path Alias\n\nUse the package's configured path alias for every import. A package has aliases when it declares `imports` in `package.json` or `compilerOptions.paths` in `tsconfig.json`, and then never uses a relative path (`./`, `../`), not even for a sibling file, a `common/` subfolder or a package entry's re-exports.\n\nWhen a package declares no aliases, use relative paths consistently.\n\nRead the alias from the package's own declaration; never write one from memory, because packages differ.\n\nA `paths` alias, declared in `tsconfig.json`. It takes no file extension:\n\n```jsonc\n// tsconfig.json\n\"paths\": { \"@/*\": [\"./src/*\"] }\n```\n\n```typescript\nimport { features } from '@/features/home/common/constants/features';\n```\n\nAn `imports` alias, declared in `package.json`. It names the real file, so it carries the extension:\n\n```jsonc\n// package.json\n\"imports\": { \"#src/*\": \"./src/*\" }\n```\n\n```typescript\nimport { features } from '#src/features/home/common/constants/features.ts';\n```\n\nIncorrect in a package with either alias:\n\n```typescript\nimport { features } from './common/constants/features';\n```\n\nThen every import of a file reads the same, wherever it is written.",
       "fixtures": [
         {
           "side": "pass",
@@ -1829,7 +1725,7 @@
         "pass": 4,
         "fail": 2
       },
-      "prose": "## Index File Contents\n\nAn index file holds only re-export lines, `export { Foo } from '<path>'` and `export type { Bar } from '<path>'`, and comments.\n\n- Re-export each name explicitly, never with `export *`. List what other packages need, and nothing only the package itself uses.\n- How re-export lines wrap or merge follows the project's formatter, not this rule.\n- Put executable code in an entry file with its own name, conventionally `main.ts`, which imports what it runs from the files that declare it.\n\nA package's entry is the list other packages build against. Code in it makes that list hard to read, and a star publishes whatever its target happens to export, so the contract stops being a decision.",
+      "prose": "## Index File Contents\n\nAn index file holds only re-export lines, `export { Foo } from '<path>'` and `export type { Bar } from '<path>'`, and comments.\n\n- Re-export each name explicitly, never with `export *`. List what other packages need, and nothing only the package itself uses.\n- Put executable code in an entry file with its own name, conventionally `main.ts`, which imports what it runs from the files that declare it.\n\nA package's entry is the list other packages build against. Code in it makes that list hard to read, and a star publishes whatever its target happens to export, so the contract stops being a decision.",
       "fixtures": [
         {
           "side": "pass",
@@ -1884,7 +1780,7 @@
         "pass": 5,
         "fail": 4
       },
-      "prose": "## Index Files\n\nOnly a package's entry is an index file, and nothing imports through one. Every import names the file that declares what it imports: `@/ingestion/ingestRecords`, never `@/ingestion`.\n\n- Delete an index file in any other folder, and import each name from the file that declares it.\n- Import from another workspace package through its entry, such as `@acme/engine`, never a path into its `src/`.\n- Code inside a package never imports its own entry.\n- An index file may re-export from another index file, and an index file's own test imports the file it tests.\n- This rule judges only files that belong to a package. Where the repo's manifests declare workspace packages, a file outside all of them, such as a build script at the repo root, is not held to it. A repo that declares none is one package, and every file in it is judged.\n\nAn import through an index file loads every file it re-exports to reach one name, and a test runner, unlike a bundler, pays for all of them. A folder's index lists names nothing reads through it, and it drifts the first time someone adds a file and forgets it.",
+      "prose": "## Index Files\n\nOnly a package's entry is an index file, and nothing inside the package imports through it. Every import names the file that declares what it imports: `@/ingestion/ingestRecords`, never `@/ingestion`.\n\n- Delete an index file in any other folder, and import each name from the file that declares it.\n- Import from another package through its entry, such as `@acme/engine`, never by a path into its `src/`.\n- An index file may re-export from another index file, and its own test imports it.\n\nAn import through an index file loads every file it re-exports to reach one name, and a test runner, unlike a bundler, pays for all of them.",
       "fixtures": [
         {
           "side": "pass",
@@ -1941,61 +1837,6 @@
       }
     },
     {
-      "id": "internal-import-from-outside",
-      "name": "lightsout/internal-import-from-outside",
-      "set": "code",
-      "documentPath": "code/fractal/imports",
-      "summary": "Keeping a folder's private files private.",
-      "deterministic": true,
-      "agent": false,
-      "defaultSeverity": "off",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 3,
-        "fail": 3
-      },
-      "prose": "## Internal Import From Outside\n\nPut a folder's private files in its `internal/` folder, and import them only from files inside that folder. Everything outside `internal/` is the folder's public API.\n\n```\nsrc/ingestion/\n├─ ingestRecords.ts        # public: anyone may import it\n└─ internal/\n   └─ parseRow.ts          # private to src/ingestion/\n```\n\n- Any file inside the folder, tests included, may import from its `internal/`.\n- From outside, import the public file that uses it instead, or move the file out of `internal/` when it is genuinely shared.\n- Nested folders nest the rule: `src/ingestion/parser/internal/tokenize.ts` is private to `src/ingestion/parser/`.\n- An `internal/` folder may sit in any folder, beside what `module-folder-layout` allows.\n- `internal/` marks privacy only. Inside it, place code as anywhere else.\n\nThen privacy shows in the import line itself, with no list elsewhere to consult.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/ingestion/ingestRecords.ts",
-          "text": "import { parseRow } from './internal/parseRow';\n\nexport const ingestRecords = (): number => parseRow();\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/ingestion/internal/parseRow.ts",
-          "text": "export const parseRow = (): number => 2;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/reporting/buildReport.ts",
-          "text": "import { ingestRecords } from '../ingestion/ingestRecords';\n\nexport const buildReport = (): number => ingestRecords();\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/ingestion/ingestRecords.ts",
-          "text": "import { parseRow } from './internal/parseRow';\n\nexport const ingestRecords = (): number => parseRow();\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/ingestion/internal/parseRow.ts",
-          "text": "export const parseRow = (): number => 2;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/reporting/buildReport.ts",
-          "text": "import { parseRow } from '../ingestion/internal/parseRow';\n\nexport const buildReport = (): number => parseRow();\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/ingestion/ingestRecords.ts",
-          "pass": "src/ingestion/ingestRecords.ts"
-        }
-      }
-    },
-    {
       "id": "jest-spyon-vs-jest-mock",
       "name": "lightsout/jest-spyon-vs-jest-mock",
       "set": "tests",
@@ -2040,7 +1881,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Module Boundary Testing\n\nTest a module through its public API by default, and cover its internals through it. Import what a test exercises from the file that declares it, never through an index file. A test inside a module may import the module's other files; a test outside it imports only the module's public files, as any other caller would.\n\nGive a file a direct test of its own when it earns one:\n\n- Its cases are combinatorial, and driving them all through the boundary is impractical.\n- It states a contract that stands on its own, such as a parser or a date formatter, which callers rely on whichever module holds it.\n- Coverage a gate demands cannot be reached through any boundary input, and the branch is not dead code.\n\nA direct test does not require making the file public, and an existing direct test is not debt to migrate. When both would pin the same behaviour, write the boundary test.\n\nA branch no input reaches, through the boundary or directly, is dead code: flag it for deletion instead of forcing a test onto it.\n\nA boundary test pins behaviour, not how the module is split inside, so the internals can be reorganised without touching a test. An import through an index file loads every file it re-exports to reach one name.",
+      "prose": "## Module Boundary Testing\n\nTest a module through its public file, and cover the files only it uses through that file.\n\n- A public file is a top-level file of a subject folder, or a module folder's main file. Each gets a test beside it.\n- A file in `common/` gets a test of its own: several callers rely on it.\n- A file private to one module gets a test of its own only when its cases are too many to drive through the public file, when it is a contract that stands alone, such as a parser, or when coverage a gate demands cannot be reached through the public file.\n- A file with no logic, such as a type, a constant of fixed values or an index file, gets no test.\n- An existing direct test stays. When a new test could go either way, write it against the public file.\n\nA branch no input reaches, through the public file or directly, is dead code: delete it instead of testing it.\n\nA test through the public file pins behaviour, not how the module is split inside, so the insides can be reorganised without touching a test.",
       "fixtures": [
         {
           "side": "pass",
@@ -2085,99 +1926,44 @@
       "id": "module-file-to-folder",
       "name": "lightsout/module-file-to-folder",
       "set": "code",
-      "documentPath": "code/fractal/modules",
+      "documentPath": "code/fractal/layout",
       "summary": "When a module should stay one file, and when it should become a folder.",
-      "deterministic": false,
-      "agent": true,
+      "deterministic": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
         "pass": 3,
-        "fail": 3
+        "fail": 1
       },
-      "prose": "## Module File to Folder\n\nA module is one exported item and the code only it uses.\n\n- Keep a module in one file. TypeScript hides everything a file does not export, so its helpers stay private for free.\n- Turn it into a folder only when it needs more files that only it uses, such as its own types, constants or helpers.\n- When the folder is down to one file, turn it back into a file.\n- This applies at every level, including a module inside another module's folder.\n- The type folders in `common/` are not modules, so this rule does not apply to them.",
+      "prose": "## Module File to Folder\n\nKeep a module in one file until it needs files of its own. When a module folder holds only its main file, turn it back into a file.",
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/RateLimiter.ts",
-          "text": "interface ConstructorParams {\n\tperMinute: number;\n}\n\n// Correct: one file. Nothing but the class is exported, so TypeScript keeps\n// everything else in the file private.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ perMinute }: ConstructorParams) {\n\t\tthis.remaining = perMinute;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
+          "path": "src/billing/RateLimiter.ts",
+          "text": "// Correct: a module with no files of its own is one file.\nexport class RateLimiter {\n\tisAllowed({ count }: { count: number }): boolean {\n\t\treturn count < 10;\n\t}\n}\n"
         },
         {
           "side": "pass",
-          "path": "src/RetryPolicy/common/types/RetryPolicyOptions.ts",
-          "text": "// Correct: this type exists for RetryPolicy, so it lives in RetryPolicy's own\n// common/types/ folder. Callers still import it from this file.\nexport interface RetryPolicyOptions {\n\tattempts: number;\n\tdelayMs: number;\n}\n"
+          "path": "src/billing/RetryPolicy/getDelay.ts",
+          "text": "export const getDelay = ({ attempt }: { attempt: number }): number => 100 * 2 ** attempt;\n"
         },
         {
           "side": "pass",
-          "path": "src/RetryPolicy/RetryPolicy.ts",
-          "text": "import type { RetryPolicyOptions } from './common/types/RetryPolicyOptions.ts';\n\n// Correct: RetryPolicy exports its options type for callers, so it needs a\n// second file. It is a folder that holds the class and that file.\nexport class RetryPolicy {\n\tprivate readonly options: RetryPolicyOptions;\n\n\tconstructor(options: RetryPolicyOptions) {\n\t\tthis.options = options;\n\t}\n\n\tdelayFor({ attempt }: { attempt: number }): number | undefined {\n\t\treturn attempt < this.options.attempts ? this.options.delayMs * 2 ** attempt : undefined;\n\t}\n}\n"
+          "path": "src/billing/RetryPolicy/RetryPolicy.ts",
+          "text": "import { getDelay } from './getDelay.ts';\n\n// Correct: the module has a file of its own, so it is a folder.\nexport class RetryPolicy {\n\tnext({ attempt }: { attempt: number }): number {\n\t\treturn getDelay({ attempt });\n\t}\n}\n"
         },
         {
           "side": "fail",
-          "path": "src/common/types/RetryPolicyOptions.ts",
-          "text": "// Incorrect: this type exists for RetryPolicy, but it sits in the shared code\n// every module can reach. It belongs in a RetryPolicy/ folder.\nexport interface RetryPolicyOptions {\n\tattempts: number;\n\tdelayMs: number;\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/RateLimiter/RateLimiter.ts",
-          "text": "interface ConstructorParams {\n\tperMinute: number;\n}\n\n// Incorrect: a folder that holds only this one file. Nothing else in it serves\n// RateLimiter, so it should be the single file src/RateLimiter.ts.\nexport class RateLimiter {\n\tprivate remaining: number;\n\n\tconstructor({ perMinute }: ConstructorParams) {\n\t\tthis.remaining = perMinute;\n\t}\n\n\ttake(): boolean {\n\t\tconst allowed = this.remaining > 0;\n\n\t\tif (allowed) {\n\t\t\tthis.remaining -= 1;\n\t\t}\n\n\t\treturn allowed;\n\t}\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/RetryPolicy.ts",
-          "text": "import type { RetryPolicyOptions } from './common/types/RetryPolicyOptions.ts';\n\n// Incorrect: RetryPolicy exports its options type for callers, and a file holds\n// one export, so it needs a second file. It should be a folder, not one file.\nexport class RetryPolicy {\n\tprivate readonly options: RetryPolicyOptions;\n\n\tconstructor(options: RetryPolicyOptions) {\n\t\tthis.options = options;\n\t}\n\n\tdelayFor({ attempt }: { attempt: number }): number | undefined {\n\t\treturn attempt < this.options.attempts ? this.options.delayMs * 2 ** attempt : undefined;\n\t}\n}\n"
+          "path": "src/billing/RateLimiter/RateLimiter.ts",
+          "text": "// Incorrect: the folder holds nothing but its main file. It belongs at\n// src/billing/RateLimiter.ts.\nexport class RateLimiter {\n\tisAllowed({ count }: { count: number }): boolean {\n\t\treturn count < 10;\n\t}\n}\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/RateLimiter/RateLimiter.ts",
-          "pass": "src/RetryPolicy/RetryPolicy.ts"
-        }
-      }
-    },
-    {
-      "id": "module-folder-layout",
-      "name": "lightsout/module-folder-layout",
-      "set": "code",
-      "documentPath": "code/fractal/modules",
-      "summary": "What goes inside a module folder.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
-      },
-      "prose": "## Module Folder Layout\n\nEvery module folder has the same layout:\n\n- Its main file, named after the folder: `listIssues/listIssues.ts`. The folder takes its item's name and casing, so a class or component folder is PascalCase: `HttpClient/`, `IssuePanel/`.\n- A `common/` folder for the files only this module uses, when it has any.\n- Modules inside it, each a file or folder next to the main file.\n\nNothing else. Outside a module, a folder holds modules, a `common/`, and domain folders that group related modules. Never invent another kind of folder.\n\n`common/` holds only files that other code imports directly, never a module with files of its own:\n\n- When shared code needs a file that only it uses, move it out of `common/` into its own module folder, next to the `common/` it left, and move that file into the module's own `common/`.\n- This includes a domain folder: once one of its files exists only to serve the others, it is a module and moves out.\n\nThen a reader knows where to look in any module, and `common/` stays a list of things to import.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/listIssues/common/utils/getIssueRows.ts",
-          "text": "// Correct: only listIssues uses this, so it goes in the module's common/.\nexport const getIssueRows = ({ titles }: { titles: string[] }): string[] => titles.map((title, index) => `${index + 1}. ${title}`);\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/listIssues/listIssues.ts",
-          "text": "import { getIssueRows } from './common/utils/getIssueRows.ts';\n\n// Correct: the main file is named after its folder.\nexport const listIssues = ({ titles }: { titles: string[] }): string => getIssueRows({ titles }).join('\\n');\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/listIssues/getIssueRows.ts",
-          "text": "// Incorrect: only listIssues uses this, so it belongs in listIssues/common/utils/.\nexport const getIssueRows = ({ titles }: { titles: string[] }): string[] => titles.map((title, index) => `${index + 1}. ${title}`);\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/listIssues/run.ts",
-          "text": "import { getIssueRows } from './getIssueRows.ts';\n\n// Incorrect: the main file is not named after its folder, so a reader cannot\n// tell which file is the module.\nexport const run = ({ titles }: { titles: string[] }): string => getIssueRows({ titles }).join('\\n');\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/listIssues/run.ts",
-          "pass": "src/listIssues/listIssues.ts"
+          "fail": "src/billing/RateLimiter/RateLimiter.ts",
+          "pass": "src/billing/RateLimiter.ts"
         }
       }
     },
@@ -2185,7 +1971,7 @@
       "id": "multi-export",
       "name": "lightsout/multi-export",
       "set": "code",
-      "documentPath": "code/fractal/modules",
+      "documentPath": "code/fractal/layout",
       "summary": "How many things one file may export.",
       "deterministic": true,
       "agent": false,
@@ -2193,9 +1979,9 @@
       "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
-        "fail": 1
+        "fail": 2
       },
-      "prose": "## Multi-Export\n\nGive each exported function, class, interface, type or constant its own file, named after the export. Non-exported items, such as private helpers and local types, may sit in the file of the export they serve.\n\nOnly these cases may put more than one item in a file:\n\n1. A `Params` interface stays in its function's file, not exported.\n2. A private helper stays in the file of the export it serves, not exported, while only that file calls it. When covering it through the export is impractical, because its inputs are combinatorial, give it its own file and its own tests.\n3. A union and its member types share one file when the members exist only as parts of that union.\n4. A lookup map keyed by a union (`Record<MyType, …>`) may sit in the file that declares the union: a change to one always changes the other.\n5. A type and the single value typed by it share one file, named for the value, such as `interface Config` beside `export const defaultConfig: Config`: the value has no consumer the type lacks.\n\n\"Closely related\", \"both config functions\", \"over-engineered to split\", \"just a small helper\" and \"one is a helper for the other\" are not exceptions. Make a helper non-exported and keep it in the file, or give each export its own file: `loadConfig` and `saveConfig` go in `loadConfig.ts` and `saveConfig.ts`.\n\nException 3:\n\n```typescript\n// common/types/SyncEvent.ts\nexport interface FileAddedEvent {\n\tkind: typeof SyncEventKind.FileAdded;\n\tpath: string;\n}\n\nexport interface RecordParsedEvent {\n\tkind: typeof SyncEventKind.RecordParsed;\n\trecordId: string;\n}\n\nexport type SyncEvent = FileAddedEvent | RecordParsedEvent;\n```\n\nWhen a member type starts being used on its own, it moves to its own file.\n\nWhen several values form one concept, such as a feature's thresholds, export one named object: `export const featureThresholds = { maxBatchSize: 20, maxRetries: 3 } as const;`. Never a bag, such as a `constants.ts` of loose exports.\n\nOne export per file gives each item one name at every use, and a search finds it.",
+      "prose": "## Multi-Export\n\nExport one thing per file, and name the file after it: `loadConfig` and `saveConfig` go in `loadConfig.ts` and `saveConfig.ts`.\n\n- A helper or a `Params` interface that only this file uses stays in it, not exported.\n- When covering a helper through the export is impractical, because its inputs are combinatorial, give it its own file and its own tests.\n- A type or constant that another file needs gets its own file.\n\nOnly these files may export more than one thing:\n\n1. A union type and its member types, while the members are used only as parts of that union. When a member starts being used on its own, it moves to its own file.\n2. A constant object and the type derived from it, under one name.\n\n```typescript\n// common/types/SyncEvent.ts\nexport interface FileAddedEvent {\n\tkind: 'file-added';\n\tpath: string;\n}\n\nexport interface RecordParsedEvent {\n\tkind: 'record-parsed';\n\trecordId: string;\n}\n\nexport type SyncEvent = FileAddedEvent | RecordParsedEvent;\n```\n\n```typescript\n// common/constants/SyncState.ts\nexport const SyncState = { idle: 'idle', busy: 'busy' } as const;\n\nexport type SyncState = (typeof SyncState)[keyof typeof SyncState];\n```\n\nWhen several values form one concept, such as a feature's thresholds, export one named object: `export const featureThresholds = { maxBatchSize: 20, maxRetries: 3 } as const;`. Never a file of loose constants.\n\nOne export per file gives each item one name at every use, and a search finds it.",
       "fixtures": [
         {
           "side": "pass",
@@ -2204,8 +1990,8 @@
         },
         {
           "side": "pass",
-          "path": "src/common/constants/defaultTheme.ts",
-          "text": "// Exception 5: a type and the single value typed by it share a file, filed\n// under the value's name.\nexport interface Theme {\n\tname: string;\n}\n\nexport const defaultTheme: Theme = { name: 'dark' };\n"
+          "path": "src/common/constants/SyncState.ts",
+          "text": "export const SyncState = { idle: 'idle', busy: 'busy' } as const;\n\nexport type SyncState = (typeof SyncState)[keyof typeof SyncState];\n"
         },
         {
           "side": "pass",
@@ -2219,6 +2005,11 @@
         },
         {
           "side": "fail",
+          "path": "src/common/constants/defaultTheme.ts",
+          "text": "export interface Theme {\n\tname: string;\n}\n\nexport const defaultTheme: Theme = { name: 'dark' };\n"
+        },
+        {
+          "side": "fail",
           "path": "src/common/types/Config.ts",
           "text": "export interface Config {\n\tname: string;\n}\n\nexport const maxRetries = 3;\n"
         }
@@ -2226,8 +2017,8 @@
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/common/types/Config.ts",
-          "pass": "src/common/constants/defaultConfig.ts"
+          "fail": "src/common/constants/defaultTheme.ts",
+          "pass": "src/common/constants/SyncState.ts"
         }
       }
     },
@@ -2304,37 +2095,6 @@
           "fail": "src/common/types/SyncEvent.ts",
           "pass": "src/common/types/SyncEvent.ts"
         }
-      }
-    },
-    {
-      "id": "naming-for-reuse",
-      "name": "lightsout/naming-for-reuse",
-      "set": "code",
-      "documentPath": "code/fractal/duplication",
-      "summary": "Naming things for what they are, not where they are used.",
-      "deterministic": false,
-      "agent": true,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 1,
-        "fail": 1
-      },
-      "prose": "## Naming for Reuse\n\nName a thing by what it is, never by where or how it is used today. Ask: could someone use it elsewhere in the app without the name misleading them?\n\n| Context-specific | Generic |\n| --- | --- |\n| `heroMaxWidth` | `maxContentWidth` |\n| `formatPricingDate()` | `formatDate()` |\n| `HeroButtonVariant` | `ButtonVariant` |\n\nThis applies to everything you extract or create. Default to the generic name. A value that is truly specific to one feature may keep a scoped name.\n\nNarrowing a name later is free, and renaming a widely used one is expensive.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/common/utils/formatDate.ts",
-          "text": "// Named for what it does, so the pricing page is not the only place it fits.\nexport const formatDate = ({ date }: { date: Date }): string => date.toISOString();\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/common/utils/formatPricingDate.ts",
-          "text": "// Named for the one screen that happens to call it today.\nexport const formatPricingDate = ({ date }: { date: Date }): string => date.toISOString();\n"
-        }
-      ],
-      "example": {
-        "kind": "snippet"
       }
     },
     {
@@ -2633,7 +2393,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## React Function Size\n\nSplit a function longer than 80 lines. A hook, a function whose name starts with `use`, may run to 160 lines, and a component, a capitalised function in a `.tsx` file, may run to 200. Lines run from the signature to the closing brace, and a callback with no name counts toward the function that holds it.\n\nA function is exempt when every statement calls a named step, or assigns that call's result, and the flow is linear. One inline loop, branch or transformation ends the exemption: a 150-line `start()` that calls eight steps is fine, but one with an inline loop is not. It has nothing to extract, and splitting it would scatter the sequence.\n\nReach for the exemption last. Extract the work into named pieces first, then look again: what remains is short, or plainly a sequence.\n\nEach piece you extract is a new name to read, and perhaps a new file. Extract a piece because it deserves a name, not to win back lines.",
+      "prose": "## React Function Size\n\nSplit a function longer than 80 lines. A hook, a function whose name starts with `use`, may run to 160 lines, and a component, a capitalised function in a `.tsx` file, may run to 200. Lines run from the signature to the closing brace, and a callback with no name counts toward the function that holds it.\n\nExtract a piece because it deserves a name, not to win back lines.",
       "fixtures": [
         {
           "side": "pass",
@@ -2654,7 +2414,7 @@
       "id": "reuse-common-code",
       "name": "lightsout/reuse-common-code",
       "set": "code",
-      "documentPath": "code/fractal/shared-code",
+      "documentPath": "code/fractal/layout",
       "summary": "Look for existing shared code before writing new code.",
       "deterministic": false,
       "agent": true,
@@ -2664,7 +2424,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Reuse Common Code\n\nBefore you write a helper, type, constant or service, look for one in every `common/` folder in the package.\n\n- If one does what you need, import it. Never write a second copy.\n- If it sits in another module's `common/`, move it up as `shared-code-placement` says, then import it.\n- If one nearly does, extend it rather than write a near copy, as long as its current callers keep working.\n\nTwo copies drift apart, and a fix then reaches only one of them.",
+      "prose": "## Reuse Common Code\n\nBefore you write a helper, type or constant, look for one in every `common/` folder in the package.\n\n- If one does what you need, import it. Never write a second copy.\n- If it sits in another module's `common/`, move it up as `shared-code-placement` says, then import it.\n- If one nearly does, extend it rather than write a near copy, as long as its current callers keep working.\n\nTwo copies drift apart, and a fix then reaches only one of them.",
       "fixtures": [
         {
           "side": "pass",
@@ -2709,64 +2469,84 @@
       "id": "shared-code-placement",
       "name": "lightsout/shared-code-placement",
       "set": "code",
-      "documentPath": "code/fractal/shared-code",
-      "summary": "Where code that several modules use belongs.",
+      "documentPath": "code/fractal/layout",
+      "summary": "Where a file belongs, from who uses it.",
       "deterministic": true,
       "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
-        "pass": 4,
-        "fail": 4
+        "pass": 5,
+        "fail": 7
       },
-      "prose": "## Shared Code Placement\n\nPut shared code in the `common/` of the lowest folder that holds every file using it.\n\n- Code that only one module uses stays in that module.\n- When a second module needs it, move it up to the `common/` of the lowest folder that holds both, update the imports, and check that the move made no circular imports.\n- A type or function that is part of a module's own API, such as the options its function takes, stays in that module. Other modules import it from there.\n\nThen where a file sits shows who uses it.",
+      "prose": "## Shared Code Placement\n\nPut a file where its users are.\n\n- Used by one file: beside that file, in its module folder.\n- Used by two or more files: in the `common/` of the lowest folder that holds them all.\n- Used from outside its subject folder: at the top level of that subject folder.\n\nWhen a file gains a user, move it, update the imports, and check the move made no circular imports.\n\nThen where a file sits shows who uses it.",
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/billing/billing.ts",
-          "text": "import { formatMoney } from '../common/utils/formatMoney.ts';\nimport { roundCents } from './common/utils/roundCents.ts';\n\nexport const billing = ({ cents }: { cents: number }): string => formatMoney({ cents: roundCents({ cents }) });\n"
+          "path": "src/billing/chargeCustomer/buildReceipt.ts",
+          "text": "import { roundCents } from './common/roundCents.ts';\n\n// Correct: only chargeCustomer.ts uses this, so it sits beside it.\nexport const buildReceipt = ({ cents }: { cents: number }): string => `Receipt ${roundCents({ cents })}`;\n"
         },
         {
           "side": "pass",
-          "path": "src/billing/common/utils/roundCents.ts",
-          "text": "// Correct: only billing uses this, so it stays in billing.\nexport const roundCents = ({ cents }: { cents: number }): number => Math.round(cents);\n"
+          "path": "src/billing/chargeCustomer/chargeCustomer.ts",
+          "text": "import { formatMoney } from '../../common/formatMoney.ts';\nimport { buildReceipt } from './buildReceipt.ts';\nimport { roundCents } from './common/roundCents.ts';\n\nexport const chargeCustomer = ({ cents }: { cents: number }): string => `${buildReceipt({ cents })} ${formatMoney({ cents: roundCents({ cents }) })}`;\n"
         },
         {
           "side": "pass",
-          "path": "src/common/utils/formatMoney.ts",
+          "path": "src/billing/chargeCustomer/common/roundCents.ts",
+          "text": "// Correct: both files of the chargeCustomer module use this, and no file outside it.\nexport const roundCents = ({ cents }: { cents: number }): number => Math.round(cents);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/common/formatMoney.ts",
           "text": "// Correct: billing and invoices both use this, and src/ is the lowest folder\n// that holds both.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
         },
         {
           "side": "pass",
-          "path": "src/invoices.ts",
-          "text": "import { formatMoney } from './common/utils/formatMoney.ts';\n\nexport const invoices = ({ cents }: { cents: number }): string => `Invoiced ${formatMoney({ cents })}`;\n"
+          "path": "src/invoices/sendInvoice.ts",
+          "text": "import { chargeCustomer } from '../billing/chargeCustomer/chargeCustomer.ts';\nimport { formatMoney } from '../common/formatMoney.ts';\n\nexport const sendInvoice = ({ cents }: { cents: number }): string => `${chargeCustomer({ cents })} ${formatMoney({ cents })}`;\n"
         },
         {
           "side": "fail",
-          "path": "src/billing/billing.ts",
-          "text": "import { roundCents } from '../common/utils/roundCents.ts';\nimport { formatMoney } from './common/utils/formatMoney.ts';\n\nexport const billing = ({ cents }: { cents: number }): string => formatMoney({ cents: roundCents({ cents }) });\n"
+          "path": "src/billing/buildReceipt.ts",
+          "text": "// Incorrect: only chargeCustomer.ts uses this, yet it sits at the top of\n// billing as if other folders used it. It belongs in chargeCustomer's folder.\nexport const buildReceipt = ({ cents }: { cents: number }): string => `Receipt ${cents}`;\n"
         },
         {
           "side": "fail",
-          "path": "src/billing/common/utils/formatMoney.ts",
-          "text": "// Incorrect: invoices.ts uses this too, so it sits too low. It belongs in\n// src/common/utils/, the lowest folder that holds both users.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
+          "path": "src/billing/chargeCustomer.ts",
+          "text": "import { buildReceipt } from './buildReceipt.ts';\nimport { formatMoney } from './common/formatMoney.ts';\nimport { roundCents } from './common/roundCents.ts';\nimport { taxRate } from './taxRate.ts';\n\nexport const chargeCustomer = ({ cents }: { cents: number }): string => `${buildReceipt({ cents })} ${formatMoney({ cents: roundCents({ cents }) * taxRate })}`;\n"
         },
         {
           "side": "fail",
-          "path": "src/common/utils/roundCents.ts",
-          "text": "// Incorrect: only billing uses this, so it sits too high. It belongs in\n// src/billing/common/utils/.\nexport const roundCents = ({ cents }: { cents: number }): number => Math.round(cents);\n"
+          "path": "src/billing/common/formatMoney.ts",
+          "text": "// Incorrect: sendInvoice.ts uses this too, so it sits too low. It belongs in\n// src/common/, the lowest folder that holds both users.\nexport const formatMoney = ({ cents }: { cents: number }): string => `$${(cents / 100).toFixed(2)}`;\n"
         },
         {
           "side": "fail",
-          "path": "src/invoices.ts",
-          "text": "import { formatMoney } from './billing/common/utils/formatMoney.ts';\n\n// Reaches into billing's own common/ for a helper they both need.\nexport const invoices = ({ cents }: { cents: number }): string => `Invoiced ${formatMoney({ cents })}`;\n"
+          "path": "src/billing/common/roundCents.ts",
+          "text": "// Incorrect: one file uses this, so it is not shared. It belongs beside\n// chargeCustomer.ts.\nexport const roundCents = ({ cents }: { cents: number }): number => Math.round(cents);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/refundCustomer.ts",
+          "text": "import { taxRate } from './taxRate.ts';\n\nexport const refundCustomer = ({ cents }: { cents: number }): number => cents * taxRate;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/taxRate.ts",
+          "text": "// Incorrect: two billing files share this and nothing outside billing uses\n// it. It belongs in src/billing/common/.\nexport const taxRate = 1.2;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/invoices/sendInvoice.ts",
+          "text": "import { chargeCustomer } from '../billing/chargeCustomer.ts';\nimport { formatMoney } from '../billing/common/formatMoney.ts';\nimport { refundCustomer } from '../billing/refundCustomer.ts';\n\nexport const sendInvoice = ({ cents }: { cents: number }): string => `${chargeCustomer({ cents })} ${refundCustomer({ cents })} ${formatMoney({ cents })}`;\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/billing/common/utils/formatMoney.ts",
-          "pass": "src/common/utils/formatMoney.ts"
+          "fail": "src/billing/common/formatMoney.ts",
+          "pass": "src/common/formatMoney.ts"
         }
       }
     },
@@ -2774,7 +2554,7 @@
       "id": "shared-package-criteria",
       "name": "lightsout/shared-package-criteria",
       "set": "code",
-      "documentPath": "code/fractal/shared-code",
+      "documentPath": "code/fractal/layout",
       "summary": "What belongs in the shared package.",
       "deterministic": false,
       "agent": true,
@@ -2784,7 +2564,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Shared Package Criteria\n\nNever copy code from one package into another. Put it in the shared package instead, but only when two or more packages need it, it has no framework dependencies, and it is a contract both sides agree on, such as constants, error codes or pure predicates. Never when:\n\n- One package needs it. Put it in that package's `common/`.\n- It imports a framework. Keep the pure part shared, and wrap it locally.\n- It is an implementation detail, such as a hook, guard or resolver.\n\nFor example, `packages/shared/src/permissions/hasPermission.ts` holds the pure function, and each package that needs a framework form wraps it locally, such as a React hook or a NestJS guard.\n\nA shared package where everything is public is like a `common/`: its `src/` holds domain folders, not modules. Decide each folder as `module-folder-layout` does: a folder whose every file is something its users call directly is a domain folder.\n\nCopies in each package drift apart, and a fix then reaches only one of them. Then every package can import everything in the shared package.",
+      "prose": "## Shared Package Criteria\n\nIn a repo with several packages, never copy code from one package into another. Put it in the shared package, but only when two or more packages need it and it is a contract both sides agree on, such as constants, error codes or pure functions.\n\n- One package needs it: put it in that package's `common/`.\n- It depends on a library only one package uses: keep the pure part shared, and wrap it in that package.\n\nCopies in each package drift apart, and a fix then reaches only one of them.",
       "fixtures": [
         {
           "side": "pass",
@@ -2897,66 +2677,6 @@
       }
     },
     {
-      "id": "synonym-export-name",
-      "name": "lightsout/synonym-export-name",
-      "set": "code",
-      "documentPath": "code/fractal/duplication",
-      "summary": "One naming pattern, and one name for each concept.",
-      "deterministic": true,
-      "agent": false,
-      "defaultSeverity": "advisory",
-      "defaultOptions": {},
-      "fixtureCounts": {
-        "pass": 5,
-        "fail": 2
-      },
-      "prose": "## Synonym Export Name\n\nUse one naming pattern for each kind of name within a domain. Follow the pattern the codebase already uses; never introduce a competing one: beside `getUserData`, a new reader is `getUserSettings`, not `fetchUserSettings`.\n\nNever introduce a second verb for a concept that already has a name. Two export names that differ only by a synonym, or only in word order, name one concept:\n\n- `fetch`, `load`, `retrieve` and `read` mean `get`.\n- `make`, `generate` and `produce` mean `create`.\n- `remove` means `delete`, `modify` means `update`, and `verify` and `check` mean `validate`.\n\nA name on its own may use any verb, such as `readFile`, `loadConfig` or `checkArgs`: this rule is about two living names for one concept. Where a domain has standardized on another verb, such as `fetch`, keep that verb.\n\nWhen names follow one pattern, a reader can guess a name and a search finds it. A synonym is missed by a search, so the concept gets written again, and `duplicate-function-body` and `duplicate-code-block` cannot catch the copy, because it was written separately and looks nothing like the first.",
-      "fixtures": [
-        {
-          "side": "pass",
-          "path": "src/config/readFile.ts",
-          "text": "// A lone name may use any verb: nothing else in the repo names this concept,\n// so there is no pair and nothing to report.\nexport const readFile = ({ path }: { path: string }): string => `contents of ${path}`;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/get-started.ts",
-          "text": "// The framework pair the rule spares: a route segment and the component that\n// renders it, one name spelled for two conventions.\nexport const route = '/get-started';\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/screens/GetStarted.tsx",
-          "text": "export const GetStarted = (): string => 'get started';\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/users/getUserData.ts",
-          "text": "export const getUserData = ({ id }: { id: string }): string => id;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/users/getUserRoles.ts",
-          "text": "export const getUserRoles = ({ id }: { id: string }): string[] => [id];\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/profile/getUserData.ts",
-          "text": "export const getUserData = ({ id }: { id: string }): string => id;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/users/fetchUserData.ts",
-          "text": "export const fetchUserData = ({ id }: { id: string }): string => id;\n"
-        }
-      ],
-      "example": {
-        "kind": "repo",
-        "focus": {
-          "fail": "src/profile/getUserData.ts",
-          "pass": "src/config/readFile.ts"
-        }
-      }
-    },
-    {
       "id": "test-beside-subject",
       "name": "lightsout/test-beside-subject",
       "set": "tests",
@@ -2970,7 +2690,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Test Beside Subject\n\nPut a unit test beside the one source file it tests, and name it after that file: `src/auth/AuthService.ts` is tested by `src/auth/AuthService.unit.test.ts`. The part of the test's name before the first dot names a real file in the same folder.\n\n- Never put a unit test in a `__tests__/`, `tests/` or `test/` folder under `src/`.\n- A test file whose subjects span several source files is a split candidate, not a naming exception.\n- When one subject genuinely needs more than one test file, such as a pipeline with distinct scenarios, add a camelCase scenario to the name: `<File>.<scenario>.unit.test.ts`, such as `runImplementPipeline.monorepo.unit.test.ts`.\n\nThen a file's test is found beside it, under its name.",
+      "prose": "## Test Beside Subject\n\nPut a unit test beside the one source file it tests, and name it after that file: `src/auth/AuthService.ts` is tested by `src/auth/AuthService.unit.test.ts`. The part of the test's name before the first dot names a real file in the same folder.\n\n- Never put a unit test in a `__tests__/`, `tests/` or `test/` folder under `src/`.\n- A test that covers several source files is split into one test file per source file.\n- When one subject genuinely needs more than one test file, such as a pipeline with distinct scenarios, add a camelCase scenario to the name: `<File>.<scenario>.unit.test.ts`, such as `runImplementPipeline.monorepo.unit.test.ts`.\n\nThen a file's test is found beside it, under its name.",
       "fixtures": [
         {
           "side": "pass",
@@ -3072,7 +2792,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Test File Size\n\nKeep a test file to 400 lines or fewer. Arrangement earns tests more room than source, but a test file past the cap is almost never thorough: it is the boundary test of a module whose internal units have no tests of their own, absorbing all their contracts through its one public file.\n\nFix the module, not the test file:\n\n1. Give each internal unit the file is really testing a direct test beside it, asserting on the unit itself. The unit may not be a file yet: a long schema or config object tested block by block is several contracts in one file, so split the source into its blocks first, then test each, as `module-boundary-testing` allows.\n2. Leave the boundary test only what the boundary owns: the sequence, the short-circuits, which units run at all, and the order of the result.\n3. Then delete the boundary tests the move made redundant. One whose every claim a unit's direct test now pins, or another module's own test of the same renderer or parser, is duplicate coverage, and deleting it is consolidation. Never delete a claim that afterwards lives nowhere.\n\nOne shape is different: a pipeline whose units already have their own direct tests, and whose long test file is end-to-end scenarios of the pipeline's own outcomes. There is no unit left to test apart, so there, and only there, split the scenarios by named concern, such as `runPipeline.supervisor.unit.test.ts` and `runPipeline.advisories.unit.test.ts`, each with one concern and its own fixtures.\n\nSplitting a test file into unnamed halves, or deleting assertions to get under the cap, clears the finding and keeps the problem.",
+      "prose": "## Test File Size\n\nKeep a test file to 400 lines or fewer. Past the cap, split it by named scenario, one concern per file: `runPipeline.supervisor.unit.test.ts`, `runPipeline.advisories.unit.test.ts`.\n\nNever split a test file into unnamed halves, or delete assertions, to get under the cap.",
       "fixtures": [
         {
           "side": "pass",
@@ -3272,7 +2992,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Test Support in Src\n\nKeep shared test helpers, mocks and fixtures out of `src/`, in the package's test-support folders, such as `tests/helpers/`, `test/mocks/` and `test/fixtures/`. Only test files sit beside their source.\n\n- A mock one test file uses stays in that file.\n- A mock several tests in one area share goes in a `__mocks__/` folder beside the module it doubles, the one test-support folder allowed under `src/`.\n- A mock, fixture or utility the whole codebase uses goes in `test/mocks/`, `test/fixtures/` or `test/utils/`.\n\nUnder `src/`, test-support code reads as production source, to scanners and people alike.",
+      "prose": "## Test Support in Src\n\nKeep shared test helpers, mocks and fixtures out of `src/`, in the package's `tests/` folder: `tests/helpers/`, `tests/mocks/`, `tests/fixtures/`. Only test files sit beside their source.\n\n- A mock or helper one test file uses stays in that file.\n- One that several test files share goes in `tests/`.\n\nUnder `src/`, test-support code reads as production source, to scanners and people alike.",
       "fixtures": [
         {
           "side": "pass",

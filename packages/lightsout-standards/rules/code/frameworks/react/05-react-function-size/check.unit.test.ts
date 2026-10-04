@@ -66,8 +66,7 @@ describe('react-function-size check', () => {
 				siteKey: 'react-function-size:src/reporting/buildReportSummary.ts',
 				files: [{ path: 'src/reporting/buildReportSummary.ts', startLine: 1, endLine: 7 }],
 				detail: "function 'buildReportSummary' is 7 lines (cap ~5)",
-				guidance:
-					'Extract logic. Exempt only when every statement is a call to a named step (or the assignment of its result) and the flow is linear — any inline loop, branch, or transformation disqualifies.',
+				guidance: 'Split the function into named pieces.',
 				measure: 7,
 			},
 		]);
@@ -139,8 +138,7 @@ describe('react-function-size check', () => {
 				siteKey: 'react-function-size:src/reporting/buildReportSummary.ts',
 				files: [{ path: 'src/reporting/buildReportSummary.ts', startLine: 1, endLine: 12 }],
 				detail: "function 'buildReportSummary' is 12 lines (cap ~5)",
-				guidance:
-					'Extract logic. Exempt only when every statement is a call to a named step (or the assignment of its result) and the flow is linear — any inline loop, branch, or transformation disqualifies.',
+				guidance: 'Split the function into named pieces.',
 				measure: 12,
 			},
 		]);
@@ -158,8 +156,7 @@ describe('react-function-size check', () => {
 				{ path: 'src/reporting/buildReportSummary.ts', startLine: 2, endLine: 7 },
 			],
 			detail: "function 'buildReportSummary' is 10 lines (cap ~5); function 'convert' is 6 lines (cap ~5)",
-			guidance:
-				'Extract logic. Exempt only when every statement is a call to a named step (or the assignment of its result) and the flow is linear — any inline loop, branch, or transformation disqualifies.',
+			guidance: 'Split the function into named pieces.',
 			measure: 16,
 		});
 	});
@@ -173,8 +170,7 @@ describe('react-function-size check', () => {
 			siteKey: 'react-function-size:src/ledger/Ledger.ts',
 			files: [{ path: 'src/ledger/Ledger.ts', startLine: 2, endLine: 7 }],
 			detail: "function 'total' is 6 lines (cap ~5)",
-			guidance:
-				'Extract logic. Exempt only when every statement is a call to a named step (or the assignment of its result) and the flow is linear — any inline loop, branch, or transformation disqualifies.',
+			guidance: 'Split the function into named pieces.',
 			measure: 6,
 		});
 	});
@@ -196,8 +192,7 @@ describe('react-function-size check', () => {
 					{ path: 'src/reporting/summaries.ts', startLine: 8, endLine: 13 },
 				],
 				detail: "function 'buildReportSummary' is 7 lines (cap ~5); function 'buildReportTotals' is 6 lines (cap ~5)",
-				guidance:
-					'Extract logic. Exempt only when every statement is a call to a named step (or the assignment of its result) and the flow is linear — any inline loop, branch, or transformation disqualifies.',
+				guidance: 'Split the function into named pieces.',
 				measure: 13,
 			},
 		]);
@@ -220,16 +215,14 @@ describe('react-function-size check', () => {
 					{ path: 'src/reporting/summaries.ts', startLine: 8, endLine: 13 },
 				],
 				detail: "function 'buildReportSummary' is 7 lines (cap ~5); function 'buildReportTotals' is 6 lines (cap ~5)",
-				guidance:
-					'Extract logic. Exempt only when every statement is a call to a named step (or the assignment of its result) and the flow is linear — any inline loop, branch, or transformation disqualifies.',
+				guidance: 'Split the function into named pieces.',
 				measure: 13,
 			},
 			{
 				siteKey: 'react-function-size:src/reporting/summaries.ts',
 				files: [{ path: 'src/reporting/summaries.ts', startLine: 1, endLine: 7 }],
 				detail: "function 'buildReportSummary' is 7 lines (cap ~5)",
-				guidance:
-					'Extract logic. Exempt only when every statement is a call to a named step (or the assignment of its result) and the flow is linear — any inline loop, branch, or transformation disqualifies.',
+				guidance: 'Split the function into named pieces.',
 				measure: 7,
 			},
 		]);

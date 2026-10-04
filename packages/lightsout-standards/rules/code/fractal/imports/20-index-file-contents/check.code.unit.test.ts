@@ -20,7 +20,7 @@ describe('index-file-contents check: code in an index file', () => {
 				siteKey: 'index-file-contents:src/cli/index.ts',
 				files: [{ path: 'src/cli/index.ts' }],
 				detail: '3 statement(s) other than re-export lines, the first at line 1',
-				guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
+				guidance: 'An index file holds re-export lines only. Put executable code in a named entry file such as main.ts.',
 			},
 		]);
 	});
@@ -66,7 +66,7 @@ describe('index-file-contents check: code in an index file', () => {
 				siteKey: 'index-file-contents:src/reporting/index.ts',
 				files: [{ path: 'src/reporting/index.ts' }],
 				detail: '2 statement(s) other than re-export lines, the first at line 1',
-				guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
+				guidance: 'An index file holds re-export lines only. Put executable code in a named entry file such as main.ts.',
 			},
 		]);
 	});
@@ -83,7 +83,7 @@ describe('index-file-contents check: code in an index file', () => {
 				siteKey: 'index-file-contents:src/features/Dashboard/index.tsx',
 				files: [{ path: 'src/features/Dashboard/index.tsx' }],
 				detail: '1 statement(s) other than re-export lines, the first at line 1',
-				guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
+				guidance: 'An index file holds re-export lines only. Put executable code in a named entry file such as main.ts.',
 			},
 		]);
 	});
@@ -98,7 +98,7 @@ describe('index-file-contents check: code in an index file', () => {
 				siteKey: 'index-file-contents:src/index.ts',
 				files: [{ path: 'src/index.ts' }],
 				detail: '1 statement(s) other than re-export lines, the first at line 1',
-				guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
+				guidance: 'An index file holds re-export lines only. Put executable code in a named entry file such as main.ts.',
 			},
 		]);
 	});

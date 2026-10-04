@@ -66,8 +66,7 @@ const buildFileFindings = ({ input, options, rule, getSizeCap }: Params & { inpu
 					rule,
 					files: oversized.map(({ startLine, endLine }) => ({ path, startLine, endLine })),
 					detail: oversized.map(({ kind, name, lines, cap }) => `${kind} '${name}' is ${lines} lines (cap ~${cap})`).join('; '),
-					guidance:
-						'Extract logic. Exempt only when every statement is a call to a named step (or the assignment of its result) and the flow is linear — any inline loop, branch, or transformation disqualifies.',
+					guidance: 'Split the function into named pieces.',
 					// One finding covers every oversized function in the file, so the measure
 					// sums them: it rises when one grows and when a second goes over the cap,
 					// which are the two ways this one site gets worse.

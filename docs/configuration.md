@@ -490,7 +490,6 @@ A repository that wants the strict profile promotes those rules itself — an ex
     "function-size": "blocking",
     "react-function-size": "blocking",
     "import-path-alias": "blocking",
-    "internal-import-from-outside": "blocking",
     "multi-export": "blocking",
     "single-use-scalar": "blocking",
     "test-beside-subject": "blocking",

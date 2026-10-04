@@ -11,14 +11,14 @@ interface Params {
 }
 
 /**
- * A repo on the `lightsout/standards` pack with a planted tier-0 synonym pair split
+ * A repo on the `lightsout/standards` pack with a planted pair of same-named exports split
  * across two folders, and no node_modules — so the compiler-gated tiers degrade
  * to a note, which is the other rendering path `standards-check` owns.
  * Standards are opt-in, so the config names the pack: without it nothing here
  * would be checked at all.
  *
  * Both halves of the pair are consumed by an entry point that exports nothing,
- * so the only thing wrong with this repo is the synonym: an unconsumed export
+ * so the only thing wrong with this repo is the shared name: an unconsumed export
  * is its own blocking verdict, and one planted here would arrive as work the
  * fixture never meant to plant.
  */
@@ -28,10 +28,10 @@ export const seedStandardsFixture = async ({ baseline = false, config }: Params 
 	await mkdir(join(cwd, 'src', 'a'), { recursive: true });
 	await mkdir(join(cwd, 'src', 'b'), { recursive: true });
 	await writeFile(join(cwd, 'src', 'a', 'getUserData.ts'), 'export const getUserData = () => 1;\n', 'utf8');
-	await writeFile(join(cwd, 'src', 'b', 'fetchUserData.ts'), 'export const fetchUserData = () => 2;\n', 'utf8');
+	await writeFile(join(cwd, 'src', 'b', 'getUserData.ts'), 'export const getUserData = () => 2;\n', 'utf8');
 	await writeFile(
 		join(cwd, 'src', 'app.ts'),
-		"import { getUserData } from './a/getUserData.ts';\nimport { fetchUserData } from './b/fetchUserData.ts';\n\nconsole.log(getUserData, fetchUserData);\n",
+		"import { getUserData } from './a/getUserData.ts';\nimport { getUserData as getOtherUserData } from './b/getUserData.ts';\n\nconsole.log(getUserData, getOtherUserData);\n",
 		'utf8',
 	);
 

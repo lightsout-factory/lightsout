@@ -24,7 +24,7 @@ export const check: StandardsCheckModule = {
 				rule: 'dead-export',
 				files: [{ path: file }],
 				detail: `${names.map((name) => `'${name}'`).join(', ')} ${names.length > 1 ? 'are' : 'is'} referenced nowhere else`,
-				guidance: 'A dead code candidate. Delete it — version control has the history.',
+				guidance: 'Nothing references it. Delete it.',
 			}),
 		);
 	},

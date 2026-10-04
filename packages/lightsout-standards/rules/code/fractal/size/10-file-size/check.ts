@@ -4,7 +4,7 @@ import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
 
 /**
  * A barrel is exempt at any length: the remedy the finding asks for, split it
- * or graduate the concept, is what a module's public API cannot do.
+ * or turn its module into a folder, is what a package's public API cannot do.
  */
 const buildFileFindings = ({ input, options }: { input: SyntaxTreeInput; options: Record<string, number> }) => {
 	const findings: RawStandardsFinding[] = [];
@@ -19,7 +19,7 @@ const buildFileFindings = ({ input, options }: { input: SyntaxTreeInput; options
 					rule: 'file-size',
 					files: [{ path }],
 					detail: `${lineCount} lines (cap ~${cap})`,
-					guidance: 'Split the file, or graduate the concept it has grown into.',
+					guidance: 'Split the file, or turn its module into a folder.',
 					// The length, not the distance past the cap, so the same file measures
 					// the same however the cap is retuned.
 					measure: lineCount,

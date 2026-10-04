@@ -71,7 +71,7 @@ test('readPlanningStandards: a config naming the shipped standards pack loads it
 
 	const standards = await readPlanningStandards({ cwd, config: configWith({ 'standards-pack': 'lightsout/standards' }) });
 
-	expect(standards ?? '').toMatch(/<!-- lightsout: code\/fractal\/modules -->/);
+	expect(standards ?? '').toMatch(/<!-- lightsout: code\/fractal\/layout -->/);
 	expect((standards ?? '').includes('code/frameworks/')).toBeFalsy();
 	expect(logged).toStrictEqual([]);
 });
@@ -130,7 +130,7 @@ test("readPlanningStandards: planning reads the selected pack's code prose", asy
 
 	// standards-pack false selects no pack; the react pack's code topic is read beside the fractal ones
 	expect(switchedOff).toBe(undefined);
-	expect(named ?? '').toMatch(/<!-- lightsout: code\/fractal\/modules -->/);
+	expect(named ?? '').toMatch(/<!-- lightsout: code\/fractal\/layout -->/);
 	expect(named ?? '').toMatch(/<!-- lightsout: code\/frameworks\/react -->/);
 	expect((named ?? '').includes('<!-- lightsout: tests/')).toBeFalsy();
 	expect(logged).toStrictEqual([]);

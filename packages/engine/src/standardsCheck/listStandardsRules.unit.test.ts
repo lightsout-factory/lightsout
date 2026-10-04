@@ -74,6 +74,10 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  * `test-mock-untyped`. `single-return` gained a check. The hook
  * and component caps left `function-size` for `react-function-size`, which the
  * framework packs hold and `lightsout/standards` does not, so it is not listed here.
+ *
+ * On 2026-10-04 the fractal rules were judged one by one against the layout
+ * model. `synonym-export-name` and `internal-import-from-outside` were retired
+ * with the rules they named, and `module-file-to-folder` gained a check.
  */
 const durableRuleIds = [
 	'prefer-functions',
@@ -88,14 +92,13 @@ const durableRuleIds = [
 	'duplicate-function-body',
 	'duplicate-code-block',
 	'duplicate-export-name',
-	'synonym-export-name',
 	'import-path-alias',
 	'index-files',
 	'index-file-contents',
-	'internal-import-from-outside',
 	'circular-dependencies',
 	'multi-export',
 	'filename-mismatch',
+	'module-file-to-folder',
 	'shared-code-placement',
 	'file-directly-in-common',
 	'banned-folder-name',

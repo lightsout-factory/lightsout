@@ -42,7 +42,7 @@ describe('dead-export check', () => {
 				siteKey: 'dead-export:src/feature/buildGreeting.ts',
 				files: [{ path: 'src/feature/buildGreeting.ts' }],
 				detail: "'buildGreeting' is referenced nowhere else",
-				guidance: 'A dead code candidate. Delete it — version control has the history.',
+				guidance: 'Nothing references it. Delete it.',
 			},
 		]);
 	});

@@ -1,5 +1,5 @@
 // A package entry past the cap, and exempt at any length: the remedy a size finding
-// asks for — split the file, or graduate the concept — is the one thing a
+// asks for, split the file or turn its module into a folder, is the one thing a
 // package's public API cannot do.
 export { getCatalogEntry001 } from './catalog/entries/getCatalogEntry001';
 export { getCatalogEntry002 } from './catalog/entries/getCatalogEntry002';

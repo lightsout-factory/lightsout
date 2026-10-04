@@ -23,7 +23,7 @@ describe('file-size check', () => {
 				siteKey: 'file-size:src/reporting/buildReportSummary.ts',
 				files: [{ path: 'src/reporting/buildReportSummary.ts' }],
 				detail: '7 lines (cap ~6)',
-				guidance: 'Split the file, or graduate the concept it has grown into.',
+				guidance: 'Split the file, or turn its module into a folder.',
 				measure: 7,
 			},
 		]);
