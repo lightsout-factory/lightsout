@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { PullRequestSummary } from '#src/common/types/PullRequestSummary.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { ShipResult } from '#src/contracts/ship/ShipResult.ts';
@@ -13,7 +14,6 @@ import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
 import type { ParkedWork } from '#src/queue/internal/common/types/ParkedWork.ts';
 import type { nameWaveWorkOrders } from '#src/queue/nameWaveWorkOrders.ts';
-import type { PullRequestSummary } from '#src/ship/forge/common/types/PullRequestSummary.ts';
 import { nameWaveLikeTemplate } from '#tests/helpers/nameWaveLikeTemplate.ts';
 import { queueTicketFixture as ticketOf } from '#tests/helpers/queueTicketFixture.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
@@ -69,7 +69,7 @@ jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: { cwd: string })
 // The two ends of the drain, stubbed on one barrel. Everything else stays real:
 // `PullRequestState` is a plain constant nothing gains from doubling.
 jest.mock('#src/ship/forge/findPullRequest.ts', () => ({ findPullRequest: (params: FindPullRequestParams) => mockFindPullRequest(params) }));
-jest.mock('#src/ship/runShip.ts', () => ({ runShip: (params: { cwd: string }) => mockRunShip(params) }));
+jest.mock('#src/ship/runShip/runShip.ts', () => ({ runShip: (params: { cwd: string }) => mockRunShip(params) }));
 // -------------------------
 // Naming a wave creates work orders, which reads the tracker and spawns a
 // harness — the work order module's own job, with its own tests. These cases

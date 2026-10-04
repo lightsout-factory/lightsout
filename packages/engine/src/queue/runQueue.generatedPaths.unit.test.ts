@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process';
 import { basename, dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { PullRequestSummary } from '#src/common/types/PullRequestSummary.ts';
 import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
@@ -13,7 +14,6 @@ import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import type { nameWaveWorkOrders } from '#src/queue/nameWaveWorkOrders.ts';
 import { runQueue } from '#src/queue/runQueue.ts';
-import type { PullRequestSummary } from '#src/ship/forge/common/types/PullRequestSummary.ts';
 import { committedPaths } from '#tests/helpers/committedPaths.ts';
 import { nameWaveLikeTemplate } from '#tests/helpers/nameWaveLikeTemplate.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
@@ -74,7 +74,7 @@ const mockFindPullRequest = jest.fn<(params: FindPullRequestParams) => Promise<P
 const mockRunShip = jest.fn<(params: { cwd: string }) => Promise<ShipResult>>();
 
 jest.mock('#src/ship/forge/findPullRequest.ts', () => ({ findPullRequest: (params: FindPullRequestParams) => mockFindPullRequest(params) }));
-jest.mock('#src/ship/runShip.ts', () => ({ runShip: (params: { cwd: string }) => mockRunShip(params) }));
+jest.mock('#src/ship/runShip/runShip.ts', () => ({ runShip: (params: { cwd: string }) => mockRunShip(params) }));
 // -------------------------
 const mockRunWorkerWithRelay = jest.fn<(params: { worktreePath: string }) => Promise<WorkerOutcome>>();
 

@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import type { ShipWorkOrderGuard } from '#src/common/types/ShipWorkOrderGuard.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
@@ -15,7 +16,6 @@ import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
 import { shipOneBranch } from '#src/queue/internal/shipOneBranch.ts';
-import type { ShipWorkOrderGuard } from '#src/ship/common/types/ShipWorkOrderGuard.ts';
 import { createWorktree } from '#src/worktree/createWorktree.ts';
 import { readWorktreeRecord } from '#src/worktree/records/readWorktreeRecord.ts';
 import { writeWorktreeRecord } from '#src/worktree/records/writeWorktreeRecord.ts';
@@ -49,7 +49,7 @@ jest.mock('#src/gates/gateHolds/takeGateHold.ts', () => ({
 	takeGateHold: (params: Parameters<typeof mockTakeGateHold>[0]) => mockTakeGateHold(params),
 }));
 jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: { cwd: string }) => mockRunGates(params) }));
-jest.mock('#src/ship/runShip.ts', () => ({ runShip: (params: Parameters<typeof mockRunShip>[0]) => mockRunShip(params) }));
+jest.mock('#src/ship/runShip/runShip.ts', () => ({ runShip: (params: Parameters<typeof mockRunShip>[0]) => mockRunShip(params) }));
 // -------------------------
 
 const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };

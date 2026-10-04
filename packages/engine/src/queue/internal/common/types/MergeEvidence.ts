@@ -1,4 +1,4 @@
-import type { PullRequestSummary } from '#src/ship/forge/common/types/PullRequestSummary.ts';
+import type { PullRequestSummary } from '#src/common/types/PullRequestSummary.ts';
 
 export interface MergeEvidence {
 	/**

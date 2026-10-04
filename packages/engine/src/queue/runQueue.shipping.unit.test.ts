@@ -4,6 +4,8 @@ import { basename, dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { ShipIntegration } from '#src/common/types/ShipIntegration.ts';
+import type { ShipSettings } from '#src/common/types/ShipSettings.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
@@ -22,8 +24,6 @@ import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOu
 import type { ParkedWork } from '#src/queue/internal/common/types/ParkedWork.ts';
 import type { nameWaveWorkOrders } from '#src/queue/nameWaveWorkOrders.ts';
 import { runQueue } from '#src/queue/runQueue.ts';
-import type { ShipIntegration } from '#src/ship/common/types/ShipIntegration.ts';
-import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
 import { nameWaveLikeTemplate } from '#tests/helpers/nameWaveLikeTemplate.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
@@ -83,7 +83,7 @@ jest.mock('#src/gates/runGates.ts', () => ({ runGates: (params: RunGatesParams) 
 // asserts is what the queue does around the merge.
 const mockRunShip = jest.fn<(params: { cwd: string; integration: ShipIntegration }) => Promise<ShipResult>>();
 
-jest.mock('#src/ship/runShip.ts', () => ({ runShip: (params: { cwd: string; integration: ShipIntegration }) => mockRunShip(params) }));
+jest.mock('#src/ship/runShip/runShip.ts', () => ({ runShip: (params: { cwd: string; integration: ShipIntegration }) => mockRunShip(params) }));
 // -------------------------
 // Naming a wave creates work orders, which reads the tracker and spawns a
 // harness — the work order module's own job, with its own tests. These cases

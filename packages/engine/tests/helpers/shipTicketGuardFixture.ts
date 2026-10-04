@@ -1,4 +1,4 @@
-import type { ShipWorkOrderGuard } from '#src/ship/common/types/ShipWorkOrderGuard.ts';
+import type { ShipWorkOrderGuard } from '#src/common/types/ShipWorkOrderGuard.ts';
 
 /**
  * A ticket guard that authorizes everything and records nothing, for tests whose

@@ -1,8 +1,8 @@
+import { PullRequestState } from '#src/common/constants/PullRequestState.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import { readBranchState } from '#src/queue/branchState/readBranchState.ts';
 import { writeBranchState } from '#src/queue/branchState/writeBranchState.ts';
 import type { MergeEvidence } from '#src/queue/internal/common/types/MergeEvidence.ts';
-import { PullRequestState } from '#src/ship/forge/common/constants/PullRequestState.ts';
 import { findPullRequest } from '#src/ship/forge/findPullRequest.ts';
 
 interface Params {

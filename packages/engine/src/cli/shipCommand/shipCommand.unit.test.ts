@@ -18,11 +18,13 @@ import { stubForgeOnPath } from '#tests/helpers/stubForgeOnPath.ts';
 // case here keeps the outcome it had. The stand-in only records what the command
 // handed it, because the integration bundle is built here and read by an agent
 // spawn that a green ship never reaches.
-type RunShip = typeof import('#src/ship/runShip.ts').runShip;
+type RunShip = typeof import('#src/ship/runShip/runShip.ts').runShip;
 
-const mockRunShip = jest.fn<RunShip>((params) => jest.requireActual<typeof import('#src/ship/runShip.ts')>('#src/ship/runShip.ts').runShip(params));
+const mockRunShip = jest.fn<RunShip>((params) =>
+	jest.requireActual<typeof import('#src/ship/runShip/runShip.ts')>('#src/ship/runShip/runShip.ts').runShip(params),
+);
 
-jest.mock('#src/ship/runShip.ts', () => ({ runShip: (params: Parameters<RunShip>[0]) => mockRunShip(params) }));
+jest.mock('#src/ship/runShip/runShip.ts', () => ({ runShip: (params: Parameters<RunShip>[0]) => mockRunShip(params) }));
 // -------------------------
 
 const viewed = '{"number":41,"url":"https://forge.example/acme/repo/pull/41","title":"Add the ship command","headRefName":"lo-60-ship"}';

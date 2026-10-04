@@ -17,11 +17,13 @@ import { stubForgeOnPath } from '#tests/helpers/stubForgeOnPath.ts';
 // The ship sequence is not stubbed out — it still runs for real against a real
 // origin and a stubbed forge. The stand-in only records whether the command
 // reached it, because a refused authorization must stop before any ship starts.
-type RunShip = typeof import('#src/ship/runShip.ts').runShip;
+type RunShip = typeof import('#src/ship/runShip/runShip.ts').runShip;
 
-const mockRunShip = jest.fn<RunShip>((params) => jest.requireActual<typeof import('#src/ship/runShip.ts')>('#src/ship/runShip.ts').runShip(params));
+const mockRunShip = jest.fn<RunShip>((params) =>
+	jest.requireActual<typeof import('#src/ship/runShip/runShip.ts')>('#src/ship/runShip/runShip.ts').runShip(params),
+);
 
-jest.mock('#src/ship/runShip.ts', () => ({ runShip: (params: Parameters<RunShip>[0]) => mockRunShip(params) }));
+jest.mock('#src/ship/runShip/runShip.ts', () => ({ runShip: (params: Parameters<RunShip>[0]) => mockRunShip(params) }));
 // -------------------------
 // The authorization is written for real; the stand-in exists so one case can
 // hand the command a publish failure no local-only record would ever produce.

@@ -1,4 +1,6 @@
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { ShipIntegration } from '#src/common/types/ShipIntegration.ts';
+import type { ShipSettings } from '#src/common/types/ShipSettings.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
@@ -6,8 +8,6 @@ import type { QueueBoardRecorder } from '#src/queue/board/QueueBoardRecorder.ts'
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
-import type { ShipIntegration } from '#src/ship/common/types/ShipIntegration.ts';
-import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
 
 export interface LaneContext {
 	/** The main repository checkout. */

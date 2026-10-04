@@ -1,3 +1,5 @@
+import type { ShipIntegration } from '#src/common/types/ShipIntegration.ts';
+import type { ShipSettings } from '#src/common/types/ShipSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
@@ -5,9 +7,7 @@ import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
 import { takeGateHold } from '#src/gates/gateHolds/takeGateHold.ts';
 import { writeBranchState } from '#src/queue/branchState/writeBranchState.ts';
 import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
-import type { ShipIntegration } from '#src/ship/common/types/ShipIntegration.ts';
-import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
-import { runShip } from '#src/ship/runShip.ts';
+import { runShip } from '#src/ship/runShip/runShip.ts';
 import { reconcileShippedTicket } from '#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts';
 import { createWorkOrderShipGuard } from '#src/workOrder/implementRun/createWorkOrderShipGuard.ts';
 import { deleteWorktreeRecord } from '#src/worktree/records/deleteWorktreeRecord.ts';

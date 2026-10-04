@@ -1,4 +1,4 @@
-import { runGh } from '#src/ship/forge/internal/runGh.ts';
+import { runGh } from '#src/ship/forge/common/runGh.ts';
 
 interface Params {
 	cwd: string;

@@ -2,10 +2,10 @@ import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { readResumedPlanName } from '#src/cli/internal/common/implementRun/readResumedPlanName.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { resolveCommandShipIntent } from '#src/cli/internal/common/utils/resolveCommandShipIntent.ts';
+import type { ShipIntent } from '#src/common/types/ShipIntent.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import type { ShipIntent } from '#src/ship/common/types/ShipIntent.ts';
 import { requireImplementLifecycle } from '#src/ticketLifecycle/requireImplementLifecycle.ts';
 import { readWorkOrderRunTerms } from '#src/workOrder/implementRun/readWorkOrderRunTerms.ts';
 

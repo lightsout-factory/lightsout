@@ -1,9 +1,9 @@
 import { renderProgressBlock } from '#src/cli/internal/common/progressBlock/renderProgressBlock.ts';
 import { formatClockDuration } from '#src/cli/internal/common/utils/formatClockDuration.ts';
+import type { ShippingProgressReading } from '#src/common/types/ShippingProgressReading.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { ShippingStepId } from '#src/contracts/ship/ShippingStepId.ts';
 import { isPidAlive } from '#src/runState/isPidAlive.ts';
-import type { ShippingProgressReading } from '#src/ship/progress/common/types/ShippingProgressReading.ts';
 import { readShippingProgress } from '#src/ship/progress/readShippingProgress.ts';
 
 type RecordedProgress = ShippingProgressReading['progress'];

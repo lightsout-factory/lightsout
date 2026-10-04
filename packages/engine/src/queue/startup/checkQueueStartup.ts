@@ -3,6 +3,7 @@ import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
 import { readGitDefaultBranch } from '#src/common/git/readGitDefaultBranch.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
+import type { ShipSettings } from '#src/common/types/ShipSettings.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
@@ -10,7 +11,6 @@ import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import { renderWorkOrderBranch } from '#src/queue/internal/renderWorkOrderBranch.ts';
 import { checkPlanningStatusLabels } from '#src/queue/startup/internal/checkPlanningStatusLabels.ts';
-import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
 import { matchesTicketPattern } from '#src/ship/matchesTicketPattern.ts';
 
 interface Params {

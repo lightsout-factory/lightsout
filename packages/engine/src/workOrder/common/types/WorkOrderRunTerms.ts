@@ -1,4 +1,4 @@
-import type { ShipRequestTerms } from '#src/ship/common/types/ShipRequestTerms.ts';
+import type { ShipRequestTerms } from '#src/common/types/ShipRequestTerms.ts';
 
 export interface WorkOrderRunTerms {
 	/** The one sentence saying why this plan may not be built yet, or undefined when it may. */

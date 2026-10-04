@@ -40,7 +40,7 @@ jest.mock('#src/cli/internal/common/utils/runPipelineOrFailFast.ts', () => ({
 // reached at all is the claim of the single-phase row.
 const mockRunShip = jest.fn<(params: { cwd: string }) => Promise<ShipResult>>();
 
-jest.mock('#src/ship/runShip.ts', () => ({ runShip: (params: { cwd: string }) => mockRunShip(params) }));
+jest.mock('#src/ship/runShip/runShip.ts', () => ({ runShip: (params: { cwd: string }) => mockRunShip(params) }));
 // -------------------------
 // Whether the tracker was written to before the run is what a refused plan has
 // to answer for, so the pre-source lifecycle write is a spy rather than a call.

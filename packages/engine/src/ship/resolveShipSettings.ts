@@ -1,6 +1,6 @@
+import type { ShipSettings } from '#src/common/types/ShipSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { ShipMergeMethod } from '#src/contracts/ship/ShipMergeMethod.ts';
-import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
 
 interface Params {
 	config: LightsoutConfig;

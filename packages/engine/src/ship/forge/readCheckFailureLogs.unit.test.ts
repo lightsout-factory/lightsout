@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import type { CheckFailure } from '#src/ship/forge/common/types/CheckFailure.ts';
+import type { CheckFailure } from '#src/ship/common/types/CheckFailure.ts';
 import { readCheckFailureLogs } from '#src/ship/forge/readCheckFailureLogs.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { stubForgeOnPath } from '#tests/helpers/stubForgeOnPath.ts';

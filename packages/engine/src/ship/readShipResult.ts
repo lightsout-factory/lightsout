@@ -1,6 +1,6 @@
 import { readJsonFile } from '#src/common/readJsonFile.ts';
 import { ShipResult } from '#src/contracts/ship/ShipResult.ts';
-import { getShipResultPath } from '#src/ship/internal/common/utils/getShipResultPath.ts';
+import { getShipResultPath } from '#src/ship/common/getShipResultPath.ts';
 
 interface Params {
 	cwd: string;

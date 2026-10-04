@@ -11,7 +11,7 @@ import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
 import { resolveShipIntent } from '#src/ship/resolveShipIntent.ts';
-import { runShip } from '#src/ship/runShip.ts';
+import { runShip } from '#src/ship/runShip/runShip.ts';
 import { reconcileShippedTicket } from '#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts';
 import { createWorkOrderShipGuard } from '#src/workOrder/implementRun/createWorkOrderShipGuard.ts';
 import { readWorkOrderRunTerms } from '#src/workOrder/implementRun/readWorkOrderRunTerms.ts';
