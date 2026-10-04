@@ -30,7 +30,7 @@ interface RunCoveragePipelineParams {
 
 const mockRunCoveragePipeline = jest.fn<(params: RunCoveragePipelineParams) => Promise<CoverageResult>>();
 
-jest.mock('#src/coverage/runCoveragePipeline.ts', () => ({
+jest.mock('#src/coverage/runCoveragePipeline/runCoveragePipeline.ts', () => ({
 	runCoveragePipeline: (params: RunCoveragePipelineParams) => mockRunCoveragePipeline(params),
 }));
 // -------------------------
