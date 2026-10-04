@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
-import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
+import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 import { report } from '#tests/helpers/report.ts';
 
 const roleInvocation = { systemPrompt: 'ROLE-SYSTEM-PROMPT', prompt: 'ROLE-PROMPT' };

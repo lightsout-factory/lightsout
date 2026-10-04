@@ -6,7 +6,7 @@ import { Permissions } from '#src/contracts/Permissions.ts';
 import { WorkOrderName } from '#src/contracts/work/WorkOrderName.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { getDriver } from '#src/drivers/getDriver.ts';
-import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
+import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 
 interface Params {
 	/** The checkout the harness is spawned in. The call reads nothing from it, but every spawn needs a working directory. */

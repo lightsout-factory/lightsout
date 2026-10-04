@@ -8,7 +8,7 @@ import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
+import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { readPlanningProgress } from '#src/plan/progress/readPlanningProgress.ts';

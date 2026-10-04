@@ -8,7 +8,7 @@ import { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { CommitMessage } from '#src/contracts/work/CommitMessage.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
+import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 
 interface Params {
 	cwd: string;

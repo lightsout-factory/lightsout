@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import { getAgentOutcomeStatus } from '#src/invoke/getAgentOutcomeStatus.ts';
 
 /** One settled agent call, carrying only the two fields the reading turns on. */

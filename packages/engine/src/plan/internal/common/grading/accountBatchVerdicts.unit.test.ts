@@ -1,4 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import { GapArea } from '#src/contracts/plan/grade/GapArea.ts';
 import type { GapBatchVerdict } from '#src/contracts/plan/grade/GapBatchVerdict.ts';
 import { GapCheckLens } from '#src/contracts/plan/grade/GapCheckLens.ts';
@@ -6,7 +7,6 @@ import type { GapGroupVerdict } from '#src/contracts/plan/grade/GapGroupVerdict.
 import type { GapObservation } from '#src/contracts/plan/grade/GapObservation.ts';
 import { GapOutcome } from '#src/contracts/plan/grade/GapOutcome.ts';
 import type { GradedGap } from '#src/contracts/plan/grade/GradedGap.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import { accountBatchVerdicts } from '#src/plan/internal/common/grading/accountBatchVerdicts.ts';
 import type { GapBatch } from '#src/plan/internal/common/types/GapBatch.ts';
 import type { GapRuling } from '#src/plan/internal/common/types/GapRuling.ts';

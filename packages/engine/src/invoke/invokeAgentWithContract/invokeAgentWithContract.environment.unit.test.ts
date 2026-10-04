@@ -3,7 +3,7 @@ import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import type { AgentEnvironment } from '#src/drivers/common/types/AgentEnvironment.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
-import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
+import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 import { outcomeFields } from '#tests/helpers/outcomeFields.ts';
 import { report } from '#tests/helpers/report.ts';
 

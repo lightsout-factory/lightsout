@@ -1,4 +1,4 @@
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 
 interface Params<Report> {
 	/** `undefined` for a task `drainTasks` never started. */

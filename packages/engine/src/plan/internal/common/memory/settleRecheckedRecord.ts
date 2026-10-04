@@ -1,8 +1,8 @@
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import { GapOutcome } from '#src/contracts/plan/grade/GapOutcome.ts';
 import type { GapVerdict } from '#src/contracts/plan/grade/GapVerdict.ts';
 import type { GradeFindingRecord } from '#src/contracts/plan/memory/GradeFindingRecord.ts';
 import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatus.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import { confirmCitation } from '#src/plan/internal/common/memory/confirmCitation.ts';
 
 interface Params {

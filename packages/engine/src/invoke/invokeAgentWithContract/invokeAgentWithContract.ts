@@ -1,15 +1,15 @@
 import type { z } from 'zod';
 import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { buildReportReemitterInvocation } from '#src/agents/buildReportReemitterInvocation.ts';
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { HarnessProcessUsage } from '#src/contracts/activity/HarnessProcessUsage.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import type { AgentEnvironment } from '#src/drivers/common/types/AgentEnvironment.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
-import { extractJsonReport } from '#src/invoke/extractJsonReport.ts';
-import { recordHarnessProcess } from '#src/invoke/internal/common/utils/recordHarnessProcess.ts';
+import { extractJsonReport } from '#src/invoke/invokeAgentWithContract/extractJsonReport.ts';
+import { recordHarnessProcess } from '#src/invoke/invokeAgentWithContract/recordHarnessProcess.ts';
 
 /**
  * Stays `undefined` until some rung reports usage, so a harness that reports

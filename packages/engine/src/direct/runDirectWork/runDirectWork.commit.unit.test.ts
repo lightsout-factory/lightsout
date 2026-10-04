@@ -1,4 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
@@ -9,7 +10,6 @@ import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
@@ -42,7 +42,7 @@ interface CommitRunWorkParams {
 const mockInvokeAgentWithContract =
 	jest.fn<(params: { invocation: { prompt: string; systemPrompt: string }; allowedCommands?: string[] }) => Promise<AgentOutcome<WorkReport>>>();
 
-jest.mock('#src/invoke/invokeAgentWithContract.ts', () => ({
+jest.mock('#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts', () => ({
 	invokeAgentWithContract: (params: { invocation: { prompt: string; systemPrompt: string }; allowedCommands?: string[] }) =>
 		mockInvokeAgentWithContract(params),
 }));

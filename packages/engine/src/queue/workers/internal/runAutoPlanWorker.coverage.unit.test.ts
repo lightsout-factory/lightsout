@@ -3,12 +3,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import { runAutoPlanWorker } from '#src/queue/workers/internal/runAutoPlanWorker.ts';
@@ -37,7 +37,9 @@ interface InvokeCall {
 
 const mockInvokeAgentWithContract = jest.fn<(params: InvokeCall) => Promise<AgentOutcome<WorkReport>>>();
 
-jest.mock('#src/invoke/invokeAgentWithContract.ts', () => ({ invokeAgentWithContract: (params: InvokeCall) => mockInvokeAgentWithContract(params) }));
+jest.mock('#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts', () => ({
+	invokeAgentWithContract: (params: InvokeCall) => mockInvokeAgentWithContract(params),
+}));
 // -------------------------
 // The engine's choice of plan and the ordered build around the session are each
 // covered by their own tests; stubbing them leaves the harness call these cases

@@ -1,6 +1,7 @@
 import { basename, join } from 'node:path';
 import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { buildPlanDedupInvocation } from '#src/agents/buildPlanDedupInvocation.ts';
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { DedupFinding } from '#src/contracts/dedup/DedupFinding.ts';
@@ -10,7 +11,6 @@ import type { ReviewedCollision } from '#src/contracts/dedup/ReviewedCollision.t
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
 import { planAgentTimeouts } from '#src/plan/common/constants/planAgentTimeouts.ts';
 import { detectPriorArtCandidates } from '#src/plan/detectPriorArtCandidates.ts';

@@ -1,5 +1,5 @@
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { PlanDraftReport } from '#src/contracts/plan/draft/PlanDraftReport.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 
 export interface PhaseOutcome {

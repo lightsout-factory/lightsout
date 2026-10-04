@@ -6,7 +6,7 @@ import { readConfig } from '#src/common/config/readConfig.ts';
 import type { HarnessProcessMark } from '#src/contracts/activity/HarnessProcessMark.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
+import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
 import { outcomeFields } from '#tests/helpers/outcomeFields.ts';
 import { report } from '#tests/helpers/report.ts';

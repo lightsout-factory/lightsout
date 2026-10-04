@@ -17,7 +17,7 @@ import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { getAgentOutcomeStatus } from '#src/invoke/getAgentOutcomeStatus.ts';
-import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
+import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 

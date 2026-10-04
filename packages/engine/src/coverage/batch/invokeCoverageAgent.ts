@@ -6,7 +6,7 @@ import { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
+import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 import { appendFriction } from '#src/runState/appendFriction.ts';
 import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 

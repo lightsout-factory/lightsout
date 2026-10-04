@@ -1,11 +1,11 @@
 import { describe, expect, test } from '@jest/globals';
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import { getAttemptStop } from '#src/refactor/batch/getAttemptStop.ts';
 import { BatchStopKind } from '#src/refactor/internal/common/constants/BatchStopKind.ts';
 import type { BatchStop } from '#src/refactor/internal/common/types/BatchStop.ts';

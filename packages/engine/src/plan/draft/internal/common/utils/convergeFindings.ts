@@ -1,7 +1,7 @@
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { PlanFixReport } from '#src/contracts/plan/draft/PlanFixReport.ts';
 import { PlanFixStatus } from '#src/contracts/plan/draft/PlanFixStatus.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
 import { getBlockingFindings } from '#src/plan/common/utils/getBlockingFindings.ts';
 import { getFindingSetKey } from '#src/plan/draft/internal/common/utils/getFindingSetKey.ts';

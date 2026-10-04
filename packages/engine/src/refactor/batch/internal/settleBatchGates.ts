@@ -1,10 +1,10 @@
 import { maxCheapFixRetries } from '#src/common/constants/maxCheapFixRetries.ts';
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import { describeGateNoVerdict } from '#src/common/utils/describeGateNoVerdict.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import { SettleKind } from '#src/refactor/batch/internal/common/constants/SettleKind.ts';
 import type { SettleOutcome } from '#src/refactor/batch/internal/common/types/SettleOutcome.ts';
 import { superviseBatch } from '#src/refactor/batch/internal/superviseBatch.ts';

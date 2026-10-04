@@ -3,13 +3,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
 import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTicket.ts';
@@ -45,7 +45,7 @@ interface InvokeParams {
 
 const mockInvokeAgentWithContract = jest.fn<(params: InvokeParams) => Promise<AgentOutcome<WorkReport>>>();
 
-jest.mock('#src/invoke/invokeAgentWithContract.ts', () => ({
+jest.mock('#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts', () => ({
 	invokeAgentWithContract: (params: InvokeParams) => mockInvokeAgentWithContract(params),
 }));
 // -------------------------

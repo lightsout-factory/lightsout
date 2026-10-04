@@ -8,7 +8,7 @@ import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import { nextStepRecord } from '#src/direct/runDirectWork/common/nextStepRecord.ts';
 import { stopDirectRun } from '#src/direct/runDirectWork/common/stopDirectRun.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract.ts';
+import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 
 const implementStep = 'implement';
