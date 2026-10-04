@@ -7,7 +7,7 @@ import { PhaseReport } from '#src/contracts/run/PhaseReport.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { runPhasesPipeline } from '#src/phases/runPhasesPipeline.ts';
+import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeline.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
 import { describeRunLockHolder } from '#src/runState/lock/describeRunLockHolder.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';

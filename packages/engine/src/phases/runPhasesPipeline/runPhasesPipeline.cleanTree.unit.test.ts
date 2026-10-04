@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
-import { runPhasesPipeline } from '#src/phases/runPhasesPipeline.ts';
+import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeline.ts';
 import { createPhaseDriver } from '#tests/helpers/createPhaseDriver.ts';
 import { readPhaseChildRuns } from '#tests/helpers/readPhaseChildRuns.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';

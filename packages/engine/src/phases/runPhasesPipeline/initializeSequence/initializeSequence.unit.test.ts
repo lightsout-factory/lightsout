@@ -8,7 +8,7 @@ import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { initializeSequence } from '#src/phases/initializeSequence.ts';
+import { initializeSequence } from '#src/phases/runPhasesPipeline/initializeSequence/initializeSequence.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';

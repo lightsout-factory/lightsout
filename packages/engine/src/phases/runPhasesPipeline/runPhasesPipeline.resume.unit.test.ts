@@ -5,7 +5,7 @@ import { readConfig } from '#src/common/config/readConfig.ts';
 import { PhaseReport } from '#src/contracts/run/PhaseReport.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { runPhasesPipeline } from '#src/phases/runPhasesPipeline.ts';
+import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeline.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 import { commitAll } from '#tests/helpers/commitAll.ts';

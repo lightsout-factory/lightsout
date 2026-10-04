@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import { runPhasesPipeline } from '#src/phases/runPhasesPipeline.ts';
+import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeline.ts';
 import { readRunLock } from '#src/runState/lock/readRunLock.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { createPhaseDriver } from '#tests/helpers/createPhaseDriver.ts';

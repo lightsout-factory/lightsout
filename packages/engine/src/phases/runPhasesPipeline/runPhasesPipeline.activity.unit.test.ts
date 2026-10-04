@@ -9,7 +9,7 @@ import { readConfig } from '#src/common/config/readConfig.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { ActivityNode } from '#src/contracts/activity/ActivityNode.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { runPhasesPipeline } from '#src/phases/runPhasesPipeline.ts';
+import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeline.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { createPhaseDriver } from '#tests/helpers/createPhaseDriver.ts';
 import { expectDefined } from '#tests/helpers/expectDefined.ts';

@@ -8,7 +8,7 @@ import { Effort } from '#src/contracts/Effort.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PhaseReport } from '#src/contracts/run/PhaseReport.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { runPhasesPipeline } from '#src/phases/runPhasesPipeline.ts';
+import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeline.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 import { createPhaseDriver } from '#tests/helpers/createPhaseDriver.ts';

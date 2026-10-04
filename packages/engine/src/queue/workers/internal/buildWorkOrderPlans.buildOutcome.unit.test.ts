@@ -29,7 +29,9 @@ import { config, planAt, planOf, setupTicketPlanBuild, workOrderName } from '#te
 // build leaves behind — are read from the same record every later plan reads.
 const mockRunPhasesPipeline = jest.fn<(params: { overviewPath: string }) => Promise<PipelineResult>>();
 
-jest.mock('#src/phases/runPhasesPipeline.ts', () => ({ runPhasesPipeline: (params: { overviewPath: string }) => mockRunPhasesPipeline(params) }));
+jest.mock('#src/phases/runPhasesPipeline/runPhasesPipeline.ts', () => ({
+	runPhasesPipeline: (params: { overviewPath: string }) => mockRunPhasesPipeline(params),
+}));
 // -------------------------
 const mockRunImplementPipeline = jest.fn<(params: { planPath: string }) => Promise<PipelineResult>>();
 

@@ -4,8 +4,8 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunUsage } from '#src/contracts/run/RunUsage.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
-import { confirmOwnership } from '#src/phases/internal/runPhase/common/utils/confirmOwnership.ts';
-import { persistStep } from '#src/phases/internal/runPhase/common/utils/persistStep.ts';
+import { confirmOwnership } from '#src/phases/runPhasesPipeline/runPhase/common/confirmOwnership.ts';
+import { persistStep } from '#src/phases/runPhasesPipeline/runPhase/common/persistStep.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 
 interface Params {

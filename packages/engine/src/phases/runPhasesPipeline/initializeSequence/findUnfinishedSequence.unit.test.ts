@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { findUnfinishedSequence } from '#src/phases/findUnfinishedSequence.ts';
+import { findUnfinishedSequence } from '#src/phases/runPhasesPipeline/initializeSequence/findUnfinishedSequence.ts';
 import { plantSequence } from '#tests/helpers/plantSequence.ts';
 
 const overviewPath = join('plans', 'demo', 'overview.md');

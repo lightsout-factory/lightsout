@@ -5,8 +5,8 @@ import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
-import { confirmOwnership } from '#src/phases/internal/runPhase/common/utils/confirmOwnership.ts';
-import { persistStep } from '#src/phases/internal/runPhase/common/utils/persistStep.ts';
+import { confirmOwnership } from '#src/phases/runPhasesPipeline/runPhase/common/confirmOwnership.ts';
+import { persistStep } from '#src/phases/runPhasesPipeline/runPhase/common/persistStep.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { isLightsoutWorktree } from '#src/worktree/records/isLightsoutWorktree.ts';
 

@@ -22,7 +22,9 @@ import { config, planOf, setupTicketPlanBuild } from '#tests/helpers/setupTicket
 // build is handed is what `runPlanFolderPipeline` passed on.
 const mockRunPhasesPipeline = jest.fn<(params: { overviewPath: string }) => Promise<PipelineResult>>();
 
-jest.mock('#src/phases/runPhasesPipeline.ts', () => ({ runPhasesPipeline: (params: { overviewPath: string }) => mockRunPhasesPipeline(params) }));
+jest.mock('#src/phases/runPhasesPipeline/runPhasesPipeline.ts', () => ({
+	runPhasesPipeline: (params: { overviewPath: string }) => mockRunPhasesPipeline(params),
+}));
 // -------------------------
 const mockRunImplementPipeline = jest.fn<(params: PlanBuildCall) => Promise<PipelineResult>>();
 

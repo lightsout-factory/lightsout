@@ -1,6 +1,6 @@
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import { runPhasesPipeline } from '#src/phases/runPhasesPipeline.ts';
+import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeline.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 

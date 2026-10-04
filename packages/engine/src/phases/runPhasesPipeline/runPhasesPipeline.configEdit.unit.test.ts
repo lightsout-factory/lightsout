@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { runPhasesPipeline } from '#src/phases/runPhasesPipeline.ts';
+import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeline.ts';
 import { createPhaseDriver } from '#tests/helpers/createPhaseDriver.ts';
 import { readPhaseChildRuns } from '#tests/helpers/readPhaseChildRuns.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';
