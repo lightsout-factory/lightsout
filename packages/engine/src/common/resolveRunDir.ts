@@ -1,4 +1,4 @@
-import { runDirectoryIndex } from '#src/common/constants/runDirectoryIndex/runDirectoryIndex.ts';
+import { runDirectoryIndex } from '#src/common/constants/runDirectoryIndex.ts';
 
 interface Params {
 	cwd: string;

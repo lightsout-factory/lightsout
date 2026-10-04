@@ -37,7 +37,7 @@ const matchRuns = ({ known, runId }: { known: ReadonlyMap<string, string>; runId
  * Keyed by `cwd` rather than by the state directory: keying by the state
  * directory would make every lookup pay a `git rev-parse` to find the key.
  */
-export class RunDirectoryIndex {
+class RunDirectoryIndex {
 	private readonly directories = new Map<string, Map<string, string>>();
 	private readonly scanned = new Set<string>();
 
@@ -101,3 +101,6 @@ export class RunDirectoryIndex {
 		return entries;
 	}
 }
+
+/** A single shared instance is what makes "searched once per process" true. */
+export const runDirectoryIndex = new RunDirectoryIndex();

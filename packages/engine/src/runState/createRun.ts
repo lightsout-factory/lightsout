@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { runDirectoryIndex } from '#src/common/constants/runDirectoryIndex/runDirectoryIndex.ts';
+import { runDirectoryIndex } from '#src/common/constants/runDirectoryIndex.ts';
 import { readGitCurrentBranch } from '#src/common/git/readGitCurrentBranch.ts';
 import { resolveNewRunDir } from '#src/common/resolveNewRunDir.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
