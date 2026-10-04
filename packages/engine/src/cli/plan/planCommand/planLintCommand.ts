@@ -4,10 +4,10 @@ import { bold } from '#src/cli/common/terminal/bold.ts';
 import { green } from '#src/cli/common/terminal/green.ts';
 import { red } from '#src/cli/common/terminal/red.ts';
 import { printStructuralFinding } from '#src/cli/plan/planCommand/common/printStructuralFinding.ts';
+import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { exitCli } from '#src/common/exitCli.ts';
+import { getBlockingFindings } from '#src/common/getBlockingFindings.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
-import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
-import { getBlockingFindings } from '#src/plan/common/utils/getBlockingFindings.ts';
 import { runPlanLint } from '#src/plan/runPlanLint.ts';
 
 export const planLintCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {

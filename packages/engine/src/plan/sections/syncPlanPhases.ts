@@ -1,12 +1,12 @@
 import { basename } from 'node:path';
-import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
-import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
+import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
+import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
+import { getPhaseSetDefects } from '#src/plan/common/getPhaseSetDefects.ts';
+import { parsePhaseDeclarations } from '#src/plan/common/parsePhaseDeclarations.ts';
+import { resolvePlanDeliverable } from '#src/plan/common/resolvePlanDeliverable.ts';
 import type { SyncedPlanFile } from '#src/plan/common/types/SyncedPlanFile.ts';
-import { getPhaseSetDefects } from '#src/plan/common/utils/getPhaseSetDefects.ts';
-import { resolvePlanDeliverable } from '#src/plan/common/utils/resolvePlanDeliverable.ts';
-import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
-import { parsePlan } from '#src/plan/parsePlan.ts';
-import { syncPhaseSectionsFromFiles } from '#src/plan/sections/syncPhaseSectionsFromFiles.ts';
+import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
+import { syncPhaseSectionsFromFiles } from '#src/plan/sections/syncPhaseSectionsFromFiles/syncPhaseSectionsFromFiles.ts';
 
 interface Params {
 	cwd: string;

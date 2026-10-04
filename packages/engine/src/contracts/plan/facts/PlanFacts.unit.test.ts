@@ -5,9 +5,11 @@ const setupFacts = (overrides: Record<string, unknown> = {}) => {
 	const area = {
 		area: 'engine plan pipeline',
 		affectedPackages: ['src/plan'],
-		filesToModify: [{ path: 'src/plan/runPlanVerifyFacts.ts', role: 'stamps the verification onto facts.json' }],
+		filesToModify: [{ path: 'src/plan/runPlanVerifyFacts/runPlanVerifyFacts.ts', role: 'stamps the verification onto facts.json' }],
 		patternsToMirror: [{ path: 'src/plan/runPlanDraft.ts', takeaway: 'the run<X> entry-point shape' }],
-		integrationPoints: [{ name: 'verifyFacts', signature: '({ cwd, facts }) => Promise<PathVerification>', at: 'src/plan/verifyFacts.ts:31' }],
+		integrationPoints: [
+			{ name: 'verifyFacts', signature: '({ cwd, facts }) => Promise<PathVerification>', at: 'src/plan/runPlanVerifyFacts/verifyFacts.ts:31' },
+		],
 		scripts: [{ key: 'check', command: 'tsc --noEmit' }],
 		namingConvention: 'run<X> functions, one export per file',
 	};
@@ -34,9 +36,11 @@ describe('PlanFacts', () => {
 				{
 					area: 'engine plan pipeline',
 					affectedPackages: ['src/plan'],
-					filesToModify: [{ path: 'src/plan/runPlanVerifyFacts.ts', role: 'stamps the verification onto facts.json' }],
+					filesToModify: [{ path: 'src/plan/runPlanVerifyFacts/runPlanVerifyFacts.ts', role: 'stamps the verification onto facts.json' }],
 					patternsToMirror: [{ path: 'src/plan/runPlanDraft.ts', takeaway: 'the run<X> entry-point shape' }],
-					integrationPoints: [{ name: 'verifyFacts', signature: '({ cwd, facts }) => Promise<PathVerification>', at: 'src/plan/verifyFacts.ts:31' }],
+					integrationPoints: [
+						{ name: 'verifyFacts', signature: '({ cwd, facts }) => Promise<PathVerification>', at: 'src/plan/runPlanVerifyFacts/verifyFacts.ts:31' },
+					],
 					scripts: [{ key: 'check', command: 'tsc --noEmit' }],
 					namingConvention: 'run<X> functions, one export per file',
 				},

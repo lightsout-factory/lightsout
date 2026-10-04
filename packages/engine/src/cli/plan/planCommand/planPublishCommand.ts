@@ -7,7 +7,7 @@ import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
-import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep.ts';
+import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep/recordPlanningStep.ts';
 import { publishWorkOrderPlan } from '#src/workOrder/publishWorkOrderPlan/publishWorkOrderPlan.ts';
 
 interface PlanPublishOutcome {

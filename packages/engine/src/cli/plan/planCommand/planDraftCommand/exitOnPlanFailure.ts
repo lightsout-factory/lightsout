@@ -1,5 +1,5 @@
+import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { exitCli } from '#src/common/exitCli.ts';
-import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
 
 interface PlanRunFailure {
 	status: 'failed' | 'paused-rate-limit';

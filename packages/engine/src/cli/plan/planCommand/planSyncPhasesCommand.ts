@@ -1,9 +1,9 @@
 import { basename } from 'node:path';
 import { getRequiredFlag } from '#src/cli/common/args/getRequiredFlag.ts';
 import { bold } from '#src/cli/common/terminal/bold.ts';
+import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { exitCli } from '#src/common/exitCli.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
-import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
 import { syncPlanPhases } from '#src/plan/sections/syncPlanPhases.ts';
 
 export const planSyncPhasesCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {

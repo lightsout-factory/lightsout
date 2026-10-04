@@ -3,15 +3,15 @@ import { dim } from '#src/cli/common/terminal/dim.ts';
 import { green } from '#src/cli/common/terminal/green.ts';
 import { yellow } from '#src/cli/common/terminal/yellow.ts';
 import { planRunOptions } from '#src/cli/plan/planCommand/common/planRunOptions.ts';
+import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { exitCli } from '#src/common/exitCli.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
-import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep.ts';
-import { runPlanDedup } from '#src/plan/runPlanDedup.ts';
+import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep/recordPlanningStep.ts';
+import { runPlanDedup } from '#src/plan/runPlanDedup/runPlanDedup.ts';
 
 interface Params {
 	cwd: string;

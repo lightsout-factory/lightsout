@@ -1,10 +1,10 @@
 import { formatClockDuration } from '#src/cli/common/formatClockDuration.ts';
 import { renderProgressBlock } from '#src/cli/statusCommand/common/renderProgressBlock.ts';
+import { pathExists } from '#src/common/pathExists.ts';
 import type { PlanningProgress } from '#src/contracts/plan/progress/PlanningProgress.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import type { PlanningStepRecord } from '#src/contracts/plan/progress/PlanningStepRecord.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { getPlanningProgressPath } from '#src/plan/progress/getPlanningProgressPath.ts';
 import { readPlanningProgress } from '#src/plan/progress/readPlanningProgress.ts';
 import { isPidAlive } from '#src/runState/isPidAlive.ts';

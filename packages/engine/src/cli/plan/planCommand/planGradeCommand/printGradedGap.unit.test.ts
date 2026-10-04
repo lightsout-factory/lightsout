@@ -63,12 +63,14 @@ test('printGradedGap: a finding the implementing agent can settle is a note, and
 });
 
 test('printGradedGap: a finding the reader missed an answer for points at where the answer lives', () => {
-	const { gap, logged, write } = setupGradedGap({ gap: { outcome: GapOutcome.AlreadyAnswered, answerAt: 'src/plan/runPlanGrade.ts:foldGapResults' } });
+	const { gap, logged, write } = setupGradedGap({
+		gap: { outcome: GapOutcome.AlreadyAnswered, answerAt: 'src/plan/runPlanGrade/runPlanGrade.ts:foldGapResults' },
+	});
 
 	printGradedGap({ gap, write });
 
 	expect(logged[0]?.startsWith('note ')).toBe(true);
-	expect(logged[1]).toBe('   already answered at: src/plan/runPlanGrade.ts:foldGapResults');
+	expect(logged[1]).toBe('   already answered at: src/plan/runPlanGrade/runPlanGrade.ts:foldGapResults');
 });
 
 test('printGradedGap: a finding nobody judged says so, and why, rather than reading like a thin plan', () => {

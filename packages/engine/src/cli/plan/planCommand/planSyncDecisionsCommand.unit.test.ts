@@ -4,7 +4,7 @@ import { expect, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/parseFlags.ts';
 import { planSyncDecisionsCommand } from '#src/cli/plan/planCommand/planSyncDecisionsCommand.ts';
 import { DecisionSource } from '#src/contracts/plan/decisions/DecisionSource.ts';
-import { syncPlanDecisions } from '#src/plan/decisionLog/syncPlanDecisions.ts';
+import { syncPlanDecisions } from '#src/plan/decisionLog/syncPlanDecisions/syncPlanDecisions.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';

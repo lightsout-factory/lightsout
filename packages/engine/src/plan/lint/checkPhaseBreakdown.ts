@@ -1,16 +1,16 @@
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
+import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import { buildModeBulletLabels } from '#src/plan/common/constants/buildModeBulletLabels.ts';
 import { createdFileCeiling } from '#src/plan/common/constants/createdFileCeiling.ts';
-import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
-import { getDeclarationDefects } from '#src/plan/common/utils/getDeclarationDefects.ts';
-import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';
-import { checkPhaseCount } from '#src/plan/lint/checkPhaseCount.ts';
-import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
-import { parsePlan } from '#src/plan/parsePlan.ts';
+import { getDeclarationDefects } from '#src/plan/common/getDeclarationDefects.ts';
+import { parsePhaseDeclarations } from '#src/plan/common/parsePhaseDeclarations.ts';
+import type { ParsedPlan } from '#src/plan/common/types/ParsedPlan.ts';
+import { checkPhaseCount } from '#src/plan/lint/common/checkPhaseCount.ts';
+import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
 
 interface Params {
 	overviewText: string;

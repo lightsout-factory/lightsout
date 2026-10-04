@@ -1,5 +1,6 @@
 import { buildQueueAutoPlanInvocation } from '#src/agents/buildQueueAutoPlanInvocation.ts';
 import { getDirsOutsideCwd } from '#src/common/getDirsOutsideCwd.ts';
+import { pathExists } from '#src/common/pathExists.ts';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
@@ -11,7 +12,6 @@ import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
-import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { readPlanningProgress } from '#src/plan/progress/readPlanningProgress.ts';
 import type { WorkerOutcome } from '#src/queue/common/types/WorkerOutcome.ts';

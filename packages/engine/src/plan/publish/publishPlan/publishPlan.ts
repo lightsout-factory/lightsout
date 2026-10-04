@@ -1,0 +1,108 @@
+import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
+import { sha256 } from '#src/common/sha256.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { durablePlanFiles } from '#src/plan/publish/durablePlanFiles.ts';
+import { attachDurableFiles } from '#src/plan/publish/publishPlan/attachDurableFiles.ts';
+import { prepareAttachments } from '#src/plan/publish/publishPlan/prepareAttachments.ts';
+import { reportStaleAttachments } from '#src/plan/publish/publishPlan/reportStaleAttachments.ts';
+import { readPlanWorkOrderRef } from '#src/plan/readPlanWorkOrderRef.ts';
+import { getTicketsByIdentifiers } from '#src/ticketTracker/getTicketsByIdentifiers.ts';
+import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';
+
+interface Params {
+	cwd: string;
+	/** Kebab plan name — the folder the plan's own files live in. */
+	name: string;
+	config: LightsoutConfig;
+	/** The process environment the tracker API key is read from. Passed rather than read, so a test never mutates `process.env`. */
+	env: NodeJS.ProcessEnv;
+	onProgress: (message: string) => void;
+	/** The plan id every attachment title is namespaced under. */
+	titlePrefix: string;
+}
+
+interface PublishReport {
+	ticketRef?: string;
+	/** Each published attachment's own name, ending with the generation commit marker. */
+	published: string[];
+	/** Durable-titled attachments outside the committed generation. Reported, never deleted. */
+	stale: string[];
+	error?: string;
+	/**
+	 * SHA-256 of the commit marker's bytes, set only for a publish in which every
+	 * attachment including the marker landed.
+	 */
+	markerSha256?: string;
+}
+
+/**
+ * The refusals are ordered disk first, then the work order's own record, then
+ * configuration, then the network: the first two are answered with no config
+ * and no round trip, and "this folder holds no plan" is the failure a user hits
+ * most. The queue refuses configuration first because it is about to spawn
+ * workers; this is about to read four files.
+ *
+ * A durable-titled attachment outside the new manifest is reported and never
+ * deleted. Restore ignores it because it is not in the committed generation;
+ * deleting an attachment this run did not write would still be an unattended
+ * destructive act on an outward surface.
+ */
+export const publishPlan = async ({ cwd, name, config, env, onProgress, titlePrefix }: Params): Promise<PublishReport> => {
+	const durable = await durablePlanFiles({ cwd, name });
+
+	if (durable.error !== undefined) {
+		return { published: [], stale: [], error: durable.error };
+	}
+
+	const ticketRef = await readPlanWorkOrderRef({ cwd, name });
+
+	if (ticketRef === undefined) {
+		return {
+			published: [],
+			stale: [],
+			error: `plan '${name}' cannot be published: work order '${workOrderNameOf({ name })}' carries no ticket reference in its record, so it belongs to no ticket`,
+		};
+	}
+
+	const prepared = await prepareAttachments({ files: durable.files });
+
+	if ('error' in prepared) {
+		return { ticketRef, published: [], stale: [], error: prepared.error };
+	}
+
+	const settings = resolveTrackerSettings({ config, env });
+
+	if ('error' in settings) {
+		return { ticketRef, published: [], stale: [], error: settings.error };
+	}
+
+	const tickets = await getTicketsByIdentifiers({ settings, identifiers: [ticketRef] });
+
+	if ('error' in tickets) {
+		return { ticketRef, published: [], stale: [], error: tickets.error };
+	}
+
+	const ticket = tickets.at(0);
+
+	if (ticket === undefined) {
+		return { ticketRef, published: [], stale: [], error: `there is no ${ticketRef} on the configured ticket tracker` };
+	}
+
+	const { published, error } = await attachDurableFiles({
+		settings,
+		ticketId: ticket.id,
+		ticketRef,
+		attachments: prepared.attachments,
+		onProgress,
+		titlePrefix,
+	});
+
+	if (error !== undefined) {
+		return { ticketRef, published, stale: [], error };
+	}
+
+	const stale = await reportStaleAttachments({ settings, ticketRef, published, onProgress, titlePrefix });
+	const marker = prepared.attachments.at(-1);
+
+	return marker === undefined ? { ticketRef, published, stale } : { ticketRef, published, stale, markerSha256: sha256({ content: marker.content }) };
+};

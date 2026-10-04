@@ -1,15 +1,15 @@
 import { rename, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachments.ts';
+import { planAttachmentManifestName } from '#src/common/constants/planAttachmentManifestName.ts';
 import { WorkOrderSyncKeep } from '#src/common/constants/WorkOrderSyncKeep.ts';
 import { messageOf } from '#src/common/messageOf.ts';
+import { pathExists } from '#src/common/pathExists.ts';
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
 import { sha256 } from '#src/common/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import { planAttachmentManifestName } from '#src/plan/common/constants/planAttachmentManifestName.ts';
-import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { getTicketAttachments } from '#src/ticketTracker/getTicketAttachments.ts';
 import { readTicketAsset } from '#src/ticketTracker/readTicketAsset.ts';

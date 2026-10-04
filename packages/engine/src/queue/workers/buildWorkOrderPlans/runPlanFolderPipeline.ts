@@ -1,10 +1,10 @@
 import { join } from 'node:path';
+import { pathExists } from '#src/common/pathExists.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeline.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline/runImplementPipeline.ts';
-import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
 import type { WorkerOutcome } from '#src/queue/common/types/WorkerOutcome.ts';

@@ -44,7 +44,7 @@ const findDeclaredMirrors = () => {
 const behaviouralMirrors = [
 	{
 		name: 'getExportName',
-		left: 'packages/engine/src/plan/common/utils/getExportName.ts',
+		left: 'packages/engine/src/plan/common/getExportName.ts',
 		right: 'packages/lightsout-standards/common/naming/getExportName.ts',
 		export: 'getExportName',
 		inputs: [

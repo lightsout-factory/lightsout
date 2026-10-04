@@ -5,20 +5,20 @@ import { yellow } from '#src/cli/common/terminal/yellow.ts';
 import { planRunOptions } from '#src/cli/plan/planCommand/common/planRunOptions.ts';
 import { printStructuralFinding } from '#src/cli/plan/planCommand/common/printStructuralFinding.ts';
 import { printGradedGap } from '#src/cli/plan/planCommand/planGradeCommand/printGradedGap.ts';
+import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { exitCli } from '#src/common/exitCli.ts';
+import { getBlockingGaps } from '#src/common/getBlockingGaps.ts';
+import { gradeMemoryPath } from '#src/common/gradeMemoryPath.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { GapOutcome } from '#src/contracts/plan/grade/GapOutcome.ts';
 import type { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
-import { getBlockingGaps } from '#src/plan/common/utils/getBlockingGaps.ts';
-import { gradeMemoryPath } from '#src/plan/common/utils/gradeMemoryPath.ts';
 import { gradeHistoryPath } from '#src/plan/gradeHistoryPath.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
-import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep.ts';
-import { runPlanGrade } from '#src/plan/runPlanGrade.ts';
+import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep/recordPlanningStep.ts';
+import { runPlanGrade } from '#src/plan/runPlanGrade/runPlanGrade.ts';
 
 interface Params {
 	cwd: string;

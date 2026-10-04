@@ -1,0 +1,415 @@
+import { mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { expect, test } from '@jest/globals';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
+import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
+import { renderDecisionLog } from '#src/plan/decisionLog/renderDecisionLog.ts';
+import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure/lintPlanStructure.ts';
+import { renderGlobalConstraints } from '#src/plan/sections/renderGlobalConstraints.ts';
+import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
+import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
+import { overviewBody, phaseBody } from '#tests/helpers/phasePlan.ts';
+import { planBodyWith } from '#tests/helpers/planBodyWith.ts';
+import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { writeDemoPlanFile } from '#tests/helpers/writeDemoPlanFile.ts';
+
+/** A plan whose Files-to-Create section names `count` new modules, plus any extra sections. */
+const sizedPlan = ({ count, extra = '' }: { count: number; extra?: string }) => {
+	const creates = Array.from({ length: count }, (_, index) => `### \`src/gen${index}.ts\`\n\nGenerated module ${index}.\n`).join('\n');
+
+	return `# Plan
+
+${renderDecisionLog({ decisions: [] })}
+
+## Prerequisites
+
+- None
+
+${renderGlobalConstraints({ decisions: [] })}
+
+## Files to Create
+
+${creates}
+${extra}
+## Scope Boundaries
+
+**Do NOT:** wander.
+
+## Verification
+
+- \`true\` — types clean
+
+## What Next Plan Expects
+
+None.
+`;
+};
+
+test('lintPlanStructure: a 60-file plan trips both size numbers — the created ceiling blocks, the touched count only notes', async () => {
+	const cwd = setupConsumerRepo();
+	const path = writeDemoPlanFile({ cwd, name: 'too-big.md', body: sizedPlan({ count: 60 }) });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const ceiling = findings.find((finding) => finding.check === StructuralCheck.CreatedFilesWithinCeiling);
+	const guardrail = findings.find((finding) => finding.check === StructuralCheck.ScopeWithinGuardrail);
+
+	// 60 created files is more than a phase can specify — that one is a defect
+	expect(ceiling?.severity).toBe(FindingSeverity.Blocking);
+	expect(ceiling?.issue).toMatch(/creates 60 source files, over the 30-file ceiling/);
+	// the touched count is a note about where the implementing agent stops, not a
+	// defect: a 60-file mechanical phase has to stay legal
+	expect(guardrail?.severity).toBe(FindingSeverity.Advisory);
+	expect(guardrail?.issue).toMatch(/touches 60 source files, over the 50-file limit from the configured executor-file-limit/);
+});
+
+test('lintPlanStructure: a plan creating exactly 30 files sits on the ceiling rather than over it', async () => {
+	const cwd = setupConsumerRepo();
+	const path = writeDemoPlanFile({ cwd, name: 'thirty.md', body: sizedPlan({ count: 30 }) });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+
+	// the ceiling is 30, not 29, got: ${JSON.stringify(findings)}
+	expect(findings).toStrictEqual([]);
+});
+
+test('lintPlanStructure: a plan declaring its own File Budget silences the touched-file note it covers', async () => {
+	const cwd = setupConsumerRepo();
+	const modifies = Array.from({ length: 60 }, (_, index) => `### \`src/index.js\`\n\nRename an import (${index}).\n`).join('\n');
+	const declared = writeDemoPlanFile({
+		cwd,
+		name: 'declared.md',
+		body: sizedPlan({ count: 3, extra: `\n## File Budget\n\n80\n\n## Files to Modify\n\n${modifies}\n` }),
+	});
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [declared], decisions: emptyDecisionsRecord() });
+
+	// a phase that creates three files and edits one import everywhere is
+	// legitimate work no repo-wide number can express, got:
+	// ${JSON.stringify(findings)}
+	expect(findings).toStrictEqual([]);
+});
+
+test('lintPlanStructure: the configured executor-file-limit moves the advisory off its default', async () => {
+	const cwd = setupConsumerRepo();
+	const config = LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'executor-file-limit': 10 });
+	const path = writeDemoPlanFile({ cwd, name: 'configured-limit.md', body: sizedPlan({ count: 12 }) });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config });
+
+	expect(findings.map((finding) => finding.issue)).toStrictEqual([
+		'plan touches 12 source files, over the 10-file limit from the configured executor-file-limit',
+	]);
+});
+
+test('lintPlanStructure: a Files to Move heading naming one path is a blocking finding at its line', async () => {
+	const cwd = setupConsumerRepo();
+	const path = writeDemoPlanFile({ cwd, name: 'bad-move.md', body: sizedPlan({ count: 1, extra: '\n## Files to Move\n\n### `src/index.js`\n\nTo where?\n' }) });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const move = findings.find((finding) => finding.check === StructuralCheck.MoveWellFormed);
+
+	// a half-written move heading loses a file silently — the line number is what
+	// the writer is pointed at
+	expect(move?.severity).toBe(FindingSeverity.Blocking);
+	expect(move?.location).toMatch(/^bad-move\.md:\d+$/);
+});
+
+test('lintPlanStructure: a clean plan returns no findings', async () => {
+	const cwd = setupConsumerRepo();
+	const path = writeDemoPlanFile({ cwd, name: 'clean.md', body: cleanPlanBody() });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+
+	// clean plan should have no findings, got: ${JSON.stringify(findings)}
+	expect(findings).toStrictEqual([]);
+});
+
+test('lintPlanStructure: a path the Context prose names but the tree does not hold is one blocking prose-path finding', async () => {
+	const cwd = setupConsumerRepo();
+	const clean = writeDemoPlanFile({ cwd, name: 'clean-prose.md', body: cleanPlanBody() });
+	const stale = writeDemoPlanFile({ cwd, name: 'stale-prose.md', body: planBodyWith({ snippet: 'It replaces `src/ghost.ts`, which moved months ago.' }) });
+
+	const before = await lintPlanStructure({ cwd, planPaths: [clean], decisions: emptyDecisionsRecord() });
+	const after = await lintPlanStructure({ cwd, planPaths: [stale], decisions: emptyDecisionsRecord() });
+	const prose = after.filter((finding) => finding.check === StructuralCheck.ProsePathExists);
+
+	// only the heading paths were ever checked, so a wrong path in a sentence
+	// belonged to nobody and survived into implementation
+	expect(before).toStrictEqual([]);
+	expect(prose.length).toBe(1);
+	expect(prose[0]?.severity).toBe(FindingSeverity.Blocking);
+	expect(prose[0]?.issue).toBe('path named in prose does not exist: src/ghost.ts');
+	expect(prose[0]?.location ?? '').toMatch(/^stale-prose\.md:\d+$/);
+	expect(after.length).toBe(before.length + 1);
+});
+
+test('lintPlanStructure: fence state resets per file — an unclosed fence never silences the next plan', async () => {
+	const cwd = setupConsumerRepo();
+	const unclosed = writeDemoPlanFile({ cwd, name: 'unclosed-fence.md', body: planBodyWith({ snippet: '```ts\nconst {userName} = props;' }) });
+	const following = writeDemoPlanFile({ cwd, name: 'after-fence.md', body: planBodyWith({ snippet: 'Resolve the {token} before writing.' }) });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [unclosed, following], decisions: emptyDecisionsRecord() });
+	const placeholders = findings.filter((finding) => finding.check === StructuralCheck.NoPlaceholders);
+
+	// only the second plan's prose token is flagged, got:
+	// ${JSON.stringify(placeholders)}
+	expect(placeholders.length).toBe(1);
+	// the finding is attributed to the second plan
+	expect(placeholders[0].location.startsWith('after-fence.md:')).toBeTruthy();
+});
+
+/** A plan whose only lint-relevant content is one modify path and one verification command. */
+const packagePlan = ({ modifyPath, command }: { modifyPath: string; command: string }) => `# Plan
+
+${renderDecisionLog({ decisions: [] })}
+
+## Prerequisites
+
+- None
+
+${renderGlobalConstraints({ decisions: [] })}
+
+## Files to Modify
+
+### \`${modifyPath}\`
+
+Change something.
+
+## Scope Boundaries
+
+**Do NOT:** wander.
+
+## Verification
+
+- \`${command}\` — gates green
+
+## What Next Plan Expects
+
+None.
+`;
+
+test('lintPlanStructure: a path directly under packages/ with no package segment is flagged', async () => {
+	const cwd = setupConsumerRepo();
+
+	const body = packagePlan({ modifyPath: 'packages/loose.ts', command: 'true' });
+	const path = writeDemoPlanFile({ cwd, name: 'loose-package-path.md', body });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+
+	// the unidentifiable package path is flagged, got: ${JSON.stringify(findings)}
+	expect(findings.some((finding) => finding.check === StructuralCheck.PackagesIdentifiable && finding.issue.includes("'packages/loose.ts'"))).toBeTruthy();
+});
+
+test('lintPlanStructure: a configured packagesDir moves the package-segment check off the default', async () => {
+	const cwd = setupConsumerRepo();
+
+	const config = LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': 'modules' });
+	const body = packagePlan({ modifyPath: 'modules/loose.ts', command: 'true' });
+	const path = writeDemoPlanFile({ cwd, name: 'custom-packages-dir.md', body });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config });
+
+	// the configured packages directory drives the check, got:
+	// ${JSON.stringify(findings)}
+	expect(findings.some((finding) => finding.check === StructuralCheck.PackagesIdentifiable && finding.issue.includes('directly under modules/'))).toBeTruthy();
+});
+
+test('lintPlanStructure: an overview.md basename is the overview variant on its own', async () => {
+	const cwd = setupConsumerRepo();
+	const path = writeDemoPlanFile({
+		cwd,
+		name: 'overview.md',
+		body: `# Plain Title
+
+## Global Constraints
+
+- None
+`,
+	});
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const sections = findings.filter((finding) => finding.check === StructuralCheck.SectionsPresent);
+
+	// the filename alone selects the overview section set
+	expect(sections.map((finding) => finding.issue)).toStrictEqual([
+		"missing required section '## Phases' (overview plan)",
+		"missing required section '## Phase Declarations' (overview plan)",
+		"missing required section '## Cross-Phase Dependencies' (overview plan)",
+	]);
+});
+
+test('lintPlanStructure: a plan file that cannot be read is a finding, not a silent pass', async () => {
+	const cwd = setupConsumerRepo();
+	const planPath = join(cwd, 'unreadable-plan.md');
+
+	// a directory standing where the plan should be: the draft claimed a path
+	// that holds no text, and a clean lint would let that through as structural
+	mkdirSync(planPath);
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [planPath], decisions: emptyDecisionsRecord() });
+
+	expect(findings.map(({ issue, location }) => ({ issue, location }))).toStrictEqual([{ issue: 'plan file could not be read', location: planPath }]);
+	expect(findings[0]?.fix).toMatch(/ensure the draft wrote the plan file/);
+});
+
+test("lintPlanStructure: an implementable plan's Renames section is held to the renames-well-formed check", async () => {
+	const cwd = setupConsumerRepo();
+	const selfContaining = writeDemoPlanFile({
+		cwd,
+		name: 'self-containing.md',
+		body: phaseBody({ modify: ['src/index.js'], renames: [{ from: 'foo', to: 'fooBar' }], reference: false }),
+	});
+	const clean = writeDemoPlanFile({
+		cwd,
+		name: 'rename-only.md',
+		body: phaseBody({ modify: ['src/index.js'], renames: [{ from: 'one', to: 'uno' }], reference: false }),
+	});
+
+	const refused = await lintPlanStructure({ cwd, planPaths: [selfContaining], decisions: emptyDecisionsRecord() });
+	const accepted = await lintPlanStructure({ cwd, planPaths: [clean], decisions: emptyDecisionsRecord() });
+	const refusedRenames = refused.filter((finding) => finding.check === StructuralCheck.RenamesWellFormed);
+	const acceptedRenames = accepted.filter((finding) => finding.check === StructuralCheck.RenamesWellFormed);
+
+	// `foo` → `fooBar` re-applies to its own output, so the per-file loop must
+	// reach the renames check for an implementable file, got:
+	// ${JSON.stringify(refused)}
+	expect(refusedRenames).toEqual([expect.objectContaining({ check: 'renames-well-formed', severity: FindingSeverity.Blocking, phase: 'self-containing.md' })]);
+	expect(acceptedRenames).toStrictEqual([]);
+});
+
+/** `count` distinct source paths — distinct because the touched count drops duplicates. */
+const touchedPaths = ({ count }: { count: number }) => Array.from({ length: count }, (_, index) => `src/touched${index}.ts`);
+
+test('lintPlanStructure: a plan touching more source files than the touched ceiling is blocked, and the budget note still reads beside it', async () => {
+	const cwd = setupConsumerRepo();
+	const path = writeDemoPlanFile({
+		cwd,
+		name: 'too-wide.md',
+		body: phaseBody({ create: ['src/gen0.ts'], modify: touchedPaths({ count: 70 }), reference: false }),
+	});
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const ceiling = findings.filter((finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling);
+	const guardrail = findings.filter((finding) => finding.check === StructuralCheck.ScopeWithinGuardrail);
+
+	// 71 touched files is more than one implementing run finishes, got:
+	// ${JSON.stringify(findings)}
+	expect(ceiling).toEqual([
+		expect.objectContaining({
+			severity: FindingSeverity.Blocking,
+			phase: 'too-wide.md',
+			issue: expect.stringMatching(/touches 71 source files, over the 70-file ceiling/),
+		}),
+	]);
+	expect(guardrail).toEqual([expect.objectContaining({ severity: FindingSeverity.Advisory })]);
+});
+
+test('lintPlanStructure: a plan touching exactly the touched ceiling keeps only the advisory note', async () => {
+	const cwd = setupConsumerRepo();
+	const path = writeDemoPlanFile({ cwd, name: 'seventy.md', body: phaseBody({ modify: touchedPaths({ count: 70 }), reference: false }) });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const ceiling = findings.filter((finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling);
+	const guardrail = findings.filter((finding) => finding.check === StructuralCheck.ScopeWithinGuardrail);
+
+	// the ceiling is 70, not 69, got: ${JSON.stringify(findings)}
+	expect(ceiling).toStrictEqual([]);
+	expect(guardrail).toEqual([
+		expect.objectContaining({
+			severity: FindingSeverity.Advisory,
+			issue: expect.stringMatching(/touches 70 source files, over the 50-file limit from the configured executor-file-limit/),
+		}),
+	]);
+});
+
+test("lintPlanStructure: a plan's own File Budget does not lift it past the touched ceiling", async () => {
+	const cwd = setupConsumerRepo();
+	const path = writeDemoPlanFile({ cwd, name: 'budgeted.md', body: phaseBody({ modify: touchedPaths({ count: 71 }), fileBudget: 200, reference: false }) });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const ceiling = findings.filter((finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling);
+	const guardrail = findings.filter((finding) => finding.check === StructuralCheck.ScopeWithinGuardrail);
+
+	// an unbounded budget is what let a 77-file phase through, got:
+	// ${JSON.stringify(findings)}
+	expect(ceiling).toEqual([expect.objectContaining({ severity: FindingSeverity.Blocking, phase: 'budgeted.md' })]);
+	expect(guardrail).toStrictEqual([]);
+});
+
+test('lintPlanStructure: a rename-only plan is exempt from the touched ceiling', async () => {
+	const cwd = setupConsumerRepo();
+	const path = writeDemoPlanFile({
+		cwd,
+		name: 'wide-rename.md',
+		body: phaseBody({ modify: touchedPaths({ count: 71 }), renames: [{ from: 'one', to: 'uno' }], reference: false }),
+	});
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const ceiling = findings.filter((finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling);
+
+	// a rename's size is not what makes it hard, got: ${JSON.stringify(findings)}
+	expect(ceiling).toStrictEqual([]);
+});
+
+test('lintPlanStructure: a move-folders-and-files plan is exempt from the touched ceiling and the over-budget advisory', async () => {
+	const cwd = setupConsumerRepo();
+	const move = Array.from({ length: 36 }, (_, index) => ({ from: `src/old${index}.ts`, to: `src/new${index}.ts` }));
+	const path = writeDemoPlanFile({ cwd, name: 'wide-move.md', body: phaseBody({ move, buildMode: 'move-folders-and-files', reference: false }) });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const sizes = findings.filter(
+		(finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling || finding.check === StructuralCheck.ScopeWithinGuardrail,
+	);
+
+	// moves count on both sides, so these touch well past the 70-file ceiling and
+	// the 50-file default budget — a mechanical move's size is not what makes it
+	// hard, got: ${JSON.stringify(findings)}
+	expect(sizes).toStrictEqual([]);
+});
+
+test('lintPlanStructure: the touched-ceiling fix for a standard plan points at both mechanical build modes', async () => {
+	const cwd = setupConsumerRepo();
+	const path = writeDemoPlanFile({ cwd, name: 'too-wide-standard.md', body: phaseBody({ modify: touchedPaths({ count: 71 }), reference: false }) });
+
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const ceiling = findings
+		.filter((finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling)
+		.map(({ severity, fix }) => ({
+			severity,
+			namesRenames: fix.includes('## Renames'),
+			namesBuildMode: fix.includes('## Build Mode'),
+			namesMoveMode: fix.includes('move-folders-and-files'),
+		}));
+
+	expect(ceiling).toStrictEqual([{ severity: FindingSeverity.Blocking, namesRenames: true, namesBuildMode: true, namesMoveMode: true }]);
+});
+
+test("lintPlanStructure: an implementable plan's Build Mode section is held to the build-mode-well-formed check", async () => {
+	const cwd = setupConsumerRepo();
+	const implementable = writeDemoPlanFile({
+		cwd,
+		name: 'unknown-mode.md',
+		body: phaseBody({ modify: ['src/index.js'], buildMode: 'sideways', reference: false }),
+	});
+	const overview = writeDemoPlanFile({
+		cwd,
+		name: 'overview.md',
+		body: `${overviewBody({ rows: [{ file: 'phase1-demo.md' }] })}\n## Build Mode\n\nsideways\n`,
+	});
+
+	const refused = await lintPlanStructure({ cwd, planPaths: [implementable], decisions: emptyDecisionsRecord() });
+	const ignored = await lintPlanStructure({ cwd, planPaths: [overview], decisions: emptyDecisionsRecord() });
+	const refusedModes = refused.filter((finding) => finding.check === StructuralCheck.BuildModeWellFormed);
+	const ignoredModes = ignored.filter((finding) => finding.check === StructuralCheck.BuildModeWellFormed);
+
+	// the per-file loop must reach the build-mode check for an implementable file
+	// only — an overview builds nothing, got: ${JSON.stringify(refused)}
+	expect(refusedModes).toEqual([
+		expect.objectContaining({
+			check: 'build-mode-well-formed',
+			severity: FindingSeverity.Blocking,
+			phase: 'unknown-mode.md',
+			location: 'unknown-mode.md → Build Mode',
+		}),
+	]);
+	expect(ignoredModes).toStrictEqual([]);
+});

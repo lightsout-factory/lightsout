@@ -1,6 +1,7 @@
 import { access, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
+import { resolveRecordedPlanPath } from '#src/common/resolveRecordedPlanPath.ts';
 import { toRepoRelativePath } from '#src/common/toRepoRelativePath.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
@@ -10,7 +11,6 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { readOverviewPhases } from '#src/phases/readOverviewPhases.ts';
 import { findUnfinishedSequence } from '#src/phases/runPhasesPipeline/initializeSequence/findUnfinishedSequence.ts';
-import { resolveRecordedPlanPath } from '#src/plan/common/paths/resolveRecordedPlanPath.ts';
 import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';

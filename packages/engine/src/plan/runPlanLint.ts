@@ -1,8 +1,8 @@
+import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
+import { getBlockingFindings } from '#src/common/getBlockingFindings.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
-import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
-import { getBlockingFindings } from '#src/plan/common/utils/getBlockingFindings.ts';
-import { getPlanDetectionInputs } from '#src/plan/internal/common/utils/getPlanDetectionInputs.ts';
-import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure.ts';
+import { getPlanDetectionInputs } from '#src/plan/common/getPlanDetectionInputs.ts';
+import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure/lintPlanStructure.ts';
 
 interface Params {
 	cwd: string;

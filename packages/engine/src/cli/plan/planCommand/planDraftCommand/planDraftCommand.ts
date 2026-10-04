@@ -5,7 +5,9 @@ import { yellow } from '#src/cli/common/terminal/yellow.ts';
 import { planRunOptions } from '#src/cli/plan/planCommand/common/planRunOptions.ts';
 import { printStructuralFinding } from '#src/cli/plan/planCommand/common/printStructuralFinding.ts';
 import { exitOnPlanFailure } from '#src/cli/plan/planCommand/planDraftCommand/exitOnPlanFailure.ts';
+import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { exitCli } from '#src/common/exitCli.ts';
+import { getBlockingFindings } from '#src/common/getBlockingFindings.ts';
 import { getStringFlag } from '#src/common/getStringFlag.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
@@ -13,11 +15,9 @@ import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
-import { getBlockingFindings } from '#src/plan/common/utils/getBlockingFindings.ts';
-import { runPlanDraft } from '#src/plan/draft/runPlanDraft.ts';
+import { runPlanDraft } from '#src/plan/draft/runPlanDraft/runPlanDraft.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
-import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep.ts';
+import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep/recordPlanningStep.ts';
 
 interface Params {
 	cwd: string;

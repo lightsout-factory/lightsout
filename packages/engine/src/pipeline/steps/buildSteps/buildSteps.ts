@@ -12,7 +12,7 @@ import { buildTestSteps } from '#src/pipeline/steps/buildSteps/buildTestSteps/bu
 import { cleanSlateStep } from '#src/pipeline/steps/buildSteps/cleanSlateStep.ts';
 import { getLedgerMovePaths } from '#src/pipeline/steps/buildSteps/getLedgerMovePaths.ts';
 import { writeLedgerTestsStep } from '#src/pipeline/steps/buildSteps/writeLedgerTestsStep/writeLedgerTestsStep.ts';
-import { parsePlan } from '#src/plan/parsePlan.ts';
+import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
 
 interface Params {
 	run: PipelineRun;

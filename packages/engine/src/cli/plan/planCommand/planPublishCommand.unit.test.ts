@@ -8,8 +8,8 @@ import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import { parseFlags } from '#src/cli/common/parseFlags.ts';
 import { planCommand } from '#src/cli/plan/planCommand/planCommand.ts';
 import { planPublishCommand } from '#src/cli/plan/planCommand/planPublishCommand.ts';
+import { planAttachmentManifestName } from '#src/common/constants/planAttachmentManifestName.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { planAttachmentManifestName } from '#src/plan/common/constants/planAttachmentManifestName.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
 

@@ -1,5 +1,5 @@
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
-import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
+import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
 
 interface Params {
 	path: string;

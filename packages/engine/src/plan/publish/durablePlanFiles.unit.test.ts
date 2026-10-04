@@ -4,9 +4,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { serializeAttachmentManifest } from '#src/common/attachmentManifest/serializeAttachmentManifest.ts';
-import { planAttachmentManifestName } from '#src/plan/common/constants/planAttachmentManifestName.ts';
+import { planAttachmentManifestName } from '#src/common/constants/planAttachmentManifestName.ts';
 import { durablePlanFiles } from '#src/plan/publish/durablePlanFiles.ts';
-import { restorePlanWorkspace } from '#src/plan/restore/restorePlanWorkspace.ts';
+import { restorePlanWorkspace } from '#src/plan/restore/restorePlanWorkspace/restorePlanWorkspace.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 

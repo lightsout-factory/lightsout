@@ -2,16 +2,16 @@ import { createProgressPrinter } from '#src/cli/common/createProgressPrinter.ts'
 import { bold } from '#src/cli/common/terminal/bold.ts';
 import { yellow } from '#src/cli/common/terminal/yellow.ts';
 import { ensureBrainstormFiles } from '#src/cli/plan/planCommand/planVerifyFactsCommand/ensureBrainstormFiles.ts';
+import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { usage } from '#src/common/constants/usage.ts';
 import { exitCli } from '#src/common/exitCli.ts';
 import { getStringFlag } from '#src/common/getStringFlag.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
-import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep.ts';
-import { runPlanVerifyFacts } from '#src/plan/runPlanVerifyFacts.ts';
+import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep/recordPlanningStep.ts';
+import { runPlanVerifyFacts } from '#src/plan/runPlanVerifyFacts/runPlanVerifyFacts.ts';
 
 export const planVerifyFactsCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const name = getStringFlag({ flags, name: 'name' });

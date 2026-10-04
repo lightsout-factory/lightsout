@@ -6,9 +6,9 @@ const setupFinding = (overrides: Record<string, unknown> = {}) => {
 		check: 'path-exists',
 		severity: 'blocking',
 		phase: 'plan.md',
-		issue: 'the plan names src/plan/runPlanGrade.ts, which does not exist',
+		issue: 'the plan names src/plan/runPlanGrade/runPlanGrade.ts, which does not exist',
 		location: 'Files to Modify, line 42',
-		fix: 'point the entry at src/plan/runPlanGrade.ts or drop it',
+		fix: 'point the entry at src/plan/runPlanGrade/runPlanGrade.ts or drop it',
 		...overrides,
 	};
 
@@ -25,9 +25,9 @@ describe('StructuralFinding', () => {
 			check: 'path-exists',
 			severity: 'blocking',
 			phase: 'plan.md',
-			issue: 'the plan names src/plan/runPlanGrade.ts, which does not exist',
+			issue: 'the plan names src/plan/runPlanGrade/runPlanGrade.ts, which does not exist',
 			location: 'Files to Modify, line 42',
-			fix: 'point the entry at src/plan/runPlanGrade.ts or drop it',
+			fix: 'point the entry at src/plan/runPlanGrade/runPlanGrade.ts or drop it',
 		});
 	});
 

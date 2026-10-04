@@ -1,10 +1,10 @@
 import { expect, test } from '@jest/globals';
 import { buildFocusedPlanWriterInvocation } from '#src/agents/buildFocusedPlanWriterInvocation/buildFocusedPlanWriterInvocation.ts';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
+import type { ExportCollision } from '#src/common/types/ExportCollision.ts';
+import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import type { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
-import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
-import type { ExportCollision } from '#src/plan/evidence/common/types/ExportCollision.ts';
 
 type FocusedParams = Parameters<typeof buildFocusedPlanWriterInvocation>[0];
 
@@ -37,7 +37,7 @@ const declarationRow = (): PhaseDeclaration => ({
 /** The engine's rendered evidence for one assignment, with a sentinel no other section could carry. */
 const evidenceBrief = (): string =>
 	[
-		'### `packages/engine/src/plan/sections/renderPhaseRow.ts`',
+		'### `packages/engine/src/plan/sections/syncPhaseSectionsFromFiles/syncPhaseSections/renderPhaseRow.ts`',
 		'',
 		'```ts',
 		'export const renderPhaseRow = ({ declaration }: Params): string => { /* … */ };',
@@ -51,14 +51,14 @@ const censusCollisions = (): ExportCollision[] => [
 	{
 		symbol: 'renderPhaseRow',
 		collidesWith: [
-			{ name: 'renderPhaseRow', path: 'packages/engine/src/plan/sections/renderPhaseRow.ts' },
+			{ name: 'renderPhaseRow', path: 'packages/engine/src/plan/sections/syncPhaseSectionsFromFiles/syncPhaseSections/renderPhaseRow.ts' },
 			{ name: 'render_phase_row', path: 'packages/engine/src/legacy/renderPhaseRowLegacy.ts' },
 		],
 	},
 	{
 		symbol: 'writePlanSection',
 		collidesWith: [
-			{ name: 'writePlanSection', path: 'packages/engine/src/plan/sections/writePlanSection.ts' },
+			{ name: 'writePlanSection', path: 'packages/engine/src/plan/sections/common/writePlanSection.ts' },
 			{ name: 'WritePlanSection', path: 'packages/engine/src/legacy/writePlanSectionLegacy.ts' },
 		],
 	},
@@ -141,11 +141,11 @@ test('buildFocusedPlanWriterInvocation: every census collision renders a bullet 
 	expect(bulletsNaming({ prompt: invocation.prompt, symbol: 'renderPhaseRow' }).length).toBe(1);
 	expect(bulletsNaming({ prompt: invocation.prompt, symbol: 'writePlanSection' }).length).toBe(1);
 	// both collisions on the first symbol survive, each with the file it is in
-	expect(invocation.prompt.includes('packages/engine/src/plan/sections/renderPhaseRow.ts')).toBeTruthy();
+	expect(invocation.prompt.includes('packages/engine/src/plan/sections/syncPhaseSectionsFromFiles/syncPhaseSections/renderPhaseRow.ts')).toBeTruthy();
 	expect(invocation.prompt.includes('render_phase_row')).toBeTruthy();
 	expect(invocation.prompt.includes('packages/engine/src/legacy/renderPhaseRowLegacy.ts')).toBeTruthy();
 	// and both on the second, so a second symbol is not dropped either
-	expect(invocation.prompt.includes('packages/engine/src/plan/sections/writePlanSection.ts')).toBeTruthy();
+	expect(invocation.prompt.includes('packages/engine/src/plan/sections/common/writePlanSection.ts')).toBeTruthy();
 	expect(invocation.prompt.includes('WritePlanSection')).toBeTruthy();
 	expect(invocation.prompt.includes('packages/engine/src/legacy/writePlanSectionLegacy.ts')).toBeTruthy();
 });

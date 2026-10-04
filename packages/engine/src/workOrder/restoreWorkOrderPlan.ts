@@ -2,7 +2,7 @@ import { restoreBrainstormFiles } from '#src/brainstorm/restore/restoreBrainstor
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { restorePlanWorkspace } from '#src/plan/restore/restorePlanWorkspace.ts';
+import { restorePlanWorkspace } from '#src/plan/restore/restorePlanWorkspace/restorePlanWorkspace.ts';
 import { readWorkOrderWithTrackerTarget } from '#src/workOrder/common/readWorkOrderWithTrackerTarget.ts';
 import { recordWorkOrderSyncState } from '#src/workOrder/common/recordWorkOrderSyncState.ts';
 

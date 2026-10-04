@@ -6,7 +6,7 @@ import type { ConfigDocs } from '#src/contracts/ConfigDocs.ts';
 import { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
 import { renderDecisionLog } from '#src/plan/decisionLog/renderDecisionLog.ts';
 import { gradeHistoryPath } from '#src/plan/gradeHistoryPath.ts';
-import { runPlanGrade } from '#src/plan/runPlanGrade.ts';
+import { runPlanGrade } from '#src/plan/runPlanGrade/runPlanGrade.ts';
 import { renderGlobalConstraints } from '#src/plan/sections/renderGlobalConstraints.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { createGapCheckDriver } from '#tests/helpers/createGapCheckDriver.ts';

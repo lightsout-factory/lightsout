@@ -60,7 +60,7 @@ interface PublishReport {
 
 const mockPublishPlan = jest.fn<(params: PublishParams) => Promise<PublishReport>>();
 
-jest.mock('#src/plan/publish/publishPlan.ts', () => ({ publishPlan: (params: PublishParams) => mockPublishPlan(params) }));
+jest.mock('#src/plan/publish/publishPlan/publishPlan.ts', () => ({ publishPlan: (params: PublishParams) => mockPublishPlan(params) }));
 // -------------------------
 
 /** The work order's label, which is also the branch the linked worktree below stands on. */
