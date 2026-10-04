@@ -1,5 +1,7 @@
 import { basename, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import type { Driver } from '#src/common/types/Driver.ts';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { ConfigDocs } from '#src/contracts/ConfigDocs.ts';
 import { GapArea } from '#src/contracts/plan/grade/GapArea.ts';
 import type { GapBatchVerdict } from '#src/contracts/plan/grade/GapBatchVerdict.ts';
@@ -10,8 +12,6 @@ import type { GradedGap } from '#src/contracts/plan/grade/GradedGap.ts';
 import type { GradeFindingRecord } from '#src/contracts/plan/memory/GradeFindingRecord.ts';
 import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatus.ts';
 import type { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import { drainGradeAgents } from '#src/plan/internal/common/grading/drainGradeAgents.ts';
 import type { getPlanDetectionPass } from '#src/plan/internal/common/utils/getPlanDetectionPass.ts';
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';

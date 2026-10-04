@@ -1,5 +1,5 @@
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import { runQueue } from '#src/queue/runQueue.ts';
 import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';

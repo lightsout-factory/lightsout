@@ -1,11 +1,11 @@
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runRefactorPipeline } from '#src/refactor/runRefactorPipeline.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';

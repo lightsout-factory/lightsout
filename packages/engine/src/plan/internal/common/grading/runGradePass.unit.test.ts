@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import { GapArea } from '#src/contracts/plan/grade/GapArea.ts';
 import { GapCheckLens } from '#src/contracts/plan/grade/GapCheckLens.ts';
@@ -12,7 +13,6 @@ import { GradeFindingStatus } from '#src/contracts/plan/memory/GradeFindingStatu
 import { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
 import { GradeScope } from '#src/contracts/plan/memory/GradeScope.ts';
 import type { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { gradeMemoryPath } from '#src/plan/common/utils/gradeMemoryPath.ts';
 import { runGradePass } from '#src/plan/internal/common/grading/runGradePass.ts';
 import { getPlanDetectionPass } from '#src/plan/internal/common/utils/getPlanDetectionPass.ts';

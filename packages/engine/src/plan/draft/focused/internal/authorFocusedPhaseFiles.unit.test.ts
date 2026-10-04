@@ -2,6 +2,8 @@ import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import type { Driver } from '#src/common/types/Driver.ts';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { SourceEvidenceEntry } from '#src/contracts/plan/evidence/SourceEvidenceEntry.ts';
@@ -9,8 +11,6 @@ import type { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvi
 import { SourceEvidenceKind } from '#src/contracts/plan/evidence/SourceEvidenceKind.ts';
 import type { ExploreArea } from '#src/contracts/plan/facts/ExploreArea.ts';
 import type { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 import { authorFocusedPhaseFiles } from '#src/plan/draft/focused/internal/authorFocusedPhaseFiles.ts';
 import { expectDefined } from '#tests/helpers/expectDefined.ts';

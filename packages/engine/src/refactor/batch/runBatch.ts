@@ -1,11 +1,11 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { collectBatchAdvisories } from '#src/refactor/batch/collectBatchAdvisories.ts';
 import { createBatchTools } from '#src/refactor/batch/internal/createBatchTools.ts';
 import { runBatchPass } from '#src/refactor/batch/internal/runBatchPass.ts';

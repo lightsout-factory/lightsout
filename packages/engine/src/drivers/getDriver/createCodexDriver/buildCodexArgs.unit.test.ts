@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals';
 import { Permissions } from '#src/contracts/Permissions.ts';
-import { buildCodexArgs } from '#src/drivers/buildCodexArgs.ts';
+import { buildCodexArgs } from '#src/drivers/getDriver/createCodexDriver/buildCodexArgs.ts';
 
 const outFile = '/tmp/last-message.txt';
 

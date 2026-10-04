@@ -1,7 +1,7 @@
+import type { AgentEnvironment } from '#src/common/types/AgentEnvironment.ts';
 import type { HarnessProcessUsage } from '#src/contracts/activity/HarnessProcessUsage.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
-import type { AgentEnvironment } from '#src/drivers/common/types/AgentEnvironment.ts';
 
 export interface DriverInvocation {
 	/** Full user-message prompt, assembled deterministically by the engine (plan, standards, task). */

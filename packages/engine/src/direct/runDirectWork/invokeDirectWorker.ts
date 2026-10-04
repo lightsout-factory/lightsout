@@ -2,12 +2,12 @@ import { buildDirectWorkerInvocation } from '#src/agents/buildDirectWorkerInvoca
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
 import type { RunState } from '#src/common/services/RunState.ts';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import { nextStepRecord } from '#src/direct/runDirectWork/common/nextStepRecord.ts';
 import { stopDirectRun } from '#src/direct/runDirectWork/common/stopDirectRun.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 

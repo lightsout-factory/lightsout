@@ -1,7 +1,7 @@
 import { join } from 'node:path';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeline.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
 import { pathExists } from '#src/plan/common/paths/pathExists.ts';

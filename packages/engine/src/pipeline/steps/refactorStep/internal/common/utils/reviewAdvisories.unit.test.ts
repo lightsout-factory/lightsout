@@ -1,8 +1,8 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import { reviewAdvisories } from '#src/pipeline/steps/refactorStep/internal/common/utils/reviewAdvisories.ts';
 

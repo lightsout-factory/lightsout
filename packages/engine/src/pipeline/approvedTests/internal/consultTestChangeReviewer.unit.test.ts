@@ -1,7 +1,7 @@
 import { expect, test } from '@jest/globals';
+import type { Driver } from '#src/common/types/Driver.ts';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import { TestChangeKind } from '#src/pipeline/approvedTests/internal/common/constants/TestChangeKind.ts';
 import { consultTestChangeReviewer } from '#src/pipeline/approvedTests/internal/consultTestChangeReviewer.ts';
 import { outcomeFields } from '#tests/helpers/outcomeFields.ts';

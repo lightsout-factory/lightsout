@@ -1,8 +1,8 @@
+import type { Driver } from '#src/common/types/Driver.ts';
 import { renderBranchTemplate } from '#src/common/utils/renderBranchTemplate.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { WorkOrderListing } from '#src/workOrder/common/types/WorkOrderListing.ts';
 import { findWorkOrderByTicketRef } from '#src/workOrder/findWorkOrderByTicketRef.ts';
 import { buildWorkOrderState } from '#src/workOrder/internal/common/record/buildWorkOrderState.ts';

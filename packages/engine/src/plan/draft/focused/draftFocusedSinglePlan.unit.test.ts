@@ -1,11 +1,11 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import { Effort } from '#src/contracts/Effort.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvidenceIndex.ts';
 import { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import { draftFocusedSinglePlan } from '#src/plan/draft/focused/draftFocusedSinglePlan.ts';
 import type { DraftContext } from '#src/plan/internal/common/types/DraftContext.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';

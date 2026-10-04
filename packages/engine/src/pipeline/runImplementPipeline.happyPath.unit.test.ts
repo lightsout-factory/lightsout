@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
 import { readCommandLog } from '#tests/helpers/readCommandLog.ts';
 import { report } from '#tests/helpers/report.ts';

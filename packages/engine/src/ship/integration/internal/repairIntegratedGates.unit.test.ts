@@ -1,6 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import type { ShipStepFailure } from '#src/ship/common/types/ShipStepFailure.ts';
 import { repairIntegratedGates } from '#src/ship/integration/internal/repairIntegratedGates.ts';

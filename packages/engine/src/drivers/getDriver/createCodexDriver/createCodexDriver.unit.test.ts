@@ -5,7 +5,7 @@ import { dirname, join } from 'node:path';
 import { afterAll, expect, test } from '@jest/globals';
 import { Effort } from '#src/contracts/Effort.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
-import { createCodexDriver } from '#src/drivers/createCodexDriver.ts';
+import { createCodexDriver } from '#src/drivers/getDriver/createCodexDriver/createCodexDriver.ts';
 
 // The `codex` binary is the one unowned boundary here, so each setup writes a
 // fake one onto PATH: it records the argv and stdin it was handed, writes the

@@ -5,6 +5,7 @@ import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivity
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import { resumeCommand } from '#src/cli/resumeCommand.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
@@ -13,7 +14,6 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
 import { manifestOf, runId, setupResume } from '#tests/helpers/setupResume.ts';

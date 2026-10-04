@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import { runPlanDraft } from '#src/plan/draft/runPlanDraft.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { createDraftDriver } from '#tests/helpers/createDraftDriver.ts';

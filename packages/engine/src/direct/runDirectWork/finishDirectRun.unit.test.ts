@@ -1,10 +1,10 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { RunState } from '#src/common/services/RunState.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { finishDirectRun } from '#src/direct/runDirectWork/finishDirectRun.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';

@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { buildClaudeCodeArgs } from '#src/drivers/buildClaudeCodeArgs.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { isRateLimitMessage } from '#src/drivers/internal/common/utils/isRateLimitMessage.ts';
-import { spawnCollect } from '#src/drivers/internal/common/utils/spawnCollect.ts';
-import { writeSystemPromptFile } from '#src/drivers/internal/common/utils/writeSystemPromptFile.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
+import { isRateLimitMessage } from '#src/drivers/getDriver/common/isRateLimitMessage.ts';
+import { spawnCollect } from '#src/drivers/getDriver/common/spawnCollect.ts';
+import { writeSystemPromptFile } from '#src/drivers/getDriver/common/writeSystemPromptFile.ts';
+import { buildClaudeCodeArgs } from '#src/drivers/getDriver/createClaudeCodeDriver/buildClaudeCodeArgs.ts';
 
 const ResultEnvelope = z.object({
 	result: z.string().optional(),

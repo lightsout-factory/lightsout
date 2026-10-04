@@ -1,6 +1,7 @@
 import { maxCheapFixRetries } from '#src/common/constants/maxCheapFixRetries.ts';
 import { RunState } from '#src/common/services/RunState.ts';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { describeGateCoordinationStop } from '#src/common/utils/describeGateCoordinationStop.ts';
 import { describeGateNoVerdictStop } from '#src/common/utils/describeGateNoVerdictStop.ts';
@@ -14,7 +15,6 @@ import { createDirectRun } from '#src/direct/runDirectWork/createDirectRun.ts';
 import { finishDirectRun } from '#src/direct/runDirectWork/finishDirectRun.ts';
 import { invokeDirectWorker } from '#src/direct/runDirectWork/invokeDirectWorker.ts';
 import { verifyDirectWork } from '#src/direct/runDirectWork/verifyDirectWork.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { withRunLock } from '#src/runState/lock/withRunLock.ts';
 import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';

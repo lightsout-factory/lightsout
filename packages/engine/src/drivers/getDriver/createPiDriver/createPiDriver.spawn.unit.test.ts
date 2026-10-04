@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, expect, test } from '@jest/globals';
 import { Permissions } from '#src/contracts/Permissions.ts';
-import { createOmpDriver, createPiDriver } from '#src/drivers/createPiDriver.ts';
+import { createOmpDriver, createPiDriver } from '#src/drivers/getDriver/createPiDriver/createPiDriver.ts';
 import { fakeHarnessOnPath } from '#tests/helpers/fakeHarnessOnPath.ts';
 
 // What the engine asked for and what the process was actually handed: the

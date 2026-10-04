@@ -1,8 +1,8 @@
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 
 export interface WorkOrderPlanStep {

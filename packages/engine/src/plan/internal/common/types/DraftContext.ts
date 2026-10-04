@@ -1,11 +1,11 @@
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import type { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvidenceIndex.ts';
 import type { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 
 /** The escalation from the single to the phased flow hands over exactly the state the first flow started from. */
 export interface DraftContext {

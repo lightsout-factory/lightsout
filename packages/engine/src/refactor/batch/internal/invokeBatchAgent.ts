@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { runFormatter } from '#src/common/processes/runFormatter.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
@@ -8,7 +9,6 @@ import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import type { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutcome.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 import { appendFriction } from '#src/runState/appendFriction.ts';
 import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';

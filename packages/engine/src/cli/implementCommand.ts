@@ -16,10 +16,10 @@ import { resolveCommandShipIntent } from '#src/cli/internal/common/utils/resolve
 import { runPhasesOrFailFast } from '#src/cli/internal/common/utils/runPhasesOrFailFast.ts';
 import { runPipelineOrFailFast } from '#src/cli/internal/common/utils/runPipelineOrFailFast.ts';
 import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { getDriver } from '#src/drivers/getDriver.ts';
+import { getDriver } from '#src/drivers/getDriver/getDriver.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
 import { requireImplementLifecycle } from '#src/ticketLifecycle/requireImplementLifecycle.ts';

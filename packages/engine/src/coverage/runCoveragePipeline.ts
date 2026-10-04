@@ -1,5 +1,6 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { runPreflightGate } from '#src/common/utils/runPreflightGate.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
@@ -11,7 +12,6 @@ import { initializeCoverageRun } from '#src/coverage/initializeCoverageRun.ts';
 import { CoverageRun } from '#src/coverage/internal/CoverageRun.ts';
 import { runCoverageRounds } from '#src/coverage/internal/runCoverageRounds.ts';
 import { seedCoverageResumeState } from '#src/coverage/seedCoverageResumeState.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { withRunLock } from '#src/runState/lock/withRunLock.ts';
 import { resolveStandards } from '#src/standards/resolveStandards.ts';
 

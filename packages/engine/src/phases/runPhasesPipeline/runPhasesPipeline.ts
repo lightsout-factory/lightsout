@@ -2,13 +2,13 @@ import { discardGeneratedChanges } from '#src/commit/discardGeneratedChanges.ts'
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { initializeSequence } from '#src/phases/runPhasesPipeline/initializeSequence/initializeSequence.ts';
 import { runPhase } from '#src/phases/runPhasesPipeline/runPhase/runPhase.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';

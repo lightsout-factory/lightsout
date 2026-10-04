@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { expectDefined } from '#tests/helpers/expectDefined.ts';
 import { overviewBody } from '#tests/helpers/phasePlan.ts';

@@ -1,3 +1,4 @@
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { CoverageBatchReport } from '#src/contracts/coverage/CoverageBatchReport.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
@@ -10,7 +11,6 @@ import { settleCoverageGates } from '#src/coverage/batch/internal/settleCoverage
 import { CoverageBatchStopKind } from '#src/coverage/internal/common/constants/CoverageBatchStopKind.ts';
 import type { CoverageBatch } from '#src/coverage/internal/common/types/CoverageBatch.ts';
 import type { CoverageBatchStop } from '#src/coverage/internal/common/types/CoverageBatchStop.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runBatchGates } from '#src/gates/runBatchGates.ts';
 
 interface Params {

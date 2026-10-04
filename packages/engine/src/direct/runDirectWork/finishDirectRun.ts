@@ -1,10 +1,10 @@
 import { commitRunWork } from '#src/commit/commitRunWork/commitRunWork.ts';
 import type { RunState } from '#src/common/services/RunState.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { headingOf } from '#src/common/utils/headingOf.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { nextStepRecord } from '#src/direct/runDirectWork/common/nextStepRecord.ts';
 import { stopDirectRun } from '#src/direct/runDirectWork/common/stopDirectRun.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 
 interface Params {

@@ -1,6 +1,6 @@
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
 import { syncGateHolds } from '#src/gates/gateHolds/syncGateHolds.ts';
 import { BoardQuestionRelay } from '#src/queue/board/BoardQuestionRelay.ts';

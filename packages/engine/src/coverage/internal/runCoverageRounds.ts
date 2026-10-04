@@ -1,4 +1,5 @@
 import type ts from 'typescript';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
@@ -11,7 +12,6 @@ import type { CoverageBatch } from '#src/coverage/internal/common/types/Coverage
 import { settleCoverageBatch } from '#src/coverage/internal/settleCoverageBatch.ts';
 import { runCoverageCheck } from '#src/coverage/runCoverageCheck.ts';
 import type { seedCoverageResumeState } from '#src/coverage/seedCoverageResumeState.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 
 const runRoundBatch = async ({
 	run,

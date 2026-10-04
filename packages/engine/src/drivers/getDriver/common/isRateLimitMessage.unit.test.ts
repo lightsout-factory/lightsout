@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { isRateLimitMessage } from '#src/drivers/internal/common/utils/isRateLimitMessage.ts';
+import { isRateLimitMessage } from '#src/drivers/getDriver/common/isRateLimitMessage.ts';
 
 test('isRateLimitMessage: the period-qualified wording the harness really used is read as a wall', () => {
 	// the exact rejected payload from the 2026-08-25 graded pass, which the two

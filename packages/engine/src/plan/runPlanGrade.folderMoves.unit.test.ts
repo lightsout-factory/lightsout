@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import { runPlanGrade } from '#src/plan/runPlanGrade.ts';
 import { createGapCheckDriver } from '#tests/helpers/createGapCheckDriver.ts';
 import { expectStatus } from '#tests/helpers/expectStatus.ts';

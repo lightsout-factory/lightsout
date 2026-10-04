@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { report } from '#tests/helpers/report.ts';

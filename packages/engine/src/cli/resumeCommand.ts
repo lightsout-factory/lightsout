@@ -19,7 +19,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { getDriver } from '#src/drivers/getDriver.ts';
+import { getDriver } from '#src/drivers/getDriver/getDriver.ts';
 import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';

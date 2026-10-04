@@ -1,10 +1,10 @@
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { buildCodexArgs } from '#src/drivers/buildCodexArgs.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { isRateLimitMessage } from '#src/drivers/internal/common/utils/isRateLimitMessage.ts';
-import { spawnCollect } from '#src/drivers/internal/common/utils/spawnCollect.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
+import { isRateLimitMessage } from '#src/drivers/getDriver/common/isRateLimitMessage.ts';
+import { spawnCollect } from '#src/drivers/getDriver/common/spawnCollect.ts';
+import { buildCodexArgs } from '#src/drivers/getDriver/createCodexDriver/buildCodexArgs.ts';
 
 /** Codex has no system-prompt channel, so the role instructions ride at the top of the task text. */
 export const createCodexDriver = (): Driver => {

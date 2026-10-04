@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { afterAll, expect, test } from '@jest/globals';
 import { Effort } from '#src/contracts/Effort.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
-import { createClaudeCodeDriver } from '#src/drivers/createClaudeCodeDriver.ts';
+import { createClaudeCodeDriver } from '#src/drivers/getDriver/createClaudeCodeDriver/createClaudeCodeDriver.ts';
 import { fakeHarnessOnPath } from '#tests/helpers/fakeHarnessOnPath.ts';
 
 // What the engine asked for and what the process was actually handed: flags,

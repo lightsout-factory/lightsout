@@ -6,10 +6,10 @@ import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivity
 import { createActivityRecorder } from '#src/activity/createActivityRecorder/createActivityRecorder.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { ActivityNode } from '#src/contracts/activity/ActivityNode.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { repairPhaseBreakdown } from '#src/plan/draft/repairPhaseBreakdown.ts';
 import { expectDefined } from '#tests/helpers/expectDefined.ts';
 import { expectStatus } from '#tests/helpers/expectStatus.ts';

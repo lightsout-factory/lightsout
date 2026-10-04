@@ -1,13 +1,13 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { consultSupervisor } from '#src/common/utils/consultSupervisor.ts';
 import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
 import { describeGateNoVerdict } from '#src/common/utils/describeGateNoVerdict.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { SupervisorDecision } from '#src/contracts/work/SupervisorDecision.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import { SettleKind } from '#src/refactor/batch/internal/common/constants/SettleKind.ts';
 import type { SettleOutcome } from '#src/refactor/batch/internal/common/types/SettleOutcome.ts';

@@ -1,9 +1,9 @@
 import { buildUnitTestWriterInvocation } from '#src/agents/buildUnitTestWriterInvocation.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { invokeCoverageAgent } from '#src/coverage/batch/invokeCoverageAgent.ts';
 import type { CoverageBatch } from '#src/coverage/internal/common/types/CoverageBatch.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 
 interface Params {
 	cwd: string;

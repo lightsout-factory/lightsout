@@ -1,7 +1,7 @@
+import type { Driver } from '#src/common/types/Driver.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
 import type { LeftBehindTicket } from '#src/queue/internal/common/types/LeftBehindTicket.ts';

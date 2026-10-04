@@ -1,5 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
@@ -8,7 +9,6 @@ import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';

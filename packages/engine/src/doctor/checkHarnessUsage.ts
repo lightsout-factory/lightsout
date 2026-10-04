@@ -1,15 +1,15 @@
+import type { Driver } from '#src/common/types/Driver.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { DoctorCheck } from '#src/doctor/internal/common/types/DoctorCheck.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import { getDriver } from '#src/drivers/getDriver.ts';
+import { getDriver } from '#src/drivers/getDriver/getDriver.ts';
 
 /** The adapter file whose parse has to be re-captured when a harness renames its token fields. */
 const usageAdapters: Record<string, string> = {
-	'claude-code': 'packages/engine/src/drivers/createClaudeCodeDriver.ts',
-	omp: 'packages/engine/src/drivers/createPiDriver.ts',
-	pi: 'packages/engine/src/drivers/createPiDriver.ts',
+	'claude-code': 'packages/engine/src/drivers/getDriver/createClaudeCodeDriver/createClaudeCodeDriver.ts',
+	omp: 'packages/engine/src/drivers/getDriver/createPiDriver/createPiDriver.ts',
+	pi: 'packages/engine/src/drivers/getDriver/createPiDriver/createPiDriver.ts',
 };
 
 const holdsFiniteNumber = ({ value }: { value: unknown }) =>

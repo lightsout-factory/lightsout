@@ -1,8 +1,8 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import { nameWaveWorkOrders } from '#src/queue/nameWaveWorkOrders.ts';
 import type { WorkOrderListing } from '#src/workOrder/common/types/WorkOrderListing.ts';

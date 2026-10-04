@@ -3,7 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { runRefactorPipeline } from '#src/refactor/runRefactorPipeline.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';

@@ -1,9 +1,9 @@
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runBatchGates } from '#src/gates/runBatchGates.ts';
 import { standaloneBanner } from '#src/refactor/batch/internal/common/constants/standaloneBanner.ts';
 import type { BatchTools } from '#src/refactor/batch/internal/common/types/BatchTools.ts';

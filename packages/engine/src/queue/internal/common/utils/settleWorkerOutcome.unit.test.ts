@@ -1,8 +1,8 @@
 import { execSync } from 'node:child_process';
 import { describe, expect, test } from '@jest/globals';
+import type { Driver } from '#src/common/types/Driver.ts';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import { readBranchState } from '#src/queue/branchState/readBranchState.ts';
 import { settleWorkerOutcome } from '#src/queue/internal/common/utils/settleWorkerOutcome.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';

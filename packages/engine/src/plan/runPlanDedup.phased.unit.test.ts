@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import { DedupReport } from '#src/contracts/dedup/DedupReport.ts';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import { runPlanDedup } from '#src/plan/runPlanDedup.ts';
 import { createDedupJudgeDriver } from '#tests/helpers/createDedupJudgeDriver.ts';
 import { createFailingSpawnDriver } from '#tests/helpers/createFailingSpawnDriver.ts';

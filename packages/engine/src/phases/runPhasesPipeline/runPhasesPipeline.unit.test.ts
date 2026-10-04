@@ -3,10 +3,10 @@ import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { PhaseReport } from '#src/contracts/run/PhaseReport.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { runPhasesPipeline } from '#src/phases/runPhasesPipeline/runPhasesPipeline.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
 import { describeRunLockHolder } from '#src/runState/lock/describeRunLockHolder.ts';

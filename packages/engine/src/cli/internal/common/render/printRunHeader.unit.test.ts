@@ -1,7 +1,7 @@
 import { expect, jest, test } from '@jest/globals';
 import { printRunHeader } from '#src/cli/internal/common/render/printRunHeader.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 

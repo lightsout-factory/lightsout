@@ -1,9 +1,9 @@
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { runPreflightGate } from '#src/common/utils/runPreflightGate.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { initializeRun } from '#src/refactor/initializeRun.ts';
 import { closeRefactorRun } from '#src/refactor/internal/closeRefactorRun.ts';
 import { countByRule } from '#src/refactor/internal/countByRule.ts';

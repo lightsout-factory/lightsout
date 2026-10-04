@@ -1,7 +1,7 @@
 import { expect, test } from '@jest/globals';
+import type { AgentEnvironment } from '#src/common/types/AgentEnvironment.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
-import { buildClaudeCodeArgs } from '#src/drivers/buildClaudeCodeArgs.ts';
-import type { AgentEnvironment } from '#src/drivers/common/types/AgentEnvironment.ts';
+import { buildClaudeCodeArgs } from '#src/drivers/getDriver/createClaudeCodeDriver/buildClaudeCodeArgs.ts';
 
 test('buildClaudeCodeArgs: with no options the argv is exactly the base flags', () => {
 	expect(buildClaudeCodeArgs({})).toStrictEqual(['-p', '--output-format', 'stream-json', '--verbose', '--exclude-dynamic-system-prompt-sections']);

@@ -1,4 +1,4 @@
-import type { AgentEnvironment } from '#src/drivers/common/types/AgentEnvironment.ts';
+import type { AgentEnvironment } from '#src/common/types/AgentEnvironment.ts';
 import { planWriterTools } from '#src/plan/draft/internal/common/constants/planWriterTools.ts';
 
 /**

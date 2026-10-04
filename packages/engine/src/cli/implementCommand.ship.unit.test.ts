@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { implementCommand } from '#src/cli/implementCommand.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
@@ -20,7 +20,7 @@ const mockStubDriver: Driver = {
 	},
 };
 
-jest.mock('#src/drivers/getDriver.ts', () => ({ getDriver: () => mockStubDriver }));
+jest.mock('#src/drivers/getDriver/getDriver.ts', () => ({ getDriver: () => mockStubDriver }));
 // -------------------------
 
 /** The plan folder the phased case points `--plan` at. */

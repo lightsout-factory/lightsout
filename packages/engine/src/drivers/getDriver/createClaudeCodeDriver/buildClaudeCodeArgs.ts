@@ -1,6 +1,6 @@
+import type { AgentEnvironment } from '#src/common/types/AgentEnvironment.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
-import type { AgentEnvironment } from '#src/drivers/common/types/AgentEnvironment.ts';
 
 const claudePermissionModes: Record<Permissions, string> = {
 	[Permissions.ReadOnly]: 'plan',

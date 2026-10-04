@@ -1,13 +1,13 @@
 import type { z } from 'zod';
 import { buildReportReemitterInvocation } from '#src/agents/buildReportReemitterInvocation.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
+import type { AgentEnvironment } from '#src/common/types/AgentEnvironment.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { HarnessProcessUsage } from '#src/contracts/activity/HarnessProcessUsage.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
-import type { AgentEnvironment } from '#src/drivers/common/types/AgentEnvironment.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { extractJsonReport } from '#src/invoke/invokeAgentWithContract/extractJsonReport.ts';
 import { recordHarnessProcess } from '#src/invoke/invokeAgentWithContract/recordHarnessProcess.ts';
 

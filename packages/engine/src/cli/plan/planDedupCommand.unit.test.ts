@@ -5,7 +5,7 @@ import { expect, test } from '@jest/globals';
 import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import { planDedupCommand } from '#src/cli/plan/planDedupCommand.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { minimalPlanBody } from '#tests/helpers/minimalPlanBody.ts';
 import { writeEmptyDecisions } from '#tests/helpers/writeEmptyDecisions.ts';

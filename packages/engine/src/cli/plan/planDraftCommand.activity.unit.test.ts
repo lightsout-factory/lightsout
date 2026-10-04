@@ -3,8 +3,8 @@ import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivity
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { planDraftCommand } from '#src/cli/plan/planDraftCommand.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { ActivityNode } from '#src/contracts/activity/ActivityNode.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { createDraftDriver } from '#tests/helpers/createDraftDriver.ts';

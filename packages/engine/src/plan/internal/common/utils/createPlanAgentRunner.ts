@@ -2,14 +2,14 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { z } from 'zod';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
+import type { AgentEnvironment } from '#src/common/types/AgentEnvironment.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
 import { getDirsOutsideCwd } from '#src/common/utils/getDirsOutsideCwd.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
-import type { AgentEnvironment } from '#src/drivers/common/types/AgentEnvironment.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { getAgentOutcomeStatus } from '#src/invoke/getAgentOutcomeStatus.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 

@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { expect } from '@jest/globals';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import { expectDefined } from '#tests/helpers/expectDefined.ts';
 
 /** The absolute path the prompt names — the writer's output line and the repairer's plan-file bullet share the `- <path>` shape. */

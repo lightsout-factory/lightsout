@@ -3,11 +3,11 @@ import { join } from 'node:path';
 import { buildPromptImproverInvocation } from '#src/agents/buildPromptImproverInvocation.ts';
 import { PromptImprovementStatus } from '#src/common/constants/PromptImprovementStatus.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { FrictionRecord } from '#src/contracts/friction/FrictionRecord.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
 import { readFriction } from '#src/runState/readFriction.ts';
 

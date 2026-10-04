@@ -1,10 +1,10 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { CoverageWorklist } from '#src/contracts/coverage/CoverageWorklist.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { runCoveragePipeline } from '#src/coverage/runCoveragePipeline.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
