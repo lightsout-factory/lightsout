@@ -1,8 +1,8 @@
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { continueDirectRun } from '#src/cli/internal/common/implementRun/continueDirectRun.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { runPhasesOrFailFast } from '#src/cli/internal/common/utils/runPhasesOrFailFast.ts';
 import { runPipelineOrFailFast } from '#src/cli/internal/common/utils/runPipelineOrFailFast.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';

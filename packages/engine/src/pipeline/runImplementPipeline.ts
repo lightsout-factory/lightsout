@@ -1,10 +1,10 @@
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { commitRunWork } from '#src/commit/commitRunWork/commitRunWork.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { readGitPrefix } from '#src/common/git/readGitPrefix.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';

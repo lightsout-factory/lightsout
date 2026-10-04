@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { runPlanGrade } from '#src/plan/runPlanGrade.ts';

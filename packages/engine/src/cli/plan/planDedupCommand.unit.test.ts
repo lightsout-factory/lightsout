@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { expect, test } from '@jest/globals';
-import { buildActivityTree } from '#src/activity/buildActivityTree.ts';
+import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import { planDedupCommand } from '#src/cli/plan/planDedupCommand.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

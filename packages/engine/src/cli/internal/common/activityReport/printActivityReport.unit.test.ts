@@ -1,5 +1,5 @@
 import { expect, jest, test } from '@jest/globals';
-import { buildActivityTree } from '#src/activity/buildActivityTree.ts';
+import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { printActivityReport } from '#src/cli/internal/common/activityReport/printActivityReport.ts';
 import type { ActivityLevelEnd } from '#src/contracts/activity/ActivityLevelEnd.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';

@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { describe, expect, test } from '@jest/globals';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
 import { gradeMemoryPath } from '#src/plan/common/utils/gradeMemoryPath.ts';

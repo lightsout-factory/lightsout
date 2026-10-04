@@ -1,9 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { formatCost, formatTokenCount } from '@lightsout/shared';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
 import { RunState } from '#src/common/services/RunState.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';

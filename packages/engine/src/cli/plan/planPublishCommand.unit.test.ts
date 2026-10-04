@@ -2,8 +2,8 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { activityRecordPath } from '#src/activity/activityRecordPath.ts';
-import { buildActivityTree } from '#src/activity/buildActivityTree.ts';
+import { activityRecordPath } from '#src/activity/activityRecordPath/activityRecordPath.ts';
+import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { planCommand } from '#src/cli/plan/planCommand.ts';

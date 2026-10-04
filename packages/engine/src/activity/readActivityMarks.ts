@@ -1,4 +1,4 @@
-import { activityRecordPath } from '#src/activity/activityRecordPath.ts';
+import { activityRecordPath } from '#src/activity/activityRecordPath/activityRecordPath.ts';
 import { readJsonlRecords } from '#src/common/utils/readJsonlRecords.ts';
 import { ActivityMark } from '#src/contracts/activity/ActivityMark.ts';
 

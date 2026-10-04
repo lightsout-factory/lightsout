@@ -1,6 +1,6 @@
 import { basename, join } from 'node:path';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { buildPlanDedupInvocation } from '#src/agents/buildPlanDedupInvocation.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';

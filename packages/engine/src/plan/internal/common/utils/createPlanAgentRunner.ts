@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { z } from 'zod';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
 import { getDirsOutsideCwd } from '#src/common/utils/getDirsOutsideCwd.ts';

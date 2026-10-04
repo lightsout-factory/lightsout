@@ -1,10 +1,10 @@
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { buildActivityTree } from '#src/activity/buildActivityTree.ts';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
+import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import { resumeCommand } from '#src/cli/resumeCommand.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';

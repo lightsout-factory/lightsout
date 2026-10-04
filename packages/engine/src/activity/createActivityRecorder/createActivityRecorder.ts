@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { activityRecordPath } from '#src/activity/activityRecordPath.ts';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
-import { appendActivityMark } from '#src/activity/internal/common/utils/appendActivityMark.ts';
+import { activityRecordPath } from '#src/activity/activityRecordPath/activityRecordPath.ts';
+import { appendActivityMark } from '#src/activity/createActivityRecorder/appendActivityMark.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { ActivityMark } from '#src/contracts/activity/ActivityMark.ts';
 import { ActivityMarkKind } from '#src/contracts/activity/ActivityMarkKind.ts';

@@ -1,10 +1,10 @@
 import { formatCost, formatDuration } from '@lightsout/shared';
-import { spanOfActivityNodes } from '#src/activity/common/utils/spanOfActivityNodes.ts';
 import { totalActivityReports } from '#src/activity/totalActivityReports.ts';
 import { harnessProcessLabel } from '#src/cli/internal/common/activityReport/harnessProcessLabel.ts';
 import { renderActivityTree } from '#src/cli/internal/common/activityReport/renderActivityTree.ts';
 import { printSectionHeading } from '#src/cli/internal/common/render/printSectionHeading.ts';
 import { dim } from '#src/cli/internal/common/terminal/dim.ts';
+import { spanOfActivityNodes } from '#src/common/spanOfActivityNodes.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { ActivityNode } from '#src/contracts/activity/ActivityNode.ts';
 import type { ActivityReport } from '#src/contracts/activity/ActivityReport.ts';

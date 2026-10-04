@@ -1,4 +1,4 @@
-import { totalActivityNode } from '#src/activity/internal/common/utils/totalActivityNode.ts';
+import { totalActivityNode } from '#src/activity/common/totalActivityNode.ts';
 import type { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { ActivityMark } from '#src/contracts/activity/ActivityMark.ts';
 import { ActivityMarkKind } from '#src/contracts/activity/ActivityMarkKind.ts';

@@ -1,8 +1,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { HarnessProcessMark } from '#src/contracts/activity/HarnessProcessMark.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

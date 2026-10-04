@@ -1,7 +1,7 @@
-import { spanOfActivityNodes } from '#src/activity/common/utils/spanOfActivityNodes.ts';
-import { gatherNodeProcesses } from '#src/activity/internal/common/utils/gatherNodeProcesses.ts';
-import { nestActivityMarks } from '#src/activity/internal/common/utils/nestActivityMarks.ts';
-import { totalActivityNode } from '#src/activity/internal/common/utils/totalActivityNode.ts';
+import { nestActivityMarks } from '#src/activity/buildActivityTree/nestActivityMarks.ts';
+import { gatherNodeProcesses } from '#src/activity/common/gatherNodeProcesses.ts';
+import { totalActivityNode } from '#src/activity/common/totalActivityNode.ts';
+import { spanOfActivityNodes } from '#src/common/spanOfActivityNodes.ts';
 import type { ActivityMark } from '#src/contracts/activity/ActivityMark.ts';
 import type { ActivityReport } from '#src/contracts/activity/ActivityReport.ts';
 

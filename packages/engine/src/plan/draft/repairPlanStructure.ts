@@ -1,6 +1,6 @@
 import { join } from 'node:path';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { buildPlanRepairInvocation } from '#src/agents/buildPlanRepairInvocation.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';

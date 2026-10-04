@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { z } from 'zod';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { AgentEnvironment } from '#src/drivers/common/types/AgentEnvironment.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

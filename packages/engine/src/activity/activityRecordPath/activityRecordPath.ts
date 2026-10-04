@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { activityRecordFileName } from '#src/activity/common/constants/activityRecordFileName.ts';
+import { activityRecordFileName } from '#src/activity/activityRecordPath/activityRecordFileName.ts';
 
 interface Params {
 	/** The directory the record lives in. Asking for the path creates nothing. */

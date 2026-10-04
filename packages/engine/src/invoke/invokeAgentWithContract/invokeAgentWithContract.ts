@@ -1,6 +1,6 @@
 import type { z } from 'zod';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { buildReportReemitterInvocation } from '#src/agents/buildReportReemitterInvocation.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { HarnessProcessUsage } from '#src/contracts/activity/HarnessProcessUsage.ts';
 import type { Effort } from '#src/contracts/Effort.ts';

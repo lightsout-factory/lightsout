@@ -1,4 +1,4 @@
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';

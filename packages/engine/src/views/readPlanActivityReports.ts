@@ -1,4 +1,4 @@
-import { buildActivityTree } from '#src/activity/buildActivityTree.ts';
+import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import type { PlanActivityReport } from '#src/views/common/types/PlanActivityReport.ts';

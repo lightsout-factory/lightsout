@@ -1,4 +1,4 @@
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { HarnessProcessUsage } from '#src/contracts/activity/HarnessProcessUsage.ts';
 import { ProcessEndReason } from '#src/contracts/activity/ProcessEndReason.ts';

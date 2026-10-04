@@ -1,6 +1,6 @@
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { buildTestChangeReviewInvocation } from '#src/agents/buildTestChangeReviewInvocation.ts';
 import { defaultSupervisorTimeoutMinutes } from '#src/common/constants/defaultSupervisorTimeoutMinutes.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';

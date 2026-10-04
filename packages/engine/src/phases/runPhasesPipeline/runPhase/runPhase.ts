@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';

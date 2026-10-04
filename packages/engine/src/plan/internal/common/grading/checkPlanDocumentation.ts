@@ -1,6 +1,6 @@
 import { basename } from 'node:path';
-import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { buildPlanDocsCheckInvocation } from '#src/agents/buildPlanDocsCheckInvocation.ts';
+import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { ConfigDocs } from '#src/contracts/ConfigDocs.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
