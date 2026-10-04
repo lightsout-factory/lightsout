@@ -31,6 +31,8 @@ export const StandardsPackListing = z.object({
 		deterministic: z.number(),
 		agent: z.number(),
 		topics: z.number(),
+		/** An estimate of what an agent writing code reads: each topic's intro and the prose of every rule that is not off. */
+		tokens: z.number(),
 	}),
 });
 

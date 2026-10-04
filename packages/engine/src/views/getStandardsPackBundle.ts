@@ -1,3 +1,4 @@
+import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { FixtureSide } from '#src/contracts/views/FixtureSide.ts';
 import type { StandardsPackBundle } from '#src/contracts/views/StandardsPackBundle.ts';
 import type { StandardsPackRuleView } from '#src/contracts/views/StandardsPackRuleView.ts';
@@ -8,6 +9,7 @@ import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibra
 import { resolveAuthoredStandardsLibrary } from '#src/standardsLibraries/resolveAuthoredStandardsLibrary.ts';
 import { resolveDefaultStandardsLibrary } from '#src/standardsLibraries/resolveDefaultStandardsLibrary.ts';
 import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack.ts';
+import { estimateTokens } from '#src/views/internal/common/utils/estimateTokens.ts';
 import { readPackFixtures } from '#src/views/internal/common/utils/readPackFixtures.ts';
 import { resolveRuleExample } from '#src/views/internal/common/utils/resolveRuleExample.ts';
 import { toStandardsPackRuleListing } from '#src/views/internal/common/utils/toStandardsPackRuleListing.ts';
@@ -36,6 +38,11 @@ const toRuleView = async ({ rule }: { rule: LoadedStandardsRule }) => {
 const toPackListing = ({ packFile, resolved }: { packFile: LoadedStandardsPackFile; resolved: ResolvedStandardsPack }) => {
 	const deterministic = resolved.rules.filter((entry) => entry.rule.deterministic).length;
 	const agent = resolved.rules.filter((entry) => entry.rule.agent).length;
+	// A rule that is off sends no prose to an agent, so it costs nothing to read.
+	const readByAgents = [
+		...resolved.topics.map((topic) => topic.intro),
+		...resolved.rules.filter((entry) => entry.severity !== StandardsSeverity.Off).map((entry) => entry.rule.prose),
+	];
 
 	return {
 		name: packFile.name,
@@ -45,7 +52,13 @@ const toPackListing = ({ packFile, resolved }: { packFile: LoadedStandardsPackFi
 		include: packFile.include,
 		topics: resolved.topics.map((topic) => `${topic.library}/${topic.path}`),
 		rules: resolved.rules.map((entry) => ({ name: entry.rule.name, severity: entry.severity, options: entry.options })),
-		totals: { rules: resolved.rules.length, deterministic, agent, topics: resolved.topics.length },
+		totals: {
+			rules: resolved.rules.length,
+			deterministic,
+			agent,
+			topics: resolved.topics.length,
+			tokens: estimateTokens({ text: readByAgents.join('\n\n') }),
+		},
 	};
 };
 

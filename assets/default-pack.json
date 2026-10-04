@@ -16,7 +16,7 @@
     {
       "name": "code-style",
       "address": "lightsout/code-style",
-      "description": "Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values, a type-safe value and a unit test.",
+      "description": "Makes code read the same whoever wrote it: one way to write a function, a class, a named value and a unit test.",
       "include": {
         "packs": [],
         "topics": [
@@ -146,7 +146,8 @@
         "rules": 21,
         "deterministic": 12,
         "agent": 10,
-        "topics": 5
+        "topics": 5,
+        "tokens": 4301
       }
     },
     {
@@ -311,13 +312,14 @@
         "rules": 24,
         "deterministic": 21,
         "agent": 5,
-        "topics": 5
+        "topics": 5,
+        "tokens": 3616
       }
     },
     {
       "name": "react",
       "address": "lightsout/react",
-      "description": "The rules written for React: function size measured for hooks and components, and one way to write a component test.",
+      "description": "The rules written for React: size caps for hooks and components, and one way to write a component test.",
       "include": {
         "packs": [],
         "topics": [
@@ -350,13 +352,14 @@
         "rules": 2,
         "deterministic": 1,
         "agent": 1,
-        "topics": 2
+        "topics": 2,
+        "tokens": 539
       }
     },
     {
       "name": "standards",
       "address": "lightsout/standards",
-      "description": "The standard for a package with no framework pack of its own: a repo that keeps one shape at every level and is written in one style.",
+      "description": "For a package with no framework pack of its own: one shape at every level, written in one style.",
       "include": {
         "packs": [
           "lightsout/fractal",
@@ -622,7 +625,8 @@
         "rules": 45,
         "deterministic": 33,
         "agent": 15,
-        "topics": 10
+        "topics": 10,
+        "tokens": 7917
       }
     },
     {
@@ -650,7 +654,8 @@
         "rules": 1,
         "deterministic": 0,
         "agent": 1,
-        "topics": 1
+        "topics": 1,
+        "tokens": 86
       }
     }
   ],

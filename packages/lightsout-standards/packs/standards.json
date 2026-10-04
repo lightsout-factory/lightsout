@@ -1,5 +1,5 @@
 {
-	"description": "The standard for a package with no framework pack of its own: a repo that keeps one shape at every level and is written in one style.",
+	"description": "For a package with no framework pack of its own: one shape at every level, written in one style.",
 	"include": {
 		"packs": ["lightsout/fractal", "lightsout/code-style"]
 	}

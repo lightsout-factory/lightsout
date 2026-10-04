@@ -64,11 +64,11 @@ describe('PacksPage', () => {
 		}));
 
 		expect(marks).toStrictEqual([
-			{ address: 'lightsout/fractal', fill: '#3178C6' },
-			{ address: 'lightsout/code-style', fill: '#3178C6' },
-			{ address: 'lightsout/standards', fill: '#3178C6' },
-			{ address: 'lightsout/react', fill: '#61DAFB' },
-			{ address: 'lightsout/tanstack-start', fill: 'currentColor' },
+			{ address: 'fractal', fill: '#3178C6' },
+			{ address: 'code-style', fill: '#3178C6' },
+			{ address: 'standards', fill: '#3178C6' },
+			{ address: 'react', fill: '#61DAFB' },
+			{ address: 'tanstack-start', fill: 'currentColor' },
 		]);
 	});
 
@@ -81,8 +81,8 @@ describe('PacksPage', () => {
 			.getAllByRole('heading')
 			.map((heading) => heading.textContent)
 			.filter((text) => text !== 'Standards Packs');
-		const standardsCard = screen.getByRole('link', { name: /lightsout\/standards/ });
-		const reactCard = screen.getByRole('link', { name: /lightsout\/react/ });
+		const standardsCard = screen.getByRole('link', { name: /standards/ });
+		const reactCard = screen.getByRole('link', { name: /react/ });
 		const ruleSetLinks = screen
 			.getAllByRole('link')
 			.map((link) => link.getAttribute('href'))
@@ -94,7 +94,7 @@ describe('PacksPage', () => {
 			reactHref: reactCard.getAttribute('href'),
 			ruleSetLinks,
 		}).toStrictEqual({
-			headings: ['lightsout/standards', 'lightsout/react', 'Your team’s pack'],
+			headings: ['lightsout', 'standards', 'react', 'Your team’s pack'],
 			standardsHref: '/standards-packs/lightsout/packs/standards',
 			reactHref: '/standards-packs/lightsout/packs/react',
 			ruleSetLinks: [],
@@ -102,40 +102,39 @@ describe('PacksPage', () => {
 	});
 
 	// The library's own totals (1 rule, 1 deterministic, 0 agent) differ from the pack's, so the counts shown prove they are the pack's.
-	test('names the packs a pack includes and counts its rules by kind of check', () => {
+	test('estimates what a pack costs to read and counts its rules by kind of check', () => {
 		setupPacksPage({
 			pack: buildStandardsPackView({
 				packs: [
 					buildStandardsPackListing({
 						name: 'standards',
-						include: { packs: ['lightsout/fractal'], topics: [], rules: [] },
-						totals: { rules: 5, deterministic: 3, agent: 2 },
+						include: { packs: ['lightsout/fractal', 'lightsout/code-style'], topics: [], rules: [] },
+						totals: { rules: 5, deterministic: 3, agent: 2, tokens: 7917 },
 					}),
 				],
 			}),
 		});
 
-		const card = screen.getByRole('link', { name: /lightsout\/standards/ });
+		const card = screen.getByRole('link', { name: /standards/ });
 
 		expect([
-			within(card).getByText(/^Includes/).textContent,
+			within(card).getByTitle('An estimate of what an agent reads on every task').textContent,
 			within(card).queryByText('3 deterministic checks') !== null,
 			within(card).queryByText('2 agent checks') !== null,
-		]).toStrictEqual(['Includes lightsout/fractal', true, true]);
+		]).toStrictEqual(['~7.9k tokens', true, true]);
 	});
 
-	test('leaves out the description, included packs and condition of a pack that has none of them', () => {
+	test('leaves out the description and condition of a pack that has neither', () => {
 		setupPacksPage({
 			pack: buildStandardsPackView({ packs: [buildStandardsPackListing({ name: 'standards', overrides: { description: undefined } })] }),
 		});
 
-		const card = screen.getByRole('link', { name: /lightsout\/standards/ });
+		const card = screen.getByRole('link', { name: /standards/ });
 
 		expect({
 			description: within(card).queryByText('Every bundled standard at once.'),
-			includes: within(card).queryByText(/^Includes/),
 			condition: within(card).queryByText(/^Applies only/),
-		}).toStrictEqual({ description: null, includes: null, condition: null });
+		}).toStrictEqual({ description: null, condition: null });
 	});
 
 	test('says on a conditional pack’s card which packages it reaches', () => {
@@ -145,17 +144,17 @@ describe('PacksPage', () => {
 			}),
 		});
 
-		const card = screen.getByRole('link', { name: /lightsout\/react/ });
+		const card = screen.getByRole('link', { name: /react/ });
 
 		expect(within(card).getByText(/^Applies only/).textContent).toBe('Applies only to packages that depend on react, preact or react-dom.');
 	});
 
-	test('shows the packs alone, with no library heading or blurb above them', () => {
+	test('names the library once above its packs, with no blurb', () => {
 		setupPacksPage();
 
-		// the page is about the packs; the library's own description belongs to the home page
+		// each card carries the pack's own name; the library's description belongs to the home page
 		expect(screen.queryByText('The rules lightsout ships.')).toBeNull();
-		expect(screen.queryByRole('heading', { name: 'lightsout' })).toBeNull();
+		expect(screen.getByRole('heading', { level: 2, name: 'lightsout' })).toBeInTheDocument();
 	});
 
 	test('points a team at the docs for writing its own pack', () => {

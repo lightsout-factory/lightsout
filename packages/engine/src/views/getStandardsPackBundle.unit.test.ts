@@ -245,8 +245,8 @@ describe('getStandardsPackBundle', () => {
 		expect(totals).toStrictEqual({
 			library: { rules: 3, deterministic: 1, agent: 2, topics: 2, packs: 2, withFixtures: 1 },
 			packs: {
-				app: { rules: 3, deterministic: 1, agent: 2, topics: 2 },
-				base: { rules: 2, deterministic: 1, agent: 1, topics: 1 },
+				app: { rules: 3, deterministic: 1, agent: 2, topics: 2, tokens: expect.any(Number) },
+				base: { rules: 2, deterministic: 1, agent: 1, topics: 1, tokens: expect.any(Number) },
 			},
 		});
 	});

@@ -69,7 +69,7 @@ const buildPack = ({ name, rules }: { name: string; rules: string[] }): Standard
 	include: { packs: [], topics: [], rules: [] },
 	topics: ['lightsout/code/agent-corrections/type-safety'],
 	rules: rules.map((rule) => ({ name: rule, severity: StandardsSeverity.Blocking, options: {} })),
-	totals: { rules: rules.length, deterministic: rules.length, agent: 0, topics: 1 },
+	totals: { rules: rules.length, deterministic: rules.length, agent: 0, topics: 1, tokens: 0 },
 });
 
 /** The page's rule, `lightsout/type-assertion`, in a library whose packs are given. */

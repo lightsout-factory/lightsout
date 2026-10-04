@@ -1,6 +1,6 @@
 import type { StandardsPackListing } from '@lightsout/engine';
 import { Link } from '@tanstack/react-router';
-import { ArrowRight, Blocks } from 'lucide-react';
+import { ArrowRight, Blocks, Coins } from 'lucide-react';
 import { FrameworkMark } from '#src/appUI/icons/FrameworkMark.tsx';
 import { CheckKind } from '#src/common/constants/CheckKind.ts';
 import { checkKindIcons } from '#src/common/constants/checkKindIcons.ts';
@@ -9,6 +9,7 @@ import { checkKindTones } from '#src/common/constants/checkKindTones.ts';
 import { cn } from '#src/common/utils/cn.ts';
 import { PackCondition } from '#src/features/packs/components/PackCondition.tsx';
 import { packFrameworks } from '#src/features/packs/internal/common/constants/packFrameworks.ts';
+import { formatTokenEstimate } from '#src/features/packs/internal/common/utils/formatTokenEstimate.ts';
 
 interface Props {
 	/** The library the pack belongs to — the first half of its address and of its page link. */
@@ -33,19 +34,26 @@ export const PackCard = ({ library, pack }: Props) => {
 				{framework === undefined ? (
 					<Blocks aria-hidden="true" className="size-5 text-muted-foreground" />
 				) : (
-					<FrameworkMark framework={framework} className="size-5" />
+					<FrameworkMark framework={framework} className="size-6" />
 				)}
 			</span>
 			<div className="flex flex-col gap-1">
-				<h3 className="break-all font-bold font-mono text-drop-navy text-lg">{pack.address}</h3>
-				{pack.description === undefined ? null : <p className="text-muted-foreground text-sm">{pack.description}</p>}
-				{pack.appliesWhen === undefined ? null : <PackCondition dependencies={pack.appliesWhen.dependencies} className="text-xs" />}
-				{pack.include.packs.length === 0 ? null : <p className="text-muted-foreground text-xs">Includes {pack.include.packs.join(', ')}</p>}
-				<p className="text-muted-foreground text-sm">
-					<span className="font-semibold text-drop-navy">{pack.totals.rules}</span> rules
+				<h3 className="break-all font-bold font-mono text-drop-navy text-lg">{pack.name}</h3>
+				{/* Fixed heights, so the rule counts sit on one line across a row of cards whatever each pack says about itself. */}
+				<p title={pack.description} className="line-clamp-4 h-20 text-muted-foreground text-sm">
+					{pack.description}
 				</p>
+				{pack.appliesWhen === undefined ? null : <PackCondition dependencies={pack.appliesWhen.dependencies} className="truncate text-xs" />}
 			</div>
 			<ul className="flex flex-col gap-2">
+				<li title="An estimate of what an agent reads on every task" className="flex items-center gap-2.5 text-muted-foreground text-sm">
+					<span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-status-in-progress-light text-status-in-progress">
+						<Coins aria-hidden="true" className="size-3.5" />
+					</span>
+					<span>
+						<span className="font-semibold text-drop-navy">{formatTokenEstimate({ tokens: pack.totals.tokens })}</span> tokens
+					</span>
+				</li>
 				{kinds.map(({ kind, count }) => {
 					const Icon = checkKindIcons[kind];
 

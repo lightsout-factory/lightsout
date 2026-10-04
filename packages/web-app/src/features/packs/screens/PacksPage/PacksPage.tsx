@@ -23,6 +23,7 @@ export const PacksPage = () => {
 				<CheckKindKey />
 			</header>
 			<section aria-label="Packs" className="flex flex-col gap-6">
+				<h2 className="font-bold font-mono text-2xl text-drop-navy">{library.name}</h2>
 				<div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
 					{sortPacksForDisplay({ packs: library.packs }).map((pack) => (
 						<PackCard key={pack.name} library={library.name} pack={pack} />

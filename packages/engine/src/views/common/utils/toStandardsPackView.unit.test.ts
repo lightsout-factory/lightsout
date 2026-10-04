@@ -26,7 +26,7 @@ const setupBundle = ({ described = true }: { described?: boolean } = {}) => {
 					{ name: 'lightsout/function-size', severity: StandardsSeverity.Blocking, options: { lines: 40 } },
 					{ name: 'lightsout/pure-functions', severity: StandardsSeverity.Advisory, options: {} },
 				],
-				totals: { rules: 2, deterministic: 1, agent: 1, topics: 1 },
+				totals: { rules: 2, deterministic: 1, agent: 1, topics: 1, tokens: 120 },
 			},
 		],
 		topics: [
@@ -101,7 +101,7 @@ describe('toStandardsPackView', () => {
 						{ name: 'lightsout/function-size', severity: 'blocking', options: { lines: 40 } },
 						{ name: 'lightsout/pure-functions', severity: 'advisory', options: {} },
 					],
-					totals: { rules: 2, deterministic: 1, agent: 1, topics: 1 },
+					totals: { rules: 2, deterministic: 1, agent: 1, topics: 1, tokens: 120 },
 				},
 			],
 			topics: [
